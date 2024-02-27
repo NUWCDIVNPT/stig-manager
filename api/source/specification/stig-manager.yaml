@@ -10,8 +10,6 @@ servers:
   - url: 'http://localhost:64001/api'
 paths:
   /assets:
-    parameters:
-      - $ref: '#/components/parameters/AssetProjectionQuery'
     get:
       tags:
         - Asset
@@ -26,6 +24,7 @@ paths:
         - $ref: '#/components/parameters/NameMatchQuery'
         - $ref: '#/components/parameters/MetadataQuery'
         - $ref: '#/components/parameters/BenchmarkIdQuery'
+        - $ref: '#/components/parameters/AssetProjectionQuery'
       responses:
         '200':
           description: AssetProjected array response
@@ -49,6 +48,8 @@ paths:
         - Asset
       summary: Create an Asset
       operationId: createAsset
+      parameters:
+        - $ref: '#/components/parameters/AssetProjectionQuery'
       requestBody:
         required: true
         content:
@@ -77,6 +78,42 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+    patch:
+      tags:
+        - Asset
+      summary: Delete one or more Assets
+      operationId: patchAssets
+      parameters:
+        - $ref: '#/components/parameters/CollectionIdQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetsPatchRequest'
+      responses:
+        '200':
+          description: AssetsPatch response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetsPatchResponse'
+        '400':
+          description: Client Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientErrorDuplicateAsset'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+
   '/assets/{assetId}':
     parameters:
       - $ref: '#/components/parameters/AssetIdPath'
@@ -4031,6 +4068,30 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StigUserBasic'
+    AssetsPatchRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        operation:
+          type: string
+          enum:
+            - delete
+        assetIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetId'
+    AssetsPatchResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        operation:
+          type: string
+          enum:
+            - deleted
+        assetIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetId'
     AssetStigResponse:
       type: object
       additionalProperties: false

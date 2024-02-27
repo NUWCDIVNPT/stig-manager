@@ -35925,6 +35925,304 @@
 							]
 						},
 						{
+							"name": "Assets-batch-delete",
+							"item": [
+								{
+									"name": "Import and overwrite application data (as elevated Admin) Copy",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 200 for elevated stigmanadmin user\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 403\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"let response = pm.response.text();\r",
+													"console.log(response)\r",
+													"\r",
+													"pm.test(\"Body contains string\",() => {\r",
+													"  pm.expect(response).to.include(\"Commit successful\");\r",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "oauth2",
+											"oauth2": [
+												{
+													"key": "accessToken",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "multipart/form-data"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "importFile",
+													"type": "file",
+													"src": "./{{formDataFiles}}/{{appDataFile}}"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/op/appdata?elevate=true",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"op",
+												"appdata"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "true",
+													"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Assets - expect success for valid users",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"    return;\r",
+													"}\r",
+													"else {\r",
+													"    pm.test(\"Status code is 200\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"}\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"let jsonDataExpected =\r",
+													"{\r",
+													"    \"operation\": \"deleted\",\r",
+													"    \"assetIds\": [\r",
+													"        \"29\",\r",
+													"        \"42\"\r",
+													"    ]\r",
+													"}\r",
+													"\r",
+													"\r",
+													"pm.test(\"Response JSON is an object\", function () {\r",
+													"    pm.expect(jsonData).to.be.an('object');\r",
+													"\r",
+													"});\r",
+													"\r",
+													"pm.test(\"operation = deleted and AssetIs are accurate\", function () {\r",
+													"    pm.expect(jsonData).to.eql(jsonDataExpected);\r",
+													"\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "PATCH",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"operation\":\"delete\",\r\n    \"assetIds\":\r\n        [\"29\",\"42\"]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets"
+											],
+											"query": [
+												{
+													"key": "collectionId",
+													"value": "{{testCollection}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Assets - assets not in collection",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"\r",
+													"    pm.test(\"Status code is 403\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"if (pm.response.code !== 403) {\r",
+													"    return;\r",
+													"}\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "PATCH",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"operation\":\"delete\",\r\n    \"assetIds\":\r\n        [\"258\",\"260\"]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/assets?collectionId={{testCollection}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets"
+											],
+											"query": [
+												{
+													"key": "collectionId",
+													"value": "{{testCollection}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Assets - collection does not exist",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"\r",
+													"    pm.test(\"Status code is 403\", function () {\r",
+													"        pm.response.to.have.status(403);\r",
+													"    });\r",
+													"if (pm.response.code !== 403) {\r",
+													"    return;\r",
+													"}\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "PATCH",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"operation\":\"delete\",\r\n    \"assetIds\":\r\n        [\"258\",\"260\"]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/assets?collectionId=65465",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"assets"
+											],
+											"query": [
+												{
+													"key": "collectionId",
+													"value": "65465"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
 							"name": "Create an Asset",
 							"event": [
 								{
@@ -36018,6 +36316,95 @@
 											"key": "projection",
 											"value": "stigs",
 											"description": "Additional properties to include in the response.\n"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Import and overwrite application data (as elevated Admin) Copy 2",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 200 for elevated stigmanadmin user\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 403\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let response = pm.response.text();\r",
+											"console.log(response)\r",
+											"\r",
+											"pm.test(\"Body contains string\",() => {\r",
+											"  pm.expect(response).to.include(\"Commit successful\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{appDataFile}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/op/appdata?elevate=true",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"op",
+										"appdata"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "true",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
 										}
 									]
 								}
