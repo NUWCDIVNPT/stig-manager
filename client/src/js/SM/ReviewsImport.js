@@ -890,7 +890,7 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
             if (_this.localStorage) {
                 localStorage.setItem('wizardImportOptions', JSON.stringify(_this.getOptions())) 
             }
-            _this.onOptionChanged?.(_this, cb, checked)
+            _this.onOptionChanged?.(_this, item, record, index)
         }
 
         this.restoreOptions = function (options = _this.initialOptions) {
