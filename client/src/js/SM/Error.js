@@ -21,7 +21,7 @@ class ExtRequestError extends SmError {
     this.url = detail?.options?.url
     this.status = detail?.response?.status
     this.responseText = detail?.response?.responseText
-    this.responseHeaders = detail?.response?.getAllResponseHeaders()
+    this.responseHeaders = detail?.response?.getAllResponseHeaders?.()
     const tokenParsed = { ...window.oidcProvider.tokenParsed }
     let expDate = new Date(tokenParsed.exp*1000)
     let iatDate = new Date(tokenParsed.iat*1000)
@@ -43,7 +43,7 @@ class ExtDataProxyError extends SmError {
     this.url = options?.url
     this.status = response?.status
     this.responseText = response?.responseText
-    this.responseHeaders = response?.getAllResponseHeaders()
+    this.responseHeaders = response?.getAllResponseHeaders?.()
     const tokenParsed = { ...window.oidcProvider.tokenParsed }
     let expDate = new Date(tokenParsed.exp*1000)
     let iatDate = new Date(tokenParsed.iat*1000)
@@ -185,7 +185,7 @@ SM.Error.handleError = async function (e) {
 SM.Error.initSourceMap = async function () {
   try {
     window.sourceMap.SourceMapConsumer.initialize({
-      "lib/mappings.wasm": "js/third-party/source-map/mappings.wasm"
+      "lib/mappings.wasm": "js/modules/source-map/mappings.wasm"
     })
     const response = await fetch ('js/stig-manager.min.js.map')
     const text = await response.text()
@@ -207,7 +207,7 @@ SM.Error.getOriginalSource = function (stackTrace) {
         output += `    at ${methodName || ''}\n`
       } else {
         const pos = SM.Error.sourceMapConsumer.originalPositionFor({ line: lineNumber, column });
-        if (pos && pos.line != null) {
+        if (pos?.line != null) {
           output += `    at ${pos.name || ''} (${pos.source}:${pos.line}:${pos.column})\n`
         }
       }
