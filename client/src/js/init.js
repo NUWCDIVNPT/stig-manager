@@ -38,7 +38,7 @@ async function loadResources() {
   }
   const { serializeError } = await import('./modules/node_modules/serialize-error/index.js')
   STIGMAN.serializeError = serializeError
-  STIGMAN.ClientModules = await import('./modules/node_modules/stig-manager-client-modules/index.js')
+  STIGMAN.ClientModules = await import('./modules/node_modules/@nuwcdivnpt/stig-manager-client-modules/index.js')
 
   STIGMAN.isMinimizedSource = isMinimizedSource
 }
