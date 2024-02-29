@@ -496,7 +496,10 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       `result.api as "result"`,
       `CASE WHEN review.resultEngine = 0 THEN NULL ELSE review.resultEngine END as resultEngine`,
       `review.autoResult`,
-      `status.api as "status"`
+      `status.api as "status"`,
+      `review.statusTs`,
+      `review.ts`,
+      `review.touchTs`
     ]
     const joins = [
       'current_rev rev',
