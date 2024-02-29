@@ -269,7 +269,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
     })
     const mdf = new Ext.form.DisplayField({
       // anchor: '100% 2%',
-      fieldLabel: 'Modified',
+      fieldLabel: 'Evaluated',
       hideLabel: false,
       allowBlank: true,
       name: 'editStr',
@@ -281,14 +281,14 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       }
     })
     const sdf = new Ext.form.DisplayField({
-      fieldLabel: 'Status',
+      fieldLabel: 'Statused',
       hideLabel: false,
       allowBlank: true,
       name: 'status',
       formatValue: function (v) {
-        this.setValue(`<span class="sm-review-sprite sm-review-sprite-${v.label}"></span>
-        <span class="sm-review-sprite sm-review-sprite-date">${new Date(v.ts).format('Y-m-d H:i T')}</span>
-        <span class="sm-review-sprite sm-review-sprite-user">${v.user.username}<span>`)
+        this.setValue(`<span class="sm-review-sprite sm-review-sprite-date">${new Date(v.ts).format('Y-m-d H:i T')}</span>
+        <span class="sm-review-sprite sm-review-sprite-user">${v.user.username}</span>
+        <span class="sm-review-sprite sm-review-sprite-${v.label}"></span>`)
       }
     })
     const btn1 = new SM.Review.Form.Button({
