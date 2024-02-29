@@ -4299,6 +4299,12 @@ components:
             type: boolean
           status:
             $ref: '#/components/schemas/ChecklistStatus'
+          statusTs:
+            $ref: '#/components/schemas/StringDateTime'
+          ts:
+            $ref: '#/components/schemas/StringDateTime'
+          touchTs:
+            $ref: '#/components/schemas/StringDateTime'
     ChecklistCkl:
       type: object
       description: The CKL format generated and read by DISA STIG VIewer

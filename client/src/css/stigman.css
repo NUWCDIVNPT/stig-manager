@@ -238,7 +238,8 @@
 }
 .sm-engine-result-icon {
   background-image: url(../img/bot2.svg);
-  background-repeat: no-repeat
+  background-repeat: no-repeat;
+  width: 12px;
 }
 .sm-engine-override-icon {
   background-image: url(../img/override2.svg);
@@ -258,6 +259,17 @@
   height: 14px;
   width: 14px
 }
+.x-menu-item-text .sm-engine-result-icon,  .x-menu-item-text .sm-history-icon{
+  background-size: 12px 12px;
+  height: 12px
+}
+
+.x-grid3-cell.x-grid3-hd .sm-history-icon {
+  background-size: 12px 12px;
+  background-position: center;
+  height: 12px
+}
+
 .x-menu-check-item .x-menu-item-icon {
   background-image: url(../img/checkboxes.svg);
   background-position: 1px 0;

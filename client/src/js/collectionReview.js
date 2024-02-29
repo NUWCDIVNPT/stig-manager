@@ -749,6 +749,7 @@ async function addCollectionReview ( params ) {
 				type: 'string'
 			},
 	    'resultEngine',
+		'touchTs',
 			{
 				name: 'engineResult',
 				convert: engineResultConverter
@@ -1044,7 +1045,18 @@ async function addCollectionReview ( params ) {
 					filter: {
 						type: 'values'
 					}
-				}
+				},
+				{
+					id: 'touchTs' + idAppend,
+					header: '<div exportvalue="touchTs" class="sm-history-icon" ext:qtip="Last action"></div>',
+					fixed: true,
+					width: 48,
+					align: 'center',
+					dataIndex: 'touchTs',
+					sortable: true,
+					renderer: renderDurationToNow
+				  }
+			
 			],
 			isCellEditable: function(col, row) {
 				var record = reviewsStore.getAt(row);
