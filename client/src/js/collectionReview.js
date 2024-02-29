@@ -1648,7 +1648,8 @@ async function addCollectionReview ( params ) {
 						keyup: (field) => {
 							if (field.isValid() && field.getValue().trim().length > 0) {
 								submitBtn.enable()
-							} else {
+							} 
+							else {
 								submitBtn.disable()
 							}
 						}
@@ -1668,10 +1669,11 @@ async function addCollectionReview ( params ) {
 				})
 				function handler (btn) {
 					const value = textArea.getValue()
-					if (btn.action === 'reject' && value.trim().length > 0){
+					if (btn.action === 'reject'){
 						fpwindow.close()
 						resolve(value)
-					}else{
+					}
+					else{
 						fpwindow.close()
 						reject()
 					}
