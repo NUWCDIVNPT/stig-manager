@@ -1643,12 +1643,14 @@ async function addCollectionReview ( params ) {
 				const textArea = new Ext.form.TextArea({
 					emptyText: 'Provide feedback explaining this rejection.',
 					maxLength: 255,
+					enableKeyEvents: true,
 					listeners: {
-						valid: () => {
-							submitBtn.enable()
-						},
-						invalid: () => {
-							submitBtn.disable()
+						keyup: (field) => {
+							if (field.isValid() && field.getValue().trim().length > 0) {
+								submitBtn.enable();
+							} else {
+								submitBtn.disable();
+							}
 						}
 					}
 				})
@@ -1656,16 +1658,23 @@ async function addCollectionReview ( params ) {
 					text: 'Reject with this feedback',
 					action: 'reject',
 					iconCls: 'sm-rejected-icon',
+					disabled: true,
+					handler
+				})
+				const cancelBtn = new Ext.Button(	{
+					text: 'Cancel',
+					action: 'cancel',
 					handler
 				})
 				function handler (btn) {
-					if (btn.action === 'reject') {
-						const value = textArea.getValue()
+					const value = textArea.getValue()
+					if (btn.action === 'reject' && value.trim().length > 0){
 						fpwindow.close()
 						resolve(value)
+					}else{
+						fpwindow.close()
+						reject()
 					}
-					fpwindow.close()
-					reject()
 				}
 				const fpwindow = new Ext.Window({
 					title: `Reject Reviews`,
@@ -1678,22 +1687,11 @@ async function addCollectionReview ( params ) {
 					plain: true,
 					bodyStyle: 'padding:5px;',
 					buttonAlign: 'right',
-					items: [
-						textArea
-					],
-					buttons: [
-						{
-							text: 'Cancel',
-							action: 'cancel',
-							handler
-						},
-						submitBtn
-					]
+					items: [textArea],
+					buttons: [cancelBtn,submitBtn]
 				})
 				fpwindow.show()
-	
 			})
-
 		}
 		
 		async function handleStatusChange (grid, sm, status) {
