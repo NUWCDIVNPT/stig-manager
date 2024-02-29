@@ -1647,9 +1647,9 @@ async function addCollectionReview ( params ) {
 					listeners: {
 						keyup: (field) => {
 							if (field.isValid() && field.getValue().trim().length > 0) {
-								submitBtn.enable();
+								submitBtn.enable()
 							} else {
-								submitBtn.disable();
+								submitBtn.disable()
 							}
 						}
 					}
