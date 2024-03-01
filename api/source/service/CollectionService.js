@@ -798,6 +798,20 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
       'accepted', sum(CASE WHEN r.statusId = 3 THEN 1 ELSE 0 END)
     )
   ) as counts
+  ,json_object(
+    'ts', json_object(
+      'min', DATE_FORMAT(MIN(r.ts),'%Y-%m-%dT%H:%i:%sZ'),
+      'max', DATE_FORMAT(MAX(r.ts),'%Y-%m-%dT%H:%i:%sZ')
+    ),
+    'statusTs', json_object(
+      'min', DATE_FORMAT(MIN(r.statusTs),'%Y-%m-%dT%H:%i:%sZ'),
+      'max', DATE_FORMAT(MAX(r.statusTs),'%Y-%m-%dT%H:%i:%sZ')
+    ),
+    'touchTs', json_object(
+      'min', DATE_FORMAT(MIN(r.touchTs),'%Y-%m-%dT%H:%i:%sZ'),
+      'max', DATE_FORMAT(MAX(r.touchTs),'%Y-%m-%dT%H:%i:%sZ')
+    )
+  ) as timestamps
 from
   ${joins.join('\n')}
 where

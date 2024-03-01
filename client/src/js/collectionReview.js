@@ -96,6 +96,12 @@ async function addCollectionReview ( params ) {
 			},{
 				name:'severity',
 				type:'string'
+			},{
+				name: 'minTouchTs',
+				mapping: 'timestamps.touchTs.min'
+			},{
+				name: 'maxTouchTs',
+				mapping: 'timestamps.touchTs.max'
 			}
 		]);
 
@@ -477,6 +483,28 @@ async function addCollectionReview ( params ) {
 					filter: {
 						type: 'string'
 					}	
+				},
+				{
+					id: 'minTouchTs' + idAppend,
+					header: 'Oldest',
+					fixed: true,
+					hidden: true,
+					width: 48,
+					align: 'center',
+					dataIndex: 'minTouchTs',
+					sortable: true,
+					renderer: renderDurationToNow
+				},
+				{
+					id: 'maxTouchTs' + idAppend,
+					header: 'Newest',
+					fixed: true,
+					hidden: true,
+					width: 48,
+					align: 'center',
+					dataIndex: 'maxTouchTs',
+					sortable: true,
+					renderer: renderDurationToNow
 				},
 				{ 	
 					id:'oCnt' + idAppend,
