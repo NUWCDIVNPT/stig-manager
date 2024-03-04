@@ -5,10 +5,16 @@
 # - Node.js and module "pkg" (npm install -g pkg)
 # - zip
 # - tar
-# - gpg, if you wish to produce detached signatures
 
-KEYRING=stig-manager.gpg 
-SIGNING_KEY="nuwcdivnpt-bot@users.noreply.github.com"
+
+check_exit_status() {
+  if [[ $? -eq 0 ]]; then
+    echo "[BUILD_TASK] $1 succeeded"
+  else
+    echo "[BUILD_TASK] $1 failed"
+    exit $2
+  fi
+}
 
 LAUNCHERDIR=launchers
 BINDIR=bin
@@ -26,24 +32,27 @@ echo "Fetching node_modules"
 rm -rf ./source/node_modules
 cd ./source
 npm ci
+npm install -g pkg
 cd ..
 ../client/build.sh
 ../docs/build.sh
 
 DESCRIBE=$(git describe --tags | sed 's/\(.*\)-.*/\1/')
+check_exit_status "Getting latest tag" 4
 echo $DESCRIBE
 
 # Make binaries
 echo "Building binaries"
 pkg -C gzip --public --public-packages=* --no-bytecode pkg.config.json
+check_exit_status "Building binaries" 1
 
 echo "Creating archives with launchers"
 # Windows archive
 zip --junk-paths $DISTDIR/stig-manager-win-$DESCRIBE.zip $LAUNCHERDIR/stig-manager.bat $BINDIR/stig-manager-win.exe
-[[ $1 == "--sign" ]] && gpg --keyring $KEYRING --default-key $SIGNING_KEY --armor --detach-sig  $DISTDIR/stig-manager-win-$DESCRIBE.zip
+check_exit_status "Zipping Windows Archive" 3
 
 # Linux archive
 tar -cJvf $DISTDIR/stig-manager-linux-$DESCRIBE.tar.xz --xform='s|^|stig-manager/|S' -C $LAUNCHERDIR stig-manager.sh -C ../$BINDIR stig-manager-linuxstatic
-[[ $1 == "--sign" ]] && gpg --keyring $KEYRING --default-key $SIGNING_KEY --armor --detach-sig $DISTDIR/stig-manager-linux-$DESCRIBE.tar.xz
+check_exit_status "Zipping Linux Archive" 4
 
 echo "Build artifacts are in $DISTDIR"
