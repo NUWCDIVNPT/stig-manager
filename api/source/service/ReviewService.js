@@ -1069,8 +1069,17 @@ select
     ELSE review.statusUserId -- saved user
   END as statusUserId,
   
-  @userId as userId,
-  UTC_TIMESTAMP() as ts
+  CASE WHEN review.reviewId is null -- no existing review
+      or rChangedAny.reviewId is not null -- change to review fields
+    THEN @userId  -- this user
+    ELSE review.userId -- saved user
+  END as userId,
+
+  CASE WHEN review.reviewId is null -- no existing review
+      or rChangedAny.reviewId is not null -- change to review fields
+    THEN UTC_TIMESTAMP() -- now
+    ELSE review.ts -- saved time
+  END as ts
 from
   cteIncoming
   LEFT JOIN cteGrant on cteIncoming.ruleId = cteGrant.ruleId
