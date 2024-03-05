@@ -1278,6 +1278,8 @@ where
     
     const sqlSetVariables = `set @collectionId = ?, @assetId = ?, @userId = ?, @reviews = ?, @utcTimestamp = UTC_TIMESTAMP()`
     await connection.query(sqlSetVariables, [parseInt(collectionId), parseInt(assetId), parseInt(userId), JSON.stringify(reviews)])
+    await connection.query(`select @utcTimestamp as utcTimestamp`)
+    // console.log(`Timestamp: ${timestamp[0].utcTimestamp}`)
     const [settings] = await connection.query(`select c.settings->>"$.history.maxReviews" as maxReviews FROM collection c where collectionId = @collectionId`)
     const historyMaxReviews = settings[0].maxReviews
     await connection.query(sqlCreateTableValidatedReview)
