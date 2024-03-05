@@ -1057,7 +1057,7 @@ select
       or review.reviewId is null -- no existing review
       or (cteCollectionSetting.resetCriteria = 'result' and rChangedResult.reviewId is not null) -- status meets criteria for resetting
       or (cteCollectionSetting.resetCriteria = 'any' and rChangedAny.reviewId is not null) -- status meets criteria for resetting
-    THEN UTC_TIMESTAMP() -- now
+    THEN @utcTimestamp -- now
     ELSE review.statusTs -- saved time
   END as statusTs,
   
@@ -1077,7 +1077,7 @@ select
 
   CASE WHEN review.reviewId is null -- no existing review
       or rChangedAny.reviewId is not null -- change to review fields
-    THEN UTC_TIMESTAMP() -- now
+    THEN @utcTimestamp -- now
     ELSE review.ts -- saved time
   END as ts
 from
@@ -1276,7 +1276,7 @@ where
   try {
     connection = await dbUtils.pool.getConnection()
     
-    const sqlSetVariables = `set @collectionId = ?, @assetId = ?, @userId = ?, @reviews = ?`
+    const sqlSetVariables = `set @collectionId = ?, @assetId = ?, @userId = ?, @reviews = ?, @utcTimestamp = UTC_TIMESTAMP()`
     await connection.query(sqlSetVariables, [parseInt(collectionId), parseInt(assetId), parseInt(userId), JSON.stringify(reviews)])
     const [settings] = await connection.query(`select c.settings->>"$.history.maxReviews" as maxReviews FROM collection c where collectionId = @collectionId`)
     const historyMaxReviews = settings[0].maxReviews
