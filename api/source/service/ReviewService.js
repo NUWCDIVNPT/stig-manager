@@ -821,6 +821,7 @@ exports.exportReviews = async function (includeHistory = false) {
   ]
   const joins = [
     'review r',
+    'inner join asset a on r.assetId = a.assetId AND a.state = "enabled"',
     'left join result on r.resultId = result.resultId',
     'left join status on r.statusId = status.statusId',
   ]
