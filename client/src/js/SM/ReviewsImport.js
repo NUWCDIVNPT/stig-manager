@@ -2219,16 +2219,17 @@ async function showImportResultFiles(collectionId) {
 
             const taskConfig = {
                 collectionId,
-                createObjects: true,
+                createObjects: userGrant >= 3,
                 strictRevisionCheck: false
             } 
             const tasks = new STIGMAN.ClientModules.TaskObject({ apiAssets, apiStigs, parsedResults: parseResults.success, options: taskConfig })
+            const taskErrors = tasks.errors.map( e => ({file: e.sourceRef, error: e.message}))
             // Transform into data for SM.ReviewsImport.Grid
             const results = {
                 taskAssets: tasks.taskAssets,
                 rows: [],
                 dupedRows: [],
-                errors: parseResults.fail,
+                errors: [...parseResults.fail, ...taskErrors],
                 hasDuplicates: false
             }
             // Collate multiple checklists into duplicates and the single checklist for POSTing.

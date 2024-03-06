@@ -414,7 +414,7 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                         iconCls: 'sm-import-icon',
                         text: 'Import CKL(B) or XCCDF...',
                         handler: function() {
-                            showImportResultFiles( me.collectionId, me.apiFieldSettings );            
+                            showImportResultFiles(me.collectionId);            
                         }
                     },
                     '-',
