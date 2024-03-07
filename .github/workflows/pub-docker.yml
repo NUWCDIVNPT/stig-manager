@@ -29,23 +29,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
       - name: Download client distribution
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: client-dist
           path: ./client/dist
       - name: Download documentation
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: docs-build
           path: ./docs/_build/html
       - name: Get repository metadata
         id: repo
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const repo = await github.rest.repos.get(context.repo)
@@ -115,23 +115,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
       - name: Download client distribution
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: client-dist
           path: ./client/dist
       - name: Download documentation
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: docs-build
           path: ./docs/_build/html
       - name: Get repository metadata
         id: repo
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const repo = await github.rest.repos.get(context.repo)

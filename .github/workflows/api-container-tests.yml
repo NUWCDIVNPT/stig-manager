@@ -22,7 +22,7 @@ jobs:
         mysql_version: ["8.0.33", "8.0.34", "8.0.35"]
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build image for ${{ matrix.container.name }}
         id: image-build
         run: |
@@ -104,7 +104,7 @@ jobs:
           newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder "Additional sundry tests" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showEnvironmentData --reporter-htmlextra-export ./newman/AdditionalSundryReport-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.html | grep -A18 '┌─────'
       - name: Upload Newman artifact
         id: artifact-upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           name: newman-htmlextra-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}
@@ -116,7 +116,7 @@ jobs:
         run: |
           docker logs stig-manager-api > api-log-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.json
       - name: Upload API log artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         id: api-log-upload
         if: ${{ always() }}
         with:
@@ -132,7 +132,7 @@ jobs:
         run: tar cvzf ./logs-${{ matrix.container.name }}-${{ matrix.mysql_version }}.tgz ./logs-${{ matrix.container.name }}-${{ matrix.mysql_version }}
       - name: Upload container logs artifact
         if: ${{ cancelled() || failure() }}
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v4
         with:
           name: logs-${{ matrix.container.name }}-${{ matrix.mysql_version }}.tgz
           path: ./logs-${{ matrix.container.name }}-${{ matrix.mysql_version }}.tgz
