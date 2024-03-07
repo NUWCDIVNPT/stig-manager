@@ -20,8 +20,8 @@ jobs:
         id: fetch-versions
         run: |
           VERSIONS=$(echo $(curl -s "https://registry.hub.docker.com/v2/repositories/library/mysql/tags/?page_size=100" | jq -r '.results[].name | select(test("^8\\.0\\.\\d+$"))' | sort -V | tail -n3; echo "8.0.21") | tr ' ' '\n' | sort -Vr | jq -Rsc 'split("\n")[:-1]')
-        
           echo "version_array=$VERSIONS" >> $GITHUB_OUTPUT
+
   test_api:
     needs: fetch-mysql-versions
     name: Postman tests with ${{ matrix.container.name }} and MySQL ${{ matrix.mysql_version }}
@@ -36,7 +36,6 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
-
       - name: Build image for ${{ matrix.container.name }}
         id: image-build
         run: |
