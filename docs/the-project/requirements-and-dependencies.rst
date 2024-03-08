@@ -22,7 +22,7 @@ Tested with:
 - Docker 20.10.2
 - NodeJs provided by node:lts-alpine image on Docker Hub
 - NodeJs provided by registry1.dso.mil/ironbank/opensource/nodejs/nodejs18:latest image on Iron Bank
-- MySQL provided by mysql:latest image on Docker Hub
+- MySQL - latest 3 minor versions of the MySQL 8.0.x series available on Docker Hub.
 - RedHat Keycloak 19+
 
 
