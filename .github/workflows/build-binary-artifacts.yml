@@ -1,3 +1,4 @@
+
 name: Build Binary Artifacts and Sign
 on:
   workflow_dispatch:
@@ -19,39 +20,81 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@111c56156bcc6918c056dbef52164cfa583dc549 # pin@v5
-        with:
-          gpg_private_key: ${{ secrets.STIGMAN_PRIVATE_KEY }}
+
       - name: Get repository metadata
         id: repo
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const repo = await github.rest.repos.get(context.repo)
-            return repo.data
-      - name: install pkg
-        run: |
-          sudo npm install -g pkg             
+            return repo.data     
+
       - name: install uglify
         run: |
-          sudo npm install -g uglify-js              
-      - name: run build script and sign
-        id: run-the-build-script-and-sign
+          sudo npm install -g uglify-js    
+
+      - name: run build script
+        id: run-the-build-script
         working-directory: ./api
-        run: ./build.sh  --sign
+        run: ./build.sh
+
+      - name: Import GPG Key
+        id: import_gpg
+        run: | 
+          if ! echo "${{ secrets.STIGMAN_PRIVATE_KEY }}" | gpg --import; then
+            echo "::warning ::Private key GPG Import failed"
+            exit 1
+          fi
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          DESCRIBE=$(git describe --tags | sed 's/\(.*\)-.*/\1/')
+          echo "tag=$DESCRIBE" >> $GITHUB_ENV
+
+      - name: Sign Dist Artifacts
+        id: sign_artifacts
+        working-directory: ./api/dist
+        run: |
+        
+         if ! gpg --default-key nuwcdivnpt-bot@users.noreply.github.com --armor --detach-sig ./stig-manager-linux-${{ env.tag }}.tar.xz; then
+            echo "::warning ::Linux Signing failed"
+            exit 1
+          fi
+         if ! gpg --default-key nuwcdivnpt-bot@users.noreply.github.com --armor --detach-sig ./stig-manager-win-${{ env.tag }}.zip; then
+            echo "::warning ::Windows Signing failed"
+            exit 1
+         fi
+        
+      - name: Verify Signatures
+        id: verify_signatures
+        working-directory: ./api/dist
+        run: |
+          if ! gpg --verify stig-manager-linux-${{ env.tag }}.tar.xz.asc stig-manager-linux-${{ env.tag }}.tar.xz; then
+            echo "::warning ::Signature verification for Linux failed"
+            exit 1
+          fi
+          if ! gpg --verify stig-manager-win-${{ env.tag }}.zip.asc stig-manager-win-${{ env.tag }}.zip; then
+            echo "::warning ::Signature verification for Windows failed"
+            exit 1
+          fi
+   
       - name: Upload builds
-        uses: actions/upload-artifact@v3
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: binary-artifacts
           path: ./api/bin/
+          if-no-files-found: error
+
       - name: Upload archives
-        uses: actions/upload-artifact@v3
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: binary-archives
           path: ./api/dist/
+          if-no-files-found: error

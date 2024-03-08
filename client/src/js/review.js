@@ -1358,39 +1358,35 @@ async function addReview( params ) {
     try {
       fp = reviewForm
       fp.getEl().mask('Saving...')
-      // masktask = new Ext.util.DelayedTask(function(){
-      //   Ext.getBody().mask('Saving...')
-      // })
-      // masktask.delay(100)
 
       const fvalues = fp.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
-      const jsonData = {
-        result: fvalues.result,
-        detail: fvalues.detail,
-        comment: fvalues.comment,
-        resultEngine: fp.resultChanged() ? null : fvalues.resultEngine
-      }
-      let method
+      
+      let method, status
       switch (saveParams.type) {
         case 'accept':
         case 'submit':
         case 'unsubmit':
-          jsonData.status = saveParams.type == 'submit' ? 'submitted' : saveParams.type === 'accept' ? 'accepted' : 'saved'
+          status = saveParams.type == 'submit' ? 'submitted' : saveParams.type === 'accept' ? 'accepted' : 'saved'
           method = 'PATCH'
           break
+        case 'save':
         case 'save and unsubmit':
-          jsonData.status = 'saved'
+          status = 'saved'
           method = 'PUT'
           break
         case 'save and submit':
-          jsonData.status = 'submitted'
-          method = 'PUT'
-          break
-        case 'save':
-          jsonData.status = 'saved'
+          status = 'submitted'
           method = 'PUT'
           break
       }
+
+      const jsonData = method === 'PUT' ? {
+        result: fvalues.result,
+        detail: fvalues.detail,
+        comment: fvalues.comment,
+        resultEngine: fp.resultChanged() ? null : fvalues.resultEngine,
+        status
+      } : { status }
 
       const reviewFromApi = await Ext.Ajax.requestPromise({
         responseType: 'json',
