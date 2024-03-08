@@ -86,7 +86,10 @@ async function addReview( params ) {
       name: 'engineResult',
       convert: engineResultConverter
     },
-    'touchTs'
+    {
+      name: 'touchTs',
+      type: 'date'
+    }
   ]);
 
 

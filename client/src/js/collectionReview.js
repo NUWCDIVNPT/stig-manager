@@ -98,9 +98,11 @@ async function addCollectionReview ( params ) {
 				type:'string'
 			},{
 				name: 'minTouchTs',
+				type: 'date',
 				mapping: 'timestamps.touchTs.min'
 			},{
 				name: 'maxTouchTs',
+				type: 'date',
 				mapping: 'timestamps.touchTs.max'
 			}
 		]);
