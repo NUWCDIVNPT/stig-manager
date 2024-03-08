@@ -20,14 +20,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
 
       - name: Get repository metadata
         id: repo
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const repo = await github.rest.repos.get(context.repo)
@@ -85,7 +85,7 @@ jobs:
    
       - name: Upload builds
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: binary-artifacts
           path: ./api/bin/
@@ -93,7 +93,7 @@ jobs:
 
       - name: Upload archives
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: binary-archives
           path: ./api/dist/

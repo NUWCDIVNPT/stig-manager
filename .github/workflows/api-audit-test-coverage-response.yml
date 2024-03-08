@@ -39,7 +39,7 @@ jobs:
     name: npm audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: npm ci
         working-directory: ./api/source/
@@ -55,8 +55,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
       - name: coverage directory
@@ -145,21 +145,21 @@ jobs:
         run: c8 report -r lcov -r text
       - name: Upload Newman artifact
         id: artifact-upload-newman
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           name: newman-htmlextra
           path: ./test/api/newman
       - name: Upload coverage artifact
         id: artifact-upload-coverage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           name: coverage-report
           path: ./api/source/coverage
       - name: Upload API logs
         id: artifact-upload-api-logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           name: api-log
@@ -171,7 +171,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download API log artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: api-log
           path: ./logs
@@ -182,7 +182,7 @@ jobs:
           exit $(jq '. | length' response-validation.json)
       - name: Upload response validation artifact
         if: ${{ failure() }}
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v4
         with:
           name: response-validation
           path: ./logs/response-validation.json
@@ -192,11 +192,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Important to fetch all history for accurate blame information
       - name: Download lcov artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: coverage-report
       - name: Move lcov.info to api/source
