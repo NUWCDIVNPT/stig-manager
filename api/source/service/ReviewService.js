@@ -1070,13 +1070,17 @@ select
   END as statusUserId,
   
   CASE WHEN review.reviewId is null -- no existing review
-      or rChangedAny.reviewId is not null -- change to review fields
+      or cteIncoming.resultId is not null -- patch request contains result
+      or cteIncoming.detail is not null -- patch request contains detail
+      or cteIncoming.comment is not null -- patch request contains comment
     THEN @userId  -- this user
     ELSE review.userId -- saved user
   END as userId,
 
   CASE WHEN review.reviewId is null -- no existing review
-      or rChangedAny.reviewId is not null -- change to review fields
+      or cteIncoming.resultId is not null -- patch request contains result
+      or cteIncoming.detail is not null -- patch request contains detail
+      or cteIncoming.comment is not null -- patch request contains comment
     THEN @utcTimestamp -- now
     ELSE review.ts -- saved time
   END as ts
