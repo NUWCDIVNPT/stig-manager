@@ -1742,7 +1742,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
           id: 'import',
           text: 'Import CKL(B) or SCAP...',
           handler: () => {
-            showImportResultFiles(collectionId)         
+            showImportResultFiles(collectionId, false)         
           }
         }
       ],

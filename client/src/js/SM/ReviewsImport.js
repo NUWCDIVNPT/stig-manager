@@ -1992,7 +1992,7 @@ SM.ReviewsImport.ImportProgressPanel = Ext.extend(Ext.Panel, {
     }
 })
 
-async function showImportResultFiles(collectionId) {
+async function showImportResultFiles(collectionId, createObjects = true) {
     try {
         const cachedCollection = SM.Cache.CollectionMap.get(collectionId)
         const userGrant = curUser.collectionGrants.find( i => i.collection.collectionId === cachedCollection.collectionId )?.accessLevel
@@ -2219,7 +2219,7 @@ async function showImportResultFiles(collectionId) {
 
             const taskConfig = {
                 collectionId,
-                createObjects: userGrant >= 3,
+                createObjects,
                 strictRevisionCheck: false
             } 
             const tasks = new STIGMAN.ClientModules.TaskObject({ apiAssets, apiStigs, parsedResults: parseResults.success, options: taskConfig })
