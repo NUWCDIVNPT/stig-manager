@@ -1741,6 +1741,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
         {
           id: 'import',
           text: 'Import CKL(B) or SCAP...',
+          qtip: SM.TipContent.ImportFromCollectionPanel,
           handler: () => {
             showImportResultFiles(collectionId, false)         
           }
