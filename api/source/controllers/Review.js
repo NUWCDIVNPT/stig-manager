@@ -168,6 +168,9 @@ module.exports.putReviewByAssetRule = async function (req, res, next) {
 
 module.exports.patchReviewByAssetRule = async function (req, res, next) {
   try {
+    if (Object.hasOwn(req.body, 'resultEngine') && !Object.hasOwn(req.body, 'result')) {
+      throw new SmError.UnprocessableError('Request body with resultEngine must include a result')
+    }
     const collectionId = Collection.getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const {assetId, ruleId} = {...req.params}
     const currentReviews =  await ReviewService.getReviews([], { assetId, ruleId }, req.userObject)
