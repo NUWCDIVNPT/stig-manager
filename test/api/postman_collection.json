@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "afe87add-1b90-4d7a-9b0a-4a42fb2ca9fa",
+		"_postman_id": "e8acbc2b-8ae9-478c-9359-fe458570a7a5",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -37393,8 +37393,17 @@
 																	"    case \"lvl4\":\r",
 																	"    case \"stigmanadmin\":\r",
 																	"        pm.test(\"Status is 200\", () => pm.response.to.have.status(200))\r",
+																	"        pm.expect(jsonData).to.have.property(\"touchTs\").to.eql(jsonData.status.ts)\r",
+																	"        pm.expect(jsonData.status).to.have.property(\"ts\").to.not.eql(jsonData.ts)        \r",
 																	"        break\r",
-																	"}"
+																	"}\r",
+																	"\r",
+																	"// pm.test(\"Response has proper timestamps\", () => {\r",
+																	"//     pm.expect(jsonData).to.be.an(\"object\");\r",
+																	"//     pm.expect(jsonData).to.have.property(\"result\").to.eql(\"pass\");\r",
+																	"//     pm.expect(jsonData).to.have.property(\"touchTs\").to.eql(jsonData.ts)\r",
+																	"//     pm.expect(jsonData.status).to.have.property(\"ts\").to.not.eql(jsonData.ts)\r",
+																	"// });"
 																],
 																"type": "text/javascript"
 															}
@@ -38054,6 +38063,286 @@
 										}
 									]
 								}
+							},
+							"response": []
+						},
+						{
+							"name": "Return the Review for an Asset and Rule Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+											"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response JSON is an object, timestamps match\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"    pm.expect(jsonData).to.have.property(\"touchTs\").to.eql(jsonData.ts)\r",
+											"    pm.expect(jsonData.status).to.have.property(\"ts\").to.eql(jsonData.ts)    \r",
+											"});\r",
+											"\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
+											"    pm.expect(jsonData.stigs).to.exist;\r",
+											"}\r",
+											"if (pm.request.url.getQueryString().match(/projection=history/)) {\r",
+											"    pm.expect(jsonData.history).to.exist;\r",
+											"}\r",
+											"if (pm.request.url.getQueryString().match(/projection=rule/)) {\r",
+											"    pm.expect(jsonData.rule).to.exist;\r",
+											"}\r",
+											"if (pm.request.url.getQueryString().match(/projection=metadata/)) {\r",
+											"    pm.expect(jsonData.metadata).to.exist;\r",
+											"}\r",
+											"pm.test(\"Check if object contains all provided keys\", function () {\r",
+											"    // pm.expect(jsonData).to.have.all.keys(reviewKeys);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check if object contains proper ruleId\", function () {\r",
+											"    let testRuleId = pm.environment.get(\"testRuleId\");\r",
+											"    pm.expect(jsonData.ruleId).to.eql(testRuleId);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check review comment for regex match string\", function () {\r",
+											"    let reviewMatchString = pm.environment.get(\"reviewMatchString\");\r",
+											"    var regex = new RegExp(reviewMatchString);\r",
+											"    pm.expect(jsonData.detail).to.match(regex);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId?projection=history&projection=stigs&projection=rule&projection=metadata",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"reviews",
+										":assetId",
+										":ruleId"
+									],
+									"query": [
+										{
+											"key": "projection",
+											"value": "history"
+										},
+										{
+											"key": "projection",
+											"value": "stigs"
+										},
+										{
+											"key": "projection",
+											"value": "rule"
+										},
+										{
+											"key": "projection",
+											"value": "metadata"
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										},
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "ruleId",
+											"value": "{{testRuleId}}",
+											"description": "(Required) A path parameter that indentifies a Rule"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "resultEngine only - expect fail",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\")\r",
+											"console.log(\"user: \" + user)\r",
+											"\r",
+											"let jsonData = pm.response.json()\r",
+											"\r",
+											"pm.test(\"Status is 422\", () => pm.response.to.have.status(422))\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"resultEngine\": {\n      \"type\": \"script\",\n      \"product\": \"Evaluate-STIG\",\n      \"version\": \"1.2310.1\",\n      \"time\": \"2023-12-11T12:56:14.3576272-05:00\",\n      \"checkContent\": {\n        \"location\": \"VPN_Checks:1.2023.7.24\"\n      },\n      \"overrides\": [\n        {\n          \"authority\": \"Some_AnswerFile.xml\",\n          \"oldResult\": \"unknown\",\n          \"newResult\": \"pass\",\n          \"remark\": \"Evaluate-STIG Answer File\"\n        }\n      ]\n    }\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"reviews",
+										":assetId",
+										":ruleId"
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										},
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "ruleId",
+											"value": "{{testRuleId}}",
+											"description": "(Required) A path parameter that indentifies a Rule"
+										}
+									]
+								},
+								"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+							},
+							"response": []
+						},
+						{
+							"name": "resultEngine only - expect success",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get('user');\r",
+											"\r",
+											"console.log('user: ' + user)\r",
+											"\r",
+											"\r",
+											"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200 for all users but collectioncreator\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"pm.test('Status is 200', () => pm.response.to.have.status(200))\r",
+											"\r",
+											"pm.test(\"Response has proper timestamps\", () => {\r",
+											"    pm.expect(jsonData).to.be.an(\"object\");\r",
+											"    pm.expect(jsonData).to.have.property(\"result\").to.eql(\"pass\");\r",
+											"    pm.expect(jsonData).to.have.property(\"touchTs\").to.eql(jsonData.ts)\r",
+											"    pm.expect(jsonData.status).to.have.property(\"ts\").to.not.eql(jsonData.ts)\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"result\": \"pass\",\n    \"resultEngine\": {\n      \"type\": \"script\",\n      \"product\": \"Evaluate-STIG\",\n      \"version\": \"1.2310.1\",\n      \"time\": \"2023-12-11T12:56:14.3576272-05:00\",\n      \"checkContent\": {\n        \"location\": \"VPN_Checks:1.2023.7.24\"\n      },\n      \"overrides\": [\n        {\n          \"authority\": \"Some_AnswerFile.xml\",\n          \"oldResult\": \"unknown\",\n          \"newResult\": \"pass\",\n          \"remark\": \"Evaluate-STIG Answer File\"\n        }\n      ]\n    }\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"reviews",
+										":assetId",
+										":ruleId"
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										},
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "ruleId",
+											"value": "{{testRuleId}}",
+											"description": "(Required) A path parameter that indentifies a Rule"
+										}
+									]
+								},
+								"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
 							},
 							"response": []
 						},
