@@ -11,15 +11,28 @@ on:
       - ".github/workflows/api-container-tests.yml"
 
 jobs:
+  fetch-mysql-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      MYSQL_VERSIONS: ${{ steps.fetch-versions.outputs.version_array }}
+    steps:
+      - name: Fetch MySQL Versions
+        id: fetch-versions
+        run: |
+          VERSIONS=$(echo $(curl -s "https://registry.hub.docker.com/v2/repositories/library/mysql/tags/?page_size=100" | jq -r '.results[].name | select(test("^8\\.0\\.\\d+$"))' | sort -V | tail -n3 | cat <(echo "8.0.21") - | jq -Rnc '[inputs]'))
+          echo "version_array=$VERSIONS" >> $GITHUB_OUTPUT
+
   test_api:
+    needs: fetch-mysql-versions
     name: Postman tests with ${{ matrix.container.name }} and MySQL ${{ matrix.mysql_version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         container:
-          - name: "stig-manager-alpine"
-            build_arg: "node:lts-alpine"
-        mysql_version: ["8.0.34", "8.0.35", "8.0.36"]
+            - name: "stig-manager-alpine"
+              build_arg: "node:lts-alpine"
+        mysql_version: ${{fromJson(needs.fetch-mysql-versions.outputs.MYSQL_VERSIONS)}}
+        
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
