@@ -1393,7 +1393,8 @@ paths:
       description: |
         The request MUST target an existing Review and the request body MUST contain one or more Review properties. The overall request is validated as follows:
         
-        - conformance with the OAS schema for `ReviewAssetRulePatch`
+        - the request body conforms with the OAS schema for `ReviewAssetRulePatch`
+        - a request body that includes `resultEngine` must also include `result`
         - the requesting user has been granted access to the {collectionId}
         - a Review already exists for the {assetId} and {ruleId}
         
