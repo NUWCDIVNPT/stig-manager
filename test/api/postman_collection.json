@@ -37360,6 +37360,95 @@
 													"response": []
 												},
 												{
+													"name": "Import and overwrite application data (as elevated Admin) Copy 2",
+													"event": [
+														{
+															"listen": "test",
+															"script": {
+																"exec": [
+																	"let user = pm.environment.get(\"user\");\r",
+																	"console.log(\"user: \" + user);\r",
+																	"\r",
+																	"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+																	"    user = \"elevated\";\r",
+																	"    console.log(\"setting user to 'elevated'\");\r",
+																	"}\r",
+																	"\r",
+																	"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
+																	"    pm.test(\"Status should be is 200 for elevated stigmanadmin user\", function () {\r",
+																	"        pm.response.to.have.status(200);\r",
+																	"    });\r",
+																	"}\r",
+																	"else {\r",
+																	"    pm.test(\"Status code is 403\", function () {\r",
+																	"        pm.response.to.have.status(403);\r",
+																	"    });\r",
+																	"}\r",
+																	"if (pm.response.code !== 200) {\r",
+																	"    return;\r",
+																	"}\r",
+																	"\r",
+																	"\r",
+																	"let response = pm.response.text();\r",
+																	"console.log(response)\r",
+																	"\r",
+																	"pm.test(\"Body contains string\",() => {\r",
+																	"  pm.expect(response).to.include(\"Commit successful\");\r",
+																	"});"
+																],
+																"type": "text/javascript"
+															}
+														}
+													],
+													"request": {
+														"auth": {
+															"type": "bearer",
+															"bearer": [
+																{
+																	"key": "token",
+																	"value": "{{token.stigmanadmin}}",
+																	"type": "string"
+																}
+															]
+														},
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "multipart/form-data"
+															}
+														],
+														"body": {
+															"mode": "formdata",
+															"formdata": [
+																{
+																	"key": "importFile",
+																	"type": "file",
+																	"src": "./{{formDataFiles}}/{{appDataFile}}"
+																}
+															]
+														},
+														"url": {
+															"raw": "{{baseUrl}}/op/appdata?elevate=true",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"op",
+																"appdata"
+															],
+															"query": [
+																{
+																	"key": "elevate",
+																	"value": "true",
+																	"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+																}
+															]
+														}
+													},
+													"response": []
+												},
+												{
 													"name": "PATCH Review to Accepted",
 													"event": [
 														{
@@ -37393,8 +37482,10 @@
 																	"    case \"lvl4\":\r",
 																	"    case \"stigmanadmin\":\r",
 																	"        pm.test(\"Status is 200\", () => pm.response.to.have.status(200))\r",
-																	"        pm.expect(jsonData).to.have.property(\"touchTs\").to.eql(jsonData.status.ts)\r",
-																	"        pm.expect(jsonData.status).to.have.property(\"ts\").to.not.eql(jsonData.ts)        \r",
+																	"        pm.test(\"Response has proper timestamps\", () => {\r",
+																	"            pm.expect(jsonData).to.have.property(\"touchTs\").to.eql(jsonData.status.ts)\r",
+																	"            pm.expect(jsonData.status).to.have.property(\"ts\").to.not.eql(jsonData.ts)        \r",
+																	"        })\r",
 																	"        break\r",
 																	"}\r",
 																	"\r",
