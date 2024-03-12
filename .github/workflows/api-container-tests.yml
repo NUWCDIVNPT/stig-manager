@@ -32,7 +32,6 @@ jobs:
             - name: "stig-manager-alpine"
               build_arg: "node:lts-alpine"
         mysql_version: ${{fromJson(needs.fetch-mysql-versions.outputs.MYSQL_VERSIONS)}}
-        
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4

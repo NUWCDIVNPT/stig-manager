@@ -4437,6 +4437,24 @@ components:
                   type: integer
                 rejected:
                   type: integer
+        timestamps:
+          type: object
+          additionalProperties: false
+          properties:
+            ts:
+              $ref: '#/components/schemas/ChecklistCollectionStigTimestamps'
+            statusTs:
+              $ref: '#/components/schemas/ChecklistCollectionStigTimestamps'
+            touchTs:
+              $ref: '#/components/schemas/ChecklistCollectionStigTimestamps'
+    ChecklistCollectionStigTimestamps:
+      type: object
+      additionalProperties: false
+      properties:
+        max:
+          $ref: '#/components/schemas/StringDateTimeNullable'
+        min:
+          $ref: '#/components/schemas/StringDateTimeNullable'
     ChecklistResult:
       description: The Review result
       type: string
