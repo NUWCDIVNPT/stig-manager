@@ -334,10 +334,10 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
 
     function initLastSavedData () {
       if ( rcb.value === null ) { rcb.value = '' }
-      ack.lastSavedData = ack.value
+      ack.lastSavedData = ack.getValue()
       rcb.lastSavedData = rcb.value
-      dta.lastSavedData = dta.value === null ? '' : dta.value
-      cta.lastSavedData = cta.value === null ? '' : cta.value
+      dta.lastSavedData = dta.getValue()
+      cta.lastSavedData = cta.getValue()
     }
 
     function isReviewSubmittable () {
