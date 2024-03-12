@@ -2011,6 +2011,16 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   src: local(''),
        url('../fonts/ubuntu-mono-v15-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
 }
+.x-tool.x-tool-import {
+  background-image: url(../img/upload.svg);
+  background-repeat: no-repeat;
+  background-size: 12px 16px;
+  color: grey;
+  width: auto;
+  padding-left: 15px;
+  font-size: 10px;
+  line-height: 16px;
+}
 .x-tool.x-tool-label {
   background-image: url(../img/label.svg);
   background-repeat: no-repeat;

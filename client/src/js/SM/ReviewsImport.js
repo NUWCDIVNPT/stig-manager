@@ -1992,7 +1992,7 @@ SM.ReviewsImport.ImportProgressPanel = Ext.extend(Ext.Panel, {
     }
 })
 
-async function showImportResultFiles(collectionId) {
+async function showImportResultFiles(collectionId, createObjects = true) {
     try {
         const cachedCollection = SM.Cache.CollectionMap.get(collectionId)
         const userGrant = curUser.collectionGrants.find( i => i.collection.collectionId === cachedCollection.collectionId )?.accessLevel
@@ -2219,16 +2219,17 @@ async function showImportResultFiles(collectionId) {
 
             const taskConfig = {
                 collectionId,
-                createObjects: true,
+                createObjects,
                 strictRevisionCheck: false
             } 
             const tasks = new STIGMAN.ClientModules.TaskObject({ apiAssets, apiStigs, parsedResults: parseResults.success, options: taskConfig })
+            const taskErrors = tasks.errors.map( e => ({file: e.sourceRef, error: e.message}))
             // Transform into data for SM.ReviewsImport.Grid
             const results = {
                 taskAssets: tasks.taskAssets,
                 rows: [],
                 dupedRows: [],
-                errors: parseResults.fail,
+                errors: [...parseResults.fail, ...taskErrors],
                 hasDuplicates: false
             }
             // Collate multiple checklists into duplicates and the single checklist for POSTing.

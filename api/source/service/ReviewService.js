@@ -1059,7 +1059,7 @@ select
       or review.reviewId is null -- no existing review
       or (cteCollectionSetting.resetCriteria = 'result' and rChangedResult.reviewId is not null) -- status meets criteria for resetting
       or (cteCollectionSetting.resetCriteria = 'any' and rChangedAny.reviewId is not null) -- status meets criteria for resetting
-    THEN UTC_TIMESTAMP() -- now
+    THEN @utcTimestamp -- now
     ELSE review.statusTs -- saved time
   END as statusTs,
   
@@ -1071,8 +1071,21 @@ select
     ELSE review.statusUserId -- saved user
   END as statusUserId,
   
-  @userId as userId,
-  UTC_TIMESTAMP() as ts
+  CASE WHEN review.reviewId is null -- no existing review
+      or cteIncoming.resultId is not null -- patch request contains result
+      or cteIncoming.detail is not null -- patch request contains detail
+      or cteIncoming.comment is not null -- patch request contains comment
+    THEN @userId  -- this user
+    ELSE review.userId -- saved user
+  END as userId,
+
+  CASE WHEN review.reviewId is null -- no existing review
+      or cteIncoming.resultId is not null -- patch request contains result
+      or cteIncoming.detail is not null -- patch request contains detail
+      or cteIncoming.comment is not null -- patch request contains comment
+    THEN @utcTimestamp -- now
+    ELSE review.ts -- saved time
+  END as ts
 from
   cteIncoming
   LEFT JOIN cteGrant on cteIncoming.ruleId = cteGrant.ruleId
@@ -1269,7 +1282,7 @@ where
   try {
     connection = await dbUtils.pool.getConnection()
     
-    const sqlSetVariables = `set @collectionId = ?, @assetId = ?, @userId = ?, @reviews = ?`
+    const sqlSetVariables = `set @collectionId = ?, @assetId = ?, @userId = ?, @reviews = ?, @utcTimestamp = UTC_TIMESTAMP()`
     await connection.query(sqlSetVariables, [parseInt(collectionId), parseInt(assetId), parseInt(userId), JSON.stringify(reviews)])
     const [settings] = await connection.query(`select c.settings->>"$.history.maxReviews" as maxReviews FROM collection c where collectionId = @collectionId`)
     const historyMaxReviews = settings[0].maxReviews
