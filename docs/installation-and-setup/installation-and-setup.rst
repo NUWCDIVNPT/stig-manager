@@ -223,13 +223,13 @@ Procedure
 Updating STIG Manager
 -------------------------------------------------
 
-Because the STIG Manager API itself is stateless, updates are relatively simple. Follow the same procedure as the initial deployment, but with the updated version of the app.  Ensure that the database and OIDC Provider that STIG Manager is configured to use are set up to persist their data.
+Because the STIG Manager API itself is stateless, updates are relatively simple. Follow the same procedure as the initial deployment, but with the updated version of the app, configured to use the same OIDC and database resources.
 
-Some releases may require database schema changes. In these cases, the app will automatically apply the necessary changes to the database schema when it starts up. These changes can occasionally take more than a few minutes to run if your data set is large. We note these "Database Migrations" in our Release Notes, in case deployments want to take an extra snapshot or something before running it in addition to their normal backups.
+Some releases may require database schema changes. In these cases, the app will automatically apply the necessary changes to the database schema when it starts up. These changes can occasionally take several minutes to run if your data set is large. We note these "Database Migrations" in our Release Notes. We recommend updates be performed during a maintenance window, and that a current database backup is available.
 
 Most updates do not require database migrations.
 
-Downgrading STIG Manager to an earlier version is not supported. If you need to revert to an earlier version, you will need to restore the database from a backup taken before the upgrade.
+Downgrading STIG Manager to an earlier version is not supported. If you need to revert to an earlier version, you will need to restore the database from a backup taken with the earlier version.
 
 | 
 
