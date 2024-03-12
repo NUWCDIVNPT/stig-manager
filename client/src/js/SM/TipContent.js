@@ -95,3 +95,7 @@ The user must have a "Manage" or "Owner" grant in the destination Collection.<br
 <b>Exporting results to another Collection is limited to a maximum of {maxItems} Assets at a time.</b>`
 
 SM.TipContent.ExportOptions.ZipArchive = `Export a .zip archive of checklists for selected Assets/STIGs in the desired format.`
+
+SM.TipContent.ImportFromCollectionPanel = `Will not create new Assets or STIG assignments.<br><br>To create new Assets or STIG assignments, import from the Collection Management workspace.`
+
+SM.TipContent.ImportFromCollectionManager = `Will create new Assets and STIG assignments if they do not exist in this Collection.`
