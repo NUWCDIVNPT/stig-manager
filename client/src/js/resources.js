@@ -14,7 +14,6 @@ const scripts = [
   'ext/adapter/ext/ext-base-debug.js',
   'ext/ext-all-debug-w-comments.js',
   'ext/ux/GroupSummary.js',
-  'js/chart.min.js',
   'js/diff.js',
   'js/diff2html.min.js',
   'js/stigmanUtils.js',
