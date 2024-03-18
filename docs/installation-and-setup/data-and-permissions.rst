@@ -173,22 +173,12 @@ See our :ref:`Authentication and Identity <authentication>` documentation and ou
 Database Entity Relationship Diagrams
 ===============================================
 
-These diagrams may not always be up to date. Always refer to the implemented db structure as the authoritative source for this information. 
-
-
-.. thumbnail:: /assets/images/eer-stigman.svg
-      :width: 75% 
-      :show_caption: True
-      :title: MySQL representation of STIG Manager's non-STIG data structures. 
-
-
-|
+The following diagram may not always be up to date. Always refer to the implemented db structure as the authoritative source for this information. 
 
 
 .. thumbnail:: /assets/images/eer-stig-wide.svg
       :width: 75% 
       :show_caption: True
-      :title: MySQL representation of STIG Manager's STIG data. 
+      :title: Entity Relationship Diagram representation of STIG Manager's MySQL data. 
 
-|
-
+`View the enlarged ERD Document here. <../_images/eer-stig-wide1.svg>`_
