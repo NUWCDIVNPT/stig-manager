@@ -6,15 +6,29 @@ const Umzug = require('umzug')
 const path = require('path')
 const fs = require("fs")
 const semverLt = require('semver/functions/lt')
-
+const Importer = require('./migrations/lib/mysql-import.js')
 const minMySqlVersion = '8.0.14'
 let _this = this
-
 let initAttempt = 0
+
 module.exports.testConnection = async function () {
   logger.writeDebug('mysql', 'preflight', { attempt: ++initAttempt })
   let [result] = await _this.pool.query('SELECT VERSION() as version')
-  return result[0].version
+  let [tables] = await _this.pool.query('SHOW TABLES')
+  return {
+    detectedMySqlVersion: result[0].version,
+    detectedTables: tables.length 
+  }
+}
+
+async function loadToEmptyDatabase(pool){
+  const importer = new Importer(pool)
+  const dir = path.join(__dirname, 'migrations', 'sql', 'current');
+  const files = await fs.promises.readdir(dir)
+  for (const file of files) {
+      logger.writeInfo('mysql', 'initalizing', {status: 'running', name: file })
+      await importer.import(path.join(dir, file))
+  }    
 }
 
 function getPoolConfig() {
@@ -82,7 +96,7 @@ module.exports.initializeDatabase = async function () {
   process.on('SIGINT', closePoolAndExit)
 
   // Preflight the pool every 5 seconds
-  const detectedMySqlVersion = await retry(_this.testConnection, {
+  const {detectedTables,detectedMySqlVersion} = await retry(_this.testConnection, {
     retries: 24,
     factor: 1,
     minTimeout: 5 * 1000,
@@ -100,10 +114,15 @@ module.exports.initializeDatabase = async function () {
       success: true,
       version: detectedMySqlVersion
       })
-
   }
 
-  // Perform migrations
+  if(detectedTables === 0) {
+    logger.writeInfo('mysql', 'setup', { message: 'No existing tables detected. Setting up new database.' });
+    await loadToEmptyDatabase(_this.pool)
+    logger.writeInfo('mysql', 'setup', { message: 'Database setup complete.' });
+    return true
+  }
+    // Perform migrations
   const umzug = new Umzug({
     migrations: {
       path: path.join(__dirname, './migrations'),
@@ -137,7 +156,6 @@ module.exports.initializeDatabase = async function () {
   }
   // return true if the database migrations include the initial scaffolding
   return migrations.length > 0 && migrations[0].file === '0000.js'
-
 }
 
 module.exports.parseRevisionStr = function (revisionStr) {
