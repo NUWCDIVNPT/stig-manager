@@ -103,7 +103,6 @@ cp $SrcDir/js/Env.js.example $DistDir/js
 cp -r $SrcDir/js/modules $DistDir/js/modules
 cd $SrcDir/js
 uglifyjs \
-'chart.min.js' \
 'diff.js' \
 'diff2html.min.js' \
 'stigmanUtils.js' \

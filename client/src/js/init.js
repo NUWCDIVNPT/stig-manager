@@ -30,6 +30,10 @@ async function loadResources() {
     }
     document.head.appendChild(link)
   }
+  
+  const { Chart } = await import('./modules/node_modules/chart.js/auto/auto.js')
+  window.Chart = Chart
+
   for (const src of scripts) {
     const script = document.createElement('script')
     script.src = src
@@ -39,7 +43,7 @@ async function loadResources() {
   const { serializeError } = await import('./modules/node_modules/serialize-error/index.js')
   STIGMAN.serializeError = serializeError
   STIGMAN.ClientModules = await import('./modules/node_modules/@nuwcdivnpt/stig-manager-client-modules/index.js')
-
+  
   STIGMAN.isMinimizedSource = isMinimizedSource
 }
 
