@@ -210,7 +210,7 @@ The Assets and STIGS presented in the Collection Dashboard can be filtered by cl
 |
 
 
-      - **Progress Chart** - Presents the proportion of Reviews that have been Assessed out of the total number of Assessments required in a Collection (ie. The total number of Rules contained in all STIGs that have been assigned to all Assets). The number of Assessed Reviews is further broken down by the Status of each of those Reviews. Depending on your process, you may want all your Reviews to wind up with an "Assessed," "Submitted," or "Accepted" status (The "Assessed" proportion here is the number of Reviews that have been "Saved" with :ref:`a valid Assessment Result <assessment note>`). 
+      - **Progress Chart** - Presents the proportion of Reviews that have been Assessed out of the total number of Assessments required in a Collection (ie. The total number of Rules contained in all STIGs that have been assigned to all Assets). The number of Assessed Reviews is further broken down by the Status of each of those Reviews. Depending on your process, you may want all your Reviews to wind up with an "Assessed," "Submitted," or "Accepted" status (The "Assessed" proportion here is the number of Reviews that have been "Saved" with :ref:`a valid Assessment Result <assessment note>`).  **The "Import..." button allows users to update their Reviews by importing .ckl(b) or XCCDF checklist files. Imports will NOT create new Assets and STIG assignments when initiated from the Collection Dashboard.**
       - **Inventory** - Total number of Assets, unique STIGs, and checklists (STIGs assigned to Assets) in this Collection. If you are a Manager or Owner for this Collection, you will see a "Manage" button on the right of this box's header. Click it to open the  :ref:`manage-collection-workspace`.
       - **Findings** - Total number of "Open" Findings in a Collection, broken down by Severity Category. Click the "Details" button on the right of this box's header to open the Findings Report. The Findings Report provides a way to engage with all "Open" findings in a Collection, and generate a precursor POA&M from them. See :ref:`Findings Report` for more info.
       - **Review Ages** - The age of the oldest Review in a Collection and the newest Review in a Collection. Whenever Review *content* (Result or commentary) is modified, its timestamp is updated, and this is used to calculate the ages presented here as "oldest" and "newest." The "Updated" block represents the last time the *Status* of a Review changed (ie. when a Saved, Submitted, Accepted, or Rejected status was applied).
@@ -602,7 +602,19 @@ By default, the most current STIG is displayed. The User can also select older r
 
 Columns
 ~~~~~~~~~~~~~~
-The columns in this panel represent the Rule Severity Category, Rule Id, Rule Title, and aggregated Review Columns for Open (O), Not a Finding (NF), Not Applicable (NA), Not Reviewed (NR), Submitted, Rejected, and Accepted. Additional Columns and filtering options are available by clicking the column headers. 
+The columns in this panel represent the Rule Severity Category, Rule Id, Rule Title, and aggregated Review Columns for Open (O), Not a Finding (NF), Not Applicable (NA), Not Reviewed (NR), Submitted, Rejected, and Accepted. 
+
+Additional Columns and filtering options are available by clicking the column headers. Column selections will persist for the Collection across user sessions.
+
+.. thumbnail:: /assets/images/collection-workspace-checklist-ages.png
+      :width: 50% 
+      :show_caption: True
+      :title: Column Selection
+
+|
+
+
+
 
 
 Rule Info Panel
