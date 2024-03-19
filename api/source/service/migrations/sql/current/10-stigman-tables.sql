@@ -1,13 +1,10 @@
--- MySQL dump 10.13  Distrib 8.0.36, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.3.0, for Linux (x86_64)
 --
 -- Host: 127.0.0.1    Database: stigman
 -- ------------------------------------------------------
--- Server version	8.0.35
+-- Server version	8.0.34
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -20,22 +17,17 @@
 --
 
 DROP TABLE IF EXISTS `_migrations`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `_migrations` (
   `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   `name` varchar(128) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `asset`
 --
 
 DROP TABLE IF EXISTS `asset`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `asset` (
   `assetId` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
@@ -56,15 +48,12 @@ CREATE TABLE `asset` (
   KEY `INDEX_COLLECTIONID` (`collectionId`),
   CONSTRAINT `FK_ASSET_2` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `cci`
 --
 
 DROP TABLE IF EXISTS `cci`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cci` (
   `cci` varchar(20) NOT NULL,
   `status` varchar(20) NOT NULL,
@@ -78,15 +67,12 @@ CREATE TABLE `cci` (
   PRIMARY KEY (`cci`),
   KEY `ap` (`apAcronym`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `cci_reference_map`
 --
 
 DROP TABLE IF EXISTS `cci_reference_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cci_reference_map` (
   `cciRefId` int NOT NULL AUTO_INCREMENT,
   `cci` varchar(20) NOT NULL,
@@ -101,15 +87,12 @@ CREATE TABLE `cci_reference_map` (
   KEY `cci` (`cci`),
   KEY `textRefNist` (`textRefNist`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `check_content`
 --
 
 DROP TABLE IF EXISTS `check_content`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `check_content` (
   `ccId` int NOT NULL AUTO_INCREMENT,
   `digest` binary(32) GENERATED ALWAYS AS (unhex(sha2(`content`,256))) STORED,
@@ -117,15 +100,12 @@ CREATE TABLE `check_content` (
   PRIMARY KEY (`ccId`),
   UNIQUE KEY `digest_UNIQUE` (`digest`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `collection`
 --
 
 DROP TABLE IF EXISTS `collection`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `collection` (
   `collectionId` int NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
@@ -143,15 +123,12 @@ CREATE TABLE `collection` (
   UNIQUE KEY `index2` (`name`,`isEnabled`),
   UNIQUE KEY `index3` (`name`,`isNameUnavailable`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `collection_grant`
 --
 
 DROP TABLE IF EXISTS `collection_grant`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `collection_grant` (
   `cgId` int NOT NULL AUTO_INCREMENT,
   `collectionId` int NOT NULL,
@@ -163,15 +140,12 @@ CREATE TABLE `collection_grant` (
   CONSTRAINT `fk_collection_grant_1` FOREIGN KEY (`userId`) REFERENCES `user_data` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_collection_grant_2` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `collection_label`
 --
 
 DROP TABLE IF EXISTS `collection_label`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `collection_label` (
   `clId` int NOT NULL AUTO_INCREMENT,
   `collectionId` int NOT NULL,
@@ -184,15 +158,12 @@ CREATE TABLE `collection_label` (
   KEY `index4` (`uuid`),
   CONSTRAINT `fk_collection_label_1` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `collection_label_asset_map`
 --
 
 DROP TABLE IF EXISTS `collection_label_asset_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `collection_label_asset_map` (
   `claId` int NOT NULL AUTO_INCREMENT,
   `assetId` int NOT NULL,
@@ -203,15 +174,12 @@ CREATE TABLE `collection_label_asset_map` (
   CONSTRAINT `fk_collection_label_asset_map_1` FOREIGN KEY (`assetId`) REFERENCES `asset` (`assetId`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_collection_label_asset_map_2` FOREIGN KEY (`clId`) REFERENCES `collection_label` (`clId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `collection_rev_map`
 --
 
 DROP TABLE IF EXISTS `collection_rev_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `collection_rev_map` (
   `crId` int NOT NULL AUTO_INCREMENT,
   `collectionId` int NOT NULL,
@@ -222,29 +190,23 @@ CREATE TABLE `collection_rev_map` (
   KEY `index_revId` (`revId`),
   CONSTRAINT `fk_collection_rev_map_1` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `config`
 --
 
 DROP TABLE IF EXISTS `config`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `config` (
   `key` varchar(45) NOT NULL,
   `value` varchar(255) NOT NULL,
   PRIMARY KEY (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `current_group_rule`
 --
 
 DROP TABLE IF EXISTS `current_group_rule`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `current_group_rule` (
   `cgrId` int NOT NULL AUTO_INCREMENT,
   `benchmarkId` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
@@ -255,15 +217,12 @@ CREATE TABLE `current_group_rule` (
   KEY `idx_rule` (`ruleId`),
   KEY `idx_group` (`groupId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `current_rev`
 --
 
 DROP TABLE IF EXISTS `current_rev`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `current_rev` (
   `revId` varchar(255) NOT NULL,
   `benchmarkId` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
@@ -285,15 +244,12 @@ CREATE TABLE `current_rev` (
   PRIMARY KEY (`revId`),
   UNIQUE KEY `index2` (`benchmarkId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `default_rev`
 --
 
 DROP TABLE IF EXISTS `default_rev`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `default_rev` (
   `vdId` int NOT NULL AUTO_INCREMENT,
   `collectionId` int NOT NULL,
@@ -306,15 +262,12 @@ CREATE TABLE `default_rev` (
   KEY `index4` (`revId`),
   CONSTRAINT `fk_default_rev_2` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `fix_text`
 --
 
 DROP TABLE IF EXISTS `fix_text`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `fix_text` (
   `ftId` int NOT NULL AUTO_INCREMENT,
   `digest` binary(32) GENERATED ALWAYS AS (unhex(sha2(`text`,256))) STORED,
@@ -322,15 +275,12 @@ CREATE TABLE `fix_text` (
   PRIMARY KEY (`ftId`),
   UNIQUE KEY `digest_UNIQUE` (`digest`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `result`
 --
 
 DROP TABLE IF EXISTS `result`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `result` (
   `resultId` int NOT NULL AUTO_INCREMENT,
   `api` varchar(32) NOT NULL,
@@ -341,15 +291,12 @@ CREATE TABLE `result` (
   PRIMARY KEY (`resultId`),
   UNIQUE KEY `RESULT_API` (`api`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `rev_group_rule_cci_map`
 --
 
 DROP TABLE IF EXISTS `rev_group_rule_cci_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rev_group_rule_cci_map` (
   `rgrccId` int NOT NULL AUTO_INCREMENT,
   `rgrId` int NOT NULL,
@@ -358,15 +305,12 @@ CREATE TABLE `rev_group_rule_cci_map` (
   UNIQUE KEY `index2` (`rgrId`,`cci`),
   KEY `index3` (`cci`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `rev_group_rule_map`
 --
 
 DROP TABLE IF EXISTS `rev_group_rule_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rev_group_rule_map` (
   `rgrId` int NOT NULL AUTO_INCREMENT,
   `revId` varchar(255) DEFAULT NULL,
@@ -400,15 +344,12 @@ CREATE TABLE `rev_group_rule_map` (
   KEY `idx_version_check_digest` (`version`,`checkDigest`),
   CONSTRAINT `fk_rev_group_rule_map_1` FOREIGN KEY (`revId`) REFERENCES `revision` (`revId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `review`
 --
 
 DROP TABLE IF EXISTS `review`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `review` (
   `reviewId` int NOT NULL AUTO_INCREMENT,
   `assetId` int DEFAULT NULL,
@@ -442,15 +383,12 @@ CREATE TABLE `review` (
   KEY `idx_reAuthority` (`reAuthority`),
   CONSTRAINT `FK_REVIEWS_1` FOREIGN KEY (`assetId`) REFERENCES `asset` (`assetId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `review_history`
 --
 
 DROP TABLE IF EXISTS `review_history`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `review_history` (
   `historyId` int NOT NULL AUTO_INCREMENT,
   `reviewId` int NOT NULL,
@@ -477,15 +415,37 @@ CREATE TABLE `review_history` (
   KEY `idx_reAuthority` (`reAuthority`),
   CONSTRAINT `fk_review_history_1` FOREIGN KEY (`reviewId`) REFERENCES `review` (`reviewId`) ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `review_preserved`
+--
+
+DROP TABLE IF EXISTS `review_preserved`;
+CREATE TABLE `review_preserved` (
+  `reviewId` int NOT NULL DEFAULT '0',
+  `assetId` int DEFAULT NULL,
+  `ruleId` varchar(45) DEFAULT NULL,
+  `resultId` int DEFAULT NULL,
+  `detail` mediumtext,
+  `comment` mediumtext,
+  `autoResult` bit(1) DEFAULT b'0',
+  `ts` datetime NOT NULL,
+  `userId` int DEFAULT NULL,
+  `statusId` int NOT NULL,
+  `statusText` varchar(255) DEFAULT NULL,
+  `statusTs` datetime DEFAULT NULL,
+  `metadata` json NOT NULL DEFAULT (json_object()),
+  `resultEngine` json DEFAULT NULL,
+  `version` varchar(45) NOT NULL,
+  `checkDigest` binary(32) NOT NULL,
+  `rowNum` bigint unsigned NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Table structure for table `revision`
 --
 
 DROP TABLE IF EXISTS `revision`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `revision` (
   `revId` varchar(255) NOT NULL,
   `benchmarkId` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
@@ -510,15 +470,12 @@ CREATE TABLE `revision` (
   KEY `idx_revision_benchmark_revisionStr` (`benchmarkId`,`revisionStr`),
   CONSTRAINT `FK_REVISION_1` FOREIGN KEY (`benchmarkId`) REFERENCES `stig` (`benchmarkId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `rule_version_check_digest`
 --
 
 DROP TABLE IF EXISTS `rule_version_check_digest`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rule_version_check_digest` (
   `ruleId` varchar(255) NOT NULL,
   `version` varchar(45) NOT NULL,
@@ -526,15 +483,12 @@ CREATE TABLE `rule_version_check_digest` (
   PRIMARY KEY (`ruleId`),
   KEY `index_vcd` (`version`,`checkDigest`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `severity_cat_map`
 --
 
 DROP TABLE IF EXISTS `severity_cat_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `severity_cat_map` (
   `id` int NOT NULL AUTO_INCREMENT,
   `severity` varchar(45) NOT NULL,
@@ -543,15 +497,12 @@ CREATE TABLE `severity_cat_map` (
   PRIMARY KEY (`id`),
   KEY `idx_scm_severity` (`severity`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `status`
 --
 
 DROP TABLE IF EXISTS `status`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `status` (
   `statusId` int NOT NULL,
   `api` varchar(16) NOT NULL,
@@ -559,30 +510,24 @@ CREATE TABLE `status` (
   PRIMARY KEY (`statusId`),
   UNIQUE KEY `IDX_API` (`api`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `stig`
 --
 
 DROP TABLE IF EXISTS `stig`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `stig` (
   `benchmarkId` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
   `title` varchar(255) NOT NULL,
   PRIMARY KEY (`benchmarkId`),
   KEY `idx_benchmark_title` (`title`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `stig_asset_map`
 --
 
 DROP TABLE IF EXISTS `stig_asset_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `stig_asset_map` (
   `saId` int NOT NULL AUTO_INCREMENT,
   `benchmarkId` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
@@ -626,15 +571,12 @@ CREATE TABLE `stig_asset_map` (
   CONSTRAINT `FK_STIG_ASSET_MAP_1` FOREIGN KEY (`assetId`) REFERENCES `asset` (`assetId`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_STIG_ASSET_MAP_2` FOREIGN KEY (`benchmarkId`) REFERENCES `stig` (`benchmarkId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `user_data`
 --
 
 DROP TABLE IF EXISTS `user_data`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_data` (
   `userId` int NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
@@ -644,15 +586,12 @@ CREATE TABLE `user_data` (
   PRIMARY KEY (`userId`),
   UNIQUE KEY `INDEX_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `user_stig_asset_map`
 --
 
 DROP TABLE IF EXISTS `user_stig_asset_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_stig_asset_map` (
   `id` int NOT NULL AUTO_INCREMENT,
   `userId` int NOT NULL,
@@ -663,7 +602,6 @@ CREATE TABLE `user_stig_asset_map` (
   CONSTRAINT `fk_user_stig_asset_map_1` FOREIGN KEY (`saId`) REFERENCES `stig_asset_map` (`saId`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_user_stig_asset_map_2` FOREIGN KEY (`userId`) REFERENCES `user_data` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Temporary view structure for view `v_current_group_rule`
@@ -671,8 +609,6 @@ CREATE TABLE `user_stig_asset_map` (
 
 DROP TABLE IF EXISTS `v_current_group_rule`;
 /*!50001 DROP VIEW IF EXISTS `v_current_group_rule`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
 /*!50001 CREATE VIEW `v_current_group_rule` AS SELECT 
  1 AS `benchmarkId`,
  1 AS `groupId`,
@@ -698,7 +634,6 @@ SET @saved_cs_client     = @@character_set_client;
  1 AS `checkDigest`,
  1 AS `fixref`,
  1 AS `fixDigest`*/;
-SET character_set_client = @saved_cs_client;
 
 --
 -- Temporary view structure for view `v_current_rev`
@@ -706,8 +641,6 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `v_current_rev`;
 /*!50001 DROP VIEW IF EXISTS `v_current_rev`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
 /*!50001 CREATE VIEW `v_current_rev` AS SELECT 
  1 AS `revId`,
  1 AS `benchmarkId`,
@@ -726,7 +659,6 @@ SET @saved_cs_client     = @@character_set_client;
  1 AS `highCount`,
  1 AS `checkCount`,
  1 AS `fixCount`*/;
-SET character_set_client = @saved_cs_client;
 
 --
 -- Temporary view structure for view `v_default_rev`
@@ -734,14 +666,11 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `v_default_rev`;
 /*!50001 DROP VIEW IF EXISTS `v_default_rev`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
 /*!50001 CREATE VIEW `v_default_rev` AS SELECT 
  1 AS `collectionId`,
  1 AS `benchmarkId`,
  1 AS `revId`,
  1 AS `revisionPinned`*/;
-SET character_set_client = @saved_cs_client;
 
 --
 -- Temporary view structure for view `v_latest_rev`
@@ -749,30 +678,21 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `v_latest_rev`;
 /*!50001 DROP VIEW IF EXISTS `v_latest_rev`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
 /*!50001 CREATE VIEW `v_latest_rev` AS SELECT 
  1 AS `revId`,
  1 AS `benchmarkId`,
  1 AS `revisionStr`*/;
-SET character_set_client = @saved_cs_client;
 
 --
 -- Final view structure for view `v_current_group_rule`
 --
 
 /*!50001 DROP VIEW IF EXISTS `v_current_group_rule`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`stigman`@`%` SQL SECURITY DEFINER */
 /*!50001 VIEW `v_current_group_rule` AS select `cr`.`benchmarkId` AS `benchmarkId`,`rgr`.`groupId` AS `groupId`,`rgr`.`groupTitle` AS `groupTitle`,`rgr`.`groupSeverity` AS `groupSeverity`,`rgr`.`ruleId` AS `ruleId`,`rgr`.`version` AS `version`,`rgr`.`title` AS `title`,`rgr`.`severity` AS `severity`,`rgr`.`weight` AS `weight`,`rgr`.`vulnDiscussion` AS `vulnDiscussion`,`rgr`.`falsePositives` AS `falsePositives`,`rgr`.`falseNegatives` AS `falseNegatives`,`rgr`.`documentable` AS `documentable`,`rgr`.`mitigations` AS `mitigations`,`rgr`.`severityOverrideGuidance` AS `severityOverrideGuidance`,`rgr`.`potentialImpacts` AS `potentialImpacts`,`rgr`.`thirdPartyTools` AS `thirdPartyTools`,`rgr`.`mitigationControl` AS `mitigationControl`,`rgr`.`responsibility` AS `responsibility`,`rgr`.`iaControls` AS `iaControls`,`rgr`.`checkSystem` AS `checkSystem`,`rgr`.`checkDigest` AS `checkDigest`,`rgr`.`fixref` AS `fixref`,`rgr`.`fixDigest` AS `fixDigest` from (`current_rev` `cr` left join `rev_group_rule_map` `rgr` on((`cr`.`revId` = `rgr`.`revId`))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
@@ -780,17 +700,11 @@ SET character_set_client = @saved_cs_client;
 --
 
 /*!50001 DROP VIEW IF EXISTS `v_current_rev`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`stigman`@`%` SQL SECURITY DEFINER */
 /*!50001 VIEW `v_current_rev` AS select `rr`.`revId` AS `revId`,`rr`.`benchmarkId` AS `benchmarkId`,`rr`.`version` AS `version`,`rr`.`release` AS `release`,`rr`.`benchmarkDate` AS `benchmarkDate`,`rr`.`benchmarkDateSql` AS `benchmarkDateSql`,`rr`.`status` AS `status`,`rr`.`statusDate` AS `statusDate`,`rr`.`description` AS `description`,`rr`.`active` AS `active`,`rr`.`groupCount` AS `groupCount`,`rr`.`ruleCount` AS `ruleCount`,`rr`.`lowCount` AS `lowCount`,`rr`.`mediumCount` AS `mediumCount`,`rr`.`highCount` AS `highCount`,`rr`.`checkCount` AS `checkCount`,`rr`.`fixCount` AS `fixCount` from (select `r`.`revId` AS `revId`,`r`.`benchmarkId` AS `benchmarkId`,`r`.`version` AS `version`,`r`.`release` AS `release`,`r`.`benchmarkDate` AS `benchmarkDate`,`r`.`benchmarkDateSql` AS `benchmarkDateSql`,`r`.`status` AS `status`,`r`.`statusDate` AS `statusDate`,`r`.`description` AS `description`,`r`.`active` AS `active`,`r`.`groupCount` AS `groupCount`,`r`.`ruleCount` AS `ruleCount`,`r`.`lowCount` AS `lowCount`,`r`.`mediumCount` AS `mediumCount`,`r`.`highCount` AS `highCount`,`r`.`checkCount` AS `checkCount`,`r`.`fixCount` AS `fixCount`,row_number() OVER (PARTITION BY `r`.`benchmarkId` ORDER BY field(`r`.`status`,'draft','accepted') desc,(`r`.`version` + 0) desc,(`r`.`release` + 0) desc )  AS `rn` from `revision` `r`) `rr` where (`rr`.`rn` = 1) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
@@ -798,17 +712,11 @@ SET character_set_client = @saved_cs_client;
 --
 
 /*!50001 DROP VIEW IF EXISTS `v_default_rev`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`stigman`@`%` SQL SECURITY DEFINER */
 /*!50001 VIEW `v_default_rev` AS select distinct `a`.`collectionId` AS `collectionId`,`sa`.`benchmarkId` AS `benchmarkId`,(case when (`crm`.`revId` is not null) then `crm`.`revId` else `cr`.`revId` end) AS `revId`,(case when (`crm`.`revId` is not null) then 1 else 0 end) AS `revisionPinned` from (((`asset` `a` join `stig_asset_map` `sa` on((`a`.`assetId` = `sa`.`assetId`))) left join `current_rev` `cr` on((`sa`.`benchmarkId` = `cr`.`benchmarkId`))) left join `collection_rev_map` `crm` on(((`sa`.`benchmarkId` = `crm`.`benchmarkId`) and (`a`.`collectionId` = `crm`.`collectionId`)))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
@@ -816,26 +724,18 @@ SET character_set_client = @saved_cs_client;
 --
 
 /*!50001 DROP VIEW IF EXISTS `v_latest_rev`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`stigman`@`%` SQL SECURITY DEFINER */
 /*!50001 VIEW `v_latest_rev` AS select `rr`.`revId` AS `revId`,`rr`.`benchmarkId` AS `benchmarkId`,concat('V',`rr`.`version`,'R',`rr`.`release`) AS `revisionStr` from (select `r`.`revId` AS `revId`,`r`.`benchmarkId` AS `benchmarkId`,`r`.`version` AS `version`,`r`.`release` AS `release`,row_number() OVER (PARTITION BY `r`.`benchmarkId` ORDER BY field(`r`.`status`,'draft','accepted') desc,(`r`.`version` + 0) desc,(`r`.`release` + 0) desc )  AS `rn` from `revision` `r`) `rr` where (`rr`.`rn` = 1) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-03-18 14:06:43
+-- Dump completed on 2024-03-19 16:13:46
