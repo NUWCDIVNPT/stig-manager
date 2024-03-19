@@ -21,14 +21,20 @@ module.exports.testConnection = async function () {
   }
 }
 
-async function loadToEmptyDatabase(pool){
+async function setupInitialDatabase(pool){
   const importer = new Importer(pool)
   const dir = path.join(__dirname, 'migrations', 'sql', 'current');
   const files = await fs.promises.readdir(dir)
-  for (const file of files) {
-      logger.writeInfo('mysql', 'initalizing', {status: 'running', name: file })
-      await importer.import(path.join(dir, file))
-  }    
+  try {
+    for (const file of files) {
+        logger.writeInfo('mysql', 'initalizing', {status: 'running', name: file })
+        await importer.import(path.join(dir, file))
+    }    
+  }
+  catch (e) {
+    logger.writeError('mysql', 'initialize', {status: 'error', files: files, message: e.message })
+    throw new Error(`Failed to initialize database with file ${e.message}`);
+  }
 }
 
 function getPoolConfig() {
@@ -105,7 +111,7 @@ module.exports.initializeDatabase = async function () {
       logger.writeError('mysql', 'preflight', { success: false, message: error.message })
     }
   })
-  if ( semverLt(detectedMySqlVersion, minMySqlVersion) ) {
+  if (semverLt(detectedMySqlVersion, minMySqlVersion) ) {
     logger.writeError('mysql', 'preflight', { success: false, message: `MySQL release ${detectedMySqlVersion} is too old. Update to release ${minMySqlVersion} or later.` })
     process.exit(1)
   } 
@@ -116,46 +122,52 @@ module.exports.initializeDatabase = async function () {
       })
   }
 
-  if(detectedTables === 0) {
-    logger.writeInfo('mysql', 'setup', { message: 'No existing tables detected. Setting up new database.' });
-    await loadToEmptyDatabase(_this.pool)
-    logger.writeInfo('mysql', 'setup', { message: 'Database setup complete.' });
-    return true
-  }
-    // Perform migrations
-  const umzug = new Umzug({
-    migrations: {
-      path: path.join(__dirname, './migrations'),
-      params: [_this.pool]
-    },
-    storage: path.join(__dirname, './migrations/lib/umzug-mysql-storage'),
-    storageOptions: {
-      pool: _this.pool
+  try{
+    if(detectedTables === 0) {
+      logger.writeInfo('mysql', 'setup', { message: 'No existing tables detected. Setting up new database.' });
+      await setupInitialDatabase(_this.pool)
+      logger.writeInfo('mysql', 'setup', { message: 'Database setup complete.' });
+      return true
     }
-  })
+      // Perform migrations
+    const umzug = new Umzug({
+      migrations: {
+        path: path.join(__dirname, './migrations'),
+        params: [_this.pool]
+      },
+      storage: path.join(__dirname, './migrations/lib/umzug-mysql-storage'),
+      storageOptions: {
+        pool: _this.pool
+      }
+    })
 
-  if (config.database.revert) {
-    const migrations = await umzug.executed()
-    if (migrations.length) {
-      logger.writeInfo('mysql', 'migration', { message: 'MySQL schema will revert the last migration and terminate' })
-      await umzug.down()
-    } else {
-      logger.writeInfo('mysql', 'migration', { message: 'MySQL schema has no migrations to revert' })
+    if (config.database.revert) {
+      const migrations = await umzug.executed()
+      if (migrations.length) {
+        logger.writeInfo('mysql', 'migration', { message: 'MySQL schema will revert the last migration and terminate' })
+        await umzug.down()
+      } else {
+        logger.writeInfo('mysql', 'migration', { message: 'MySQL schema has no migrations to revert' })
+      }
+      logger.writeInfo('mysql', 'migration', { message: 'MySQL revert migration has completed' })
+      process.exit(1)
     }
-    logger.writeInfo('mysql', 'migration', { message: 'MySQL revert migration has completed' })
-    process.exit(1)
+    const migrations = await umzug.pending()
+    if (migrations.length > 0) {
+      logger.writeInfo('mysql', 'migration', { message: `MySQL schema requires ${migrations.length} update${migrations.length > 1 ? 's' : ''}` })
+      await umzug.up()
+      logger.writeInfo('mysql', 'migration', { message: `All migrations performed successfully` })
+    }
+    else {
+      logger.writeInfo('mysql', 'migration', { message: `MySQL schema is up to date` })
+    }
+     // return true if the database migrations include the initial scaffolding
+    return migrations.length > 0 && migrations[0].file === '0000.js'
   }
-  const migrations = await umzug.pending()
-  if (migrations.length > 0) {
-    logger.writeInfo('mysql', 'migration', { message: `MySQL schema requires ${migrations.length} update${migrations.length > 1 ? 's' : ''}` })
-    await umzug.up()
-    logger.writeInfo('mysql', 'migration', { message: `All migrations performed successfully` })
-  }
-  else {
-    logger.writeInfo('mysql', 'migration', { message: `MySQL schema is up to date` })
-  }
-  // return true if the database migrations include the initial scaffolding
-  return migrations.length > 0 && migrations[0].file === '0000.js'
+  catch (error) {
+    logger.writeError('mysql', 'initalization', { message: error.message })
+    throw new Error('Failed during database initialization or migration.')
+  } 
 }
 
 module.exports.parseRevisionStr = function (revisionStr) {
