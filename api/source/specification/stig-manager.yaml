@@ -1400,7 +1400,7 @@ paths:
         
         A string value for the `status` property will set the stored value to `{ label: <string>, text: null }`.
         
-        If the request changes the existing `result`, then the `resultEngine` value will be set to `null` unless the request includes an explicit `resultEngine` value. 
+        If the request includes a `result`, then the `resultEngine` value will be set to `null` unless the request includes an explicit `resultEngine` value. 
 
         An absent `status` property may still lead to the `status` value being updated to `{ label: "saved", text: "Review change triggered status update" }`, in accordance with the Collection `settings.status.resetCriteria`.
 
@@ -6317,7 +6317,7 @@ components:
             label:
               $ref: '#/components/schemas/ReviewStatusLabel'
             text:
-              $ref: '#/components/schemas/String255Nullable'
+              $ref: '#/components/schemas/StatusText'
     ReviewStatusRestrictedWrite:
       oneOf:
         - $ref: '#/components/schemas/ReviewStatusLabelRestricted'
@@ -6330,7 +6330,7 @@ components:
             label:
               $ref: '#/components/schemas/ReviewStatusLabelRestricted'
             text:
-              $ref: '#/components/schemas/String255Nullable'
+              $ref: '#/components/schemas/StatusText'
     ReviewStatusRead:
       type: object
       required:
@@ -6343,7 +6343,7 @@ components:
         label:
           $ref: '#/components/schemas/ReviewStatusLabel'
         text:
-          $ref: '#/components/schemas/String255Nullable'
+          $ref: '#/components/schemas/StatusText'
         user:
           $ref: '#/components/schemas/UserBasic'
         ts:
@@ -6602,6 +6602,10 @@ components:
           type: string
         benchmarkId:
           type: string
+    StatusText:
+      type: string
+      maxLength: 511
+      nullable: true
     STIG:
       type: object
       required:

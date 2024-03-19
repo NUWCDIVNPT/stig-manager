@@ -1684,7 +1684,7 @@ async function addCollectionReview ( params ) {
 			return new Promise ((resolve, reject) => {
 				const textArea = new Ext.form.TextArea({
 					emptyText: 'Provide feedback explaining this rejection.',
-					maxLength: 255,
+					maxLength: 511,
 					enableKeyEvents: true,
 					listeners: {
 						keyup: (field) => {
@@ -1725,12 +1725,12 @@ async function addCollectionReview ( params ) {
 					modal: true,
 					resizable: false,
 					closable: false,
-					width: 300,
-					height: 200,
+					width: 400,
+					height: 300,
 					layout: 'fit',
 					plain: true,
 					bodyStyle: 'padding:5px;',
-					buttonAlign: 'right',
+					buttonAlign: 'center',
 					items: [textArea],
 					buttons: [cancelBtn,submitBtn]
 				})

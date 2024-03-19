@@ -36,7 +36,7 @@ exports.postReviewBatch = async function ({
       resultEngine JSON PATH "$.resultEngine" DEFAULT '0' ON EMPTY,
       metadata JSON PATH "$.metadata",
       statusLabel VARCHAR(255) PATH "$.status.label",
-      statusText VARCHAR(255) PATH "$.status.text"
+      statusText VARCHAR(511) PATH "$.status.text"
       )
     ) as jt
     left join result jtresult on (jtresult.api = jt.result)
@@ -991,7 +991,7 @@ FROM
     metadata JSON PATH "$.metadata",
     statusRaw VARCHAR(255) PATH "$.status",
     statusLabel VARCHAR(255) PATH "$.status.label",
-    statusText VARCHAR(255) PATH "$.status.text"
+    statusText VARCHAR(511) PATH "$.status.text"
     )
   ) AS jt
   left join result on (jt.result = result.api)
@@ -1031,7 +1031,10 @@ select
   CASE WHEN cteIncoming.resultEngine != 0 -- resultEngine present
     THEN cteIncoming.resultEngine
     ELSE
-      NULL
+      CASE WHEN cteIncoming.resultId is null -- result absent, patch only
+        THEN review.resultEngine
+        ELSE NULL
+      END
   END as resultEngine,
   
   CASE WHEN cteIncoming.statusId is not null

@@ -573,24 +573,6 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
       hrend = process.hrtime(hrstart)
       stats.current_rev = `${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
-
-      // update current_group_rule
-      hrstart = process.hrtime()
-      let sqlDeleteCurrentGroupRule = 'DELETE FROM current_group_rule WHERE benchmarkId = ?'
-      let sqlInsertCurrentGroupRule = `INSERT INTO current_group_rule (groupId, ruleId, benchmarkId)
-        SELECT rgr.groupId,
-          rgr.ruleId,
-          cr.benchmarkId
-        from
-          current_rev cr
-          left join rev_group_rule_map rgr on cr.revId = rgr.revId
-        where
-          cr.benchmarkId = ?`
-      ;[result] = await connection.query(sqlDeleteCurrentGroupRule, [dml.stig.binds.benchmarkId])
-      ;[result] = await connection.query(sqlInsertCurrentGroupRule, [dml.stig.binds.benchmarkId])
-      hrend = process.hrtime(hrstart)
-      stats.current_rev = `${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
       // Stats
       hrstart = process.hrtime()
       await dbUtils.updateDefaultRev(connection, {
@@ -928,7 +910,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
       const [drRows] = await connection.query('SELECT collectionId FROM default_rev WHERE benchmarkId = :benchmarkId and revId = :revId', binds)
       const wasDefaultRev = !!drRows.length
 
-      // re-materialize current_rev and current_group_rule if we're deleteing the current revision
+      // re-materialize current_rev if we're deleteing the current revision
       if (wasCurrentRev) {
         dmls = dmls.concat(currentRevDmls)
       }
