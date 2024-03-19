@@ -417,31 +417,6 @@ CREATE TABLE `review_history` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Table structure for table `review_preserved`
---
-
-DROP TABLE IF EXISTS `review_preserved`;
-CREATE TABLE `review_preserved` (
-  `reviewId` int NOT NULL DEFAULT '0',
-  `assetId` int DEFAULT NULL,
-  `ruleId` varchar(45) DEFAULT NULL,
-  `resultId` int DEFAULT NULL,
-  `detail` mediumtext,
-  `comment` mediumtext,
-  `autoResult` bit(1) DEFAULT b'0',
-  `ts` datetime NOT NULL,
-  `userId` int DEFAULT NULL,
-  `statusId` int NOT NULL,
-  `statusText` varchar(255) DEFAULT NULL,
-  `statusTs` datetime DEFAULT NULL,
-  `metadata` json NOT NULL DEFAULT (json_object()),
-  `resultEngine` json DEFAULT NULL,
-  `version` varchar(45) NOT NULL,
-  `checkDigest` binary(32) NOT NULL,
-  `rowNum` bigint unsigned NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
 -- Table structure for table `revision`
 --
 
