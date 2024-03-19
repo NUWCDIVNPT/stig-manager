@@ -1,3 +1,18 @@
+1.4.4
+-----
+
+Changes:
+
+  - (UI/API) Review Ages exposed in more interfaces: Asset Review, Collection Review, Other Assets
+  - (UI/API) Review min/max ages in Collection Review checklist presentations
+  - (UI) Bulk .ckl[b]/xccdf imports from Collection Dashboard for all users (for Review updates only)
+  - (UI) Reject Status Text validation
+  - (UI) bugfix: Collection metadata deletes
+  - (API) bugfix: Timestamp update misbehavior in some circumstances
+  - (API) Dependency updates in response to CVE-2024-28849; CVE-2024-28176
+  - (Docs) Guidance for updating deployments
+  - (Docs) Database schemas and diagram updates
+
 1.4.3
 -----
 
