@@ -1059,7 +1059,10 @@ async function addReview( params ) {
           title: 'Status Text',
           ref: '../statusTextPanel',
           padding: 10,
-          autoScroll: true
+          autoScroll: true,
+          bodyStyle: {
+              'white-space': 'pre-wrap' // ensures whitespace is preserved if not using <pre>
+          }
         },
         {
           title: 'History',

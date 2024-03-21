@@ -6317,7 +6317,7 @@ components:
             label:
               $ref: '#/components/schemas/ReviewStatusLabel'
             text:
-              $ref: '#/components/schemas/String255Nullable'
+              $ref: '#/components/schemas/String512Nullable'
     ReviewStatusRestrictedWrite:
       oneOf:
         - $ref: '#/components/schemas/ReviewStatusLabelRestricted'
@@ -6330,7 +6330,7 @@ components:
             label:
               $ref: '#/components/schemas/ReviewStatusLabelRestricted'
             text:
-              $ref: '#/components/schemas/String255Nullable'
+              $ref: '#/components/schemas/String512Nullable'
     ReviewStatusRead:
       type: object
       required:
@@ -6343,7 +6343,7 @@ components:
         label:
           $ref: '#/components/schemas/ReviewStatusLabel'
         text:
-          $ref: '#/components/schemas/String255Nullable'
+          $ref: '#/components/schemas/String512Nullable'
         user:
           $ref: '#/components/schemas/UserBasic'
         ts:
@@ -6681,6 +6681,10 @@ components:
     String255Nullable:
       type: string
       maxLength: 255
+      nullable: true
+    String512Nullable:
+      type: string
+      maxLength: 512
       nullable: true
     StringDateTime:
       type: string
