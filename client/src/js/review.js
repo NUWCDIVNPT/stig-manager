@@ -1061,7 +1061,8 @@ async function addReview( params ) {
           padding: 10,
           autoScroll: true,
           bodyStyle: {
-              'white-space': 'pre-wrap' // ensures whitespace is preserved if not using <pre>
+              'white-space': 'pre-wrap',
+              'overflow-wrap': 'break-word'
           }
         },
         {
