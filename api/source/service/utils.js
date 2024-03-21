@@ -1,4 +1,4 @@
-const mysql = require('mysql2/promise');
+const mysql = require('mysql2/promise')
 const config = require('../utils/config')
 const logger = require('../utils/logger')
 const retry = require('async-retry')
@@ -23,7 +23,7 @@ module.exports.testConnection = async function () {
 
 async function setupInitialDatabase(pool){
   const importer = new Importer(pool)
-  const dir = path.join(__dirname, 'migrations', 'sql', 'current');
+  const dir = path.join(__dirname, 'migrations', 'sql', 'current')
   const files = await fs.promises.readdir(dir)
   try {
     for (const file of files) {
@@ -33,7 +33,7 @@ async function setupInitialDatabase(pool){
   }
   catch (e) {
     logger.writeError('mysql', 'initialize', {status: 'error', files: files, message: e.message })
-    throw new Error(`Failed to initialize database with file ${e.message}`);
+    throw new Error(`Failed to initialize database with file ${e.message}`)
   }
 }
 
@@ -49,10 +49,10 @@ function getPoolConfig() {
     charset: 'utf8mb4_0900_ai_ci',
     typeCast: function (field, next) {
       if ((field.type === "BIT") && (field.length === 1)) {
-        let bytes = field.buffer() || [0];
-        return( bytes[ 0 ] === 1 );
+        let bytes = field.buffer() || [0]
+        return( bytes[ 0 ] === 1 )
       }
-      return next();
+      return next()
     } 
   }
   if (config.database.password) {
@@ -90,10 +90,10 @@ module.exports.initializeDatabase = async function () {
     try {
       await _this.pool.end()
       logger.writeInfo('mysql', 'close', { success: true })
-      process.exit(0);
+      process.exit(0)
     } catch(err) {
       logger.writeError('mysql', 'close', { success: false, message: err.message })
-      process.exit(1);
+      process.exit(1)
     }
   }   
   process.on('SIGPIPE', closePoolAndExit)
@@ -122,14 +122,14 @@ module.exports.initializeDatabase = async function () {
       })
   }
 
-  try{
-    if(detectedTables === 0) {
-      logger.writeInfo('mysql', 'setup', { message: 'No existing tables detected. Setting up new database.' });
+  try {
+    if (detectedTables === 0) {
+      logger.writeInfo('mysql', 'setup', { message: 'No existing tables detected. Setting up new database.' })
       await setupInitialDatabase(_this.pool)
-      logger.writeInfo('mysql', 'setup', { message: 'Database setup complete.' });
-      return true
+      logger.writeInfo('mysql', 'setup', { message: 'Database setup complete.' })
+      return
     }
-      // Perform migrations
+    // Perform migrations
     const umzug = new Umzug({
       migrations: {
         path: path.join(__dirname, './migrations'),
@@ -161,8 +161,6 @@ module.exports.initializeDatabase = async function () {
     else {
       logger.writeInfo('mysql', 'migration', { message: `MySQL schema is up to date` })
     }
-     // return true if the database migrations include the initial scaffolding
-    return migrations.length > 0 && migrations[0].file === '0000.js'
   }
   catch (error) {
     logger.writeError('mysql', 'initalization', { message: error.message })
@@ -422,7 +420,7 @@ module.exports.updateStatsAssetStig = async function(connection, {
         sam.fixedResultEngine = source.fixedResultEngine        
     `
 
-    let stats;
+    let stats
     [stats] = await connection.query(sqlUpdate, binds)
     return stats
 
