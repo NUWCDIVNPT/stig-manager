@@ -6317,7 +6317,7 @@ components:
             label:
               $ref: '#/components/schemas/ReviewStatusLabel'
             text:
-              $ref: '#/components/schemas/String255Nullable'
+              $ref: '#/components/schemas/StatusText'
     ReviewStatusRestrictedWrite:
       oneOf:
         - $ref: '#/components/schemas/ReviewStatusLabelRestricted'
@@ -6330,7 +6330,7 @@ components:
             label:
               $ref: '#/components/schemas/ReviewStatusLabelRestricted'
             text:
-              $ref: '#/components/schemas/String255Nullable'
+              $ref: '#/components/schemas/StatusText'
     ReviewStatusRead:
       type: object
       required:
@@ -6343,7 +6343,7 @@ components:
         label:
           $ref: '#/components/schemas/ReviewStatusLabel'
         text:
-          $ref: '#/components/schemas/String255Nullable'
+          $ref: '#/components/schemas/StatusText'
         user:
           $ref: '#/components/schemas/UserBasic'
         ts:
@@ -6602,6 +6602,10 @@ components:
           type: string
         benchmarkId:
           type: string
+    StatusText:
+      type: string
+      maxLength: 511
+      nullable: true
     STIG:
       type: object
       required:
