@@ -6604,7 +6604,7 @@ components:
           type: string
     StatusText:
       type: string
-      maxLength: 512
+      maxLength: 511
       nullable: true
     STIG:
       type: object
