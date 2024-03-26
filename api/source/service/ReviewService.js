@@ -1031,7 +1031,7 @@ select
   CASE WHEN cteIncoming.resultEngine != 0 -- resultEngine present
     THEN cteIncoming.resultEngine
     ELSE
-      CASE WHEN cteIncoming.result is null
+      CASE WHEN cteIncoming.resultId is null
         THEN review.resultEngine
         ELSE NULL
       END
