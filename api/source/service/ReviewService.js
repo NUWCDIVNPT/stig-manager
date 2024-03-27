@@ -1031,7 +1031,10 @@ select
   CASE WHEN cteIncoming.resultEngine != 0 -- resultEngine present
     THEN cteIncoming.resultEngine
     ELSE
-      NULL
+      CASE WHEN cteIncoming.resultId is null -- result absent, patch only
+        THEN review.resultEngine
+        ELSE NULL
+      END
   END as resultEngine,
   
   CASE WHEN cteIncoming.statusId is not null

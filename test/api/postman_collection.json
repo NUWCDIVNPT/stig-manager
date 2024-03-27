@@ -38348,7 +38348,7 @@
 							"response": []
 						},
 						{
-							"name": "resultEngine only - expect success",
+							"name": "resultEngine w result - expect success",
 							"event": [
 								{
 									"listen": "test",
@@ -38385,9 +38385,11 @@
 											"    pm.expect(jsonData.status).to.have.property(\"ts\").to.not.eql(jsonData.ts)\r",
 											"});\r",
 											"\r",
+											"setTimeout(function(){}, 1000);\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -38402,6 +38404,191 @@
 								"body": {
 									"mode": "raw",
 									"raw": "{\n    \"result\": \"pass\",\n    \"resultEngine\": {\n      \"type\": \"script\",\n      \"product\": \"Evaluate-STIG\",\n      \"version\": \"1.2310.1\",\n      \"time\": \"2023-12-11T12:56:14.3576272-05:00\",\n      \"checkContent\": {\n        \"location\": \"VPN_Checks:1.2023.7.24\"\n      },\n      \"overrides\": [\n        {\n          \"authority\": \"Some_AnswerFile.xml\",\n          \"oldResult\": \"unknown\",\n          \"newResult\": \"pass\",\n          \"remark\": \"Evaluate-STIG Answer File\"\n        }\n      ]\n    }\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"reviews",
+										":assetId",
+										":ruleId"
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										},
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "ruleId",
+											"value": "{{testRuleId}}",
+											"description": "(Required) A path parameter that indentifies a Rule"
+										}
+									]
+								},
+								"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+							},
+							"response": []
+						},
+						{
+							"name": "status only - expect resultEngine to remain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get('user');\r",
+											"\r",
+											"console.log('user: ' + user)\r",
+											"\r",
+											"\r",
+											"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200 for all users but collectioncreator\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"pm.test('Status is 200', () => pm.response.to.have.status(200))\r",
+											"\r",
+											"pm.test(\"Response has proper timestamps and values\", () => {\r",
+											"    pm.expect(jsonData).to.be.an(\"object\");\r",
+											"    pm.expect(jsonData).to.have.property(\"result\").to.eql(\"pass\");\r",
+											"    pm.expect(jsonData).to.have.property(\"touchTs\").to.eql(jsonData.status.ts)\r",
+											"    pm.expect(jsonData.status).to.have.property(\"ts\").to.not.eql(jsonData.ts)\r",
+											"    pm.expect(jsonData).to.have.property(\"resultEngine\").to.not.eql(null);\r",
+											"});\r",
+											"\r",
+											"setTimeout(function(){}, 1000);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"status\": \"submitted\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"reviews",
+										":assetId",
+										":ruleId"
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										},
+										{
+											"key": "assetId",
+											"value": "{{testAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										},
+										{
+											"key": "ruleId",
+											"value": "{{testRuleId}}",
+											"description": "(Required) A path parameter that indentifies a Rule"
+										}
+									]
+								},
+								"description": "Create a new Review, or update all properties of an existing Review, setting missing properties to null"
+							},
+							"response": []
+						},
+						{
+							"name": "status only - expect resultEngine to remain Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get('user');\r",
+											"\r",
+											"console.log('user: ' + user)\r",
+											"\r",
+											"\r",
+											"if ( user == \"collectioncreator\" ) { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for collectioncreator\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200 for all users but collectioncreator\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"pm.test('Status is 200', () => pm.response.to.have.status(200))\r",
+											"\r",
+											"pm.test(\"Response has proper timestamps and values\", () => {\r",
+											"    pm.expect(jsonData).to.be.an(\"object\");\r",
+											"    pm.expect(jsonData).to.have.property(\"result\").to.eql(\"fail\");\r",
+											"    pm.expect(jsonData).to.have.property(\"touchTs\").to.eql(jsonData.ts)\r",
+											"    pm.expect(jsonData.status).to.have.property(\"ts\").to.eql(jsonData.ts)\r",
+											"    pm.expect(jsonData).to.have.property(\"resultEngine\").to.eql(null);\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"result\": \"fail\"\n}"
 								},
 								"url": {
 									"raw": "{{baseUrl}}/collections/:collectionId/reviews/:assetId/:ruleId",
