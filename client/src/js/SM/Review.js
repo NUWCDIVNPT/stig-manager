@@ -310,7 +310,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
     }
 
     this.resultChanged = function () {
-      return ack.lastSavedData != ack.getValue()
+      return rcb.lastSavedData != rcb.value
     }
 
     function loadValues (values) {
@@ -684,6 +684,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
                 // Load the record into the form
                 if (!rcb.disabled) {
                   rcb.setValue(selectedRecord.data.result);
+                  rcb.fireEvent('select')
                 }
                 dta.setValue(selectedRecord.data.detail);
                 if (rcb.getValue() === 'fail') {
