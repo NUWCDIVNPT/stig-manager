@@ -15,7 +15,8 @@
 static_data_tables="result status _migrations"
 
 # Export the schema of all tables in the 'stigman' database into a SQL file,
-# removing any AUTO_INCREMENT attribute values to prevent conflicts with existing data when imported.
+# removing any AUTO_INCREMENT attribute values to prevent conflicts with existing data when imported
+# and removing statements that trigger a mysql2 bug when changing client character set
 # The '--no-data' flag means no table row data will be dumped, only the schema.
 # The '--no-create-db' flag prevents the inclusion of CREATE DATABASE statements in the dump.
 mysqldump -h 127.0.0.1 -P 50001 -u root -prootpw --no-data --no-create-db stigman |
