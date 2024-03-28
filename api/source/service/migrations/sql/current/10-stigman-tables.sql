@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.3.0, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.36, for Linux (x86_64)
 --
 -- Host: 127.0.0.1    Database: stigman
 -- ------------------------------------------------------
--- Server version	8.0.34
+-- Server version	8.0.35
 
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
@@ -203,22 +203,6 @@ CREATE TABLE `config` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Table structure for table `current_group_rule`
---
-
-DROP TABLE IF EXISTS `current_group_rule`;
-CREATE TABLE `current_group_rule` (
-  `cgrId` int NOT NULL AUTO_INCREMENT,
-  `benchmarkId` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
-  `groupId` varchar(45) NOT NULL,
-  `ruleId` varchar(255) NOT NULL,
-  PRIMARY KEY (`cgrId`),
-  KEY `idx_benchmarkId` (`benchmarkId`),
-  KEY `idx_rule` (`ruleId`),
-  KEY `idx_group` (`groupId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
 -- Table structure for table `current_rev`
 --
 
@@ -361,7 +345,7 @@ CREATE TABLE `review` (
   `ts` datetime NOT NULL,
   `userId` int DEFAULT NULL,
   `statusId` int NOT NULL,
-  `statusText` varchar(255) DEFAULT NULL,
+  `statusText` varchar(512) DEFAULT NULL,
   `statusUserId` int DEFAULT NULL,
   `statusTs` datetime DEFAULT NULL,
   `metadata` json NOT NULL DEFAULT (json_object()),
@@ -399,7 +383,7 @@ CREATE TABLE `review_history` (
   `ts` datetime NOT NULL,
   `userId` int DEFAULT NULL,
   `statusId` int NOT NULL,
-  `statusText` varchar(255) DEFAULT NULL,
+  `statusText` varchar(512) DEFAULT NULL,
   `statusUserId` int DEFAULT NULL,
   `statusTs` datetime DEFAULT NULL,
   `touchTs` datetime DEFAULT NULL,
@@ -414,31 +398,6 @@ CREATE TABLE `review_history` (
   KEY `idx_reType` (`reType`),
   KEY `idx_reAuthority` (`reAuthority`),
   CONSTRAINT `fk_review_history_1` FOREIGN KEY (`reviewId`) REFERENCES `review` (`reviewId`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Table structure for table `review_preserved`
---
-
-DROP TABLE IF EXISTS `review_preserved`;
-CREATE TABLE `review_preserved` (
-  `reviewId` int NOT NULL DEFAULT '0',
-  `assetId` int DEFAULT NULL,
-  `ruleId` varchar(45) DEFAULT NULL,
-  `resultId` int DEFAULT NULL,
-  `detail` mediumtext,
-  `comment` mediumtext,
-  `autoResult` bit(1) DEFAULT b'0',
-  `ts` datetime NOT NULL,
-  `userId` int DEFAULT NULL,
-  `statusId` int NOT NULL,
-  `statusText` varchar(255) DEFAULT NULL,
-  `statusTs` datetime DEFAULT NULL,
-  `metadata` json NOT NULL DEFAULT (json_object()),
-  `resultEngine` json DEFAULT NULL,
-  `version` varchar(45) NOT NULL,
-  `checkDigest` binary(32) NOT NULL,
-  `rowNum` bigint unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -604,38 +563,6 @@ CREATE TABLE `user_stig_asset_map` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Temporary view structure for view `v_current_group_rule`
---
-
-DROP TABLE IF EXISTS `v_current_group_rule`;
-/*!50001 DROP VIEW IF EXISTS `v_current_group_rule`*/;
-/*!50001 CREATE VIEW `v_current_group_rule` AS SELECT 
- 1 AS `benchmarkId`,
- 1 AS `groupId`,
- 1 AS `groupTitle`,
- 1 AS `groupSeverity`,
- 1 AS `ruleId`,
- 1 AS `version`,
- 1 AS `title`,
- 1 AS `severity`,
- 1 AS `weight`,
- 1 AS `vulnDiscussion`,
- 1 AS `falsePositives`,
- 1 AS `falseNegatives`,
- 1 AS `documentable`,
- 1 AS `mitigations`,
- 1 AS `severityOverrideGuidance`,
- 1 AS `potentialImpacts`,
- 1 AS `thirdPartyTools`,
- 1 AS `mitigationControl`,
- 1 AS `responsibility`,
- 1 AS `iaControls`,
- 1 AS `checkSystem`,
- 1 AS `checkDigest`,
- 1 AS `fixref`,
- 1 AS `fixDigest`*/;
-
---
 -- Temporary view structure for view `v_current_rev`
 --
 
@@ -684,18 +611,6 @@ DROP TABLE IF EXISTS `v_latest_rev`;
  1 AS `revisionStr`*/;
 
 --
--- Final view structure for view `v_current_group_rule`
---
-
-/*!50001 DROP VIEW IF EXISTS `v_current_group_rule`*/;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`stigman`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `v_current_group_rule` AS select `cr`.`benchmarkId` AS `benchmarkId`,`rgr`.`groupId` AS `groupId`,`rgr`.`groupTitle` AS `groupTitle`,`rgr`.`groupSeverity` AS `groupSeverity`,`rgr`.`ruleId` AS `ruleId`,`rgr`.`version` AS `version`,`rgr`.`title` AS `title`,`rgr`.`severity` AS `severity`,`rgr`.`weight` AS `weight`,`rgr`.`vulnDiscussion` AS `vulnDiscussion`,`rgr`.`falsePositives` AS `falsePositives`,`rgr`.`falseNegatives` AS `falseNegatives`,`rgr`.`documentable` AS `documentable`,`rgr`.`mitigations` AS `mitigations`,`rgr`.`severityOverrideGuidance` AS `severityOverrideGuidance`,`rgr`.`potentialImpacts` AS `potentialImpacts`,`rgr`.`thirdPartyTools` AS `thirdPartyTools`,`rgr`.`mitigationControl` AS `mitigationControl`,`rgr`.`responsibility` AS `responsibility`,`rgr`.`iaControls` AS `iaControls`,`rgr`.`checkSystem` AS `checkSystem`,`rgr`.`checkDigest` AS `checkDigest`,`rgr`.`fixref` AS `fixref`,`rgr`.`fixDigest` AS `fixDigest` from (`current_rev` `cr` left join `rev_group_rule_map` `rgr` on((`cr`.`revId` = `rgr`.`revId`))) */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
 -- Final view structure for view `v_current_rev`
 --
 
@@ -738,4 +653,4 @@ DROP TABLE IF EXISTS `v_latest_rev`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-03-19 16:13:46
+-- Dump completed on 2024-03-28 15:26:46
