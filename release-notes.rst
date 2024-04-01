@@ -1,3 +1,16 @@
+1.4.5
+-----
+
+Changes:
+
+  - (UI/API) feat: Status text field expanded to 511 characters.
+  - (UI) bugfix: Review `resultEngine` no longer keeps old value when using drag & drop from Other Assets. 
+  - (API/DB) chore: Remove unused current_group_rule table and view. 
+  - (API) bugfix: Review `resultEngine` now only set to null when PATCH'd with a `result` and no `resultEngine`.
+  - (API) feat: DB bootstrap improvements, build script, static data.
+  - (API) chore: Update dependency in response to CVE-2022-25881
+  - **Includes database migration**
+
 1.4.4
 -----
 
@@ -11,7 +24,7 @@ Changes:
   - (API) bugfix: Timestamp update misbehavior in some circumstances
   - (API) Dependency updates in response to CVE-2024-28849; CVE-2024-28176
   - (Docs) Guidance for updating deployments
-  - (Docs) Database schemas and diagram updates
+  - (Docs) Database schemas and diagram updates  
 
 1.4.3
 -----
