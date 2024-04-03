@@ -3829,6 +3829,8 @@ components:
       oneOf:
         - type: object
         - type: array
+          items:
+            type: object
     ApiVersion:
       $ref: '#/components/schemas/Version'
     Asset:
@@ -3954,18 +3956,6 @@ components:
       $ref: '#/components/schemas/StringIntId'
     AssetIp:
       $ref: '#/components/schemas/String255Nullable'
-    AssetLabels:
-      additionalProperties: false
-      type: object
-      properties:
-        assetId:
-          $ref: '#/components/schemas/AssetId'
-        name:
-          $ref: '#/components/schemas/AssetName'
-      required:
-        - assetId
-        - name
-        - labels
     AssetMac:
       $ref: '#/components/schemas/String255Nullable'
     AssetName:
@@ -4386,7 +4376,7 @@ components:
         stigs:
           type: array
           items:
-            $ref: '#/components/schemas/Stig'
+            $ref: '#/components/schemas/StigCklb'
     TargetData:
       type: object
       properties:
@@ -4412,7 +4402,7 @@ components:
           type: string
         web_db_instance:
           type: string
-    Stig:
+    StigCklb:
       type: object
       properties:
         stig_name:
@@ -5307,6 +5297,7 @@ components:
       type: string
     CommitObject:
       type: object
+      additionalProperties: false
       properties:
         branch:
           $ref: '#/components/schemas/CommitBranch'
@@ -5427,7 +5418,7 @@ components:
           type: string
         ccis:
           type: array
-          minLength: 0
+          minItems: 0
           items:
             $ref: '#/components/schemas/CciBasic'
         definition:
@@ -7236,7 +7227,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
     AssetIdPath:
@@ -7261,7 +7252,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7275,7 +7266,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
     BenchmarkIdPath:
@@ -7291,13 +7282,6 @@ components:
       description: A query parameter that identifies a STIG
       schema:
         type: string
-    CciPath:
-      name: cci
-      in: path
-      description: A path parameter that identifies a CCI
-      required: true
-      schema:
-        type: string
     CciProjectionQuery:
       name: projection
       in: query
@@ -7307,7 +7291,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7329,7 +7313,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7369,7 +7353,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
     CollectionProjectionQuery:
@@ -7381,7 +7365,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7400,7 +7384,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7416,7 +7400,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7448,7 +7432,6 @@ components:
       description: Aggregate the findings on this property
       schema:
         type: string
-        uniqueItems: true
         minLength: 1
         enum:
           - ruleId
@@ -7463,7 +7446,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7501,7 +7484,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7527,7 +7510,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           $ref: '#/components/schemas/LabelId'
     LabelMatchQuery:
@@ -7545,7 +7528,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           $ref: '#/components/schemas/LabelName'
     MetadataKeyPath:
@@ -7563,7 +7546,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           pattern: '^([\w\.]+:.*?)$'
           type: string
@@ -7621,7 +7604,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7638,7 +7621,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7652,7 +7635,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7688,7 +7671,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
     RevisionStrPath:
@@ -7728,7 +7711,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7745,8 +7728,8 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
-        maxLength: 2
+        minItems: 1
+        maxItems: 2
         items:
           $ref: '#/components/schemas/RuleSeverity'
     StartDateQuery:
@@ -7845,7 +7828,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
