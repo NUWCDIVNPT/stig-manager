@@ -7229,20 +7229,20 @@ components:
         uniqueItems: true
         minItems: 1
         items:
-          type: string
+          $ref: '#/components/schemas/AssetId'
     AssetIdPath:
       name: assetId
       in: path
       description: A path parameter that identifies an Asset
       required: true
       schema:
-        type: string
+        $ref: '#/components/schemas/AssetId'
     AssetIdQuery:
       name: assetId
       in: query
       description: A query parameter that identifies an Asset
       schema:
-        type: string
+        $ref: '#/components/schemas/AssetId'
     AssetProjectionQuery:
       name: projection
       in: query
@@ -7268,20 +7268,20 @@ components:
         uniqueItems: true
         minItems: 1
         items:
-          type: string
+          $ref: '#/components/schemas/BenchmarkId'
     BenchmarkIdPath:
       name: benchmarkId
       in: path
       description: A path parameter that identifies a STIG
       required: true
       schema:
-        type: string
+        $ref: '#/components/schemas/BenchmarkId'
     BenchmarkIdQuery:
       name: benchmarkId
       in: query
       description: A query parameter that identifies a STIG
       schema:
-        type: string
+        $ref: '#/components/schemas/BenchmarkId'
     CciProjectionQuery:
       name: projection
       in: query
@@ -7303,7 +7303,7 @@ components:
       in: query
       description: A query parameter that identifies a CCI
       schema:
-        type: string
+        $ref: '#/components/schemas/CciString'
     ChecklistProjectionQuery:
       name: projection
       in: query
@@ -7337,14 +7337,14 @@ components:
       description: A path parameter that identifies a Collection
       required: true
       schema:
-        $ref: '#/components/schemas/StringIntId'
+        $ref: '#/components/schemas/CollectionId'
     CollectionIdQuery:
       name: collectionId
       required: true
       in: query
       description: A query parameter that identifies a Collection
       schema:
-        type: string
+        $ref: '#/components/schemas/CollectionId'
     CollectionIdArrayQuery:
       name: collectionId
       required: false
@@ -7355,7 +7355,7 @@ components:
         uniqueItems: true
         minItems: 1
         items:
-          type: string
+          $ref: '#/components/schemas/CollectionId'
     CollectionProjectionQuery:
       name: projection
       in: query
@@ -7411,7 +7411,7 @@ components:
       description: A path parameter that identifies a Collection
       required: true
       schema:
-        $ref: '#/components/schemas/StringIntId'
+        $ref: '#/components/schemas/CollectionId'
     EndDateQuery:
       name: endDate
       in: query
@@ -7468,13 +7468,13 @@ components:
       description: A path parameter that identifies a Group
       required: true
       schema:
-        type: string
+        $ref: '#/components/schemas/GroupId'
     GroupIdQuery:
       name: groupId
       in: query
       description: A query parameter that identifies a Group
       schema:
-        type: string
+        $ref: '#/components/schemas/GroupId'
     GroupProjectionQuery:
       name: projection
       in: query
@@ -7494,8 +7494,7 @@ components:
       in: query
       description: A JSONPath expression
       schema:
-        type: string
-        maxLength: 255
+        $ref: '#/components/schemas/String255'
     LabelIdPath:
       name: labelId
       in: path
@@ -7680,28 +7679,26 @@ components:
       description: A path parameter that identifies a STIG revision [V{version_num}R{release_num} | 'latest' ]
       required: true
       schema:
-        pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-        type: string
+        $ref: '#/components/schemas/RevisionStr'
     RevisionStrQuery:
       name: revisionStr
       in: query
       description: Selects Reviews mapped to a Revision [ V{version_num}R{release_num} |'latest' ]; requires benchmarkId
       schema:
-        pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-        type: string
+        $ref: '#/components/schemas/RevisionStr'
     RuleIdPath:
       name: ruleId
       in: path
       description: A path parameter that identifies a Rule
       required: true
       schema:
-        type: string
+        $ref: '#/components/schemas/RuleId'
     RuleIdQuery:
       name: ruleId
       in: query
       description: Selects Reviews of a Rule
       schema:
-        type: string
+        $ref: '#/components/schemas/RuleId'
     RuleProjectionQuery:
       name: projection
       in: query
@@ -7794,19 +7791,19 @@ components:
       description: A path parameter that identifies a User
       required: true
       schema:
-        type: string
+        $ref: '#/components/schemas/UserId'
     UserIdQuery:
       name: userId
       in: query
       description: A path parameter that identifies a User
       schema:
-        type: string
+        $ref: '#/components/schemas/UserId'
     UsernameQuery:
       name: username
       in: query
       description: Matches against the username according to the `username-match` parameter
       schema:
-        type: string
+        $ref: '#/components/schemas/Username'
     UsernameMatchQuery:
       name: username-match
       in: query
