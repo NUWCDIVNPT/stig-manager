@@ -13,6 +13,9 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
     
     const queries = []
 
+    const groupBy = []
+    const orderBy = []
+
     const columns = [
       'CAST(c.collectionId as char) as collectionId',
       'c.name',
@@ -170,17 +173,11 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       predicates.binds.push( userObject.userId, userObject.userId )
     }
 
-    // CONSTRUCT MAIN QUERY
-    let sql = 'SELECT '
-    sql+= columns.join(",\n")
-    sql += ' FROM '
-    sql+= joins.join(" \n")
-    if (predicates.statements.length > 0) {
-      sql += "\nWHERE " + predicates.statements.join(" and ")
-    }
-    sql += ' group by c.collectionId, c.name, c.description, c.settings, c.metadata'
-    sql += ' order by c.name'
-    
+    groupBy.push('c.collectionId, c.name, c.description, c.settings, c.metadata')
+    orderBy.push('c.name')
+
+    const sql = dbUtils.makeQueryString({columns, joins, predicates,groupBy, orderBy})
+
     // perform concurrent labels query
     if (queries.length) {
       queries.push(dbUtils.pool.query(sql, predicates.binds))
@@ -226,7 +223,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
       groupBy = [
         'rgr.rgrId'
       ]
-      orderBy = 'rgr.ruleId'
+      orderBy = ['rgr.ruleId']
       break
     case 'groupId':
       columns = [
@@ -238,7 +235,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
       groupBy = [
         'rgr.rgrId'
       ]
-      orderBy = 'substring(rgr.groupId from 3) + 0'
+      orderBy = ['substring(rgr.groupId from 3) + 0']
       break
     case 'cci':
       columns = [
@@ -250,7 +247,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
       groupBy = [
         'cci.cci'
       ]
-      orderBy = 'cci.cci'
+      orderBy = ['cci.cci']
       break
   }
   let joins = [
@@ -365,22 +362,16 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
   predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
   predicates.binds.push( userObject.userId, userObject.userId )
   
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += '\nFROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  sql += '\ngroup by ' + groupBy.join(',')
-  sql += '\norder by ' + orderBy
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
   
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
   return (rows)
 }
 
 exports.queryStatus = async function (inPredicates = {}, userObject) {
+
+  let orderby = ['a.name', 'sa.benchmarkId']
+
   let columns = [
     `distinct cast(a.assetId as char) as assetId`,
     'a.name as assetName',
@@ -485,15 +476,7 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
   predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
   predicates.binds.push( userObject.userId, userObject.userId )
   
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += '\nFROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  sql += '\norder by a.name, sa.benchmarkId'
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, orderby})
   
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
   return (rows)
@@ -520,6 +503,9 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
     ],
     binds: []
   }
+
+  let orderBy = ['sa.benchmarkId', 'a.name']
+
   if ( inPredicates.collectionId ) {
     predicates.statements.push('c.collectionId = ?')
     predicates.binds.push( inPredicates.collectionId )
@@ -532,16 +518,8 @@ exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, 
     predicates.binds.push( inPredicates.userId )
   }
 
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  sql += ' order by sa.benchmarkId, a.name'
-  
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, orderBy})
+
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
   return (rows)
 }
@@ -732,6 +710,47 @@ exports.deleteCollection = async function(collectionId, projection, elevate, use
 exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId, revisionStr, userObject ) {
   let connection
   try {
+
+    const groupBy = ['rgr.rgrId']
+    const orderBy = ['rgr.ruleId']
+
+    const columns = [
+          `rgr.ruleId
+      ,rgr.title as ruleTitle
+      ,rgr.severity
+      ,rgr.\`version\`
+      ,rgr.groupId
+      ,rgr.groupTitle
+      ,json_object(
+        'results', json_object(
+          'pass', sum(CASE WHEN r.resultId = 3 THEN 1 ELSE 0 END),
+          'fail', sum(CASE WHEN r.resultId = 4 THEN 1 ELSE 0 END),
+          'notapplicable', sum(CASE WHEN r.resultId = 2 THEN 1 ELSE 0 END),
+          'other', sum(CASE WHEN r.resultId is null OR (r.resultId != 2 AND r.resultId != 3 AND r.resultId != 4) THEN 1 ELSE 0 END)
+        ),
+        'statuses', json_object(
+          'saved', sum(CASE WHEN r.statusId = 0 THEN 1 ELSE 0 END),
+          'submitted', sum(CASE WHEN r.statusId = 1 THEN 1 ELSE 0 END),
+          'rejected', sum(CASE WHEN r.statusId = 2 THEN 1 ELSE 0 END),
+          'accepted', sum(CASE WHEN r.statusId = 3 THEN 1 ELSE 0 END)
+        )
+      ) as counts
+      ,json_object(
+        'ts', json_object(
+          'min', DATE_FORMAT(MIN(r.ts),'%Y-%m-%dT%H:%i:%sZ'),
+          'max', DATE_FORMAT(MAX(r.ts),'%Y-%m-%dT%H:%i:%sZ')
+        ),
+        'statusTs', json_object(
+          'min', DATE_FORMAT(MIN(r.statusTs),'%Y-%m-%dT%H:%i:%sZ'),
+          'max', DATE_FORMAT(MAX(r.statusTs),'%Y-%m-%dT%H:%i:%sZ')
+        ),
+        'touchTs', json_object(
+          'min', DATE_FORMAT(MIN(r.touchTs),'%Y-%m-%dT%H:%i:%sZ'),
+          'max', DATE_FORMAT(MAX(r.touchTs),'%Y-%m-%dT%H:%i:%sZ')
+        )
+      ) as timestamps`
+    ]
+
     const joins = [
       'asset a',
       'left join stig_asset_map sa using (assetId)',
@@ -777,50 +796,8 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
       predicates.binds.userId = userObject.userId
     }
   
-    const sql = `select
-  rgr.ruleId
-  ,rgr.title as ruleTitle
-  ,rgr.severity
-  ,rgr.\`version\`
-  ,rgr.groupId
-  ,rgr.groupTitle
-  ,json_object(
-    'results', json_object(
-      'pass', sum(CASE WHEN r.resultId = 3 THEN 1 ELSE 0 END),
-      'fail', sum(CASE WHEN r.resultId = 4 THEN 1 ELSE 0 END),
-      'notapplicable', sum(CASE WHEN r.resultId = 2 THEN 1 ELSE 0 END),
-      'other', sum(CASE WHEN r.resultId is null OR (r.resultId != 2 AND r.resultId != 3 AND r.resultId != 4) THEN 1 ELSE 0 END)
-    ),
-    'statuses', json_object(
-      'saved', sum(CASE WHEN r.statusId = 0 THEN 1 ELSE 0 END),
-      'submitted', sum(CASE WHEN r.statusId = 1 THEN 1 ELSE 0 END),
-      'rejected', sum(CASE WHEN r.statusId = 2 THEN 1 ELSE 0 END),
-      'accepted', sum(CASE WHEN r.statusId = 3 THEN 1 ELSE 0 END)
-    )
-  ) as counts
-  ,json_object(
-    'ts', json_object(
-      'min', DATE_FORMAT(MIN(r.ts),'%Y-%m-%dT%H:%i:%sZ'),
-      'max', DATE_FORMAT(MAX(r.ts),'%Y-%m-%dT%H:%i:%sZ')
-    ),
-    'statusTs', json_object(
-      'min', DATE_FORMAT(MIN(r.statusTs),'%Y-%m-%dT%H:%i:%sZ'),
-      'max', DATE_FORMAT(MAX(r.statusTs),'%Y-%m-%dT%H:%i:%sZ')
-    ),
-    'touchTs', json_object(
-      'min', DATE_FORMAT(MIN(r.touchTs),'%Y-%m-%dT%H:%i:%sZ'),
-      'max', DATE_FORMAT(MAX(r.touchTs),'%Y-%m-%dT%H:%i:%sZ')
-    )
-  ) as timestamps
-from
-  ${joins.join('\n')}
-where
-  ${predicates.statements.join(' and ')}
-group by	
-  rgr.rgrId
- order by
-  rgr.ruleId
-`
+    const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
+
     // Send query
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
@@ -897,6 +874,9 @@ exports.getStigsByCollection = async function( {collectionId, labelIds, labelNam
     'count(sa.assetId) as assetCount'
   ]
 
+  const groupBy = ['sa.benchmarkId', 'revision.revId', 'dr.revisionPinned', 'stig.benchmarkId']
+  const orderBy = ['sa.benchmarkId']
+
   const joins = [
     'collection c',
     'left join collection_grant cg on c.collectionId = cg.collectionId',
@@ -951,16 +931,8 @@ exports.getStigsByCollection = async function( {collectionId, labelIds, labelNam
   joins.push('left join user_stig_asset_map usa on sa.saId = usa.saId')
   predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
   predicates.binds.push( userObject.userId )
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  sql += ' group by sa.benchmarkId, revision.revId, dr.revisionPinned, stig.benchmarkId'
-  sql += ' order by sa.benchmarkId'
+
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
   
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
   return (rows)
@@ -1134,92 +1106,90 @@ status- only return history with this status
 If rule and asset id provided, return that intersection.
 */
 exports.getReviewHistoryByCollection = async function (collectionId, startDate, endDate, assetId, ruleId, status) {
-  let binds = {
-    collectionId: collectionId
-  }
-  
-  let sql = `
-select
-CAST(innerQuery.assetId as char) as assetId,
-	json_arrayagg(
-		json_object(
-			'ruleId', innerQuery.ruleId,
-			'history', innerQuery.history
-		)
-	) as reviewHistories
-from
-	(select 
-		a.assetId, 
-		rv.ruleId, 
-		json_arrayagg(
-		  json_object(
-        'ts', DATE_FORMAT(rh.ts, '%Y-%m-%dT%TZ'),
-        'ruleId', rh.ruleId,
-        'result', result.api,
-        'detail', COALESCE(LEFT(rh.detail,32767), ''),
-        'comment', COALESCE(LEFT(rh.comment,32767), ''),
-        'autoResult', rh.autoResult = 1,
-        'status', JSON_OBJECT(
-          'label', status.api,
-          'text', rh.statusText,
-          'user', JSON_OBJECT(
-            'userId', CAST(rh.statusUserId as char),
-            'username', udStatus.username
-          ),
-          'ts', DATE_FORMAT(rh.statusTs, '%Y-%m-%dT%TZ')
-        ),        
-        'userId', CAST(rh.userId as char),
-        'username', ud.username,
-        'touchTs', DATE_FORMAT(rh.touchTs, '%Y-%m-%dT%TZ')
 
+  const columns = [
+    `CAST(innerQuery.assetId as char) as assetId,
+      json_arrayagg(
+        json_object(
+          'ruleId', innerQuery.ruleId,
+          'history', innerQuery.history
         )
-		) as 'history'
-	FROM
-		review_history rh
-		INNER JOIN review rv on rh.reviewId = rv.reviewId
-		INNER JOIN user_data ud on rh.userId = ud.userId
-    left join user_data udStatus on udStatus.userId=rh.statusUserId
-		INNER JOIN result on rh.resultId = result.resultId
-		INNER JOIN status on rh.statusId = status.statusId
-		inner join asset a on a.assetId = rv.assetId and a.state = 'enabled'
-	WHERE
-		rv.assetId = a.assetId
-		and a.collectionId = :collectionId`
+      ) as reviewHistories
+    from
+      (select 
+        a.assetId, 
+        rv.ruleId, 
+        json_arrayagg(
+          json_object(
+            'ts', DATE_FORMAT(rh.ts, '%Y-%m-%dT%TZ'),
+            'ruleId', rh.ruleId,
+            'result', result.api,
+            'detail', COALESCE(LEFT(rh.detail,32767), ''),
+            'comment', COALESCE(LEFT(rh.comment,32767), ''),
+            'autoResult', rh.autoResult = 1,
+            'status', JSON_OBJECT(
+              'label', status.api,
+              'text', rh.statusText,
+              'user', JSON_OBJECT(
+                'userId', CAST(rh.statusUserId as char),
+                'username', udStatus.username
+              ),
+              'ts', DATE_FORMAT(rh.statusTs, '%Y-%m-%dT%TZ')
+            ),        
+            'userId', CAST(rh.userId as char),
+            'username', ud.username,
+            'touchTs', DATE_FORMAT(rh.touchTs, '%Y-%m-%dT%TZ')
+    
+            )
+        ) as history`
+  ]
+
+  const joins = [
+    'review_history rh',
+		'INNER JOIN review rv on rh.reviewId = rv.reviewId',
+		'INNER JOIN user_data ud on rh.userId = ud.userId',
+    'left join user_data udStatus on udStatus.userId=rh.statusUserId',
+		'INNER JOIN result on rh.resultId = result.resultId',
+		'INNER JOIN status on rh.statusId = status.statusId',
+		'inner join asset a on a.assetId = rv.assetId and a.state = "enabled"'
+  ]
+
+  let predicates = {
+    statements: ['rv.assetId = a.assetId',
+		'a.collectionId = ?'],
+    binds: [collectionId] 
+  }
+  let groupBy = []
 
   if (startDate) {
-    binds.startDate = startDate
-    sql += " AND rh.touchTs >= :startDate"
+   predicates.binds.push(startDate)
+   predicates.statements.push('rh.touchTs >= ?')
   }
 
   if (endDate) {
-    binds.endDate = endDate
-    sql += " AND rh.touchTs <= :endDate"
+    predicates.binds.push(endDate)
+    predicates.statements.push('rh.touchTs <= ?')
   }
 
   if(ruleId) {
-    binds.ruleId = ruleId
-    sql += " AND rv.ruleId = :ruleId"
+    predicates.binds.push(ruleId)
+    predicates.statements.push('rv.ruleId = ?')
   }
 
   if(status) {
-    binds.statusId = dbUtils.REVIEW_STATUS_API[status]
-    sql += " AND rh.statusId = :statusId"
+    predicates. binds.push(dbUtils.REVIEW_STATUS_API[status])
+    predicates.statements.push('rh.statusId = ?')
   }
-  
 
   if(assetId) {
-    binds.assetId = assetId
-    sql += " AND a.assetId = :assetId"
+    predicates.binds.push(assetId)
+    predicates.statements.push('a.assetId = ?')
   }
+  
+  groupBy.push('rv.ruleId', 'a.assetId ) innerQuery\nGROUP BY\n innerQuery.assetId')
+  let sql = dbUtils.makeQueryString({columns, joins, predicates,groupBy })
+  let [rows] = await dbUtils.pool.query(sql, predicates.binds)
 
-  sql += `
-	group by
-		rv.ruleId, a.assetID) innerQuery
-group by
-	innerQuery.assetId
-  `
-
-  let [rows] = await dbUtils.pool.query(sql, binds)
   return (rows)
 }
 
@@ -1333,7 +1303,7 @@ exports.getCollectionLabels = async function (collectionId, userObject) {
     'left join user_stig_asset_map usa_l on sa_l.saId = usa_l.saId',
     'left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a_l.assetId and a_l.state = "enabled"'
   ]
-  const groups = [
+  const groupBy = [
     'cl.uuid',
     'cl.name',
     'cl.description',
@@ -1352,28 +1322,20 @@ exports.getCollectionLabels = async function (collectionId, userObject) {
     ],
     binds: [userObject.userId]
   }
-  const order = [
+  const orderBy = [
     'cl.name'
   ]
   if (collectionId === 'all') {
     columns.push('CAST(cl.collectionId as char) as collectionId')
-    groups.push('cl.collectionId')
-    order.unshift('cl.collectionId')
+    groupBy.push('cl.collectionId')
+    orderBy.unshift('cl.collectionId')
   }
   else {
     predicates.statements.push('cl.collectionId = ?')
     predicates.binds.push(collectionId)
   }
-  const sql = `SELECT
-  ${columns.join(',\n')}
-  FROM 
-  ${joins.join('\n')}
-  WHERE
-  ${predicates.statements.join(' AND ')}
-  GROUP BY
-  ${groups.join(',\n')}
-  ORDER BY
-  ${order.join(',\n')}`
+
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
   const [rows] = await dbUtils.pool.query(sql, predicates.binds)
   return rows
 }
