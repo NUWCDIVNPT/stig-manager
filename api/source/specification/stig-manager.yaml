@@ -283,10 +283,10 @@ paths:
                   - $ref: '#/components/schemas/ChecklistAssetStig'
                   - $ref: '#/components/schemas/ChecklistCklb'
             application/xml:
-                schema:
-                  oneOf:
-                    - $ref: '#/components/schemas/ChecklistCkl'
-                    - $ref: '#/components/schemas/ChecklistXccdf'
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ChecklistCkl'
+                  - $ref: '#/components/schemas/ChecklistXccdf'
         default:
           description: unexpected error
           content:
@@ -634,7 +634,7 @@ paths:
         The `settings` property is optional and can be partially provided.
         - If `settings` is not provided, the Collection will be created with the default settings.
         - If a partial `settings` object is provided, the Collection will be created with settings merged from the provided object and the default settings.
-        
+
         The default settings are:
         ```
          {
@@ -724,7 +724,7 @@ paths:
       summary: Merge provided properties with a Collection
       description: |
         The `settings` property can be partially provided. If a partial `settings` object is provided, the Collection settings will be updated to the provided object merged with the **default** settings. This sets existing property values not specified in the partial object to their default values.
-        
+
         The default settings are found in the description of `POST /collection`
       operationId: updateCollection
       requestBody:
@@ -806,8 +806,8 @@ paths:
       summary: Return a ZIP archive containing CKL files for the supplied Assets and STIGs
       operationId: postCklArchiveByCollection
       parameters:
-       - $ref: '#/components/parameters/CollectionIdPath'
-       - $ref: '#/components/parameters/CklModeQuery'
+        - $ref: '#/components/parameters/CollectionIdPath'
+        - $ref: '#/components/parameters/CklModeQuery'
       requestBody:
         required: true
         description: An array of '#/components/schemas/AssetStigSelection'.
@@ -844,8 +844,8 @@ paths:
       summary: Return a ZIP archive containing CKLB files for the supplied Assets and STIGs
       operationId: postCklbArchiveByCollection
       parameters:
-       - $ref: '#/components/parameters/CollectionIdPath'
-       - $ref: '#/components/parameters/CklModeQuery'
+        - $ref: '#/components/parameters/CollectionIdPath'
+        - $ref: '#/components/parameters/CklModeQuery'
       requestBody:
         required: true
         description: An array of '#/components/schemas/AssetStigSelection'.
@@ -881,7 +881,7 @@ paths:
       summary: Return a ZIP archive containing XCCDF results for the supplied Assets and STIGs
       operationId: postXccdfArchiveByCollection
       parameters:
-       - $ref: '#/components/parameters/CollectionIdPath'
+        - $ref: '#/components/parameters/CollectionIdPath'
       requestBody:
         required: true
         description: An array of '#/components/schemas/AssetStigSelection'.
@@ -946,8 +946,8 @@ paths:
         Cloning large Collections can take several minutes! Users may see a performance impact when accessing the source Collection during this time.<br><br>Making changes to the source Collection while it is being cloned may lead to inconsistent results in the cloned Collection.<br><br><b>Before proceeding, it is recommended you warn Users that they refrain from modifying components of the source Collection while the cloning process is underway.</b>
       operationId: cloneCollection
       parameters:
-       - $ref: '#/components/parameters/CollectionIdPath'
-       - $ref: '#/components/parameters/CollectionProjectionQuery'
+        - $ref: '#/components/parameters/CollectionIdPath'
+        - $ref: '#/components/parameters/CollectionProjectionQuery'
       requestBody:
         required: true
         description: CollectionClone request body
@@ -981,7 +981,7 @@ paths:
       operationId: exportToCollection
       parameters:
         - $ref: '#/components/parameters/CollectionIdPath'
-        - $ref: '#/components/parameters/DstCollectionIdPath'       
+        - $ref: '#/components/parameters/DstCollectionIdPath'
       requestBody:
         required: true
         description: An array of '#/components/schemas/AssetStigSelection'. <b>The number of array items must conform to the minItems/maxItems properties</b>
@@ -1150,86 +1150,86 @@ paths:
       description: |
 
         Applies a complete or partial Review to multiple target Asset/Rule pairs. Depending on the Review properties supplied, new Reviews may be created, existing Reviews may be updated, or both operations may occur (similar to an SQL merge).
-        
+
         ## Caution
 
         **It is possible to send a request which will place the database under considerable load and take many seconds (or minutes) to complete. To determine if a request affects a large set of Reviews, clients are strongly encouraged to send a "preflight" request with the `dryRun` option enabled.**
-        
+
         ## Request Validation
-        
+
         The overall request is validated as follows:
-        
+
         - conformance with the OAS schema for `ReviewBatch`
         - the requesting user has been granted access to the {collectionId}
-        
+
         ## Request body
-        
+
         **source** *(required)*
-        
+
           The Review source is applied to the product of `assets` x `rules` (see below). It MUST contain at least one of the properties `result`, `detail`, `comment`, `resultEngine`, `metadata` or `status`.
         - Multiple properties can be specified.
         - a string value for the `status` property is normalized to `{ label: <string>, text: null }`
-        
-        
+
+
         **assets** *(required)*
-        
+
         The target Assets, which are specified as either:
           - an array of `assetId`
           - an array of `benchmarkId` where target Assets are calculated as the list of distinct Assets assigned at least one of the given STIGs, taking into account the requesting User's collection grant.
-        
+
         **rules** *(required)*
-        
+
         The target Rules, which are specified as either:
           - an array of `ruleId`
           - an array of `benchmarkId` where target Rules are calculated as the list of distinct Rules from all available revisions of the given STIGs.
-        
+
         **action** *(optional)*
-        
+
         Constrains the data action to be taken. If present, the value MUST be one of `insert`, `update`, or `merge`.
-        
+
           - `insert`: only create new Reviews, do not update existing Reviews
           - `update`: only update existing Reviews, do not create new Reviews
           - `merge`: create new Reviews and update existing Reviews
-        
+
         If not present, the default value is:
           
           - `merge` if the source Review includes `result`
           - `update` if the source Review does not include `result`   
-        
+
         New Reviews cannot be created when `source` does not include `result`. In that case, specifying either the `insert` or `merge` value is an error. 
-        
+
         **updateFilters** *(optional)*
-        
+
         Limits the Reviews to be updated, based on an array of filtering objects. If present, updates are applied to Reviews from the product `assets` x `rules` that pass each of the filters (filters are combined with logical AND). If not present, updates are applied to each Review from the product `assets` x `rules`. 
-        
+
         Filtering objects specify a Review `field` , a `condition`, and a `value`. See the schema definition for further details. 
-        
+
         **dryRun** *(optional)*
-        
+
         If present with a `true` value, performs all processing and validation logic without actually changing any data. Useful to verify what a given request would do and to reveal any validation errors. The default value is `false`.
-        
+
         ## Review candidates
-        
+
         Candidate Reviews are created by cross joining the source Review with the product of `assets` x `rules` and applying the resulting rows to existing Reviews (if any) in accordance with the Collection settings.
-        
+
         **For updated Reviews** 
-        
+
         In general, an absent source Review property will retain existing values except as below.
-        
+
         - an absent `status` property will either retain the existing value or update the `status` value to `{ label: "saved", text: "Review change triggered status update" }`, in accordance with the Collection `settings.status.resetCriteria`.
         - an absent `resultEngine` property will either retain the existing value or update the `resultEngine` value to `null`. If applying the source Review changes an existing `result`, the `resultEngine` value will be set to `null`.
-        
+
         **For new Reviews**
-        
+
         - an absent `detail` or `comment` property will set the candidate value to the empty string.
         - an absent `status` property will set the candidate value to `{ label: "saved", text: null }`.
         - an absent `resultEngine` property will set the candidate value to `null`.
         - an absent `metadata` property will set the candidate value to `{}`
-        
+
         ## Candidate validation
-        
+
         Each candidate Review is permitted or rejected as follows:
-        
+
         - If the requesting user's collection grant is `restricted` AND the `ruleId` is not included in any version of any `benchmarkId` for which the requesting user been granted access, then **reject** the Review.
         - If `status.label` has value `saved`, then permit the Review.
         - If the Review would not be submittable according to the Collection settings, then **reject** the Review
@@ -1262,7 +1262,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
-            - 'stig-manager:collection'      
+            - 'stig-manager:collection'
   '/collections/{collectionId}/reviews/{assetId}':
     get:
       tags:
@@ -1305,24 +1305,24 @@ paths:
 
         - conformance with the OAS schema for `ReviewAssetPost`
         - the requesting user has been granted access to the {collectionId}
-        
+
         **For all Reviews**
-        
+
         - a string value for the `status` property will set the stored value to `{ label: <string>, text: null }`
         - an absent `resultEngine` property will set the stored value to `null`
 
         **For updated Reviews** 
-        
+
         - a `null` value for either `detail` or `comment` will retain the existing value.
         - an absent `status` property will either retain the existing value or update the `status` value to `{ label: "saved", text: "Review change triggered status update" }`, in accordance with the Collection `settings.status.resetCriteria`.
-        
+
         **For new Reviews**
-        
+
         - a `null` value for either `detail` or `comment` will set the stored value to the empty string.
         - an absent `status` property will set the stored value to `{ label: "saved", text: null }`.
-        
+
         **Each new or updated Review is permitted or rejected as follows:**
-        
+
         - If the requesting user's collection grant is `restricted` AND the `ruleId` is not included in any version of any `benchmarkId` for which the requesting user been granted access, then **reject** the Review
         - If the optional property `status` is absent or `status.label` has value `saved`, then permit the Review
         - If the new or updated Review would not be submittable according to the Collection settings, then **reject** the Review
@@ -1376,7 +1376,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ReviewAssetRuleRead'
         '204':
-          description: The requested resource has no content.            
+          description: The requested resource has no content.
         default:
           description: unexpected error
           content:
@@ -1392,14 +1392,14 @@ paths:
       summary: Merge the provided properties with an existing Review
       description: |
         The request MUST target an existing Review and the request body MUST contain one or more Review properties. The overall request is validated as follows:
-        
+
         - the request body conforms with the OAS schema for `ReviewAssetRulePatch`
         - a request body that includes `resultEngine` must also include `result`
         - the requesting user has been granted access to the {collectionId}
         - a Review already exists for the {assetId} and {ruleId}
-        
+
         A string value for the `status` property will set the stored value to `{ label: <string>, text: null }`.
-        
+
         If the request includes a `result`, then the `resultEngine` value will be set to `null` unless the request includes an explicit `resultEngine` value. 
 
         An absent `status` property may still lead to the `status` value being updated to `{ label: "saved", text: "Review change triggered status update" }`, in accordance with the Collection `settings.status.resetCriteria`.
@@ -1407,7 +1407,7 @@ paths:
         Unlike the corresponding PUT endpoint, the `detail` and `comment` properties do not support `null` as a value.
 
         The request is permitted or rejected as follows:
-        
+
         - If the requesting user's collection grant is `restricted` AND the `assetId` is not included in any user grant, then **reject** the Review
         - If the requesting user's collection grant is `restricted` AND the `ruleId` is not included in any version of any `benchmarkId` for which the user been granted access, then **reject** the Review
         - If the new or updated Review would not be submittable according to the Collection settings, then **reject** the Review
@@ -1443,27 +1443,27 @@ paths:
       summary: Set all properties of a Review
       description: |
         The request can target either a new or an existing Review. The request body MUST contain the Review properties `result`, `detail`, and `comment`. The overall request is validated as follows:
-        
+
         - conformance with the OAS schema for `ReviewAssetRulePut`
         - the requesting user has been granted access to the {collectionId}
 
         **For all Reviews**
-        
+
         - a string value for the `status` property will set the stored value to `{ label: <string>, text: null }`
         - an absent `resultEngine` property will set the stored value to `resultEngine: null`
-        
+
         **For updated Reviews** 
-        
+
         - a `null` value for either `detail` or `comment` will retain the existing value.
         - an absent `status` property will either retain or update the `status` value to `{ label: "saved", text: "Review change triggered status update" }`, in accordance with the Collection `settings.status.resetCriteria`.
 
         **For new Reviews**
-        
+
         - a `null` value for either `detail` or `comment` will set the stored value to the empty string.
         - an absent `status` property will set the stored value to `{ label: "saved", text: null }`.
-        
+
         The request is permitted or rejected as follows:
-        
+
         - If the requesting user's collection grant is `restricted` AND the `assetId` is not included in any user grant, then **reject** the Review
         - If the requesting user's collection grant is `restricted` AND the `ruleId` is not included in any version of any `benchmarkId` for which the user been granted access, then **reject** the Review
         - If the new or updated Review would not be submittable according to the Collection settings, then **reject** the Review
@@ -1762,7 +1762,7 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/Label'
+                $ref: '#/components/schemas/Label'
         default:
           description: unexpected error
           content:
@@ -1875,7 +1875,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
-            - 'stig-manager:collection'          
+            - 'stig-manager:collection'
   '/collections/{collectionId}/metadata':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -2454,11 +2454,11 @@ paths:
         - Collection
       summary: Return history records for the specified Collection that meet the specified criteria
       operationId: getReviewHistoryByCollection
-      parameters: 
+      parameters:
         - $ref: '#/components/parameters/StartDateQuery' # Lower bound (earliest date) of returned history entry timestamps
-        - $ref: '#/components/parameters/EndDateQuery'    # Upper bound (latest date) of returned history entry timestamps 
-        - $ref: '#/components/parameters/AssetIdQuery'  # return review history entries for just the specified assetId, if provided.
-        - $ref: '#/components/parameters/RuleIdQuery'  # return review history entries for just the specified RuleId, if provided.        
+        - $ref: '#/components/parameters/EndDateQuery' # Upper bound (latest date) of returned history entry timestamps
+        - $ref: '#/components/parameters/AssetIdQuery' # return review history entries for just the specified assetId, if provided.
+        - $ref: '#/components/parameters/RuleIdQuery' # return review history entries for just the specified RuleId, if provided.
         - $ref: '#/components/parameters/ReviewStatusQuery' # return review history entries with the specified status
       responses:
         '200':
@@ -2483,9 +2483,9 @@ paths:
         - Collection
       summary: Remove history records that meet specified criteria
       operationId: deleteReviewHistoryByCollection
-      parameters: 
+      parameters:
         - $ref: '#/components/parameters/RetentionDateQuery' # Review History Entries older than this date will be deleted.
-        - $ref: '#/components/parameters/AssetIdQuery'  # Apply operation to just the specified assetId, if provided.
+        - $ref: '#/components/parameters/AssetIdQuery' # Apply operation to just the specified assetId, if provided.
       responses:
         '200':
           description: Number of history records deleted.
@@ -2501,7 +2501,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
-            - 'stig-manager:collection'            
+            - 'stig-manager:collection'
   '/collections/{collectionId}/review-history/stats':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -2512,11 +2512,11 @@ paths:
       operationId: getReviewHistoryStatsByCollection
       parameters:
         - $ref: '#/components/parameters/StartDateQuery' # Lower bound (earliest date) of returned history entry count
-        - $ref: '#/components/parameters/EndDateQuery'    # Upper bound (latest date) of returned history entry count
-        - $ref: '#/components/parameters/AssetIdQuery'  # return review history stats for just the specified assetId, if provided.
-        - $ref: '#/components/parameters/RuleIdQuery'  # return review history stats for just the specified RuleId, if provided.        
-        - $ref: '#/components/parameters/ReviewStatusQuery' # return review history stats with the specified status        
-        - $ref: '#/components/parameters/ReviewHistoryStatsProjectionQuery' 
+        - $ref: '#/components/parameters/EndDateQuery' # Upper bound (latest date) of returned history entry count
+        - $ref: '#/components/parameters/AssetIdQuery' # return review history stats for just the specified assetId, if provided.
+        - $ref: '#/components/parameters/RuleIdQuery' # return review history stats for just the specified RuleId, if provided.
+        - $ref: '#/components/parameters/ReviewStatusQuery' # return review history stats with the specified status
+        - $ref: '#/components/parameters/ReviewHistoryStatsProjectionQuery'
       responses:
         '200':
           description: ReviewHistoryStats response
@@ -2532,7 +2532,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
-            - 'stig-manager:collection:read'            
+            - 'stig-manager:collection:read'
   '/collections/{collectionId}/status':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -2739,7 +2739,7 @@ paths:
     get:
       tags:
         - Collection
-      summary: EXPERIMENTAL - Return the Assets in the specified Collection with unreviewed Rules 
+      summary: EXPERIMENTAL - Return the Assets in the specified Collection with unreviewed Rules
       operationId: getUnreviewedAssetsByCollection
       responses:
         '200':
@@ -2771,7 +2771,7 @@ paths:
     get:
       tags:
         - Collection
-      summary: EXPERIMENTAL - Return the Rules in the specified Collection with unreviewed Assets 
+      summary: EXPERIMENTAL - Return the Rules in the specified Collection with unreviewed Assets
       operationId: getUnreviewedRulesByCollection
       responses:
         '200':
@@ -3080,8 +3080,8 @@ paths:
         - $ref: '#/components/parameters/ElevateQuery'
       responses:
         '200':
-           description: Detail response
-           content:
+          description: Detail response
+          content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Detail'
@@ -3179,7 +3179,7 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/Cci'
+                $ref: '#/components/schemas/Cci'
         default:
           description: unexpected error
           content:
@@ -3606,7 +3606,7 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/RuleProjected'
+                $ref: '#/components/schemas/RuleProjected'
         default:
           description: unexpected error
           content:
@@ -3648,8 +3648,8 @@ paths:
       summary: Return a list of Users accessible to the requester
       operationId: getUsers
       parameters:
-      - $ref: '#/components/parameters/UsernameQuery'
-      - $ref: '#/components/parameters/UsernameMatchQuery'
+        - $ref: '#/components/parameters/UsernameQuery'
+        - $ref: '#/components/parameters/UsernameMatchQuery'
       responses:
         '200':
           description: UserProjected array response
@@ -3685,7 +3685,7 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/UserProjected'
+                $ref: '#/components/schemas/UserProjected'
         default:
           description: unexpected error
           content:
@@ -3765,7 +3765,7 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/UserProjected'
+                $ref: '#/components/schemas/UserProjected'
         default:
           description: unexpected error
           content:
@@ -3778,7 +3778,7 @@ paths:
     delete:
       tags:
         - User
-      summary: Delete a User that has never accessed the system. 
+      summary: Delete a User that has never accessed the system.
       operationId: deleteUser
       responses:
         '200':
@@ -3799,43 +3799,66 @@ paths:
 components:
   schemas:
     AccessLevel:
-      type: integer
+      maximum: 4
       minimum: 1
-      maximum: 3
+      type: integer
+    ApAcronym:
+      $ref: '#/components/schemas/String20Nullable'
+    ApiClassification:
+      type: string
+      enum:
+        - NONE
+        - U
+        - FOUO
+        - CUI
+        - C
+        - S
+        - TS
+        - SCI
     ApiConfiguration:
-      type: object
       additionalProperties: false
+      type: object
       properties:
         classification:
-          type: string
-          enum:
-            - NONE
-            - U
-            - FOUO
-            - CUI
-            - C
-            - S
-            - TS
-            - SCI
+          $ref: '#/components/schemas/ApiClassification'
         commit:
-          type: object
-          properties:
-            branch:
-              type: string
-            sha:
-              type: string
-            tag:
-              type: string
-            describe:
-              type: string
+          $ref: '#/components/schemas/CommitObject'
         version:
-          type: string
+          $ref: '#/components/schemas/ApiVersion'
     ApiDefinition:
       oneOf:
         - type: object
         - type: array
+          items:
+            type: object
+    ApiVersion:
+      $ref: '#/components/schemas/Version'
     Asset:
+      additionalProperties: false
       type: object
+      properties:
+        assetId:
+          $ref: '#/components/schemas/AssetId'
+        collection:
+          $ref: '#/components/schemas/CollectionBasic'
+        description:
+          $ref: '#/components/schemas/AssetDescription'
+        fqdn:
+          $ref: '#/components/schemas/AssetFqdn'
+        ip:
+          $ref: '#/components/schemas/AssetIp'
+        labelIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelId' 
+        mac:
+          $ref: '#/components/schemas/AssetMac'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        name:
+          $ref: '#/components/schemas/AssetName'
+        noncomputing:
+          $ref: '#/components/schemas/AssetNoncomputing'
       required:
         - assetId
         - name
@@ -3845,89 +3868,70 @@ components:
         - ip
         - mac
         - noncomputing
-        # - metadata
+    AssetBasic:
       additionalProperties: false
+      type: object
       properties:
         assetId:
-          readOnly: true
-          type: string
+          $ref: '#/components/schemas/AssetId'
         name:
-          type: string
-          nullable: false
-          maxLength: 255
-        fqdn:
-          type: string
-          nullable: true
-          maxLength: 255
-        collection:
-          $ref: '#/components/schemas/CollectionBasic'
-        description:
-          type: string
-          nullable: true
-          maxLength: 255
-        ip:
-          type: string
-          nullable: true
-          maxLength: 255
-        labelIds:
-          type: array
+          $ref: '#/components/schemas/AssetName'
+      required:
+        - assetId
+        - name
+    AssetBasicProjected:
+      additionalProperties: false
+      type: object
+      properties:
+        assetId:
+          $ref: '#/components/schemas/AssetId'
+        assetLabelIds:
           items:
             $ref: '#/components/schemas/LabelId'
-        mac:
-          type: string
-          nullable: true
-          maxLength: 255
-        noncomputing:
-          type: boolean
-        metadata:
-          $ref: '#/components/schemas/Metadata'  
-    AssetBasic:
-      type: object
-      required:
-        - assetId
-        - name
-      additionalProperties: false
-      properties:
-        assetId:
-          type: string
-        name:
-          type: string
-    AssetLabels:
-      type: object
-      required:
-        - assetId
-        - name
-        - labels
-      additionalProperties: false
-      properties:
-        assetId:
-          $ref: '#/components/schemas/String255'
-        name:
-          $ref: '#/components/schemas/String255'
-
-    AssetBasicProjected:
-      type: object
-      required:
-        - assetId
-        - name
-      additionalProperties: false
-      properties:
-        assetId:
-          type: string
-        name:
-          type: string
+          type: array
         collectionId:
-          type: string  #This is redundant except when in response to a request that changed an Asset's collection. 
-        assetLabelIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/LabelId'          
+          $ref: '#/components/schemas/CollectionId'
+        name:
+          $ref: '#/components/schemas/AssetName'
         restrictedUserAccess:
-          type: array
           items:
             $ref: '#/components/schemas/UserBasic'
+          type: array
+      required:
+        - assetId
+        - name
+    AssetCount:
+      minimum: 0
+      type: integer
     AssetCreateOrReplace:
+      additionalProperties: false
       type: object
+      properties:
+        collectionId:
+          $ref: '#/components/schemas/CollectionId'
+        description:
+          $ref: '#/components/schemas/AssetDescription'
+        fqdn:
+          $ref: '#/components/schemas/AssetFqdn'
+        ip:
+          $ref: '#/components/schemas/AssetIp'
+        labelIds:
+          items:
+            $ref: '#/components/schemas/LabelId'
+          type: array
+        mac:
+          $ref: '#/components/schemas/AssetMac'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        name:
+          $ref: '#/components/schemas/AssetName'
+        noncomputing:
+          $ref: '#/components/schemas/AssetNoncomputing'
+        stigs:
+          description: The benchmarkIds mapped to this Asset
+          items:
+            type: string
+          type: array
       required:
         - name
         - collectionId
@@ -3936,56 +3940,87 @@ components:
         - noncomputing
         - metadata
         - stigs
+    AssetDescription:
+      $ref: '#/components/schemas/String255Nullable'
+    AssetForCollection:
       additionalProperties: false
+      type: object
       properties:
+        assetId:
+          $ref: '#/components/schemas/AssetId'
         name:
-          type: string
-          nullable: false
-          maxLength: 255
-        fqdn:
-          type: string
-          nullable: true
-          maxLength: 255
-        collectionId:
-          description: The collectionId mapped to this Asset
-          type: string
+          $ref: '#/components/schemas/AssetName'
+    AssetFqdn:
+      $ref: '#/components/schemas/String255Nullable'
+    AssetId:
+      $ref: '#/components/schemas/StringIntId'
+    AssetIp:
+      $ref: '#/components/schemas/String255Nullable'
+    AssetMac:
+      $ref: '#/components/schemas/String255Nullable'
+    AssetName:
+      $ref: '#/components/schemas/String255'
+    AssetNoncomputing:
+      type: boolean
+    AssetProjected:
+      additionalProperties: false
+      type: object
+      properties:
+        assetId:
+          $ref: '#/components/schemas/AssetId'
+        collection:
+          $ref: '#/components/schemas/CollectionBasic'
         description:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetDescription'
+        fqdn:
+          $ref: '#/components/schemas/AssetFqdn'
         ip:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetIp'
         labelIds:
           type: array
           items:
             $ref: '#/components/schemas/LabelId'
         mac:
-          type: string
-          nullable: true
-          maxLength: 255
-        noncomputing:
-          type: boolean
+          $ref: '#/components/schemas/AssetMac'
         metadata:
           $ref: '#/components/schemas/Metadata'
-        stigs:
-          description: The benchmarkIds mapped to this Asset
+        name:
+          $ref: '#/components/schemas/AssetName'
+        noncomputing:
+          $ref: '#/components/schemas/AssetNoncomputing'
+        statusStats:
+          additionalProperties: false
+          type: object
+          properties:
+            acceptedCount:
+              nullable: true
+              type: integer
+            maxTs:
+              $ref: '#/components/schemas/MaxTs'
+            minTs:
+              $ref: '#/components/schemas/MinTs'
+            rejectedCount:
+              nullable: true
+              type: integer
+            ruleCount:
+              $ref: '#/components/schemas/RuleCount'
+            savedCount:
+              nullable: true
+              type: integer
+            stigCount:
+              type: integer
+            submittedCount:
+              nullable: true
+              type: integer
+        stigGrants:
           type: array
           items:
-            type: string
-    AssetForCollection:
-      type: object
-      additionalProperties: false
-      properties:
-        assetId:
-          type: string
-        name:
-          type: string
-    AssetId:
-      $ref: '#/components/schemas/StringIntId'
-    AssetProjected:
-      type: object
+            $ref: '#/components/schemas/StigUserBasic'
+        stigs:
+          type: array
+          description: The benchmarkIds mapped to this Asset
+          items:
+            $ref: '#/components/schemas/CollectionStig'
       required:
         - assetId
         - name
@@ -3996,322 +4031,256 @@ components:
         - mac
         - noncomputing
         - labelIds
-      additionalProperties: false
-      properties:
-        assetId:
-          readOnly: true
-          type: string
-        name:
-          type: string
-          nullable: false
-          maxLength: 255
-        fqdn:
-          type: string
-          nullable: true
-          maxLength: 255
-        collection:
-          $ref: '#/components/schemas/CollectionBasic'
-        description:
-          type: string
-          nullable: true
-          maxLength: 255
-        ip:
-          type: string
-          nullable: true
-          maxLength: 255
-        labelIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/LabelId'
-        mac:
-          type: string
-          nullable: true
-          maxLength: 255
-        noncomputing:
-          type: boolean
-        metadata:
-          $ref: '#/components/schemas/Metadata'    
-        statusStats:
-          type: object
-          additionalProperties: false
-          properties:
-            stigCount:
-              type: integer
-            ruleCount:
-              type: integer
-              nullable: true
-            acceptedCount:
-              type: integer
-              nullable: true
-            rejectedCount:
-              type: integer
-              nullable: true
-            submittedCount:
-              type: integer
-              nullable: true
-            savedCount:
-              type: integer
-              nullable: true
-            minTs:
-              type: string
-              format: date-time
-              nullable: true
-            maxTs:
-              type: string
-              format: date-time
-              nullable: true
-        stigs:
-          type: array
-          description: The benchmarkIds mapped to this Asset
-          items:
-            $ref: '#/components/schemas/CollectionStig'
-        stigGrants:
-          type: array
-          items:
-            $ref: '#/components/schemas/StigUserBasic'
-    AssetsPatchRequest:
-      type: object
-      additionalProperties: false
-      properties:
-        operation:
-          type: string
-          enum:
-            - delete
-        assetIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/AssetId'
-    AssetsPatchResponse:
-      type: object
-      additionalProperties: false
-      properties:
-        operation:
-          type: string
-          enum:
-            - deleted
-        assetIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/AssetId'
     AssetStigResponse:
-      type: object
       additionalProperties: false
+      type: object
+      properties:
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        revisionDate:
+          $ref: '#/components/schemas/RevisionDate'
+        revisionStr:
+          $ref: '#/components/schemas/RevisionStrRaw'
+        ruleCount:
+          $ref: '#/components/schemas/RuleCount'
       required:
         - benchmarkId
         - revisionStr
         - revisionDate
         - ruleCount
-      properties:
-        benchmarkId:
-          type: string
-        revisionStr:
-          $ref: '#/components/schemas/RevisionStrRaw'
-        revisionDate:
-          type: string
-          format: date
-        ruleCount:
-          type: integer
     AssetStigSelection:
-      description: |
-        An array that specifies a list of Assets/STIG items.
-        
-        Each array item is an object that MUST include the property `assetId` and MAY include the property `stigs`.
-        
-        If the `stigs` property is absent, the default value of the property is used. The default value is an array of the default revisions of each STIG to which the requesting User
-        has been granted access on the Asset.
-        
-        If the `stigs` property is present, the value MUST be an array. Each array member is EITHER:
-        - an object that identifies both a `benchmarkId` and a specific `revisionStr`
-        - a string whose value is a `benchmarkId`. This is equivalent to specifying the object {"benchmarkId": [provided benchmarkId], "revisionStr": [default revisionStr for the provided benchmarkId]}
-      type: object
       additionalProperties: false
-      required:
-        - assetId
+      type: object
+      description: >
+        An array that specifies a list of Assets/STIG items.
+
+
+        Each array item is an object that MUST include the property `assetId`
+        and MAY include the property `stigs`.
+
+
+        If the `stigs` property is absent, the default value of the property is
+        used. The default value is an array of the default revisions of each
+        STIG to which the requesting User
+
+        has been granted access on the Asset.
+
+
+        If the `stigs` property is present, the value MUST be an array. Each
+        array member is EITHER:
+
+        - an object that identifies both a `benchmarkId` and a specific
+        `revisionStr`
+
+        - a string whose value is a `benchmarkId`. This is equivalent to
+        specifying the object {"benchmarkId": [provided benchmarkId],
+        "revisionStr": [default revisionStr for the provided benchmarkId]}
       properties:
         assetId:
-          $ref: '#/components/schemas/StringIntId'
+          $ref: '#/components/schemas/AssetId'
         stigs:
-          type: array
-          minItems: 1
           maxItems: 30
+          minItems: 1
+          type: array
           uniqueItems: true
           items:
             oneOf:
               - $ref: '#/components/schemas/RevisionBasic'
               - $ref: '#/components/schemas/String255'
+      required:
+        - assetId
     AssetUpdate:
       additionalProperties: false
+      type: object
       properties:
-        name:
-          type: string
-          nullable: false
-          maxLength: 255
-        fqdn:
-          type: string
-          nullable: true
-          maxLength: 255
         collectionId:
-          description: The collectionId mapped to this Asset
-          type: string
+          $ref: '#/components/schemas/CollectionId'
         description:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetDescription'
+        fqdn:
+          $ref: '#/components/schemas/AssetFqdn'
         ip:
-          type: string
-          nullable: true
-          maxLength: 255
+          $ref: '#/components/schemas/AssetIp'
         labelIds:
           type: array
           items:
             $ref: '#/components/schemas/LabelId'
         mac:
-          type: string
-          nullable: true
-          maxLength: 255
-        noncomputing:
-          type: boolean
+          $ref: '#/components/schemas/AssetMac'
         metadata:
           $ref: '#/components/schemas/Metadata'
+        name:
+          $ref: '#/components/schemas/AssetName'
+        noncomputing:
+          $ref: '#/components/schemas/AssetNoncomputing'
         stigs:
           description: The benchmarkIds mapped to this Asset
           type: array
           items:
-            type: string
-    BenchmarkId:
-        type: string           
-    Cci:
-      type: object
+            $ref: '#/components/schemas/BenchmarkId'
+    AssetsPatchRequest:
       additionalProperties: false
+      type: object
+      properties:
+        assetIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetId'
+        operation:
+          type: string
+          enum:
+            - delete
+    AssetsPatchResponse:
+      additionalProperties: false
+      type: object
+      properties:
+        assetIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetId'
+        operation:
+          type: string
+          enum:
+            - deleted
+    BenchmarkId:
+      $ref: '#/components/schemas/String255Nullable'
+    Cci:
+      additionalProperties: false
+      type: object
       properties:
         cci:
-          type: string
-        status:
-          type: string
-        publishdate:
-          type: string
-          format: date-time
+          $ref: '#/components/schemas/CciString'
         contributor:
           type: string
-        type:
-          type: string
         definition:
-          type: string
+          $ref: '#/components/schemas/DefinitionString'
         emassAp:
           $ref: '#/components/schemas/EmassAp'
+        publishdate:
+          $ref: '#/components/schemas/StringDateTime'
         references:
           type: array
           items:
             $ref: '#/components/schemas/CciReferenceItem'
+        status:
+          $ref: '#/components/schemas/CciStatus'
         stigs:
-          type: array
           items:
             $ref: '#/components/schemas/RevisionBasic'
+          type: array
+        type:
+          $ref: '#/components/schemas/CciType'
     CciBasic:
+      additionalProperties: false
       type: object
+      properties:
+        apAcronym:
+          $ref: '#/components/schemas/ApAcronym'
+        cci:
+          $ref: '#/components/schemas/CciString'
+        control:
+          nullable: true
+          type: string
+        definition:
+          $ref: '#/components/schemas/DefinitionString'
       required:
         - cci
         - apAcronym
         - definition
-      additionalProperties: false
-      properties:
-        cci:
-          type: string
-        apAcronym:
-          type: string
-        definition:
-          type: string
-        control:
-          type: string
-          nullable: true
     CciListItem:
-      type: object
       additionalProperties: false
+      type: object
       properties:
         cci:
-          type: string
-        type:
-          type: string
+          $ref: '#/components/schemas/CciString'
         references:
           type: array
           items:
             $ref: '#/components/schemas/CciReferenceItem'
+        type:
+          $ref: '#/components/schemas/CciType'
+    CciLocation:
+      $ref: '#/components/schemas/String255'
     CciReferenceItem:
-      type: object
       additionalProperties: false
+      type: object
       properties:
         creator:
           type: string
-        title:
-          type: string
-        version:
-          type: string
+        indexDisa:
+          $ref: '#/components/schemas/IndexDisa'
         location:
-          type: string
-        indexDisa:
-          type: string
-        textRefNist:
-          type: string
+          $ref: '#/components/schemas/CciLocation'
         parentControl:
-          type: string
+          $ref: '#/components/schemas/ParentControl'
+        textRefNist:
+          $ref: '#/components/schemas/TextRefNist'
+        title:
+          $ref: '#/components/schemas/CciString'
+        version:
+          $ref: '#/components/schemas/VersionString'
     CciReferenceRev4:
-      type: object
       additionalProperties: false
+      type: object
       properties:
         indexDisa:
-          type: string
-        textRefNist:
-          type: string
+          $ref: '#/components/schemas/IndexDisa'
         parentControl:
-          type: string
+          $ref: '#/components/schemas/ParentControl'
+        textRefNist:
+          $ref: '#/components/schemas/TextRefNist'
+    CciStatus:
+      $ref: '#/components/schemas/String20'
+    CciString:
+      $ref: '#/components/schemas/String255'
+    CciType:
+      $ref: '#/components/schemas/String20'
     Check:
-      type: object
       additionalProperties: false
+      type: object
       properties:
-        system:
-          type: string
         content:
+          type: string
+        system:
           type: string
     ChecklistAssetStig:
       type: array
       items:
+        additionalProperties: false
         type: object
-        additionalProperties: false  
         properties:
           assetId:
-            type: string
-          ruleId:
-            type: string
-          ruleTitle:
-            type: string
+            $ref: '#/components/schemas/AssetId'
+          autoResult:
+            type: boolean
           groupId:
-            type: string
+            $ref: '#/components/schemas/GroupId'
           groupTitle:
-            type: string
-          version:
-            type: string
-          severity:
-            $ref: '#/components/schemas/RuleSeverity'
+            $ref: '#/components/schemas/GroupTitle'
           result:
             $ref: '#/components/schemas/ChecklistResult'
           resultEngine:
             $ref: '#/components/schemas/ResultEngine'
-          autoResult:
-            type: boolean
+          ruleId:
+            $ref: '#/components/schemas/RuleId'
+          ruleTitle:
+            $ref: '#/components/schemas/RuleTitle'
+          severity:
+            $ref: '#/components/schemas/RuleSeverity'
           status:
             $ref: '#/components/schemas/ChecklistStatus'
           statusTs:
             $ref: '#/components/schemas/StringDateTimeNullable'
-          ts:
-            $ref: '#/components/schemas/StringDateTimeNullable'
           touchTs:
             $ref: '#/components/schemas/StringDateTimeNullable'
+          ts:
+            $ref: '#/components/schemas/StringDateTimeNullable'
+          version:
+            $ref: '#/components/schemas/VersionString'
     ChecklistCkl:
-      type: object
-      description: The CKL format generated and read by DISA STIG VIewer
-      xml:
-        name: CHECKLIST
       additionalProperties: false
+      description: The CKL format generated and read by DISA STIG Viewer
+      type: object
       properties:
         ASSET:
           type: object
@@ -4319,19 +4288,19 @@ components:
           properties:
             ASSET_TYPE:
               type: string
-            HOST_NAME:
+            HOST_FQDN:
+              type: string
+            HOST_GUID:
               type: string
             HOST_IP:
               type: string
             HOST_MAC:
               type: string
-            HOST_GUID:
-              type: string
-            HOST_FQDN:
-              type: string
-            TECH_AREA:
+            HOST_NAME:
               type: string
             TARGET_KEY:
+              type: string
+            TECH_AREA:
               type: string
         STIGS:
           type: object
@@ -4350,9 +4319,9 @@ components:
                         SI_DATA:
                           type: object
                           properties:
-                            SID_NAME:
-                              type: string
                             SID_DATA:
+                              type: string
+                            SID_NAME:
                               type: string
                   VULN:
                     type: array
@@ -4360,15 +4329,14 @@ components:
                       type: object
                       additionalProperties: false
                       properties:
-                        STIG_DATA:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              VULN_ATTRIBUTE:
-                                type: string
-                              ATTRIBUTE_DATA:
-                                type: string
+                        COMMENTS:
+                          type: string
+                        FINDING_DETAILS:
+                          type: string
+                        SEVERITY_JUSTIFICATION:
+                          type: string
+                        SEVERITY_OVERRIDE:
+                          type: string
                         STATUS:
                           type: string
                           enum:
@@ -4376,85 +4344,266 @@ components:
                             - NotAFinding
                             - Not_Applicable
                             - Not_Reviewed
-                        FINDING_DETAILS:
-                          type: string
-                        COMMENTS:
-                          type: string
-                        SEVERITY_OVERRIDE:
-                          type: string
-                        SEVERITY_JUSTIFICATION:
-                          type: string
+                        STIG_DATA:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              ATTRIBUTE_DATA:
+                                type: string
+                              VULN_ATTRIBUTE:
+                                type: string
+      xml:
+        name: CHECKLIST
     ChecklistCklb:
-      type: object
+      additionalProperties: false
       description: The CKLB format generated and read by DISA STIG VIewer 3
+      type: object
       properties:
+        title:
+          type: string
+        id:
+          type: string
+          format: uuid
+        active:
+          type: boolean
+        mode:
+          type: integer
+        has_path:
+          type: boolean
         target_data:
-          type: object
-        stigs: 
+          $ref: '#/components/schemas/TargetData'
+        stigs:
           type: array
           items:
-            type: object
-    ChecklistCollectionStig:
+            $ref: '#/components/schemas/StigCklb'
+    TargetData:
       type: object
-      additionalProperties: false
       properties:
-        ruleId:
+        target_type:
           type: string
-        ruleTitle:
+        host_name:
+          $ref: '#/components/schemas/AssetName'
+        ip_address:
+          $ref: '#/components/schemas/AssetIp'
+        mac_address:
+          $ref: '#/components/schemas/AssetMac'
+        fqdn:
+          $ref: '#/components/schemas/AssetFqdn'
+        comments:
           type: string
-        groupId:
+        role:
           type: string
-        groupTitle:
+        is_web_database:
+          type: boolean
+        technology_area:
+          type: string
+        web_db_site:
+          type: string
+        web_db_instance:
+          type: string
+    StigCklb:
+      type: object
+      properties:
+        stig_name:
+          type: string
+        display_name:
+          type: string
+        stig_id:
           type: string
         version:
+          type: integer
+        release_info:
+          type: string
+        uuid:
+          type: string
+          format: uuid
+        reference_identifier:
+          type: string
+        size:
+          type: integer
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rule'
+    Rule:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        stig_uuid:
+          type: string
+          format: uuid
+        target_key:
+          type: string
+          nullable: true
+        stig_ref:
+          type: string
+          nullable: true
+        group_id:
+          type: string
+        rule_id:
+          type: string
+        rule_id_src:
+          type: string
+        weight:
+          type: string
+        classification:
           type: string
         severity:
-          $ref: '#/components/schemas/RuleSeverity'
+          type: string
+        rule_version:
+          type: string
+        group_title:
+          type: string
+        rule_title:
+          type: string
+        fix_text:
+          type: string
+        false_positives:
+          type: string
+          nullable: true
+        false_negatives:
+          type: string
+          nullable: true
+        discussion:
+          type: string
+        check_content:
+          type: string
+        documentable:
+          type: string
+        mitigations:
+          type: string
+          nullable: true
+        potential_impacts:
+          type: string
+          nullable: true
+        third_party_tools:
+          type: string
+          nullable: true
+        mitigation_control:
+          type: string
+          nullable: true
+        responsibility:
+          type: string
+          nullable: true
+        security_override_guidance:
+          type: string
+          nullable: true
+        ia_controls:
+          type: string
+          nullable: true
+        check_content_ref:
+          type: object
+          properties:
+            href:
+              type: string
+            name:
+              type: string
+        legacy_ids:
+          type: array
+          items:
+            type: string
+        group_tree:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupTree'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        STIGUuid:
+          type: string
+          format: uuid
+        status:
+          type: string
+        overrides:
+          type: object
+        comments:
+          type: string
+        finding_details:
+          type: string
+        ccis:
+          type: array
+          items:
+            type: string
+    GroupTree:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+    ChecklistCollectionCounts:
+      additionalProperties: false
+      type: object
+      properties:
+        results:
+          type: object
+          properties:
+            fail:
+              type: integer
+            notapplicable:
+              type: integer
+            pass:
+              type: integer
+            unassessed:
+              type: integer
+        statuses:
+          additionalProperties: false
+          type: object
+          properties:
+            accepted:
+              type: integer
+            rejected:
+              type: integer
+            saved:
+              type: integer
+            submitted:
+              type: integer
+    ChecklistCollectionStig:
+      additionalProperties: false
+      type: object
+      properties:
         counts:
-          type: object
-          additionalProperties: false
-          properties:
-            results:
-              type: object
-              properties:
-                pass:
-                  type: integer
-                fail:
-                  type: integer
-                notapplicable:
-                  type: integer
-                unassessed:
-                  type: integer
-            statuses:
-              type: object
-              additionalProperties: false
-              properties:
-                saved:
-                  type: integer
-                submitted:
-                  type: integer
-                accepted:
-                  type: integer
-                rejected:
-                  type: integer
+          $ref: '#/components/schemas/ChecklistCollectionCounts'
+        groupId:
+          $ref: '#/components/schemas/GroupId'
+        groupTitle:
+          $ref: '#/components/schemas/GroupTitle'
+        ruleId:
+          $ref: '#/components/schemas/RuleId'
+        ruleTitle:
+          $ref: '#/components/schemas/RuleTitle'
+        severity:
+          $ref: '#/components/schemas/RuleSeverity'
         timestamps:
-          type: object
           additionalProperties: false
+          type: object
           properties:
-            ts:
-              $ref: '#/components/schemas/ChecklistCollectionStigTimestamps'
             statusTs:
               $ref: '#/components/schemas/ChecklistCollectionStigTimestamps'
             touchTs:
               $ref: '#/components/schemas/ChecklistCollectionStigTimestamps'
+            ts:
+              $ref: '#/components/schemas/ChecklistCollectionStigTimestamps'
+        version:
+          $ref: '#/components/schemas/VersionString'
+    ChecklistCollectionStigTimestamp:
+      $ref: '#/components/schemas/StringDateTimeNullable'
     ChecklistCollectionStigTimestamps:
-      type: object
       additionalProperties: false
+      type: object
       properties:
         max:
-          $ref: '#/components/schemas/StringDateTimeNullable'
+          $ref: '#/components/schemas/ChecklistCollectionStigTimestamp'
         min:
-          $ref: '#/components/schemas/StringDateTimeNullable'
+          $ref: '#/components/schemas/ChecklistCollectionStigTimestamp'
     ChecklistResult:
       description: The Review result
       type: string
@@ -4473,7 +4622,6 @@ components:
     ChecklistResultUnreviewed:
       description: The Review result
       type: string
-      nullable: true
       enum:
         - notchecked
         - unknown
@@ -4482,6 +4630,7 @@ components:
         - informational
         - fixed
         - null
+      nullable: true
     ChecklistStatus:
       type: string
       nullable: true
@@ -4492,171 +4641,196 @@ components:
         - rejected
         - null
     ChecklistXccdf:
+      additionalProperties: true
       type: object
-      description: |
-        An XCCDF document with TestResult. Note: OAS 3.x cannot represent the actual XML schema
+      description: >
+        An XCCDF document with TestResult. Note: OAS 3.x cannot represent the
+        actual XML schema
       xml:
         name: Benchmark
-        namespace: 'http://checklists.nist.gov/xccdf/1.2'
-      additionalProperties: true
+        namespace: http://checklists.nist.gov/xccdf/1.2
     ClientErrorDuplicateAsset:
-      type: object
       additionalProperties: false
+      type: object
       properties:
         code:
           type: integer
           enum:
             - 400
-        message:
-          type: string
-          enum:
-            - 'Duplicate name'
         data:
           $ref: '#/components/schemas/Asset'
-    ClientErrorDuplicateCollection:
-      type: object
-      additionalProperties: false
-      properties:
-        code:
-          type: integer
-          enum:
-            - 400
         message:
           type: string
           enum:
-            - 'Duplicate name'
+            - Duplicate name
+    ClientErrorDuplicateCollection:
+      additionalProperties: false
+      type: object
+      properties:
+        code:
+          type: string
+          enum:
+            - 400
         data:
           $ref: '#/components/schemas/Collection'
+        message:
+          type: string
+          enum:
+            - Duplicate name
     Collection:
+      additionalProperties: false
       type: object
+      properties:
+        collectionId:
+          $ref: '#/components/schemas/CollectionId'
+        created:
+          $ref: '#/components/schemas/Created'
+        description:
+          $ref: '#/components/schemas/CollectionDescription'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        name:
+          $ref: '#/components/schemas/CollectionName'
+        settings:
+          $ref: '#/components/schemas/CollectionSettings'
       required:
         - collectionId
         - name
         - description
         - settings
         - metadata
-        - created   
-      additionalProperties: false
-      properties:
-        collectionId:
-          readOnly: true
-          type: string
-          nullable: false
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        settings:
-          $ref: '#/components/schemas/CollectionSettings'
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        created:
-          type: string
-          format: date-time    
+        - created
     CollectionBasic:
-      type: object
       additionalProperties: false
+      type: object
       properties:
         collectionId:
-          type: string
+          $ref: '#/components/schemas/CollectionId'
         name:
-          type: string
+          $ref: '#/components/schemas/CollectionName'
     CollectionCloneOptions:
-      type: object
       additionalProperties: false
+      type: object
       properties:
-        grants:
-          type: boolean
-          default: true
-          description: Clone the source Collection's users and their grants. Whether this option is enabled or not, the creator of the cloned Collection (ie. you) will be given an Owner grant in the clone.
-        labels:
-          type: boolean
-          default: true
-          description: Clone the source Collection's available labels. You must enable this option AND the assets option for labels to be mapped to Assets in the clone.
         assets:
           type: boolean
           default: true
-          description: Clone the source Collection's Assets and their core properties. If this option is not enabled then the stagMappings and pinRevisions options are ignored.
-        stigMappings:
+          description: >-
+            Clone the source Collection's Assets and their core properties. If
+            this option is not enabled then the stagMappings and pinRevisions
+            options are ignored.
+        grants:
+          default: true
+          type: boolean
+          description: >-
+            Clone the source Collection's users and their grants. Whether this
+            option is enabled or not, the creator of the cloned Collection (ie.
+            you) will be given an Owner grant in the clone.
+        labels:
+          type: boolean
+          default: true
+          description: >-
+            Clone the source Collection's available labels. You must enable this
+            option AND the assets option for labels to be mapped to Assets in
+            the clone.
+        pinRevisions:
+          default: matchSource
           type: string
+          description: >
+            <b>matchSource:</b> STIGs in the source Collection that are pinned
+            to a specific Revision will be pinned to that Revision in the clone.
+            STIGs that track the latest Revision (unpinned) in the source will
+            be unpinned in the clone.<br><br><b>sourceDefaults:</b> All STIGs in
+            the clone will be pinned to a specific Revision. STIGs that are
+            pinned to a specific Revision in the source Collection will be
+            pinned to that Revision in the clone. STIGs that track the latest
+            Revision in the source will be pinned to the current latest Revision
+            in the clone.
+          enum:
+            - matchSource
+            - sourceDefaults
+
+        stigMappings:
+          default: withReviews
+          type: string
+          description: >
+            <b>withReviews:</b> Assets will be cloned with their current STIG
+            assignments and ALL stored Reviews. This will include Reviews that
+            are no longer associated with a current STIG assignment or are
+            associated with a non-default Revision of a
+            STIG.<br><br><b>withoutReviews:</b> Assets will be cloned with their
+            current STIG assignments but NO stored Reviews will be cloned. All
+            Metrics will be set to zero.<br><br> <b>none:</b> Assets will be
+            cloned with only their core properties and no STIG assignments or
+            Reviews. The pinRevisions option will be ignored.
           enum:
             - none
             - withReviews
             - withoutReviews
-          default: withReviews
-          description: |
-            <b>withReviews:</b> Assets will be cloned with their current STIG assignments and ALL stored Reviews. This will include Reviews that are no longer associated with a current STIG assignment or are associated with a non-default Revision of a STIG.<br><br><b>withoutReviews:</b> Assets will be cloned with their current STIG assignments but NO stored Reviews will be cloned. All Metrics will be set to zero.<br><br> <b>none:</b> Assets will be cloned with only their core properties and no STIG assignments or Reviews. The pinRevisions option will be ignored.
-        pinRevisions:
-          type: string
-          description: |
-            <b>matchSource:</b> STIGs in the source Collection that are pinned to a specific Revision will be pinned to that Revision in the clone. STIGs that track the latest Revision (unpinned) in the source will be unpinned in the clone.<br><br><b>sourceDefaults:</b> All STIGs in the clone will be pinned to a specific Revision. STIGs that are pinned to a specific Revision in the source Collection will be pinned to that Revision in the clone. STIGs that track the latest Revision in the source will be pinned to the current latest Revision in the clone.          
-          enum:
-            - matchSource
-            - sourceDefaults
-          default: matchSource
     CollectionCloneRequest:
+      additionalProperties: false
       type: object
+      properties:
+        description:
+          $ref: '#/components/schemas/CollectionDescription'
+        name:
+          $ref: '#/components/schemas/CollectionName'
+        options:
+          $ref: '#/components/schemas/CollectionCloneOptions'
       required:
         - name
         - description
-      additionalProperties: false
-      properties:
-        name:
-          $ref: '#/components/schemas/String255'
-        description:
-          type: string
-          nullable: true
-        options:
-          $ref: '#/components/schemas/CollectionCloneOptions'
     CollectionCloneResponse:
-      description: |
-        The response body is a stream of newline-delimited JSON (NDJSON) objects reporting the progress of the (possibly long running) cloning process. Each object conforms to this schema, but not all objects will have every property.<br/><br/>The sequence of objects starts with multiple {"stage": "collection"} objects, optionally followed by multiple {"stage": "reviews"} objects if review cloning is requested, and concludes with one {"stage": "result"} object whose "collection" property value conforms to the CollectionProjected schema for the created Collection.<br/><br/>Success is indicated when the final {"stage": "result"} message is sent. Errors that prevent cloning from completing are reported with {"status": "error"} and the "result" stage is not reported. Note that the endpoint will return HTTP status 200 immediately after the request is validated and the cloning process has started, so you should not rely on status 200 for indication of cloning success. 
+      description: >
+        The response body is a stream of newline-delimited JSON (NDJSON) objects
+        reporting the progress of the (possibly long running) cloning process.
+        Each object conforms to this schema, but not all objects will have every
+        property.<br/><br/>The sequence of objects starts with multiple
+        {"stage": "collection"} objects, optionally followed by multiple
+        {"stage": "reviews"} objects if review cloning is requested, and
+        concludes with one {"stage": "result"} object whose "collection"
+        property value conforms to the CollectionProjected schema for the
+        created Collection.<br/><br/>Success is indicated when the final
+        {"stage": "result"} message is sent. Errors that prevent cloning from
+        completing are reported with {"status": "error"} and the "result" stage
+        is not reported. Note that the endpoint will return HTTP status 200
+        immediately after the request is validated and the cloning process has
+        started, so you should not rely on status 200 for indication of cloning
+        success.
       type: object
       properties:
-        stage:
+        collection:
+          $ref: '#/components/schemas/CollectionProjected'
+        error:
+          type: object
+        message:
           type: string
+        stack:
+          type: string
+        stage:
           enum:
             - collection
             - reviews
             - result
-        stepCount:
-          type: integer
-        step:
-          type: integer
-        stepName:
-          type: string
-        message:
           type: string
         status:
-          type: string
           enum:
             - running
             - finished
             - error
-        error:
-          type: object
-        stack:
           type: string
-        collection:
-          $ref: '#/components/schemas/CollectionProjected'
+        step:
+          type: integer
+        stepCount:
+          type: integer
+        stepName:
+          type: string
     CollectionCreateOrReplace:
-      type: object
-      required:
-        - name
-        - metadata
-        - grants
       additionalProperties: false
+      type: object
       properties:
-        name:
-          type: string
         description:
-          type: string
-          nullable: true
-        settings:
-          $ref: '#/components/schemas/CollectionSettings'
-        metadata:
-          $ref: '#/components/schemas/Metadata'
+          $ref: '#/components/schemas/CollectionDescription'
         grants:
           type: array
           items:
@@ -4665,54 +4839,78 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LabelCreate'
+          
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        name:
+          $ref: '#/components/schemas/CollectionName'
+        settings:
+          $ref: '#/components/schemas/CollectionSettings'
+      required:
+        - name
+        - metadata
+        - grants
+    CollectionDescription:
+      $ref: '#/components/schemas/String255Nullable'
     CollectionExportToResponse:
-      description: |
-        The response body is a stream of newline-delimited JSON (NDJSON) objects reporting the progress of the (possibly long running) export process. Each object conforms to this schema, but not all objects will have every property.<br/><br/>The sequence of objects starts with multiple {"stage": "prepare"} objects, followed by multiple {"stage": "assets"} objects, multiple {"stage": "reviews"} objects, and multiple {"stage": "metrics"} objects. The stream concludes with one {"stage": "commit"} object and then one {"stage": "result"} object whose "counts" property value conforms to the schema below.<br/><br/>Success is indicated when the final {"stage": "result"} message is sent. Errors that prevent exporting from completing are reported with {"status": "error"} and the "result" stage is not reported. Note that the endpoint will return HTTP status 200 immediately after the request is validated and the export process has started, so you should not rely on status 200 for indication of export success. 
+      description: >
+        The response body is a stream of newline-delimited JSON (NDJSON) objects
+        reporting the progress of the (possibly long running) export process.
+        Each object conforms to this schema, but not all objects will have every
+        property.<br/><br/>The sequence of objects starts with multiple
+        {"stage": "prepare"} objects, followed by multiple {"stage": "assets"}
+        objects, multiple {"stage": "reviews"} objects, and multiple {"stage":
+        "metrics"} objects. The stream concludes with one {"stage": "commit"}
+        object and then one {"stage": "result"} object whose "counts" property
+        value conforms to the schema below.<br/><br/>Success is indicated when
+        the final {"stage": "result"} message is sent. Errors that prevent
+        exporting from completing are reported with {"status": "error"} and the
+        "result" stage is not reported. Note that the endpoint will return HTTP
+        status 200 immediately after the request is validated and the export
+        process has started, so you should not rely on status 200 for indication
+        of export success.
       type: object
       properties:
-        stage:
+        counts:
+          additionalProperties: false
+          type: object
+          properties:
+            assetsCreated:
+              type: integer
+            reviewsInserted:
+              type: integer
+            reviewsUpdated:
+              type: integer
+            stigsMapped:
+              type: integer
+        error:
+          type: object
+        message:
           type: string
+        stack:
+          type: string
+        stage:
           enum:
             - prepare
             - assets
             - reviews
             - metrics
             - result
-        stepCount:
-          type: integer
-        step:
-          type: integer
-        stepName:
-          type: string
-        message:
           type: string
         status:
-          type: string
           enum:
             - running
             - error
-        error:
-          type: object
-        stack:
           type: string
-        counts:
-          type: object
-          additionalProperties: false
-          properties:
-            assetsCreated:
-              type: integer
-            stigsMapped:
-              type: integer
-            reviewsInserted:
-              type: integer
-            reviewsUpdated:
-              type: integer
+        step:
+          type: integer
+        stepCount:
+          type: integer
+        stepName:
+          type: string
     CollectionFieldEnabledAlways:
-      type: object
       additionalProperties: false
-      required:
-        - enabled
-        - required
+      type: object
       properties:
         enabled:
           type: string
@@ -4724,12 +4922,12 @@ components:
             - always
             - findings
             - optional
+      required:
+        - enabled
+        - required
     CollectionFieldEnabledFindings:
-      type: object
       additionalProperties: false
-      required:
-        - enabled
-        - required
+      type: object
       properties:
         enabled:
           type: string
@@ -4740,290 +4938,274 @@ components:
           enum:
             - findings
             - optional
+      required:
+        - enabled
+        - required
     CollectionFieldSetting:
       type: object
+      example:
+        enabled: always
+        required: findings
       oneOf:
         - $ref: '#/components/schemas/CollectionFieldEnabledAlways'
         - $ref: '#/components/schemas/CollectionFieldEnabledFindings'
-      example:   # Sample object
-        enabled: 'always'
-        required: 'findings'
     CollectionFieldSettings:
-      type: object
       additionalProperties: false
+      type: object
+      properties:
+        comment:
+          $ref: '#/components/schemas/CollectionFieldSetting'
+        detail:
+          $ref: '#/components/schemas/CollectionFieldSetting'
       required:
         - detail
         - comment
-      properties:
-        detail:
-          $ref: '#/components/schemas/CollectionFieldSetting'
-        comment:
-          $ref: '#/components/schemas/CollectionFieldSetting'
     CollectionGrant:
+      additionalProperties: false
       type: object
+      properties:
+        accessLevel:
+          $ref: '#/components/schemas/AccessLevel'
+        collectionId:
+          $ref: '#/components/schemas/CollectionId'
       required:
         - collectionId
         - accessLevel
-      additionalProperties: false
-      properties:
-        collectionId:
-          type: string
-        accessLevel:
-          type: integer
     CollectionGrantProjected:
-      type: object
       additionalProperties: false
+      type: object
       properties:
+        accessLevel:
+          $ref: '#/components/schemas/AccessLevel'
         collection:
           type: object
           properties:
             collectionId:
-              type: string
+              $ref: '#/components/schemas/CollectionId'
             name:
-              type: string
-        accessLevel:
-          type: integer
+              $ref: '#/components/schemas/CollectionName'
     CollectionHistorySettings:
-      type: object
       additionalProperties: false
-      required:
-        - maxReviews
+      type: object
       properties:
         maxReviews:
-          type: integer
-          minimum: -1
-          maximum: 50
           example: 5
-    CollectionProjected:
-      type: object
+          maximum: 50
+          minimum: -1
+          type: integer
       required:
-        - collectionId
-        - name
-        - description
-        - settings
-        - metadata
+        - maxReviews
+    CollectionId:
+      $ref: '#/components/schemas/StringIntId'
+    CollectionName:
+      $ref: '#/components/schemas/String45'
+    CollectionProjected:
       additionalProperties: false
+      type: object
       properties:
-        collectionId:
-          readOnly: true
-          type: string
-          nullable: false
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        settings:
-          $ref: '#/components/schemas/CollectionSettings'
-        metadata:
-          $ref: '#/components/schemas/Metadata'
         assets:
           type: array
           items:
             $ref: '#/components/schemas/AssetForCollection'
-        stigs:
-          type: array
-          items:
-            $ref: '#/components/schemas/CollectionStig'
+        collectionId:
+          $ref: '#/components/schemas/CollectionId'
+        description:
+          $ref: '#/components/schemas/CollectionDescription'
         grants:
           type: array
           items:
-            $ref: '#/components/schemas/UserGrantProjected'     
-        owners:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
+            $ref: '#/components/schemas/UserGrantProjected'
         labels:
           type: array
           items:
             $ref: '#/components/schemas/Label'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        name:
+          $ref: '#/components/schemas/CollectionName'
+        owners:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        settings:
+          $ref: '#/components/schemas/CollectionSettings'
         statistics:
           $ref: '#/components/schemas/CollectionStatistics'
-    CollectionsProjected:
-      type: object
+        stigs:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionStig'
       required:
         - collectionId
         - name
         - description
         - settings
         - metadata
-      additionalProperties: false
-      properties:
-        collectionId:
-          readOnly: true
-          type: string
-          nullable: false
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        settings:
-          $ref: '#/components/schemas/CollectionSettings'
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        owners:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
-        labels:
-          type: array
-          items:
-            $ref: '#/components/schemas/Label'
-        statistics:
-          $ref: '#/components/schemas/CollectionStatistics'
     CollectionSettings:
-      type: object
       additionalProperties: false
+      type: object
       properties:
         fields:
           $ref: '#/components/schemas/CollectionFieldSettings'
-        status:
-          $ref: '#/components/schemas/CollectionStatusSettings'
         history:
           $ref: '#/components/schemas/CollectionHistorySettings'
+        status:
+          $ref: '#/components/schemas/CollectionStatusSettings'
     CollectionStatistics:
+      additionalProperties: false
       type: object
+      properties:
+        assetCount:
+          $ref: '#/components/schemas/AssetCount'
+        checklistCount:
+          type: integer
+        created:
+          $ref: '#/components/schemas/Created'
+        grantCount:
+          type: integer
       required:
         - created
         - assetCount
         - grantCount
         - checklistCount
-      additionalProperties: false
-      properties:
-        created:
-          $ref: '#/components/schemas/StringDateTime'
-        assetCount:
-          type: integer     
-        grantCount:
-          type: integer     
-        checklistCount:
-          type: integer                  
     CollectionStatus:
-      type: object
       additionalProperties: false
+      type: object
       properties:
         assetId:
-          type: string
-        assetName:
-          type: string
+          $ref: '#/components/schemas/AssetId'
         assetLabelIds:
-          type: array
           items:
-            $ref: '#/components/schemas/LabelId'          
+            $ref: '#/components/schemas/LabelId'
+          type: array
+        assetName:
+          $ref: '#/components/schemas/AssetName'
         benchmarkId:
-          type: string
-        minTs:
-          type: string
-          format: date-time
-          nullable: true
-        maxTs:
-          type: string
-          format: date-time
-          nullable: true
-        rules:  
-          type: object
-          properties:
-            total:
-              type: integer
+          $ref: '#/components/schemas/BenchmarkId'
         findings:
           type: object
           properties:
+            high:
+              type: integer
             low:
               type: integer
             medium:
               type: integer
-            high:
-              type: integer
+        maxTs:
+          $ref: '#/components/schemas/MaxTs'
+        minTs:
+          $ref: '#/components/schemas/MinTs'
         result:
           type: object
           properties:
-            notchecked:
-              $ref: '#/components/schemas/CollectionStatusCount'
-            notapplicable:
-              $ref: '#/components/schemas/CollectionStatusCount'                 
-            pass:
+            error:
               $ref: '#/components/schemas/CollectionStatusCount'
             fail:
               $ref: '#/components/schemas/CollectionStatusCount'
-            unknown:
-              $ref: '#/components/schemas/CollectionStatusCount'
-            error:
-              $ref: '#/components/schemas/CollectionStatusCount'              
-            notselected:
+            fixed:
               $ref: '#/components/schemas/CollectionStatusCount'
             informational:
-              $ref: '#/components/schemas/CollectionStatusCount'   
-            fixed:
-              $ref: '#/components/schemas/CollectionStatusCount'                 
+              $ref: '#/components/schemas/CollectionStatusCount'
+            notapplicable:
+              $ref: '#/components/schemas/CollectionStatusCount'
+            notchecked:
+              $ref: '#/components/schemas/CollectionStatusCount'
+            notselected:
+              $ref: '#/components/schemas/CollectionStatusCount'
+            pass:
+              $ref: '#/components/schemas/CollectionStatusCount'
+            unknown:
+              $ref: '#/components/schemas/CollectionStatusCount'
+        rules:
+          type: object
+          properties:
+            total:
+              type: integer
         status:
           type: object
           properties:
+            accepted:
+              $ref: '#/components/schemas/CollectionStatusCount'
+            rejected:
+              $ref: '#/components/schemas/CollectionStatusCount'
             saved:
               $ref: '#/components/schemas/CollectionStatusCount'
             submitted:
               $ref: '#/components/schemas/CollectionStatusCount'
-            rejected:
-              $ref: '#/components/schemas/CollectionStatusCount'
-            accepted:
-              $ref: '#/components/schemas/CollectionStatusCount'
     CollectionStatusCount:
-      type: object
       additionalProperties: false
+      type: object
+      properties:
+        resultEngine:
+          type: integer
+        total:
+          type: integer
       required:
         - total
         - resultEngine
-      properties:
-        total:
-          type: integer
-        resultEngine:
-          type: integer
     CollectionStatusSettings:
-      type: object
       additionalProperties: false
-      required:
-        - canAccept
-        - minAcceptGrant
-        - resetCriteria
+      type: object
       properties:
         canAccept:
           type: boolean
         minAcceptGrant:
           type: integer
-          minimum: 2
-          maximum: 4
           example: 2
+          maximum: 4
+          minimum: 2
         resetCriteria:
           type: string
+          example: result
           enum:
             - any
             - result
-          example: 'result'
+      required:
+        - canAccept
+        - minAcceptGrant
+        - resetCriteria
     CollectionStig:
-      type: object
       additionalProperties: false
+      type: object
+      properties:
+        benchmarkDate:
+          $ref: '#/components/schemas/StringDateNullable'
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        revisionPinned:
+          type: boolean
+        revisionStr:
+          $ref: '#/components/schemas/RevisionStr'
+        ruleCount:
+          $ref: '#/components/schemas/RuleCount'
       required:
         - benchmarkId
         - revisionStr
         - benchmarkDate
         - revisionPinned
         - ruleCount
-      properties:
-        benchmarkId:
-          type: string
-        revisionStr:
-          $ref: '#/components/schemas/RevisionStr'   
-        benchmarkDate:
-          type: string
-          format: date
-          nullable: true
-        revisionPinned:
-          type: boolean   
-        ruleCount:
-          type: integer
     CollectionStigWithAssetCount:
-      type: object
       additionalProperties: false
+      type: object
+      properties:
+        assetCount:
+          $ref: '#/components/schemas/AssetCount'
+        assets:
+          items:
+            $ref: '#/components/schemas/AssetForCollection'
+          type: array
+        benchmarkDate:
+          $ref: '#/components/schemas/StringDateNullable'
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        revisionPinned:
+          type: boolean
+        revisionStr:
+          $ref: '#/components/schemas/RevisionStr'
+        ruleCount:
+          $ref: '#/components/schemas/RuleCount'
+        title:
+          $ref: '#/components/schemas/StatusText'
       required:
         - benchmarkId
         - revisionStr
@@ -5031,30 +5213,22 @@ components:
         - revisionPinned
         - ruleCount
         - assetCount
-      properties:
-        benchmarkId:
-          type: string
-        title:
-          type: string
-        revisionStr:
-          $ref: '#/components/schemas/RevisionStr'   
-        benchmarkDate:
-          type: string
-          format: date
-          nullable: true
-        revisionPinned:
-          type: boolean   
-        ruleCount:
-          type: integer
-        assetCount:
-          type: integer
-        assets:
-          type: array
-          items:
-            $ref: '#/components/schemas/AssetForCollection'
     CollectionStigWithIsDefault:
-      type: object
       additionalProperties: false
+      type: object
+      properties:
+        benchmarkDate:
+          $ref: '#/components/schemas/StringDateNullable'
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        isDefault:
+          type: boolean
+        revisionPinned:
+          type: boolean
+        revisionStr:
+          $ref: '#/components/schemas/RevisionStr'
+        ruleCount:
+          $ref: '#/components/schemas/RuleCount'
       required:
         - benchmarkId
         - revisionStr
@@ -5062,71 +5236,103 @@ components:
         - revisionPinned
         - ruleCount
         - isDefault
-      properties:
-        benchmarkId:
-          type: string
-        revisionStr:
-          $ref: '#/components/schemas/RevisionStr'   
-        benchmarkDate:
-          type: string
-          format: date
-          nullable: true
-        revisionPinned:
-          type: boolean   
-        ruleCount:
-          type: integer
-        isDefault:
-          type: boolean
     CollectionUpdate:
       type: object
       additionalProperties: false
       properties:
-        name:
-          type: string
         description:
-          type: string
-          nullable: true
-        settings:
-          $ref: '#/components/schemas/CollectionSettings'
-        metadata:
-          $ref: '#/components/schemas/Metadata'
+          $ref: '#/components/schemas/CollectionDescription'
         grants:
           type: array
           items:
             type: object
             properties:
-              userId:
-                type: string
               accessLevel:
-                type: integer
+                $ref: '#/components/schemas/AccessLevel'
+              userId:
+                $ref: '#/components/schemas/UserId'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        name:
+          $ref: '#/components/schemas/CollectionName'
+        settings:
+          $ref: '#/components/schemas/CollectionSettings'
+    CollectionsProjected:
+      additionalProperties: false
+      type: object
+      properties:
+        collectionId:
+          $ref: '#/components/schemas/CollectionId'
+        description:
+          $ref: '#/components/schemas/CollectionDescription'
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        name:
+          $ref: '#/components/schemas/CollectionName'
+        owners:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        settings:
+          $ref: '#/components/schemas/CollectionSettings'
+        statistics:
+          $ref: '#/components/schemas/CollectionStatistics'
+      required:
+        - collectionId
+        - name
+        - description
+        - settings
+        - metadata
     CommentaryString:
-      type: string
-      maxLength: 32767
+      $ref: '#/components/schemas/String32767'
     CommentaryStringNullable:
+      $ref: '#/components/schemas/String32767Nullable'
+    CommitBranch:
       type: string
+    CommitDescribe:
+      type: string
+    CommitObject:
+      type: object
+      additionalProperties: false
+      properties:
+        branch:
+          $ref: '#/components/schemas/CommitBranch'
+        describe:
+          $ref: '#/components/schemas/CommitDescribe'
+        sha:
+          $ref: '#/components/schemas/CommitSha'
+        tag:
+          $ref: '#/components/schemas/CommitTag'
+    CommitSha:
+      type: string
+    CommitTag:
+      type: string
+    Created:
+      $ref: '#/components/schemas/StringDateTime'
+    DefinitionString:
       nullable: true
-      maxLength: 32767                
-    Date:
       type: string
-      format: date
-      # pattern: '^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])$'        
     Detail:
       type: object
       properties:
-        dbInfo:
-          $ref: '#/components/schemas/DetailMySqlInfo'
         assetStig:
           type: array
           items:
             $ref: '#/components/schemas/DetailAssetStig'
+        dbInfo:
+          $ref: '#/components/schemas/DetailMySqlInfo'
     DetailAssetStig:
-      type: object
       additionalProperties: false
+      type: object
       properties:
-        collectionId:
-          $ref: '#/components/schemas/StringIntId'
         assetCnt:
           type: integer
+        collectionId:
+          $ref: '#/components/schemas/CollectionId'
         range01to05:
           type: integer
         range06to10:
@@ -5143,185 +5349,197 @@ components:
           additionalProperties:
             $ref: '#/components/schemas/DetailMySqlTableInfo'
     DetailMySqlTableInfo:
-      type: object
       additionalProperties: false
+      type: object
       properties:
+        autoIncrement:
+          nullable: true
+          type: integer
+        avgRowLength:
+          nullable: true
+          type: integer
+        createTime:
+          $ref: '#/components/schemas/StringDateTimeNullable'
+        dataLength:
+          nullable: true
+          type: integer
+        indexLength:
+          nullable: true
+          type: integer
+        maxDataLength:
+          nullable: true
+          type: integer
+        tableCollation:
+          nullable: true
+          type: string
         tableName:
           type: string
         tableRows:
+          nullable: true
           type: integer
-          nullable: true
-        tableCollation:
-          type: string
-          nullable: true
-        avgRowLength:
-          type: integer
-          nullable: true
-        dataLength:
-          type: integer
-          nullable: true
-        maxDataLength:
-          type: integer
-          nullable: true
-        indexLength:
-          type: integer
-          nullable: true
-        autoIncrement:
-          type: integer
-          nullable: true
-        createTime:
-          $ref: '#/components/schemas/StringDateTimeNullable'
         updateTime:
           $ref: '#/components/schemas/StringDateTimeNullable'
+    DisplayName:
+      $ref: '#/components/schemas/String255Nullable'
     EmassAp:
+      additionalProperties: false
       type: object
       nullable: true
-      additionalProperties: false
       properties:
         apAcronym:
+          $ref: '#/components/schemas/ApAcronym'
+        assessmentProcedure:
           type: string
         implementation:
-          type: string
-        assessmentProcedure:
           type: string
     Error:
       type: object
       properties:
-        error:
-          type: string
         detail:
+          type: string
+        error:
           type: string
         stack:
           type: string
     FindingProjected:
-      type: object
       additionalProperties: false
+      type: object
       properties:
-        assetCount:
-          type: integer
-        ruleId:
-          type: string      
-        groupId:
-          type: string
-        cci:
-          type: string
-          nullable: true
-        title:
-          type: string
-        definition:
-          type: string
-          nullable: true
         apAcronym:
-          type: string
-          nullable: true
-        severity:
-          $ref: '#/components/schemas/RuleSeverity'
+          $ref: '#/components/schemas/ApAcronym'
+        assetCount:
+          $ref: '#/components/schemas/AssetCount'
         assets:
           type: array
           items:
             $ref: '#/components/schemas/AssetBasic'
+        cci:
+          nullable: true
+          type: string
         ccis:
           type: array
-          minLength: 0
+          minItems: 0
           items:
-            $ref: '#/components/schemas/CciBasic'            
+            $ref: '#/components/schemas/CciBasic'
+        definition:
+          $ref: '#/components/schemas/DefinitionString'
+        groupId:
+          $ref: '#/components/schemas/GroupId'
         groups:
           type: array
           items:
             $ref: '#/components/schemas/GroupProjected'
+        ruleId:
+          $ref: '#/components/schemas/RuleId'
         rules:
           type: array
           items:
-            $ref: '#/components/schemas/RuleAbbr'      
+            $ref: '#/components/schemas/RuleAbbr'
+        severity:
+          $ref: '#/components/schemas/RuleSeverity'
         stigs:
           type: array
           items:
-            $ref: '#/components/schemas/CollectionStig'                              
+            $ref: '#/components/schemas/CollectionStig'
+        title:
+          $ref: '#/components/schemas/RuleTitle'
     Fix:
-      type: object
       additionalProperties: false
+      type: object
       properties:
         fixref:
           type: string
         text:
           type: string
+    GroupId:
+      $ref: '#/components/schemas/String255'
     GroupProjected:
-      type: object
       additionalProperties: false
+      type: object
       properties:
         groupId:
-          type: string
-        title:
-          type: string
-        severity:
-          type: string          
+          $ref: '#/components/schemas/GroupId'
         rules:
-            type: array
-            items:
-              $ref: '#/components/schemas/RuleAbbr'
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleAbbr'
+        severity:
+          $ref: '#/components/schemas/RuleSeverity'
+        title:
+          $ref: '#/components/schemas/GroupTitle'
+    GroupTitle:
+      $ref: '#/components/schemas/String255Nullable'
+    IndexDisa:
+      $ref: '#/components/schemas/String255'
     Label:
-      type: object
       additionalProperties: false
+      type: object
+      properties:
+        color:
+          $ref: '#/components/schemas/StringHexColor'
+        description:
+          $ref: '#/components/schemas/String255Nullable'
+        labelId:
+          $ref: '#/components/schemas/LabelId'
+        name:
+          $ref: '#/components/schemas/LabelName'
+        uses:
+          type: integer
       required:
         - name
         - description
         - color
         - labelId
         - uses
+    LabelBasic:
+      additionalProperties: false
+      type: object
       properties:
         labelId:
           $ref: '#/components/schemas/LabelId'
         name:
           $ref: '#/components/schemas/LabelName'
-        description:
-          $ref: '#/components/schemas/String255Nullable'
-        color:
-          $ref: '#/components/schemas/StringHexColor'
-        uses:
-          type: integer
-    LabelBasic:
-      type: object
-      additionalProperties: false
       required:
         - name
         - labelId
+    LabelCreate:
+      additionalProperties: false
+      type: object
       properties:
-        labelId:
-          $ref: '#/components/schemas/LabelId'
+        color:
+          $ref: '#/components/schemas/StringHexColor'
+        description:
+          $ref: '#/components/schemas/String255Nullable'
         name:
           $ref: '#/components/schemas/LabelName'
-    LabelCreate:
-      type: object
-      additionalProperties: false
       required:
         - name
         - description
         - color
-      properties:
-        name:
-          $ref: '#/components/schemas/LabelName'
-        description:
-          $ref: '#/components/schemas/String255Nullable'
-        color:
-          $ref: '#/components/schemas/StringHexColor'
     LabelId:
       $ref: '#/components/schemas/StringUuid'
     LabelIdNullable:
       $ref: '#/components/schemas/StringUuidNullable'
     LabelName:
-      type: string
-      minLength: 1
       maxLength: 16
+      minLength: 1
+      type: string
     LabelUpdate:
-      type: object
       additionalProperties: false
+      type: object
       properties:
-        name:
-          $ref: '#/components/schemas/LabelName'
-        description:
-          $ref: '#/components/schemas/String255Nullable'
         color:
           $ref: '#/components/schemas/StringHexColor'
+        description:
+          $ref: '#/components/schemas/String255Nullable'
+        name:
+          $ref: '#/components/schemas/LabelName'
+    LocationString:
+      type: string
+    MaxTs:
+      format: date-time
+      nullable: true
+      type: string
     Metadata:
       type: object
       additionalProperties:
@@ -5329,234 +5547,173 @@ components:
     MetadataKey:
       type: string
     MetadataValue:
-      type: string   
-    MetricsUnagg:
+      type: string
+    MetricsAggAsset:
       type: object
-      required:
-        - assetId
-        - name
-        - labels
-        - benchmarkId
-        - title
-        - revisionStr
-        - revisionPinned
       properties:
         assetId:
-          type: string
-        name:
-          type: string
+          $ref: '#/components/schemas/AssetId'
+        benchmarkIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/BenchmarkId'
+        fqdn:
+          $ref: '#/components/schemas/AssetFqdn'
+        ip:
+          $ref: '#/components/schemas/AssetIp'
         labels:
           type: array
           items:
             $ref: '#/components/schemas/LabelBasic'
-        benchmarkId:
-          $ref: '#/components/schemas/BenchmarkId'
-        title:
-          $ref: '#/components/schemas/String255'
-        revisionStr:
-          $ref: '#/components/schemas/RevisionStrRaw'
-        revisionPinned:
-          type: boolean
-    MetricsDetailUnagg:
-      allOf:
-        - $ref: '#/components/schemas/MetricsUnagg'
-        - $ref: '#/components/schemas/MetricsDetail'
-    MetricsSummaryUnagg:
-      allOf:
-        - $ref: '#/components/schemas/MetricsUnagg'
-        - $ref: '#/components/schemas/MetricsSummary'       
-    MetricsAggAsset:
-      type: object
+        mac:
+          $ref: '#/components/schemas/AssetMac'
+        name:
+          $ref: '#/components/schemas/AssetName'
+        noncomputing:
+          $ref: '#/components/schemas/AssetNoncomputing'
       required:
         - assetId
         - name
         - labels
         - benchmarkIds
-      properties:
-        assetId:
-          type: string
-        name:
-          type: string
-        labels:
-          type: array
-          items:
-            $ref: '#/components/schemas/LabelBasic'
-        fqdn:
-          type: string
-          nullable: true
-          maxLength: 255
-        ip:
-          type: string
-          nullable: true
-          maxLength: 255
-        mac:
-          type: string
-          nullable: true
-          maxLength: 255
-        noncomputing:
-          type: boolean
-        benchmarkIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/BenchmarkId'
-    MetricsDetailAggAsset:
-      allOf:
-        - $ref: '#/components/schemas/MetricsAggAsset'
-        - $ref: '#/components/schemas/MetricsDetail'
-    MetricsSummaryAggAsset:
-      allOf:
-        - $ref: '#/components/schemas/MetricsAggAsset'
-        - $ref: '#/components/schemas/MetricsSummary'
     MetricsAggCollection:
       type: object
+      properties:
+        assets:
+          type: integer
+        checklists:
+          type: integer
+        collectionId:
+          $ref: '#/components/schemas/CollectionId'
+        name:
+          $ref: '#/components/schemas/CollectionName'
+        stigs:
+          type: integer
       required:
         - collectionId
         - name
         - checklists
         - assets
         - stigs
-      properties:
-        collectionId:
-          type: string
-        name:
-          type: string
-        checklists:
-          type: integer
-        assets:
-          type: integer
-        stigs:
-          type: integer
-    MetricsDetailAggCollection:
-      allOf:
-        - $ref: '#/components/schemas/MetricsAggCollection'
-        - $ref: '#/components/schemas/MetricsDetail'
-    MetricsSummaryAggCollection:
-      allOf:
-        - $ref: '#/components/schemas/MetricsAggCollection'
-        - $ref: '#/components/schemas/MetricsSummary'
     MetricsAggLabel:
       type: object
+      properties:
+        assets:
+          type: integer
+        labelId:
+          $ref: '#/components/schemas/LabelIdNullable'
+        name:
+          nullable: true
+          type: string
       required:
         - labelId
         - name
         - assets
+    MetricsAggMeta:
+      type: object
       properties:
-        labelId:
-          $ref: '#/components/schemas/LabelIdNullable'
-        name:
-          type: string
-          nullable: true
         assets:
           type: integer
-    MetricsDetailAggLabel:
-      allOf:
-        - $ref: '#/components/schemas/MetricsAggLabel'
-        - $ref: '#/components/schemas/MetricsDetail'
-    MetricsSummaryAggLabel:
-      allOf:
-        - $ref: '#/components/schemas/MetricsAggLabel'
-        - $ref: '#/components/schemas/MetricsSummary'
+        checklists:
+          type: integer
+        collections:
+          type: integer
+        stigs:
+          type: integer
+      required:
+        - collections
+        - assets
+        - stigs
+        - checklists
     MetricsAggStig:
       type: object
+      properties:
+        assets:
+          type: integer
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        collections:
+          type: integer
+        revisionPinned:
+          type: boolean
+        revisionStr:
+          $ref: '#/components/schemas/RevisionStrRaw'
+        ruleCount:
+          $ref: '#/components/schemas/RuleCount'
+        title:
+          $ref: '#/components/schemas/StigTitle'
       required:
         - benchmarkId
         - title
         - assets
         - revisionStr
         - ruleCount
-      properties:
-        benchmarkId:
-          $ref: '#/components/schemas/BenchmarkId'
-        title:
-          $ref: '#/components/schemas/String255'
-        revisionStr:
-          $ref: '#/components/schemas/RevisionStrRaw'
-        revisionPinned:
-          type: boolean
-        collections:
-          type: integer
-        assets:
-          type: integer
-        ruleCount:
-          type: integer
-    MetricsDetailAggStig:
-      allOf:
-        - $ref: '#/components/schemas/MetricsAggStig'
-        - $ref: '#/components/schemas/MetricsDetail'
-    MetricsSummaryAggStig:
-      allOf:
-        - $ref: '#/components/schemas/MetricsAggStig'
-        - $ref: '#/components/schemas/MetricsSummary'
-    MetricsAggMeta:
-      type: object
-      required:
-        - collections
-        - assets
-        - stigs
-        - checklists
-      properties:
-        collections:
-          type: integer
-        assets:
-          type: integer
-        stigs:
-          type: integer
-        checklists:
-          type: integer
-    MetricsDetailAggMeta:
-      allOf:
-        - $ref: '#/components/schemas/MetricsAggMeta'
-        - $ref: '#/components/schemas/MetricsDetail'
-    MetricsSummaryAggMeta:
-      allOf:
-        - $ref: '#/components/schemas/MetricsAggMeta'
-        - $ref: '#/components/schemas/MetricsSummary'
     MetricsDetail:
-      type: object
-      required:
-        - metrics
       properties:
         metrics:
-          type: object
           additionalProperties: false
-          required:
-            - assessments
-            - assessmentsBySeverity
-            - assessed
-            - minTs
-            - maxTs
-            - maxTouchTs
-            - results
-            - statuses
-            - findings
+          type: object
           properties:
+            assessed:
+              type: integer
             assessments:
               type: integer
             assessmentsBySeverity:
-              type: object
               additionalProperties: false
-              required:
-                - low
-                - medium
-                - high
+              type: object
               properties:
+                high:
+                  type: integer
                 low:
                   type: integer
                 medium:
                   type: integer
+              required:
+                - low
+                - medium
+                - high
+            findings:
+              additionalProperties: false
+              type: object
+              properties:
                 high:
-                  type: integer                    
-            assessed:
-              type: integer
-            minTs:
-              $ref: '#/components/schemas/StringDateTimeNullable'
-            maxTs:
-              $ref: '#/components/schemas/StringDateTimeNullable'
+                  type: integer
+                low:
+                  type: integer
+                medium:
+                  type: integer
+              required:
+                - low
+                - medium
+                - high
             maxTouchTs:
               $ref: '#/components/schemas/StringDateTimeNullable'
+            maxTs:
+              $ref: '#/components/schemas/MaxTs'
+            minTs:
+              $ref: '#/components/schemas/MinTs'
             results:
-              type: object
               additionalProperties: false
+              type: object
+              properties:
+                error:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                fail:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                fixed:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                informational:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                notapplicable:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                notchecked:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                notselected:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                pass:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                unknown:
+                  $ref: '#/components/schemas/CollectionStatusCount'
               required:
                 - notchecked
                 - notapplicable
@@ -5567,59 +5724,117 @@ components:
                 - notselected
                 - informational
                 - fixed
-              properties:
-                notchecked:
-                  $ref: '#/components/schemas/CollectionStatusCount'
-                notapplicable:
-                  $ref: '#/components/schemas/CollectionStatusCount'                 
-                pass:
-                  $ref: '#/components/schemas/CollectionStatusCount'
-                fail:
-                  $ref: '#/components/schemas/CollectionStatusCount'
-                unknown:
-                  $ref: '#/components/schemas/CollectionStatusCount'
-                error:
-                  $ref: '#/components/schemas/CollectionStatusCount'              
-                notselected:
-                  $ref: '#/components/schemas/CollectionStatusCount'
-                informational:
-                  $ref: '#/components/schemas/CollectionStatusCount'   
-                fixed:
-                  $ref: '#/components/schemas/CollectionStatusCount'                 
             statuses:
               type: object
               properties:
+                accepted:
+                  $ref: '#/components/schemas/CollectionStatusCount'
+                rejected:
+                  $ref: '#/components/schemas/CollectionStatusCount'
                 saved:
                   $ref: '#/components/schemas/CollectionStatusCount'
                 submitted:
                   $ref: '#/components/schemas/CollectionStatusCount'
-                rejected:
-                  $ref: '#/components/schemas/CollectionStatusCount'
-                accepted:
-                  $ref: '#/components/schemas/CollectionStatusCount'
+          required:
+            - assessments
+            - assessmentsBySeverity
+            - assessed
+            - minTs
+            - maxTs
+            - maxTouchTs
+            - results
+            - statuses
+            - findings
+      required:
+        - metrics
+    MetricsDetailAggAsset:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggAsset'
+        - $ref: '#/components/schemas/MetricsDetail'
+    MetricsDetailAggCollection:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggCollection'
+        - $ref: '#/components/schemas/MetricsDetail'
+    MetricsDetailAggLabel:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggLabel'
+        - $ref: '#/components/schemas/MetricsDetail'
+    MetricsDetailAggMeta:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggMeta'
+        - $ref: '#/components/schemas/MetricsDetail'
+    MetricsDetailAggStig:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggStig'
+        - $ref: '#/components/schemas/MetricsDetail'
+    MetricsDetailUnagg:
+      allOf:
+        - $ref: '#/components/schemas/MetricsUnagg'
+        - $ref: '#/components/schemas/MetricsDetail'
+    MetricsSummary:
+      properties:
+        metrics:
+          additionalProperties: false
+          type: object
+          properties:
+            assessed:
+              type: integer
+            assessments:
+              type: integer
             findings:
-              type: object
               additionalProperties: false
-              required:
-                - low
-                - medium
-                - high
+              type: object
               properties:
+                high:
+                  type: integer
                 low:
                   type: integer
                 medium:
                   type: integer
-                high:
-                  type: integer            
-    MetricsSummary:
-      type: object
-      # additionalProperties: false
-      required:
-        - metrics
-      properties:
-        metrics:
-          type: object
-          additionalProperties: false
+              required:
+                - low
+                - medium
+                - high
+            maxTouchTs:
+              $ref: '#/components/schemas/StringDateTimeNullable'
+            maxTs:
+              $ref: '#/components/schemas/MaxTs'
+            minTs:
+              $ref: '#/components/schemas/MinTs'
+            results:
+              additionalProperties: false
+              type: object
+              properties:
+                fail:
+                  type: integer
+                notapplicable:
+                  type: integer
+                pass:
+                  type: integer
+                unassessed:
+                  type: integer
+              required:
+                - pass
+                - fail
+                - notapplicable
+                - unassessed
+            statuses:
+              additionalProperties: false
+              type: object
+              properties:
+                accepted:
+                  type: integer
+                rejected:
+                  type: integer
+                saved:
+                  type: integer
+                submitted:
+                  type: integer
+              required:
+                - saved
+                - submitted
+                - accepted
+                - rejected
           required:
             - assessments
             - assessed
@@ -5629,108 +5844,108 @@ components:
             - results
             - statuses
             - findings
-          properties:
-            assessments:
-              type: integer
-            assessed:
-              type: integer
-            minTs:
-              $ref: '#/components/schemas/StringDateTimeNullable'
-            maxTs:
-              $ref: '#/components/schemas/StringDateTimeNullable'
-            maxTouchTs:
-              $ref: '#/components/schemas/StringDateTimeNullable'
-            results:
-              type: object
-              additionalProperties: false
-              required:
-                - pass
-                - fail
-                - notapplicable
-                - unassessed
-              properties:
-                pass:
-                  type: integer
-                fail:
-                  type: integer
-                notapplicable:
-                  type: integer
-                unassessed:
-                  type: integer
-            statuses:
-              type: object
-              additionalProperties: false
-              required:
-                - saved
-                - submitted
-                - accepted
-                - rejected
-              properties:
-                saved:
-                  type: integer
-                submitted:
-                  type: integer
-                accepted:
-                  type: integer
-                rejected:
-                  type: integer
-            findings:
-              type: object
-              additionalProperties: false
-              required:
-                - low
-                - medium
-                - high
-              properties:
-                low:
-                  type: integer
-                medium:
-                  type: integer
-                high:
-                  type: integer
+      required:
+        - metrics
+    MetricsSummaryAggAsset:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggAsset'
+        - $ref: '#/components/schemas/MetricsSummary'
+    MetricsSummaryAggCollection:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggCollection'
+        - $ref: '#/components/schemas/MetricsSummary'
+    MetricsSummaryAggLabel:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggLabel'
+        - $ref: '#/components/schemas/MetricsSummary'
+    MetricsSummaryAggMeta:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggMeta'
+        - $ref: '#/components/schemas/MetricsSummary'
+    MetricsSummaryAggStig:
+      allOf:
+        - $ref: '#/components/schemas/MetricsAggStig'
+        - $ref: '#/components/schemas/MetricsSummary'
+    MetricsSummaryUnagg:
+      allOf:
+        - $ref: '#/components/schemas/MetricsUnagg'
+        - $ref: '#/components/schemas/MetricsSummary'
+    MetricsUnagg:
+      type: object
+      properties:
+        assetId:
+          type: string
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        labels:
+          items:
+            $ref: '#/components/schemas/LabelBasic'
+          type: array
+        name:
+          type: string
+        revisionPinned:
+          type: boolean
+        revisionStr:
+          $ref: '#/components/schemas/RevisionStrRaw'
+        title:
+          $ref: '#/components/schemas/StigTitle'
+      required:
+        - assetId
+        - name
+        - labels
+        - benchmarkId
+        - title
+        - revisionStr
+        - revisionPinned
+    MinTs:
+      format: date-time
+      nullable: true
+      type: string
+    ParentControl:
+      $ref: '#/components/schemas/String255'
     ResultEngine:
+      additionalProperties: false
       type: object
       nullable: true
-      additionalProperties: false
       properties:
-        type:
-          $ref: '#/components/schemas/ResultEngineType'
-        product:
-          $ref: '#/components/schemas/String255'
-        version:
-          $ref: '#/components/schemas/String255'
-        time:
-          $ref: '#/components/schemas/StringDateTime'
         checkContent:
           $ref: '#/components/schemas/ResultEngineCheckContent'
         overrides:
           type: array
-          minItems: 1
           items:
             $ref: '#/components/schemas/ResultEngineOverride'
+          minItems: 1
+        product:
+          $ref: '#/components/schemas/String255'
+        time:
+          $ref: '#/components/schemas/StringDateTime'
+        type:
+          $ref: '#/components/schemas/ResultEngineType'
+        version:
+          $ref: '#/components/schemas/VersionString'
       required:
         - product
         - type
     ResultEngineCheckContent:
-      type: object
       additionalProperties: false
       nullable: true
+      type: object       
       properties:
-        location:
-          $ref: '#/components/schemas/String255'
         component:
           $ref: '#/components/schemas/String255'
+        location:
+          $ref: '#/components/schemas/LocationString'
       required:
         - location
     ResultEngineOverride:
-      type: object
       additionalProperties: false
+      type: object
       properties:
         authority:
           $ref: '#/components/schemas/String255'
-        oldResult:
-          $ref: '#/components/schemas/ReviewResult'
         newResult:
+          $ref: '#/components/schemas/ReviewResult'
+        oldResult:
           $ref: '#/components/schemas/ReviewResult'
         remark:
           $ref: '#/components/schemas/String255'
@@ -5748,6 +5963,45 @@ components:
         - other
     ReviewAsset:
       type: object
+      properties:
+        autoResult:
+          type: boolean
+        comment:
+          $ref: '#/components/schemas/CommentaryString'
+        detail:
+          $ref: '#/components/schemas/CommentaryString'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewHistory'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        resultEngine:
+          $ref: '#/components/schemas/ResultEngine'
+        rule:
+          $ref: '#/components/schemas/RuleAbbr'
+        ruleId:
+          $ref: '#/components/schemas/RuleId'
+        ruleIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleId'
+        status:
+          $ref: '#/components/schemas/ReviewStatusRead'
+        stigs:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionStigWithIsDefault'
+        touchTs:
+          $ref: '#/components/schemas/StringDateTime'
+        ts:
+          $ref: '#/components/schemas/StringDateTime'
+        userId:
+          $ref: '#/components/schemas/UserId'
+        username:
+          $ref: '#/components/schemas/Username'
       required:
         - ruleId
         - ruleIds
@@ -5759,62 +6013,6 @@ components:
         - username
         - ts
         - touchTs
-      properties:
-        ruleId:
-          $ref: '#/components/schemas/String255'
-        ruleIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/String255'
-        result:
-          $ref: '#/components/schemas/ReviewResult'
-        resultEngine:
-          $ref: '#/components/schemas/ResultEngine'
-        detail:
-          $ref: '#/components/schemas/CommentaryString'
-        comment:
-          $ref: '#/components/schemas/CommentaryString'
-        autoResult:
-          type: boolean
-        status:
-          $ref: '#/components/schemas/ReviewStatusRead'
-        userId:
-          $ref: '#/components/schemas/StringIntId'
-        username:
-          $ref: '#/components/schemas/String255'
-        ts:
-          $ref: '#/components/schemas/StringDateTime'
-        touchTs:
-          $ref: '#/components/schemas/StringDateTime'
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/ReviewHistory'
-        stigs:
-          type: array
-          items:
-            $ref: '#/components/schemas/CollectionStigWithIsDefault'
-        rule:
-          $ref: '#/components/schemas/RuleAbbr'
-    ReviewAssetRulePatch:
-      type: object
-      additionalProperties: false
-      minProperties: 1
-      properties:
-        result:
-          $ref: '#/components/schemas/ReviewResult'
-        detail:
-          $ref: '#/components/schemas/CommentaryString'
-        comment:
-          $ref: '#/components/schemas/CommentaryString'
-        resultEngine:
-          $ref: '#/components/schemas/ResultEngine'
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        status:
-          $ref: '#/components/schemas/ReviewStatusWrite'
     ReviewAssetPost:
       type: object
       required:
@@ -5825,7 +6023,7 @@ components:
       additionalProperties: false
       properties:
         ruleId:
-          $ref: '#/components/schemas/String255'
+          $ref: '#/components/schemas/RuleId'
         result:
           $ref: '#/components/schemas/ReviewResult'
         resultEngine:
@@ -5840,30 +6038,80 @@ components:
           $ref: '#/components/schemas/Metadata'
         status:
           $ref: '#/components/schemas/ReviewStatusWrite'
-    ReviewAssetRulePut:
+    ReviewAssetRulePatch:
+      additionalProperties: false
       type: object
+      minProperties: 1
+      properties:
+        comment:
+          $ref: '#/components/schemas/CommentaryString'
+        detail:
+          $ref: '#/components/schemas/CommentaryString'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        resultEngine:
+          $ref: '#/components/schemas/ResultEngine'
+        status:
+          $ref: '#/components/schemas/ReviewStatusWrite'
+    ReviewAssetRulePut:
+      additionalProperties: false
+      type: object
+      properties:
+        autoResult:
+          type: boolean
+        comment:
+          $ref: '#/components/schemas/CommentaryStringNullable'
+        detail:
+          $ref: '#/components/schemas/CommentaryStringNullable'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        resultEngine:
+          $ref: '#/components/schemas/ResultEngine'
+        status:
+          $ref: '#/components/schemas/ReviewStatusWrite'
       required:
         - result
         - detail
         - comment
-      additionalProperties: false
+    ReviewAssetRuleRead:
+      type: object
       properties:
+        autoResult:
+          type: boolean
+        comment:
+          $ref: '#/components/schemas/CommentaryString'
+        detail:
+          $ref: '#/components/schemas/CommentaryString'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewHistory'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
         result:
           $ref: '#/components/schemas/ReviewResult'
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
-        detail:
-          $ref: '#/components/schemas/CommentaryStringNullable'
-        comment:
-          $ref: '#/components/schemas/CommentaryStringNullable'
-        autoResult:
-          type: boolean
-        metadata:
-          $ref: '#/components/schemas/Metadata'
+        rule:
+          $ref: '#/components/schemas/RuleAbbr'
         status:
-          $ref: '#/components/schemas/ReviewStatusWrite'
-    ReviewAssetRuleRead:
-      type: object
+          $ref: '#/components/schemas/ReviewStatusRead'
+        stigs:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionStigWithIsDefault'
+        touchTs:
+          $ref: '#/components/schemas/StringDateTime'
+        ts:
+          $ref: '#/components/schemas/StringDateTime'
+        userId:
+          $ref: '#/components/schemas/UserId'
+        username:
+          $ref: '#/components/schemas/Username'
       required:
         - result
         - detail
@@ -5873,88 +6121,55 @@ components:
         - ts
         - status
         - touchTs
+    ReviewAssetWrite:
+      additionalProperties: false
+      type: object
       properties:
-        result:
-          $ref: '#/components/schemas/ReviewResult'
-        resultEngine:
-          $ref: '#/components/schemas/ResultEngine'
-        detail:
-          $ref: '#/components/schemas/CommentaryString'
-        comment:
-          $ref: '#/components/schemas/CommentaryString'
         autoResult:
           type: boolean
-        userId:
-          $ref: '#/components/schemas/StringIntId'
-        username:
-          $ref: '#/components/schemas/String255'
-        ts:
-          $ref: '#/components/schemas/StringDateTime'
-        touchTs:
-          $ref: '#/components/schemas/StringDateTime'
+        comment:
+          $ref: '#/components/schemas/StringMaxNullable'
+        detail:
+          $ref: '#/components/schemas/CommentaryStringNullable'
         metadata:
           $ref: '#/components/schemas/Metadata'
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        ruleId:
+          $ref: '#/components/schemas/RuleId'
         status:
-          $ref: '#/components/schemas/ReviewStatusRead'
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/ReviewHistory'
-        stigs:
-          type: array
-          items:
-            $ref: '#/components/schemas/CollectionStigWithIsDefault'
-        rule:
-          $ref: '#/components/schemas/RuleAbbr'
-    ReviewAssetWrite:
-      type: object
+          $ref: '#/components/schemas/ReviewStatusRestrictedWrite'
       required:
         - ruleId
         - result
         - detail
         - comment
         - autoResult
-      additionalProperties: false
-      properties:
-        ruleId:
-          $ref: '#/components/schemas/String255'
-        result:
-          $ref: '#/components/schemas/ReviewResult'
-        detail:
-          $ref: '#/components/schemas/StringMaxNullable'
-        comment:
-          $ref: '#/components/schemas/StringMaxNullable'
-        autoResult:
-          type: boolean
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        status:
-          $ref: '#/components/schemas/ReviewStatusRestrictedWrite'
     ReviewBatch:
+      additionalProperties: false
       type: object
+      properties:
+        action:
+          $ref: '#/components/schemas/ReviewBatchAction'
+        assets:
+          $ref: '#/components/schemas/ReviewBatchAssetsCriteria'
+        dryRun:
+          default: false
+          type: boolean
+        rules:
+          $ref: '#/components/schemas/ReviewBatchRulesCriteria'
+        source:
+          $ref: '#/components/schemas/ReviewBatchSource'
+        updateFilters:
+          type: array 
+          items:
+            $ref: '#/components/schemas/ReviewBatchFilter'
       required:
         - source
         - assets
         - rules
-      additionalProperties: false
-      properties:
-        source:
-          $ref: '#/components/schemas/ReviewBatchSource'
-        assets:
-          $ref: '#/components/schemas/ReviewBatchAssetsCriteria'
-        rules:
-          $ref: '#/components/schemas/ReviewBatchRulesCriteria'
-        action:
-          $ref: '#/components/schemas/ReviewBatchAction'
-        updateFilters:
-          type: array
-          items:
-            $ref: '#/components/schemas/ReviewBatchFilter'
-        dryRun:
-          type: boolean
-          default: false
     ReviewBatchAction:
-      type: string
+      type: string  
       enum:
         - insert
         - update
@@ -5963,49 +6178,45 @@ components:
       oneOf:
         - $ref: '#/components/schemas/ReviewBatchCriteria_AssetIds'
         - $ref: '#/components/schemas/ReviewBatchCriteria_BenchmarkIds'
-    ReviewBatchRulesCriteria:
-      oneOf:
-        - $ref: '#/components/schemas/ReviewBatchCriteria_RuleIds'
-        - $ref: '#/components/schemas/ReviewBatchCriteria_BenchmarkIds'
     ReviewBatchCriteria_AssetIds:
-      type: object
-      required:
-        - assetIds
       additionalProperties: false
+      type: object
       properties:
         assetIds:
           type: array
-          minItems: 1
-          maxItems: 2500
-          uniqueItems: true
           items:
             $ref: '#/components/schemas/AssetId'
-    ReviewBatchCriteria_BenchmarkIds:
-      type: object
+          maxItems: 2500
+          minItems: 1
+          uniqueItems: true
       required:
-        - benchmarkIds
+        - assetIds
+    ReviewBatchCriteria_BenchmarkIds:
       additionalProperties: false
+      type: object
       properties:
         benchmarkIds:
           type: array
-          minItems: 1
-          maxItems: 50
-          uniqueItems: true
           items:
             $ref: '#/components/schemas/BenchmarkId'
-    ReviewBatchCriteria_RuleIds:
-      type: object
+          maxItems: 50
+          minItems: 1
+          uniqueItems: true
       required:
-        - ruleIds
+        - benchmarkIds
+    ReviewBatchCriteria_RuleIds:
       additionalProperties: false
+      type: object
       properties:
         ruleIds:
           type: array
-          minItems: 1
-          maxItems: 500
-          uniqueItems: true
           items:
             $ref: '#/components/schemas/String255'
+          maxItems: 500
+          minItems: 1
+          uniqueItems: true
+      required:
+        - ruleIds
     ReviewBatchFilter:
       oneOf:
         - $ref: '#/components/schemas/ReviewBatchFilter_String'
@@ -6013,135 +6224,119 @@ components:
         - $ref: '#/components/schemas/ReviewBatchFilter_Status'
         - $ref: '#/components/schemas/ReviewBatchFilter_Date'
         - $ref: '#/components/schemas/ReviewBatchFilter_User'
-    ReviewBatchFilter_String:
-      type: object
-      required:
-        - field
-        - value
+    ReviewBatchFilter_Date:
       additionalProperties: false
+      type: object
       properties:
-        field:
-          type: string
-          enum:
-            - detail
-            - comment
-            - statusText
         condition:
+          default: equals
           type: string
-          default: 'equals'
           enum:
             - equals
-            - contains
-            - beginsWith
-            - endsWith
-        value:
-          type: string
-    ReviewBatchFilter_Date:
-      type: object
-      required:
-        - field
-        - value
-      additionalProperties: false
-      properties:
+            - lessThan
+            - greaterThan
         field:
           type: string
           enum:
             - ts
             - statusTs
             - touchTs
-        condition:
-          type: string
-          default: 'equals'
-          enum:
-            - equals
-            - lessThan
-            - greaterThan
         value:
           $ref: '#/components/schemas/StringDateTime'
-    ReviewBatchFilter_Result:
-      type: object
       required:
         - field
         - value
+    ReviewBatchFilter_Result:
       additionalProperties: false
+      type: object
       properties:
+        condition:
+          default: equals
+          type: string
+          enum:
+            - equals
+            - notequal
         field:
           type: string
           enum:
             - result
-        condition:
-          type: string
-          default: 'equals'
-          enum:
-            - equals
-            - notequal
         value:
           $ref: '#/components/schemas/ReviewResult'
-    ReviewBatchFilter_Status:
-      type: object
       required:
         - field
         - value
+    ReviewBatchFilter_Status:
       additionalProperties: false
+      type: object
       properties:
+        condition:
+          default: equals
+          type: string
+          enum:
+            - equals
+            - notequal
         field:
           type: string
           enum:
             - statusLabel
             - status
-        condition:
-          type: string
-          default: 'equals'
-          enum:
-            - equals
-            - notequal
         value:
           $ref: '#/components/schemas/ReviewStatusLabel'
-    ReviewBatchFilter_User:
-      type: object
       required:
         - field
         - value
+    ReviewBatchFilter_String:
       additionalProperties: false
+      type: object
       properties:
+        condition:
+          default: equals
+          type: string
+          enum:
+            - equals
+            - contains
+            - beginsWith
+            - endsWith
+        field:
+          type: string
+          enum:
+            - detail
+            - comment
+            - statusText
+        value:
+          type: string
+      required:
+        - field
+        - value
+    ReviewBatchFilter_User:
+      additionalProperties: false
+      type: object
+      properties:
+        condition:
+          default: equals
+          type: string
+          enum:
+            - equals
+            - notequal
         field:
           type: string
           enum:
             - userId
             - statusUserId
-        condition:
-          type: string
-          default: 'equals'
-          enum:
-            - equals
-            - notequal
         value:
           $ref: '#/components/schemas/StringIntId'
-          
-      
-    ReviewBatchSource:
-      type: object
       required:
-        - review
+        - field
+        - value
+    ReviewBatchResponse:
       additionalProperties: false
-      properties:
-        review:
-          $ref: '#/components/schemas/ReviewAssetRulePatch'
-    
-    ReviewBatchResponseDryRun:
       type: object
-      required:
-      - willInsert
-      - willUpdate
-      - willFailValidation
-      - validationErrors
-      additionalProperties: false
       properties:
-        willInsert:
+        failedValidation:
           type: integer
-        willUpdate:
+        inserted:
           type: integer
-        willFailValidation:
+        updated:
           type: integer
         validationErrors:
           type: array
@@ -6150,26 +6345,19 @@ components:
             properties:
               assetId:
                 $ref: '#/components/schemas/AssetId'
-              ruleId:
-                $ref: '#/components/schemas/String255'
               error:
                 $ref: '#/components/schemas/String255'
-     
-    ReviewBatchResponse:
-      type: object
+              ruleId:
+                $ref: '#/components/schemas/RuleId'
       required:
         - inserted
         - updated
         - failedValidation
         - validationErrors
+    ReviewBatchResponseDryRun:
       additionalProperties: false
+      type: object
       properties:
-        inserted:
-          type: integer
-        updated:
-          type: integer
-        failedValidation:
-          type: integer
         validationErrors:
           type: array
           items:
@@ -6177,12 +6365,59 @@ components:
             properties:
               assetId:
                 $ref: '#/components/schemas/AssetId'
-              ruleId:
-                $ref: '#/components/schemas/String255'
               error:
                 $ref: '#/components/schemas/String255'
-    ReviewHistory:
+              ruleId:
+                $ref: '#/components/schemas/RuleId'
+        willFailValidation:
+          type: integer
+        willInsert:
+          type: integer
+        willUpdate:
+          type: integer
+      required:
+        - willInsert
+        - willUpdate
+        - willFailValidation
+        - validationErrors
+    ReviewBatchRulesCriteria:
+      oneOf:
+        - $ref: '#/components/schemas/ReviewBatchCriteria_RuleIds'
+        - $ref: '#/components/schemas/ReviewBatchCriteria_BenchmarkIds'
+    ReviewBatchSource:
+      additionalProperties: false
       type: object
+      properties:
+        review:
+          $ref: '#/components/schemas/ReviewAssetRulePatch'
+      required:
+        - review
+    ReviewHistory:
+      additionalProperties: false
+      type: object
+      properties:
+        autoResult:
+          type: boolean
+        comment:
+          $ref: '#/components/schemas/CommentaryString'
+        detail:
+          $ref: '#/components/schemas/CommentaryString'
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        resultEngine:
+          $ref: '#/components/schemas/ResultEngine'
+        ruleId:
+          $ref: '#/components/schemas/RuleId'
+        status:
+          $ref: '#/components/schemas/ReviewStatusRead'
+        touchTs:
+          $ref: '#/components/schemas/StringDateTime'
+        ts:
+          $ref: '#/components/schemas/StringDateTime'
+        userId:
+          $ref: '#/components/schemas/UserId'
+        username:
+          $ref: '#/components/schemas/Username'
       required:
         - result
         - detail
@@ -6193,186 +6428,139 @@ components:
         - ts
         - touchTs
         - ruleId
-      additionalProperties: false
-      properties:
-        result:
-          $ref: '#/components/schemas/ReviewResult'
-        resultEngine:
-          $ref: '#/components/schemas/ResultEngine'
-        detail:
-          $ref: '#/components/schemas/CommentaryString'
-        comment:
-          $ref: '#/components/schemas/CommentaryString'
-        autoResult:
-          type: boolean
-        status:
-          $ref: '#/components/schemas/ReviewStatusRead'
-        userId:
-          $ref: '#/components/schemas/StringIntId'
-        username:
-          $ref: '#/components/schemas/String255'
-        ts:
-          $ref: '#/components/schemas/StringDateTime'
-        touchTs:
-          $ref: '#/components/schemas/StringDateTime'
-        ruleId:
-          $ref: '#/components/schemas/String255'
     ReviewHistoryAsset:
-      type: object
-      required:
-        - assetId
-        - reviewHistories
       additionalProperties: false
+      type: object
       properties:
         assetId:
           $ref: '#/components/schemas/String255'
-        reviewHistories: 
+        reviewHistories:
           type: array
           items:
             $ref: '#/components/schemas/ReviewHistoryRule'
-    ReviewHistoryRule:
-      type: object
       required:
-        - ruleId
-        - history
+        - assetId
+        - reviewHistories
+    ReviewHistoryDeleted:
       additionalProperties: false
+      type: object
       properties:
-        ruleId:
-          $ref: '#/components/schemas/String255'       
+        HistoryEntriesDeleted:
+          type: integer
+      required:
+        - HistoryEntriesDeleted
+    ReviewHistoryRule:
+      additionalProperties: false
+      type: object
+      properties:
         history:
           type: array
           items:
             $ref: '#/components/schemas/ReviewHistory'
-    ReviewHistoryDeleted:     
-      type: object
+        ruleId:
+          $ref: '#/components/schemas/RuleId'
       required:
-        - HistoryEntriesDeleted
-      additionalProperties: false
-      properties:
-        HistoryEntriesDeleted: 
-          type: integer   
+        - ruleId
+        - history
     ReviewHistoryStats:
-      type: object
-      required:
-        - collectionHistoryEntryCount
-        - oldestHistoryEntryDate
       additionalProperties: false
+      type: object
       properties:
-        collectionHistoryEntryCount: 
-          type: integer
-        oldestHistoryEntryDate: 
-          $ref: '#/components/schemas/StringDateTime'
         assetHistoryEntryCounts:
           type: array
           items:
             $ref: '#/components/schemas/ReviewHistoryStatsAsset'
+        collectionHistoryEntryCount:
+          type: integer
+        oldestHistoryEntryDate:
+          $ref: '#/components/schemas/StringDateTime'
+      required:
+        - collectionHistoryEntryCount
+        - oldestHistoryEntryDate
     ReviewHistoryStatsAsset:
-      type: object
-      required: 
-        - assetId
-        - historyEntryCount
-        - oldestHistoryEntry
       additionalProperties: false
+      type: object
       properties:
         assetId:
           $ref: '#/components/schemas/String255'
         historyEntryCount:
           type: integer
         oldestHistoryEntry:
-          type: string
           nullable: true
-    ReviewResult:
-      type: string
-      enum:
-        - fail
-        - pass
-        - notapplicable
-        - notchecked
-        - unknown
-        - error
-        - notselected
-        - informational
-        - fixed
-    ReviewStatusLabel:
-      type: string
-      enum:
-        - saved
-        - submitted
-        - accepted
-        - rejected
-    ReviewStatusLabelRestricted:
-      type: string
-      enum:
-        - saved
-        - submitted
-    ReviewStatusWrite:
-      oneOf:
-        - $ref: '#/components/schemas/ReviewStatusLabel'
-        - type: object
-          required:
-            - label
-            - text
-          additionalProperties: false
-          properties:
-            label:
-              $ref: '#/components/schemas/ReviewStatusLabel'
-            text:
-              $ref: '#/components/schemas/StatusText'
-    ReviewStatusRestrictedWrite:
-      oneOf:
-        - $ref: '#/components/schemas/ReviewStatusLabelRestricted'
-        - type: object
-          required:
-            - label
-            - text
-          additionalProperties: false
-          properties:
-            label:
-              $ref: '#/components/schemas/ReviewStatusLabelRestricted'
-            text:
-              $ref: '#/components/schemas/StatusText'
-    ReviewStatusRead:
-      type: object
+          type: string
       required:
-        - label
-        - text
-        - user
-        - ts
-      additionalProperties: false
-      properties:
-        label:
-          $ref: '#/components/schemas/ReviewStatusLabel'
-        text:
-          $ref: '#/components/schemas/StatusText'
-        user:
-          $ref: '#/components/schemas/UserBasic'
-        ts:
-          $ref: '#/components/schemas/StringDateTime'
+        - assetId
+        - historyEntryCount
+        - oldestHistoryEntry
     ReviewPostResponse:
-      type: object
-      required:
-        - rejected
-        - affected
       additionalProperties: false
+      type: object
       properties:
-        rejected:
-          type: array
-          items:
-            type: object
-            properties:
-              ruleId:
-                $ref: '#/components/schemas/String255'
-              reason:
-                $ref: '#/components/schemas/String255'
         affected:
           type: object
           properties:
-            updated:
-              type: number
             inserted:
               type: number
+            updated:
+              type: number
+        rejected:
+          type: array
+          items:
+            type: object 
+            properties:
+              reason:
+                $ref: '#/components/schemas/String255'
+              ruleId:
+                $ref: '#/components/schemas/RuleId'
+      required:
+        - rejected
+        - affected
     ReviewRead:
+      additionalProperties: false
       type: object
+      properties:
+        assetId:
+          $ref: '#/components/schemas/StringIntId'
+        assetLabelIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelId'
+        assetName:
+          $ref: '#/components/schemas/String255'
+        autoResult:
+          type: boolean
+        comment:
+          $ref: '#/components/schemas/CommentaryStringNullable'
+        detail:
+          $ref: '#/components/schemas/CommentaryStringNullable'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        resultEngine:
+          $ref: '#/components/schemas/ResultEngine'
+        rule:
+          $ref: '#/components/schemas/RuleAbbr'
+        ruleId:
+          $ref: '#/components/schemas/RuleId'
+        ruleIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/String255'
+        status:
+          $ref: '#/components/schemas/ReviewStatusRead'
+        stigs:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionStigWithIsDefault'
+        touchTs:
+          $ref: '#/components/schemas/StringDateTime'
+        ts:
+          $ref: '#/components/schemas/StringDateTime'
+        userId:
+          $ref: '#/components/schemas/UserId'
+        username:
+          $ref: '#/components/schemas/Username'
       required:
         - assetId
         - assetName
@@ -6386,52 +6574,97 @@ components:
         - ts
         - touchTs
         - status
+    ReviewResult:
+      enum:
+        - fail
+        - pass
+        - notapplicable
+        - notchecked
+        - unknown
+        - error
+        - notselected
+        - informational
+        - fixed
+      type: string
+    ReviewStatusLabel:
+      enum:
+        - saved
+        - submitted
+        - accepted
+        - rejected
+      type: string
+    ReviewStatusLabelRestricted:
+      enum:
+        - saved
+        - submitted
+      type: string
+    ReviewStatusRead:
       additionalProperties: false
+      type: object
       properties:
-        assetId:
-          $ref: '#/components/schemas/StringIntId'
-        assetName:
-          $ref: '#/components/schemas/String255'
-        assetLabelIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/LabelId'              
-        ruleId:
-          $ref: '#/components/schemas/String255'
-        ruleIds:
-          type: array
-          items:
-            $ref: '#/components/schemas/String255'
-        result:
-          $ref: '#/components/schemas/ReviewResult'
-        resultEngine:
-          $ref: '#/components/schemas/ResultEngine'
-        detail:
-          $ref: '#/components/schemas/StringMaxNullable'
-        comment:
-          $ref: '#/components/schemas/StringMaxNullable'
-        autoResult:
-          type: boolean
-        userId:
-          $ref: '#/components/schemas/StringIntId'
-        username:
-          $ref: '#/components/schemas/String255'
+        label:
+          $ref: '#/components/schemas/ReviewStatusLabel'
+        text:
+          $ref: '#/components/schemas/StatusText'
         ts:
           $ref: '#/components/schemas/StringDateTime'
-        touchTs:
-          $ref: '#/components/schemas/StringDateTime'
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        status:
-          $ref: '#/components/schemas/ReviewStatusRead'
-        stigs:
+        user:
+          $ref: '#/components/schemas/UserBasic'
+      required:
+        - label
+        - text
+        - user
+        - ts
+    ReviewStatusRestrictedWrite:
+      oneOf:
+        - $ref: '#/components/schemas/ReviewStatusLabelRestricted'
+        - type: object
+        - additionalProperties: false
+          properties:
+            label:
+              $ref: '#/components/schemas/ReviewStatusLabelRestricted'
+            text:
+              $ref: '#/components/schemas/StatusText'
+          required:
+            - label
+            - text
+    ReviewStatusWrite:
+      oneOf:
+        - $ref: '#/components/schemas/ReviewStatusLabel'
+        - type: object
+          required:
+            - label
+            - text
+          additionalProperties: false
+          properties:
+            label:
+              $ref: '#/components/schemas/ReviewStatusLabel'
+            text:
+              $ref: '#/components/schemas/StatusText'
+    Revision:
+      additionalProperties: false
+      type: object
+      properties:
+        benchmarkDate:
+          $ref: '#/components/schemas/StringDateNullable'
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        collectionIds:
           type: array
           items:
-            $ref: '#/components/schemas/CollectionStigWithIsDefault'
-        rule:
-          $ref: '#/components/schemas/RuleAbbr'
-    Revision:
-      type: object
+            $ref: '#/components/schemas/CollectionId'
+        release:
+          $ref: '#/components/schemas/RevisionRelease'
+        revisionStr:
+          $ref: '#/components/schemas/RevisionStr'
+        ruleCount:
+          $ref: '#/components/schemas/RuleCount'
+        status:
+          $ref: '#/components/schemas/RevisionStatus'
+        statusDate:
+          $ref: '#/components/schemas/StringDateNullable'
+        version:
+          $ref: '#/components/schemas/VersionString'
       required:
         - benchmarkId
         - revisionStr
@@ -6442,86 +6675,132 @@ components:
         - statusDate
         - ruleCount
         - collectionIds
-      additionalProperties: false
-      properties:
-        benchmarkId:
-          type: string
-        revisionStr:
-          type: string
-        version:
-          type: string
-        release:
-          type: string
-        benchmarkDate:
-          type: string
-          format: date
-          nullable: true
-        status:
-          type: string
-          nullable: true
-        statusDate:
-          type: string
-          format: date
-        ruleCount:
-          type: integer
-        collectionIds:
-          type: array
-          items:
-            type: string
     RevisionBasic:
-      type: object
-      required:
-        - benchmarkId
-        - revisionStr      
       additionalProperties: false
+      type: object
       properties:
         benchmarkId:
-          $ref: '#/components/schemas/String255'
+          $ref: '#/components/schemas/BenchmarkId'
         revisionStr:
           $ref: '#/components/schemas/RevisionStr'
-    RevisionPost:
-      type: object
       required:
         - benchmarkId
         - revisionStr
-        - action
+    RevisionDate:
+      $ref: '#/components/schemas/StringDate'
+    RevisionPost:
       additionalProperties: false
+      type: object
       properties:
-        benchmarkId:
-          $ref: '#/components/schemas/String255'
-        revisionStr:
-          $ref: '#/components/schemas/RevisionStr'
         action:
           type: string
           enum:
             - inserted
             - preserved
             - replaced
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        revisionStr:
+          $ref: '#/components/schemas/RevisionStr'
+      required:
+        - benchmarkId
+        - revisionStr
+        - action
+    RevisionRelease:
+      $ref: '#/components/schemas/String45'
+    RevisionStatus:
+      $ref: '#/components/schemas/String45Nullable'
     RevisionStr:
-      type: string
       pattern: ^(V\d{1,3}R\d{1,3}(\.\d{1,3})?|latest)$
-    RevisionStrRaw:
       type: string
+    RevisionStrRaw:
       pattern: ^(V\d{1,3}R\d{1,3}(\.\d{1,3})?)$
+      type: string
+    RevisionVersion:
+      $ref: '#/components/schemas/StringIntId'
     RuleAbbr:
+      additionalProperties: false
       type: object
+      properties:
+        ruleId:
+          $ref: '#/components/schemas/RuleId'
+        severity:
+          type: string
+        title:
+          $ref: '#/components/schemas/RuleTitle'
+        version:
+          $ref: '#/components/schemas/VersionString'
       required:
         - ruleId
         - version
         - title
-        - severity      
+        - severity
+    RuleCount:
+      nullable: true
+      type: integer
+    RuleId:
+      $ref: '#/components/schemas/String45Nullable'
+    RuleProjected:
       additionalProperties: false
+      type: object
       properties:
+        ccis:
+          items:
+            $ref: '#/components/schemas/CciBasic'
+          type: array
+        check:
+          $ref: '#/components/schemas/Check'
+        detail:
+          additionalProperties: false
+          type: object
+          properties:
+            documentable:
+              nullable: true
+              type: string
+            falseNegatives:
+              nullable: true
+              type: string
+            falsePositives:
+              nullable: true
+              type: string
+            mitigationControl:
+              nullable: true
+              type: string
+            mitigations:
+              nullable: true
+              type: string
+            potentialImpacts:
+              nullable: true
+              type: string
+            responsibility:
+              nullable: true
+              type: string
+            severityOverrideGuidance:
+              nullable: true
+              type: string
+            thirdPartyTools:
+              nullable: true
+              type: string
+            vulnDiscussion:
+              nullable: true
+              type: string
+            weight:
+              nullable: true
+              type: string
+        fix:
+          $ref: '#/components/schemas/Fix'
+        groupId:
+          $ref: '#/components/schemas/GroupId'
+        groupTitle:
+          $ref: '#/components/schemas/GroupTitle'
         ruleId:
-          type: string
-        version:
-          type: string
-        title:
-          type: string
+          $ref: '#/components/schemas/RuleId'
         severity:
           type: string
-    RuleProjected:
-      type: object
+        title:
+          $ref: '#/components/schemas/RuleTitle'
+        version:
+          $ref: '#/components/schemas/VersionString'
       required:
         - ruleId
         - version
@@ -6529,85 +6808,50 @@ components:
         - severity
         - groupId
         - groupTitle
-      additionalProperties: false
-      properties:
-        ruleId:
-          type: string
-        version:
-          type: string
-        title:
-          type: string
-        severity:
-          type: string
-        groupId:
-          type: string
-        groupTitle:
-          type: string
-        detail:
-          type: object
-          additionalProperties: false 
-          properties:
-            weight:
-              type: string
-              nullable: true
-            vulnDiscussion:
-              type: string
-              nullable: true
-            falsePositives:
-              type: string
-              nullable: true
-            falseNegatives:
-              type: string
-              nullable: true
-            documentable:
-              type: string
-              nullable: true
-            mitigations:
-              type: string
-              nullable: true
-            severityOverrideGuidance:
-              type: string
-              nullable: true
-            potentialImpacts:
-              type: string
-              nullable: true
-            thirdPartyTools:
-              type: string
-              nullable: true
-            mitigationControl:
-              type: string
-              nullable: true
-            responsibility:
-              type: string   
-              nullable: true           
-        ccis:
-          type: array
-          items:
-            $ref: '#/components/schemas/CciBasic'
-        check:
-          $ref: '#/components/schemas/Check'
-        fix:
-          $ref: '#/components/schemas/Fix'
     RuleSeverity:
-      type: string
       enum:
         - high
         - medium
         - low
+      type: string
+    RuleTitle:
+      $ref: '#/components/schemas/StringMax'
     SCAPMap:
-      type: object
       additionalProperties: false
+      type: object
       properties:
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
         scapBenchmarkId:
           type: string
-        benchmarkId:
-          type: string
-    StatusText:
-      type: string
-      maxLength: 511
-      nullable: true
     STIG:
+      additionalProperties: false
       type: object
+      properties:
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        collectionIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionId'
+        lastRevisionDate:
+          $ref: '#/components/schemas/StringDateNullable'
+        lastRevisionStr:
+          type: string
+        revisionStrs:
+          type: array
+          items:
+            $ref: '#/components/schemas/RevisionStrRaw'
+        revisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Revision'
+        ruleCount:
+          $ref: '#/components/schemas/RuleCount'
+        status:
+          $ref: '#/components/schemas/StatusText'
+        title:
+          $ref: '#/components/schemas/StigTitle'
       required:
         - benchmarkId
         - title
@@ -6615,351 +6859,366 @@ components:
         - lastRevisionDate
         - ruleCount
         - collectionIds
-      additionalProperties: false
-      properties:
-        benchmarkId:
-          type: string
-        title:
-          type: string
-        status:
-          type: string
-          nullable: true
-        lastRevisionStr:
-          type: string
-        lastRevisionDate:
-          type: string
-          format: date
-          nullable: true
-        ruleCount:
-          type: integer
-        collectionIds:
-          type: array
-          items:
-            type: string
-        revisionStrs:
-          type: array
-          items:
-           $ref: '#/components/schemas/RevisionStrRaw'
-        revisions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Revision'
-    StigAssetPut:
-      type: object
-      required:
-        - benchmarkId
-        - assetId
-      additionalProperties: false
-      properties:
-        benchmarkId:
-          type: string
-        assetId:
-          type: string
+    StatusText:
+      $ref: '#/components/schemas/String511Nullable'
     StigAssetBasic:
+      additionalProperties: false
       type: object
+      properties:
+        asset:
+          $ref: '#/components/schemas/AssetBasic'
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
       required:
         - benchmarkId
         - asset
+    StigAssetPut:
       additionalProperties: false
+      type: object
+      properties:
+        assetId:
+          $ref: '#/components/schemas/AssetId'
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+      required:
+        - benchmarkId
+        - assetId
+    StigTitle:
+      $ref: '#/components/schemas/String255'
+    StigUserBasic:
+      additionalProperties: false
+      type: object
       properties:
         benchmarkId:
-          type: string
-        asset:
-          $ref: '#/components/schemas/AssetBasic'
-    StigUserBasic:
-      type: object
+          $ref: '#/components/schemas/BenchmarkId'
+        users:
+          items:
+            $ref: '#/components/schemas/UserBasic'
+          type: array
       required:
         - benchmarkId
         - users
-      additionalProperties: false
-      properties:
-        benchmarkId:
-          type: string
-        users:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserBasic'
+    String20:
+      maxLength: 20
+      type: string
+    String20Nullable:
+      maxLength: 20
+      nullable: true
+      type: string
     String255:
-      type: string
       maxLength: 255
+      type: string
     String255Nullable:
-      type: string
       maxLength: 255
       nullable: true
+      type: string
+    String32767:
+      maxLength: 32767
+      type: string
+    String32767Nullable:
+      maxLength: 32767
+      nullable: true
+      type: string
+    String45:
+      maxLength: 45
+      type: string
+    String45Nullable:
+      maxLength: 45
+      nullable: true
+      type: string
+    String511:
+      maxLength: 511
+      type: string
+    String511Nullable:
+      maxLength: 511
+      nullable: true
+      type: string
+    StringDate:
+      format: date
+      type: string
+    StringDateNullable:
+      format: date
+      nullable: true
+      type: string
     StringDateTime:
-      type: string
       format: date-time
+      type: string
     StringDateTimeNullable:
-      type: string
       format: date-time
       nullable: true
+      type: string
     StringHexColor:
+      example: aa33cc
+      pattern: ^[a-fA-F0-9]{6}$
       type: string
-      pattern: "^[a-fA-F0-9]{6}$"
-      example: "aa33cc"
     StringIntId:
-      type: string
-      minLength: 1
       maxLength: 10
-      pattern: "^[0-9]{1,10}$"
-    StringIntIdReadOnly:
+      minLength: 1
+      pattern: ^[0-9]{1,10}$
       type: string
-      pattern: "^[0-9]{1,10}$"
-      readOnly: true
     StringIntIdNullable:
-      type: string
-      pattern: "^[0-9]{1,10}$"
       nullable: true
-    StringMax:
+      pattern: ^[0-9]{1,10}$
       type: string
-      maxLength: 16777215
-    StringMaxNullable:
-      type: string
-      maxLength: 16777215
-      nullable: true
-    StringUuid:
-      type: string
-      pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
-    StringUuidReadOnly:
-      type: string
-      pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    StringIntIdReadOnly:
+      pattern: ^[0-9]{1,10}$
       readOnly: true
-    StringUuidNullable:
       type: string
-      pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    StringMax:
+      maxLength: 16777215
+      type: string
+    StringMaxNullable:
+      maxLength: 16777215
       nullable: true
+      type: string
+    StringUuid:
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+      type: string
+    StringUuidNullable:
+      nullable: true
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+      type: string
+    StringUuidReadOnly:
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+      readOnly: true
+      type: string
+    TextRefNist:
+      $ref: '#/components/schemas/String255'
+    TitleString:
+      $ref: '#/components/schemas/String255'
     UnreviewedAsset:
-      type: object
-      required:
-        - assetId
-        - name
-        - labels
-        - unreviewed
       additionalProperties: false
+      type: object
       properties:
         assetId:
-          $ref: '#/components/schemas/StringIntId'
-        name:
-          $ref: '#/components/schemas/String255'
+          $ref: '#/components/schemas/AssetId'
         labels:
           type: array
           items:
             $ref: '#/components/schemas/LabelBasic'
+        name:
+          $ref: '#/components/schemas/AssetName'
         unreviewed:
           type: array
           items:
             $ref: '#/components/schemas/UnreviewedAssetItem'
+      required:
+        - assetId
+        - name
+        - labels
+        - unreviewed
     UnreviewedAssetItem:
+      additionalProperties: false
       type: object
+      properties:
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        groupId:
+          $ref: '#/components/schemas/GroupId'
+        groupTitle:
+          $ref: '#/components/schemas/GroupTitle'
+        result:
+          $ref: '#/components/schemas/ChecklistResultUnreviewed'
+        ruleId:
+          $ref: '#/components/schemas/RuleId'
+        ruleTitle:
+          $ref: '#/components/schemas/RuleTitle'
+        severity:
+          $ref: '#/components/schemas/RuleSeverity'
       required:
         - result
         - ruleId
         - groupId
         - benchmarkId
+    UnreviewedRule:
       additionalProperties: false
+      type: object
       properties:
-        result:
-          $ref: '#/components/schemas/ChecklistResultUnreviewed'
-        ruleId:
-          $ref: '#/components/schemas/String255'
-        ruleTitle:
-          $ref: '#/components/schemas/StringMax'
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
         groupId:
-          $ref: '#/components/schemas/String255'
+          $ref: '#/components/schemas/GroupId'
         groupTitle:
-          $ref: '#/components/schemas/StringMax'
+          $ref: '#/components/schemas/GroupTitle'
+        ruleId:
+          $ref: '#/components/schemas/RuleId'
+        ruleTitle:
+          $ref: '#/components/schemas/RuleTitle'
         severity:
           $ref: '#/components/schemas/RuleSeverity'
-        benchmarkId:
-          $ref: '#/components/schemas/String255'
-    UnreviewedRule:
-      type: object
+        unreviewed:
+          type: array
+          items:
+            $ref: '#/components/schemas/UnreviewedRuleItem'
       required:
         - ruleId
         - groupId
         - benchmarkId
         - unreviewed
+    UnreviewedRuleItem:
       additionalProperties: false
+      type: object
       properties:
-        ruleId:
-          $ref: '#/components/schemas/String255'
-        ruleTitle:
-          $ref: '#/components/schemas/StringMax'
-        groupId:
-          $ref: '#/components/schemas/String255'
-        groupTitle:
-          $ref: '#/components/schemas/StringMax'
-        severity:
-          $ref: '#/components/schemas/RuleSeverity'
-        benchmarkId:
-          $ref: '#/components/schemas/String255'
-        unreviewed:
+        assetId:
+          $ref: '#/components/schemas/AssetId'
+        labels:
           type: array
           items:
-            $ref: '#/components/schemas/UnreviewedRuleItem'
-    UnreviewedRuleItem:
-      type: object
+            $ref: '#/components/schemas/LabelBasic'
+        name:
+          $ref: '#/components/schemas/AssetName'
+        result:
+          $ref: '#/components/schemas/ChecklistResultUnreviewed'
       required:
         - result
         - assetId
         - name
         - labels
-      additionalProperties: false
-      properties:
-        result:
-          $ref: '#/components/schemas/ChecklistResultUnreviewed'
-        assetId:
-          $ref: '#/components/schemas/StringIntId'
-        name:
-          $ref: '#/components/schemas/String255'
-        labels:
-          type: array
-          items:
-            $ref: '#/components/schemas/LabelBasic'
     User:
+      additionalProperties: false
       type: object
+      properties:
+        displayName:
+          $ref: '#/components/schemas/DisplayName'
+        email:
+          nullable: true
+          type: string
+        userId:
+          $ref: '#/components/schemas/UserId'
+        username:
+          $ref: '#/components/schemas/Username'
       required:
         - userId
         - username
         - displayName
-        - email  
-      additionalProperties: false
-      properties:
-        userId:
-          type: string
-          readOnly: true
-        username:
-          type: string
-        displayName:
-          type: string
-          nullable: true
-        email:
-          type: string
-          nullable: true
-    UserProjected:
-      type: object
-      required:
-        - userId
-        - username
-        - displayName
-        - email  
-      additionalProperties: false
-      properties:
-        userId:
-          type: string
-          readOnly: true
-        username:
-          type: string
-        displayName:
-          type: string
-          nullable: true
-        email:
-          type: string
-          nullable: true
-        privileges: 
-            $ref: '#/components/schemas/UserPrivileges'
-        collectionGrants:
-          type: array
-          items:
-            $ref: '#/components/schemas/CollectionGrantProjected'
-        statistics:
-          $ref: '#/components/schemas/UserStatistics'          
+        - email
     UserBasic:
-      type: object
-      required: 
-        - userId
-        - username
       additionalProperties: false
+      type: object
       properties:
         userId:
-          type: string
-          readOnly: true
+          $ref: '#/components/schemas/UserId'
         username:
-          type: string
-    UserCreateOrReplace:
+          $ref: '#/components/schemas/Username'
       required:
+        - userId
         - username
-        - collectionGrants
-      type: object
+    UserCreateOrReplace:
       additionalProperties: false
+      type: object
       properties:
-        username:
-          type: string
         collectionGrants:
           type: array
           items:
             $ref: '#/components/schemas/CollectionGrant'
+        username:
+          $ref: '#/components/schemas/Username'
+      required:
+        - username
+        - collectionGrants
     UserGrant:
+      additionalProperties: false
       type: object
+      properties:
+        accessLevel:
+          $ref: '#/components/schemas/AccessLevel'
+        userId:
+          $ref: '#/components/schemas/UserId'
       required:
         - userId
         - accessLevel
-      additionalProperties: false
-      properties:
-        userId:
-          type: string
-        accessLevel:
-          type: integer
-          minimum: 1
-          maximum: 4
     UserGrantProjected:
-      type: object
-      required:
-        - user          
-        - accessLevel
       additionalProperties: false
+      type: object
       properties:
+        accessLevel:
+          $ref: '#/components/schemas/AccessLevel'
         user:
           type: object
           properties:
             userId:
-              type: string
+              $ref: '#/components/schemas/UserId'
             username:
-              type: string
+              $ref: '#/components/schemas/Username'
           required:
             - userId
             - username
-        accessLevel:
-          type: integer
-          minimum: 1
-          maximum: 4
-    UserPrivileges: 
+      required:
+        - user
+        - accessLevel
+    UserId:
+      $ref: '#/components/schemas/StringIntId'
+    UserPrivileges:
       type: object
       additionalProperties: false
       properties:
+        canAdmin:
+          type: boolean
         canCreateCollection:
           type: boolean
-        canAdmin:
-          type: boolean          
-    UserStatistics:
+    UserProjected:
+      additionalProperties: false
       type: object
-      required: 
+      properties:
+        collectionGrants:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionGrantProjected'
+        displayName:
+          $ref: '#/components/schemas/DisplayName'
+        email:
+          nullable: true
+          type: string
+        privileges:
+          $ref: '#/components/schemas/UserPrivileges'
+        statistics:
+          $ref: '#/components/schemas/UserStatistics'
+        userId:
+          $ref: '#/components/schemas/UserId'
+        username:
+          $ref: '#/components/schemas/Username'
+      required:
+        - userId
+        - username
+        - displayName
+        - email
+    UserStatistics:
+      additionalProperties: false
+      type: object
+      properties:
+        collectionGrantCount:
+          type: integer
+        created:
+          $ref: '#/components/schemas/Created'
+        lastAccess:
+          nullable: true
+          type: integer
+        lastClaims:
+          type: object
+      required:
         - created
         - collectionGrantCount
         - lastAccess
         - lastClaims
-      additionalProperties: false
-      properties:
-        created:
-          type: string
-          format: date-time
-        collectionGrantCount:
-          type: integer
-        lastAccess:
-          type: integer
-          nullable: true
-        lastClaims:
-          type: object
     UserUpdate:
-      type: object
       additionalProperties: false
+      type: object
       properties:
-        username:
-          type: string
         collectionGrants:
           type: array
           items:
             $ref: '#/components/schemas/CollectionGrant'
+        username:
+          $ref: '#/components/schemas/Username'
+    Username:
+      $ref: '#/components/schemas/String255'
+    Version:
+      description: |
+        API version string
+      pattern: ^\d+\.\d+\.\d+$
+      type: string
+    VersionString:
+      $ref: '#/components/schemas/String255'
   parameters:
     AssetIdArrayQuery:
       name: assetId
@@ -6968,22 +7227,22 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1        
+        minItems: 1
         items:
-          type: string
+          $ref: '#/components/schemas/AssetId'
     AssetIdPath:
       name: assetId
       in: path
       description: A path parameter that identifies an Asset
       required: true
       schema:
-        type: string
+        $ref: '#/components/schemas/AssetId'
     AssetIdQuery:
       name: assetId
       in: query
       description: A query parameter that identifies an Asset
       schema:
-        type: string
+        $ref: '#/components/schemas/AssetId'
     AssetProjectionQuery:
       name: projection
       in: query
@@ -6993,7 +7252,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7007,29 +7266,22 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
-          type: string
+          $ref: '#/components/schemas/BenchmarkId'
     BenchmarkIdPath:
       name: benchmarkId
       in: path
       description: A path parameter that identifies a STIG
       required: true
       schema:
-        type: string
+        $ref: '#/components/schemas/BenchmarkId'
     BenchmarkIdQuery:
       name: benchmarkId
       in: query
       description: A query parameter that identifies a STIG
       schema:
-        type: string
-    CciPath:
-      name: cci
-      in: path
-      description: A path parameter that identifies a CCI
-      required: true
-      schema:
-        type: string
+        $ref: '#/components/schemas/BenchmarkId'
     CciProjectionQuery:
       name: projection
       in: query
@@ -7039,7 +7291,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1    
+        minItems: 1
         items:
           type: string
           enum:
@@ -7051,7 +7303,7 @@ components:
       in: query
       description: A query parameter that identifies a CCI
       schema:
-        type: string
+        $ref: '#/components/schemas/CciString'
     ChecklistProjectionQuery:
       name: projection
       in: query
@@ -7061,7 +7313,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7085,14 +7337,14 @@ components:
       description: A path parameter that identifies a Collection
       required: true
       schema:
-        $ref: '#/components/schemas/StringIntId'
+        $ref: '#/components/schemas/CollectionId'
     CollectionIdQuery:
       name: collectionId
       required: true
       in: query
       description: A query parameter that identifies a Collection
       schema:
-        type: string
+        $ref: '#/components/schemas/CollectionId'
     CollectionIdArrayQuery:
       name: collectionId
       required: false
@@ -7101,9 +7353,9 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
-          type: string
+          $ref: '#/components/schemas/CollectionId'
     CollectionProjectionQuery:
       name: projection
       in: query
@@ -7113,7 +7365,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7132,7 +7384,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7148,7 +7400,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7159,13 +7411,13 @@ components:
       description: A path parameter that identifies a Collection
       required: true
       schema:
-        $ref: '#/components/schemas/StringIntId'
+        $ref: '#/components/schemas/CollectionId'
     EndDateQuery:
       name: endDate
       in: query
       description: History entries with a timestamp after the specified end date.
       schema:
-        $ref: '#/components/schemas/Date'
+        $ref: '#/components/schemas/StringDate'
     ElevateQuery:
       name: elevate
       in: query
@@ -7180,7 +7432,6 @@ components:
       description: Aggregate the findings on this property
       schema:
         type: string
-        uniqueItems: true
         minLength: 1
         enum:
           - ruleId
@@ -7195,7 +7446,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7217,13 +7468,13 @@ components:
       description: A path parameter that identifies a Group
       required: true
       schema:
-        type: string
+        $ref: '#/components/schemas/GroupId'
     GroupIdQuery:
       name: groupId
       in: query
       description: A query parameter that identifies a Group
       schema:
-        type: string
+        $ref: '#/components/schemas/GroupId'
     GroupProjectionQuery:
       name: projection
       in: query
@@ -7233,7 +7484,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7243,8 +7494,7 @@ components:
       in: query
       description: A JSONPath expression
       schema:
-        type: string
-        maxLength: 255
+        $ref: '#/components/schemas/String255'
     LabelIdPath:
       name: labelId
       in: path
@@ -7259,7 +7509,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           $ref: '#/components/schemas/LabelId'
     LabelMatchQuery:
@@ -7277,7 +7527,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           $ref: '#/components/schemas/LabelName'
     MetadataKeyPath:
@@ -7295,7 +7545,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           pattern: '^([\w\.]+:.*?)$'
           type: string
@@ -7343,7 +7593,7 @@ components:
       description: Delete history entries with a timestamp earlier than the specified retention date.
       required: true
       schema:
-        $ref: '#/components/schemas/Date'
+        $ref: '#/components/schemas/StringDate'
     ReviewProjectionQuery:
       name: projection
       in: query
@@ -7353,7 +7603,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7370,7 +7620,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7384,7 +7634,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7420,7 +7670,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
     RevisionStrPath:
@@ -7429,28 +7679,26 @@ components:
       description: A path parameter that identifies a STIG revision [V{version_num}R{release_num} | 'latest' ]
       required: true
       schema:
-        pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-        type: string
+        $ref: '#/components/schemas/RevisionStr'
     RevisionStrQuery:
       name: revisionStr
       in: query
       description: Selects Reviews mapped to a Revision [ V{version_num}R{release_num} |'latest' ]; requires benchmarkId
       schema:
-        pattern: ^(V\d+R\d+(\.\d+)?|latest)$
-        type: string
+        $ref: '#/components/schemas/RevisionStr'
     RuleIdPath:
       name: ruleId
       in: path
       description: A path parameter that identifies a Rule
       required: true
       schema:
-        type: string
+        $ref: '#/components/schemas/RuleId'
     RuleIdQuery:
       name: ruleId
       in: query
       description: Selects Reviews of a Rule
       schema:
-        type: string
+        $ref: '#/components/schemas/RuleId'
     RuleProjectionQuery:
       name: projection
       in: query
@@ -7460,7 +7708,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
+        minItems: 1
         items:
           type: string
           enum:
@@ -7477,8 +7725,8 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1
-        maxLength: 2
+        minItems: 1
+        maxItems: 2
         items:
           $ref: '#/components/schemas/RuleSeverity'
     StartDateQuery:
@@ -7486,7 +7734,7 @@ components:
       in: query
       description: History entries with a timestamp before the specified start date.
       schema:
-        $ref: '#/components/schemas/Date'
+        $ref: '#/components/schemas/StringDate'
     StigProjectionQuery:
       name: projection
       in: query
@@ -7537,30 +7785,25 @@ components:
           enum:
             - ruleTitle
             - groupTitle
-    UserAccessLevelQuery:
-      name: accessLevel
-      in: query
-      schema:
-        $ref: '#/components/schemas/AccessLevel'
     UserIdPath:
       name: userId
       in: path
       description: A path parameter that identifies a User
       required: true
       schema:
-        type: string
+        $ref: '#/components/schemas/UserId'
     UserIdQuery:
       name: userId
       in: query
       description: A path parameter that identifies a User
       schema:
-        type: string
+        $ref: '#/components/schemas/UserId'
     UsernameQuery:
       name: username
       in: query
       description: Matches against the username according to the `username-match` parameter
       schema:
-        type: string
+        $ref: '#/components/schemas/Username'
     UsernameMatchQuery:
       name: username-match
       in: query
@@ -7582,7 +7825,7 @@ components:
       schema:
         type: array
         uniqueItems: true
-        minLength: 1        
+        minItems: 1
         items:
           type: string
           enum:
@@ -7599,7 +7842,6 @@ components:
     oauth:
       type: openIdConnect
       openIdConnectUrl: http://localhost:8080/realms/stigman/.well-known/openid-configuration
-
 # supported oauth scopes:
 # - stig-manager
 # - 'stig-manager:op'
