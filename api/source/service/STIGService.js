@@ -137,6 +137,9 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
     'rgr.groupTitle as "title"',
   ]
 
+  const orderBy = ['substring(rgr.groupId from 3) + 0']
+  const groupBy = ['rgr.groupId', 'rgr.groupTitle']
+
   let joins
   let predicates = {
     statements: [],
@@ -173,18 +176,8 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
       'severity', rgr.severity)) as "rules"`)
   }
 
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  if (inProjection && inProjection.includes('rules')) {
-    sql += "\nGROUP BY rgr.groupId, rgr.groupTitle\n"
-  }  
-  sql += ` order by substring(rgr.groupId from 3) + 0`
+  // // CONSTRUCT MAIN QUERY
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
 
   try {
     let [rows] = await dbUtils.pool.query(sql, predicates.binds)
@@ -219,6 +212,8 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
     'rgr.severity',
     'rgr.rgrId'
   ]
+
+  const orderBy =  ['substring(rgr.ruleId from 4) + 0']
 
   let joins
   let predicates = {
@@ -316,19 +311,8 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
       'text', ft.text) as fix`)
   }
 
-
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  if (inProjection?.includes('cci')) {
-    sql += "\nGROUP BY " + groupBy.join(", ") + "\n"
-  }  
-  sql += ` order by substring(rgr.ruleId from 4) + 0`
+  // // CONSTRUCT MAIN QUERY
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
 
   try {
     let [rows] = await dbUtils.pool.query(sql, predicates.binds)
@@ -356,6 +340,8 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   let groupBy = [
     'rgr.rgrId'
   ]
+
+  const orderBy = ['substring(rgr.ruleId from 4) + 0']
 
   let joins = [
     'rev_group_rule_map rgr'
@@ -424,20 +410,8 @@ exports.queryRules = async function ( ruleId, inProjection ) {
     joins.push('left join fix_text ft on rgr.fixDigest = ft.digest')
   }
 
-
   // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql += columns.join(",\n")
-  sql += ' FROM '
-  sql += joins.join(" \n")
-
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-
-  sql += "\nGROUP BY " + groupBy.join(", ") + "\n"
-
-  sql += ` ORDER BY substring(rgr.ruleId from 4) + 0`
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
 
   try {
     let [rows] = await dbUtils.pool.query(sql, predicates.binds)
@@ -1019,6 +993,8 @@ exports.getCci = async function(cci, inProjection, userObject) {
     'c.definition'
   ]
 
+  const orderBy = ['c.cci']
+
   let joins = [
     'cci c '
   ]
@@ -1081,17 +1057,7 @@ exports.getCci = async function(cci, inProjection, userObject) {
     ) as "stigs"`)
   }
 
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql += columns.join(",\n")
-  sql += ' FROM '
-  sql += joins.join(" \n")
-
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-
-  sql += ` order by c.cci`
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, orderBy})
 
   try {
     let [rows] = await dbUtils.pool.query(sql, predicates.binds)
@@ -1131,7 +1097,9 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
     ), JSON_ARRAY()) AS "references"`
   ]
 
-  let joins
+  const orderBy = ['c.cci']
+
+  let joins = []
   let predicates = {
     statements: [],
     binds: []
@@ -1158,17 +1126,9 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
   joins.push('LEFT JOIN cci c using (cci)')
   // joins.push('LEFT JOIN cci_reference_map crm using (cci)')
 
-
   // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT DISTINCT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  sql += ` ORDER BY c.cci`
-
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, orderBy})
+  
   try {
     let [rows] = await dbUtils.pool.query(sql, predicates.binds)
     return rows

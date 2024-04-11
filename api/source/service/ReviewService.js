@@ -784,17 +784,8 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     }
   }
 
-
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  sql += ` GROUP BY ${groupBy.join(', ')}`
-
+  // // CONSTRUCT MAIN QUERY
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy})
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
 
   return (rows)
@@ -878,12 +869,7 @@ exports.exportReviews = async function (includeHistory = false) {
     ]
   }
 
-  const sql = `SELECT
-  ${columns.join(',\n')}
-  FROM
-  ${joins.join(" \n")}
-  ${includeHistory ? ` GROUP BY ${groupBy.join(', ')}` : ''}
-  `
+  const sql = dbUtils.makeQueryString({columns, joins, groupBy})
   let [rows] = await dbUtils.pool.query(sql)
   return (rows)
 }

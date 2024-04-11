@@ -29,6 +29,8 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       'ud.username'
     ]
 
+    const orderBy = ['ud.username']
+
     // PROJECTIONS
     if (inProjection?.includes('collectionGrants')) {
       joins.push('left join collection c on cg.collectionId = c.collectionId')
@@ -90,15 +92,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     }
 
     // CONSTRUCT MAIN QUERY
-    let sql = 'SELECT '
-    sql+= columns.join(',\n')
-    sql += ' FROM '
-    sql+= joins.join(' \n')
-    if (predicates.statements.length > 0) {
-      sql += '\nWHERE ' + predicates.statements.join(' and ')
-    }
-    sql += '\nGROUP BY ' + groupBy.join(',\n')
-    sql += ' order by ud.username'
+    const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
   
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true
