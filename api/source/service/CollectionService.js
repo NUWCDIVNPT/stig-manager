@@ -370,7 +370,7 @@ exports.queryFindings = async function (aggregator, inProjection = [], inPredica
 
 exports.queryStatus = async function (inPredicates = {}, userObject) {
 
-  let orderby = ['a.name', 'sa.benchmarkId']
+  let orderBy = ['a.name', 'sa.benchmarkId']
 
   let columns = [
     `distinct cast(a.assetId as char) as assetId`,
@@ -476,7 +476,7 @@ exports.queryStatus = async function (inPredicates = {}, userObject) {
   predicates.statements.push('(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)')
   predicates.binds.push( userObject.userId, userObject.userId )
   
-  const sql = dbUtils.makeQueryString({columns, joins, predicates, orderby})
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, orderBy})
   
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
   return (rows)
