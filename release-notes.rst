@@ -1,3 +1,12 @@
+1.4.6
+-----
+
+Changes:
+
+  - (API) dependency: Update mysql2 library in response to CVE-2024-21508, CVE-2024-21509, CVE-2024-21507
+  - (API) Refactor API definition for better maintainability
+  - (API) Refactor db query construction for consistency
+
 1.4.5
 -----
 
