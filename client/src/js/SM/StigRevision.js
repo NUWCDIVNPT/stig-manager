@@ -194,7 +194,7 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
   
     const store = new Ext.data.JsonStore({
       proxy: new Ext.data.HttpProxy({
-        url: `${STIGMAN.Env.apiBase}/stigs?projection=revisions`,
+        url: `${STIGMAN.Env.apiBase}/stigs?elevate=true&projection=revisions`,
         method: 'GET'
       }),
       root: '',
