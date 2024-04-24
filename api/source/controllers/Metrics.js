@@ -7,7 +7,7 @@ const {stringify: csvStringify} = require('csv-stringify/sync')
 
 async function getCollectionMetrics (req, res, next, {style, aggregation, firstRowOnly = false}) {
   try {
-    const collectionId = Collection.getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const { collectionId } = Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const returnType = req.query.format || 'json'
     const inPredicates = {
       collectionId,
