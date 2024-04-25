@@ -66,7 +66,7 @@ module.exports.createCollection = async function createCollection (req, res, nex
   }  
 }
 
-// changed
+
 module.exports.deleteCollection = async function deleteCollection (req, res, next) {
   try {
     const elevate = req.query.elevate
@@ -93,7 +93,7 @@ module.exports.getChecklistByCollectionStig = async function getChecklistByColle
   try {
     const benchmarkId = req.params.benchmarkId
     const revisionStr = req.params.revisionStr
-    const { collectionId } = checkCollectionGrantOrElevation(req)
+    const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const response = await CollectionService.getChecklistByCollectionStig(collectionId, benchmarkId, revisionStr, req.userObject )
     res.json(response)
   }
@@ -106,7 +106,7 @@ module.exports.getCollection = async function getCollection (req, res, next) {
   try {
     const projection = req.query.projection
     const elevate = req.query.elevate
-    const { collectionId } = checkCollectionGrantOrElevation(req)
+    const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted, true)
     const response = await CollectionService.getCollection(collectionId, projection, elevate, req.userObject )
     res.status(typeof response === 'undefined' ? 204 : 200).json(response)
   }
@@ -141,7 +141,7 @@ module.exports.getFindingsByCollection = async function getFindingsByCollection 
     const assetId = req.query.assetId
     const acceptedOnly = req.query.acceptedOnly
     const projection = req.query.projection
-    const { collectionId } = checkCollectionGrantOrElevation(req)
+    const { collectionId } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const response = await CollectionService.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, projection, req.userObject )
     res.json(response)
   }
@@ -161,7 +161,7 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
       office: req.query.office,
       status: req.query.status
     }
-    const { collectionId, collectionGrant } = checkCollectionGrantOrElevation(req)
+    const { collectionId, collectionGrant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const response = await CollectionService.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, 
       [
         'rulesWithDiscussion',
@@ -181,18 +181,6 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
   }
 }
 
-module.exports.getStatusByCollection = async function getStatusByCollection (req, res, next) {
-  try {
-    const benchmarkIds = req.query.benchmarkId
-    const assetIds = req.query.assetId
-    const { collectionId } = checkCollectionGrantOrElevation(req)
-    const response = await CollectionService.getStatusByCollection( collectionId, assetIds, benchmarkIds, req.userObject )
-    res.json(response)
-  }
-  catch (err) {
-    next(err)
-  }
-}
 
 module.exports.getStigAssetsByCollectionUser = async function getStigAssetsByCollectionUser (req, res, next) {
   try {
@@ -342,40 +330,60 @@ function requestedOwnerGrantsMatchExisting(requestedGrants, existingGrants) {
  * @returns {Object} - An object containing the collectionId and collectionGrant.
  * @throws {SmError.PrivilegeError} - If the user does not have sufficient privileges.
  */
-function getCollectionInfoAndCheckPermission(request, minimumAccessLevel = Security.ACCESS_LEVEL.Manage, allowElevate = false) {
+function getCollectionInfoAndCheckPermission(request, minimumAccessLevel = Security.ACCESS_LEVEL.Manage, supportsElevation = false) {
   let collectionId = request.params.collectionId
   const elevate = request.query.elevate
   const collectionGrant = request.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
   // If elevate is not set, and the user does not have a grant, or the grant level is below the minimum required, throw an error.
-  if ((!allowElevate || !elevate) && (!collectionGrant || collectionGrant.accessLevel < minimumAccessLevel)) {
+  if (!( (supportsElevation && elevate) || (collectionGrant?.accessLevel >= minimumAccessLevel) )) {
     throw new SmError.PrivilegeError();
   }
   return {collectionId, collectionGrant}
 }
 
-module.exports.getCollectionInfoAndCheckPermission = getCollectionInfoAndCheckPermission
+module.exports.getStatusByCollection = async function getStatusByCollection (req, res, next) {
+  try {
+    const collectionId = req.params.collectionId
+    const benchmarkIds = req.query.benchmarkId
+    const assetIds = req.query.assetId
+    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+    if (collectionGrant) {
+      const response = await CollectionService.getStatusByCollection( collectionId, assetIds, benchmarkIds, req.userObject )
+      res.json(response)
+    }
+    else {
+      throw new SmError.PrivilegeError()
+    }
+  }
+  catch (err) {
+    next(err)
+  }
+}
 
+
+module.exports.getCollectionInfoAndCheckPermission = getCollectionInfoAndCheckPermission
+// get rid of this. 
 /**
  * Checks if the user has a collection grant or is "elevating" to access a collection.
  * @param {Object} request - The request object.
  * @returns {Object} - An object containing the collectionId and collectionGrant.
  * @throws {SmError.PrivilegeError} - If the user does not have the necessary privileges.
  */
-function checkCollectionGrantOrElevation(request) {  
-  const collectionId = request.params.collectionId
-  const collectionGrant = request.userObject.collectionGrants.find(g => g.collection.collectionId === collectionId)
+// function checkCollectionGrantOrElevation(request) {  
+//   const collectionId = request.params.collectionId
+//   const collectionGrant = request.userObject.collectionGrants.find(g => g.collection.collectionId === collectionId)
 
-  let elevate = false
-  if ('elevate' in request.query) {
-    elevate = request.query.elevate
-  }
-  if (!elevate && !collectionGrant) {
-    throw new SmError.PrivilegeError()
-  }
-  return { collectionId, collectionGrant }
-}
+//   let elevate = false
+//   if ('elevate' in request.query) {
+//     elevate = request.query.elevate
+//   }
+//   if (!elevate && !collectionGrant) {
+//     throw new SmError.PrivilegeError()
+//   }
+//   return { collectionId, collectionGrant }
+// }
 
-module.exports.checkCollectionGrantOrElevation = checkCollectionGrantOrElevation
+// module.exports.checkCollectionGrantOrElevation = checkCollectionGrantOrElevation
 
 module.exports.getCollectionMetadata = async function (req, res, next) {
   try {

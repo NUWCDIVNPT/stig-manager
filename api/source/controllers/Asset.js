@@ -345,7 +345,7 @@ module.exports.getAssetsByStig = async function getAssetsByStig (req, res, next)
     let labelMatch = req.query.labelMatch
     let projection = req.query.projection
 
-    let { collectionId } = Collection.checkCollectionGrantOrElevation(req, Security.ACCESS_LEVEL.Manage)
+    let { collectionId } = Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     let response = await AssetService.getAssetsByStig( collectionId, benchmarkId, {labelIds, labelNames, labelMatch}, projection, false, req.userObject )
     res.json(response)
     
