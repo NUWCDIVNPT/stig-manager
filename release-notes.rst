@@ -1,3 +1,11 @@
+1.4.7
+-----
+
+Changes:
+
+  - (API) dependency: Update mysql2 library in response to CVE-2024-21511
+  - (UI) bugfix: STIG Management UI now displays system-wide count of Collections using a STIG.
+
 1.4.6
 -----
 
