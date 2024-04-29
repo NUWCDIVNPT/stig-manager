@@ -1,10 +1,10 @@
 'use strict';
 
-const writer = require('../utils/writer');
+const writer = require('../utils/writer')
 const config = require('../utils/config')
 const escape = require('../utils/escape')
-const AssetService = require(`../service/AssetService`);
-const CollectionService = require(`../service/CollectionService`);
+const AssetService = require(`../service/AssetService`)
+const CollectionService = require(`../service/CollectionService`)
 const Collection = require('./Collection')
 const Security = require('../utils/accessLevels')
 const dbUtils = require(`../service/utils`)
@@ -49,7 +49,7 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
   try {
     let elevate = req.query.elevate
     let projection = req.query.projection
-    const {assetId} = await getAssetInfoAndVerifyAccess(req)
+    const { assetId } = await getAssetInfoAndVerifyAccess(req)
     const response = await AssetService.getAsset(assetId, projection, elevate, req.userObject)
     await AssetService.deleteAsset( assetId, projection, elevate, req.userObject )
     res.json(response)
@@ -63,7 +63,7 @@ module.exports.removeStigFromAsset = async function removeStigFromAsset (req, re
   try {
     let benchmarkId = req.params.benchmarkId
     let elevate = req.query.elevate
-    const {assetId} = await getAssetInfoAndVerifyAccess(req)
+    const { assetId } = await getAssetInfoAndVerifyAccess(req)
     let response = await AssetService.removeStigFromAsset(assetId, benchmarkId, elevate, req.userObject )
     res.json(response)
   }
@@ -75,7 +75,7 @@ module.exports.removeStigFromAsset = async function removeStigFromAsset (req, re
 module.exports.removeStigsFromAsset = async function removeStigsFromAsset (req, res, next) {
   try {
     let elevate = req.query.elevate
-    const {assetId} = await getAssetInfoAndVerifyAccess(req)
+    const { assetId } = await getAssetInfoAndVerifyAccess(req)
     let response = await AssetService.removeStigsFromAsset(assetId, elevate, req.userObject )
     res.json(response)
   }
@@ -116,7 +116,7 @@ module.exports.removeUsersFromAssetStig = async function removeUsersFromAssetSti
   try {
     let benchmarkId = req.params.benchmarkId
     let elevate = req.query.elevate
-    const {assetId} = await getAssetInfoAndVerifyAccess(req)
+    const { assetId } = await getAssetInfoAndVerifyAccess(req)
     let response = await AssetService.removeUsersFromAssetStig(assetId, benchmarkId, elevate, req.userObject )
     res.json(response)
   }
@@ -426,7 +426,7 @@ module.exports.attachStigToAsset = async function attachStigToAsset (req, res, n
 
     let benchmarkId = req.params.benchmarkId
     let elevate = req.query.elevate
-    const {assetId, collectionGrant} = await getAssetInfoAndVerifyAccess(req)
+    const { assetId, collectionGrant } = await getAssetInfoAndVerifyAccess(req)
     if (elevate || collectionGrant.accessLevel >= 3) {
       let response = await AssetService.attachStigToAsset({
         assetId,
@@ -562,7 +562,7 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
 
 module.exports.getAssetMetadata = async function (req, res, next) {
   try {
-    let {assetId} = await getAssetInfoAndVerifyAccess(req)
+    let { assetId } = await getAssetInfoAndVerifyAccess(req)
     let result = await AssetService.getAssetMetadata(assetId, req.userObject)
     res.json(result)
   }
@@ -573,7 +573,7 @@ module.exports.getAssetMetadata = async function (req, res, next) {
 
 module.exports.patchAssetMetadata = async function (req, res, next) {
   try {
-    let {assetId} = await getAssetInfoAndVerifyAccess(req)
+    let { assetId } = await getAssetInfoAndVerifyAccess(req)
     let metadata = req.body
     await AssetService.patchAssetMetadata(assetId, metadata)
     let result = await AssetService.getAssetMetadata(assetId)
@@ -586,7 +586,7 @@ module.exports.patchAssetMetadata = async function (req, res, next) {
 
 module.exports.putAssetMetadata = async function (req, res, next) {
   try {
-    let {assetId} = await getAssetInfoAndVerifyAccess(req)
+    let { assetId } = await getAssetInfoAndVerifyAccess(req)
     let body = req.body
     await AssetService.putAssetMetadata(assetId, body)
     let result = await AssetService.getAssetMetadata(assetId)
@@ -599,7 +599,7 @@ module.exports.putAssetMetadata = async function (req, res, next) {
 
 module.exports.getAssetMetadataKeys = async function (req, res, next) {
   try {
-    let {assetId} = await getAssetInfoAndVerifyAccess(req)
+    let { assetId } = await getAssetInfoAndVerifyAccess(req)
     let result = await AssetService.getAssetMetadataKeys(assetId, req.userObject)
     if (!result) {
       throw new SmError.NotFoundError('metadata keys not found')
@@ -613,7 +613,7 @@ module.exports.getAssetMetadataKeys = async function (req, res, next) {
 
 module.exports.getAssetMetadataValue = async function (req, res, next) {
   try {
-    let {assetId} = await getAssetInfoAndVerifyAccess(req)
+    let { assetId } = await getAssetInfoAndVerifyAccess(req)
     let key = req.params.key
     let result = await AssetService.getAssetMetadataValue(assetId, key, req.userObject)
     if (!result) { 
@@ -628,7 +628,7 @@ module.exports.getAssetMetadataValue = async function (req, res, next) {
 
 module.exports.putAssetMetadataValue = async function (req, res, next) {
   try {
-    let {assetId} = await getAssetInfoAndVerifyAccess(req)
+    let { assetId } = await getAssetInfoAndVerifyAccess(req)
     let key = req.params.key
     let value = req.body
 
@@ -643,7 +643,7 @@ module.exports.putAssetMetadataValue = async function (req, res, next) {
 
 module.exports.deleteAssetMetadataKey = async function (req, res, next) {
   try {
-    let {assetId} = await getAssetInfoAndVerifyAccess(req)
+    let { assetId } = await getAssetInfoAndVerifyAccess(req)
     let key = req.params.key
 
     await AssetService.deleteAssetMetadataKey(assetId, key, req.userObject)
@@ -702,7 +702,7 @@ async function getAssetInfoAndVerifyAccess(request) {
   const collectionGrant = request.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
   // check if user has sufficient access level
   if (collectionGrant?.accessLevel < Security.ACCESS_LEVEL.Manage) {
-    throw new SmError.PrivilegeError("Insufficient access level.");
+    throw new SmError.PrivilegeError("Insufficient access level.")
   }
   return {assetId, collectionGrant}
 }

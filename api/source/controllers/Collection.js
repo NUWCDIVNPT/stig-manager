@@ -66,7 +66,6 @@ module.exports.createCollection = async function createCollection (req, res, nex
   }  
 }
 
-
 module.exports.deleteCollection = async function deleteCollection (req, res, next) {
   try {
     const elevate = req.query.elevate
@@ -334,56 +333,15 @@ function getCollectionInfoAndCheckPermission(request, minimumAccessLevel = Secur
   let collectionId = request.params.collectionId
   const elevate = request.query.elevate
   const collectionGrant = request.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-  // If elevate is not set, and the user does not have a grant, or the grant level is below the minimum required, throw an error.
+  // If elevate is not set and supported, and the user does not have a grant, or the grant level is below the minimum required, throw an error.
   if (!( (supportsElevation && elevate) || (collectionGrant?.accessLevel >= minimumAccessLevel) )) {
-    throw new SmError.PrivilegeError();
+    throw new SmError.PrivilegeError()
   }
   return {collectionId, collectionGrant}
 }
 
-module.exports.getStatusByCollection = async function getStatusByCollection (req, res, next) {
-  try {
-    const collectionId = req.params.collectionId
-    const benchmarkIds = req.query.benchmarkId
-    const assetIds = req.query.assetId
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if (collectionGrant) {
-      const response = await CollectionService.getStatusByCollection( collectionId, assetIds, benchmarkIds, req.userObject )
-      res.json(response)
-    }
-    else {
-      throw new SmError.PrivilegeError()
-    }
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-
 module.exports.getCollectionInfoAndCheckPermission = getCollectionInfoAndCheckPermission
-// get rid of this. 
-/**
- * Checks if the user has a collection grant or is "elevating" to access a collection.
- * @param {Object} request - The request object.
- * @returns {Object} - An object containing the collectionId and collectionGrant.
- * @throws {SmError.PrivilegeError} - If the user does not have the necessary privileges.
- */
-// function checkCollectionGrantOrElevation(request) {  
-//   const collectionId = request.params.collectionId
-//   const collectionGrant = request.userObject.collectionGrants.find(g => g.collection.collectionId === collectionId)
 
-//   let elevate = false
-//   if ('elevate' in request.query) {
-//     elevate = request.query.elevate
-//   }
-//   if (!elevate && !collectionGrant) {
-//     throw new SmError.PrivilegeError()
-//   }
-//   return { collectionId, collectionGrant }
-// }
-
-// module.exports.checkCollectionGrantOrElevation = checkCollectionGrantOrElevation
 
 module.exports.getCollectionMetadata = async function (req, res, next) {
   try {
