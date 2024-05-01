@@ -37,13 +37,12 @@ The API requires knowledge of 1) the DB address/port, 2) which schema (database)
 Configure MySQL
 ~~~~~~~~~~~~~~~~~~~~
 
-STIG Manager requires a database schema, and the use of an account with SuperUser privileges on the intended schema:
+The STIG Manager API requires a dedicated MySQL database (equivalent to a schema in other RDBMS products). The API connects to MySQL with an account that must have a full grant to the dedicated database but does not require server administration privileges. On first bootstrap, all database tables, views, and static data will be created.
+Example commands to prepare MySQL for initial API execution:
 
-  * Create schema - suggested value: stigman
-  * Create user - suggested value: stigman
-  * Grant User all privileges on created schema (``grant all on *stigman* schema to *stigman* user``). 
-
-The above steps are sufficient for a username/password setup, but it is highly recommended that you configure MySQL to use TLS connections.
+  * Create database: ``CREATE DATABASE stigman``
+  * Create API user account - ``CREATE USER 'stigman'@'%' IDENTIFIED BY 'new_password'``
+  * Grant API user account all privileges on created database ``GRANT ALL ON stigman.* TO 'stigman'`` 
 
 .. note::
    Suggested DB configuration options:
