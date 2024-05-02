@@ -11,7 +11,7 @@ const _this = this
 
 module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res, next) {
   try {
-    const collectionId = Collection.getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const { collectionId } = Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const assetId = req.params.assetId
     const reviews = req.body
     const result = await ReviewService.putReviewsByAsset({
@@ -30,24 +30,20 @@ module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res,
 
 module.exports.deleteReviewByAssetRule = async function deleteReviewByAssetRule (req, res, next) {
   try {
-    let collectionId = req.params.collectionId
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
     let projection = req.query.projection
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
-      const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
-      if (userHasRule) {
-        let response = await ReviewService.deleteReviewByAssetRule(assetId, ruleId, projection, req.userObject, res.svcStatus)
-        res.status(response ? 200 : 204).json(response)
-      }
-      else {
-        throw new SmError.PrivilegeError()
-      }
+    
+    Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
+    if (userHasRule) {
+      let response = await ReviewService.deleteReviewByAssetRule(assetId, ruleId, projection, req.userObject, res.svcStatus)
+      res.status(response ? 200 : 204).json(response)
     }
     else {
       throw new SmError.PrivilegeError()
     }
+  
   }
   catch(err) {
     next(err)
@@ -60,25 +56,19 @@ module.exports.exportReviews = async function exportReviews (includeHistory) {
 
 module.exports.getReviewByAssetRule = async function (req, res, next) {
   try {
-    let collectionId = req.params.collectionId
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
     let projection = req.query.projection
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
-      let response = await ReviewService.getReviews( projection, {
-        collectionId: collectionId,
-        assetId: assetId,
-        ruleId: ruleId
-      }, req.userObject)
-      // res.json(response[0])
-      // res.status(typeof response === 'undefined' ? 204 : 200).json(response[0])
-      res.status(response.length == 0 ? 204 : 200).json(response[0])
-
-    }
-    else {
-      throw new SmError.PrivilegeError()
-    }
+    const {collectionId } = Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    
+    let response = await ReviewService.getReviews( projection, {
+      collectionId,
+      assetId: assetId,
+      ruleId: ruleId
+    }, req.userObject)
+    // res.json(response[0])
+    // res.status(typeof response === 'undefined' ? 204 : 200).json(response[0])
+    res.status(response.length == 0 ? 204 : 200).json(response[0])
   }
   catch(err) {
     next(err)
@@ -88,27 +78,22 @@ module.exports.getReviewByAssetRule = async function (req, res, next) {
 module.exports.getReviewsByCollection = async function getReviewsByCollection (req, res, next) {
   try {
     let projection = req.query.projection
-    let collectionId = req.params.collectionId
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
-      let response = await ReviewService.getReviews( projection, {
-        collectionId: collectionId,
-        result: req.query.result,
-        status: req.query.status,
-        rules: req.query.rules || 'default-mapped',
-        ruleId: req.query.ruleId,
-        groupId: req.query.groupId,
-        cci: req.query.cci,
-        userId: req.query.userId,
-        assetId: req.query.assetId,
-        benchmarkId: req.query.benchmarkId,
-        metadata: req.query.metadata
-      }, req.userObject)
-      res.json(response)
-    }
-    else {
-      throw new SmError.PrivilegeError()
-    }
+    const {collectionId } = Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+
+    let response = await ReviewService.getReviews( projection, {
+      collectionId,
+      result: req.query.result,
+      status: req.query.status,
+      rules: req.query.rules || 'default-mapped',
+      ruleId: req.query.ruleId,
+      groupId: req.query.groupId,
+      cci: req.query.cci,
+      userId: req.query.userId,
+      assetId: req.query.assetId,
+      benchmarkId: req.query.benchmarkId,
+      metadata: req.query.metadata
+    }, req.userObject)
+    res.json(response)
   }
   catch(err) {
     next(err)
@@ -117,25 +102,20 @@ module.exports.getReviewsByCollection = async function getReviewsByCollection (r
 
 module.exports.getReviewsByAsset = async function (req, res, next) {
   try {
-    let collectionId = req.params.collectionId
     let assetId = req.params.assetId
     let projection = req.query.projection
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
-      let response = await ReviewService.getReviews( projection, {
-        collectionId: collectionId,
-        assetId: assetId,
-        rules: req.query.rules || 'default-mapped',
-        result: req.query.result,
-        status: req.query.status,
-        benchmarkId: req.query.benchmarkId,
-        metadata: req.query.metadata
-      }, req.userObject )
-      res.json(response)
-    }
-    else {
-      throw new SmError.PrivilegeError()
-    }
+    const {collectionId } = Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    
+    let response = await ReviewService.getReviews( projection, {
+      collectionId,
+      assetId: assetId,
+      rules: req.query.rules || 'default-mapped',
+      result: req.query.result,
+      status: req.query.status,
+      benchmarkId: req.query.benchmarkId,
+      metadata: req.query.metadata
+    }, req.userObject )
+    res.json(response)
   }
   catch(err) {
     next(err)
@@ -144,7 +124,7 @@ module.exports.getReviewsByAsset = async function (req, res, next) {
 
 module.exports.putReviewByAssetRule = async function (req, res, next) {
   try {
-    const collectionId = Collection.getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const { collectionId } = Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const {assetId, ruleId} = {...req.params}
     const review = {...req.body, ruleId}
     const projection = req.query.projection
@@ -171,7 +151,7 @@ module.exports.patchReviewByAssetRule = async function (req, res, next) {
     if (Object.hasOwn(req.body, 'resultEngine') && !Object.hasOwn(req.body, 'result')) {
       throw new SmError.UnprocessableError('Request body with resultEngine must include a result')
     }
-    const collectionId = Collection.getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const { collectionId } = Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const {assetId, ruleId} = {...req.params}
     const currentReviews =  await ReviewService.getReviews([], { assetId, ruleId }, req.userObject)
     if (currentReviews.length === 0) {
@@ -199,22 +179,16 @@ module.exports.patchReviewByAssetRule = async function (req, res, next) {
 
 module.exports.getReviewMetadata = async function (req, res, next) {
   try {
-    let collectionId = req.params.collectionId
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
-      const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
-      if (userHasRule) {
-        let response = await ReviewService.getReviewMetadata( assetId, ruleId, req.userObject)
-        res.json(response)
-      }
-      else {
-        throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
-      }
+    Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
+    if (userHasRule) {
+      let response = await ReviewService.getReviewMetadata( assetId, ruleId, req.userObject)
+      res.json(response)
     }
     else {
-      throw new SmError.PrivilegeError()
+      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
     }
   }
   catch (err) {
@@ -224,24 +198,18 @@ module.exports.getReviewMetadata = async function (req, res, next) {
 
 module.exports.patchReviewMetadata = async function (req, res, next) {
   try {
-    let collectionId = req.params.collectionId
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
     let metadata = req.body
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
-      const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
-      if (userHasRule) {
-        await ReviewService.patchReviewMetadata( assetId, ruleId, metadata)
-        let response = await ReviewService.getReviewMetadata( assetId, ruleId)
-        res.json(response)
-      }
-      else {
-        throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
-      }
+    Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
+    if (userHasRule) {
+      await ReviewService.patchReviewMetadata( assetId, ruleId, metadata)
+      let response = await ReviewService.getReviewMetadata( assetId, ruleId)
+      res.json(response)
     }
     else {
-      throw new SmError.PrivilegeError()
+      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
     }
   }
   catch (err) {
@@ -251,25 +219,18 @@ module.exports.patchReviewMetadata = async function (req, res, next) {
 
 module.exports.putReviewMetadata = async function (req, res, next) {
   try {
-    let collectionId = req.params.collectionId
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
     let body = req.body
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
-      const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
-      if (userHasRule) {
-        await ReviewService.putReviewMetadata( assetId, ruleId, body)
-        let response = await ReviewService.getReviewMetadata( assetId, ruleId)
-        res.json(response)
-      }
-      else {
-        throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
-        
-      }
+    Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
+    if (userHasRule) {
+      await ReviewService.putReviewMetadata( assetId, ruleId, body)
+      let response = await ReviewService.getReviewMetadata( assetId, ruleId)
+      res.json(response)
     }
     else {
-      throw new SmError.PrivilegeError()
+      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
     }
   }
   catch (err) {
@@ -279,25 +240,19 @@ module.exports.putReviewMetadata = async function (req, res, next) {
 
 module.exports.getReviewMetadataKeys = async function (req, res, next) {
   try {
-    let collectionId = req.params.collectionId
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
-      const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
-      if (userHasRule) {
-        let response = await ReviewService.getReviewMetadataKeys( assetId, ruleId, req.userObject)
-        if (!response) {
-          throw new SmError.NotFoundError('metadata keys not found')
-        }
-        res.json(response)
+    Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
+    if (userHasRule) {
+      let response = await ReviewService.getReviewMetadataKeys( assetId, ruleId, req.userObject)
+      if (!response) {
+        throw new SmError.NotFoundError('metadata keys not found')
       }
-      else {
-        throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
-      }
+      res.json(response)
     }
     else {
-      throw new SmError.PrivilegeError()
+      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
     }
   }
   catch (err) {
@@ -307,26 +262,20 @@ module.exports.getReviewMetadataKeys = async function (req, res, next) {
 
 module.exports.getReviewMetadataValue = async function (req, res, next) {
   try {
-    let collectionId = req.params.collectionId
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
     let key = req.params.key
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
-      const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
-      if (userHasRule) {
-        let response = await ReviewService.getReviewMetadataValue( assetId, ruleId, key, req.userObject)
-        if (!response) {
-          throw new SmError.NotFoundError('metadata key not found')
-        }
-        res.json(response)
+    Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
+    if (userHasRule) {
+      let response = await ReviewService.getReviewMetadataValue( assetId, ruleId, key, req.userObject)
+      if (!response) {
+        throw new SmError.NotFoundError('metadata key not found')
       }
-      else {
-        throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
-      }
+      res.json(response)
     }
     else {
-      throw new SmError.PrivilegeError()
+      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
     }
   }
   catch (err) {
@@ -336,24 +285,18 @@ module.exports.getReviewMetadataValue = async function (req, res, next) {
 
 module.exports.putReviewMetadataValue = async function (req, res, next) {
   try {
-    let collectionId = req.params.collectionId
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
     let key = req.params.key
     let value = req.body
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
-      const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
-      if (userHasRule) {
-        await ReviewService.putReviewMetadataValue( assetId, ruleId, key, value)
-        res.status(204).send()
-      }
-      else {
-        throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
-      }
+    Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
+    if (userHasRule) {
+      await ReviewService.putReviewMetadataValue( assetId, ruleId, key, value)
+      res.status(204).send()
     }
     else {
-      throw new SmError.PrivilegeError()
+      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
     }
   }
   catch (err) {
@@ -361,26 +304,19 @@ module.exports.putReviewMetadataValue = async function (req, res, next) {
   }  
 }
 
-
 module.exports.deleteReviewMetadataKey = async function (req, res, next) {
   try {
-    let collectionId = req.params.collectionId
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
     let key = req.params.key
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if ( collectionGrant ) {
-      const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
-      if (userHasRule) {
-        await ReviewService.deleteReviewMetadataKey( assetId, ruleId, key, req.userObject)
-        res.status(204).send()
-      }
-      else {
-        throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
-      }
+    Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    const userHasRule = await ReviewService.checkRuleByAssetUser( ruleId, assetId, req.userObject )
+    if (userHasRule) {
+      await ReviewService.deleteReviewMetadataKey( assetId, ruleId, key, req.userObject)
+      res.status(204).send()
     }
     else {
-      throw new SmError.PrivilegeError()
+      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
     }
   }
   catch (err) {
@@ -390,11 +326,8 @@ module.exports.deleteReviewMetadataKey = async function (req, res, next) {
 
 module.exports.postReviewBatch = async function (req, res, next) {
   try {
-    
-    //const { performance } = require('node:perf_hooks');
   
-    const collectionId = Collection.getCollectionIdAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
+    const { collectionId, collectionGrant } = Collection.getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
     const collectionSettings = await CollectionService.getCollectionSettings(collectionId)
     const historySettings = collectionSettings.history
     const statusSettings = collectionSettings.status
