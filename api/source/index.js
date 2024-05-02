@@ -30,6 +30,12 @@ const multer  = require('multer')
 const writer = require('./utils/writer.js')
 const OperationSvc = require(`./service/OperationService`)
 const { middleware: openApiMiddleware, resolvers } = require('express-openapi-validator')
+const db = require(`./service/utils`)
+const depStatus = {
+  db: 'waiting',
+  auth: 'waiting'
+}
+
 
 // express-openapi-validator does not expose top-level HttpError in their index.js. 
 // We can get it from framework.types.js
@@ -51,7 +57,7 @@ process.on('unhandledRejection', (reason, promise) => {
 const app = express();
 let storage =  multer.memoryStorage()
 const upload = multer({ 
-  storage: storage,
+  storage,
   limits: {
     fileSize: parseInt(config.http.maxUpload)
   }
@@ -75,6 +81,21 @@ app.use(compression({
     return compression.filter(req, res)
   }
 }))
+
+// 503 service unavailable check
+app.use((req, res, next) => {
+  try {
+    if ((depStatus.db === 'up' && depStatus.auth === 'up') || req.url.startsWith('/api/op/definition')) {
+      next()
+    }
+    else {
+      res.status(503).json({status: depStatus})
+    }
+  }
+  catch(e) {
+    next(e)
+  }
+})
 
 const apiSpecPath = path.join(__dirname, './specification/stig-manager.yaml');
 app.use( "/api", openApiMiddleware ({
@@ -224,32 +245,38 @@ const STIGMAN = {
 }
 
 async function startServer(app) {
-    let db = require(`./service/utils`)
-    try {
-      await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
-    }
-    catch (e) {
-      logger.writeError('index', 'shutdown', {message:'Failed to setup dependencies', error: serializeError(e)});
-      process.exit(1);  
-    }
-  
-    // Set/change classification if indicated
-    if (config.settings.setClassification) {
-      await OperationSvc.setConfigurationItem('classification', config.settings.setClassification)
-    }
-
-    // Start the server
-    const server = http.createServer(app).listen(config.http.port, function () {
-      const endTime = process.hrtime.bigint()
-      logger.writeInfo('index', 'started', {
-        durationS: Number(endTime - startTime) / 1e9, 
-        port: config.http.port,
-        api: '/api',
-        client: config.client.disabled ? undefined : '/',
-        documentation: config.docs.disabled ? undefined : '/docs',
-        swagger: config.swaggerUi.enabled ? '/api-docs' : undefined
-      })
+  // Start the server
+  const server = http.createServer(app)
+  server.listen(config.http.port, function () {
+    logger.writeInfo('index', 'listening', {
+      port: config.http.port,
+      api: '/api',
+      client: config.client.disabled ? undefined : '/',
+      documentation: config.docs.disabled ? undefined : '/docs',
+      swagger: config.swaggerUi.enabled ? '/api-docs' : undefined
     })
+  })
+
+  try {
+    await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
+    depStatus.db = 'up'
+    depStatus.auth = 'up'
+  }
+  catch (e) {
+    logger.writeError('index', 'shutdown', {message:'Failed to setup dependencies', error: serializeError(e)});
+    process.exit(1);  
+  }
+
+  // Set/change classification if indicated
+  if (config.settings.setClassification) {
+    await OperationSvc.setConfigurationItem('classification', config.settings.setClassification)
+  }
+
+  const endTime = process.hrtime.bigint()
+  logger.writeInfo('index', 'ready', {
+    durationS: Number(endTime - startTime) / 1e9
+  })
+
 }
 
 function modulePathResolver( handlersPath, route, apiDoc ) {
