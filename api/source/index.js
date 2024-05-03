@@ -271,7 +271,7 @@ async function startServer(app) {
   }
 
   const endTime = process.hrtime.bigint()
-  logger.writeInfo('index', 'ready', {
+  logger.writeInfo('index', 'started', {
     durationS: Number(endTime - startTime) / 1e9
   })
 
