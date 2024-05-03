@@ -2533,34 +2533,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
-  '/collections/{collectionId}/status':
-    parameters:
-      - $ref: '#/components/parameters/CollectionIdPath'
-      - $ref: '#/components/parameters/BenchmarkIdArrayQuery'
-      - $ref: '#/components/parameters/AssetIdArrayQuery'
-    get:
-      tags:
-        - Collection
-      summary: DEPRECATED - targeted for removal soon, please use the Metrics endpoints
-      operationId: getStatusByCollection
-      responses:
-        '200':
-          description: Metrics response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CollectionStatus'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:collection:read'
   '/collections/{collectionId}/stigs':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'

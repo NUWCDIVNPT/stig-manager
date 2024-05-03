@@ -846,15 +846,6 @@ exports.getFindingsByCollection = async function( collectionId, aggregator, benc
   return (rows)
 }
 
-exports.getStatusByCollection = async function( collectionId, assetIds, benchmarkIds, userObject ) {
-  let rows = await _this.queryStatus({ 
-    collectionId,
-    benchmarkIds,
-    assetIds
-    }, userObject)
-  return (rows)
-}
-
 exports.getStigAssetsByCollectionUser = async function (collectionId, userId, elevate, userObject) {
   let rows = await _this.queryStigAssets([], { 
     collectionId: collectionId,
