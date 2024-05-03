@@ -258,9 +258,7 @@ async function startServer(app) {
   })
 
   try {
-    await Promise.all([auth.initializeAuth(), db.initializeDatabase()])
-    depStatus.db = 'up'
-    depStatus.auth = 'up'
+    await Promise.all([auth.initializeAuth(depStatus), db.initializeDatabase(depStatus)])
   }
   catch (e) {
     logger.writeError('index', 'shutdown', {message:'Failed to setup dependencies', error: serializeError(e)});
