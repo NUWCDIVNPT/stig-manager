@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "fcb1e3fc-7e68-4709-baae-eb5bec83df44",
 		"name": "STIGMan OSS",
-		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:\n Name: Carl Smigielski\n Email: carl.a.smigielski@saic.com",
+		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:  \nName: Carl Smigielski  \nEmail: [carl.a.smigielski@saic.com](https://mailto:carl.a.smigielski@saic.com)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "28917726"
 	},
@@ -7645,19 +7645,21 @@
 															"\r",
 															"\r",
 															"//&& user != \"collectioncreator\"\r",
-															"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" && user != \"lvl5\") {\r",
-															"    pm.test(\"Status should be 403 for all users except stigmanAdmin(elevated), collectioncreator, or >= level 3\", function () {\r",
-															"        pm.response.to.have.status(403);\r",
-															"    });\r",
-															"    return;\r",
+															"// if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" && user != \"lvl5\") {\r",
+															"//     pm.test(\"Status should be 403 for all users except stigmanAdmin(elevated), collectioncreator, or >= level 3\", function () {\r",
+															"//         pm.response.to.have.status(403);\r",
+															"//     });\r",
+															"//     return;\r",
+															"// }\r",
+															"if (user == \"collectioncreator\"){\r",
+															"     pm.response.to.have.status(403);\r",
+															"     return;\r",
 															"}\r",
 															"else {\r",
 															"    pm.test(\"Status code is 200 for \" + user, function () {\r",
 															"        pm.response.to.have.status(200);\r",
 															"    });\r",
 															"}\r",
-															"\r",
-															"\r",
 															"if (pm.response.code !== 200) {\r",
 															"    return;\r",
 															"}\r",
@@ -7669,15 +7671,15 @@
 															"});\r",
 															"\r",
 															"\r",
-															"\r",
-															"pm.test(\"Check if collection metadata object contains proper metadata\", function () {\r",
-															"    let testMetadataKey = pm.environment.get(\"pocEmail\");\r",
-															"    let testMetadataValue = pm.environment.get(\"pocEmail@email.com\");\r",
-															"    pm.expect(jsonData[testMetadataKey]).to.eql(testMetadataValue);\r",
-															"});\r",
+															"// pm.test(\"Check if collection metadata object contains proper metadata\", function () {\r",
+															"//     let testMetadataKey = pm.environment.get(\"pocEmail\");\r",
+															"//     let testMetadataValue = pm.environment.get(\"pocEmail@email.com\");\r",
+															"//     pm.expect(jsonData[testMetadataKey]).to.eql(testMetadataValue);\r",
+															"// });\r",
 															""
 														],
-														"type": "text/javascript"
+														"type": "text/javascript",
+														"packages": {}
 													}
 												}
 											],
@@ -7714,18 +7716,14 @@
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
 															"\r",
-															"\r",
-															"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" && user != \"lvl5\") {\r",
-															"    pm.test(\"Status should be 403 for all users except stigmanAdmin(elevated) or >= level 3\", function () {\r",
-															"        pm.response.to.have.status(403);\r",
-															"    });\r",
-															"    return;\r",
+															"if (user == \"collectioncreator\"){\r",
+															"     pm.response.to.have.status(403);\r",
+															"     return;\r",
 															"}\r",
-															"else {\r",
-															"    pm.test(\"Status code is 200\", function () {\r",
-															"        pm.response.to.have.status(200);\r",
-															"    });\r",
-															"}\r",
+															"pm.test(\"Status code is 200\", function () {\r",
+															"    pm.response.to.have.status(200);\r",
+															"});\r",
+															"//}\r",
 															"if (pm.response.code !== 200) {\r",
 															"    return;\r",
 															"}\r",
@@ -7738,13 +7736,14 @@
 															"});\r",
 															"\r",
 															"\r",
-															"/*\r",
-															"pm.test(\"Check if collection metadata object contains proper metadata\", function () {\r",
-															"    pm.expect(jsonData).to.include(\"pocEmail\");\r",
+															"\r",
+															"pm.test(\"Check if asset metadata object contains proper metadata\", function () {\r",
+															"    pm.expect(jsonData).to.include(\"testkey\");\r",
 															"});\r",
-															"*/"
+															""
 														],
-														"type": "text/javascript"
+														"type": "text/javascript",
+														"packages": {}
 													}
 												}
 											],
@@ -7782,12 +7781,9 @@
 															"let user = pm.environment.get(\"user\");\r",
 															"console.log(\"user: \" + user);\r",
 															"\r",
-															"/*\r",
-															"if (user != \"stigmanadmin\" && user != \"elevated\" && user != \"lvl3\" && user != \"lvl4\" && user != \"lvl5\") {\r",
-															"    pm.test(\"Status should be 403 for all users except stigmanAdmin(elevated) or >= level 3\", function () {\r",
-															"        pm.response.to.have.status(403);\r",
-															"    });\r",
-															"    return;\r",
+															"if (user == \"collectioncreator\"){\r",
+															"     pm.response.to.have.status(403);\r",
+															"     return;\r",
 															"}\r",
 															"else {\r",
 															"    pm.test(\"Status code is 200 for \" + user, function () {\r",
@@ -7804,14 +7800,13 @@
 															"    pm.expect(jsonData).to.be.an('string');\r",
 															"});\r",
 															"\r",
-															"\r",
-															"\r",
 															"pm.test(\"Check if collection metadata object contains proper metadata\", function () {\r",
-															"    pm.expect(jsonData).to.eql(\"poc2Patched\");\r",
+															"    pm.expect(jsonData).to.eql(\"testvalue\");\r",
 															"});\r",
-															"*/"
+															""
 														],
-														"type": "text/javascript"
+														"type": "text/javascript",
+														"packages": {}
 													}
 												}
 											],
@@ -7837,7 +7832,7 @@
 														},
 														{
 															"key": "key",
-															"value": "{{metadataKey}}"
+															"value": "{{testMetadataKey}}"
 														}
 													]
 												}

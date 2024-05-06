@@ -562,7 +562,7 @@ module.exports.updateAsset = async function updateAsset (req, res, next) {
 
 module.exports.getAssetMetadata = async function (req, res, next) {
   try {
-    let { assetId } = await getAssetInfoAndVerifyAccess(req)
+    let { assetId } = await getAssetInfoAndVerifyAccess(req, Security.ACCESS_LEVEL.Restricted)
     let result = await AssetService.getAssetMetadata(assetId, req.userObject)
     res.json(result)
   }
@@ -599,7 +599,7 @@ module.exports.putAssetMetadata = async function (req, res, next) {
 
 module.exports.getAssetMetadataKeys = async function (req, res, next) {
   try {
-    let { assetId } = await getAssetInfoAndVerifyAccess(req)
+    let { assetId } = await getAssetInfoAndVerifyAccess(req, Security.ACCESS_LEVEL.Restricted)
     let result = await AssetService.getAssetMetadataKeys(assetId, req.userObject)
     if (!result) {
       throw new SmError.NotFoundError('metadata keys not found')
@@ -613,7 +613,7 @@ module.exports.getAssetMetadataKeys = async function (req, res, next) {
 
 module.exports.getAssetMetadataValue = async function (req, res, next) {
   try {
-    let { assetId } = await getAssetInfoAndVerifyAccess(req)
+    let { assetId } = await getAssetInfoAndVerifyAccess(req, Security.ACCESS_LEVEL.Restricted)
     let key = req.params.key
     let result = await AssetService.getAssetMetadataValue(assetId, key, req.userObject)
     if (!result) { 
@@ -690,7 +690,7 @@ function getCollectionIdAndVerifyAccess(request, minimumAccessLevel = Security.A
  * @returns {Promise<Object>} - A promise that resolves to an object containing the assetId and a collectionGrant.
  * @throws {SmError.PrivilegeError} - user does not have sufficient access level or the asset does not exist.
  */
-async function getAssetInfoAndVerifyAccess(request) {
+async function getAssetInfoAndVerifyAccess(request, accessLevel = Security.ACCESS_LEVEL.Manage) {
   let assetId = request.params.assetId
 
   // fetch the Asset for access control checks and the response
@@ -701,7 +701,7 @@ async function getAssetInfoAndVerifyAccess(request) {
   }
   const collectionGrant = request.userObject.collectionGrants.find( g => g.collection.collectionId === assetToAffect.collection.collectionId )
   // check if user has sufficient access level
-  if (collectionGrant?.accessLevel < Security.ACCESS_LEVEL.Manage) {
+  if (collectionGrant?.accessLevel < accessLevel) {
     throw new SmError.PrivilegeError("Insufficient access level.")
   }
   return {assetId, collectionGrant}
