@@ -704,7 +704,9 @@
       ],
       "mac": null,
       "noncomputing": true,
-      "metadata": {},
+      "metadata": {
+        "testkey": "testvalue"
+      },
       "stigGrants": [
         {
           "benchmarkId": "VPN_SRG_TEST",
