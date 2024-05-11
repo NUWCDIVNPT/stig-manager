@@ -74,7 +74,7 @@ function getPoolConfig() {
   return poolConfig
 }
 
-module.exports.initializeDatabase = async function () {
+module.exports.initializeDatabase = async function (depStatus) {
   // Create the connection pool
   const poolConfig = getPoolConfig()
   logger.writeDebug('mysql', 'poolConfig', { ...poolConfig })
@@ -127,7 +127,6 @@ module.exports.initializeDatabase = async function () {
       logger.writeInfo('mysql', 'setup', { message: 'No existing tables detected. Setting up new database.' })
       await setupInitialDatabase(_this.pool)
       logger.writeInfo('mysql', 'setup', { message: 'Database setup complete.' })
-      return
     }
     // Perform migrations
     const umzug = new Umzug({
@@ -161,9 +160,11 @@ module.exports.initializeDatabase = async function () {
     else {
       logger.writeInfo('mysql', 'migration', { message: `MySQL schema is up to date` })
     }
+    depStatus.db = 'up'
   }
   catch (error) {
     logger.writeError('mysql', 'initalization', { message: error.message })
+    depStatus.db = 'failed'
     throw new Error('Failed during database initialization or migration.')
   } 
 }

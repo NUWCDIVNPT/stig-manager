@@ -1,25 +1,25 @@
-var http = require("http");
+const http = require("http")
 
-var options = {  
+const options = {  
     host : "localhost",
     port: process.env.STIGMAN_API_PORT || 54000,
-    path: "/api/op/configuration",
+    path: "/api/op/definition?jsonpath=%24.info.version",
     timeout : 2000
-};
+}
 
-var request = http.request(options, (res) => {  
-    console.log(`STATUS: ${res.statusCode}`);
+const request = http.request(options, (res) => {  
+    console.log(`STATUS: ${res.statusCode}`)
     if (res.statusCode == 200) {
-        process.exit(0);
+        process.exit(0)
     }
     else {
-        process.exit(1);
+        process.exit(1)
     }
-});
+})
 
 request.on('error', function(err) {  
-    console.log('ERROR');
-    process.exit(1);
-});
+    console.log('ERROR')
+    process.exit(1)
+})
 
-request.end();  
+request.end()

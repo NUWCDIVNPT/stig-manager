@@ -3801,8 +3801,6 @@ components:
       oneOf:
         - type: object
         - type: array
-          items:
-            type: object
     ApiVersion:
       $ref: '#/components/schemas/Version'
     Asset:

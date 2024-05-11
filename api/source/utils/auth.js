@@ -113,7 +113,7 @@ function getKey(header, callback){
 }
 
 let initAttempt = 0
-async function initializeAuth() {
+async function initializeAuth(depStatus) {
     const retries = 24
     const wellKnown = `${config.oauth.authority}/.well-known/openid-configuration`
     async function getJwks() {
@@ -140,6 +140,7 @@ async function initializeAuth() {
         }
     })
     logger.writeInfo('oidc', 'discovery', { success: true, metadataUri: wellKnown, jwksUri: jwksUri })
+    depStatus.auth = 'up'
 }
 
 module.exports = {verifyRequest, initializeAuth}
