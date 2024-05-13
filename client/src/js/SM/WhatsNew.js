@@ -20,7 +20,6 @@ SM.WhatsNew.Sources = [
         <b>statusUsers</b>:  Array of JSON objects containing an entry for each User that has set the current Status (Submitted, Accepted, etc.) of a Review in the Collection, and the number of Reviews they have set the Status for.
       </li>
     </ul>      
-
     <br>
     <p><img src="img/whatsnew/2024-05-10-metrics-export.png"/></p>
     `    
