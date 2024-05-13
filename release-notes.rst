@@ -1,3 +1,14 @@
+1.4.8
+-----
+
+Changes:
+
+  - (API) feat: Added resultEngine, user, statusUser columns to Detail metrics exports.
+  - (API) feat: Listen on STIGMAN_API_PORT on startup and respond with status while bootstrap process is running.
+  - (API) chore: Remove Dockerfile healthcheck
+  - (API) chore: Refactor controllers to use a set of common functions when checking a collection grant or invoking elevation
+  - (Docs) chore: Minor updates and clarifications
+
 1.4.7
 -----
 
