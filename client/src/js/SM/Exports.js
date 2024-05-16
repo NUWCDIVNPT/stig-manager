@@ -79,28 +79,28 @@ SM.Exports.AssetTree = Ext.extend(Ext.tree.TreePanel, {
       if (match) {
         let collectionId = match[1]
         let assetId = match[2]
-        let result = await Ext.Ajax.requestPromise({
-          url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/status`,
+        let apiMetrics = await Ext.Ajax.requestPromise({
+          responseType: 'json',
+          url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/metrics/summary`,
           method: 'GET',
           params: {
-            assetId: assetId
+            assetId
           }
         })
-        let apiStatus = JSON.parse(result.response.responseText)
-        let content = apiStatus.map(status => {
-          const badgePercent = Math.round((status.status.accepted.total / status.rules.total) * 100)
+        let content = apiMetrics.map(item => {
+          const badgePercent = Math.round((item.metrics.statuses.accepted / item.metrics.assessments) * 100)
           const badgeClass = badgePercent === 100 ? 'sm-export-sprite-low' : badgePercent >= 50 ? 'sm-export-sprite-medium' : 'sm-export-sprite-high'
           return {
-            id: `${collectionId}-${assetId}-${status.benchmarkId}-assignment-leaf`,
-            text: `${SM.he(status.benchmarkId)} <span class="sm-export-sprite ${badgeClass}">${badgePercent}%</span>`,
+            id: `${collectionId}-${assetId}-${item.benchmarkId}-assignment-leaf`,
+            text: `${SM.he(item.benchmarkId)} <span class="sm-export-sprite ${badgeClass}">${badgePercent}%</span>`,
             leaf: true,
             node: 'asset-stig',
             iconCls: 'sm-stig-icon',
-            stigName: status.benchmarkId,
-            assetName: status.assetName,
-            assetId: status.assetId,
+            stigName: item.benchmarkId,
+            assetName: item.name,
+            assetId: item.assetId,
             collectionId: collectionId,
-            benchmarkId: status.benchmarkId,
+            benchmarkId: item.benchmarkId,
             checked: !!this.ui.checkbox.checked
           }
         })
@@ -273,26 +273,21 @@ SM.Exports.StigTree = Ext.extend(Ext.tree.TreePanel, {
       match = node.match(/^(\d+)-assignment-stigs-node$/)
       if (match) {
         let collectionId = match[1]
-        // let result = await Ext.Ajax.requestPromise({
-        //   url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs`,
-        //   method: 'GET'
-        // })
-        // let apiStigs = JSON.parse(result.response.responseText)
         const gridStigs = this.getOwnerTree().data
-        const result = await Ext.Ajax.requestPromise({
-          url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/status`,
+        const apiMetrics = await Ext.Ajax.requestPromise({
+          responseType: 'json',
+          url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/metrics/summary`,
           method: 'GET',
           params: {
             benchmarkId: gridStigs.map( r => r.benchmarkId )
           }
         })
-        let apiStatus = JSON.parse(result.response.responseText)
         let benchmarkStatus = {}
-        for (const status of apiStatus) {
-          if (!benchmarkStatus[status.benchmarkId]) {
-            benchmarkStatus[status.benchmarkId] = []
+        for (const item of apiMetrics) {
+          if (!benchmarkStatus[item.benchmarkId]) {
+            benchmarkStatus[item.benchmarkId] = []
           }
-          benchmarkStatus[status.benchmarkId].push(status)
+          benchmarkStatus[item.benchmarkId].push(item)
         }
 
         let stigNodes = []
@@ -311,20 +306,20 @@ SM.Exports.StigTree = Ext.extend(Ext.tree.TreePanel, {
             qtip: SM.he(stig.title)
           }
           let assetNodes = []
-          for (const status of benchmarkStatus[stig.benchmarkId]) {
-            const badgePercent = Math.round((status.status.accepted.total / status.rules.total) * 100)
+          for (const item of benchmarkStatus[stig.benchmarkId]) {
+            const badgePercent = Math.round((item.metrics.statuses.accepted / item.metrics.assessments) * 100)
             const badgeClass = badgePercent === 100 ? 'sm-export-sprite-low' : badgePercent >= 50 ? 'sm-export-sprite-medium' : 'sm-export-sprite-high'
             assetNodes.push({
-              id: `${collectionId}-${status.benchmarkId}-${status.assetId}-assignment-leaf`,
-              text: `${SM.he(status.assetName)} <span class="sm-export-sprite ${badgeClass}">${badgePercent}%</span>`,
+              id: `${collectionId}-${item.benchmarkId}-${item.assetId}-assignment-leaf`,
+              text: `${SM.he(item.name)} <span class="sm-export-sprite ${badgeClass}">${badgePercent}%</span>`,
               leaf: true,
               node: 'stig-asset',
               iconCls: 'sm-asset-icon',
-              stigName: status.benchmarkId,
-              assetName: status.assetName,
-              assetId: status.assetId,
+              stigName: item.benchmarkId,
+              assetName: item.name,
+              assetId: item.assetId,
               collectionId: collectionId,
-              benchmarkId: status.benchmarkId,
+              benchmarkId: item.benchmarkId,
               checked: !!this.ui.checkbox.checked,
             })
           }
