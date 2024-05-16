@@ -1,3 +1,10 @@
+1.4.9
+-----
+
+Changes:
+
+  - (UI) bugfix: Resolves issue preventing node expansion in the Export Results interface
+
 1.4.8
 -----
 
