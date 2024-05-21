@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "974d3e90-02e5-4e02-8eda-04821046d753",
+		"_postman_id": "055a2e36-bf8a-485f-a23a-7cc45f19221c",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:  \nName: Carl Smigielski  \nEmail: [carl.a.smigielski@saic.com](https://mailto:carl.a.smigielski@saic.com)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "17450853"
+		"_exporter_id": "9301046"
 	},
 	"item": [
 		{
@@ -74638,6 +74638,288 @@
 											"key": "assetId",
 											"value": "{{scrapAsset}}",
 											"description": "(Required) A path parameter that indentifies an Asset"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "restricted grant assignments outside of Collection boundary",
+					"item": [
+						{
+							"name": "Add restricted user to collection Y",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+											"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+											"\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response has proper projections\", function () {\r",
+											"\r",
+											"    if (pm.request.url.getQueryString().match(/projection=statistics/)) {\r",
+											"        pm.expect(jsonData).to.have.property('statistics');\r",
+											"    }\r",
+											"    if (pm.request.url.getQueryString().match(/projection=stigs/)) {\r",
+											"        pm.expect(jsonData).to.have.property('stigs');\r",
+											"    }\r",
+											"    if (pm.request.url.getQueryString().match(/projection=assets/)) {\r",
+											"        pm.expect(jsonData).to.have.property('assets');\r",
+											"    }\r",
+											"    if (pm.request.url.getQueryString().match(/projection=owners/)) {\r",
+											"        pm.expect(jsonData).to.have.property('owners');\r",
+											"    }\r",
+											"    if (pm.request.url.getQueryString().match(/projection=grants/)) {\r",
+											"        pm.expect(jsonData).to.have.property('grants');\r",
+											"    }            \r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"metadata\": {\n    \"pocName\": \"poc2Patched\",\n    \"pocEmail\": \"pocEmail@email.com\",\n    \"pocPhone\": \"12342\",\n    \"reqRar\": \"true\"\n  },\n    \"grants\": [\n        {\n          \"userId\": \"87\",\n          \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"1\",\n            \"accessLevel\": 4\n        },\n        {\n                \"userId\": \"85\",\n            \"accessLevel\": 1\n        }\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId?elevate={{elevated}}&projection=grants",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)"
+										},
+										{
+											"key": "projection",
+											"value": "assets",
+											"description": "Additional properties to include in the response.\n",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "grants",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "owners",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "statistics",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "83",
+											"description": "(Required) A path parameter that indentifies a Collection"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "set stig-asset grants for a lvl1 user in this collection, with asset from another collection",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.lvl3}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "[\r\n    {\r\n        \"benchmarkId\": \"{{testBenchmark}}\",\r\n        \"assetId\": \"240\"\r\n    },\r\n    {\r\n        \"benchmarkId\": \"{{testBenchmark}}\",\r\n        \"assetId\": \"62\"\r\n    },\r\n    {\r\n        \"benchmarkId\": \"{{testBenchmark}}\",\r\n        \"assetId\": \"42\"\r\n    }     \r\n]",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/grants/:userId/access",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"grants",
+										":userId",
+										"access"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}"
+										},
+										{
+											"key": "userId",
+											"value": "{{testLvl1User}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Return stig-asset grants for a lvl1 user in this collection. Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an array\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('array').of.length(0);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/grants/:userId/access",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"grants",
+										":userId",
+										"access"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "83"
+										},
+										{
+											"key": "userId",
+											"value": "{{testLvl1User}}"
 										}
 									]
 								}
