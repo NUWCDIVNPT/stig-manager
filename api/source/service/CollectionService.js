@@ -541,13 +541,20 @@ exports.setStigAssetsByCollectionUser = async function(collectionId, userId, sti
         await connection.execute(sqlDelete, [userId, collectionId])
       if (stigAssets.length > 0) {
         // Get saIds
-        const bindsInsertSaIds = [ userId ]
+        const bindsInsertSaIds = [userId, collectionId]
         const predicatesInsertSaIds = []
         for (const stigAsset of stigAssets) {
           bindsInsertSaIds.push(stigAsset.benchmarkId, stigAsset.assetId)
-          predicatesInsertSaIds.push('(benchmarkId = ? AND assetId = ?)')
+          predicatesInsertSaIds.push('(sa.benchmarkId = ? AND sa.assetId = ?)')
         }
-        let sqlInsertSaIds = `INSERT IGNORE INTO user_stig_asset_map (userId, saId) SELECT ?, saId FROM stig_asset_map WHERE `
+        let sqlInsertSaIds = `INSERT IGNORE INTO user_stig_asset_map (userId, saId) 
+        SELECT 
+          ?,
+          sa.saId
+        FROM
+          stig_asset_map sa
+          inner join asset a on (sa.assetId = a.assetId and a.collectionId = ? and a.isEnabled = 1)
+        WHERE `
         sqlInsertSaIds += predicatesInsertSaIds.join('\nOR\n')
         await connection.execute(sqlInsertSaIds, bindsInsertSaIds)
       }
