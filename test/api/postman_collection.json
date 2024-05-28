@@ -74643,6 +74643,124 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "check that request body without collectionId properly sets labels - GH-1293",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+											"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+											"\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+											"    pm.expect(jsonData.labelIds).to.have.lengthOf(1);\r",
+											"\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    // \"collectionId\": \"{{scrapCollection}}\",\n    // \"description\": \"test desc\",\n    // \"ip\": \"1.1.1.1\",\n    // \"noncomputing\": true,\n    \"labelIds\": [\n        \"df4e6836-a003-11ec-b1bc-0242ac110002\"\n    ]\n    // \"metadata\": {\n    //     \"pocName\": \"poc2Put\",\n    //     \"pocEmail\": \"pocEmailPut@email.com\",\n    //     \"pocPhone\": \"12342\",\n    //     \"reqRar\": \"true\"\n    // },\n    // \"stigs\": [\n    //     \"VPN_SRG_TEST\",\n    //     \"Windows_10_STIG_TEST\",\n    //     \"RHEL_7_STIG_TEST\"\n    // ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "statusStats",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigGrants"
+										}
+									],
+									"variable": [
+										{
+											"key": "assetId",
+											"value": "{{scrapAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
