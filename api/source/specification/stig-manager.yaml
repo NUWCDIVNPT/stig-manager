@@ -5662,10 +5662,6 @@ components:
               $ref: '#/components/schemas/MaxTs'
             minTs:
               $ref: '#/components/schemas/MinTs'
-            resultEngines:
-              type: array
-              items:
-                $ref: '#/components/schemas/MetricsResultEngine'
             results:
               additionalProperties: false
               type: object
@@ -5709,14 +5705,6 @@ components:
                   $ref: '#/components/schemas/CollectionStatusCount'
                 submitted:
                   $ref: '#/components/schemas/CollectionStatusCount'
-            statusUsers:
-              type: array
-              items:
-                $ref: '#/components/schemas/MetricsStatusUser'
-            users:
-              type: array
-              items:
-                $ref: '#/components/schemas/MetricsUser'
           required:
             - assessments
             - assessmentsBySeverity
@@ -5727,9 +5715,6 @@ components:
             - results
             - statuses
             - findings
-            - resultEngines
-            - users
-            - statusUsers
       required:
         - metrics
     MetricsDetailAggAsset:
@@ -5756,24 +5741,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/MetricsUnagg'
         - $ref: '#/components/schemas/MetricsDetail'
-    MetricsResultEngine:
-      type: object
-      properties:
-        product:
-          $ref: '#/components/schemas/String255'
-        version:
-          $ref: '#/components/schemas/VersionString'
-        reviewCount:
-          type: integer
-    MetricsStatusUser:
-      type: object
-      properties:
-        userId:
-          $ref: '#/components/schemas/UserId'
-        username:
-          $ref: '#/components/schemas/Username'
-        reviewCount:
-          type: integer
     MetricsSummary:
       properties:
         metrics:
@@ -5900,15 +5867,6 @@ components:
         - title
         - revisionStr
         - revisionPinned
-    MetricsUser:
-      type: object
-      properties:
-        userId:
-          $ref: '#/components/schemas/UserId'
-        username:
-          $ref: '#/components/schemas/Username'
-        reviewCount:
-          type: integer
     MinTs:
       format: date-time
       nullable: true

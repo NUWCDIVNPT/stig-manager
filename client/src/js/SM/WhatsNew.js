@@ -2,30 +2,6 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
-    date: '2024-05-10',
-    header: `Aggregated Result Engine and User Review Info Now Available in Metrics Exports`,
-    body: `
-    <p>
-    The "Detail" style Metrics Export available from the Collection Dashboard now includes aggregated information about the Result Engines and Users that have contributed to the current state of the Reviews in your Collection. 
-    <p>   
-    <b>This information is presented in the "resultEngines","users", and "statusUsers" columns (or JSON properties) of the export:</b>
-    <ul>
-      <li>
-      <b>resultEngines</b>: Array of JSON objects containing an entry for each version of a resultEngine (ie. Evaluate-STIG 1.2, Evaluate-STIG 2.4, OpenSCAP, etc.) that is associated with a current Review in the Collection, and the number of Reviews that tool evaluated.
-      </li>
-      <li>
-        <b>users</b>: Array of JSON objects containing an entry for each User that has set the current Evaluation (Result, Detail, Comment fields) of a Review in the Collection, and the number of Reviews they evaluated.
-      </li>
-      <li>
-        <b>statusUsers</b>:  Array of JSON objects containing an entry for each User that has set the current Status (Submitted, Accepted, etc.) of a Review in the Collection, and the number of Reviews they have set the Status for.
-      </li>
-    </ul>      
-    <br>
-    <p><img src="img/whatsnew/2024-05-10-metrics-export.png"/></p>
-    `    
-  },     
-
-  {
     date: '2024-03-17',
     header: `Bulk Checklist Imports Now Available to All Users`,
     body: `
