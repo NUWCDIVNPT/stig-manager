@@ -287,8 +287,8 @@ module.exports.updateStatsAssetStig = async function(connection, {
   saIds }) {
   if (!connection) { throw new Error ('Connection required')}
   // Handle optional predicates, 
-  const predicates = ['sa.assetId IS NOT NULL AND sa.benchmarkId IS NOT NULL']
-  const binds = []
+  let predicates = ['sa.assetId IS NOT NULL AND sa.benchmarkId IS NOT NULL']
+  let binds = []
   let whereClause = ''
 
   if (rules && rules.length > 0) {
@@ -329,118 +329,14 @@ module.exports.updateStatsAssetStig = async function(connection, {
     binds.push([saIds])
   }
   if (predicates.length > 0) {
-    whereClause = predicates.join(' and ')
+    whereClause = `where  ${predicates.join(' and ')}`
   }
 
   const sqlUpdate = `
-  with reviewProps as (
-    select
-        review.assetId,
-        dr.benchmarkId,
-        review.userId,
-        udUser.username,
-        review.statusUserId,
-        udStatusUser.username as statusUsername,
-        review.reProduct,
-        json_unquote(json_extract(review.resultEngine,'$.version')) as reVersion
-    from
-       asset a
-       left join stig_asset_map sa using (assetId)
-       left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)
-       left join rev_group_rule_map rgr on dr.revId = rgr.revId
-       left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId
-       inner join review on (rvcd.version=review.version and rvcd.checkDigest=review.checkDigest and review.assetId=sa.assetId)
-       left join user_data udUser on review.userId = udUser.userId
-       left join user_data udStatusUser on review.statusUserId = udStatusUser.userId
-    ${whereClause ? `where ${whereClause}`:''}
-  ),
-  userCount as (
-    select
-      assetId,
-      benchmarkId,
-      userId,
-      username,
-      count(*) as reviewCount
-    from
-      reviewProps
-    group by
-      assetId,
-      benchmarkId,
-      userId,
-      username
-  ),
-  userJson as (
-    select
-      assetId,
-      benchmarkId,
-      json_arrayagg(json_object('userId', cast(userId as char), 'username', username, 'reviewCount', reviewCount)) as users
-    from
-      userCount
-    group by
-      assetId,
-      benchmarkId
-  ),
-  statusUserCount as (
-    select
-      assetId,
-      benchmarkId,
-      statusUserId,
-      statusUsername,
-      count(*) as reviewCount
-    from
-      reviewProps
-    group by
-      assetId,
-      benchmarkId,
-      statusUserId,
-      statusUsername
-  ),
-  statusUserJson as (
-    select
-      assetId,
-      benchmarkId,
-      json_arrayagg(json_object('userId', cast(statusUserId as char), 'username', statusUsername, 'reviewCount', reviewCount)) as statusUsers
-    from
-      statusUserCount
-    group by
-      assetId,
-      benchmarkId
-  ),
-  reCount as (
-    select
-      assetId,
-      benchmarkId,
-      reProduct,
-      reVersion,
-      count(*) as reviewCount
-    from
-      reviewProps
-    where
-      reviewProps.reProduct is not null
-    group by
-      assetId,
-      benchmarkId,
-      reProduct,
-      reVersion
-  ),
-  reJson as (
-    select
-      assetId,
-      benchmarkId,
-      json_arrayagg(json_object('product', reProduct, 'version', reVersion, 'reviewCount', reviewCount)) as resultEngines
-    from
-      reCount
-    group by
-      assetId,
-      benchmarkId
-  ),
-  source as
+  with source as
     ( select
        sa.assetId,
        sa.benchmarkId,
-       any_value(reJson.resultEngines) as resultEngines,
-       any_value(userJson.users) as users,
-       any_value(statusUserJson.statusUsers) as statusUsers,
        min(review.ts) as minTs,
        max(review.ts) as maxTs,  
        max(review.touchTs) as maxTouchTs,  
@@ -479,25 +375,19 @@ module.exports.updateStatsAssetStig = async function(connection, {
        
        from
          asset a
-         inner join stig_asset_map sa using (assetId)
+         left join stig_asset_map sa using (assetId)
          left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)
          left join rev_group_rule_map rgr on dr.revId = rgr.revId
          left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId
          left join review on (rvcd.version=review.version and rvcd.checkDigest=review.checkDigest and review.assetId=sa.assetId)
-         left join reJson on (sa.assetId = reJson.assetId and sa.benchmarkId = reJson.benchmarkId)
-         left join userJson on (sa.assetId = userJson.assetId and sa.benchmarkId = userJson.benchmarkId)
-         left join statusUserJson on (sa.assetId = statusUserJson.assetId and sa.benchmarkId = statusUserJson.benchmarkId)
-        ${whereClause ? `where ${whereClause}`:''}
+    ${whereClause}
     group by
       sa.assetId,
       sa.benchmarkId
-    )
+      )
   update stig_asset_map sam
     inner join source on sam.assetId = source.assetId and source.benchmarkId = sam.benchmarkId
-        set sam.resultEngines = source.resultEngines,
-        sam.users = source.users,
-        sam.statusUsers = source.statusUsers,
-        sam.minTs = source.minTs,
+    set sam.minTs = source.minTs,
         sam.maxTs = source.maxTs,
         sam.maxTouchTs = source.maxTouchTs,
         sam.saved = source.saved,
@@ -532,7 +422,7 @@ module.exports.updateStatsAssetStig = async function(connection, {
     `
 
     let stats
-    [stats] = await connection.query(sqlUpdate, binds.concat(binds))
+    [stats] = await connection.query(sqlUpdate, binds)
     return stats
 
 }

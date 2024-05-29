@@ -3,49 +3,36 @@
     {
       "userId": "87",
       "username": "admin",
-      "email": null,
-      "displayName": "Admin Burke",
       "statistics": {
-        "created": "2024-05-01T23:47:18Z",
-        "lastAccess": 1714607404,
+        "created": "2022-03-09 23:51:20.000000",
+        "lastAccess": 1646869919,
         "lastClaims": {
-          "aud": [
-            "realm-management",
-            "account"
-          ],
+          "acr": "0",
+          "aud": "realm-management",
           "azp": "stig-manager",
-          "exp": 1714607538,
-          "iat": 1714607238,
-          "iss": "http://localhost:8080/realms/stigman",
-          "jti": "a7c6de10-df1f-4072-8b6a-ed8b0287457b",
-          "sid": "b5b07095-d594-4030-98de-2d75bb6773df",
+          "exp": 1646870203,
+          "iat": 1646869903,
+          "iss": "http://localhost:8080/auth/realms/stigman",
+          "jti": "286cb1ea-6f44-48d5-9105-3efcdf2ee02c",
           "sub": "bf87a16f-39e6-46d9-8971-f0ef51dd3f85",
           "typ": "Bearer",
           "name": "Admin Burke",
-          "nonce": "7e299dac-b2fc-42b2-84e7-18c477d2a85d",
-          "scope": "stig-manager:collection stig-manager:stig:read stig-manager:user:read stig-manager:op stig-manager:user stig-manager stig-manager:stig",
-          "clientId": "admin",
-          "auth_time": 1714579853,
-          "client_id": "admin",
+          "email": "admin@admin.com",
+          "nonce": "d42ef1c0-8009-4b02-8925-0f1b9433c7c3",
+          "scope": "openid stig-manager:collection stig-manager:stig:read stig-manager:user:read stig-manager:op stig-manager:user stig-manager:stig",
+          "auth_time": 1646846276,
           "given_name": "Admin",
           "family_name": "Burke",
           "realm_access": {
             "roles": [
               "create_collection",
-              "default-roles-stigman",
               "admin",
               "user"
             ]
           },
-          "session_state": "b5b07095-d594-4030-98de-2d75bb6773df",
+          "session_state": "5da5018d-e50f-46cd-b0a7-02bd8bd5a7b7",
+          "email_verified": false,
           "resource_access": {
-            "account": {
-              "roles": [
-                "manage-account",
-                "manage-account-links",
-                "view-profile"
-              ]
-            },
             "realm-management": {
               "roles": [
                 "view-users",
@@ -62,10 +49,8 @@
     {
       "userId": "86",
       "username": "bizarroLvl1",
-      "email": null,
-      "displayName": "bizarroLvl1",
       "statistics": {
-        "created": "2024-05-01T23:47:18Z",
+        "created": "2022-03-09 23:51:20.000000",
         "lastAccess": null,
         "lastClaims": {},
         "collectionGrantCount": 2
@@ -74,10 +59,8 @@
     {
       "userId": "82",
       "username": "collectioncreator",
-      "email": null,
-      "displayName": "collectioncreator",
       "statistics": {
-        "created": "2024-05-01T23:47:18Z",
+        "created": "2022-03-09 23:51:20.000000",
         "lastAccess": 1602652554,
         "lastClaims": {
           "acr": "1",
@@ -120,10 +103,8 @@
     {
       "userId": "85",
       "username": "lvl1",
-      "email": null,
-      "displayName": "lvl1",
       "statistics": {
-        "created": "2024-05-01T23:47:18Z",
+        "created": "2022-03-09 23:51:20.000000",
         "lastAccess": 1602652493,
         "lastClaims": {
           "acr": "1",
@@ -165,10 +146,8 @@
     {
       "userId": "21",
       "username": "lvl2",
-      "email": null,
-      "displayName": "lvl2",
       "statistics": {
-        "created": "2024-05-01T23:47:18Z",
+        "created": "2022-03-09 23:51:20.000000",
         "lastAccess": 1602652507,
         "lastClaims": {
           "acr": "1",
@@ -210,10 +189,8 @@
     {
       "userId": "44",
       "username": "lvl3",
-      "email": null,
-      "displayName": "lvl3",
       "statistics": {
-        "created": "2024-05-01T23:47:18Z",
+        "created": "2022-03-09 23:51:20.000000",
         "lastAccess": 1602652565,
         "lastClaims": {
           "acr": "1",
@@ -255,10 +232,8 @@
     {
       "userId": "45",
       "username": "lvl4",
-      "email": null,
-      "displayName": "lvl4",
       "statistics": {
-        "created": "2024-05-01T23:47:18Z",
+        "created": "2022-03-09 23:51:20.000000",
         "lastAccess": 1602652573,
         "lastClaims": {
           "acr": "1",
@@ -300,11 +275,9 @@
     {
       "userId": "1",
       "username": "stigmanadmin",
-      "email": null,
-      "displayName": "STIGMAN Admin",
       "statistics": {
-        "created": "2024-05-01T23:47:18Z",
-        "lastAccess": 1714607410,
+        "created": "2022-03-09 23:51:20.000000",
+        "lastAccess": 1643160098,
         "lastClaims": {
           "acr": "0",
           "aud": [
@@ -312,27 +285,24 @@
             "account"
           ],
           "azp": "stig-manager",
-          "exp": 1864681035,
-          "iat": 1670540236,
+          "exp": 1670394347,
+          "iat": 1605631412,
           "iss": "http://localhost:8080/auth/realms/stigman",
-          "jti": "47f9aa7d-bac4-4098-9be8-ace75513aa7f",
-          "sid": "87365b33-2c76-4b3c-8485-fba5dbff4b9f",
-          "sub": "b7c78a62-b84f-4578-a983-2ebc66fd9efe",
+          "jti": "daf8b741-73d1-4eba-96af-f855ab0bd226",
+          "sub": "eb965d15-aa78-43fc-a2a6-3d86258c1eec",
           "typ": "Bearer",
-          "name": "STIGMAN Admin",
-          "nonce": "3378daff-0404-43b3-b4ab-ee31ff7340ac",
-          "scope": "openid stig-manager:collection stig-manager:stig:read stig-manager:user:read stig-manager:op stig-manager:collection:read stig-manager:op:read stig-manager:user stig-manager stig-manager:stig",
-          "auth_time": 1670540235,
-          "given_name": "STIGMAN",
-          "family_name": "Admin",
+          "nonce": "73937be3-4ccc-4fa7-8202-45685523dd2c",
+          "scope": "openid stig-manager:collection stig-manager:stig:read stig-manager:user:read stig-manager:op stig-manager:user stig-manager:stig",
+          "auth_time": 1605594347,
           "realm_access": {
             "roles": [
               "create_collection",
-              "default-roles-stigman",
-              "admin"
+              "admin",
+              "user"
             ]
           },
-          "session_state": "87365b33-2c76-4b3c-8485-fba5dbff4b9f",
+          "session_state": "5ac2a938-1074-4e6a-8c4b-e83e4e7d763b",
+          "email_verified": false,
           "resource_access": {
             "account": {
               "roles": [
@@ -357,10 +327,8 @@
     {
       "userId": "22",
       "username": "wf-test",
-      "email": null,
-      "displayName": "wf-test",
       "statistics": {
-        "created": "2024-05-01T23:47:18Z",
+        "created": "2022-03-09 23:51:20.000000",
         "lastAccess": null,
         "lastClaims": {},
         "collectionGrantCount": 0
@@ -369,10 +337,8 @@
     {
       "userId": "43",
       "username": "workforce-60",
-      "email": null,
-      "displayName": "workforce-60",
       "statistics": {
-        "created": "2024-05-01T23:47:18Z",
+        "created": "2022-03-09 23:51:20.000000",
         "lastAccess": null,
         "lastClaims": {},
         "collectionGrantCount": 0
@@ -399,9 +365,6 @@
           "canAccept": true,
           "resetCriteria": "result",
           "minAcceptGrant": 3
-        },
-        "history": {
-          "maxReviews": 15
         }
       },
       "metadata": {
@@ -410,22 +373,6 @@
         "pocEmail": "pocEmail@email.com",
         "pocPhone": "12342"
       },
-      "stigs": [
-        {
-          "ruleCount": 81,
-          "benchmarkId": "VPN_SRG_TEST",
-          "revisionStr": "V1R1",
-          "benchmarkDate": "2019-07-19",
-          "revisionPinned": false
-        },
-        {
-          "ruleCount": 287,
-          "benchmarkId": "Windows_10_STIG_TEST",
-          "revisionStr": "V1R23",
-          "benchmarkDate": "2020-06-17",
-          "revisionPinned": false
-        }
-      ],
       "grants": [
         {
           "accessLevel": 1,
@@ -492,9 +439,6 @@
           "canAccept": true,
           "resetCriteria": "result",
           "minAcceptGrant": 3
-        },
-        "history": {
-          "maxReviews": 15
         }
       },
       "metadata": {
@@ -503,15 +447,6 @@
         "pocEmail": "string",
         "pocPhone": "string"
       },
-      "stigs": [
-        {
-          "ruleCount": 81,
-          "benchmarkId": "VPN_SRG_TEST",
-          "revisionStr": "V1R1",
-          "benchmarkDate": "2019-07-19",
-          "revisionPinned": false
-        }
-      ],
       "grants": [
         {
           "accessLevel": 4,
@@ -543,9 +478,6 @@
           "canAccept": true,
           "resetCriteria": "result",
           "minAcceptGrant": 3
-        },
-        "history": {
-          "maxReviews": 15
         }
       },
       "metadata": {
@@ -554,29 +486,6 @@
         "pocEmail": "pocEmailPut@email.com",
         "pocPhone": "12342"
       },
-      "stigs": [
-        {
-          "ruleCount": 244,
-          "benchmarkId": "RHEL_7_STIG_TEST",
-          "revisionStr": "V3R0.3",
-          "benchmarkDate": "2020-03-31",
-          "revisionPinned": false
-        },
-        {
-          "ruleCount": 81,
-          "benchmarkId": "VPN_SRG_TEST",
-          "revisionStr": "V1R1",
-          "benchmarkDate": "2019-07-19",
-          "revisionPinned": false
-        },
-        {
-          "ruleCount": 287,
-          "benchmarkId": "Windows_10_STIG_TEST",
-          "revisionStr": "V1R23",
-          "benchmarkDate": "2020-06-17",
-          "revisionPinned": false
-        }
-      ],
       "grants": [
         {
           "accessLevel": 1,
@@ -632,13 +541,9 @@
           "canAccept": true,
           "resetCriteria": "result",
           "minAcceptGrant": 3
-        },
-        "history": {
-          "maxReviews": 15
         }
       },
       "metadata": {},
-      "stigs": [],
       "grants": [
         {
           "accessLevel": 4,
@@ -670,13 +575,9 @@
           "canAccept": true,
           "resetCriteria": "result",
           "minAcceptGrant": 3
-        },
-        "history": {
-          "maxReviews": 15
         }
       },
       "metadata": {},
-      "stigs": [],
       "grants": [
         {
           "accessLevel": 4,
@@ -712,13 +613,9 @@
           "canAccept": true,
           "resetCriteria": "result",
           "minAcceptGrant": 3
-        },
-        "history": {
-          "maxReviews": 15
         }
       },
       "metadata": {},
-      "stigs": [],
       "grants": [],
       "labels": []
     },
@@ -741,13 +638,9 @@
           "canAccept": true,
           "resetCriteria": "result",
           "minAcceptGrant": 3
-        },
-        "history": {
-          "maxReviews": 15
         }
       },
       "metadata": {},
-      "stigs": [],
       "grants": [
         {
           "accessLevel": 4,
@@ -763,74 +656,6 @@
   ],
   "assets": [
     {
-      "assetId": "34",
-      "name": "test asset stigmanadmin",
-      "fqdn": null,
-      "description": "test desc",
-      "ip": "1.1.1.1",
-      "labelIds": [],
-      "mac": null,
-      "noncomputing": true,
-      "metadata": {},
-      "stigGrants": [
-        {
-          "benchmarkId": "RHEL_7_STIG_TEST",
-          "userIds": []
-        },
-        {
-          "benchmarkId": "VPN_SRG_TEST",
-          "userIds": []
-        },
-        {
-          "benchmarkId": "Windows_10_STIG_TEST",
-          "userIds": []
-        }
-      ],
-      "collectionId": "1"
-    },
-    {
-      "assetId": "38",
-      "name": "FOMALHAUT",
-      "fqdn": null,
-      "description": "",
-      "ip": "10.0.0.27",
-      "labelIds": [],
-      "mac": null,
-      "noncomputing": false,
-      "metadata": {},
-      "stigGrants": [
-        {
-          "benchmarkId": "VPN_SRG_TEST",
-          "userIds": [
-            "85"
-          ]
-        }
-      ],
-      "collectionId": "1"
-    },
-    {
-      "assetId": "241",
-      "name": "test asset POST stigmanadmin",
-      "fqdn": null,
-      "description": "test desc",
-      "ip": "1.1.1.1",
-      "labelIds": [],
-      "mac": null,
-      "noncomputing": true,
-      "metadata": {},
-      "stigGrants": [
-        {
-          "benchmarkId": "VPN_SRG_TEST",
-          "userIds": []
-        },
-        {
-          "benchmarkId": "Windows_10_STIG_TEST",
-          "userIds": []
-        }
-      ],
-      "collectionId": "1"
-    },
-    {
       "assetId": "29",
       "name": "ACHERNAR_Collection_X_asset",
       "fqdn": null,
@@ -841,6 +666,30 @@
       "noncomputing": false,
       "metadata": {},
       "stigGrants": [],
+      "collectionId": "21"
+    },
+    {
+      "assetId": "62",
+      "name": "Collection_X_asset",
+      "fqdn": null,
+      "description": "",
+      "ip": "10.1.1.1",
+      "labelIds": [
+        "755b8a28-9a68-11ec-b1bc-0242ac110002"
+      ],
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [
+        {
+          "benchmarkId": "VPN_SRG_TEST",
+          "userIds": []
+        },
+        {
+          "benchmarkId": "Windows_10_STIG_TEST",
+          "userIds": []
+        }
+      ],
       "collectionId": "21"
     },
     {
@@ -875,30 +724,6 @@
       "collectionId": "21"
     },
     {
-      "assetId": "62",
-      "name": "Collection_X_asset",
-      "fqdn": null,
-      "description": "",
-      "ip": "10.1.1.1",
-      "labelIds": [
-        "755b8a28-9a68-11ec-b1bc-0242ac110002"
-      ],
-      "mac": null,
-      "noncomputing": false,
-      "metadata": {},
-      "stigGrants": [
-        {
-          "benchmarkId": "VPN_SRG_TEST",
-          "userIds": []
-        },
-        {
-          "benchmarkId": "Windows_10_STIG_TEST",
-          "userIds": []
-        }
-      ],
-      "collectionId": "21"
-    },
-    {
       "assetId": "154",
       "name": "Collection_X_lvl1_asset-2",
       "fqdn": null,
@@ -923,24 +748,6 @@
       "collectionId": "21"
     },
     {
-      "assetId": "153",
-      "name": "Collection_Y_lvl_1_asset-1",
-      "fqdn": null,
-      "description": "",
-      "ip": "",
-      "labelIds": [],
-      "mac": null,
-      "noncomputing": false,
-      "metadata": {},
-      "stigGrants": [
-        {
-          "benchmarkId": "VPN_SRG_TEST",
-          "userIds": []
-        }
-      ],
-      "collectionId": "83"
-    },
-    {
       "assetId": "240",
       "name": "Collection_Y_asset-noGrants",
       "fqdn": null,
@@ -959,6 +766,105 @@
       "collectionId": "83"
     },
     {
+      "assetId": "153",
+      "name": "Collection_Y_lvl_1_asset-1",
+      "fqdn": null,
+      "description": "",
+      "ip": "",
+      "labelIds": [],
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [
+        {
+          "benchmarkId": "VPN_SRG_TEST",
+          "userIds": []
+        }
+      ],
+      "collectionId": "83"
+    },
+    {
+      "assetId": "38",
+      "name": "FOMALHAUT",
+      "fqdn": null,
+      "description": "",
+      "ip": "10.0.0.27",
+      "labelIds": [],
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [
+        {
+          "benchmarkId": "VPN_SRG_TEST",
+          "userIds": [
+            "85"
+          ]
+        }
+      ],
+      "collectionId": "1"
+    },
+    {
+      "assetId": "246",
+      "name": "tesetest",
+      "fqdn": null,
+      "description": "",
+      "ip": "",
+      "labelIds": [],
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [],
+      "collectionId": "92"
+    },
+    {
+      "assetId": "241",
+      "name": "test asset POST stigmanadmin",
+      "fqdn": null,
+      "description": "test desc",
+      "ip": "1.1.1.1",
+      "labelIds": [],
+      "mac": null,
+      "noncomputing": true,
+      "metadata": {},
+      "stigGrants": [
+        {
+          "benchmarkId": "VPN_SRG_TEST",
+          "userIds": []
+        },
+        {
+          "benchmarkId": "Windows_10_STIG_TEST",
+          "userIds": []
+        }
+      ],
+      "collectionId": "1"
+    },
+    {
+      "assetId": "34",
+      "name": "test asset stigmanadmin",
+      "fqdn": null,
+      "description": "test desc",
+      "ip": "1.1.1.1",
+      "labelIds": [],
+      "mac": null,
+      "noncomputing": true,
+      "metadata": {},
+      "stigGrants": [
+        {
+          "benchmarkId": "RHEL_7_STIG_TEST",
+          "userIds": []
+        },
+        {
+          "benchmarkId": "VPN_SRG_TEST",
+          "userIds": []
+        },
+        {
+          "benchmarkId": "Windows_10_STIG_TEST",
+          "userIds": []
+        }
+      ],
+      "collectionId": "1"
+    },
+    {
       "assetId": "242",
       "name": "testasset",
       "fqdn": null,
@@ -970,6 +876,19 @@
       "metadata": {},
       "stigGrants": [],
       "collectionId": "85"
+    },
+    {
+      "assetId": "245",
+      "name": "testasset",
+      "fqdn": null,
+      "description": "test desc",
+      "ip": "",
+      "labelIds": [],
+      "mac": null,
+      "noncomputing": false,
+      "metadata": {},
+      "stigGrants": [],
+      "collectionId": "92"
     },
     {
       "assetId": "243",
@@ -996,32 +915,6 @@
       "metadata": {},
       "stigGrants": [],
       "collectionId": "85"
-    },
-    {
-      "assetId": "245",
-      "name": "testasset",
-      "fqdn": null,
-      "description": "test desc",
-      "ip": "",
-      "labelIds": [],
-      "mac": null,
-      "noncomputing": false,
-      "metadata": {},
-      "stigGrants": [],
-      "collectionId": "92"
-    },
-    {
-      "assetId": "246",
-      "name": "tesetest",
-      "fqdn": null,
-      "description": "",
-      "ip": "",
-      "labelIds": [],
-      "mac": null,
-      "noncomputing": false,
-      "metadata": {},
-      "stigGrants": [],
-      "collectionId": "92"
     }
   ],
   "reviews": [
@@ -1029,25 +922,9 @@
       "assetId": "42",
       "ruleId": "SV-106179r1_rule",
       "result": "pass",
-      "resultEngine": {
-        "time": "2023-12-11T12:56:14.3576272-05:00",
-        "type": "script",
-        "product": "Evaluate-STIG",
-        "version": "1.2310.1",
-        "overrides": [
-          {
-            "remark": "Evaluate-STIG Answer File",
-            "authority": "Some_AnswerFile.xml",
-            "newResult": "pass",
-            "oldResult": "unknown"
-          }
-        ],
-        "checkContent": {
-          "location": "VPN_Checks:1.2023.7.24"
-        }
-      },
       "detail": "test\nvisible to lvl1",
-      "comment": "sure",
+      "autoResult": false,
+      "comment": "idk",
       "userId": "1",
       "ts": "2021-07-16T03:34:02Z",
       "touchTs": "2021-07-16T03:34:02Z",
@@ -1065,7 +942,6 @@
           "ts": "2020-08-11T23:37:45Z",
           "detail": "test\nvisible to lvl1",
           "result": "pass",
-          "ruleId": "SV-106179r1_rule",
           "status": {
             "ts": "2020-08-11T23:37:45Z",
             "text": null,
@@ -1075,13 +951,12 @@
           "userId": "1",
           "comment": null,
           "touchTs": "2020-08-11T23:37:45Z",
-          "resultEngine": null
+          "autoResult": false
         },
         {
           "ts": "2020-08-11T23:37:45Z",
           "detail": "test\nvisible to lvl1",
           "result": "pass",
-          "ruleId": "SV-106179r1_rule",
           "status": {
             "ts": "2020-08-11T23:37:45Z",
             "text": null,
@@ -1091,7 +966,7 @@
           "userId": "1",
           "comment": null,
           "touchTs": "2020-08-11T23:37:45Z",
-          "resultEngine": null
+          "autoResult": false
         }
       ]
     },
@@ -1099,26 +974,10 @@
       "assetId": "42",
       "ruleId": "SV-106181r1_rule",
       "result": "notapplicable",
-      "resultEngine": {
-        "time": "2023-12-11T12:56:14.3576272-05:00",
-        "type": "script",
-        "product": "Evaluate-STIG",
-        "version": "2",
-        "overrides": [
-          {
-            "remark": "Evaluate-STIG Answer File",
-            "authority": "Some_AnswerFile.xml",
-            "newResult": "pass",
-            "oldResult": "unknown"
-          }
-        ],
-        "checkContent": {
-          "location": "VPN_Checks:2"
-        }
-      },
-      "detail": "test\nvisible to lvl1",
-      "comment": "sure",
-      "userId": "1",
+      "detail": "test\nvisible to lvl1\nhas history",
+      "autoResult": false,
+      "comment": "",
+      "userId": "87",
       "ts": "2022-02-03T00:07:05Z",
       "touchTs": "2022-02-03T00:07:07Z",
       "status": {
@@ -1133,7 +992,6 @@
           "ts": "2020-08-11T22:26:50Z",
           "detail": "test\nvisible to lvl1",
           "result": "notapplicable",
-          "ruleId": "SV-106181r1_rule",
           "status": {
             "ts": "2020-08-11T22:26:50Z",
             "text": null,
@@ -1143,13 +1001,12 @@
           "userId": "1",
           "comment": null,
           "touchTs": "2020-08-11T22:26:50Z",
-          "resultEngine": null
+          "autoResult": false
         },
         {
           "ts": "2020-08-11T22:26:50Z",
           "detail": "test\nvisible to lvl1",
           "result": "notapplicable",
-          "ruleId": "SV-106181r1_rule",
           "status": {
             "ts": "2020-08-11T22:26:50Z",
             "text": null,
@@ -1159,13 +1016,12 @@
           "userId": "1",
           "comment": null,
           "touchTs": "2020-08-11T22:26:50Z",
-          "resultEngine": null
+          "autoResult": false
         },
         {
           "ts": "2022-02-03T00:07:05Z",
           "detail": "test\nvisible to lvl1\nhas history",
           "result": "notapplicable",
-          "ruleId": "SV-106181r1_rule",
           "status": {
             "ts": "2022-02-03T00:07:05Z",
             "text": null,
@@ -1175,7 +1031,7 @@
           "userId": "87",
           "comment": "",
           "touchTs": "2022-02-03T00:07:05Z",
-          "resultEngine": null
+          "autoResult": false
         }
       ]
     },
@@ -1183,8 +1039,8 @@
       "assetId": "42",
       "ruleId": "SV-106183r1_rule",
       "result": "fail",
-      "resultEngine": null,
       "detail": "test\nvisible to lvl1",
+      "autoResult": false,
       "comment": "test\nvisible to lvl1",
       "userId": "1",
       "ts": "2020-08-11T22:27:26Z",
@@ -1202,8 +1058,8 @@
       "assetId": "42",
       "ruleId": "SV-106185r1_rule",
       "result": "fail",
-      "resultEngine": null,
       "detail": "test\nvisible to lvl1",
+      "autoResult": false,
       "comment": "test\nvisible to lvl1",
       "userId": "1",
       "ts": "2020-08-11T22:28:27Z",
@@ -1221,8 +1077,8 @@
       "assetId": "42",
       "ruleId": "SV-106187r1_rule",
       "result": "fail",
-      "resultEngine": null,
       "detail": "test\nvisible to lvl1",
+      "autoResult": false,
       "comment": "test\nvisible to lvl1",
       "userId": "1",
       "ts": "2020-08-11T22:28:17Z",
@@ -1240,8 +1096,8 @@
       "assetId": "42",
       "ruleId": "SV-106189r1_rule",
       "result": "pass",
-      "resultEngine": null,
       "detail": "test\nvisible to lvl1\nunbumitted\n",
+      "autoResult": false,
       "comment": null,
       "userId": "1",
       "ts": "2020-08-11T22:28:42Z",
@@ -1259,8 +1115,8 @@
       "assetId": "42",
       "ruleId": "SV-77809r3_rule",
       "result": "pass",
-      "resultEngine": null,
       "detail": "test\nvisible to lvl2 and above",
+      "autoResult": false,
       "comment": null,
       "userId": "1",
       "ts": "2020-08-11T22:29:16Z",
@@ -1276,29 +1132,10 @@
     },
     {
       "assetId": "42",
-      "ruleId": "SV-77813r6_rule",
-      "result": "fail",
-      "resultEngine": null,
-      "detail": "test\nlvl2",
-      "comment": "test\nlvl2",
-      "userId": "1",
-      "ts": "2020-08-18T20:48:29Z",
-      "touchTs": "2020-08-18T20:48:29Z",
-      "status": {
-        "ts": "2020-08-18T20:48:29Z",
-        "text": null,
-        "label": "submitted",
-        "userId": "1"
-      },
-      "metadata": {},
-      "history": []
-    },
-    {
-      "assetId": "42",
       "ruleId": "SV-77811r1_rule",
       "result": "pass",
-      "resultEngine": null,
       "detail": "test\nvisible to lvl2 and above",
+      "autoResult": false,
       "comment": null,
       "userId": "1",
       "ts": "2020-08-11T22:29:30Z",
@@ -1313,29 +1150,32 @@
       "history": []
     },
     {
+      "assetId": "42",
+      "ruleId": "SV-77813r6_rule",
+      "result": "fail",
+      "detail": "test\nlvl2",
+      "autoResult": false,
+      "comment": "test\nlvl2",
+      "userId": "1",
+      "ts": "2020-08-18T20:48:29Z",
+      "touchTs": "2020-08-18T20:48:29Z",
+      "status": {
+        "ts": "2020-08-18T20:48:29Z",
+        "text": null,
+        "label": "submitted",
+        "userId": "1"
+      },
+      "metadata": {},
+      "history": []
+    },
+    {
       "assetId": "62",
       "ruleId": "SV-106179r1_rule",
       "result": "notapplicable",
-      "resultEngine": {
-        "time": "2023-12-11T12:56:14.3576272-05:00",
-        "type": "script",
-        "product": "Evaluate-STIG",
-        "version": "1.2310.1",
-        "overrides": [
-          {
-            "remark": "Evaluate-STIG Answer File",
-            "authority": "Some_AnswerFile.xml",
-            "newResult": "pass",
-            "oldResult": "unknown"
-          }
-        ],
-        "checkContent": {
-          "location": "VPN_Checks:1.2023.7.24"
-        }
-      },
-      "detail": "test\n",
-      "comment": "sure",
-      "userId": "1",
+      "detail": "test\nvisible to lvl1",
+      "autoResult": false,
+      "comment": "",
+      "userId": "87",
       "ts": "2022-01-26T01:23:06Z",
       "touchTs": "2022-01-26T01:23:06Z",
       "status": {
@@ -1351,25 +1191,9 @@
       "assetId": "62",
       "ruleId": "SV-106181r1_rule",
       "result": "notapplicable",
-      "resultEngine": {
-        "time": "2023-12-11T12:56:14.3576272-05:00",
-        "type": "script",
-        "product": "Evaluate-STIG",
-        "version": "2",
-        "overrides": [
-          {
-            "remark": "Evaluate-STIG Answer File",
-            "authority": "Some_AnswerFile.xml",
-            "newResult": "pass",
-            "oldResult": "unknown"
-          }
-        ],
-        "checkContent": {
-          "location": "VPN_Checks:2"
-        }
-      },
-      "detail": "test",
-      "comment": "sure",
+      "detail": "test\nvisible to lvl1",
+      "autoResult": false,
+      "comment": null,
       "userId": "1",
       "ts": "2020-08-11T23:37:48Z",
       "touchTs": "2020-08-11T23:37:48Z",
@@ -1386,8 +1210,8 @@
       "assetId": "62",
       "ruleId": "SV-106183r1_rule",
       "result": "fail",
-      "resultEngine": null,
-      "detail": "test\n",
+      "detail": "test\nvisible to lvl1",
+      "autoResult": false,
       "comment": null,
       "userId": "1",
       "ts": "2020-08-11T23:37:53Z",
@@ -1402,29 +1226,32 @@
       "history": []
     },
     {
+      "assetId": "153",
+      "ruleId": "SV-106179r1_rule",
+      "result": "pass",
+      "detail": "test\nvisible to lvl1",
+      "autoResult": false,
+      "comment": null,
+      "userId": "1",
+      "ts": "2020-08-18T02:22:56Z",
+      "touchTs": "2020-08-18T02:22:56Z",
+      "status": {
+        "ts": "2020-08-18T02:22:56Z",
+        "text": null,
+        "label": "submitted",
+        "userId": "1"
+      },
+      "metadata": {},
+      "history": []
+    },
+    {
       "assetId": "154",
       "ruleId": "SV-106179r1_rule",
       "result": "pass",
-      "resultEngine": {
-        "time": "2023-12-11T12:56:14.3576272-05:00",
-        "type": "script",
-        "product": "Evaluate-STIG",
-        "version": "1.2310.1",
-        "overrides": [
-          {
-            "remark": "Evaluate-STIG Answer File",
-            "authority": "Some_AnswerFile.xml",
-            "newResult": "pass",
-            "oldResult": "unknown"
-          }
-        ],
-        "checkContent": {
-          "location": "VPN_Checks:1.2023.7.24"
-        }
-      },
-      "detail": "test\nvisible to lvl1",
-      "comment": "sure",
-      "userId": "1",
+      "detail": "test\nvisible to lvl1\nhas history",
+      "autoResult": false,
+      "comment": "",
+      "userId": "87",
       "ts": "2022-02-02T20:20:18Z",
       "touchTs": "2022-02-02T20:20:18Z",
       "status": {
@@ -1439,7 +1266,6 @@
           "ts": "2020-08-11T22:30:38Z",
           "detail": "test\nvisible to lvl1",
           "result": "pass",
-          "ruleId": "SV-106179r1_rule",
           "status": {
             "ts": "2020-08-11T22:30:38Z",
             "text": null,
@@ -1449,13 +1275,12 @@
           "userId": "1",
           "comment": null,
           "touchTs": "2020-08-11T22:30:38Z",
-          "resultEngine": null
+          "autoResult": false
         },
         {
           "ts": "2020-08-11T22:30:38Z",
           "detail": "test\nvisible to lvl1",
           "result": "pass",
-          "ruleId": "SV-106179r1_rule",
           "status": {
             "ts": "2020-08-11T22:30:38Z",
             "text": null,
@@ -1465,7 +1290,7 @@
           "userId": "1",
           "comment": null,
           "touchTs": "2020-08-11T22:30:38Z",
-          "resultEngine": null
+          "autoResult": false
         }
       ]
     },
@@ -1473,25 +1298,9 @@
       "assetId": "154",
       "ruleId": "SV-106181r1_rule",
       "result": "notapplicable",
-      "resultEngine": {
-        "time": "2023-12-11T12:56:14.3576272-05:00",
-        "type": "script",
-        "product": "Evaluate-STIG",
-        "version": "3",
-        "overrides": [
-          {
-            "remark": "Evaluate-STIG Answer File",
-            "authority": "Some_AnswerFile.xml",
-            "newResult": "pass",
-            "oldResult": "unknown"
-          }
-        ],
-        "checkContent": {
-          "location": "VPN_Checks:3"
-        }
-      },
       "detail": "test\nvisible to lvl1",
-      "comment": "sure",
+      "autoResult": false,
+      "comment": null,
       "userId": "1",
       "ts": "2020-08-11T22:30:42Z",
       "touchTs": "2020-08-11T22:30:42Z",
@@ -1508,8 +1317,8 @@
       "assetId": "154",
       "ruleId": "SV-106183r1_rule",
       "result": "fail",
-      "resultEngine": null,
       "detail": "test\nvisible to lvl1",
+      "autoResult": false,
       "comment": null,
       "userId": "1",
       "ts": "2020-08-11T22:30:51Z",
@@ -1527,8 +1336,8 @@
       "assetId": "154",
       "ruleId": "SV-106185r1_rule",
       "result": "fail",
-      "resultEngine": null,
       "detail": "test\nvisible to lvl1",
+      "autoResult": false,
       "comment": null,
       "userId": "1",
       "ts": "2020-08-11T22:30:55Z",
@@ -1546,8 +1355,8 @@
       "assetId": "154",
       "ruleId": "SV-106187r1_rule",
       "result": "fail",
-      "resultEngine": null,
       "detail": "test\nvisible to lvl1",
+      "autoResult": false,
       "comment": null,
       "userId": "1",
       "ts": "2020-08-11T22:31:11Z",
@@ -1562,30 +1371,11 @@
       "history": []
     },
     {
-      "assetId": "153",
-      "ruleId": "SV-106179r1_rule",
-      "result": "pass",
-      "resultEngine": null,
-      "detail": "test\nvisible to lvl1",
-      "comment": null,
-      "userId": "1",
-      "ts": "2020-08-18T02:22:56Z",
-      "touchTs": "2020-08-18T02:22:56Z",
-      "status": {
-        "ts": "2020-08-18T02:22:56Z",
-        "text": null,
-        "label": "submitted",
-        "userId": "1"
-      },
-      "metadata": {},
-      "history": []
-    },
-    {
       "assetId": "240",
       "ruleId": "SV-106179r1_rule",
       "result": "pass",
-      "resultEngine": null,
       "detail": "test\nno one but admin users should see this.",
+      "autoResult": false,
       "comment": null,
       "userId": "1",
       "ts": "2020-08-18T02:22:23Z",
