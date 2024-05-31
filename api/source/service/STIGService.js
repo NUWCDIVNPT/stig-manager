@@ -137,6 +137,9 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
     'rgr.groupTitle as "title"',
   ]
 
+  const orderBy = ['substring(rgr.groupId from 3) + 0']
+  const groupBy = ['rgr.groupId', 'rgr.groupTitle']
+
   let joins
   let predicates = {
     statements: [],
@@ -148,7 +151,7 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
   
   if (inPredicates.revisionStr != 'latest') {
     joins = ['revision r']
-    let [results, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
+    const {version, release} = dbUtils.parseRevisionStr(inPredicates.revisionStr)
     predicates.statements.push('r.version = ?')
     predicates.binds.push(version)
     predicates.statements.push('r.release = ?')
@@ -165,7 +168,7 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
   }
 
   // PROJECTIONS
-  if (inProjection && inProjection.includes('rules')) {
+  if (inProjection?.includes('rules')) {
     columns.push(`json_arrayagg(json_object(
       'ruleId', rgr.ruleId, 
       'version', rgr.version, 
@@ -173,21 +176,11 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
       'severity', rgr.severity)) as "rules"`)
   }
 
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  if (inProjection && inProjection.includes('rules')) {
-    sql += "\nGROUP BY rgr.groupId, rgr.groupTitle\n"
-  }  
-  sql += ` order by substring(rgr.groupId from 3) + 0`
+  // // CONSTRUCT MAIN QUERY
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
 
   try {
-    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
     return (rows.length > 0 ? rows : null)
   }
   catch (err) {
@@ -220,6 +213,8 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
     'rgr.rgrId'
   ]
 
+  const orderBy =  ['substring(rgr.ruleId from 4) + 0']
+
   let joins
   let predicates = {
     statements: [],
@@ -232,7 +227,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   
   if (revisionStr != 'latest') {
     joins = ['revision rev']
-    let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+    const {version, release} = dbUtils.parseRevisionStr(revisionStr)
     predicates.statements.push('rev.version = ?')
     predicates.binds.push(version)
     predicates.statements.push('rev.release = ?')
@@ -249,7 +244,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   joins.push('left join rev_group_rule_map rgr using (revId)' )
 
   // PROJECTIONS
-  if ( inProjection && inProjection.includes('detail') ) {
+  if ( inProjection?.includes('detail') ) {
     columns.push(`json_object(
       'weight', rgr.weight,
       'vulnDiscussion', rgr.vulnDiscussion,
@@ -280,7 +275,7 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
     )
   }
 
-  if ( inProjection && inProjection.includes('ccis') ) {
+  if ( inProjection?.includes('ccis') ) {
     columns.push(`(select 
       coalesce
       (
@@ -303,32 +298,21 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
       )
     ) as "ccis"`)
   }
-  if ( inProjection && inProjection.includes('check') ) {
+  if ( inProjection?.includes('check') ) {
     joins.push('left join check_content cc on rgr.checkDigest = cc.digest' )
     columns.push(`json_object(
       'system', rgr.checkSystem,
       'content', cc.content) as \`check\``)
     }
-  if ( inProjection && inProjection.includes('fix') ) {
+  if ( inProjection?.includes('fix') ) {
     joins.push('left join fix_text ft on rgr.fixDigest = ft.digest' )
     columns.push(`json_object(
       'fixref', rgr.fixref,
       'text', ft.text) as fix`)
   }
 
-
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  if (inProjection && inProjection.includes('cci')) {
-    sql += "\nGROUP BY " + groupBy.join(", ") + "\n"
-  }  
-  sql += ` order by substring(rgr.ruleId from 4) + 0`
+  // // CONSTRUCT MAIN QUERY
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
 
   try {
     let [rows] = await dbUtils.pool.query(sql, predicates.binds)
@@ -357,6 +341,8 @@ exports.queryRules = async function ( ruleId, inProjection ) {
     'rgr.rgrId'
   ]
 
+  const orderBy = ['substring(rgr.ruleId from 4) + 0']
+
   let joins = [
     'rev_group_rule_map rgr'
   ]
@@ -373,7 +359,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   
 
   // PROJECTIONS
-  if ( inProjection && inProjection.includes('detail') ) {
+  if ( inProjection?.includes('detail') ) {
     columns.push(`json_object(
       'weight', rgr.weight,
       'vulnDiscussion', rgr.vulnDiscussion,
@@ -403,7 +389,7 @@ exports.queryRules = async function ( ruleId, inProjection ) {
     // groupBy.push(...detailColumns)
   }
 
-  if ( inProjection && inProjection.includes('ccis') ) {
+  if ( inProjection?.includes('ccis') ) {
     columns.push(`CASE WHEN count(rgrcc.cci) = 0 
     THEN json_array()
     ELSE CAST(CONCAT('[', GROUP_CONCAT(distinct json_object('cci', rgrcc.cci,'apAcronym',cci.apAcronym,'definition',cci.definition)), ']') as json) 
@@ -414,33 +400,21 @@ exports.queryRules = async function ( ruleId, inProjection ) {
     )
   }
 
-  if ( inProjection && inProjection.includes('check') ) {
+  if ( inProjection?.includes('check') ) {
     columns.push(`json_object('system', rgr.checkSystem,'content', cc.content) as \`check\``)
     joins.push('left join check_content cc on rgr.checkDigest = cc.digest')
   }
 
-  if ( inProjection && inProjection.includes('fix') ) {
+  if ( inProjection?.includes('fix') ) {
     columns.push(`json_object('fixref', rgr.fixref,'text', ft.text) as fix`)
     joins.push('left join fix_text ft on rgr.fixDigest = ft.digest')
   }
 
-
   // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql += columns.join(",\n")
-  sql += ' FROM '
-  sql += joins.join(" \n")
-
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-
-  sql += "\nGROUP BY " + groupBy.join(", ") + "\n"
-
-  sql += ` ORDER BY substring(rgr.ruleId from 4) + 0`
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
 
   try {
-    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
     return (rows[0])
   }
   catch (err) {
@@ -570,24 +544,6 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
           v_current_rev.benchmarkId = ?`
       ;[result] = await connection.query(sqlDeleteCurrentRev, [dml.stig.binds.benchmarkId])
       ;[result] = await connection.query(sqlUpdateCurrentRev, [dml.stig.binds.benchmarkId])
-      hrend = process.hrtime(hrstart)
-      stats.current_rev = `${hrend[0]}s  ${hrend[1] / 1000000}ms`
-
-
-      // update current_group_rule
-      hrstart = process.hrtime()
-      let sqlDeleteCurrentGroupRule = 'DELETE FROM current_group_rule WHERE benchmarkId = ?'
-      let sqlInsertCurrentGroupRule = `INSERT INTO current_group_rule (groupId, ruleId, benchmarkId)
-        SELECT rgr.groupId,
-          rgr.ruleId,
-          cr.benchmarkId
-        from
-          current_rev cr
-          left join rev_group_rule_map rgr on cr.revId = rgr.revId
-        where
-          cr.benchmarkId = ?`
-      ;[result] = await connection.query(sqlDeleteCurrentGroupRule, [dml.stig.binds.benchmarkId])
-      ;[result] = await connection.query(sqlInsertCurrentGroupRule, [dml.stig.binds.benchmarkId])
       hrend = process.hrtime(hrstart)
       stats.current_rev = `${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
@@ -907,7 +863,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
 
   let connection;
   try {
-    let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+    const {version, release} = dbUtils.parseRevisionStr(revisionStr)
     let binds = {
       benchmarkId: benchmarkId,
       version: version,
@@ -928,7 +884,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
       const [drRows] = await connection.query('SELECT collectionId FROM default_rev WHERE benchmarkId = :benchmarkId and revId = :revId', binds)
       const wasDefaultRev = !!drRows.length
 
-      // re-materialize current_rev and current_group_rule if we're deleteing the current revision
+      // re-materialize current_rev if we're deleteing the current revision
       if (wasCurrentRev) {
         dmls = dmls.concat(currentRevDmls)
       }
@@ -1037,6 +993,8 @@ exports.getCci = async function(cci, inProjection, userObject) {
     'c.definition'
   ]
 
+  const orderBy = ['c.cci']
+
   let joins = [
     'cci c '
   ]
@@ -1050,11 +1008,11 @@ exports.getCci = async function(cci, inProjection, userObject) {
   predicates.statements.push('c.cci = ?')
   predicates.binds.push(cci)
 
-  if ( inProjection && inProjection.includes('emassAp') ) {
+  if ( inProjection?.includes('emassAp') ) {
     columns.push(`case when c.apAcronym is null then null else json_object("apAcronym", c.apAcronym, "implementation", c.implementation, "assessmentProcedure", c.assessmentProcedure) END  as "emassAp"`)
   }
 
-  if ( inProjection && inProjection.includes('references') ) {
+  if ( inProjection?.includes('references') ) {
     columns.push(`(select 
       coalesce
       (
@@ -1076,7 +1034,7 @@ exports.getCci = async function(cci, inProjection, userObject) {
     ) as "references"`)
   }
 
-  if ( inProjection && inProjection.includes('stigs') ) {
+  if ( inProjection?.includes('stigs') ) {
     columns.push(`(select 
       coalesce
       (
@@ -1099,20 +1057,10 @@ exports.getCci = async function(cci, inProjection, userObject) {
     ) as "stigs"`)
   }
 
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql += columns.join(",\n")
-  sql += ' FROM '
-  sql += joins.join(" \n")
-
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-
-  sql += ` order by c.cci`
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, orderBy})
 
   try {
-    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
 
     return (rows[0])
   }
@@ -1149,7 +1097,9 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
     ), JSON_ARRAY()) AS "references"`
   ]
 
-  let joins
+  const orderBy = ['c.cci']
+
+  let joins = []
   let predicates = {
     statements: [],
     binds: []
@@ -1161,7 +1111,7 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
   if (revisionStr != 'latest') {
     joins = ['revision r']
 
-    let [results, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
+    const {version, release} = dbUtils.parseRevisionStr(revisionStr)
     predicates.statements.push('r.version = ?')
     predicates.binds.push(version)
     predicates.statements.push('r.release = ?')
@@ -1176,19 +1126,11 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
   joins.push('LEFT JOIN cci c using (cci)')
   // joins.push('LEFT JOIN cci_reference_map crm using (cci)')
 
-
   // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT DISTINCT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  sql += ` ORDER BY c.cci`
-
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, orderBy})
+  
   try {
-    let [rows, fields] = await dbUtils.pool.query(sql, predicates.binds)
+    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
     return rows
   }
   catch(err) {
@@ -1334,7 +1276,7 @@ exports.getRevisionsByBenchmarkId = async function(benchmarkId, userObject, elev
     ORDER BY
       r.benchmarkDateSql desc`
     const binds = elevate ? [benchmarkId] : [userObject.userId, benchmarkId]
-    let [rows, fields] = await dbUtils.pool.query(sql, binds)
+    let [rows] = await dbUtils.pool.query(sql, binds)
     return (rows)
   }
   catch(err) {

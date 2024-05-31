@@ -11,18 +11,30 @@ on:
       - ".github/workflows/api-container-tests.yml"
 
 jobs:
+  fetch-mysql-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      MYSQL_VERSIONS: ${{ steps.fetch-versions.outputs.version_array }}
+    steps:
+      - name: Fetch MySQL Versions
+        id: fetch-versions
+        run: |
+          VERSIONS=$(echo $(curl -s "https://registry.hub.docker.com/v2/repositories/library/mysql/tags/?page_size=100" | jq -r '.results[].name | select(test("^8\\.0\\.\\d+$"))' | sort -V | tail -n3 | cat <(echo "8.0.21") - | jq -Rnc '[inputs]'))
+          echo "version_array=$VERSIONS" >> $GITHUB_OUTPUT
+
   test_api:
+    needs: fetch-mysql-versions
     name: Postman tests with ${{ matrix.container.name }} and MySQL ${{ matrix.mysql_version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         container:
-          - name: "stig-manager-alpine"
-            build_arg: "node:lts-alpine"
-        mysql_version: ["8.0.33", "8.0.34", "8.0.35"]
+            - name: "stig-manager-alpine"
+              build_arg: "node:lts-alpine"
+        mysql_version: ${{fromJson(needs.fetch-mysql-versions.outputs.MYSQL_VERSIONS)}}
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build image for ${{ matrix.container.name }}
         id: image-build
         run: |
@@ -104,7 +116,7 @@ jobs:
           newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder "Additional sundry tests" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showEnvironmentData --reporter-htmlextra-export ./newman/AdditionalSundryReport-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.html | grep -A18 '┌─────'
       - name: Upload Newman artifact
         id: artifact-upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           name: newman-htmlextra-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}
@@ -116,7 +128,7 @@ jobs:
         run: |
           docker logs stig-manager-api > api-log-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.json
       - name: Upload API log artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         id: api-log-upload
         if: ${{ always() }}
         with:
@@ -132,7 +144,7 @@ jobs:
         run: tar cvzf ./logs-${{ matrix.container.name }}-${{ matrix.mysql_version }}.tgz ./logs-${{ matrix.container.name }}-${{ matrix.mysql_version }}
       - name: Upload container logs artifact
         if: ${{ cancelled() || failure() }}
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v4
         with:
           name: logs-${{ matrix.container.name }}-${{ matrix.mysql_version }}.tgz
           path: ./logs-${{ matrix.container.name }}-${{ matrix.mysql_version }}.tgz

@@ -2,7 +2,6 @@ const dbUtils = require('./utils')
 
 module.exports.queryMetrics = async function ({
   inPredicates = {},
-  inProjections = [],
   userId,
   aggregation = 'unagg',
   style = 'detail',
@@ -15,6 +14,7 @@ module.exports.queryMetrics = async function ({
   }
 
   // CTE processing
+  // This CTE retreives the granted Asset/STIG pairs for a single collection
   const cteProps = {
     columns: [
       'distinct c.collectionId',
@@ -155,6 +155,132 @@ module.exports.queryMetrics = async function ({
     }
     else {
       columns.push( aggregation === 'unagg' ? sqlMetricsSummary : sqlMetricsSummaryAgg)
+    }
+  }
+  const query = dbUtils.makeQueryString({
+    ctes,
+    columns,
+    joins,
+    predicates,
+    groupBy,
+    orderBy
+  })
+  
+  let [ rows ] = await dbUtils.pool.query(
+    query, 
+    [...cteProps.predicates.binds, ...predicates.binds]
+  )
+  return (rows || [])
+}
+
+module.exports.queryMetaMetrics = async function ({
+  inPredicates = {},
+  userId,
+  aggregation = 'meta',
+  style = 'detail',
+  returnType = 'json'
+}) {
+  const predicates = {
+    statements: [],
+    binds: []
+  }
+  // CTE processing
+  // This CTE retreives the granted Asset/STIG pairs across all collections (or the requested ones)
+  const cteProps = {
+    columns: [
+      'distinct c.collectionId',
+      'sa.benchmarkId',
+      'a.assetId',
+      'sa.saId'
+    ],
+    joins: [
+      'collection c',
+      'left join collection_grant cg on c.collectionId = cg.collectionId',
+      'inner join asset a on c.collectionId = a.collectionId and a.state = "enabled"',
+      'left join stig_asset_map sa on a.assetId = sa.assetId',
+      'left join user_stig_asset_map usa on sa.saId = usa.saId'
+    ],
+    predicates: {
+      statements: [
+        '(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)',
+        'c.state = "enabled"'
+      ],
+      binds: [
+        userId
+      ]
+    }
+  }
+  if (inPredicates.benchmarkIds) {
+    cteProps.predicates.statements.push(
+      'sa.benchmarkId IN ?'
+    )
+    cteProps.predicates.binds.push([inPredicates.benchmarkIds])
+  }
+  if (inPredicates.collectionIds) {
+    cteProps.predicates.statements.push(
+      'c.collectionId IN ?'
+    )
+    cteProps.predicates.binds.push([inPredicates.collectionIds])
+  }
+  if (inPredicates.revisionIds) {
+    cteProps.joins.push(
+      'left join default_rev dr on c.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId',
+      'left join revision rev on dr.revId = rev.revId'
+    )
+    cteProps.predicates.statements.push(
+      'rev.revId IN ?'
+    )
+    cteProps.predicates.binds.push([inPredicates.revisionIds])
+  }
+  const cteQuery = dbUtils.makeQueryString({
+    columns: cteProps.columns,
+    joins: cteProps.joins,
+    predicates: cteProps.predicates
+  })
+  const ctes = [
+    `granted as (${cteQuery})`
+  ]
+  // Main query
+  const columns = returnType === 'csv' ? [...baseColsFlat[aggregation]] : [...baseCols[aggregation]]
+  const joins = [
+    'granted',
+    'left join asset a on granted.assetId = a.assetId',
+    'left join stig_asset_map sa on granted.saId = sa.saId',
+    'left join default_rev dr on granted.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId',
+    'left join revision rev on dr.revId = rev.revId',
+    'left join stig on rev.benchmarkId = stig.benchmarkId'
+  ]
+  const groupBy = []
+  const orderBy = []
+  switch (aggregation) {
+    case 'meta':
+      predicates.statements.push('sa.benchmarkId IS NOT NULL')
+      break
+    case 'collection':
+      joins.push('left join collection c on granted.collectionId = c.collectionId')
+      groupBy.push('c.collectionId')
+      orderBy.push('c.name')
+      break
+    case 'metaStig':
+      predicates.statements.push('sa.benchmarkId IS NOT NULL')
+      groupBy.push('rev.revId')
+      orderBy.push('rev.benchmarkId')
+      break
+  }
+  if (style === 'detail') {
+    if (returnType === 'csv') {
+      columns.push(...colsMetricsDetailAgg)
+    }
+    else {
+      columns.push(sqlMetricsDetailAgg)
+    }
+  }
+  else { //style: 'summary'
+    if (returnType === 'csv') {
+      columns.push(...colsMetricsSummaryAgg)
+    }
+    else {
+      columns.push(sqlMetricsSummaryAgg)
     }
   }
   const query = dbUtils.makeQueryString({
@@ -463,6 +589,20 @@ const baseCols = {
     'cl.color',
     'cl.description',
     'count(distinct a.assetId) as assets'
+  ],
+  meta: [
+    'count(distinct granted.collectionId) as collections',
+    'count(distinct a.assetId) as assets',
+    'count(distinct sa.benchmarkId) as stigs',
+    'count(sa.saId) as checklists'
+  ],
+  metaStig: [
+    'rev.benchmarkId',
+    'stig.title',
+    'rev.revisionStr',
+    'count(distinct granted.collectionId) as collections',
+    'count(distinct a.assetId) as assets',
+    'rev.ruleCount'
   ]
 }
 const baseColsFlat = {
@@ -499,5 +639,19 @@ const baseColsFlat = {
     'BIN_TO_UUID(cl.uuid,1) as labelId',
     'cl.name',
     'count(distinct a.assetId) as assets'
+  ],
+  meta: [
+    'count(distinct granted.collectionId) as collections',
+    'count(distinct a.assetId) as assets',
+    'count(distinct sa.benchmarkId) as stigs',
+    'count(sa.saId) as checklists'
+  ],
+  metaStig: [
+    'rev.benchmarkId',
+    'stig.title',
+    'rev.revisionStr',
+    'count(distinct granted.collectionId) as collections',
+    'count(distinct a.assetId) as assets',
+    'rev.ruleCount'
   ]
 }

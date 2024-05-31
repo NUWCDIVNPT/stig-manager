@@ -265,24 +265,26 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                 try {
                     let assetRecords = me.getSelectionModel().getSelections()
                     const multiDelete = assetRecords.length > 1
-                    var confirmStr=`Deleting ${multiDelete ? '<b>multiple assets</b>' : 'this asset'} will <b>permanently remove</b> all data associated with the asset${multiDelete ? 's' : ''}. This includes all the corresponding STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to continue?`;
+                    const confirmStr=`Deleting ${multiDelete ? '<b>multiple assets</b>' : 'this asset'} will <b>permanently remove</b> all data associated with the asset${multiDelete ? 's' : ''}. This includes all the corresponding STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to continue?`;
                     let btn = await SM.confirmPromise("Confirm Delete", confirmStr)
                     if (btn == 'yes') {
-                        const l = assetRecords.length
-                        let apiAsset
-                        for (let i=0; i < l; i++) {
-                            Ext.getBody().mask(`Deleting ${i+1}/${l} Assets`)
-                            // Edge case to handle when the selected record was changed (e.g., stats updated) 
-                            // while still selected, then is deleted
-                            const thisRecord = me.store.getById(assetRecords[i].id)
-                            apiAsset = await Ext.Ajax.requestPromise({
-                                responseType: 'json',
-                                url: `${STIGMAN.Env.apiBase}/assets/${thisRecord.data.assetId}`,
-                                method: 'DELETE'
-                            })
-                            me.store.remove(thisRecord)
-                        }
-                        SM.Dispatcher.fireEvent('assetdeleted', apiAsset) //only need the last deleted asset
+                        const assetIds = assetRecords.map( r => r.data.assetId)
+                        Ext.getBody().mask(`Deleting ${assetRecords.length} Assets`)
+                        await Ext.Ajax.requestPromise({
+                            responseType: 'json',
+                            url: `${STIGMAN.Env.apiBase}/assets?collectionId=${me.collectionId}`,
+                            method: 'PATCH',
+                            jsonData: {
+                                operation: 'delete',
+                                assetIds
+                            }
+                        })
+                        me.store.suspendEvents(false)
+                        // Might need to handle edge case when the selected record was changed (e.g., stats updated) while still selected, then is deleted
+                        me.store.remove(assetRecords)
+                        me.store.resumeEvents()
+
+                        SM.Dispatcher.fireEvent('assetdeleted', {collection: {collectionId: me.collectionId}}) // mock an Asset for collectionManager.onAssetEvent
                     }
                 }
                 catch (e) {
@@ -411,8 +413,9 @@ SM.CollectionAssetGrid = Ext.extend(Ext.grid.GridPanel, {
                     {
                         iconCls: 'sm-import-icon',
                         text: 'Import CKL(B) or XCCDF...',
+                        tooltip: SM.TipContent.ImportFromCollectionManager,
                         handler: function() {
-                            showImportResultFiles( me.collectionId, me.apiFieldSettings );            
+                            showImportResultFiles(me.collectionId);            
                         }
                     },
                     '-',

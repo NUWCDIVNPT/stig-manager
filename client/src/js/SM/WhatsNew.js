@@ -2,6 +2,61 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2024-03-17',
+    header: `Bulk Checklist Imports Now Available to All Users`,
+    body: `
+    <p>
+    All Users can now import multiple checklists at once from the Collection Dashboard. When initiated from the Collection Dashboard, the import will bring in Reviews for existing Assets and their STIG assignments, but no new Assets or STIG assignments will be created. <p>To create new Assets or STIG Assignments, Managers and Owners can still initiate an import from the Manage Collection Workspace.
+    <p>
+    <p><img src="img/whatsnew/2024-03-15-dashboard-import.png"/></p>
+    `    
+  },     
+
+  {
+    date: '2024-03-01',
+    header: `Review Age Info Now Available In All Review Grids`,
+    body: `
+    <p>
+    Review ages and timestamps can now be displayed in the top-level grid presentations of the Asset and Collection Review workspaces. The age displayed is calculated using the last time any part of the Review was altered. Hover over a Review age to see the date that change was made.<p>
+
+    Review ages are presented by default in the last column of the Asset Review checklist:
+    <p>
+    <p><img src="img/whatsnew/2024-03-01-asset-workspace-dates.png"/></p>
+
+    <p>The "Other Assets" tab also shows this column now:</p>
+    <p><img src="img/whatsnew/2024-03-01-asset-workspace-dates-other-assets.png"/></p>
+
+    In the Collection Review workspace, the Review age columns are hidden by default. Use the column picker to add them to your view. Changes made to this display will persist when you return to the workspace later:
+
+    <p><img src="img/whatsnew/2024-03-01-collection-workspace-checklist-dates.png"/></p>
+
+    <p>Review ages are presented by default in the last column of the individual Asset Review grid:
+
+    <p><img src="img/whatsnew/2024-03-01-collection-workspace-asset-dates.png"/></p>
+
+    `    
+
+  },    
+
+
+  {
+    date: '2024-01-17',
+    header: `New Meta Dashboard`,
+    body: `
+    <p>
+    The new Meta Dashboard provides totals and metrics for some or all of your Collections at a glance. The Collections Tab shows top-level metrics for each Collection, while the STIGs tab shows metrics for each STIG across Collections.  
+    <p>
+    Access the Meta Dashboard by clicking on the Report icon in the top-level Collections node of the Navigation Tree:
+    <p>
+    <p><img src="img/whatsnew/2024-01-17-meta-collection-icon.png"/></p>
+
+    <p>Control which Collections are included in the Meta Dashboard with the filters at the top of the Overview panel:</p>
+
+    <p><img src="img/whatsnew/2024-01-17-meta-collection-panel-overview-filters.png"/></p>
+    `    
+  },      
+  
+  {
     date: '2023-10-31',
     header: `New Interfaces for Managing Asset Labels and STIG Assignments`,
     body: `

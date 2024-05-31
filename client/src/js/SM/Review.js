@@ -269,7 +269,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
     })
     const mdf = new Ext.form.DisplayField({
       // anchor: '100% 2%',
-      fieldLabel: 'Modified',
+      fieldLabel: 'Evaluated',
       hideLabel: false,
       allowBlank: true,
       name: 'editStr',
@@ -281,14 +281,14 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       }
     })
     const sdf = new Ext.form.DisplayField({
-      fieldLabel: 'Status',
+      fieldLabel: 'Statused',
       hideLabel: false,
       allowBlank: true,
       name: 'status',
       formatValue: function (v) {
-        this.setValue(`<span class="sm-review-sprite sm-review-sprite-${v.label}"></span>
-        <span class="sm-review-sprite sm-review-sprite-date">${new Date(v.ts).format('Y-m-d H:i T')}</span>
-        <span class="sm-review-sprite sm-review-sprite-user">${v.user.username}<span>`)
+        this.setValue(`<span class="sm-review-sprite sm-review-sprite-date">${new Date(v.ts).format('Y-m-d H:i T')}</span>
+        <span class="sm-review-sprite sm-review-sprite-user">${v.user.username}</span>
+        <span class="sm-review-sprite sm-review-sprite-${v.label}"></span>`)
       }
     })
     const btn1 = new SM.Review.Form.Button({
@@ -310,7 +310,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
     }
 
     this.resultChanged = function () {
-      return ack.lastSavedData != ack.getValue()
+      return rcb.lastSavedData != rcb.value
     }
 
     function loadValues (values) {
@@ -334,10 +334,10 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
 
     function initLastSavedData () {
       if ( rcb.value === null ) { rcb.value = '' }
-      ack.lastSavedData = ack.value
+      ack.lastSavedData = ack.getValue()
       rcb.lastSavedData = rcb.value
-      dta.lastSavedData = dta.value === null ? '' : dta.value
-      cta.lastSavedData = cta.value === null ? '' : cta.value
+      dta.lastSavedData = dta.getValue()
+      cta.lastSavedData = cta.getValue()
     }
 
     function isReviewSubmittable () {
@@ -684,6 +684,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
                 // Load the record into the form
                 if (!rcb.disabled) {
                   rcb.setValue(selectedRecord.data.result);
+                  rcb.fireEvent('select')
                 }
                 dta.setValue(selectedRecord.data.detail);
                 if (rcb.getValue() === 'fail') {

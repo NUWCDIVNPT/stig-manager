@@ -52,5 +52,4 @@ STIGMAN_CLIENT_DIRECTORY=./client \
 STIGMAN_DOCS_DIRECTORY=./docs
 
 EXPOSE 54000
-HEALTHCHECK --interval=120s --timeout=3s --start-period=120s CMD node healthcheck.js
 CMD [ "node", "index.js" ]

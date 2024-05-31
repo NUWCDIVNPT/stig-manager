@@ -977,7 +977,7 @@ SM.Collection.ManagePanel = Ext.extend(Ext.Panel, {
                         const data = grid.getValue()
                         const result = await Ext.Ajax.requestPromise({
                             url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/metadata`,
-                            method: 'PATCH',
+                            method: 'PUT',
                             jsonData: data
                         })
                         const sortstate = grid.store.getSortState()

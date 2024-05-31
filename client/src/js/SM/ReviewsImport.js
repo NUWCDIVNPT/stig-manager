@@ -6,19 +6,19 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
         const fields = [
             {
                 name: 'filename',
-                mapping: 'checklist.file.name'
+                mapping: 'checklist.sourceRef.name'
             },
             {
                 name: 'fullPath',
-                mapping: 'checklist.file.fullPath'
+                mapping: 'checklist.sourceRef.fullPath'
             },
             {
                 name: 'date',
-                mapping: 'checklist.file.lastModifiedDate'
+                mapping: 'checklist.sourceRef.lastModifiedDate'
             },
             {
                 name: 'file',
-                mapping: 'checklist.file'
+                mapping: 'checklist.sourceRef'
             },
             {
                 name: 'assetId',
@@ -81,7 +81,7 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
             reader: new Ext.data.JsonReader({
                 fields: fields,
                 // idProperty: (v) => `${v.filename}-${v.assetName}-${v.benchmarkId}`
-                idProperty: (v) => `${v.checklist.file.name}-${v.taskAsset.assetProps.name}-${v.checklist.benchmarkId}`
+                idProperty: (v) => `${v.checklist.sourceRef.name}-${v.taskAsset.assetProps.name}-${v.checklist.benchmarkId}`
             }),
             sortInfo: {
                 field: 'assetName',
@@ -240,28 +240,14 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
             }),
             listeners: {
             },
-            getValue: function () {
-                return true
-            },
-            setValue: function (v) {
-                store.loadData(v)
-            },
-            validator: function (v) {
-                let one = 1
-            },
-            markInvalid: function () {
-                let one = 1
-            },
-            clearInvalid: function () {
-                let one = 1
-            },
-            isValid: function () {
-                return true
-            },
+            getValue: () => true,
+            setValue: (v) => store.loadData(v),
+            validator: Ext.emptyFn,
+            markInvalid: Ext.emptyFn,
+            clearInvalid: Ext.emptyFn,
+            isValid: () => true,
             getName: () => this.name,
-            validate: function () {
-                let one = 1
-            },
+            validate:Ext.emptyFn,
             createObjects: true,
             importReviews: true,
             enableCreateObjects: (enabled = true) => {
@@ -287,7 +273,6 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
 
 SM.ReviewsImport.ReviewsFilterCombo = Ext.extend(Ext.form.ComboBox, {
     initComponent: function () {
-        let me = this
         let config = {
             width: 140,
             forceSelection: true,
@@ -481,12 +466,11 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
             ]
         })
         const onFilterChanged = (filter) => {
-            switch (filter) {
-                case 'resultchange':
-                    store.filterBy(record => record.data.result !== record.data.curResult)
-                    break
-                default:
-                    store.clearFilter()
+            if (filter === 'resultchange' ) {
+                store.filterBy(record => record.data.result !== record.data.curResult)
+            } 
+            else {
+                store.clearFilter()
             }
         }
 
@@ -534,7 +518,6 @@ SM.ReviewsImport.ReviewsGrid = Ext.extend(Ext.grid.GridPanel, {
 
 SM.ReviewsImport.ParseErrorsGrid = Ext.extend(Ext.grid.GridPanel, {
     initComponent: function () {
-        const me = this
         const fields = [
             {
                 name: 'file'
@@ -624,28 +607,14 @@ SM.ReviewsImport.ParseErrorsGrid = Ext.extend(Ext.grid.GridPanel, {
             }),
             listeners: {
             },
-            getValue: function () {
-                return true
-            },
-            setValue: function (v) {
-                store.loadData(v)
-            },
-            validator: function (v) {
-                let one = 1
-            },
-            markInvalid: function () {
-                let one = 1
-            },
-            clearInvalid: function () {
-                let one = 1
-            },
-            isValid: function () {
-                return true
-            },
+            getValue: () => true,
+            setValue: (v) => store.loadData(v),
+            validator: Ext.emptyFn,
+            markInvalid: Ext.emptyFn,
+            clearInvalid: Ext.emptyFn,
+            isValid: () => true,
             getName: () => this.name,
-            validate: function () {
-                let one = 1
-            }
+            validate: Ext.emptyFn
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.ReviewsImport.ParseErrorsGrid.superclass.initComponent.call(this)
@@ -838,7 +807,6 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
             value: this.initialOptions.unreviewed,
             name: 'unreviewed',
             readOnly: this.context === 'wizard',
-            name: 'unreviewed',
             listeners: {
                 select: onSelect
             }
@@ -883,7 +851,7 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
             hideLabel: true,
             listeners: {
                 check: function (cb, checked) {
-                    _this.onOptionChanged && _this.onOptionChanged(_this, cb, checked)
+                    _this.onOptionChanged?.(_this, cb, checked)
                 }
             }
         })
@@ -904,7 +872,7 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
                     if (_this.localStorage && localStorage.wizardImportOptions?.length) {
                         _this.restoreOptions(JSON.parse(localStorage.wizardImportOptions))
                     }
-                    _this.onOptionChanged && _this.onOptionChanged(_this, cb, checked)
+                    _this.onOptionChanged?.(_this, cb, checked)
                 }
             }
         })
@@ -922,7 +890,7 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
             if (_this.localStorage) {
                 localStorage.setItem('wizardImportOptions', JSON.stringify(_this.getOptions())) 
             }
-            _this.onOptionChanged && _this.onOptionChanged(_this, item, record, index)
+            _this.onOptionChanged?.(_this, item, record, index)
         }
 
         this.restoreOptions = function (options = _this.initialOptions) {
@@ -985,11 +953,10 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
                 e.preventDefault()
                 this.getElementsByClassName('x-panel-body')[0].style.border = ''
                 let entries = []
-                let files = []
                 if (!e.dataTransfer) {
-                    throw ('Event is missing the dataTransfer property')
+                    throw new Error('Event is missing the dataTransfer property')
                 }
-                entries = await getAllFileEntries(e.dataTransfer.items, e.currentTarget)
+                entries = await getAllFileEntries(e.dataTransfer.items)
                 if (!entries.length) {
                    throw new Error('no entries error')
                 }
@@ -1133,34 +1100,32 @@ SM.ReviewsImport.SelectFilesGrid = Ext.extend(Ext.grid.GridPanel, {
         // hack override to handle setting record id as desired
         store.reader.readRecords = function(o){
             this.arrayData = o;
-            var s = this.meta,
-                sid = s ? Ext.num(s.idIndex, s.id) : null,
+            let s = this.meta,
                 recordType = this.recordType,
                 fields = recordType.prototype.fields,
                 records = [],
                 success = true,
                 v;
     
-            var root = this.getRoot(o);
+            let root = this.getRoot(o);
     
-            for(var i = 0, len = root.length; i < len; i++) {
-                var n = root[i],
-                    values = {},
-                    id = ((sid || sid === 0) && n[sid] !== undefined && n[sid] !== "" ? n[sid] : null);
-                for(var j = 0, jlen = fields.length; j < jlen; j++) {
-                    var f = fields.items[j],
+            for(let i = 0, len = root.length; i < len; i++) {
+                let n = root[i],
+                    values = {}
+                for(let j = 0, jlen = fields.length; j < jlen; j++) {
+                    let f = fields.items[j],
                         k = f.mapping !== undefined && f.mapping !== null ? f.mapping : j;
                     v = n[k] !== undefined ? n[k] : f.defaultValue;
                     v = f.convert(v, n);
                     values[f.name] = v;
                 }
                 // change second argument from id to values.id
-                var record = new recordType(values, values.id);
+                let record = new recordType(values, values.id);
                 record.json = n;
                 records[records.length] = record;
             }
     
-            var totalRecords = records.length;
+            let totalRecords = records.length;
     
             if(s.totalProperty) {
                 v = parseInt(this.getTotal(o), 10);
@@ -1583,42 +1548,6 @@ SM.ReviewsImport.OptionsPanel = Ext.extend(Ext.Panel, {
                 await me.addHandler(me.taskAssets, grid.createObjects, grid.importReviews)
             }
         })
-        const controls = new Ext.Panel({
-            region: 'south',
-            border: false,
-            height: 40,
-            layout: 'hbox',
-            layoutConfig: {
-                align: 'middle',
-                defaultMargins: '0 5',
-                pack: 'start'
-            },
-            items: [
-                {
-                    xtype: 'checkbox',
-                    checked: true,
-                    boxLabel: 'Create or update Assets and STIG associations',
-                    margins: '0 15 -2 0',
-                    listeners: {
-                        check: function (cb, checked) {
-                            grid.enableCreateObjects(checked)
-                            continueBtn.setDisabled(!grid.store.getCount())
-                        }
-                    }
-                },
-                {
-                    xtype: 'checkbox',
-                    checked: true,
-                    boxLabel: 'Import reviews',
-                    margins: '0 0 -2 0',
-                    listeners: {
-                        check: function (cb, checked) {
-                            grid.enableImportReviews(checked)
-                        }
-                    }
-                }
-            ]
-        })
         const config = {
             layout: 'vbox',
             layoutConfig: {
@@ -1889,28 +1818,14 @@ SM.ReviewsImport.ImportStatusGrid = Ext.extend(Ext.grid.GridPanel, {
             }),
             listeners: {
             },
-            getValue: function () {
-                return true
-            },
-            setValue: function (v) {
-                store.loadData(v)
-            },
-            validator: function (v) {
-                let one = 1
-            },
-            markInvalid: function () {
-                let one = 1
-            },
-            clearInvalid: function () {
-                let one = 1
-            },
-            isValid: function () {
-                return true
-            },
+            getValue: () => true,
+            setValue: (v) => store.loadData(v),
+            validator: Ext.emptyFn,
+            markInvalid: Ext.emptyFn,
+            clearInvalid: Ext.emptyFn,
+            isValid: () => true,
             getName: () => this.name,
-            validate: function () {
-                let one = 1
-            }
+            validate: Ext.emptyFn
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         this.superclass().initComponent.call(this)
@@ -1919,7 +1834,6 @@ SM.ReviewsImport.ImportStatusGrid = Ext.extend(Ext.grid.GridPanel, {
 
 SM.ReviewsImport.ImportRejectGrid = Ext.extend(Ext.grid.GridPanel, {
     initComponent: function () {
-        const me = this
         const fields = [
             'ruleId',
             'reason'
@@ -1996,28 +1910,14 @@ SM.ReviewsImport.ImportRejectGrid = Ext.extend(Ext.grid.GridPanel, {
             }),
             listeners: {
             },
-            getValue: function () {
-                return true
-            },
-            setValue: function (v) {
-                store.loadData(v)
-            },
-            validator: function (v) {
-                let one = 1
-            },
-            markInvalid: function () {
-                let one = 1
-            },
-            clearInvalid: function () {
-                let one = 1
-            },
-            isValid: function () {
-                return true
-            },
+            getValue: () => true,
+            setValue: (v) => store.loadData(v),
+            validator: Ext.emptyFn,
+            markInvalid: Ext.emptyFn,
+            clearInvalid: Ext.emptyFn,
+            isValid: () => true,
             getName: () => this.name,
-            validate: function () {
-                let one = 1
-            }
+            validate: Ext.emptyFn
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         this.superclass().initComponent.call(this)
@@ -2092,192 +1992,7 @@ SM.ReviewsImport.ImportProgressPanel = Ext.extend(Ext.Panel, {
     }
 })
 
-class TaskObject {
-    constructor({ apiAssets = [], apiStigs = [], parsedResults = [], collectionId, config  }) {
-        // An array of results from the parsers
-        this.parsedResults = parsedResults
-        this.collectionId = collectionId
-        this.config = config ?? { 
-            strictRevisionCheck: false,
-            createObjects: true
-         } 
-        // An array of assets from the API
-        this.apiAssets = apiAssets
-        // Create Maps of the assets by assetName and metadata.cklHostName
-        this.mappedAssetNames = new Map()
-        this.mappedCklHostnames = new Map()
-        for (const apiAsset of apiAssets) {
-            // Update .stigs to an array of benchmarkId strings
-            apiAsset.stigs = apiAsset.stigs.map(stig => stig.benchmarkId)
-            this.mappedAssetNames.set(apiAsset.name.toLowerCase(), apiAsset)
-            if (apiAsset.metadata?.cklHostName) {
-                const v = this.mappedCklHostnames.get(apiAsset.metadata.cklHostName.toLowerCase())
-                if (v) {
-                    v.push(apiAsset)
-                }
-                else {
-                    this.mappedCklHostnames.set(apiAsset.metadata.cklHostName.toLowerCase(), [apiAsset])
-                }
-            }
-        }
-
-        // A Map() of the installed benchmarkIds return by the API
-        // key: benchmarkId, value: array of revisionStr
-        this.mappedStigs = new Map()
-        for (const apiStig of apiStigs) {
-            this.mappedStigs.set(apiStig.benchmarkId, apiStig.revisionStrs)
-        }
-
-        // An array of accumulated errors
-        this.errors = []
-
-        // A Map() of assets to be processed by the writer
-        this.taskAssets = this._createTaskAssets()
-    }
-
-    _findAssetFromParsedTarget(target) {
-        if (!target.metadata.cklHostName) {
-            return this.mappedAssetNames.get(target.name.toLowerCase())
-        }
-        const matchedByCklHostname = this.mappedCklHostnames.get(target.metadata.cklHostName.toLowerCase())
-        if (!matchedByCklHostname) return null
-        const matchedByAllCklMetadata = matchedByCklHostname.find(
-            asset => asset.metadata.cklWebDbInstance?.toLowerCase() === target.metadata.cklWebDbInstance?.toLowerCase()
-                && asset.metadata.cklWebDbSite?.toLowerCase() === target.metadata.cklWebDbSite?.toLowerCase())
-        if (!matchedByAllCklMetadata) return null
-        return matchedByAllCklMetadata
-    }
-
-    _createTaskAssets() {
-        // taskAssets is a Map() keyed by lowercase asset name (or CKL metadata), the value is an object:
-        // {
-            // knownAsset: false, // does the asset need to be created
-            // assetProps: null, // an Asset object suitable for put/post to the API 
-            // hasNewAssignment: false, //  are there new STIG assignments?
-            // newAssignments: [], // any new assignments
-            // checklists: new Map(), // the vetted result checklists, a Map() keyed by benchmarkId
-            // checklistsIgnored: [], // the ignored checklists
-            // reviews: [] // the vetted reviews
-        // }
-
-
-        const taskAssets = new Map()
-
-        for (const parsedResult of this.parsedResults) {
-            // Generate mapping key
-            let mapKey, tMeta = parsedResult.target.metadata
-            if (!tMeta.cklHostName) {
-                mapKey = parsedResult.target.name.toLowerCase()
-            }
-            else {
-                mapKey = `${tMeta.cklHostName}-${tMeta.cklWebDbSite ?? 'NA'}-${tMeta.cklWebDbInstance ?? 'NA'}`
-            }
-
-            // Try to find the asset in the API response
-            const apiAsset = this._findAssetFromParsedTarget(parsedResult.target)
-            if (!apiAsset && !this.config.createObjects) {
-                // Bail if the asset doesn't exist and we won't create it
-                this.errors.push({
-                    file: parsedResult.file,
-                    message: `asset does not exist for target`,
-                    target: parsedResult.target
-                })
-                continue
-            }
-            // Try to find the target in our Map()
-            let taskAsset = taskAssets.get(mapKey)
-
-            if (!taskAsset) {
-                // This is our first encounter with this assetName, initialize Map() value
-                taskAsset = {
-                    knownAsset: false,
-                    assetProps: null, // an object suitable for put/post to the API 
-                    hasNewAssignment: false,
-                    newAssignments: [],
-                    checklists: new Map(), // the vetted result checklists
-                    checklistsIgnored: [], // the ignored checklists
-                    reviews: [] // the vetted reviews
-                }
-                if (!apiAsset) {
-                    // The asset does not exist in the API. Set assetProps from this parseResult.
-                    if (!tMeta.cklHostName) {
-                        taskAsset.assetProps = { ...parsedResult.target, collectionId: this.collectionId, stigs: [] }
-                    }
-                    else {
-                        taskAsset.assetProps = { ...parsedResult.target, name: mapKey, collectionId: this.collectionId, stigs: [] }
-                    }
-                }
-                else {
-                    // The asset exists in the API. Set assetProps from the apiAsset.
-                    taskAsset.knownAsset = true
-                    taskAsset.assetProps = { ...apiAsset, collectionId: this.collectionId }
-                }
-                // Insert the asset into taskAssets
-                taskAssets.set(mapKey, taskAsset)
-            }
-
-            // Helper functions
-            const stigIsInstalled = ({ benchmarkId, revisionStr }) => {
-                const revisionStrs = this.mappedStigs.get(benchmarkId)
-                if ( revisionStrs ) {                  
-                    return revisionStr && this.config.strictRevisionCheck ? revisionStrs.includes( revisionStr ) : true
-                  }
-                  else {
-                    return false
-                  }
-            }
-            const stigIsAssigned = ({ benchmarkId }) => {
-                return taskAsset.assetProps.stigs.includes(benchmarkId)
-            }
-            const assignStig = (benchmarkId) => {
-                if (!stigIsAssigned(benchmarkId)) {
-                    taskAsset.hasNewAssignment = true
-                    taskAsset.newAssignments.push(benchmarkId)
-                    taskAsset.assetProps.stigs.push(benchmarkId)
-                }
-            }
-            const stigIsNewlyAssigned = (benchmarkId) => taskAsset.newAssignments.includes(benchmarkId)
-
-            const addToTaskAssetChecklistMapArray = (taskAsset, checklist) => {
-                let checklistArray = taskAsset.checklists.get(checklist.benchmarkId)
-                if (checklistArray) {
-                    checklistArray.push(checklist)
-                }
-                else {
-                    taskAsset.checklists.set(checklist.benchmarkId, [checklist])
-                }
-            }   
-
-            // Vet the checklists in this parseResult 
-            for (const checklist of parsedResult.checklists) {
-                checklist.file = parsedResult.file
-                if (stigIsInstalled(checklist)) {
-                    if (stigIsAssigned(checklist)) {
-                        checklist.newAssignment = stigIsNewlyAssigned(checklist.benchmarkId)
-                        addToTaskAssetChecklistMapArray(taskAsset, checklist)
-                    }
-                    else if (this.config.createObjects) {
-                        assignStig(checklist.benchmarkId)
-                        checklist.newAssignment = true
-                        addToTaskAssetChecklistMapArray(taskAsset, checklist)
-                    }
-                    else {
-                        checklist.ignored = `Not mapped to Asset`
-                        taskAsset.checklistsIgnored.push(checklist)
-                    }
-                }
-                else {
-                    checklist.ignored = `Not installed`
-                    taskAsset.checklistsIgnored.push(checklist)
-                }
-            }
-
-        }
-        return taskAssets
-    }
-}
-
-async function showImportResultFiles(collectionId) {
+async function showImportResultFiles(collectionId, createObjects = true) {
     try {
         const cachedCollection = SM.Cache.CollectionMap.get(collectionId)
         const userGrant = curUser.collectionGrants.find( i => i.collection.collectionId === cachedCollection.collectionId )?.accessLevel
@@ -2407,144 +2122,138 @@ async function showImportResultFiles(collectionId) {
         }
 
         async function parseFiles(files, pb) {
-            try {
-                // Get collection assets for matching
-                let apiAssetsResult = Ext.Ajax.requestPromise({
-                    url: `${STIGMAN.Env.apiBase}/assets`,
-                    params: {
-                        collectionId: collectionId,
-                        projection: 'stigs'
-                    },
-                    method: 'GET'
-                })
+            // Get collection assets for matching
+            let apiAssetsResult = Ext.Ajax.requestPromise({
+                url: `${STIGMAN.Env.apiBase}/assets`,
+                params: {
+                    collectionId: collectionId,
+                    projection: 'stigs'
+                },
+                method: 'GET'
+            })
 
-                // Get installed STIGs for matching
-                let apiStigsResult = Ext.Ajax.requestPromise({
-                    url: `${STIGMAN.Env.apiBase}/stigs`,
-                    method: 'GET'
-                })
+            // Get installed STIGs for matching
+            let apiStigsResult = Ext.Ajax.requestPromise({
+                url: `${STIGMAN.Env.apiBase}/stigs`,
+                method: 'GET'
+            })
 
-                // Get SCAP benchmarkId map
-                let scapBenchmarkMap = await getScapBenchmarkMap()
+            // Get SCAP benchmarkId map
+            let scapBenchmarkMap = await getScapBenchmarkMap()
 
-                let filesHandled = 0
-                const parseResults = {
-                    success: [],
-                    fail: []
-                }
+            let filesHandled = 0
+            const parseResults = {
+                success: [],
+                fail: []
+            }
 
-                // Raw parsing of each file
-                for (const file of files) {
-                    pb.updateText(file.name)
-                    let extension = file.name.substring(file.name.lastIndexOf(".") + 1)
-                    let data = await readTextFileAsync(file)
-                    if (extension === 'ckl') {
-                        try {
-                            const r = ReviewParser.reviewsFromCkl({
-                                data, 
-                                fieldSettings: cachedCollection.settings.fields, 
-                                allowAccept: canAccept,
-                                importOptions: fp.parseOptionsFieldSet.getOptions(),
-                                XMLParser: fxp.XMLParser,
-                                valueProcessor: tagValueProcessor
-                            })
-                            r.file = file
-                            parseResults.success.push(r)
-                        }
-                        catch (e) {
-                            parseResults.fail.push({
-                                file: file,
-                                error: e.message
-                            })
-                        }
+            // Raw parsing of each file
+            for (const file of files) {
+                pb.updateText(file.name)
+                let extension = file.name.substring(file.name.lastIndexOf(".") + 1)
+                let data = await readTextFileAsync(file)
+                if (extension === 'ckl') {
+                    try {
+                        const r = STIGMAN.ClientModules.reviewsFromCkl({
+                            data, 
+                            fieldSettings: cachedCollection.settings.fields, 
+                            allowAccept: canAccept,
+                            importOptions: fp.parseOptionsFieldSet.getOptions(),
+                            sourceRef: file
+                        })
+                        parseResults.success.push(r)
                     }
-                    else if (extension === 'cklb') {
-                        try {
-                            const r = ReviewParser.reviewsFromCklb({
-                                data, 
-                                fieldSettings: cachedCollection.settings.fields, 
-                                allowAccept: canAccept,
-                                importOptions: fp.parseOptionsFieldSet.getOptions()
-                            })
-                            r.file = file
-                            parseResults.success.push(r)
-                        }
-                        catch (e) {
-                            parseResults.fail.push({
-                                file: file,
-                                error: e.message
-                            })
-                        }
-                    }
-                    else if (extension === 'xml') {
-                        try {
-                            const r = ReviewParser.reviewsFromScc({
-                                data, 
-                                fieldSettings: cachedCollection.settings.fields, 
-                                allowAccept: canAccept,
-                                importOptions: fp.parseOptionsFieldSet.getOptions(),
-                                XMLParser: fxp.XMLParser,
-                                valueProcessor: tagValueProcessor,
-                                scapBenchmarkMap
-                            })
-                            r.file = file
-                            parseResults.success.push(r)
-                        }
-                        catch (e) {
-                            parseResults.fail.push({
-                                file: file,
-                                error: e.message
-                            })
-                        }
-                    }
-                    filesHandled++
-                    pb.updateProgress(filesHandled / files.length)
-                }
-
-                apiAssetsResult = await apiAssetsResult
-                const apiAssets = JSON.parse(apiAssetsResult.response.responseText)
-
-                apiStigsResult = await apiStigsResult
-                const apiStigs = JSON.parse(apiStigsResult.response.responseText)
-
-                const taskConfig = {
-                    createObjects: true,
-                    strictRevisionCheck: false
-                } 
-                const tasks = new TaskObject({ apiAssets, apiStigs, parsedResults: parseResults.success, collectionId, config: taskConfig })
-                // Transform into data for SM.ReviewsImport.Grid
-                const results = {
-                    taskAssets: tasks.taskAssets,
-                    rows: [],
-                    dupedRows: [],
-                    errors: parseResults.fail,
-                    hasDuplicates: false
-                }
-                // Collate multiple checklists into duplicates and the single checklist for POSTing.
-                // Since the parsed files were sorted by ascending date order, the last
-                // item in each checklists array is from the most recently dated file and we will choose this item.
-                for (const taskAsset of tasks.taskAssets.values()) {
-                    for (const assetStigChecklists of taskAsset.checklists.values()) {
-                        if (assetStigChecklists.length > 1) {
-                            results.hasDuplicates = true
-                            const dupedChecklists = assetStigChecklists.slice(0, -1)
-                            const rowsToPush = dupedChecklists.map( checklist => ({ taskAsset, checklist }))
-                            results.dupedRows.push(...rowsToPush)
-                        }
-                        results.rows.push({ taskAsset, checklist: assetStigChecklists.slice(-1)[0]})
-                    }
-                    for (const ignoredChecklist of taskAsset.checklistsIgnored) {
-                        results.errors.push({
-                            file: ignoredChecklist.file,
-                            error: `Ignoring ${ignoredChecklist.benchmarkId} ${ignoredChecklist.revisionStr}. ${ignoredChecklist.ignored}`
+                    catch (e) {
+                        parseResults.fail.push({
+                            file,
+                            error: e.message
                         })
                     }
                 }
-                return results
+                else if (extension === 'cklb') {
+                    try {
+                        const r = STIGMAN.ClientModules.reviewsFromCklb({
+                            data, 
+                            fieldSettings: cachedCollection.settings.fields, 
+                            allowAccept: canAccept,
+                            importOptions: fp.parseOptionsFieldSet.getOptions(),
+                            sourceRef: file
+                        })
+                        parseResults.success.push(r)
+                    }
+                    catch (e) {
+                        parseResults.fail.push({
+                            file: file,
+                            error: e.message
+                        })
+                    }
+                }
+                else if (extension === 'xml') {
+                    try {
+                        const r = STIGMAN.ClientModules.reviewsFromScc({
+                            data, 
+                            fieldSettings: cachedCollection.settings.fields, 
+                            allowAccept: canAccept,
+                            importOptions: fp.parseOptionsFieldSet.getOptions(),
+                            scapBenchmarkMap,
+                            sourceRef: file
+                        })
+                        parseResults.success.push(r)
+                    }
+                    catch (e) {
+                        parseResults.fail.push({
+                            file: file,
+                            error: e.message
+                        })
+                    }
+                }
+                filesHandled++
+                pb.updateProgress(filesHandled / files.length)
             }
-            catch (e) {
-                throw (e)
+
+            apiAssetsResult = await apiAssetsResult
+            const apiAssets = JSON.parse(apiAssetsResult.response.responseText)
+
+            apiStigsResult = await apiStigsResult
+            const apiStigs = JSON.parse(apiStigsResult.response.responseText)
+
+            const taskConfig = {
+                collectionId,
+                createObjects,
+                strictRevisionCheck: false
+            } 
+            const tasks = new STIGMAN.ClientModules.TaskObject({ apiAssets, apiStigs, parsedResults: parseResults.success, options: taskConfig })
+            const taskErrors = tasks.errors.map( e => ({file: e.sourceRef, error: e.message}))
+            // Transform into data for SM.ReviewsImport.Grid
+            const results = {
+                taskAssets: tasks.taskAssets,
+                rows: [],
+                dupedRows: [],
+                errors: [...parseResults.fail, ...taskErrors],
+                hasDuplicates: false
             }
+            // Collate multiple checklists into duplicates and the single checklist for POSTing.
+            // The parsed files are sorted in descending date order, the first
+            // item in each checklists array is from the most recently dated file and we will choose this item.
+            for (const taskAsset of tasks.taskAssets.values()) {
+                for (const assetStigChecklists of taskAsset.checklists.values()) {
+                    if (assetStigChecklists.length > 1) {
+                        results.hasDuplicates = true
+                        assetStigChecklists.sort((a,b) => b.sourceRef.lastModified - a.sourceRef.lastModified)
+                        const dupedChecklists = assetStigChecklists.slice(1)
+                        const rowsToPush = dupedChecklists.map( checklist => ({ taskAsset, checklist }))
+                        results.dupedRows.push(...rowsToPush)
+                    }
+                    results.rows.push({ taskAsset, checklist: assetStigChecklists[0]})
+                }
+                for (const ignoredChecklist of taskAsset.checklistsIgnored) {
+                    results.errors.push({
+                        file: ignoredChecklist.sourceRef,
+                        error: `Ignoring ${ignoredChecklist.benchmarkId} ${ignoredChecklist.revisionStr}. ${ignoredChecklist.ignored}`
+                    })
+                }
+            }
+            return results
         }
 
         function showErrors(results) {
@@ -2618,7 +2327,7 @@ async function showImportResultFiles(collectionId) {
                         if (importReviews) {
                             let reviewsArray = []
                             for (const benchmarkId of taskAsset.checklists.keys()) {
-                                reviewsArray = reviewsArray.concat(taskAsset.checklists.get(benchmarkId).slice(-1)[0].reviews)
+                                reviewsArray = reviewsArray.concat(taskAsset.checklists.get(benchmarkId)[0].reviews)
                             }
                             const importReviewArrayResult = await importReviewArray(collectionId, assetId, reviewsArray)
                             updateStatusGrid({...importAssetResult, ...importReviewArrayResult})
@@ -2914,17 +2623,15 @@ async function showImportResultFile(params) {
 
             let r
             if (extension === 'ckl') {
-                r = ReviewParser.reviewsFromCkl({
+                r = STIGMAN.ClientModules.reviewsFromCkl({
                     data, 
                     fieldSettings: cachedCollection.settings.fields, 
                     allowAccept: canAccept,
                     importOptions: fp.parseOptionsFieldSet.getOptions(),
-                    XMLParser: fxp.XMLParser,
-                    valueProcessor: tagValueProcessor
                 })
             }
             else if (extension === 'cklb') {
-                r = ReviewParser.reviewsFromCklb({
+                r = STIGMAN.ClientModules.reviewsFromCklb({
                     data, 
                     fieldSettings: cachedCollection.settings.fields, 
                     allowAccept: canAccept,
@@ -2933,20 +2640,17 @@ async function showImportResultFile(params) {
             }
             else if (extension === 'xml') {
                 const scapBenchmarkMap = await getScapBenchmarkMap()
-                r = ReviewParser.reviewsFromScc({
+                r = STIGMAN.ClientModules.reviewsFromScc({
                     data, 
                     fieldSettings: cachedCollection.settings.fields, 
                     allowAccept: canAccept,
                     importOptions: fp.parseOptionsFieldSet.getOptions(),
-                    XMLParser: fxp.XMLParser,
-                    valueProcessor: tagValueProcessor,
                     scapBenchmarkMap
                 })
             }
             else {
                 throw (new Error('Unknown file extension'))
             }
-            r.file = file
             return r
         }
 
@@ -3033,7 +2737,7 @@ async function showImportResultFile(params) {
                         headers: { 'Content-Type': 'application/json;charset=utf-8' },
                         jsonData: reviewArray
                     })
-                    apiReviews = JSON.parse(result.response.responseText)
+                    const apiReviews = JSON.parse(result.response.responseText)
                     return {
                         inserted: apiReviews.affected.inserted,
                         updated: apiReviews.affected.updated,
@@ -3055,7 +2759,7 @@ async function getScapBenchmarkMap() {
         url: `${STIGMAN.Env.apiBase}/stigs/scap-maps`,
         method: 'GET'
     })
-    apiScapMaps = JSON.parse(result.response.responseText)
+    const apiScapMaps = JSON.parse(result.response.responseText)
     return new Map(apiScapMaps.map(apiScapMap => [apiScapMap.scapBenchmarkId, apiScapMap.benchmarkId]))
 }
 

@@ -54,7 +54,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
           autoResult INT,
           ts DATETIME,
           statusId INT,
-          statusText VARCHAR(255),
+          statusText VARCHAR(511),
           statusUserId INT,
           statusTs DATETIME,
           metadata JSON,
@@ -227,7 +227,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
                 ts DATETIME PATH "$.ts",
                 userId INT PATH "$.userId",
                 statusId INT PATH "$.statusId",
-                statusText VARCHAR(255) PATH "$.statusText",
+                statusText VARCHAR(511) PATH "$.statusText",
                 statusUserId INT PATH "$.statusUserId",
                 statusTs DATETIME PATH "$.statusTs",
                 touchTs DATETIME PATH "$.touchTs",
@@ -338,8 +338,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         ])
       }
         for (const pin of c.stigs ?? []) {
-          if (pin.revisionPinned == true){
-            let [input, version, release] = /V(\d+)R(\d+(\.\d+)?)/.exec(pin.revisionStr)
+          if (pin.revisionPinned){
+            const {version, release} = dbUtils.parseRevisionStr(pin.revisionStr)
             dml.collectionPins.insertBinds.push([
               parseInt(c.collectionId),
               pin.benchmarkId,
@@ -512,21 +512,7 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
         stats[table].insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
       }
     }
-
-    // // Stats
-    // res.write('Calculating status statistics\n')
-    // hrstart = process.hrtime();
-    // const statusStats = await dbUtils.updateStatsAssetStig( connection, {} )
-    // hrend = process.hrtime(hrstart)
-    // stats.stats = `${statusStats.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-    
-    // // Commit
-    // hrstart = process.hrtime() 
-    // res.write(`Starting commit\n`)
-    // await connection.query('COMMIT')
     res.write(`Commit successful\n`)
-    // hrend = process.hrtime(hrstart)
-    // stats.commit = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
         // Stats
         res.write('Calculating status statistics\n')

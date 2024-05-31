@@ -19,7 +19,7 @@ import sphinx_rtd_theme
 # -- Project information -----------------------------------------------------
 
 project = 'STIG Manager'
-copyright = '2023 U.S. Federal Government (in countries where recognized)'
+copyright = '2024 U.S. Federal Government (in countries where recognized)'
 author = 'cd-rite'
 
 

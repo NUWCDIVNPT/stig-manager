@@ -1,3 +1,104 @@
+1.4.11
+-----
+
+Changes:
+
+  - (UI/API) Removing feature from Release 1.4.8 adding resultEngine, user, statusUser columns to Detail metrics exports. The feature was found to cause poor performance in large deployments. 
+
+1.4.10
+-----
+
+Changes:
+
+  - (API) bugfix: Resolves issue allowing Collection Owner/Managers to create restricted grant assignments outside of Collection boundary
+  
+1.4.9
+-----
+
+Changes:
+
+  - (UI) bugfix: Resolves issue preventing node expansion in the Export Results interface
+
+
+1.4.8
+-----
+
+Changes:
+
+  - (API) feat: Added resultEngine, user, statusUser columns to Detail metrics exports.
+  - (API) feat: Listen on STIGMAN_API_PORT on startup and respond with status while bootstrap process is running.
+  - (API) chore: Remove Dockerfile healthcheck
+  - (API) chore: Refactor controllers to use a set of common functions when checking a collection grant or invoking elevation
+  - (Docs) chore: Minor updates and clarifications
+
+1.4.7
+-----
+
+Changes:
+
+  - (API) dependency: Update mysql2 library in response to CVE-2024-21511
+  - (UI) bugfix: STIG Management UI now displays system-wide count of Collections using a STIG.
+
+1.4.6
+-----
+
+Changes:
+
+  - (API) dependency: Update mysql2 library in response to CVE-2024-21508, CVE-2024-21509, CVE-2024-21507
+  - (API) Refactor API definition for better maintainability
+  - (API) Refactor db query construction for consistency
+
+1.4.5
+-----
+
+Changes:
+
+  - (UI/API) feat: Status text field expanded to 511 characters.
+  - (UI) bugfix: Review `resultEngine` no longer keeps old value when using drag & drop from Other Assets. 
+  - (API/DB) chore: Remove unused current_group_rule table and view. 
+  - (API) bugfix: Review `resultEngine` now only set to null when PATCH'd with a `result` and no `resultEngine`.
+  - (API) feat: DB bootstrap improvements, build script, static data.
+  - (API) chore: Update dependency in response to CVE-2022-25881
+  - **Includes database migration**
+
+1.4.4
+-----
+
+Changes:
+
+  - (UI/API) Review Ages exposed in more interfaces: Asset Review, Collection Review, Other Assets
+  - (UI/API) Review min/max ages in Collection Review checklist presentations
+  - (UI) Bulk .ckl[b]/xccdf imports from Collection Dashboard for all users (for Review updates only)
+  - (UI) Reject Status Text validation
+  - (UI) bugfix: Collection metadata deletes
+  - (API) bugfix: Timestamp update misbehavior in some circumstances
+  - (API) Dependency updates in response to CVE-2024-28849; CVE-2024-28176
+  - (Docs) Guidance for updating deployments
+  - (Docs) Database schemas and diagram updates  
+
+1.4.3
+-----
+
+Changes:
+
+  - (API/UI) Added multi-asset patch endpoint with delete support for better performance when deleting large numbers of Assets
+  - (UI) Switch to newly-published stig-manager-client-modules package on npm
+  - (Docs) Updates to documentation publish process
+  - (API) Code cleanup
+  - (Docs) Updated STIGMan ASD reference checklist version
+
+1.4.2
+-----
+
+Changes:
+
+  - (API/UI) Meta-Collection Dashboard feature
+  - (Docs) Documentation updates
+  - (Demo/Docs) Demo data updates, include STIGs for demo data.
+  - (API) Code cleanup
+  - (API/Dependency) Dependency updates  
+
+  
 1.4.1
 -----
 

@@ -87,8 +87,8 @@ async function addReview( params ) {
       convert: engineResultConverter
     },
     {
-      name: 'reviewComplete',
-      type: 'boolean'
+      name: 'touchTs',
+      type: 'date'
     }
   ]);
 
@@ -625,8 +625,17 @@ async function addReview( params ) {
           type: 'values',
           renderer: SM.ColumnFilters.Renderers.status
         } 
+      },
+      {
+        id: 'touchTs' + idAppend,
+        header: '<div exportvalue="touchTs" class="sm-history-icon" ext:qtip="Last action"></div>',
+        fixed: true,
+        width: 44,
+        align: 'center',
+        dataIndex: 'touchTs',
+        sortable: true,
+        renderer: renderDurationToNow
       }
-
     ],
     autoExpandColumn: 'ruleTitle' + idAppend,
     loadMask: {msg: ''},
@@ -762,6 +771,7 @@ async function addReview( params ) {
       type: 'string'
     },
     'resultEngine',
+    'touchTs',
     {
       name: 'engineResult',
       convert: engineResultConverter
@@ -909,7 +919,7 @@ async function addReview( params ) {
       },
       { 	
 				header: "Status", 
-				width: 50,
+				width: 44,
 				fixed: true,
         align: 'center',
 				dataIndex: 'status',
@@ -922,6 +932,16 @@ async function addReview( params ) {
           renderer: SM.ColumnFilters.Renderers.status
         }
 			},
+      {
+        id: 'touchTs' + idAppend,
+        header: '<div exportvalue="touchTs" class="sm-history-icon" ext:qtip="Last action"></div>',
+        fixed: true,
+        width: 44,
+        align: 'center',
+        dataIndex: 'touchTs',
+        sortable: true,
+        renderer: renderDurationToNow
+      },
 			{ 	
 				header: "User", 
 				width: 50,
@@ -1039,7 +1059,11 @@ async function addReview( params ) {
           title: 'Status Text',
           ref: '../statusTextPanel',
           padding: 10,
-          autoScroll: true
+          autoScroll: true,
+          bodyStyle: {
+              'white-space': 'pre-wrap',
+              'overflow-wrap': 'break-word'
+          }
         },
         {
           title: 'History',
@@ -1338,39 +1362,35 @@ async function addReview( params ) {
     try {
       fp = reviewForm
       fp.getEl().mask('Saving...')
-      // masktask = new Ext.util.DelayedTask(function(){
-      //   Ext.getBody().mask('Saving...')
-      // })
-      // masktask.delay(100)
 
       const fvalues = fp.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
-      const jsonData = {
-        result: fvalues.result,
-        detail: fvalues.detail,
-        comment: fvalues.comment,
-        resultEngine: fp.resultChanged() ? null : fvalues.resultEngine
-      }
-      let method
+      
+      let method, status
       switch (saveParams.type) {
         case 'accept':
         case 'submit':
         case 'unsubmit':
-          jsonData.status = saveParams.type == 'submit' ? 'submitted' : saveParams.type === 'accept' ? 'accepted' : 'saved'
+          status = saveParams.type == 'submit' ? 'submitted' : saveParams.type === 'accept' ? 'accepted' : 'saved'
           method = 'PATCH'
           break
+        case 'save':
         case 'save and unsubmit':
-          jsonData.status = 'saved'
+          status = 'saved'
           method = 'PUT'
           break
         case 'save and submit':
-          jsonData.status = 'submitted'
-          method = 'PUT'
-          break
-        case 'save':
-          jsonData.status = 'saved'
+          status = 'submitted'
           method = 'PUT'
           break
       }
+
+      const jsonData = method === 'PUT' ? {
+        result: fvalues.result,
+        detail: fvalues.detail,
+        comment: fvalues.comment,
+        resultEngine: fp.resultChanged() ? null : fvalues.resultEngine,
+        status
+      } : { status }
 
       const reviewFromApi = await Ext.Ajax.requestPromise({
         responseType: 'json',
@@ -1385,8 +1405,8 @@ async function addReview( params ) {
 
       // Update group grid
       fp.groupGridRecord.data.result = reviewFromApi.result
-      fp.groupGridRecord.data.reviewComplete = reviewFromApi.reviewComplete
       fp.groupGridRecord.data.status = reviewFromApi.status.label
+      fp.groupGridRecord.data.touchTs = reviewFromApi.touchTs
       fp.groupGridRecord.data.resultEngine = reviewFromApi.resultEngine
       fp.groupGridRecord.data.engineResult = engineResultConverter('', reviewFromApi)
       fp.groupGridRecord.commit()

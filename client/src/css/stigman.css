@@ -13,6 +13,9 @@
   --metrics-status-chart-rejected-dark: hsl(5deg 90% 25%)
 }
 
+.x-tree-node-collapsed .x-tree-node-icon, .x-tree-node-expanded .x-tree-node-icon, .x-tree-node-leaf .x-tree-node-icon {
+	width: 22px;
+}
 .sm-grid-cell-with-toolbar {
 	position: relative;
 }
@@ -40,7 +43,7 @@
 }
 
 .x-grid3-row-over .sm-grid-cell-with-toolbar .sm-static-width:hover {
-	scale: 125%;
+	scale: 110%;
 	filter: brightness(100%);
 }
 
@@ -235,7 +238,8 @@
 }
 .sm-engine-result-icon {
   background-image: url(../img/bot2.svg);
-  background-repeat: no-repeat
+  background-repeat: no-repeat;
+  width: 12px;
 }
 .sm-engine-override-icon {
   background-image: url(../img/override2.svg);
@@ -255,6 +259,17 @@
   height: 14px;
   width: 14px
 }
+.x-menu-item-text .sm-engine-result-icon,  .x-menu-item-text .sm-history-icon{
+  background-size: 12px 12px;
+  height: 12px
+}
+
+.x-grid3-cell.x-grid3-hd .sm-history-icon {
+  background-size: 12px 12px;
+  background-position: center;
+  height: 12px
+}
+
 .x-menu-check-item .x-menu-item-icon {
   background-image: url(../img/checkboxes.svg);
   background-position: 1px 0;
@@ -1996,8 +2011,28 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   src: local(''),
        url('../fonts/ubuntu-mono-v15-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
 }
+.x-tool.x-tool-import {
+  background-image: url(../img/upload.svg);
+  background-repeat: no-repeat;
+  background-size: 12px 16px;
+  color: grey;
+  width: auto;
+  padding-left: 15px;
+  font-size: 10px;
+  line-height: 16px;
+}
 .x-tool.x-tool-label {
   background-image: url(../img/label.svg);
+  background-repeat: no-repeat;
+  background-size: 12px 16px;
+  color: grey;
+  width: auto;
+  padding-left: 15px;
+  font-size: 10px;
+  line-height: 16px;
+}
+.x-tool.x-tool-collection {
+  background-image: url(../img/collection.svg);
   background-repeat: no-repeat;
   background-size: 12px 16px;
   color: grey;

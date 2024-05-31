@@ -496,7 +496,10 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
       `result.api as "result"`,
       `CASE WHEN review.resultEngine = 0 THEN NULL ELSE review.resultEngine END as resultEngine`,
       `review.autoResult`,
-      `status.api as "status"`
+      `status.api as "status"`,
+      `review.statusTs`,
+      `review.ts`,
+      `review.touchTs`
     ]
     const joins = [
       'current_rev rev',
@@ -520,8 +523,8 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
     }
     if (inPredicates.revisionStr !== 'latest') {
       joins.splice(0, 1, 'revision rev')
-      const results = /V(\d+)R(\d+(\.\d+)?)/.exec(inPredicates.revisionStr)
-      const revId =  `${inPredicates.benchmarkId}-${results[1]}-${results[2]}`
+      const {version, release} = dbUtils.parseRevisionStr(inPredicates.revisionStr)
+      const revId =  `${inPredicates.benchmarkId}-${version}-${release}`
       predicates.statements.push('rev.revId = :revId')
       predicates.binds.revId = revId
     }
@@ -776,8 +779,8 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs, el
         revisionStrResolved = `V${resultGetBenchmarkId[0].version}R${resultGetBenchmarkId[0].release}`
       }
       else {
-        let revParse = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-        revId =  `${benchmarkId}-${revParse[1]}-${revParse[2]}`
+        const {version, release} = dbUtils.parseRevisionStr(revisionStr)
+        revId =  `${benchmarkId}-${version}-${release}`
         ;[resultGetBenchmarkId] = await connection.execute(sqlGetBenchmarkId, [revId])
       }
   
@@ -971,7 +974,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
     cklb.target_data.target_type = resultGetAsset[0].noncomputing ? 'Non-Computing' : 'Computing'
     cklb.target_data.role = resultGetAsset[0].metadata.cklRole ?? 'None'
     cklb.target_data.technology_area = resultGetAsset[0].metadata.cklTechArea ?? ''
-    cklb.target_data.is_web_database = resultGetAsset[0].metadata.cklHostName ?  true : false
+    cklb.target_data.is_web_database = !!resultGetAsset[0].metadata.cklHostName
     cklb.target_data.web_db_site = resultGetAsset[0].metadata.cklWebDbSite ?? ''
     cklb.target_data.web_db_instance = resultGetAsset[0].metadata.cklWebDbInstance ?? ''
     
@@ -1021,8 +1024,8 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
         revisionStrResolved = `V${resultGetBenchmarkId[0].version}R${resultGetBenchmarkId[0].release}`
       }
       else {
-        let revParse = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-        revId =  `${benchmarkId}-${revParse[1]}-${revParse[2]}`
+        const {version, release} = dbUtils.parseRevisionStr(revisionStr)
+        revId =  `${benchmarkId}-${version}-${release}`
         ;[resultGetBenchmarkId] = await connection.execute(sqlGetBenchmarkId, [revId])
       }
   
@@ -1181,8 +1184,8 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
       revisionStrResolved = `V${result[0].version}R${result[0].release}`
     }
     else {
-      let revParse = /V(\d+)R(\d+(\.\d+)?)/.exec(revisionStr)
-      revId = `${benchmarkId}-${revParse[1]}-${revParse[2]}`
+      const {version, release} = dbUtils.parseRevisionStr(revisionStr)
+      revId = `${benchmarkId}-${version}-${release}`
       ;[result] = await connection.query(sqlGetRevision, [revId])
       revisionStrResolved = revisionStr
     }
@@ -1333,6 +1336,13 @@ exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
   return (rows[0])
 }
 
+exports.deleteAssets = async function(assetIds, userObject) {
+  const sqlDelete = `UPDATE asset SET state = "disabled", stateDate = NOW(), stateUserId = ? where assetId IN ?`
+  await dbUtils.pool.query(sqlDelete, [userObject.userId, [assetIds]])
+  // changes above might have affected need for records in collection_rev_map 
+  await dbUtils.pruneCollectionRevMap()
+  await dbUtils.updateDefaultRev(null, {})
+}
 
 exports.attachStigToAsset = async function( {assetId, benchmarkId, collectionId, elevate, userObject, svcStatus = {}} ) {
 

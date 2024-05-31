@@ -55,6 +55,11 @@ Required and optional components of a STIG Manager OSS deployment:
   A stateful data storage capability that supports mutual TLS authentication and secure data at rest. 
 
 
+.. note::
+  The STIG Manager API itself is stateless, and persists no data. All application data is stored in the deployer-provided MySQL database. Responsibility for data security and backup is entirely the responsibility of the deployer maintaining the database. 
+  Likewise, the OIDC Provider is responsible for user authentication and authorization, and the deployer is responsible for the security and backup of the OIDC Provider.
+
+
 -------------------------------
 
 
@@ -181,8 +186,8 @@ Procedure
 
 .. _deploy-with-binaries:
 
-Deployment Precompiled Binaries
-----------------------------------
+Deployment with Precompiled Binaries
+--------------------------------------
 
 STIG Manager can be deployed with the binaries made available `with each release. <https://github.com/NUWCDIVNPT/stig-manager/releases>`_
 
@@ -215,6 +220,18 @@ Procedure
   It is recommended that you make use of a process manager such as `PM2 <https://github.com/Unitech/pm2>`_ when deploying from source or binaries, to monitor the app and keep it running.
 
 
+Updating STIG Manager
+-------------------------------------------------
+
+Because the STIG Manager API itself is stateless, updates are relatively simple. Follow the same procedure as the initial deployment, but with the updated version of the app, configured to use the same OIDC and database resources.
+
+Some releases may require database schema changes. In these cases, the app will automatically apply the necessary changes to the database schema when it starts up. These changes can occasionally take several minutes to run if your data set is large. We note these "Database Migrations" in our Release Notes. We recommend updates be performed during a maintenance window, and that a current database backup is available.
+
+Most updates do not require database migrations.
+
+Downgrading STIG Manager to an earlier version is not supported. If you need to revert to an earlier version, you will need to restore the database from a backup taken with the earlier version.
+
+| 
 
 Common Configuration Variables
 -------------------------------------------------

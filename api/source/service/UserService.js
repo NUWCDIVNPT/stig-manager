@@ -29,11 +29,10 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       'ud.username'
     ]
 
-    // PROJECTIONS
-    if (inProjection && inProjection.includes('privileges')) {
-    }
+    const orderBy = ['ud.username']
 
-    if (inProjection && inProjection.includes('collectionGrants')) {
+    // PROJECTIONS
+    if (inProjection?.includes('collectionGrants')) {
       joins.push('left join collection c on cg.collectionId = c.collectionId')
       columns.push(`case when count(cg.cgId) > 0 then 
       json_arrayagg(
@@ -47,7 +46,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       ) else json_array() end as collectionGrants`)
     }
 
-    if (inProjection && inProjection.includes('statistics')) {
+    if (inProjection?.includes('statistics')) {
       columns.push(`json_object(
           'created', date_format(ud.created, '%Y-%m-%dT%TZ'),
           'collectionGrantCount', count(cg.cgId),
@@ -93,15 +92,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     }
 
     // CONSTRUCT MAIN QUERY
-    let sql = 'SELECT '
-    sql+= columns.join(',\n')
-    sql += ' FROM '
-    sql+= joins.join(' \n')
-    if (predicates.statements.length > 0) {
-      sql += '\nWHERE ' + predicates.statements.join(' and ')
-    }
-    sql += '\nGROUP BY ' + groupBy.join(',\n')
-    sql += ' order by ud.username'
+    const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
   
     connection = await dbUtils.pool.getConnection()
     connection.config.namedPlaceholders = true

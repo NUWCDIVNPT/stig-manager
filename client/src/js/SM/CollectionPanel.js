@@ -954,7 +954,7 @@ SM.CollectionPanel.ProgressPanel = Ext.extend(Ext.Panel, {
       }
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
-    SM.CollectionPanel.ProgressPanel.superclass.initComponent.call(this)
+    this.superclass().initComponent.call(this)
   }
 })
 
@@ -1231,6 +1231,7 @@ SM.CollectionPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       bodyStyle: 'padding: 10px;',
       title: 'Progress',
       tools: this.progressPanelTools || undefined,
+      toolTemplate,
       border: true
     })
     this.agesPanel = new SM.CollectionPanel.AgesPanel({
@@ -1733,6 +1734,16 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
               collectionName,
               treePath
             })
+          }
+        }
+      ],
+      progressPanelTools: [
+        {
+          id: 'import',
+          text: 'Import CKL(B) or SCAP...',
+          qtip: SM.TipContent.ImportFromCollectionPanel,
+          handler: () => {
+            showImportResultFiles(collectionId, false)         
           }
         }
       ],

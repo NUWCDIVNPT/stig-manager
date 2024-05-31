@@ -36,7 +36,7 @@ exports.postReviewBatch = async function ({
       resultEngine JSON PATH "$.resultEngine" DEFAULT '0' ON EMPTY,
       metadata JSON PATH "$.metadata",
       statusLabel VARCHAR(255) PATH "$.status.label",
-      statusText VARCHAR(255) PATH "$.status.text"
+      statusText VARCHAR(511) PATH "$.status.text"
       )
     ) as jt
     left join result jtresult on (jtresult.api = jt.result)
@@ -493,7 +493,7 @@ from
     await connection.query(sqlTempTable)
     
     let validationErrors = []
-    let [table] = await connection.query('select * from validated_reviews')
+    
     let [counts] = await connection.query(`select
     coalesce(sum(case when error is not null then 1 else 0 end),0) as failedValidations,
     coalesce(sum(case when error is null and reviewId is null then 1 else 0 end),0) as inserts,
@@ -784,17 +784,8 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
     }
   }
 
-
-  // CONSTRUCT MAIN QUERY
-  let sql = 'SELECT '
-  sql+= columns.join(",\n")
-  sql += ' FROM '
-  sql+= joins.join(" \n")
-  if (predicates.statements.length > 0) {
-    sql += "\nWHERE " + predicates.statements.join(" and ")
-  }
-  sql += ` GROUP BY ${groupBy.join(', ')}`
-
+  // // CONSTRUCT MAIN QUERY
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy})
   let [rows] = await dbUtils.pool.query(sql, predicates.binds)
 
   return (rows)
@@ -821,6 +812,8 @@ exports.exportReviews = async function (includeHistory = false) {
   ]
   const joins = [
     'review r',
+    'inner join asset a on r.assetId = a.assetId AND a.state = "enabled"',
+    'inner join collection c on c.collectionId = a.collectionId and c.state = "enabled"',
     'left join result on r.resultId = result.resultId',
     'left join status on r.statusId = status.statusId',
   ]
@@ -876,12 +869,7 @@ exports.exportReviews = async function (includeHistory = false) {
     ]
   }
 
-  const sql = `SELECT
-  ${columns.join(',\n')}
-  FROM
-  ${joins.join(" \n")}
-  ${includeHistory ? ` GROUP BY ${groupBy.join(', ')}` : ''}
-  `
+  const sql = dbUtils.makeQueryString({columns, joins, groupBy})
   let [rows] = await dbUtils.pool.query(sql)
   return (rows)
 }
@@ -989,7 +977,7 @@ FROM
     metadata JSON PATH "$.metadata",
     statusRaw VARCHAR(255) PATH "$.status",
     statusLabel VARCHAR(255) PATH "$.status.label",
-    statusText VARCHAR(255) PATH "$.status.text"
+    statusText VARCHAR(511) PATH "$.status.text"
     )
   ) AS jt
   left join result on (jt.result = result.api)
@@ -1029,7 +1017,10 @@ select
   CASE WHEN cteIncoming.resultEngine != 0 -- resultEngine present
     THEN cteIncoming.resultEngine
     ELSE
-      NULL
+      CASE WHEN cteIncoming.resultId is null -- result absent, patch only
+        THEN review.resultEngine
+        ELSE NULL
+      END
   END as resultEngine,
   
   CASE WHEN cteIncoming.statusId is not null
@@ -1057,7 +1048,7 @@ select
       or review.reviewId is null -- no existing review
       or (cteCollectionSetting.resetCriteria = 'result' and rChangedResult.reviewId is not null) -- status meets criteria for resetting
       or (cteCollectionSetting.resetCriteria = 'any' and rChangedAny.reviewId is not null) -- status meets criteria for resetting
-    THEN UTC_TIMESTAMP() -- now
+    THEN @utcTimestamp -- now
     ELSE review.statusTs -- saved time
   END as statusTs,
   
@@ -1069,8 +1060,21 @@ select
     ELSE review.statusUserId -- saved user
   END as statusUserId,
   
-  @userId as userId,
-  UTC_TIMESTAMP() as ts
+  CASE WHEN review.reviewId is null -- no existing review
+      or cteIncoming.resultId is not null -- patch request contains result
+      or cteIncoming.detail is not null -- patch request contains detail
+      or cteIncoming.comment is not null -- patch request contains comment
+    THEN @userId  -- this user
+    ELSE review.userId -- saved user
+  END as userId,
+
+  CASE WHEN review.reviewId is null -- no existing review
+      or cteIncoming.resultId is not null -- patch request contains result
+      or cteIncoming.detail is not null -- patch request contains detail
+      or cteIncoming.comment is not null -- patch request contains comment
+    THEN @utcTimestamp -- now
+    ELSE review.ts -- saved time
+  END as ts
 from
   cteIncoming
   LEFT JOIN cteGrant on cteIncoming.ruleId = cteGrant.ruleId
@@ -1267,7 +1271,7 @@ where
   try {
     connection = await dbUtils.pool.getConnection()
     
-    const sqlSetVariables = `set @collectionId = ?, @assetId = ?, @userId = ?, @reviews = ?`
+    const sqlSetVariables = `set @collectionId = ?, @assetId = ?, @userId = ?, @reviews = ?, @utcTimestamp = UTC_TIMESTAMP()`
     await connection.query(sqlSetVariables, [parseInt(collectionId), parseInt(assetId), parseInt(userId), JSON.stringify(reviews)])
     const [settings] = await connection.query(`select c.settings->>"$.history.maxReviews" as maxReviews FROM collection c where collectionId = @collectionId`)
     const historyMaxReviews = settings[0].maxReviews
@@ -1420,7 +1424,7 @@ exports.patchReviewMetadata = async function ( assetId, ruleId, metadata ) {
       review.assetId = ?
       and rvcd.ruleId = ?`
   binds.push(JSON.stringify(metadata), assetId, ruleId)
-  let [rows] = await dbUtils.pool.query(sql, binds)
+  await dbUtils.pool.query(sql, binds)
   return true
 }
 
@@ -1436,7 +1440,7 @@ exports.putReviewMetadata = async function ( assetId, ruleId, metadata ) {
       review.assetId = ?
       and rvcd.ruleId = ?`
   binds.push(JSON.stringify(metadata), assetId, ruleId)
-  let [rows] = await dbUtils.pool.query(sql, binds)
+  await dbUtils.pool.query(sql, binds)
   return true
 }
 

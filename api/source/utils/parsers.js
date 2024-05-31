@@ -139,7 +139,7 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
   }
 
   function benchmarkDateTo8601(benchmarkDate) {
-    monthToNum = {
+    const monthToNum = {
       'Jan': '01',
       'January': '01',
       'Feb': '02',

@@ -5,8 +5,7 @@ Database
 ########################################
 
 
-The STIGMan API was developed with a Controller-Service model that allows additional database services to be developed while using the same Controller code. 
-Right now, the only database supported is MySQL.
+The STIGMan API was developed with a Controller-Service model that allows additional database services to be developed while using the same Controller code. However, the only database currently supported is MySQL.
 
 
 Database User Requirements
@@ -26,24 +25,24 @@ Specify the User and Schema with these environment variables:
 Database - MySQL 8.0.21+
 -----------------------------
 
-STIG Manager has been tested with MySQL 8.0.21.
+The STIG Manager API is tested with the latest 3 minor versions of the MySQL 8.0.x series, and 8.0.21.
+While STIG Manager will bootstrap when provided with an 8.0.21+ MySQL database, it is strongly recommended you use the latest version of MySQL 8.0.x available.
 
 The API requires knowledge of 1) the DB address/port, 2) which schema (database) is used for STIG Manager, and 3) User credentials with necessary privileges on that schema. `More information about MySQL. <https://dev.mysql.com/doc/>`_
 
 .. note::
-   The API includes a database migration function which tracks the database schema version and if necessary can automatically update the schema at launch. The initial run of the API scaffolds all database objects and static data.  Releases that require a database change will include the image label "new-data-migration" with a value that lists the database services affected.
+   The API includes a database migration function which tracks the database schema version and if necessary can automatically update the schema at launch. The initial run of the API scaffolds all database objects and static data.  Releases that require a database change will include a message in the release notes.
 
 
 Configure MySQL
 ~~~~~~~~~~~~~~~~~~~~
 
-STIG Manager requires a database schema, and the use of an account with SuperUser privileges on the intended schema:
+The STIG Manager API requires a dedicated MySQL database (equivalent to a schema in other RDBMS products). The API connects to MySQL with an account that must have a full grant to the dedicated database but does not require server administration privileges. On first bootstrap, all database tables, views, and static data will be created.
+Example commands to prepare MySQL for initial API execution:
 
-  * Create schema - suggested value: stigman
-  * Create user - suggested value: stigman
-  * Grant User all privileges on created schema (``grant all on *stigman* schema to *stigman* user``). 
-
-The above steps are sufficient for a username/password setup, but it is highly recommended that you configure MySQL to use TLS connections.
+  * Create database: ``CREATE DATABASE stigman``
+  * Create API user account - ``CREATE USER 'stigman'@'%' IDENTIFIED BY 'new_password'``
+  * Grant API user account all privileges on created database ``GRANT ALL ON stigman.* TO 'stigman'`` 
 
 .. note::
    Suggested DB configuration options:

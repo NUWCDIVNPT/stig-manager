@@ -1,5 +1,6 @@
 import { stylesheets, scripts, isMinimizedSource } from './resources.js'
-import * as OP from './oidcProvider.js'
+import * as OP from './modules/oidcProvider.js'
+window.oidcProvider = OP
 
 function getScopeStr() {
   const scopePrefix = STIGMAN.Env.oauth.scopePrefix
@@ -29,20 +30,24 @@ async function loadResources() {
     }
     document.head.appendChild(link)
   }
+  
+  const { Chart } = await import('./modules/node_modules/chart.js/auto/auto.js')
+  window.Chart = Chart
+
   for (const src of scripts) {
-    var script = document.createElement('script')
+    const script = document.createElement('script')
     script.src = src
     script.async = false
     document.head.appendChild(script)
   }
-  const { serializeError } = await import('./third-party/node_modules/serialize-error/index.js')
+  const { serializeError } = await import('./modules/node_modules/serialize-error/index.js')
   STIGMAN.serializeError = serializeError
-
+  STIGMAN.ClientModules = await import('./modules/node_modules/@nuwcdivnpt/stig-manager-client-modules/index.js')
+  
   STIGMAN.isMinimizedSource = isMinimizedSource
 }
 
 async function authorizeOidc() {
-  window.oidcProvider = OP
   try {
     const tokens = await OP.authorize({
       oidcProvider: STIGMAN.Env.oauth.authority,

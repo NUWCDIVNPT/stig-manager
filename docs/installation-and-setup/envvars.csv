@@ -26,7 +26,7 @@
 "STIGMAN_CLIENT_REFRESH_DISABLED","| **Default** ``false``
 | Whether the web client should use a provided refresh token to update the access token","Client"
 "STIGMAN_CLIENT_WELCOME_IMAGE ","| **No default**
-| An image URL that will be rendered in the Home tab Welcome widget. The image will be scaled to a max width or height of 125 pixels - If no alternate image is specified, the seal of the Department of the Navy (the project sponsor)  will be displayed. ","Client Appearance"
+| The URL of an image hosted elsewhere that will be rendered in the Home tab Welcome widget. The STIGMan app does not serve the image itself, only the reference to it. The URL should be in relation to and accessible from the client's browser. The image will be scaled to a max width or height of 125 pixels - If no alternate image is specified, the seal of the Department of the Navy (the project sponsor)  will be displayed. ","Client Appearance"
 "STIGMAN_CLIENT_WELCOME_LINK","| **No default**
 | Value of an optional link that will follow the Welcome message in the Home tab Welcome widget. ","Client Appearance"
 "STIGMAN_CLIENT_WELCOME_MESSAGE ","| **No default**

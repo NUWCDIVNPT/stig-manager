@@ -96,6 +96,14 @@ async function addCollectionReview ( params ) {
 			},{
 				name:'severity',
 				type:'string'
+			},{
+				name: 'minTouchTs',
+				type: 'date',
+				mapping: 'timestamps.touchTs.min'
+			},{
+				name: 'maxTouchTs',
+				type: 'date',
+				mapping: 'timestamps.touchTs.max'
 			}
 		]);
 
@@ -478,6 +486,28 @@ async function addCollectionReview ( params ) {
 						type: 'string'
 					}	
 				},
+				{
+					id: 'minTouchTs' + idAppend,
+					header: 'Oldest',
+					fixed: true,
+					hidden: true,
+					width: 64,
+					align: 'center',
+					dataIndex: 'minTouchTs',
+					sortable: true,
+					renderer: renderDurationToNow
+				},
+				{
+					id: 'maxTouchTs' + idAppend,
+					header: 'Newest',
+					fixed: true,
+					hidden: true,
+					width: 64,
+					align: 'center',
+					dataIndex: 'maxTouchTs',
+					sortable: true,
+					renderer: renderDurationToNow
+				},
 				{ 	
 					id:'oCnt' + idAppend,
 					header: '<div class="sm-result-fail" style="font-weight:bolder;" exportvalue="O">O</div>', 
@@ -749,6 +779,7 @@ async function addCollectionReview ( params ) {
 				type: 'string'
 			},
 	    'resultEngine',
+		'touchTs',
 			{
 				name: 'engineResult',
 				convert: engineResultConverter
@@ -1044,7 +1075,18 @@ async function addCollectionReview ( params ) {
 					filter: {
 						type: 'values'
 					}
-				}
+				},
+				{
+					id: 'touchTs' + idAppend,
+					header: '<div exportvalue="touchTs" class="sm-history-icon" ext:qtip="Last action"></div>',
+					fixed: true,
+					width: 48,
+					align: 'center',
+					dataIndex: 'touchTs',
+					sortable: true,
+					renderer: renderDurationToNow
+				  }
+			
 			],
 			isCellEditable: function(col, row) {
 				var record = reviewsStore.getAt(row);
@@ -1642,13 +1684,16 @@ async function addCollectionReview ( params ) {
 			return new Promise ((resolve, reject) => {
 				const textArea = new Ext.form.TextArea({
 					emptyText: 'Provide feedback explaining this rejection.',
-					maxLength: 255,
+					maxLength: 511,
+					enableKeyEvents: true,
 					listeners: {
-						valid: () => {
-							submitBtn.enable()
-						},
-						invalid: () => {
-							submitBtn.disable()
+						keyup: (field) => {
+							if (field.isValid() && field.getValue().trim().length > 0) {
+								submitBtn.enable()
+							} 
+							else {
+								submitBtn.disable()
+							}
 						}
 					}
 				})
@@ -1656,44 +1701,41 @@ async function addCollectionReview ( params ) {
 					text: 'Reject with this feedback',
 					action: 'reject',
 					iconCls: 'sm-rejected-icon',
+					disabled: true,
+					handler
+				})
+				const cancelBtn = new Ext.Button(	{
+					text: 'Cancel',
+					action: 'cancel',
 					handler
 				})
 				function handler (btn) {
-					if (btn.action === 'reject') {
-						const value = textArea.getValue()
+					const value = textArea.getValue()
+					if (btn.action === 'reject'){
 						fpwindow.close()
 						resolve(value)
 					}
-					fpwindow.close()
-					reject()
+					else{
+						fpwindow.close()
+						reject()
+					}
 				}
 				const fpwindow = new Ext.Window({
 					title: `Reject Reviews`,
 					modal: true,
 					resizable: false,
 					closable: false,
-					width: 300,
-					height: 200,
+					width: 400,
+					height: 300,
 					layout: 'fit',
 					plain: true,
 					bodyStyle: 'padding:5px;',
-					buttonAlign: 'right',
-					items: [
-						textArea
-					],
-					buttons: [
-						{
-							text: 'Cancel',
-							action: 'cancel',
-							handler
-						},
-						submitBtn
-					]
+					buttonAlign: 'center',
+					items: [textArea],
+					buttons: [cancelBtn,submitBtn]
 				})
 				fpwindow.show()
-	
 			})
-
 		}
 		
 		async function handleStatusChange (grid, sm, status) {
