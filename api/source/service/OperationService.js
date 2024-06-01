@@ -612,68 +612,93 @@ exports.getDetails = async function() {
         c.collectionId
       `
 
-      const sqlDisabledAssetsInEnabledCollections = `
-      select 
-        c.collectionId,
-        count(distinct a.assetId) as disabledAssetCnt,
-        count(r.reviewId) as reviewCnt,
-        count(rh.historyId) as historyCnt
-      from 
-        collection c
-      left join asset a on a.collectionId = c.collectionId
-      left join review r on r.assetId = a.assetId
-      left join review_history rh on rh.reviewId = r.reviewId
-      where 
-        a.state = "disabled" and 
-        c.state = "enabled"
-      group by 
-        c.collectionId
-      `
+      // const sqlDisabledAssetsInEnabledCollections = `
+      // select 
+      //   c.collectionId,
+      //   count(distinct a.assetId) as disabledAssetCnt,
+      //   count(r.reviewId) as reviewCnt,
+      //   count(rh.historyId) as historyCnt
+      // from 
+      //   collection c
+      // left join asset a on a.collectionId = c.collectionId
+      // left join review r on r.assetId = a.assetId
+      // left join review_history rh on rh.reviewId = r.reviewId
+      // where 
+      //   a.state = "disabled" and 
+      //   c.state = "enabled"
+      // group by 
+      //   c.collectionId
+      // `
 
       
       const sqlCountsByCollection = `
-      select 
-        c.collectionId,
-        c.state,
-        count(distinct a.assetId) as assetCnt,
-        count(distinct r.reviewId) as reviewCnt,
-        count(rh.historyId) as historyCnt
-      from 
-        collection c
-      left join asset a on a.collectionId = c.collectionId
-      left join review r on r.assetId = a.assetId
-      left join review_history rh on rh.reviewId = r.reviewId
-      group by 
-        c.collectionId
-      `
+      SELECT
+      cast(c.collectionId as char) as collectionId,
+      c.state,
+      count(distinct a.assetId) as assetsTotal,
+      count( distinct 
+        if(a.state = "disabled", a.assetId, null)
+        ) 
+        as assetsDisabled,
+      count(distinct sa.benchmarkId) as uniqueStigs,
+      count(sa.saId) as stigAssignments,
+      coalesce(sum(rev.ruleCount),0) 
+        as ruleCnt,
+      coalesce(
+          sum(sa.pass + sa.fail + sa.notapplicable + sa.notchecked + sa.notselected + sa.informational + sa.fixed + sa.unknown + sa.error),0) 
+          as reviewCntTotal,
+      coalesce(
+        sum(if(a.state = "disabled", (sa.pass + sa.fail + sa.notapplicable + sa.notchecked + sa.notselected + sa.informational + sa.fixed + sa.unknown + sa.error), 0)))
+        as reviewCntDisabled
+    FROM
+      collection c
+      left join asset a on c.collectionId = a.collectionId 
+      left join stig_asset_map sa on a.assetId = sa.assetId
+      left join default_rev dr on c.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId
+      left join revision rev on dr.revId = rev.revId
+      left join stig on rev.benchmarkId = stig.benchmarkId
+    GROUP BY
+      c.collectionId
+    ORDER BY
+      c.collectionId
+       `
+
 
       const sqlOverallTotals = `
       select 
-        count(distinct c.collectionId) as collectionCnt,
-        count(distinct a.assetId) as assetCnt,
-        count(distinct r.reviewId) as reviewCnt,
-        count(rh.historyId) as historyCnt
-      from 
-        collection c
-      left join asset a on a.collectionId = c.collectionId
-      left join review r on r.assetId = a.assetId
-      left join review_history rh on rh.reviewId = r.reviewId
-      `
+      'collectionCnt', count(distinct c.collectionId) as rowCount
+     from
+      collection c 
+     union
+     select 
+      'reviewHistoryCnt', count(distinct rh.historyId)
+     from
+      review_history rh
+ `
+
+
 
       //orphaned reviews!
 
     await dbUtils.pool.query(sqlAnalyze)
 
-    const [[schemaInfoArray], [assetStig], [disabledCollections], [disabledAssetsInEnabledCollections], [countsByCollection],[overallTotals]] = await Promise.all([
-      dbUtils.pool.query(sqlInfoSchema, [config.database.schema]),
-      dbUtils.pool.query(sqlCollectionAssetStigs),
-      dbUtils.pool.query(sqlDisabledCollectionCount),
-      dbUtils.pool.query(sqlDisabledAssetsInEnabledCollections),
-      dbUtils.pool.query(sqlCountsByCollection),
-      dbUtils.pool.query(sqlOverallTotals)
+    // const [[schemaInfoArray], [assetStig], [disabledCollections], [disabledAssetsInEnabledCollections], [countsByCollection],[overallTotals]] = await Promise.all([
+    //   dbUtils.pool.query(sqlInfoSchema, [config.database.schema]),
+    //   dbUtils.pool.query(sqlCollectionAssetStigs),
+    //   dbUtils.pool.query(sqlDisabledCollectionCount),
+    //   dbUtils.pool.query(sqlDisabledAssetsInEnabledCollections),
+    //   dbUtils.pool.query(sqlCountsByCollection),
+    //   dbUtils.pool.query(sqlOverallTotals)
 
+    // ])
 
-    ])
+    const [schemaInfoArray] = await dbUtils.pool.query(sqlInfoSchema, [config.database.schema]);
+    const [assetStig] = await dbUtils.pool.query(sqlCollectionAssetStigs);
+    const [disabledCollections] = await dbUtils.pool.query(sqlDisabledCollectionCount);
+    // const [disabledAssetsInEnabledCollections] = await dbUtils.pool.query(sqlDisabledAssetsInEnabledCollections);
+    const [countsByCollection] = await dbUtils.pool.query(sqlCountsByCollection);
+    const [overallTotals] = await dbUtils.pool.query(sqlOverallTotals);
+
 
 
     // call reviewHistoryStatsByCollection for each collection:
@@ -708,10 +733,11 @@ exports.getDetails = async function() {
       },
       assetStig,
       disabledCollections,
-      disabledAssetsInEnabledCollections,
+      // disabledAssetsInEnabledCollections,
       // reviewHistoryStatsResults,
       // reviewHistoryStatsOld,
       countsByCollection,
       overallTotals
+      // metametrics
     })
 }
