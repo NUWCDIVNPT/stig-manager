@@ -550,7 +550,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
 exports.getDetails = async function() {
   const sqlAnalyze = `ANALYZE TABLE
   collection, asset, review, review_history, user`
-  const sqlInfoSchema = `SELECT
+  const sqlInfoSchema = `
+  SELECT
     TABLE_NAME as tableName,
     TABLE_ROWS as tableRows,
     TABLE_COLLATION as tableCollation,
@@ -566,7 +567,8 @@ exports.getDetails = async function() {
   WHERE
     TABLE_SCHEMA = ?
   ORDER BY
-    TABLE_NAME`
+    TABLE_NAME
+    `
   const sqlCollectionAssetStigs = `
     SELECT
       CAST(sub.collectionId as char) as collectionId,
@@ -592,7 +594,8 @@ exports.getDetails = async function() {
     GROUP BY
       sub.collectionId
     ORDER BY
-      sub.collectionId`
+      sub.collectionId
+  `
 
 
       const sqlDisabledCollectionCount = `
@@ -633,6 +636,7 @@ exports.getDetails = async function() {
       
       const sqlCountsByCollection = `
       SELECT
+      -- row_number() over (order by c.collectionId) as collectionItem,
       cast(c.collectionId as char) as collectionId,
       c.state,
       count(distinct a.assetId) as assetsTotal,
@@ -650,35 +654,36 @@ exports.getDetails = async function() {
       coalesce(
         sum(if(a.state = "disabled", (sa.pass + sa.fail + sa.notapplicable + sa.notchecked + sa.notselected + sa.informational + sa.fixed + sa.unknown + sa.error), 0)))
         as reviewCntDisabled
-    FROM
-      collection c
-      left join asset a on c.collectionId = a.collectionId 
-      left join stig_asset_map sa on a.assetId = sa.assetId
-      left join default_rev dr on c.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId
-      left join revision rev on dr.revId = rev.revId
-      left join stig on rev.benchmarkId = stig.benchmarkId
-    GROUP BY
-      c.collectionId
-    ORDER BY
-      c.collectionId
-       `
+      FROM
+        collection c
+        left join asset a on c.collectionId = a.collectionId 
+        left join stig_asset_map sa on a.assetId = sa.assetId
+        left join default_rev dr on c.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId
+        left join revision rev on dr.revId = rev.revId
+        left join stig on rev.benchmarkId = stig.benchmarkId
+      GROUP BY
+        c.collectionId
+      ORDER BY
+        c.collectionId
+      `
 
 
-      const sqlOverallTotals = `
-      select 
-      'collectionCnt', count(distinct c.collectionId) as rowCount
-     from
-      collection c 
-     union
-     select 
-      'reviewHistoryCnt', count(distinct rh.historyId)
-     from
-      review_history rh
- `
+      // const sqlOverallHistoryCnt = `
+      // select 
+      //   count(distinct rh.historyId) as reviewHistoryCnt
+      // from
+      //   review_history rh
+      // `
 
 
 
-      //orphaned reviews!
+    const sqlOrphanedReviews = `
+    SELECT count(distinct r.ruleId)
+    FROM 
+     review r 
+    where 
+        r.ruleId not in (select ruleId from rule_version_check_digest)
+    `
 
     await dbUtils.pool.query(sqlAnalyze)
 
@@ -697,7 +702,8 @@ exports.getDetails = async function() {
     const [disabledCollections] = await dbUtils.pool.query(sqlDisabledCollectionCount);
     // const [disabledAssetsInEnabledCollections] = await dbUtils.pool.query(sqlDisabledAssetsInEnabledCollections);
     const [countsByCollection] = await dbUtils.pool.query(sqlCountsByCollection);
-    const [overallTotals] = await dbUtils.pool.query(sqlOverallTotals);
+    // const [overallHistoryCnt] = await dbUtils.pool.query(sqlOverallHistoryCnt);
+    const [orphanedReviews] = await dbUtils.pool.query(sqlOrphanedReviews);
 
 
 
@@ -737,7 +743,7 @@ exports.getDetails = async function() {
       // reviewHistoryStatsResults,
       // reviewHistoryStatsOld,
       countsByCollection,
-      overallTotals
-      // metametrics
+      // overallHistoryCnt,
+      orphanedReviews      
     })
 }
