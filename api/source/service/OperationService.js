@@ -667,13 +667,27 @@ exports.getDetails = async function() {
         c.collectionId
       `
 
+      const sqlRestrictedGrantCounts = `
+      select collectionId, json_arrayagg(perUser) as restrictedUserGrantCounts
+      from 
+      (select
+        a.collectionId, 
+        json_object('user', usam.userId, 'assignments', count(usam.saId), 'uniqueAssets', count(distinct sam.assetId)) as perUser
+      from user_stig_asset_map usam
+      left join stig_asset_map sam on sam.saId=usam.saId
+      left join asset a on a.assetId = sam.assetId
+      group by
+      userId, collectionId) as sub
+      group by 
+      sub.collectionId
+`
 
-      // const sqlOverallHistoryCnt = `
-      // select 
-      //   count(distinct rh.historyId) as reviewHistoryCnt
-      // from
-      //   review_history rh
-      // `
+      const sqlOverallHistoryCnt = `
+      select 
+        count(*) as reviewHistoryCnt
+      from
+        review_history rh
+      `
 
 
 
@@ -699,10 +713,11 @@ exports.getDetails = async function() {
 
     const [schemaInfoArray] = await dbUtils.pool.query(sqlInfoSchema, [config.database.schema]);
     const [assetStig] = await dbUtils.pool.query(sqlCollectionAssetStigs);
-    const [disabledCollections] = await dbUtils.pool.query(sqlDisabledCollectionCount);
+    // const [disabledCollections] = await dbUtils.pool.query(sqlDisabledCollectionCount);
     // const [disabledAssetsInEnabledCollections] = await dbUtils.pool.query(sqlDisabledAssetsInEnabledCollections);
     const [countsByCollection] = await dbUtils.pool.query(sqlCountsByCollection);
-    // const [overallHistoryCnt] = await dbUtils.pool.query(sqlOverallHistoryCnt);
+    const [restrictedGrantCountsByCollection] = await dbUtils.pool.query(sqlRestrictedGrantCounts);
+    const [overallHistoryCnt] = await dbUtils.pool.query(sqlOverallHistoryCnt);
     const [orphanedReviews] = await dbUtils.pool.query(sqlOrphanedReviews);
 
 
@@ -738,12 +753,13 @@ exports.getDetails = async function() {
         tables: schemaInfoArray.reduce(schemaReducer, {})
       },
       assetStig,
-      disabledCollections,
+      // disabledCollections,
       // disabledAssetsInEnabledCollections,
       // reviewHistoryStatsResults,
       // reviewHistoryStatsOld,
       countsByCollection,
-      // overallHistoryCnt,
+      restrictedGrantCountsByCollection,      
+      overallHistoryCnt,
       orphanedReviews      
     })
 }
