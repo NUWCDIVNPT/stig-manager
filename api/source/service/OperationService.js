@@ -672,7 +672,7 @@ exports.getDetails = async function() {
       from 
       (select
         a.collectionId, 
-        json_object('user', usam.userId, 'assignments', count(usam.saId), 'uniqueAssets', count(distinct sam.assetId)) as perUser
+        json_object('user', usam.userId, 'checklistAssignments', count(usam.saId), 'uniqueAssets', count(distinct sam.assetId)) as perUser
       from user_stig_asset_map usam
       left join stig_asset_map sam on sam.saId=usam.saId
       left join asset a on a.assetId = sam.assetId
