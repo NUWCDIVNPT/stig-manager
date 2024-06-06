@@ -1691,7 +1691,7 @@ SM.Collection.HistorySettings.HistoryFields = Ext.extend(Ext.form.FieldSet, {
     initComponent: function () {
         const _this = this
         _this.historySettings = _this.historySettings ?? {
-            maxReviews: -1
+            maxReviews: 5
         }
         const maxReviewsComboBox = new SM.Collection.HistorySettings.MaxReviewsComboBox({
             name: 'maxReviews',
@@ -1715,7 +1715,7 @@ SM.Collection.HistorySettings.HistoryFields = Ext.extend(Ext.form.FieldSet, {
         }
 
         _this.setValues = function (values) {
-            maxReviewsComboBox.setValue(values.maxReviews || -1)
+            maxReviewsComboBox.setValue(values.maxReviews || 5)
         }
 
         function onComboSelect(item, record, index) {
