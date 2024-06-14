@@ -699,6 +699,28 @@ exports.getDetails = async function() {
         r.ruleId not in (select ruleId from rule_version_check_digest)
     `
 
+  const sqlMySqlVersion = `SELECT VERSION() as version`
+  const sqlMySqlVariables = `
+    SHOW VARIABLES WHERE
+      Variable_Name LIKE 'innodb_buffer_pool_size' OR 
+      Variable_Name LIKE 'innodb_log_buffer_size' OR 
+      Variable_Name LIKE 'innodb_io_capacity' OR 
+      Variable_Name LIKE 'innodb_io_capacity_max' OR  
+      Variable_Name LIKE 'innodb_flush_sync' OR  
+      Variable_Name LIKE 'innodb_log_file_size ' OR  
+      Variable_Name LIKE 'innodb_io_capacity_max' OR  
+      Variable_Name LIKE 'innodb_lock_wait_timeout' OR  
+      Variable_Name LIKE 'key_buffer_size' OR  
+      Variable_Name LIKE 'max_heap_table_size' OR  
+      Variable_Name LIKE 'temptable_max_mmap' OR  
+      Variable_Name LIKE 'sort_buffer_size' OR  
+      Variable_Name LIKE 'read_buffer_size' OR  
+      Variable_Name LIKE 'binlog_cache_size' OR  
+      Variable_Name LIKE 'innodb_buffer_pool_instances' OR  
+      Variable_Name LIKE 'tmp_table_size'
+`
+
+
     await dbUtils.pool.query(sqlAnalyze)
 
     // const [[schemaInfoArray], [assetStig], [disabledCollections], [disabledAssetsInEnabledCollections], [countsByCollection],[overallTotals]] = await Promise.all([
@@ -719,6 +741,8 @@ exports.getDetails = async function() {
     const [restrictedGrantCountsByCollection] = await dbUtils.pool.query(sqlRestrictedGrantCounts);
     const [overallHistoryCnt] = await dbUtils.pool.query(sqlOverallHistoryCnt);
     const [orphanedReviews] = await dbUtils.pool.query(sqlOrphanedReviews);
+    const [mySqlVersion] = await dbUtils.pool.query(sqlMySqlVersion);
+    const [mySqlVariables] = await dbUtils.pool.query(sqlMySqlVariables);
 
 
 
