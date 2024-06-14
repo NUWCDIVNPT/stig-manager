@@ -20,7 +20,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       'CAST(c.collectionId as char) as collectionId',
       'c.name',
       'c.description',
-      `JSON_MERGE_PATCH('${JSON.stringify(MyController.defaultSettings)}', c.settings) as settings`,
+      'c.settings as settings',
       'c.metadata'
     ]
     const joins = [
@@ -201,13 +201,35 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       for (const collectionResult of collectionResults) {
         collectionResult.labels = labelMap.get(collectionResult.collectionId) ?? []
       }
-
+      // Loop through each Collection object and merge missing settings
+      collectionResults.forEach(collection => {
+        mergeSettings(MyController.defaultSettings, collection.settings);
+      });
       return collectionResults
     }
     else {
       let [rows] = await dbUtils.pool.query(sql, predicates.binds)
+
       return (rows)  
     }
+}
+
+// Function to merge default settings into a given settings object
+function mergeSettings(defaults, settings) {
+  for (const key in defaults) {
+    if (defaults.hasOwnProperty(key)) {
+      if (typeof defaults[key] === 'object' && !Array.isArray(defaults[key])) {
+        if (!settings[key]) {
+          settings[key] = {};
+        }
+        mergeSettings(defaults[key], settings[key]);
+      } else {
+        if (!settings.hasOwnProperty(key)) {
+          settings[key] = defaults[key];
+        }
+      }
+    }
+  }
 }
 
 exports.queryFindings = async function (aggregator, inProjection = [], inPredicates = {}, userObject) {
