@@ -771,12 +771,16 @@ exports.getDetails = async function() {
 
     // const nameValuesReducer = (obj, item) => (obj[item.Variable_name] = item.Value, obj)
     const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
+    const collectionIdReducer = (obj, item) => (obj[item.collectionId] = item, obj)
 
     return ({
       dbInfo: {
         tables: schemaInfoArray.reduce(schemaReducer, {})
       },
       assetStig,
+      // assetStig: {
+      //   collectionId: assetStig.reduce(collectionIdReducer, {})
+      // },
       // disabledCollections,
       // disabledAssetsInEnabledCollections,
       // reviewHistoryStatsResults,
