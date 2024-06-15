@@ -29,6 +29,12 @@ const writeError = config.log.level >= 1 ? function writeError () {
   write(1, ...arguments)
 } : () => {}
 
+
+let operationIdCounts = {}
+let operationIdDurationTotals = {}
+let operationIdDurationMax = {}
+
+
 // All messages to STDOUT are handled here
 async function write (level, component, type, data) {
   try {
@@ -115,6 +121,7 @@ function requestLogger (req, res, next) {
   function logResponse () {
     res._startTime = res._startTime ?? new Date()
     if (config.log.mode === 'combined') {
+        let durationMs = Number(res._startTime - req._startTime)
       writeInfo(req.component || 'rest', 'transaction', {
         request: serializeRequest(res.req),
         response: {
@@ -125,8 +132,19 @@ function requestLogger (req, res, next) {
           errorBody: res.errorBody,
           responseBody
         },
-        retries: res.svcStatus?.retries,
-        durationMs: Number(res._startTime - req._startTime)
+        operationalStats: {
+          retries: res.svcStatus?.retries,
+          durationMs,
+          endpoint: res.req.endpointStat,
+          operationId: res.req.openapi?.schema.operationId,
+          operationIdCount: operationIdCounts[res.req.openapi?.schema.operationId] = (operationIdCounts[res.req.openapi?.schema.operationId] || 0) + 1,
+          operationIdDurationAvg: 
+            Math.round((operationIdDurationTotals[res.req.openapi?.schema.operationId] = 
+              (operationIdDurationTotals[res.req.openapi?.schema.operationId] || 0) + durationMs )
+              / operationIdCounts[res.req.openapi?.schema.operationId]),
+          operationIdDurationMax: operationIdDurationMax[res.req.openapi?.schema.operationId] =
+            Math.max(operationIdDurationMax[res.req.openapi?.schema.operationId] || 0, durationMs)
+        }
       })  
     }
     else {
@@ -148,6 +166,15 @@ function requestLogger (req, res, next) {
   next()
 }
 
+
+function trackRequestStats (req, res, next) {
+let idk = 1
+res.req.endpointStat = {originalUrl: res.req.originalUrl}
+
+next()
+}
+
+
 function serializeEnvironment () {
   let env = {}
   for (const [key, value] of Object.entries(process.env)) {
@@ -166,5 +193,6 @@ module.exports = {
   writeError, 
   writeWarn, 
   writeInfo, 
-  writeDebug 
+  writeDebug,
+  trackRequestStats
 }

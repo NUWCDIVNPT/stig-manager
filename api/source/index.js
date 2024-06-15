@@ -70,7 +70,10 @@ app.use(express.json({
 })) //Handle JSON request body
 app.use(cors())
 
+app.use("/api", logger.trackRequestStats )
+
 app.use( logger.requestLogger )
+
 
 // compress responses
 app.use(compression({
