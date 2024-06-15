@@ -30,10 +30,17 @@ const writeError = config.log.level >= 1 ? function writeError () {
 } : () => {}
 
 
+
+
 let operationIdCounts = {}
 let operationIdDurationTotals = {}
 let operationIdDurationMax = {}
 
+let overallOpStats = {
+  operationIdCounts: operationIdCounts,
+  operationIdDurationTotals: operationIdDurationTotals,
+  operationIdDurationMax: operationIdDurationMax
+}
 
 // All messages to STDOUT are handled here
 async function write (level, component, type, data) {
@@ -121,7 +128,23 @@ function requestLogger (req, res, next) {
   function logResponse () {
     res._startTime = res._startTime ?? new Date()
     if (config.log.mode === 'combined') {
+
         let durationMs = Number(res._startTime - req._startTime)
+        let endpoint = res.req.endpointStat
+        let operationId = res.req.openapi?.schema.operationId
+
+        let operationIdCountRes = operationIdCounts[res.req.openapi?.schema.operationId] = (operationIdCounts[res.req.openapi?.schema.operationId] || 0) + 1
+
+        let operationIdDurationAvgRes =  
+          Math.round((operationIdDurationTotals[res.req.openapi?.schema.operationId] = 
+            (operationIdDurationTotals[res.req.openapi?.schema.operationId] || 0) + durationMs )
+            / operationIdCounts[res.req.openapi?.schema.operationId])
+            
+        let operationIdDurationMaxRes = operationIdDurationMax[res.req.openapi?.schema.operationId] =
+        Math.max(operationIdDurationMax[res.req.openapi?.schema.operationId] || 0, durationMs)
+
+        // let endpoint = res.req.endpointStat
+
       writeInfo(req.component || 'rest', 'transaction', {
         request: serializeRequest(res.req),
         response: {
@@ -135,15 +158,11 @@ function requestLogger (req, res, next) {
         operationalStats: {
           retries: res.svcStatus?.retries,
           durationMs,
-          endpoint: res.req.endpointStat,
-          operationId: res.req.openapi?.schema.operationId,
-          operationIdCount: operationIdCounts[res.req.openapi?.schema.operationId] = (operationIdCounts[res.req.openapi?.schema.operationId] || 0) + 1,
-          operationIdDurationAvg: 
-            Math.round((operationIdDurationTotals[res.req.openapi?.schema.operationId] = 
-              (operationIdDurationTotals[res.req.openapi?.schema.operationId] || 0) + durationMs )
-              / operationIdCounts[res.req.openapi?.schema.operationId]),
-          operationIdDurationMax: operationIdDurationMax[res.req.openapi?.schema.operationId] =
-            Math.max(operationIdDurationMax[res.req.openapi?.schema.operationId] || 0, durationMs)
+          endpoint,
+          operationId,
+          operationIdCountRes,
+          operationIdDurationAvgRes,
+          operationIdDurationMaxRes 
         }
       })  
     }
@@ -167,6 +186,7 @@ function requestLogger (req, res, next) {
 }
 
 
+//just testing
 function trackRequestStats (req, res, next) {
 let idk = 1
 res.req.endpointStat = {originalUrl: res.req.originalUrl}
@@ -194,5 +214,9 @@ module.exports = {
   writeWarn, 
   writeInfo, 
   writeDebug,
-  trackRequestStats
+  trackRequestStats,
+  overallOpStats,
+  operationIdCounts,
+  operationIdDurationTotals,
+  operationIdDurationMax
 }

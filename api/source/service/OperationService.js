@@ -1,7 +1,8 @@
 'use strict';
 const dbUtils = require('./utils')
 const config = require('../utils/config')
-const CollectionService = require(`./CollectionService`)
+// const CollectionService = require(`./CollectionService`)
+const logger = require('../utils/logger')
 
 
 /**
@@ -737,9 +738,9 @@ exports.getDetails = async function() {
     const [assetStig] = await dbUtils.pool.query(sqlCollectionAssetStigs);
     // const [disabledCollections] = await dbUtils.pool.query(sqlDisabledCollectionCount);
     // const [disabledAssetsInEnabledCollections] = await dbUtils.pool.query(sqlDisabledAssetsInEnabledCollections);
-    const [countsByCollection] = await dbUtils.pool.query(sqlCountsByCollection);
+    // const [countsByCollection] = await dbUtils.pool.query(sqlCountsByCollection);
     const [restrictedGrantCountsByCollection] = await dbUtils.pool.query(sqlRestrictedGrantCounts);
-    const [overallHistoryCnt] = await dbUtils.pool.query(sqlOverallHistoryCnt);
+    // const [overallHistoryCnt] = await dbUtils.pool.query(sqlOverallHistoryCnt);
     const [orphanedReviews] = await dbUtils.pool.query(sqlOrphanedReviews);
     const [mySqlVersion] = await dbUtils.pool.query(sqlMySqlVersion);
     const [mySqlVariables] = await dbUtils.pool.query(sqlMySqlVariables);
@@ -766,17 +767,31 @@ exports.getDetails = async function() {
     // let endDate = '2021-01-01'
     // let reviewHistoryStatsOld = await CollectionService.getReviewHistoryStatsByCollection(11,endDate)
 
+let operationalStats = {}
+// let operationIdCounts = logger.operationIdCounts
+// let operationIdDurationTotals = logger.operationIdDurationTotals
+// let operationIdDurationMax = logger.operationIdDurationMax
+let overallOpStats = logger.overallOpStats
 
+for (const key in overallOpStats.operationIdCounts)(
+  operationalStats[key] = {
+    operationId: key,
+    count: overallOpStats?.operationIdCounts[key],
+    avgDuration: Math.round(overallOpStats?.operationIdDurationTotals[key] / overallOpStats.operationIdCounts[key]),
+    maxDuration: overallOpStats?.operationIdDurationMax[key]
+  }
 
+)
 
     // const nameValuesReducer = (obj, item) => (obj[item.Variable_name] = item.Value, obj)
     const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
-    const collectionIdReducer = (obj, item) => (obj[item.collectionId] = item, obj)
+    // const collectionIdReducer = (obj, item) => (obj[item.collectionId] = item, obj)
 
     return ({
       dbInfo: {
         tables: schemaInfoArray.reduce(schemaReducer, {})
       },
+      operationalStats,
       assetStig,
       // assetStig: {
       //   collectionId: assetStig.reduce(collectionIdReducer, {})
@@ -785,9 +800,9 @@ exports.getDetails = async function() {
       // disabledAssetsInEnabledCollections,
       // reviewHistoryStatsResults,
       // reviewHistoryStatsOld,
-      countsByCollection,
+      // countsByCollection,
       restrictedGrantCountsByCollection,      
-      overallHistoryCnt,
-      orphanedReviews      
+      // overallHistoryCnt,
+      orphanedReviews
     })
 }
