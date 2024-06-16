@@ -2,7 +2,8 @@
 const dbUtils = require('./utils')
 const config = require('../utils/config')
 // const CollectionService = require(`./CollectionService`)
-const logger = require('../utils/logger')
+const logger = require('../utils/logger');
+const { forEach } = require('lodash');
 
 
 /**
@@ -743,7 +744,7 @@ exports.getDetails = async function() {
     // const [overallHistoryCnt] = await dbUtils.pool.query(sqlOverallHistoryCnt);
     const [orphanedReviews] = await dbUtils.pool.query(sqlOrphanedReviews);
     const [mySqlVersion] = await dbUtils.pool.query(sqlMySqlVersion);
-    const [mySqlVariables] = await dbUtils.pool.query(sqlMySqlVariables);
+    let [mySqlVariables] = await dbUtils.pool.query(sqlMySqlVariables);
 
 
 
@@ -768,45 +769,60 @@ exports.getDetails = async function() {
     // let reviewHistoryStatsOld = await CollectionService.getReviewHistoryStatsByCollection(11,endDate)
 
 let operationalStats = {}
-// let operationIdCounts = logger.operationIdCounts
-// let operationIdDurationTotals = logger.operationIdDurationTotals
-// let operationIdDurationMax = logger.operationIdDurationMax
+operationalStats.operationIds = {};
+
 let overallOpStats = logger.overallOpStats
+let operationIdStats = logger.overallOpStats.operationIdStats
 
-for (const key in overallOpStats.operationIdCounts)(
-  operationalStats[key] = {
+for (const key in operationIdStats.operationIdCounts)(
+  operationalStats.operationIds[key] = {
     operationId: key,
-    count: overallOpStats?.operationIdCounts[key],
-    avgDuration: Math.round(overallOpStats?.operationIdDurationTotals[key] / overallOpStats.operationIdCounts[key]),
-    maxDuration: overallOpStats?.operationIdDurationMax[key]
+    count: operationIdStats?.operationIdCounts[key],
+    avgDuration: Math.round(operationIdStats?.operationIdDurationTotals[key] / operationIdStats.operationIdCounts[key]),
+    maxDuration: operationIdStats?.operationIdDurationMax[key]
   }
-
 )
+
+operationalStats.totalRequests = overallOpStats.totalRequests
+operationalStats.totalApiRequests = overallOpStats.totalApiRequests
+operationalStats.totalRequestDuration = overallOpStats.totalRequestDuration
 
 // let uptime = `${Math.round(process.uptime())} seconds` // seconds
 let uptime = Math.round(process.uptime()) // seconds
 
 if (uptime < 60) {
-  uptime = `${uptime} seconds`
+  uptime = `${uptime} seconds`;
+} else if (uptime < 3600) { // less than 1 hour
+  let minutes = Math.floor(uptime / 60);
+  let seconds = uptime % 60;
+  uptime = `${minutes} minutes ${seconds} seconds`;
+} else { // 1 hour or more
+  let hours = Math.floor(uptime / 3600);
+  let minutes = Math.floor((uptime % 3600) / 60);
+  uptime = `${hours} hours ${minutes} minutes`;
 }
-else if (uptime < 3600) { // 1 hour
-  uptime = `${Math.round(uptime / 60)} minutes`
-}
-else { //if (uptime < 86400) { // 1 day
-  uptime = `${Math.round(uptime / 3600)} hours`
-}
-
-
 
     // const nameValuesReducer = (obj, item) => (obj[item.Variable_name] = item.Value, obj)
     const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
+    const varReducer = (obj, item) => (obj[item.Variable_name] = item, obj)
     // const collectionIdReducer = (obj, item) => (obj[item.collectionId] = item, obj)
+
+    let mySqlVariableStrings = []
+
+  for (const key in mySqlVariables){
+    mySqlVariableStrings.push(`${mySqlVariables[key].Variable_name}: ${mySqlVariables[key].Value}`)
+
+  
+  }
+
+    mySqlVariables = mySqlVariables.reduce(varReducer, {})
+
+
 
     return ({
       dbInfo: {
         tables: schemaInfoArray.reduce(schemaReducer, {})
       },
-      operationalStats,
       assetStig,
       // assetStig: {
       //   collectionId: assetStig.reduce(collectionIdReducer, {})
@@ -819,6 +835,11 @@ else { //if (uptime < 86400) { // 1 day
       restrictedGrantCountsByCollection,      
       // overallHistoryCnt,
       orphanedReviews,
-      uptime
+      operationalStats,
+      uptime,
+      mySqlVersion: mySqlVersion[0].version,
+      mySqlVariables,
+      mySqlVariableStrings
+
     })
 }

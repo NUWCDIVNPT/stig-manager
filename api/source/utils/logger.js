@@ -35,11 +35,20 @@ const writeError = config.log.level >= 1 ? function writeError () {
 let operationIdCounts = {}
 let operationIdDurationTotals = {}
 let operationIdDurationMax = {}
+let totalRequests = 0
+let totalApiRequests = 0
+let totalRequestDuration = 0
+
 
 let overallOpStats = {
-  operationIdCounts: operationIdCounts,
-  operationIdDurationTotals: operationIdDurationTotals,
-  operationIdDurationMax: operationIdDurationMax
+  totalRequests: totalRequests,
+  totalApiRequests: totalApiRequests,
+  totalRequestDuration: totalRequestDuration,
+  operationIdStats: {
+    operationIdCounts: operationIdCounts,
+    operationIdDurationTotals: operationIdDurationTotals,
+    operationIdDurationMax: operationIdDurationMax
+  }
 }
 
 // All messages to STDOUT are handled here
@@ -127,10 +136,13 @@ function requestLogger (req, res, next) {
 
   function logResponse () {
     res._startTime = res._startTime ?? new Date()
+    overallOpStats.totalRequests += 1
+
     if (config.log.mode === 'combined') {
 
         let durationMs = Number(res._startTime - req._startTime)
 
+        overallOpStats.totalRequestDuration  += durationMs
         let operationalStats = {
           retries: res.svcStatus?.retries,
           durationMs
@@ -139,6 +151,7 @@ function requestLogger (req, res, next) {
         let operationId = res.req.openapi?.schema.operationId
         //if operationId is defined, this is an api endpoint response so we can track some stats
         if (operationId ) {
+          overallOpStats.totalApiRequests++
           // operationalStats.originalUrl = res.req.originalUrl
           operationalStats.operationIdCount = operationIdCounts[operationId] = (operationIdCounts[operationId] || 0) + 1
 
@@ -224,9 +237,6 @@ module.exports = {
   writeWarn, 
   writeInfo, 
   writeDebug,
-  // trackRequestStats,
   overallOpStats,
-  operationIdCounts,
-  operationIdDurationTotals,
-  operationIdDurationMax
+
 }
