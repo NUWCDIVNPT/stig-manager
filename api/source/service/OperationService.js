@@ -783,6 +783,21 @@ for (const key in overallOpStats.operationIdCounts)(
 
 )
 
+// let uptime = `${Math.round(process.uptime())} seconds` // seconds
+let uptime = Math.round(process.uptime()) // seconds
+
+if (uptime < 60) {
+  uptime = `${uptime} seconds`
+}
+else if (uptime < 3600) { // 1 hour
+  uptime = `${Math.round(uptime / 60)} minutes`
+}
+else { //if (uptime < 86400) { // 1 day
+  uptime = `${Math.round(uptime / 3600)} hours`
+}
+
+
+
     // const nameValuesReducer = (obj, item) => (obj[item.Variable_name] = item.Value, obj)
     const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
     // const collectionIdReducer = (obj, item) => (obj[item.collectionId] = item, obj)
@@ -803,6 +818,7 @@ for (const key in overallOpStats.operationIdCounts)(
       // countsByCollection,
       restrictedGrantCountsByCollection,      
       // overallHistoryCnt,
-      orphanedReviews
+      orphanedReviews,
+      uptime
     })
 }
