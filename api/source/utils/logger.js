@@ -130,20 +130,25 @@ function requestLogger (req, res, next) {
     if (config.log.mode === 'combined') {
 
         let durationMs = Number(res._startTime - req._startTime)
-        let endpoint = res.req.endpointStat
+
+        let operationalStats = {
+          retries: res.svcStatus?.retries,
+          durationMs
+        }
+
         let operationId = res.req.openapi?.schema.operationId
+        //if operationId is defined, this is an api endpoint response so we can track some stats
+        if (operationId ) {
+          // operationalStats.originalUrl = res.req.originalUrl
+          operationalStats.operationIdCount = operationIdCounts[operationId] = (operationIdCounts[operationId] || 0) + 1
 
-        let operationIdCountRes = operationIdCounts[res.req.openapi?.schema.operationId] = (operationIdCounts[res.req.openapi?.schema.operationId] || 0) + 1
+          operationIdDurationTotals[operationId] = (operationIdDurationTotals[operationId] || 0) + durationMs 
 
-        let operationIdDurationAvgRes =  
-          Math.round((operationIdDurationTotals[res.req.openapi?.schema.operationId] = 
-            (operationIdDurationTotals[res.req.openapi?.schema.operationId] || 0) + durationMs )
-            / operationIdCounts[res.req.openapi?.schema.operationId])
-            
-        let operationIdDurationMaxRes = operationIdDurationMax[res.req.openapi?.schema.operationId] =
-        Math.max(operationIdDurationMax[res.req.openapi?.schema.operationId] || 0, durationMs)
+          operationalStats.operationIdDurationAvg = Math.round(operationIdDurationTotals[operationId] / operationIdCounts[operationId])
 
-        // let endpoint = res.req.endpointStat
+          operationalStats.operationIdDurationMax = operationIdDurationMax[operationId] = Math.max(operationIdDurationMax[operationId] || 0, durationMs)
+
+        }
 
       writeInfo(req.component || 'rest', 'transaction', {
         request: serializeRequest(res.req),
@@ -153,17 +158,22 @@ function requestLogger (req, res, next) {
           clientTerminated: res.destroyed ? true : undefined,
           headers: res.finished ? res.getHeaders() : undefined,
           errorBody: res.errorBody,
-          responseBody
+          responseBody,
+          operationalStats
         },
-        operationalStats: {
-          retries: res.svcStatus?.retries,
-          durationMs,
-          endpoint,
-          operationId,
-          operationIdCountRes,
-          operationIdDurationAvgRes,
-          operationIdDurationMaxRes 
-        }
+        // operationalStats: {
+        //   retries: res.svcStatus?.retries,
+        //   durationMs,
+        //   endpoint,
+        //   operationId,
+        //   operationIdCount: operationIdCounts[operationId],
+        //   operationIdDurationAvg: 
+        //     Math.round(((operationIdDurationTotals[operationId] || 0) + durationMs ) / operationIdCounts[operationId]),
+        //   operationIdDurationMax: operationIdDurationMax[operationId]
+          // operationIdCountRes,
+          // operationIdDurationAvgRes,
+          // operationIdDurationMaxRes 
+        
       })  
     }
     else {
@@ -186,13 +196,13 @@ function requestLogger (req, res, next) {
 }
 
 
-//just testing
-function trackRequestStats (req, res, next) {
-let idk = 1
-res.req.endpointStat = {originalUrl: res.req.originalUrl}
+// //just testing
+// function trackRequestStats (req, res, next) {
+// let idk = 1
+// res.req.endpointStat = {originalUrl: res.req.originalUrl}
 
-next()
-}
+// next()
+// }
 
 
 function serializeEnvironment () {
@@ -214,7 +224,7 @@ module.exports = {
   writeWarn, 
   writeInfo, 
   writeDebug,
-  trackRequestStats,
+  // trackRequestStats,
   overallOpStats,
   operationIdCounts,
   operationIdDurationTotals,
