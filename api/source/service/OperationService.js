@@ -739,7 +739,7 @@ exports.getDetails = async function() {
     const [assetStig] = await dbUtils.pool.query(sqlCollectionAssetStigs);
     // const [disabledCollections] = await dbUtils.pool.query(sqlDisabledCollectionCount);
     // const [disabledAssetsInEnabledCollections] = await dbUtils.pool.query(sqlDisabledAssetsInEnabledCollections);
-    // const [countsByCollection] = await dbUtils.pool.query(sqlCountsByCollection);
+    const [countsByCollection] = await dbUtils.pool.query(sqlCountsByCollection);
     const [restrictedGrantCountsByCollection] = await dbUtils.pool.query(sqlRestrictedGrantCounts);
     // const [overallHistoryCnt] = await dbUtils.pool.query(sqlOverallHistoryCnt);
     const [orphanedReviews] = await dbUtils.pool.query(sqlOrphanedReviews);
@@ -831,7 +831,7 @@ if (uptime < 60) {
       // disabledAssetsInEnabledCollections,
       // reviewHistoryStatsResults,
       // reviewHistoryStatsOld,
-      // countsByCollection,
+      countsByCollection,
       restrictedGrantCountsByCollection,      
       // overallHistoryCnt,
       orphanedReviews,
