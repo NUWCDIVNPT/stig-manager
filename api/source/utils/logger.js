@@ -42,7 +42,8 @@ let overallOpStats = {
     operationIdProjections: {},
     operationIdDurationTotals: {},
     operationIdDurationMin: {},
-    operationIdDurationMax: {}
+    operationIdDurationMax: {},
+    clients: {}
   }
 }
 
@@ -163,6 +164,16 @@ function requestLogger (req, res, next) {
 
           operationalStats.operationIdDurationMax = 
             overallOpStats.operationIdStats.operationIdDurationMax[operationId] = Math.max(overallOpStats.operationIdStats.operationIdDurationMax[operationId] || 0, durationMs)
+
+            let client = res.req?.access_token?.azp || 'unknown'
+            
+            overallOpStats.operationIdStats.clients[operationId] =
+              overallOpStats.operationIdStats.clients[operationId] || {}
+            overallOpStats.operationIdStats.clients[operationId][client] =
+              overallOpStats.operationIdStats.clients[operationId][client] || 0
+
+            overallOpStats.operationIdStats.clients[operationId][client] = (overallOpStats.operationIdStats.clients[operationId][client] || 0) + 1         
+            operationalStats.clients = overallOpStats.operationIdStats.clients[operationId]
 
           //if projections are defined, track stats for each projection
           if (res.req.query?.projection?.length > 0){
