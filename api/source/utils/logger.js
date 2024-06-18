@@ -35,6 +35,7 @@ const writeError = config.log.level >= 1 ? function writeError () {
 let operationIdCounts = {}
 let operationIdDurationTotals = {}
 let operationIdDurationMax = {}
+let operationIdDurationMin = {}
 let totalRequests = 0
 let totalApiRequests = 0
 let totalRequestDuration = 0
@@ -47,6 +48,7 @@ let overallOpStats = {
   operationIdStats: {
     operationIdCounts: operationIdCounts,
     operationIdDurationTotals: operationIdDurationTotals,
+    operationIdDurationMin: operationIdDurationMin,
     operationIdDurationMax: operationIdDurationMax
   }
 }
@@ -160,6 +162,9 @@ function requestLogger (req, res, next) {
           operationalStats.operationIdDurationAvg = Math.round(operationIdDurationTotals[operationId] / operationIdCounts[operationId])
 
           operationalStats.operationIdDurationMax = operationIdDurationMax[operationId] = Math.max(operationIdDurationMax[operationId] || 0, durationMs)
+
+          operationalStats.operationIdDurationMin = operationIdDurationMin[operationId] = Math.min(operationIdDurationMin[operationId] || 99999999999, durationMs)
+
 
         }
 
