@@ -32,24 +32,17 @@ const writeError = config.log.level >= 1 ? function writeError () {
 
 
 
-let operationIdCounts = {}
-let operationIdDurationTotals = {}
-let operationIdDurationMax = {}
-let operationIdDurationMin = {}
-let totalRequests = 0
-let totalApiRequests = 0
-let totalRequestDuration = 0
-
-
+// Stats for all requests
 let overallOpStats = {
-  totalRequests: totalRequests,
-  totalApiRequests: totalApiRequests,
-  totalRequestDuration: totalRequestDuration,
+  totalRequests: 0,
+  totalApiRequests: 0,
+  totalRequestDuration: 0,
   operationIdStats: {
-    operationIdCounts: operationIdCounts,
-    operationIdDurationTotals: operationIdDurationTotals,
-    operationIdDurationMin: operationIdDurationMin,
-    operationIdDurationMax: operationIdDurationMax
+    operationIdCounts: {},
+    operationIdProjections: {},
+    operationIdDurationTotals: {},
+    operationIdDurationMin: {},
+    operationIdDurationMax: {}
   }
 }
 
@@ -154,17 +147,52 @@ function requestLogger (req, res, next) {
         //if operationId is defined, this is an api endpoint response so we can track some stats
         if (operationId ) {
           overallOpStats.totalApiRequests++
-          // operationalStats.originalUrl = res.req.originalUrl
-          operationalStats.operationIdCount = operationIdCounts[operationId] = (operationIdCounts[operationId] || 0) + 1
 
-          operationIdDurationTotals[operationId] = (operationIdDurationTotals[operationId] || 0) + durationMs 
+          operationalStats.operationIdCount =  
+            overallOpStats.operationIdStats.operationIdCounts[operationId] = (overallOpStats.operationIdStats.operationIdCounts[operationId] || 0) + 1
 
-          operationalStats.operationIdDurationAvg = Math.round(operationIdDurationTotals[operationId] / operationIdCounts[operationId])
+          //running total of duration for this operationId
+          overallOpStats.operationIdStats.operationIdDurationTotals[operationId] = 
+            (overallOpStats.operationIdStats.operationIdDurationTotals[operationId] || 0) + durationMs 
 
-          operationalStats.operationIdDurationMax = operationIdDurationMax[operationId] = Math.max(operationIdDurationMax[operationId] || 0, durationMs)
+          operationalStats.operationIdDurationAvg = 
+            Math.round(overallOpStats.operationIdStats.operationIdDurationTotals[operationId] / overallOpStats.operationIdStats.operationIdCounts[operationId])
 
-          operationalStats.operationIdDurationMin = operationIdDurationMin[operationId] = Math.min(operationIdDurationMin[operationId] || 99999999999, durationMs)
+          operationalStats.operationIdDurationMin = 
+            overallOpStats.operationIdStats.operationIdDurationMin[operationId] = Math.min(overallOpStats.operationIdStats.operationIdDurationMin[operationId] || 99999999999, durationMs)
 
+          operationalStats.operationIdDurationMax = 
+            overallOpStats.operationIdStats.operationIdDurationMax[operationId] = Math.max(overallOpStats.operationIdStats.operationIdDurationMax[operationId] || 0, durationMs)
+
+          //if projections are defined, track stats for each projection
+          if (res.req.query?.projection?.length > 0){
+            for (let projection of res.req.query.projection){
+              for (let projection of res.req.query.projection) {
+                overallOpStats.operationIdStats.operationIdProjections[operationId] =
+                  overallOpStats.operationIdStats.operationIdProjections[operationId] || {}
+                overallOpStats.operationIdStats.operationIdProjections[operationId][projection] =
+                  overallOpStats.operationIdStats.operationIdProjections[operationId][projection] || {}
+            
+                overallOpStats.operationIdStats.operationIdProjections[operationId][projection].count = 
+                  (overallOpStats.operationIdStats.operationIdProjections[operationId][projection].count || 0) + 1;
+
+                overallOpStats.operationIdStats.operationIdProjections[operationId][projection].min = 
+                Math.min(overallOpStats.operationIdStats.operationIdProjections[operationId][projection].min || 99999999999, durationMs)                
+
+                overallOpStats.operationIdStats.operationIdProjections[operationId][projection].max = 
+                Math.max(overallOpStats.operationIdStats.operationIdProjections[operationId][projection].max || 0, durationMs)             
+
+                overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationTotal = 
+                  (overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationTotal || 0) + durationMs;
+
+                overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationAvg = 
+                  Math.round(overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationTotal / overallOpStats.operationIdStats.operationIdProjections[operationId][projection].count)
+
+                operationalStats.operationIdProjections = overallOpStats.operationIdStats.operationIdProjections[operationId]
+              }
+
+            }
+          }
 
         }
 

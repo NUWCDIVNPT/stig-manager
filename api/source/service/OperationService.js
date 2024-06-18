@@ -780,7 +780,8 @@ for (const key in operationIdStats.operationIdCounts)(
     count: operationIdStats?.operationIdCounts[key],
     avgDuration: Math.round(operationIdStats?.operationIdDurationTotals[key] / operationIdStats.operationIdCounts[key]),
     minDuration: operationIdStats?.operationIdDurationMin[key],
-    maxDuration: operationIdStats?.operationIdDurationMax[key]
+    maxDuration: operationIdStats?.operationIdDurationMax[key],
+    projectionStats: operationIdStats?.operationIdProjections[key]
   }
 )
 
