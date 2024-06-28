@@ -7,6 +7,7 @@
 #
 # Build artifacts will created in ./dist
 
+set -e
 echo "Client build starting"
 
 # Change to this script directory
