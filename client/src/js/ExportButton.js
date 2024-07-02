@@ -66,10 +66,10 @@ Ext.ux.ExportButton = Ext.extend(Ext.Button, {
 		if (btn.exportFormat == 'csv'){
 			if (btn.exportType == 'grid') {
 				csv += this.gridToCsv(this.gridSource);
-				filename = this.gridBasename + '.csv';
+				filename = `${this.gridBasename}_${new Date().toISOString().replace(/:|\d{2}\.\d{3}/g,'')}.csv`;
 			} else if (btn.exportType == 'store') {
 				csv += this.storeToCsv(this.storeSource);
-				filename = this.storeBasename + '.csv';
+				filename = `${this.storeBasename}_${new Date().toISOString().replace(/:|\d{2}\.\d{3}/g,'')}.csv`;
 			}
 		}
 		let blob = new Blob([csv],{type:"text/csv;charset=utf-8"});

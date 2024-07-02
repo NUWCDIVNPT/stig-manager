@@ -1126,7 +1126,7 @@ SM.CollectionPanel.ExportPanel = Ext.extend(Ext.Panel, {
         const agg = aggComboBox.getValue()
         const url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/metrics/${style}${agg === 'unagg' ? '' : `/${agg}`}?${queryParamsStr}`
 
-        const attachment = `${agg}-${style}.${format}`
+        const attachment = `${agg}-${style}_${new Date().toISOString().replace(/:|\d{2}\.\d{3}/g,'')}.${format}`
         await window.oidcProvider.updateToken(10)
         const fetchInit = {
           method: 'GET',

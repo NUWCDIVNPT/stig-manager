@@ -652,12 +652,13 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
     attrValueProcessor: escapeForXml
 })
   const zip = Archiver('zip', {zlib: {level: 9}})
+  const started = new Date().toISOString()
   const attachmentName = escape.escapeFilename(`${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 
-    'CKL' : format.startsWith('cklb-') ? 'CKLB' : 'XCCDF'}.zip`)
+    'CKL' : format.startsWith('cklb-') ? 'CKLB' : 'XCCDF'}_${started.replace(/:|\d{2}\.\d{3}/g,'')}.zip`)
   res.attachment(attachmentName)
   zip.pipe(res)
   const manifest = {
-    started: new Date().toISOString(),
+    started,
     finished: '',
     errorCount: 0,
     errors: [],
