@@ -227,6 +227,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
     const benchmarkId = req.params.benchmarkId
     const revisionStr = req.params.revisionStr
     const format = req.query.format || 'json'
+    const started = new Date().toISOString()
     if (await dbUtils.userHasAssetStigs(assetId, [benchmarkId], false, req.userObject)) {
       const response = await AssetService.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, format, false, req.userObject )
       if (format === 'json') {
@@ -234,7 +235,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
       }
       else if (format === 'cklb') {
         response.cklb.title = `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}`
-        let filename = escape.escapeFilename(`${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.cklb`)
+        let filename = escape.escapeFilename(`${response.assetName}-${benchmarkId}-${response.revisionStrResolved}-${started.replace(/:|\d{2}\.\d{3}/g,'')}.cklb`)
         writer.writeInlineFile(res, JSON.stringify(response.cklb), filename, 'application/json')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
       }
       else if (format === 'ckl') {
@@ -251,7 +252,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
         })
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += builder.build(response.xmlJs)
-        let filename = escape.escapeFilename(`${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.ckl`)
+        let filename = escape.escapeFilename(`${response.assetName}-${benchmarkId}-${response.revisionStrResolved}-${started.replace(/:|\d{2}\.\d{3}/g,'')}.ckl`)
         writer.writeInlineFile(res, xml, filename, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
       }
       else if (format === 'xccdf') {
@@ -270,7 +271,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
         })
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += builder.build(response.xmlJs)
-        let filename = escape.escapeFilename(`${response.assetName}-${benchmarkId}-${response.revisionStrResolved}-xccdf.xml`)
+        let filename = escape.escapeFilename(`${response.assetName}-${benchmarkId}-${response.revisionStrResolved}-${started.replace(/:|\d{2}\.\d{3}/g,'')}-xccdf.xml`)
         writer.writeInlineFile(res, xml, filename, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
       }
     }
