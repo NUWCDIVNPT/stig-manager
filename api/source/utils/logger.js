@@ -133,79 +133,21 @@ function requestLogger (req, res, next) {
   function logResponse () {
     res._startTime = res._startTime ?? new Date()
     overallOpStats.totalRequests += 1
+    let durationMs = Number(res._startTime - req._startTime)
+
+    overallOpStats.totalRequestDuration  += durationMs
+    let operationalStats = {
+      retries: res.svcStatus?.retries,
+      durationMs
+    }
+
+    let operationId = res.req.openapi?.schema.operationId
+    //if operationId is defined, this is an api endpoint response so we can track some stats
+    if (operationId ) {
+      operationalStats = trackOperationStats(operationalStats, operationId, durationMs, res)
+    }    
 
     if (config.log.mode === 'combined') {
-
-        let durationMs = Number(res._startTime - req._startTime)
-
-        overallOpStats.totalRequestDuration  += durationMs
-        let operationalStats = {
-          retries: res.svcStatus?.retries,
-          durationMs
-        }
-
-        let operationId = res.req.openapi?.schema.operationId
-        //if operationId is defined, this is an api endpoint response so we can track some stats
-        if (operationId ) {
-          overallOpStats.totalApiRequests++
-
-          operationalStats.operationIdCount =  
-            overallOpStats.operationIdStats.operationIdCounts[operationId] = (overallOpStats.operationIdStats.operationIdCounts[operationId] || 0) + 1
-
-          //running total of duration for this operationId
-          overallOpStats.operationIdStats.operationIdDurationTotals[operationId] = 
-            (overallOpStats.operationIdStats.operationIdDurationTotals[operationId] || 0) + durationMs 
-
-          operationalStats.operationIdDurationAvg = 
-            Math.round(overallOpStats.operationIdStats.operationIdDurationTotals[operationId] / overallOpStats.operationIdStats.operationIdCounts[operationId])
-
-          operationalStats.operationIdDurationMin = 
-            overallOpStats.operationIdStats.operationIdDurationMin[operationId] = Math.min(overallOpStats.operationIdStats.operationIdDurationMin[operationId] || 99999999999, durationMs)
-
-          operationalStats.operationIdDurationMax = 
-            overallOpStats.operationIdStats.operationIdDurationMax[operationId] = Math.max(overallOpStats.operationIdStats.operationIdDurationMax[operationId] || 0, durationMs)
-
-            let client = res.req?.access_token?.azp || 'unknown'
-            
-            overallOpStats.operationIdStats.clients[operationId] =
-              overallOpStats.operationIdStats.clients[operationId] || {}
-            overallOpStats.operationIdStats.clients[operationId][client] =
-              overallOpStats.operationIdStats.clients[operationId][client] || 0
-
-            overallOpStats.operationIdStats.clients[operationId][client] = (overallOpStats.operationIdStats.clients[operationId][client] || 0) + 1         
-            operationalStats.clients = overallOpStats.operationIdStats.clients[operationId]
-
-          //if projections are defined, track stats for each projection
-          if (res.req.query?.projection?.length > 0){
-            for (let projection of res.req.query.projection){
-              for (let projection of res.req.query.projection) {
-                overallOpStats.operationIdStats.operationIdProjections[operationId] =
-                  overallOpStats.operationIdStats.operationIdProjections[operationId] || {}
-                overallOpStats.operationIdStats.operationIdProjections[operationId][projection] =
-                  overallOpStats.operationIdStats.operationIdProjections[operationId][projection] || {}
-            
-                overallOpStats.operationIdStats.operationIdProjections[operationId][projection].count = 
-                  (overallOpStats.operationIdStats.operationIdProjections[operationId][projection].count || 0) + 1;
-
-                overallOpStats.operationIdStats.operationIdProjections[operationId][projection].min = 
-                Math.min(overallOpStats.operationIdStats.operationIdProjections[operationId][projection].min || 99999999999, durationMs)                
-
-                overallOpStats.operationIdStats.operationIdProjections[operationId][projection].max = 
-                Math.max(overallOpStats.operationIdStats.operationIdProjections[operationId][projection].max || 0, durationMs)             
-
-                overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationTotal = 
-                  (overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationTotal || 0) + durationMs;
-
-                overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationAvg = 
-                  Math.round(overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationTotal / overallOpStats.operationIdStats.operationIdProjections[operationId][projection].count)
-
-                operationalStats.operationIdProjections = overallOpStats.operationIdStats.operationIdProjections[operationId]
-              }
-
-            }
-          }
-
-        }
 
       writeInfo(req.component || 'rest', 'transaction', {
         request: serializeRequest(res.req),
@@ -218,19 +160,7 @@ function requestLogger (req, res, next) {
           responseBody,
           operationalStats
         },
-        // operationalStats: {
-        //   retries: res.svcStatus?.retries,
-        //   durationMs,
-        //   endpoint,
-        //   operationId,
-        //   operationIdCount: operationIdCounts[operationId],
-        //   operationIdDurationAvg: 
-        //     Math.round(((operationIdDurationTotals[operationId] || 0) + durationMs ) / operationIdCounts[operationId]),
-        //   operationIdDurationMax: operationIdDurationMax[operationId]
-          // operationIdCountRes,
-          // operationIdDurationAvgRes,
-          // operationIdDurationMaxRes 
-        
+
       })  
     }
     else {
@@ -240,6 +170,7 @@ function requestLogger (req, res, next) {
         headers: res.getHeaders(),
         errorBody: res.errorBody,
         retries: res.svcStatus?.retries,
+        operationalStats
       })  
     }
   }
@@ -253,15 +184,6 @@ function requestLogger (req, res, next) {
 }
 
 
-// //just testing
-// function trackRequestStats (req, res, next) {
-// let idk = 1
-// res.req.endpointStat = {originalUrl: res.req.originalUrl}
-
-// next()
-// }
-
-
 function serializeEnvironment () {
   let env = {}
   for (const [key, value] of Object.entries(process.env)) {
@@ -270,6 +192,87 @@ function serializeEnvironment () {
     }
   }
   return env
+}
+
+function trackOperationStats (operationalStats, operationId, durationMs, res) {
+  //increment total api requests
+  overallOpStats.totalApiRequests++
+  //increment operationId call count
+  overallOpStats.operationIdStats.operationIdCounts[operationId] = (overallOpStats.operationIdStats.operationIdCounts[operationId] || 0) + 1
+  //running total of duration for this operationId
+  overallOpStats.operationIdStats.operationIdDurationTotals[operationId] = 
+    (overallOpStats.operationIdStats.operationIdDurationTotals[operationId] || 0) + durationMs 
+  //min duration for this operationId
+  overallOpStats.operationIdStats.operationIdDurationMin[operationId] = 
+    Math.min(overallOpStats.operationIdStats.operationIdDurationMin[operationId] || 99999999999, durationMs)
+  //max duration for this operationId
+  overallOpStats.operationIdStats.operationIdDurationMax[operationId] = 
+    Math.max(overallOpStats.operationIdStats.operationIdDurationMax[operationId] || 0, durationMs)
+  //check token for client id
+  let client = res.req?.access_token?.azp || 'unknown'
+  //track clients for this operationId
+  overallOpStats.operationIdStats.clients[operationId] =
+    overallOpStats.operationIdStats.clients[operationId] || {}
+  // track operation counts for each client
+  overallOpStats.operationIdStats.clients[operationId][client] =
+    overallOpStats.operationIdStats.clients[operationId][client] || 0
+
+  //increment client count for this operationId
+  overallOpStats.operationIdStats.clients[operationId][client] = 
+    (overallOpStats.operationIdStats.clients[operationId][client] || 0) + 1         
+
+  //if projections are defined, track stats for each projection
+  if (res.req.query?.projection?.length > 0){
+      //for each projection, increment count, track min, max, total duration
+      for (let projection of res.req.query.projection) {
+        //track projections for this operationId
+        overallOpStats.operationIdStats.operationIdProjections[operationId] =
+          overallOpStats.operationIdStats.operationIdProjections[operationId] || {}
+        //track projection stats for this operationId
+        overallOpStats.operationIdStats.operationIdProjections[operationId][projection] =
+          overallOpStats.operationIdStats.operationIdProjections[operationId][projection] || {}
+        //increment projection count for this operationId
+        overallOpStats.operationIdStats.operationIdProjections[operationId][projection].count = 
+          (overallOpStats.operationIdStats.operationIdProjections[operationId][projection].count || 0) + 1;
+
+        //track min, max, total duration for this projection
+        overallOpStats.operationIdStats.operationIdProjections[operationId][projection].min = 
+        Math.min(overallOpStats.operationIdStats.operationIdProjections[operationId][projection].min || 99999999999, durationMs)                
+
+        overallOpStats.operationIdStats.operationIdProjections[operationId][projection].max = 
+        Math.max(overallOpStats.operationIdStats.operationIdProjections[operationId][projection].max || 0, durationMs)             
+
+        overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationTotal = 
+          (overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationTotal || 0) + durationMs;
+
+        //calculate average duration for this projection
+        overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationAvg = 
+          Math.round(overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationTotal / overallOpStats.operationIdStats.operationIdProjections[operationId][projection].count)
+
+      }
+  }
+  // if logging stats, add to operationalStats object
+  if (config.log.optStats === 'true') {
+
+    operationalStats.operationIdCount =  
+    overallOpStats.operationIdStats.operationIdCounts[operationId]
+
+    operationalStats.operationIdDurationMax = 
+    overallOpStats.operationIdStats.operationIdDurationMax[operationId]
+
+    operationalStats.operationIdDurationMin = 
+    overallOpStats.operationIdStats.operationIdDurationMin[operationId]
+
+    operationalStats.operationIdDurationAvg = 
+    Math.round(overallOpStats.operationIdStats.operationIdDurationTotals[operationId] / overallOpStats.operationIdStats.operationIdCounts[operationId])
+    
+    operationalStats.clients = overallOpStats.operationIdStats.clients[operationId]
+
+    if (res.req.query?.projection?.length > 0){
+      operationalStats.operationIdProjections = overallOpStats.operationIdStats.operationIdProjections[operationId]
+    }
+  }
+  return operationalStats
 }
 
 module.exports = { 
