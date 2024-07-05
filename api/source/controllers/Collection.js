@@ -173,7 +173,7 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
     const po = Serialize.poamObjectFromFindings(response, defaults)
     const xlsx = await Serialize.xlsxFromPoamObject(po)
     let collectionName = collectionGrant.collection.name
-    writer.writeInlineFile( res, xlsx, `POAM-${collectionName}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    writer.writeInlineFile( res, xlsx, `POAM-${collectionName}_${escape.filenameComponentFromDate()}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   }
   catch (err) {
     next(err)
@@ -652,13 +652,14 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
     attrValueProcessor: escapeForXml
 })
   const zip = Archiver('zip', {zlib: {level: 9}})
-  const started = new Date().toISOString()
+  const started = new Date()
+  const dateString = escape.filenameComponentFromDate(started)
   const attachmentName = escape.escapeFilename(`${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 
-    'CKL' : format.startsWith('cklb-') ? 'CKLB' : 'XCCDF'}_${started.replace(/:|\d{2}\.\d{3}/g,'')}.zip`)
+    'CKL' : format.startsWith('cklb-') ? 'CKLB' : 'XCCDF'}_${dateString}.zip`)
   res.attachment(attachmentName)
   zip.pipe(res)
   const manifest = {
-    started,
+    started: started.toISOString(),
     finished: '',
     errorCount: 0,
     errors: [],
