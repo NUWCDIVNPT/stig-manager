@@ -702,26 +702,62 @@ exports.getDetails = async function() {
     `
 
   const sqlMySqlVersion = `SELECT VERSION() as version`
-  const sqlMySqlVariables = `
-    SHOW VARIABLES WHERE
-      Variable_Name LIKE 'innodb_buffer_pool_size' OR 
-      Variable_Name LIKE 'innodb_log_buffer_size' OR 
-      Variable_Name LIKE 'innodb_io_capacity' OR 
-      Variable_Name LIKE 'innodb_io_capacity_max' OR  
-      Variable_Name LIKE 'innodb_flush_sync' OR  
-      Variable_Name LIKE 'innodb_log_file_size ' OR  
-      Variable_Name LIKE 'innodb_io_capacity_max' OR  
-      Variable_Name LIKE 'innodb_lock_wait_timeout' OR  
-      Variable_Name LIKE 'key_buffer_size' OR  
-      Variable_Name LIKE 'max_heap_table_size' OR  
-      Variable_Name LIKE 'temptable_max_mmap' OR  
-      Variable_Name LIKE 'sort_buffer_size' OR  
-      Variable_Name LIKE 'read_buffer_size' OR  
-      Variable_Name LIKE 'binlog_cache_size' OR  
-      Variable_Name LIKE 'innodb_buffer_pool_instances' OR  
-      Variable_Name LIKE 'tmp_table_size'
-`
+  const sqlMySqlVariablesInMb = `
+  SELECT 
+      variable_name,
+      ROUND(variable_value / (1024 * 1024), 2) AS value
+  FROM 
+      performance_schema.global_variables
+  WHERE 
+      variable_name IN (
+        'innodb_buffer_pool_size' , 
+        'innodb_log_buffer_size' , 
+        'innodb_log_file_size' ,  
+        'tmp_table_size' ,  
+        'key_buffer_size' ,  
+        'max_heap_table_size' ,  
+        'temptable_max_mmap' ,  
+        'sort_buffer_size' ,  
+        'read_buffer_size' ,  
+        'read_rnd_buffer_size' ,  
+        'join_buffer_size' ,  
+        'binlog_cache_size' ,  
+        'tmp_table_size'
+      )
+  ORDER by variable_name
 
+`
+const sqlMySqlVariablesRawValues = `
+SELECT 
+    variable_name,
+    variable_value as value
+    FROM 
+    performance_schema.global_variables
+WHERE 
+    variable_name IN (
+      'innodb_buffer_pool_size' , 
+      'innodb_buffer_pool_instances' ,  
+      'innodb_log_buffer_size' , 
+      'innodb_log_file_size' ,  
+      'innodb_io_capacity' , 
+      'innodb_io_capacity_max' ,  
+      'innodb_flush_sync' ,  
+      'innodb_io_capacity_max' ,  
+      'innodb_lock_wait_timeout' ,  
+      'tmp_table_size' ,  
+      'key_buffer_size' ,  
+      'max_heap_table_size' ,  
+      'temptable_max_mmap' ,  
+      'sort_buffer_size' ,  
+      'read_buffer_size' ,  
+      'read_rnd_buffer_size' ,  
+      'join_buffer_size' ,  
+      'binlog_cache_size' ,  
+      'tmp_table_size'
+    )
+  ORDER by variable_name
+
+`
 
     await dbUtils.pool.query(sqlAnalyze)
 
@@ -744,7 +780,8 @@ exports.getDetails = async function() {
     // const [overallHistoryCnt] = await dbUtils.pool.query(sqlOverallHistoryCnt);
     const [orphanedReviews] = await dbUtils.pool.query(sqlOrphanedReviews);
     const [mySqlVersion] = await dbUtils.pool.query(sqlMySqlVersion);
-    let [mySqlVariables] = await dbUtils.pool.query(sqlMySqlVariables);
+    let [mySqlVariablesInMb] = await dbUtils.pool.query(sqlMySqlVariablesInMb);
+    let [mySqlVariablesRaw] = await dbUtils.pool.query(sqlMySqlVariablesRawValues);
 
 
 
@@ -810,15 +847,17 @@ if (uptime < 60) {
     const varReducer = (obj, item) => (obj[item.Variable_name] = item, obj)
     // const collectionIdReducer = (obj, item) => (obj[item.collectionId] = item, obj)
 
-    let mySqlVariableStrings = []
+    let mySqlVariableStringsInMb = []
+    let mySqlVariableStringsRaw = []
 
-  for (const key in mySqlVariables){
-    mySqlVariableStrings.push(`${mySqlVariables[key].Variable_name}: ${mySqlVariables[key].Value}`)
-
-  
+  for (const key in mySqlVariablesInMb){
+    mySqlVariableStringsInMb.push(`${mySqlVariablesInMb[key].variable_name}: ${mySqlVariablesInMb[key].value}M`)
+  }
+  for (const key in mySqlVariablesRaw){
+    mySqlVariableStringsRaw.push(`${mySqlVariablesRaw[key].variable_name}: ${mySqlVariablesRaw[key].value}`)
   }
 
-    mySqlVariables = mySqlVariables.reduce(varReducer, {})
+  // mySqlVariablesInMb.reduce(varReducer, {})
 
 
 
@@ -841,8 +880,9 @@ if (uptime < 60) {
       operationalStats,
       uptime,
       mySqlVersion: mySqlVersion[0].version,
-      mySqlVariables,
-      mySqlVariableStrings
+      // mySqlVariablesInMb,
+      mySqlVariableStringsInMb,
+      mySqlVariableStringsRaw
 
     })
 }
