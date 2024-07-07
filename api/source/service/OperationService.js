@@ -702,6 +702,32 @@ exports.getDetails = async function() {
     `
 
   const sqlMySqlVersion = `SELECT VERSION() as version`
+
+  const mysqlVarsInMbOnly = [
+    'innodb_buffer_pool_size',
+    'innodb_log_buffer_size',
+    'innodb_log_file_size',
+    'tmp_table_size',
+    'key_buffer_size',
+    'max_heap_table_size',
+    'temptable_max_mmap',
+    'sort_buffer_size',
+    'read_buffer_size',
+    'read_rnd_buffer_size',
+    'join_buffer_size',
+    'binlog_cache_size',
+    'tmp_table_size'
+  ]
+
+  const mySqlVariablesRawOnly = [
+    'innodb_buffer_pool_instances' ,  
+    'innodb_io_capacity' , 
+    'innodb_io_capacity_max' ,  
+    'innodb_flush_sync' ,  
+    'innodb_io_capacity_max' ,  
+    'innodb_lock_wait_timeout'
+  ]
+
   const sqlMySqlVariablesInMb = `
   SELECT 
       variable_name,
@@ -710,23 +736,10 @@ exports.getDetails = async function() {
       performance_schema.global_variables
   WHERE 
       variable_name IN (
-        'innodb_buffer_pool_size' , 
-        'innodb_log_buffer_size' , 
-        'innodb_log_file_size' ,  
-        'tmp_table_size' ,  
-        'key_buffer_size' ,  
-        'max_heap_table_size' ,  
-        'temptable_max_mmap' ,  
-        'sort_buffer_size' ,  
-        'read_buffer_size' ,  
-        'read_rnd_buffer_size' ,  
-        'join_buffer_size' ,  
-        'binlog_cache_size' ,  
-        'tmp_table_size'
+        ${mysqlVarsInMbOnly.map( v => `'${v}'`).join(',')}
       )
   ORDER by variable_name
-
-`
+`  
 const sqlMySqlVariablesRawValues = `
 SELECT 
     variable_name,
@@ -735,29 +748,12 @@ SELECT
     performance_schema.global_variables
 WHERE 
     variable_name IN (
-      'innodb_buffer_pool_size' , 
-      'innodb_buffer_pool_instances' ,  
-      'innodb_log_buffer_size' , 
-      'innodb_log_file_size' ,  
-      'innodb_io_capacity' , 
-      'innodb_io_capacity_max' ,  
-      'innodb_flush_sync' ,  
-      'innodb_io_capacity_max' ,  
-      'innodb_lock_wait_timeout' ,  
-      'tmp_table_size' ,  
-      'key_buffer_size' ,  
-      'max_heap_table_size' ,  
-      'temptable_max_mmap' ,  
-      'sort_buffer_size' ,  
-      'read_buffer_size' ,  
-      'read_rnd_buffer_size' ,  
-      'join_buffer_size' ,  
-      'binlog_cache_size' ,  
-      'tmp_table_size'
+        ${mysqlVarsInMbOnly.map( v => `'${v}'`).join(',')},
+        ${mySqlVariablesRawOnly.map( v => `'${v}'`).join(',')}
     )
   ORDER by variable_name
-
 `
+
 
     await dbUtils.pool.query(sqlAnalyze)
 
@@ -844,7 +840,6 @@ if (uptime < 60) {
 
     // const nameValuesReducer = (obj, item) => (obj[item.Variable_name] = item.Value, obj)
     const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
-    const varReducer = (obj, item) => (obj[item.Variable_name] = item, obj)
     // const collectionIdReducer = (obj, item) => (obj[item.collectionId] = item, obj)
 
     let mySqlVariableStringsInMb = []
@@ -856,9 +851,6 @@ if (uptime < 60) {
   for (const key in mySqlVariablesRaw){
     mySqlVariableStringsRaw.push(`${mySqlVariablesRaw[key].variable_name}: ${mySqlVariablesRaw[key].value}`)
   }
-
-  // mySqlVariablesInMb.reduce(varReducer, {})
-
 
 
     return ({
