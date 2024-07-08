@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "fcb1e3fc-7e68-4709-baae-eb5bec83df44",
+		"_postman_id": "835a145b-c95c-4f10-ad6b-2547ac6840b0",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:  \nName: Carl Smigielski  \nEmail: [carl.a.smigielski@saic.com](https://mailto:carl.a.smigielski@saic.com)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "28917726"
+		"_exporter_id": "9301046"
 	},
 	"item": [
 		{
@@ -71381,12 +71381,20 @@
 											"}\r",
 											"\r",
 											"\r",
+											"const regex = /^inline; filename=\"TxxxxxEST_&bsol;slash&colon;colon\\.\\.x2-VPN_SRG_TEST-V1R1/;\r",
+											"\r",
+											"\r",
 											"pm.test(\"Content-Disposition is set with expected filename\", function () {\r",
-											"    pm.response.to.have.header(\"Content-Disposition\", \"inline; filename=\\\"TxxxxxEST_&bsol;slash&colon;colon..x2-VPN_SRG_TEST-V1R1.ckl\\\"\");\r",
+											"    pm.expect(pm.response.headers.get('Content-Disposition')).to.match(regex)\r",
+											"\r",
+											"\r",
 											"});\r",
+											"\r",
+											"\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -71477,13 +71485,18 @@
 											"}\r",
 											"\r",
 											"\r",
-											"pm.test(\"Content-Disposition is set with expected filename\", function () {\r",
-											"    pm.response.to.have.header(\"Content-Disposition\", \"inline; filename=\\\"TxxxxxEST_&bsol;slash&colon;colon..x2-VPN_SRG_TEST-V1R1.cklb\\\"\");\r",
-											"});\r",
+											"const regex = /^inline; filename=\"TxxxxxEST_&bsol;slash&colon;colon\\.\\.x2-VPN_SRG_TEST-V1R1/;\r",
 											"\r",
+											"\r",
+											"pm.test(\"Content-Disposition is set with expected filename\", function () {\r",
+											"    pm.expect(pm.response.headers.get('Content-Disposition')).to.match(regex)\r",
+											"\r",
+											"\r",
+											"});\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -71541,7 +71554,7 @@
 							"response": []
 						},
 						{
-							"name": "Return the cklB for Asset with reserved chars Copy",
+							"name": "Return the xccdf for Asset with reserved chars Copy",
 							"event": [
 								{
 									"listen": "test",
@@ -71573,14 +71586,18 @@
 											"    return;\r",
 											"}\r",
 											"\r",
+											"const regex = /^inline; filename=\"TxxxxxEST_&bsol;slash&colon;colon\\.\\.x2-VPN_SRG_TEST-V1R1/;\r",
+											"\r",
 											"\r",
 											"pm.test(\"Content-Disposition is set with expected filename\", function () {\r",
-											"    pm.response.to.have.header(\"Content-Disposition\", \"inline; filename=\\\"TxxxxxEST_&bsol;slash&colon;colon..x2-VPN_SRG_TEST-V1R1-xccdf.xml\\\"\");\r",
-											"});\r",
+											"    pm.expect(pm.response.headers.get('Content-Disposition')).to.match(regex)\r",
 											"\r",
+											"\r",
+											"});\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
