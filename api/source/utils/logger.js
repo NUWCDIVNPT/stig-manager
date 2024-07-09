@@ -251,7 +251,7 @@ function trackOperationStats (operationalStats, operationId, durationMs, res) {
 
       }
   }
-  // if logging stats, add to operationalStats object
+  // if including stats in log entries, add to operationalStats object
   if (config.log.optStats === 'true') {
 
     operationalStats.operationIdCount =  
