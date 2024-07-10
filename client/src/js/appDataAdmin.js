@@ -21,7 +21,7 @@ async function addAppDataAdmin( params ) {
           handler: function (btn) {
             if (detailResponseText) {
               const blob = new Blob([detailResponseText], {type: 'application/json'})
-              downloadBlob(blob, `stig-manager-details-${new Date().toISOString().replace(/:|\d{2}\.\d{3}/g,'')}.json`)
+              downloadBlob(blob, SM.Global.filenameEscaped(`stig-manager-details_${SM.Global.filenameComponentFromDate()}.json`))
             }
           }
         }
