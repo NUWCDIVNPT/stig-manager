@@ -819,9 +819,15 @@ for (const key in operationIdStats.operationIdCounts)(
   }
 )
 
+
+
 operationalStats.totalRequests = overallOpStats.totalRequests
 operationalStats.totalApiRequests = overallOpStats.totalApiRequests
 operationalStats.totalRequestDuration = overallOpStats.totalRequestDuration
+
+
+operationalStats = obfuscateClients(operationalStats);
+
 
 // let uptime = `${Math.round(process.uptime())} seconds` // seconds
 let uptime = Math.round(process.uptime()) // seconds
@@ -877,4 +883,33 @@ if (uptime < 60) {
       mySqlVariableStringsRaw
 
     })
+}
+
+
+function obfuscateClients(operationalStats) {
+  const obfuscationMap = {};
+  let obfuscatedCounter = 1;
+
+  function getObfuscatedKey(client) {
+    if (!obfuscationMap[client]) {
+      obfuscationMap[client] = `client${obfuscatedCounter++}`;
+    }
+    return obfuscationMap[client];
+  }
+
+  const operationIds = operationalStats.operationIds;
+
+  for (const operation in operationIds) {
+    const clients = operationIds[operation].clients;
+    const newClients = {};
+    
+    for (const client in clients) {
+      const obfuscatedKey = getObfuscatedKey(client);
+      newClients[obfuscatedKey] = clients[client];
+    }
+    
+    operationIds[operation].clients = newClients;
+  }
+
+  return operationalStats;
 }
