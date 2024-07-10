@@ -942,7 +942,8 @@ SM.MetaPanel.ExportPanel = Ext.extend(Ext.Panel, {
         const agg = aggComboBox.getValue()
         const url = `${STIGMAN.Env.apiBase}/collections/meta/metrics/${style}${agg === 'unagg' ? '' : `/${agg}`}?${queryParamsStr}`
 
-        const attachment = `${agg}-${style}.${format}`
+        const attachment = SM.Global.filenameEscaped(`Meta-${agg}-${style}_${SM.Global.filenameComponentFromDate()}.${format}`)
+
         await window.oidcProvider.updateToken(10)
         const fetchInit = {
           method: 'GET',

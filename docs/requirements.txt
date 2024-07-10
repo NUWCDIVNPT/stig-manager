@@ -1,6 +1,6 @@
 alabaster==0.7.12
 Babel==2.9.1
-certifi==2023.7.22
+certifi==2024.7.4
 chardet==4.0.0
 colorama==0.4.5
 commonmark==0.9.1
@@ -26,5 +26,5 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.9
 sphinx-tabs==3.4.4
-urllib3==1.26.18
+urllib3==1.26.19
 

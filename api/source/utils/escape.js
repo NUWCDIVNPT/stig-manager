@@ -38,7 +38,7 @@ module.exports.escapeFilename = function (value) {
    * Regexes match characters that need to be escaped in filenames.
    * @type {RegExp}
    */
-  const osReserved = /[\/\\:\*"\?<>\|]/g
+  const osReserved = /[/\\:*"?<>|]/g
   const controlChars = /[\x00-\x1f]/g
 
     /**
@@ -61,5 +61,9 @@ module.exports.escapeFilename = function (value) {
   .replace(osReserved, (match) => osReserveReplace[match])
   .replace(controlChars, (match) => `&#x${match.charCodeAt(0).toString().padStart(2,'0')};`)
   .substring(0, 255)
+}
+
+module.exports.filenameComponentFromDate = function (dateObject = new Date()) {
+  return dateObject.toISOString().replace(/:|\d{2}\.\d{3}/g,'')
 }
 
