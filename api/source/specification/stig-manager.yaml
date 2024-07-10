@@ -4960,7 +4960,7 @@ components:
       properties:
         maxReviews:
           example: 5
-          maximum: 50
+          maximum: 15
           minimum: -1
           type: integer
       required:

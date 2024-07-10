@@ -1675,10 +1675,9 @@ SM.Collection.HistorySettings.MaxReviewsComboBox = Ext.extend(Ext.form.ComboBox,
         let data = [
             [0, 'disabled']
         ]
-        for (let limit = 1; limit < 51; limit++) {
+        for (let limit = 1; limit < 16; limit++) {
             data.push([limit, `capped at ${limit}`])
         }
-        data.push([-1, 'unlimited'])
         this.store = new Ext.data.SimpleStore({
             fields: ['value', 'display']
         })
