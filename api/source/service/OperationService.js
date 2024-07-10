@@ -891,6 +891,9 @@ function obfuscateClients(operationalStats) {
   let obfuscatedCounter = 1;
 
   function getObfuscatedKey(client) {
+    if (client === "unknown") {
+      return client;
+    }
     if (!obfuscationMap[client]) {
       obfuscationMap[client] = `client${obfuscatedCounter++}`;
     }
