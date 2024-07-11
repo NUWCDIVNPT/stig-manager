@@ -895,7 +895,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
 
   
       // re-calculate review statistics if we've affected current_rev
-      if (wasDefaultRev && !wasCurrentRev) {
+      if (wasDefaultRev || wasCurrentRev) {
         const collectionIds = drRows.map( row => row.collectionId)
         await dbUtils.updateDefaultRev( connection, {collectionIds, benchmarkId})
         await dbUtils.updateStatsAssetStig( connection, {collectionIds, benchmarkId})
