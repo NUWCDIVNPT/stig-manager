@@ -601,7 +601,6 @@ exports.getDetails = async function() {
 
       const sqlCountsByCollection = `
       SELECT
-      -- row_number() over (order by c.collectionId) as collectionItem,
       cast(c.collectionId as char) as collectionId,
       c.state,
       count(distinct a.assetId) as assetsTotal,
