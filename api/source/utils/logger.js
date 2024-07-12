@@ -43,6 +43,7 @@ let overallOpStats = {
     operationIdDurationTotals: {},
     operationIdDurationMin: {},
     operationIdDurationMax: {},
+    operationIdDurationMaxUpdated: {},    
     clients: {}
   }
 }
@@ -205,9 +206,23 @@ function trackOperationStats (operationalStats, operationId, durationMs, res) {
   //min duration for this operationId
   overallOpStats.operationIdStats.operationIdDurationMin[operationId] = 
     Math.min(overallOpStats.operationIdStats.operationIdDurationMin[operationId] || 99999999999, durationMs)
+
   //max duration for this operationId
-  overallOpStats.operationIdStats.operationIdDurationMax[operationId] = 
-    Math.max(overallOpStats.operationIdStats.operationIdDurationMax[operationId] || 0, durationMs)
+  // overallOpStats.operationIdStats.operationIdDurationMax[operationId] = 
+  //   Math.max(overallOpStats.operationIdStats.operationIdDurationMax[operationId] || 0, durationMs)
+
+  //track max duration for this operationId, and number of times max was updated
+  if (!overallOpStats.operationIdStats.operationIdDurationMax[operationId]) {
+    overallOpStats.operationIdStats.operationIdDurationMax[operationId] = durationMs  
+    overallOpStats.operationIdStats.operationIdDurationMaxUpdated[operationId] = 1    
+  }
+    if (overallOpStats.operationIdStats.operationIdDurationMax[operationId] < durationMs) {
+      overallOpStats.operationIdStats.operationIdDurationMax[operationId] = durationMs
+      overallOpStats.operationIdStats.operationIdDurationMaxUpdated[operationId] = 
+        (overallOpStats.operationIdStats.operationIdDurationMaxUpdated[operationId] || 0) + 1
+    }
+
+
   //check token for client id
   let client = res.req?.access_token?.azp || 'unknown'
   //track clients for this operationId
@@ -255,16 +270,19 @@ function trackOperationStats (operationalStats, operationId, durationMs, res) {
   if (config.log.optStats === 'true') {
 
     operationalStats.operationIdCount =  
-    overallOpStats.operationIdStats.operationIdCounts[operationId]
+      overallOpStats.operationIdStats.operationIdCounts[operationId]
 
     operationalStats.operationIdDurationMax = 
-    overallOpStats.operationIdStats.operationIdDurationMax[operationId]
+      overallOpStats.operationIdStats.operationIdDurationMax[operationId]
+
+    operationalStats.operationIdDurationMaxUpdated =
+      overallOpStats.operationIdStats.operationIdDurationMaxUpdated[operationId]  
 
     operationalStats.operationIdDurationMin = 
-    overallOpStats.operationIdStats.operationIdDurationMin[operationId]
+     overallOpStats.operationIdStats.operationIdDurationMin[operationId]
 
     operationalStats.operationIdDurationAvg = 
-    Math.round(overallOpStats.operationIdStats.operationIdDurationTotals[operationId] / overallOpStats.operationIdStats.operationIdCounts[operationId])
+      Math.round(overallOpStats.operationIdStats.operationIdDurationTotals[operationId] / overallOpStats.operationIdStats.operationIdCounts[operationId])
     
     operationalStats.clients = overallOpStats.operationIdStats.clients[operationId]
 

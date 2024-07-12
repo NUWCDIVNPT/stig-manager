@@ -599,43 +599,6 @@ exports.getDetails = async function() {
       sub.collectionId
   `
 
-
-      const sqlDisabledCollectionCount = `
-      select 
-        c.collectionId,
-        count(distinct a.assetId) as assetCnt,
-        count(r.reviewId) as reviewCnt,
-        count(rh.historyId) as historyCnt
-      from 
-        collection c
-      left join asset a on a.collectionId = c.collectionId
-      left join review r on r.assetId = a.assetId
-      left join review_history rh on rh.reviewId = r.reviewId
-      where 
-        c.state = "disabled"
-      group by 
-        c.collectionId
-      `
-
-      // const sqlDisabledAssetsInEnabledCollections = `
-      // select 
-      //   c.collectionId,
-      //   count(distinct a.assetId) as disabledAssetCnt,
-      //   count(r.reviewId) as reviewCnt,
-      //   count(rh.historyId) as historyCnt
-      // from 
-      //   collection c
-      // left join asset a on a.collectionId = c.collectionId
-      // left join review r on r.assetId = a.assetId
-      // left join review_history rh on rh.reviewId = r.reviewId
-      // where 
-      //   a.state = "disabled" and 
-      //   c.state = "enabled"
-      // group by 
-      //   c.collectionId
-      // `
-
-      
       const sqlCountsByCollection = `
       SELECT
       -- row_number() over (order by c.collectionId) as collectionItem,
@@ -683,16 +646,6 @@ exports.getDetails = async function() {
       group by 
       sub.collectionId
 `
-
-      const sqlOverallHistoryCnt = `
-      select 
-        count(*) as reviewHistoryCnt
-      from
-        review_history rh
-      `
-
-
-
     const sqlOrphanedReviews = `
     SELECT count(distinct r.ruleId)
     FROM 
@@ -757,99 +710,63 @@ WHERE
 
     await dbUtils.pool.query(sqlAnalyze)
 
-    // const [[schemaInfoArray], [assetStig], [disabledCollections], [disabledAssetsInEnabledCollections], [countsByCollection],[overallTotals]] = await Promise.all([
-    //   dbUtils.pool.query(sqlInfoSchema, [config.database.schema]),
-    //   dbUtils.pool.query(sqlCollectionAssetStigs),
-    //   dbUtils.pool.query(sqlDisabledCollectionCount),
-    //   dbUtils.pool.query(sqlDisabledAssetsInEnabledCollections),
-    //   dbUtils.pool.query(sqlCountsByCollection),
-    //   dbUtils.pool.query(sqlOverallTotals)
-
-    // ])
-
     const [schemaInfoArray] = await dbUtils.pool.query(sqlInfoSchema, [config.database.schema]);
     const [assetStig] = await dbUtils.pool.query(sqlCollectionAssetStigs);
-    // const [disabledCollections] = await dbUtils.pool.query(sqlDisabledCollectionCount);
-    // const [disabledAssetsInEnabledCollections] = await dbUtils.pool.query(sqlDisabledAssetsInEnabledCollections);
     const [countsByCollection] = await dbUtils.pool.query(sqlCountsByCollection);
     const [restrictedGrantCountsByCollection] = await dbUtils.pool.query(sqlRestrictedGrantCounts);
-    // const [overallHistoryCnt] = await dbUtils.pool.query(sqlOverallHistoryCnt);
     const [orphanedReviews] = await dbUtils.pool.query(sqlOrphanedReviews);
     const [mySqlVersion] = await dbUtils.pool.query(sqlMySqlVersion);
     let [mySqlVariablesInMb] = await dbUtils.pool.query(sqlMySqlVariablesInMb);
     let [mySqlVariablesRaw] = await dbUtils.pool.query(sqlMySqlVariablesRawValues);
 
 
+  let operationalStats = {}
+  operationalStats.operationIds = {};
 
-    // call reviewHistoryStatsByCollection for each collection:
-    // let elevate = true;
-    // const collections = await CollectionService.getCollections({}, '', elevate)
-    // let collectionIds = collections.map(collection => collection.collectionId);
-    // let reviewHistoryStatsResults = []
-    // for (const collection of collectionIds) {
-    //   let stats = await CollectionService.getReviewHistoryStatsByCollection(collection)
-    //   reviewHistoryStatsResults.push(
-    //     {
-    //       collectionId: collection, 
-    //       historyEntryCount: stats.collectionHistoryEntryCount,
-    //       oldestHistoryEntry: stats.oldestHistoryEntryDate
-    //     })
-    // }
-    // // let reviewHistoryStatsResult = await CollectionService.getReviewHistoryStatsByCollection(collections[0].collectionId)
-    // // // res.json(reviewHistoryStatsresult)
+  let overallOpStats = logger.overallOpStats
+  let operationIdStats = logger.overallOpStats.operationIdStats
 
-    // let endDate = '2021-01-01'
-    // let reviewHistoryStatsOld = await CollectionService.getReviewHistoryStatsByCollection(11,endDate)
+  for (const key in operationIdStats.operationIdCounts)(
+    operationalStats.operationIds[key] = {
+      operationId: key,
+      count: operationIdStats?.operationIdCounts[key],
+      avgDuration: Math.round(operationIdStats?.operationIdDurationTotals[key] / operationIdStats.operationIdCounts[key]),
+      minDuration: operationIdStats?.operationIdDurationMin[key],
+      maxDuration: operationIdStats?.operationIdDurationMax[key],
+      maxDurationUpdated: operationIdStats?.operationIdDurationMaxUpdated[key],
+      projectionStats: operationIdStats?.operationIdProjections[key],
+      clients: operationIdStats?.clients[key]
+    }
+  )
 
-let operationalStats = {}
-operationalStats.operationIds = {};
+  operationalStats.totalRequests = overallOpStats.totalRequests
+  operationalStats.totalApiRequests = overallOpStats.totalApiRequests
+  operationalStats.totalRequestDuration = overallOpStats.totalRequestDuration
 
-let overallOpStats = logger.overallOpStats
-let operationIdStats = logger.overallOpStats.operationIdStats
 
-for (const key in operationIdStats.operationIdCounts)(
-  operationalStats.operationIds[key] = {
-    operationId: key,
-    count: operationIdStats?.operationIdCounts[key],
-    avgDuration: Math.round(operationIdStats?.operationIdDurationTotals[key] / operationIdStats.operationIdCounts[key]),
-    minDuration: operationIdStats?.operationIdDurationMin[key],
-    maxDuration: operationIdStats?.operationIdDurationMax[key],
-    projectionStats: operationIdStats?.operationIdProjections[key],
-    clients: operationIdStats?.clients[key]
+  operationalStats = obfuscateClients(operationalStats);
+
+
+  // let uptime = `${Math.round(process.uptime())} seconds` // seconds
+  let uptime = Math.round(process.uptime()) // seconds
+
+  if (uptime < 60) {
+    uptime = `${uptime} seconds`;
+  } else if (uptime < 3600) { // less than 1 hour
+    let minutes = Math.floor(uptime / 60);
+    let seconds = uptime % 60;
+    uptime = `${minutes} minutes ${seconds} seconds`;
+  } else { // 1 hour or more
+    let hours = Math.floor(uptime / 3600);
+    let minutes = Math.floor((uptime % 3600) / 60);
+    uptime = `${hours} hours ${minutes} minutes`;
   }
-)
 
+  const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
 
-
-operationalStats.totalRequests = overallOpStats.totalRequests
-operationalStats.totalApiRequests = overallOpStats.totalApiRequests
-operationalStats.totalRequestDuration = overallOpStats.totalRequestDuration
-
-
-operationalStats = obfuscateClients(operationalStats);
-
-
-// let uptime = `${Math.round(process.uptime())} seconds` // seconds
-let uptime = Math.round(process.uptime()) // seconds
-
-if (uptime < 60) {
-  uptime = `${uptime} seconds`;
-} else if (uptime < 3600) { // less than 1 hour
-  let minutes = Math.floor(uptime / 60);
-  let seconds = uptime % 60;
-  uptime = `${minutes} minutes ${seconds} seconds`;
-} else { // 1 hour or more
-  let hours = Math.floor(uptime / 3600);
-  let minutes = Math.floor((uptime % 3600) / 60);
-  uptime = `${hours} hours ${minutes} minutes`;
-}
-
-    // const nameValuesReducer = (obj, item) => (obj[item.Variable_name] = item.Value, obj)
-    const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
-    // const collectionIdReducer = (obj, item) => (obj[item.collectionId] = item, obj)
-
-    let mySqlVariableStringsInMb = []
-    let mySqlVariableStringsRaw = []
+  //create array of strings for easier reading
+  let mySqlVariableStringsInMb = []
+  let mySqlVariableStringsRaw = []
 
   for (const key in mySqlVariablesInMb){
     mySqlVariableStringsInMb.push(`${mySqlVariablesInMb[key].variable_name}: ${mySqlVariablesInMb[key].value}M`)
@@ -864,24 +781,15 @@ if (uptime < 60) {
         tables: schemaInfoArray.reduce(schemaReducer, {})
       },
       assetStig,
-      // assetStig: {
-      //   collectionId: assetStig.reduce(collectionIdReducer, {})
-      // },
-      // disabledCollections,
-      // disabledAssetsInEnabledCollections,
-      // reviewHistoryStatsResults,
-      // reviewHistoryStatsOld,
       countsByCollection,
       restrictedGrantCountsByCollection,      
-      // overallHistoryCnt,
       orphanedReviews,
       operationalStats,
       uptime,
       mySqlVersion: mySqlVersion[0].version,
-      // mySqlVariablesInMb,
       mySqlVariableStringsInMb,
-      mySqlVariableStringsRaw
-
+      mySqlVariableStringsRaw,
+      mySqlVariablesRaw
     })
 }
 
