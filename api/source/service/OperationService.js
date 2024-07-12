@@ -1,9 +1,7 @@
 'use strict';
 const dbUtils = require('./utils')
 const config = require('../utils/config')
-// const CollectionService = require(`./CollectionService`)
 const logger = require('../utils/logger');
-const { forEach } = require('lodash');
 
 
 /**
