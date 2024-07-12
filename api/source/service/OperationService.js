@@ -645,6 +645,22 @@ exports.getDetails = async function() {
       group by 
       sub.collectionId
 `
+
+  const sqlGrantCounts = `
+SELECT 
+    collectionId,
+    SUM(CASE WHEN accessLevel = 1 THEN 1 ELSE 0 END) AS accessLevel1,
+    SUM(CASE WHEN accessLevel = 2 THEN 1 ELSE 0 END) AS accessLevel2,
+    SUM(CASE WHEN accessLevel = 3 THEN 1 ELSE 0 END) AS accessLevel3,
+    SUM(CASE WHEN accessLevel = 4 THEN 1 ELSE 0 END) AS accessLevel4
+FROM 
+    collection_grant
+GROUP BY 
+    collectionId
+ORDER BY 
+    collectionId
+  `
+
     const sqlOrphanedReviews = `
     SELECT count(distinct r.ruleId)
     FROM 
@@ -713,6 +729,9 @@ WHERE
     const [assetStig] = await dbUtils.pool.query(sqlCollectionAssetStigs);
     const [countsByCollection] = await dbUtils.pool.query(sqlCountsByCollection);
     const [restrictedGrantCountsByCollection] = await dbUtils.pool.query(sqlRestrictedGrantCounts);
+    const [grantCountsByCollection] = await dbUtils.pool.query(sqlGrantCounts);
+
+    
     const [orphanedReviews] = await dbUtils.pool.query(sqlOrphanedReviews);
     const [mySqlVersion] = await dbUtils.pool.query(sqlMySqlVersion);
     let [mySqlVariablesInMb] = await dbUtils.pool.query(sqlMySqlVariablesInMb);
@@ -781,7 +800,8 @@ WHERE
       },
       assetStig,
       countsByCollection,
-      restrictedGrantCountsByCollection,      
+      restrictedGrantCountsByCollection,     
+      grantCountsByCollection, 
       orphanedReviews,
       operationalStats,
       uptime,
