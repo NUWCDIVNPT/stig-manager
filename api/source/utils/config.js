@@ -83,7 +83,9 @@ let config = {
     },
     log: {
         level: parseInt(process.env.STIGMAN_LOG_LEVEL) || 3,
-        mode: process.env.STIGMAN_LOG_MODE || 'combined' 
+        mode: process.env.STIGMAN_LOG_MODE || 'combined',
+        // if STIGMAN_DEV_OPT_STATS_IN_LOGS = true, add performance stats to logs:
+        optStats: process.env.STIGMAN_DEV_LOG_OPT_STATS || "false"
     }
 }
 
