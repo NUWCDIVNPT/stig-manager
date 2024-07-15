@@ -30,7 +30,7 @@ module.exports.defaultSettings = {
     minAcceptGrant: 3
   },
   history: {
-    maxReviews: 15
+    maxReviews: 5
   }
 }
 

@@ -654,7 +654,7 @@ paths:
               minAcceptGrant: 3
             },
             history: {
-              maxReviews: 15
+              maxReviews: 5
             }
           }
         ```
@@ -4960,8 +4960,8 @@ components:
       properties:
         maxReviews:
           example: 5
-          maximum: 50
-          minimum: -1
+          maximum: 15
+          minimum: 0
           type: integer
       required:
         - maxReviews

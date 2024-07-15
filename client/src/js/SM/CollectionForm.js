@@ -1675,10 +1675,9 @@ SM.Collection.HistorySettings.MaxReviewsComboBox = Ext.extend(Ext.form.ComboBox,
         let data = [
             [0, 'disabled']
         ]
-        for (let limit = 1; limit < 51; limit++) {
+        for (let limit = 1; limit < 16; limit++) {
             data.push([limit, `capped at ${limit}`])
         }
-        data.push([-1, 'unlimited'])
         this.store = new Ext.data.SimpleStore({
             fields: ['value', 'display']
         })
@@ -1691,7 +1690,7 @@ SM.Collection.HistorySettings.HistoryFields = Ext.extend(Ext.form.FieldSet, {
     initComponent: function () {
         const _this = this
         _this.historySettings = _this.historySettings ?? {
-            maxReviews: -1
+            maxReviews: 5
         }
         const maxReviewsComboBox = new SM.Collection.HistorySettings.MaxReviewsComboBox({
             name: 'maxReviews',
@@ -1715,7 +1714,7 @@ SM.Collection.HistorySettings.HistoryFields = Ext.extend(Ext.form.FieldSet, {
         }
 
         _this.setValues = function (values) {
-            maxReviewsComboBox.setValue(values.maxReviews || -1)
+            maxReviewsComboBox.setValue(values.maxReviews || 5)
         }
 
         function onComboSelect(item, record, index) {
