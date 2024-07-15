@@ -31,21 +31,12 @@ const writeError = config.log.level >= 1 ? function writeError () {
 
 
 
-
 // Stats for all requests
-let overallOpStats = {
+const overallOpStats = {
   totalRequests: 0,
   totalApiRequests: 0,
   totalRequestDuration: 0,
-  operationIdStats: {
-    operationIdCounts: {},
-    operationIdProjections: {},
-    operationIdDurationTotals: {},
-    operationIdDurationMin: {},
-    operationIdDurationMax: {},
-    operationIdDurationMaxUpdated: {},    
-    clients: {}
-  }
+  operationIdStats: {}
 }
 
 // All messages to STDOUT are handled here
@@ -134,18 +125,26 @@ function requestLogger (req, res, next) {
   function logResponse () {
     res._startTime = res._startTime ?? new Date()
     overallOpStats.totalRequests += 1
-    let durationMs = Number(res._startTime - req._startTime)
+    const durationMs = Number(res._startTime - req._startTime)
 
-    overallOpStats.totalRequestDuration  += durationMs
+    overallOpStats.totalRequestDuration += durationMs
+    const operationId = res.req.openapi?.schema.operationId
     let operationalStats = {
+      operationId,
       retries: res.svcStatus?.retries,
       durationMs
     }
 
-    let operationId = res.req.openapi?.schema.operationId
     //if operationId is defined, this is an api endpoint response so we can track some stats
     if (operationId ) {
-      operationalStats = trackOperationStats(operationalStats, operationId, durationMs, res)
+      trackOperationStats(operationId, durationMs, res)
+      // If including stats in log entries, add to operationalStats object
+      if (config.log.optStats === 'true') {
+        operationalStats = {
+          ...operationalStats,
+          ...overallOpStats.operationIdStats[operationId]
+        }
+      }
     }    
 
     if (config.log.mode === 'combined') {
@@ -159,9 +158,8 @@ function requestLogger (req, res, next) {
           headers: res.finished ? res.getHeaders() : undefined,
           errorBody: res.errorBody,
           responseBody,
-          operationalStats
         },
-
+        operationalStats
       })  
     }
     else {
@@ -170,7 +168,6 @@ function requestLogger (req, res, next) {
         status: res.statusCode,
         headers: res.getHeaders(),
         errorBody: res.errorBody,
-        retries: res.svcStatus?.retries,
         operationalStats
       })  
     }
@@ -195,102 +192,67 @@ function serializeEnvironment () {
   return env
 }
 
-function trackOperationStats (operationalStats, operationId, durationMs, res) {
+function trackOperationStats(operationId, durationMs, res) {
   //increment total api requests
   overallOpStats.totalApiRequests++
-  //increment operationId call count
-  overallOpStats.operationIdStats.operationIdCounts[operationId] = (overallOpStats.operationIdStats.operationIdCounts[operationId] || 0) + 1
-  //running total of duration for this operationId
-  overallOpStats.operationIdStats.operationIdDurationTotals[operationId] = 
-    (overallOpStats.operationIdStats.operationIdDurationTotals[operationId] || 0) + durationMs 
-  //min duration for this operationId
-  overallOpStats.operationIdStats.operationIdDurationMin[operationId] = 
-    Math.min(overallOpStats.operationIdStats.operationIdDurationMin[operationId] || 99999999999, durationMs)
-
-  //max duration for this operationId
-  // overallOpStats.operationIdStats.operationIdDurationMax[operationId] = 
-  //   Math.max(overallOpStats.operationIdStats.operationIdDurationMax[operationId] || 0, durationMs)
-
-  //track max duration for this operationId, and number of times max was updated
-  if (!overallOpStats.operationIdStats.operationIdDurationMax[operationId]) {
-    overallOpStats.operationIdStats.operationIdDurationMax[operationId] = durationMs  
-    overallOpStats.operationIdStats.operationIdDurationMaxUpdated[operationId] = 1    
+  // Ensure the operationIdStats object exists for the operationId
+  if (!overallOpStats.operationIdStats[operationId]) {
+    overallOpStats.operationIdStats[operationId] = {
+      totalRequests: 0,
+      totalDuration: 0,
+      minDuration: Infinity,
+      maxDuration: 0,
+      maxDurationUpdates: 0,
+      get averageDuration() {
+        return this.totalRequests ? Math.round(this.totalDuration / this.totalRequests) : 0;
+      },
+      clients: {},
+    };
   }
-    if (overallOpStats.operationIdStats.operationIdDurationMax[operationId] < durationMs) {
-      overallOpStats.operationIdStats.operationIdDurationMax[operationId] = durationMs
-      overallOpStats.operationIdStats.operationIdDurationMaxUpdated[operationId] = 
-        (overallOpStats.operationIdStats.operationIdDurationMaxUpdated[operationId] || 0) + 1
-    }
 
 
-  //check token for client id
-  let client = res.req?.access_token?.azp || 'unknown'
-  //track clients for this operationId
-  overallOpStats.operationIdStats.clients[operationId] =
-    overallOpStats.operationIdStats.clients[operationId] || {}
-  // track operation counts for each client
-  overallOpStats.operationIdStats.clients[operationId][client] =
-    overallOpStats.operationIdStats.clients[operationId][client] || 0
+  // Get the stats object for this operationId
+  const stats = overallOpStats.operationIdStats[operationId];
+  // Increment total requests and total duration for this operationId
+  stats.totalRequests++;
+  stats.totalDuration += durationMs;
 
-  //increment client count for this operationId
-  overallOpStats.operationIdStats.clients[operationId][client] = 
-    (overallOpStats.operationIdStats.clients[operationId][client] || 0) + 1         
-
-  //if projections are defined, track stats for each projection
-  if (res.req.query?.projection?.length > 0){
-      //for each projection, increment count, track min, max, total duration
-      for (let projection of res.req.query.projection) {
-        //track projections for this operationId
-        overallOpStats.operationIdStats.operationIdProjections[operationId] =
-          overallOpStats.operationIdStats.operationIdProjections[operationId] || {}
-        //track projection stats for this operationId
-        overallOpStats.operationIdStats.operationIdProjections[operationId][projection] =
-          overallOpStats.operationIdStats.operationIdProjections[operationId][projection] || {}
-        //increment projection count for this operationId
-        overallOpStats.operationIdStats.operationIdProjections[operationId][projection].count = 
-          (overallOpStats.operationIdStats.operationIdProjections[operationId][projection].count || 0) + 1;
-
-        //track min, max, total duration for this projection
-        overallOpStats.operationIdStats.operationIdProjections[operationId][projection].min = 
-        Math.min(overallOpStats.operationIdStats.operationIdProjections[operationId][projection].min || 99999999999, durationMs)                
-
-        overallOpStats.operationIdStats.operationIdProjections[operationId][projection].max = 
-        Math.max(overallOpStats.operationIdStats.operationIdProjections[operationId][projection].max || 0, durationMs)             
-
-        overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationTotal = 
-          (overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationTotal || 0) + durationMs;
-
-        //calculate average duration for this projection
-        overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationAvg = 
-          Math.round(overallOpStats.operationIdStats.operationIdProjections[operationId][projection].durationTotal / overallOpStats.operationIdStats.operationIdProjections[operationId][projection].count)
-
-      }
+  // Update min and max duration
+  stats.minDuration = Math.min(stats.minDuration, durationMs);
+  if (durationMs > stats.maxDuration) {
+    stats.maxDuration = durationMs;
+    stats.maxDurationUpdates++;
   }
-  // if including stats in log entries, add to operationalStats object
-  if (config.log.optStats === 'true') {
 
-    operationalStats.operationIdCount =  
-      overallOpStats.operationIdStats.operationIdCounts[operationId]
+  // Check token for client id
+  let client = res.req?.access_token?.azp || 'unknown';
+  // Increment client count for this operationId
+  stats.clients[client] = (stats.clients[client] || 0) + 1;
 
-    operationalStats.operationIdDurationMax = 
-      overallOpStats.operationIdStats.operationIdDurationMax[operationId]
+  // If projections are defined, track stats for each projection
+  if (res.req.query?.projection?.length > 0) {
+    stats.projections = stats.projections || {};
+    for (const projection of res.req.query.projection) {
+      // Ensure the projection stats object exists
+      stats.projections[projection] = stats.projections[projection] || {
+        totalRequests: 0,
+        minDuration: Infinity,
+        maxDuration: 0,
+        totalDuration: 0,
+        get averageDuration() {
+          return this.totalRequests ? Math.round(this.totalDuration / this.totalRequests) : 0;
+        }        
+      };
 
-    operationalStats.operationIdDurationMaxUpdated =
-      overallOpStats.operationIdStats.operationIdDurationMaxUpdated[operationId]  
-
-    operationalStats.operationIdDurationMin = 
-     overallOpStats.operationIdStats.operationIdDurationMin[operationId]
-
-    operationalStats.operationIdDurationAvg = 
-      Math.round(overallOpStats.operationIdStats.operationIdDurationTotals[operationId] / overallOpStats.operationIdStats.operationIdCounts[operationId])
-    
-    operationalStats.clients = overallOpStats.operationIdStats.clients[operationId]
-
-    if (res.req.query?.projection?.length > 0){
-      operationalStats.operationIdProjections = overallOpStats.operationIdStats.operationIdProjections[operationId]
+      const projStats = stats.projections[projection];
+      // Increment projection count and update duration stats
+      projStats.totalRequests++;
+      projStats.minDuration = Math.min(projStats.minDuration, durationMs);
+      projStats.maxDuration = Math.max(projStats.maxDuration, durationMs);
+      projStats.totalDuration += durationMs;
     }
   }
-  return operationalStats
+
 }
 
 module.exports = { 
@@ -302,6 +264,6 @@ module.exports = {
   writeWarn, 
   writeInfo, 
   writeDebug,
-  overallOpStats,
+  overallOpStats
 
 }

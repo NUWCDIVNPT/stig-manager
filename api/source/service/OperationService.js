@@ -634,7 +634,7 @@ exports.getDetails = async function() {
       from 
       (select
         a.collectionId, 
-        json_object('user', usam.userId, 'checklistAssignments', count(usam.saId), 'uniqueAssets', count(distinct sam.assetId)) as perUser
+        json_object('user', usam.userId, 'stigAssetCount', count(usam.saId), 'uniqueAssets', count(distinct sam.assetId)) as perUser
       from user_stig_asset_map usam
       left join stig_asset_map sam on sam.saId=usam.saId
       left join asset a on a.assetId = sam.assetId
@@ -720,63 +720,51 @@ WHERE
   ORDER by variable_name
 `
 
+  await dbUtils.pool.query(sqlAnalyze)
 
-    await dbUtils.pool.query(sqlAnalyze)
-
-    const [schemaInfoArray] = await dbUtils.pool.query(sqlInfoSchema, [config.database.schema]);
-    const [assetStig] = await dbUtils.pool.query(sqlCollectionAssetStigs);
-    const [countsByCollection] = await dbUtils.pool.query(sqlCountsByCollection);
-    const [restrictedGrantCountsByCollection] = await dbUtils.pool.query(sqlRestrictedGrantCounts);
-    const [grantCountsByCollection] = await dbUtils.pool.query(sqlGrantCounts);
-
-    
-    const [orphanedReviews] = await dbUtils.pool.query(sqlOrphanedReviews);
-    const [mySqlVersion] = await dbUtils.pool.query(sqlMySqlVersion);
-    let [mySqlVariablesInMb] = await dbUtils.pool.query(sqlMySqlVariablesInMb);
-    let [mySqlVariablesRaw] = await dbUtils.pool.query(sqlMySqlVariablesRawValues);
+  const [schemaInfoArray] = await dbUtils.pool.query(sqlInfoSchema, [config.database.schema]);
+  const [assetStig] = await dbUtils.pool.query(sqlCollectionAssetStigs);
+  const [countsByCollection] = await dbUtils.pool.query(sqlCountsByCollection);
+  const [restrictedGrantCountsByCollection] = await dbUtils.pool.query(sqlRestrictedGrantCounts);
+  const [grantCountsByCollection] = await dbUtils.pool.query(sqlGrantCounts);
+  const [orphanedReviews] = await dbUtils.pool.query(sqlOrphanedReviews);
+  const [mySqlVersion] = await dbUtils.pool.query(sqlMySqlVersion);
+  let [mySqlVariablesInMb] = await dbUtils.pool.query(sqlMySqlVariablesInMb);
+  let [mySqlVariablesRaw] = await dbUtils.pool.query(sqlMySqlVariablesRawValues);
 
 
-  let operationalStats = {}
-  operationalStats.operationIds = {};
-
-  let overallOpStats = logger.overallOpStats
-  let operationIdStats = logger.overallOpStats.operationIdStats
-
-  for (const key in operationIdStats.operationIdCounts)(
-    operationalStats.operationIds[key] = {
-      operationId: key,
-      count: operationIdStats?.operationIdCounts[key],
-      avgDuration: Math.round(operationIdStats?.operationIdDurationTotals[key] / operationIdStats.operationIdCounts[key]),
-      minDuration: operationIdStats?.operationIdDurationMin[key],
-      maxDuration: operationIdStats?.operationIdDurationMax[key],
-      maxDurationUpdated: operationIdStats?.operationIdDurationMaxUpdated[key],
-      projectionStats: operationIdStats?.operationIdProjections[key],
-      clients: operationIdStats?.clients[key]
-    }
-  )
-
-  operationalStats.totalRequests = overallOpStats.totalRequests
-  operationalStats.totalApiRequests = overallOpStats.totalApiRequests
-  operationalStats.totalRequestDuration = overallOpStats.totalRequestDuration
-
+  let operationalStats = logger.overallOpStats
 
   operationalStats = obfuscateClients(operationalStats);
 
+  operationalStats.operationIdStats = sortObjectByKeys(operationalStats.operationIdStats);
 
-  // let uptime = `${Math.round(process.uptime())} seconds` // seconds
-  let uptime = Math.round(process.uptime()) // seconds
+  let nodeUptime = Math.round(process.uptime()) // seconds
 
-  if (uptime < 60) {
-    uptime = `${uptime} seconds`;
-  } else if (uptime < 3600) { // less than 1 hour
-    let minutes = Math.floor(uptime / 60);
-    let seconds = uptime % 60;
-    uptime = `${minutes} minutes ${seconds} seconds`;
+  if (nodeUptime < 60) {
+    nodeUptime = `${nodeUptime} seconds`;
+  } else if (nodeUptime < 3600) { // less than 1 hour
+    let minutes = Math.floor(nodeUptime / 60);
+    let seconds = nodeUptime % 60;
+    nodeUptime = `${minutes} minutes ${seconds} seconds`;
   } else { // 1 hour or more
-    let hours = Math.floor(uptime / 3600);
-    let minutes = Math.floor((uptime % 3600) / 60);
-    uptime = `${hours} hours ${minutes} minutes`;
+    let hours = Math.floor(nodeUptime / 3600);
+    let minutes = Math.floor((nodeUptime % 3600) / 60);
+    nodeUptime = `${hours} hours ${minutes} minutes`;
   }
+
+
+  const formatMemoryUsage = (data) => `${Math.round(data / 1024 / 1024 * 100) / 100}`;
+
+  const memoryData = process.memoryUsage();
+
+  const nodeMemoryUsageInMb = {
+    rss: `${formatMemoryUsage(memoryData.rss)}`, //Resident Set Size - total memory allocated for the process execution
+    heapTotal: `${formatMemoryUsage(memoryData.heapTotal)}`, // total size of the allocated heap
+    heapUsed: `${formatMemoryUsage(memoryData.heapUsed)}`, // actual memory used during the execution
+    external: `${formatMemoryUsage(memoryData.external)}` // V8 external memory
+  };
+
 
   const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
 
@@ -802,7 +790,8 @@ WHERE
       grantCountsByCollection, 
       orphanedReviews,
       operationalStats,
-      uptime,
+      nodeUptime,
+      nodeMemoryUsageInMb,
       mySqlVersion: mySqlVersion[0].version,
       mySqlVariableStringsInMb,
       mySqlVariableStringsRaw,
@@ -825,19 +814,36 @@ function obfuscateClients(operationalStats) {
     return obfuscationMap[client];
   }
 
-  const operationIds = operationalStats.operationIds;
+  const operationIdStats = operationalStats.operationIdStats;
 
-  for (const operation in operationIds) {
-    const clients = operationIds[operation].clients;
-    const newClients = {};
-    
-    for (const client in clients) {
-      const obfuscatedKey = getObfuscatedKey(client);
-      newClients[obfuscatedKey] = clients[client];
+  for (const operationId in operationIdStats) {
+    if (operationIdStats[operationId].clients) {
+      const clients = operationIdStats[operationId].clients;
+      const newClients = {};
+      
+      for (const clientName in clients) {
+        const obfuscatedName = getObfuscatedKey(clientName);
+        newClients[obfuscatedName] = clients[clientName];
+      }
+      
+      operationIdStats[operationId].clients = newClients;
     }
-    
-    operationIds[operation].clients = newClients;
   }
 
   return operationalStats;
+}
+
+
+
+function sortObjectByKeys(obj) {
+  // Extract property names and sort them
+  const sortedKeys = Object.keys(obj).sort();
+  
+  // Create a new object and add properties in sorted order
+  const sortedObj = {};
+  for (const key of sortedKeys) {
+    sortedObj[key] = obj[key];
+  }
+
+  return sortedObj;
 }
