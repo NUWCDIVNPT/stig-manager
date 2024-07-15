@@ -707,15 +707,55 @@ ORDER BY
   ORDER by variable_name
 `  
 const sqlMySqlVariablesRawValues = `
-SELECT 
+  SELECT 
+      variable_name,
+      variable_value as value
+      FROM 
+      performance_schema.global_variables
+  WHERE 
+      variable_name IN (
+          ${mysqlVarsInMbOnly.map( v => `'${v}'`).join(',')},
+          ${mySqlVariablesRawOnly.map( v => `'${v}'`).join(',')}
+      )
+    ORDER by variable_name
+`
+
+const mySqlStatusRawOnly = [
+'Bytes_received',
+'Bytes_sent',
+'Handler_commit',
+'Handler_update',
+'Handler_write',
+'Innodb_buffer_pool_bytes_data',
+'Innodb_row_lock_waits',
+'Innodb_rows_read',
+'Innodb_rows_updated',
+'Innodb_rows_inserted',
+'Innodb_row_lock_time_avg',
+'Innodb_row_lock_time_max',
+'Created_tmp_files',
+'Created_tmp_tables',
+'Max_used_connections',
+'Open_tables',
+'Opened_tables',
+'Queries',
+'Select_full_join',
+'Slow_queries',
+'Table_locks_immediate',
+'Table_locks_waited',
+'Threads_created',
+'Uptime'
+]
+
+const sqlMySqlStatusRawValues = `
+  SELECT 
     variable_name,
     variable_value as value
-    FROM 
-    performance_schema.global_variables
-WHERE 
+  FROM 
+    performance_schema.global_status
+  WHERE 
     variable_name IN (
-        ${mysqlVarsInMbOnly.map( v => `'${v}'`).join(',')},
-        ${mySqlVariablesRawOnly.map( v => `'${v}'`).join(',')}
+        ${mySqlStatusRawOnly.map( v => `'${v}'`).join(',')}
     )
   ORDER by variable_name
 `
@@ -731,6 +771,7 @@ WHERE
   const [mySqlVersion] = await dbUtils.pool.query(sqlMySqlVersion);
   let [mySqlVariablesInMb] = await dbUtils.pool.query(sqlMySqlVariablesInMb);
   let [mySqlVariablesRaw] = await dbUtils.pool.query(sqlMySqlVariablesRawValues);
+  let [mySqlStatusRaw] = await dbUtils.pool.query(sqlMySqlStatusRawValues);
 
 
   let operationalStats = logger.overallOpStats
@@ -770,14 +811,14 @@ WHERE
 
   //create array of strings for easier reading
   let mySqlVariableStringsInMb = []
-  let mySqlVariableStringsRaw = []
 
   for (const key in mySqlVariablesInMb){
-    mySqlVariableStringsInMb.push(`${mySqlVariablesInMb[key].variable_name}: ${mySqlVariablesInMb[key].value}M`)
+    mySqlVariablesInMb[key].value = `${mySqlVariablesInMb[key].value}M`
+    // mySqlVariableStringsInMb.push(`${mySqlVariablesInMb[key].variable_name}: ${mySqlVariablesInMb[key].value}M`)
   }
-  for (const key in mySqlVariablesRaw){
-    mySqlVariableStringsRaw.push(`${mySqlVariablesRaw[key].variable_name}: ${mySqlVariablesRaw[key].value}`)
-  }
+  mySqlVariablesInMb = variableNameReducer(mySqlVariablesInMb) 
+  mySqlVariablesRaw = variableNameReducer(mySqlVariablesRaw)
+  mySqlStatusRaw = variableNameReducer(mySqlStatusRaw)
 
 
     return ({
@@ -793,9 +834,9 @@ WHERE
       nodeUptime,
       nodeMemoryUsageInMb,
       mySqlVersion: mySqlVersion[0].version,
-      mySqlVariableStringsInMb,
-      mySqlVariableStringsRaw,
-      mySqlVariablesRaw
+      mySqlVariablesInMb,
+      mySqlVariablesRaw,
+      mySqlStatusRaw
     })
 }
 
@@ -846,4 +887,12 @@ function sortObjectByKeys(obj) {
   }
 
   return sortedObj;
+}
+
+
+function variableNameReducer(data) {
+  return data.reduce((acc, item) => {
+    acc[item.variable_name] = item.value;
+    return acc;
+  }, {});
 }
