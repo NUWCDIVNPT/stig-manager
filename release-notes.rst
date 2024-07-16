@@ -12,6 +12,8 @@ Changes:
   - (UI/API) feat: Default review history records setting for new Collections set to 5
   - (UI/API) feat: Max review history records setting limited to 15
   - (build) chore: dependency updates
+  - **Includes database migration to update settings for existing Collections to reflect the new Review History cap where appropriate. No history is altered as part of the migration, history entries will be trimmed to new max as Reviews are subsequently updated.**
+
 
 1.4.11
 -----
