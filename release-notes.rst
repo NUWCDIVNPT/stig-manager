@@ -1,3 +1,18 @@
+1.4.12
+-----
+
+Changes:
+
+  - (API) feat: “Anonymized Deployment Details” report enhancements
+  - (UI/API) feat: Date/time added to filenames for exported/generated files
+  - (API) fix: Asset updates without collectionId property preserves labels
+  - (API) fix: default_rev and stats updated when current STIG revision is removed
+  - (API) fix: Resolved issue preventing new deployments from using alternative DB user
+  - (build) fix: resolved issue building images with uglify.js
+  - (UI/API) feat: Default review history records setting for new Collections set to 5
+  - (UI/API) feat: Max review history records setting limited to 15
+  - (build) chore: dependency updates
+
 1.4.11
 -----
 
