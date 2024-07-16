@@ -809,12 +809,8 @@ const sqlMySqlStatusRawValues = `
 
   const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
 
-  //create array of strings for easier reading
-  let mySqlVariableStringsInMb = []
-
   for (const key in mySqlVariablesInMb){
     mySqlVariablesInMb[key].value = `${mySqlVariablesInMb[key].value}M`
-    // mySqlVariableStringsInMb.push(`${mySqlVariablesInMb[key].variable_name}: ${mySqlVariablesInMb[key].value}M`)
   }
   mySqlVariablesInMb = variableNameReducer(mySqlVariablesInMb) 
   mySqlVariablesRaw = variableNameReducer(mySqlVariablesRaw)
