@@ -14,7 +14,8 @@ let config = {
         // Supported STIGMAN_DEV_RESPONSE_VALIDATION values: 
         // "logOnly" (logs failing response, but still sends them) 
         // "none"(no validation performed)
-        responseValidation: process.env.STIGMAN_DEV_RESPONSE_VALIDATION || "none"
+        responseValidation: process.env.STIGMAN_DEV_RESPONSE_VALIDATION || "none",
+        obfuscateClientsInOptStats: process.env.STIGMAN_DEV_OPT_STATS_OBFUSCATE_CLIENTS || "true",
 
     },
     client: {

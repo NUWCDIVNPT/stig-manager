@@ -776,7 +776,10 @@ const sqlMySqlStatusRawValues = `
 
   let operationalStats = logger.overallOpStats
 
-  operationalStats = obfuscateClients(operationalStats);
+  // Obfuscate client names in stats if configured (default == true)
+  if (config.settings.obfuscateClientsInOptStats == "true") {
+    operationalStats = obfuscateClients(operationalStats);
+  }
 
   operationalStats.operationIdStats = sortObjectByKeys(operationalStats.operationIdStats);
 
