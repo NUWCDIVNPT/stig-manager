@@ -660,7 +660,7 @@ ORDER BY
   `
 
     const sqlOrphanedReviews = `
-    SELECT count(distinct r.ruleId)
+    SELECT count(distinct r.ruleId) as uniqueOrphanedRules
     FROM 
      review r 
     where 
