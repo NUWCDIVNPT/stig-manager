@@ -615,7 +615,10 @@ exports.getDetails = async function() {
           as reviewCntTotal,
       coalesce(
         sum(if(a.state = "disabled", (sa.pass + sa.fail + sa.notapplicable + sa.notchecked + sa.notselected + sa.informational + sa.fixed + sa.unknown + sa.error), 0)))
-        as reviewCntDisabled
+        as reviewCntDisabled,
+	    count(distinct cl.clId) as collectionLabelCount, 
+      count(distinct clam.assetId) as labeledAssetCount,
+      count(distinct clam.claId) as assetLabelCount
       FROM
         collection c
         left join asset a on c.collectionId = a.collectionId 
@@ -623,6 +626,8 @@ exports.getDetails = async function() {
         left join default_rev dr on c.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId
         left join revision rev on dr.revId = rev.revId
         left join stig on rev.benchmarkId = stig.benchmarkId
+        left join collection_label cl on cl.collectionId = c.collectionId
+        left join collection_label_asset_map clam on clam.clId = cl.clId
       GROUP BY
         c.collectionId
       ORDER BY
