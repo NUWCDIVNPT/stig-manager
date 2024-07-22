@@ -331,6 +331,7 @@ async function showCollectionProps(collectionId) {
         },
         method: 'GET'
       })
+      SM.Cache.updateCollection(apiCollection)
 
       fp.setFieldValues(apiCollection)
     }
