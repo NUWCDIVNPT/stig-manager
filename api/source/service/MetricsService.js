@@ -122,6 +122,7 @@ module.exports.queryMetrics = async function ({
       break
     case 'label':
       predicates.statements.push('a.assetId IS NOT NULL')
+      predicates.statements.push('cl.collectionId = granted.collectionId or cl.collectionId IS NULL')
       groupBy.push('cl.description', 'cl.color')
       joins.push(
         'left join collection_label_asset_map cla on a.assetId = cla.assetId',
