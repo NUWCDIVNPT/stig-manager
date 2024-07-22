@@ -190,25 +190,30 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
           const uniqueArray = [...uniqueSet].sort(col.filter.comparer)
           const cValue = cVals[col.dataIndex]
           for ( const value of uniqueArray ) {
-            itemConfigs.push({
-              text: col.filter.renderer ? col.filter.renderer(value, col.filter.collectionId) : value ? value : '<i>(No value)</i>',
-              xtype: 'menucheckitem',
-              column: col,
-              hideOnClick: false,
-              // checked: isLoading ? true : cVals[col.dataIndex] ? cVals[col.dataIndex].includes(value) : false,
-              checked: isLoading ? true : cValue ? cValue.selectAllChecked || cValue.includes(value) : false,
-              filter: {
-                dataIndex: col.dataIndex,
-                type: 'values',
-                value
-              },
-              listeners: {
-                checkchange: function (item, value) {
-                  item.selectAllItem.onValueItemChanged()
-                  _this.onFilterChange(item, value)
+            //Don't add label filters for values that are not in the labelMap, unless the value is an empty string (which is a valid filter item)
+            if ((col.dataIndex == "labelIds" || col.dataIndex == "labelId") && (SM.Cache.CollectionMap.get(col.filter.collectionId).labelMap.get(value) === undefined && value !== '')) {
+              continue
+            } else {
+              itemConfigs.push({
+                text: col.filter.renderer ? col.filter.renderer(value, col.filter.collectionId) : value ? value : '<i>(No value)</i>',
+                xtype: 'menucheckitem',
+                column: col,
+                hideOnClick: false,
+                // checked: isLoading ? true : cVals[col.dataIndex] ? cVals[col.dataIndex].includes(value) : false,
+                checked: isLoading ? true : cValue ? cValue.selectAllChecked || cValue.includes(value) : false,
+                filter: {
+                  dataIndex: col.dataIndex,
+                  type: 'values',
+                  value
+                },
+                listeners: {
+                  checkchange: function (item, value) {
+                    item.selectAllItem.onValueItemChanged()
+                    _this.onFilterChange(item, value)
+                  }
                 }
-              }
-            })
+              })
+            }
           }
           // add the Select All item
           const selectAllItem = hmenu.addItem({
@@ -408,6 +413,6 @@ SM.ColumnFilters.Renderers = {
   labels: function (labelId, collectionId) {
     if (!labelId) return '<i>(No value)</i>'
     const labelObj = SM.Cache.CollectionMap.get(collectionId).labelMap.get(labelId)
-    return SM.Collection.LabelTpl.apply(labelObj)
+      return SM.Collection.LabelTpl.apply(labelObj)
   }
 }

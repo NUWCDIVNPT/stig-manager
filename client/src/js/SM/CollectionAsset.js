@@ -510,9 +510,10 @@ SM.AssetLabelField = Ext.extend(Ext.form.Field, {
     },
     setValue: function (labelIds) {
             this.labelIds = labelIds
-            this.labelsMenu.setLabelsChecked(labelIds, true)
-
             const cachedCollection = SM.Cache.CollectionMap.get(this.collectionId)
+            //remove any labelIds that are not in the collection
+            labelIds = labelIds.filter(id => cachedCollection.labels.some(label => label.labelId === id));
+            this.labelsMenu.setLabelsChecked(labelIds, true)
             const assetLabels = cachedCollection.labels.filter( function (label) {
                 return labelIds.includes(label.labelId)
             })
