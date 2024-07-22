@@ -191,7 +191,7 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
           const cValue = cVals[col.dataIndex]
           for ( const value of uniqueArray ) {
             //Don't add label filters for values that are not in the labelMap, unless the value is an empty string (which is a valid filter item)
-            if ((col.dataIndex == "labelIds" || col.dataIndex == "labelId") && (SM.Cache.CollectionMap.get(col.filter.collectionId).labelMap.get(value) === undefined && value !== '')) {
+            if ((col.dataIndex == "labelIds" || col.dataIndex == "labelId" || col.dataIndex == "assetLabelIds") && (SM.Cache.CollectionMap.get(col.filter.collectionId).labelMap.get(value) === undefined && value !== '')) {
               continue
             } else {
               itemConfigs.push({
