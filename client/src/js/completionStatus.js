@@ -72,7 +72,7 @@ function addCompletionStatus( params) {
 				renderer: function (value, metadata) {
 						const labels = []
 						for (const labelId of value) {
-								const label = SM.Cache.CollectionMap.get(collectionId).labelMap.get(labelId)
+								const label = SM.Cache.getCollectionLabel(collectionId, labelId)
 								if (label) labels.push(label)
 						}
 						labels.sort((a,b) => a.name.localeCompare(b.name))

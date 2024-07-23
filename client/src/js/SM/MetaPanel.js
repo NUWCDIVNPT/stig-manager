@@ -176,7 +176,7 @@ SM.MetaPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
             renderer: function (value, metadata) {
               const labels = []
               for (const labelId of value) {
-                const label = SM.Cache.CollectionMap.get(_this.collectionId).labelMap.get(labelId)
+                const label = SM.Cache.getCollectionLabel(_this.collectionId, labelId)
                 if (label) labels.push(label)
               }
               labels.sort((a, b) => a.name.localeCompare(b.name))
@@ -506,7 +506,7 @@ SM.MetaPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
             renderer: function (value, metadata) {
               const labels = []
               for (const labelId of value) {
-                const label = SM.Cache.CollectionMap.get(_this.collectionId).labelMap.get(labelId)
+                const label = SM.Cache.getCollectionLabel(_this.collectionId, labelId)
                 if (label) labels.push(label)
               }
               labels.sort((a, b) => a.name.localeCompare(b.name))
