@@ -263,6 +263,11 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
             filter: {
               type: 'values',
               collectionId: _this.collectionId,
+              comparer: function (a, b) {
+                var collectionId = _this.collectionId
+                return SM.Cache.CollectionMap.get(collectionId).labelMap.get(a).name.localeCompare(SM.Cache.CollectionMap.get(collectionId).labelMap.get(b).name)
+              },    
+              // SM.ColumnFilters.CompareFns.labelIds,
               renderer: SM.ColumnFilters.Renderers.labels
             },
             renderer: function (value, metadata) {
