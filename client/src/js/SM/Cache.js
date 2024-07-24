@@ -71,6 +71,16 @@ SM.Cache.seedCollections = function (apiCollections) {
   return SM.Cache.CollectionMap
 }
 
+SM.Cache.getCollectionLabel = function (collectionId, labelId) {
+  if (!labelId || !collectionId) return undefined
+  return SM.Cache.CollectionMap.get(collectionId).labelMap.get(labelId) || {
+    labelId,
+    color: 'FF0000',
+    description: 'cross-collection label error',
+    name: 'ERROR'
+  }
+}
+
 SM.Dispatcher.addListener('collectioncreated', function( apiCollection, options) {
   SM.Cache.seedCollections([apiCollection])
 })
