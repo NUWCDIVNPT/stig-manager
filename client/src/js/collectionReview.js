@@ -937,6 +937,9 @@ async function addCollectionReview ( params ) {
 					filter: {
 							type: 'values', 
 							collectionId: apiCollection.collectionId,
+							comparer: function (a, b) {
+								return SM.ColumnFilters.CompareFns.labelIds(a, b, apiCollection.collectionId)
+								},  
 							renderer: SM.ColumnFilters.Renderers.labels
 					},
 					renderer: function (value, metadata) {

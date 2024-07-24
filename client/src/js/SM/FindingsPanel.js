@@ -477,6 +477,9 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				filter: {
 					type: 'values',
 					collectionId: me.panel.collectionId,
+					comparer: function (a, b) {
+						return SM.ColumnFilters.CompareFns.labelIds(a, b, me.panel.collectionId)
+						},      					
 					renderer: SM.ColumnFilters.Renderers.labels
 				},
 				renderer: function (value, metadata) {

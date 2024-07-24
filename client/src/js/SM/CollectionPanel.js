@@ -263,11 +263,14 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
             filter: {
               type: 'values',
               collectionId: _this.collectionId,
+              // comparer: function (a, b) {
+              //   var collectionId = _this.collectionId
+              //   return SM.Cache.CollectionMap.get(collectionId).labelMap.get(a).name.localeCompare(SM.Cache.CollectionMap.get(collectionId).labelMap.get(b).name)
+              // },    
               comparer: function (a, b) {
-                var collectionId = _this.collectionId
-                return SM.Cache.CollectionMap.get(collectionId).labelMap.get(a).name.localeCompare(SM.Cache.CollectionMap.get(collectionId).labelMap.get(b).name)
-              },    
-              // SM.ColumnFilters.CompareFns.labelIds,
+                return SM.ColumnFilters.CompareFns.labelIds(a, b, _this.collectionId)
+                },
+              // comparer: SM.ColumnFilters.CompareFns.labelIds,
               renderer: SM.ColumnFilters.Renderers.labels
             },
             renderer: function (value, metadata) {
@@ -343,6 +346,9 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
             filter: {
               type: 'values',
               collectionId: _this.collectionId,
+              comparer: function (a, b) {
+                return SM.ColumnFilters.CompareFns.labelIds(a, b, _this.collectionId)
+                },              
               renderer: SM.ColumnFilters.Renderers.labels
             },
             renderer: function (value, metadata) {
@@ -575,6 +581,9 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
             filter: {
               type: 'values',
               collectionId: _this.collectionId,
+              comparer: function (a, b) {
+                return SM.ColumnFilters.CompareFns.labelIds(a, b, _this.collectionId)
+                },              
               renderer: SM.ColumnFilters.Renderers.labels
             },
             renderer: function (value, metadata) {
