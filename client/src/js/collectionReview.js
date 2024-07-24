@@ -945,8 +945,8 @@ async function addCollectionReview ( params ) {
 					renderer: function (value, metadata) {
 							const labels = []
 							for (const labelId of value) {
-									const label = SM.Cache.CollectionMap.get(apiCollection.collectionId).labelMap.get(labelId)
-									if (label) labels.push(label)
+								const label = SM.Cache.getCollectionLabel(apiCollection.collectionId, labelId)
+								if (label) labels.push(label)
 							}
 							labels.sort((a,b) => a.name.localeCompare(b.name))
 							metadata.attr = 'style="white-space:nowrap;text-overflow:clip;"'

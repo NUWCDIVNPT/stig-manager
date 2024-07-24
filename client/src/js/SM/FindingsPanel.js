@@ -485,7 +485,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				renderer: function (value, metadata) {
 					const labels = []
 					for (const labelId of value) {
-						const label = SM.Cache.CollectionMap.get(me.panel.collectionId).labelMap.get(labelId)
+						const label = SM.Cache.getCollectionLabel(me.panel.collectionId, labelId)
 						if (label) labels.push(label)
 					}
 					labels.sort((a, b) => a.name.localeCompare(b.name))
