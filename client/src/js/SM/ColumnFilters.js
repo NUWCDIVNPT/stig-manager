@@ -352,9 +352,9 @@ SM.ColumnFilters.CompareFns = {
     
   },
   labelIds: (a, b, collectionId) => {
-    if (a == "" || b == "") return 1
+    if (a === "") return -1;
+    if (b === "") return 1;
     return SM.Cache.getCollectionLabel(collectionId, a).name.localeCompare(SM.Cache.getCollectionLabel(collectionId, b).name)
-    // return SM.Cache.CollectionMap.get(collectionId).labelMap.get(a).name.localeCompare(SM.Cache.CollectionMap.get(collectionId).labelMap.get(b).name)
   },        
 }
 
