@@ -1689,6 +1689,8 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
       return
     }
 
+    SM.Cache.updateCollectionLabels(collectionId)
+
     const gState = {}
 
     gState.labelIds = initialLabelIds
@@ -1833,7 +1835,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
       ],
       listeners: {
         tabchange: function (tp) {
-          updateData({event: 'tabchange'})
+          if (!tp.firstShow) updateData({ event: 'tabchange' })
           tp.firstShow = false
         }
       }
