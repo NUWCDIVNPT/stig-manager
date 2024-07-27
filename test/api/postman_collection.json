@@ -29600,7 +29600,7 @@
 									"});\r",
 									"\r",
 									"pm.test(\"assetStig exists\", function () {\r",
-									"    pm.expect(jsonData.assetStig).to.exist;\r",
+									"    pm.expect(jsonData.assetStigByCollection).to.exist;\r",
 									"});\r",
 									"\r",
 									"\r",
@@ -29609,7 +29609,8 @@
 									"\r",
 									""
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],

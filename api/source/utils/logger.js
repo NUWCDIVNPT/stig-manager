@@ -207,6 +207,7 @@ function trackOperationStats(operationId, durationMs, res) {
         return this.totalRequests ? Math.round(this.totalDuration / this.totalRequests) : 0;
       },
       clients: {},
+      users: {},
     };
   }
 
@@ -223,6 +224,11 @@ function trackOperationStats(operationId, durationMs, res) {
     stats.maxDuration = durationMs;
     stats.maxDurationUpdates++;
   }
+
+  // Check token for userid
+  let userId = res.req?.userObject?.userId || 'unknown';
+  // Increment user count for this operationId
+  stats.users[userId] = (stats.users[userId] || 0) + 1;  
 
   // Check token for client id
   let client = res.req?.access_token?.azp || 'unknown';
