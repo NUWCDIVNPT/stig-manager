@@ -191,7 +191,7 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
           const cValue = cVals[col.dataIndex]
           for ( const value of uniqueArray ) {
             itemConfigs.push({
-              text: col.filter.renderer ? col.filter.renderer(value, col.filter.collectionId) : value ? value : '<i>(No value)</i>',
+              text: col.filter.renderer ? col.filter.renderer(value, col.filter.collectionId) : value ,
               xtype: 'menucheckitem',
               column: col,
               hideOnClick: false,
@@ -407,7 +407,7 @@ SM.ColumnFilters.Renderers = {
   },
   labels: function (labelId, collectionId) {
     if (!labelId) return '<i>(No value)</i>'
-    const labelObj = SM.Cache.CollectionMap.get(collectionId).labelMap.get(labelId)
+    const labelObj = SM.Cache.getCollectionLabel(collectionId, labelId)
     return SM.Collection.LabelTpl.apply(labelObj)
   }
 }

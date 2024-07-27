@@ -17,6 +17,8 @@ async function addCollectionManager( params ) {
 			},
 			method: 'GET'
 		})
+		SM.Cache.updateCollection(apiCollection)
+
 		let apiFieldSettings = apiCollection.settings.fields
 
 		function onFieldSettingsChanged (collectionId, fieldSettings) {
