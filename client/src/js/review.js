@@ -1112,7 +1112,6 @@ async function addReview( params ) {
     canAccept,
     fieldSettings: apiFieldSettings,
     btnHandler: function (btn) {
-      console.log(btn)
       saveReview({
         source: 'form',
         type: btn.actionType
