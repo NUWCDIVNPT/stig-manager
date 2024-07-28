@@ -6,10 +6,7 @@ SM.Cache.getCollections = async function () {
   const apiCollections = await Ext.Ajax.requestPromise({
     responseType: 'json',
     url: `${STIGMAN.Env.apiBase}/collections`,
-    method: 'GET',
-    params: {
-      projection: 'labels'
-    }
+    method: 'GET'
   })
   return SM.Cache.seedCollections(apiCollections)
 }
@@ -69,12 +66,19 @@ SM.Cache.updateCollection = function (apiCollection) {
 SM.Cache.seedCollections = function (apiCollections) {
   for (const collection of apiCollections) {
     const labelMap = new Map()
-    for (const label of collection.labels) {
-      labelMap.set(label.labelId, label)
-    }
     SM.Cache.CollectionMap.set(collection.collectionId, { labelMap, ...collection })
   }
   return SM.Cache.CollectionMap
+}
+
+SM.Cache.getCollectionLabel = function (collectionId, labelId) {
+  if (!labelId || !collectionId) return undefined
+  return SM.Cache.CollectionMap.get(collectionId).labelMap.get(labelId) || {
+    labelId,
+    color: 'FF0000',
+    description: 'cross-collection label error',
+    name: 'ERROR'
+  }
 }
 
 SM.Dispatcher.addListener('collectioncreated', function( apiCollection, options) {

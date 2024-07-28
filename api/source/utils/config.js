@@ -14,7 +14,8 @@ let config = {
         // Supported STIGMAN_DEV_RESPONSE_VALIDATION values: 
         // "logOnly" (logs failing response, but still sends them) 
         // "none"(no validation performed)
-        responseValidation: process.env.STIGMAN_DEV_RESPONSE_VALIDATION || "none"
+        responseValidation: process.env.STIGMAN_DEV_RESPONSE_VALIDATION || "none",
+        obfuscateClientsInOptStats: process.env.STIGMAN_DEV_OPT_STATS_OBFUSCATE_CLIENTS || "true",
 
     },
     client: {
@@ -83,7 +84,9 @@ let config = {
     },
     log: {
         level: parseInt(process.env.STIGMAN_LOG_LEVEL) || 3,
-        mode: process.env.STIGMAN_LOG_MODE || 'combined' 
+        mode: process.env.STIGMAN_LOG_MODE || 'combined',
+        // if STIGMAN_DEV_OPT_STATS_IN_LOGS = true, add performance stats to logs:
+        optStats: process.env.STIGMAN_DEV_LOG_OPT_STATS || "false"
     }
 }
 

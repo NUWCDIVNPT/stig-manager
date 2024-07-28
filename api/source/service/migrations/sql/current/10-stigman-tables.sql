@@ -618,7 +618,6 @@ DROP TABLE IF EXISTS `v_latest_rev`;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`stigman`@`%` SQL SECURITY DEFINER */
 /*!50001 VIEW `v_current_rev` AS select `rr`.`revId` AS `revId`,`rr`.`benchmarkId` AS `benchmarkId`,`rr`.`version` AS `version`,`rr`.`release` AS `release`,`rr`.`benchmarkDate` AS `benchmarkDate`,`rr`.`benchmarkDateSql` AS `benchmarkDateSql`,`rr`.`status` AS `status`,`rr`.`statusDate` AS `statusDate`,`rr`.`description` AS `description`,`rr`.`active` AS `active`,`rr`.`groupCount` AS `groupCount`,`rr`.`ruleCount` AS `ruleCount`,`rr`.`lowCount` AS `lowCount`,`rr`.`mediumCount` AS `mediumCount`,`rr`.`highCount` AS `highCount`,`rr`.`checkCount` AS `checkCount`,`rr`.`fixCount` AS `fixCount` from (select `r`.`revId` AS `revId`,`r`.`benchmarkId` AS `benchmarkId`,`r`.`version` AS `version`,`r`.`release` AS `release`,`r`.`benchmarkDate` AS `benchmarkDate`,`r`.`benchmarkDateSql` AS `benchmarkDateSql`,`r`.`status` AS `status`,`r`.`statusDate` AS `statusDate`,`r`.`description` AS `description`,`r`.`active` AS `active`,`r`.`groupCount` AS `groupCount`,`r`.`ruleCount` AS `ruleCount`,`r`.`lowCount` AS `lowCount`,`r`.`mediumCount` AS `mediumCount`,`r`.`highCount` AS `highCount`,`r`.`checkCount` AS `checkCount`,`r`.`fixCount` AS `fixCount`,row_number() OVER (PARTITION BY `r`.`benchmarkId` ORDER BY field(`r`.`status`,'draft','accepted') desc,(`r`.`version` + 0) desc,(`r`.`release` + 0) desc )  AS `rn` from `revision` `r`) `rr` where (`rr`.`rn` = 1) */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
@@ -630,7 +629,6 @@ DROP TABLE IF EXISTS `v_latest_rev`;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`stigman`@`%` SQL SECURITY DEFINER */
 /*!50001 VIEW `v_default_rev` AS select distinct `a`.`collectionId` AS `collectionId`,`sa`.`benchmarkId` AS `benchmarkId`,(case when (`crm`.`revId` is not null) then `crm`.`revId` else `cr`.`revId` end) AS `revId`,(case when (`crm`.`revId` is not null) then 1 else 0 end) AS `revisionPinned` from (((`asset` `a` join `stig_asset_map` `sa` on((`a`.`assetId` = `sa`.`assetId`))) left join `current_rev` `cr` on((`sa`.`benchmarkId` = `cr`.`benchmarkId`))) left join `collection_rev_map` `crm` on(((`sa`.`benchmarkId` = `crm`.`benchmarkId`) and (`a`.`collectionId` = `crm`.`collectionId`)))) */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
@@ -642,7 +640,6 @@ DROP TABLE IF EXISTS `v_latest_rev`;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`stigman`@`%` SQL SECURITY DEFINER */
 /*!50001 VIEW `v_latest_rev` AS select `rr`.`revId` AS `revId`,`rr`.`benchmarkId` AS `benchmarkId`,concat('V',`rr`.`version`,'R',`rr`.`release`) AS `revisionStr` from (select `r`.`revId` AS `revId`,`r`.`benchmarkId` AS `benchmarkId`,`r`.`version` AS `version`,`r`.`release` AS `release`,row_number() OVER (PARTITION BY `r`.`benchmarkId` ORDER BY field(`r`.`status`,'draft','accepted') desc,(`r`.`version` + 0) desc,(`r`.`release` + 0) desc )  AS `rn` from `revision` `r`) `rr` where (`rr`.`rn` = 1) */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

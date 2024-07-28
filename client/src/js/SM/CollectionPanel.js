@@ -268,7 +268,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
             renderer: function (value, metadata) {
               const labels = []
               for (const labelId of value) {
-                const label = SM.Cache.CollectionMap.get(_this.collectionId).labelMap.get(labelId)
+                const label = SM.Cache.getCollectionLabel(_this.collectionId, labelId)
                 if (label) labels.push(label)
               }
               labels.sort((a, b) => a.name.localeCompare(b.name))
@@ -343,7 +343,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
             renderer: function (value, metadata) {
               const labels = []
               const labelId = value
-              const label = SM.Cache.CollectionMap.get(_this.collectionId).labelMap.get(labelId)
+              const label = SM.Cache.getCollectionLabel(_this.collectionId, labelId)
               if (label) labels.push(label)
               labels.sort((a, b) => a.name.localeCompare(b.name))
               metadata.attr = 'style="white-space:normal;"'
@@ -575,7 +575,7 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
             renderer: function (value, metadata) {
               const labels = []
               for (const labelId of value) {
-                const label = SM.Cache.CollectionMap.get(_this.collectionId).labelMap.get(labelId)
+                const label = SM.Cache.getCollectionLabel(_this.collectionId, labelId)
                 if (label) labels.push(label)
               }
               labels.sort((a, b) => a.name.localeCompare(b.name))
@@ -1126,7 +1126,7 @@ SM.CollectionPanel.ExportPanel = Ext.extend(Ext.Panel, {
         const agg = aggComboBox.getValue()
         const url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/metrics/${style}${agg === 'unagg' ? '' : `/${agg}`}?${queryParamsStr}`
 
-        const attachment = `${agg}-${style}.${format}`
+        const attachment = SM.Global.filenameEscaped(`${SM.Cache.CollectionMap.get(_this.collectionId)?.name}-${agg}-${style}_${SM.Global.filenameComponentFromDate()}.${format}`)
         await window.oidcProvider.updateToken(10)
         const fetchInit = {
           method: 'GET',
@@ -1675,6 +1675,8 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
       return
     }
 
+    SM.Cache.updateCollectionLabels(collectionId)
+
     const gState = {}
 
     gState.labelIds = initialLabelIds
@@ -1819,7 +1821,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
       ],
       listeners: {
         tabchange: function (tp) {
-          updateData({event: 'tabchange'})
+          if (!tp.firstShow) updateData({ event: 'tabchange' })
           tp.firstShow = false
         }
       }

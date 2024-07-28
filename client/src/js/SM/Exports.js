@@ -704,10 +704,8 @@ SM.Exports.showExportTree = async function (collectionId, collectionName, treeba
 SM.Exports.exportArchiveStreaming = async function ({collectionId, checklists, format = 'ckl-mono'}) {
 
   function formatBytes(a, b = 2, k = 1024) { 
-    with (Math) { 
-      let d = floor(log(a) / log(k));
-      return 0 == a ? "0 Bytes" : (a / pow(k, d)).toFixed(b) + " " + ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"][d] 
-    }
+    const d = Math.floor(Math.log(a) / Math.log(k));
+    return 0 == a ? "0 Bytes" : (a / Math.pow(k, d)).toFixed(b) + " " + ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"][d] 
   }
 
   const url = {
@@ -734,6 +732,7 @@ SM.Exports.exportArchiveStreaming = async function ({collectionId, checklists, f
       return
     }
 
+    // The fallback code below only executes if the service worker is broken, which probably means we have bigger issues
     let response = await fetch(url[format], fetchInit)
     const contentDisposition = response.headers.get("content-disposition")
     if (!response.ok) {

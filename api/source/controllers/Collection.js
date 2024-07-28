@@ -30,7 +30,7 @@ module.exports.defaultSettings = {
     minAcceptGrant: 3
   },
   history: {
-    maxReviews: 15
+    maxReviews: 5
   }
 }
 
@@ -151,7 +151,6 @@ module.exports.getFindingsByCollection = async function getFindingsByCollection 
 
 module.exports.getPoamByCollection = async function getFindingsByCollection (req, res, next) {
   try {
-    const collectionId = req.params.collectionId
     const aggregator = req.query.aggregator
     const benchmarkId = req.query.benchmarkId
     const assetId = req.query.assetId
@@ -164,8 +163,8 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
       authName: req.query.mccastAuthName,
       format: req.query.format
     }
-    const collectionGrant = req.userObject.collectionGrants.find( g => g.collection.collectionId === collectionId )
-    if (collectionGrant) {
+  const { collectionId, collectionGrant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+  if (collectionGrant) {
       const response = await CollectionService.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, 
         [
           'rulesWithDiscussion',
@@ -662,12 +661,14 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
     attrValueProcessor: escapeForXml
 })
   const zip = Archiver('zip', {zlib: {level: 9}})
+  const started = new Date()
+  const dateString = escape.filenameComponentFromDate(started)
   const attachmentName = escape.escapeFilename(`${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 
-    'CKL' : format.startsWith('cklb-') ? 'CKLB' : 'XCCDF'}.zip`)
+    'CKL' : format.startsWith('cklb-') ? 'CKLB' : 'XCCDF'}_${dateString}.zip`)
   res.attachment(attachmentName)
   zip.pipe(res)
   const manifest = {
-    started: new Date().toISOString(),
+    started: started.toISOString(),
     finished: '',
     errorCount: 0,
     errors: [],

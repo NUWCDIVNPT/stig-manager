@@ -533,3 +533,37 @@ Ext.override(Ext.grid.GridPanel, {
     }
 })
 
+SM.Global.filenameComponentFromDate = function (dateObject = new Date()) {
+    return dateObject.toISOString().replace(/:|\d{2}\.\d{3}/g,'')
+}
+
+SM.Global.filenameEscaped = function (value) {
+    /**
+     * Regexes match characters that need to be escaped in filenames.
+     * @type {RegExp}
+     */
+    const osReserved = /[/\\:*"?<>|]/g
+    const controlChars = /[\x00-\x1f]/g
+  
+      /**
+     * Map of characters to their corresponding named HTML entities.
+     * @type {Object.<string, string>}
+     */
+    const osReserveReplace = {
+      '/': '&sol;',
+      '\\': '&bsol;',
+      ':': '&colon;',
+      '*': '&ast;',
+      '"': '&quot;',
+      '?': '&quest;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '|': '&vert;',
+    }
+  
+    return value.toString()
+    .replace(osReserved, (match) => osReserveReplace[match])
+    .replace(controlChars, (match) => `&#x${match.charCodeAt(0).toString().padStart(2,'0')};`)
+    .substring(0, 255)
+  }
+

@@ -884,7 +884,7 @@ async function addReview( params ) {
         renderer: function (value, metadata) {
             const labels = []
             for (const labelId of value) {
-                const label = SM.Cache.CollectionMap.get(apiCollection.collectionId).labelMap.get(labelId)
+                const label = SM.Cache.getCollectionLabel(apiCollection.collectionId, labelId)
                 if (label) labels.push(label)
             }
             labels.sort((a,b) => a.name.localeCompare(b.name))
@@ -1086,10 +1086,9 @@ async function addReview( params ) {
     labelSpans = SM.Collection.LabelArrayTpl.apply(leaf.assetLabels)
   }
   else {
-    const labelMap = SM.Cache.CollectionMap.get(apiCollection.collectionId).labelMap
     const labels = []
     for (const labelId of leaf.assetLabelIds) {
-        const label = labelMap.get(labelId)
+        const label = SM.Cache.getCollectionLabel(apiCollection.collectionId, labelId)
         if (label) labels.push(label)
     }
     labels.sort((a,b) => a.name.localeCompare(b.name))

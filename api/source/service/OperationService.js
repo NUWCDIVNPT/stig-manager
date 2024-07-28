@@ -1,6 +1,7 @@
 'use strict';
 const dbUtils = require('./utils')
 const config = require('../utils/config')
+const logger = require('../utils/logger');
 
 
 /**
@@ -549,7 +550,8 @@ exports.replaceAppData = async function (importOpts, appData, userObject, res ) 
 exports.getDetails = async function() {
   const sqlAnalyze = `ANALYZE TABLE
   collection, asset, review, review_history, user`
-  const sqlInfoSchema = `SELECT
+  const sqlInfoSchema = `
+  SELECT
     TABLE_NAME as tableName,
     TABLE_ROWS as tableRows,
     TABLE_COLLATION as tableCollation,
@@ -565,7 +567,8 @@ exports.getDetails = async function() {
   WHERE
     TABLE_SCHEMA = ?
   ORDER BY
-    TABLE_NAME`
+    TABLE_NAME
+    `
   const sqlCollectionAssetStigs = `
     SELECT
       CAST(sub.collectionId as char) as collectionId,
@@ -591,21 +594,304 @@ exports.getDetails = async function() {
     GROUP BY
       sub.collectionId
     ORDER BY
-      sub.collectionId`
+      sub.collectionId
+  `
 
-    await dbUtils.pool.query(sqlAnalyze)
+      const sqlCountsByCollection = `
+      SELECT
+      cast(c.collectionId as char) as collectionId,
+      c.state,
+      count(distinct a.assetId) as assetsTotal,
+      count( distinct 
+        if(a.state = "disabled", a.assetId, null)
+        ) 
+        as assetsDisabled,
+      count(distinct sa.benchmarkId) as uniqueStigs,
+      count(sa.saId) as stigAssignments,
+      coalesce(sum(rev.ruleCount),0) 
+        as ruleCnt,
+      coalesce(
+          sum(sa.pass + sa.fail + sa.notapplicable + sa.notchecked + sa.notselected + sa.informational + sa.fixed + sa.unknown + sa.error),0) 
+          as reviewCntTotal,
+      coalesce(
+        sum(if(a.state = "disabled", (sa.pass + sa.fail + sa.notapplicable + sa.notchecked + sa.notselected + sa.informational + sa.fixed + sa.unknown + sa.error), 0)))
+        as reviewCntDisabled
+      FROM
+        collection c
+        left join asset a on c.collectionId = a.collectionId 
+        left join stig_asset_map sa on a.assetId = sa.assetId
+        left join default_rev dr on c.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId
+        left join revision rev on dr.revId = rev.revId
+        left join stig on rev.benchmarkId = stig.benchmarkId
+      GROUP BY
+        c.collectionId
+      ORDER BY
+        c.collectionId
+      `
 
-    const [[schemaInfoArray], [assetStig]] = await Promise.all([
-      dbUtils.pool.query(sqlInfoSchema, [config.database.schema]),
-      dbUtils.pool.query(sqlCollectionAssetStigs)
-    ])
+      const sqlRestrictedGrantCounts = `
+      select collectionId, json_arrayagg(perUser) as restrictedUserGrantCounts
+      from 
+      (select
+        a.collectionId, 
+        json_object('user', usam.userId, 'stigAssetCount', count(usam.saId), 'uniqueAssets', count(distinct sam.assetId)) as perUser
+      from user_stig_asset_map usam
+      left join stig_asset_map sam on sam.saId=usam.saId
+      left join asset a on a.assetId = sam.assetId
+      group by
+      userId, collectionId) as sub
+      group by 
+      sub.collectionId
+`
 
-    const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
+  const sqlGrantCounts = `
+SELECT 
+    collectionId,
+    SUM(CASE WHEN accessLevel = 1 THEN 1 ELSE 0 END) AS accessLevel1,
+    SUM(CASE WHEN accessLevel = 2 THEN 1 ELSE 0 END) AS accessLevel2,
+    SUM(CASE WHEN accessLevel = 3 THEN 1 ELSE 0 END) AS accessLevel3,
+    SUM(CASE WHEN accessLevel = 4 THEN 1 ELSE 0 END) AS accessLevel4
+FROM 
+    collection_grant
+GROUP BY 
+    collectionId
+ORDER BY 
+    collectionId
+  `
+
+    const sqlOrphanedReviews = `
+    SELECT count(distinct r.ruleId)
+    FROM 
+     review r 
+    where 
+        r.ruleId not in (select ruleId from rule_version_check_digest)
+    `
+
+  const sqlMySqlVersion = `SELECT VERSION() as version`
+
+  const mysqlVarsInMbOnly = [
+    'innodb_buffer_pool_size',
+    'innodb_log_buffer_size',
+    'innodb_log_file_size',
+    'tmp_table_size',
+    'key_buffer_size',
+    'max_heap_table_size',
+    'temptable_max_mmap',
+    'sort_buffer_size',
+    'read_buffer_size',
+    'read_rnd_buffer_size',
+    'join_buffer_size',
+    'binlog_cache_size',
+    'tmp_table_size'
+  ]
+
+  const mySqlVariablesRawOnly = [
+    'innodb_buffer_pool_instances' ,  
+    'innodb_io_capacity' , 
+    'innodb_io_capacity_max' ,  
+    'innodb_flush_sync' ,  
+    'innodb_io_capacity_max' ,  
+    'innodb_lock_wait_timeout'
+  ]
+
+  const sqlMySqlVariablesInMb = `
+  SELECT 
+      variable_name,
+      ROUND(variable_value / (1024 * 1024), 2) AS value
+  FROM 
+      performance_schema.global_variables
+  WHERE 
+      variable_name IN (
+        ${mysqlVarsInMbOnly.map( v => `'${v}'`).join(',')}
+      )
+  ORDER by variable_name
+`  
+const sqlMySqlVariablesRawValues = `
+  SELECT 
+      variable_name,
+      variable_value as value
+      FROM 
+      performance_schema.global_variables
+  WHERE 
+      variable_name IN (
+          ${mysqlVarsInMbOnly.map( v => `'${v}'`).join(',')},
+          ${mySqlVariablesRawOnly.map( v => `'${v}'`).join(',')}
+      )
+    ORDER by variable_name
+`
+
+const mySqlStatusRawOnly = [
+'Bytes_received',
+'Bytes_sent',
+'Handler_commit',
+'Handler_update',
+'Handler_write',
+'Innodb_buffer_pool_bytes_data',
+'Innodb_row_lock_waits',
+'Innodb_rows_read',
+'Innodb_rows_updated',
+'Innodb_rows_inserted',
+'Innodb_row_lock_time_avg',
+'Innodb_row_lock_time_max',
+'Created_tmp_files',
+'Created_tmp_tables',
+'Max_used_connections',
+'Open_tables',
+'Opened_tables',
+'Queries',
+'Select_full_join',
+'Slow_queries',
+'Table_locks_immediate',
+'Table_locks_waited',
+'Threads_created',
+'Uptime'
+]
+
+const sqlMySqlStatusRawValues = `
+  SELECT 
+    variable_name,
+    variable_value as value
+  FROM 
+    performance_schema.global_status
+  WHERE 
+    variable_name IN (
+        ${mySqlStatusRawOnly.map( v => `'${v}'`).join(',')}
+    )
+  ORDER by variable_name
+`
+
+  await dbUtils.pool.query(sqlAnalyze)
+
+  const [schemaInfoArray] = await dbUtils.pool.query(sqlInfoSchema, [config.database.schema]);
+  const [assetStig] = await dbUtils.pool.query(sqlCollectionAssetStigs);
+  const [countsByCollection] = await dbUtils.pool.query(sqlCountsByCollection);
+  const [restrictedGrantCountsByCollection] = await dbUtils.pool.query(sqlRestrictedGrantCounts);
+  const [grantCountsByCollection] = await dbUtils.pool.query(sqlGrantCounts);
+  const [orphanedReviews] = await dbUtils.pool.query(sqlOrphanedReviews);
+  const [mySqlVersion] = await dbUtils.pool.query(sqlMySqlVersion);
+  let [mySqlVariablesInMb] = await dbUtils.pool.query(sqlMySqlVariablesInMb);
+  let [mySqlVariablesRaw] = await dbUtils.pool.query(sqlMySqlVariablesRawValues);
+  let [mySqlStatusRaw] = await dbUtils.pool.query(sqlMySqlStatusRawValues);
+
+
+  let operationalStats = logger.overallOpStats
+
+  // Obfuscate client names in stats if configured (default == true)
+  if (config.settings.obfuscateClientsInOptStats == "true") {
+    operationalStats = obfuscateClients(operationalStats);
+  }
+
+  operationalStats.operationIdStats = sortObjectByKeys(operationalStats.operationIdStats);
+
+  let nodeUptime = Math.round(process.uptime()) // seconds
+
+  if (nodeUptime < 60) {
+    nodeUptime = `${nodeUptime} seconds`;
+  } else if (nodeUptime < 3600) { // less than 1 hour
+    let minutes = Math.floor(nodeUptime / 60);
+    let seconds = nodeUptime % 60;
+    nodeUptime = `${minutes} minutes ${seconds} seconds`;
+  } else { // 1 hour or more
+    let hours = Math.floor(nodeUptime / 3600);
+    let minutes = Math.floor((nodeUptime % 3600) / 60);
+    nodeUptime = `${hours} hours ${minutes} minutes`;
+  }
+
+
+  const formatMemoryUsage = (data) => `${Math.round(data / 1024 / 1024 * 100) / 100}`;
+
+  const memoryData = process.memoryUsage();
+
+  const nodeMemoryUsageInMb = {
+    rss: `${formatMemoryUsage(memoryData.rss)}`, //Resident Set Size - total memory allocated for the process execution
+    heapTotal: `${formatMemoryUsage(memoryData.heapTotal)}`, // total size of the allocated heap
+    heapUsed: `${formatMemoryUsage(memoryData.heapUsed)}`, // actual memory used during the execution
+    external: `${formatMemoryUsage(memoryData.external)}` // V8 external memory
+  };
+
+
+  const schemaReducer = (obj, item) => (obj[item.tableName] = item, obj)
+
+  for (const key in mySqlVariablesInMb){
+    mySqlVariablesInMb[key].value = `${mySqlVariablesInMb[key].value}M`
+  }
+  mySqlVariablesInMb = variableNameReducer(mySqlVariablesInMb) 
+  mySqlVariablesRaw = variableNameReducer(mySqlVariablesRaw)
+  mySqlStatusRaw = variableNameReducer(mySqlStatusRaw)
+
 
     return ({
       dbInfo: {
         tables: schemaInfoArray.reduce(schemaReducer, {})
       },
-      assetStig
+      assetStig,
+      countsByCollection,
+      restrictedGrantCountsByCollection,     
+      grantCountsByCollection, 
+      orphanedReviews,
+      operationalStats,
+      nodeUptime,
+      nodeMemoryUsageInMb,
+      mySqlVersion: mySqlVersion[0].version,
+      mySqlVariablesInMb,
+      mySqlVariablesRaw,
+      mySqlStatusRaw
     })
+}
+
+
+function obfuscateClients(operationalStats) {
+  const obfuscationMap = {};
+  let obfuscatedCounter = 1;
+
+  function getObfuscatedKey(client) {
+    if (client === "unknown") {
+      return client;
+    }
+    if (!obfuscationMap[client]) {
+      obfuscationMap[client] = `client${obfuscatedCounter++}`;
+    }
+    return obfuscationMap[client];
+  }
+
+  const operationIdStats = operationalStats.operationIdStats;
+
+  for (const operationId in operationIdStats) {
+    if (operationIdStats[operationId].clients) {
+      const clients = operationIdStats[operationId].clients;
+      const newClients = {};
+      
+      for (const clientName in clients) {
+        const obfuscatedName = getObfuscatedKey(clientName);
+        newClients[obfuscatedName] = clients[clientName];
+      }
+      
+      operationIdStats[operationId].clients = newClients;
+    }
+  }
+
+  return operationalStats;
+}
+
+
+
+function sortObjectByKeys(obj) {
+  // Extract property names and sort them
+  const sortedKeys = Object.keys(obj).sort();
+  
+  // Create a new object and add properties in sorted order
+  const sortedObj = {};
+  for (const key of sortedKeys) {
+    sortedObj[key] = obj[key];
+  }
+
+  return sortedObj;
+}
+
+
+function variableNameReducer(data) {
+  return data.reduce((acc, item) => {
+    acc[item.variable_name] = item.value;
+    return acc;
+  }, {});
 }

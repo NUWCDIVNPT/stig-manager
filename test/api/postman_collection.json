@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "fcb1e3fc-7e68-4709-baae-eb5bec83df44",
+		"_postman_id": "c52d7291-facb-48c7-ba27-6c138a35d977",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:  \nName: Carl Smigielski  \nEmail: [carl.a.smigielski@saic.com](https://mailto:carl.a.smigielski@saic.com)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "28917726"
+		"_exporter_id": "9301046"
 	},
 	"item": [
 		{
@@ -71381,12 +71381,20 @@
 											"}\r",
 											"\r",
 											"\r",
+											"const regex = /^inline; filename=\"TxxxxxEST_&bsol;slash&colon;colon\\.\\.x2-VPN_SRG_TEST-V1R1/;\r",
+											"\r",
+											"\r",
 											"pm.test(\"Content-Disposition is set with expected filename\", function () {\r",
-											"    pm.response.to.have.header(\"Content-Disposition\", \"inline; filename=\\\"TxxxxxEST_&bsol;slash&colon;colon..x2-VPN_SRG_TEST-V1R1.ckl\\\"\");\r",
+											"    pm.expect(pm.response.headers.get('Content-Disposition')).to.match(regex)\r",
+											"\r",
+											"\r",
 											"});\r",
+											"\r",
+											"\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -71477,13 +71485,18 @@
 											"}\r",
 											"\r",
 											"\r",
-											"pm.test(\"Content-Disposition is set with expected filename\", function () {\r",
-											"    pm.response.to.have.header(\"Content-Disposition\", \"inline; filename=\\\"TxxxxxEST_&bsol;slash&colon;colon..x2-VPN_SRG_TEST-V1R1.cklb\\\"\");\r",
-											"});\r",
+											"const regex = /^inline; filename=\"TxxxxxEST_&bsol;slash&colon;colon\\.\\.x2-VPN_SRG_TEST-V1R1/;\r",
 											"\r",
+											"\r",
+											"pm.test(\"Content-Disposition is set with expected filename\", function () {\r",
+											"    pm.expect(pm.response.headers.get('Content-Disposition')).to.match(regex)\r",
+											"\r",
+											"\r",
+											"});\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -71541,7 +71554,7 @@
 							"response": []
 						},
 						{
-							"name": "Return the cklB for Asset with reserved chars Copy",
+							"name": "Return the xccdf for Asset with reserved chars Copy",
 							"event": [
 								{
 									"listen": "test",
@@ -71573,14 +71586,18 @@
 											"    return;\r",
 											"}\r",
 											"\r",
+											"const regex = /^inline; filename=\"TxxxxxEST_&bsol;slash&colon;colon\\.\\.x2-VPN_SRG_TEST-V1R1/;\r",
+											"\r",
 											"\r",
 											"pm.test(\"Content-Disposition is set with expected filename\", function () {\r",
-											"    pm.response.to.have.header(\"Content-Disposition\", \"inline; filename=\\\"TxxxxxEST_&bsol;slash&colon;colon..x2-VPN_SRG_TEST-V1R1-xccdf.xml\\\"\");\r",
-											"});\r",
+											"    pm.expect(pm.response.headers.get('Content-Disposition')).to.match(regex)\r",
 											"\r",
+											"\r",
+											"});\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -72190,6 +72207,124 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "check that request body without collectionId properly sets labels - GH-1293",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"lvl1\" || user == \"lvl2\" || user == \"collectioncreator\" || user == \"globular\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 403 for all users except stigmanAdmin(elevated), lvl3 and lvl4\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+											"    // pm.expect(jsonData).to.have.lengthOf(1);\r",
+											"\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response JSON is an object\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('object');\r",
+											"    // pm.expect(jsonData).to.have.lengthOf.at.least(1);\r",
+											"    pm.expect(jsonData.labelIds).to.have.lengthOf(1);\r",
+											"\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    // \"collectionId\": \"{{scrapCollection}}\",\n    // \"description\": \"test desc\",\n    // \"ip\": \"1.1.1.1\",\n    // \"noncomputing\": true,\n    \"labelIds\": [\n        \"df4e6836-a003-11ec-b1bc-0242ac110002\"\n    ]\n    // \"metadata\": {\n    //     \"pocName\": \"poc2Put\",\n    //     \"pocEmail\": \"pocEmailPut@email.com\",\n    //     \"pocPhone\": \"12342\",\n    //     \"reqRar\": \"true\"\n    // },\n    // \"stigs\": [\n    //     \"VPN_SRG_TEST\",\n    //     \"Windows_10_STIG_TEST\",\n    //     \"RHEL_7_STIG_TEST\"\n    // ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/assets/:assetId?projection=statusStats&projection=stigs&projection=stigGrants",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assets",
+										":assetId"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "{{elevated}}",
+											"description": "Elevate the user context for this request if user is permitted (canAdmin)",
+											"disabled": true
+										},
+										{
+											"key": "projection",
+											"value": "statusStats",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigs",
+											"description": "Additional properties to include in the response.\n"
+										},
+										{
+											"key": "projection",
+											"value": "stigGrants"
+										}
+									],
+									"variable": [
+										{
+											"key": "assetId",
+											"value": "{{scrapAsset}}",
+											"description": "(Required) A path parameter that indentifies an Asset"
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -72467,6 +72602,301 @@
 										{
 											"key": "userId",
 											"value": "{{testLvl1User}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "default-rev-recalc",
+					"item": [
+						{
+							"name": "Import a new STIG - new Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 403\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"\r",
+											"// let jsonData = pm.response.json();\r",
+											"// let expectedRevData = \r",
+											"// {\r",
+											"//     \"benchmarkId\": \"VPN_SRG_TEST\",\r",
+											"//     \"revisionStr\": \"V1R1\",\r",
+											"//     \"action\": \"inserted\"\r",
+											"// }\r",
+											"\r",
+											"\r",
+											"// pm.test(\"Response JSON as expected)\", function () {\r",
+											"//     pm.expect(jsonData).to.be.an('object')\r",
+											"//     pm.expect(jsonData).to.eql(expectedRevData)\r",
+											"// });\r",
+											"\r",
+											"\r",
+											"// console.log(response)\r",
+											"\r",
+											"\r",
+											"\r",
+											"// pm.test(\"Body contains string\",() => {\r",
+											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
+											"// });"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "replace",
+											"value": "true",
+											"description": " (This can only be one of true,false)",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "importFile",
+											"type": "file",
+											"src": "./{{formDataFiles}}/{{testStigFile}}"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/stigs?clobber=false",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs"
+									],
+									"query": [
+										{
+											"key": "clobber",
+											"value": "false"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Deletes the specified revision of a STIG v1r0 - with force - could fail if not present, so no tests Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/stigs/:benchmarkId/revisions/:revisionStr?elevate=true&force=true",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"stigs",
+										":benchmarkId",
+										"revisions",
+										":revisionStr"
+									],
+									"query": [
+										{
+											"key": "elevate",
+											"value": "true"
+										},
+										{
+											"key": "force",
+											"value": "true"
+										}
+									],
+									"variable": [
+										{
+											"key": "benchmarkId",
+											"value": "{{testBenchmark}}",
+											"description": "(Required) A path parameter that indentifies a STIG"
+										},
+										{
+											"key": "revisionStr",
+											"value": "V1R1",
+											"description": "(Required) A path parameter that indentifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Return summary metrics - check no null benchmarks",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Fixed TypeError by correcting the syntax\r",
+											"let user = pm.environment.get(\"user\");\r",
+											"console.log(\"user: \" + user);\r",
+											"\r",
+											"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+											"    user = \"elevated\";\r",
+											"    console.log(\"setting user to 'elevated'\");\r",
+											"}\r",
+											"\r",
+											"if (user == \"collectioncreator\" || user == \"bizarroLvl1\" ) {\r",
+											"    pm.test(\"Status should be is 403 for user collectioncreator, bizarroLvl1\", function () {\r",
+											"        pm.response.to.have.status(403);\r",
+											"    });\r",
+											"    return;\r",
+											"}\r",
+											"else {\r",
+											"    pm.test(\"Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"    });\r",
+											"}\r",
+											"if (pm.response.code !== 200) {\r",
+											"    return;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"\r",
+											"pm.test(\"Response JSON is an array\", function () {\r",
+											"    pm.expect(jsonData).to.be.an('array');\r",
+											"});\r",
+											"\r",
+											"\r",
+											"let testAsset = pm.environment.get(\"testAsset\");\r",
+											"let testBenchmark = pm.environment.get(\"testBenchmark\");\r",
+											"let testLabel = pm.environment.get(\"testLabel\");\r",
+											"let testLabelName = pm.environment.get(\"testLabelName\");\r",
+											"\r",
+											"\r",
+											"//reference metrics\r",
+											"let testChecklistLength = parseInt(pm.environment.get(\"checklistLength\"));\r",
+											"let testTotalAssessmentsForTestAsset = 368;\r",
+											"let testTotalAssessmentsForTestSTIG = testChecklistLength * 3;\r",
+											"// let testTotalAssessmentsForCollection = 1014;\r",
+											"\r",
+											"\r",
+											"\r",
+											"// Checking that response fulfills parameter requests\r",
+											"// for (let item of jsonData){\r",
+											"//     console.log( \"testing: \" + item.name) \r",
+											"    \r",
+											"    pm.test(\"No null benchmarks\", function () {\r",
+											"        for (let stig of jsonData){\r",
+											"            // pm.expect(stig).to.have.all.keys(stigKeys);\r",
+											"            pm.expect(stig.benchmarkId).to.not.equal(null);\r",
+											"            // pm.expect(stig.revisionPinned).to.eql(false);\r",
+											"\r",
+											"        }\r",
+											"\r",
+											"    });\r",
+											"\r",
+											"\r",
+											"return;\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token.stigmanadmin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/collections/:collectionId/metrics/summary/stig",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"collections",
+										":collectionId",
+										"metrics",
+										"summary",
+										"stig"
+									],
+									"variable": [
+										{
+											"key": "collectionId",
+											"value": "{{testCollection}}"
 										}
 									]
 								}

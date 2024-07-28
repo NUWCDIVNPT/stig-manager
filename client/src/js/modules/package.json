@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@nuwcdivnpt/stig-manager-client-modules": "^1.4.1",
+    "@nuwcdivnpt/stig-manager-client-modules": "^1.4.2",
     "chart.js": "^4.4.2",
     "serialize-error": "^11.0.0"
   }

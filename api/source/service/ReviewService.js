@@ -506,9 +506,7 @@ from
       await connection.query('START TRANSACTION')
 
       if (counts[0].updates) {
-        if (historyMaxReviews !== -1) {
           await connection.query(sqlHistoryPrune, [ historyMaxReviews ])
-        }
         if (historyMaxReviews !== 0) {
           await connection.query(sqlHistory)
         }
@@ -1289,9 +1287,7 @@ where
     async function transaction () {
       await connection.query('START TRANSACTION')
       if (counts[0].updates) {
-        if (historyMaxReviews !== -1) {
           await connection.query(sqlHistoryPrune, [ historyMaxReviews ])
-        }
         if (historyMaxReviews !== 0) {
           await connection.query(sqlHistory)
         }

@@ -884,7 +884,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
       const [drRows] = await connection.query('SELECT collectionId FROM default_rev WHERE benchmarkId = :benchmarkId and revId = :revId', binds)
       const wasDefaultRev = !!drRows.length
 
-      // re-materialize current_rev if we're deleteing the current revision
+      // re-materialize current_rev if we're deleting the current revision
       if (wasCurrentRev) {
         dmls = dmls.concat(currentRevDmls)
       }
@@ -893,9 +893,8 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
        await connection.query(sql, binds)
       }
 
-  
-      // re-calculate review statistics if we've affected current_rev
-      if (wasDefaultRev && !wasCurrentRev) {
+      // re-calculate review statistics and repopulate default_rev from view if we've affected default_rev
+      if (wasDefaultRev) {
         const collectionIds = drRows.map( row => row.collectionId)
         await dbUtils.updateDefaultRev( connection, {collectionIds, benchmarkId})
         await dbUtils.updateStatsAssetStig( connection, {collectionIds, benchmarkId})
