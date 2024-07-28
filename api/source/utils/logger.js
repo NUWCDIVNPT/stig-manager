@@ -200,6 +200,7 @@ function trackOperationStats(operationId, durationMs, res) {
     overallOpStats.operationIdStats[operationId] = {
       totalRequests: 0,
       totalDuration: 0,
+      elevatedRequests: 0,
       minDuration: Infinity,
       maxDuration: 0,
       maxDurationUpdates: 0,
@@ -234,6 +235,11 @@ function trackOperationStats(operationId, durationMs, res) {
   let client = res.req?.access_token?.azp || 'unknown';
   // Increment client count for this operationId
   stats.clients[client] = (stats.clients[client] || 0) + 1;
+
+  // Increment elevated request count if elevate query param is true
+  if (res.req.query?.elevate === true) {
+    stats.elevatedRequests = (stats.elevatedRequests || 0) + 1;
+  }
 
   // If projections are defined, track stats for each projection
   if (res.req.query?.projection?.length > 0) {
