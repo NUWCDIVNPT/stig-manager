@@ -231,11 +231,14 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
       const response = await AssetService.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, format, false, req.userObject )
       if (format === 'json') {
         res.json(response)
+        return
       }
-      else if (format === 'cklb') {
-        response.cklb.title = `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}`
-        let filename = escape.escapeFilename(`${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.cklb`)
-        writer.writeInlineFile(res, JSON.stringify(response.cklb), filename, 'application/json')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
+      
+      const dateString = escape.filenameComponentFromDate()
+      const fileBasename = `${response.assetName}-${benchmarkId}-${response.revisionStrResolved}`
+      if (format === 'cklb') {
+        response.cklb.title = fileBasename
+        writer.writeInlineFile(res, JSON.stringify(response.cklb), `${fileBasename}_${dateString}.cklb`, 'application/json')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
       }
       else if (format === 'ckl') {
         const builder = new XMLBuilder({
@@ -251,8 +254,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
         })
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += builder.build(response.xmlJs)
-        let filename = escape.escapeFilename(`${response.assetName}-${benchmarkId}-${response.revisionStrResolved}.ckl`)
-        writer.writeInlineFile(res, xml, filename, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
+        writer.writeInlineFile(res, xml, `${fileBasename}_${dateString}.ckl`, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
       }
       else if (format === 'xccdf') {
         const builder = new XMLBuilder({
@@ -270,8 +272,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
         })
         let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
         xml += builder.build(response.xmlJs)
-        let filename = escape.escapeFilename(`${response.assetName}-${benchmarkId}-${response.revisionStrResolved}-xccdf.xml`)
-        writer.writeInlineFile(res, xml, filename, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
+        writer.writeInlineFile(res, xml, `${fileBasename}-xccdf_${dateString}.xml`, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
       }
     }
     else {
@@ -310,9 +311,9 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
 
     const response = await AssetService.getChecklistByAsset(assetId, stigs, format, false, req.userObject )
 
+    const dateString = escape.filenameComponentFromDate()
     if (format === 'cklb') {
-      let filename = escape.escapeFilename(`${response.assetName}.cklb`)
-      writer.writeInlineFile(res, JSON.stringify(response.cklb), filename, 'application/json') 
+      writer.writeInlineFile(res, JSON.stringify(response.cklb), `${response.assetName}_${dateString}.cklb`, 'application/json') 
     }
     else if (format === 'ckl') {
       const builder = new XMLBuilder({
@@ -328,8 +329,7 @@ module.exports.getChecklistByAsset = async function getChecklistByAssetStig (req
       })
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
       xml += builder.build(response.xmlJs)
-      let filename = escape.escapeFilename(`${response.assetName}.ckl`)
-      writer.writeInlineFile(res, xml, filename, 'application/xml')
+      writer.writeInlineFile(res, xml, `${response.assetName}_${dateString}.ckl`, 'application/xml')
     }
   }
   catch (err) {

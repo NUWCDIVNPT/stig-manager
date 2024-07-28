@@ -1,3 +1,4 @@
+const escape = require ('./escape.js')
 let ResponsePayload = function(code, payload) {
   this.code = code;
   this.payload = payload;
@@ -52,15 +53,10 @@ let writeJson = exports.writeJson = function(response, arg1, arg2) {
   response.end(payload);
 }
 
-const charToHexStr = (c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`
-
-const goodFilename = (string) =>
-  string.replace(/[<>:"/\\|?*\x00-\x1F]| +$/g, charToHexStr)
-
 exports.writeInlineFile = function(response, payload, filename, contentType) {
   response.writeHead(200, {
     'Content-Type': contentType,
-    'Content-Disposition': `inline; filename="${goodFilename(filename)}"`,
+    'Content-Disposition': `inline; filename="${escape.escapeFilename(filename)}"`,
     'Access-Control-Expose-Headers': 'Content-Disposition'
   })
   response.write(payload)
@@ -78,4 +74,6 @@ exports.writeNoContent = function (response) {
   response.writeHead(204)
   response.end()
 }
+
+
 

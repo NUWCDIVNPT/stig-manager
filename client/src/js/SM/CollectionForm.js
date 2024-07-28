@@ -1675,10 +1675,9 @@ SM.Collection.HistorySettings.MaxReviewsComboBox = Ext.extend(Ext.form.ComboBox,
         let data = [
             [0, 'disabled']
         ]
-        for (let limit = 1; limit < 51; limit++) {
+        for (let limit = 1; limit < 16; limit++) {
             data.push([limit, `capped at ${limit}`])
         }
-        data.push([-1, 'unlimited'])
         this.store = new Ext.data.SimpleStore({
             fields: ['value', 'display']
         })
@@ -1691,7 +1690,7 @@ SM.Collection.HistorySettings.HistoryFields = Ext.extend(Ext.form.FieldSet, {
     initComponent: function () {
         const _this = this
         _this.historySettings = _this.historySettings ?? {
-            maxReviews: -1
+            maxReviews: 5
         }
         const maxReviewsComboBox = new SM.Collection.HistorySettings.MaxReviewsComboBox({
             name: 'maxReviews',
@@ -1715,7 +1714,7 @@ SM.Collection.HistorySettings.HistoryFields = Ext.extend(Ext.form.FieldSet, {
         }
 
         _this.setValues = function (values) {
-            maxReviewsComboBox.setValue(values.maxReviews || -1)
+            maxReviewsComboBox.setValue(values.maxReviews || 5)
         }
 
         function onComboSelect(item, record, index) {
@@ -1766,7 +1765,7 @@ SM.Collection.LabelSpritesByCollectionLabelId = function (collectionId, labelIds
         if (labelId === null) {
             includeUnlabeled = true
         }
-        const label = SM.Cache.CollectionMap.get(collectionId).labelMap.get(labelId)
+        const label = SM.Cache.getCollectionLabel(collectionId, labelId)
         if (label) labels.push(label)
     }
     labels.sort((a, b) => a.name.localeCompare(b.name))
@@ -2257,7 +2256,7 @@ SM.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
     },
     setLabelsChecked: function (labelIds, checked) {
         for (const labelId of labelIds) {
-            this.find('labelId', labelId)[0].setChecked(checked, true) //suppressEvent = true
+            this.find('labelId', labelId)[0]?.setChecked(checked, true) //suppressEvent = true
         }
     },
     updateLabel: function (label) {
@@ -2342,7 +2341,7 @@ SM.Collection.LabelAssetsForm = Ext.extend(Ext.form.FormPanel, {
             isFormField: true,
             selectionsGridTitle: 'Tagged'
         })
-        const labelData = {...SM.Cache.CollectionMap.get(this.collectionId).labelMap.get(this.labelId)}
+        const labelData = {...SM.Cache.getCollectionLabel(this.collectionId, this.labelId)}
         labelData.extraCls = 'sm-jumbo-sprite'
         const labelSpan = SM.Collection.LabelTpl.apply(labelData)
         const labelField = new Ext.form.DisplayField({

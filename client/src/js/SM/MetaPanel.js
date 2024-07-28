@@ -176,7 +176,7 @@ SM.MetaPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
             renderer: function (value, metadata) {
               const labels = []
               for (const labelId of value) {
-                const label = SM.Cache.CollectionMap.get(_this.collectionId).labelMap.get(labelId)
+                const label = SM.Cache.getCollectionLabel(_this.collectionId, labelId)
                 if (label) labels.push(label)
               }
               labels.sort((a, b) => a.name.localeCompare(b.name))
@@ -506,7 +506,7 @@ SM.MetaPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
             renderer: function (value, metadata) {
               const labels = []
               for (const labelId of value) {
-                const label = SM.Cache.CollectionMap.get(_this.collectionId).labelMap.get(labelId)
+                const label = SM.Cache.getCollectionLabel(_this.collectionId, labelId)
                 if (label) labels.push(label)
               }
               labels.sort((a, b) => a.name.localeCompare(b.name))
@@ -942,7 +942,8 @@ SM.MetaPanel.ExportPanel = Ext.extend(Ext.Panel, {
         const agg = aggComboBox.getValue()
         const url = `${STIGMAN.Env.apiBase}/collections/meta/metrics/${style}${agg === 'unagg' ? '' : `/${agg}`}?${queryParamsStr}`
 
-        const attachment = `${agg}-${style}.${format}`
+        const attachment = SM.Global.filenameEscaped(`Meta-${agg}-${style}_${SM.Global.filenameComponentFromDate()}.${format}`)
+
         await window.oidcProvider.updateToken(10)
         const fetchInit = {
           method: 'GET',

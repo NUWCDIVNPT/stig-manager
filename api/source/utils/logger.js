@@ -29,6 +29,16 @@ const writeError = config.log.level >= 1 ? function writeError () {
   write(1, ...arguments)
 } : () => {}
 
+
+
+// Stats for all requests
+const overallOpStats = {
+  totalRequests: 0,
+  totalApiRequests: 0,
+  totalRequestDuration: 0,
+  operationIdStats: {}
+}
+
 // All messages to STDOUT are handled here
 async function write (level, component, type, data) {
   try {
@@ -114,7 +124,31 @@ function requestLogger (req, res, next) {
 
   function logResponse () {
     res._startTime = res._startTime ?? new Date()
+    overallOpStats.totalRequests += 1
+    const durationMs = Number(res._startTime - req._startTime)
+
+    overallOpStats.totalRequestDuration += durationMs
+    const operationId = res.req.openapi?.schema.operationId
+    let operationalStats = {
+      operationId,
+      retries: res.svcStatus?.retries,
+      durationMs
+    }
+
+    //if operationId is defined, this is an api endpoint response so we can track some stats
+    if (operationId ) {
+      trackOperationStats(operationId, durationMs, res)
+      // If including stats in log entries, add to operationalStats object
+      if (config.log.optStats === 'true') {
+        operationalStats = {
+          ...operationalStats,
+          ...overallOpStats.operationIdStats[operationId]
+        }
+      }
+    }    
+
     if (config.log.mode === 'combined') {
+
       writeInfo(req.component || 'rest', 'transaction', {
         request: serializeRequest(res.req),
         response: {
@@ -123,10 +157,9 @@ function requestLogger (req, res, next) {
           clientTerminated: res.destroyed ? true : undefined,
           headers: res.finished ? res.getHeaders() : undefined,
           errorBody: res.errorBody,
-          responseBody
+          responseBody,
         },
-        retries: res.svcStatus?.retries,
-        durationMs: Number(res._startTime - req._startTime)
+        operationalStats
       })  
     }
     else {
@@ -135,7 +168,7 @@ function requestLogger (req, res, next) {
         status: res.statusCode,
         headers: res.getHeaders(),
         errorBody: res.errorBody,
-        retries: res.svcStatus?.retries,
+        operationalStats
       })  
     }
   }
@@ -148,6 +181,7 @@ function requestLogger (req, res, next) {
   next()
 }
 
+
 function serializeEnvironment () {
   let env = {}
   for (const [key, value] of Object.entries(process.env)) {
@@ -158,6 +192,69 @@ function serializeEnvironment () {
   return env
 }
 
+function trackOperationStats(operationId, durationMs, res) {
+  //increment total api requests
+  overallOpStats.totalApiRequests++
+  // Ensure the operationIdStats object exists for the operationId
+  if (!overallOpStats.operationIdStats[operationId]) {
+    overallOpStats.operationIdStats[operationId] = {
+      totalRequests: 0,
+      totalDuration: 0,
+      minDuration: Infinity,
+      maxDuration: 0,
+      maxDurationUpdates: 0,
+      get averageDuration() {
+        return this.totalRequests ? Math.round(this.totalDuration / this.totalRequests) : 0;
+      },
+      clients: {},
+    };
+  }
+
+
+  // Get the stats object for this operationId
+  const stats = overallOpStats.operationIdStats[operationId];
+  // Increment total requests and total duration for this operationId
+  stats.totalRequests++;
+  stats.totalDuration += durationMs;
+
+  // Update min and max duration
+  stats.minDuration = Math.min(stats.minDuration, durationMs);
+  if (durationMs > stats.maxDuration) {
+    stats.maxDuration = durationMs;
+    stats.maxDurationUpdates++;
+  }
+
+  // Check token for client id
+  let client = res.req?.access_token?.azp || 'unknown';
+  // Increment client count for this operationId
+  stats.clients[client] = (stats.clients[client] || 0) + 1;
+
+  // If projections are defined, track stats for each projection
+  if (res.req.query?.projection?.length > 0) {
+    stats.projections = stats.projections || {};
+    for (const projection of res.req.query.projection) {
+      // Ensure the projection stats object exists
+      stats.projections[projection] = stats.projections[projection] || {
+        totalRequests: 0,
+        minDuration: Infinity,
+        maxDuration: 0,
+        totalDuration: 0,
+        get averageDuration() {
+          return this.totalRequests ? Math.round(this.totalDuration / this.totalRequests) : 0;
+        }        
+      };
+
+      const projStats = stats.projections[projection];
+      // Increment projection count and update duration stats
+      projStats.totalRequests++;
+      projStats.minDuration = Math.min(projStats.minDuration, durationMs);
+      projStats.maxDuration = Math.max(projStats.maxDuration, durationMs);
+      projStats.totalDuration += durationMs;
+    }
+  }
+
+}
+
 module.exports = { 
   requestLogger, 
   sanitizeHeaders, 
@@ -166,5 +263,7 @@ module.exports = {
   writeError, 
   writeWarn, 
   writeInfo, 
-  writeDebug 
+  writeDebug,
+  overallOpStats
+
 }
