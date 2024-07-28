@@ -6,6 +6,7 @@ const parsers = require('../utils/parsers.js')
 const STIGService = require(`../service/STIGService`)
 
 module.exports.importBenchmark = async function importManualBenchmark (req, res, next) {
+if ( req.query.elevate ) {
   try {
     const extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
     const clobber = req.query.clobber ?? false
@@ -28,6 +29,10 @@ module.exports.importBenchmark = async function importManualBenchmark (req, res,
   catch(err) {
     next(err)
   }
+}
+else {
+  next(new SmError.PrivilegeError())
+}
 }
 
 
