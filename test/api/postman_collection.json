@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "c52d7291-facb-48c7-ba27-6c138a35d977",
+		"_postman_id": "79d75667-78a4-4fcb-9ede-f73badfbf139",
 		"name": "STIGMan OSS",
 		"description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.\n\nContact Support:  \nName: Carl Smigielski  \nEmail: [carl.a.smigielski@saic.com](https://mailto:carl.a.smigielski@saic.com)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -28,7 +28,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -52,7 +52,8 @@
 											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 											"// });"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -96,7 +97,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -106,6 +107,10 @@
 									"query": [
 										{
 											"key": "clobber",
+											"value": "true"
+										},
+										{
+											"key": "elevate",
 											"value": "true"
 										}
 									]
@@ -128,7 +133,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -152,7 +157,8 @@
 											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 											"// });"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -196,7 +202,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -206,6 +212,10 @@
 									"query": [
 										{
 											"key": "clobber",
+											"value": "true"
+										},
+										{
+											"key": "elevate",
 											"value": "true"
 										}
 									]
@@ -228,7 +238,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -252,7 +262,8 @@
 											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 											"// });"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -296,7 +307,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -306,6 +317,10 @@
 									"query": [
 										{
 											"key": "clobber",
+											"value": "true"
+										},
+										{
+											"key": "elevate",
 											"value": "true"
 										}
 									]
@@ -21509,7 +21524,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"// if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
@@ -21533,7 +21548,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -21579,7 +21595,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -21589,6 +21605,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -29600,7 +29620,7 @@
 									"});\r",
 									"\r",
 									"pm.test(\"assetStig exists\", function () {\r",
-									"    pm.expect(jsonData.assetStig).to.exist;\r",
+									"    pm.expect(jsonData.assetStigByCollection).to.exist;\r",
 									"});\r",
 									"\r",
 									"\r",
@@ -29609,7 +29629,8 @@
 									"\r",
 									""
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -29775,7 +29796,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"// if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -29799,7 +29820,8 @@
 											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 											"// });"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -29843,7 +29865,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -29853,6 +29875,10 @@
 									"query": [
 										{
 											"key": "clobber",
+											"value": "true"
+										},
+										{
+											"key": "elevate",
 											"value": "true"
 										}
 									]
@@ -29875,7 +29901,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"// if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -29899,7 +29925,8 @@
 											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 											"// });"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -29943,7 +29970,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -29953,6 +29980,10 @@
 									"query": [
 										{
 											"key": "clobber",
+											"value": "true"
+										},
+										{
+											"key": "elevate",
 											"value": "true"
 										}
 									]
@@ -29975,7 +30006,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"// if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -29999,7 +30030,8 @@
 											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 											"// });"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -30043,7 +30075,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -30053,6 +30085,10 @@
 									"query": [
 										{
 											"key": "clobber",
+											"value": "true"
+										},
+										{
+											"key": "elevate",
 											"value": "true"
 										}
 									]
@@ -30503,7 +30539,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -30547,7 +30584,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -30557,6 +30594,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -30585,7 +30626,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -30629,7 +30671,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -30639,6 +30681,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -30667,7 +30713,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -30711,7 +30758,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -30721,6 +30768,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -48153,7 +48204,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"// if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
@@ -48177,7 +48228,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -48221,7 +48273,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -48231,6 +48283,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -48253,7 +48309,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
@@ -48269,19 +48325,19 @@
 													"\r",
 													"\r",
 													"\r",
-													"let jsonData = pm.response.json();\r",
-													"let expectedRevData = \r",
-													"{\r",
-													"    \"benchmarkId\": \"VPN_SRG_TEST\",\r",
-													"    \"revisionStr\": \"V1R0\",\r",
-													"    \"action\": \"inserted\"\r",
-													"}\r",
+													"// let jsonData = pm.response.json();\r",
+													"// let expectedRevData = \r",
+													"// {\r",
+													"//     \"benchmarkId\": \"VPN_SRG_TEST\",\r",
+													"//     \"revisionStr\": \"V1R0\",\r",
+													"//     \"action\": \"inserted\"\r",
+													"// }\r",
 													"\r",
 													"\r",
-													"pm.test(\"Response JSON as expected)\", function () {\r",
-													"    pm.expect(jsonData).to.be.an('object')\r",
-													"    pm.expect(jsonData).to.eql(expectedRevData)\r",
-													"});\r",
+													"// pm.test(\"Response JSON as expected)\", function () {\r",
+													"//     pm.expect(jsonData).to.be.an('object')\r",
+													"//     pm.expect(jsonData).to.eql(expectedRevData)\r",
+													"// });\r",
 													"\r",
 													"\r",
 													"// console.log(response)\r",
@@ -48292,99 +48348,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "Content-Type",
-												"value": "multipart/form-data"
-											}
-										],
-										"body": {
-											"mode": "formdata",
-											"formdata": [
-												{
-													"key": "replace",
-													"value": "true",
-													"description": " (This can only be one of true,false)",
-													"type": "text",
-													"disabled": true
-												},
-												{
-													"key": "importFile",
-													"type": "file",
-													"src": "./{{formDataFiles}}/{{testStigFile}}",
-													"disabled": true
-												},
-												{
-													"key": "importFile",
-													"type": "file",
-													"src": "form-data-files/U_VPN_SRG_V1R0_Manual-xccdf.xml"
-												}
-											]
-										},
-										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
-											"host": [
-												"{{baseUrl}}"
-											],
-											"path": [
-												"stigs"
-											],
-											"query": [
-												{
-													"key": "clobber",
-													"value": "true"
-												}
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Import a new STIG - VPN R1V0 - just check response",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"let user = pm.environment.get(\"user\");\r",
-													"console.log(\"user: \" + user);\r",
-													"\r",
-													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
-													"    user = \"elevated\";\r",
-													"    console.log(\"setting user to 'elevated'\");\r",
-													"}\r",
-													"\r",
-													"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
-													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
-													"        pm.response.to.have.status(200);\r",
-													"    });\r",
-													"// }\r",
-													"// else {\r",
-													"//     pm.test(\"Status code is 403\", function () {\r",
-													"//         pm.response.to.have.status(403);\r",
-													"//     });\r",
-													"//     return;\r",
-													"// }\r",
-													"if (pm.response.code !== 200) {\r",
-													"    return;\r",
-													"}\r",
-													"\r",
-													"\r",
-													"\r",
-													"let response = pm.response.text();\r",
-													"console.log(response)\r",
-													"\r",
-													"// pm.test(\"Body contains string\",() => {\r",
-													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
-													"// });"
-												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -48430,7 +48395,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -48441,6 +48406,10 @@
 												{
 													"key": "clobber",
 													"value": "true"
+												},
+												{
+													"key": "elevate",
+													"value": "true"
 												}
 											]
 										}
@@ -48448,7 +48417,7 @@
 									"response": []
 								},
 								{
-									"name": "Import a new STIG - Win 10  (as admin)",
+									"name": "Import a new STIG - VPN R1V0 - just check response",
 									"event": [
 										{
 											"listen": "test",
@@ -48462,7 +48431,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"// if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
@@ -48486,7 +48455,115 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token.stigmanadmin}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "multipart/form-data"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "replace",
+													"value": "true",
+													"description": " (This can only be one of true,false)",
+													"type": "text",
+													"disabled": true
+												},
+												{
+													"key": "importFile",
+													"type": "file",
+													"src": "./{{formDataFiles}}/{{testStigFile}}",
+													"disabled": true
+												},
+												{
+													"key": "importFile",
+													"type": "file",
+													"src": "form-data-files/U_VPN_SRG_V1R0_Manual-xccdf.xml"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"stigs"
+											],
+											"query": [
+												{
+													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
+													"value": "true"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Import a new STIG - Win 10  (as admin)",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let user = pm.environment.get(\"user\");\r",
+													"console.log(\"user: \" + user);\r",
+													"\r",
+													"if (pm.request.url.getQueryString().match(/elevate=true/)) {\r",
+													"    user = \"elevated\";\r",
+													"    console.log(\"setting user to 'elevated'\");\r",
+													"}\r",
+													"\r",
+													"// if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
+													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
+													"        pm.response.to.have.status(200);\r",
+													"    });\r",
+													"// }\r",
+													"// else {\r",
+													"//     pm.test(\"Status code is 403\", function () {\r",
+													"//         pm.response.to.have.status(403);\r",
+													"//     });\r",
+													"//     return;\r",
+													"// }\r",
+													"if (pm.response.code !== 200) {\r",
+													"    return;\r",
+													"}\r",
+													"\r",
+													"\r",
+													"\r",
+													"let response = pm.response.text();\r",
+													"console.log(response)\r",
+													"\r",
+													"// pm.test(\"Body contains string\",() => {\r",
+													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
+													"// });"
+												],
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -48530,7 +48607,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -48540,6 +48617,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -48562,7 +48643,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"// if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
@@ -48586,7 +48667,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -48630,7 +48712,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -48640,6 +48722,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -52403,7 +52489,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -52447,7 +52534,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -52457,6 +52544,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -52485,7 +52576,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -52529,7 +52621,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -52539,6 +52631,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -52567,7 +52663,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -52611,7 +52708,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -52621,6 +52718,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -54893,7 +54994,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -54932,7 +55033,8 @@
 											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 											"// });"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -54962,7 +55064,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=false",
+									"raw": "{{baseUrl}}/stigs?clobber=false&elevate={{elevated}}",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -54973,6 +55075,10 @@
 										{
 											"key": "clobber",
 											"value": "false"
+										},
+										{
+											"key": "elevate",
+											"value": "{{elevated}}"
 										}
 									]
 								}
@@ -54994,7 +55100,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -55033,7 +55139,8 @@
 											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 											"// });"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -55063,7 +55170,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=false",
+									"raw": "{{baseUrl}}/stigs?clobber=false&elevate={{elevated}}",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -55074,6 +55181,10 @@
 										{
 											"key": "clobber",
 											"value": "false"
+										},
+										{
+											"key": "elevate",
+											"value": "{{elevated}}"
 										}
 									]
 								}
@@ -55095,7 +55206,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -55134,7 +55245,8 @@
 											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 											"// });"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -55164,7 +55276,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"raw": "{{baseUrl}}/stigs?clobber=true&elevate={{elevated}}",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -55175,6 +55287,10 @@
 										{
 											"key": "clobber",
 											"value": "true"
+										},
+										{
+											"key": "elevate",
+											"value": "{{elevated}}"
 										}
 									]
 								}
@@ -55201,7 +55317,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -55239,7 +55355,8 @@
 											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 											"// });"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -55269,7 +55386,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"raw": "{{baseUrl}}/stigs?clobber=true&elevate={{elevated}}",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -55280,6 +55397,10 @@
 										{
 											"key": "clobber",
 											"value": "true"
+										},
+										{
+											"key": "elevate",
+											"value": "{{elevated}}"
 										}
 									]
 								}
@@ -55626,7 +55747,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -55665,7 +55786,8 @@
 											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 											"// });"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -55695,7 +55817,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"raw": "{{baseUrl}}/stigs?clobber=true&elevate={{elevated}}",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -55706,6 +55828,10 @@
 										{
 											"key": "clobber",
 											"value": "true"
+										},
+										{
+											"key": "elevate",
+											"value": "{{elevated}}"
 										}
 									]
 								}
@@ -55730,7 +55856,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -55768,7 +55894,8 @@
 											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 											"// });"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -55779,7 +55906,8 @@
 											"    pm.environment.set(\"testStigFileReplace\", testStigFileOtherRevision);\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -55809,7 +55937,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"raw": "{{baseUrl}}/stigs?clobber=true&elevate={{elevated}}",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -55820,6 +55948,10 @@
 										{
 											"key": "clobber",
 											"value": "true"
+										},
+										{
+											"key": "elevate",
+											"value": "{{elevated}}"
 										}
 									]
 								}
@@ -56364,7 +56496,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -56408,7 +56541,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -56418,6 +56551,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -56446,7 +56583,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -56490,7 +56628,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -56500,6 +56638,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -56528,7 +56670,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -56572,7 +56715,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -56582,6 +56725,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -59758,7 +59905,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
@@ -59782,7 +59929,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -59826,7 +59974,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -59836,6 +59984,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -59858,7 +60010,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
@@ -59882,7 +60034,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -59926,7 +60079,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -59936,6 +60089,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -59958,7 +60115,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
@@ -59982,7 +60139,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -60026,7 +60184,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -60036,6 +60194,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -62556,7 +62718,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -62572,7 +62734,8 @@
 											"\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -62602,7 +62765,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -62612,6 +62775,10 @@
 									"query": [
 										{
 											"key": "clobber",
+											"value": "true"
+										},
+										{
+											"key": "elevate",
 											"value": "true"
 										}
 									]
@@ -63316,7 +63483,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"// if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"// if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -63340,7 +63507,8 @@
 											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 											"// });"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -63386,7 +63554,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -63396,6 +63564,10 @@
 									"query": [
 										{
 											"key": "clobber",
+											"value": "true"
+										},
+										{
+											"key": "elevate",
 											"value": "true"
 										}
 									]
@@ -64022,7 +64194,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
@@ -64044,7 +64216,8 @@
 													"\r",
 													""
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -64088,12 +64261,18 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs",
+											"raw": "{{baseUrl}}/stigs?elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
 												"stigs"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "true"
+												}
 											]
 										}
 									},
@@ -64114,7 +64293,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
@@ -64133,7 +64312,8 @@
 													"console.log(response)\r",
 													""
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -64177,12 +64357,18 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs",
+											"raw": "{{baseUrl}}/stigs?elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
 												"stigs"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "true"
+												}
 											]
 										}
 									},
@@ -64203,7 +64389,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
@@ -64221,7 +64407,8 @@
 													"console.log(response)\r",
 													""
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -64265,12 +64452,18 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs",
+											"raw": "{{baseUrl}}/stigs?elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
 											"path": [
 												"stigs"
+											],
+											"query": [
+												{
+													"key": "elevate",
+													"value": "true"
+												}
 											]
 										}
 									},
@@ -65719,7 +65912,7 @@
 													"    console.log(\"setting user to 'elevated'\");\r",
 													"}\r",
 													"\r",
-													"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+													"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 													"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 													"        pm.response.to.have.status(200);\r",
 													"    });\r",
@@ -65758,7 +65951,8 @@
 													"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 													"// });"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -65804,7 +65998,7 @@
 											]
 										},
 										"url": {
-											"raw": "{{baseUrl}}/stigs?clobber=true",
+											"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -65814,6 +66008,10 @@
 											"query": [
 												{
 													"key": "clobber",
+													"value": "true"
+												},
+												{
+													"key": "elevate",
 													"value": "true"
 												}
 											]
@@ -69567,7 +69765,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -69591,7 +69789,8 @@
 											"//   pm.expect(response).to.include(\"currentGroupRule\");\r",
 											"// });"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -69635,7 +69834,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=true",
+									"raw": "{{baseUrl}}/stigs?clobber=true&elevate=true",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -69645,6 +69844,10 @@
 									"query": [
 										{
 											"key": "clobber",
+											"value": "true"
+										},
+										{
+											"key": "elevate",
 											"value": "true"
 										}
 									]
@@ -72628,7 +72831,7 @@
 											"    console.log(\"setting user to 'elevated'\");\r",
 											"}\r",
 											"\r",
-											"if (user == \"stigmanadmin\") { //placeholder for \"users\" that should fail\r",
+											"if (user == \"elevated\") { //placeholder for \"users\" that should fail\r",
 											"    pm.test(\"Status should be is 200 only for stigmanadmin user\", function () {\r",
 											"        pm.response.to.have.status(200);\r",
 											"    });\r",
@@ -72708,7 +72911,7 @@
 									]
 								},
 								"url": {
-									"raw": "{{baseUrl}}/stigs?clobber=false",
+									"raw": "{{baseUrl}}/stigs?clobber=false&elevate=true",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -72719,6 +72922,10 @@
 										{
 											"key": "clobber",
 											"value": "false"
+										},
+										{
+											"key": "elevate",
+											"value": "true"
 										}
 									]
 								}
