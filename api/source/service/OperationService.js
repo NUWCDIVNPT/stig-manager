@@ -572,114 +572,127 @@ exports.getDetails = async function() {
     TABLE_NAME
     `
   const sqlCollectionAssetStigs = `
-    SELECT
-      CAST(sub.collectionId as char) as collectionId,
-      sum(case when sub.assetId then 1 else 0 end) as assetCnt,
-      sum(case when sub.stigAssetCnt >= 1 and sub.stigAssetCnt <= 5 then 1 else 0 end) as range01to05,
-      sum(case when sub.stigAssetCnt >= 6 and sub.stigAssetCnt <= 10 then 1 else 0 end) as range06to10,
-      sum(case when sub.stigAssetCnt >= 11 and sub.stigAssetCnt <= 15 then 1 else 0 end) as range11to15,
-      sum(case when sub.stigAssetCnt >= 16 then 1 else 0 end) as range16plus
-    FROM
-    (SELECT
-      c.collectionId,
-      c.name,
-      a.assetId,
-      COUNT(sa.assetId) as stigAssetCnt
-    FROM
-      collection c
-      LEFT JOIN asset a on a.collectionId = c.collectionId and a.state = "enabled"
-      LEFT JOIN stig_asset_map sa on sa.assetId = a.assetId 
-    GROUP BY
-      c.collectionId,
-      c.name,
-      a.assetId) as sub
-    GROUP BY
-      sub.collectionId
-    ORDER BY
-      sub.collectionId
+  SELECT
+    CAST(sub.collectionId as char) as collectionId,
+    sum(case when sub.assetId then 1 else 0 end) as assetCnt,
+    sum(case when sub.stigAssetCnt >= 1 and sub.stigAssetCnt <= 5 then 1 else 0 end) as range01to05,
+    sum(case when sub.stigAssetCnt >= 6 and sub.stigAssetCnt <= 10 then 1 else 0 end) as range06to10,
+    sum(case when sub.stigAssetCnt >= 11 and sub.stigAssetCnt <= 15 then 1 else 0 end) as range11to15,
+    sum(case when sub.stigAssetCnt >= 16 then 1 else 0 end) as range16plus
+  FROM
+  (SELECT
+    c.collectionId,
+    c.name,
+    a.assetId,
+    COUNT(sa.assetId) as stigAssetCnt
+  FROM
+    collection c
+    LEFT JOIN asset a on a.collectionId = c.collectionId and a.state = "enabled"
+    LEFT JOIN stig_asset_map sa on sa.assetId = a.assetId 
+  GROUP BY
+    c.collectionId,
+    c.name,
+    a.assetId) as sub
+  GROUP BY
+    sub.collectionId
+  ORDER BY
+    sub.collectionId
   `
 
-      const sqlCountsByCollection = `
-      SELECT
-      cast(c.collectionId as char) as collectionId,
-      c.state,
-      count(distinct a.assetId) as assetsTotal,
-      count( distinct 
-        if(a.state = "disabled", a.assetId, null)
-        ) 
-        as assetsDisabled,
-      count(distinct sa.benchmarkId) as uniqueStigs,
-      count(sa.saId) as stigAssignments,
-      coalesce(sum(rev.ruleCount),0) 
-        as ruleCnt,
-      coalesce(
-          sum(sa.pass + sa.fail + sa.notapplicable + sa.notchecked + sa.notselected + sa.informational + sa.fixed + sa.unknown + sa.error),0) 
-          as reviewCntTotal,
-      coalesce(
-        sum(if(a.state = "disabled", (sa.pass + sa.fail + sa.notapplicable + sa.notchecked + sa.notselected + sa.informational + sa.fixed + sa.unknown + sa.error), 0)))
-        as reviewCntDisabled,
-	    count(distinct cl.clId) as collectionLabelCount, 
-      count(distinct clam.assetId) as labeledAssetCount,
-      count(distinct clam.claId) as assetLabelCount
-      FROM
-        collection c
-        left join asset a on c.collectionId = a.collectionId 
-        left join stig_asset_map sa on a.assetId = sa.assetId
-        left join default_rev dr on c.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId
-        left join revision rev on dr.revId = rev.revId
-        left join stig on rev.benchmarkId = stig.benchmarkId
-        left join collection_label cl on cl.collectionId = c.collectionId
-        left join collection_label_asset_map clam on clam.clId = cl.clId
-      GROUP BY
-        c.collectionId
-      ORDER BY
-        c.collectionId
-      `
+  const sqlCountsByCollection = `
+  SELECT
+    cast(c.collectionId as char) as collectionId,
+    c.state,
+    count(distinct a.assetId) as assetsTotal,
+    count( distinct 
+      if(a.state = "disabled", a.assetId, null)
+      ) 
+      as assetsDisabled,
+    count(distinct sa.benchmarkId) as uniqueStigs,
+    count(sa.saId) as stigAssignments,
+    coalesce(sum(rev.ruleCount),0) 
+      as ruleCnt,
+    coalesce(
+        sum(sa.pass + sa.fail + sa.notapplicable + sa.notchecked + sa.notselected + sa.informational + sa.fixed + sa.unknown + sa.error),0) 
+        as reviewCntTotal,
+    coalesce(
+      sum(if(a.state = "disabled", (sa.pass + sa.fail + sa.notapplicable + sa.notchecked + sa.notselected + sa.informational + sa.fixed + sa.unknown + sa.error), 0)))
+      as reviewCntDisabled
+  FROM
+    collection c
+    left join asset a on c.collectionId = a.collectionId 
+    left join stig_asset_map sa on a.assetId = sa.assetId
+    left join default_rev dr on c.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId
+    left join revision rev on dr.revId = rev.revId
+  GROUP BY
+    c.collectionId
+  ORDER BY
+    c.collectionId
+  `
 
-      const sqlRestrictedGrantCounts = `
-      select collectionId, json_arrayagg(perUser) as restrictedUserGrantCounts
-      from 
-      (select
-        a.collectionId, 
-        json_object('user', usam.userId, 'stigAssetCount', count(usam.saId), 'uniqueAssets', count(distinct sam.assetId)) as perUser
-      from user_stig_asset_map usam
+  const sqlLabelCountsByCollection = `
+  SELECT
+    cast(c.collectionId as char) as collectionId,
+    count(distinct cl.clId) as collectionLabelCount,
+    count(distinct clam.assetId) as labeledAssetCount,
+    count(distinct clam.claId) as assetLabelCount
+  FROM
+    collection c
+    left join collection_label cl on cl.collectionId = c.collectionId
+    left join collection_label_asset_map clam on clam.clId = cl.clId
+  GROUP BY
+    c.collectionId
+  `  
+  const sqlRestrictedGrantCountsByCollection = `
+  select 
+    collectionId, 
+    json_arrayagg(perUser) as restrictedUserGrantCounts
+  from 
+    (select
+      a.collectionId, 
+      json_object('user', usam.userId, 'stigAssetCount', count(usam.saId), 'uniqueAssets', count(distinct sam.assetId)) as perUser
+    from 
+      user_stig_asset_map usam
       left join stig_asset_map sam on sam.saId=usam.saId
       left join asset a on a.assetId = sam.assetId
-      group by
-      userId, collectionId) as sub
-      group by 
-      sub.collectionId
+    group by
+      userId, collectionId)
+    as sub
+  group by 
+    sub.collectionId
 `
 
   const sqlGrantCounts = `
-SELECT 
+  SELECT 
     collectionId,
     SUM(CASE WHEN accessLevel = 1 THEN 1 ELSE 0 END) AS accessLevel1,
     SUM(CASE WHEN accessLevel = 2 THEN 1 ELSE 0 END) AS accessLevel2,
     SUM(CASE WHEN accessLevel = 3 THEN 1 ELSE 0 END) AS accessLevel3,
     SUM(CASE WHEN accessLevel = 4 THEN 1 ELSE 0 END) AS accessLevel4
-FROM 
+  FROM 
     collection_grant
-GROUP BY 
+  GROUP BY 
     collectionId
-ORDER BY 
+  ORDER BY 
     collectionId
   `
   
   const sqlUserInfo = `
   select 
-  userId, 
-  lastAccess,
-  JSON_UNQUOTE(lastClaims) as lastClaims
-  from stigman.user_data
+    userId, 
+    lastAccess,
+    JSON_UNQUOTE(lastClaims) as lastClaims
+  from 
+    stigman.user_data
   `
-    const sqlOrphanedReviews = `
-    SELECT count(distinct r.ruleId) as uniqueOrphanedRules
-    FROM 
-     review r 
-    where 
-        r.ruleId not in (select ruleId from rule_version_check_digest)
-    `
+  const sqlOrphanedReviews = `
+  SELECT 
+    count(distinct r.ruleId) as uniqueOrphanedRules
+  FROM 
+    review r 
+  where 
+    r.ruleId not in (select ruleId from rule_version_check_digest)
+  `
 
   const sqlMySqlVersion = `SELECT VERSION() as version`
 
@@ -710,29 +723,29 @@ ORDER BY
 
   const sqlMySqlVariablesInMb = `
   SELECT 
-      variable_name,
-      ROUND(variable_value / (1024 * 1024), 2) AS value
+    variable_name,
+    ROUND(variable_value / (1024 * 1024), 2) AS value
   FROM 
-      performance_schema.global_variables
+    performance_schema.global_variables
   WHERE 
-      variable_name IN (
-        ${mysqlVarsInMbOnly.map( v => `'${v}'`).join(',')}
-      )
+    variable_name IN (
+      ${mysqlVarsInMbOnly.map( v => `'${v}'`).join(',')}
+    )
   ORDER by variable_name
-`  
-const sqlMySqlVariablesRawValues = `
+  `  
+  const sqlMySqlVariablesRawValues = `
   SELECT 
-      variable_name,
-      variable_value as value
-      FROM 
-      performance_schema.global_variables
+    variable_name,
+    variable_value as value
+    FROM 
+    performance_schema.global_variables
   WHERE 
-      variable_name IN (
-          ${mysqlVarsInMbOnly.map( v => `'${v}'`).join(',')},
-          ${mySqlVariablesRawOnly.map( v => `'${v}'`).join(',')}
-      )
+    variable_name IN (
+        ${mysqlVarsInMbOnly.map( v => `'${v}'`).join(',')},
+        ${mySqlVariablesRawOnly.map( v => `'${v}'`).join(',')}
+    )
     ORDER by variable_name
-`
+  `
 
 const mySqlStatusRawOnly = [
 'Bytes_received',
@@ -761,7 +774,7 @@ const mySqlStatusRawOnly = [
 'Uptime'
 ]
 
-const sqlMySqlStatusRawValues = `
+  const sqlMySqlStatusRawValues = `
   SELECT 
     variable_name,
     variable_value as value
@@ -772,15 +785,16 @@ const sqlMySqlStatusRawValues = `
         ${mySqlStatusRawOnly.map( v => `'${v}'`).join(',')}
     )
   ORDER by variable_name
-`
+  `
 
   await dbUtils.pool.query(sqlAnalyze)
 
   const [schemaInfoArray] = await dbUtils.pool.query(sqlInfoSchema, [config.database.schema])
-  const [assetStig] = await dbUtils.pool.query(sqlCollectionAssetStigs)
-  const [countsByCollection] = await dbUtils.pool.query(sqlCountsByCollection)
-  const [restrictedGrantCountsByCollection] = await dbUtils.pool.query(sqlRestrictedGrantCounts)
-  const [grantCountsByCollection] = await dbUtils.pool.query(sqlGrantCounts)
+  let [assetStigByCollection] = await dbUtils.pool.query(sqlCollectionAssetStigs)
+  let [countsByCollection] = await dbUtils.pool.query(sqlCountsByCollection)
+  let [labelCountsByCollection] = await dbUtils.pool.query(sqlLabelCountsByCollection)
+  let [restrictedGrantCountsByCollection] = await dbUtils.pool.query(sqlRestrictedGrantCountsByCollection)
+  let [grantCountsByCollection] = await dbUtils.pool.query(sqlGrantCounts)
   const [orphanedReviews] = await dbUtils.pool.query(sqlOrphanedReviews)
   let [userInfo] = await dbUtils.pool.query(sqlUserInfo)
   const [mySqlVersion] = await dbUtils.pool.query(sqlMySqlVersion)
@@ -791,7 +805,7 @@ const sqlMySqlStatusRawValues = `
   // remove lastClaims, replace non-stigman roles with "other"
   userInfo = cleanUserData(userInfo)
   //count role assignments and break out by lastAccess time periods
-  let userRoleCounts = breakOutRoleUsage(userInfo)
+  let userPrivilegeCounts = breakOutRoleUsage(userInfo)
 
   //create working copy of operational stats
   let operationalStats = _.cloneDeep(logger.overallOpStats)
@@ -807,6 +821,41 @@ const sqlMySqlStatusRawValues = `
     mySqlVariablesInMb[key].value = `${mySqlVariablesInMb[key].value}M`
   }
 
+  // Create objects keyed by collectionId from arrays of objects
+  countsByCollection = createObjectFromKeyValue(countsByCollection, "collectionId")
+  labelCountsByCollection = createObjectFromKeyValue(labelCountsByCollection, "collectionId")
+  assetStigByCollection = createObjectFromKeyValue(assetStigByCollection, "collectionId")
+  restrictedGrantCountsByCollection = createObjectFromKeyValue(restrictedGrantCountsByCollection, "collectionId")
+  grantCountsByCollection = createObjectFromKeyValue(grantCountsByCollection, "collectionId")
+
+//Bundle "byCollection" stats together by collectionId
+  for(let collectionId in countsByCollection) {
+    // Add assetStig data to countsByCollection 
+    if (assetStigByCollection[collectionId]) {
+      countsByCollection[collectionId].assetStigByCollection = assetStigByCollection[collectionId]
+    }
+    // Add restrictedGrant data to countsByCollection
+    if (restrictedGrantCountsByCollection[collectionId]) {
+      countsByCollection[collectionId].restrictedGrantCountsByUser = restrictedGrantCountsByCollection[collectionId].restrictedUserGrantCounts
+      countsByCollection[collectionId].restrictedGrantCountsByUser = createObjectFromKeyValue(countsByCollection[collectionId].restrictedGrantCountsByUser, "user")
+    }
+    else {
+      countsByCollection[collectionId].restrictedGrantCountsByUser = 0
+    }
+    // Add grant data to countsByCollection
+    if (grantCountsByCollection[collectionId]) {
+      countsByCollection[collectionId].grantCounts = grantCountsByCollection[collectionId]
+    }
+    else {
+      countsByCollection[collectionId].grantCounts = 0
+    }    
+    // Add labelCounts data to countsByCollection
+    if (labelCountsByCollection[collectionId]) {
+      countsByCollection[collectionId].labelCounts = labelCountsByCollection[collectionId]
+    }
+  }
+  
+
   return ({
     dateGenerated: new Date().toISOString(),
     stigmanVersion: config.version,
@@ -814,13 +863,10 @@ const sqlMySqlStatusRawValues = `
     dbInfo: {
       tables: createObjectFromKeyValue(schemaInfoArray, "tableName"),
     },
-    assetStigByCollection: createObjectFromKeyValue(assetStig, "collectionId"),
-    countsByCollection: createObjectFromKeyValue(countsByCollection, "collectionId"),
-    restrictedGrantCountsByCollection: createObjectFromKeyValue(restrictedGrantCountsByCollection, "collectionId"),
-    grantCountsByCollection: createObjectFromKeyValue(grantCountsByCollection, "collectionId"),
+    countsByCollection,
     uniqueRuleCountOfOrphanedReviews: orphanedReviews[0].uniqueOrphanedRules,
     userInfo: createObjectFromKeyValue(userInfo, "userId"),
-    userRoleCounts,
+    userPrivilegeCounts,
     operationalStats,
     nodeUptime: getNodeUptime(),
     nodeMemoryUsageInMb: getNodeMemoryUsage(),
