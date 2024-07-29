@@ -350,7 +350,12 @@ SM.ColumnFilters.CompareFns = {
   },
   labels: (a, b) => {
     
-  }
+  },
+  labelIds: (a, b, collectionId) => {
+    if (a === "") return -1;
+    if (b === "") return 1;
+    return SM.Cache.getCollectionLabel(collectionId, a).name.localeCompare(SM.Cache.getCollectionLabel(collectionId, b).name)
+  },        
 }
 
 SM.ColumnFilters.Renderers = {
