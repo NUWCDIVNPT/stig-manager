@@ -6,10 +6,8 @@ const parsers = require('../utils/parsers.js')
 const STIGService = require(`../service/STIGService`)
 
 module.exports.importBenchmark = async function importManualBenchmark (req, res, next) {
-  if ( !req.query.elevate ) {
-    next(new SmError.PrivilegeError())
-  }
   try {
+    if (!req.query.elevate) throw new SmError.PrivilegeError()
     const extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
     const clobber = req.query.clobber ?? false
     if (extension.toLowerCase() != 'xml') {
