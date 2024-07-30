@@ -1,4 +1,5 @@
 async function addAppDataAdmin( params ) {
+  let detailBodyWrapEl
   try {
     let { treePath } = params
     const tab = Ext.getCmp('main-tab-panel').getItem('appdata-admin-tab')
@@ -250,6 +251,8 @@ async function addAppDataAdmin( params ) {
     })
     thisTab.show()
 
+    detailBodyWrapEl = detailJson.getEl().child('.x-panel-bwrap')
+    detailBodyWrapEl.mask('Getting data...')
     const detailResponseText = (await getDetail()).response.responseText //used by downloadBlob
     const detailTree = JsonView.createTree(JSON.parse(detailResponseText))
     // adjust for rendering
@@ -258,10 +261,12 @@ async function addAppDataAdmin( params ) {
     detailTree.isExpanded = true
     detailTree.children[0].isExpanded = true
 
-    const el = detailJson.body
-    JsonView.render(detailTree, el)
+    JsonView.render(detailTree, detailJson.body)
   }
   catch (e) {
     SM.Error.handleError(e)
+  }
+  finally {
+    detailBodyWrapEl.unmask()
   }
 }
