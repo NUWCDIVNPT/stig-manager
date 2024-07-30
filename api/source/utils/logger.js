@@ -200,6 +200,7 @@ function trackOperationStats(operationId, durationMs, res) {
     overallOpStats.operationIdStats[operationId] = {
       totalRequests: 0,
       totalDuration: 0,
+      elevatedRequests: 0,
       minDuration: Infinity,
       maxDuration: 0,
       maxDurationUpdates: 0,
@@ -207,6 +208,7 @@ function trackOperationStats(operationId, durationMs, res) {
         return this.totalRequests ? Math.round(this.totalDuration / this.totalRequests) : 0;
       },
       clients: {},
+      users: {},
     };
   }
 
@@ -224,10 +226,20 @@ function trackOperationStats(operationId, durationMs, res) {
     stats.maxDurationUpdates++;
   }
 
+  // Check token for userid
+  let userId = res.req.userObject?.userId || 'unknown';
+  // Increment user count for this operationId
+  stats.users[userId] = (stats.users[userId] || 0) + 1;  
+
   // Check token for client id
-  let client = res.req?.access_token?.azp || 'unknown';
+  let client = res.req.access_token?.azp || 'unknown';
   // Increment client count for this operationId
   stats.clients[client] = (stats.clients[client] || 0) + 1;
+
+  // Increment elevated request count if elevate query param is true
+  if (res.req.query?.elevate === true) {
+    stats.elevatedRequests = (stats.elevatedRequests || 0) + 1;
+  }
 
   // If projections are defined, track stats for each projection
   if (res.req.query?.projection?.length > 0) {
