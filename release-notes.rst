@@ -1,3 +1,17 @@
+1.4.13
+-----
+
+Changes:
+
+  - (API) feat: More “Anonymized Deployment Details” report enhancements
+  - (UI/API) fix: Enforce elevate=true parameter for Reference STIG imports
+  - (UI) feat: Added load mask to Deployment Details report
+  - (UI) feat: Sort labels in column filters
+  - (UI) refactor: Adjust rendering for invalid asset labels
+  - (UI) refactor: Remove unneeded labels projection from initial Collections request 
+  - (UI) refactor: Suppress unneeded requests for dashboard data when first loaded  
+  - (API) chore: dependency updates
+
 1.4.12
 -----
 
@@ -13,7 +27,6 @@ Changes:
   - (UI/API) feat: Max review history records setting limited to 15
   - (build) chore: dependency updates
   - **Includes database migration to update settings for existing Collections to reflect the new Review History cap where appropriate. No history is altered as part of the migration, history entries will be trimmed to new max as Reviews are subsequently updated.**
-
 
 1.4.11
 -----
