@@ -163,8 +163,8 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
       authName: req.query.mccastAuthName,
       format: req.query.format
     }
-  const { collectionId, collectionGrant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
-  if (collectionGrant) {
+    const { collectionId, collectionGrant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
+    if (collectionGrant) {
       const response = await CollectionService.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, 
         [
           'rulesWithDiscussion',
