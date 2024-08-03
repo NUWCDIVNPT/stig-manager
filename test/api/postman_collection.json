@@ -3466,7 +3466,7 @@
 									"name": "poam",
 									"item": [
 										{
-											"name": "Return a POAM-like spreadsheet aggregated by groupId",
+											"name": "Return an EMASS formatted POAM-like spreadsheet aggregated by groupId",
 											"event": [
 												{
 													"listen": "test",
@@ -3482,7 +3482,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/poam?aggregator=groupId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&acceptedOnly=true",
+													"raw": "{{baseUrl}}/collections/:collectionId/poam?format=EMASS&aggregator=groupId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&acceptedOnly=true",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -3492,6 +3492,10 @@
 														"poam"
 													],
 													"query": [
+														{
+															"key": "format",
+															"value": "EMASS"
+														},
 														{
 															"key": "aggregator",
 															"value": "groupId",
@@ -3530,7 +3534,7 @@
 											"response": []
 										},
 										{
-											"name": "Return a POAM-like spreadsheet aggregated by ruleId",
+											"name": "Return an EMASS formatted POAM-like spreadsheet aggregated by ruleId",
 											"event": [
 												{
 													"listen": "test",
@@ -3546,7 +3550,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/poam?aggregator=ruleId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing",
+													"raw": "{{baseUrl}}/collections/:collectionId/poam?format=EMASS&aggregator=ruleId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -3556,6 +3560,136 @@
 														"poam"
 													],
 													"query": [
+														{
+															"key": "format",
+															"value": "EMASS"
+														},
+														{
+															"key": "aggregator",
+															"value": "ruleId"
+														},
+														{
+															"key": "date",
+															"value": "01%2F01%2F1970"
+														},
+														{
+															"key": "office",
+															"value": "MyOffice"
+														},
+														{
+															"key": "status",
+															"value": "Ongoing"
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}"
+														}
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Return an EMASS formatted POAM-like spreadsheet aggregated by groupId",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"// Tests are at poam folder level"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/poam?format=MCCAST&aggregator=groupId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&acceptedOnly=true",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"poam"
+													],
+													"query": [
+														{
+															"key": "format",
+															"value": "MCCAST"
+														},
+														{
+															"key": "aggregator",
+															"value": "groupId",
+															"description": "(Required) Aggregate the findings on this property"
+														},
+														{
+															"key": "date",
+															"value": "01%2F01%2F1970"
+														},
+														{
+															"key": "office",
+															"value": "MyOffice"
+														},
+														{
+															"key": "status",
+															"value": "Ongoing"
+														},
+														{
+															"key": "acceptedOnly",
+															"value": "true"
+														},
+														{
+															"key": "status",
+															"value": "",
+															"disabled": true
+														}
+													],
+													"variable": [
+														{
+															"key": "collectionId",
+															"value": "{{testCollection}}"
+														}
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "Return a MCCAST formatted POAM-like spreadsheet aggregated by ruleId",
+											"event": [
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															"// Tests are at poam folder level"
+														],
+														"type": "text/javascript"
+													}
+												}
+											],
+											"request": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/collections/:collectionId/poam?format=MCCAST&aggregator=ruleId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"collections",
+														":collectionId",
+														"poam"
+													],
+													"query": [
+														{
+															"key": "format",
+															"value": "MCCAST"
+														},
 														{
 															"key": "aggregator",
 															"value": "ruleId"
