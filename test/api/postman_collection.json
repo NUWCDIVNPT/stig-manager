@@ -3482,7 +3482,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/poam?format=EMASS&aggregator=groupId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&acceptedOnly=true",
+													"raw": "{{baseUrl}}/collections/:collectionId/poam?format=EMASS&aggregator=groupId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&acceptedOnly=true&mccastPackageId=PackageID&mccastAuthName=AuthPackageName",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -3521,6 +3521,14 @@
 															"key": "status",
 															"value": "",
 															"disabled": true
+														},
+														{
+															"key": "mccastPackageId",
+															"value": "PackageID"
+														},
+														{
+															"key": "mccastAuthName",
+															"value": "AuthPackageName"
 														}
 													],
 													"variable": [
@@ -3550,7 +3558,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/poam?format=EMASS&aggregator=ruleId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing",
+													"raw": "{{baseUrl}}/collections/:collectionId/poam?format=EMASS&aggregator=ruleId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&mccastPackageId=PackageID&mccastAuthName=AuthPackageName",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -3579,6 +3587,14 @@
 														{
 															"key": "status",
 															"value": "Ongoing"
+														},
+														{
+															"key": "mccastPackageId",
+															"value": "PackageID"
+														},
+														{
+															"key": "mccastAuthName",
+															"value": "AuthPackageName"
 														}
 													],
 													"variable": [
@@ -3608,7 +3624,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/poam?format=MCCAST&aggregator=groupId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&acceptedOnly=true",
+													"raw": "{{baseUrl}}/collections/:collectionId/poam?format=MCCAST&aggregator=groupId&date=01%2F01%2F1970&office=MyOffice&status=Started&acceptedOnly=true&mccastPackageId=PackageID&mccastAuthName=AuthPackageName",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -3637,7 +3653,7 @@
 														},
 														{
 															"key": "status",
-															"value": "Ongoing"
+															"value": "Started"
 														},
 														{
 															"key": "acceptedOnly",
@@ -3647,6 +3663,14 @@
 															"key": "status",
 															"value": "",
 															"disabled": true
+														},
+														{
+															"key": "mccastPackageId",
+															"value": "PackageID"
+														},
+														{
+															"key": "mccastAuthName",
+															"value": "AuthPackageName"
 														}
 													],
 													"variable": [
@@ -3676,7 +3700,7 @@
 												"method": "GET",
 												"header": [],
 												"url": {
-													"raw": "{{baseUrl}}/collections/:collectionId/poam?format=MCCAST&aggregator=ruleId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing",
+													"raw": "{{baseUrl}}/collections/:collectionId/poam?format=MCCAST&aggregator=groupId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&acceptedOnly=true&mccastPackageId=PackageID&mccastAuthName=AuthPackageName",
 													"host": [
 														"{{baseUrl}}"
 													],
@@ -3704,7 +3728,15 @@
 														},
 														{
 															"key": "status",
-															"value": "Ongoing"
+															"value": "Started"
+														},
+														{
+															"key": "mccastPackageId",
+															"value": "PackageID"
+														},
+														{
+															"key": "mccastAuthName",
+															"value": "AuthPackageName"
 														}
 													],
 													"variable": [
