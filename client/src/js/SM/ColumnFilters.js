@@ -191,7 +191,7 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
           const cValue = cVals[col.dataIndex]
           for ( const value of uniqueArray ) {
             itemConfigs.push({
-              text: col.filter.renderer ? col.filter.renderer(value, col.filter.collectionId) : value ? value : '<i>(No value)</i>',
+              text: col.filter.renderer ? col.filter.renderer(value, col.filter.collectionId) : value ,
               xtype: 'menucheckitem',
               column: col,
               hideOnClick: false,
@@ -350,7 +350,12 @@ SM.ColumnFilters.CompareFns = {
   },
   labels: (a, b) => {
     
-  }
+  },
+  labelIds: (a, b, collectionId) => {
+    if (a === "") return -1;
+    if (b === "") return 1;
+    return SM.Cache.getCollectionLabel(collectionId, a).name.localeCompare(SM.Cache.getCollectionLabel(collectionId, b).name)
+  },        
 }
 
 SM.ColumnFilters.Renderers = {
@@ -407,7 +412,7 @@ SM.ColumnFilters.Renderers = {
   },
   labels: function (labelId, collectionId) {
     if (!labelId) return '<i>(No value)</i>'
-    const labelObj = SM.Cache.CollectionMap.get(collectionId).labelMap.get(labelId)
+    const labelObj = SM.Cache.getCollectionLabel(collectionId, labelId)
     return SM.Collection.LabelTpl.apply(labelObj)
   }
 }
