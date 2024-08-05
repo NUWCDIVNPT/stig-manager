@@ -2429,6 +2429,24 @@ paths:
           in: query
           schema:
             type: string
+          allowReserved: true
+        - name: format
+          description: Value for POAM format (ie, EMASS, MCCAST)
+          in: query
+          schema:
+            type: string
+        - name: mccastPackageId
+          description: Value for POAM MCCAST PackageId
+          in: query
+          schema:
+            type: string
+          allowReserved: true
+        - name: mccastAuthName
+          description: Value for POAM MCCAST Authorization Name
+          in: query
+          schema:
+            type: string
+          allowReserved: true
       responses:
         '200':
           description: CollectionFinding response

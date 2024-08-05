@@ -630,6 +630,35 @@ SM.PoamStatusComboBox = Ext.extend(Ext.form.ComboBox, {
 })
 Ext.reg('sm-poam-status-combo', SM.PoamStatusComboBox);
 
+SM.PoamFormatComboBox = Ext.extend(Ext.form.ComboBox, {
+	initComponent: function () {
+		let config = {
+			displayField: 'display',
+			valueField: 'value',
+			triggerAction: 'all',
+			mode: 'local',
+			editable: false
+		}
+		let me = this
+		let data = [
+			['EMASS', 'EMASS'],
+			['MCCAST', 'MCCAST']
+		]
+		this.store = new Ext.data.SimpleStore({
+			fields: ['value', 'display']
+		})
+		this.store.on('load', function (store) {
+			me.setValue(store.getAt(0).get('value'))
+		})
+
+		Ext.apply(this, Ext.apply(this.initialConfig, config))
+		SM.PoamFormatComboBox.superclass.initComponent.call(this)
+
+		this.store.loadData(data)
+	}
+})
+Ext.reg('sm-poam-format-combo', SM.PoamFormatComboBox);
+
 
 SM.PoamOptionsPanel = Ext.extend(Ext.FormPanel, {
 	initComponent: function () {
@@ -644,7 +673,60 @@ SM.PoamOptionsPanel = Ext.extend(Ext.FormPanel, {
 			hideLabel: true,
 			value: defaultDate
 		})
+
+		const statusCombo = new SM.PoamStatusComboBox({
+			anchor: '100%',
+			hideLabel: true,
+			name: 'status',
+			ref: 'statusCombo'
+		});
+
 		const items = [
+			{
+				xtype: 'fieldset',
+				title: 'Format',
+				items: [{
+					xtype: 'sm-poam-format-combo',
+					anchor: '100%',
+					hideLabel: true,
+					name: 'format',
+					value: 'EMASS',
+					listeners: {
+						select:  (combo, record) => {
+							// Toggle visibility based on selection
+							const generatePoamWindow = Ext.getCmp('generatePoamWindow');
+                            const packageIdFieldset = Ext.getCmp('mccastPackageIdFieldset');
+                            const authNameFieldset = Ext.getCmp('mccastAuthNameFieldset');
+                            const officeIdFieldset = Ext.getCmp('officeIdFieldset');
+
+                            //MCCAST MODE
+                            if(record.data.value === 'MCCAST') {
+                                generatePoamWindow.setHeight(460);
+                                statusCombo.store.loadData([
+                                    ['Started','Started'],
+                                    ['Not Started','Not Started'],
+                                    ['Request Risk Acceptance','Request Risk Acceptance']
+                                ]);
+                                officeIdFieldset.setVisible(false);
+                                packageIdFieldset.setVisible(true);
+                                authNameFieldset.setVisible(true);
+                            }
+                            //EMASS or OTHER MODE
+                            else {
+                                generatePoamWindow.setHeight(390);
+                                statusCombo.store.loadData([
+                                    ['Ongoing','Ongoing'],
+                                    ['Completed','Completed']
+                                ]);
+                                officeIdFieldset.setVisible(true);
+                                packageIdFieldset.setVisible(false);
+                                authNameFieldset.setVisible(false);
+                            }
+							this.doLayout();
+						}
+					}
+				}]
+			},
 			{
 				xtype: 'fieldset',
 				title: 'Scheduled Completion Date',
@@ -652,35 +734,61 @@ SM.PoamOptionsPanel = Ext.extend(Ext.FormPanel, {
 			},
 			{
 				xtype: 'fieldset',
+				id: 'officeIdFieldset',
 				title: 'Office/Org',
 				items: [{
+					id: 'officeId',
 					xtype: 'textfield',
 					anchor: '100%',
 					hideLabel: true,
 					name: 'office',
-					value: 'My office info'
+					value: 'My Office Info'
 				}]
 			},
 			{
 				xtype: 'fieldset',
 				title: 'Status',
+				items: [statusCombo]
+			},
+			{
+				xtype: 'fieldset',
+				id: 'mccastPackageIdFieldset',
+				title: 'Package ID',
+				hidden:true,
 				items: [{
-					xtype: 'sm-poam-status-combo',
+					name: 'mccastPackageId',
+					id: 'mccastPackageId',
+					xtype: 'textfield',
 					anchor: '100%',
 					hideLabel: true,
-					name: 'status',
-					value: 'Ongoing'
+					value: 'Package ID',
 				}]
-			}
-
+			},
+			{
+                xtype: 'fieldset',
+                id: 'mccastAuthNameFieldset',
+                title: 'Authorization Package Name',
+                hidden:true,
+                items: [{
+                    name: 'mccastAuthName',
+                    id: 'mccastAuthName',
+                    xtype: 'textfield',
+                    anchor: '100%',
+                    hideLabel: true,
+                    value: 'Authorization Package Name'
+                }]
+            }
 		]
+
 		const config = {
 			baseCls: 'x-plain',
 			labelWidth: 70,
 			monitorValid: true,
 			trackResetOnLoad: true,
-			items: items,
+			items,
+			id: 'generatePoamPanel',
 			buttons: [{
+				anchor:'100%',
 				text: this.btnText || 'Generate',
 				iconCls: 'icon-excel',
 				height: 30,
@@ -699,6 +807,7 @@ SM.RequestAndServePoam = async function (collectionId, params) {
 	let mb
 	try {
 		mb = Ext.MessageBox.wait('Generating POA&M')
+		Object.keys(params).forEach((k) => params[k] == "" && delete params[k]);
 		const search = new URLSearchParams(params).toString()
 		let url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/poam?${search}`
 
@@ -762,11 +871,12 @@ SM.GeneratePoamButton = Ext.extend(Ext.Button, {
 			/******************************************************/
 			const appwindow = new Ext.Window({
 				title: 'POA&M Defaults',
+				id:'generatePoamWindow',
 				cls: 'sm-dialog-window sm-round-panel',
 				modal: true,
 				hidden: true,
 				width: 230,
-				height: 310,
+				height: 390,
 				layout: 'fit',
 				plain: true,
 				bodyStyle: 'padding:5px;',
