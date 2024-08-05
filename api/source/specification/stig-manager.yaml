@@ -3122,6 +3122,7 @@ paths:
           schema:
             type: boolean
             default: false
+        - $ref: '#/components/parameters/ElevateQuery'
       requestBody:
         required: true
         content:

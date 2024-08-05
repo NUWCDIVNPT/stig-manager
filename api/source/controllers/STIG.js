@@ -7,6 +7,7 @@ const STIGService = require(`../service/STIGService`)
 
 module.exports.importBenchmark = async function importManualBenchmark (req, res, next) {
   try {
+    if (!req.query.elevate) throw new SmError.PrivilegeError()
     const extension = req.file.originalname.substring(req.file.originalname.lastIndexOf(".")+1)
     const clobber = req.query.clobber ?? false
     if (extension.toLowerCase() != 'xml') {
