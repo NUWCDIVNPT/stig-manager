@@ -66,13 +66,7 @@ ext/resources/images/gray/tabs/tab-close.gif
 ext/resources/images/gray/tabs/scroll-left.gif
 ext/resources/images/gray/tabs/scroll-right.gif
 ext/resources/images/gray/window/icon-question.gif
-ext/ux/fileuploadfield/css/fileuploadfield.css
-ext/resources/images/gray/form/date-trigger.gif
-ext/resources/images/gray/shared/hd-sprite.gif
-ext/resources/images/gray/shared/left-btn.gif
-ext/resources/images/gray/toolbar/btn-arrow-light.gif
-ext/resources/images/gray/shared/right-btn.gif
-ext/resources/images/gray/window/icon-error.gif"
+ext/ux/fileuploadfield/css/fileuploadfield.css"
 tar cf - -C $SrcDir --files-from <(echo "${ExtResources}") | tar xf - -C $DistDir
 
 # CSS
@@ -109,7 +103,7 @@ cp $SrcDir/js/init.js $DistDir/js/init.js
 cp $SrcDir/js/Env.js.example $DistDir/js
 cp -r $SrcDir/js/modules $DistDir/js/modules
 cd $SrcDir/js
-npx uglifyjs \
+uglifyjs \
 'diff.js' \
 'diff2html.min.js' \
 'stigmanUtils.js' \

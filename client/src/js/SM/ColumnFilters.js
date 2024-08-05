@@ -73,7 +73,6 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
       const hmenu = this.hmenu
       const stringItems = hmenu.filterItems.stringItems
       const selectItems = hmenu.filterItems.selectItems
-      const objItems = hmenu.filterItems.objItems
       const conditions = {}
       const filterFns = []
   
@@ -96,24 +95,12 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
           }
         }
       }
-      for (const objItem of objItems) {
-        const dataIndex = objItem.filter.dataIndex
-        const value = objItem.valueOf()
-        if (value) {
-          conditions[dataIndex] = value
-        }
-      }
-      
       // create a function for each dataIndex
       for (const dataIndex of Object.keys(conditions)) {
-        // if there are no active filters, do not populate the store with a filter.
-        if(this.multiTypeFilterCheck().length < 1) {
-          return
-        } 
           filterFns.push({
             fn: function (record) {
               const value = record.data[dataIndex]
-              if (Array.isArray(value)) {
+              if (Array.isArray(value)) { 
               // the record data is an Array of values
                 if (Array.isArray(conditions[dataIndex])) {
                   if (conditions[dataIndex].includes('') && value.length === 0) return true
@@ -126,27 +113,10 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
                 return conditions[dataIndex].includes(value) 
               }
               else {
-                if (typeof(value) === 'object') {
-                  let startDate = Ext.getCmp('dateStart').getValue()
-                  let endDate = Ext.getCmp('dateEnd').getValue()
-                  if (endDate.toString().length > 0)
-                    endDate.setHours(23,59,59)
-                  if (startDate.length == 0 && endDate.length == 0){
-                    return true
-                  } else {
-                    if (record.get('dateScanned') <= endDate && startDate.length == 0){
-                      return true
-                    }
-                    if (startDate <= record.get('dateScanned') && endDate.length ==0 ){
-                      return true
-                    }
-                    return startDate <= record.get('dateScanned') && record.get('dateScanned') <= endDate;
-                  }
-                }
                 // match case-insensitive condition anywhere in value
-                  const a = value.toLowerCase()
-                  const b = conditions[dataIndex].toLowerCase()
-                  return a.indexOf(b) > -1
+                const a = value.toLowerCase()
+                const b = conditions[dataIndex].toLowerCase()
+                return a.indexOf(b) > -1
               }
             }
           })  
@@ -155,11 +125,8 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
     },
     onFilterChange: function (item, value) {
       switch (item.filter.type) {
-        case 'date':
-          item.column.filtered = (!!(value).length > 0)
-          break
         case 'string':
-          item.column.filtered = (!!(item.getValue()).length > 0)
+          item.column.filtered = !!(item.getValue())
           break
         case 'values':
           const hmenuItems = this.hmenu.items.items
@@ -173,94 +140,6 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
       }
       this.fireEvent('filterschanged', this, item, value)
     },
-
-    multiTypeFilterCheck: function() {
-      let filterList = [] 
-      let hasDate = false
-      let dateFilter = {}
-      for (var key in this.cm.lookup) {
-        let currFiltered = {}
-        try {
-          if(this.cm.lookup[key]['filtered'] === true) {
-            let currType = this.cm.lookup[key]['filter']['type']
-            let dataIndex = this.cm.lookup[key]['dataIndex']
-            if (currType === 'date') {
-              hasDate = true
-              dateFilter['type'] = currType
-              dateFilter[currType] = this.cm.lookup[key]['filter']
-              dateFilter['dataIndex'] = dataIndex
-            } else {
-              currFiltered['type'] = currType
-              currFiltered[currType] = this.cm.lookup[key]['filter']
-              currFiltered['dataIndex'] = dataIndex
-              filterList.push(currFiltered)   
-            }
-          }
-        } catch(e) {
-          console.log(e)
-        }
-      }
-      if (hasDate)
-        filterList.push(dateFilter)
-      return filterList
-    },
-
-    multiTypeFilter: function (currFilters,startDate, endDate) {     
-      let storeFilters = []
-      for (key in currFilters) {
-        let dataIndex = currFilters[key]['dataIndex']
-        let currentFilter
-        let currentType = currFilters[key]['type'];
-        if (currentType === 'date'){
-          currentFilter = {
-            fn: function (record){    
-              if (endDate.toString().length > 0)
-                endDate.setHours(23,59,59)
-              if (startDate.length == 0 && endDate.length == 0){
-                return true
-              } else {
-                if (record.get('dateScanned') <= endDate && startDate.length == 0){
-                  return true
-                }
-                if (startDate <= record.get('dateScanned') && endDate.length ==0 ){
-                  return true
-                }
-                return startDate <= record.get('dateScanned') && record.get('dateScanned') <= endDate;
-              }
-            },
-          }
-          storeFilters.push(currentFilter)
-        }
-         else {
-          currentFilter = {
-            fn: function (record) {
-              return (record.get(dataIndex).toString().toLowerCase().includes(Ext.getCmp(dataIndex).getValue().toLowerCase()))
-            }
-          }
-          storeFilters.push(currentFilter)
-       }
-     }
-      this.grid.store.filter(storeFilters)
-    },
-
-    clearDateFilter: function () {
-      Ext.getCmp('dateStart').setValue('')
-      Ext.getCmp('dateEnd').setValue('')
-    },
-    checkForInvalidDateRange: function() {
-      var startDate = Ext.getCmp('dateStart').getValue();
-      var endDate = Ext.getCmp('dateEnd').getValue(); 
-      if(startDate > endDate && endDate.toString().length > 0) {
-        Ext.Msg.show({
-          title: 'Error',
-          msg: '\'From Date\' should be less than or equal to the \'To Date\'' ,
-          buttons: Ext.MessageBox.OK,
-          icon: Ext.MessageBox.ERROR
-        });
-        //sets value to the 'from' date so that the app wont throw error
-        Ext.getCmp('dateEnd').setValue(Ext.getCmp('dateStart').getValue());
-      }
-    },
     afterRenderUI: function () {
       const _this = this
       const dynamicColumns = []
@@ -270,8 +149,7 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
       const hmenu = this.hmenu
       hmenu.filterItems = {
         stringItems: [],
-        selectItems: [],
-        objItems: []
+        selectItems: []
       }
       // disables keyboard navigation, needed to support left-right arrow in search input
       hmenu.keyNav = new Ext.KeyNav(document.body, {disabled: true})
@@ -313,7 +191,7 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
           const cValue = cVals[col.dataIndex]
           for ( const value of uniqueArray ) {
             itemConfigs.push({
-              text: col.filter.renderer ? col.filter.renderer(value, col.filter.collectionId) : value ,
+              text: col.filter.renderer ? col.filter.renderer(value, col.filter.collectionId) : value ? value : '<i>(No value)</i>',
               xtype: 'menucheckitem',
               column: col,
               hideOnClick: false,
@@ -394,100 +272,7 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
       })
   
       for (const col of this.cm.config) {
-        switch (col.filter?.type) {          
-          case 'date':
-          const DatePanel = hmenu.add(new SM.ColumnFilters.FormFieldPanel ({
-            filter: {dataIndex: col.dataIndex, type: 'date'},
-            defaults:{
-              xtype: 'datefield',
-              column: col,
-              filter: {dataIndex: col.dataIndex, type: 'date'}
-            },
-              items: [{
-                title: 'Pick your start date',
-                fieldLabel: 'From',
-                format: 'Y-m-d',
-                name: 'dateStart',
-                id: 'dateStart',
-                listeners: {
-                  select : function() {
-                    _this.checkForInvalidDateRange()
-                    _this.onFilterChange(this,this.value)
-                    let filterCount = (_this.multiTypeFilterCheck()).length
-                    let currFilters = _this.multiTypeFilterCheck()
-                    if( filterCount > 1) {
-                      _this.multiTypeFilter(currFilters,this.getValue(), Ext.getCmp('dateEnd').getValue())
-                    }
-                  },                
-                  change: function (item, e) {
-                    _this.checkForInvalidDateRange()
-                    _this.onFilterChange(item, item.value)
-                    let filterCount = Object.keys(_this.multiTypeFilterCheck()).length
-                    let currFilters = _this.multiTypeFilterCheck()
-                    if( filterCount > 1) {
-                      _this.multiTypeFilter(currFilters, this.getValue(), Ext.getCmp('dateEnd').getValue())
-                    }
-                  },
-                  keyup: function (item, e) {
-                    const k = e.getKey()
-                    if (k == e.RETURN) {
-                      _this.checkForInvalidDateRange()
-                      _this.onFilterChange(this,this.value)
-                      e.stopEvent();
-                      hmenu.hide(true)
-                    }
-                  }
-                }
-              }, {
-                title: 'Pick your end date',
-                fieldLabel: 'To',
-                format: 'Y-m-d',
-                name: 'dateEnd',
-                id: 'dateEnd',
-                listeners: {
-                  select : function() {
-                    _this.checkForInvalidDateRange()
-                    _this.onFilterChange(this,this.value)
-                    let filterCount = Object.keys(_this.multiTypeFilterCheck()).length 
-                    let currFilters = _this.multiTypeFilterCheck()                  
-                    if( filterCount > 1) {
-                      _this.multiTypeFilter(currFilters, Ext.getCmp('dateStart').getValue(), this.getValue())
-                    }
-                  },
-                  change: function (item, e) {
-                    _this.checkForInvalidDateRange()
-                    _this.onFilterChange(item, item.value)
-                    let filterCount = Object.keys(_this.multiTypeFilterCheck()).length
-                    let currFilters = _this.multiTypeFilterCheck()
-                    if( filterCount > 1) {
-                      _this.multiTypeFilter(currFilters, Ext.getCmp('dateStart').getValue(), this.getValue())
-                    }
-                  },
-                  keyup: function (item, e) {
-                    const k = e.getKey()
-                    if (k == e.RETURN) {
-                      _this.checkForInvalidDateRange()
-                      _this.onFilterChange(this,this.value)
-                        e.stopEvent();
-                        hmenu.hide(true)
-                    }
-                  }
-                }
-              },
-              {
-                xtype:'button',
-                text: 'Clear Filter',
-                handler: 
-                  function(item,e) {
-                    _this.clearDateFilter()
-                    _this.onFilterChange(item,'')
-                    hmenu.hide(true)
-                  }
-              }
-            ]
-            }))
-            hmenu.filterItems.objItems.push(DatePanel);
-            break
+        switch (col.filter?.type) {
           case 'string':
             if (col.renderer) {
               col.configRenderer = col.renderer
@@ -495,7 +280,6 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
             }
             const stringItem = hmenu.add(new SM.ColumnFilters.SearchTextField({
               emptyText: "Contains...",
-              id: col.dataIndex,
               height: 24,
               column: col,
               filter: { dataIndex: col.dataIndex, type: 'string'},
@@ -503,12 +287,7 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
               hideParent: true,
               listeners: {
                 input: function (item, e) {
-                  let filterCount = (_this.multiTypeFilterCheck()).length
-                  let currFilters = _this.multiTypeFilterCheck()
-                  if( filterCount > 1 && item.getValue().length > 0) {
-                    _this.multiTypeFilter(currFilters,Ext.getCmp('dateStart').getValue(), Ext.getCmp('dateEnd').getValue())
-                  }
-                  _this.onFilterChange(item, item.getValue())
+                  _this.onFilterChange(item, item.value)
                 },
                 keyup: function (item, e) {
                   const k = e.getKey()
@@ -534,29 +313,6 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
 
 SM.ColumnFilters.GridView = SM.ColumnFilters.extend(Ext.grid.GridView)
 SM.ColumnFilters.GridViewBuffered = SM.ColumnFilters.extend(Ext.ux.grid.BufferView)
-
-SM.ColumnFilters.FormFieldPanel = Ext.extend(Ext.form.FormPanel, {
-  initComponent: function () {
-    const config = {
-      autoCreate: {type:'form', input:'text'}
-    }
-    Ext.apply(this, Ext.apply(this.initialConfig.config))
-    
-    SM.ColumnFilters.FormFieldPanel.superclass.initComponent.apply(this,arguments);
-    this.addEvents('input')
-  },
-  initEvents: function () {
-    SM.ColumnFilters.FormFieldPanel.superclass.initEvents.call(this)
-      this.mon(this.el, {
-        scope: this,
-        input: this.onInput
-      })      
-  },
-  onInput: function (e) {
-    this.filter.value = [this.items.items[0].getValue(), this.items.items[1].getValue()]
-    this.fireEvent('input',this, e);
-  }
-})
 
 SM.ColumnFilters.SearchTextField = Ext.extend(Ext.form.TextField, {
   initComponent: function () {
@@ -594,12 +350,7 @@ SM.ColumnFilters.CompareFns = {
   },
   labels: (a, b) => {
     
-  },
-  labelIds: (a, b, collectionId) => {
-    if (a === "") return -1;
-    if (b === "") return 1;
-    return SM.Cache.getCollectionLabel(collectionId, a).name.localeCompare(SM.Cache.getCollectionLabel(collectionId, b).name)
-  },        
+  }
 }
 
 SM.ColumnFilters.Renderers = {
@@ -649,18 +400,6 @@ SM.ColumnFilters.Renderers = {
   },
   highlighterShim: function (v, m, r, ri, ci, s) {
     if (this.filter?.type === 'string' && this.filter?.value) {
-      const dateCheck = new Date(v);
-      // If the current data we are highlighting can become a 'Date' obj, do this so that we can highlight the date when filtering.
-      if (dateCheck.toString() !== 'Invalid Date') {
-        // convert this to a str for proper format
-        const newTime = dateCheck.toString();
-        // Cuts out the timezone for UI purposes. The abbreviated timezone is still displayed.
-        const timezoneIndex = newTime.indexOf('(')
-        const parsedStr = newTime.slice(4, timezoneIndex-1);
-        const re = new RegExp(SM.he(this.filter.value),'gi')
-        v = parsedStr.replace(re,'<span class="sm-text-highlight">$&</span>')
-        return this.configRenderer ? this.configRenderer.call(this, v, m, r, ri, ci, s) : v      
-      }
       const re = new RegExp(SM.he(this.filter.value),'gi')
       v = v.replace(re,'<span class="sm-text-highlight">$&</span>')
     }
@@ -668,7 +407,7 @@ SM.ColumnFilters.Renderers = {
   },
   labels: function (labelId, collectionId) {
     if (!labelId) return '<i>(No value)</i>'
-    const labelObj = SM.Cache.getCollectionLabel(collectionId, labelId)
+    const labelObj = SM.Cache.CollectionMap.get(collectionId).labelMap.get(labelId)
     return SM.Collection.LabelTpl.apply(labelObj)
   }
 }
