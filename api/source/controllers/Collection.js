@@ -161,10 +161,9 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
       status: req.query.status,
       packageId: req.query.mccastPackageId,
       authName: req.query.mccastAuthName,
-      format: req.query.format
+      format: req.query.format || "EMASS"
     }
     const { collectionId, collectionGrant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
-    if (collectionGrant) {
       const response = await CollectionService.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, 
         [
           'rulesWithDiscussion',
@@ -177,11 +176,7 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
       const po = (defaults.format == "EMASS") ? Serialize.poamObjectFromFindings(response, defaults) : Serialize.mccastPoamObjectFromFindings(response, defaults);
       const xlsx = await Serialize.xlsxFromPoamObject(po, defaults.format)
       let collectionName = collectionGrant.collection.name
-      writer.writeInlineFile( res, xlsx, `POAM-${collectionName}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    }
-    else {
-      throw new SmError.PrivilegeError()
-    }
+      writer.writeInlineFile( res, xlsx, `POAM-${defaults.format}-${collectionName}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
   }
   catch (err) {

@@ -808,6 +808,13 @@ SM.RequestAndServePoam = async function (collectionId, params) {
 	try {
 		mb = Ext.MessageBox.wait('Generating POA&M')
 		Object.keys(params).forEach((k) => params[k] == "" && delete params[k]);
+		if (params.format === "EMASS") {
+			delete params.mccastPackageId;
+			delete params.mccastAuthName;
+		}
+		if (params.format === "MCCAST") {
+			delete params.office;
+		}
 		const search = new URLSearchParams(params).toString()
 		let url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/poam?${search}`
 
