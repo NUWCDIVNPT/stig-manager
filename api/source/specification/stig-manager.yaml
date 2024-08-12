@@ -2430,11 +2430,7 @@ paths:
           schema:
             type: string
           allowReserved: true
-        - name: format
-          description: Value for POAM format (ie, EMASS, MCCAST)
-          in: query
-          schema:
-            type: string
+        - $ref: '#/components/parameters/PoamFormatQuery'
         - name: mccastPackageId
           description: Value for POAM MCCAST PackageId
           in: query
@@ -7576,6 +7572,15 @@ components:
         enum:
           - ruleId
           - groupId
+    PoamFormatQuery:
+      name: format
+      in: query
+      description: Value for POAM format (ie. EMASS, MCCAST)
+      schema:
+        type: string
+        enum:
+          - EMASS
+          - MCCAST          
     RetentionDateQuery:
       name: retentionDate
       in: query
