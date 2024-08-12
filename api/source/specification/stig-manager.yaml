@@ -7585,7 +7585,8 @@ components:
         type: string
         enum:
           - EMASS
-          - MCCAST          
+          - MCCAST
+        default: EMASS
     RetentionDateQuery:
       name: retentionDate
       in: query
