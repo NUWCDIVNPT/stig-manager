@@ -27,16 +27,25 @@ jobs:
     name: SonarCloud Analysis client
     runs-on: ubuntu-latest
     steps:
-      #checkout the repo
+      # Checkout the repo
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Important to fetch all history for accurate blame information
+          fetch-depth: 0
+
+      - name: Check SonarCloud Token
+        run: |
+          if [ -z "${{ secrets.SONAR_TOKEN_CLIENT }}" ]; then
+            echo "SonarCloud token not found. Skipping SonarCloud analysis."
+            exit 0
+          fi
+
+      # Analyze client with SonarCloud
       - name: Analyze client with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2.0.2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_CLIENT }} # Needed to push to SonarCloud
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_CLIENT }} 
         with:
           projectBaseDir: ./client/src
           # Additional arguments for the sonarcloud scanner
@@ -45,9 +54,3 @@ jobs:
             -Dsonar.organization=nuwcdivnpt
             -Dsonar.inclusions=**/*.js,**/*.html,**/*.css
             -Dsonar.exclusions=**/node_modules/**
-
-    #   This will fail the action if Quality Gate fails (leaving out for now )
-    #  - name: Check Quality Gate
-    #    uses: sonarsource/sonarqube-quality-gate-action@master
-    #    env:
-    #      SONAR_TOKEN:

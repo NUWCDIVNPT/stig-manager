@@ -186,11 +186,18 @@ jobs:
         with:
           name: response-validation
           path: ./logs/response-validation.json
+  
   SonarCloudAnalysis-API:
     name: SonarCloud Analysis API
     needs: test_api
     runs-on: ubuntu-latest
     steps:
+      - name: Check SonarCloud Token
+        run: |
+          if [ -z "${{ secrets.SONAR_TOKEN_CLIENT }}" ]; then
+            echo "SonarCloud token not found. Skipping SonarCloud analysis."
+            exit 0
+          fi
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
