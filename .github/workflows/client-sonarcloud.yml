@@ -26,20 +26,13 @@ jobs:
   SonarCloudAnalysis-Client:
     name: SonarCloud Analysis client
     runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
     steps:
       # Checkout the repo
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Check SonarCloud Token
-        run: |
-          if [ -z "${{ secrets.SONAR_TOKEN_CLIENT }}" ]; then
-            echo "SonarCloud token not found. Skipping SonarCloud analysis."
-            exit 0
-          fi
-
       # Analyze client with SonarCloud
       - name: Analyze client with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v2.0.2

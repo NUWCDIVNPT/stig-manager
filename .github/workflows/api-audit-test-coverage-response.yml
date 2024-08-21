@@ -191,13 +191,8 @@ jobs:
     name: SonarCloud Analysis API
     needs: test_api
     runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
     steps:
-      - name: Check SonarCloud Token
-        run: |
-          if [ -z "${{ secrets.SONAR_TOKEN_CLIENT }}" ]; then
-            echo "SonarCloud token not found. Skipping SonarCloud analysis."
-            exit 0
-          fi
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
