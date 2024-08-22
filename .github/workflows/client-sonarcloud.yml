@@ -27,12 +27,22 @@ jobs:
     name: SonarCloud Analysis client
     runs-on: ubuntu-latest
     steps:
+      - name: Check if PR is from a fork
+        id: check_fork
+        run: |
+          if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
+            echo "This is a PR from a fork, skipping sonarcloud analysis."
+            echo "SKIP_STEP=true" >> $GITHUB_ENV
+          fi
       #checkout the repo
       - name: Checkout repository
+        if: env.SKIP_STEP != 'true'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Important to fetch all history for accurate blame information
+      
       - name: Analyze client with SonarCloud
+        if: env.SKIP_STEP != 'true'
         uses: SonarSource/sonarcloud-github-action@v2.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information
