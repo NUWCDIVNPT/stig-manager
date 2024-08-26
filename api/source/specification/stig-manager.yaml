@@ -3796,6 +3796,8 @@ components:
           $ref: '#/components/schemas/ApiClassification'
         commit:
           $ref: '#/components/schemas/CommitObject'
+        lastMigration:
+          $ref: '#/components/schemas/LastMigration'
         version:
           $ref: '#/components/schemas/ApiVersion'
     ApiDefinition:
@@ -5505,6 +5507,9 @@ components:
           $ref: '#/components/schemas/String255Nullable'
         name:
           $ref: '#/components/schemas/LabelName'
+    LastMigration:
+      type: integer
+      minimum: 0
     LocationString:
       type: string
     MaxTs:
