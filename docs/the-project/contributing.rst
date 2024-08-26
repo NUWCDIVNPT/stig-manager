@@ -8,29 +8,79 @@ Contribution Guide
 Reporting Bugs & Issues
 =============================
 
-Please file bug reports on the `STIG Manager 
-issue tracker <https://github.com/NUWCDIVNPT/stig-manager/issues>`__. When reporting
-a bug, please include as much information as possible. This includes:
+Please file bug reports or feature requests on the `STIG Manager 
+issue tracker <https://github.com/NUWCDIVNPT/stig-manager/issues>`__. When reporting a bug, please provide as much detail as possible to help us understand and reproduce the issue. Include:
 
 -  Install type: Hosted, Local, Docker, etc
+-  Detailed steps to reproduce the issue
 -  Action taken
 -  Expected result
 -  Actual result
--  Screenshot (if relevant)
+-  Screenshots or logs (if relevant)
+-  Your environment details (OS, browser version, etc.)
 
 
-Developer Information
+Code Contributions
 ======================================
 
-STIG Manager is being developed using a `Forking Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow>`_. All contributions to the codebase are expected to come via a GitHub Pull Request from a fork of the appropriate repository.  Ideally, PRs should reference an Issue, pass all existing tests, and provide additional tests if applicable.  Upon successful review, contributions will be merged into the main branch by the project maintainers.  
+STIG Manager is being developed using a `Forking Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow>`_. All contributions to the codebase are expected to come via a GitHub Pull Request(PR) from a fork of the appropriate repository. 
 
-Contributors should be comfortable with the `licences <https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md>`__ governing the project and any other conditions specified in the Project's `Contributing.md <https://github.com/NUWCDIVNPT/stig-manager/blob/main/CONTRIBUTING.md>`_ document. On first PR submission, feel free to add yourself to the `Contributors <https://github.com/NUWCDIVNPT/stig-manager/blob/main/CONTRIBUTORS.md>`_ document. 
+Contributors should be comfortable with the `licences <https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md>`__ governing the project and any other conditions specified in the Project's `Contributing.md <https://github.com/NUWCDIVNPT/stig-manager/blob/main/CONTRIBUTING.md>`_ document.
+
+To ensure smooth integration and maintain project quality, please adhere to these guidelines:
+
+1. **Reference an Issue**: 
+
+   - Every PR should reference an existing issue in the repository. 
+   - If no relevant issue exists, create one describing the bug or feature you intend to address before submitting your PR.
+
+2. **Testing**: 
+
+   - PRs should pass all existing tests.
+   - Provide additional tests for new features or bug fixes when applicable.
+   - If automated tests aren't suitable, include a clear testing procedure in your PR description.
+
+3. **First-time Contributors**:
+
+   - Add yourself to the `CONTRIBUTORS.md <https://github.com/NUWCDIVNPT/stig-manager/blob/main/CONTRIBUTORS.md>`_ file.
+   - By doing so, you agree to abide by the Developer's Certificate of Origin as outlined in `CONTRIBUTING.md <https://github.com/NUWCDIVNPT/stig-manager/blob/main/CONTRIBUTING.md>`_.
+   - A project maintainer will send an email to the address you provided in CONTRIBUTORS.md. You must respond to this email before your PR can be accepted.
+
+4. **Code Quality**:
+
+   - Follow the project's coding style and conventions.
+   - Write clear, self-documenting code with appropriate comments.
+   - Keep commits focused and use meaningful commit messages.
+
+5. **Documentation**:
+
+   - Update relevant documentation to reflect your changes.
+   - Include inline documentation for new code when necessary.
+
+6. **Review Process**:
+
+   - Be responsive to review comments and change requests.
+   - Make requested changes promptly or provide a clear explanation if you disagree.
+
+7. **PR Branch Permissions**:
+
+   - When creating a PR, enable the "Allow edits from maintainers" option. This gives project maintainers the ability to make updates to your PR if needed.   
+
+8. **Licensing**:
+
+   - Ensure your contributions comply with the project's `licenses <https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md>`_.
+
+PRs that meet these criteria will be reviewed by project maintainers. Upon successful review and email verification, contributions will be merged into the main branch.
+
+Before contributing, please familiarize yourself with the project structure, coding standards, and development environment setup. If you have any questions or need clarification on any aspect of the contribution process, please open a discussion in the project's  `GitHub Discussions <https://github.com/NUWCDIVNPT/stig-manager/discussions>`_ area.
+
+We appreciate your interest in contributing to STIG Manager and look forward to your contributions!
+
 
 Development functional components
 ======================================
 
-These are the components of the project, their technologies and maintainers. We are soliciting individuals and organizations interesting in helping maintain any of these components.  If you would like to contribute, check our  `Issues on GitHub <https://github.com/NUWCDIVNPT/stig-manager/issues>`__ for items labeled `good first issue <https://github.com/NUWCDIVNPT/stig-manager/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22>`__, or for specific areas you would like to help with. 
-
+This section outlines the main components of the STIG Manager project, their technologies, and current maintainers. We welcome contributions in all these areas. If you would like to contribute, check our  `Issues on GitHub <https://github.com/NUWCDIVNPT/stig-manager/issues>`__ for items labeled `good first issue <https://github.com/NUWCDIVNPT/stig-manager/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22>`__, or for specific areas you would like to help with. 
 
 
 .. list-table:: **API**
@@ -73,6 +123,8 @@ These are the components of the project, their technologies and maintainers. We 
    * - Test suites
      - | Postman
        | newman
+       | Mocha
+       | Chai
      - @cd-rite
      - - Automated UI Testing
        - Help would be appreciated identifying additional test cases. 
@@ -129,10 +181,8 @@ These are the components of the project, their technologies and maintainers. We 
      - `enhancement <https://github.com/NUWCDIVNPT/stig-manager/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement>`__          
 
 
-
 Data Flow Diagram
 ---------------------------
-
 
 .. thumbnail:: /assets/images/data-flow-01b.svg
   :width: 75%
@@ -140,30 +190,25 @@ Data Flow Diagram
   :title: Data Flow Diagram
 
 
-|
-
-
 Required Tools
-----------------
+-----------------
 
 The team regularly uses these tools:
 
-    - git
-    - Docker
-    - VS Code
-    - Postman
-
+  - git: For version control
+  - Docker: For containerization and testing
+  - VS Code: Recommended IDE for development
+  - Node.js: For running the application and tests
+  - Mocha, Chai, Postman: For writing and running tests
 
 
 Software Components
 -----------------------
 
-See :ref:`requirements-and-dependencies`
+See :ref:`requirements-and-dependencies` and :ref:`project-description` for more information about project components and dependencies.
 
 
-
-
-License / Credits
+Licenses
 -----------------
 
 The repository is licensed under the `MIT License <https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md>`__, with the exception of the client, which is licensed under the `GNU GPL
