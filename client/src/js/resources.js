@@ -38,6 +38,7 @@ const scripts = [
   'js/SM/SelectingGridToolbar.js',
   'js/SM/NavTree.js',
   'js/SM/RowEditorToolbar.js',
+  'js/SM/AppData.js',
   'js/SM/BatchReview.js',
   'js/SM/Collection.js',
   'js/SM/CollectionClone.js',
