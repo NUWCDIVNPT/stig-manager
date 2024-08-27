@@ -1,4 +1,4 @@
-.. project-description:
+.. _project-description:
 
 
 Project Description and Resources

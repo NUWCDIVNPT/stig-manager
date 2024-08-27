@@ -24,6 +24,7 @@ Our Project incorporates software developed since 2012 by the `U.S. Naval Unders
    user-guide/index
    admin-guide/index
    the-project/index
+   the-project/contributing
    reference/index
 
 * :ref:`genindex`
@@ -63,17 +64,18 @@ These videos and others are available on our `YouTube channel. <https://www.yout
 Reporting Bugs & Issues
 ===================================
 
-Please file bug reports on the `STIG Manager 
-issue tracker <https://github.com/NUWCDIVNPT/stig-manager/issues>`__. When reporting
-a bug, please include as much information as possible. This includes:
+Please file bug reports or feature requests on the `STIG Manager 
+issue tracker <https://github.com/NUWCDIVNPT/stig-manager/issues>`__. When reporting a bug, please provide as much detail as possible to help us understand and reproduce the issue. Include:
 
 -  Install type: Hosted, Local, Docker, etc
+-  Detailed steps to reproduce the issue
 -  Action taken
 -  Expected result
 -  Actual result
--  Screenshot (if relevant)
+-  Screenshots or logs (if relevant)
+-  Your environment details (OS, browser version, etc.)
 
-License / Credits
+Licenses
 ========================
 
 The  repository is licensed under the `MIT License <https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md>`__, with the exception of the client, which is licensed under the `GNU GPL
