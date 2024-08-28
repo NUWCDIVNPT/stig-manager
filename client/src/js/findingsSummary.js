@@ -13,7 +13,7 @@ function addFindingsSummary( params ) {
 
 	const aggregator = 'groupId'
 
-	const findingsPanel = new SM.FindingsPanel({
+	const findingsPanel = new SM.Findings.FindingsPanel({
 		collectionId: collectionId,
 		aggregator: aggregator
 	})
@@ -36,7 +36,7 @@ function addFindingsSummary( params ) {
 	}
 	findingsTab.makePermanent = function () {
 		findingsTab.sm_tabMode = 'permanent'
-		findingsTab.updateTitle.call(findingsTab)
+		findingsTab.updateTitle(findingsTab)
 	}
 
 	let tp = Ext.getCmp('main-tab-panel')
@@ -49,7 +49,7 @@ function addFindingsSummary( params ) {
 	} else {
 	  thisTab = tp.add( findingsTab )
 	}
-	thisTab.updateTitle.call(thisTab)
+	thisTab.updateTitle(thisTab)
 	thisTab.show();
   
 	findingsPanel.parent.getStore().load({
