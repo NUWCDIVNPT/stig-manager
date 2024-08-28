@@ -1,8 +1,7 @@
-Ext.ns('SM')
+Ext.ns('SM.Findings')
 
-SM.AggregatorCombo = Ext.extend(Ext.form.ComboBox, {
+SM.Findings.AggregatorCombo = Ext.extend(Ext.form.ComboBox, {
 	initComponent: function () {
-		let me = this
 		let config = {
 			width: 70,
 			forceSelection: true,
@@ -17,12 +16,12 @@ SM.AggregatorCombo = Ext.extend(Ext.form.ComboBox, {
 			})
 		}
 		Ext.apply(this, Ext.apply(this.initialConfig, config))
-		SM.AggregatorCombo.superclass.initComponent.call(this)
+		this.superclass().initComponent.call(this)
 	}
 })
-Ext.reg('sm-aggregator-combo', SM.AggregatorCombo)
+Ext.reg('sm-aggregator-combo', SM.Findings.AggregatorCombo)
 
-SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
+SM.Findings.ParentGrid = Ext.extend(Ext.grid.GridPanel, {
 	initComponent: function () {
 		let me = this
 		this.aggValue = this.aggValue || 'groupId'
@@ -229,10 +228,11 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				}
 			]
 		})
-		const generatePoamBtn = new SM.GeneratePoamButton({
+		const generatePoamBtn = new Ext.Button({
 			parentGrid: me,
 			iconCls: 'icon-excel',
-			text: 'Generate POA&M...'
+			text: 'Generate POA&M...',
+			handler: this.genPoamBtnHandler
 		})
 		function getStatSprites (store) {
 			const stats = store.data.items.reduce((accumulator, currentValue) => {
@@ -256,7 +256,7 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				tooltip: 'Reload this grid',
 				width: 20,
 				handler: function (btn) {
-					store.reload();
+					store.reload()
 				}
 			},
 			'-',
@@ -357,11 +357,11 @@ SM.FindingsParentGrid = Ext.extend(Ext.grid.GridPanel, {
 
 		}
 		Ext.apply(this, Ext.apply(this.initialConfig, config))
-		SM.FindingsParentGrid.superclass.initComponent.call(this)
+		this.superclass().initComponent.call(this)
 	}
 })
 
-SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
+SM.Findings.ChildGrid = Ext.extend(Ext.grid.GridPanel, {
 	initComponent: function () {
 		const me = this
 		function engineResultConverter (v,r) {
@@ -564,7 +564,7 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				tooltip: 'Reload this grid',
 				width: 20,
 				handler: function (btn) {
-					store.reload();
+					store.reload()
 				}
 			},
 			'-',
@@ -597,11 +597,11 @@ SM.FindingsChildGrid = Ext.extend(Ext.grid.GridPanel, {
 			bbar
 		}
 		Ext.apply(this, Ext.apply(this.initialConfig, config))
-		SM.FindingsChildGrid.superclass.initComponent.call(this)
+		this.superclass().initComponent.call(this)
 	}
 })
 
-SM.PoamStatusComboBox = Ext.extend(Ext.form.ComboBox, {
+SM.Findings.PoamStatusComboBox = Ext.extend(Ext.form.ComboBox, {
 	initComponent: function () {
 		let config = {
 			displayField: 'display',
@@ -623,15 +623,41 @@ SM.PoamStatusComboBox = Ext.extend(Ext.form.ComboBox, {
 		})
 
 		Ext.apply(this, Ext.apply(this.initialConfig, config))
-		SM.PoamStatusComboBox.superclass.initComponent.call(this)
+		this.superclass().initComponent.call(this)
 
 		this.store.loadData(data)
 	}
 })
-Ext.reg('sm-poam-status-combo', SM.PoamStatusComboBox);
 
+SM.Findings.PoamFormatComboBox = Ext.extend(Ext.form.ComboBox, {
+	initComponent: function () {
+		let config = {
+			displayField: 'display',
+			valueField: 'value',
+			triggerAction: 'all',
+			mode: 'local',
+			editable: false
+		}
+		let me = this
+		let data = [
+			['EMASS', 'EMASS'],
+			['MCCAST', 'MCCAST']
+		]
+		this.store = new Ext.data.SimpleStore({
+			fields: ['value', 'display']
+		})
+		this.store.on('load', function (store) {
+			me.setValue(store.getAt(0).get('value'))
+		})
 
-SM.PoamOptionsPanel = Ext.extend(Ext.FormPanel, {
+		Ext.apply(this, Ext.apply(this.initialConfig, config))
+		this.superclass().initComponent.call(this)
+
+		this.store.loadData(data)
+	}
+})
+
+SM.Findings.PoamOptionsPanel = Ext.extend(Ext.FormPanel, {
 	initComponent: function () {
 		const me = this
 		// Set default date 30 days from now
@@ -644,43 +670,119 @@ SM.PoamOptionsPanel = Ext.extend(Ext.FormPanel, {
 			hideLabel: true,
 			value: defaultDate
 		})
+
+		const statusCombo = new SM.Findings.PoamStatusComboBox({
+			anchor: '100%',
+			hideLabel: true,
+			name: 'status',
+			ref: 'statusCombo'
+		})
+
+		const setFormatDisplay = function (format) {
+			// Toggle visibility of FieldSets based on selection
+			const generatePoamWindow = me.ownerCt
+			formatCombo.setValue(format)
+
+			if (format === 'MCCAST') {
+				generatePoamWindow.setHeight(460)
+				statusCombo.store.loadData([
+					['Started','Started'],
+					['Not Started','Not Started'],
+					['Request Risk Acceptance','Request Risk Acceptance']
+				])
+				officeFieldSet.setVisible(false)
+				mccastPackageIdFieldSet.setVisible(true)
+				mccastAuthNameFieldSet.setVisible(true)
+		}
+		//EMASS or OTHER MODE
+		else {
+				generatePoamWindow.setHeight(390)
+				statusCombo.store.loadData([
+					['Ongoing','Ongoing'],
+					['Completed','Completed']
+				])
+				officeFieldSet.setVisible(true)
+				mccastPackageIdFieldSet.setVisible(false)
+				mccastAuthNameFieldSet.setVisible(false)
+			}
+		}
+
+		const formatCombo = new SM.Findings.PoamFormatComboBox(					{
+			anchor: '100%',
+			hideLabel: true,
+			name: 'format',
+			value: 'EMASS',
+			listeners: {
+				select:  (combo, record) => {
+					setFormatDisplay(record.data.value)
+				}
+			}
+		})
+
+		const officeFieldSet = new Ext.form.FieldSet({
+			title: 'Office/Org',
+			items: [{
+				xtype: 'textfield',
+				anchor: '100%',
+				hideLabel: true,
+				name: 'office',
+				value: 'My Office Info'
+			}]
+		})
+
+		const mccastPackageIdFieldSet = new Ext.form.FieldSet({
+			title: 'Package ID',
+			hidden:true,
+			items: [{
+				name: 'mccastPackageId',
+				xtype: 'textfield',
+				anchor: '100%',
+				hideLabel: true,
+				value: 'Package ID',
+			}]
+		})
+
+		const mccastAuthNameFieldSet = new Ext.form.FieldSet({
+			title: 'Authorization Package Name',
+			hidden:true,
+			items: [{
+					name: 'mccastAuthName',
+					xtype: 'textfield',
+					anchor: '100%',
+					hideLabel: true,
+					value: 'Authorization Package Name'
+			}]
+		})
+
 		const items = [
+			{
+				xtype: 'fieldset',
+				title: 'Format',
+				items: [formatCombo]
+			},
 			{
 				xtype: 'fieldset',
 				title: 'Scheduled Completion Date',
 				items: [dateField]
 			},
-			{
-				xtype: 'fieldset',
-				title: 'Office/Org',
-				items: [{
-					xtype: 'textfield',
-					anchor: '100%',
-					hideLabel: true,
-					name: 'office',
-					value: 'My office info'
-				}]
-			},
+			officeFieldSet,
 			{
 				xtype: 'fieldset',
 				title: 'Status',
-				items: [{
-					xtype: 'sm-poam-status-combo',
-					anchor: '100%',
-					hideLabel: true,
-					name: 'status',
-					value: 'Ongoing'
-				}]
-			}
-
+				items: [statusCombo]
+			},
+			mccastPackageIdFieldSet,
+			mccastAuthNameFieldSet
 		]
+
 		const config = {
 			baseCls: 'x-plain',
 			labelWidth: 70,
 			monitorValid: true,
 			trackResetOnLoad: true,
-			items: items,
+			items,
 			buttons: [{
+				anchor:'100%',
 				text: this.btnText || 'Generate',
 				iconCls: 'icon-excel',
 				height: 30,
@@ -688,17 +790,26 @@ SM.PoamOptionsPanel = Ext.extend(Ext.FormPanel, {
 				parentPanel: me,
 				formBind: true,
 				handler: this.btnHandler || function () { }
-			}]
+			}],
+			setFormatDisplay
 		}
 		Ext.apply(this, Ext.apply(this.initialConfig, config))
-		SM.PoamOptionsPanel.superclass.initComponent.call(this)
+		this.superclass().initComponent.call(this)
 	}
 })
 
-SM.RequestAndServePoam = async function (collectionId, params) {
+SM.Findings.RequestAndServePoam = async function (collectionId, params) {
 	let mb
 	try {
 		mb = Ext.MessageBox.wait('Generating POA&M')
+		Object.keys(params).forEach((k) => params[k] == "" && delete params[k])
+		if (params.format === "EMASS") {
+			delete params.mccastPackageId
+			delete params.mccastAuthName
+		}
+		if (params.format === "MCCAST") {
+			delete params.office
+		}
 		const search = new URLSearchParams(params).toString()
 		let url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/poam?${search}`
 
@@ -725,9 +836,9 @@ SM.RequestAndServePoam = async function (collectionId, params) {
 			let url = window.URL.createObjectURL(blob)
 			a.href = url
 			a.download = filename
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
+			document.body.appendChild(a)
+			a.click()
+			document.body.removeChild(a)
 			window.URL.revokeObjectURL(url)
 		}
 	}
@@ -737,71 +848,20 @@ SM.RequestAndServePoam = async function (collectionId, params) {
 	}
 }
 
-SM.GeneratePoamButton = Ext.extend(Ext.Button, {
+SM.Findings.FindingsPanel = Ext.extend(Ext.Panel, {
 	initComponent: function () {
 		const me = this
-		const onClick = function (btn, e) {
-			const poamOptionsPanel = new SM.PoamOptionsPanel({
-				btnText: 'Generate POA&M',
-				padding: 10,
-				btnHandler: (btn, e) => {
-					const params = poamOptionsPanel.getForm().getFieldValues()
-					if (params.date && params.date instanceof Date) {
-						params.date = Ext.util.Format.date(params.date, 'm/d/Y')
-					}
-					params.aggregator = me.parentGrid.aggValue
-					if (me.parentGrid.stigValue && me.parentGrid.stigValue !== me.parentGrid.stigAllValue) {
-						params.benchmarkId = me.parentGrid.stigValue
-					}
-					appwindow.close()
-					SM.RequestAndServePoam(me.parentGrid.panel.collectionId, params)
-				}
-			})
-			/******************************************************/
-			// Form window
-			/******************************************************/
-			const appwindow = new Ext.Window({
-				title: 'POA&M Defaults',
-				cls: 'sm-dialog-window sm-round-panel',
-				modal: true,
-				hidden: true,
-				width: 230,
-				height: 310,
-				layout: 'fit',
-				plain: true,
-				bodyStyle: 'padding:5px;',
-				buttonAlign: 'right',
-				items: poamOptionsPanel
-			})
-			appwindow.show(document.body);
-		}
-
-		const config = {
-			listeners: {
-				click: onClick
-			}
-		}
-
-		Ext.apply(this, Ext.apply(this.initialConfig, config))
-		SM.GeneratePoamButton.superclass.initComponent.call(this)
-	}
-})
-Ext.reg('sm-generate-poam-button', SM.GeneratePoamButton);
-
-// config: {collectionId}
-SM.FindingsPanel = Ext.extend(Ext.Panel, {
-	initComponent: function () {
-		const me = this
-		const parent = new SM.FindingsParentGrid({
+		const parent = new SM.Findings.ParentGrid({
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
 			border: false,
 			region: 'center',
 			panel: this,
 			aggValue: me.aggregator || 'groupId',
-			title: 'Aggregated Findings'
+			title: 'Aggregated Findings',
+			genPoamBtnHandler
 		})
-		const child = new SM.FindingsChildGrid({
+		const child = new SM.Findings.ChildGrid({
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
 			border: false,
@@ -819,7 +879,7 @@ SM.FindingsPanel = Ext.extend(Ext.Panel, {
 		this.parent = parent
 		this.child = child
 
-		onParentRowSelect = (sm, index, record) => {
+		const onParentRowSelect = (sm, index, record) => {
 			const params = {}
 			params[parent.aggValue] = record.data[parent.aggValue]
 			if (parent.stigValue !== parent.stigAllValue) {
@@ -830,7 +890,7 @@ SM.FindingsPanel = Ext.extend(Ext.Panel, {
 			})
 		}
 		function onChildRowDblClick (grid, rowIndex) {
-			const r = grid.getStore().getAt(rowIndex);
+			const r = grid.getStore().getAt(rowIndex)
 			const leaf = {
 				collectionId: grid.panel.collectionId, 
 				assetId: r.data.assetId,
@@ -846,6 +906,42 @@ SM.FindingsPanel = Ext.extend(Ext.Panel, {
 			})
 		}
 
+		function genPoamBtnHandler() {
+			const poamOptionsPanel = new SM.Findings.PoamOptionsPanel({
+				btnText: 'Generate POA&M',
+				padding: 10,
+				btnHandler: function () {
+					const params = poamOptionsPanel.getForm().getFieldValues()
+					if (params.date && params.date instanceof Date) {
+						params.date = Ext.util.Format.date(params.date, 'm/d/Y')
+					}
+					params.aggregator = parent.aggValue
+					if (parent.stigValue && parent.stigValue !== parent.stigAllValue) {
+						params.benchmarkId = parent.stigValue
+					}
+					appwindow.close()
+					localStorage.setItem('poam-format', params.format ?? 'EMASS')
+					SM.Findings.RequestAndServePoam(parent.panel.collectionId, params)
+				}
+			})
+
+			const appwindow = new Ext.Window({
+				title: 'POA&M Defaults',
+				cls: 'sm-dialog-window sm-round-panel',
+				modal: true,
+				hidden: true,
+				width: 230,
+				height: 390,
+				layout: 'fit',
+				plain: true,
+				bodyStyle: 'padding:5px;',
+				buttonAlign: 'right',
+				items: poamOptionsPanel
+			})
+			appwindow.show(document.body)
+			poamOptionsPanel.setFormatDisplay(localStorage.getItem('poam-format') ?? 'EMASS')
+		}
+
 		const config = {
 			layout: 'border',
 			border: false,
@@ -859,13 +955,7 @@ SM.FindingsPanel = Ext.extend(Ext.Panel, {
 		}
 
 		Ext.apply(this, Ext.apply(this.initialConfig, config))
-		SM.FindingsPanel.superclass.initComponent.call(this)
-
-		// parent.store.load({
-		//     params: {
-		//         aggregator: parent.aggValue
-		//     }
-		// })
+		this.superclass().initComponent.call(this)
 
 	}
 })

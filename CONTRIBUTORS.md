@@ -10,6 +10,7 @@
 - Copyright 2021 Russell Johnson, russell.d.johnson@saic.com
 - Copyright 2023-2024 Mathew Ferreira, mferreira@rite-solutions.com
 - Copyright 2024 Rajesh Shrestha, rshrestha@rite-solutions.com
+- Copyright 2024 David Whalen, david.whalen@usmc.mil
 - _Add the copyright date, your name, and email address here. (PLEASE KEEP THIS LINE)_
 
 ## Note for U.S. Federal Employees

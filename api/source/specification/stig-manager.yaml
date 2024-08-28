@@ -2418,17 +2418,36 @@ paths:
           in: query
           schema:
             type: string
+            pattern: '^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/\d{4}$'
         - name: office
           description: Value for column Office/Org
           in: query
           schema:
             type: string
+            maxLength: 255
           allowReserved: true
         - name: status
           description: Value for column Status
           in: query
           schema:
             type: string
+            maxLength: 255
+          allowReserved: true
+        - $ref: '#/components/parameters/PoamFormatQuery'
+        - name: mccastPackageId
+          description: Value for POAM MCCAST PackageId
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+          allowReserved: true
+        - name: mccastAuthName
+          description: Value for POAM MCCAST Authorization Name
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+          allowReserved: true
       responses:
         '200':
           description: CollectionFinding response
@@ -7558,6 +7577,16 @@ components:
         enum:
           - ruleId
           - groupId
+    PoamFormatQuery:
+      name: format
+      in: query
+      description: Value for POAM format (ie. EMASS, MCCAST)
+      schema:
+        type: string
+        enum:
+          - EMASS
+          - MCCAST
+        default: EMASS
     RetentionDateQuery:
       name: retentionDate
       in: query

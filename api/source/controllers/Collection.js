@@ -151,17 +151,27 @@ module.exports.getFindingsByCollection = async function getFindingsByCollection 
 
 module.exports.getPoamByCollection = async function getFindingsByCollection (req, res, next) {
   try {
-    const aggregator = req.query.aggregator
-    const benchmarkId = req.query.benchmarkId
-    const assetId = req.query.assetId
-    const acceptedOnly = req.query.acceptedOnly
+    const {
+      aggregator, 
+      benchmarkId, 
+      assetId, 
+      acceptedOnly, 
+      date, 
+      office, 
+      status, 
+      mccastPackageId, 
+      mccastAuthName, 
+      format
+    } = req.query
     const defaults = {
-      date: req.query.date,
-      office: req.query.office,
-      status: req.query.status
+      date, 
+      office, 
+      status, 
+      mccastPackageId, 
+      mccastAuthName
     }
     const { collectionId, collectionGrant } = getCollectionInfoAndCheckPermission(req, Security.ACCESS_LEVEL.Restricted)
-    const response = await CollectionService.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, 
+    const findings = await CollectionService.getFindingsByCollection( collectionId, aggregator, benchmarkId, assetId, acceptedOnly, 
       [
         'rulesWithDiscussion',
         'groups',
@@ -169,17 +179,19 @@ module.exports.getPoamByCollection = async function getFindingsByCollection (req
         'stigs',
         'ccis'
       ], req.userObject )
-    
-    const po = Serialize.poamObjectFromFindings(response, defaults)
-    const xlsx = await Serialize.xlsxFromPoamObject(po)
-    let collectionName = collectionGrant.collection.name
-    writer.writeInlineFile( res, xlsx, `POAM-${collectionName}_${escape.filenameComponentFromDate()}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+    const poFns = {
+      EMASS: Serialize.poamObjectFromFindings,
+      MCCAST: Serialize.mccastPoamObjectFromFindings
+    }
+    const xlsx = await Serialize.xlsxFromPoamObject(poFns[format](findings, defaults), format)
+    writer.writeInlineFile( res, xlsx, `POAM-${format}-${collectionGrant.collection.name}_${escape.filenameComponentFromDate()}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
   }
   catch (err) {
     next(err)
   }
 }
-
 
 module.exports.getStigAssetsByCollectionUser = async function getStigAssetsByCollectionUser (req, res, next) {
   try {
