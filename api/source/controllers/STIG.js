@@ -221,6 +221,9 @@ module.exports.getStigById = async function getStigById (req, res, next) {
   const elevate = req.query.elevate
   try {
     let response = await STIGService.getStigById(benchmarkId, req.userObject, elevate)
+    if(!response) {
+      throw new SmError.NotFoundError()
+    }
     res.json(response)
   }
   catch(err) {
