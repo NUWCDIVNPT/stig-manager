@@ -162,7 +162,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
     }
     if ( inPredicates.metadata ) {
       for (const pair of inPredicates.metadata) {
-        const [key, value] = pair.split(':')
+        const [key, value] = pair.split(/:(.*)/s)
         predicates.statements.push('JSON_CONTAINS(c.metadata, ?, ?)')
         predicates.binds.push( `"${value}"`,  `$.${key}`)
       }

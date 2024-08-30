@@ -776,7 +776,7 @@ exports.getReviews = async function (inProjection = [], inPredicates = {}, userO
   }
   if ( inPredicates.metadata ) {
     for (const pair of inPredicates.metadata) {
-      const [key, value] = pair.split(':')
+      const [key, value] = pair.split(/:(.*)/s)
       predicates.statements.push('JSON_CONTAINS(r.metadata, ?, ?)')
       predicates.binds.push( `"${value}"`,  `$.${key}`)
     }
