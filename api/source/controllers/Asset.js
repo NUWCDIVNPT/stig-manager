@@ -601,7 +601,7 @@ module.exports.getAssetMetadataKeys = async function (req, res, next) {
   try {
     let { assetId } = await getAssetInfoAndVerifyAccess(req, Security.ACCESS_LEVEL.Restricted)
     let result = await AssetService.getAssetMetadataKeys(assetId, req.userObject)
-    if (!result) {
+    if (!result.length) {
       throw new SmError.NotFoundError('metadata keys not found')
     }
     res.json(result)
