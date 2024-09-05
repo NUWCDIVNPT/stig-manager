@@ -187,7 +187,7 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       const labelResults = results[0]
       const collectionResults = results[1][0]
       
-      if (inPredicates.collectionId){
+      if (inPredicates.collectionId && collectionResults[0]){
         // collectionId predicate specified, add labels array to first (and only) item in collectionResults
         collectionResults[0].labels = labelResults
       }
@@ -1304,6 +1304,7 @@ exports.getCollectionLabels = async function (collectionId, userObject) {
   ]
   const joins = [
     'collection_label cl', 
+    'right join collection c on c.collectionId = cl.collectionId and c.state = "enabled"',
     'left join collection_grant cg_l on cl.collectionId = cg_l.collectionId',
     'left join asset a_l on cl.collectionId = a_l.collectionId',
     'left join stig_asset_map sa_l on a_l.assetId = sa_l.assetId',
