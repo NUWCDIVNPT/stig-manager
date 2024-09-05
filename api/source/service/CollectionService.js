@@ -106,14 +106,8 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       ) as "owners"`)
     }
     if (inProjection.includes('labels')) {
-      if ( inPredicates.collectionId ) {
-        // get labels for specified collectionId
-        queries.push(_this.getCollectionLabels(inPredicates.collectionId, userObject))
-      }
-      else {
-        // no collectionId specified, get "all" labels
-        queries.push(_this.getCollectionLabels('all', userObject))
-      }
+      // get labels for specified collectionId. If no collectionId specified, get "all" labels
+      queries.push(_this.getCollectionLabels(inPredicates.collectionId ? inPredicates.collectionId : 'all', userObject));
     }
     if (inProjection.includes('statistics')) {
       if (context == dbUtils.CONTEXT_USER) {
