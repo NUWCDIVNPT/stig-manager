@@ -106,7 +106,14 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       ) as "owners"`)
     }
     if (inProjection.includes('labels')) {
-      queries.push(_this.getCollectionLabels('all', userObject))
+      if ( inPredicates.collectionId ) {
+        // get labels for specified collectionId
+        queries.push(_this.getCollectionLabels(inPredicates.collectionId, userObject))
+      }
+      else {
+        // no collectionId specified, get "all" labels
+        queries.push(_this.getCollectionLabels('all', userObject))
+      }
     }
     if (inProjection.includes('statistics')) {
       if (context == dbUtils.CONTEXT_USER) {
@@ -186,22 +193,30 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       const labelResults = results[0]
       const collectionResults = results[1][0]
       
-      // transform labels into Map
-      const labelMap = new Map()
-      for (const labelResult of labelResults) {
-        const {collectionId, ...label} = labelResult
-        const existing = labelMap.get(collectionId)
-        if (existing) {
-          existing.push(label)
+      if (inPredicates.collectionId){
+        // collectionId predicate specified, add labels array to first (and only) item in collectionResults
+        collectionResults[0].labels = labelResults
+      }
+      else {
+        // "all" collections requested, add labels array to each collectionResult
+        // when "all" labels are requested, label objects returned from getCollectionLabels include collectionId
+        // transform labels into Map keyed on collectionId
+        const labelMap = new Map()
+        for (const labelResult of labelResults) {
+          const {collectionId, ...label} = labelResult
+          const existing = labelMap.get(collectionId)
+          if (existing) {
+            existing.push(label)
+          }
+          else {
+            labelMap.set(collectionId, [label])
+          }
         }
-        else {
-          labelMap.set(collectionId, [label])
+        // add labels array for each Collection to corresponding collectionResult
+        for (const collectionResult of collectionResults) {
+          collectionResult.labels = labelMap.get(collectionResult.collectionId) ?? []
         }
       }
-      for (const collectionResult of collectionResults) {
-        collectionResult.labels = labelMap.get(collectionResult.collectionId) ?? []
-      }
-
       return collectionResults
     }
     else {
