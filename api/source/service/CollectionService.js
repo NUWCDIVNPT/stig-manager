@@ -1304,7 +1304,7 @@ exports.getCollectionLabels = async function (collectionId, userObject) {
   ]
   const joins = [
     'collection_label cl', 
-    'right join collection c on c.collectionId = cl.collectionId and c.state = "enabled"',
+    'inner join collection c on c.collectionId = cl.collectionId and c.state = "enabled"',
     'left join collection_grant cg_l on cl.collectionId = cg_l.collectionId',
     'left join asset a_l on cl.collectionId = a_l.collectionId',
     'left join stig_asset_map sa_l on a_l.assetId = sa_l.assetId',
