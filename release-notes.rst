@@ -1,3 +1,17 @@
+1.4.14
+-----
+
+Changes:
+
+  - (UI/API) feat: USMC MCCAST formatted POAM export option (#1345, thank you, @whalenda and NIWC/MCBOSS)
+  - (API) fix: pass collectionId to getCollectionLabels() when known for better performance (#1363)
+  - (API) fix: metadata query param parsing (#1359)
+  - (API) fix: getStigById/getUserByUserId return 404 for nonexistent resources (#1358)
+  - (API) enhancement: updated contribution guide
+  - (build) enhancement: skips sonarcloud actions when PR form fork (#1351) 
+  - (API) chore: update mysql init scripts
+  - (API) chore: dependency updates
+
 1.4.13
 -----
 
