@@ -106,7 +106,8 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       ) as "owners"`)
     }
     if (inProjection.includes('labels')) {
-      queries.push(_this.getCollectionLabels('all', userObject))
+      // get labels for specified collectionId. If no collectionId specified, get "all" labels
+      queries.push(_this.getCollectionLabels(inPredicates.collectionId ? inPredicates.collectionId : 'all', userObject));
     }
     if (inProjection.includes('statistics')) {
       if (context == dbUtils.CONTEXT_USER) {
@@ -186,22 +187,30 @@ exports.queryCollections = async function (inProjection = [], inPredicates = {},
       const labelResults = results[0]
       const collectionResults = results[1][0]
       
-      // transform labels into Map
-      const labelMap = new Map()
-      for (const labelResult of labelResults) {
-        const {collectionId, ...label} = labelResult
-        const existing = labelMap.get(collectionId)
-        if (existing) {
-          existing.push(label)
+      if (inPredicates.collectionId && collectionResults[0]){
+        // collectionId predicate specified, add labels array to first (and only) item in collectionResults
+        collectionResults[0].labels = labelResults
+      }
+      else {
+        // "all" collections requested, add labels array to each collectionResult
+        // when "all" labels are requested, label objects returned from getCollectionLabels include collectionId
+        // transform labels into Map keyed on collectionId
+        const labelMap = new Map()
+        for (const labelResult of labelResults) {
+          const {collectionId, ...label} = labelResult
+          const existing = labelMap.get(collectionId)
+          if (existing) {
+            existing.push(label)
+          }
+          else {
+            labelMap.set(collectionId, [label])
+          }
         }
-        else {
-          labelMap.set(collectionId, [label])
+        // add labels array for each Collection to corresponding collectionResult
+        for (const collectionResult of collectionResults) {
+          collectionResult.labels = labelMap.get(collectionResult.collectionId) ?? []
         }
       }
-      for (const collectionResult of collectionResults) {
-        collectionResult.labels = labelMap.get(collectionResult.collectionId) ?? []
-      }
-
       return collectionResults
     }
     else {
@@ -1295,6 +1304,7 @@ exports.getCollectionLabels = async function (collectionId, userObject) {
   ]
   const joins = [
     'collection_label cl', 
+    'inner join collection c on c.collectionId = cl.collectionId and c.state = "enabled"',
     'left join collection_grant cg_l on cl.collectionId = cg_l.collectionId',
     'left join asset a_l on cl.collectionId = a_l.collectionId',
     'left join stig_asset_map sa_l on a_l.assetId = sa_l.assetId',
