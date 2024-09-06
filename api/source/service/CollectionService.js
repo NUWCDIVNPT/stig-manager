@@ -1306,16 +1306,13 @@ exports.getCollectionLabels = async function (collectionId, userObject) {
     'collection_label cl', 
     'inner join collection c on c.collectionId = cl.collectionId and c.state = "enabled"',
     'left join collection_grant cg_l on cl.collectionId = cg_l.collectionId',
-    'left join asset a_l on cl.collectionId = a_l.collectionId',
+    'left join collection_label_asset_map cla on cla.clId = cl.clId',
+    'left join asset a_l on cla.assetId = a_l.assetId and a_l.state = "enabled"',
     'left join stig_asset_map sa_l on a_l.assetId = sa_l.assetId',
-    'left join user_stig_asset_map usa_l on sa_l.saId = usa_l.saId',
-    'left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a_l.assetId and a_l.state = "enabled"'
+    'left join user_stig_asset_map usa_l on sa_l.saId = usa_l.saId'
   ]
   const groupBy = [
-    'cl.uuid',
-    'cl.name',
-    'cl.description',
-    'cl.color'
+    'cl.clId'
   ]
   const predicates = {
     statements: [
