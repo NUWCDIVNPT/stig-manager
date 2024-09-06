@@ -96,7 +96,8 @@ SM.AppData.ReplacePanel = Ext.extend(Ext.Panel, {
     this.textarea = new Ext.form.TextArea({
       buffer: '',
       anchor: '100%, -10',
-      border: false
+      border: false,
+      readOnly: true
     })
     this.progress = new Ext.ProgressBar({
       width: 300
@@ -170,25 +171,54 @@ SM.AppData.doDownload = async function () {
 {
   class JSONLObjectStream extends TransformStream {
   constructor (separator = '\n') {
+    /**
+     * buffer - stores string from incoming chunk
+     * @type {string}
+     */
     let buffer = ''
+    /**
+     * splitRegExp - RegExp to split including any trailing separator
+     */
+    const splitRegExp = new RegExp(`(?<=${separator})`)
+
     super({
-      transform(chunk, controller) {
-        if (chunk.startsWith(separator)) {
-          buffer = chunk.slice(1)
-        }
-        else {
-          buffer = buffer + chunk
-        }
-        const segments = buffer.split(separator)
-        for (const segment of segments) {
-          if (segment.startsWith('{')) {
-            const jsObj = SM.safeJSONParse(segment)
-            if (jsObj) {
-              controller.enqueue(jsObj)
+      transform (chunk, controller) {
+        buffer += chunk
+
+        /** @type {string[]} */
+        const candidates = buffer.split(splitRegExp)
+
+        /** @type {number} */
+        const lastIndex = candidates.length - 1
+
+        buffer = ''
+
+        /** index @type {number} */
+        /** candidate @type {string} */
+        for (const [index, candidate] of candidates.entries()) {
+          if (index === lastIndex && !candidate.endsWith(separator)) {
+            // this is the last candidate and there's no trailing separator
+            // initialize buffer for next _transform() or _flush()
+            buffer = candidate
+          }
+          else if (candidate.startsWith('{')) {
+            const record = SM.safeJSONParse(candidate)
+            if (record) {
+              // write any parsed Object
+              controller.enqueue(record)
             }
           }
         }
-        buffer = buffer.endsWith(separator) ? '' : segments[segments.length - 1]
+      },
+      flush (controller) {
+        // if what's left in the buffer is a parsable Object, write it
+        if (buffer.startsWith('{')) {
+          const record = SM.safeJSONParse(buffer)
+          if (record) {
+            // write any parsed Object
+            controller.enqueue(record)
+          }
+        }
       }
     })
   }
@@ -230,14 +260,13 @@ SM.AppData.doReplace = function () {
     bodyStyle: 'padding:5px;',
     buttonAlign: 'center',
     items: rp,
+    onEsc: Ext.emptyFn
   }).show(document.body)
   rp.updateStatusText('No file has been selected', true, true)
 
   function btnHandler (btn) {
     if (btn.fileObj) upload(btn.fileObj)
   }
-
-
 
   async function analyze (fileObj) {
     try {
@@ -301,6 +330,8 @@ SM.AppData.doReplace = function () {
   async function upload (fileObj) {
     try {
       rp.actionButton.disable()
+      rp.ownerCt.getTool('close')?.hide()
+
       rp.updateStatusText('Awaiting API response...', false, true)
       let formData = new FormData()
       formData.append('importFile', fileObj);

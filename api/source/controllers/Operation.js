@@ -28,6 +28,7 @@ module.exports.getAppData = async function getAppData (req, res, next) {
   try {
     if (!req.query.elevate) throw new SmError.PrivilegeError()
     res.attachment(`appdata-v${config.lastMigration}_${escape.filenameComponentFromDate()}.gz`)
+    // the service method will stream the appdata file to the response object
     await OperationService.getAppData(res)
     // the service ends the response by closing the gzip stream
   }
@@ -37,15 +38,18 @@ module.exports.getAppData = async function getAppData (req, res, next) {
 }
 
 module.exports.replaceAppData = async function replaceAppData (req, res, next) {
+  // write JSONL to the response; called from the service method
   function progressCb(json) {
     res.write(JSON.stringify(json) + '\n')
   }
+  
   try {
     if (!req.query.elevate) throw new SmError.PrivilegeError()
     res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8')
     res.setHeader('Transfer-Encoding', 'chunked')
 
     req.noCompression = true
+    // req.file.buffer contains the uploaded file data
     await OperationService.replaceAppData(req.file.buffer, progressCb )
     res.end()
   }

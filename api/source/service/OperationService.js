@@ -5,10 +5,9 @@ const {privilegeGetter} = require('../utils/auth')
 const logger = require('../utils/logger')
 const _ = require('lodash')
 const BJSON = require('../utils/buffer-json')
-const { Transform } = require("node:stream")
+const { Readable, Transform } = require("node:stream")
 const { pipeline } = require("node:stream/promises")
 const zlib = require("node:zlib")
-const { Readable } = require('node:stream');
 
 
 /**
@@ -17,33 +16,38 @@ const { Readable } = require('node:stream');
  * returns ApiVersion
  **/
 exports.getConfiguration = async function() {
-  try {
-    let sql = `SELECT * from config`
-    let [rows] = await dbUtils.pool.query(sql)
-    let config = {}
-    for (const row of rows) {
-      config[row.key] = row.value
-    }
-    return (config)
+  const sql = `SELECT * from config`
+  const [rows] = await dbUtils.pool.query(sql)
+  const config = {}
+  for (const row of rows) {
+    config[row.key] = row.value
   }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  return (config)
 }
 
 exports.setConfigurationItem = async function (key, value) {
-  try {
-    let sql = 'INSERT INTO config (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)'
-    await dbUtils.pool.query(sql, [key, value])
-    return (true)
-  }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
-
+  const sql = 'INSERT INTO config (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)'
+  await dbUtils.pool.query(sql, [key, value])
+  return (true)
 }
 
+/**
+ * getAppData - streams GZip compressed JSONL records to the response. The JSONL are either
+ * data records from a MySQL table (always an array) or metadata records (always an object).
+ * 
+ * @param {import('express').Response} res express response
+ * @returns {undefined}
+ * @example Abbreviated example of JSONL which is streamed compressed to the response:
+ *  {"version":"1.4.13","commit":{"branch":"na","sha":"na","tag":"na","describe":"na"},"date":"2024-08-18T15:29:16.784Z","lastMigration":33}\n
+    {"tables":[{"table":"stig","rowCount":4}, ... ], "totalRows": 4}\n
+    {"table":"stig","columns":"`benchmarkId`, `title`","rowCount":4}\n
+    ["RHEL_7_STIG_TEST","Red Hat Enterprise Linux 7 Security Technical Implementation Guide"]\n
+    ["VPN_SRG_TEST","Virtual Private Network (VPN) Security Requirements Guide"]\n
+    ["VPN_SRG_Rule-fingerprint-match-test","Virtual Private Network (VPN) Security Requirements Guide - replaced"]\n
+    ["Windows_10_STIG_TEST","Windows 10 Security Technical Implementation Guide"]\n ...
+ */
 exports.getAppData = async function (res) {
+  /** @type {string[]} tables to exclude from the appdata file */
   const excludedTables = [
     '_migrations', 
     'status', 
@@ -54,13 +58,18 @@ exports.getAppData = async function (res) {
     'config'
   ]
 
+  /** @type {zlib.Gzip} transform stream to compress JSONL records and write to the response */
   const gzip = zlib.createGzip()
   gzip.pipe(res)
   gzip.setMaxListeners(Infinity)
-
+  
+  // Write metadata record {version, commit, date, lastMigration}
   const {version, commit, lastMigration} = config
   gzip.write(JSON.stringify({version, commit, date: new Date(), lastMigration}) + '\n')
-
+   
+  // Execute SQL to retrieve a list of tables and their non-generated columns. The query binds
+  // to the schema name and the excluded tables.
+  /** @type {Array.<Array.<{table:string, columns:string[]}>} */
   const [tableRows] = await dbUtils.pool.query(`SELECT
     TABLE_NAME as \`table\`,
     json_arrayagg(CONCAT('\`',COLUMN_NAME,'\`')) as columns
@@ -73,105 +82,193 @@ exports.getAppData = async function (res) {
     and EXTRA NOT LIKE '% GENERATED'
   group by
     TABLE_NAME`, [config.database.schema, config.database.schema, excludedTables])
-  
-  const tableData = tableRows.reduce((acc, value) => {
+
+  /**
+   * @type {Object.<string, {columns:string, rowCount?:number}>} object pivoted from tableRows[]
+   * @example
+   * '{
+        "asset": {
+          "columns": "`assetId`,`name`,`fqdn`, ... "
+        },
+        "check_content": {
+          "columns": "`ccId`,`content`"
+        },
+        "collection": {
+          "columns": "`collectionId`,`name`,`description`, ... "
+        }
+      }'
+   */
+  const tableMetadata = tableRows.reduce((acc, value) => {
     acc[value.table] = {columns:value.columns.join(',')}
     return acc
   }, {})
-  const tableNames = Object.keys(tableData)
 
+
+  /** @type {string[]} */
+  const tableNames = Object.keys(tableMetadata)
+
+  /** @type {number} incremented by the row count of each table */
   let totalRows = 0
+
+  /** @type {{table:string, rowCount:number}[]} */
   let tables = []
+
+  // Select and handle the row count for each table. 
   for (const table of tableNames) {
     const [row] = await dbUtils.pool.query(`select count(*) as cnt from ${table}`)
     const rowCount = row[0].cnt
-    tableData[table].rowCount = rowCount
+    tableMetadata[table].rowCount = rowCount
     tables.push({table, rowCount})
     totalRows += rowCount
   }
-  const collections = (await dbUtils.pool.query(`select json_arrayagg(name) as names from collection`))[0][0].names
 
-  gzip.write(JSON.stringify({tables, totalRows, collections}) + '\n')
+  // Write metadata record {tables, totalRows}
+  gzip.write(JSON.stringify({tables, totalRows}) + '\n')
 
   for (const table of tableNames) {
+    // create readable stream using the non-promise interface of dbUtils.pool.pool
+    // select all rows for non-generated columns in table
+    // perform custom type casting of fields to JS
+    /** @type {Readable} */
     const queryStream = dbUtils.pool.pool.query({
-      sql: `select ${tableData[table].columns} from ${table}`,
+      sql: `select ${tableMetadata[table].columns} from ${table}`,
       rowsAsArray: true,
       typeCast: function (field, next) {
+         // BIT fields returned as boolean
         if ((field.type === "BIT") && (field.length === 1)) {
           let bytes = field.buffer() || [0]
           return (bytes[0] === 1)
         }
+         // Designated fields returned as original MySQL strings
         if (field.type === 'JSON' || field.type === 'DATETIME' || field.type === 'DATE') {
           return (field.string("utf8"))
         }
         return next()
       }
      }).stream()
-    gzip.write(JSON.stringify({table, ...tableData[table]}) + '\n')
-    await pipeline(queryStream, createBJSON(), gzip, { end: false })
-  }
 
-  gzip.end()
+    // Write metadata record {table, columns, rowCount}
+    gzip.write(JSON.stringify({table, ...tableMetadata[table]}) + '\n')
 
-  function createBJSON() {
-    return new Transform({
+    /** @type {Transform} writes a JSONL data record for each tuple of row data*/
+    const bjson = new Transform({
       objectMode: true,
-      transform: (row, encoding, cb) => {
-        cb(null, BJSON.stringify(row) + '\n')
+      transform: (data, encoding, cb) => {
+        // BSJON supports stringify() and parse() of Buffer values
+        cb(null, BJSON.stringify(data) + '\n')
       }
     })
+
+    // pipeline writes data records [field, field, ...] to gzip, ends without closing gzip
+    await pipeline(queryStream, bjson, gzip, { end: false })
   }
+
+  // ending gzip will also end the response
+  gzip.end()
 }
 
-exports.replaceAppData = async function (bufferGz, progressCb ) {
-  class AppDataJSONStream extends Transform {
-    constructor({jsonParser = JSON.parse, separator = '\n'}) {
+/**
+ * replaceAppData - process a file created by getAppData() and execute SQL queries with progress messages
+ * 
+ * @param {Buffer} bufferGz - buffer with file content
+ * @param {function(Object)} progressCb - optional, argument is an object with progress status
+ * @returns {undefined}
+ */
+exports.replaceAppData = async function (bufferGz, progressCb = () => {}) {
+  /**
+   * ParseJSONLStream - Transform chunks of JSONL records into individual parsed AppData records (N:1).
+   * @extends Transform
+   */
+  class ParseJSONLStream extends Transform {
+    /**
+     * @param {Object} param
+     * @param {function(string):any} param.jsonParser - function for JSON parsing, default JSON.parse()
+     * @param {string} param.separator - character separating JSONL records, default '\n'
+     */
+    constructor({jsonParser = JSON.parse, separator = '\n'} = {}) {
       super({objectMode: true})
-      this.buffer = ''
-      this.separator = separator
-      this.sepCharCode = separator.charCodeAt(0)
-      this.isFirstSegment = true
-      this.jsonParser = jsonParser
+      Object.assign(this, {separator, jsonParser})
+  
+      /** @type {RegExp} RegExp for .split() that includes any trailing separator */
+      this.splitRegExp = new RegExp(`(?<=${separator})`)
+  
+      /** @type {string} holds incoming chunk prefaced by any partial record from previous transform */
+      this.buffer = '' 
     }
+
+    /**
+     * @param {Buffer} chunk - buffer from Gunzip that can span multiple JSONL records
+     * @param {string} encoding - usually 'utf8'
+     * @param {function()} cb - signals completion
+     */
     _transform(chunk, encoding, cb) {
-      if (chunk[0] === this.sepCharCode) {
-        this.buffer = chunk.toString(encoding, 1)
-      }
-      else {
-        this.buffer += chunk.toString(encoding)
-      }
+      this.buffer += chunk.toString(encoding)
       
-      const segments = this.buffer.split(this.separator)
-      for (const segment of segments) {
-        let jso
-        try {
-          jso = this.jsonParser(segment)
+      /** @type {string[]} list of JSONL, last item might be truncated or partial */
+      const candidates = this.buffer.split(this.splitRegExp)
+      /** @type {number} index of last candidates[] item */
+      const lastIndex = candidates.length - 1
+
+      // clear buffer for the next _transform() or _flush()
+      this.buffer = ''
+  
+      /** index @type {number} */
+      /** candidate @type {string} */
+      for (const [index, candidate] of candidates.entries()) {
+        if (index === lastIndex && !candidate.endsWith(this.separator)) {
+          // this is the last candidate and there's no trailing separator
+          // initialize buffer for next _transform() or _flush()
+          this.buffer = candidate
         }
-        catch {
-          jso = undefined
-        }
-        if (this.isFirstSegment && jso?.lastMigration !== config.lastMigration) {
-          cb(new Error(`Invalid content: can't match lastMigration`))
-          return
-        }
-        this.isFirstSegment = false
-        if (jso) {
-          this.push(jso)
+        else {
+          try {
+            // if parsable, write parsed value
+            this.push(this.jsonParser(candidate))
+          }
+          // swallow any parse error
+          catch {}
         }
       }
-      this.buffer = this.buffer.endsWith(this.separator) ? '' : segments[segments.length - 1]
+      cb()
+    }
+    /** @param {function()} cb signals completion */
+    _flush(cb) {
+      try {
+        // if what's left in the buffer is parsable, write parsed value
+        if (this.buffer) this.push(this.jsonParser(this.buffer))
+      }
+      // swallow any parse error
+      catch {}
       cb()
     }
   }
+    /**
+   * AppDataQueryStream - Transform AppData records into an SQL query object (N:1)
+   * @extends Transform
+   */
   class AppDataQueryStream extends Transform {
-    constructor({maxValues = 10000, onTablesFn = new Function()}) {
+    /**
+     * @param {Object} param
+     * @param {number} param.maxValues - maximum number of values for an insert query.
+     * @param {function(Object): any} param.onTablesFn - called when record {tables, ...} is read
+     * @param {function(Object): any} param.onMigrationFn - called when record {..., lastMigration} is read
+     */
+    constructor({maxValues = 10000, onTablesFn = new Function(), onMigrationFn = new Function()}) {
       super({objectMode: true})
-      this.onTablesFn = onTablesFn
-      this.maxValues = maxValues
-      this.currentObject = null
+      Object.assign(this, { maxValues, onTablesFn, onMigrationFn })
+      
+      /** @type {null|Object} the last metadata record encountered */
+      this.currentMetadata = null
+      
+      /** @type {Array} values for an insert query */
       this.currentBinds = []
     }
+
+    /**
+     * @param {Buffer} chunk a single AppData record
+     * @param {string} encoding usually 'utf8'
+     * @param {function()} cb signals completion
+     */
     _transform(chunk, encoding, cb) {
       if (Array.isArray(chunk)) {
         this.currentBinds.push(chunk)
@@ -180,11 +277,20 @@ exports.replaceAppData = async function (bufferGz, progressCb ) {
           this.currentBinds = []
         }
       }
+      else if (chunk.lastMigration) {
+        try {
+          this.onMigrationFn(chunk)
+        }
+        catch (e) {
+          cb(e)
+          return
+        }
+      }
       else if (chunk.table){
-        if (this.currentObject) { 
+        if (this.currentMetadata) { 
           this.push(this.formatCurrentQuery())
         }
-        this.currentObject = chunk
+        this.currentMetadata = chunk
         this.currentBinds = []
         this.push(this.formatCurrentQuery())
       }
@@ -194,36 +300,55 @@ exports.replaceAppData = async function (bufferGz, progressCb ) {
         }
         catch (e) {
           cb(e)
+          return
         }
       }
       else {
-        this.currentObject = null
+        this.currentMetadata = null
       }
       cb()
     }
+    
+    /** @param {function()} cb signals completion */
     _flush(cb) {
       this.push(this.formatCurrentQuery())
       cb()
     }
+
+    /** 
+     * Creates an object with an SQL insert or truncate statement that operates
+     * on the current table and any current binds
+     * @returns {{table:string, sql:string, valueCount:number}} */
     formatCurrentQuery() {
       const sqlInsert = this.currentBinds.length
-        ? `insert into ${this.currentObject.table}(${this.currentObject.columns}) values ?`
-        : `truncate ${this.currentObject.table}`
+        ? `insert into ${this.currentMetadata.table}(${this.currentMetadata.columns}) values ?`
+        : `truncate ${this.currentMetadata.table}`
       return {
-        table: this.currentObject.table,
+        table: this.currentMetadata.table,
         sql: dbUtils.pool.format(sqlInsert, [this.currentBinds]),
         valueCount: this.currentBinds.length
       }
     }
   }
+
+  /** 
+   * @param {any} record expected to be AppData metadata {..., lastMigration}
+   * @returns {undefined}
+   * @throws {Error}
+   */
+  function onMigrationFn(record) {
+    if (record.lastMigration !== config.lastMigration)
+      throw new Error(`Appdata migration v${record.lastMigration} not equal to v${config.lastMigration}`)
+  }
   
+  /** @type {import('mysql2/promise').PoolConnection} */
   let connection
   try {
     connection = await dbUtils.pool.getConnection()
     await connection.query('SET FOREIGN_KEY_CHECKS=0')
     const gunzip = zlib.createGunzip()
-    const jsonl = new AppDataJSONStream({jsonParser: BJSON.parse})
-    const queries = new AppDataQueryStream({maxValues: 10000, onTablesFn: progressCb})
+    const jsonl = new ParseJSONLStream({jsonParser: BJSON.parse})
+    const queries = new AppDataQueryStream({maxValues: 10000, onTablesFn: progressCb, onMigrationFn})
     pipeline(Readable.from(bufferGz), gunzip, jsonl, queries)
     let seq = 0
     for await (const data of queries) {
@@ -236,12 +361,12 @@ exports.replaceAppData = async function (bufferGz, progressCb ) {
   }
   catch (err) {
     progressCb({status: 'fail', error: err.message})
-    return null
+    return undefined
   }
   finally {
     if (typeof connection !== 'undefined') {
       await connection.query('SET FOREIGN_KEY_CHECKS=1')
-      await connection.release()
+      connection.release()
     }
   }
 }
