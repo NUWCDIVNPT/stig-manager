@@ -2264,3 +2264,13 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .x-item-disabled {
 	filter: saturate(0)
 }
+
+.sm-match-case-icon {
+  background-image: url(../img/match-case.svg);
+  background-size: contain;
+}
+
+.sm-match-word-icon {
+  background-image: url(../img/match-word.svg);
+  background-size: contain;
+}

@@ -78,10 +78,9 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
   
       // // iterate the menu items and set the condition(s) for each dataIndex
       for (const stringItem of stringItems) {
-        const dataIndex = stringItem.filter.dataIndex
         const value = stringItem.getValue()
-        if (value) {
-          conditions[dataIndex] = value
+        if (value.value) {
+          conditions[stringItem.filter.dataIndex] = value
         }
       }
       for (const selectItem of selectItems) {
@@ -99,24 +98,32 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
       for (const dataIndex of Object.keys(conditions)) {
           filterFns.push({
             fn: function (record) {
-              const value = record.data[dataIndex]
-              if (Array.isArray(value)) { 
+              const cellValue = record.data[dataIndex]
+              const condition = conditions[dataIndex]
+              if (Array.isArray(cellValue)) { 
               // the record data is an Array of values
-                if (Array.isArray(conditions[dataIndex])) {
-                  if (conditions[dataIndex].includes('') && value.length === 0) return true
-                  return value.some( v => conditions[dataIndex].includes(v))
+                if (Array.isArray(condition)) {
+                  if (condition.includes('') && cellValue.length === 0) return true
+                  return cellValue.some( v => condition.includes(v))
                 }
               }
   
               // the record data is a scalar value (we're missing object handling?)
-              if (Array.isArray(conditions[dataIndex])) {
-                return conditions[dataIndex].includes(value) 
+              if (Array.isArray(condition)) {
+                return condition.includes(cellValue) 
               }
               else {
-                // match case-insensitive condition anywhere in value
-                const a = value.toLowerCase()
-                const b = conditions[dataIndex].toLowerCase()
-                return a.indexOf(b) > -1
+                // string matches
+                const a = condition.matchCase ? cellValue : cellValue.toLowerCase()
+                const b = condition.matchCase ? condition.value : condition.value.toLowerCase()
+                let found
+                if (condition.matchWord) {
+                  found = a.search(new RegExp(`\\b${b}\\b`))
+                }
+                else {
+                  found = a.indexOf(b)
+                }
+                return condition.condition ? found > -1 : found === -1
               }
             }
           })  
@@ -126,14 +133,16 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
     onFilterChange: function (item, value) {
       switch (item.filter.type) {
         case 'string':
-          item.column.filtered = !!(item.getValue())
+          item.column.filtered = !!(item.getValue()?.value)
           break
         case 'values':
-          const hmenuItems = this.hmenu.items.items
-          const hmenuPeers = hmenuItems.filter( i => i.filter?.type === 'values' && i.filter?.dataIndex === item.filter.dataIndex)
-          const hmenuPeersChecked = hmenuPeers.map( i => i.checked)
-          item.column.filtered = hmenuPeersChecked.includes(false)
-          break
+          {
+            const hmenuItems = this.hmenu.items.items
+            const hmenuPeers = hmenuItems.filter( i => i.filter?.type === 'values' && i.filter?.dataIndex === item.filter.dataIndex)
+            const hmenuPeersChecked = hmenuPeers.map( i => i.checked)
+            item.column.filtered = hmenuPeersChecked.includes(false)
+            break
+          }
         case 'selectall':
           item.column.filtered = !(!!value)
           break
@@ -273,33 +282,27 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
   
       for (const col of this.cm.config) {
         switch (col.filter?.type) {
-          case 'string':
+          case 'string': {
             if (col.renderer) {
               col.configRenderer = col.renderer
               col.renderer = SM.ColumnFilters.Renderers.highlighterShim
             }
-            const stringItem = hmenu.add(new SM.ColumnFilters.SearchTextField({
-              emptyText: "Contains...",
-              height: 24,
+            const stringItem = hmenu.add(new SM.ColumnFilters.StringPanel({
+              hideOnClick: false,
               column: col,
               filter: { dataIndex: col.dataIndex, type: 'string'},
-              enableKeyEvents: true,
-              hideParent: true,
               listeners: {
-                input: function (item, e) {
-                  _this.onFilterChange(item, item.value)
+                filterchanged: function (panel) {
+                  _this.onFilterChange(panel, panel.getValue())
                 },
-                keyup: function (item, e) {
-                  const k = e.getKey()
-                  if (k == e.RETURN) {
-                      e.stopEvent();
-                      hmenu.hide(true)
-                  }
+                enterkey: function () {
+                  hmenu.hide(true)
                 }
               }
             }))
             hmenu.filterItems.stringItems.push(stringItem)
             break
+          }
           case 'values':
             dynamicColumns.push(col)
             break
@@ -314,25 +317,140 @@ SM.ColumnFilters.extend = function extend (extended = Ext.grid.GridView) {
 SM.ColumnFilters.GridView = SM.ColumnFilters.extend(Ext.grid.GridView)
 SM.ColumnFilters.GridViewBuffered = SM.ColumnFilters.extend(Ext.ux.grid.BufferView)
 
-SM.ColumnFilters.SearchTextField = Ext.extend(Ext.form.TextField, {
+SM.ColumnFilters.StringMatchTextField = Ext.extend(Ext.form.TextField, {
   initComponent: function () {
     const config = {
-      autoCreate: {tag: 'input', type: 'search', size: '20', autocomplete: 'off'}
+      autoCreate: {tag: 'input', type: 'search', size: '20', autocomplete: 'off'},
+      enableKeyEvents: true
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
-    SM.ColumnFilters.SearchTextField.superclass.initComponent.call(this)
+    this.superclass().initComponent.call(this)
     this.addEvents( 'input' )
   },
   initEvents: function () {
-    SM.ColumnFilters.SearchTextField.superclass.initEvents.call(this)
+    this.superclass().initEvents.call(this)
     this.mon(this.el, {
       scope: this,
       input: this.onInput
     })
   },
   onInput: function (e) {
-    this.column.filter.value = this.getValue()
     this.fireEvent('input', this, e);
+  }
+})
+
+SM.ColumnFilters.StringMatchConditionComboBox = Ext.extend(Ext.form.ComboBox, {
+  initComponent: function () {
+    const store = new Ext.data.ArrayStore({
+      fields: ['display', 'value'],
+      data: [['Includes', true], ['Excludes', false]]
+    })
+    const config = {
+      listClass: 'x-menu',
+      store,
+      triggerAction: 'all',
+      mode: 'local',
+      editable: false,
+      valueField: 'value',
+      displayField: 'display'
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+    this.setValue(true)
+  }
+})
+
+SM.ColumnFilters.StringMatchCaseButton = Ext.extend(Ext.Button, {
+  initComponent:  function () {
+    const config = {
+      enableToggle: true,
+      border: false,
+      iconCls: 'sm-match-case-icon',
+      tooltip: 'Match case'
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
+
+SM.ColumnFilters.StringMatchWordButton = Ext.extend(Ext.Button, {
+  initComponent:  function () {
+    const config = {
+      enableToggle: true,
+      border: false,
+      iconCls: 'sm-match-word-icon',
+      tooltip: 'Match word'
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
+
+SM.ColumnFilters.StringPanel = Ext.extend(Ext.Panel, {
+  initComponent: function () {
+    const _this = this
+
+    const onFilterChange = function () {
+      _this.column.filter.value = getValue()
+      _this.fireEvent('filterchanged', _this)
+    }
+
+    const conditionComboBox = new SM.ColumnFilters.StringMatchConditionComboBox({
+      flex: 1,
+      listeners: {
+        select: onFilterChange
+      }
+    })
+    const matchCaseButton = new SM.ColumnFilters.StringMatchCaseButton({
+      width: 24,
+      listeners: {
+        toggle: onFilterChange
+      }
+    })
+    const matchWordButton = new SM.ColumnFilters.StringMatchWordButton({
+      width: 24,
+      listeners: {
+        toggle: onFilterChange
+      }
+    })
+    const textfield = new SM.ColumnFilters.StringMatchTextField({
+      height: 24,
+      listeners: {
+        input: onFilterChange,
+        keyup: function (item, e) {
+          const k = e.getKey()
+          if (k == e.RETURN) {
+              e.stopEvent()
+              _this.fireEvent('enterkey')
+          }
+        }
+      }
+    })
+
+    function getValue () {
+      return {
+        value: textfield.getValue() ?? '',
+        condition: conditionComboBox.getValue(),
+        matchCase: matchCaseButton.pressed,
+        matchWord: matchWordButton.pressed,
+      }
+    }
+    const config = {
+      getValue,
+      items: [
+        {
+          layout: 'hbox',
+          items: [
+            conditionComboBox,
+            matchCaseButton,
+            matchWordButton
+          ]
+        },
+        textfield
+      ]
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
   }
 })
 
@@ -348,14 +466,11 @@ SM.ColumnFilters.CompareFns = {
   severity: (a, b) => {
     return SM.ColumnFilters.Scorers.severity[a] - SM.ColumnFilters.Scorers.severity[b]
   },
-  labels: (a, b) => {
-    
-  },
   labelIds: (a, b, collectionId) => {
     if (a === "") return -1;
     if (b === "") return 1;
     return SM.Cache.getCollectionLabel(collectionId, a).name.localeCompare(SM.Cache.getCollectionLabel(collectionId, b).name)
-  },        
+  }       
 }
 
 SM.ColumnFilters.Renderers = {
@@ -404,11 +519,15 @@ SM.ColumnFilters.Renderers = {
     }  
   },
   highlighterShim: function (v, m, r, ri, ci, s) {
-    if (this.filter?.type === 'string' && this.filter?.value) {
-      const re = new RegExp(SM.he(this.filter.value),'gi')
-      v = v.replace(re,'<span class="sm-text-highlight">$&</span>')
+    if (this.filter?.type === 'string' && this.filter.value?.value && this.filter.value.condition) {
+      let searchStr = SM.he(this.filter.value.value)
+      const flags = `g${this.filter.value.matchCase ? '' : 'i'}`
+      if (this.filter.value.matchWord) {
+        searchStr = `\\b${searchStr}\\b`
+      }
+      v = v.replace(new RegExp(searchStr, flags),'<span class="sm-text-highlight">$&</span>')
     }
-    return this.configRenderer ? this.configRenderer.call(this, v, m, r, ri, ci, s) : v
+    return this.configRenderer ? this.configRenderer(v, m, r, ri, ci, s) : v
   },
   labels: function (labelId, collectionId) {
     if (!labelId) return '<i>(No value)</i>'
