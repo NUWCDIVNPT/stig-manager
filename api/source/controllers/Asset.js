@@ -51,7 +51,7 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
     let projection = req.query.projection
     const { assetId } = await getAssetInfoAndVerifyAccess(req)
     const response = await AssetService.getAsset(assetId, projection, elevate, req.userObject)
-    await AssetService.deleteAsset( assetId, projection, elevate, req.userObject )
+    await AssetService.deleteAsset( assetId, projection, elevate, req.userObject, res.svcStatus)
     res.json(response)
   }
   catch (err) {
@@ -64,7 +64,7 @@ module.exports.removeStigFromAsset = async function removeStigFromAsset (req, re
     let benchmarkId = req.params.benchmarkId
     let elevate = req.query.elevate
     const { assetId } = await getAssetInfoAndVerifyAccess(req)
-    let response = await AssetService.removeStigFromAsset(assetId, benchmarkId, elevate, req.userObject )
+    let response = await AssetService.removeStigFromAsset(assetId, benchmarkId, elevate, req.userObject, res.svcStatus)
     res.json(response)
   }
   catch (err) {
@@ -76,7 +76,7 @@ module.exports.removeStigsFromAsset = async function removeStigsFromAsset (req, 
   try {
     let elevate = req.query.elevate
     const { assetId } = await getAssetInfoAndVerifyAccess(req)
-    let response = await AssetService.removeStigsFromAsset(assetId, elevate, req.userObject )
+    let response = await AssetService.removeStigsFromAsset(assetId, elevate, req.userObject, res.svcStatus)
     res.json(response)
   }
   catch (err) {
@@ -663,7 +663,7 @@ module.exports.patchAssets = async function (req, res, next) {
     if (!patchRequest.assetIds.every( a => collectionAssets.includes(a))) {
       throw new SmError.PrivilegeError('One or more assetId is not a Collection member.')
     }
-    await AssetService.deleteAssets(patchRequest.assetIds, req.userObject)
+    await AssetService.deleteAssets(patchRequest.assetIds, req.userObject, res.svcStatus)
     res.json({
       operation: 'deleted',
       assetIds: patchRequest.assetIds
