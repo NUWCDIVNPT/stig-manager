@@ -1609,6 +1609,9 @@ exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds,
         await connection.query(sqlInsertBenchmarks, [ binds ])
       }
 
+      // changes above might have affected need for records in collection_rev_map 
+      await dbUtils.pruneCollectionRevMap(connection)
+
       await dbUtils.updateDefaultRev(connection, {
         collectionId: collectionId,
         benchmarkId: benchmarkId
@@ -1618,8 +1621,7 @@ exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds,
         benchmarkId: benchmarkId
       })
 
-      // changes above might have affected need for records in collection_rev_map 
-      await dbUtils.pruneCollectionRevMap(connection)
+  
 
       // Commit the changes
       await connection.commit()
