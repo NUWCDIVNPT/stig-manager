@@ -1349,7 +1349,7 @@ exports.deleteAsset = async function(assetId, projection, elevate, userObject, s
     if (typeof connection !== 'undefined') {
       await connection.rollback()
     }
-    throw ( {status: 500, message: err.message, stack: err.stack} )
+    throw err
   }
   finally {
     if (typeof connection !== 'undefined') {
@@ -1378,7 +1378,7 @@ exports.deleteAssets = async function(assetIds, userObject, svcStatus = {}) {
     if (typeof connection !== 'undefined') {
       await connection.rollback()
     }
-    throw ( {status: 500, message: err.message, stack: err.stack} )
+    throw err
   }
   finally {
     if (typeof connection !== 'undefined') {
@@ -1454,7 +1454,7 @@ exports.removeStigFromAsset = async function (assetId, benchmarkId, elevate, use
     if (typeof connection !== 'undefined') {
       await connection.rollback()
     }
-    throw ( {status: 500, message: err.message, stack: err.stack} )
+    throw err
   }
   finally {
     if (typeof connection !== 'undefined') {
@@ -1486,7 +1486,7 @@ exports.removeStigsFromAsset = async function (assetId, elevate, userObject, svc
     if (typeof connection !== 'undefined') {
       await connection.rollback()
     }
-    throw ( {status: 500, message: err.message, stack: err.stack} )
+    throw err
   }
   finally {
     if (typeof connection !== 'undefined') {
