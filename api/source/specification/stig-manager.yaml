@@ -4114,12 +4114,16 @@ components:
       properties:
         assetIds:
           type: array
+          minItems: 1
           items:
             $ref: '#/components/schemas/AssetId'
         operation:
           type: string
           enum:
             - delete
+      required:
+        - assetIds
+        - operation
     AssetsPatchResponse:
       additionalProperties: false
       type: object

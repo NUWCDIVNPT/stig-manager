@@ -1327,22 +1327,64 @@ exports.createAsset = async function({body, projection, elevate, userObject, svc
   })
 }
 
-exports.deleteAsset = async function(assetId, projection, elevate, userObject) {
-  const rows = await _this.queryAssets(projection, {assetId: assetId}, elevate, userObject)
-  const sqlDelete = `UPDATE asset SET state = "disabled", stateDate = NOW(), stateUserId = ? where assetId = ?`
-  await dbUtils.pool.query(sqlDelete, [userObject.userId, assetId])
-  // changes above might have affected need for records in collection_rev_map 
-  await dbUtils.pruneCollectionRevMap()
-  await dbUtils.updateDefaultRev(null, {})
-  return (rows[0])
+exports.deleteAsset = async function(assetId, projection, elevate, userObject, svcStatus = {}) {
+
+  let connection
+  try {
+    connection = await dbUtils.pool.getConnection()
+    async function transaction () {
+      await connection.query('START TRANSACTION')
+      const sqlDelete = `UPDATE asset SET state = "disabled", stateDate = NOW(), stateUserId = ? where assetId = ?`
+      await connection.query(sqlDelete, [userObject.userId, assetId])
+      // changes above might have affected need for records in collection_rev_map
+      await dbUtils.pruneCollectionRevMap(connection)
+      await dbUtils.updateDefaultRev(connection, {})
+      await connection.commit()
+    }
+    const rows = await _this.queryAssets(projection, {assetId: assetId}, elevate, userObject)
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
+    return (rows[0])
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    throw err
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
 }
 
-exports.deleteAssets = async function(assetIds, userObject) {
-  const sqlDelete = `UPDATE asset SET state = "disabled", stateDate = NOW(), stateUserId = ? where assetId IN ?`
-  await dbUtils.pool.query(sqlDelete, [userObject.userId, [assetIds]])
-  // changes above might have affected need for records in collection_rev_map 
-  await dbUtils.pruneCollectionRevMap()
-  await dbUtils.updateDefaultRev(null, {})
+exports.deleteAssets = async function(assetIds, userObject, svcStatus = {}) {
+
+  let connection
+  try{
+    connection = await dbUtils.pool.getConnection()
+    async function transaction () {
+      await connection.query('START TRANSACTION')
+      const sqlDelete = `UPDATE asset SET state = "disabled", stateDate = NOW(), stateUserId = ? where assetId IN ?`
+      await connection.query(sqlDelete, [userObject.userId, [assetIds]])
+      // changes above might have affected need for records in collection_rev_map 
+      await dbUtils.pruneCollectionRevMap(connection)
+      await dbUtils.updateDefaultRev(connection, {})
+      await connection.commit()
+    }
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    throw err
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
 }
 
 exports.attachStigToAsset = async function( {assetId, benchmarkId, collectionId, elevate, userObject, svcStatus = {}} ) {
@@ -1388,26 +1430,69 @@ exports.attachStigToAsset = async function( {assetId, benchmarkId, collectionId,
   }
 }
 
-exports.removeStigFromAsset = async function (assetId, benchmarkId, elevate, userObject ) {
-  const sqlDelete = `DELETE FROM stig_asset_map where assetId = ? and benchmarkId = ?`
-  await dbUtils.pool.query(sqlDelete, [assetId, benchmarkId])
-  const rows = await _this.queryStigsByAsset( {
-    assetId: assetId
-  }, elevate, userObject)
-  // changes above might have affected need for records in collection_rev_map 
-  await dbUtils.pruneCollectionRevMap()
-  await dbUtils.updateDefaultRev(null, {})
-  return (rows)
+exports.removeStigFromAsset = async function (assetId, benchmarkId, elevate, userObject, svcStatus = {}) {
+  
+  let connection
+  try{
+    connection = await dbUtils.pool.getConnection()
+    async function transaction () {
+      connection.query('START TRANSACTION')
+      const sqlDelete = `DELETE FROM stig_asset_map where assetId = ? and benchmarkId = ?`
+      await connection.query(sqlDelete, [assetId, benchmarkId])
+      // changes above might have affected need for records in collection_rev_map
+      const rows = await _this.queryStigsByAsset( {
+        assetId: assetId
+      }, elevate, userObject)
+      await dbUtils.pruneCollectionRevMap(connection)
+      await dbUtils.updateDefaultRev(connection, {})
+      await connection.commit()
+      return (rows)
+    }
+    return await dbUtils.retryOnDeadlock(transaction, svcStatus)
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    throw err
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
 }
 
-exports.removeStigsFromAsset = async function (assetId, elevate, userObject ) {
-  const sqlDelete = `DELETE FROM stig_asset_map where assetId = ?`
-  await dbUtils.pool.query(sqlDelete, [assetId])
-  const rows = await _this.queryStigsByAsset( {assetId: assetId}, elevate, userObject)
-  // changes above might have affected need for records in collection_rev_map 
-  await dbUtils.pruneCollectionRevMap()
-  await dbUtils.updateDefaultRev(null, {})
-  return (rows)
+exports.removeStigsFromAsset = async function (assetId, elevate, userObject, svcStatus = {}) {
+
+  let connection
+
+  try{
+    connection = await dbUtils.pool.getConnection()
+    async function transaction () {
+      await connection.query('START TRANSACTION')
+      const sqlDelete = `DELETE FROM stig_asset_map where assetId = ?`
+      await connection.query(sqlDelete, [assetId])
+      
+      // changes above might have affected need for records in collection_rev_map
+      await dbUtils.pruneCollectionRevMap(connection)
+      await dbUtils.updateDefaultRev(connection, {})
+      await connection.commit()
+    }
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
+    return await _this.queryStigsByAsset( {assetId: assetId}, elevate, userObject)
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    throw err
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
 }
 
 exports.deleteAssetStigGrant = async function (assetId, benchmarkId, userId, elevate, userObject ) {
@@ -1524,6 +1609,9 @@ exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds,
         await connection.query(sqlInsertBenchmarks, [ binds ])
       }
 
+      // changes above might have affected need for records in collection_rev_map 
+      await dbUtils.pruneCollectionRevMap(connection)
+
       await dbUtils.updateDefaultRev(connection, {
         collectionId: collectionId,
         benchmarkId: benchmarkId
@@ -1533,8 +1621,7 @@ exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds,
         benchmarkId: benchmarkId
       })
 
-      // changes above might have affected need for records in collection_rev_map 
-      await dbUtils.pruneCollectionRevMap(connection)
+  
 
       // Commit the changes
       await connection.commit()
