@@ -1,3 +1,13 @@
+1.4.15
+-----
+
+Changes:
+
+  - (API) fix: further improved performance for endpoints that call getCollection (#1363)
+  - (API) fix: ensure updateDefaultRev is called as part of a transaction (#1370)
+  - (UI) feature: enhanced column filters
+  - (API) chore: dependency updates
+
 1.4.14
 -----
 
