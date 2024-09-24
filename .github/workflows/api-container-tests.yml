@@ -24,7 +24,7 @@ jobs:
 
   test_api:
     needs: fetch-mysql-versions
-    name: Postman tests with ${{ matrix.container.name }} and MySQL ${{ matrix.mysql_version }}
+    name: Mocha tests with ${{ matrix.container.name }} and MySQL ${{ matrix.mysql_version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -67,60 +67,23 @@ jobs:
           -e STIGMAN_DEV_RESPONSE_VALIDATION=logOnly \
           ${{ matrix.container.name }}
 
-      - name: Install Newman reporter
-        id: newman-reporter-install
-        run: |
-          sudo npm install -g newman-reporter-htmlextra
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: ./test/api/
+
       - name: Wait for bootstrap
         run: for i in {1..10}; do [ $i -gt 1 ] && sleep 5; curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration && s=0 && break || s=$?; printf '.'; done; (exit $s)
-      - name: Run Newman Collection LoadTestData
-        id: newman-run-loadTestData
-        working-directory: ./test/api
-        run: |
-          set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder LoadTestData -r cli,htmlextra  --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/dataPreloadReport-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.html | grep -A18 '┌─────'
-      - name: Run Newman Collection GETS
-        id: newman-run-gets
-        if: steps.newman-run-loadTestData.conclusion == 'success'
-        working-directory: ./test/api
-        run: |
-          set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 6 --folder GETs -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/GetsReport-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.html | grep -A18 '┌─────'
-      - name: Run Newman Collection Posts, Puts, Patches, Deletes
-        id: newman-run-pppd
-        if: steps.newman-run-loadTestData.conclusion == 'success'
-        working-directory: ./test/api
-        run: |
-          set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 6 --folder "POSTS, Puts, Patches, and Deletes" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/PPPDReport-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.html | grep -A18 '┌─────'
-      - name: Run Newman Collection STIGS
-        id: newman-run-stigs
-        if: steps.newman-run-loadTestData.conclusion == 'success'
-        working-directory: ./test/api
-        run: |
-          set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 2 --folder "STIGS" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showOnlyFails --reporter-htmlextra-export ./newman/stigsReport-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.html | grep -A18 '┌─────'
-      - name: Run Newman Collection LVL1 Cross-Boundary Tests
-        id: newman-run-lvl1-cross-boundary
-        if: steps.newman-run-loadTestData.conclusion == 'success'
-        working-directory: ./test/api
-        run: |
-          set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder "LVL1 cross-boundary tests" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showEnvironmentData --reporter-htmlextra-export ./newman/lvl1Report-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.html | grep -A18 '┌─────'
-      - name: Run Newman Collection Additional Sundry Tests
-        id: newman-run-additional-sundry
-        if: steps.newman-run-loadTestData.conclusion == 'success'
-        working-directory: ./test/api
-        run: |
-          set -o pipefail
-          newman run postman_collection.json -e postman_environment.json -d collectionRunnerData.json -n 1 --folder "Additional sundry tests" -r cli,htmlextra --reporter-cli-no-assertions --reporter-cli-no-console --reporter-htmlextra-showEnvironmentData --reporter-htmlextra-export ./newman/AdditionalSundryReport-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}.html | grep -A18 '┌─────'
-      - name: Upload Newman artifact
-        id: artifact-upload
+      - name: Run tests with coverage
+        working-directory: ./test/api/
+        run: npm test
+      - name: Upload mocha test report
+        id: artifact-upload-mocha
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: newman-htmlextra-${{ matrix.container.name }}-${{ matrix.mysql_version }}-${{ github.run_id }}
-          path: ./test/api/newman
+          name: mocha-report-${{ matrix.container.name }}-${{ matrix.mysql_version }}
+          path: ./test/api/mochawesome-report
+   
       - name: Extract API container log
         id: api-log-extract
         if: ${{ always() }}

@@ -1,13 +1,5 @@
-# API testing with Postman
-
-## Required tooling
-- Node.js
-- [newman](https://www.npmjs.com/package/newman) (global install)
-- [newman-reporter-htmlextra](https://www.npmjs.com/package/newman-reporter-htmlextra)
-
-
-## Optional tooling
-- [Postman](https://www.postman.com/downloads/)
+# API testing
+This project contains a set of Mocha and Chai tests for stig-manager.
 
 ## Runtime environment
 ### Authentication Server
@@ -50,30 +42,59 @@ Run ***ONE*** of the following:
   docker run --name stig-manager-api \
   -p 64001:54000 \
   nuwcdivnpt/stig-manager
-   ```   
-
-## Running the Tests
-
-### From the Command Line Using newman
-- Ensure the newman npm module is installed. If not, run `npm install -g newman`
-- From the /test/api folder of the project repo, run the `runFailsOnly.sh` bash script.
-- Test result summaries are output to the console, and detailed test reports are output to the `/test/api/newman`` directory.
-
-### From Postman UI
-
-- Open Postman and import the collection and environment files from the `/test/api` directory of the project repo.
-- Run requests individually, or as part of a Collection or Folder "run" using the `collectionRunnerData.json` file, if user iterations are needed.
+   ```
 
 
-## Test Components
 
-Located in the `/test/api directory of the project repo:
+## Installation
 
-- `postman_collection.json`  The Postman Collection of API tests.
-- `postman_environment.json`  The Postman Environment for the API tests.
-- `collectionRunnerData.json`  The data file used by the newman/Postman Collection Runner to run iterations of the tests. Each iteration is specific to a user with different levels of access and grants to Collections maintained by the API. 
-- `runFailsOnly.sh`  A bash script that runs the tests using newman, and outputs a summary of the results to the console. Detailed test reports are output to the /test/api/newman directory.  Tests are run in groups defined by the top-level folders of the Postman Collection. 
-- `form-data-files/*`  Test data files sent by Postman/newman to the API. Includes several sets of data to populate the API with data the tests expect, and several reference STIGs to use in the tests.  If using the Postman UI, you may need to adjust Postman settings to allow access to this folder locally. 
+To install the dependencies required to run the test suite, run this command from the test folder:
+
+```
+npm install
+```
+
+Ensure that testConfig.json is configured correctly. This file contains the base URL for the API and access token for the admin test user. 
+```test/api/mocha/testConfig.json```
+
+
+## Usage
+
+The test suite uses Mocha as the test runner and Chai-http to call endpoints and Chai for assertions. 
+
+To run the tests for local development, use the following bash script:
+
+```test/api/runMocha.sh``` (use -h flag for help)
+
+In CI/CD use ```npm test``` to run tests. 
+
+
+
+
+## How to Write Tests
+
+The test suite follows these conventions:
+
+- All access tokens used in the tests are valid when using the ["test" keycloak container maintained here.](https://github.com/NUWCDIVNPT/stig-manager-auth). 
+- The main directory for all testing files is located at ```test/api/mocha```.
+- Tests validating the basic functionality of our endpoints are found in ```test/api/mocha/data```.
+- Each subdirectory within ```test/api/mocha/data``` is organized by API tag
+- Test files generally adhere to the naming convention ```<apiTag><HTTPMethod>.test.js``` (e.g., ```assetPatch.test.js```).
+- The ```test/api/mocha/crossBoundary``` directory contains tests for Level 1 cross-boundary scenarios.
+- Integration tests are located in ```test/api/mocha/integration```. Integration tests, as defined here, involve calling a set of related endpoints together to validate major application functionalities. These differ from the more focused, unit-like data tests that target individual API endpoints.
+- ```iterations.js``` defines the various iterations a test or group of tests will execute. This structure supports running the same test across multiple scenarios. Iterations contain an iteration name (often the test user name), a user Id as found in the test data set, and a test access token for that user.
+- Most tests reference corresponding ```referenceData.js``` and ```expectations.js``` files. These files contain the "answers" or expected data against which the API responses are validated.
+  - ```referenceData.js``` typically contains static or more global data about the tests or API paths.
+   - ```expectations.js``` contains data specific to the current test iterations (e.g., different user scenarios) and controls whether a test should run for a particular iteration.
+
+
+#### Test Naming conventions
+
+- top-level describe: ```describe('<HTTPMethod> - <APITag>', function () ``` Example: ```describe('DELETE - Asset', function ()```
+- Iteration-specific describe (used by runMocha.sh to run for a specific iteration): ```describe(iteration:${iteration.name}`, function () ```
+- Endpoint-level describe: ```describe('<operationId> - <endpointPath>', function ()``` Example: ```describe('deleteAssetMetadataKey - /assets/{assetId}/metadata/keys/{key}', function ()```
+
+Make sure these files are correctly set up before running the tests.
 
 ## Test Policy
 
