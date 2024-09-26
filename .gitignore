@@ -31,6 +31,7 @@ api/source/tls/mysql2/tls.cnf
 clients/extjs/js/keycloak.json
 .gitignore
 newman/
+mochawesome-report/
 /docs/_build/doctrees/
 
 # macOS file
