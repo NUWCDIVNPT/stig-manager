@@ -7,7 +7,7 @@ const path = require('path')
 const fs = require("fs")
 const semverLt = require('semver/functions/lt')
 const Importer = require('./migrations/lib/mysql-import.js')
-const minMySqlVersion = '8.0.14'
+const minMySqlVersion = '8.0.21'
 let _this = this
 let initAttempt = 0
 
