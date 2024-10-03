@@ -84,10 +84,10 @@ The STIG Manager API must be configured to establish TLS connections to the MySQ
    If using the STIG Manager API container, the CA certificate file must be mounted to the container at the path specified in the environment variable. (usually `/home/node/tls/<your-ca>.pem`)
 
 
-Connect with Client Certificate
+Authenticate with Client Certificate
 ++++++++++++++++++++++++++++++++++++++
 
-To connect to MySQL with a client certificate, the following environment variables must be set:
+To authenticate to MySQL with a client certificate, the following environment variables must be set:
 
   * *STIGMAN_DB_TLS_CERT_FILE* - A file/path relative to the API /tls directory that contains the PEM encoded Client certificate used when authenticating the database client.
   * *STIGMAN_DB_TLS_KEY_FILE* - A file/path relative to the API /tls directory that contains the PEM encoded Client private key used when authenticating the database client.
@@ -95,7 +95,7 @@ To connect to MySQL with a client certificate, the following environment variabl
 .. note::
    If using the STIG Manager API container, the client certificate and key files must be mounted to the container at the path specified in the environment variable. (usually `/home/node/tls/<your-client-cert/key>.pem`)
 
-The stigman API user must be altered in MySQL such that it is identified by the subject of the valid X.509 certificate it will use to connect. The following command, customized to suit your certificates, will accomplish this:
+The stigman API user must be altered in MySQL such that it is identified by the subject of the valid X.509 certificate it will use to authenticate. The following command, customized to suit your certificates, will accomplish this:
 ``ALTER USER stigman@'%' IDENTIFIED BY '' REQUIRE SUBJECT '/C=US/ST=California/L=Santa Clara/CN=fake-client';``
 
 
