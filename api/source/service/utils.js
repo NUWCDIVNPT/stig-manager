@@ -6,6 +6,7 @@ const Umzug = require('umzug')
 const path = require('path')
 const fs = require("fs")
 const semverLt = require('semver/functions/lt')
+const semverCoerce = require('semver/functions/coerce')
 const Importer = require('./migrations/lib/mysql-import.js')
 const minMySqlVersion = '8.0.21'
 let _this = this
@@ -111,7 +112,7 @@ module.exports.initializeDatabase = async function (depStatus) {
       logger.writeError('mysql', 'preflight', { success: false, message: error.message })
     }
   })
-  if (semverLt(detectedMySqlVersion, minMySqlVersion) ) {
+  if (semverLt(semverCoerce(detectedMySqlVersion), minMySqlVersion) ) {
     logger.writeError('mysql', 'preflight', { success: false, message: `MySQL release ${detectedMySqlVersion} is too old. Update to release ${minMySqlVersion} or later.` })
     process.exit(1)
   } 
