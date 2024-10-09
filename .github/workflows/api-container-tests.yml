@@ -1,4 +1,4 @@
-name: API Containers
+name: API containers
 on:
   workflow_dispatch:
   pull_request:
