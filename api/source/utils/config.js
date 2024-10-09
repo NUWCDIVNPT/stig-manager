@@ -79,7 +79,8 @@ let config = {
             servicename: process.env.STIGMAN_JWT_SERVICENAME_CLAIM,
             name: process.env.STIGMAN_JWT_NAME_CLAIM || process.env.STIGMAN_JWT_USERNAME_CLAIM || "name",
             privileges: formatChain(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles"),
-            email: process.env.STIGMAN_JWT_EMAIL_CLAIM || "email"
+            email: process.env.STIGMAN_JWT_EMAIL_CLAIM || "email",
+            assertion: process.env.STIGMAN_JWT_ASSERTION_CLAIM || "jti"
         }
     },
     log: {
