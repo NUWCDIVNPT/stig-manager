@@ -229,11 +229,44 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
     },
     loadTree: async function (node, cb) {
         try {
-          let match, collectionGrant
           // Root node
           if (node == 'stigman-root') {
             let content = []
             if (curUser.privileges.canAdmin) {
+              const children = [
+                {
+                  id: 'collection-admin',
+                  text: 'Collections',
+                  leaf: true,
+                  iconCls: 'sm-collection-icon'
+                },
+                {
+                  id: 'user-admin',
+                  text: 'User Grants',
+                  leaf: true,
+                  iconCls: 'sm-users-icon'
+                },
+                {
+                  id: 'stig-admin',
+                  text: 'STIG Benchmarks',
+                  leaf: true,
+                  iconCls: 'sm-stig-icon'
+                },
+                {
+                  id: 'appinfo-admin',
+                  text: 'Application Info',
+                  leaf: true,
+                  iconCls: 'sm-info-circle-icon'
+                }
+              ]
+              if (STIGMAN.Env.experimental.appData === 'true') {
+                children.push({
+                    id: 'appdata-admin',
+                    text: 'Export/Import Data <span class="sm-navtree-sprite">experimental</span>',
+                    leaf: true,
+                    iconCls: 'sm-database-save-icon'
+                  })
+              }
               content.push(
                 {
                   id: `admin-root`,
@@ -241,32 +274,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                   text: 'Application Management',
                   iconCls: 'sm-setting-icon',
                   expanded: false,
-                  children: [
-                    {
-                      id: 'collection-admin',
-                      text: 'Collections',
-                      leaf: true,
-                      iconCls: 'sm-collection-icon'
-                    },
-                    {
-                      id: 'user-admin',
-                      text: 'User Grants',
-                      leaf: true,
-                      iconCls: 'sm-users-icon'
-                    },
-                    {
-                      id: 'stig-admin',
-                      text: 'STIG Benchmarks',
-                      leaf: true,
-                      iconCls: 'sm-stig-icon'
-                    },
-                    {
-                      id: 'appdata-admin',
-                      text: 'Application Info',
-                      leaf: true,
-                      iconCls: 'sm-database-save-icon'
-                    }
-                  ]
+                  children
                 }
               )
             }
@@ -473,8 +481,11 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
           case 'stig-admin':
             addStigAdmin( { treePath: n.getPath() })
             break
+          case 'appinfo-admin':
+            SM.AppInfo.showAppInfoTab({treePath: n.getPath()})
+            break
           case 'appdata-admin':
-            addAppDataAdmin( { treePath: n.getPath() })
+            SM.AppData.showAppDataTab({treePath: n.getPath()})
             break
           case 'whats-new':
             SM.WhatsNew.addTab( { treePath: n.getPath() })

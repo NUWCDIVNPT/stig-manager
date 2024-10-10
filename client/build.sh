@@ -66,6 +66,7 @@ ext/resources/images/gray/tabs/tab-close.gif
 ext/resources/images/gray/tabs/scroll-left.gif
 ext/resources/images/gray/tabs/scroll-right.gif
 ext/resources/images/gray/window/icon-question.gif
+ext/ux/css/LockingGridView.css
 ext/ux/fileuploadfield/css/fileuploadfield.css"
 tar cf - -C $SrcDir --files-from <(echo "${ExtResources}") | tar xf - -C $DistDir
 
@@ -138,6 +139,7 @@ uglifyjs \
 'SM/CollectionGrant.js' \
 'SM/CollectionPanel.js' \
 'SM/MetaPanel.js' \
+'LockingGridView.js' \
 'SM/ColumnFilters.js' \
 'SM/FindingsPanel.js' \
 'SM/Assignments.js' \
@@ -150,12 +152,13 @@ uglifyjs \
 'SM/StigRevision.js' \
 'SM/Inventory.js' \
 'SM/AssetSelection.js' \
+'SM/AppInfo.js' \
+'SM/AppData.js' \
 'library.js' \
 'userAdmin.js' \
 'collectionAdmin.js' \
 'collectionManager.js' \
 'stigAdmin.js' \
-'appDataAdmin.js' \
 'completionStatus.js' \
 'findingsSummary.js' \
 'review.js' \

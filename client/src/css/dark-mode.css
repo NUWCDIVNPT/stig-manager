@@ -110,9 +110,16 @@ input:-webkit-autofill, select:-webkit-autofill, textarea:-webkit-autofill {
     background-color: hsl(0 0% 12% / 1)
 }
 
-.sm-round-inner-panel .x-panel-body {
+.sm-round-panel .sm-round-inner-panel .x-panel-body {
     background-color: #1a1d1e
 }
+.sm-round-panel .x-panel-body, .sm-round-panel.x-window {
+    background-color: #1a1d1e;
+}
+.sm-round-panel.x-window-dlg {
+	background-color: #1a1d1e;
+}
+
 
 .x-grid3-row-expanded .x-grid3-row-body {
     background-color: hsl(37deg 10% 23%)
@@ -669,7 +676,16 @@ td.x-date-mp-month a, td.x-date-mp-month a:hover, td.x-date-mp-year a, td.x-date
 }
 
 .x-layout-split {
-    background-color: transparent
+    background-color: transparent;
+    transition-property: background-color;
+    transition-duration: 100ms;
+    transition-delay: 0s;
+}
+
+.x-layout-split:hover {
+    background-color: #243385;
+    transition-duration: 100ms;
+    transition-delay: 0s;
 }
 
 .ext-strict .ext-ie6 .x-layout-split {
@@ -1176,14 +1192,6 @@ td.sort-asc .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.x-grid3-hd-men
     background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMiIgaGVpZ2h0PSIyMiI+PGRlZnM+PGZpbHRlciBpZD0iZGFya3JlYWRlci1pbWFnZS1maWx0ZXIiPjxmZUNvbG9yTWF0cml4IHR5cGU9Im1hdHJpeCIgdmFsdWVzPSIwLjMzMyAtMC42NjcgLTAuNjY3IDAuMDAwIDEuMDAwIC0wLjY2NyAwLjMzMyAtMC42NjcgMC4wMDAgMS4wMDAgLTAuNjY3IC0wLjY2NyAwLjMzMyAwLjAwMCAxLjAwMCAwLjAwMCAwLjAwMCAwLjAwMCAxLjAwMCAwLjAwMCIgLz48L2ZpbHRlcj48L2RlZnM+PGltYWdlIHdpZHRoPSIyIiBoZWlnaHQ9IjIyIiBmaWx0ZXI9InVybCgjZGFya3JlYWRlci1pbWFnZS1maWx0ZXIpIiB4bGluazpocmVmPSJkYXRhOmltYWdlL2dpZjtiYXNlNjQsUjBsR09EbGhBZ0FXQUxNQUFOcmEydWJtNXVYbDVlTGk0dDNkM2R2YjI5N2UzdC9mMzd5OHZPSGg0ZVRrNU9QajQrRGc0TnpjM0FBQUFBQUFBQ0g1QkFBQUFBQUFMQUFBQUFBQ0FCWUFBQVFZTU1ncHFsQnFyY0ZIU2d4empFWkpuRVJUckVEcklrZ0VBRHM9IiAvPjwvc3ZnPg==")
 }
 
-.sort-asc .x-grid3-sort-icon {
-    background-image: url("../ext/resources/images/gray/grid/sort_asc.gif")
-}
-
-.sort-desc .x-grid3-sort-icon {
-    background-image: url("../ext/resources/images/gray/grid/sort_desc.gif")
-}
-
 .x-grid3-cell-text, .x-grid3-hd-text {
     color: #e8e6e3
 }
@@ -1259,14 +1267,6 @@ td.sort-asc .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.x-grid3-hd-men
     background-color: #181a1b!important
 }
 
-.xg-hmenu-sort-asc .x-menu-item-icon {
-    background-image: url("../ext/resources/images/default/grid/hmenu-asc.gif")
-}
-
-.xg-hmenu-sort-desc .x-menu-item-icon {
-    background-image: url("../ext/resources/images/default/grid/hmenu-desc.gif")
-}
-
 .xg-hmenu-lock .x-menu-item-icon {
     background-image: url("../ext/resources/images/default/grid/hmenu-lock.gif")
 }
@@ -1313,10 +1313,6 @@ td.sort-asc .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.x-grid3-hd-men
 
 .x-group-by-icon {
     background-image: url("../ext/resources/images/default/grid/group-by.gif")
-}
-
-.x-cols-icon {
-    background-image: url("../ext/resources/images/default/grid/columns.gif")
 }
 
 .x-show-groups-icon {
@@ -2334,13 +2330,13 @@ td.sort-asc, td.sort-desc, td.x-grid3-hd-menu-open, td.x-grid3-hd-over {
 }
 
 .x-border-layout-ct {
-    background-color: hsl(211deg 25% 7%)
+    background-color: hsl(0 0% 8% / 1);
 }
 
-.sm-round-panel {
-    background-color: #181a1b
-}
-
+/* .sm-round-panel {
+    background-color: #276d90;
+} 
+ */
 .sm-round-panel .x-panel-header {
     background-color: #35393b;
     background-image: none
@@ -2350,7 +2346,7 @@ td.sort-asc, td.sort-desc, td.x-grid3-hd-menu-open, td.x-grid3-hd-over {
     background-color: hsl(200 5% 17% / 1)
 }
 
-.sm-home-widget-body {
+.sm-round-panel .sm-home-widget-body {
     background-color: #2b2e30
 }
 
@@ -3172,4 +3168,15 @@ embed[type="application/pdf"] {
 .sm-grabbing *, .sm-grabbing .sm-grid3-draggable .x-grid3-row-selected *, .sm-grabbing .sm-grid3-draggable .x-grid3-row-selected {
     cursor: url("../img/drag-drop-dark.svg"), grabbing;
 }
+.sm-appinfo-message {
+    background-color: #2d2d2d;
+    color: #999999;
+}
+.sm-render-zero {
+	color: #444444
+}
+.sm-whats-new img {
+  border: 1px solid hsl(0 0% 20% / 1)
+}
+
   

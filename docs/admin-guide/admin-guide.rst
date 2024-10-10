@@ -95,17 +95,55 @@ Use the buttons at the top to add new STIGS, delete entire STIGs or specific rev
 
 
 
+
+-------------------------
+
+.. _app-info:
+
+Application Info Panel
+------------------------------------
+
+
+This panel provides App Managers with a report on the current state, performance, and utilization of the STIGMan application.  
+
+The toolbar allows users to load and save report data files, as well as fetch a new report from the API. The "Save for sharing" button will download a .json file of the current report data with the option to replace specific deployment data such as Collection and User names with generated identifiers. 
+
+The report displays the data source, date, and STIG Manager version at the top. Report data is displayed in the following tabs:
+
+  - **Requests**: Information regarding the requests made to each API endpoint, organized by operationId. This data includes the count of requests, max duration, average duration, response length, error counts, and other useful metrics.  Endpoints with ``projection`` parameters will populate the "Projections" panel with a subset of these metrics. This report also indicates users and clients that made the requests, as well as counts of any error code responses.
+  - **Collections**: High level metrics about the size and state of all Collections, including "disabled" Collections and Assets, total Reviews, grants, etc. This report offers additional tabs reporting Grants, Labels, STIG Assignments, and Settings by Collection. The "Access Control Lists" panel lists users and applicable access control rules for users with limited access to the Collection, such as those with Restricted-type grants. 
+  - **Users**: A report of all users of the system, their privileges, grants, and last active date.  This report also includes panels summarizing overall user counts by privilege, and by last activity date (last 30/90 days).
+  - **MySQL**: Information about the managed data, configuration, and status of the MySQL database. 
+  - **NodeJs**: Information about the configuration of the STIGMan application, as well as status of the NodeJs server, including the version, uptime, and memory usage.
+  - **JSON Tree** : A tree view of the data that is available in the report. Equivalent to the contents of the .json file that can be downloaded with the "Save" button.
+
+
+.. note::
+   Help the STIG Manager team improve the application by sharing this report if you encounter issues or have suggestions for improvement. You can email the report to the team at RMF_Tools@us.navy.mil
+
+
+.. thumbnail:: /assets/images/admin-app-info.png
+      :width: 50% 
+      :show_caption: True
+      :title: Application Info Report
+
+
+|
+
+
 -------------------------
 
 .. _app-data:
 
-Application Info Panel
+Export/Import Data Panel
 ------------------------------------
-This panel allows App Managers to download a representation of all data STIGMan manages, minus the actual DISA Reference STIGs themselves.
-This same data can also be imported, but be aware that if data is moved to a different STIGMan instance, the destination instance must have all STIGs that were assigned to any Assets from the originating instance.
+
+This panel allows App Managers to download a representation of most of the data STIGMan manages, minus the actual DISA Reference STIGs themselves. This same data can also be imported, but be aware that ALL existing data in that STIGMan instance will be lost.  If this data is imported into a different STIGMan instance, the destination instance must have all STIGs that were assigned to any Assets from the originating instance.
+
+This feature must be enabled for the deployment by setting the ``STIGMAN_EXPERIMENTAL_APPDATA`` environment variable to ``true``. 
 
 .. warning::
-   This feature is considered Experimental! Use at your own risk, and rely on daily database backups to maintain your data!
+   This feature is considered Experimental! Use at your own risk, and rely on daily database backups to maintain your data!  ALL data in the destination instance will be replaced!
 
 .. thumbnail:: /assets/images/admin-app-data.png
       :width: 50% 

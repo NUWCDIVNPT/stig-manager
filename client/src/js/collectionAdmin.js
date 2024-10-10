@@ -75,7 +75,7 @@ function addCollectionAdmin( params ) {
 
   const collectionGrid = new Ext.grid.GridPanel({
     cls: 'sm-round-panel',
-    margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
+    // margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
     region: 'center',
     id: 'collectionGrid',
     store: store,
@@ -276,7 +276,7 @@ function addCollectionAdmin( params ) {
     iconCls: 'sm-collection-icon',
     title: 'Collections',
     closable: true,
-    layout: 'border',
+    layout: 'fit',
     border: false,
     items: [collectionGrid],
     listeners: {

@@ -173,16 +173,6 @@ The only changes that can be made to Users in the STIG Manager interface is thei
 -------------------------------
 
 
-Application Data
-===========================
-
-This Tab has buttons that allow you to Import and Export all User and Collection data from STIG Manager. These options are considered experimental and should not be relied upon to move or preserve Production data or other data you cannot afford to lose. On import, the imported data completely replaces all STIG Manager data currently on the system. Compatibility with future versions of STIG Manager is not guaranteed. They are currently used only for Development purposes. All that said, we are considering developing a method for handling the importation of STIG Manager Collection objects and their associated Assets, STIGs, Reviews, History, and Users.
-
-
-
-
-
-
 .. _automated-imports:
 
 Configure a Source of Automated Evaluations

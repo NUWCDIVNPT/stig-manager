@@ -193,6 +193,13 @@ const reference = {
       grantCount: 7,
       checklistCount: 6,
     },
+    appinfo: {
+      state: 'enabled',
+      assets: 4,
+      assetsDisabled: 1,
+      reviews: 17,
+      reviewsDisabled: 1
+    },
     labelsProjected: [
       {
         name: "test-label-full",

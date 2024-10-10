@@ -3031,6 +3031,24 @@ paths:
       security:
         - oauth:
             - stig-manager:op
+  /op/appinfo:
+    get:
+      tags:
+        - Operation
+      summary: Return information about the application deployment
+      operationId: getAppInfo
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      responses:
+        '200':
+          description: AppInfo response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppInfo'
+      security:
+        - oauth:
+            - stig-manager:op:read
   /op/configuration:
     get:
       tags:
@@ -3065,7 +3083,7 @@ paths:
     get:
       tags:
         - Operation
-      summary: Return deployment details
+      summary: "DEPRECATED: replaced by /op/appinfo"
       operationId: getDetails
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
@@ -3823,6 +3841,257 @@ components:
         - type: array
     ApiVersion:
       $ref: '#/components/schemas/Version'
+    AppInfo:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        schema:
+          $ref: '#/components/schemas/String255'
+        version:
+          $ref: '#/components/schemas/ApiVersion'
+        collections:
+          additionalProperties:
+            $ref: '#/components/schemas/AppInfoCollection'
+        requests:
+          $ref: '#/components/schemas/AppInfoRequests'
+        users:
+          $ref: '#/components/schemas/AppInfoUsers'
+        mysql:
+          $ref: '#/components/schemas/AppInfoMySql'
+        nodejs:
+          $ref: '#/components/schemas/AppInfoNodejs'
+      required:
+        - date
+        - schema
+        - version
+        - collections
+        - requests
+        - users
+        - mysql
+        - nodejs
+    AppInfoNodejs:
+      type: object
+      properties:
+        version:
+          $ref: '#/components/schemas/ApiVersion'
+        uptime:
+          type: number
+        os:
+          type: object
+          properties:
+            platform:
+              $ref: '#/components/schemas/String255'
+            arch:
+              $ref: '#/components/schemas/String255'
+            osMachine:
+              $ref: '#/components/schemas/String255'
+            osName:
+              $ref: '#/components/schemas/String255'
+            osRelease:
+              $ref: '#/components/schemas/String255'
+            loadAverage:
+              $ref: '#/components/schemas/String255'
+        environment:
+          additionalProperties:
+            type: string
+        memory:
+          type: object
+          properties:
+            rss:
+              type: number
+            heapTotal:
+              type: number
+            heapUsed:
+              type: number
+            external:
+              type: number
+            arrayBuffers:
+              type: number
+            maxRss:
+              type: number
+        cpus:
+          type: array
+          items:
+            type: object
+            properties:
+              model:
+                $ref: '#/components/schemas/String255'
+              speed:
+                type: number
+    AppInfoMySql:
+      type: object
+      properties:
+        version:
+          $ref: '#/components/schemas/ApiVersion'
+        tables:
+          type: object
+        variables:
+          type: object
+        status:
+          type: object
+    AppInfoUsers:
+      type: object
+      properties:
+        userInfo:
+          additionalProperties:
+            $ref: '#/components/schemas/AppInfoUserInfo'
+        userPrivilegeCounts:
+          type: object
+          properties:
+            overall:
+              additionalProperties:
+                type: number
+            activeInLast30Days:
+              additionalProperties:
+                type: number
+            activeInLast90Days:
+              additionalProperties:
+                type: number
+    AppInfoUserInfo:
+      type: object
+      properties:
+        username:
+          $ref: '#/components/schemas/Username'
+        created:
+          type: string
+          format: date-time
+        lastAccess:
+          type: number
+          nullable: true
+        privileges:
+          type: array
+          items:
+            $ref: '#/components/schemas/String255'
+    AppInfoRequests:
+      type: object
+      properties:
+        totalRequests:
+          type: number
+        totalApiRequests:
+          type: number
+        totalRequestDuration:
+          type: number
+        operationIds:
+          additionalProperties:
+            $ref: '#/components/schemas/AppInfoOperation'
+    AppInfoOperation:
+      type: object
+      properties:
+        totalRequests:
+          type: number
+        totalDuration:
+          type: number
+        elevatedRequests:
+          type: number
+        minDuration:
+          type: number
+        maxDuration:
+          type: number
+        maxDurationUpdates:
+          type: number
+        retried:
+          type: number
+        averageRetries:
+          type: number
+        totalResLength:
+          type: number
+        minResLength:
+          type: number
+        maxResLength:
+          type: number
+        totalReqLength:
+          type: number
+        minReqLength:
+          type: number
+        maxReqLength:
+          type: number
+        projections:
+          type: object
+        clients:
+          type: object
+          additionalProperties:
+            type: number
+        users:
+          type: object
+          additionalProperties:
+            type: number
+    AppInfoCollection:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/CollectionName'
+        state:
+          type: string
+          enum:
+            - enabled
+            - disabled
+        assetsTotal:
+          type: number
+        assetsDisabled:
+          type: number
+        uniqueStigs:
+          type: number
+        stigAssignments:
+          type: number
+        ruleCnt:
+          type: number
+        reviewCntTotal:
+          type: number
+        reviewCntDisabled:
+          type: number
+        assetStigRanges:
+          $ref: '#/components/schemas/AppInfoAssetStigRanges'
+        restrictedUsers:
+          type: object
+          additionalProperties: 
+            $ref: '#/components/schemas/AppInfoRestrictedUsers'
+        grantCounts:
+          $ref: '#/components/schemas/AppInfoGrantCounts'
+        labelCounts:
+          $ref: '#/components/schemas/AppInfoLabelCounts'
+    AppInfoLabelCounts:
+      type: object
+      properties:
+        collectionLabels:
+          type: number
+        labeledAssets:
+          type: number
+        assetLabels:
+          type: number
+    AppInfoGrantCounts:
+      type: object
+      properties:
+        accessLevel1:
+          type: number
+        accessLevel2:
+          type: number
+        accessLevel3:
+          type: number
+        accessLevel4:
+          type: number
+    AppInfoRestrictedUsers:
+      type: object
+      properties:
+        uniqueAssets:
+          type: number
+        stigAsstCount:
+          type: number
+    AppInfoAssetStigRanges:
+      type: object
+      properties:
+        range00:
+          type: number
+        range01to05:
+          type: number
+        range06to10:
+          type: number
+        range11to15:
+          type: number
+        range16plus:
+          type: number
+      
     Asset:
       additionalProperties: false
       type: object

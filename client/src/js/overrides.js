@@ -955,6 +955,46 @@ Ext.override(Ext.grid.GridView,{
         row.innerHTML = this.templates.rowInner.apply(rowParams);
         
         this.fireEvent('rowupdated', this, rowIndex, record);
+    },
+    renderHeaders : function() {
+      let colModel   = this.cm,
+          templates  = this.templates,
+          headerTpl  = templates.hcell,
+          properties = {},
+          colCount   = colModel.getColumnCount(),
+          last       = colCount - 1,
+          cells      = [],
+          i, cssCls;
+      
+      for (i = 0; i < colCount; i++) {
+          if (i == 0) {
+              cssCls = 'x-grid3-cell-first ';
+          } else {
+              cssCls = i == last ? 'x-grid3-cell-last ' : '';
+          }
+          
+          properties = {
+              id     : colModel.getColumnId(i),
+              value  : colModel.getColumnHeader(i) || '',
+              style  : this.getColumnStyle(i, true),
+              css    : cssCls,
+              tooltip: this.getColumnTooltip(i)
+          };
+          
+          if (colModel.config[i].align == 'right') {
+              // changed from framework default of 16px
+              properties.istyle = 'padding-right: 4px;';
+          } else {
+              delete properties.istyle;
+          }
+          
+          cells[i] = headerTpl.apply(properties);
+      }
+      
+      return templates.header.apply({
+          cells : cells.join(""),
+          tstyle: String.format("width: {0};", this.getTotalWidth())
+      });
     }
 })
 
