@@ -29,6 +29,7 @@ env:
   STIGMAN_SWAGGER_SERVER: http://localhost:64001/api
   STIGMAN_SWAGGER_REDIRECT: http://localhost:64001/api-docs/oauth2-redirect.html
   STIGMAN_DEV_RESPONSE_VALIDATION: logOnly
+  STIGMAN_EXPERIMENTAL_APPDATA: 'true'
   NODE_V8_COVERAGE: /home/runner/work/stig-manager/stig-manager/api/source/coverage/tmp/
 
 permissions:

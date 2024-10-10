@@ -7,7 +7,8 @@ const stylesheets = [
   'css/RowEditor.css',
   'css/jsonview.bundle.css',
   'css/diff2html.min.css',
-  'css/dark-mode.css'
+  'css/dark-mode.css',
+  'ext/ux/css/LockingGridView.css'
 ]
 
 const scripts = [

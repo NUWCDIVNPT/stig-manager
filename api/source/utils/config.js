@@ -1,6 +1,6 @@
 const package = require("../package.json")
 
-let config = {
+const config = {
     version: package.version,
     commit: {
         branch: process.env.COMMIT_BRANCH || 'na',
@@ -14,9 +14,7 @@ let config = {
         // Supported STIGMAN_DEV_RESPONSE_VALIDATION values: 
         // "logOnly" (logs failing response, but still sends them) 
         // "none"(no validation performed)
-        responseValidation: process.env.STIGMAN_DEV_RESPONSE_VALIDATION || "none",
-        obfuscateClientsInOptStats: process.env.STIGMAN_DEV_OPT_STATS_OBFUSCATE_CLIENTS || "true",
-
+        responseValidation: process.env.STIGMAN_DEV_RESPONSE_VALIDATION || "none"
     },
     client: {
         clientId: process.env.STIGMAN_CLIENT_ID || "stig-manager",
@@ -79,14 +77,17 @@ let config = {
             servicename: process.env.STIGMAN_JWT_SERVICENAME_CLAIM,
             name: process.env.STIGMAN_JWT_NAME_CLAIM || process.env.STIGMAN_JWT_USERNAME_CLAIM || "name",
             privileges: formatChain(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles"),
+            privilegesPath: process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles",
             email: process.env.STIGMAN_JWT_EMAIL_CLAIM || "email"
         }
     },
     log: {
         level: parseInt(process.env.STIGMAN_LOG_LEVEL) || 3,
         mode: process.env.STIGMAN_LOG_MODE || 'combined',
-        // if STIGMAN_DEV_OPT_STATS_IN_LOGS = true, add performance stats to logs:
-        optStats: process.env.STIGMAN_DEV_LOG_OPT_STATS || "false"
+        optStats: process.env.STIGMAN_DEV_LOG_OPT_STATS === "true"
+    },
+    experimental: {
+        appData: process.env.STIGMAN_EXPERIMENTAL_APPDATA === "true"
     }
 }
 

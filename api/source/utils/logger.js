@@ -32,11 +32,11 @@ const writeError = config.log.level >= 1 ? function writeError () {
 
 
 // Stats for all requests
-const overallOpStats = {
+const requestStats = {
   totalRequests: 0,
   totalApiRequests: 0,
   totalRequestDuration: 0,
-  operationIdStats: {}
+  operationIds: {}
 }
 
 // All messages to STDOUT are handled here
@@ -102,16 +102,20 @@ function requestLogger (req, res, next) {
   res._startTime = undefined
   res.svcStatus = {}
 
-  // Response body handling for privileged requests
-  let responseBody = undefined
-  if (req.query.elevate === true || req.query.elevate === 'true' ) {
-    responseBody = ''
-    const originalSend = res.send
-    res.send = function (chunk) {
-      responseBody += chunk
-      originalSend.apply(res, arguments)
-      res.end()
+  // Response body length for appinfo and content for privileged requests
+  let responseBody
+  res.sm_responseLength = 0
+  responseBody = ''
+  const originalSend = res.send
+  res.send = function (chunk) {
+    if (chunk !== undefined) {
+      if (req.query.elevate === true || req.query.elevate === 'true' ) {
+        responseBody += chunk
+      }
+      res.sm_responseLength += chunk.length || 0
     }
+    originalSend.apply(res, arguments)
+    res.end()
   }
 
   // record request start
@@ -124,12 +128,12 @@ function requestLogger (req, res, next) {
 
   function logResponse () {
     res._startTime = res._startTime ?? new Date()
-    overallOpStats.totalRequests += 1
+    requestStats.totalRequests += 1
     const durationMs = Number(res._startTime - req._startTime)
 
-    overallOpStats.totalRequestDuration += durationMs
+    requestStats.totalRequestDuration += durationMs
     const operationId = res.req.openapi?.schema.operationId
-    let operationalStats = {
+    let operationStats = {
       operationId,
       retries: res.svcStatus?.retries,
       durationMs
@@ -138,17 +142,16 @@ function requestLogger (req, res, next) {
     //if operationId is defined, this is an api endpoint response so we can track some stats
     if (operationId ) {
       trackOperationStats(operationId, durationMs, res)
-      // If including stats in log entries, add to operationalStats object
-      if (config.log.optStats === 'true') {
-        operationalStats = {
-          ...operationalStats,
-          ...overallOpStats.operationIdStats[operationId]
+      // If including stats in log entries, add to operationStats object
+      if (config.log.optStats) {
+        operationStats = {
+          ...operationStats,
+          ...requestStats.operationIds[operationId]
         }
       }
     }    
 
     if (config.log.mode === 'combined') {
-
       writeInfo(req.component || 'rest', 'transaction', {
         request: serializeRequest(res.req),
         response: {
@@ -159,7 +162,7 @@ function requestLogger (req, res, next) {
           errorBody: res.errorBody,
           responseBody,
         },
-        operationalStats
+        operationStats
       })  
     }
     else {
@@ -168,7 +171,7 @@ function requestLogger (req, res, next) {
         status: res.statusCode,
         headers: res.getHeaders(),
         errorBody: res.errorBody,
-        operationalStats
+        operationStats
       })  
     }
   }
@@ -181,7 +184,6 @@ function requestLogger (req, res, next) {
   next()
 }
 
-
 function serializeEnvironment () {
   let env = {}
   for (const [key, value] of Object.entries(process.env)) {
@@ -193,57 +195,99 @@ function serializeEnvironment () {
 }
 
 function trackOperationStats(operationId, durationMs, res) {
+
+  const acceptsRequestBody = (res.req.method === 'POST' || res.req.method === 'PUT' || res.req.method === 'PATCH')
+
   //increment total api requests
-  overallOpStats.totalApiRequests++
-  // Ensure the operationIdStats object exists for the operationId
-  if (!overallOpStats.operationIdStats[operationId]) {
-    overallOpStats.operationIdStats[operationId] = {
+  requestStats.totalApiRequests++
+  // Ensure the operationIds object exists for the operationId
+  if (!requestStats.operationIds[operationId]) {
+    requestStats.operationIds[operationId] = {
       totalRequests: 0,
       totalDuration: 0,
       elevatedRequests: 0,
       minDuration: Infinity,
       maxDuration: 0,
       maxDurationUpdates: 0,
-      get averageDuration() {
-        return this.totalRequests ? Math.round(this.totalDuration / this.totalRequests) : 0;
-      },
+      retried: 0,
+      averageRetries: 0,
+      totalResLength: 0,
+      minResLength: Infinity,
+      maxResLength: 0,
       clients: {},
       users: {},
-    };
+      errors: {}
+    }
+    if (acceptsRequestBody) {
+      requestStats.operationIds[operationId].totalReqLength = 0
+      requestStats.operationIds[operationId].minReqLength = Infinity
+      requestStats.operationIds[operationId].maxReqLength = 0
+    }
   }
-
 
   // Get the stats object for this operationId
-  const stats = overallOpStats.operationIdStats[operationId];
-  // Increment total requests and total duration for this operationId
-  stats.totalRequests++;
-  stats.totalDuration += durationMs;
+  const stats = requestStats.operationIds[operationId]
 
-  // Update min and max duration
-  stats.minDuration = Math.min(stats.minDuration, durationMs);
-  if (durationMs > stats.maxDuration) {
-    stats.maxDuration = durationMs;
-    stats.maxDurationUpdates++;
+  // errors
+  if (res.statusCode >= 500) {
+    const code = res.errorBody?.code || 'nocode'
+    stats.errors[code] = (stats.errors[code] || 0) + 1
   }
 
+  // Update max duration
+  stats.minDuration = Math.min(stats.minDuration, durationMs)
+  if (durationMs > stats.maxDuration) {
+    stats.maxDuration = durationMs
+    stats.maxDurationUpdates++
+  }
+
+  // Increment total requests and total duration for this operationId
+  stats.totalRequests++
+  stats.totalDuration += durationMs
+
+  stats.totalResLength += res.sm_responseLength
+  // Update max response length
+  stats.minResLength = Math.min(stats.minResLength, res.sm_responseLength)
+  if (res.sm_responseLength > stats.maxResLength) {
+    stats.maxResLength = res.sm_responseLength
+  }
+
+  if (acceptsRequestBody) {
+    const requestLength = parseInt(res.req.headers['content-length'] ?? '0')
+    stats.totalReqLength += requestLength
+    stats.minReqLength = Math.min(stats.minReqLength, requestLength)
+    if (requestLength > stats.maxReqLength) {
+      stats.maxReqLength = requestLength
+    }
+  }
+
+  // Update retries
+  if (res.svcStatus?.retries) {
+    stats.retried++
+    stats.averageRetries = runningAverage({
+      currentAvg: stats.averageRetries,
+      counter: stats.retried,
+      newValue: res.svcStatus.retries
+    })    
+  }
   // Check token for userid
-  let userId = res.req.userObject?.userId || 'unknown';
+  let userId = res.req.userObject?.userId || 'unknown'
   // Increment user count for this operationId
-  stats.users[userId] = (stats.users[userId] || 0) + 1;  
+  stats.users[userId] = (stats.users[userId] || 0) + 1  
 
   // Check token for client id
-  let client = res.req.access_token?.azp || 'unknown';
+  let client = res.req.access_token?.azp || 'unknown'
   // Increment client count for this operationId
-  stats.clients[client] = (stats.clients[client] || 0) + 1;
+  stats.clients[client] = (stats.clients[client] || 0) + 1
 
   // Increment elevated request count if elevate query param is true
   if (res.req.query?.elevate === true) {
-    stats.elevatedRequests = (stats.elevatedRequests || 0) + 1;
+    stats.elevatedRequests = (stats.elevatedRequests || 0) + 1
   }
 
   // If projections are defined, track stats for each projection
   if (res.req.query?.projection?.length > 0) {
-    stats.projections = stats.projections || {};
+    stats.projections = stats.projections || {}
     for (const projection of res.req.query.projection) {
       // Ensure the projection stats object exists
       stats.projections[projection] = stats.projections[projection] || {
@@ -251,20 +295,31 @@ function trackOperationStats(operationId, durationMs, res) {
         minDuration: Infinity,
         maxDuration: 0,
         totalDuration: 0,
+        retried: 0,
+        averageRetries: 0,
         get averageDuration() {
-          return this.totalRequests ? Math.round(this.totalDuration / this.totalRequests) : 0;
+          return this.totalRequests ? Math.round(this.totalDuration / this.totalRequests) : 0
         }        
-      };
+      }
 
-      const projStats = stats.projections[projection];
+      const projStats = stats.projections[projection]
       // Increment projection count and update duration stats
-      projStats.totalRequests++;
-      projStats.minDuration = Math.min(projStats.minDuration, durationMs);
-      projStats.maxDuration = Math.max(projStats.maxDuration, durationMs);
-      projStats.totalDuration += durationMs;
+      projStats.totalRequests++
+      projStats.minDuration = Math.min(projStats.minDuration, durationMs)
+      projStats.maxDuration = Math.max(projStats.maxDuration, durationMs)
+      projStats.totalDuration += durationMs
+      
+      // Update retries
+      if (res.svcStatus?.retries) {
+        projStats.retried++
+        projStats.averageRetries = projStats.averageRetries + (res.svcStatus.retries - projStats.averageRetries) / projStats.retried
+      }
     }
   }
 
+  function runningAverage({currentAvg, counter, newValue}) {
+    return currentAvg + (newValue - currentAvg) / counter
+  }
 }
 
 module.exports = { 
@@ -276,6 +331,5 @@ module.exports = {
   writeWarn, 
   writeInfo, 
   writeDebug,
-  overallOpStats
-
+  requestStats
 }
