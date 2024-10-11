@@ -55,6 +55,8 @@
 | The location of the documentation files, relative to the API source directory. Note that if running source from a clone of the GitHub repository, the docs are located at `../../docs/_build/html` relative to the API directory. ","API, documentation"
 "STIGMAN_DOCS_DISABLED","| **Default** ``false``
 | Whether to *not* serve the project Documentation.  NOTE: If you choose to serve the Client from the API container but not the Documentation, the links do the Docs on the home page will not work. ","Documentation                "
+"STIGMAN_EXPERIMENTAL_APPDATA","| **Default**  ``false``
+| Set to ``true`` to enable the experimental AppData import/export API endpoints and User Interface. ","API, Client"
 "STIGMAN_LOG_LEVEL","| **Default** ``3``
 | Controls the granularity of the generated log output, from 1 to 4. Each level is inclusive of the ones before it. Level 1 will log only errors, level 2 includes warnings, level 3 includes status and transaction logs, and level 4 includes debug-level logs","API"
 "STIGMAN_LOG_MODE","| **Default** ``combined``

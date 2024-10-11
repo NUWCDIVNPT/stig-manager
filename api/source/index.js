@@ -130,7 +130,7 @@ app.use((err, req, res, next) => {
     })
   }
   // Expose selected error properties in the response
-  res.errorBody = { error: err.message, detail: err.detail, stack: err.stack}
+  res.errorBody = { error: err.message, code: err.code, detail: err.detail, stack: err.stack}
   if (!res._headerSent) {
     res.status(err.status || 500).header(err.headers).json(res.errorBody)
   }
@@ -224,6 +224,9 @@ const STIGMAN = {
           privileges: "${config.oauth.claims.privileges}",
           email: "${config.oauth.claims.email}"
         }
+    },
+    experimental: {
+      appData: "${config.experimental.appData}"
     }
   }
 }    

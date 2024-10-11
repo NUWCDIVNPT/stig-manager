@@ -21,8 +21,8 @@ The JWT produced by the Identity Provider should provide the claims specified be
     * User Full Name - ``STIGMAN_JWT_NAME_CLAIM`` - (optional) **default:** ``name``
     * User Email - ``STIGMAN_JWT_EMAIL_CLAIM`` - (optional) **default:** ``email``
     * User Privileges - ``STIGMAN_JWT_PRIVILEGES_CLAIM`` - **default:** ``realm_access.roles``
-    * Scope - ``STIGMAN_JWT_SCOPE_CLAIM`` **default:** ``scope``. Some OIDC Providers (Okta, Azure AD) use the claim ``scp`` to enumerate scopes.
-    * Assertion ID - ``STIGMAN_JWT_ASSERTION_CLAIM`` **default** ``jti``. Some OIDC Providers (ADFS, Azure AD) use the claim ``nonce`` instead of ``jti`` to protect against replay attacks.
+    * Scope - ``STIGMAN_JWT_SCOPE_CLAIM`` **default:** ``scope``. Some OIDC Providers (Okta, Azure Entra ID) use the claim ``scp`` to enumerate scopes.
+    * Assertion ID - ``STIGMAN_JWT_ASSERTION_CLAIM`` **default** ``jti``. Some OIDC Providers (ADFS, Azure Entra ID?) use the claim ``uti`` instead of ``jti`` to protect against replay attacks.
 
 .. note::
   STIG Manager will use the value specified in the ``STIGMAN_JWT_USERNAME_CLAIM`` environment variable as the Claim that should hold a users unique username. This value defaults to the Keycloak default, which is ``preferred_username``
