@@ -1,4 +1,4 @@
-name: API Container Tests
+name: API containers
 on:
   workflow_dispatch:
   pull_request:
@@ -24,7 +24,7 @@ jobs:
 
   test_api:
     needs: fetch-mysql-versions
-    name: Mocha tests with ${{ matrix.container.name }} and MySQL ${{ matrix.mysql_version }}
+    name: ${{ matrix.container.name }} and MySQL ${{ matrix.mysql_version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
