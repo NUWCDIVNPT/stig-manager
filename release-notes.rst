@@ -1,3 +1,18 @@
+1.4.16
+-----
+
+Changes:
+
+  - (UI/API) feat: New enhanced Application Info report available to Application Managers
+  - (API) feat: support custom jwt assertion claim (#1401)
+  - (API) feat: handle ported MySQL version string when enforcing minimum version (#1398)
+  - (docs) Clarifications and updates
+  - (tests) New testing framework implemented with Mocha/Chai
+  - (API) chore: dependency updates
+  - (build) refactor: simplified workflow names
+  - (info) New contact information for Application Info and Security Policy reports: RMF_Tools@us.navy.mil
+  - **NOTE:** The "Experimental" Export/Import Data feature that used to share the "App Info" tab must now be enabled explicitly with an Environment Variable (`STIGMAN_EXPERIMENTAL_APPDATA=true`). When enabled, it will have its own node in the Application Management NavTree. See the documentation for more details.
+
 1.4.15
 -----
 
