@@ -21,7 +21,8 @@ The JWT produced by the Identity Provider should provide the claims specified be
     * User Full Name - ``STIGMAN_JWT_NAME_CLAIM`` - (optional) **default:** ``name``
     * User Email - ``STIGMAN_JWT_EMAIL_CLAIM`` - (optional) **default:** ``email``
     * User Privileges - ``STIGMAN_JWT_PRIVILEGES_CLAIM`` - **default:** ``realm_access.roles``
-    * scope - OIDC standard. Use ``STIGMAN_CLIENT_EXTRA_SCOPES`` to specify additional scopes the client should request. 
+    * Scope - ``STIGMAN_JWT_SCOPE_CLAIM`` **default:** ``scope``. Some OIDC Providers (Okta, Azure Entra ID) use the claim ``scp`` to enumerate scopes.
+    * Assertion ID - ``STIGMAN_JWT_ASSERTION_CLAIM`` **default** ``jti``. Some OIDC Providers (ADFS, Azure Entra ID?) use the claim ``uti`` instead of ``jti`` to protect against replay attacks.
 
 .. note::
   STIG Manager will use the value specified in the ``STIGMAN_JWT_USERNAME_CLAIM`` environment variable as the Claim that should hold a users unique username. This value defaults to the Keycloak default, which is ``preferred_username``
@@ -109,16 +110,15 @@ The **Roles** specified in the JWT map to Privileges in STIG Manager that allow 
 
 The **Scopes** specified in the JWT control access to API endpoints as specified in the OpenAPI spec.  See the :ref:`STIG Manager Client Scopes and Roles <oidc-scopes-table>` table below for a suggestion on how to allocate these scopes using OIDC roles, and more information. 
 
-
-
-.. note::
-  The information provided below is just one way to configure Keycloak to provide a JWT that will work with STIG Manager. Please make sure you configure Keycloak in accordance with your organization's Security Policy.
-
+If your OIDC Provider requires the STIG Manager Web App to request additional scopes when redirecting to the OIDC Provider, you can provide those as values to the envvar ``STIGMAN_CLIENT_EXTRA_SCOPES``. An example would be Okta, which requires the scope ``offline_access`` be requested in order to generate a refresh token.
 
 .. _keycloak:
 
 Authentication Example - RedHat Keycloak 19+
 -------------------------------------------------------
+
+.. note::
+  The information provided below is just one way to configure Keycloak to provide a JWT that will work with STIG Manager. Please make sure you configure Keycloak in accordance with your organization's Security Policy.
 
 The web client is an OpenID Connect (OIDC) OAuth2 Relying Party and the API is an OAuth2 Resource Server. User authentication is provided by an external Identity Provider (IdP). All API access is controlled by OAUth2 JSON Web Tokens (JWTs) issued by the IdP. User roles are extracted from token claims, endpoint access is controlled by token scope. 
 Keycloak is readily available, actively maintained by a major OSS vendor, supports Identity Brokering and User Federation, and is used by major DoD projects such as Air Force Iron Bank.

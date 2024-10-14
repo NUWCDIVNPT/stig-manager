@@ -16,7 +16,7 @@
 "STIGMAN_CLIENT_DISABLED","| **Default** ``false``
 | Whether to *not* serve the reference web client","Client"
 "STIGMAN_CLIENT_EXTRA_SCOPES","| **No default**
-| OAuth2 scopes to request in addition to ``stig-manager:stig`` ``stig-manager:stig:read`` ``stig-manager:collection`` ``stig-manager:user`` ``stig-manager:user:read`` ``stig-manager:op``. Some OIDC providers (Okta) generate a refresh token only if the scope ``offline_access`` is requested","Client"
+| A space separated list of OAuth2 scopes to request in addition to ``stig-manager:stig`` ``stig-manager:stig:read`` ``stig-manager:collection`` ``stig-manager:user`` ``stig-manager:user:read`` ``stig-manager:op``. Some OIDC providers (Okta) generate a refresh token only if the scope ``offline_access`` is requested","Client"
 "STIGMAN_CLIENT_ID","| **Default** ``stig-manager``
 | The OIDC clientId of the web client","Client"
 "STIGMAN_CLIENT_OIDC_PROVIDER","| **Default** Value of ``STIGMAN_OIDC_PROVIDER``
@@ -61,6 +61,8 @@
 | Controls the granularity of the generated log output, from 1 to 4. Each level is inclusive of the ones before it. Level 1 will log only errors, level 2 includes warnings, level 3 includes status and transaction logs, and level 4 includes debug-level logs","API"
 "STIGMAN_LOG_MODE","| **Default** ``combined``
 | Controls whether the logs will create one “combined” log entry for http requests that includes both the request and response information; or two separate log entries, one for the request and one for the response, that can be correlated via a generated Request GUID in each entry","API"
+"STIGMAN_JWT_ASSERTION_CLAIM","| **Default** ``jti``
+| The access token claim whose value is the OIDC provider's Assertion ID. Updates to this value trigger the API to update a User's ``lastClaims`` property. The claim MUST be a top-level claim and cannot be nested.","API"
 "STIGMAN_JWT_EMAIL_CLAIM","| **Default** ``email``
 | The access token claim whose value is the user's email address","API, Client"
 "STIGMAN_JWT_NAME_CLAIM","| **Default** ``name``
