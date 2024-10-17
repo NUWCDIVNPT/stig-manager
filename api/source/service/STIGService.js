@@ -654,7 +654,7 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
         binds: []
       },
       revGroupRuleCciMap: {
-        sql: `INSERT INTO rev_group_rule_cci_map (rgrId, cci)
+        sql: `INSERT IGNORE INTO rev_group_rule_cci_map (rgrId, cci)
           SELECT 
             rgr.rgrId,
             tt.cci
