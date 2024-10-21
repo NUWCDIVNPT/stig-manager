@@ -3022,9 +3022,9 @@ paths:
         '200':
           description: Import successful
           content:
-            application/json:
+            application/jsonl:
               schema:
-                type: object
+                type: string
         default:
           description: unexpected error
           content:
