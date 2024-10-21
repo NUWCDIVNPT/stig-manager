@@ -67,7 +67,7 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
       chunks.push(chunk)
     }
     const buffer = Buffer.concat(chunks)
-    res.setHeader('Content-Type', 'text/jsonl; charset=utf-8')
+    res.setHeader('Content-Type', 'application/jsonl; charset=utf-8')
     res.setHeader('Transfer-Encoding', 'chunked')
     req.noCompression = true
     await OperationService.replaceAppData(buffer, req.headers['content-type'], progressCb )
