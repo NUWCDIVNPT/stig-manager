@@ -2,8 +2,14 @@
 const dbUtils = require('./utils')
 const config = require('../utils/config')
 const logger = require('../utils/logger')
+const BJSON = require('../utils/buffer-json')
+const { Readable, Transform } = require("node:stream")
+const { pipeline } = require("node:stream/promises")
+const zlib = require("node:zlib")
 const klona = require('../utils/klona')
 const os = require('node:os')
+const Umzug = require('umzug')
+const path = require('path')
 
 /**
  * Return version information
@@ -11,539 +17,451 @@ const os = require('node:os')
  * returns ApiVersion
  **/
 exports.getConfiguration = async function() {
-  try {
-    let sql = `SELECT * from config`
-    let [rows] = await dbUtils.pool.query(sql)
-    let config = {}
-    for (const row of rows) {
-      config[row.key] = row.value
-    }
-    return (config)
+  const sql = `SELECT * from config`
+  const [rows] = await dbUtils.pool.query(sql)
+  const config = {}
+  for (const row of rows) {
+    config[row.key] = row.value
   }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  return (config)
 }
 
 exports.setConfigurationItem = async function (key, value) {
-  try {
-    let sql = 'INSERT INTO config (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)'
-    await dbUtils.pool.query(sql, [key, value])
-    return (true)
-  }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
-
+  const sql = 'INSERT INTO config (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)'
+  await dbUtils.pool.query(sql, [key, value])
+  return (true)
 }
 
-exports.replaceAppData = async function (importOpts, appData, userObject, res ) {
-  function queriesFromBenchmarkData(appdata) {
-    let {collections, assets, users, reviews} = appdata
+/**
+ * getAppData - streams JSONL records to the response. The JSONL are either
+ * data records from a MySQL table (always an array) or metadata records (always an object).
+ * 
+ * @param {import('express').Response} res express response
+ * @returns {undefined}
+ * @example Abbreviated example of JSONL which is streamed to the response:
+ *  {"version":"1.4.13","commit":{"branch":"na","sha":"na","tag":"na","describe":"na"},"date":"2024-08-18T15:29:16.784Z","lastMigration":33}\n
+    {"tables":[{"table":"stig","rowCount":4}, ... ], "totalRows": 4}\n
+    {"table":"stig","columns":"`benchmarkId`, `title`","rowCount":4}\n
+    ["RHEL_7_STIG_TEST","Red Hat Enterprise Linux 7 Security Technical Implementation Guide"]\n
+    ["VPN_SRG_TEST","Virtual Private Network (VPN) Security Requirements Guide"]\n
+    ["VPN_SRG_Rule-fingerprint-match-test","Virtual Private Network (VPN) Security Requirements Guide - replaced"]\n
+    ["Windows_10_STIG_TEST","Windows 10 Security Technical Implementation Guide"]\n ...
+ */
+exports.getAppData = async function (res, format) {
+  /** @type {string[]} tables to exclude from the appdata file */
+  const excludedTables = [
+    '_migrations', 
+    'status', 
+    'result',
+    'severity_cat_map', 
+    'cci', 
+    'cci_reference_map', 
+    'config'
+  ]
 
-    const tempFlag = true
-    const ddl = {
-      tempReview: {
-        drop: 'drop table if exists temp_review',
-        create: `CREATE${tempFlag ? ' TEMPORARY' : ''} TABLE temp_review (
-          assetId INT,
-          ruleId VARCHAR(45),
-          resultId INT,
-          detail MEDIUMTEXT,
-          comment MEDIUMTEXT,
-          userId INT,
-          autoResult INT,
-          ts DATETIME,
-          statusId INT,
-          statusText VARCHAR(511),
-          statusUserId INT,
-          statusTs DATETIME,
-          metadata JSON,
-          resultEngine JSON
-        )`
-      }
-    }
-    let dml = {
-      preload: [
-      ],
-      postload: [
-      ],
-      collection: {
-        sqlDelete: `DELETE FROM collection`,
-        sqlInsert: `INSERT INTO
-        collection (
-          collectionId,
-          name,
-          settings,
-          metadata 
-        ) VALUES ?`,
-        insertBinds: []
-      },
-      collectionLabel: {
-        sqlDelete: `DELETE FROM collection_label`,
-        sqlInsert: `INSERT INTO
-        collection_label (
-          collectionId,
-          name,
-          description,
-          color,
-          uuid
-        ) VALUES ?`,
-        insertBinds: []
-      },
-      userData: {
-        sqlDelete: `DELETE FROM user_data`,
-        sqlInsert: `INSERT INTO
-        user_data (
-          userId,
-          username, 
-          lastAccess,
-          lastClaims
-        ) VALUES ?`,
-        insertBinds: []
-      },
-      collectionGrant: {
-        sqlDelete: `DELETE FROM collection_grant`,
-        sqlInsert: `INSERT INTO
-        collection_grant (
-          collectionId,
-          userId,
-          accessLevel
-        ) VALUES ?`,
-        insertBinds: []
-      },
-      collectionPins: {
-        sqlDelete: `DELETE FROM collection_rev_map`,
-        sqlInsert: `INSERT INTO
-        collection_rev_map (
-          collectionId,
-          benchmarkId,
-          revId
-        ) VALUES ?`,
-        insertBinds: []
-      },      
-      asset: {
-        sqlDelete: `DELETE FROM asset`,
-        sqlInsert: `INSERT INTO asset (
-          assetId,
-          collectionId,
-          name,
-          description,
-          ip,
-          noncomputing,
-          metadata
-        ) VALUES ?`,
-        insertBinds: []
-      },
-      assetLabel: {
-        sqlDelete: `DELETE FROM collection_label_asset_map`,
-        sqlInsert: `INSERT INTO collection_label_asset_map (
-          assetId,
-          clId
-        ) 
-        SELECT
-          jt.assetId,
-          cl.clId
-        FROM
-          JSON_TABLE(
-            ?,
-            '$[*]' COLUMNS(
-              assetId INT PATH '$.assetId',
-              collectionId INT PATH '$.collectionId',
-              NESTED PATH '$.labelIds[*]' COLUMNS ( labelId VARCHAR(36) PATH '$')
-            )
-          ) as jt
-          INNER JOIN collection_label cl on cl.collectionId = jt.collectionId and cl.uuid = UUID_TO_BIN(jt.labelId,1)`,
-        insertBinds: []
-      },
-      stigAssetMap: {
-        sqlDelete: `DELETE FROM stig_asset_map`,
-        sqlInsert: `INSERT INTO stig_asset_map (
-          assetId,
-          benchmarkId,
-          userIds
-        ) VALUES ?`,
-        insertBinds: []
-      },
-      userStigAssetMap: {
-        sqlDelete: `DELETE FROM user_stig_asset_map`,
-        sqlInsert: `INSERT INTO user_stig_asset_map
-        (saId, userId)
-        SELECT
-        sa.saId,
-        jt.userId
-        FROM
-        stig_asset_map sa,
-          JSON_TABLE(
-            sa.userIds,
-            "$[*]"
-            COLUMNS(
-              userId INT(11) PATH "$"
-            )
-          ) AS jt`,
-        insertBinds: [null] // dummy value so length > 0
-      },
-      reviewHistory: {
-        sqlDelete: `DELETE FROM review_history`,
-        sqlInsert: `INSERT INTO review_history (
-            reviewId,
-            ruleId,
-            resultId,
-            detail,
-            comment,
-            autoResult,
-            ts,
-            userId,
-            statusId,
-            statusText,
-            statusUserId,
-            statusTs,
-            touchTs
-          )
-          SELECT
-            r.reviewId,
-            jt.ruleId,
-            jt.resultId,
-            jt.detail,
-            jt.comment,
-            jt.autoResult,
-            jt.ts,
-            jt.userId,
-            jt.statusId,
-            jt.statusText,
-            jt.statusUserId,
-            jt.statusTs,
-            jt.touchTs
-          FROM
-            JSON_TABLE(
-              ?,
-              "$[*]"
-              COLUMNS(
-                assetId INT PATH "$.assetId",
-                ruleId VARCHAR(45) PATH "$.ruleId",
-                resultId INT PATH "$.resultId",
-                detail MEDIUMTEXT PATH "$.detail",
-                comment MEDIUMTEXT PATH "$.comment",
-                autoResult INT PATH "$.autoResult",
-                ts DATETIME PATH "$.ts",
-                userId INT PATH "$.userId",
-                statusId INT PATH "$.statusId",
-                statusText VARCHAR(511) PATH "$.statusText",
-                statusUserId INT PATH "$.statusUserId",
-                statusTs DATETIME PATH "$.statusTs",
-                touchTs DATETIME PATH "$.touchTs",
-                resultEngine JSON PATH "$.resultEngine"
-              )
-            ) as jt
-            LEFT JOIN rule_version_check_digest rvcd ON jt.ruleId = rvcd.ruleId
-            LEFT JOIN review r ON (jt.assetId = r.assetId and rvcd.version = r.version and rvcd.checkDigest = r.checkDigest)`,
-        insertBinds: []
-      },
-      tempReview: {
-        sqlInsert: `INSERT IGNORE INTO temp_review(
-          assetId,
-          ruleId,
-          resultId,
-          detail,
-          comment,
-          userId,
-          autoResult,
-          ts,
-          statusId,
-          statusText,
-          statusUserId,
-          statusTs,
-          metadata,
-          resultEngine
-        ) VALUES ?`,
-        insertBinds: []
-      },
-      review: {
-        sqlDelete: `TRUNCATE review`,
-        sqlInsert: `INSERT IGNORE INTO review (
-          assetId,
-          ruleId,
-          \`version\`,
-          checkDigest,
-          resultId,
-          detail,
-          comment,
-          userId,
-          autoResult,
-          ts,
-          statusText,
-          statusUserId,
-          statusId,
-          statusTs,
-          metadata,
-          resultEngine
-        )
-        SELECT 
-          jt.assetId,
-          jt.ruleId,
-          rvcd.version,
-          rvcd.checkDigest,
-          jt.resultId,
-          jt.detail,
-          jt.comment,
-          jt.userId,
-          jt.autoResult,
-          jt.ts,
-          jt.statusText,
-          jt.statusUserId,
-          jt.statusId,
-          jt.statusTs,
-          jt.metadata,
-          jt.resultEngine
-        FROM
-        temp_review jt
-        LEFT JOIN rule_version_check_digest rvcd ON (jt.ruleId = rvcd.ruleId)`,
-        insertBinds: [null] // dummy value so length > 0
-      }
-    }
+  let sink
+  if (format === 'gzip') {
+    /** @type {zlib.Gzip} transform stream to compress JSONL records and write to the response */
+    sink = zlib.createGzip()
+    sink.pipe(res)
+  }
+  else {
+    /** @type {http.ServerResponse} */
+    sink = res
+  }
+  sink.setMaxListeners(Infinity)
 
-    // Process appdata object
 
-    // Table: user_data
-    for (const u of users) {
-      dml.userData.insertBinds.push([
-        parseInt(u.userId) || null,
-        u.username, 
-        u.statistics.lastAccess,
-        JSON.stringify(u.statistics.lastClaims)
-      ])
-    }
-    
-    // Tables: collection, collection_grant_map, collection_label
-    for (const c of collections) {
-      dml.collection.insertBinds.push([
-        parseInt(c.collectionId) || null,
-        c.name,
-        JSON.stringify(c.settings),
-        JSON.stringify(c.metadata)
-      ])
-      for (const grant of c.grants) {
-        dml.collectionGrant.insertBinds.push([
-          parseInt(c.collectionId) || null,
-          parseInt(grant.userId) || null,
-          grant.accessLevel
-        ])
-      }
-      for (const label of c.labels) {
-        dml.collectionLabel.insertBinds.push([
-          parseInt(c.collectionId),
-          label.name,
-          label.description,
-          label.color,
-          dbUtils.uuidToSqlString(label.labelId)
-        ])
-      }
-        for (const pin of c.stigs ?? []) {
-          if (pin.revisionPinned){
-            const {version, release} = dbUtils.parseRevisionStr(pin.revisionStr)
-            dml.collectionPins.insertBinds.push([
-              parseInt(c.collectionId),
-              pin.benchmarkId,
-              pin.benchmarkId + "-" + version + "-" + release
-            ])
-          }
+  // Write metadata record {version, commit, date, lastMigration}
+  const {version, commit, lastMigration} = config
+  sink.write(JSON.stringify({version, commit, date: new Date(), lastMigration}) + '\n')
+   
+  // Execute SQL to retrieve a list of tables and their non-generated columns. The query binds
+  // to the schema name and the excluded tables.
+  /** @type {Array.<Array.<{table:string, columns:string[]}>} */
+  const [tableRows] = await dbUtils.pool.query(`SELECT
+    TABLE_NAME as \`table\`,
+    json_arrayagg(CONCAT('\`',COLUMN_NAME,'\`')) as columns
+  FROM
+    INFORMATION_SCHEMA.COLUMNS 
+  where
+    TABLE_SCHEMA=? 
+    and TABLE_NAME IN (select TABLE_NAME FROM INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA=? and TABLE_TYPE='BASE TABLE')
+    and TABLE_NAME not in (?)
+    and EXTRA NOT LIKE '% GENERATED'
+  group by
+    TABLE_NAME`, [config.database.schema, config.database.schema, excludedTables])
+
+  /**
+   * @type {Object.<string, {columns:string, rowCount?:number}>} object pivoted from tableRows[]
+   * @example
+   * '{
+        "asset": {
+          "columns": "`assetId`,`name`,`fqdn`, ... "
+        },
+        "check_content": {
+          "columns": "`ccId`,`content`"
+        },
+        "collection": {
+          "columns": "`collectionId`,`name`,`description`, ... "
         }
-    }
+      }'
+   */
+  const tableMetadata = tableRows.reduce((acc, value) => {
+    acc[value.table] = {columns:value.columns.join(',')}
+    return acc
+  }, {})
 
-    // Tables: asset, collection_label_asset_maps, stig_asset_map, user_stig_asset_map
-    const assetLabels = []
-    for (const asset of assets) {
-      let { stigGrants, labelIds, ...assetFields} = asset
-      dml.asset.insertBinds.push([
-        parseInt(assetFields.assetId) || null,
-        parseInt(assetFields.collectionId) || null,
-        assetFields.name,
-        assetFields.description,
-        assetFields.ip,
-        assetFields.noncomputing ? 1: 0,
-        JSON.stringify(assetFields.metadata)
-      ])
-      let assetId = assetFields.assetId
-      for (const sr of stigGrants) {
-        sr.userIds = sr.userIds.map( u => parseInt(u))
-        dml.stigAssetMap.insertBinds.push([
-          parseInt(assetId) || null,
-          sr.benchmarkId,
-          JSON.stringify(sr.userIds)
-        ])
-      }
-      if (labelIds?.length > 0) {
-        assetLabels.push({
-          assetId: parseInt(assetFields.assetId),
-          collectionId: parseInt(assetFields.collectionId),
-          labelIds
-        })  
-      }
-    }
-    dml.assetLabel.insertBinds.push(JSON.stringify(assetLabels))
 
-    // Tables: review, review_history
-    const historyRecords = []
-    for (const review of reviews) {
-      for (const h of review.history) {
-        historyRecords.push({
-          assetId: parseInt(review.assetId),
-          ruleId: review.ruleId,
-          resultId: dbUtils.REVIEW_RESULT_API[h.result],
-          detail: h.detail,
-          comment: h.comment,
-          autoResult: h.autoResult ? 1 : 0,
-          ts: new Date(h.ts),
-          userId: parseInt(h.userId),
-          statusId: dbUtils.REVIEW_STATUS_API[h.status.label],
-          statusText: h.statusText,
-          statusUserId: parseInt(h.status.userId ?? h.status.user?.userId),
-          statusTs: new Date(h.status.ts),
-          touchTs: new Date(h.touchTs),
-          resultEngine: JSON.stringify(h.resultEngine)
-        })
-      }
-      dml.tempReview.insertBinds.push([
-        parseInt(review.assetId),
-        review.ruleId,
-        dbUtils.REVIEW_RESULT_API[review.result],
-        review.detail,
-        review.comment,
-        parseInt(review.userId),
-        review.autoResult ? 1 : 0,
-        new Date(review.ts),
-        dbUtils.REVIEW_STATUS_API[review.status?.label],
-        review.status?.text,
-        parseInt(review.status.userId ?? review.status.user?.userId),
-        new Date(review.status?.ts),
-        JSON.stringify(review.metadata || {}),
-        review.resultEngine ? JSON.stringify(review.resultEngine) : null
-      ])
-    }
-    dml.reviewHistory.insertBinds = JSON.stringify(historyRecords)
-    return {ddl, dml}
+  /** @type {string[]} */
+  const tableNames = Object.keys(tableMetadata)
+
+  /** @type {number} incremented by the row count of each table */
+  let totalRows = 0
+
+  /** @type {{table:string, rowCount:number}[]} */
+  let tables = []
+
+  // Select and handle the row count for each table. 
+  for (const table of tableNames) {
+    const [row] = await dbUtils.pool.query(`select count(*) as cnt from ${table}`)
+    const rowCount = row[0].cnt
+    tableMetadata[table].rowCount = rowCount
+    tables.push({table, rowCount})
+    totalRows += rowCount
   }
 
-  let connection
-  try {
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-    res.setHeader('Transfer-Encoding', 'chunked')
-    res.write('Starting import\n')
-    let result, hrstart, hrend, tableOrder, stats = {}
-    let totalstart = process.hrtime() 
+  // Write metadata record {tables, totalRows}
+  sink.write(JSON.stringify({tables, totalRows}) + '\n')
 
-    hrstart = process.hrtime() 
-    // dml = dmlObjectFromAppData(appData)
-    const {ddl, dml} = queriesFromBenchmarkData(appData)
-    hrend = process.hrtime(hrstart)
-    stats.dmlObject = `Built in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-    res.write('Parsed appdata\n')
+  for (const table of tableNames) {
+    // create readable stream using the non-promise interface of dbUtils.pool.pool
+    // select all rows for non-generated columns in table
+    // perform custom type casting of fields to JS
+    /** @type {Readable} */
+    const queryStream = dbUtils.pool.pool.query({
+      sql: `select ${tableMetadata[table].columns} from ${table}`,
+      rowsAsArray: true,
+      typeCast: function (field, next) {
+         // BIT fields returned as boolean
+        if ((field.type === "BIT") && (field.length === 1)) {
+          let bytes = field.buffer() || [0]
+          return (bytes[0] === 1)
+        }
+         // Designated fields returned as original MySQL strings
+        if (field.type === 'JSON' || field.type === 'DATETIME' || field.type === 'DATE') {
+          return (field.string("utf8"))
+        }
+        return next()
+      }
+     }).stream()
 
-    // Connect to MySQL
-    connection = await dbUtils.pool.getConnection()
-    await connection.query('SET FOREIGN_KEY_CHECKS=0')
+    // Write metadata record {table, columns, rowCount}
+    sink.write(JSON.stringify({table, ...tableMetadata[table]}) + '\n')
 
-    // create temporary tables
-    for (const tempTable of Object.keys(ddl)) {
-      await connection.query(ddl[tempTable].drop)
-      await connection.query(ddl[tempTable].create)
-    }
+    /** @type {Transform} writes a JSONL data record for each tuple of row data*/
+    const bjson = new Transform({
+      objectMode: true,
+      transform: (data, encoding, cb) => {
+        // BSJON supports stringify() and parse() of Buffer values
+        cb(null, BJSON.stringify(data) + '\n')
+      }
+    })
 
-    // Deletes
-    tableOrder = [
-      'reviewHistory',
-      'review',
-      'userStigAssetMap',
-      'stigAssetMap',
-      'collectionGrant',
-      'assetLabel',
-      'collectionLabel',
-      'collectionPins',
-      'collection',
-      'asset',
-      'userData',
-    ]
-    for (const table of tableOrder) {
-      res.write(`Deleting: ${table}\n`)
-      hrstart = process.hrtime() 
-      ;[result] = await connection.query(dml[table].sqlDelete)
-      hrend = process.hrtime(hrstart)
-      stats[table] = {}
-      stats[table].delete = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-    }
+    // pipeline writes data records [field, field, ...] to sink, ends without closing sink
+    await pipeline(queryStream, bjson, sink, { end: false })
+  }
 
-    // Inserts
+  // ending sink will also end the response
+  sink.end()
+}
 
+exports.getAppDataTables = async function () {
+  const sql = `SELECT
+    TABLE_NAME as name,
+    TABLE_ROWS as \`rows\`,
+    DATA_LENGTH as dataLength
+  FROM
+    information_schema.TABLES
+  WHERE
+    TABLE_SCHEMA=? and TABLE_TYPE='BASE TABLE'
+  ORDER BY
+    TABLE_NAME`
+  const [rows] = await dbUtils.pool.query(sql, [config.database.schema])
+  return (rows)
+}
+
+/**
+ * replaceAppData - process a file created by getAppData() and execute SQL queries with progress messages
+ * 
+ * @param {Buffer} buffer - buffer with file content
+ * @param {function(Object)} progressCb - optional, argument is an object with progress status
+ * @returns {Promise} promise
+ */
+exports.replaceAppData = async function (buffer, contentType, progressCb = () => {}) {
+  /**
+   * ParseJSONLStream - Transform chunks of JSONL records into individual parsed AppData records (N:1).
+   * @extends Transform
+   */
   
-    tableOrder = [
-      'userData',
-      'collection',
-      'collectionLabel',
-      'collectionGrant',
-      'asset',
-      'assetLabel',
-      'stigAssetMap',
-      'userStigAssetMap',
-      'tempReview',
-      'review',
-      'reviewHistory'
-    ]
-
-    if (dml.collectionPins?.insertBinds?.length > 0) {
-      tableOrder.push('collectionPins')
+  /** @type {boolean} needsMigrations - indicates if migrations are required */
+  let needsMigrations = false
+  class ParseJSONLStream extends Transform {
+    /**
+     * @param {Object} param
+     * @param {function(string):any} param.jsonParser - function for JSON parsing, default JSON.parse()
+     * @param {string} param.separator - character separating JSONL records, default '\n'
+     */
+    constructor({jsonParser = JSON.parse, separator = '\n'} = {}) {
+      super({objectMode: true})
+      Object.assign(this, {separator, jsonParser})
+  
+      /** @type {RegExp} RegExp for .split() that includes any trailing separator */
+      this.splitRegExp = new RegExp(`(?<=${separator})`)
+  
+      /** @type {string} holds incoming chunk prefaced by any partial record from previous transform */
+      this.buffer = '' 
     }
 
-    stats.tempReview = {}
-    await connection.query('SET FOREIGN_KEY_CHECKS=1')
-    for (const table of tableOrder) {
-      if (dml[table].insertBinds.length > 0) {
-        hrstart = process.hrtime()
-        if (typeof dml[table].insertBinds === 'string') { // reviewHistory
-          ;[result] = await connection.query(dml[table].sqlInsert, [dml[table].insertBinds])
+    /**
+     * @param {Buffer} chunk - buffer from Gunzip that can span multiple JSONL records
+     * @param {string} encoding - usually 'utf8'
+     * @param {function()} cb - signals completion
+     */
+    _transform(chunk, encoding, cb) {
+      this.buffer += chunk.toString(encoding)
+      
+      /** @type {string[]} list of JSONL, last item might be truncated or partial */
+      const candidates = this.buffer.split(this.splitRegExp)
+      /** @type {number} index of last candidates[] item */
+      const lastIndex = candidates.length - 1
+
+      // clear buffer for the next _transform() or _flush()
+      this.buffer = ''
+  
+      /** index @type {number} */
+      /** candidate @type {string} */
+      for (const [index, candidate] of candidates.entries()) {
+        if (index === lastIndex && !candidate.endsWith(this.separator)) {
+          // this is the last candidate and there's no trailing separator
+          // initialize buffer for next _transform() or _flush()
+          this.buffer = candidate
         }
         else {
-          let i, j, bindchunk, chunk = 5000
-          for (i=0,j=dml[table].insertBinds.length; i<j; i+=chunk) {
-            res.write(`Inserting: ${table} chunk: ${i}\n`)
-            bindchunk = dml[table].insertBinds.slice(i,i+chunk)
-            ;[result] = await connection.query(dml[table].sqlInsert, [bindchunk])
-          } 
+          try {
+            // if parsable, write parsed value
+            this.push(this.jsonParser(candidate))
+          }
+          // swallow any parse error
+          catch {}
         }
-        hrend = process.hrtime(hrstart)
-        stats[table].insert = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
+      }
+      cb()
+    }
+    /** @param {function()} cb signals completion */
+    _flush(cb) {
+      try {
+        // if what's left in the buffer is parsable, write parsed value
+        if (this.buffer) this.push(this.jsonParser(this.buffer))
+      }
+      // swallow any parse error
+      catch {}
+      cb()
+    }
+  }
+
+  /**
+   * AppDataQueryStream - Transform AppData records into an SQL query object (N:1)
+   * @extends Transform
+   */
+  class AppDataQueryStream extends Transform {
+    /**
+     * @param {Object} param
+     * @param {number} param.maxValues - maximum number of values for an insert query.
+     * @param {function(Object): any} param.onTablesFn - called when record {tables, ...} is read
+     * @param {function(Object): any} param.onMigrationFn - called when record {..., lastMigration} is read
+     */
+    constructor({maxValues = 10000, onTablesFn = new Function(), onMigrationFn = async function () {}}) {
+      super({objectMode: true})
+      Object.assign(this, { maxValues, onTablesFn, onMigrationFn })
+      
+      /** @type {null|Object} the last metadata record encountered */
+      this.currentMetadata = null
+      
+      /** @type {Array} values for an insert query */
+      this.currentBinds = []
+    }
+
+    /**
+     * @param {Buffer} chunk a single AppData record
+     * @param {string} encoding usually 'utf8'
+     * @param {function()} cb signals completion
+     */
+    async _transform(chunk, encoding, cb) {
+      if (Array.isArray(chunk)) {
+        this.currentBinds.push(chunk)
+        if (this.currentBinds.length === this.maxValues || this.currentBinds.length === 0) {
+          this.push(this.formatCurrentQuery())
+          this.currentBinds = []
+        }
+      }
+      else if (chunk.lastMigration) {
+        try {
+          await this.onMigrationFn(chunk)
+        }
+        catch (e) {
+          cb(e)
+          return
+        }
+      }
+      else if (chunk.table){
+        if (this.currentMetadata) { 
+          this.push(this.formatCurrentQuery())
+        }
+        this.currentMetadata = chunk
+        this.currentBinds = []
+        this.push(this.formatCurrentQuery())
+      }
+      else if (chunk.tables) {
+        try {
+          this.onTablesFn(chunk)
+        }
+        catch (e) {
+          cb(e)
+          return
+        }
+      }
+      else {
+        this.currentMetadata = null
+      }
+      cb()
+    }
+    
+    /** @param {function()} cb signals completion */
+    _flush(cb) {
+      this.push(this.formatCurrentQuery())
+      cb()
+    }
+
+    /** 
+     * Creates an object with an SQL insert or truncate statement that operates
+     * on the current table and any current binds
+     * @returns {{table:string, sql:string, valueCount:number}} */
+    formatCurrentQuery() {
+      const sqlInsert = this.currentBinds.length
+        ? `insert into ${this.currentMetadata.table}(${this.currentMetadata.columns}) values ?`
+        : `truncate ${this.currentMetadata.table}`
+      return {
+        table: this.currentMetadata.table,
+        sql: dbUtils.pool.format(sqlInsert, [this.currentBinds]),
+        valueCount: this.currentBinds.length
       }
     }
-    res.write(`Commit successful\n`)
+  }
 
-        // Stats
-        res.write('Calculating status statistics\n')
-        hrstart = process.hrtime()
-        let statsConn = await dbUtils.pool.getConnection()
-        await dbUtils.updateDefaultRev( statsConn, {} )
-        const statusStats = await dbUtils.updateStatsAssetStig( statsConn, {} )
-        await statsConn.release()
-        hrend = process.hrtime(hrstart)
-        stats.stats = `${statusStats.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-    
+  /** 
+   * @param {any} record expected to be AppData metadata {..., lastMigration}
+   * @returns {undefined}
+   * @throws {Error}
+   */
+  async function onMigrationFn(record) {
+    if (record.lastMigration === config.lastMigration) return
+    if (record.lastMigration > config.lastMigration) {
+      throw new Error(`API migration v${config.lastMigration} is less than the source migration v${record.lastMigration}`) 
+    }
+    needsMigrations = true
+    await resetDatabase()
+    await migrateTo(record.lastMigration)
+  }
 
-    // Total time calculation
-    hrend = process.hrtime(totalstart)
-    stats.total = `TOTAL in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
-    res.write(JSON.stringify(stats))
-    res.end()
+  async function migrateTo(migration = config.lastMigration) {
+    const endMigration = migration.toString().padStart(4, '0') + '.js'
+    const umzug = new Umzug({
+      migrations: {
+        path: path.join(__dirname, './migrations'),
+        params: [dbUtils.pool]
+      },
+      storage: path.join(__dirname, './migrations/lib/umzug-mysql-storage'),
+      storageOptions: {
+        pool: dbUtils.pool
+      }
+    })
+    umzug.on('migrating', (name) => {
+      progressCb({migration: name, status: 'started'})
+    })
+    umzug.on('migrated', (name) => {
+      progressCb({migration: name, status: 'finished'})
+    })
+    await umzug.up({to: endMigration})
+  }
 
-    return (stats)
+  async function resetDatabase() {
+    const connection = await dbUtils.pool.getConnection()
+    const sql = `SELECT
+    table_name,
+    table_type
+      FROM
+        information_schema.TABLES
+      WHERE
+        TABLE_SCHEMA=?`
+    const [tables] = await connection.query(sql,[config.database.schema])
+    await connection.query('SET FOREIGN_KEY_CHECKS = 0')
+    for (const table of tables) {
+      const drop = `DROP ${table.TABLE_TYPE === 'BASE TABLE' ? 'TABLE' : 'VIEW'} ${table.TABLE_NAME}`
+      await connection.query(drop)
+      progressCb({sql: drop})
+    }
+    await connection.query('SET FOREIGN_KEY_CHECKS = 1')
+    await connection.release()
+  }
+
+  function createChunkedReadable(buffer, chunkSize = 64 * 1024) {
+    let offset = 0
+    return new Readable({
+      read() {
+        if (offset >= buffer.length) {
+          this.push(null) // No more data, signal end of stream
+        } 
+        else {
+          const chunk = buffer.subarray(offset, offset + chunkSize)
+          this.push(chunk) // Push the next chunk
+          offset += chunkSize
+        }
+      }
+    })
+  }
+  
+  /** @type {import('mysql2/promise').PoolConnection} */
+  let connection
+  try {
+    connection = await dbUtils.pool.getConnection()
+    await connection.query('SET FOREIGN_KEY_CHECKS=0')
+    const jsonl = new ParseJSONLStream({jsonParser: BJSON.parse})
+    const queries = new AppDataQueryStream({maxValues: 10000, onTablesFn: progressCb, onMigrationFn})
+    if (contentType === 'application/gzip') {
+      pipeline(Readable.from(buffer), zlib.createGunzip(), jsonl, queries)
+    }
+    else {
+      pipeline(createChunkedReadable(buffer, 10 * 1024 * 1024), jsonl, queries)
+    }
+    let seq = 0
+    for await (const data of queries) {
+      await connection.query(data.sql)
+      seq++
+      progressCb({seq, table: data.table, valueCount: data.valueCount})
+    }
+    if (needsMigrations) await migrateTo(config.lastMigration)
+    progressCb({status: 'success'})
+
   }
   catch (err) {
-    if (typeof connection !== 'undefined') {
-      await connection.query('ROLLBACK')
-    }
-    res.write(err.message)
-    res.end()
+    progressCb({status: 'fail', error: err.message})
+    return undefined
   }
   finally {
     if (typeof connection !== 'undefined') {
-      await connection.release()
+      await connection.query('SET FOREIGN_KEY_CHECKS=1')
+      connection.release()
     }
   }
 }

@@ -138,12 +138,14 @@ The report displays the data source, date, and STIG Manager version at the top. 
 Export/Import Data Panel
 ------------------------------------
 
-This panel allows App Managers to download a representation of most of the data STIGMan manages, minus the actual DISA Reference STIGs themselves. This same data can also be imported, but be aware that ALL existing data in that STIGMan instance will be lost.  If this data is imported into a different STIGMan instance, the destination instance must have all STIGs that were assigned to any Assets from the originating instance.
+This panel allows App Managers to stream JSONL records from the STIG Manager backend database to a file, with an option to GZip compress the stream. The final size of the file is unknown when the operation starts, so no progress indication can be provided. Transfer rates will be higher if the server does not compress the stream, but the final file may be up to 10x larger.
+
+The downloaded file can be imported into the same or a different STIG Manager instance. All existing data will be overwritten. Importing a Gzip compressed file will reduce upload time and memory usage on the API service.
 
 This feature must be enabled for the deployment by setting the ``STIGMAN_EXPERIMENTAL_APPDATA`` environment variable to ``true``. 
 
 .. warning::
-   This feature is considered Experimental! Use at your own risk, and rely on daily database backups to maintain your data!  ALL data in the destination instance will be replaced!
+   This feature is Experimental and continues to be developed, breaking changes may happen. Use at your own risk and rely on daily database backups to maintain your data.  ALL data in the destination instance will be replaced.
 
 .. thumbnail:: /assets/images/admin-app-data.png
       :width: 50% 

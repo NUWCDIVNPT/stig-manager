@@ -412,7 +412,7 @@ describe('POST - Stig', () => {
                 it('should throw SmError.ClientError not xml file', async () => {
                 
                     const directoryPath = path.join(__dirname, '../../../form-data-files/')
-                    const testStigfile = 'appdata.json'
+                    const testStigfile = 'appdata.jsonl'
                     const filePath = path.join(directoryPath, testStigfile)
             
                     const res = await chai.request(config.baseUrl)

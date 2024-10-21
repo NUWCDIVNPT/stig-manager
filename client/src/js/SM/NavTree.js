@@ -380,10 +380,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
           SM.Error.handleError(e)
         }
     },
-    treeClick: function (n, e) {
-        let idAppend;
-        let tab;
-        
+    treeClick: function (n, e) {      
         if (!n.leaf) {
           return
         }
