@@ -2986,7 +2986,7 @@ paths:
             application/gzip:
               schema:
                 type: string
-                format: binary
+                format: binary     
         default:
           description: unexpected error
           content:
@@ -3007,6 +3007,10 @@ paths:
         required: false
         content:
           application/gzip:
+            schema:
+              type: string
+              format: binary
+          application/x-gzip:
             schema:
               type: string
               format: binary
