@@ -308,7 +308,7 @@ SM.AppData.doReplace = function () {
       rp.updateStatusText('', true, true)
 
       let objectStream
-      if (fileObj.type === 'application/gzip') {
+      if (fileObj.type === 'application/gzip' || fileObj.type === 'application/x-gzip') {
         objectStream = fileObj.stream()
           .pipeThrough(new SM.AppData.FileReaderProgressStream(fileObj.size, rp.updateProgress.bind(rp)))
           .pipeThrough(new DecompressionStream("gzip"))
