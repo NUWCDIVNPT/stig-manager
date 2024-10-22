@@ -2967,7 +2967,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
-
   /op/appdata:
     get:
       tags:
@@ -2975,14 +2974,19 @@ paths:
       summary: Export application data
       operationId: getAppData
       parameters:
+        - $ref: '#/components/parameters/AppDataFormatQuery'
         - $ref: '#/components/parameters/ElevateQuery'
       responses:
         '200':
           description: Exported data
           content:
-            application/json:
+            application/jsonl:
               schema:
-                type: object
+                type: string
+            application/gzip:
+              schema:
+                type: string
+                format: binary     
         default:
           description: unexpected error
           content:
@@ -3002,26 +3006,25 @@ paths:
       requestBody:
         required: false
         content:
-          application/json:
+          application/gzip:
             schema:
-              type: object
-              properties:
-                collections:
-                  type: string
-          multipart/form-data:
+              type: string
+              format: binary
+          application/x-gzip:
             schema:
-              type: object
-              properties:
-                importFile:
-                  type: string
-                  format: binary
+              type: string
+              format: binary
+          application/jsonl:
+            schema:
+              type: string
+              format: binary
       responses:
         '200':
           description: Import successful
           content:
-            application/json:
+            application/jsonl:
               schema:
-                type: object
+                type: string
         default:
           description: unexpected error
           content:
@@ -3031,6 +3034,32 @@ paths:
       security:
         - oauth:
             - stig-manager:op
+  /op/appdata/tables:
+    get:
+      tags:
+        - Operation
+      summary: Get the name and data length of each table
+      operationId: getAppDataTables
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      responses:
+        '200':
+          description: An array of table names and lengths
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppDataTable'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op:read
   /op/appinfo:
     get:
       tags:
@@ -3833,6 +3862,8 @@ components:
           $ref: '#/components/schemas/ApiClassification'
         commit:
           $ref: '#/components/schemas/CommitObject'
+        lastMigration:
+          $ref: '#/components/schemas/LastMigration'
         version:
           $ref: '#/components/schemas/ApiVersion'
     ApiDefinition:
@@ -3841,6 +3872,21 @@ components:
         - type: array
     ApiVersion:
       $ref: '#/components/schemas/Version'
+    AppDataFormat:
+      type: string
+      default: 'gzip'
+      enum:
+        - jsonl
+        - gzip
+    AppDataTable:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/String255'
+        rows:
+          type: number
+        dataLength:
+          type: number
     AppInfo:
       type: object
       properties:
@@ -5797,6 +5843,9 @@ components:
           $ref: '#/components/schemas/String255Nullable'
         name:
           $ref: '#/components/schemas/LabelName'
+    LastMigration:
+      type: integer
+      minimum: 0
     LocationString:
       type: string
     MaxTs:
@@ -7483,6 +7532,12 @@ components:
     VersionString:
       $ref: '#/components/schemas/String255'
   parameters:
+    AppDataFormatQuery:
+      name: format
+      in: query
+      description: The format of the appdata
+      schema:
+        $ref: '#/components/schemas/AppDataFormat'
     AssetIdArrayQuery:
       name: assetId
       in: query

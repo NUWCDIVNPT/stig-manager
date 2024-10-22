@@ -16,8 +16,6 @@ Sample Data
 
 Load this data with the feature described here :ref:`app-data`
 
-This data set will not load unless the `STIG Library Compilation <https://public.cyber.mil/stigs/compilations/>`_ has been imported. 
-
 
 
 Containers

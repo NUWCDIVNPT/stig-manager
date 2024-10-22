@@ -73,7 +73,7 @@ describe('POST - Review', () => {
             beforeEach(async function () {
               this.timeout(4000)
                 // await utils.uploadTestStigs()
-                await utils.loadAppData("batch-test-data.json")
+                await utils.loadAppData("batch-test-data.jsonl")
             })
             it(`POST batch review: target assets, whole stig`, async () => {
 
@@ -792,7 +792,7 @@ describe('POST - Review', () => {
               
           beforeEach(async function () {
             this.timeout(4000)
-            await utils.loadAppData("batch-test-data.json")
+            await utils.loadAppData("batch-test-data.jsonl")
           })
           it(`POST batch Review: target by assets, and one rule, expect validation failure - invalid result for status`, async () => {
               const postreview = {

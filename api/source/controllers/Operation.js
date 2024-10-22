@@ -1,21 +1,14 @@
-const writer = require('../utils/writer.js')
 const config = require('../utils/config')
 const OperationService = require(`../service/OperationService`)
-const Asset = require(`./Asset`)
-const Collection = require(`./Collection`)
-const User = require(`./User`)
-const Review = require(`./Review`)
-const JSZip = require("jszip");
+const escape = require('../utils/escape')
 const {JSONPath} = require('jsonpath-plus')
 const SmError = require('../utils/error.js')
 
 module.exports.getConfiguration = async function getConfiguration (req, res, next) {
   try {
-    let dbConfigs = await OperationService.getConfiguration()
-    let version = {version: config.version}
-    let commit = {commit: config.commit}
-    let response = { ...version, ...commit, ...dbConfigs }
-    res.json(response)
+    const dbConfigs = await OperationService.getConfiguration()
+    const {version, commit, lastMigration} = config
+    res.json({ version, commit, lastMigration, ...dbConfigs })
   }
   catch(err) {
     next(err)
@@ -33,49 +26,27 @@ module.exports.setConfigurationItem = async function setConfigurationItem (req, 
 
 module.exports.getAppData = async function getAppData (req, res, next) {
   try {
-    if (!config.experimental.appData) {
-      throw new SmError.NotFoundError('endpoint disabled, to enable set STIGMAN_EXPERIMENTAL_APPDATA=true')
-    }
-    let elevate = req.query.elevate
-    if ( elevate ) {
-      let collections = await Collection.exportCollections( ['grants', 'labels', 'stigs'], elevate, req.userObject )
-      for (const collection of collections) {
-          for (const grant of collection.grants) {
-            grant.userId = grant.user.userId
-            delete grant.user
-          }
-      }
-      let users = await User.exportUsers( ['statistics'], elevate, req.userObject)
-      let assets = await Asset.exportAssets( ['stigGrants'], elevate, req.userObject)
-      assets.forEach(asset => {
-        asset.collectionId = asset.collection.collectionId
-        delete asset.collection
-        asset.stigGrants = asset.stigGrants.map( s => ({
-          benchmarkId: s.benchmarkId,
-          userIds: s.users.map( r => r.userId )
-        }))
-      })
-      let reviews = await Review.exportReviews(true)
-      let response = {
-        users: users,
-        collections: collections,
-        assets: assets,
-        reviews: reviews
-      }
-      let zip = new JSZip()
-      zip.file("stig-manager-appdata.json", JSON.stringify(response))
-      let buffer = await zip.generateAsync({
-        type: 'nodebuffer',
-        compression: "DEFLATE",
-        compressionOptions: {
-            level: 3
-        }
-      })
-      writer.writeInlineFile(res, buffer, 'stig-manager-appdata.json.zip', 'application/zip')
-    }
-    else {
-      throw new SmError.PrivilegeError()
-    }
+    if (!config.experimental.appData) throw new SmError.NotFoundError('endpoint disabled, to enable set STIGMAN_EXPERIMENTAL_APPDATA=true')
+    if (!req.query.elevate) throw new SmError.PrivilegeError()
+    const format = req.query.format || 'gzip'
+    res.attachment(`appdata-v${config.lastMigration}_${escape.filenameComponentFromDate()}.jsonl${format==='gzip'?'.gz':''}`)
+    if (format === 'jsonl') res.type('application/jsonl')
+    req.noCompression = true
+
+    // the service method will stream the appdata file to the response object
+    OperationService.getAppData(res, format)
+    // the service ends the response by closing the gzip stream
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getAppDataTables = async function (req, res, next) {
+  try {
+    if (!req.query.elevate) throw new SmError.PrivilegeError()
+    const response = await OperationService.getAppDataTables()
+    res.json(response)
   }
   catch (err) {
     next(err)
@@ -83,37 +54,24 @@ module.exports.getAppData = async function getAppData (req, res, next) {
 }
 
 module.exports.replaceAppData = async function replaceAppData (req, res, next) {
+  // write JSONL to the response; called from the service method
+  function progressCb(json) {
+    res.write(JSON.stringify(json) + '\n')
+  }
+  
   try {
-    if (!config.experimental.appData) {
-      throw new SmError.NotFoundError('endpoint disabled, to enable set STIGMAN_EXPERIMENTAL_APPDATA=true')
+    if (!config.experimental.appData) throw new SmError.NotFoundError('endpoint disabled, to enable set STIGMAN_EXPERIMENTAL_APPDATA=true')
+    if (!req.query.elevate) throw new SmError.PrivilegeError()
+    let chunks = []
+    for await (const chunk of req) {
+      chunks.push(chunk)
     }
+    const buffer = Buffer.concat(chunks)
+    res.setHeader('Content-Type', 'application/jsonl; charset=utf-8')
+    res.setHeader('Transfer-Encoding', 'chunked')
     req.noCompression = true
-    let elevate = req.query.elevate
-    let appdata
-    if ( elevate ) {
-      if (req.file && (req.file.mimetype === 'application/json' || req.file.mimetype === 'application/zip' || req.file.mimetype === 'application/x-zip-compressed') ) {
-        let data = req.file.buffer
-        if (req.file.mimetype === 'application/zip' || req.file.mimetype === 'application/x-zip-compressed') {
-          let zipIn = new JSZip()
-          let contents = await zipIn.loadAsync(data)
-          let fns = Object.keys(contents.files)
-          if (fns.length > 1) {
-            throw new SmError.UnprocessableError('ZIP archive has too many files.')
-          }
-          let fn = fns[0]
-          data = await contents.files[fn].async("nodebuffer")
-        }
-        appdata = JSON.parse(data)
-      }
-      else {
-        appdata = req.body
-      }
-      let options = []
-      await OperationService.replaceAppData(options, appdata, req.userObject, res )
-    }
-    else {
-      throw new SmError.PrivilegeError()
-    }
+    await OperationService.replaceAppData(buffer, req.headers['content-type'], progressCb )
+    res.end()
   }
   catch (err) {
     next(err)

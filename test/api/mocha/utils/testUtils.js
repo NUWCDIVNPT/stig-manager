@@ -17,29 +17,16 @@ const metricsOutputToJSON = (testCaseName, username, responseData, outputJsonFil
   fs.writeFileSync(metricsFilePath, JSON.stringify(metricsData, null, 2), 'utf8')
 }
 
-const loadAppData = async (appdataFileName = 'appdata.json') => {
-
-  //const appdataFile = path.join(__dirname, '../../form-data-files/appdata.json')
-  const appdataFile = path.join(__dirname, `../../form-data-files/${appdataFileName}`)
-  const formData = new FormData()
-  formData.append('importFile', fs.createReadStream(appdataFile), {
-    filename: 'appdata.json',
-    contentType: 'application/json'
-  })
-  const axiosConfig = {
+const loadAppData = (appdataFileName = 'appdata.jsonl') => {
+  return axios({
     method: 'post',
     url: `${config.baseUrl}/op/appdata?elevate=true`,
     headers: {
-      ...formData.getHeaders(),
+      'Content-Type': 'application/jsonl',
       Authorization: `Bearer ${adminToken}`
     },
-    data: formData
-  }
-  try {
-    const response = await axios(axiosConfig)
-  } catch (error) {
-    throw error
-  }
+    data: fs.readFileSync(path.join(__dirname, `../../form-data-files/${appdataFileName}`))
+  })
 }
 
 const createTempCollection = async (collectionPost) => {

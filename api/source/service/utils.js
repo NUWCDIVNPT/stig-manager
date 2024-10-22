@@ -162,6 +162,8 @@ module.exports.initializeDatabase = async function (depStatus) {
       logger.writeInfo('mysql', 'migration', { message: `MySQL schema is up to date` })
     }
     depStatus.db = 'up'
+    const migrated = await umzug.executed()
+    config.lastMigration = parseInt(migrated[migrated.length -1].file.substring(0,4))
   }
   catch (error) {
     logger.writeError('mysql', 'initalization', { message: error.message })

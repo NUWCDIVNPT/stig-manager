@@ -14,7 +14,7 @@ describe('GET - MetaMetrics', function () {
   before(async function () {
     this.timeout(4000)
     await utils.uploadTestStigs()
-    await utils.loadAppData("appdata-meta-metrics-with-pin.json")
+    await utils.loadAppData("appdata-meta-metrics-with-pin.jsonl")
     try{
         await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
     }
