@@ -438,7 +438,7 @@ exports.replaceAppData = async function (buffer, contentType, progressCb = () =>
     await connection.query('SET FOREIGN_KEY_CHECKS=0')
     const jsonl = new ParseJSONLStream({jsonParser: BJSON.parse})
     const queries = new AppDataQueryStream({maxValues: 10000, onTablesFn: progressCb, onMigrationFn})
-    if (contentType === 'application/gzip') {
+    if (contentType === 'application/gzip' || contentType === 'application/x-gzip') {
       pipeline(Readable.from(buffer), zlib.createGunzip(), jsonl, queries)
     }
     else {
