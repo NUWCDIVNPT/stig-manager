@@ -4,8 +4,8 @@ Sample data that demonstrates the features of STIG Manager is provided in the `d
 
 The sample data can be loaded from the web client:
 
-- `Application Management -> Application Info -> Replace Application Data...`
-- Select the `data/appdata/demo-appdata.gz` file from the repo. The data may take a few 10s of seconds to load.
+- `Application Management -> Export/Import Data -> Replace Application Data...`
+- Select the `data/appdata/demo-appdata.jsonl.gz` file from the repo. The data may take a few 10s of seconds to load.
 
 
 Refresh the browser to see the new data. 
