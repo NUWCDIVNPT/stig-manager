@@ -1,3 +1,15 @@
+1.4.17
+-----
+
+Changes:
+
+  - (UI/API) feat: New, more capable App Data Export/Import feature
+  - (API) feat: Handle duplicate CCI elements in Rules from latest DISA Reference STIGs
+  - (API) feat: add index for asset/collection state columns in database for better performance
+  - (docs) Clarifications and updates for new feature
+
+  - **NOTE:** This release includes a database migration that adds an index for the ``state`` columns in the ``asset`` and ``collection`` tables. 
+
 1.4.16
 -----
 
