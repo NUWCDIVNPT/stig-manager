@@ -49,9 +49,7 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
       {
         name: 'ccis',
         // Convert the CCIs array into a joined string when loading into the store
-        convert: function(v) {
-          return v?.map(i => i.cci).join('\n') || ''
-        }
+        convert: v => v.map(i => i.cci).join('\n')
       }
     ]
     const exportBtn = new Ext.ux.ExportButton({
