@@ -47,7 +47,9 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
         mapping: 'detail.vulnDiscussion'
       },
       {
-        name: 'ccis'
+        name: 'ccis',
+        // Convert the CCIs array into a joined string when loading into the store
+        convert: v => v.map(i => i.cci).join('\n')
       }
     ]
     const exportBtn = new Ext.ux.ExportButton({
@@ -169,8 +171,7 @@ SM.Library.ChecklistGrid = Ext.extend(Ext.grid.GridPanel, {
         header: "CCIs",
         width: 100,
         dataIndex: 'ccis',
-        renderer: function (v) {
-          v = v.map(v => v.cci).join('\n')
+        renderer: function(v) {
           return columnWrap.apply(this, arguments)
         },
         sortable: false,
