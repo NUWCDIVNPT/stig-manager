@@ -326,27 +326,51 @@ exports.setLastAccess = async function (userId, timestamp) {
 }
 
 exports.setUserData = async function (userObject, fields) {
-  let insertColumns = ['username']
-  // Apparently the standard MySQL practice to ensure insertId is valid even on non-updating updates
-  // See: https://chrisguitarguy.com/2020/01/26/mysql-last-insert-id-on-duplicate-key-update/
-  let updateColumns = ['userId = LAST_INSERT_ID(userId)']
-  // let updateColumns = []
-  let binds = [userObject.username]
-  if (fields.lastAccess) {
-    insertColumns.push('lastAccess')
-    updateColumns.push('lastAccess = VALUES(lastAccess)')
-    binds.push(fields.lastAccess)
+  //if userObject already has userId attached, then we are updating an existing user
+  if (userObject.userId) {
+    // Existing user - do UPDATE
+    const updates = []
+    const binds = []
+    
+    if (fields.lastAccess) {
+      updates.push('lastAccess = ?')
+      binds.push(fields.lastAccess)
+    }
+    if (fields.lastClaims) {
+      updates.push('lastClaims = ?')
+      binds.push(JSON.stringify(fields.lastClaims))
+    }
+    
+    if (updates.length > 0) {
+      await dbUtils.pool.query(
+        `UPDATE user_data 
+         SET ${updates.join(', ')}
+         WHERE userId = ?`,
+        [...binds, userObject.userId]
+      )
+    }
+    return userObject.userId
+    
+  } else {
+    // New user - do INSERT
+    const columns = ['username']
+    const binds = [userObject.username]
+    
+    if (fields.lastAccess) {
+      columns.push('lastAccess')
+      binds.push(fields.lastAccess)
+    }
+    if (fields.lastClaims) {
+      columns.push('lastClaims')
+      binds.push(JSON.stringify(fields.lastClaims))
+    }
+    
+    const [result] = await dbUtils.pool.query(
+      `INSERT INTO user_data (${columns.join(', ')})
+       VALUES (${'?'.repeat(binds.length).split('').join(', ')})`,
+      binds
+    )
+    return result.insertId
   }
-  if (fields.lastClaims) {
-    insertColumns.push('lastClaims')
-    updateColumns.push('lastClaims = VALUES(lastClaims)')
-    binds.push(JSON.stringify(fields.lastClaims))
-  }
-  let sqlUpsert = `INSERT INTO user_data (
-    ${insertColumns.join(',\n')}
-  ) VALUES ? ON DUPLICATE KEY UPDATE 
-    ${updateColumns.join(',\n')}`
-  let [result] = await dbUtils.pool.query(sqlUpsert, [[binds]])
-  return result.insertId
 }
 
