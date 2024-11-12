@@ -319,57 +319,13 @@ exports.updateUser = async function( userId, body, projection, elevate, userObje
   }
 }
 
-exports.setLastAccess = async function (userId, timestamp) {
-    let sqlUpdate = `UPDATE user_data SET lastAccess = ? where userId = ?`
-    await dbUtils.pool.execute(sqlUpdate, [timestamp, userId])
-    return true
-}
-
 exports.setUserData = async function (userObject, fields) {
-  //if userObject already has userId attached, then we are updating an existing user
   if (userObject.userId) {
-    // Existing user - do UPDATE
-    const updates = []
-    const binds = []
-    
-    if (fields.lastAccess) {
-      updates.push('lastAccess = ?')
-      binds.push(fields.lastAccess)
-    }
-    if (fields.lastClaims) {
-      updates.push('lastClaims = ?')
-      binds.push(JSON.stringify(fields.lastClaims))
-    }
-    
-    if (updates.length > 0) {
-      await dbUtils.pool.query(
-        `UPDATE user_data 
-         SET ${updates.join(', ')}
-         WHERE userId = ?`,
-        [...binds, userObject.userId]
-      )
-    }
+    await dbUtils.pool.query(`UPDATE user_data SET ? WHERE userId = ?`, [fields, userObject.userId])
     return userObject.userId
-    
-  } else {
-    // New user - do INSERT
-    const columns = ['username']
-    const binds = [userObject.username]
-    
-    if (fields.lastAccess) {
-      columns.push('lastAccess')
-      binds.push(fields.lastAccess)
-    }
-    if (fields.lastClaims) {
-      columns.push('lastClaims')
-      binds.push(JSON.stringify(fields.lastClaims))
-    }
-    
-    const [result] = await dbUtils.pool.query(
-      `INSERT INTO user_data (${columns.join(', ')})
-       VALUES (${'?'.repeat(binds.length).split('').join(', ')})`,
-      binds
-    )
+  }
+  else {
+    const [result] = await dbUtils.pool.query(`INSERT INTO user_data SET ?`, [{username: userObject.username, ...fields}])
     return result.insertId
   }
 }

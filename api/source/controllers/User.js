@@ -183,16 +183,3 @@ module.exports.updateUser = async function updateUser (req, res, next) {
     next(err)
   }
 }
-
-/* c8 ignore start */
-module.exports.setUserData = async function setUserData (username, fields) {
-  try {
-    await UserService.setUserData(username, fields)
-    return await UserService.getUserByUsername(username)
-  }
-  catch (e) {
-    next(err)
-
-  }
-}
-/* c8 ignore end */
