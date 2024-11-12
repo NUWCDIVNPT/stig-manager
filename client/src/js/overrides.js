@@ -1269,7 +1269,7 @@ Ext.Element.prototype.addStyles = function(sides, styles){
     for (i = 0; i < len; i++) {
         side = sidesArr[i];
         // replace parseInt call with parseFloat to account for fractional scaling
-        size = side && parseFloat(this.getStyle(styles[side]));
+        size = side && Math.round(parseFloat(this.getStyle(styles[side])));
         if (size) {
             ttlSize += Math.abs(size);
         }
