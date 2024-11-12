@@ -1135,189 +1135,191 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
     left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId
     left join review on (rvcd.version = review.version and rvcd.checkDigest = review.checkDigest and review.assetId = ?)
 
-    left join result on review.resultId = result.resultId 
-    left join status on review.statusId = status.statusId 
-  WHERE
-    rev.revId = ?
-  order by
-    substring(rgr.groupId from 3) + 0 asc
-  `
-  async function getBenchmarkRevision(connection, benchmarkId, revisionStr) {
-    let revisionStrResolved
-    // Benchmark, calculate revId
-    const sqlGetRevision = revisionStr === 'latest' ?
-      `select
-        cr.benchmarkId, 
-        s.title, 
-        cr.revId, 
-        cr.description, 
-        cr.version, 
-        cr.release, 
-        cr.benchmarkDate,
-        cr.status,
-        cr.statusDate
-      from
-        current_rev cr 
-        left join stig s on cr.benchmarkId = s.benchmarkId
-      where
-        cr.benchmarkId = ?`
-    :
+  left join result on review.resultId = result.resultId 
+  left join status on review.statusId = status.statusId 
+WHERE
+  rev.revId = ?
+order by
+  substring(rgr.groupId from 3) + 0 asc
+`
+async function getBenchmarkRevision(connection, benchmarkId, revisionStr) {
+  let revisionStrResolved
+  // Benchmark, calculate revId
+  const sqlGetRevision = revisionStr === 'latest' ?
     `select
-        r.benchmarkId,
-        s.title,
-        r.revId,
-        r.description,
-        r.version,
-        r.release,
-        r.benchmarkDate,
-        r.status,
-        r.statusDate
-      from 
-        stig s 
-        left join revision r on s.benchmarkId=r.benchmarkId
-      where
-        r.revId = ?`  
+      cr.benchmarkId, 
+      s.title, 
+      cr.revId, 
+      cr.description, 
+      cr.version, 
+      cr.release, 
+      cr.benchmarkDate,
+      cr.status,
+      cr.statusDate
+    from
+      current_rev cr 
+      left join stig s on cr.benchmarkId = s.benchmarkId
+    where
+      cr.benchmarkId = ?`
+  :
+  `select
+      r.benchmarkId,
+      s.title,
+      r.revId,
+      r.description,
+      r.version,
+      r.release,
+      r.benchmarkDate,
+      r.status,
+      r.statusDate
+    from 
+      stig s 
+      left join revision r on s.benchmarkId=r.benchmarkId
+    where
+      r.revId = ?`  
 
-    let result, revId
-    if (revisionStr === 'latest') {
-      ;[result] = await connection.query(sqlGetRevision, [benchmarkId])
-      revId = result[0].revId
-      revisionStrResolved = `V${result[0].version}R${result[0].release}`
+  let result, revId
+  if (revisionStr === 'latest') {
+    ;[result] = await connection.query(sqlGetRevision, [benchmarkId])
+    revId = result[0].revId
+    revisionStrResolved = `V${result[0].version}R${result[0].release}`
+  }
+  else {
+    const {version, release} = dbUtils.parseRevisionStr(revisionStr)
+    revId = `${benchmarkId}-${version}-${release}`
+    ;[result] = await connection.query(sqlGetRevision, [revId])
+    revisionStrResolved = revisionStr
+  }
+  result[0].revisionStr = revisionStrResolved
+  return result[0]
+}
+
+function prefixObjectProperties(prefix, obj) {
+  for (const k in obj)
+    {
+        if (typeof obj[k] == "object" && obj[k] !== null) {
+          prefixObjectProperties(prefix, obj[k])
+        }
+        if (!Array.isArray(obj)) {
+          obj[`${prefix}:${k}`] = obj[k]
+          delete obj[k] 
+        }
+    }
+}
+
+function generateTargetFacts({metadata, ...assetFields}) {
+  const fact = []
+  for (const field in assetFields) {
+    if (assetFields[field]) {
+      fact.push({
+        '@_name': `tag:stig-manager@users.noreply.github.com,2020:asset:${field}`,
+        '@_type': 'string',
+        '#text': assetFields[field]
+      })  
+    }
+  }
+  const re = /^urn:/
+  for (const key in metadata) {
+    if (re.test(key)) {
+      fact.push({
+        '@_name': key,
+        '@_type': 'string',
+        '#text': metadata[key] || ''
+      })
     }
     else {
-      const {version, release} = dbUtils.parseRevisionStr(revisionStr)
-      revId = `${benchmarkId}-${version}-${release}`
-      ;[result] = await connection.query(sqlGetRevision, [revId])
-      revisionStrResolved = revisionStr
+      fact.push({
+        '@_name': `tag:stig-manager@users.noreply.github.com,2020:asset:metadata:${encodeURI(key)}`,
+        '@_type': 'string',
+        '#text': metadata[key] || ''
+      })
     }
-    result[0].revisionStr = revisionStrResolved
-    return result[0]
   }
+  return {"cdf:fact": fact}
+}
 
-  function prefixObjectProperties(prefix, obj) {
-    for (const k in obj)
-      {
-          if (typeof obj[k] == "object" && obj[k] !== null) {
-            prefixObjectProperties(prefix, obj[k])
-          }
-          if (!Array.isArray(obj)) {
-            obj[`${prefix}:${k}`] = obj[k]
-            delete obj[k] 
-          }
-      }
+// reuse a connection for multiple SELECT queries
+const connection = await dbUtils.pool.getConnection()
+// target
+const [resultGetAsset] = await connection.query(sqlGetAsset, [assetId])
+// benchmark
+const revision = await getBenchmarkRevision(connection, benchmarkId, revisionStr)
+// checklist
+const [resultGetChecklist] = await connection.query(sqlGetChecklist, [assetId, revision.revId])
+// release connection
+await connection.release()
+
+// scaffold xccdf object with cdf namespace on all base elements
+const xmlJs = {
+  "cdf:Benchmark": {
+    "@_xmlns:cdf": "http://checklists.nist.gov/xccdf/1.2",
+    "@_xmlns:dc": "http://purl.org/dc/elements/1.1/",
+    "@_xmlns:sm": "http://github.com/nuwcdivnpt/stig-manager",
+    "@_id": `xccdf_mil.disa.stig_benchmark_${revision.benchmarkId}`,
+    "cdf:status": {
+      "@_date": revision.statusDate,
+      "#text": revision.status
+    },
+    "cdf:title": revision.title,
+    "cdf:description": revision.description,
+    "cdf:platform": {
+      "@_idref": "cpe:2.3:a:disa:stig"
+    },      
+    "cdf:version": revision.revisionStr,  
+    "cdf:metadata": {
+      "dc:creator": "DISA",
+      "dc:publisher": "STIG Manager OSS"
+    },
+    "cdf:Group": [],
+    "cdf:TestResult": {
+      "@_id": `xccdf_mil.navy.nuwcdivnpt.stig-manager_testresult_${revision.benchmarkId}`,
+      "@_test-system": `cpe:/a:nuwcdivnpt:stig-manager:${config.version}`,
+      "@_end-time": new Date().toISOString(),
+      "@_version": "1.0",
+      "cdf:title": "",
+      "cdf:target": resultGetAsset[0].name,
+      "cdf:target-address": resultGetAsset[0].ip,
+      "cdf:target-facts": generateTargetFacts(resultGetAsset[0]),
+      "cdf:rule-result": [],
+      "cdf:score": "1.0"
+    } 
   }
+}  
 
-  function generateTargetFacts({metadata, ...assetFields}) {
-    const fact = []
-    for (const field in assetFields) {
-      if (assetFields[field]) {
-        fact.push({
-          '@_name': `tag:stig-manager@users.noreply.github.com,2020:asset:${field}`,
-          '@_type': 'string',
-          '#text': assetFields[field]
-        })  
+// iterate through checklist query results
+for (const r of resultGetChecklist) {
+  xmlJs["cdf:Benchmark"]["cdf:Group"].push({
+    "@_id": `xccdf_mil.disa.stig_group_${r.groupId}`,
+    "cdf:title": r.groupTitle,
+    "cdf:Rule": {
+      "@_id": `xccdf_mil.disa.stig_rule_${r.ruleId}`,
+      "@_weight": r.weight,
+      "@_severity": r.severity || undefined,
+      "cdf:title": r.ruleTitle,
+      "cdf:check": {
+        "@_system": r.checkSystem,
+        "cdf:check-content": r.checkContent
       }
     }
-    const re = /^urn:/
-    for (const key in metadata) {
-      if (re.test(key)) {
-        fact.push({
-          '@_name': key,
-          '@_type': 'string',
-          '#text': metadata[key] || ''
-        })
-      }
-      else {
-        fact.push({
-          '@_name': `tag:stig-manager@users.noreply.github.com,2020:asset:metadata:${encodeURI(key)}`,
-          '@_type': 'string',
-          '#text': metadata[key] || ''
-        })
-      }
-    }
-    return {fact}
+  })
+  if (r.resultEngine) {
+    prefixObjectProperties('sm', r.resultEngine)
   }
-
-  // reuse a connection for multiple SELECT queries
-  const connection = await dbUtils.pool.getConnection()
-  // target
-  const [resultGetAsset] = await connection.query(sqlGetAsset, [assetId])
-  // benchmark
-  const revision = await getBenchmarkRevision(connection, benchmarkId, revisionStr)
-  // checklist
-  const [resultGetChecklist] = await connection.query(sqlGetChecklist, [assetId, revision.revId])
-  // release connection
-  await connection.release()
-
-
-  // scaffold xccdf object
-  const xmlJs = {
-    Benchmark: {
-      "@_xmlns": "http://checklists.nist.gov/xccdf/1.2",
-      "@_xmlns:dc": "http://purl.org/dc/elements/1.1/",
-      "@_xmlns:sm": "http://github.com/nuwcdivnpt/stig-manager",
-      "@_id": `xccdf_mil.disa.stig_benchmark_${revision.benchmarkId}`,
-      "status": {
-        "@_date": revision.statusDate,
-        "#text": revision.status
-      },
-      "title": revision.title,
-      "description": revision.description,
-      "version": revision.revisionStr,
-      "metadata": {
-        "dc:creator": "DISA",
-        "dc:publisher": "STIG Manager OSS"
-      },
-      "Group": [],
-      TestResult: {
-        "@_id": `xccdf_mil.navy.nuwcdivnpt.stig-manager_testresult_${revision.benchmarkId}`,
-        "@_test-system": `cpe:/a:nuwcdivnpt:stig-manager:${config.version}`,
-        "@_end-time": new Date().toISOString(),
-        "@_version": "1.0",
-        "title": "",
-        "target": resultGetAsset[0].name,
-        "target-address": resultGetAsset[0].ip,
-        "target-facts": generateTargetFacts(resultGetAsset[0]),
-        "rule-result": [],
-        "score": "1.0"
-      } 
-    }
-  }  
-
-  // iterate through checklist query results
-  for (const r of resultGetChecklist) {
-    xmlJs["Benchmark"]["Group"].push({
-      "@_id": `xccdf_mil.disa.stig_group_${r.groupId}`,
-      "title": r.groupTitle,
-      "Rule": {
-        "@_id": `xccdf_mil.disa.stig_rule_${r.ruleId}`,
-        "@_weight": r.weight,
-        "@_severity": r.severity || undefined,
-        "title": r.ruleTitle,
-        "check": {
-          "@_system": r.checkId,
-          "check-content": r.checkContent
-        }
+  xmlJs["cdf:Benchmark"]["cdf:TestResult"]["cdf:rule-result"].push({
+    "cdf:result": r.result || "notchecked",
+    "@_idref": `xccdf_mil.disa.stig_rule_${r.ruleId}`,
+    "@_time": r.ts?.toISOString(),
+    "cdf:check": {
+      "@_system": r.checkSystem,
+      "cdf:check-content": {
+        "sm:detail": r.detail || undefined,
+        "sm:comment": r.comment || undefined,
+        "sm:resultEngine": r.resultEngine || undefined
       }
-    })
-    if (r.resultEngine) {
-      prefixObjectProperties('sm', r.resultEngine)
     }
-    xmlJs["Benchmark"]["TestResult"]["rule-result"].push({
-      result: r.result || "notchecked",
-      "@_idref": `xccdf_mil.disa.stig_rule_${r.ruleId}`,
-      "@_time": r.ts?.toISOString(),
-      "check": {
-        "@_system": r.checkId,
-        "check-content": {
-          "sm:detail": r.detail || undefined,
-          "sm:comment": r.comment || undefined,
-          "sm:resultEngine": r.resultEngine || undefined
-        }
-      }
-    })
-  }
-  return ({assetName: resultGetAsset[0].name, xmlJs, revisionStrResolved: revision.revisionStr})
+  })
+}
+return ({assetName: resultGetAsset[0].name, xmlJs, revisionStrResolved: revision.revisionStr})
 }
 
 exports.createAsset = async function({body, projection, elevate, userObject, svcStatus = {}}) {
