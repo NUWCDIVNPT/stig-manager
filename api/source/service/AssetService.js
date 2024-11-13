@@ -1235,7 +1235,7 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
         })
       }
     }
-    return {fact}
+    return {"cdf:fact": fact}
   }
 
   // reuse a connection for multiple SELECT queries
@@ -1249,67 +1249,69 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
   // release connection
   await connection.release()
 
-
-  // scaffold xccdf object
+  // scaffold xccdf object with cdf namespace on all base elements
   const xmlJs = {
-    Benchmark: {
-      "@_xmlns": "http://checklists.nist.gov/xccdf/1.2",
+    "cdf:Benchmark": {
+      "@_xmlns:cdf": "http://checklists.nist.gov/xccdf/1.2",
       "@_xmlns:dc": "http://purl.org/dc/elements/1.1/",
       "@_xmlns:sm": "http://github.com/nuwcdivnpt/stig-manager",
       "@_id": `xccdf_mil.disa.stig_benchmark_${revision.benchmarkId}`,
-      "status": {
+      "cdf:status": {
         "@_date": revision.statusDate,
         "#text": revision.status
       },
-      "title": revision.title,
-      "description": revision.description,
-      "version": revision.revisionStr,
-      "metadata": {
+      "cdf:title": revision.title,
+      "cdf:description": revision.description,
+      "cdf:platform": {
+        "@_idref": "cpe:2.3:a:disa:stig"
+      },      
+      "cdf:version": revision.revisionStr,  
+      "cdf:metadata": {
         "dc:creator": "DISA",
         "dc:publisher": "STIG Manager OSS"
       },
-      "Group": [],
-      TestResult: {
+      "cdf:Group": [],
+      "cdf:TestResult": {
         "@_id": `xccdf_mil.navy.nuwcdivnpt.stig-manager_testresult_${revision.benchmarkId}`,
         "@_test-system": `cpe:/a:nuwcdivnpt:stig-manager:${config.version}`,
         "@_end-time": new Date().toISOString(),
         "@_version": "1.0",
-        "title": "",
-        "target": resultGetAsset[0].name,
-        "target-address": resultGetAsset[0].ip,
-        "target-facts": generateTargetFacts(resultGetAsset[0]),
-        "rule-result": [],
-        "score": "1.0"
+        "cdf:title": "",
+        "cdf:target": resultGetAsset[0].name,
+        "cdf:target-address": resultGetAsset[0].ip,
+        "cdf:target-facts": generateTargetFacts(resultGetAsset[0]),
+        "cdf:rule-result": [],
+        "cdf:score": "1.0"
       } 
     }
   }  
 
   // iterate through checklist query results
   for (const r of resultGetChecklist) {
-    xmlJs["Benchmark"]["Group"].push({
+    xmlJs["cdf:Benchmark"]["cdf:Group"].push({
       "@_id": `xccdf_mil.disa.stig_group_${r.groupId}`,
-      "title": r.groupTitle,
-      "Rule": {
+      "cdf:title": r.groupTitle,
+      "cdf:Rule": {
         "@_id": `xccdf_mil.disa.stig_rule_${r.ruleId}`,
         "@_weight": r.weight,
         "@_severity": r.severity || undefined,
-        "title": r.ruleTitle,
-        "check": {
-          "@_system": r.checkId,
-          "check-content": r.checkContent
+        "cdf:title": r.ruleTitle,
+        "cdf:check": {
+          "@_system": r.checkSystem,
+          "cdf:check-content": r.checkContent
         }
       }
     })
     if (r.resultEngine) {
       prefixObjectProperties('sm', r.resultEngine)
     }
-    xmlJs["Benchmark"]["TestResult"]["rule-result"].push({
-      result: r.result || "notchecked",
+    xmlJs["cdf:Benchmark"]["cdf:TestResult"]["cdf:rule-result"].push({
+      "cdf:result": r.result || "notchecked",
       "@_idref": `xccdf_mil.disa.stig_rule_${r.ruleId}`,
       "@_time": r.ts?.toISOString(),
-      "check": {
-        "@_system": r.checkId,
-        "check-content": {
+      "cdf:check": {
+        "@_system": r.checkSystem,
+        "cdf:check-content": {
           "sm:detail": r.detail || undefined,
           "sm:comment": r.comment || undefined,
           "sm:resultEngine": r.resultEngine || undefined
