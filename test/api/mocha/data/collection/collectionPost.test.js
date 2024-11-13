@@ -57,7 +57,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
   
       describe("createCollection - /collections", function () {
 
-        const random = Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100)
+        const random = utils.getUUIDSubString()
 
         it("Create a Collection and test projections",async function () {
           const post = JSON.parse(JSON.stringify(requestBodies.createCollection))
@@ -128,7 +128,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
 
           const post = JSON.parse(JSON.stringify(requestBodies.createCollection))
           post.grants.push(post.grants[0])
-          post.name = "TEST" + Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100)
+          post.name = "TEST" + utils.getUUIDSubString()
           const res = await chai
             .request(config.baseUrl)
             .post(`/collections?elevate=${distinct.canElevate}`)
@@ -179,7 +179,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             .post(`/collections/${reference.testCollection.collectionId}/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`)
             .set("Authorization", `Bearer ${iteration.token}`)
             .send({
-              name:"Clone_" + Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100) + "_X",
+              name:"Clone_" + utils.getUUIDSubString(),
               description: "clone of test collection x",
               options: {
                 grants: true,

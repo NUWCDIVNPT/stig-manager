@@ -104,7 +104,7 @@ describe('GET - Review', () => {
         it('Return a list of reviews accessible to the requester, metadata Projection. issue 1357', async () => {
           const tempCollectionWithMetadata = await utils.createTempCollection(
             {
-              name: 'tempCollection' + Math.floor(Math.random() * 1000),
+              name: 'tempCollection' + utils.getUUIDSubString(),
               description: 'Collection TEST description',
               settings: {
                 fields: {

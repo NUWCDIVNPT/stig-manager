@@ -31,7 +31,7 @@ describe('PUT - Asset', function () {
             .put(`/assets/${reference.scrapAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + iteration.token)
             .send({
-              "name": 'TestAsset' + Math.floor(Math.random() * 1000),
+              "name": 'TestAsset' + utils.getUUIDSubString(),
               "collectionId": reference.scrapCollection.collectionId,
               "description": "test desc",
               "ip": "1.1.1.1",
@@ -108,7 +108,7 @@ describe('PUT - Asset', function () {
             .put(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
             .set('Authorization', 'Bearer ' + iteration.token)
             .send({
-              "name": 'TestAsset' + Math.floor(Math.random() * 1000),
+              "name": 'TestAsset' + utils.getUUIDSubString(),
               "collectionId": reference.testCollection.collectionId,
               "description": "test desc",
               "ip": "1.1.1.1",
@@ -170,7 +170,7 @@ describe('PUT - Asset', function () {
             .put(`/assets/${reference.scrapAsset.assetId}`)
             .set('Authorization', 'Bearer ' + iteration.token)
             .send({
-              "name":'TestAsset' + Math.floor(Math.random() * 1000),
+              "name":'TestAsset' + utils.getUUIDSubString(),
               "collectionId": reference.scrapCollection.collectionId,
               "description": "test desc",
               "ip": "1.1.1.1",
@@ -207,7 +207,7 @@ describe('PUT - Asset', function () {
             .put(`/assets/${reference.scrapAsset.assetId}`)
             .set('Authorization', 'Bearer ' + iteration.token)
             .send({
-              "name": 'TestAsset' + Math.floor(Math.random() * 1000),
+              "name": 'TestAsset' + utils.getUUIDSubString(),
               "collectionId": reference.scrapLvl1User.userId,
               "description": "test desc",
               "ip": "1.1.1.1",
@@ -354,7 +354,7 @@ describe('PUT - Asset', function () {
           const res = await chai.request(config.baseUrl)
           .put(`/collections/${reference.scrapCollection.collectionId}/stigs/${reference.scrapAsset.scrapBenchmark}/assets?projection=restrictedUserAccess`)
           .set('Authorization', 'Bearer ' + iteration.token)
-          .send([`${Math.floor(Math.random() * 123456)}`])
+          .send([`12321`])
           expect(res).to.have.status(403)
         })
       })
