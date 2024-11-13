@@ -1,3 +1,16 @@
+1.4.18
+-----
+
+Changes:
+
+  - (UI) feat: Support for importing Evaluate-STIG style XCCDF test results.
+  - (UI) fix: Ensure integer size when fractional scaling is applied to UI
+  - (UI) fix: Column filters for CCIs in STIG Library 
+  - (API) feat: XCCDF exports now pass NIST XCCDF validation
+  - (API) feat: Avoid incrementing userIds when updating existing user_data records
+  - (tests) fix: Use UUIDs when generating test data to avoid collisions
+  - (API) Dependency updates
+
 1.4.17
 -----
 
