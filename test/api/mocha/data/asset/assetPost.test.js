@@ -25,7 +25,7 @@ describe('POST - Asset', function () {
             .post('/assets?projection=statusStats&projection=stigs')
             .set('Authorization', 'Bearer ' + iteration.token)
             .send({
-              name: 'TestAsset' + Date.now(),
+              name: 'TestAsset' + utils.getUUIDSubString(),
               collectionId: reference.testCollection.collectionId,
               description: 'test',
               ip: '1.1.1.1',
@@ -100,7 +100,7 @@ describe('POST - Asset', function () {
             .post('/assets?projection=stigGrants')
             .set('Authorization', 'Bearer ' + iteration.token)
             .send({
-              name: 'TestAsset' + Date.now(),
+              name: 'TestAsset' + utils.getUUIDSubString(),
               collectionId: reference.testCollection.collectionId,
               description: 'test',
               ip: '1.1.1.1',

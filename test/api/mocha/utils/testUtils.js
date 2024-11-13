@@ -124,7 +124,7 @@ const deleteCollection = async (collectionId) => {
 const createTempAsset = async asset => {
   if (!asset) {
     asset = {
-      name: 'tempAsset' + Date.now(),
+      name: 'tempAsset' + getUUIDSubString(),
       collectionId: "21",
       description: 'temp',
       ip: '1.1.1.1',
