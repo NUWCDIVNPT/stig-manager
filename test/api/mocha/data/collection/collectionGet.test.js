@@ -82,7 +82,7 @@ describe('GET - Collection', function () {
         it('Return a list of Collections accessible to the requester METADATA param but with a colon character (see issue 1357)',async function () {
           const tempCollectionWithMetadata = await utils.createTempCollection(
             {
-              name: 'tempCollection' + Math.floor(Math.random() * 1000),
+              name: 'tempCollection' + utils.getUUIDSubString(),
               description: 'Collection TEST description',
               settings: {
                 fields: {
@@ -452,10 +452,8 @@ describe('GET - Collection', function () {
         })
         it("should return SmError.NotFoundError because the label does not exist",async function () {
 
-          const randomUUID = uuidv4()
-
           const res = await chai.request(config.baseUrl)
-            .get(`/collections/${reference.testCollection.collectionId}/labels/${randomUUID}`)
+            .get(`/collections/${reference.testCollection.collectionId}/labels/${uuidv4()}`)
             .set('Authorization', `Bearer ${iteration.token}`)
             if (distinct.grant === "none"){
               expect(res).to.have.status(403)
@@ -509,7 +507,7 @@ describe('GET - Collection', function () {
         it('should return empty 200 reponse, collection does not have metadata',async function () {
           
           const collectionNoMetadata = await utils.createTempCollection( {
-            name: 'temoCollection' + Math.floor(Math.random() * 1000),
+            name: 'temoCollection' + utils.getUUIDSubString(),
             description: 'Collection TEST description',
             settings: {
               fields: {

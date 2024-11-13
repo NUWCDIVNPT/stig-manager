@@ -9,7 +9,7 @@ const reference = require('../../referenceData.js')
 const requestBodies = require('./requestBodies.js')
 
 let testUser = null
-const randomValue = Math.floor(Math.random() * 10000)
+const randomValue = utils.getUUIDSubString(8)
 
 describe('user', () => {
 
@@ -26,7 +26,7 @@ describe('user', () => {
           // this is here because after we do the gets we need to create a temp user to do all posts, patches, and puts etc on. 
       // as a result we will have an extra user in the gets to consider
         const create =  JSON.parse(JSON.stringify(requestBodies.scrapUser))
-        create.username = create.username + Math.floor(Math.random() * 1000) + Date.now()
+        create.username = create.username + utils.getUUIDSubString()
         testUser = await utils.createUser(create)
       })
 
@@ -273,7 +273,7 @@ describe('user', () => {
                     "username": "TEST_USER" + randomValue,
                     "collectionGrants": [
                         {
-                            "collectionId": `${randomValue}`,
+                            "collectionId": `${"987654"}`,
                             "accessLevel": 1
                         }
                     ]
@@ -363,7 +363,7 @@ describe('user', () => {
                   "username": "PatchTest",
                   "collectionGrants": [
                       {
-                          "collectionId": `${Math.floor(Math.random() * 100022)}`,
+                          "collectionId": `1234321`,
                           "accessLevel": 1
                       }
                   ]
@@ -429,7 +429,7 @@ describe('user', () => {
                   "username": "putTesting",
                   "collectionGrants": [
                       {
-                          "collectionId": `${Math.floor(Math.random() * 100022)}`,
+                          "collectionId": `1234321`,
                           "accessLevel": 1
                       }
                   ]

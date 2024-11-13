@@ -83,7 +83,7 @@ describe('PUT - Collection', function () {
 
           const putRequest = JSON.parse(JSON.stringify(requestBodies.replaceCollection))
           putRequest.grants.push(putRequest.grants[0])
-          putRequest.name = "TEST" + Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100)
+          putRequest.name = "TEST" + utils.getUUIDSubString()
           const res = await chai.request(config.baseUrl)
               .put(`/collections/${reference.testCollection.collectionId}`)
               .set('Authorization', `Bearer ${iteration.token}`)
@@ -214,9 +214,8 @@ describe('PUT - Collection', function () {
             }
         })
         it("should throw SmError.NotFoundError when attempting to set asset stig for a user that does not exist with access level 1",async function () {
-          const randomUserId = Math.floor(Math.random() * 1002230)
           const res = await chai.request(config.baseUrl)
-              .put(`/collections/${reference.scrapCollection.collectionId}/grants/${randomUserId}/access`)
+              .put(`/collections/${reference.scrapCollection.collectionId}/grants/${"123432"}/access`)
               .set('Authorization', `Bearer ${iteration.token}`)
               .send([{
                     "benchmarkId": reference.scrapAsset.scrapBenchmark,

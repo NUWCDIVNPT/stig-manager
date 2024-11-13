@@ -63,7 +63,7 @@ describe('PATCH - Collection', function () {
 
             const patchRequest = JSON.parse(JSON.stringify(requestBodies.updateCollection))
             patchRequest.grants.push(patchRequest.grants[0])
-            patchRequest.name = "TEST" + Math.floor(Math.random() * 100) + "-" + Math.floor(Math.random() * 100)
+            patchRequest.name = "TEST" + utils.getUUIDSubString()
             const res = await chai.request(config.baseUrl)
                 .patch(`/collections/${reference.testCollection.collectionId}`)
                 .set('Authorization', `Bearer ${iteration.token}`)

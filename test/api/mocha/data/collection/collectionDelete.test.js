@@ -34,7 +34,7 @@ describe('DELETE - Collection ', function () {
 
         before(async function () {
           const testCollectionClone  = JSON.parse(JSON.stringify(requestBodies.resetTestCollection))
-          testCollectionClone.name = `Collection ` + Math.floor(Math.random() * 1000000)
+          testCollectionClone.name = `Collection ` + utils.getUUIDSubString()
           tempCollection = await utils.createTempCollection(testCollectionClone)
         })
 
@@ -63,7 +63,7 @@ describe('DELETE - Collection ', function () {
         let tempLabel = null
         beforeEach(async function () {
           const labelPost = JSON.parse(JSON.stringify(requestBodies.recreateCollectionLabel))
-          labelPost.name = `Label ` + Math.floor(Math.random() * 1000000)
+          labelPost.name = `Label ` + utils.getUUIDSubString(8)
           tempLabel = await utils.createCollectionLabel(reference.testCollection.collectionId, labelPost)
         })
         it('Delete a scrap collection scrap Label',async function () {

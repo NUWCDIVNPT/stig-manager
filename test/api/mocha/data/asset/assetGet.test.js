@@ -346,7 +346,7 @@ describe(`GET - Asset`, function () {
 
         it(`should return assets accessible to the requester, testing metadata query. (issue 1357)`, async function () {
           const assetWithMetadata = await utils.createTempAsset({
-            name: 'tempAsset' + Math.floor(Math.random() * 10000),
+            name: 'tempAsset' + utils.getUUIDSubString(40),
             collectionId: reference.scrapCollection.collectionId,
             description: 'temp',
             ip: '1.1.1.1',
@@ -728,7 +728,7 @@ describe(`GET - Asset`, function () {
             .post(`/assets`)
             .set(`Authorization`, `Bearer ` + iteration.token)
             .send({
-              name: `assetNoChecklists` + Math.floor(Math.random() * 10000),
+              name: `assetNoChecklists` + utils.getUUIDSubString(40),
               collectionId: reference.testCollection.collectionId,
               description: `test`,
               ip: `1.1.1.1`,
