@@ -1,3 +1,12 @@
+1.4.19
+-----
+
+Changes:
+
+  - (API) chore: Update dependency Cross-Spawn 
+  - (API) fix: Allow for use and proper handling of backslashes in metadata values
+ 
+
 1.4.18
 -----
 
