@@ -34,7 +34,13 @@ async function start () {
 			await navigator.serviceWorker.register('serviceWorker.js')
 		}
 		el.innerHTML += "<br/><br/>Fetching user data"
-		await SM.GetUserObject()
+		try {
+			await SM.GetUserObject()
+		}
+		catch (e) {
+			el.innerHTML += `<br/><br/>Error Fetching user data`
+			throw(e)
+		}
 		if (curUser.username !== undefined) {
 			loadApp();
 		} else {
@@ -42,7 +48,7 @@ async function start () {
 		}
 	}
 	catch (e) {
-		el.innerHTML += `<br/>${e.message}`
+		el.innerHTML += `<br/></br/><textarea rows=12 cols=80 style="font-size: 10px" readonly>${JSON.stringify(STIGMAN.serializeError(e), null, 2)}</textarea>`
 	}
 }
 
