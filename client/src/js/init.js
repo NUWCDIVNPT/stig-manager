@@ -1,6 +1,12 @@
 import { stylesheets, scripts, isMinimizedSource } from './resources.js'
 import * as OP from './modules/oidcProvider.js'
+
+const statusEl = document.getElementById("loading-text")
 window.oidcProvider = OP
+
+function appendStatus(html) {
+  statusEl.innerHTML += `${statusEl.innerHTML ? '<br/><br/>' : ''}${html}`
+}
 
 function getScopeStr() {
   const scopePrefix = STIGMAN.Env.oauth.scopePrefix
@@ -56,19 +62,23 @@ async function authorizeOidc() {
       scope: getScopeStr()
     })
     if (tokens) {
+      appendStatus(`Loading App ${STIGMAN?.Env?.version}`)
       loadResources()
     }
   }
   catch (e) {
-    document.getElementById("loading-text").innerHTML = e.message
+    appendStatus(e.message)
   }
 }
 
 if (window.isSecureContext) {
-  document.getElementById("loading-text").innerHTML = `Loading ${STIGMAN?.Env?.version}`
+  appendStatus(`Authorizing`)
   authorizeOidc()
 }
 else {
-  document.getElementById("loading-text").innerHTML = `SECURE CONTEXT REQUIRED<br><br>The App is not executing in a <a href=https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts target="_blank">secure context</a> and cannot continue. <br><br>To be considered secure, resources that are not local must be served over https:// URLs and the security properties of the network channel used to deliver the resource must not be considered deprecated.`
+  appendStatus(`SECURE CONTEXT REQUIRED<br><br>
+    The App is not executing in a <a href=https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts target="_blank">secure context</a> and cannot continue.
+    <br><br>To be considered secure, resources that are not local must be served over https:// URLs and the security 
+    properties of the network channel used to deliver the resource must not be considered deprecated.`)
 }
 

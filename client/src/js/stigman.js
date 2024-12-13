@@ -28,24 +28,22 @@ Ext.Ajax.disableCaching = false
 
 async function start () {
 	let timer
+	const el = Ext.get('loading-text').dom
+
 	try {
 		if ('serviceWorker' in navigator) {
 			await navigator.serviceWorker.register('serviceWorker.js')
 		}
-		timer = setTimeout(() => {
-			Ext.get( 'loading-text' ).dom.innerHTML = "Getting configuration..."
-		}, 250)
+		el.innerHTML += "<br/><br/>Fetching user data"
 		await SM.GetUserObject()
 		if (curUser.username !== undefined) {
-			clearTimeout(timer)
 			loadApp();
 		} else {
-			Ext.get( 'loading-text' ).dom.innerHTML =`No account for ${window.oidcProvider.token}`;
+			el.innerHTML += `<br/>No account for ${window.oidcProvider.token}`
 		}
 	}
 	catch (e) {
-		clearTimeout(timer)
-		Ext.get( 'loading-text' ).dom.innerHTML = e.message
+		el.innerHTML += `<br/>${e.message}`
 	}
 }
 
