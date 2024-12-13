@@ -188,6 +188,7 @@ function getTokenRequestBody(code, redirectUri) {
     // perhaps from a bookmarked URL of an earlier authorization request.
     // Try to restart authorization from the beginning by redirecting to our entry point.
     window.location.href = redirectUri
+    throw new Error('Redirecting after not finding code verifier')
   }
   const params = new URLSearchParams()
   params.append('code', code)
