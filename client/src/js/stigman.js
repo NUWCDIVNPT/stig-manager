@@ -27,7 +27,6 @@ function myContextMenu (e,t,eOpts) {
 Ext.Ajax.disableCaching = false
 
 async function start () {
-	let timer
 	const el = Ext.get('loading-text').dom
 
 	try {
