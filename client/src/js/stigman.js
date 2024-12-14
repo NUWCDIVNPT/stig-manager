@@ -27,25 +27,28 @@ function myContextMenu (e,t,eOpts) {
 Ext.Ajax.disableCaching = false
 
 async function start () {
-	let timer
+	const el = Ext.get('loading-text').dom
+
 	try {
 		if ('serviceWorker' in navigator) {
 			await navigator.serviceWorker.register('serviceWorker.js')
 		}
-		timer = setTimeout(() => {
-			Ext.get( 'loading-text' ).dom.innerHTML = "Getting configuration..."
-		}, 250)
-		await SM.GetUserObject()
+		el.innerHTML += "<br/><br/>Fetching user data"
+		try {
+			await SM.GetUserObject()
+		}
+		catch (e) {
+			el.innerHTML += `<br/><br/>Error Fetching user data`
+			throw(e)
+		}
 		if (curUser.username !== undefined) {
-			clearTimeout(timer)
 			loadApp();
 		} else {
-			Ext.get( 'loading-text' ).dom.innerHTML =`No account for ${window.oidcProvider.token}`;
+			el.innerHTML += `<br/>No account for ${window.oidcProvider.token}`
 		}
 	}
 	catch (e) {
-		clearTimeout(timer)
-		Ext.get( 'loading-text' ).dom.innerHTML = e.message
+		el.innerHTML += `<br/></br/><textarea rows=12 cols=80 style="font-size: 10px" readonly>${JSON.stringify(STIGMAN.serializeError(e), null, 2)}</textarea>`
 	}
 }
 

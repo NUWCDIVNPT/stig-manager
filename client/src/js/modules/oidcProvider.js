@@ -52,11 +52,14 @@ function setTokens(tokens, clientTime) {
   state.tokens = tokens
   token = state.tokens.access_token
   refreshToken = state.tokens.refresh_token
+
   tokenParsed = decodeToken(token)
   refreshTokenParsed = decodeToken(refreshToken)
+  
   state.timeSkew = clientTime ? Math.floor(clientTime / 1000) - tokenParsed.iat : 0
   console.log('[OIDCPROVIDER] Estimated time difference between browser and server is ' + state.timeSkew + ' seconds')
   console.log('[OIDCPROVIDER] Token expires ' + new Date(tokenParsed.exp * 1000))
+  
   const tokenExpiresIn = (tokenParsed.exp - (new Date().getTime() / 1000) + state.timeSkew) * 1000
   if (tokenExpiresIn <= 0) {
     expiredCallback()
@@ -67,6 +70,7 @@ function setTokens(tokens, clientTime) {
     }
     state.tokenTimeoutHandle = setTimeout(expiredCallback, tokenExpiresIn)
   }
+
   if (state.autoRefresh && refreshToken) {
     const now = new Date().getTime()
     const expiration = refreshTokenParsed ? refreshTokenParsed.exp : tokenParsed.exp
@@ -158,6 +162,10 @@ async function requestToken(body) {
     method: 'post',
     body
   })
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(text)
+  }
   return response.json()
 }
 
@@ -168,18 +176,30 @@ async function requestRefresh() {
     body
   })
   if (!response.ok) {
-    throw new Error()
+    const text = await response.text()
+    throw new Error(text)
   }
   return response.json()
 }
 
 function getTokenRequestBody(code, redirectUri) {
+  if (!localStorage.getItem('oidc-code-verifier')) {
+    // Will assume this function was called while handling a replayed request,
+    // perhaps from a bookmarked URL of an earlier authorization request.
+    // Try to restart authorization from the beginning by redirecting to our entry point.
+    window.location.href = redirectUri
+    throw new Error('Redirecting after not finding code verifier')
+  }
   const params = new URLSearchParams()
   params.append('code', code)
   params.append('grant_type', 'authorization_code')
   params.append('client_id', state.clientId)
   params.append('redirect_uri', redirectUri)
   params.append('code_verifier', localStorage.getItem('oidc-code-verifier'))
+  
+  // Clear saved code verifier to prevent replay error scenarios
+  localStorage.removeItem('oidc-code-verifier')
+  
   return params
 }
 
@@ -215,6 +235,8 @@ async function getAuthorizationUrl() {
   params.append('code_challenge_method', 'S256')
 
   const authEndpoint = state.oidcConfiguration.authorization_endpoint
+
+  // Save the code verifier for use after the OP redirect back to us
   localStorage.setItem('oidc-code-verifier', pkce.codeVerifier)
 
   return `${authEndpoint}?${params.toString()}`
