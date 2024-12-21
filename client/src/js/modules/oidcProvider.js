@@ -195,10 +195,13 @@ function getTokenRequestBody(code, redirectUri) {
   params.append('grant_type', 'authorization_code')
   params.append('client_id', state.clientId)
   params.append('redirect_uri', redirectUri)
-  params.append('code_verifier', localStorage.getItem('oidc-code-verifier'))
+  const codeVerifier = localStorage.getItem('oidc-code-verifier')
+  params.append('code_verifier', codeVerifier)
   
   // Clear saved code verifier to prevent replay error scenarios
   localStorage.removeItem('oidc-code-verifier')
+  // Save last used verifier for debugging purposes
+  localStorage.setItem('last-code-verifier', codeVerifier)
   
   return params
 }
@@ -238,6 +241,8 @@ async function getAuthorizationUrl() {
 
   // Save the code verifier for use after the OP redirect back to us
   localStorage.setItem('oidc-code-verifier', pkce.codeVerifier)
+  // Save the code challenge for debugging purposes
+  localStorage.setItem('last-code-challenge', pkce.codeChallenge)
 
   return `${authEndpoint}?${params.toString()}`
 }
