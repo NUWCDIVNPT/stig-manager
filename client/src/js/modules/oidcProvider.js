@@ -20,16 +20,27 @@ async function authorize({clientId, oidcProvider, scope, autoRefresh}) {
   }
   else {
     // exchange authorization_code for token
+    const lastOidc = JSON.parse(localStorage.getItem('last-oidc') ?? '{}')
+    lastOidc.redirectHref = window.location.href
     const [redirectUrl, paramStr] = window.location.href.split('#')
     const params = processRedirectParams(paramStr)
 
-    const lastOidc = JSON.parse(localStorage.getItem('last-oidc') ?? '{}')
     if (lastOidc.state !== params.state) {
       throw new Error(`ERROR: OIDC redirection from unknown state.<br>Expected: ${lastOidc.state}<br>Actual: ${params.state}<br><br><a href="${redirectUrl}">Retry authorization.</a>`)
     }
 
     const beforeTime = new Date().getTime()
-    const tokens = await requestToken(getTokenRequestBody(params.code, lastOidc.pkce.codeVerifier, redirectUrl))
+    const tokenRequestBody = getTokenRequestBody(params.code, lastOidc.pkce.codeVerifier, redirectUrl)
+    let tokens
+    try {
+      lastOidc.tokenEndpoint = state.oidcConfiguration.token_endpoint
+      lastOidc.tokenRequestBody = tokenRequestBody.toString()
+      tokens = await requestToken(tokenRequestBody)
+    }
+    catch (e) {
+      e.message = `<textarea rows="10" cols="80" style="font-size: 8px;">Error:\n${e.message}\n\nContext:\n${JSON.stringify(lastOidc, null, 2)}</textarea><br><br><a href="${redirectUrl}">Retry authorization.</a>`
+      throw e
+    }
     const clientTime = (beforeTime + new Date().getTime()) / 2
     setTokens(tokens, clientTime)
     window.history.replaceState(window.history.state, '', redirectUrl)
