@@ -48,7 +48,7 @@ async function start () {
 		}
 	}
 	catch (e) {
-		el.innerHTML += `<br/></br/><textarea rows=12 cols=80 style="font-size: 10px" readonly>${JSON.stringify(STIGMAN.serializeError(e), null, 2)}</textarea>`
+		el.innerHTML += `<br/></br/><textarea wrap="off" rows=12 cols=80 style="font-size: 10px" readonly>${JSON.stringify(STIGMAN.serializeError(e), null, 2)}</textarea>`
 	}
 }
 
