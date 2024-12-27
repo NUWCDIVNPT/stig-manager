@@ -38,7 +38,7 @@ async function authorize({clientId, oidcProvider, scope, autoRefresh}) {
       tokens = await requestToken(tokenRequestBody)
     }
     catch (e) {
-      e.message = `<textarea rows="10" cols="80" style="font-size: 8px;">Error:\n${e.message}\n\nContext:\n${JSON.stringify(lastOidc, null, 2)}</textarea><br><br><a href="${redirectUrl}">Retry authorization.</a>`
+      e.message = `<textarea readonly wrap="off" rows="18" cols="80" style="font-size: 8px;">Error:\n${e.message}\n\nContext:\n${JSON.stringify(lastOidc, null, 2)}</textarea><br><br><a href="${redirectUrl}">Retry authorization.</a>`
       throw e
     }
     const clientTime = (beforeTime + new Date().getTime()) / 2
