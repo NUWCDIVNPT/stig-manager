@@ -20,11 +20,28 @@ async function authorize({clientId, oidcProvider, scope, autoRefresh}) {
   }
   else {
     // exchange authorization_code for token
+    const lastOidc = JSON.parse(localStorage.getItem('last-oidc') ?? '{}')
+    lastOidc.redirectHref = window.location.href
     const [redirectUrl, paramStr] = window.location.href.split('#')
     const params = processRedirectParams(paramStr)
-    let beforeTime = new Date().getTime()
-    const tokens = await requestToken(getTokenRequestBody(params.code, redirectUrl))
-    let clientTime = (beforeTime + new Date().getTime()) / 2
+
+    if (lastOidc.state !== params.state) {
+      throw new Error(`ERROR: OIDC redirection from unknown state.<br>Expected: ${lastOidc.state}<br>Actual: ${params.state}<br><br><a href="${redirectUrl}">Retry authorization.</a>`)
+    }
+
+    const beforeTime = new Date().getTime()
+    const tokenRequestBody = getTokenRequestBody(params.code, lastOidc.pkce.codeVerifier, redirectUrl)
+    let tokens
+    try {
+      lastOidc.tokenEndpoint = state.oidcConfiguration.token_endpoint
+      lastOidc.tokenRequestBody = tokenRequestBody.toString()
+      tokens = await requestToken(tokenRequestBody)
+    }
+    catch (e) {
+      e.message = `<textarea readonly wrap="off" rows="18" cols="80" style="font-size: 8px;">Error:\n${e.message}\n\nContext:\n${JSON.stringify(lastOidc, null, 2)}</textarea><br><br><a href="${redirectUrl}">Retry authorization.</a>`
+      throw e
+    }
+    const clientTime = (beforeTime + new Date().getTime()) / 2
     setTokens(tokens, clientTime)
     window.history.replaceState(window.history.state, '', redirectUrl)
     return tokens
@@ -182,24 +199,14 @@ async function requestRefresh() {
   return response.json()
 }
 
-function getTokenRequestBody(code, redirectUri) {
-  if (!localStorage.getItem('oidc-code-verifier')) {
-    // Will assume this function was called while handling a replayed request,
-    // perhaps from a bookmarked URL of an earlier authorization request.
-    // Try to restart authorization from the beginning by redirecting to our entry point.
-    window.location.href = redirectUri
-    throw new Error('Redirecting after not finding code verifier')
-  }
+function getTokenRequestBody(code, codeVerifier, redirectUri) {
   const params = new URLSearchParams()
   params.append('code', code)
   params.append('grant_type', 'authorization_code')
   params.append('client_id', state.clientId)
   params.append('redirect_uri', redirectUri)
-  params.append('code_verifier', localStorage.getItem('oidc-code-verifier'))
-  
-  // Clear saved code verifier to prevent replay error scenarios
-  localStorage.removeItem('oidc-code-verifier')
-  
+  params.append('code_verifier', codeVerifier)
+    
   return params
 }
 
@@ -222,11 +229,11 @@ function processRedirectParams(paramStr) {
 
 async function getAuthorizationUrl() {
   const pkce = await getPkce()
-
+  const oidcState = crypto.randomUUID()
   const params = new URLSearchParams()
   params.append('client_id', state.clientId)
   params.append('redirect_uri', window.location.href)
-  params.append('state', crypto.randomUUID())
+  params.append('state', oidcState)
   params.append('response_mode', 'fragment')
   params.append('response_type', 'code')
   params.append('scope', state.scope)
@@ -235,11 +242,15 @@ async function getAuthorizationUrl() {
   params.append('code_challenge_method', 'S256')
 
   const authEndpoint = state.oidcConfiguration.authorization_endpoint
+  const authRequest = `${authEndpoint}?${params.toString()}`
 
-  // Save the code verifier for use after the OP redirect back to us
-  localStorage.setItem('oidc-code-verifier', pkce.codeVerifier)
+  localStorage.setItem('last-oidc', JSON.stringify({
+    state: oidcState,
+    pkce,
+    authRequest
+  }))
 
-  return `${authEndpoint}?${params.toString()}`
+  return authRequest
 }
 
 async function getPkce() {  
