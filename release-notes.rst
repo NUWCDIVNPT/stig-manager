@@ -1,3 +1,11 @@
+1.5.1
+-----
+
+Changes:
+
+  - (UI) fix: Handle STIG Ids with spaces 
+
+
 1.5.0
 -----
 
