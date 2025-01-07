@@ -1,4 +1,16 @@
-1.4.19
+1.5.0
+-----
+
+Changes:
+
+  - (API) chore: Update dependencies
+  - (UI) Update stigman-client-modules to 1.5.0
+  - (UI) provide detailed status during web app bootstrap; handle token errors; test oidc state before token request
+  - (Docs) Update license/contributors for 2025
+  - (Docs) Update build dependency
+  
+  
+ 1.4.19
 -----
 
 Changes:
