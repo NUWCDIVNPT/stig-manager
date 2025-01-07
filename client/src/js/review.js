@@ -1,6 +1,6 @@
 async function addReview( params ) {
   let { leaf, selectedRule, selectedResource, treePath, dblclick = false } = params
-  const idAppend = '-' + leaf.assetId + '-' + leaf.benchmarkId.replace(".", "_");
+  const idAppend = '-' + leaf.assetId + '-' + leaf.benchmarkId.replace(/[. ]/g,'_');
   const tab = Ext.getCmp('main-tab-panel').getItem('reviewTab' + idAppend);
   if (tab) {
     if (dblclick) {
