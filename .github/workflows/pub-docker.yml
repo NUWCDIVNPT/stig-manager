@@ -3,19 +3,19 @@ env:
   DOCKERHUB_REPOSITORY: nuwcdivnpt/stig-manager
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - 'api/source/**'
-      - 'client/src/**'
-      - 'docs/**'
-      - 'Dockerfile'
-      - '.github/workflows/build-client.yml'
-      - '.github/workflows/build-docs.yml'
-      - '.github/workflows/pub-docker.yml'
-    tags:
-      - 1.**
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'api/source/**'
+  #     - 'client/src/**'
+  #     - 'docs/**'
+  #     - 'Dockerfile'
+  #     - '.github/workflows/build-client.yml'
+  #     - '.github/workflows/build-docs.yml'
+  #     - '.github/workflows/pub-docker.yml'
+  #   tags:
+  #     - 1.**
 jobs:
   build-client:
     uses: nuwcdivnpt/stig-manager/.github/workflows/build-client.yml@main
@@ -58,7 +58,7 @@ jobs:
           SHA=$(git rev-parse --short=10 HEAD)
           DESCRIBE=$(git describe --tags)
           TAG=$(git describe --tags --abbrev=0)
-          TAGS=${DOCKER_IMAGE}:latest
+          TAGS=${DOCKER_IMAGE}:multiarch-dev
           [[ ${{ github.ref_type }} == "tag" ]] && TAGS="$TAGS,${DOCKER_IMAGE}:${{ github.ref_name }}" 
           echo "version=${TAG}" >> $GITHUB_OUTPUT
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
@@ -79,6 +79,7 @@ jobs:
         uses: docker/build-push-action@1104d471370f9806843c095c1db02b5a90c5f8b6 # pin@v3
         with:
           context: .
+          platforms: linux/amd64,linux/arm64
           file: ./Dockerfile
           push: true
           build-args: |
@@ -144,7 +145,7 @@ jobs:
           SHA=$(git rev-parse --short=10 HEAD)
           DESCRIBE=$(git describe --tags)
           TAG=$(git describe --tags --abbrev=0)
-          TAGS="${DOCKER_IMAGE}:latest-ironbank"
+          TAGS="${DOCKER_IMAGE}:multiarch-dev-ironbank"
           [[ ${{ github.ref_type }} == "tag" ]] && TAGS="$TAGS,${DOCKER_IMAGE}:${{ github.ref_name }}-ironbank" 
           echo "version=${TAG}" >> $GITHUB_OUTPUT
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
@@ -171,6 +172,7 @@ jobs:
         uses: docker/build-push-action@1104d471370f9806843c095c1db02b5a90c5f8b6 # pin@v3
         with:
           context: .
+          platforms: linux/amd64,linux/arm64
           file: ./Dockerfile
           push: true
           build-args: |
