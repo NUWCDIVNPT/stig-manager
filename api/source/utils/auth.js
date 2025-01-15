@@ -101,15 +101,64 @@ const getBearerToken = req => {
     if (headerParts[0].toLowerCase() === 'bearer') return headerParts[1]
 }
 
-function getKey(header, callback){
-    client.getSigningKey(header.kid, function(err, key) {
-        if (!err) {
-            let signingKey = key.publicKey || key.rsaPublicKey
-            callback(null, signingKey)
-        } else {
-            callback(err, null)
-        }
-    })
+// function getKey(header, callback){
+//     client.getSigningKey(header.kid, function(err, key) {
+//         if (!err) {
+//             let signingKey = key.publicKey || key.rsaPublicKey
+//             callback(null, signingKey)
+//         } else {
+//             callback(err, null)
+//         }
+//     })
+// }
+
+async function getKey(header, callback) {
+    async function fetchSigningKey() {
+        return await new Promise((resolve, reject) => {
+            client.getSigningKey(header.kid, (err, key) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    const signingKey = key.publicKey || key.rsaPublicKey;
+                    resolve(signingKey);
+                }
+            });
+        });
+    }
+
+    try {
+        const signingKey = await retry(
+            fetchSigningKey,
+            {
+                retries: 3,  // Number of retry attempts
+                factor: 1,   // No exponential backoff
+                minTimeout: 1000, // 1 second between retries
+                maxTimeout: 1000,
+                onRetry: (error) => {
+                    logger.writeError('oidc', 'jwks', {
+                        success: false,
+                        kid: header.kid,
+                        message: error.message
+                    });
+                }
+            }
+        );
+        
+        logger.writeDebug('oidc', 'jwks', {
+            success: true,
+            kid: header.kid
+        });
+        
+        callback(null, signingKey);
+    } catch (error) {
+        logger.writeError('oidc', 'jwks', {
+            success: false,
+            kid: header.kid,
+            message: error.message,
+            final: true
+        });
+        callback(error, null);
+    }
 }
 
 let initAttempt = 0
