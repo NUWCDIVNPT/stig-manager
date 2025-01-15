@@ -8,6 +8,8 @@ const {promisify} = require('util')
 const User = require(`../service/UserService`)
 const axios = require('axios')
 const SmError = require('./error')
+const https = require('https');
+const http = require('http');
 
 let jwksUri
 let client
@@ -175,19 +177,55 @@ async function initializeAuth(depStatus) {
             throw( new Error('No jwks_uri property found') )
         }
         jwksUri = openidConfig.jwks_uri
-        client = jwksClient({
-            jwksUri: jwksUri
-        })
+        const isHttps = jwksUri.toLowerCase().startsWith('https');
+        const requestAgent = isHttps ?
+            new https.Agent({
+                keepAlive: true,
+                keepAliveMsecs: 3000,
+                maxSockets: 25,
+                maxFreeSockets: 12,
+                timeout: 10000
+            }) :
+            new http.Agent({
+                keepAlive: true,
+                keepAliveMsecs: 3000,
+                maxSockets: 25,
+                maxFreeSockets: 12,
+                timeout: 10000
+            });
+
+            client = jwksClient({
+                cache: true,
+                cacheMaxEntries: 10,
+                cacheMaxAge: 600000,
+                jwksUri: jwksUri,
+                timeout: 10000,
+                rateLimit: true,
+                jwksRequestsPerMinute: 30,
+                requestAgent,
+                handleSigningKeyError: async (err, cb) => {
+                    logger.writeError('oidc', 'jwks', {
+                        error: err.message,
+                        code: err.code
+                    });
+                    if (err.code === 'ECONNRESET' || err.code === 'ECONNREFUSED') {
+                        client.getSigningKey.cache.reset();
+                    }
+                    cb(err);
+                }
+            })
     }
+
     await retry ( getJwks, {
         retries,
-        factor: 1,
-        minTimeout: 5 * 1000,
-        maxTimeout: 5 * 1000,
+        factor: 1.5,
+        minTimeout: 2 * 1000,
+        maxTimeout: 10 * 1000,
         onRetry: (error) => {
             logger.writeError('oidc', 'discovery', { success: false, metadataUri: wellKnown, message: error.message })
         }
     })
+
     logger.writeInfo('oidc', 'discovery', { success: true, metadataUri: wellKnown, jwksUri: jwksUri })
     depStatus.auth = 'up'
 }
