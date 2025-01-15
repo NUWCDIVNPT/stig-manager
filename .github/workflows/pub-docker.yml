@@ -58,7 +58,7 @@ jobs:
           SHA=$(git rev-parse --short=10 HEAD)
           DESCRIBE=$(git describe --tags)
           TAG=$(git describe --tags --abbrev=0)
-          TAGS=${DOCKER_IMAGE}:multiarch-dev
+          TAGS=${DOCKER_IMAGE}:latest
           [[ ${{ github.ref_type }} == "tag" ]] && TAGS="$TAGS,${DOCKER_IMAGE}:${{ github.ref_name }}" 
           echo "version=${TAG}" >> $GITHUB_OUTPUT
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
@@ -145,7 +145,7 @@ jobs:
           SHA=$(git rev-parse --short=10 HEAD)
           DESCRIBE=$(git describe --tags)
           TAG=$(git describe --tags --abbrev=0)
-          TAGS="${DOCKER_IMAGE}:multiarch-dev-ironbank"
+          TAGS="${DOCKER_IMAGE}:latest"
           [[ ${{ github.ref_type }} == "tag" ]] && TAGS="$TAGS,${DOCKER_IMAGE}:${{ github.ref_name }}-ironbank" 
           echo "version=${TAG}" >> $GITHUB_OUTPUT
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
