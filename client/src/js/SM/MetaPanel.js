@@ -1456,6 +1456,20 @@ SM.MetaPanel.showMetaTab = async function (options) {
       return
     }
 
+
+    // Get all collection IDs if none specified
+    let collectionIds = initialCollectionIds
+    if (collectionIds.length === 0) {
+      const collections = Array.from(SM.Cache.CollectionMap.values())
+      collectionIds = collections.map(c => c.collectionId)
+    }
+
+    // Now load labels for all collections
+    for (const id of collectionIds) {
+      await SM.Cache.updateCollectionLabels(id)
+    }
+
+
     const gState = {}
 
     gState.collectionIds = initialCollectionIds
