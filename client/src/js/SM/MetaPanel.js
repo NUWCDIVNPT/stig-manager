@@ -255,12 +255,10 @@ SM.MetaPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
         sortField = 'name'
         rowdblclick = (grid, rowIndex) => {
           const r = grid.getStore().getAt(rowIndex)
-          const leaf = {
+          SM.CollectionPanel.showCollectionTab({
             collectionId: r.data.collectionId,
-            benchmarkId: grid.benchmarkId,
-            revisionStr: grid.revisionStr
-          }
-          addCollectionReview({ leaf })
+            collectionName: r.data.name
+          })
         }
         cellmousedown = (grid, rowIndex, columnIndex, e) => {
           if (e.target.className === "sm-grid-cell-toolbar-edit") {
