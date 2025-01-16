@@ -255,12 +255,10 @@ SM.MetaPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
         sortField = 'name'
         rowdblclick = (grid, rowIndex) => {
           const r = grid.getStore().getAt(rowIndex)
-          const leaf = {
+          SM.CollectionPanel.showCollectionTab({
             collectionId: r.data.collectionId,
-            benchmarkId: grid.benchmarkId,
-            revisionStr: grid.revisionStr
-          }
-          addCollectionReview({ leaf })
+            collectionName: r.data.name
+          })
         }
         cellmousedown = (grid, rowIndex, columnIndex, e) => {
           if (e.target.className === "sm-grid-cell-toolbar-edit") {
@@ -1180,6 +1178,8 @@ SM.MetaPanel.AggCollectionPanel = Ext.extend(Ext.Panel, {
       height: '33%'
     })
     async function onRowSelectNorth(cm, index, record) {
+      // Update labels for the newly selected collection
+      await SM.Cache.updateCollectionLabels(record.data.collectionId)
       gridCenter.collectionId = record.data.collectionId
       gridCenter.store.proxy.setUrl(`${STIGMAN.Env.apiBase}/collections/${record.data.collectionId}/metrics/summary/stig`)
       // await gridCenter.store.loadPromise()
@@ -1455,6 +1455,7 @@ SM.MetaPanel.showMetaTab = async function (options) {
       Ext.getCmp('main-tab-panel').setActiveTab(tab.id)
       return
     }
+
 
     const gState = {}
 
