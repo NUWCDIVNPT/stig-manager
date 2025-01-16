@@ -1180,6 +1180,8 @@ SM.MetaPanel.AggCollectionPanel = Ext.extend(Ext.Panel, {
       height: '33%'
     })
     async function onRowSelectNorth(cm, index, record) {
+      // Update labels for the newly selected collection
+      await SM.Cache.updateCollectionLabels(record.data.collectionId)
       gridCenter.collectionId = record.data.collectionId
       gridCenter.store.proxy.setUrl(`${STIGMAN.Env.apiBase}/collections/${record.data.collectionId}/metrics/summary/stig`)
       // await gridCenter.store.loadPromise()
@@ -1454,19 +1456,6 @@ SM.MetaPanel.showMetaTab = async function (options) {
     if (tab) {
       Ext.getCmp('main-tab-panel').setActiveTab(tab.id)
       return
-    }
-
-
-    // Get all collection IDs if none specified
-    let collectionIds = initialCollectionIds
-    if (collectionIds.length === 0) {
-      const collections = Array.from(SM.Cache.CollectionMap.values())
-      collectionIds = collections.map(c => c.collectionId)
-    }
-
-    // Now load labels for all collections
-    for (const id of collectionIds) {
-      await SM.Cache.updateCollectionLabels(id)
     }
 
 
