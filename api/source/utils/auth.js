@@ -103,17 +103,6 @@ const getBearerToken = req => {
     if (headerParts[0].toLowerCase() === 'bearer') return headerParts[1]
 }
 
-// function getKey(header, callback){
-//     client.getSigningKey(header.kid, function(err, key) {
-//         if (!err) {
-//             let signingKey = key.publicKey || key.rsaPublicKey
-//             callback(null, signingKey)
-//         } else {
-//             callback(err, null)
-//         }
-//     })
-// }
-
 async function getKey(header, callback) {
     async function fetchSigningKey() {
         return await new Promise((resolve, reject) => {
