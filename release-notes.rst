@@ -1,3 +1,16 @@
+1.5.2
+-----
+
+Changes:
+
+  - (UI) fix: Meta-Collection Dashboard Asset labels now display properly.
+  - (UI) fix: Meta-Collection Dashboard correctly handles double-click action on Collections rows.
+  - (API/DB) fix: Change review_history.historyId to a bigint to support deployments that have created large numbers of history records. 
+  - (Workflows) Publish containers to Docker Hub for both AMD64 and ARM64 platforms. 
+
+  - **NOTE:** This release includes a database migration that changes the data type of the review_history.historyId column to a bigint. This migration may take quite some time to complete on deployments maintaining large numbers of Review History records.  
+
+
 1.5.1
 -----
 
