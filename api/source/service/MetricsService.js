@@ -1,108 +1,83 @@
+const { rest } = require('lodash')
 const dbUtils = require('./utils')
 
+function genLabelPredicates ({labelNames, labelIds, labelMatch, collectionLabelTableAlias = 'cl'}) {
+  const clauses = []
+  const binds = []
+
+  if (labelNames) {
+    clauses.push(`${collectionLabelTableAlias}.name IN ?`)
+    binds.push([labelNames])
+  }
+  if (labelIds) {
+    const uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+    clauses.push(`${collectionLabelTableAlias}.uuid IN ?`)
+    binds.push([uuidBinds])
+  }
+  if (labelMatch === 'null') {
+    clauses.push(`${collectionLabelTableAlias}.uuid IS NULL`)
+  }
+  const statement = `(${clauses.join(' OR ')})`
+  return {statement, binds}
+}
+
 module.exports.queryMetrics = async function ({
-  inPredicates = {},
-  userId,
+  collectionId,
+  filter = {},
+  grant,
   aggregation = 'unagg',
   style = 'detail',
   returnType = 'json'
 }) {
 
   const predicates = {
-    statements: [],
-    binds: []
-  }
-
-  // CTE processing
-  // This CTE retreives the granted Asset/STIG pairs for a single collection
-  const cteProps = {
-    columns: [
-      'distinct c.collectionId',
-      'sa.benchmarkId',
-      'a.assetId',
-      'sa.saId'
+    statements: [
+      'a.state = "enabled"',
+      'a.collectionId = ? '
     ],
-    joins: [
-      'collection c',
-      'left join collection_grant cg on c.collectionId = cg.collectionId',
-      'inner join asset a on c.collectionId = a.collectionId and a.state = "enabled"',
-      'left join stig_asset_map sa on a.assetId = sa.assetId',
-      'left join user_stig_asset_map usa on sa.saId = usa.saId'
-    ],
-    predicates: {
-      statements: [
-        'c.collectionId = ?',
-        '(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)'
-      ],
-      binds: [
-        inPredicates.collectionId,
-        inPredicates.collectionId,
-        userId
-      ]
-    }
+    binds: [collectionId]
   }
-  if (inPredicates.labelNames || inPredicates.labelIds || inPredicates.labelMatch) {
-    cteProps.joins.push(
-      'left join collection_label_asset_map cla on a.assetId = cla.assetId',
-      'left join collection_label cl on cla.clId = cl.clId'
-    )
-    const labelPredicates = []
-    if (inPredicates.labelNames) {
-      labelPredicates.push('cl.name IN ?')
-      if (aggregation === 'label')
-        predicates.binds.push([inPredicates.labelNames])
-      cteProps.predicates.binds.push([inPredicates.labelNames])
-    }
-    if (inPredicates.labelIds) {
-      const uuidBinds = inPredicates.labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
-      if (aggregation === 'label')
-        predicates.binds.push([uuidBinds])
-      cteProps.predicates.binds.push([uuidBinds])
-      labelPredicates.push('cl.uuid IN ?')
-    }
-    if (inPredicates.labelMatch === 'null') {
-      labelPredicates.push('cl.uuid IS NULL')
-    }
-    const labelPredicatesClause = `(${labelPredicates.join(' OR ')})`
-    if (aggregation === 'label')
-      predicates.statements.push(labelPredicatesClause)
-    cteProps.predicates.statements.push(labelPredicatesClause)
-  }
-  if (inPredicates.assetIds) {
-    cteProps.predicates.statements.push(
-      'a.assetId IN ?'
-    )
-    cteProps.predicates.binds.push([inPredicates.assetIds])
-  }
-  if (inPredicates.benchmarkIds) {
-    cteProps.predicates.statements.push(
-      'sa.benchmarkId IN ?'
-    )
-    cteProps.predicates.binds.push([inPredicates.benchmarkIds])
-  }
-
-  const cteQuery = dbUtils.makeQueryString({
-    columns: cteProps.columns,
-    joins: cteProps.joins,
-    predicates: cteProps.predicates
-  })
-  const ctes = [
-    `granted as (select ? as collectionId, null as benchmarkId, null as assetId, null as saId
-      union all ${cteQuery} )`
-  ]
-
-  // Main query
+  const ctes = []
   const columns = returnType === 'csv' ? [...baseColsFlat[aggregation]] : [...baseCols[aggregation]]
   const joins = [
-    'granted',
-    'left join asset a on granted.assetId = a.assetId',
-    'left join stig_asset_map sa on granted.saId = sa.saId',
-    'left join default_rev dr on granted.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId',
+    'asset a',
+    'left join stig_asset_map sa on a.assetId = sa.assetId',
+    'left join default_rev dr on a.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId',
     'left join revision rev on dr.revId = rev.revId',
     'left join stig on rev.benchmarkId = stig.benchmarkId'
   ]
+  if (grant.roleId === 1) {
+    ctes.push(dbUtils.cteAclEffective({cgIds: grant.grantIds}))
+    joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
+  }
   const groupBy = []
   const orderBy = []
+
+  // FILTERS
+  if (filter.labelNames || filter.labelIds || filter.labelMatch) {
+    const {statement, binds} = genLabelPredicates({
+      labelNames: filter.labelNames,
+      labelIds: filter.labelIds,
+      labelMatch: filter.labelMatch,
+      collectionLabelTableAlias: 'clPred'
+    })
+    const innerQueryRaw = `select distinct assetId from asset left join collection_label_asset_map using (assetId)
+    left join collection_label clPred using(clId) where a.collectionId = ${collectionId} and ${statement}`
+    const innerQueryFormatted = dbUtils.pool.format(innerQueryRaw, binds )
+    predicates.statements.push(`a.assetId IN (${innerQueryFormatted})`)
+  }
+  if (filter.assetIds) {
+    predicates.statements.push(
+      'a.assetId IN ?'
+    )
+    predicates.binds.push([filter.assetIds])
+  }
+  if (filter.benchmarkIds) {
+    predicates.statements.push(
+      'sa.benchmarkId IN ?'
+    )
+    predicates.binds.push([filter.benchmarkIds])
+  }
 
   switch (aggregation) {
     case 'asset':
@@ -116,18 +91,17 @@ module.exports.queryMetrics = async function ({
       orderBy.push('rev.benchmarkId')
       break
     case 'collection':
-      joins.push('left join collection c on granted.collectionId = c.collectionId')
+      joins.push(`left join collection c on a.collectionId = c.collectionId`)
       groupBy.push('c.collectionId')
       orderBy.push('c.name')
       break
     case 'label':
       predicates.statements.push('a.assetId IS NOT NULL')
-      groupBy.push('cl.description', 'cl.color')
+      groupBy.push('cl.description', 'cl.color', 'cl.uuid', 'cl.name')
       joins.push(
         'left join collection_label_asset_map cla on a.assetId = cla.assetId',
         'left join collection_label cl on cla.clId = cl.clId'
       )
-      groupBy.push('cl.uuid', 'cl.name')
       orderBy.push('cl.name')
       break
     case 'unagg':
@@ -157,107 +131,96 @@ module.exports.queryMetrics = async function ({
       columns.push( aggregation === 'unagg' ? sqlMetricsSummary : sqlMetricsSummaryAgg)
     }
   }
-  const query = dbUtils.makeQueryString({
+  const sql = dbUtils.makeQueryString({
     ctes,
     columns,
     joins,
     predicates,
     groupBy,
-    orderBy
+    orderBy,
+    format: true
   })
   
-  let [ rows ] = await dbUtils.pool.query(
-    query, 
-    [...cteProps.predicates.binds, ...predicates.binds]
-  )
+  const [rows] = await dbUtils.pool.query(sql)
   return (rows || [])
 }
 
 module.exports.queryMetaMetrics = async function ({
-  inPredicates = {},
-  userId,
+  filter = {},
+  grants,
   aggregation = 'meta',
   style = 'detail',
   returnType = 'json'
 }) {
-  const predicates = {
-    statements: [],
-    binds: []
-  }
-  // CTE processing
-  // This CTE retreives the granted Asset/STIG pairs across all collections (or the requested ones)
-  const cteProps = {
-    columns: [
-      'distinct c.collectionId',
-      'sa.benchmarkId',
-      'a.assetId',
-      'sa.saId'
-    ],
-    joins: [
-      'collection c',
-      'left join collection_grant cg on c.collectionId = cg.collectionId',
-      'inner join asset a on c.collectionId = a.collectionId and a.state = "enabled"',
-      'left join stig_asset_map sa on a.assetId = sa.assetId',
-      'left join user_stig_asset_map usa on sa.saId = usa.saId'
-    ],
-    predicates: {
-      statements: [
-        '(cg.userId = ? AND CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END)',
-        'c.state = "enabled"'
-      ],
-      binds: [
-        userId
-      ]
-    }
-  }
-  if (inPredicates.benchmarkIds) {
-    cteProps.predicates.statements.push(
-      'sa.benchmarkId IN ?'
-    )
-    cteProps.predicates.binds.push([inPredicates.benchmarkIds])
-  }
-  if (inPredicates.collectionIds) {
-    cteProps.predicates.statements.push(
-      'c.collectionId IN ?'
-    )
-    cteProps.predicates.binds.push([inPredicates.collectionIds])
-  }
-  if (inPredicates.revisionIds) {
-    cteProps.joins.push(
-      'left join default_rev dr on c.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId',
-      'left join revision rev on dr.revId = rev.revId'
-    )
-    cteProps.predicates.statements.push(
-      'rev.revId IN ?'
-    )
-    cteProps.predicates.binds.push([inPredicates.revisionIds])
-  }
-  const cteQuery = dbUtils.makeQueryString({
-    columns: cteProps.columns,
-    joins: cteProps.joins,
-    predicates: cteProps.predicates
-  })
-  const ctes = [
-    `granted as (${cteQuery})`
-  ]
-  // Main query
+
+  const ctes = []
   const columns = returnType === 'csv' ? [...baseColsFlat[aggregation]] : [...baseCols[aggregation]]
   const joins = [
-    'granted',
-    'left join asset a on granted.assetId = a.assetId',
-    'left join stig_asset_map sa on granted.saId = sa.saId',
-    'left join default_rev dr on granted.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId',
+    'asset a',
+    'left join stig_asset_map sa on a.assetId = sa.assetId',
+    'left join default_rev dr on a.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId',
     'left join revision rev on dr.revId = rev.revId',
     'left join stig on rev.benchmarkId = stig.benchmarkId'
   ]
+  const predicates = {
+    statements: ['a.state != "disabled"'],
+    binds: []
+  }
   const groupBy = []
   const orderBy = []
+
+  let grantedCollectionIds = []
+  let restrictedGrantIds = []
+  const restrictedCollectionIds = []
+  if (filter.collectionIds) {
+    for (const collectionId of filter.collectionIds) {
+      if (grants[collectionId]) {
+        grantedCollectionIds.push(collectionId)
+      }
+    }
+  }
+  else {
+    grantedCollectionIds = Object.keys(grants)
+  }
+  
+  for (const collectionId of grantedCollectionIds) {
+    if (grants[collectionId].roleId === 1) {
+      restrictedCollectionIds.push(collectionId)
+      restrictedGrantIds.push(grants[collectionId].grantIds)
+    }
+  }
+  restrictedGrantIds = restrictedGrantIds.flat()
+
+  if (grantedCollectionIds.length) {
+    predicates.statements.push('a.collectionId IN (?)')
+    predicates.binds.push(grantedCollectionIds)
+  }
+  else {
+    predicates.statements.push('false')
+  }
+  
+  if (restrictedCollectionIds.length) {
+    ctes.push(dbUtils.cteAclEffective({cgIds: restrictedGrantIds}))
+    joins.push('left join cteAclEffective cae on sa.saId = cae.saId')
+    predicates.statements.push('case when a.collectionId IN (?) then cae.saId = sa.saId else true end')
+    predicates.binds.push(restrictedCollectionIds)
+  }
+
+  if (filter.benchmarkIds) {
+    predicates.statements.push('sa.benchmarkId IN ?')
+    predicates.binds.push([filter.benchmarkIds])
+  }
+  if (filter.revisionIds) {
+    predicates.statements.push('rev.revId IN ?')
+    predicates.binds.push([filter.revisionIds])
+  }
+
   switch (aggregation) {
     case 'meta':
       predicates.statements.push('sa.benchmarkId IS NOT NULL')
       break
     case 'collection':
-      joins.push('left join collection c on granted.collectionId = c.collectionId')
+      joins.push('left join collection c on a.collectionId = c.collectionId')
       groupBy.push('c.collectionId')
       orderBy.push('c.name')
       break
@@ -283,19 +246,17 @@ module.exports.queryMetaMetrics = async function ({
       columns.push(sqlMetricsSummaryAgg)
     }
   }
-  const query = dbUtils.makeQueryString({
+  const sql = dbUtils.makeQueryString({
     ctes,
     columns,
     joins,
     predicates,
     groupBy,
-    orderBy
+    orderBy,
+    format: true
   })
 
-  let [rows, fields] = await dbUtils.pool.query(
-    query, 
-    [...cteProps.predicates.binds, ...predicates.binds]
-  )
+  const [rows] = await dbUtils.pool.query(sql)
   return (rows || [])
 }
 
@@ -452,7 +413,7 @@ const colsMetricsDetail = [
   `sa.informational`,
   `sa.informationalResultEngine`,
   `sa.fixed`,
-  `sa.fixedResultEngine`,
+  `sa.fixedResultEngine`
 ]
 const colsMetricsDetailAgg = [
   `coalesce(sum(rev.ruleCount),0) as assessments`,
@@ -591,7 +552,7 @@ const baseCols = {
     'count(distinct a.assetId) as assets'
   ],
   meta: [
-    'count(distinct granted.collectionId) as collections',
+    'count(distinct a.collectionId) as collections',
     'count(distinct a.assetId) as assets',
     'count(distinct sa.benchmarkId) as stigs',
     'count(sa.saId) as checklists'
@@ -600,7 +561,7 @@ const baseCols = {
     'rev.benchmarkId',
     'stig.title',
     'rev.revisionStr',
-    'count(distinct granted.collectionId) as collections',
+    'count(distinct a.collectionId) as collections',
     'count(distinct a.assetId) as assets',
     'rev.ruleCount'
   ]
@@ -641,7 +602,7 @@ const baseColsFlat = {
     'count(distinct a.assetId) as assets'
   ],
   meta: [
-    'count(distinct granted.collectionId) as collections',
+    'count(distinct a.collectionId) as collections',
     'count(distinct a.assetId) as assets',
     'count(distinct sa.benchmarkId) as stigs',
     'count(sa.saId) as checklists'
@@ -650,7 +611,7 @@ const baseColsFlat = {
     'rev.benchmarkId',
     'stig.title',
     'rev.revisionStr',
-    'count(distinct granted.collectionId) as collections',
+    'count(distinct a.collectionId) as collections',
     'count(distinct a.assetId) as assets',
     'rev.ruleCount'
   ]

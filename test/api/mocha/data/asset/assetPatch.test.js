@@ -1,12 +1,12 @@
-const chai = require('chai')
-const chaiHttp = require('chai-http')
-chai.use(chaiHttp)
-const expect = chai.expect
-const config = require('../../testConfig.json')
-const utils = require('../../utils/testUtils')
-const iterations = require('../../iterations.js')
-const expectations = require('./expectations.js')
-const reference = require('../../referenceData.js')
+
+import {config } from '../../testConfig.js'
+import * as utils from '../../utils/testUtils.js'
+import reference from '../../referenceData.js'
+import {iterations} from '../../iterations.js'
+import {expectations} from './expectations.js'
+import deepEqualInAnyOrder from 'deep-equal-in-any-order'
+import {use, expect} from 'chai'
+use(deepEqualInAnyOrder)
 
 describe('PATCH - Asset', function () {
 
@@ -31,7 +31,6 @@ describe('PATCH - Asset', function () {
       let scrapAsset = null
       beforeEach(async function () {
 
-        this.timeout(4000)
         testAsset = await utils.resetTestAsset()
         scrapAsset = await utils.resetScrapAsset()
       })
@@ -39,11 +38,7 @@ describe('PATCH - Asset', function () {
       describe(`updateAsset - /assets/{assetId}`, function () {
 
         it('Merge provided properties with an Asset - Change Collection - Fail for all iterations', async function () {
-          const res = await chai
-            .request(config.baseUrl)
-            .patch(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
-            .set('Authorization', 'Bearer ' + iteration.token)
-            .send({ 
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs`, 'PATCH', iteration.token, { 
               "collectionId": reference.scrapLvl1User.userId,
               "description": "test desc",
               "ip": "1.1.1.1",
@@ -56,15 +51,11 @@ describe('PATCH - Asset', function () {
               ]
           })
 
-          expect(res).to.have.status(403)
+          expect(res.status).to.eql(403)
         })
 
         it('Merge provided properties with an Asset - Change Collection - valid for lvl3 and lvl4 only (IE works for admin for me)', async function () {
-          const res = await chai
-            .request(config.baseUrl)
-            .patch(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
-            .set('Authorization', 'Bearer ' + iteration.token)
-            .send({
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs`, 'PATCH', iteration.token, {
               "collectionId": reference.scrapCollection.collectionId,
               "description": "test desc",
               "ip": "1.1.1.1",
@@ -77,10 +68,10 @@ describe('PATCH - Asset', function () {
               ]
             })
           if(!distinct.canModifyCollection){
-            expect(res).to.have.status(403)
+            expect(res.status).to.eql(403)
             return
           }
-          expect(res).to.have.status(200)
+          expect(res.status).to.eql(200)
           expect(res.body.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
           expect(res.body.labelIds).to.have.lengthOf(reference.testAsset.labels.length)
           expect(res.body.ip).to.equal(reference.testAsset.ipaddress)
@@ -93,9 +84,6 @@ describe('PATCH - Asset', function () {
               'Windows_10_STIG_TEST',
               'RHEL_7_STIG_TEST'
             ])
-          }
-          for (const stigGrant of res.body.stigGrants) {
-            expect(stigGrant.users).to.have.lengthOf(0);
           }
           const effectedAsset = await utils.getAsset(res.body.assetId)
           expect(effectedAsset.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
@@ -113,11 +101,7 @@ describe('PATCH - Asset', function () {
     
         it('Merge provided properties with an Asset', async function () {
         
-          const res = await chai
-            .request(config.baseUrl)
-            .patch(`/assets/${reference.scrapAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
-            .set('Authorization', 'Bearer ' + iteration.token)
-            .send({
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.scrapAsset.assetId}?projection=statusStats&projection=stigs`, 'PATCH', iteration.token, {
               "collectionId": reference.scrapCollection.collectionId,
               "description": "scrap",
               "ip": "1.1.1.1",
@@ -135,10 +119,10 @@ describe('PATCH - Asset', function () {
               ]
           })
           if(!distinct.canModifyCollection){
-            expect(res).to.have.status(403)
+            expect(res.status).to.eql(403)
             return
           }
-          expect(res).to.have.status(200)
+          expect(res.status).to.eql(200)
           expect(res.body).to.be.an('object')
           expect(res.body.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
           expect(res.body.ip).to.equal("1.1.1.1")
@@ -173,21 +157,25 @@ describe('PATCH - Asset', function () {
             ])
           }
         })
+
+        it("asset id does not exist", async function () {
+
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/999999`, 'PATCH', iteration.token, {
+              "description": "scrap",
+          })
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe(`patchAssetMetadata - /assets/{assetId}/metadata`, function () {
         
         it('Merge provided properties with an Asset - Change metadata', async function () {
-          const res = await chai
-            .request(config.baseUrl)
-            .patch(`/assets/${reference.testAsset.assetId}/metadata`)
-            .set('Authorization', 'Bearer ' + iteration.token)
-            .send({
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.testAsset.assetId}/metadata`, 'PATCH', iteration.token, {
               "testkey":"poc2Patched"
             })
 
             if(!distinct.canModifyCollection){
-              expect(res, "unauthorized").to.have.status(403)
+              expect(res.status).to.eql(403)
               return
             }
             expect(res.body, "expect new metadata to take effect").to.deep.equal({
@@ -199,19 +187,15 @@ describe('PATCH - Asset', function () {
             })
         })
         it('Merge metadata property/value into an Asset', async function () {
-          const res = await chai
-            .request(config.baseUrl)
-            .patch(`/assets/${reference.scrapAsset.assetId}/metadata`)
-            .set('Authorization', 'Bearer ' + iteration.token)
-            .send({
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.scrapAsset.assetId}/metadata`, 'PATCH', iteration.token, {
               "testkey":"poc2Patched"
             })
 
             if(!distinct.canModifyCollection){
-              expect(res, "un authorized").to.have.status(403)
+              expect(res.status).to.eql(403)
               return
             }
-            expect(res.body, "expect new metdata to be returned").to.deep.equal({
+            expect(res.body).to.deep.equal({
               "testkey": "poc2Patched",
             })
             const effectedAsset = await utils.getAsset(reference.scrapAsset.assetId)
@@ -234,22 +218,18 @@ describe('PATCH - Asset', function () {
     
         it('Delete Assets - expect success for valid iterations', async function () {
 
-            const assetIds = [asset1.data.assetId, asset2.data.assetId]
+            const assetIds = [asset1.assetId, asset2.assetId]
 
-            const res = await chai
-            .request(config.baseUrl)
-            .patch(`/assets?collectionId=${reference.testCollection.collectionId}`)
-            .set('Authorization', 'Bearer ' + iteration.token)
-            .send({
+            const res = await utils.executeRequest(`${config.baseUrl}/assets?collectionId=${reference.testCollection.collectionId}`, 'PATCH', iteration.token, {
                 "operation": "delete",
                 "assetIds": assetIds
             })
         
             if(!distinct.canModifyCollection){
-                expect(res).to.have.status(403)
+                expect(res.status).to.eql(403)
                 return
             }
-            expect(res).to.have.status(200)
+            expect(res.status).to.eql(200)
             expect(res.body, "expect assets 29 and 42 to be delted").to.eql({
             "operation": "deleted",
             "assetIds": assetIds})
@@ -261,26 +241,18 @@ describe('PATCH - Asset', function () {
             
         })
         it('Delete Assets - assets not in collection', async function () {
-            const res = await chai
-              .request(config.baseUrl)
-              .patch(`/assets?collectionId=${reference.testCollection.collectionId}`)
-              .set('Authorization', 'Bearer ' + iteration.token)
-              .send({
+            const res = await utils.executeRequest(`${config.baseUrl}/assets?collectionId=${reference.testCollection.collectionId}`, 'PATCH', iteration.token, {
                 "operation": "delete",
                 "assetIds": ["258","260"]
               })
-              expect(res, "assets are not in collection 21.").to.have.status(403)
+              expect(res.status).to.eql(403)
         })
         it('Delete Assets - collection does not exist', async function () {
-          const res = await chai
-            .request(config.baseUrl)
-            .patch(`/assets?collectionId=${99999}`)
-            .set('Authorization', 'Bearer ' + iteration.token)
-            .send({
+          const res = await utils.executeRequest(`${config.baseUrl}/assets?collectionId=${99999}`, 'PATCH', iteration.token, {
               "operation": "delete",
               "assetIds": ["29","42"]
             })
-            expect(res, "collecitonId is does not exist").to.have.status(403)
+            expect(res.status).to.eql(403)
         })
       })  
     })

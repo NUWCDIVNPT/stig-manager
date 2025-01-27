@@ -40,7 +40,7 @@ Example commands to prepare MySQL for initial API execution:
 
 .. note::
    Important DB configuration options:
-    - ``innodb_buffer_pool_size`` -  set to at least 1GB (1073741824) unless planning to manage a deployment with a very small amount of Assets and Reviews, and 8GB (8589934592) or more for larger deployments (>10,000 Assets).
+    - ``innodb_buffer_pool_size`` -  set to at least 4GB (4294967296) unless planning to manage a deployment with a very small amount of Assets and Reviews, and 8GB (8589934592) or more for larger deployments (>10,000 Assets).
     - ``sort_buffer_size`` - set to at least 8M (8388608), and perhaps up to 16M (Increasing the sort_buffer_size from the default of 256k may only be required if you have very large detail/comment text fields).
 
 

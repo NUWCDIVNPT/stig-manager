@@ -22,7 +22,9 @@ These pages describe how to use STIG Manager.
 		
 	user-quickstart
 	user-guide
+	roles-and-access
 	review-handling
 	rule-exceptions
+	rbac.md
 	
 	

@@ -400,6 +400,18 @@ The table below describes the fields that are included in the exports available 
      - Number of Reviews with a "fixed" result that were evaluated by an automated tool. 
      - 
      - **X**
+   * - resultEngines
+     - Array of JSON objects containing an entry for each version of a resultEngine (ie. Evaluate-STIG 1.2, Evaluate-STIG 2.4, OpenSCAP, etc.) that is associated with a current Review in the Collection, and the number of Reviews that tool evaluated.
+     - 
+     - **X**
+   * - users
+     - Array of JSON objects containing an entry for each User that has set the current Evaluation of a Review in the Collection, and the number of Reviews they evaluated.
+     - 
+     - **X**
+   * - statusUsers
+     - Array of JSON objects containing an entry for each User that set the current Status of a Review in the Collection, and the number of Reviews they have set the Status for.
+     - 
+     - **X**
 
 |
 
@@ -648,19 +660,26 @@ Select more than one Review with Shift-Click, Ctrl-Click, or the checkboxes, and
 
 |
 
+If a User has Read-Only access to Assets in this Collection, the checkboxes for those Assets will be replaced with a read-only icon, and they will not be able to change those Reviews.
 
-Resources Panel
--------------------
-This Panel provides access to the Attachments and Log tabs for the Review on the selected Asset.
+.. thumbnail:: /assets/images/collection-review-read-only.png
+      :width: 50% 
+      :show_caption: True
+      :title: Assets are Read-Only for this User
 
-Attachments Tab
-~~~~~~~~~~~~~~~~~
-The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/NUWCDIVNPT/stig-manager/issues/new/choose>`_ are submitted. 
+|
 
+Additional Review Resources
+-----------------------------------
 
-Log Tab
+Review History
 ~~~~~~~~~~~~~~~~~~~~
-The Log Panel displays a record of the Review as it has changed over time.
+Click the "clock" icon that appears when hovering over an Asset to see the Review History for that Asset. 
+
+Attachments 
+~~~~~~~~~~~~~~~~~
+Click the "paperclip" icon that appears when hovering over an Asset to see or add attachments to a Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The attachments button becomes available once there is an Evaluation Result for the Review. 
+
 
 ================================
 
@@ -673,7 +692,7 @@ Asset Review Workspace
 ====================================
 The Asset Review Workspace allows you to view and modify all the Reviews for a specific STIG on the selected Asset. It also presents useful information such as the Reviews for the same Rule on other Assets, the Review's Log, and Status Text.
 Users can also import and export results in .ckl or XCCDF checklist formats. 
-It can be accessed by clicking the Shield icon or double-clicking on an Asset in the STIGs or Assets Tabs of the Collection Dashboard. 
+This workspace can be accessed by clicking the Shield icon or double-clicking on an Asset in the STIGs or Assets Tabs of the Collection Dashboard. 
 
 
 .. thumbnail:: /assets/images/asset-review.png
@@ -697,7 +716,19 @@ From the Checklist menu in the Menu Bar, the User can:
    * Switch between Revisions of the STIG being displayed.
 
 
-The menu bar also supports a variety of status and Title filters.
+The menu bar also supports a variety of status and Title filters, and indicates if the Reviews for this Asset can be changed by the User.
+
+.. thumbnail:: /assets/images/asset-review-writeable.png
+      :width: 50% 
+      :show_caption: True
+      :title: Reviews can be changed by this User.
+
+.. thumbnail:: /assets/images/asset-review-read-only.png
+      :width: 50% 
+      :show_caption: True
+      :title: Reviews cannot be changed by this User.
+
+
 
 .. note::
    STIG Manager does not retain the .ckl or XCCDF files that are imported. The files are parsed and the individual Reviews are stored in STIG Manager's Database. STIG Manager can produce a new .ckl representation of its Reviews on demand. 
@@ -878,7 +909,7 @@ Allows a Collection Manager or Owner to Manage their Collection.
 From this Workspace, the User can:
 
    * Alter the Name, Description, Settings, and Metadata associated with the Collection
-   * Add/Modify/Remove User Grants in the Collection
+   * Add/Modify/Remove Grants and Access Control Lists for Users and User Groups in the Collection
    * Batch import CKL or XCCDF files to automatically scaffold or add to their Collection
    * Batch export CKL or XCCDF files for external tools such as eMASS
    * Add/Modify/Remove Assets in the Collection 
@@ -970,30 +1001,56 @@ Once the clone operation has started, a status bar will appear at the bottom of 
 Grants Tab
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This Tab displays all the Users who have access to some portion of this Collection.
+This Tab displays all the Users and Groups that have been given a Grant to some portion of this Collection.
 
-User Grants can be added or removed using toolbar buttons at the top of this Panel. Double-clicking a Grant will allow you to modify the Grant. When creating or modifying a Grant, typing into the Username field will display a filtered droplist of the available users. 
+User/Group Grants can be added or removed using the toolbar buttons at the top of this Panel. When hovering over a Grant, click the "pencil" icon to change the User or Role associated with the Grant. Click the "target" icon to change the Access Control List applied to the Grant.  Click the "trash" icon to remove the Grant.
 
-See :term:`User` for more info about these Access Levels.
+You can expand individual Groups listed in the "Available Grantees" panel to see the Users in that Group.
 
-.. thumbnail:: /assets/images/collection-manage-grants-user-pulldown.png
+See the :ref:`Roles and Access<roles-and-access>` section for more information about Grants, Roles, and Access Control.
+
+.. thumbnail:: /assets/images/collection-manage-new-grants-popup.png
       :width: 50% 
       :show_caption: True
       :title: The User Grants Panel
 
 
+.. thumbnail:: /assets/images/collection-manage-edit-grant.png
+      :width: 50% 
+      :show_caption: True
+      :title: Edit or reassign an existing Grant
 
 -------------------------------
 
-When a User with a Restricted Grant is selected, the "User access..." button is enabled. Restricted Users must be given access to specific Asset-STIG pairs. 
+Every Grant is associated with a User or Group, an Access Control List, and Role in the Collection.  The Access Control List can be used to restrict or expand the Grant's access to certain Assets, STIGs, or Labels in the Collection.  By default, the Full, Manage, and Owner Roles have Read/Write access to all Reviews in a Collection, and the Restricted Role has no access to any Reviews.  The Access Control List can be used to further restrict or expand access for any of these Roles.
 
-.. thumbnail:: /assets/images/restricted-access-list.png
+Managers and Owners have additional Collection capabilities that let them add or remove Assets, STIG assignments, and Grants to the Collection. 
+See the :ref:`Roles and Access<roles-and-access>` section for more information about Grants, Roles, and Access Control.
+
+
+.. thumbnail:: /assets/images/collection-manage-acl-popup.png
       :width: 50% 
       :show_caption: True
-      :title: The Restricted User Access List
+      :title: The Access Control List Popup
 
 |
 
+
+
+.. _users-panel:
+
+Users Tab
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This tab displays all the Users that have been granted access to this Collection, with either a Direct Grant to the User or via a Grant to a User Group. Hover over a Grant and click the "target" icon to view an expanded list of every Asset and STIG that the User has access to in this Collection. This view is the "effective access" of the User to the Collection that has been calculated based on the User's Role and the Access Control Lists associated with their Grant.
+
+
+.. thumbnail:: /assets/images/collection-manage-effective-access.png
+      :width: 50% 
+      :show_caption: True
+      :title: Users Effective Access
+
+|
 
 Collection Settings Tab
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

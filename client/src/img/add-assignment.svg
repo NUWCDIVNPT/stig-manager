@@ -8,7 +8,7 @@
    version="1.1"
    id="svg1"
    sodipodi:docname="add-assignment.svg"
-   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
+   inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,11 +25,11 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="1.02"
-     inkscape:cx="399.5098"
+     inkscape:cx="400"
      inkscape:cy="400"
-     inkscape:window-width="1920"
-     inkscape:window-height="1020"
-     inkscape:window-x="1920"
+     inkscape:window-width="3432"
+     inkscape:window-height="1364"
+     inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg1" />
@@ -37,5 +37,5 @@
      d="M 10,18 A 8,8 0 1 0 10,2 8,8 0 0 0 10,18 Z M 8.293,13.707 a 1,1 0 0 1 0,-1.414 L 10.586,10 8.293,7.707 A 1,1 0 0 1 9.707,6.293 l 3,3 a 1,1 0 0 1 0,1.414 l -3,3 a 1,1 0 0 1 -1.414,0 z"
      fill="#5C5F62"
      id="path1"
-     style="fill:#298c2e;fill-opacity:1" />
+     style="fill:#6a903b;fill-opacity:1" />
 </svg>

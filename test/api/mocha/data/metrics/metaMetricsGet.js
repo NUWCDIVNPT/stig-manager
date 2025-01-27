@@ -1,4 +1,4 @@
-const metrics = {
+export const metaMetrics = {
   'meta metrics detail - no agg - no params': {
     stigmanadmin: {
       collections: 2,
@@ -955,7 +955,7 @@ const metrics = {
   },
   'meta metrics detail - agg by collection - no params': {
     stigmanadmin: [
-      {
+      { 
         collectionId: '21',
         name: 'Collection X',
         assets: 3,
@@ -4824,4 +4824,3 @@ const metrics = {
     }
 }
 
-module.exports = metrics

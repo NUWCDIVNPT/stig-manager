@@ -1,10 +1,9 @@
-const chai = require("chai")
-const chaiHttp = require("chai-http")
-chai.use(chaiHttp)
-const expect = chai.expect
-const config = require("../testConfig.json")
-const utils = require("../utils/testUtils")
-const reference = require("../referenceData")
+
+import {config } from '../testConfig.js'
+import * as utils from '../utils/testUtils.js'
+import reference from '../referenceData.js'
+import { expect } from 'chai'
+
 const user = {
   name: "admin",
   grant: "Owner",
@@ -16,9 +15,7 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
     describe('delete handling', () => {
 
         before(async function () {
-            this.timeout(4000)
             await utils.loadAppData()
-            await utils.uploadTestStigs()
         })
 
         let collectionToDelete = null
@@ -26,104 +23,92 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
         let deletedCollection = null
         it('Create a Collection in order to delete it', async () => {
             
-            const res = await chai
-                .request(config.baseUrl)
-                .post("/collections?elevate=true&projection=grants&projection=labels")
-                .set("Authorization", `Bearer ${user.token}`)
-                .send({
-                    "name": "TEST_" + utils.getUUIDSubString(),
-                    "description": "Collection TEST description",
-                    "settings": {
-                        "fields": {
-                            "detail": {
-                                "enabled": "always",
-                                "required": "findings"
-                            },
-                            "comment": {
-                                "enabled": "always",
-                                "required": "findings"
-                            }
+            const res = await utils.executeRequest(`${config.baseUrl}/collections?elevate=true&projection=grants&projection=labels`, 'POST', user.token, {
+                "name": "TEST_"+ utils.getUUIDSubString(),
+                "description": "Collection TEST description",
+                "settings": {
+                    "fields": {
+                        "detail": {
+                            "enabled": "always",
+                            "required": "findings"
                         },
-                        "status": {
-                            "canAccept": true,
-                            "minAcceptGrant": 2,
-                            "resetCriteria": "result"
-                        },
-                        "history": {
-                            "maxReviews": 11
+                        "comment": {
+                            "enabled": "always",
+                            "required": "findings"
                         }
-                  },
-                    "metadata": {
-                        "pocName": "poc2Put",
-                        "pocEmail": "pocEmailPut@email.com",
-                        "pocPhone": "12342",
-                        "reqRar": "true"
                     },
-                    "grants": [
-                        {
-                                "userId": "1",
-                                "accessLevel": 4
-                        },
-                        {
-                                "userId": "85",
-                                "accessLevel": 1
-                        }        
-                    ],
-                    "labels": [
-                        {
-                            "name": "TEST",
-                            "description": "Collection label description",
-                            "color": "ffffff"
-                        }
-                    ]
-                })
-            expect(res).to.have.status(201)
+                    "status": {
+                        "canAccept": true,
+                        "minAcceptGrant": 2,
+                        "resetCriteria": "result"
+                    },
+                    "history": {
+                        "maxReviews": 11
+                    }
+              },
+                "metadata": {
+                    "pocName": "poc2Put",
+                    "pocEmail": "pocEmailPut@email.com",
+                    "pocPhone": "12342",
+                    "reqRar": "true"
+                },
+                "grants": [
+                    {
+                            "userId": "1",
+                            "roleId": 4
+                    },
+                    {
+                            "userId": "85",
+                            "roleId": 1
+                    }        
+                ],
+                "labels": [
+                    {
+                        "name": "TEST",
+                        "description": "Collection label description",
+                        "color": "ffffff"
+                    }
+                ]
+            })
+            expect(res.status).to.eql(201)
             collectionToDelete = res.body.collectionId
         })
         it('Create an Asset in collection to be deleted', async () => {
 
-            const res = await chai
-                .request(config.baseUrl)
-                .post(`/assets?projection=stigs`)
-                .set("Authorization", `Bearer ${user.token}`)
-                .send({
-                    "name": "TEST_" + utils.getUUIDSubString(),
-                    "collectionId": collectionToDelete,
-                    "description": "test desc",
-                    "ip": "1.1.1.1",
-                    "labelIds": [reference.testCollection.fullLabel],
-                    "noncomputing": true,
-                    "metadata": {
-                        "pocName": "poc2Put",
-                        "pocEmail": "pocEmailPut@email.com",
-                        "pocPhone": "12342",
-                        "reqRar": "true"
-                    },
-                    "stigs": [
-                        "VPN_SRG_TEST",
-                        "Windows_10_STIG_TEST"
-                    ]
-                })
-            expect(res).to.have.status(201)
+            const res = await utils.executeRequest(`${config.baseUrl}/assets?projection=stigs`, 'POST', user.token, {
+                "name": "TEST_"+ utils.getUUIDSubString(10),
+                "collectionId": collectionToDelete,
+                "description": "test desc",
+                "ip": "1.1.1.1",
+                "labelIds": [reference.testCollection.fullLabel],
+                "noncomputing": true,
+                "metadata": {
+                    "pocName": "poc2Put",
+                    "pocEmail": "pocEmailPut@email.com",
+                    "pocPhone": "12342",
+                    "reqRar": "true"
+                },
+                "stigs": [
+                    "VPN_SRG_TEST",
+                    "Windows_10_STIG_TEST"
+                ]
+            })
+            expect(res.status).to.eql(201)
             assetToDelete = res.body.assetId
         })
         it('Import one or more Reviews from a JSON body Copy', async () => {
 
-            const res = await chai
-                .request(config.baseUrl)
-                .post(`/collections/${collectionToDelete}/reviews/${assetToDelete}`)
-                .set("Authorization", `Bearer ${user.token}`)
-                .send([
-                    {
-                    "ruleId": reference.ruleId,
-                    "result": "pass",
-                    "detail": "test\nvisible to lvl1",
-                    "comment": "sure",
-                    "autoResult": false,
-                    "status": "submitted"
-                    }
-                ])
-            expect(res).to.have.status(200)
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${collectionToDelete}/reviews/${assetToDelete}`, 'POST', user.token, [
+                {
+                "ruleId": reference.ruleId,
+                "result": "pass",
+                "detail": "test\nvisible to lvl1",
+                "comment": "sure",
+                "autoResult": false,
+                "status": "submitted"
+                }
+            ])
+            expect(res.status).to.eql(200)
             const expectedResponse = {
                 rejected: [],
                 affected: {
@@ -136,129 +121,95 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
         })
         it(`Delete a Collection should now be deleted`, async () => {
 
-            const res = await chai
-                .request(config.baseUrl)
-                .delete(`/collections/${collectionToDelete}?elevate=true`)
-                .set("Authorization", `Bearer ${user.token}`)
-            expect(res).to.have.status(200)
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${collectionToDelete}?elevate=true`, 'DELETE', user.token)
+            expect(res.status).to.eql(200)
             deletedCollection = res.body.collectionId
         })
         it('put review of an asset in a deleted collection should fail', async () => {
 
-            const res = await chai
-                .request(config.baseUrl)
-                .put(`/collections/${collectionToDelete}/reviews/${assetToDelete}/${reference.ruleId}?projection=rule&projection=stigs`)
-                .set("Authorization", `Bearer ${user.token}`)
-                .send({
-                    "result": "pass",
-                    "detail": "test\nvisible to lvl1",
-                    "comment": "sure",
-                    "autoResult": false,
-                    "status": "submitted"
-                })
-            expect(res).to.have.status(403)
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${collectionToDelete}/reviews/${assetToDelete}/${reference.ruleId}?projection=rule&projection=stigs`, 'PUT', user.token, {
+                "result": "pass",
+                "detail": "test\nvisible to lvl1",
+                "comment": "sure",
+                "autoResult": false,
+                "status": "submitted"
+            })
+            expect(res.status).to.eql(403)
         })
         it('Return the STIGs - from deleted collection should fail', async () => {
 
-            const res = await chai
-                .request(config.baseUrl)
-                .get(`/collections/${collectionToDelete}/stigs`)
-                .set("Authorization", `Bearer ${user.token}`)
-            expect(res).to.have.status(403)
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${collectionToDelete}/stigs`, 'GET', user.token)
+            expect(res.status).to.eql(403)
         })
         it('import reviews for asset in deleted collection should fail', async () => {
 
-            const res = await chai
-                .request(config.baseUrl)
-                .post(`/collections/${collectionToDelete}/reviews/${assetToDelete}`)
-                .set("Authorization", `Bearer ${user.token}`)
-                .send([
-                    {
-                    "ruleId": reference.ruleId,
-                    "result": "pass",
-                    "detail": "test\nvisible to lvl1",
-                    "comment": "sure",
-                    "autoResult": false,
-                    "status": "submitted"
-                    }
-                ])
-            expect(res).to.have.status(403)
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${collectionToDelete}/reviews/${assetToDelete}`, 'POST', user.token, [
+                {
+                "ruleId": reference.ruleId,
+                "result": "pass",
+                "detail": "test\nvisible to lvl1",
+                "comment": "sure",
+                "autoResult": false,
+                "status": "submitted"
+                }
+            ])
+            expect(res.status).to.eql(403)
         })
         it('Delete an asset in a deleted collection should fail', async () => {
 
-            const res = await chai
-                .request(config.baseUrl)
-                .delete(`/assets/${assetToDelete}`)
-                .set("Authorization", `Bearer ${user.token}`)
-            expect(res).to.have.status(403)
+            const res = await utils.executeRequest(`${config.baseUrl}/assets/${assetToDelete}`, 'DELETE', user.token)
+            expect(res.status).to.eql(403)
         }) 
         it('Import reviews for deleted asset should fail', async () => {
 
-            const res = await chai
-                .request(config.baseUrl)
-                .post(`/collections/${collectionToDelete}/reviews/${reference.testAsset.assetId}`)
-                .set("Authorization", `Bearer ${user.token}`)
-                .send([
-                    {
-                    "ruleId": reference.ruleId,
-                    "result": "pass",
-                    "detail": "test\nvisible to lvl1",
-                    "comment": "sure",
-                    "autoResult": false,
-                    "status": "submitted"
-                    }
-                ])
-            expect(res).to.have.status(403)
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${collectionToDelete}/reviews/${reference.testAsset.assetId}`, 'POST', user.token, [
+                {
+                "ruleId": reference.ruleId,
+                "result": "pass",
+                "detail": "test\nvisible to lvl1",
+                "comment": "sure",
+                "autoResult": false,
+                "status": "submitted"
+                }
+            ])
+            expect(res.status).to.eql(403)
         })
         it('Return a deleted Collection no data returned 204', async () => {
 
-            const res = await chai
-                .request(config.baseUrl)
-                .get(`/collections/${collectionToDelete}?elevate=true&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`)
-                .set("Authorization", `Bearer ${user.token}`)
-            expect(res).to.have.status(204)
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${collectionToDelete}?elevate=true&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`, 'GET', user.token)
+            expect(res.status).to.eql(204)
         })
         it('Create an Asset in deleted collection should fail', async () => {
 
-            const res = await chai
-                .request(config.baseUrl)
-                .post(`/assets?projection=stigs`)
-                .set("Authorization", `Bearer ${user.token}`)
-                .send({
-                    "name": "TEST_" + utils.getUUIDSubString(),
-                    "collectionId": deletedCollection,
-                    "description": "test desc",
-                    "ip": "1.1.1.1",
-                    "labelIds": [reference.testCollection.fullLabel],
-                    "noncomputing": true,
-                    "metadata": {
-                        "pocName": "poc2Put",
-                        "pocEmail": "pocEmailPut@email.com",
-                        "pocPhone": "12342",
-                        "reqRar": "true"
-                    },
-                    "stigs": [
-                        "VPN_SRG_TEST",
-                        "Windows_10_STIG_TEST"
-                    ]
-                })
-            expect(res).to.have.status(403)
+            const res = await utils.executeRequest(`${config.baseUrl}/assets?projection=stigs`, 'POST', user.token, {
+                "name": "TEST_"+ utils.getUUIDSubString(10),
+                "collectionId": deletedCollection,
+                "description": "test desc",
+                "ip": "1.1.1.1",
+                "labelIds": [reference.testCollection.fullLabel],
+                "noncomputing": true,
+                "metadata": {
+                    "pocName": "poc2Put",
+                    "pocEmail": "pocEmailPut@email.com",
+                    "pocPhone": "12342",
+                    "reqRar": "true"
+                },
+                "stigs": [
+                    "VPN_SRG_TEST",
+                    "Windows_10_STIG_TEST"
+                ]
+            })
+            expect(res.status).to.eql(403)
         })
         it('should delete the test asset', async () => {
 
-            const res = await chai
-                .request(config.baseUrl)
-                .delete(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
-                .set("Authorization", `Bearer ${user.token}`)
-            expect(res).to.have.status(200)
+            const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.testAsset.assetId}`, 'DELETE', user.token)
+            expect(res.status).to.eql(200)
         })
         it('get asset, it should return 403 because asset is deleted', async () => {
-
-            const res = await chai
-                .request(config.baseUrl)
-                .get(`/assets/${reference.testAsset.assetId}?projection=statusStats&projection=stigs&projection=stigGrants`)
-                .set("Authorization", `Bearer ${user.token}`)
-            expect(res).to.have.status(403)
+            
+            const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.testAsset.assetId}`, 'GET', user.token)
+            expect(res.status).to.eql(403)
         })
     })
 })

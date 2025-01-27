@@ -1,33 +1,23 @@
-const chai = require("chai")
-const chaiHttp = require("chai-http")
-chai.use(chaiHttp)
-const expect = chai.expect
-const deepEqualInAnyOrder = require('deep-equal-in-any-order')
-chai.use(deepEqualInAnyOrder)
-const config = require("../../testConfig.json")
-const utils = require("../../utils/testUtils")
-const iterations = require("../../iterations.js")
-const expectations = require('./expectations.js')
-const reference = require('../../referenceData.js')
-const requestBodies = require('./requestBodies.js')
+import { v4 as uuidv4 } from 'uuid'
+import JSZip from 'jszip';
+import {config } from '../../testConfig.js'
+import * as utils from '../../utils/testUtils.js'
+import reference from '../../referenceData.js'
+import {requestBodies} from "./requestBodies.js"
+import {iterations} from '../../iterations.js'
+import {expectations} from './expectations.js'
+import { reviewsFromCkl, reviewsFromScc, reviewsFromCklb } from "@nuwcdivnpt/stig-manager-client-modules"
+import deepEqualInAnyOrder from 'deep-equal-in-any-order'
+import {use, expect} from 'chai'
+use(deepEqualInAnyOrder)
+
+
 
 describe('POST - Collection - not all tests run for all iterations', function () {
 
   before(async function () {
-    // this.timeout(4000)
-    await utils.uploadTestStigs()
-    try{
-      await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
-    }
-    catch(err){
-        console.log("no stig to upload")
-    }
     await utils.loadAppData()
-    await utils.createDisabledCollectionsandAssets()
-  })
-
-  after(async function () {
-    await utils.deleteStigByRevision("VPN_SRG_TEST", "V1R0")
+    await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
   })
 
   for(const iteration of iterations) {
@@ -38,22 +28,13 @@ describe('POST - Collection - not all tests run for all iterations', function ()
     describe(`iteration:${iteration.name}`, function () {
       const distinct = expectations[iteration.name]
       
-      // before(async function () {
-      //   // this.timeout(4000)
-      //   await utils.uploadTestStigs()
-      //   try{
-      //     await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
-      //   }
-      //   catch(err){
-      //       console.log("no stig to upload")
-      //   }
-      //   await utils.loadAppData()
-      //   await utils.createDisabledCollectionsandAssets()
-      // })
+      before(async function () {
+        await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
+      })
 
-      // after(async function () {
-      //   await utils.deleteStigByRevision("VPN_SRG_TEST", "V1R0")
-      // })
+      after(async function () {
+     //   await utils.deleteStigByRevision("VPN_SRG_TEST", "V1R0")
+      })
   
       describe("createCollection - /collections", function () {
 
@@ -62,18 +43,12 @@ describe('POST - Collection - not all tests run for all iterations', function ()
         it("Create a Collection and test projections",async function () {
           const post = JSON.parse(JSON.stringify(requestBodies.createCollection))
           post.name = "testCollection" + random
-          const res = await chai
-          .request(config.baseUrl)
-          .post(
-            `/collections?elevate=${distinct.canElevate}&projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`
-          )
-          .set("Authorization", `Bearer ${iteration.token}`)
-          .send(post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections?elevate=${distinct.canElevate}&projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`, 'POST', iteration.token, post)
           if(distinct.canCreateCollection === false){
-            expect(res).to.have.status(403)
+            expect(res.status).to.eql(403)
             return
           }
-          expect(res).to.have.status(201)
+          expect(res.status).to.eql(201)
           if (distinct.grant === 'none') {  
             // grant = none iteration can create a collection, but does not give itself access to the collection
             // TODO: Should eventually be changed to respond with empty object
@@ -97,7 +72,8 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           // grants projection
           expect(res.body.grants).to.have.lengthOf(1)
           expect(res.body.grants[0].user.userId).to.equal("1")
-          expect(res.body.grants[0].accessLevel).to.equal(4)
+          expect(res.body.grants[0].roleId).to.equal(4)
+          expect(res.body.grants[0].grantId).to.exist
 
           // labels projection
           expect(res.body.labels).to.have.lengthOf(1)
@@ -115,7 +91,6 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           // statistics projection
           expect(res.body.statistics.assetCount).to.equal(0)
           expect(res.body.statistics.checklistCount).to.equal(0)
-          expect(res.body.statistics.grantCount).to.equal(1)
       
           // stigs projection
           expect(res.body.stigs).to.have.lengthOf(0)
@@ -124,34 +99,41 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const createdCollection = await utils.getCollection(res.body.collectionId)
             expect(createdCollection).to.exist
         })
+        it("Create A colleciton with grant to a user group",async function () {
+
+          const post = requestBodies.createCollectionWithTestGroup
+          let uuid = uuidv4().slice(0, 10)
+          post.name = "testCollection" + uuid
+          const res = await utils.executeRequest(`${config.baseUrl}/collections?elevate=${distinct.canElevate}&projection=grants`, 'POST', iteration.token, post)
+          if(distinct.canCreateCollection === false){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(201)
+          expect(res.body.grants).to.have.lengthOf(1)
+          expect(res.body.grants[0].userGroup.userGroupId).to.equal("1")
+          expect(res.body.grants[0].roleId).to.equal(2)
+        })
         it("should throw SmError.UnprocessableError due to duplicate user in grant array.",async function () {
 
           const post = JSON.parse(JSON.stringify(requestBodies.createCollection))
           post.grants.push(post.grants[0])
           post.name = "TEST" + utils.getUUIDSubString()
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections?elevate=${distinct.canElevate}`)
-            .set("Authorization", `Bearer ${iteration.token}`)
-            .send(post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections?elevate=${distinct.canElevate}`, 'POST', iteration.token, post)
             if(distinct.canCreateCollection === false){
-              expect(res).to.have.status(403)
+              expect(res.status).to.eql(403)
               return
             }
-            expect(res).to.have.status(422)
+            expect(res.status).to.eql(422)
             expect(res.body.error).to.equal("Unprocessable Entity.")
-            expect(res.body.detail).to.equal("Duplicate user in grant array")
+            expect(res.body.detail).to.equal("Duplicate user or user group in grant array")
         })
         it("should throw SmError.UnprocessableError due to duplicate name exists ",async function () {
           const post = JSON.parse(JSON.stringify(requestBodies.createCollection))
           post.name = "testCollection" + random
-          const res = await chai
-           .request(config.baseUrl)
-           .post(`/collections?elevate=${distinct.canElevate}&projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`)
-           .set("Authorization", `Bearer ${iteration.token}`)
-           .send(post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections?elevate=${distinct.canElevate}&projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`, 'POST', iteration.token, post)
           if(distinct.canCreateCollection === false){
-            expect(res).to.have.status(403)
+            expect(res.status).to.eql(403)
             return
           }
           if (distinct.grant === 'none') {  
@@ -159,9 +141,560 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             // TODO: Should eventually be changed to respond with empty object
             return
           }
-          expect(res).to.have.status(422)
+          expect(res.status).to.eql(422)
           expect(res.body.error).to.equal("Unprocessable Entity.")
           expect(res.body.detail).to.equal("Duplicate name exists.")
+        })
+      })
+
+      describe("postCklArchiveByCollection - /collections/{collectionId}/archive/ckl", function () {
+
+        it("should download a CKL and get the test asset with test benchmark ",async function () {
+
+          const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/archive/ckl`
+          const requestBody = JSON.stringify(
+            requestBodies.postArchiveBenchmarkRevision,
+          )
+      
+          const options = {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${iteration.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          }
+      
+          // Fetch request
+          const res = await fetch(url, options)
+
+          if(iteration.name === "collectioncreator"){
+            expect(res.status).to.eql(403)
+            return
+          }
+
+          expect(res.status).to.eql(200)
+
+          const resArrayBuffer = await res.arrayBuffer();
+          const resBuffer = Buffer.from(resArrayBuffer);
+
+        
+          const zip = await JSZip.loadAsync(resBuffer)
+          const fileNames = Object.keys(zip.files)
+          expect(fileNames).to.have.lengthOf(2)
+          const data = await zip.files["Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.ckl"].async("string")
+          const assetData = reviewsFromCkl({
+            data,                    
+            fieldSettings: config.fieldSettings,  
+            allowAccept: true,       
+            importOptions: config.importOptions, 
+            sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.ckl"
+          })
+          expect(assetData.target.name).to.equal(reference.testAsset.name)
+          expect(assetData.target.metadata.cklRole).to.exist
+          expect(assetData.target.metadata.cklRole).to.equal("None")
+          expect(assetData.checklists).to.have.lengthOf(1)
+          expect(assetData.checklists[0].benchmarkId).to.equal(reference.benchmark)
+          expect(assetData.checklists[0].revisionStr).to.equal("V1R1")
+          expect(assetData.checklists[0].reviews).to.have.lengthOf(reference.testAsset.VPN_SRG_TEST_reviewCnt)
+        })
+
+        it("should download a CKL for an asset that does not have stigs attached, should throw. Lvl1 and collection creator do not  have access to asset",async function () {
+
+        
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/archive/ckl`, 'POST', iteration.token, requestBodies.postArchiveBenchmarkRevisionLvl1NoAccess)
+
+          if(iteration.name ==  "lvl1" || iteration.name == "collectioncreator"){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(422)
+        })
+
+        it("should download a CKL and get the test asset with test benchmark and no revision specified. should return latest",async function () {
+
+          const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/archive/ckl`
+          const requestBody = JSON.stringify(
+            requestBodies.postArchiveBenchmark,
+          )
+      
+          const options = {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${iteration.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          }
+      
+          // Fetch request
+          const res = await fetch(url, options)
+
+          if(iteration.name === "collectioncreator"){
+            expect(res.status).to.eql(403)
+            return
+          }
+
+          expect(res.status).to.eql(200)
+
+          const resArrayBuffer = await res.arrayBuffer();
+          const resBuffer = Buffer.from(resArrayBuffer);
+
+        
+          const zip = await JSZip.loadAsync(resBuffer)
+            const fileNames = Object.keys(zip.files)
+            expect(fileNames).to.have.lengthOf(2)
+            const data = await zip.files["Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.ckl"].async("string")
+            const assetData = reviewsFromCkl({
+              data,                    
+              fieldSettings: config.fieldSettings,  
+              allowAccept: true,       
+              importOptions: config.importOptions, 
+              sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.ckl"
+            })
+            expect(assetData.target.name).to.equal(reference.testAsset.name)
+            expect(assetData.target.metadata.cklRole).to.exist
+            expect(assetData.target.metadata.cklRole).to.equal("None")
+            expect(assetData.checklists).to.have.lengthOf(1)
+            expect(assetData.checklists[0].benchmarkId).to.equal(reference.benchmark)
+            expect(assetData.checklists[0].revisionStr).to.equal("V1R1")
+            expect(assetData.checklists[0].reviews).to.have.lengthOf(reference.testAsset.VPN_SRG_TEST_reviewCnt)
+        })
+        it("should download a CKL and get the test asset with all benchmarks in a multi stig CKL file ",async function () {
+
+          const url =`${config.baseUrl}/collections/${reference.testCollection.collectionId}/archive/ckl?mode=multi`
+          const requestBody = JSON.stringify(
+            requestBodies.postArchiveDefault,
+          )
+      
+          const options = {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${iteration.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          }
+      
+          // Fetch request
+          const res = await fetch(url, options)
+
+          if(iteration.name === "collectioncreator"){
+            expect(res.status).to.eql(403)
+            return
+          }
+
+          expect(res.status).to.eql(200)
+
+          const resArrayBuffer = await res.arrayBuffer();
+          const resBuffer = Buffer.from(resArrayBuffer);
+
+        
+          const zip = await JSZip.loadAsync(resBuffer)
+            const fileNames = Object.keys(zip.files)
+            expect(fileNames).to.have.lengthOf(2)
+            const data = await zip.files["Collection_X_lvl1_asset-1.ckl"].async("string")
+            const assetData = reviewsFromCkl({
+              data,                    
+              fieldSettings: config.fieldSettings,  
+              allowAccept: true,       
+              importOptions: config.importOptions, 
+              sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.ckl"
+            })
+            expect(assetData.target.name).to.equal(reference.testAsset.name)
+            expect(assetData.target.metadata.cklRole).to.exist
+            expect(assetData.target.metadata.cklRole).to.equal("None")
+            expect(assetData.checklists).to.have.lengthOf(distinct.testAssetChecklists)
+            for(const checklist of assetData.checklists){
+              if(checklist.benchmarkId === reference.benchmark){
+                expect(checklist.revisionStr).to.equal("V1R1")
+                expect(checklist.reviews).to.have.lengthOf(reference.testAsset.VPN_SRG_TEST_reviewCnt)
+              }
+              else {
+                expect(checklist.benchmarkId).to.equal(reference.windowsBenchmark)
+                expect(checklist.revisionStr).to.equal("V1R23")
+                expect(checklist.reviews).to.have.lengthOf(3)
+              }
+            }
+        })
+      })
+
+      describe("postCklbArchiveByCollection - /collections/{collectionId}/archive/cklb", function () {
+
+        it("should download a CKLB and get the test asset with test benchmark ",async function () {
+
+          const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/archive/cklb`
+          const requestBody = JSON.stringify(
+            requestBodies.postArchiveBenchmarkRevision,
+          )
+      
+          const options = {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${iteration.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          }
+      
+          const res = await fetch(url, options)
+
+          if(iteration.name === "collectioncreator"){
+            expect(res.status).to.eql(403)
+            return
+          }
+
+          expect(res.status).to.eql(200)
+
+          const resArrayBuffer = await res.arrayBuffer()
+          const resBuffer = Buffer.from(resArrayBuffer)
+          const zip = await JSZip.loadAsync(resBuffer)
+          const fileNames = Object.keys(zip.files)
+          expect(fileNames).to.have.lengthOf(2)
+          const data = await zip.files["Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.cklb"].async("string")
+          const assetData = reviewsFromCklb({
+            data,                    
+            fieldSettings: config.fieldSettings,  
+            allowAccept: true,       
+            importOptions: config.importOptions, 
+            sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.cklb"
+          })
+          expect(assetData.target.name).to.equal(reference.testAsset.name)
+          expect(assetData.target.metadata.cklRole).to.exist
+          expect(assetData.target.metadata.cklRole).to.equal("None")
+          expect(assetData.checklists).to.have.lengthOf(1)
+          expect(assetData.checklists[0].benchmarkId).to.equal(reference.benchmark)
+        //   expect(assetData.checklists[0].revisionStr).to.equal("V1R1") need new stigmancliet modules 
+          expect(assetData.checklists[0].reviews).to.have.lengthOf(reference.testAsset.VPN_SRG_TEST_reviewCnt)
+        })
+
+        it("should download a CKLB for an asset that does not have stigs attached, should throw. Lvl1 and collection creator do not  have access to asset",async function () {
+
+          const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/archive/cklb`
+          const requestBody = JSON.stringify(
+            requestBodies.postArchiveBenchmarkRevisionLvl1NoAccess,
+          )
+      
+          const options = {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${iteration.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          }
+      
+          const res = await fetch(url, options)
+
+          if(iteration.name ==  "lvl1" || iteration.name == "collectioncreator"){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(422)
+        })
+
+        it("should download a CKLB and get the test asset with test benchmark and no revision specified. should return latest",async function () {
+
+          const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/archive/cklb`
+          const requestBody = JSON.stringify(
+            requestBodies.postArchiveBenchmark,
+          )
+      
+          const options = {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${iteration.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          }
+      
+          const res = await fetch(url, options)
+
+          if(iteration.name === "collectioncreator"){
+            expect(res.status).to.eql(403)
+            return
+          }
+
+          //expect(res.status).to.eql(200)
+          expect(res.status).to.eql(200)
+          const resArrayBuffer = await res.arrayBuffer()
+          const resBuffer = Buffer.from(resArrayBuffer)
+          const zip = await JSZip.loadAsync(resBuffer)
+            const fileNames = Object.keys(zip.files)
+            expect(fileNames).to.have.lengthOf(2)
+            const data = await zip.files["Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.cklb"].async("string")
+            const assetData = reviewsFromCklb({
+              data,                    
+              fieldSettings: config.fieldSettings,  
+              allowAccept: true,       
+              importOptions: config.importOptions, 
+              sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.cklb"
+            })
+            expect(assetData.target.name).to.equal(reference.testAsset.name)
+            expect(assetData.target.metadata.cklRole).to.exist
+            expect(assetData.target.metadata.cklRole).to.equal("None")
+            expect(assetData.checklists).to.have.lengthOf(1)
+            expect(assetData.checklists[0].benchmarkId).to.equal(reference.benchmark)
+        //    expect(assetData.checklists[0].revisionStr).to.equal("V1R1")
+            expect(assetData.checklists[0].reviews).to.have.lengthOf(reference.testAsset.VPN_SRG_TEST_reviewCnt)
+        })
+        it("should download a CKLB and get the test asset with all benchmarks in a multi stig CKLB file ",async function () {
+
+          const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/archive/cklb?mode=multi`
+          const requestBody = JSON.stringify(
+            requestBodies.postArchiveDefault,
+          )
+      
+          const options = {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${iteration.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          }
+      
+          const res = await fetch(url, options)
+
+          if(iteration.name === "collectioncreator"){
+            expect(res.status).to.eql(403)
+            return
+          }
+
+          expect(res.status).to.eql(200)
+          const resArrayBuffer = await res.arrayBuffer()
+          const resBuffer = Buffer.from(resArrayBuffer)
+          const zip = await JSZip.loadAsync(resBuffer)
+          const fileNames = Object.keys(zip.files)
+          expect(fileNames).to.have.lengthOf(2)
+          const data = await zip.files["Collection_X_lvl1_asset-1.cklb"].async("string")
+          const assetData = reviewsFromCklb({
+            data,                    
+            fieldSettings: config.fieldSettings,  
+            allowAccept: true,       
+            importOptions: config.importOptions, 
+            sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.cklb"
+          })
+          expect(assetData.target.name).to.equal(reference.testAsset.name)
+          expect(assetData.target.metadata.cklRole).to.exist
+          expect(assetData.target.metadata.cklRole).to.equal("None")
+          expect(assetData.checklists).to.have.lengthOf(distinct.testAssetChecklists)
+          for(const checklist of assetData.checklists){
+            if(checklist.benchmarkId === reference.benchmark){
+            //   expect(checklist.revisionStr).to.equal("V1R1")
+              expect(checklist.reviews).to.have.lengthOf(reference.testAsset.VPN_SRG_TEST_reviewCnt)
+            }
+            else {
+              expect(checklist.benchmarkId).to.equal(reference.windowsBenchmark)
+          //     expect(checklist.revisionStr).to.equal("V1R23")
+              expect(checklist.reviews).to.have.lengthOf(3)
+            }
+          }
+        })
+      })
+
+      describe("postXccdfArchiveByCollection - /collections/{collectionId}/archive/xccdf", function () {
+
+        const dataArray = [
+          {
+            scapBenchmarkId: 'CAN_Ubuntu_18-04_STIG',
+            benchmarkId: 'U_CAN_Ubuntu_18-04_STIG'
+          },
+          { scapBenchmarkId: 'Mozilla_Firefox_RHEL', benchmarkId: 'Mozilla_Firefox' },
+          {
+            scapBenchmarkId: 'Mozilla_Firefox_Windows',
+            benchmarkId: 'Mozilla_Firefox'
+          },
+          { scapBenchmarkId: 'MOZ_Firefox_Linux', benchmarkId: 'MOZ_Firefox_STIG' },
+          { scapBenchmarkId: 'MOZ_Firefox_Windows', benchmarkId: 'MOZ_Firefox_STIG' },
+          { scapBenchmarkId: 'Solaris_10_X86_STIG', benchmarkId: 'Solaris_10_X86' }
+        ]
+        
+        const scapBenchmarkMap = new Map(
+          dataArray.map(item => [item.scapBenchmarkId, item])
+        )
+
+        it("should download a xccdf and get the test asset with test benchmark ",async function () {
+
+          const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/archive/xccdf`
+          const requestBody = JSON.stringify(
+            requestBodies.postArchiveBenchmarkRevision,
+          )
+      
+          const options = {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${iteration.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          }
+      
+          const res = await fetch(url, options)
+
+          if(iteration.name === "collectioncreator"){
+            expect(res.status).to.eql(403)
+            return
+          }
+
+          expect(res.status).to.eql(200)
+          const resArrayBuffer = await res.arrayBuffer()
+          const resBuffer = Buffer.from(resArrayBuffer)
+          const zip = await JSZip.loadAsync(resBuffer)
+          const fileNames = Object.keys(zip.files)
+          expect(fileNames).to.have.lengthOf(2)
+          const data = await zip.files["Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"].async("string")
+          const assetData = reviewsFromScc({
+            data,                    
+            fieldSettings: config.fieldSettings,  
+            allowAccept: true,       
+            importOptions: config.importOptions, 
+            sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"
+          })
+          expect(assetData.target.name).to.equal(reference.testAsset.name)
+          expect(assetData.target.metadata.testkey).to.exist
+          expect(assetData.target.metadata.testkey).to.equal("testvalue")
+          expect(assetData.checklists).to.have.lengthOf(1)
+          expect(assetData.checklists[0].benchmarkId).to.equal(reference.benchmark)
+        //   expect(assetData.checklists[0].revisionStr).to.equal("V1R1")
+          expect(assetData.checklists[0].reviews).to.have.lengthOf(reference.testAsset.VPN_SRG_TEST_reviewCnt)
+        })
+
+        it("should download a xccdf for an asset that does not have stigs attached, should throw. Lvl1 and collection creator do not  have access to asset",async function () {
+
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/archive/xccdf`, 'POST', iteration.token, requestBodies.postArchiveBenchmarkRevisionLvl1NoAccess)
+
+          if(iteration.name ==  "lvl1" || iteration.name == "collectioncreator"){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(422)
+        })
+
+        it("should download a xccdf and get the test asset with test benchmark and no revision specified. should return latest",async function () {
+
+          const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/archive/xccdf`
+
+          const requestBody = JSON.stringify(
+            requestBodies.postArchiveBenchmark,
+          )
+
+          const options = {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${iteration.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          }
+
+          const res = await fetch(url, options)
+
+          if(iteration.name === "collectioncreator"){
+            expect(res.status).to.eql(403)
+            return
+          }
+
+          expect(res.status).to.eql(200)
+          const resArrayBuffer = await res.arrayBuffer()
+          const resBuffer = Buffer.from(resArrayBuffer)
+          const zip = await JSZip.loadAsync(resBuffer)
+          const fileNames = Object.keys(zip.files)
+          expect(fileNames).to.have.lengthOf(2)
+          const data = await zip.files["Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"].async("string")
+          const assetData = reviewsFromScc({
+            data,                    
+            fieldSettings: config.fieldSettings,  
+            allowAccept: true,       
+            importOptions: config.importOptions, 
+            sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"
+          })
+          expect(assetData.target.name).to.equal(reference.testAsset.name)
+          expect(assetData.target.metadata.testkey).to.exist
+          expect(assetData.target.metadata.testkey).to.equal("testvalue")
+          expect(assetData.checklists).to.have.lengthOf(1)
+          expect(assetData.checklists[0].benchmarkId).to.equal(reference.benchmark)
+      //    expect(assetData.checklists[0].revisionStr).to.equal("V1R1")
+          expect(assetData.checklists[0].reviews).to.have.lengthOf(reference.testAsset.VPN_SRG_TEST_reviewCnt)
+        })
+
+        it("should download a xccdf and get the test asset with all benchmarks in a multi stig xccdf file ",async function () {
+
+          const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/archive/xccdf`
+
+          const requestBody = JSON.stringify(
+            requestBodies.postArchiveDefault,
+          )
+
+          const options = {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${iteration.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          }
+
+          const res = await fetch(url, options)
+
+          if(iteration.name === "collectioncreator"){
+            expect(res.status).to.eql(403)
+            return
+          }
+
+          expect(res.status).to.eql(200)
+          const resArrayBuffer = await res.arrayBuffer()
+          const resBuffer = Buffer.from(resArrayBuffer)
+          const zip = await JSZip.loadAsync(resBuffer)
+          const fileNames = Object.keys(zip.files)
+          if(iteration.name === "lvl1"){
+            expect(fileNames).to.have.lengthOf(2)
+          }
+          else {
+            expect(fileNames).to.have.lengthOf(3)
+          }
+          
+          const dataVPN = await zip.files["Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"].async("string")
+            
+          const assetDataVPN = reviewsFromScc({
+            data: dataVPN,                    
+            fieldSettings: config.fieldSettings,  
+            allowAccept: true,       
+            importOptions: config.importOptions, 
+            sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml",
+            scapBenchmarkMap
+          })
+          expect(assetDataVPN.target.name).to.equal(reference.testAsset.name)
+          expect(assetDataVPN.target.metadata.testkey).to.exist
+          expect(assetDataVPN.target.metadata.testkey).to.equal("testvalue")
+          expect(assetDataVPN.checklists).to.have.lengthOf(1)
+          for(const checklist of assetDataVPN.checklists){
+            //expect(checklist.revisionStr).to.equal("V1R1")
+            expect(checklist.reviews).to.have.lengthOf(reference.testAsset.VPN_SRG_TEST_reviewCnt)
+          }
+
+          if(iteration.name === "lvl1"){
+            return
+          }
+          const dataWindows = await zip.files["Collection_X_lvl1_asset-1-Windows_10_STIG_TEST-V1R23-xccdf.xml"].async("string")
+          const assetDataWindows = reviewsFromScc({
+            data: dataWindows,
+            fieldSettings: config.fieldSettings,
+            allowAccept: true,
+            importOptions: config.importOptions,
+            sourceRef: "Collection_X_lvl1_asset-1-Windows_10_STIG_TEST-V1R23-xccdf.xml",
+            scapBenchmarkMap
+          })
+          expect(assetDataWindows.target.name).to.equal(reference.testAsset.name)
+          expect(assetDataWindows.target.metadata.testkey).to.exist
+          expect(assetDataWindows.target.metadata.testkey).to.equal("testvalue")
+          expect(assetDataWindows.checklists).to.have.lengthOf(1)
+          for(const checklist of assetDataWindows.checklists){
+              expect(checklist.benchmarkId).to.equal(reference.windowsBenchmark)
+              //expect(checklist.revisionStr).to.equal("V1R23")
+              expect(checklist.reviews).to.have.lengthOf(3)
+            }
         })
       })
 
@@ -169,63 +702,94 @@ describe('POST - Collection - not all tests run for all iterations', function ()
 
         // this is flakey should be redesigned.
         before(async function () {
-          // this.timeout(4000)
           await utils.setDefaultRevision(reference.testCollection.collectionId, reference.benchmark, reference.testCollection.pinRevision)
         })
+
+        let clonedCollection = null
+
         it("Clone test collection and check that cloned collection matches source ",async function () {
 
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`)
-            .set("Authorization", `Bearer ${iteration.token}`)
-            .send({
-              name:"Clone_" + utils.getUUIDSubString(),
-              description: "clone of test collection x",
-              options: {
-                grants: true,
-                labels: true,
-                assets: true,
-                stigMappings: "withReviews",
-                pinRevisions: "matchSource",
-              },
-            })
-            let clonedCollectionId = null
-            if(!(distinct.canCreateCollection && distinct.canModifyCollection)){
-              expect(res).to.have.status(403)
-              return
-            }
-            expect(res).to.have.status(200)
-            const response = res.body.toString().split("\n")
-            expect(response).to.be.an('array')
-            for(const message of response){ 
-                if(message.length > 0){
-                    let messageObj = JSON.parse(message)
-                    if(messageObj.stage == "result"){
-                        clonedCollectionId = messageObj.collection.collectionId
-                        // assets 
-                        expect(messageObj.collection.assets).to.have.lengthOf(reference.testCollection.assetsProjected.length)
+          const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels&projection=users`
 
-                        for(const asset of messageObj.collection.assets){
-                          expect(asset.name).to.be.oneOf(reference.testCollection.assetsProjected.map(a => a.name))
-                        }
-                        // grants
-                        expect(messageObj.collection.grants).to.have.same.deep.members(reference.testCollection.grantsProjected)
+          const requestBody = JSON.stringify({
+            name:"Clone_" + utils.getUUIDSubString() + "_X",
+            description: "clone of test collection x",
+            options: {
+              grants: true,
+              labels: true,
+              assets: true,
+              stigMappings: "withReviews",
+              pinRevisions: "matchSource",
+            },
+          })
 
-                        // owners
-                        expect(messageObj.collection.owners).to.have.same.deep.members(reference.testCollection.ownersProjected)
-                        // statistics
-                        expect(messageObj.collection.statistics.assetCount).to.eql(reference.testCollection.statisticsProjected.assetCount);
-                        expect(messageObj.collection.statistics.grantCount).to.eql(reference.testCollection.statisticsProjected.grantCount);
-                        expect(messageObj.collection.statistics.checklistCount).to.eql(reference.testCollection.statisticsProjected.checklistCount);
-                        // // stigs 
-                        expect(messageObj.collection.stigs).to.deep.equalInAnyOrder(reference.testCollection.stigsProjected)
-                        // labels
-                        expect(messageObj.collection.labels).to.have.lengthOf(reference.testCollection.labelsProjected.length)
-                        for(const label of messageObj.collection.labels){
-                            expect(label.name).to.be.oneOf(reference.testCollection.labelsProjected.map(l => l.name))
-                        }
-                    }
-                }
+          const options = {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${iteration.token}`,
+                "Content-Type": "application/json",
+            },
+            body: requestBody,
+          }
+
+          const res = await fetch(url, options)
+          let clonedCollectionId = null
+          if(!(distinct.canCreateCollection && distinct.canModifyCollection)){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(200)
+          const responseText = await res.text();
+          const response = responseText.split("\n");
+          expect(response).to.be.an('array')
+          for(const message of response){ 
+              if(message.length > 0){
+                  let messageObj = JSON.parse(message)
+                  if(messageObj.stage == "result"){
+                      clonedCollectionId = messageObj.collection.collectionId
+                      clonedCollection = messageObj.collection.collectionId
+                      // assets 
+                      expect(messageObj.collection.assets).to.have.lengthOf(reference.testCollection.assetsProjected.length)
+                      expect(message.grants).to.equal(message.users)
+
+                      for(const asset of messageObj.collection.assets){
+                        expect(asset.name).to.be.oneOf(reference.testCollection.assetsProjected.map(a => a.name))
+                      }
+                      // remove grantId from grants response and grantsProjected expected response ( this cannot be tested well q)
+                      let grantsProjectedResponse = []
+                      for (const grant of messageObj.collection.grants){
+                          let {grantId, ...grantCheckProps} = grant
+                          grantsProjectedResponse.push(grantCheckProps)
+                      }
+
+                      let expectedGrantsResponse = []
+                      for (let grant of reference.testCollection.grantsProjected){
+                          let {grantId, ...grantCheckProps} = grant
+                          expectedGrantsResponse.push(grantCheckProps)
+                      }
+                      expect(grantsProjectedResponse, "check cloned collection grants").to.eql(expectedGrantsResponse)
+
+                      // owners
+                      expect(messageObj.collection.owners).to.have.same.deep.members(reference.testCollection.ownersProjected)
+                      // statistics
+                      expect(messageObj.collection.statistics.assetCount).to.eql(reference.testCollection.statisticsProjected.assetCount);
+                      expect(messageObj.collection.statistics.checklistCount).to.eql(reference.testCollection.statisticsProjected.checklistCount);
+                      // // stigs 
+                      expect(messageObj.collection.stigs).to.deep.equalInAnyOrder(reference.testCollection.stigsProjected)
+                      // labels
+                      expect(messageObj.collection.labels).to.have.lengthOf(reference.testCollection.labelsProjected.length)
+                      for(const label of messageObj.collection.labels){
+                          expect(label.name).to.be.oneOf(reference.testCollection.labelsProjected.map(l => l.name))
+                      }
+
+                      // confirm that ACLs have been transfered. will check with the testGroup acl in new collection 
+                      const testGroupGrantId = messageObj.collection.grants.find(g => g.userGroup?.userGroupId === reference.testCollection.testGroup.userGroupId).grantId
+
+                      const acl = await utils.executeRequest(`${config.baseUrl}/collections/${clonedCollection}/grants/${testGroupGrantId}/acl`, 'GET', iteration.token)
+                      expect(acl.status).to.eql(200)
+                      expect(acl.body.acl).to.have.lengthOf(3)
+                  }
+              }
             }
             
             if(clonedCollectionId !== null){
@@ -263,77 +827,96 @@ describe('POST - Collection - not all tests run for all iterations', function ()
       describe("exportToCollection - /collections/{collectionId}/export-to/{dstCollectionId}", function () {
 
         before(async function () {
-          // this.timeout(4000)
-          // await utils.uploadTestStigs()
           await utils.loadAppData()
+          await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
         })
         
         it("export entire asset to another collection, should create asset in destination",async function () {
 
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
-            .set("Authorization", `Bearer ${iteration.token}`)
-            .send([
-              {
-                assetId: reference.testAsset.assetId,
-              },
-            ])
-            
-            if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
-              return
-            }
-            expect(res).to.have.status(200)
-            const response = res.body.toString().split("\n")
-            expect(response).to.be.an('array')
-            expect(response).to.have.lengthOf.at.least(1)
+          const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`
 
-            for(const message of response){ 
-                if(message.length > 0){
-                    let messageObj = JSON.parse(message)
-                    if(messageObj.stage == "result"){
-                      expect(messageObj.counts.assetsCreated).to.eql(1)
-                      expect(messageObj.counts.stigsMapped).to.eql(reference.testAsset.validStigs.length)
-                      expect(messageObj.counts.reviewsInserted).to.eql(reference.testAsset.reviewCnt)
-                      expect(messageObj.counts.reviewsUpdated).to.eql(0)
-                    }
-                }
+          const requestBody = JSON.stringify([
+            {
+              assetId: reference.testAsset.assetId,
+            },
+          ])
+
+          const options = {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${iteration.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          }
+
+          const res = await fetch(url, options)
+            
+          if(distinct.canModifyCollection === false){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(200)
+          const responseText = await res.text()
+          const response = responseText.split("\n")
+          expect(response).to.be.an('array')
+          expect(response).to.have.lengthOf.at.least(1)
+
+          for(const message of response){ 
+            if(message.length > 0){
+              let messageObj = JSON.parse(message)
+              if(messageObj.stage == "result"){
+                expect(messageObj.counts.assetsCreated).to.eql(1)
+                expect(messageObj.counts.stigsMapped).to.eql(reference.testAsset.validStigs.length)
+                expect(messageObj.counts.reviewsInserted).to.eql(reference.testAsset.reviewCnt)
+                expect(messageObj.counts.reviewsUpdated).to.eql(0)
+              }
             }
+          }
         })
 
         it("export entire asset to another collection, asset already exists so we will be updating reviews",async function () {
 
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`)
-            .set("Authorization", `Bearer ${iteration.token}`)
-            .send([
-              {
-                assetId: reference.testAsset.assetId,
-              },
-            ])
+          const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/export-to/${reference.scrapCollection.collectionId}`
 
-            if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
-              return
-            }
+          const requestBody = JSON.stringify([
+            {
+              assetId: reference.testAsset.assetId,
+            },
+          ])
 
-            expect(res).to.have.status(200)
-            const response = res.body.toString().split("\n")
-            expect(response).to.be.an('array')
-            expect(response).to.have.lengthOf.at.least(1)
-            for(const message of response){ 
-                if(message.length > 0){
-                    let messageObj = JSON.parse(message)
-                    if(messageObj.stage == "result"){
-                      expect(messageObj.counts.assetsCreated).to.eql(0)
-                      expect(messageObj.counts.stigsMapped).to.eql(0)
-                      expect(messageObj.counts.reviewsInserted).to.eql(0)
-                      expect(messageObj.counts.reviewsUpdated).to.eql(9)
-                    }
-                }
-            }
+          const options = {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${iteration.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          }
+
+          const res = await fetch(url, options)
+
+          if(distinct.canModifyCollection === false){
+            expect(res.status).to.eql(403)
+            return
+          }
+
+          expect(res.status).to.eql(200)
+          const responseText = await res.text()
+          const response = responseText.split("\n")
+          expect(response).to.be.an('array')
+          expect(response).to.have.lengthOf.at.least(1)
+          for(const message of response){ 
+              if(message.length > 0){
+                  let messageObj = JSON.parse(message)
+                  if(messageObj.stage == "result"){
+                    expect(messageObj.counts.assetsCreated).to.eql(0)
+                    expect(messageObj.counts.stigsMapped).to.eql(0)
+                    expect(messageObj.counts.reviewsInserted).to.eql(0)
+                    expect(messageObj.counts.reviewsUpdated).to.eql(9)
+                  }
+              }
+          }
         })
       })
 
@@ -348,18 +931,14 @@ describe('POST - Collection - not all tests run for all iterations', function ()
               "description": "test label POSTED",
               "color": "aa34cc"
             }
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.scrapCollection.collectionId}/labels`)
-            .set("Authorization", `Bearer ${iteration.token}`)
-            .send(request)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.scrapCollection.collectionId}/labels`, 'POST', iteration.token, request)
 
             if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
+              expect(res.status).to.eql(403)
               return
             }
             label = res.body
-            expect(res).to.have.status(201)
+            expect(res.status).to.eql(201)
             expect(res.body.name).to.equal(request.name)
             expect(res.body.description).to.equal(request.description)
             expect(res.body.color).to.equal(request.color)
@@ -367,20 +946,16 @@ describe('POST - Collection - not all tests run for all iterations', function ()
         })
         it("Clean up - delete label",async function () {
             if(label){
-              const res = await chai
-                .request(config.baseUrl)
-                .delete(`/collections/${reference.scrapCollection.collectionId}/labels/${label.labelId}`)
-                .set("Authorization", `Bearer ${iteration.token}`)
-                expect(res).to.have.status(204)
+              const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.scrapCollection.collectionId}/labels/${label.labelId}`, 'DELETE', iteration.token)
+                expect(res.status).to.eql(204)
             }
         })
       })
 
       describe("writeStigPropsByCollectionStig - /collections/{collectionId}/stigs/{benchmarkId}", function () {
         before(async function () {
-          this.timeout(4000)
-          // await utils.uploadTestStigs()
           await utils.loadAppData()
+          await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
         })
 
         it("Set revision v1r1 of test benchmark to assets",async function () {
@@ -391,18 +966,14 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             assetIds: ["62", "42", "154"],
           }
 
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${iteration.token}`)
-            .send(post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`, 'POST', iteration.token, post)
 
             if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
+              expect(res.status).to.eql(403)
               return
             }
 
-            expect(res).to.have.status(200)
+            expect(res.status).to.eql(200)
             expect(res.body.revisionStr).to.eql(requestBodies.writeStigPropsByCollectionStig.defaultRevisionStr)
             expect(res.body.revisionPinned).to.eql(true)
             expect(res.body.ruleCount).to.eql(reference.checklistLength)
@@ -417,18 +988,14 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             assetIds: requestBodies.writeStigPropsByCollectionStig.assetIds,
           }
 
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${iteration.token}`)
-            .send(post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`, 'POST', iteration.token, post)
 
             if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
+              expect(res.status).to.eql(403)
               return
             }
 
-            expect(res).to.have.status(200)
+            expect(res.status).to.eql(200)
             expect(res.body.revisionStr).to.equal(requestBodies.writeStigPropsByCollectionStig.defaultRevisionStr)
             expect(res.body.revisionPinned).to.equal(false)
             expect(res.body.ruleCount).to.eql(reference.checklistLength)
@@ -442,18 +1009,14 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             assetIds: requestBodies.writeStigPropsByCollectionStig.assetIds,
           }
 
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${iteration.token}`)
-            .send(post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`, 'POST', iteration.token, post)
 
             if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
+              expect(res.status).to.eql(403)
               return
             }
 
-            expect(res).to.have.status(200)
+            expect(res.status).to.eql(200)
             expect(res.body.revisionStr).to.equal(requestBodies.writeStigPropsByCollectionStig.defaultRevisionStr)
             expect(res.body.revisionPinned).to.equal(false)
             expect(res.body.ruleCount).to.eql(reference.checklistLength)
@@ -467,18 +1030,14 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           defaultRevisionStr: "V1R5"
           }
 
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${iteration.token}`)
-            .send(post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`, 'POST', iteration.token, post)
 
             if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
+              expect(res.status).to.eql(403)
               return
             }
 
-            expect(res).to.have.status(422)
+            expect(res.status).to.eql(422)
         })
 
         it("Set the default revision string of test benchmark (V1R0)",async function () {
@@ -487,18 +1046,14 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           defaultRevisionStr: reference.testCollection.pinRevision
           }
 
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${iteration.token}`)
-            .send(post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`, 'POST', iteration.token, post)
 
             if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
+              expect(res.status).to.eql(403)
               return
             }
 
-            expect(res).to.have.status(200)
+            expect(res.status).to.eql(200)
             expect(res.body.revisionStr).to.equal(reference.testCollection.pinRevision)
             expect(res.body.revisionPinned).to.equal(true)
             expect(res.body.ruleCount).to.eql(reference.checklistLength)
@@ -512,20 +1067,80 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           assetIds: []
           }
 
-          const res = await chai
-            .request(config.baseUrl)
-            .post(`/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`)
-            .set("Authorization", `Bearer ${iteration.token}`)
-            .send(post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}`, 'POST', iteration.token, post)
 
             if(distinct.canModifyCollection === false){
-              expect(res).to.have.status(403)
+              expect(res.status).to.eql(403)
               return
             }
 
-            expect(res).to.have.status(204)
+            expect(res.status).to.eql(204)
             expect(res.body).to.eql({})
             
+        })
+      })
+
+      describe("postGrantsByCollection - /collections/{collectionId}/grants", function () {
+
+        before(async function () {
+          await utils.loadAppData()
+        })
+
+        it("Add grants to a collection",async function () {
+
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.scrapCollection.collectionId}/grants?elevate=true`, 'POST', iteration.token, requestBodies.postGrantsByCollection)
+
+            if(iteration.name !== "stigmanadmin"){
+              expect(res.status).to.eql(403)
+              return
+            }
+
+            expect(res.status).to.eql(201)
+
+            expect(res.body).to.have.lengthOf(requestBodies.postGrantsByCollection.length)
+            for(const grant of res.body){
+              if(grant.user){
+                expect(grant.user.userId).to.eql(reference.lvl1User.userId)
+                expect(grant.user.username).to.eql(reference.lvl1User.username)
+                expect(grant.grantId).to.exist
+                expect(grant.roleId).to.equal(2)
+              }
+              if(grant.userGroup){
+                expect(grant.userGroup.userGroupId).to.eql(reference.testCollection.testGroup.userGroupId)
+                expect(grant.userGroup.name).to.eql(reference.testCollection.testGroup.name)
+                expect(grant.grantId).to.exist
+                expect(grant.roleId).to.equal(2)
+              }
+            }
+        })
+        it("attempt to create owner grant, elevates should only work for admin user",async function () {
+
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.scrapCollection.collectionId}/grants?elevate=true`, 'POST', iteration.token, requestBodies.postOwners)
+
+            if(iteration.name !== "stigmanadmin"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(201)
+        })
+        it("Post Owner grant to collection no elevate",async function () {
+
+          const postGrantsByCollectionOwner = [
+            {
+              userId: "43",  
+              roleId: 4,
+            },
+          ]
+
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.scrapCollection.collectionId}/grants`, 'POST', iteration.token, postGrantsByCollectionOwner)
+
+            if(iteration.name !== 'stigmanadmin' && iteration.name !== 'lvl4'){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(201)
+            expect(res.body[0].user.userId).to.eql("43")
+            expect(res.body[0].roleId).to.equal(4)
         })
       })
     })

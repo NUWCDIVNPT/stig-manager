@@ -1995,7 +1995,7 @@ SM.ReviewsImport.ImportProgressPanel = Ext.extend(Ext.Panel, {
 async function showImportResultFiles(collectionId, createObjects = true) {
     try {
         const cachedCollection = SM.Cache.CollectionMap.get(collectionId)
-        const userGrant = curUser.collectionGrants.find( i => i.collection.collectionId === cachedCollection.collectionId )?.accessLevel
+        const userGrant = curUser.collectionGrants.find( i => i.collection.collectionId === cachedCollection.collectionId )?.roleId
         const canAccept = cachedCollection.settings.status.canAccept && (userGrant >= cachedCollection.settings.status.minAcceptGrant)
         const initialOptions = SM.safeJSONParse(cachedCollection.metadata.importOptions) ?? SM.ReviewsImport.DefaultOptions
         if (initialOptions?.autoStatus === 'accepted' && !canAccept) {
@@ -2037,7 +2037,7 @@ async function showImportResultFiles(collectionId, createObjects = true) {
             buttonAlign: 'center',
             items: fp
         })
-        fpwindow.show(document.body)
+        fpwindow.show(Ext.getBody())
 
         function warnOnExcessFiles(files) {
             if (files.length >= 250) {
@@ -2432,7 +2432,7 @@ async function showImportResultFiles(collectionId, createObjects = true) {
 async function showImportResultFile(params) {
     try {
         const cachedCollection = SM.Cache.CollectionMap.get(params.collectionId)
-        const userGrant = curUser.collectionGrants.find( i => i.collection.collectionId === cachedCollection.collectionId )?.accessLevel
+        const userGrant = curUser.collectionGrants.find( i => i.collection.collectionId === cachedCollection.collectionId )?.roleId
         const canAccept = cachedCollection.settings.status.canAccept && (userGrant >= cachedCollection.settings.status.minAcceptGrant)
         const initialOptions = SM.safeJSONParse(cachedCollection.metadata.importOptions) ?? SM.ReviewsImport.DefaultOptions
         if (initialOptions?.autoStatus === 'accepted' && !canAccept) {
@@ -2604,10 +2604,11 @@ async function showImportResultFile(params) {
                     throw (new Error(`The file does not include reviews for STIG: <b>${params.benchmarkId}</b><br>The file includes reviews for: ${r.checklists[0].benchmarkId}</p>`))
                 }
                 const apiResult = await Ext.Ajax.requestPromise({
+                    responseType: 'json',
                     url: `${STIGMAN.Env.apiBase}/assets/${params.assetId}/checklists/${params.benchmarkId}/${params.revisionStr}`,
                     method: 'GET'
                 })
-                const checklistFromApi = JSON.parse(apiResult.response.responseText)
+                const checklistFromApi = apiResult.checklist
                 task.cancel()
                 showReviews(checklistFromFile, checklistFromApi, params.benchmarkId, params.revisionStr)
             }
