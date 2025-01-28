@@ -35,11 +35,13 @@ extensions = [
     'sphinxcontrib.images',
     'sphinx.ext.todo',
     'myst_parser',    
-    'sphinx_tabs.tabs'
+    'sphinx_tabs.tabs',
+    'sphinx_rtd_dark_mode'
 ]
 
 todo_include_todos = True
-
+# user starts in light or dark mode
+default_dark_mode = True
 
 images_config = {
     'override_image_directive': True,

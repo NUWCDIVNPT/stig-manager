@@ -181,7 +181,7 @@ SM.MetaPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
               }
               labels.sort((a, b) => a.name.localeCompare(b.name))
               metadata.attr = 'style="white-space:nowrap;text-overflow:clip;"'
-              return SM.styledEmptyRenderer(SM.Collection.LabelArrayTpl.apply(labels))
+              return SM.styledEmptyRenderer(SM.Manage.Collection.LabelArrayTpl.apply(labels))
             }
           },
           {
@@ -509,7 +509,7 @@ SM.MetaPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
               }
               labels.sort((a, b) => a.name.localeCompare(b.name))
               metadata.attr = 'style="white-space:nowrap;text-overflow:clip;"'
-              return SM.styledEmptyRenderer(SM.Collection.LabelArrayTpl.apply(labels))
+              return SM.styledEmptyRenderer(SM.Manage.Collection.LabelArrayTpl.apply(labels))
             }
           }
         )

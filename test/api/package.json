@@ -3,20 +3,20 @@
   "version": "1.0.0",
   "description": "testing",
   "scripts": {
-    "test": "mocha --reporter mochawesome --showFailed --exit './mocha/**/*.test.js'",
-    "test:dev": "nodemon --ext 'js' --exec 'npm test'"
+    "test": "mocha --reporter mochawesome --timeout 10000 --showFailed --exit './mocha/**/*.test.js'"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "type": "module",
   "dependencies": {
-    "axios": "^1.6.8",
-    "chai": "^4.4.1",
-    "chai-http": "^4.4.0",
+    "@nuwcdivnpt/stig-manager-client-modules": "^1.4.3",
+    "chai": "^5.1.2",
     "deep-equal-in-any-order": "^2.0.6",
-    "mocha": "^10.4.0",
-    "uuid": "^10.0.0",
-    "xml2js": "^0.6.2"
+    "fast-xml-parser": "^4.5.0",
+    "jszip": "^3.10.1",
+    "mocha": "^11.0.1",
+    "uuid": "^11.0.3"
   },
   "devDependencies": {
     "mochawesome": "^7.1.3"

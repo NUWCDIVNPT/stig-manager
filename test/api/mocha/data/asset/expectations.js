@@ -1,6 +1,6 @@
 //This data contains expected response data that varies by iteration "scenario" or "user" for each test case. These expectations are relative to the "referenceData.js" data used to construct the API requests.
 
-const distinct = {
+export const expectations = {
   stigmanadmin: {
     user: 'admin',
     testAssetStigs: ['VPN_SRG_TEST', 'Windows_10_STIG_TEST'],
@@ -61,11 +61,11 @@ const distinct = {
     grant: 'restricted',
     canModifyCollection: false,
     assignedStigs: ['VPN_SRG_TEST'],
-    assetIds: ['42', '154'],
+    assetIds: ['42', '154', "62"],
     assetMatchString: "lvl1",
-    assetsAvailableFullLabel: ["42"],
+    assetsAvailableFullLabel: ["42", "62"],
     assetsAvailableNoMetadata: ["154"],
-    assetsAvailableBenchmark: ["42", "154"],
+    assetsAvailableBenchmark: ["42", "154", "62"],
     validStigs: ['VPN_SRG_TEST'],
     collectionIds: ['21'],
     hasAccessToTestAsset: true,
@@ -222,4 +222,3 @@ const distinct = {
 
   }
 }
-module.exports = distinct

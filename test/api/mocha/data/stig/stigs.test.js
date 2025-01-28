@@ -1,29 +1,22 @@
-const chai = require('chai')
-const chaiHttp = require('chai-http')
-const deepEqualInAnyOrder = require('deep-equal-in-any-order')
-chai.use(chaiHttp)
-chai.use(deepEqualInAnyOrder)
-const expect = chai.expect
-const fs = require('fs')
-const path = require('path')
-const config = require('../../testConfig.json')
-const utils = require('../../utils/testUtils.js')
-const iterations = require("../../iterations.js")
-const reference = require('../../referenceData.js')
-const expectations = require('./expectations.js')
+
+import path from 'path'
+import { readFileSync } from 'fs'
+import { fileURLToPath } from 'url'
+import {config } from '../../testConfig.js'
+import { Blob } from 'buffer'
+import * as utils from '../../utils/testUtils.js'
+import reference from '../../referenceData.js'
+import {iterations} from '../../iterations.js'
+import {expectations} from './expectations.js'
+import deepEqualInAnyOrder from 'deep-equal-in-any-order'
+import {use, expect} from 'chai'
+use(deepEqualInAnyOrder)
 
 describe('GET - Stig', () => {
 
     before(async function () {
-        this.timeout(4000)
-        await utils.uploadTestStigs()
-        try{
-            await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
-        }
-        catch(err){
-            console.log("no stig to upload")
-        }
         await utils.loadAppData()
+        await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
     })
 
     for(const iteration of iterations){
@@ -36,11 +29,9 @@ describe('GET - Stig', () => {
             describe('GET - getSTIGs - /stigs', () => {
 
                 it('Return a list of available STIGs', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .get('/stigs')
-                    .set('Authorization', `Bearer ${iteration.token}`)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs`, 'GET', iteration.token)
                    
-                    expect(res).to.have.status(200)
+                    expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('array')
 
                     for(let stig of res.body){
@@ -55,10 +46,8 @@ describe('GET - Stig', () => {
                     }
                 })
                 it('Return a list of available STIGs filter with title projection on vpn', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .get('/stigs?title=vpn')
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    expect(res).to.have.status(200)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs?title=vpn`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('array').of.length(3)
                     for(let stig of res.body){
                         expect(stig.benchmarkId, "expect stig benchmarkId returned to be a VPN variant").to.be.oneOf(reference.vpnStigs)
@@ -74,10 +63,8 @@ describe('GET - Stig', () => {
             describe('GET - getCci - /stigs/ccis/{cci}', () => {
 
                 it('Return data for the specified CCI', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/ccis/${reference.testCci.id}?projection=stigs&projection=emassAp&projection=references`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    expect(res).to.have.status(200)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/ccis/${reference.testCci.id}?projection=stigs&projection=emassAp&projection=references`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('object')
                     expect(res.body.cci, "expect to get back test cci").to.be.equal(reference.testCci.id)
                     expect(res.body.status, "expect to get back test cci status").to.be.equal(reference.testCci.status)
@@ -86,10 +73,8 @@ describe('GET - Stig', () => {
             })
             describe('GET - getRuleByRuleId - /stigs/rules/{ruleId}', () => {
                 it('get test ruledata with all projections', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/rules/${reference.testRule.ruleId}?projection=detail&projection=ccis&projection=check&projection=fix`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    expect(res).to.have.status(200)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/rules/${reference.testRule.ruleId}?projection=detail&projection=ccis&projection=check&projection=fix`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('object')
                     expect(res.body.ruleId, "expect ruleId returned to be the test ruleId").to.be.equal(reference.testRule.ruleId)
                     expect(res.body.groupId, "expect fix groupId to be the test groupId").to.be.equal(reference.testRule.groupId)
@@ -99,10 +84,8 @@ describe('GET - Stig', () => {
             })
             describe('GET - getScapMap - /stigs/scap-maps', () => {
                 it('Return a list of SCAP maps', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .get('/stigs/scap-maps')
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    expect(res).to.have.status(200)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/scap-maps`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
                     expect(res.body).to.deep.equalInAnyOrder([
                         {
                         scapBenchmarkId: 'CAN_Ubuntu_18-04_STIG',
@@ -134,10 +117,8 @@ describe('GET - Stig', () => {
             describe('GET - getStigById - /stigs/{benchmarkId}', () => {
 
                 it('Return properties of the test benchmark', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${reference.benchmark}`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    expect(res).to.have.status(200)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('object')
                     expect(res.body).to.have.property('benchmarkId')
                     expect(res.body.benchmarkId, "expect returned benchmark to be the test ben").to.be.equal(reference.benchmark)
@@ -155,10 +136,8 @@ describe('GET - Stig', () => {
             describe('GET - getRevisionsByBenchmarkId - /stigs/{benchmarkId}/revisions', () => {
 
                 it('Return a list of revisions for the test benchmark', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${reference.benchmark}/revisions`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    expect(res).to.have.status(200)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}/revisions`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('array')
                     expect(res.body).to.be.lengthOf(2)
                     for(let revision of res.body){
@@ -171,10 +150,8 @@ describe('GET - Stig', () => {
             describe('GET - getRevisionByString - /stigs/{benchmarkId}/revisions/{revisionStr}', () => {
 
                 it('Return metadata for the test benchmark and revision str V1R1', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    expect(res).to.have.status(200)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}/revisions/${reference.revisionStr}`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('object')
                     expect(res.body).to.have.property('revisionStr')
                     expect(res.body.revisionStr, "revision str to be V1R1").to.be.equal(reference.revisionStr)
@@ -185,20 +162,37 @@ describe('GET - Stig', () => {
             })
             describe('GET - getCcisByRevision - /stigs/{benchmarkId}/revisions/{revisionStr}/ccis', () => {
                 it('Return a list of CCIs from a STIG revision', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/ccis`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    expect(res).to.have.status(200)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/ccis`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
+                    expect(res.body).to.be.an('array')
+                    expect(res.body, "expected 85 ccis").to.be.lengthOf(85)
+                })
+                it("Return a list of CCIs from a STIG revision latest", async () => {
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}/revisions/${'latest'}/ccis`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('array')
                     expect(res.body, "expected 85 ccis").to.be.lengthOf(85)
                 })
             })
             describe('GET - getGroupsByRevision - /stigs/{benchmarkId}/revisions{revisionStr}/groups', () => {
                 it('Return the list of groups for the specified revision of a STIG.', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/groups?projection=rules`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    expect(res).to.have.status(200)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/groups?projection=rules`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
+                    expect(res.body).to.be.an('array')
+                    expect(res.body).to.be.lengthOf(reference.checklistLength)
+                    for(let group of res.body){
+                        if(group.groupId === reference.testRule.groupId){
+                            for(const rule of group.rules){
+                                expect(rule.ruleId, `expect test ruleID  ${reference.testRule.ruleId}`).to.be.equal(reference.testRule.ruleId)
+                                expect(rule.version, `expect rule version to be the test version. ${reference.testRule.version}`).to.be.equal(reference.testRule.version)
+                            }
+                        }
+                    }
+                })
+                it("Return the list of groups for the specified revision of a STIG latest", async () => {
+
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}/revisions/${'latest'}/groups?projection=rules`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('array')
                     expect(res.body).to.be.lengthOf(reference.checklistLength)
                     for(let group of res.body){
@@ -214,10 +208,8 @@ describe('GET - Stig', () => {
             describe('GET - getGroupByRevision - /stigs/{benchmarkId}/revisions{revisionStr}/groups/{groupId}', () => {
 
                 it('Return the rules, checks and fixes for a Group from a specified revision of a STIG.', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/groups/${reference.testRule.groupId}?projection=rules`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    expect(res).to.have.status(200)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/groups/${reference.testRule.groupId}?projection=rules`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('object')
                     expect(res.body).to.have.property('groupId')
                     expect(res.body.groupId, `expect groupId to be ${reference.testRule.groupId}`).to.be.equal(reference.testRule.groupId)
@@ -229,10 +221,8 @@ describe('GET - Stig', () => {
             }) 
             describe('GET - getRulesByRevision - /stigs/{benchmarkId}/revisions/{revisionStr}/rules', () => {
                 it("Return rule data for the LATEST revision of a STIG", async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${reference.benchmark}/revisions/${'latest'}/rules?projection=detail&projection=ccis&projection=check&projection=fix`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    expect(res).to.have.status(200)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}/revisions/${'latest'}/rules?projection=detail&projection=ccis&projection=check&projection=fix`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('array')
                     expect(res.body).to.be.lengthOf(reference.checklistLength)
                     for(const rule of res.body){
@@ -243,10 +233,8 @@ describe('GET - Stig', () => {
                     }
                 })
                 it("Return rule data for the specified revision of a STIG.", async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/rules?projection=detail&projection=ccis&projection=check&projection=fix`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    expect(res).to.have.status(200)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/rules?projection=detail&projection=ccis&projection=check&projection=fix`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('array')
                     expect(res.body).to.be.lengthOf(81)
                     for(const rule of res.body){
@@ -259,10 +247,8 @@ describe('GET - Stig', () => {
             }) 
             describe('GET - getRuleByRevision - /stigs/{benchmarkId}/revisions/{revisionStr}/rules/{ruleId}', () => {
                 it(`Return rule data for test benchmark ${reference.benchmark}, revision string, ${reference.revisionStr}, ${reference.testRule.ruleId}.`, async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .get(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/rules/${reference.testRule.ruleId}?projection=detail&projection=ccis&projection=check&projection=fix`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    expect(res).to.have.status(200)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/rules/${reference.testRule.ruleId}?projection=detail&projection=ccis&projection=check&projection=fix`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('object')
                     expect(res.body.ruleId, `expect ${reference.testRule.ruleId}`).to.be.equal(reference.testRule.ruleId)
                     expect(res.body.groupId, `expect group id to match test group id: ${reference.testRule.groupId}`).to.be.equal(reference.testRule.groupId)
@@ -292,38 +278,32 @@ describe('DELETE - Stig', () => {
                 })
 
                 it('attempts to delete stig and all revisions, fails because no force.', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .delete(`/stigs/${reference.windowsBenchmark}?elevate=true`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.windowsBenchmark}?elevate=true`, 'DELETE', iteration.token)
                     if(iteration.name !== "stigmanadmin"){
-                        expect(res).to.have.status(403)
+                        expect(res.status).to.eql(403)
                         return
                     }
-                    expect(res).to.have.status(422)
+                    expect(res.status).to.eql(422)
                 })
                 it('Deletes a stig an all revisions', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .delete(`/stigs/${reference.scrapBenchmark}?elevate=true&force=true`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.scrapBenchmark}?elevate=true&force=true`, 'DELETE', iteration.token)
                     if(iteration.name !== "stigmanadmin"){
-                        expect(res).to.have.status(403)
+                        expect(res.status).to.eql(403)
                         return
                     }
-                    expect(res).to.have.status(200)
+                    expect(res.status).to.eql(200)
 
                     const response = await utils.getStigByBenchmarkId(reference.scrapBenchmark)
                     expect(response.status).to.equal(404)
 
                 })
                 it('should throw SmError.NotFoundError No matching benchmarkId found.', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .delete(`/stigs/${'trashdata'}?elevate=true&force=true`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${'trashdata'}?elevate=true&force=true`, 'DELETE', iteration.token)
                     if(iteration.name !== "stigmanadmin"){
-                        expect(res).to.have.status(403)
+                        expect(res.status).to.eql(403)
                         return
                     }
-                    expect(res).to.have.status(404)
+                    expect(res.status).to.eql(404)
                 })
             })
             describe('DELETE - deleteRevisionByString - /stigs/{benchmarkId}/revisions/{revisionStr}', () => {
@@ -335,25 +315,21 @@ describe('DELETE - Stig', () => {
                 })
 
                 it('attempts to delete latest of test benchmark, fails because latest is not a permitted revision for this endpoint!', async () => {
-                    const res = await chai.request(config.baseUrl)
-                    .delete(`/stigs/${reference.benchmark}/revisions/latest?elevate=true&force=true`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}/revisions/latest?elevate=true&force=true`, 'DELETE', iteration.token)
                     if(iteration.name !== "stigmanadmin"){
-                        expect(res).to.have.status(403)
+                        expect(res.status).to.eql(403)
                         return
                     }
-                    expect(res, "fails because latest cannot work in this endpoint").to.have.status(400)
+                    expect(res.status).to.eql(400)
                 })
                 it('Deletes the specified revision of a STIG (v1r1 of test benchmark)', async () => {
                 
-                    const res = await chai.request(config.baseUrl)
-                    .delete(`/stigs/${reference.benchmark}/revisions/${reference.revisionStr}?elevate=true&force=true`)
-                    .set('Authorization', `Bearer ${iteration.token}`)
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}/revisions/${reference.revisionStr}?elevate=true&force=true`, 'DELETE', iteration.token)
                     if(iteration.name !== "stigmanadmin"){
-                        expect(res).to.have.status(403)
+                        expect(res.status).to.eql(403)
                         return
                     }
-                    expect(res).to.have.status(200)
+                    expect(res.status).to.eql(200)
                 })
             })
         })
@@ -362,6 +338,7 @@ describe('DELETE - Stig', () => {
 
 describe('POST - Stig', () => {
     before(async function () {
+        
        await utils.deleteStig(reference.benchmark)
     })
 
@@ -374,69 +351,113 @@ describe('POST - Stig', () => {
             describe('POST - importBenchmark - /stigs', () => {
 
                 it('Import a new STIG - new', async () => {
-                
-                    const directoryPath = path.join(__dirname, '../../../form-data-files/')
-                    const testStigfile = reference.testStigfile
-                    const filePath = path.join(directoryPath, testStigfile)
-            
-                    const res = await chai.request(config.baseUrl)
-                    .post('/stigs?elevate=true&clobber=false')
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    .set('Content-Type', `multipart/form-data`)
-                    .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
+                    const filename = reference.testStigfile
+                 
+                   const __filename = fileURLToPath(import.meta.url)
+                   const __dirname = path.dirname(__filename)
+                   const filePath = path.join(__dirname, `../../../form-data-files/${filename}`)
+                   
+                   const fileContent = readFileSync(filePath, 'utf-8')
+                   
+                   // Create a Blob for the file content
+                   const blob = new Blob([fileContent], { type: 'text/xml' })
+                 
+                   const formData = new FormData()
+                   formData.append('importFile', blob, filename)
+                 
+                   const res = await fetch(`${config.baseUrl}/stigs?elevate=true&clobber=false`, {
+                     method: 'POST',
+                     headers: {
+                       Authorization: `Bearer ${iteration.token}`,
+                     },
+                     body: formData,
+                   })
                     let expectedRevData = {
                         benchmarkId: "VPN_SRG_TEST",
                         revisionStr: "V1R1",
                         action: "inserted",
                     }
                     if(iteration.name !== "stigmanadmin"){
-                        expect(res).to.have.status(403)
+                        expect(res.status).to.eql(403)
                         return
                     }
-                    expect(res).to.have.status(200)
-                    expect(res.body).to.deep.eql(expectedRevData)
+                    expect(res.status).to.eql(200)
+                    const data = await res.json()
+                    expect(data).to.deep.eql(expectedRevData)
                 })
                 it('should throw SmError.PrivilegeError() no elevate', async () => {
                 
-                    const directoryPath = path.join(__dirname, '../../../form-data-files/')
-                    const testStigfile = reference.testStigfile
-                    const filePath = path.join(directoryPath, testStigfile)
-            
-                    const res = await chai.request(config.baseUrl)
-                    .post('/stigs?clobber=false')
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    .set('Content-Type', `multipart/form-data`)
-                    .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
-                    expect(res).to.have.status(403)
+                    const filename = reference.testStigfile
+                    const __filename = fileURLToPath(import.meta.url)
+                    const __dirname = path.dirname(__filename)
+                    const filePath = path.join(__dirname, `../../../form-data-files/${filename}`)
+                    
+                    const fileContent = readFileSync(filePath, 'utf-8')
+                    
+                    const blob = new Blob([fileContent], { type: 'text/xml' })
+                  
+                    const formData = new FormData()
+                    formData.append('importFile', blob, filename)
+                  
+                    const res = await fetch(`${config.baseUrl}/stigs?clobber=false`, {
+                      method: 'POST',
+                      headers: {
+                        Authorization: `Bearer ${iteration.token}`,
+                      },
+                      body: formData,
+                    })
+                    expect(res.status).to.eql(403)
                 })
                 it('should throw SmError.ClientError not xml file', async () => {
                 
-                    const directoryPath = path.join(__dirname, '../../../form-data-files/')
-                    const testStigfile = 'appdata.jsonl'
-                    const filePath = path.join(directoryPath, testStigfile)
-            
-                    const res = await chai.request(config.baseUrl)
-                    .post('/stigs?elevate=true&clobber=false')
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    .set('Content-Type', `multipart/form-data`)
-                    .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
+                    const filename = 'appdata.jsonl'
+                    const __filename = fileURLToPath(import.meta.url)
+                    const __dirname = path.dirname(__filename)
+                    const filePath = path.join(__dirname, `../../../form-data-files/${filename}`)
+                    
+                    const fileContent = readFileSync(filePath, 'utf-8')
+                    
+                    const blob = new Blob([fileContent], { type: 'text/xml' })
+                  
+                    const formData = new FormData()
+                    formData.append('importFile', blob, filename)
+                  
+                    const res = await fetch(`${config.baseUrl}/stigs?elevate=true&clobber=false`, {
+                      method: 'POST',
+                      headers: {
+                        Authorization: `Bearer ${iteration.token}`,
+                      },
+                      body: formData,
+                    })
                     if(iteration.name !== "stigmanadmin"){
-                        expect(res).to.have.status(403)
+                        expect(res.status).to.eql(403)
                         return
                     }
-                    expect(res).to.have.status(400)
+                    expect(res.status).to.eql(400)
                 })
                 it('Import a new STIG - preserve', async () => {
                 
-                    const directoryPath = path.join(__dirname, '../../../form-data-files/')
-                    const testStigfile = reference.testStigfile
-                    const filePath = path.join(directoryPath, testStigfile)
-            
-                    const res = await chai.request(config.baseUrl)
-                    .post('/stigs?elevate=true&clobber=false')
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    .set('Content-Type', `multipart/form-data`)
-                    .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
+                    const filename = reference.testStigfile
+                 
+                    const __filename = fileURLToPath(import.meta.url)
+                    const __dirname = path.dirname(__filename)
+                    const filePath = path.join(__dirname, `../../../form-data-files/${filename}`)
+                    
+                    const fileContent = readFileSync(filePath, 'utf-8')
+                    
+                    // Create a Blob for the file content
+                    const blob = new Blob([fileContent], { type: 'text/xml' })
+                  
+                    const formData = new FormData()
+                    formData.append('importFile', blob, filename)
+                  
+                    const res = await fetch(`${config.baseUrl}/stigs?elevate=true&clobber=false`, {
+                      method: 'POST',
+                      headers: {
+                        Authorization: `Bearer ${iteration.token}`,
+                      },
+                      body: formData,
+                    })
                     let expectedRevData = 
                     {
                         "benchmarkId": "VPN_SRG_TEST",
@@ -444,23 +465,33 @@ describe('POST - Stig', () => {
                         "action": "preserved"
                     }
                     if(iteration.name !== "stigmanadmin"){
-                        expect(res).to.have.status(403)
+                        expect(res.status).to.eql(403)
                         return
                     }
-                    expect(res).to.have.status(200)
-                    expect(res.body).to.deep.eql(expectedRevData)
+                    expect(res.status).to.eql(200)
+                    const data = await res.json()
+                    expect(data).to.deep.eql(expectedRevData)
                 })
                 it('Import a new STIG - clobber', async () => {
-                
-                    const directoryPath = path.join(__dirname, '../../../form-data-files/')
-                    const testStigfile = reference.testStigfile
-                    const filePath = path.join(directoryPath, testStigfile)
-            
-                    const res = await chai.request(config.baseUrl)
-                    .post('/stigs?elevate=true&clobber=true')
-                    .set('Authorization', `Bearer ${iteration.token}`)
-                    .set('Content-Type', `multipart/form-data`)
-                    .attach('importFile', fs.readFileSync(filePath), testStigfile) // Attach the file here
+                    const filename = reference.testStigfile
+
+                    const __filename = fileURLToPath(import.meta.url)
+                    const __dirname = path.dirname(__filename)
+                    const filePath = path.join(__dirname, `../../../form-data-files/${filename}`)
+                    const fileContent = readFileSync(filePath, 'utf-8')
+                    
+                    const blob = new Blob([fileContent], { type: 'text/xml' })
+                  
+                    const formData = new FormData()
+                    formData.append('importFile', blob, filename)
+                  
+                    const res = await fetch(`${config.baseUrl}/stigs?elevate=true&clobber=true`, {
+                      method: 'POST',
+                      headers: {
+                        Authorization: `Bearer ${iteration.token}`,
+                      },
+                      body: formData,
+                    })
                     let expectedRevData = 
                     {
                         "benchmarkId": "VPN_SRG_TEST",
@@ -468,11 +499,12 @@ describe('POST - Stig', () => {
                         "action": "replaced"
                     }
                     if(iteration.name !== "stigmanadmin"){
-                        expect(res).to.have.status(403)
+                        expect(res.status).to.eql(403)
                         return
                     }
-                    expect(res).to.have.status(200)
-                    expect(res.body).to.deep.eql(expectedRevData)
+                    expect(res.status).to.eql(200)
+                    const data = await res.json()
+                    expect(data).to.deep.eql(expectedRevData)
                 })
             })
         })

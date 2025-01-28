@@ -569,7 +569,7 @@ SM.StigRevision.ImportStigs = function ( grid ) {
     items: fp
   })
 
-  appwindow.show(document.body);
+  appwindow.show(Ext.getBody());
 
 }
 
@@ -643,6 +643,6 @@ SM.StigRevision.showConfirm = function ({message, forceMessage, forceRequired}) 
       items: fp,
       buttons: [ cancelBtn, removeBtn ]
     })
-    fpwindow.show(document.body)
+    fpwindow.show(Ext.getBody())
   })
 }

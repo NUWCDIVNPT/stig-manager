@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.39, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.3.0, for Linux (x86_64)
 --
 -- Host: 127.0.0.1    Database: stigman
 -- ------------------------------------------------------
--- Server version	8.0.36
+-- Server version	8.0.38
 
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
@@ -46,6 +46,7 @@ CREATE TABLE `asset` (
   UNIQUE KEY `INDEX_NAME_COLLECTION_ENABLED` (`name`,`collectionId`,`isEnabled`),
   KEY `INDEX_COMPUTING` (`noncomputing`),
   KEY `INDEX_COLLECTIONID` (`collectionId`),
+  KEY `idx_state` (`state`),
   CONSTRAINT `FK_ASSET_2` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -121,7 +122,8 @@ CREATE TABLE `collection` (
   `isNameUnavailable` tinyint GENERATED ALWAYS AS ((case when ((`state` = _utf8mb4'cloning') or (`state` = _utf8mb4'enabled')) then 1 else NULL end)) VIRTUAL,
   PRIMARY KEY (`collectionId`),
   UNIQUE KEY `index2` (`name`,`isEnabled`),
-  UNIQUE KEY `index3` (`name`,`isNameUnavailable`)
+  UNIQUE KEY `index3` (`name`,`isNameUnavailable`),
+  KEY `idx_state` (`state`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -130,15 +132,44 @@ CREATE TABLE `collection` (
 
 DROP TABLE IF EXISTS `collection_grant`;
 CREATE TABLE `collection_grant` (
-  `cgId` int NOT NULL AUTO_INCREMENT,
+  `grantId` int NOT NULL AUTO_INCREMENT,
   `collectionId` int NOT NULL,
-  `userId` int NOT NULL,
-  `accessLevel` int NOT NULL,
-  PRIMARY KEY (`cgId`),
+  `userId` int DEFAULT NULL,
+  `userGroupId` int DEFAULT NULL,
+  `roleId` int NOT NULL,
+  PRIMARY KEY (`grantId`),
   UNIQUE KEY `INDEX_USER` (`userId`,`collectionId`),
-  KEY `INDEX_COLLECTION` (`collectionId`,`accessLevel`),
+  UNIQUE KEY `INDEX_USER_GROUP` (`userGroupId`,`collectionId`),
+  KEY `INDEX_COLLECTION` (`collectionId`,`roleId`),
   CONSTRAINT `fk_collection_grant_1` FOREIGN KEY (`userId`) REFERENCES `user_data` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_collection_grant_2` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `fk_collection_grant_2` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_collection_grant_3` FOREIGN KEY (`userGroupId`) REFERENCES `user_group` (`userGroupId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Table structure for table `collection_grant_acl`
+--
+
+DROP TABLE IF EXISTS `collection_grant_acl`;
+CREATE TABLE `collection_grant_acl` (
+  `cgAclId` int NOT NULL AUTO_INCREMENT,
+  `grantId` int NOT NULL,
+  `benchmarkId` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  `assetId` int DEFAULT NULL,
+  `clId` int DEFAULT NULL,
+  `access` enum('none','r','rw') NOT NULL,
+  `modifiedUserId` int DEFAULT NULL,
+  `modifiedDate` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`cgAclId`),
+  KEY `fk_collection_grant_acl_1` (`grantId`),
+  KEY `fk_collection_grant_acl_2` (`assetId`,`benchmarkId`),
+  KEY `fk_collection_grant_acl_3` (`benchmarkId`,`assetId`),
+  KEY `fk_collection_grant_acl_4` (`clId`,`benchmarkId`),
+  CONSTRAINT `fk_collection_grant_acl_1` FOREIGN KEY (`grantId`) REFERENCES `collection_grant` (`grantId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_collection_grant_acl_2` FOREIGN KEY (`assetId`) REFERENCES `asset` (`assetId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_collection_grant_acl_3` FOREIGN KEY (`benchmarkId`) REFERENCES `stig` (`benchmarkId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_collection_grant_acl_4` FOREIGN KEY (`clId`) REFERENCES `collection_label` (`clId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_collection_grant_acl_5` FOREIGN KEY (`benchmarkId`, `assetId`) REFERENCES `stig_asset_map` (`benchmarkId`, `assetId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -374,7 +405,7 @@ CREATE TABLE `review` (
 
 DROP TABLE IF EXISTS `review_history`;
 CREATE TABLE `review_history` (
-  `historyId` int NOT NULL AUTO_INCREMENT,
+  `historyId` bigint unsigned NOT NULL AUTO_INCREMENT,
   `reviewId` int NOT NULL,
   `resultId` int NOT NULL,
   `detail` mediumtext,
@@ -547,19 +578,40 @@ CREATE TABLE `user_data` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Table structure for table `user_stig_asset_map`
+-- Table structure for table `user_group`
 --
 
-DROP TABLE IF EXISTS `user_stig_asset_map`;
-CREATE TABLE `user_stig_asset_map` (
-  `id` int NOT NULL AUTO_INCREMENT,
+DROP TABLE IF EXISTS `user_group`;
+CREATE TABLE `user_group` (
+  `userGroupId` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `createdUserId` int NOT NULL,
+  `createdDate` datetime DEFAULT CURRENT_TIMESTAMP,
+  `modifiedUserId` int NOT NULL,
+  `modifiedDate` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`userGroupId`),
+  UNIQUE KEY `idx_name` (`name`),
+  KEY `fk_user_group_1_idx` (`createdUserId`),
+  KEY `fk_user_group_2_idx` (`modifiedUserId`),
+  CONSTRAINT `fk_user_group_1` FOREIGN KEY (`createdUserId`) REFERENCES `user_data` (`userId`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `fk_user_group_2` FOREIGN KEY (`modifiedUserId`) REFERENCES `user_data` (`userId`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Table structure for table `user_group_user_map`
+--
+
+DROP TABLE IF EXISTS `user_group_user_map`;
+CREATE TABLE `user_group_user_map` (
+  `ugumId` int NOT NULL AUTO_INCREMENT,
+  `userGroupId` int NOT NULL,
   `userId` int NOT NULL,
-  `saId` int NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_user_stig_asset_map_2` (`userId`),
-  KEY `fk_user_stig_asset_map_1` (`saId`),
-  CONSTRAINT `fk_user_stig_asset_map_1` FOREIGN KEY (`saId`) REFERENCES `stig_asset_map` (`saId`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_user_stig_asset_map_2` FOREIGN KEY (`userId`) REFERENCES `user_data` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE
+  PRIMARY KEY (`ugumId`),
+  UNIQUE KEY `INDEX_UG_USER` (`userGroupId`,`userId`),
+  KEY `fk_user_group_map_2_idx` (`userId`),
+  CONSTRAINT `fk_user_group_map_1` FOREIGN KEY (`userGroupId`) REFERENCES `user_group` (`userGroupId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_user_group_map_2` FOREIGN KEY (`userId`) REFERENCES `user_data` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -650,4 +702,4 @@ DROP TABLE IF EXISTS `v_latest_rev`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-08-27 15:11:27
+-- Dump completed on 2025-01-17  7:10:02

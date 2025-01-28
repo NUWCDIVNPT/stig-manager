@@ -82,7 +82,7 @@ jobs:
           -e MYSQL_DATABASE=stigman \
           -e MYSQL_USER=stigman \
           -e MYSQL_PASSWORD=stigman \
-          mysql:8.0.21
+          mysql:8.0.24
       - name: Install c8 coverage reporter
         run: |
           sudo npm install -g c8

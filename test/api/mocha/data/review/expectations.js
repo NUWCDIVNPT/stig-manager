@@ -1,6 +1,6 @@
 //This data contains expected response data that varies by iteration "scenario" or "iteration" for each test case. These expectations are relative to the "referenceData.js" data used to construct the API requests.
 
-const distinct = {
+export const expectations = {
     stigmanadmin: {
       canPatchReview: true,
       testAsset: {
@@ -20,47 +20,47 @@ const distinct = {
         reviewsForResultPass: 4,
         reviewsForTestGroup: 3,
         reviewsForRulesAll: 17,
-        reviewsDefaultMapped: 11
+        reviewsDefaultMapped: 0
       },
       postReviews:{
         targetAssetsWholeStig:{
-          inserted: 241,
-          updated: 2,
+          inserted: 4,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 243
+          reviewsLength: 4
         },
         targetAssetsOneRule:{
-          inserted: 1,
-          updated: 2,
+          inserted: 2,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 3
+          reviewsLength: 2
         },
         targetAssetsAndRule:{
-          inserted: 1,
-          updated: 2,
+          inserted: 2,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 3
+          reviewsLength: 2
         },
         targetStigWholeStig:{
-          inserted: 241,
-          updated: 2,
+          inserted: 4,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 243
+          reviewsLength: 4
         },
         targetStigWholeStigInsert:{
           inserted: 1,
           updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 3
+          reviewsLength: 2
         },
         targetStigWholeStigMerge:{
-          inserted: 0,
-          updated: 2,
+          inserted: 1,
+          updated: 1,
           failedValidation: 0,
           validationErrors: 0,
           reviewsLength: 2
@@ -75,12 +75,20 @@ const distinct = {
         targetByStigOneRuleValidationFailure:{
           inserted: 0,
           updated: 0,
-          failedValidation: 3,
-          validationErrors: 3,
+          failedValidation: 2,
+          validationErrors: 2,
+          reviewsLength: 0
+        },
+        update62Insert29:{
+          inserted: 1,
+          updated: 1,
+          failedValidation: 0,
+          validationErrors: 0,
           reviewsLength: 2
         },
         
       },
+      roleId:4
     },
     lvl1: {
       canPatchReview: false,
@@ -94,46 +102,46 @@ const distinct = {
       },
       postReviews:{
         targetAssetsWholeStig:{
-          inserted: 160,
-          updated: 2,
-          failedValidation: 81,
-          validationErrors: 50,
-          reviewsLength: 162
+          inserted: 2,
+          updated: 0,
+          failedValidation: 2,
+          validationErrors: 2,
+          reviewsLength: 2
         },
         targetAssetsOneRule:{
-          inserted: 0,
-          updated: 2,
+          inserted: 1,
+          updated: 0,
           failedValidation: 1,
           validationErrors: 1,
-          reviewsLength: 2
+          reviewsLength: 1
         },
         targetAssetsAndRule:{
-          inserted: 0,
-          updated: 2,
+          inserted: 1,
+          updated: 0,
+          failedValidation: 0,
+          validationErrors: 0,
+          reviewsLength: 1
+        },
+        targetStigWholeStig:{
+          inserted: 2,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
           reviewsLength: 2
-        },
-        targetStigWholeStig:{
-          inserted: 160,
-          updated: 2,
-          failedValidation: 0,
-          validationErrors: 0,
-          reviewsLength: 162
         },
         targetStigWholeStigInsert:{
           inserted: 0,
           updated: 0,
           failedValidation: 1,
           validationErrors: 1,
-          reviewsLength: 2
+          reviewsLength: 1
         },
         targetStigWholeStigMerge:{
-          inserted: 0,
-          updated: 2,
-          failedValidation: 0,
-          validationErrors: 0,
-          reviewsLength: 2
+          inserted: 1,
+          updated: 0,
+          failedValidation: 1,
+          validationErrors: 1,
+          reviewsLength: 1
         },
         targetRulesDefinedByStig:{
           inserted:160,
@@ -145,9 +153,16 @@ const distinct = {
         targetByStigOneRuleValidationFailure:{
           inserted: 0,
           updated: 0,
-          failedValidation: 2,
-          validationErrors: 2,
-          reviewsLength: 2
+          failedValidation: 1,
+          validationErrors: 1,
+          reviewsLength: 0
+        },
+        update62Insert29:{
+          inserted: 0,
+          updated: 1,
+          failedValidation: 1,
+          validationErrors: 1,
+          reviewsLength: 1
         },
       },
       testAsset: {
@@ -158,17 +173,18 @@ const distinct = {
         reviewsForStatusSubmitted: 5
       },
       testCollection: {
-        reviewsForTestBenchmark: 11,
+        reviewsForTestBenchmark: 14,
         reviewsForResultFail: 6,
-        reviewsForTestRuleId: 2,
-        reviewsForResultFailAllAssets: 6,
-        reviewsForStatusSaved: 4,
-        reviewsForStigmanadmin: 9,
+        reviewsForTestRuleId: 3,
+        reviewsForResultFailAllAssets: 7,
+        reviewsForStatusSaved: 5,
+        reviewsForStigmanadmin: 11,
         reviewsForResultPass: 2,
-        reviewsForTestGroup: 2,
-        reviewsForRulesAll: 11,
-        reviewsDefaultMapped: 9
+        reviewsForTestGroup: 3,
+        reviewsForRulesAll: 14,
+        reviewsDefaultMapped: 0
       },
+      roleId:1
     },
     lvl2: {
       canPatchReview: true,
@@ -190,43 +206,43 @@ const distinct = {
       },
        postReviews:{
         targetAssetsWholeStig:{
-          inserted: 241,
-          updated: 2,
+          inserted: 4,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 243
+          reviewsLength: 4
         },
         targetAssetsOneRule:{
-          inserted: 1,
-          updated: 2,
+          inserted: 2,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 3
+          reviewsLength: 2
         },
         targetAssetsAndRule:{
-          inserted: 1,
-          updated: 2,
+          inserted: 2,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 3
+          reviewsLength: 2
         },
         targetStigWholeStig:{
-          inserted: 241,
-          updated: 2,
+          inserted: 4,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 243
+          reviewsLength: 4
         },
         targetStigWholeStigInsert:{
           inserted: 1,
           updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 3
+          reviewsLength: 2
         },
         targetStigWholeStigMerge:{
-          inserted: 0,
-          updated: 2,
+          inserted: 1,
+          updated: 1,
           failedValidation: 0,
           validationErrors: 0,
           reviewsLength: 2
@@ -241,8 +257,15 @@ const distinct = {
         targetByStigOneRuleValidationFailure:{
           inserted: 0,
           updated: 0,
-          failedValidation: 3,
-          validationErrors: 3,
+          failedValidation: 2,
+          validationErrors: 2,
+          reviewsLength: 0
+        },
+        update62Insert29:{
+          inserted: 1,
+          updated: 1,
+          failedValidation: 0,
+          validationErrors: 0,
           reviewsLength: 2
         },
       },
@@ -256,8 +279,9 @@ const distinct = {
         reviewsForResultPass: 4,
         reviewsForTestGroup: 3,
         reviewsForRulesAll: 17,
-        reviewsDefaultMapped: 11
+        reviewsDefaultMapped: 0
       },
+      roleId:2
     },
     lvl3: {
       canPatchReview: true,
@@ -285,47 +309,47 @@ const distinct = {
         reviewsForResultPass: 4,
         reviewsForTestGroup: 3,
         reviewsForRulesAll: 17,
-        reviewsDefaultMapped: 11
+        reviewsDefaultMapped: 0
       },
       postReviews:{
         targetAssetsWholeStig:{
-          inserted: 241,
-          updated: 2,
+          inserted: 4,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 243
+          reviewsLength: 4
         },
         targetAssetsOneRule:{
-          inserted: 1,
-          updated: 2,
+          inserted: 2,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 3
+          reviewsLength: 2
         },
         targetAssetsAndRule:{
-          inserted: 1,
-          updated: 2,
+          inserted: 2,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 3
+          reviewsLength: 2
         },
         targetStigWholeStig:{
-          inserted: 241,
-          updated: 2,
+          inserted: 4,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 243
+          reviewsLength: 4
         },
         targetStigWholeStigInsert:{
           inserted: 1,
           updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 3
+          reviewsLength: 2
         },
         targetStigWholeStigMerge:{
-          inserted: 0,
-          updated: 2,
+          inserted: 1,
+          updated: 1,
           failedValidation: 0,
           validationErrors: 0,
           reviewsLength: 2
@@ -340,11 +364,19 @@ const distinct = {
         targetByStigOneRuleValidationFailure:{
           inserted: 0,
           updated: 0,
-          failedValidation: 3,
-          validationErrors: 3,
+          failedValidation: 2,
+          validationErrors: 2,
+          reviewsLength: 0
+        },
+        update62Insert29:{
+          inserted: 1,
+          updated: 1,
+          failedValidation: 0,
+          validationErrors: 0,
           reviewsLength: 2
         },
       },
+      roleId:3
     },
     lvl4: {
       canPatchReview: true,
@@ -372,48 +404,48 @@ const distinct = {
         reviewsForStigmanadmin: 14,
         reviewsForTestGroup: 3,
         reviewsForRulesAll: 17,
-        reviewsDefaultMapped: 11
+        reviewsDefaultMapped: 0
       
       },
       postReviews:{
         targetAssetsWholeStig:{
-          inserted: 241,
-          updated: 2,
+          inserted: 4,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 243
+          reviewsLength: 4
         },
         targetAssetsOneRule:{
-          inserted: 1,
-          updated: 2,
+          inserted: 2,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 3
+          reviewsLength: 2
         },
         targetAssetsAndRule:{
-          inserted: 1,
-          updated: 2,
+          inserted: 2,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 3
+          reviewsLength: 2
         },
         targetStigWholeStig:{
-          inserted: 241,
-          updated: 2,
+          inserted: 4,
+          updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 243
+          reviewsLength: 4
         },
         targetStigWholeStigInsert:{
           inserted: 1,
           updated: 0,
           failedValidation: 0,
           validationErrors: 0,
-          reviewsLength: 3
+          reviewsLength: 2
         },
         targetStigWholeStigMerge:{
-          inserted: 0,
-          updated: 2,
+          inserted: 1,
+          updated: 1,
           failedValidation: 0,
           validationErrors: 0,
           reviewsLength: 2
@@ -428,19 +460,18 @@ const distinct = {
         targetByStigOneRuleValidationFailure:{
           inserted: 0,
           updated: 0,
-          failedValidation: 3,
-          validationErrors: 3,
-          reviewsLength: 2
+          failedValidation: 2,
+          validationErrors: 2,
+          reviewsLength: 0
         },
-        targetByStigOneRuleValidationFailure:{
-          inserted: 0,
-          updated: 0,
-          failedValidation: 3,
-          validationErrors: 3,
+        update62Insert29:{
+          inserted: 1,
+          updated: 1,
+          failedValidation: 0,
+          validationErrors: 0,
           reviewsLength: 2
         },
       },
+      roleId:4
     }
 }
-  module.exports = distinct
-  

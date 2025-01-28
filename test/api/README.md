@@ -54,13 +54,13 @@ To install the dependencies required to run the test suite, run this command fro
 npm install
 ```
 
-Ensure that testConfig.json is configured correctly. This file contains the base URL for the API and access token for the admin test user. 
-```test/api/mocha/testConfig.json```
+Ensure that testConfig.js is configured correctly. This file contains the base URL for the API and access token for the admin test user. 
+```test/api/mocha/testConfig.js```
 
 
 ## Usage
 
-The test suite uses Mocha as the test runner and Chai-http to call endpoints and Chai for assertions. 
+The test suite uses Mocha as the test runner and Chai for assertions. 
 
 To run the tests for local development, use the following bash script:
 

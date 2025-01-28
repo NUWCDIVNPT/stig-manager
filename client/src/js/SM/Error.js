@@ -149,9 +149,9 @@ SM.Error.displayError = function (data) {
     buttonAlign:'right',
     items: fp
   })
-  appwindow.render(document.body)
+  appwindow.render(Ext.getBody())
   fp.getForm().setValues(data)
-  appwindow.show(document.body)
+  appwindow.show(Ext.getBody())
 }
 
 
@@ -217,3 +217,7 @@ SM.Error.getOriginalSource = function (stackTrace) {
   })
   return output
 }
+
+window.addEventListener('unhandledrejection', (event) => {
+  SM.Error.handleError(event.reason)
+})

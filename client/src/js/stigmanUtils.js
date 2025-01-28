@@ -148,7 +148,7 @@ function initProgress (title,text,storeId,iframe) {
 		items: [pb,st]
 	});
 	statusText = '';
-	pbWindow.show(document.body);
+	pbWindow.show(Ext.getBody());
 
 }
 
@@ -347,7 +347,7 @@ function Sm_HistoryData (idAppend) {
     enableDragDrop: true,
     ddGroup: 'gridDDGroup',
 		plugins: expander,
-		border: false,
+		border: true,
 		id: 'historyGrid' + idAppend,
 		store: this.store,
 		stripeRows:true,

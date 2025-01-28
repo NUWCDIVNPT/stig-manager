@@ -130,7 +130,8 @@ app.use((err, req, res, next) => {
     })
   }
   // Expose selected error properties in the response
-  res.errorBody = { error: err.message, code: err.code, detail: err.detail, stack: err.stack}
+  res.errorBody = { error: err.message, code: err.code, detail: err.detail}
+  if (err.status === 500 || !(err.status)) res.errorBody.stack = err.stack
   if (!res._headerSent) {
     res.status(err.status || 500).header(err.headers).json(res.errorBody)
   }
@@ -142,10 +143,10 @@ app.use((err, req, res, next) => {
 
 run()
 
-async function run() {
+function run() {
   try {
     if (!config.client.disabled) {
-      await setupClient(app, config.client.directory)
+      setupClient(app, config.client.directory)
       logger.writeDebug('index', 'client', {message: 'succeeded setting up client'})
     }
     else {
@@ -188,7 +189,7 @@ async function run() {
   }
 }
 
-async function setupClient(app, directory) {
+function setupClient(app, directory) {
   try {
     const envJS = 
 `
@@ -247,10 +248,17 @@ const STIGMAN = {
   }
 }
 
-async function startServer(app) {
-  // Start the server
+function startServer(app) {
   const server = http.createServer(app)
-  server.listen(config.http.port, function () {
+
+  const onListenError = (e) => {
+    logger.writeError('index', 'shutdown', {message:`Server failed establishing or while listening on port ${config.http.port}`, error: serializeError(e)})
+    process.exit(1)  
+  }
+  server.on('error', onListenError)
+  
+  server.listen(config.http.port, async function () {
+    server.removeListener('error', onListenError)
     logger.writeInfo('index', 'listening', {
       port: config.http.port,
       api: '/api',
@@ -258,26 +266,24 @@ async function startServer(app) {
       documentation: config.docs.disabled ? undefined : '/docs',
       swagger: config.swaggerUi.enabled ? '/api-docs' : undefined
     })
+    try {
+      await Promise.all([auth.initializeAuth(depStatus), db.initializeDatabase(depStatus)])
+    }
+    catch (e) {
+      logger.writeError('index', 'shutdown', {message:'Failed to setup dependencies', error: serializeError(e)})
+      process.exit(1) 
+    }
+  
+    // Set/change classification if indicated
+    if (config.settings.setClassification) {
+      await OperationSvc.setConfigurationItem('classification', config.settings.setClassification)
+    }
+  
+    const endTime = process.hrtime.bigint()
+    logger.writeInfo('index', 'started', {
+      durationS: Number(endTime - startTime) / 1e9
+    })
   })
-
-  try {
-    await Promise.all([auth.initializeAuth(depStatus), db.initializeDatabase(depStatus)])
-  }
-  catch (e) {
-    logger.writeError('index', 'shutdown', {message:'Failed to setup dependencies', error: serializeError(e)});
-    process.exit(1);  
-  }
-
-  // Set/change classification if indicated
-  if (config.settings.setClassification) {
-    await OperationSvc.setConfigurationItem('classification', config.settings.setClassification)
-  }
-
-  const endTime = process.hrtime.bigint()
-  logger.writeInfo('index', 'started', {
-    durationS: Number(endTime - startTime) / 1e9
-  })
-
 }
 
 function modulePathResolver( handlersPath, route, apiDoc ) {

@@ -1,12 +1,10 @@
-const chai = require('chai')
-const chaiHttp = require('chai-http')
-chai.use(chaiHttp)
-const expect = chai.expect
-const config = require('../testConfig.json')
-const utils = require('../utils/testUtils')
-const xml2js = require('xml2js')
-const reference = require('../referenceData.js')
-const iterations = require('../iterations.js')
+
+import { XMLParser } from "fast-xml-parser"
+import {config } from '../testConfig.js'
+import * as utils from '../utils/testUtils.js'
+import {iterations} from '../iterations.js'
+import reference from '../referenceData.js'
+import { expect } from 'chai'
 
 const user =
   {
@@ -20,14 +18,10 @@ const user =
 describe('PUT - putReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
  
     before(async function () {
-            this.timeout(4000)
-            await utils.uploadTestStigs()
             await utils.loadAppData()
-            // await utils.createDisabledCollectionsandAssets()
         })
 
     describe('Check that "informational" results are represented as NotReviewed with Finding Details data in .ckls', () => {
-
 
         it('Set all properties of a Review with informational and a result comment', async () => {
             const putBody = {
@@ -38,30 +32,37 @@ describe('PUT - putReviewByAssetRule - /collections/{collectionId}/reviews/{asse
                 "status": "saved"
             }
     
-            const res = await chai.request(config.baseUrl)
-                .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.ruleId}?projection=rule&projection=history&projection=stigs`)
-                .set('Authorization', `Bearer ${user.token}`)
-                .send(putBody)
-            expect(res).to.have.status(200)
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.ruleId}?projection=rule&projection=history&projection=stigs`, 'PUT', user.token, putBody)
+            expect(res.status).to.eql(200)
         })
         it('Return the Checklist for the supplied Asset and STIG XML (.ckl) - check that informational + detail exported as not_reviewed + finding_details', async () => {
-            const res = await chai.request(config.baseUrl)
-                .get(`/assets/${reference.testAsset.assetId}/checklists/${reference.testCollection.benchmark}/${'V1R1'}?format=ckl`)
-                .set('Authorization', `Bearer ${user.token}`)
-            expect(res).to.have.status(200)
-            let cklData
+            
+            const url = `${config.baseUrl}/assets/${reference.testAsset.assetId}/checklists/${reference.testCollection.benchmark}/${'V1R1'}?format=ckl`
 
-            xml2js.parseString(res.body, function (err, result) {
-                cklData = result
-            })
-            let cklHostName = cklData.CHECKLIST.ASSET[0].HOST_NAME[0]
-            let cklIStigs = cklData.CHECKLIST.STIGS[0].iSTIG
+            const options = {
+                method: 'GET',
+                headers: {
+                  Authorization: `Bearer ${user.token}`,
+                },
+            }
+            const res = await fetch(url, options)
+            expect(res.status).to.eql(200)
+            const bodyText = await res.text()
+
+            let cklData
+            const parser = new XMLParser()
+            cklData = parser.parse(bodyText)
+  
+            let cklHostName = cklData.CHECKLIST.ASSET.HOST_NAME
+            let cklIStigs = cklData.CHECKLIST.STIGS.iSTIG
+            cklIStigs = [cklIStigs]
+            let currentStigId
 
             for(const iStig of cklIStigs){
-                for (let cklSiDatum of iStig.STIG_INFO[0].SI_DATA){
-                    if (cklSiDatum.SID_NAME[0] == 'stigid'){
-                        currentStigId = cklSiDatum.SID_DATA[0]
-                        expect(currentStigId).to.be.oneOf(reference.testCollection.validStigs);
+                for (let cklSiDatum of iStig.STIG_INFO.SI_DATA){
+                    if (cklSiDatum.SID_NAME == 'stigid'){
+                        currentStigId = cklSiDatum.SID_DATA
+                        expect(currentStigId).to.be.oneOf(reference.testCollection.validStigs)
                     }
                 }
                 let cklVulns = iStig.VULN;
@@ -69,8 +70,8 @@ describe('PUT - putReviewByAssetRule - /collections/{collectionId}/reviews/{asse
                     expect(cklVulns).to.be.an('array').of.length(reference.checklistLength)
                     for (let thisVuln of cklVulns){
                         for (let stigData of thisVuln.STIG_DATA){
-                            if (stigData.ATTRIBUTE_DATA[0] == 'SV-106179r1_rule'){
-                                expect(thisVuln.STATUS[0]).to.eql("Not_Reviewed")
+                            if (stigData.ATTRIBUTE_DATA == 'SV-106179r1_rule'){
+                                expect(thisVuln.STATUS).to.eql("Not_Reviewed")
                             }
                         }
                     }
@@ -87,11 +88,8 @@ describe('PUT - putReviewByAssetRule - /collections/{collectionId}/reviews/{asse
                 "status": "saved"
             }
     
-            const res = await chai.request(config.baseUrl)
-                .put(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}?projection=rule&projection=history&projection=stigs`)
-                .set('Authorization', `Bearer ${user.token}`)
-                .send(putBody)
-            expect(res).to.have.status(400)
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}?projection=rule&projection=history&projection=stigs`, 'PUT', user.token, putBody)
+            expect(res.status).to.eql(400)
         })
     })
 })
@@ -101,43 +99,28 @@ describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{
     describe('review status reset check', () => {
 
         before(async function () {
-            this.timeout(4000)
-            // await utils.uploadTestStigs()
             await utils.loadAppData()
-            // await utils.createDisabledCollectionsandAssets()
         })
 
         it('PATCH Review with new details, expect status to remain', async () => {
-            const res = await chai.request(config.baseUrl)
-              .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
-              .set('Authorization', `Bearer ${user.token}`)
-              .send({detail:"these details have changed, but the status remains"})
-            expect(res).to.have.status(200)
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`, 'PATCH', user.token, {detail:"these details have changed, but the status remains"})
+            expect(res.status).to.eql(200)
             expect(res.body.status).to.have.property('label').that.equals('submitted')
         })
         it('PATCH Review with new result, expect status to reset to saved', async () => {
-            const res = await chai.request(config.baseUrl)
-            .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
-            .set('Authorization', `Bearer ${user.token}`)
-            .send({result: "pass"})
-            expect(res).to.have.status(200)
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`, 'PATCH', user.token, {result: "pass"})
+            expect(res.status).to.eql(200)
             expect(res.body.result).to.eql("pass")
             expect(res.body.status).to.have.property('label').that.equals('saved')
         })
         it('PATCH Review to submitted status, status should chnage to submitted', async () => {
-            const res = await chai.request(config.baseUrl)
-            .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
-            .set('Authorization', `Bearer ${user.token}`)
-            .send({status: "submitted"})
-            expect(res).to.have.status(200)
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`, 'PATCH', user.token, {status: "submitted"})
+            expect(res.status).to.eql(200)
             expect(res.body.status).to.have.property('label').that.equals('submitted')
         })
         it('PATCH Review patched and no longer meets Collection Requirements expect saved', async () => {
-            const res = await chai.request(config.baseUrl)
-            .patch(`/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`)
-            .set('Authorization', `Bearer ${user.token}`)
-            .send({result: "fail"})
-            expect(res).to.have.status(200)
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${'SV-106181r1_rule'}`, 'PATCH', user.token, {result: "fail"})
+            expect(res.status).to.eql(200)
             expect(res.body.result).to.eql("fail")
             expect(res.body.status).to.have.property('label').that.equals('saved')
         })
@@ -151,18 +134,12 @@ describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{asset
             describe('test history prune', () => {
 
                 before(async function () {
-                    this.timeout(4000)
                     await utils.loadAppData()
-                    await utils.uploadTestStigs()
                 })
 
                 it('Set collection history max reviews to 2', async () => {
 
-                    const res = await chai
-                    .request(config.baseUrl)
-                    .patch(`/collections/${reference.testCollection.collectionId}?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`)
-                    .set("Authorization", `Bearer ${user.token}`)
-                    .send({
+                    const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs`, 'PATCH', user.token, {
                         metadata: {
                             pocName: "poc2Patched",
                             pocEmail: "pocEmail@email.com",
@@ -177,20 +154,14 @@ describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{asset
                     })
 
                     if(user.name  == "lvl1" || user.name  == "lvl2" || user.name  == "collectioncreator" ){
-                        expect(res).to.have.status(403)
+                        expect(res.status).to.eql(403)
                         return
                     }
-                    expect(res).to.have.status(200)
+                    expect(res.status).to.eql(200)
                 })
                 it('Post review, triggering history prune.', async () => {
 
-                    const res = await chai
-                      .request(config.baseUrl)
-                      .post(
-                        `/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}`
-                      )
-                      .set("Authorization", `Bearer ${user.token}`)
-                      .send([
+                    const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}`, 'POST', user.token, [
                         {
                           ruleId: reference.ruleId,
                           result: "pass",
@@ -202,22 +173,20 @@ describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{asset
                       ])
 
                     if(user.name  == "collectioncreator" ){
-                        expect(res).to.have.status(403)
+                        expect(res.status).to.eql(403)
                         return
                     }
-                    expect(res).to.have.status(200)
+                    expect(res.status).to.eql(200)
                 })
                 it('History stats - rule-asset - check history is pruned to 2', async () => {
 
-                    const res = await chai.request(config.baseUrl)
-                        .get(`/collections/${reference.testCollection.collectionId}/review-history/stats?assetId=${reference.testAsset.assetId}&ruleId=${reference.ruleId}`)
-                        .set("Authorization", `Bearer ${user.token}`)
+                    const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/review-history/stats?assetId=${reference.testAsset.assetId}&ruleId=${reference.ruleId}`, 'GET', user.token)
 
                     if(user.name  == "lvl1" ||  user.name  == "collectioncreator" ){
-                        expect(res).to.have.status(403)
+                        expect(res.status).to.eql(403)
                         return
                     }
-                    expect(res).to.have.status(200)
+                    expect(res.status).to.eql(200)
                     
                     if (user.name == "lvl2" ) {
                         //lvl2 could not change collection settings, so history incremented

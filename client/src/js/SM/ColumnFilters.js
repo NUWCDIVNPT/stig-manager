@@ -322,7 +322,7 @@ SM.ColumnFilters.GridViewLocking = SM.ColumnFilters.extend(Ext.ux.grid.LockingGr
 SM.ColumnFilters.StringMatchTextField = Ext.extend(Ext.form.TextField, {
   initComponent: function () {
     const config = {
-      autoCreate: {tag: 'input', type: 'search', size: '20', autocomplete: 'off'},
+      autoCreate: {tag: 'input', type: 'search', size: '20', autocomplete: 'off', spellcheck: 'false'},
       enableKeyEvents: true
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -534,6 +534,10 @@ SM.ColumnFilters.Renderers = {
   labels: function (labelId, collectionId) {
     if (!labelId) return '<i>(No value)</i>'
     const labelObj = SM.Cache.getCollectionLabel(collectionId, labelId)
-    return SM.Collection.LabelTpl.apply(labelObj)
+    return SM.Manage.Collection.LabelTpl.apply(labelObj)
+  },
+  groups: function (v) {
+    if (!v) return '<i>(No value)</i>'
+    return SM.User.GroupTpl.apply(v)
   }
 }

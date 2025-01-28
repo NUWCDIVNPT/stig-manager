@@ -176,9 +176,9 @@ Database Entity Relationship Diagrams
 The following diagram may not always be up to date. Always refer to the implemented db structure as the authoritative source for this information. 
 
 
-.. thumbnail:: /assets/images/eer-stigman-wide.svg
+.. thumbnail:: /assets/images/eer-stigman.png
       :width: 75% 
       :show_caption: True
       :title: Entity Relationship Diagram representation of STIG Manager's MySQL data. 
 
-`View the enlarged ERD Document here. <../_images/eer-stigman-wide1.svg>`_
+`View the enlarged ERD Document here. <../_images/eer-stigman1.png>`_

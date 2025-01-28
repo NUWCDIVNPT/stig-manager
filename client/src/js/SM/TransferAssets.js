@@ -10,7 +10,7 @@ SM.TransferAssets.TransferBtn = Ext.extend(Ext.Button, {
     // Populate the menu with collections that are not the source
     function setMenuItems (menu) {
       menu.removeAll()
-      const destCollectionGrants = curUser.collectionGrants.filter( g => g.collection.collectionId !== menu.srcCollectionId && g.accessLevel >= 3)
+      const destCollectionGrants = curUser.collectionGrants.filter( g => g.collection.collectionId !== menu.srcCollectionId && g.roleId >= 3)
       for (const destCollectionGrant of destCollectionGrants) {
         menu.addMenuItem({
           iconCls: 'sm-collection-icon',

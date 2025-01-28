@@ -14,7 +14,7 @@ SM.NavTree.NodeSorter = (a, b) => {
 SM.NavTree.CollectionLeafConfig = function (collection) {
   const collectionGrant = curUser.collectionGrants.find( g => g.collection.collectionId === collection.collectionId )
   let toolsEl = ''
-  if (collectionGrant && collectionGrant.accessLevel >= 3) {
+  if (collectionGrant && collectionGrant.roleId >= 3) {
     toolsEl = '<img class="sm-tree-toolbar" src="img/gear.svg" width="12" height="12" ext:qtip="Manage Collection">'
   }
   return {
@@ -92,7 +92,7 @@ SM.NavTree.LibraryNodesConfig = function (stigs) {
     children.unshift({
       id: 'library-diff-leaf',
       action: 'stig-diff',
-      text: 'Compare revisions<span class="sm-navtree-sprite">preview</span>',
+      text: 'Compare revisions',
       iconCls: 'sm-diff-icon',
       multiRevisionStigs,
       leaf: true
@@ -232,7 +232,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
           // Root node
           if (node == 'stigman-root') {
             let content = []
-            if (curUser.privileges.canAdmin) {
+            if (curUser.privileges.admin) {
               const children = [
                 {
                   id: 'collection-admin',
@@ -242,7 +242,13 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                 },
                 {
                   id: 'user-admin',
-                  text: 'User Grants',
+                  text: 'Users',
+                  leaf: true,
+                  iconCls: 'sm-user-icon'
+                },
+                {
+                  id: 'user-group-admin',
+                  text: 'User Groups',
                   leaf: true,
                   iconCls: 'sm-users-icon'
                 },
@@ -361,7 +367,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
             const collectionMap = await SM.Cache.getCollections()
             const apiCollections = [...collectionMap.values()].sort((a, b) => a.name.localeCompare(b.name))
             let content = apiCollections.map(collection => SM.NavTree.CollectionLeafConfig(collection))
-            if (curUser.privileges.canCreateCollection) {
+            if (curUser.privileges.create_collection) {
               content.unshift({
                 id: `collection-create-leaf`,
                 action: 'collection-create',
@@ -384,10 +390,12 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
         if (!n.leaf) {
           return
         }
+        const treePath = n.getPath()
+
         if (n.attributes.action === 'stig-diff') {
           SM.Library.showDiffPanel({
             multiRevisionStigs: n.attributes.multiRevisionStigs,
-            treePath: n.getPath()
+            treePath
           })
           return
         }
@@ -395,7 +403,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
           SM.CollectionPanel.showCollectionTab({
             collectionId: n.attributes.collectionId,
             collectionName: n.attributes.collectionName,
-            treePath: n.getPath()
+            treePath
           })
           return
         }
@@ -404,88 +412,45 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
             benchmarkId: n.attributes.benchmarkId,
             revisionStr: n.attributes.lastRevisionStr,
             stigTitle: n.attributes.stigTitle,
-            treePath: n.getPath()
+            treePath
           })
         }
         if (n.attributes.action == 'collection-create') {
-          let fp = new SM.Collection.CreateForm({
-            btnText: 'Create',
-            btnHandler: async () => {
-              try {
-                let values = fp.getForm().getFieldValues()
-                await addOrUpdateCollection(0, values, {
-                  showManager: true
-                })
-                appwindow.close()
-              }
-              catch (e) {
-                if (e.responseText) {
-                  const response = SM.safeJSONParse(e.responseText)
-                  if (response?.detail === 'Duplicate name exists.') {
-                    Ext.Msg.alert('Name unavailable', 'The Collection name is unavailable. Please try a different name.')
-                  }
-                  else {
-                    appwindow.close()
-                    await SM.Error.handleError(e)
-                  }
-                }
-              }
-            }
-          })
-
-          fp.getForm().setValues({
-            grants: [{
-              user: {
-                userId: curUser.userId,
-                username: curUser.username,
-                displayName: curUser.displayName
-              },
-              accessLevel: 4
-            }],
-          })
-
-          let appwindow = new Ext.Window({
-            id: 'window-project-info',
-            cls: 'sm-dialog-window sm-round-panel',
-            title: 'Create Collection',
-            modal: true,
-            width: 460,
-            height:630,
-            layout: 'fit',
-            plain: false,
-            // bodyStyle:'padding:5px;',
-            buttonAlign:'right',
-            items: fp
-          })
-
-          appwindow.show(document.body)
+          SM.Manage.Collection.showCreateWindow()
+          return
         }
         if (n.attributes.action == 'collection-management') {
           addCollectionManager({
             collectionId: n.attributes.collectionId,
             collectionName: n.attributes.collectionName,
-            treePath: n.getPath()
+            treePath
           })
         }
 
         switch (n.id) {
           case 'collection-admin':
-            addCollectionAdmin( { treePath: n.getPath() } )
+            addCollectionAdmin({ treePath })
             break
           case 'user-admin':
-            addUserAdmin( { treePath: n.getPath() })
+            SM.User.showUserAdmin({ treePath })
+            break
+          case 'user-group-admin':
+            SM.UserGroup.addUserGroupAdmin({ treePath })
             break
           case 'stig-admin':
-            addStigAdmin( { treePath: n.getPath() })
+            addStigAdmin({ treePath })
+            break
+          case 'appinfo-admin':
+            SM.AppInfo.showAppInfoTab({ treePath })
             break
           case 'appinfo-admin':
             SM.AppInfo.showAppInfoTab({treePath: n.getPath()})
             break
           case 'appdata-admin':
-            SM.AppData.showAppDataTab({treePath: n.getPath()})
+            SM.AppData.showAppDataTab({ treePath })
             break
           case 'whats-new':
-            SM.WhatsNew.addTab( { treePath: n.getPath() })
+            SM.WhatsNew.addTab({ treePath })
             break
         }
 

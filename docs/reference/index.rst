@@ -9,6 +9,18 @@ This is a glossary with definitions for terms like :term:`Asset`:
 
 .. glossary::
 
+    Access Control List
+        A list of Access Control Rules applied to a grant to determine what the grantee can access in a Collection.  Access Control Lists are managed in the Grants panel of the Manage Collection interface.  See :ref:`roles-and-access` for more information.
+
+    ACL
+        See :term:`Access Control List` 
+
+    Access Control Rule
+        An individual item describing varying levels of Access to the components of a Collection, such as specific Assets, STIGs, Labels, or the entire Collection. The overall Access Control List for a Grant is composed of these Access Control Rules. See :ref:`roles-and-access` for more information.
+
+    ACL
+        See :term:`Access Control List` 
+
     Asset
         An Asset is any component to which a STIG may be attached. Assets are created and changed in the Collection Configuration screen. To conform to the Navy RMF Process, an Asset must have a Name, IP Address, MAC Address, and Fully Qualified Domain Name unless it is designated "Non-Computing." The Asset Properties screen allows you to set all these properties, as well as attach STIGs.
 
@@ -49,8 +61,10 @@ This is a glossary with definitions for terms like :term:`Asset`:
 
             * :term:`Assets <Asset>`
             * :term:`STIGs <STIG>` attached to those Assets
-            * :term:`User Grants <User>` providing access to some or all of the Assets/STIGs in that Collection
+            * :term:`Grants <Grant>` providing access to some or all of the Assets/STIGs in that Collection for a User or Group
             * :term:`Reviews <Review>`
+            * Settings that control the behavior of the Collection, such as whether to require a Detail or Comment for each Review, Review History records, etc.
+            * :term:`Labels <Label>` that can be applied to Assets in the Collection.
         
         **Collections can be structured as an RMF Package, but do not need to be.** It is recommended that large packages be broken up into more easily-manageable Collections, to which Users can be granted higher access and, therefore, greater autonomy. 
 
@@ -58,13 +72,13 @@ This is a glossary with definitions for terms like :term:`Asset`:
         The Result or compliance state, either by a user or automated process, of a Review for a particular STIG Requirement on an Asset. 
 
     Finding
-        See :term:`Review` 
+        A :term:`Review` with a Result of Open.
     
     Grant
-        See :term:`User`
+        A Grant is a record of a User or User Group being given a Role in a Collection.  A User can have Grants in multiple Collections, and have different Roles in each Collection. Collection Owners or Managers can create/remove/modify Grants. :term:`Access Control List` rules can be applied to Grants to further refine the User's access to the Collection.  See :ref:`roles-and-access` for more information.
 
-    Package
-        An RMF Process term referring to a group of artifacts describing a System that is submitted for ATO consideration. Within STIG Manager, a Package can be represented as a Collection or group of Collections. 
+    Label
+        A Label is a user-defined tag that can be applied to Assets in a Collection. Labels can be used to filter Assets in the Collection Dashboard and other views, and can be used in Access Control Rules to restrict or enable access to Assets based on their Labels.
 
     Review
         A Review is the result of an Evaluation of a STIG Requirement that a User or automated tool has performed. These Reviews are composed of Review Evaluation Content and Status properties.  Each of these pieces carry an "Attribution" that includes the User that set that Content or Status and a timestamp indicating when they did so.  
@@ -91,44 +105,54 @@ This is a glossary with definitions for terms like :term:`Asset`:
 
         See our section on :ref:`Review Handling and Matching<review-handling>` for more information about how STIGMan tracks Reviews.
 
+    Role
+        A Role is a set of permissions that can be granted to a User or User Group in a Collection. Roles are used to determine what actions a User can perform in a Collection, and what default access they have to Assets and Reviews. 
+
+        There are four Roles available in STIG Manager. Roles differ in the actions they can perform in a Collection, and their default Access to Assets and Reviews.  See :ref:`roles-and-access` for more information.
+
+        .. list-table:: Role Capabilities and Access 
+            :widths: 20 40 40 
+            :header-rows: 1
+            :class: tight-table
+
+            * - Role
+              - Collection Management Capabilities  
+              - Default Access
+            * - Owner
+              - Add/Remove/Modify Assets, STIG assignments, Labels, and User Grants. Can delete the Collection.
+              - Full access to all Assets/Reviews (Can be restricted with Access Controls)
+            * - Manage
+              - Add/Remove/Modify Assets, STIG assignments, Labels, and User Grants with the exception of "Owner" grants. Optionally responsible for "Accepting" and "Rejecting" reviews from evaluators.
+              - Full access to all Assets/Reviews (Can be restricted with Access Controls)
+            * - Full
+              - None
+              - Full access to all Assets/Reviews (Can be restricted with Access Controls)
+            * - Restricted
+              - None
+              - None (requires Access Controls)
+
     STIG
         Secure Technical Implementation Guidelines published by the Defense Information Security Agency. STIGs are published in XCCDF format that can be imported into STIG Manager. Automated results in XCCDF format, such as those produced by the DISA SCC Tool, can also be imported. Manually evaluated STIG Results are often recorded in a .ckl file, a different format, which is produced by the DISA tool STIG Viewer, and can also be imported into STIG Manager. 
 		
     User
-        Any User in STIG Manager can be granted access to a Collection by the Collection Owner or Manager.
+        Any User in STIG Manager can be assigned a grant that provides access to a Collection by the Collection Owner or Manager.
 
         * When you grant Users access to your Collection, or when you are granted access to another Collection by someone else, that Collection will appear in the Nav Tree on the left upon refresh of the app. 
 
-        For each Collection they are granted access to, Users can have one of 4 Access Levels, providing differing levels of access to your Collection: 
-		
-        .. list-table:: The 4 Grant Access Levels provide differing levels of access to your Collection: 
-            :widths: 20 70
-            :header-rows: 1
-            :class: tight-table
+        For each Collection they are granted access to, Users can have one of 4 :term:`Roles <Role>` , providing different capabilities and default access to your Collection.  See :ref:`roles-and-access` for more information. 
 
-            * - Grant Access Level
-              - Description
-            * - Restricted
-              - Can review specific STIGs on specific Assets only.    
-            * - Full
-              - Can review any Asset/STIG in the Collection.
-            * - Manage
-              - Everything in the "Full" level.  Can Add/Remove/Modify Assets, STIG assignments, and Users with the exception of User "Owner" grants. Optionally responsible for "Accepting" and "Rejecting" reviews from evaluators.
-            * - Owner
-              - Everything in the "Manage" level.  Can Delete the Collection and Add/Remove/Modify Owner Grants.  Responsible for "Accepting"  and "Rejecting" reviews from evaluators.
-
-
-        * In order to be useful, Users with Restricted access to a Collection must be assigned specific STIGs on specific Assets using the "Restricted User access list..." button in the Grants panel toolbar.
-
-        Users can also be given one of 2 **Privileges** on the STIG Manager system. These privileges can be administered in your Authentication Provider (such as Keycloak) through the assignment of User Roles:
+        Users can also be given one of 2 **Privileges** on the STIG Manager system. These privileges can be administered in your Authentication Provider (such as Keycloak):
             * Collection Creator: Gives the User the ability to create their own Collections in STIG Manager.  
-            * Administrator: Gives the user Administrative access to STIG Manager via the "Administration" node of the Nav Tree. The Administrator Privilege allows the User to:
+            * Administrator (Application Manager): Gives the user elevated access to STIG Manager via the "Application Management" node of the Nav Tree. The Administrator Privilege allows the User to:
             
                 * Import new STIGs into STIG Manager, as well as Delete them.
                 * Create and Alter Collections, and view their metadata.
                 * Create and Alter Users, and view their metadata.
                 * Import and Export Application Data. An experimental feature that will export all the Collection data in STIG Manager
-                * The Administrator privilege does not by itself provide access to any Collection, however, they can Grant themselves access to any Collection in STIG Manager via the Administrative interface.
+                * The Administrator privilege does not by itself provide access to any Collection, however, they can Grant themselves access to any Collection in STIG Manager via the Application Manager interface.
+
+    User Group
+        A named collection of Users that can be granted access to a Collection as a single entity. User Groups can be created and modified in the User Groups interface available to Application Managers. User Groups are  available to all Collection Owners and Managers for use in the Grants panel.  See :ref:`roles-and-access` for more information.
 
 
     XCCDF

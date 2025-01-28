@@ -51,7 +51,7 @@ SM.AssetSelection.GridPanel = Ext.extend(Ext.grid.GridPanel, {
             if (label) labels.push(label)
           }
           labels.sort((a, b) => a.name.localeCompare(b.name))
-          return SM.Collection.LabelArrayTpl.apply(labels)
+          return SM.Manage.Collection.LabelArrayTpl.apply(labels)
         }
       },
       {
@@ -275,15 +275,17 @@ SM.AssetSelection.SelectingPanel = Ext.extend(Ext.Panel, {
     })
 
     function handleSelections() {
-      const sm = this.getSelectionModel()
-      if (sm.getSelected()) {
+      const sm = this.selModel
+      if (sm.hasSelection()) {
         sm.suspendEvents()
         sm.clearSelections()
         sm.resumeEvents()
         SM.SetCheckboxSelModelHeaderState(sm)
       }
-      addBtn.setDisabled(this.role === 'available')
-      removeBtn.setDisabled(this.role === 'selections')
+      const availableSelected = availableGrid.selModel.hasSelection()
+      const selectionsSelected = selectionsGrid.selModel.hasSelection()
+      addBtn.setDisabled(!availableSelected)
+      removeBtn.setDisabled(!selectionsSelected)
     }
 
     async function initPanel({ benchmarkId, labelId }) {

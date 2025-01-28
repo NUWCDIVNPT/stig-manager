@@ -3,8 +3,8 @@ info:
   title: STIG Manager API
   description: An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.
   contact:
-    name: Carl Smigielski
-    email: carl.a.smigielski@saic.com
+    name: STIG Manager OSS Project
+    url: https://github.com/NUWCDIVNPT/stig-manager
   version: 'v1'
 servers:
   - url: 'http://localhost:64001/api'
@@ -270,6 +270,7 @@ paths:
             default: json
             enum:
               - json
+              - json-access
               - ckl
               - cklb
               - xccdf
@@ -281,6 +282,7 @@ paths:
               schema:
                 oneOf:
                   - $ref: '#/components/schemas/ChecklistAssetStig'
+                  - $ref: '#/components/schemas/ChecklistJsonAccess'
                   - $ref: '#/components/schemas/ChecklistCklb'
             application/xml:
               schema:
@@ -1045,24 +1047,87 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
-  '/collections/{collectionId}/grants/{userId}/access':
+
+  '/collections/{collectionId}/grants':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
-      - $ref: '#/components/parameters/UserIdPath'
+      - $ref: '#/components/parameters/ElevateQuery'
     get:
       tags:
         - Collection
-      summary: Return an accessLevel = 1 User's access to the specified Collection. Request must be made by a User with accessLevel >= 3 to the Collection.
-      operationId: getStigAssetsByCollectionUser
+      summary: Return all collection grants
+      operationId: getGrantsByCollection
+      responses:
+        '200':
+          description: Collection Grant array response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Grant'     
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    post:
+      tags:
+        - Collection
+      summary: Add Grants to a Collection
+      operationId: postGrantsByCollection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GrantPost' 
+      responses:
+        '201':
+          description: Collection grant array response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Grant'      
+        '403':
+          $ref: '#/components/responses/Forbidden'  
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+  
+  '/collections/{collectionId}/grants/{grantId}':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/GrantIdPath'
+      - $ref: '#/components/parameters/ElevateQuery'
+    get:
+      tags:
+        - Collection
+      summary: Return a collection grant by grantId
+      operationId: getGrantByCollectionGrant
       responses:
         '200':
           description: Collection StigAssetBasic array response
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/StigAssetBasic'
+                $ref: '#/components/schemas/Grant'     
         '403':
           $ref: '#/components/responses/Forbidden'
         default:
@@ -1077,25 +1142,23 @@ paths:
     put:
       tags:
         - Collection
-      summary: Set an accessLevel = 1 User's access to the specified Collection. Request must be made by a User with accessLevel >= 3 to the Collection.
-      operationId: setStigAssetsByCollectionUser
+      summary: Replace the properties of a Collection Grant by grantId.
+      operationId: putGrantByCollectionGrant
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/StigAssetPut'
+              oneOf:
+                - $ref: '#/components/schemas/UserGrant'
+                - $ref: '#/components/schemas/UserGroupGrant'
       responses:
         '200':
-          description: StigAssetBasic array response
+          description: Collection grant array response
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/StigAssetBasic'
+                $ref: '#/components/schemas/Grant'     
         default:
           description: unexpected error
           content:
@@ -1105,6 +1168,84 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+    delete:
+      tags:
+        - Collection
+      operationId: deleteGrantByCollectionGrant
+      responses:
+        '200':
+          description: UserGrantEffective response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Grant'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+  '/collections/{collectionId}/grants/{grantId}/acl':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/GrantIdPath'
+    get:
+      tags:
+        - Collection
+      summary: Return the Access Control List for the specified Collection Grant.
+      operationId: getAclRulesByCollectionGrant
+      responses:
+        '200':
+          description: Collection AclRuleAssetBasic array response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AclForGrant'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    put:
+      tags:
+        - Collection
+      summary: Set the Access Control List for the specified Collection Grant.
+      operationId: putAclRulesByCollectionGrant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AclRulePut'
+      responses:
+        '200':
+          description: AclRuleAssetBasic array response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AclForGrant'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'      
   '/collections/{collectionId}/reviews':
     get:
       tags:
@@ -1399,7 +1540,6 @@ paths:
         - a Review already exists for the {assetId} and {ruleId}
 
         A string value for the `status` property will set the stored value to `{ label: <string>, text: null }`.
-
         If the request includes a `result`, then the `resultEngine` value will be set to `null` unless the request includes an explicit `resultEngine` value. 
 
         An absent `status` property may still lead to the `status` value being updated to `{ label: "saved", text: "Review change triggered status update" }`, in accordance with the Collection `settings.status.resetCriteria`.
@@ -2654,7 +2794,6 @@ paths:
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
       - $ref: '#/components/parameters/BenchmarkIdPath'
-      - $ref: '#/components/parameters/StigAssetsProjectionQuery'
     get:
       tags:
         - Asset
@@ -2782,7 +2921,35 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
-
+  '/collections/{collectionId}/users/{userId}/effective-acl':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/UserIdPath'
+    get:
+      tags:
+        - Collection
+      summary: Return a User's effective access rules for the specified Collection.
+      operationId: getEffectiveAclByCollectionUser
+      responses:
+        '200':
+          description: EffectiveAcl array response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EffectiveAcl'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
   '/collections/meta/metrics/detail':
     parameters:
       - $ref: '#/components/parameters/CollectionIdArrayQuery'
@@ -3660,7 +3827,7 @@ paths:
       tags:
         - User
       summary: Return the requester's user information
-      operationId: getUserObject
+      operationId: getUser
       responses:
         '200':
           description: User response
@@ -3835,12 +4002,270 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user'
+  /user-groups:
+    post:
+      tags:
+        - User
+      summary: Create a User Group
+      operationId: createUserGroup
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/UserGroupProjectionQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserGroupPostOrPut'
+      responses:
+        '201':
+          description: UserGroup response
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/UserGroupProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user'
+    get:
+      tags:
+        - User
+      summary: Get a list of User Groups accessible to the requester
+      operationId: getUserGroups
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/UserGroupProjectionQuery'
+      responses:
+        '200':
+          description: UserGroups response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserGroupProjected'
+      security:
+        - oauth:
+            - 'stig-manager:user:read'
+  '/user-groups/{userGroupId}':
+    get:
+      tags:
+        - User
+      summary: Return a User Group
+      operationId: getUserGroup
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/UserGroupIdPath'
+        - $ref: '#/components/parameters/UserGroupProjectionQuery'
+      responses:
+        '200':
+          description: UserGroup response
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/UserGroupProjected'
+        'default':
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user:read'
+    patch: 
+      tags:
+        - User 
+      summary: Patch a User Group
+      operationId: patchUserGroup
+      parameters:
+        - $ref: '#/components/parameters/UserGroupIdPath'
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/UserGroupProjectionQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserGroupPatch'
+      responses:
+        '200':
+          description: UserGroup response
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/UserGroupProjected'
+        'default':
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user'
+    put: 
+      tags:
+        - User 
+      summary: Replace a User Group
+      operationId: putUserGroup
+      parameters:
+        - $ref: '#/components/parameters/UserGroupIdPath'
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/UserGroupProjectionQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserGroupPostOrPut'
+      responses:
+        '200':
+          description: UserGroup response
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/UserGroupProjected'
+        'default':
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user'
+    delete:
+      tags:
+        - User
+      summary: Delete a User Group
+      operationId: deleteUserGroup
+      parameters:
+        - $ref: '#/components/parameters/UserGroupIdPath'
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/UserGroupProjectionQuery'
+      responses:
+        '200':
+          description: UserGroup response
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/UserGroupProjected'
+        'default':
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:user'
 components:
   schemas:
-    AccessLevel:
+    RoleId:
       maximum: 4
       minimum: 1
       type: integer
+    AclForGrant:
+      type: object
+      properties:
+        defaultAccess:
+          $ref: '#/components/schemas/AclRuleAccess'
+        acl:
+          type: array
+          items:
+            $ref: '#/components/schemas/AclRuleBasic'
+    AclRuleAccess:
+      type: string
+      enum:
+        - none
+        - r
+        - rw
+      default: rw
+    AclRuleAssetBasic:
+      additionalProperties: false
+      type: object
+      properties:
+        asset:
+          $ref: '#/components/schemas/AssetBasic'
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        access:
+          $ref: '#/components/schemas/AclRuleAccess'
+      # required:
+      #   - access
+    AclRuleAssetPut:
+      additionalProperties: false
+      type: object
+      properties:
+        assetId:
+          $ref: '#/components/schemas/AssetId'
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        access:
+          $ref: '#/components/schemas/AclRuleAccess'
+      required:
+        - access
+    AclRuleBasic:
+      anyOf:
+       - $ref: '#/components/schemas/AclRuleAssetBasic'
+       - $ref: '#/components/schemas/AclRuleLabel'
+    AclRuleLabel:
+      additionalProperties: false
+      type: object
+      properties:
+        label:
+          $ref: '#/components/schemas/LabelBasicWithColor'
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        access:
+          $ref: '#/components/schemas/AclRuleAccess'
+      required:
+        - access
+    AclRuleLabelBasic:
+      additionalProperties: false
+      type: object
+      properties:
+        label:
+          $ref: '#/components/schemas/LabelBasic'
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        access:
+          $ref: '#/components/schemas/AclRuleAccess'
+      required:
+        - access
+    AclRuleLabelPut:
+      additionalProperties: false
+      type: object
+      properties:
+        labelId:
+          $ref: '#/components/schemas/LabelId'
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        access:
+          $ref: '#/components/schemas/AclRuleAccess'
+      required:
+        - access
+    AclRulePut:
+      anyOf:
+       - $ref: '#/components/schemas/AclRuleAssetPut'
+       - $ref: '#/components/schemas/AclRuleLabelPut'
+    AclSource:
+      type: object
+      properties:
+        grantee:
+          $ref: '#/components/schemas/Grantee'
+        aclRule:
+          anyOf:
+            - $ref: '#/components/schemas/AclRuleAssetBasic'
+            - $ref: '#/components/schemas/AclRuleLabelBasic'
+          
     ApAcronym:
       $ref: '#/components/schemas/String20Nullable'
     ApiClassification:
@@ -4004,8 +4429,7 @@ components:
           type: string
           format: date-time
         lastAccess:
-          type: number
-          nullable: true
+          $ref: '#/components/schemas/UserLastAccess'
         privileges:
           type: array
           items:
@@ -4109,13 +4533,13 @@ components:
     AppInfoGrantCounts:
       type: object
       properties:
-        accessLevel1:
+        role1:
           type: number
-        accessLevel2:
+        role2:
           type: number
-        accessLevel3:
+        role3:
           type: number
-        accessLevel4:
+        role4:
           type: number
     AppInfoRestrictedUsers:
       type: object
@@ -4198,10 +4622,8 @@ components:
           $ref: '#/components/schemas/CollectionId'
         name:
           $ref: '#/components/schemas/AssetName'
-        restrictedUserAccess:
-          items:
-            $ref: '#/components/schemas/UserBasic'
-          type: array
+        access:
+          $ref: '#/components/schemas/AclRuleAccess'
       required:
         - assetId
         - name
@@ -4317,10 +4739,6 @@ components:
             submittedCount:
               nullable: true
               type: integer
-        stigGrants:
-          type: array
-          items:
-            $ref: '#/components/schemas/StigUserBasic'
         stigs:
           type: array
           description: The benchmarkIds mapped to this Asset
@@ -4451,6 +4869,22 @@ components:
           type: string
           enum:
             - deleted
+    Attribution:
+      type: object
+      properties:
+        userId:
+          $ref: '#/components/schemas/UserId'
+        username:
+          $ref: '#/components/schemas/Username'
+        ts:
+          $ref: '#/components/schemas/StringDateTime'
+    Attributions:
+      type: object
+      properties:
+        created:
+          $ref: '#/components/schemas/Attribution'
+        modified:
+          $ref: '#/components/schemas/Attribution'
     BenchmarkId:
       $ref: '#/components/schemas/String255Nullable'
     Cci:
@@ -4528,16 +4962,6 @@ components:
           $ref: '#/components/schemas/CciString'
         version:
           $ref: '#/components/schemas/VersionString'
-    CciReferenceRev4:
-      additionalProperties: false
-      type: object
-      properties:
-        indexDisa:
-          $ref: '#/components/schemas/IndexDisa'
-        parentControl:
-          $ref: '#/components/schemas/ParentControl'
-        textRefNist:
-          $ref: '#/components/schemas/TextRefNist'
     CciStatus:
       $ref: '#/components/schemas/String20'
     CciString:
@@ -4686,6 +5110,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StigCklb'
+    ChecklistJsonAccess:
+      type: object
+      properties:
+        access:
+          $ref: '#/components/schemas/AclRuleAccess'
+        checklist:
+          $ref: '#/components/schemas/ChecklistAssetStig'
     TargetData:
       type: object
       properties:
@@ -4979,7 +5410,7 @@ components:
         code:
           type: string
           enum:
-            - 400
+            - "400"
         data:
           $ref: '#/components/schemas/Collection'
         message:
@@ -5143,7 +5574,9 @@ components:
         grants:
           type: array
           items:
-            $ref: '#/components/schemas/UserGrant'
+            anyOf:
+              - $ref: '#/components/schemas/UserGrant'
+              - $ref: '#/components/schemas/UserGroupGrant'
         labels:
           type: array
           items:
@@ -5157,7 +5590,6 @@ components:
           $ref: '#/components/schemas/CollectionSettings'
       required:
         - name
-        - metadata
         - grants
     CollectionDescription:
       $ref: '#/components/schemas/String255Nullable'
@@ -5273,19 +5705,19 @@ components:
       additionalProperties: false
       type: object
       properties:
-        accessLevel:
-          $ref: '#/components/schemas/AccessLevel'
+        roleId:
+          $ref: '#/components/schemas/RoleId'
         collectionId:
           $ref: '#/components/schemas/CollectionId'
       required:
         - collectionId
-        - accessLevel
+        - roleId
     CollectionGrantProjected:
       additionalProperties: false
       type: object
       properties:
-        accessLevel:
-          $ref: '#/components/schemas/AccessLevel'
+        roleId:
+          $ref: '#/components/schemas/RoleId'
         collection:
           type: object
           properties:
@@ -5293,6 +5725,8 @@ components:
               $ref: '#/components/schemas/CollectionId'
             name:
               $ref: '#/components/schemas/CollectionName'
+        grantees:
+          $ref: '#/components/schemas/Grantees'
     CollectionHistorySettings:
       additionalProperties: false
       type: object
@@ -5323,7 +5757,13 @@ components:
         grants:
           type: array
           items:
-            $ref: '#/components/schemas/UserGrantProjected'
+            anyOf:
+             - $ref: '#/components/schemas/UserGrantProjected'     
+             - $ref: '#/components/schemas/UserGroupGrantProjected'     
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrantEffective'
         labels:
           type: array
           items:
@@ -5335,7 +5775,7 @@ components:
         owners:
           type: array
           items:
-            $ref: '#/components/schemas/User'
+            $ref: '#/components/schemas/Owner'
         settings:
           $ref: '#/components/schemas/CollectionSettings'
         statistics:
@@ -5370,77 +5810,13 @@ components:
           type: integer
         created:
           $ref: '#/components/schemas/Created'
-        grantCount:
+        userCount:
           type: integer
       required:
         - created
         - assetCount
-        - grantCount
+        - userCount
         - checklistCount
-    CollectionStatus:
-      additionalProperties: false
-      type: object
-      properties:
-        assetId:
-          $ref: '#/components/schemas/AssetId'
-        assetLabelIds:
-          items:
-            $ref: '#/components/schemas/LabelId'
-          type: array
-        assetName:
-          $ref: '#/components/schemas/AssetName'
-        benchmarkId:
-          $ref: '#/components/schemas/BenchmarkId'
-        findings:
-          type: object
-          properties:
-            high:
-              type: integer
-            low:
-              type: integer
-            medium:
-              type: integer
-        maxTs:
-          $ref: '#/components/schemas/MaxTs'
-        minTs:
-          $ref: '#/components/schemas/MinTs'
-        result:
-          type: object
-          properties:
-            error:
-              $ref: '#/components/schemas/CollectionStatusCount'
-            fail:
-              $ref: '#/components/schemas/CollectionStatusCount'
-            fixed:
-              $ref: '#/components/schemas/CollectionStatusCount'
-            informational:
-              $ref: '#/components/schemas/CollectionStatusCount'
-            notapplicable:
-              $ref: '#/components/schemas/CollectionStatusCount'
-            notchecked:
-              $ref: '#/components/schemas/CollectionStatusCount'
-            notselected:
-              $ref: '#/components/schemas/CollectionStatusCount'
-            pass:
-              $ref: '#/components/schemas/CollectionStatusCount'
-            unknown:
-              $ref: '#/components/schemas/CollectionStatusCount'
-        rules:
-          type: object
-          properties:
-            total:
-              type: integer
-        status:
-          type: object
-          properties:
-            accepted:
-              $ref: '#/components/schemas/CollectionStatusCount'
-            rejected:
-              $ref: '#/components/schemas/CollectionStatusCount'
-            saved:
-              $ref: '#/components/schemas/CollectionStatusCount'
-            submitted:
-              $ref: '#/components/schemas/CollectionStatusCount'
     CollectionStatusCount:
       additionalProperties: false
       type: object
@@ -5556,8 +5932,8 @@ components:
           items:
             type: object
             properties:
-              accessLevel:
-                $ref: '#/components/schemas/AccessLevel'
+              roleId:
+                $ref: '#/components/schemas/RoleId'
               userId:
                 $ref: '#/components/schemas/UserId'
         metadata:
@@ -5574,10 +5950,6 @@ components:
           $ref: '#/components/schemas/CollectionId'
         description:
           $ref: '#/components/schemas/CollectionDescription'
-        labels:
-          type: array
-          items:
-            $ref: '#/components/schemas/Label'
         metadata:
           $ref: '#/components/schemas/Metadata'
         name:
@@ -5585,7 +5957,7 @@ components:
         owners:
           type: array
           items:
-            $ref: '#/components/schemas/User'
+            $ref: '#/components/schemas/Owner'
         settings:
           $ref: '#/components/schemas/CollectionSettings'
         statistics:
@@ -5690,6 +6062,20 @@ components:
           $ref: '#/components/schemas/StringDateTimeNullable'
     DisplayName:
       $ref: '#/components/schemas/String255Nullable'
+    EffectiveAcl:
+      additionalProperties: false
+      type: object
+      properties:
+        access:
+          $ref: '#/components/schemas/AclRuleAccess'
+        asset:
+          $ref: '#/components/schemas/AssetBasic'
+        benchmarkId:
+          $ref: '#/components/schemas/BenchmarkId'
+        aclSources:
+          type: array
+          items:
+            $ref: '#/components/schemas/AclSource'
     EmassAp:
       additionalProperties: false
       type: object
@@ -5760,8 +6146,39 @@ components:
           type: string
         text:
           type: string
+    Grant:
+      oneOf:
+        - $ref: '#/components/schemas/UserGrantProjected'     
+        - $ref: '#/components/schemas/UserGroupGrantProjected'
+    GrantPost:
+      oneOf:
+        - $ref: '#/components/schemas/UserGrant'     
+        - $ref: '#/components/schemas/UserGroupGrant'
+    GrantEffective:
+      type: object
+      properties:
+        roleId:
+          $ref: '#/components/schemas/RoleId'
+        grantees:
+          $ref: '#/components/schemas/Grantees'
+        user:
+          $ref: '#/components/schemas/UserBasicWithDisplayName'
+      required:
+        - roleId
+        - grantees
+        - user
+    Grantee:
+      oneOf:
+        - $ref: '#/components/schemas/UserBasic'
+        - $ref: '#/components/schemas/UserGroupBasic'
+    Grantees:
+      type: array
+      items:
+        $ref: '#/components/schemas/Grantee'
+    GrantId:
+      $ref: '#/components/schemas/StringIntId'
     GroupId:
-      $ref: '#/components/schemas/String255'
+      $ref: '#/components/schemas/String255Nullable'
     GroupProjected:
       additionalProperties: false
       type: object
@@ -5810,6 +6227,20 @@ components:
           $ref: '#/components/schemas/LabelName'
       required:
         - name
+        - labelId
+    LabelBasicWithColor:
+      additionalProperties: false
+      type: object
+      properties:
+        color:
+          $ref: '#/components/schemas/StringHexColor'
+        labelId:
+          $ref: '#/components/schemas/LabelId'
+        name:
+          $ref: '#/components/schemas/LabelName'
+      required:
+        - name
+        - color
         - labelId
     LabelCreate:
       additionalProperties: false
@@ -6213,6 +6644,10 @@ components:
       format: date-time
       nullable: true
       type: string
+    Owner:
+      oneOf:
+        - $ref: '#/components/schemas/UserBasicWithDisplayName'     
+        - $ref: '#/components/schemas/UserGroup'
     ParentControl:
       $ref: '#/components/schemas/String255'
     ResultEngine:
@@ -6392,6 +6827,8 @@ components:
     ReviewAssetRuleRead:
       type: object
       properties:
+        access:
+          $ref: '#/components/schemas/AclRuleAccess'
         autoResult:
           type: boolean
         comment:
@@ -6425,6 +6862,7 @@ components:
         username:
           $ref: '#/components/schemas/Username'
       required:
+        - access
         - result
         - detail
         - comment
@@ -6433,30 +6871,6 @@ components:
         - ts
         - status
         - touchTs
-    ReviewAssetWrite:
-      additionalProperties: false
-      type: object
-      properties:
-        autoResult:
-          type: boolean
-        comment:
-          $ref: '#/components/schemas/StringMaxNullable'
-        detail:
-          $ref: '#/components/schemas/CommentaryStringNullable'
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        result:
-          $ref: '#/components/schemas/ReviewResult'
-        ruleId:
-          $ref: '#/components/schemas/RuleId'
-        status:
-          $ref: '#/components/schemas/ReviewStatusRestrictedWrite'
-      required:
-        - ruleId
-        - result
-        - detail
-        - comment
-        - autoResult
     ReviewBatch:
       additionalProperties: false
       type: object
@@ -6831,6 +7245,8 @@ components:
       additionalProperties: false
       type: object
       properties:
+        access:
+          $ref: '#/components/schemas/AclRuleAccess'
         assetId:
           $ref: '#/components/schemas/StringIntId'
         assetLabelIds:
@@ -6905,11 +7321,6 @@ components:
         - accepted
         - rejected
       type: string
-    ReviewStatusLabelRestricted:
-      enum:
-        - saved
-        - submitted
-      type: string
     ReviewStatusRead:
       additionalProperties: false
       type: object
@@ -6927,19 +7338,6 @@ components:
         - text
         - user
         - ts
-    ReviewStatusRestrictedWrite:
-      oneOf:
-        - $ref: '#/components/schemas/ReviewStatusLabelRestricted'
-        - type: object
-        - additionalProperties: false
-          properties:
-            label:
-              $ref: '#/components/schemas/ReviewStatusLabelRestricted'
-            text:
-              $ref: '#/components/schemas/StatusText'
-          required:
-            - label
-            - text
     ReviewStatusWrite:
       oneOf:
         - $ref: '#/components/schemas/ReviewStatusLabel'
@@ -7028,8 +7426,6 @@ components:
     RevisionStrRaw:
       pattern: ^(V\d{1,3}R\d{1,3}(\.\d{1,3})?)$
       type: string
-    RevisionVersion:
-      $ref: '#/components/schemas/StringIntId'
     RuleAbbr:
       additionalProperties: false
       type: object
@@ -7125,7 +7521,9 @@ components:
         - high
         - medium
         - low
+        - null
       type: string
+      nullable: true
     RuleTitle:
       $ref: '#/components/schemas/StringMax'
     SCAPMap:
@@ -7173,43 +7571,8 @@ components:
         - collectionIds
     StatusText:
       $ref: '#/components/schemas/String511Nullable'
-    StigAssetBasic:
-      additionalProperties: false
-      type: object
-      properties:
-        asset:
-          $ref: '#/components/schemas/AssetBasic'
-        benchmarkId:
-          $ref: '#/components/schemas/BenchmarkId'
-      required:
-        - benchmarkId
-        - asset
-    StigAssetPut:
-      additionalProperties: false
-      type: object
-      properties:
-        assetId:
-          $ref: '#/components/schemas/AssetId'
-        benchmarkId:
-          $ref: '#/components/schemas/BenchmarkId'
-      required:
-        - benchmarkId
-        - assetId
     StigTitle:
       $ref: '#/components/schemas/String255'
-    StigUserBasic:
-      additionalProperties: false
-      type: object
-      properties:
-        benchmarkId:
-          $ref: '#/components/schemas/BenchmarkId'
-        users:
-          items:
-            $ref: '#/components/schemas/UserBasic'
-          type: array
-      required:
-        - benchmarkId
-        - users
     String20:
       maxLength: 20
       type: string
@@ -7238,9 +7601,6 @@ components:
       maxLength: 45
       nullable: true
       type: string
-    String511:
-      maxLength: 511
-      type: string
     String511Nullable:
       maxLength: 511
       nullable: true
@@ -7268,20 +7628,8 @@ components:
       minLength: 1
       pattern: ^[0-9]{1,10}$
       type: string
-    StringIntIdNullable:
-      nullable: true
-      pattern: ^[0-9]{1,10}$
-      type: string
-    StringIntIdReadOnly:
-      pattern: ^[0-9]{1,10}$
-      readOnly: true
-      type: string
     StringMax:
       maxLength: 16777215
-      type: string
-    StringMaxNullable:
-      maxLength: 16777215
-      nullable: true
       type: string
     StringUuid:
       pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
@@ -7290,13 +7638,7 @@ components:
       nullable: true
       pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
       type: string
-    StringUuidReadOnly:
-      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
-      readOnly: true
-      type: string
     TextRefNist:
-      $ref: '#/components/schemas/String255'
-    TitleString:
       $ref: '#/components/schemas/String255'
     UnreviewedAsset:
       additionalProperties: false
@@ -7395,6 +7737,8 @@ components:
         email:
           nullable: true
           type: string
+        lastAccess:
+          $ref: '#/components/schemas/UserLastAccess'
         userId:
           $ref: '#/components/schemas/UserId'
         username:
@@ -7404,6 +7748,7 @@ components:
         - username
         - displayName
         - email
+        - lastAccess
     UserBasic:
       additionalProperties: false
       type: object
@@ -7412,9 +7757,25 @@ components:
           $ref: '#/components/schemas/UserId'
         username:
           $ref: '#/components/schemas/Username'
+        roleId:
+          $ref: '#/components/schemas/RoleId'
       required:
         - userId
         - username
+    UserBasicWithDisplayName:
+      additionalProperties: false
+      type: object
+      properties:
+        userId:
+          $ref: '#/components/schemas/UserId'
+        username:
+          $ref: '#/components/schemas/Username'
+        displayName:
+          $ref: '#/components/schemas/DisplayName'
+      required:
+        - userId
+        - username
+        - displayName
     UserCreateOrReplace:
       additionalProperties: false
       type: object
@@ -7423,50 +7784,160 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CollectionGrant'
+          uniqueItems: true
+        userGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGroupId'
+          uniqueItems: true
+          default: []
         username:
           $ref: '#/components/schemas/Username'
       required:
         - username
         - collectionGrants
     UserGrant:
-      additionalProperties: false
       type: object
-      properties:
-        accessLevel:
-          $ref: '#/components/schemas/AccessLevel'
-        userId:
-          $ref: '#/components/schemas/UserId'
       required:
         - userId
-        - accessLevel
+        - roleId
+      properties:
+        userId:
+          $ref: '#/components/schemas/UserId'
+        roleId:
+          $ref: '#/components/schemas/RoleId'
     UserGrantProjected:
       additionalProperties: false
       type: object
       properties:
-        accessLevel:
-          $ref: '#/components/schemas/AccessLevel'
+        grantId:
+          $ref: '#/components/schemas/GrantId'
+        roleId:
+          $ref: '#/components/schemas/RoleId'
         user:
-          type: object
-          properties:
-            userId:
-              $ref: '#/components/schemas/UserId'
-            username:
-              $ref: '#/components/schemas/Username'
-          required:
-            - userId
-            - username
+          $ref: '#/components/schemas/UserBasicWithDisplayName'
       required:
         - user
-        - accessLevel
+        - roleId
+    UserGroup:
+      type: object
+      additionalProperties: false
+      required:
+        - userGroupId
+        - name
+        - description
+      properties:
+        userGroupId:
+          $ref: '#/components/schemas/UserGroupId'
+        name:
+          $ref: '#/components/schemas/String255'
+        description:
+          $ref: '#/components/schemas/String255Nullable'
+    UserGroupBasic:
+      type: object
+      additionalProperties: false
+      required:
+        - userGroupId
+        - name
+      properties:
+        userGroupId:
+          $ref: '#/components/schemas/UserGroupId'
+        name:
+          $ref: '#/components/schemas/String255'
+        roleId:
+          $ref: '#/components/schemas/RoleId'
+    UserGroupGrant:
+      type: object
+      required:
+        - userGroupId
+        - roleId
+      additionalProperties: false
+      properties:
+        userGroupId:
+          $ref: '#/components/schemas/UserGroupId'
+        roleId:
+          type: integer
+          minimum: 1
+          maximum: 4
+    UserGroupGrantProjected:
+      type: object
+      required:
+        - userGroup          
+        - roleId
+      additionalProperties: false
+      properties:
+        grantId:
+          $ref: '#/components/schemas/GrantId'
+        userGroup:
+          $ref: '#/components/schemas/UserGroup'
+        roleId:
+          $ref: '#/components/schemas/RoleId'
+    UserGroupId:
+      $ref: '#/components/schemas/StringIntId' 
+    UserGroupPatch:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          $ref: '#/components/schemas/String255'
+        description:
+          $ref: '#/components/schemas/String255Nullable'
+        userIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserId'
+    UserGroupProjected:
+      type: object
+      additionalProperties: false
+      required:
+        - userGroupId
+        - name
+        - description
+      properties:
+        userGroupId:
+          $ref: '#/components/schemas/UserGroupId'
+        name:
+          $ref: '#/components/schemas/String255'
+        description:
+          $ref: '#/components/schemas/String255Nullable'
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserBasicWithDisplayName'
+        collections:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionBasic'
+        attributions:
+          $ref: '#/components/schemas/Attributions'
+    UserGroupPostOrPut:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+      properties:
+        name:
+          $ref: '#/components/schemas/String255'
+        description:
+          $ref: '#/components/schemas/String255Nullable'
+        userIds:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/UserId'
     UserId:
       $ref: '#/components/schemas/StringIntId'
+    UserLastAccess:
+      nullable: true
+      type: integer
     UserPrivileges:
       type: object
       additionalProperties: false
       properties:
-        canAdmin:
+        admin:
           type: boolean
-        canCreateCollection:
+        create_collection:
           type: boolean
     UserProjected:
       additionalProperties: false
@@ -7481,10 +7952,16 @@ components:
         email:
           nullable: true
           type: string
+        lastAccess:
+          $ref: '#/components/schemas/UserLastAccess'
         privileges:
           $ref: '#/components/schemas/UserPrivileges'
         statistics:
           $ref: '#/components/schemas/UserStatistics'
+        userGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGroupBasic'
         userId:
           $ref: '#/components/schemas/UserId'
         username:
@@ -7494,6 +7971,7 @@ components:
         - username
         - displayName
         - email
+        - lastAccess
     UserStatistics:
       additionalProperties: false
       type: object
@@ -7502,15 +7980,11 @@ components:
           type: integer
         created:
           $ref: '#/components/schemas/Created'
-        lastAccess:
-          nullable: true
-          type: integer
         lastClaims:
           type: object
       required:
         - created
         - collectionGrantCount
-        - lastAccess
         - lastClaims
     UserUpdate:
       additionalProperties: false
@@ -7520,6 +7994,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CollectionGrant'
+          uniqueItems: true
+        userGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGroupId'
+          uniqueItems: true
         username:
           $ref: '#/components/schemas/Username'
     Username:
@@ -7576,7 +8056,6 @@ components:
           enum:
             - statusStats
             - stigs
-            - stigGrants
     BenchmarkIdArrayQuery:
       name: benchmarkId
       in: query
@@ -7622,23 +8101,6 @@ components:
       description: A query parameter that identifies a CCI
       schema:
         $ref: '#/components/schemas/CciString'
-    ChecklistProjectionQuery:
-      name: projection
-      in: query
-      description: Optional properties to return. Selecting "check" or "fix" will also select "fullrules"
-      style: form
-      explode: true
-      schema:
-        type: array
-        uniqueItems: true
-        minItems: 1
-        items:
-          type: string
-          enum:
-            - cci
-            - fullrules
-            - check
-            - fix
     CklModeQuery:
       name: mode
       in: query
@@ -7689,6 +8151,7 @@ components:
           enum:
             - assets
             - grants
+            - users
             - owners
             - statistics
             - stigs
@@ -7708,7 +8171,6 @@ components:
           enum:
             - owners
             - statistics
-            - labels
     CollectionStigProjectionQuery:
       name: projection
       in: query
@@ -7780,13 +8242,13 @@ components:
       schema:
         type: boolean
         default: false
-    GroupIdPath:
-      name: groupId
+    GrantIdPath:
+      name: grantId
       in: path
-      description: A path parameter that identifies a Group
+      description: A path parameter that identifies a Grant
       required: true
       schema:
-        $ref: '#/components/schemas/GroupId'
+        $ref: '#/components/schemas/GrantId'
     GroupIdQuery:
       name: groupId
       in: query
@@ -8008,12 +8470,6 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/RevisionStr'
-    RevisionStrQuery:
-      name: revisionStr
-      in: query
-      description: Selects Reviews mapped to a Revision [ V{version_num}R{release_num} |'latest' ]; requires benchmarkId
-      schema:
-        $ref: '#/components/schemas/RevisionStr'
     RuleIdPath:
       name: ruleId
       in: path
@@ -8075,18 +8531,6 @@ components:
           type: string
           enum:
             - revisions
-    StigAssetsProjectionQuery:
-      name: projection
-      in: query
-      description: Additional properties to include in the response.
-      style: form
-      explode: true
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-            - restrictedUserAccess
     UnreviewedAssetsProjectionQuery:
       name: projection
       in: query
@@ -8113,6 +8557,27 @@ components:
           enum:
             - ruleTitle
             - groupTitle
+    UserGroupIdPath:
+      name: userGroupId
+      in: path
+      description: A path parameter that identifies a User Group
+      required: true
+      schema:
+        $ref: '#/components/schemas/UserGroupId'
+    UserGroupProjectionQuery:
+      name: projection
+      in: query
+      description: Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - users
+            - collections
+            - attributions
     UserIdPath:
       name: userId
       in: path
@@ -8123,7 +8588,7 @@ components:
     UserIdQuery:
       name: userId
       in: query
-      description: A path parameter that identifies a User
+      description: A query parameter that identifies a User
       schema:
         $ref: '#/components/schemas/UserId'
     UsernameQuery:
@@ -8159,6 +8624,7 @@ components:
           enum:
             - collectionGrants
             - statistics
+            - userGroups
   responses:
     Forbidden:
       description: The requesting User does not have access rights to the content

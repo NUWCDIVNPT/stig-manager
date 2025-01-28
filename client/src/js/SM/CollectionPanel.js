@@ -276,7 +276,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
               }
               labels.sort((a, b) => a.name.localeCompare(b.name))
               metadata.attr = 'style="white-space:nowrap;text-overflow:clip;"'
-              return SM.styledEmptyRenderer(SM.Collection.LabelArrayTpl.apply(labels))
+              return SM.styledEmptyRenderer(SM.Manage.Collection.LabelArrayTpl.apply(labels))
             }
           },
           {
@@ -353,7 +353,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
               if (label) labels.push(label)
               labels.sort((a, b) => a.name.localeCompare(b.name))
               metadata.attr = 'style="white-space:normal;"'
-              return SM.styledEmptyRenderer(SM.Collection.LabelArrayTpl.apply(labels))
+              return SM.styledEmptyRenderer(SM.Manage.Collection.LabelArrayTpl.apply(labels))
             }
           },
           {
@@ -589,7 +589,7 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
               }
               labels.sort((a, b) => a.name.localeCompare(b.name))
               metadata.attr = 'style="white-space:nowrap;text-overflow:clip;"'
-              return SM.styledEmptyRenderer(SM.Collection.LabelArrayTpl.apply(labels))
+              return SM.styledEmptyRenderer(SM.Manage.Collection.LabelArrayTpl.apply(labels))
             }
           }
         )
@@ -1581,7 +1581,7 @@ SM.CollectionPanel.AggLabelPanel = Ext.extend(Ext.Panel, {
       else {
         params.labelMatch = 'null'
       }
-      await aggAssetGrid.store.loadPromise(params)
+      await loadAggAssetGrid(params)
       unaggGrid.store.removeAll()
       aggAssetGrid.setTitle(`Assets for ${record.data.name}`)
     }
@@ -1590,6 +1590,30 @@ SM.CollectionPanel.AggLabelPanel = Ext.extend(Ext.Panel, {
         assetId: record.data.assetId
       })
       unaggGrid.setTitle(`Checklists for ${record.data.name}`)
+    }
+    async function loadAggAssetGrid(params) {
+      const url = new URL(aggAssetGrid.proxy.url, document.baseURI)
+      for (const [key, value] of Object.entries(params)) {
+        if (Array.isArray(value)) {
+          for (const item of value) {
+            url.searchParams.append(key, item)
+          }
+        }
+        else {
+          url.searchParams.append(key, value)
+        }
+      }
+      await window.oidcProvider.updateToken(10)
+      const fetchOptions = {
+        method: 'GET',
+        headers: {'Authorization': `Bearer ${window.oidcProvider.token}`}
+      }
+      let assets = await(await fetch(url, fetchOptions)).json()
+      
+      if (_this.baseParams.labelId) {
+        assets = assets.filter(asset => asset.labels.some(label => _this.baseParams.labelId.includes(label.labelId)) || (_this.baseParams.labelMatch === 'null' ? asset.labels.length === 0 : false))
+      }
+      aggAssetGrid.store.loadData(assets)
     }
 
     aggLabelGrid.getSelectionModel().on('rowselect', onRowSelectLabel)
@@ -1635,7 +1659,7 @@ SM.CollectionPanel.AggLabelPanel = Ext.extend(Ext.Panel, {
         aggLabelGrid.view.focusRow(currentIndexLabel)
         savedLoadMaskDisabled = aggAssetGrid.loadMask.disabled
         aggAssetGrid.loadMask.disabled = loadMasksDisabled
-        await aggAssetGrid.store.loadPromise({
+        await loadAggAssetGrid({
           labelId: currentRecordLabel.data.labelId
         })
         aggAssetGrid.loadMask.disabled = savedLoadMaskDisabled
@@ -1697,7 +1721,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
       `Collection: {[values.labels ? values.labels : 'all']}`
     )
 
-    const labelsMenu = new SM.Collection.LabelsMenu({
+    const labelsMenu = new SM.Manage.Collection.LabelsMenu({
       labels: gState.filterableLabels,
       showHeader: true,
       showApply: true,
@@ -1768,7 +1792,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
         }
       ],
       title: overviewTitleTpl.apply({
-        labels: SM.Collection.LabelSpritesByCollectionLabelId(collectionId, gState.labelIds)
+        labels: SM.Manage.Collection.GetLabelSprites(collectionId, gState.labelIds)
       }),
       margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
       region: 'west',
@@ -1787,7 +1811,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
     })
     overviewPanel.inventoryPanel.on('render', (panel) => {
       const collectionGrant = curUser.collectionGrants.find(g => g.collection.collectionId === collectionId)
-      const isManager = !!(collectionGrant?.accessLevel >= 3)
+      const isManager = !!(collectionGrant?.roleId >= 3)
       panel.tools.manage.setDisplayed(isManager)
       panel.tools.spacer.setDisplayed(isManager)
     })
@@ -1930,7 +1954,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
 
     function updateOverviewTitle() {
       const overviewTitle = overviewTitleTpl.apply({
-        labels: SM.Collection.LabelSpritesByCollectionLabelId(collectionId, gState.labelIds)
+        labels: SM.Manage.Collection.GetLabelSprites(collectionId, gState.labelIds)
       })
       overviewPanel.setTitle(overviewTitle)
     }

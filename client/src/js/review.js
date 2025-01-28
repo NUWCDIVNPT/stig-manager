@@ -1,6 +1,6 @@
 async function addReview( params ) {
   let { leaf, selectedRule, selectedResource, treePath, dblclick = false } = params
-  const idAppend = '-' + leaf.assetId + '-' + leaf.benchmarkId.replace(/[. ]/g,'_');
+  const idAppend = '-areview-' + leaf.assetId + '-' + leaf.benchmarkId.replace(/[. ]/g,'_');
   const tab = Ext.getCmp('main-tab-panel').getItem('reviewTab' + idAppend);
   if (tab) {
     if (dblclick) {
@@ -21,8 +21,8 @@ async function addReview( params ) {
   })
   const apiFieldSettings = apiCollection.settings.fields
   const apiStatusSettings = apiCollection.settings.status
-  const accessLevel = curUser.collectionGrants.filter(g => g.collection.collectionId == apiCollection.collectionId)[0].accessLevel
-  const canAccept = apiStatusSettings.canAccept && accessLevel >= apiStatusSettings.minAcceptGrant
+  const roleId = curUser.collectionGrants.filter(g => g.collection.collectionId == apiCollection.collectionId)[0].roleId
+  const canAccept = apiStatusSettings.canAccept && roleId >= apiStatusSettings.minAcceptGrant
 
 
   // Classic compatability. Remove after modernization
@@ -95,10 +95,10 @@ async function addReview( params ) {
 
   var groupStore = new Ext.data.JsonStore({
     proxy: new Ext.data.HttpProxy({
-      url: `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${leaf.benchmarkId}/${leaf.revisionStr}`,
+      url: `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${leaf.benchmarkId}/${leaf.revisionStr}?format=json-access`,
       method: 'GET'
     }),
-    root: '',
+    root: 'checklist',
     storeId: 'groupStore' + idAppend,
     fields: groupFields,
     idProperty: 'ruleId',
@@ -108,6 +108,11 @@ async function addReview( params ) {
     },
     listeners: {
       load: function (store, records) {
+        const access = store.reader.jsonData.access
+        reviewForm.defaultAccess = access
+        attachmentsGrid.fileUploadField.setDisabled(access !== 'rw')
+        groupChecklistMenu.importItem.setVisible(access === 'rw')
+        groupGrid.accessStr = `<span class="sm-label-sprite sm-checklist-${access === 'rw' ? 'read-write">Writeable' : 'read">Read only'}</span>`
         // Were we passed a specific rule to select?
         if ('undefined' !== typeof selectedRule) {
           var index = store.find('ruleId', selectedRule);
@@ -329,6 +334,7 @@ async function addReview( params ) {
       },
       {
         text: 'Import Results...',
+        ref: 'importItem',
         iconCls: 'sm-import-icon',
         handler: function () {
           showImportResultFile( {...leaf, revisionStr: groupGrid.sm_revisionStr, store: groupStore, fieldSettings: apiFieldSettings} );            
@@ -675,7 +681,7 @@ async function addReview( params ) {
 
   var handleRevisionMenu = function (item, eventObject) {
     let store = groupGrid.getStore()
-    store.proxy.setUrl(`${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${leaf.benchmarkId}/${item.revisionStr}`, true)
+    store.proxy.setUrl(`${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${leaf.benchmarkId}/${item.revisionStr}?format=json-access`, true)
     store.load();
     loadRevisionMenu(leaf.benchmarkId, item.revisionStr, idAppend)
     groupGrid.sm_revisionStr = item.revisionStr
@@ -692,7 +698,7 @@ async function addReview( params ) {
       if (groupChecklistMenu.revisionMenuItem === undefined) {
         groupChecklistMenu.addItem(revisionObject.menu);
       }
-      groupGrid.setTitle(SM.he(revisionObject.activeRevisionLabel));
+      groupGrid.setTitle(`${SM.he(revisionObject.activeRevisionLabel)} ${groupGrid.accessStr}`);
     }
     catch (e) {
       SM.Error.handleError(e)
@@ -889,7 +895,7 @@ async function addReview( params ) {
             }
             labels.sort((a,b) => a.name.localeCompare(b.name))
             metadata.attr = 'style="white-space:nowrap;text-overflow:clip"'
-            return SM.Collection.LabelArrayTpl.apply(labels)
+            return SM.Manage.Collection.LabelArrayTpl.apply(labels)
         }
       },
       {
@@ -1016,6 +1022,7 @@ async function addReview( params ) {
     collectionId: leaf.collectionId,
     assetId: leaf.assetId
   })
+  
   /******************************************************/
   // END Attachments Panel
   /******************************************************/
@@ -1083,7 +1090,7 @@ async function addReview( params ) {
   /******************************************************/
   let labelSpans
   if (leaf.assetLabels) {
-    labelSpans = SM.Collection.LabelArrayTpl.apply(leaf.assetLabels)
+    labelSpans = SM.Manage.Collection.LabelArrayTpl.apply(leaf.assetLabels)
   }
   else {
     const labels = []
@@ -1092,7 +1099,7 @@ async function addReview( params ) {
         if (label) labels.push(label)
     }
     labels.sort((a,b) => a.name.localeCompare(b.name))
-    labelSpans = SM.Collection.LabelArrayTpl.apply(labels)
+    labelSpans = SM.Manage.Collection.LabelArrayTpl.apply(labels)
   }
 
   const reviewForm = new SM.Review.Form.Panel({
@@ -1346,7 +1353,7 @@ async function addReview( params ) {
   thisTab.updateTitle.call(thisTab)
   thisTab.show();
 
-  groupGrid.getStore().load();
+  await groupGrid.getStore().loadPromise()
   loadRevisionMenu(leaf.benchmarkId, leaf.revisionStr, idAppend)
 
   async function saveReview(saveParams) {
