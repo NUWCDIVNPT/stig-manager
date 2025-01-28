@@ -8,7 +8,7 @@ import { readFileSync } from 'fs'
 import * as utils from '../utils/testUtils.js'
 import reference from '../referenceData.js'
 import { expect } from 'chai'
-
+import { v4 as uuidv4 } from 'uuid'
 const user = {
   name: "admin",
   grant: "Owner",
@@ -1750,6 +1750,48 @@ describe('deleteGrantByCollectionGrant - /collections/{collectionId}/grants/{gra
             const res = await utils.executeRequest(`${config.baseUrl}/collections/83/grants/8?elevate=true`, 'DELETE', user.token)
             expect(res.status).to.eql(200)
         })
+    })
+})
+
+describe('getCollection - /collections/{collectionId} -  check that empty usergroup will not be returned ', function () {
+
+    before(async function () {
+        await utils.loadAppData()
+    })
+
+    let userGroup = null
+
+
+    it('should create a userGroup', async () => {
+        const res = await utils.executeRequest(`${config.baseUrl}/user-groups?elevate=true`, 'POST', user.token, {
+            "name": "no" +  uuidv4(),
+            "description": "notseeme",
+            "userIds": [
+            ]
+        })
+        expect(res.status).to.eql(201)
+        userGroup = res.body
+    })
+
+    it('should add userGroup to collection', async () => {
+
+        const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/grants?elevate=true`, 'POST', user.token, 
+            [
+                {
+                    "userGroupId": userGroup.userGroupId,
+                    "roleId": 1
+                }
+            ]
+        )
+        expect(res.status).to.eql(201)
+    })
+            
+    it('Return a Collection with userGroup that has no users or acl ensure it is not returned by api',async function () { 
+      const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}?projection=users`, 'GET', user.token)
+      expect(res.status).to.eql(200)
+      for(const user of res.body.users){
+        expect(user.grantees[0].userGroupId).to.not.eql(userGroup.userGroupId)
+      }
     })
 })
 
