@@ -745,6 +745,43 @@ describe(`GET - Asset`, function () {
           }
         })
 
+        it(`Return the Checklist for the supplied Asset and benchmarkId and revisionStr json-access`, async function () {
+
+          const url = `${config.baseUrl}/assets/${reference.testAsset.assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=json-access`
+          const options = {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${iteration.token}`,
+            },
+          }
+    
+          const res = await fetch(url, options)
+    
+          if(!distinct.hasAccessToTestAsset){
+            expect(res.status).to.eql(403)
+            return
+          }
+          
+          expect(res.status).to.eql(200)
+    
+          let cklData
+
+          const bodyText = await res.json()
+
+          for(const checklist of bodyText.checklist){
+            expect(checklist.assetId).to.be.oneOf(reference.testCollection.assetIds)
+            if(checklist.ruleId === reference.testCollection.ruleId){
+              expect(checklist.ruleId).to.eql(reference.testCollection.ruleId)
+              expect(checklist.assetId).to.eql(reference.testAsset.assetId)
+              expect(checklist.result).to.eql("pass")
+              expect(checklist.status).to.eql("submitted")
+              expect(checklist.autoResult).to.eql(false)
+
+            }
+          }
+
+        })
+
         it(`Return the Checklist for the supplied Asset and STIG XML (.cklB) - specific STIG`, async function () {
 
           const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.testAsset.assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=cklb`, 'GET', iteration.token)
