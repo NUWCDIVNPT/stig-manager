@@ -838,6 +838,12 @@ describe(`GET - Asset`, function () {
             for(const label of asset.assetLabelIds){
               expect(label).to.be.oneOf(reference.testCollection.labels, `Label should be one of the valid labels`)
             }
+            if(asset.access === "r"){
+              expect(iteration.name).to.be.oneOf(['lvl1'])
+            }
+            else {
+              expect(asset.access).to.be.oneOf(['rw'])
+            }
           }   
         })
         it(`Assets in a Collection attached to a STIG - label-lvl1`, async function () {
@@ -855,7 +861,13 @@ describe(`GET - Asset`, function () {
             expect(asset.collectionId, "expect collectionId to be equal to reference.testCollection.collectionId").to.be.eql(reference.testCollection.collectionId)
             for(const label of asset.assetLabelIds){
               expect(label).to.be.oneOf(reference.testCollection.labels, `Label should be one of the valid labels`)
-            }            
+            }      
+            if(asset.access === "r"){
+              expect(iteration.name).to.be.oneOf(['lvl1'])
+            }
+            else {
+              expect(asset.access).to.be.oneOf(['rw'])
+            }      
           }
        
         })
@@ -876,7 +888,13 @@ describe(`GET - Asset`, function () {
             expect(asset.collectionId, "expect collectionId to be equal to reference.testCollection.collectionId").to.be.eql(reference.testCollection.collectionId)
             for(const label of asset.assetLabelIds){
               expect(label).to.be.oneOf(reference.testCollection.labels, `Label should be one of the valid labels`)
-            }            
+            }     
+            if(asset.access === "r"){
+              expect(iteration.name).to.be.oneOf(['lvl1'])
+            }
+            else {
+              expect(asset.access).to.be.oneOf(['rw'])
+            }       
           }   
         })
         it(`Assets in a Collection attached to a STIG - labelName`, async function () {
@@ -895,7 +913,13 @@ describe(`GET - Asset`, function () {
               expect(asset.collectionId, "expect collectionId to be equal to reference.testCollection.collectionId").to.be.eql(reference.testCollection.collectionId)
               for(const label of asset.assetLabelIds){
                 expect(label).to.be.oneOf(reference.testCollection.labels, `Label should be one of the valid labels`)
-              }            
+              }   
+              if(asset.access === "r"){
+                expect(iteration.name).to.be.oneOf(['lvl1'])
+              }
+              else {
+                expect(asset.access).to.be.oneOf(['rw'])
+              }         
             }   
         })
         it(`Assets in a Collection attached to a STIG - label match = null`, async function () {
@@ -910,7 +934,14 @@ describe(`GET - Asset`, function () {
             for(let asset of res.body){
               expect(asset.assetLabelIds).to.be.empty
               expect(asset.collectionId).to.eql(reference.testCollection.collectionId)
+              if(asset.access === "r"){
+                expect(iteration.name).to.be.oneOf(['lvl1'])
+              }
+              else {
+                expect(asset.access).to.be.oneOf(['rw'])
+              }
             }
+           
         })
       })
     })

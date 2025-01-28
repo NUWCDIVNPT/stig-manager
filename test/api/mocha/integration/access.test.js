@@ -16,6 +16,7 @@ const admin = {
 const lvl1 = {
   name: 'lvl1',
   userId: "85",
+  grantId: "32",
   token:
     'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJGSjg2R2NGM2pUYk5MT2NvNE52WmtVQ0lVbWZZQ3FvcXRPUWVNZmJoTmxFIn0.eyJleHAiOjE4NjQ3MDg5ODQsImlhdCI6MTY3MDU2ODE4NCwiYXV0aF90aW1lIjoxNjcwNTY4MTg0LCJqdGkiOiIxMDhmMDc2MC0wYmY5LTRkZjEtYjE0My05NjgzNmJmYmMzNjMiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXV0aC9yZWFsbXMvc3RpZ21hbiIsImF1ZCI6WyJyZWFsbS1tYW5hZ2VtZW50IiwiYWNjb3VudCJdLCJzdWIiOiJlM2FlMjdiOC1kYTIwLTRjNDItOWRmOC02MDg5ZjcwZjc2M2IiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzdGlnLW1hbmFnZXIiLCJub25jZSI6IjE0ZmE5ZDdkLTBmZTAtNDQyNi04ZmQ5LTY5ZDc0YTZmMzQ2NCIsInNlc3Npb25fc3RhdGUiOiJiNGEzYWNmMS05ZGM3LTQ1ZTEtOThmOC1kMzUzNjJhZWM0YzciLCJhY3IiOiIxIiwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtc3RpZ21hbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7InJlYWxtLW1hbmFnZW1lbnQiOnsicm9sZXMiOlsidmlldy11c2VycyIsInF1ZXJ5LWdyb3VwcyIsInF1ZXJ5LXVzZXJzIl19LCJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBzdGlnLW1hbmFnZXI6Y29sbGVjdGlvbiBzdGlnLW1hbmFnZXI6c3RpZzpyZWFkIHN0aWctbWFuYWdlcjp1c2VyOnJlYWQgc3RpZy1tYW5hZ2VyOmNvbGxlY3Rpb246cmVhZCIsInNpZCI6ImI0YTNhY2YxLTlkYzctNDVlMS05OGY4LWQzNTM2MmFlYzRjNyIsIm5hbWUiOiJyZXN0cmljdGVkIiwicHJlZmVycmVkX3VzZXJuYW1lIjoibHZsMSIsImdpdmVuX25hbWUiOiJyZXN0cmljdGVkIn0.OqLARi5ILt3j2rMikXy0ECTTqjWco0-CrMwzE88gUv2i8rVO9kMgVsXbtPk2L2c9NNNujnxqg7QIr2_sqA51saTrZHvzXcsT8lBruf74OubRMwcTQqJap-COmrzb60S7512k0WfKTYlHsoCn_uAzOb9sp8Trjr0NksU8OXCElDU'
 }
@@ -648,5 +649,87 @@ describe('Test manage user group access control', () => {
   it('should reject delete modification  of metadata key to read only review metadata on test asset with test ruleId', async () => {
     const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.testRuleId}/metadata/keys/${reference.reviewMetadataKey}`, 'DELETE', lvl1.token, `${JSON.stringify(reference.reviewMetadataValue)}`)
     expect(res.status).to.eql(403)
+  })
+})
+
+describe('Test getAssetsByStig access property', () => {
+
+  before(async function () {
+    await utils.loadAppData()
+  })
+
+  let lvl1DirectGrantId = null
+
+  it("delete all grant for lvl1 user in test collection", async () => {
+
+    const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/grants/${lvl1.grantId}`, 'DELETE', admin.token)
+    expect(res.status).to.eql(200)
+  })
+
+  it("add grant to test collection for lvl1 user", async () => {
+
+    const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/grants`, 'POST', admin.token, [
+      {
+        userId: lvl1.userId,
+        roleId: 1
+      }
+    ])
+    expect(res.status).to.eql(201)
+    lvl1DirectGrantId = res.body[0].grantId
+  })
+
+  it("get assets by stig with lvl1 user", async () => {
+    
+    const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}/assets`, 'GET', lvl1.token)
+    expect(res.status).to.eql(200)
+    expect(res.body).to.have.length(0)
+  })
+
+  it("add r to test Asset for lvl1 user", async () => {
+
+    const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/grants/${lvl1DirectGrantId}/acl`, 'PUT', admin.token, [
+      {
+        assetId: reference.testAsset.assetId,
+        access: 'r'
+      }
+    ])
+    expect(res.status).to.eql(200)
+  })
+
+  it("get assets by stig with lvl1 user should have test asset with r only access", async () => {
+    
+    const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}/assets`, 'GET', lvl1.token)
+    expect(res.status).to.eql(200)
+    expect(res.body).to.have.length(1)
+    expect(res.body[0].assetId).to.eql(reference.testAsset.assetId)
+    expect(res.body[0].access).to.eql('r')
+  })
+
+  it("get assets by stig with admin user should have test asset with rw access", async () => {
+
+    const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}/assets`, 'GET', admin.token)
+    expect(res.status).to.eql(200)
+    expect(res.body).to.have.length(3)
+    for(let asset of res.body){
+      expect(asset.access).to.eql('rw')
+    }
+  })
+  it("add rw to test Asset for lvl1 user", async () => {
+
+    const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/grants/${lvl1DirectGrantId}/acl`, 'PUT', admin.token, [
+      {
+        assetId: reference.testAsset.assetId,
+        access: 'rw'
+      }
+    ])
+    expect(res.status).to.eql(200)
+  })
+  it("get assets by stig with lvl1 user should have test asset with rw access", async () => {
+    
+    const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/stigs/${reference.testCollection.benchmark}/assets`, 'GET', lvl1.token)
+    expect(res.status).to.eql(200)
+    expect(res.body).to.have.length(1)
+    expect(res.body[0].assetId).to.eql(reference.testAsset.assetId)
+    expect(res.body[0].access).to.eql('rw')
   })
 })

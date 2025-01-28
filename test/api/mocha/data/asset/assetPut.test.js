@@ -294,6 +294,13 @@ describe('PUT - Asset', function () {
           expect(res.body).to.be.an('array').of.length(1)
           expect(res.body[0].assetId).to.equal(reference.scrapAsset.assetId)
           expect(res.body[0].collectionId).to.equal(reference.scrapCollection.collectionId)
+          if(iteration.name === 'lvl1'){
+            expect(res.body[0].access).to.equal('r')
+          }
+          else
+          {
+            expect(res.body[0].access).to.equal('rw')
+          }
         })
         it('should throw SM privilege error due to assetId not being apart of collection.', async function () {
           const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.scrapCollection.collectionId}/stigs/${reference.scrapAsset.scrapBenchmark}/assets`, 'PUT', iteration.token, [`1234321`])
