@@ -47,7 +47,7 @@ module.exports.queryMetrics = async function ({
     'left join stig on rev.benchmarkId = stig.benchmarkId'
   ]
   if (grant.roleId === 1) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: grant.grantIds}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
     joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
   }
   const groupBy = []
@@ -200,7 +200,7 @@ module.exports.queryMetaMetrics = async function ({
   }
   
   if (restrictedCollectionIds.length) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: restrictedGrantIds}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: restrictedGrantIds}))
     joins.push('left join cteAclEffective cae on sa.saId = cae.saId')
     predicates.statements.push('case when a.collectionId IN (?) then cae.saId = sa.saId else true end')
     predicates.binds.push(restrictedCollectionIds)

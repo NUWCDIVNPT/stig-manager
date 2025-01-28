@@ -2,7 +2,7 @@
 const dbUtils = require('./utils')
 const {createHash} = require('node:crypto')
 
-let _this = this
+const _this = this
 
 function cteStigCollection ({elevate = false, unrestrictedCollectionIds = [], hasRestrictions = true}) {
   const columns = [
@@ -100,7 +100,7 @@ exports.queryStigs = async function ({filter, projections, grants, elevate = fal
 
   const ctes = []
   if (requireCteAcls) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: requesterGrantIds}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: requesterGrantIds}))
   }
   ctes.push(cteStigCollection({
     elevate,
@@ -243,13 +243,8 @@ exports.queryGroups = async function ( inProjection, inPredicates ) {
   // // CONSTRUCT MAIN QUERY
   const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
 
-  try {
-    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
-    return (rows.length > 0 ? rows : null)
-  }
-  catch (err) {
-    throw err
-  }  
+  const [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  return (rows.length > 0 ? rows : null)
 }
 
 
@@ -378,13 +373,8 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
   // // CONSTRUCT MAIN QUERY
   const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
 
-  try {
-    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
-    return (rows)
-  }
-  catch (err) {
-    throw err
-  }  
+  const [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  return (rows)
 }
 
 
@@ -437,20 +427,6 @@ exports.queryRules = async function ( ruleId, inProjection ) {
       'mitigationControl', rgr.mitigationControl,
       'responsibility', rgr.responsibility
     ) as detail`)
-    // let detailColumns = [
-    //   'rgr.weight',
-    //   'rgr.vulnDiscussion',
-    //   'rgr.falsePositives',
-    //   'rgr.falseNegatives',
-    //   'rgr.documentable',
-    //   'rgr.mitigations',
-    //   'rgr.severityOverrideGuidance',
-    //   'rgr.potentialImpacts',
-    //   'rgr.thirdPartyTools',
-    //   'rgr.mitigationControl',
-    //   'rgr.responsibility'
-    // ]
-    // groupBy.push(...detailColumns)
   }
 
   if ( inProjection?.includes('ccis') ) {
@@ -477,13 +453,8 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   // CONSTRUCT MAIN QUERY
   const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
 
-  try {
-    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
-    return (rows[0])
-  }
-  catch (err) {
-    throw err
-  }  
+  const [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  return (rows[0])
 }
 
 
@@ -606,8 +577,8 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
           v_current_rev
         WHERE
           v_current_rev.benchmarkId = ?`
-      ;[result] = await connection.query(sqlDeleteCurrentRev, [dml.stig.binds.benchmarkId])
-      ;[result] = await connection.query(sqlUpdateCurrentRev, [dml.stig.binds.benchmarkId])
+      await connection.query(sqlDeleteCurrentRev, [dml.stig.binds.benchmarkId])
+      await connection.query(sqlUpdateCurrentRev, [dml.stig.binds.benchmarkId])
       hrend = process.hrtime(hrstart)
       stats.current_rev = `${hrend[0]}s  ${hrend[1] / 1000000}ms`
 
@@ -853,7 +824,7 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
     dml.revision.binds.fixCount = fixCount
 
     // add rule severity counts to the revision binds. groupRule[7] is the location of the severity value
-    dml.revGroupRuleMap.binds.reduce((binds, groupRule) => {
+    dml.revision.binds = dml.revGroupRuleMap.binds.reduce((binds, groupRule) => {
       const prop = `${groupRule[7]}Count`
       binds[prop] = (binds[prop] ?? 0) + 1
       return binds
@@ -973,7 +944,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
     if (typeof connection !== 'undefined') {
       await connection.rollback()
     }
-    throw ( {status: 500, message: err.message, stack: err.stack} )
+    throw (err)
   }
   finally {
     if (typeof connection !== 'undefined') {
@@ -1034,7 +1005,7 @@ exports.deleteStigById = async function(benchmarkId, userObject, svcStatus = {})
     if (typeof connection !== 'undefined') {
       await connection.rollback()
     }
-    throw ( {status: 500, message: err.message, stack: err.stack} )
+    throw (err)
   }
   finally {
     if (typeof connection !== 'undefined') {
@@ -1126,15 +1097,8 @@ exports.getCci = async function(cci, inProjection, userObject) {
 
   const sql = dbUtils.makeQueryString({columns, joins, predicates, orderBy})
 
-  try {
-    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
-
-    return (rows[0])
-  }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} ) 
-  }
-  // finally{}
+  const [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  return (rows[0])
 }
 
 
@@ -1196,13 +1160,8 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
   // CONSTRUCT MAIN QUERY
   const sql = dbUtils.makeQueryString({columns, joins, predicates, orderBy})
   
-  try {
-    let [rows] = await dbUtils.pool.query(sql, predicates.binds)
-    return rows
-  }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  const [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  return rows
 }
 
 
@@ -1216,17 +1175,12 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
  * returns GroupObj
  **/
 exports.getGroupByRevision = async function(benchmarkId, revisionStr, groupId, projection, userObject) {
-  try {
-    let rows = await _this.queryGroups( projection, {
-      benchmarkId: benchmarkId,
-      revisionStr: revisionStr,
-      groupId: groupId
-    })
-    return (rows[0])
-  }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  const rows = await _this.queryGroups( projection, {
+    benchmarkId: benchmarkId,
+    revisionStr: revisionStr,
+    groupId: groupId
+  })
+  return (rows[0])
 }
 
 
@@ -1238,16 +1192,10 @@ exports.getGroupByRevision = async function(benchmarkId, revisionStr, groupId, p
  * returns List
  **/
 exports.getGroupsByRevision = async function(benchmarkId, revisionStr, projection, userObject) {
-  try {
-    let rows = await _this.queryGroups( projection, {
-      benchmarkId: benchmarkId,
-      revisionStr: revisionStr
-    })
-    return (rows)
-  }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  return _this.queryGroups( projection, {
+    benchmarkId: benchmarkId,
+    revisionStr: revisionStr
+  })
 }
 
 
@@ -1267,7 +1215,7 @@ exports.getRevisionByString = async function({benchmarkId, revisionStr, grants, 
 
   const ctes = []
   if (requireCteAcls) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: requesterGrantIds}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: requesterGrantIds}))
   }
   ctes.push(cteRevCollection({
     elevate,
@@ -1322,7 +1270,7 @@ exports.getRevisionsByBenchmarkId = async function({benchmarkId, grants, userObj
 
   const ctes = []
   if (requireCteAcls) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: requesterGrantIds}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: requesterGrantIds}))
   }
   ctes.push(cteRevCollection({
     elevate,
@@ -1365,13 +1313,7 @@ exports.getRevisionsByBenchmarkId = async function({benchmarkId, grants, userObj
  * returns Rule
  **/
 exports.getRuleByRuleId = async function(ruleId, projection, userObject) {
-  try {
-    let rows = await _this.queryRules( ruleId, projection )
-    return (rows)
-  }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  return _this.queryRules( ruleId, projection )
 }
 
 
@@ -1383,15 +1325,10 @@ exports.getRuleByRuleId = async function(ruleId, projection, userObject) {
  * returns List
  **/
 exports.getRuleByRevision = async function(benchmarkId, revisionStr, ruleId, projection, userObject) {
-  try {
-    let rows = await _this.queryBenchmarkRules( benchmarkId, revisionStr, projection, {
-      ruleId: ruleId
-    })
-    return (rows[0])
-  }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  const rows = await _this.queryBenchmarkRules( benchmarkId, revisionStr, projection, {
+    ruleId: ruleId
+  })
+  return (rows[0])
 }
 
 
@@ -1403,13 +1340,7 @@ exports.getRuleByRevision = async function(benchmarkId, revisionStr, ruleId, pro
  * returns List
  **/
 exports.getRulesByRevision = async function(benchmarkId, revisionStr, projection, userObject) {
-  try {
-    let rows = await _this.queryBenchmarkRules( benchmarkId, revisionStr, projection, {} )
-    return (rows)
-  }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  return _this.queryBenchmarkRules( benchmarkId, revisionStr, projection, {} )
 }
 
 
@@ -1420,18 +1351,12 @@ exports.getRulesByRevision = async function(benchmarkId, revisionStr, projection
  * returns List
  **/
 exports.getSTIGs = async function(title, projections, userObject, elevate) {
-  try {
-    let rows = await _this.queryStigs({
-      filter: {title},
-      projections,
-      grants: userObject.grants,
-      elevate
-    })
-    return (rows)
-  }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  return _this.queryStigs({
+    filter: {title},
+    projections,
+    grants: userObject.grants,
+    elevate
+  })
 }
 
 
@@ -1442,55 +1367,40 @@ exports.getSTIGs = async function(title, projections, userObject, elevate) {
  * returns STIG
  **/
 exports.getStigById = async function(benchmarkId, userObject, elevate) {
-  try {
-    let rows = await _this.queryStigs({
-      filter: {benchmarkId},
-      projections: ['revisions'],
-      grants: userObject.grants,
-      elevate
-    })
-    return (rows[0])
-  }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  const rows = await _this.queryStigs({
+    filter: {benchmarkId},
+    projections: ['revisions'],
+    grants: userObject.grants,
+    elevate
+  })
+  return (rows[0])
 }
 
 exports.getRevisionStrsByBenchmarkId = async function (benchmarkId) {
-  try {
-    const sql = `SELECT
-      concat('V', r.version, 'R', r.release) as "revisionStr"
-    FROM
-      revision r
-    WHERE
-      r.benchmarkId = ?`
-    const [rows] = await dbUtils.pool.query(sql, [benchmarkId])
-    return rows.map( row => row.revisionStr)
-  }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  const sql = `SELECT
+    concat('V', r.version, 'R', r.release) as "revisionStr"
+  FROM
+    revision r
+  WHERE
+    r.benchmarkId = ?`
+  const [rows] = await dbUtils.pool.query(sql, [benchmarkId])
+  return rows.map( row => row.revisionStr)
 }
 
 exports.getRevisionStrsByBenchmarkIds = async function (benchmarkIds) {
-  try {
-    const sql = `SELECT
-      r.benchmarkId,
-      json_arrayagg(concat('V', r.version, 'R', r.release)) as "revisionStrs"
-    FROM
-      revision r
-    WHERE
-      r.benchmarkId IN ?
-    GROUP BY
-      r.benchmarkId`
-    const [rows] = await dbUtils.pool.query(sql, [[benchmarkIds]])
-    const returnObj = {}
-    for (const row of rows) {
-      returnObj[row.benchmarkId] = row.revisionStrs
-    }
-    return returnObj
+  const sql = `SELECT
+    r.benchmarkId,
+    json_arrayagg(concat('V', r.version, 'R', r.release)) as "revisionStrs"
+  FROM
+    revision r
+  WHERE
+    r.benchmarkId IN ?
+  GROUP BY
+    r.benchmarkId`
+  const [rows] = await dbUtils.pool.query(sql, [[benchmarkIds]])
+  const returnObj = {}
+  for (const row of rows) {
+    returnObj[row.benchmarkId] = row.revisionStrs
   }
-  catch(err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  return returnObj
 }

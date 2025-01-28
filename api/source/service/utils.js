@@ -8,7 +8,7 @@ const fs = require("fs")
 const semverLt = require('semver/functions/lt')
 const semverCoerce = require('semver/functions/coerce')
 const Importer = require('./migrations/lib/mysql-import.js')
-const minMySqlVersion = '8.0.21'
+const minMySqlVersion = '8.0.24'
 let _this = this
 let initAttempt = 0
 
@@ -206,7 +206,7 @@ module.exports.getUserAssetStigAccess = async function ({assetId, benchmarkId, g
   const grant = await _this.getGrantByAssetId(assetId, grants)
   if (!grant) return 'none'
   const binds = [assetId, benchmarkId]
-  const sql = `with ${_this.cteAclEffective({cgIds: grant.grantIds})} select
+  const sql = `with ${_this.cteAclEffective({grantIds: grant.grantIds})} select
     coalesce(ae.access, 'rw') as access
   from
 	  stig_asset_map sa
@@ -215,98 +215,6 @@ module.exports.getUserAssetStigAccess = async function ({assetId, benchmarkId, g
 	  sa.assetId = ? and sa.benchmarkId = ?`
     const [rows] = await _this.pool.query(sql, binds)
     return rows[0]?.access ?? 'none'
-}
-
-// // Returns Boolean
-// module.exports.userHasAssetStigs = async function (assetId, requestedBenchmarkIds, elevate, userObject) {
-//   const [rows] = await _this.getUserAssetStigs({
-//     assetId,
-//     grants: userObject.grants
-//   })
-//   const availableBenchmarkIds = rows.map( row => row.benchmarkId )
-//   return requestedBenchmarkIds.every( requestedBenchmarkId => availableBenchmarkIds.includes(requestedBenchmarkId))   
-// }
-
-module.exports.getUserAssetStigAccess2 = async function ({
-  assetId,
-  benchmarkId,
-  grants
-}) {
-  const grant = await _this.getGrantByAssetId(assetId, grants)
-  if (!grant) return 'none'
-
-  const connection = await _this.pool.getConnection()
-  try {
-    const { tempTableSQLs, indexSQLs } = _this.cteAclEffective2({
-      cgIds: grant.grantIds
-    })
-
-    await connection.query('DROP TEMPORARY TABLE IF EXISTS TempAclEffective')
-    await connection.query('DROP TEMPORARY TABLE IF EXISTS cteAclRulesTemp')
-    
-    for (const sql of tempTableSQLs) {
-      await connection.query(sql, [grant.grantIds])
-    }
-   
-    for (const indexSQL of indexSQLs) {
-      await connection.query(indexSQL)
-    }
-
-    const querySQL = `
-      SELECT 
-        COALESCE(ae.access, 'rw') AS access
-      FROM 
-        stig_asset_map sa
-        ${
-          grant.roleId === 1 ? 'INNER' : 'LEFT'
-        } JOIN TempAclEffective ae USING (saId)
-      WHERE 
-        sa.assetId = ? AND sa.benchmarkId = ?;
-    `
-    const [rows] = await connection.query(querySQL, [assetId, benchmarkId])
-
-    return rows[0]?.access ?? 'none'
-  } catch (error) {
-    console.error('Error during getUserAssetStigAccess2:', error)
-    throw error
-  } finally {
-    connection.release()
-  }
-}
-
-module.exports.getUserAssetStigAccess3 = async function ({
-  assetId,
-  benchmarkId,
-  grants
-}) {
-  const grant = await _this.getGrantByAssetId(assetId, grants)
-  if (!grant) return 'none'
-
-  const connection = await _this.pool.getConnection()
-  try {
-
-     await _this.cteAclEffective3({cgIds: grant.grantIds, connection: connection})
-
-    const querySQL = `
-      SELECT 
-        COALESCE(ae.access, 'rw') AS access
-      FROM 
-        stig_asset_map sa
-        ${
-          grant.roleId === 1 ? 'INNER' : 'LEFT'
-        } JOIN cteAclEffective ae USING (saId)
-      WHERE 
-        sa.assetId = ? AND sa.benchmarkId = ?;
-    `
-    const [rows] = await connection.query(querySQL, [assetId, benchmarkId])
-
-    return rows[0]?.access ?? 'none'
-  } catch (error) {
-    console.error('Error during getUserAssetStigAccess2:', error)
-    throw error
-  } finally {
-    connection.release()
-  }
 }
 
 /**
@@ -711,8 +619,8 @@ where
   return returnCte ? `cteGrantees as (${sqlFormatted})` : sqlFormatted
 }
 
-module.exports.cteAclEffective = function ({cgIds = [], includeColumnCollectionId = true, inClauseTable = 'cteGrantees', inClauseColumn = 'grantIds', inClauseUserId = ''}) {
-  const inClause = cgIds.length ? '?' : `select jt.grantId from ${inClauseTable} left join json_table (${inClauseTable}.${inClauseColumn}, '$[*]' COLUMNS (grantId INT PATH '$')) jt on true${inClauseUserId ? ` where ${inClauseTable}.userId = ${inClauseUserId}` : ''}`
+module.exports.cteAclEffective = function ({grantIds = [], includeColumnCollectionId = true, inClauseTable = 'cteGrantees', inClauseColumn = 'grantIds', inClauseUserId = ''}) {
+  const inClause = grantIds.length ? '?' : `select jt.grantId from ${inClauseTable} left join json_table (${inClauseTable}.${inClauseColumn}, '$[*]' COLUMNS (grantId INT PATH '$')) jt on true${inClauseUserId ? ` where ${inClauseTable}.userId = ${inClauseUserId}` : ''}`
   const sql = `cteAclRules as (select${includeColumnCollectionId ? ' a.collectionId,' : ''}
 	sa.saId,
 	cga.access,
@@ -751,163 +659,6 @@ cteAclRulesRanked as (
 		cteAclRules),
 cteAclEffective as (select${includeColumnCollectionId ? ' collectionId,' : ''} saId, access from cteAclRulesRanked where rn = 1 and access != 'none')`
 
-  const sqlFormatted = mysql.format(sql, [cgIds])
+  const sqlFormatted = mysql.format(sql, [grantIds])
   return sqlFormatted
-}
-
-module.exports.cteAclEffective2 = function ({
-  cgIds = [],
-  includeColumnCollectionId = true,
-  inClauseTable = 'cteGrantees',
-  inClauseColumn = 'grantIds',
-  inClauseUserId = ''
-}) {
-  const inClause = cgIds.length
-    ? '?'
-    : `SELECT jt.grantId 
-       FROM ${inClauseTable} 
-       LEFT JOIN json_table(${inClauseTable}.${inClauseColumn}, '$[*]' COLUMNS (grantId INT PATH '$')) jt 
-       ON TRUE
-       ${inClauseUserId ? `WHERE ${inClauseTable}.userId = ${inClauseUserId}` : ''}`
-
-  // cteAclRulesTemp
-  const createAclRulesSQL = `
-    CREATE TEMPORARY TABLE cteAclRulesTemp AS
-    SELECT 
-      ${includeColumnCollectionId ? 'a.collectionId,' : ''}
-      sa.saId,
-      cga.access,
-      CASE WHEN cga.benchmarkId IS NOT NULL THEN 1 ELSE 0 END +
-      CASE WHEN cga.assetId IS NOT NULL THEN 1 ELSE 0 END +
-      CASE WHEN cga.assetId IS NOT NULL AND cga.benchmarkId IS NOT NULL THEN 1 ELSE 0 END +
-      CASE WHEN cga.clId IS NOT NULL THEN 1 ELSE 0 END AS specificity
-    FROM 
-      collection_grant_acl cga
-    LEFT JOIN collection_grant cg ON cga.grantId = cg.grantId
-    LEFT JOIN collection_label_asset_map cla ON cga.clId = cla.clId
-    LEFT JOIN collection_label cl ON cla.clId = cl.clId
-    INNER JOIN stig_asset_map sa ON (
-      CASE WHEN cga.assetId IS NOT NULL THEN cga.assetId = sa.assetId ELSE TRUE END AND
-      CASE WHEN cga.benchmarkId IS NOT NULL THEN cga.benchmarkId = sa.benchmarkId ELSE TRUE END AND
-      CASE WHEN cga.clId IS NOT NULL THEN cla.assetId = sa.assetId ELSE TRUE END
-    )
-    INNER JOIN asset a ON sa.assetId = a.assetId AND a.state = 'enabled' AND cg.collectionId = a.collectionId
-    WHERE 
-      cga.grantId IN (${inClause});
-  `
-
-  const effevtive =  `CREATE TEMPORARY TABLE TempAclEffective AS
-    SELECT 
-      ${includeColumnCollectionId ? 'collectionId,' : ''}
-      saId,
-      access
-    FROM (
-      SELECT 
-        ${includeColumnCollectionId ? 'collectionId,' : ''}
-        saId,
-        access,
-        ROW_NUMBER() OVER (PARTITION BY saId ORDER BY specificity DESC, access ASC) AS rn
-      FROM 
-        cteAclRulesTemp
-    ) ranked
-    WHERE 
-      rn = 1 AND access != 'none';`
-
-
-  const indexSQLs = [
-    `CREATE INDEX idx_ranked_saId ON cteAclRulesTemp(saId);`,
-    `CREATE INDEX idx_ranked_access ON cteAclRulesTemp(access);`,
-    `CREATE INDEX idx_effective_saId ON TempAclEffective(saId);`,
-    `CREATE INDEX idx_effective_access ON TempAclEffective(access);`
-  ]
-
-  return {
-    tempTableSQLs: [createAclRulesSQL, effevtive],
-    indexSQLs
-  }
-}
-
-module.exports.cteAclEffective3 = async function ({
-  cgIds = [],
-  includeColumnCollectionId = true,
-  inClauseTable = 'cteGrantees',
-  inClauseColumn = 'grantIds',
-  inClauseUserId = '',
-  connection = _this.pool,
-}) {
-
-  await connection.query('DROP TEMPORARY TABLE IF EXISTS cteAclEffective')
-  await connection.query('DROP TEMPORARY TABLE IF EXISTS cteAclRulesTemp')
-
-  const inClause = cgIds.length
-    ? '?'
-    : `SELECT jt.grantId 
-       FROM ${inClauseTable} 
-       LEFT JOIN json_table(${inClauseTable}.${inClauseColumn}, '$[*]' COLUMNS (grantId INT PATH '$')) jt 
-       ON TRUE
-       ${inClauseUserId ? `WHERE ${inClauseTable}.userId = ${inClauseUserId}` : ''}`
-
-  // cteAclRulesTemp
-  const createAclRulesSQL = `
-    CREATE TEMPORARY TABLE cteAclRulesTemp AS
-    SELECT 
-      ${includeColumnCollectionId ? 'a.collectionId,' : ''}
-      sa.saId,
-      cga.access,
-      CASE WHEN cga.benchmarkId IS NOT NULL THEN 1 ELSE 0 END +
-      CASE WHEN cga.assetId IS NOT NULL THEN 1 ELSE 0 END +
-      CASE WHEN cga.assetId IS NOT NULL AND cga.benchmarkId IS NOT NULL THEN 1 ELSE 0 END +
-      CASE WHEN cga.clId IS NOT NULL THEN 1 ELSE 0 END AS specificity
-    FROM 
-      collection_grant_acl cga
-    LEFT JOIN collection_grant cg ON cga.grantId = cg.grantId
-    LEFT JOIN collection_label_asset_map cla ON cga.clId = cla.clId
-    LEFT JOIN collection_label cl ON cla.clId = cl.clId
-    INNER JOIN stig_asset_map sa ON (
-      CASE WHEN cga.assetId IS NOT NULL THEN cga.assetId = sa.assetId ELSE TRUE END AND
-      CASE WHEN cga.benchmarkId IS NOT NULL THEN cga.benchmarkId = sa.benchmarkId ELSE TRUE END AND
-      CASE WHEN cga.clId IS NOT NULL THEN cla.assetId = sa.assetId ELSE TRUE END
-    )
-    INNER JOIN asset a ON sa.assetId = a.assetId AND a.state = 'enabled' AND cg.collectionId = a.collectionId
-    WHERE 
-      cga.grantId IN (${inClause});
-  `
-
-  const effective =  `CREATE TEMPORARY TABLE cteAclEffective AS
-    SELECT 
-      ${includeColumnCollectionId ? 'collectionId,' : ''}
-      saId,
-      access
-    FROM (
-      SELECT 
-        ${includeColumnCollectionId ? 'collectionId,' : ''}
-        saId,
-        access,
-        ROW_NUMBER() OVER (PARTITION BY saId ORDER BY specificity DESC, access ASC) AS rn
-      FROM 
-        cteAclRulesTemp
-    ) ranked
-    WHERE 
-      rn = 1 AND access != 'none';`
-
-
-  const indexSQLs = [
-    `CREATE INDEX idx_ranked_saId ON cteAclRulesTemp(saId);`,
-    `CREATE INDEX idx_ranked_access ON cteAclRulesTemp(access);`,
-    `CREATE INDEX idx_effective_saId ON cteAclEffective(saId);`,
-    `CREATE INDEX idx_effective_access ON cteAclEffective(access);`
-  ]
-  
-  try{ 
-    await connection.query(createAclRulesSQL, cgIds)
-    await connection.query(indexSQLs[0])
-    await connection.query(indexSQLs[1])
-    await connection.query(effective, cgIds)
-    await connection.query(indexSQLs[2])
-    await connection.query(indexSQLs[3])
-  }
-  catch (error) {
-    console.error('Error during cteAclEffective3:', error)
-    throw error
-  }
 }

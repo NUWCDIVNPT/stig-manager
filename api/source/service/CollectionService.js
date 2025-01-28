@@ -212,7 +212,7 @@ exports.queryCollection = async function ({collectionId, projections = [], eleva
     ctes.push(dbUtils.sqlGrantees(cteGranteesParams))
   }
   if (requireCteAcls) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: requesterGrantIds, includeColumnCollectionId: false}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: requesterGrantIds, includeColumnCollectionId: false}))
   }
   if (requireCteAssets) {
     ctes.push(`cteAssets as (select distinct a.assetId, a.name from 
@@ -424,7 +424,7 @@ exports.queryCollections = async function ({projections = [], filter = {}, eleva
       ctes.push(dbUtils.sqlGrantees(cteGranteesParams))
     }
     if (requireCteAcls) {
-      ctes.push(dbUtils.cteAclEffective({cgIds: requesterGrantIds}))
+      ctes.push(dbUtils.cteAclEffective({grantIds: requesterGrantIds}))
     }
 
     const sql = dbUtils.makeQueryString({ctes, columns, joins, predicates, orderBy, format: true})
@@ -670,7 +670,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
   // Access control
   const grant = userObject.grants[collectionId]
   if (grant.roleId === 1) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: grant.grantIds}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
     joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
   }
 
@@ -759,7 +759,7 @@ exports.getFindingsByCollection = async function( {collectionId, aggregator, ben
     'left join cci on rgrcc.cci = cci.cci'
   ]
   if (grant.roleId === 1) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: grant.grantIds}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
     joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
   }
 
@@ -924,7 +924,7 @@ exports.getStigsByCollection = async function({collectionId, labelIds, labelName
   }
 
   if (grant.roleId === 1) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: grant.grantIds}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
     joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
   }
 
@@ -1310,7 +1310,7 @@ exports.getCollectionLabels = async function (collectionId, grant) {
     'cl.name'
   ]
   if (grant.roleId === 1) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: grant.grantIds}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
     joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
   }
   const sql = dbUtils.makeQueryString({ctes, columns, joins, predicates, groupBy, orderBy, format: true})
@@ -1357,7 +1357,7 @@ exports.getCollectionLabelById = async function (collectionId, labelId, grant) {
   const groupBy = ['cl.clId']
   const orderBy = []
   if (grant.roleId === 1) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: grant.grantIds}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
     joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
   }
   const sql = dbUtils.makeQueryString({ctes, columns, joins, predicates, groupBy, orderBy, format: true})
@@ -1410,7 +1410,7 @@ exports.getAssetsByCollectionLabelId = async function (collectionId, labelId, gr
   const groupBy = []
   const orderBy = ['a.name']
   if (grant.roleId === 1) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: grant.grantIds}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
     joins.push(
       'left join stig_asset_map sa on a.assetId = sa.assetId',
       'inner join cteAclEffective cae on sa.saId = cae.saId'
@@ -1495,6 +1495,7 @@ async function queryUnreviewedByCollection ({
   userObject
 }) {
   let columns, groupBy, orderBy
+  let projectionMap = []
   switch (grouping) {
     case 'asset':
       columns = [
@@ -1531,7 +1532,7 @@ async function queryUnreviewedByCollection ({
       ]
       break
     case 'rule':
-      const projectionMap = projections.map( p => `${p === 'groupTitle' ? 'rgr.groupTitle' : 'rgr.title'}`)
+      projectionMap = projections.map( p => `${p === 'groupTitle' ? 'rgr.groupTitle' : 'rgr.title'}`)
       columns = [
         'rgr.ruleId',
         'rgr.groupId',
@@ -1613,7 +1614,7 @@ async function queryUnreviewedByCollection ({
     predicates.binds.push([severities])
   }
   if (grant.roleId === 1) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: grant.grantIds}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
     joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
   }
 
@@ -1674,7 +1675,7 @@ exports.writeStigPropsByCollectionStig = async function ({collectionId, benchmar
     if (typeof connection !== 'undefined') {
       await connection.rollback()
     }
-    throw ( {status: 500, message: err.message, stack: err.stack} )
+    throw ( err )
   }
   finally {
     if (typeof connection !== 'undefined') {

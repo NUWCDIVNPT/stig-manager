@@ -40,7 +40,7 @@ exports.queryAssets = async function ({projections = [], filter = {}, grant = {}
     'left join stig_asset_map sa on a.assetId = sa.assetId'
   ]
   if (grant.roleId === 1) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: grant.grantIds}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
     joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
   }
 
@@ -65,21 +65,7 @@ exports.queryAssets = async function ({projections = [], filter = {}, grant = {}
           FIND_IN_SET(saStatusStats.saId, GROUP_CONCAT(sa.saId))
         ) as "statusStats"`)
     }
-    // if (projections.includes('stigGrants')) {
-    //   columns.push(`cast(
-    //     concat('[', 
-    //       coalesce (
-    //         group_concat(distinct 
-    //           case when sa.benchmarkId is not null then 
-    //             json_object(
-    //               'benchmarkId', sa.benchmarkId, 
-    //               'users', json_array())
-    //           else null end 
-    //         order by sa.benchmarkId),
-    //         ''),
-    //     ']')
-    //   as json) as "stigGrants"`)
-    // }
+
     if (projections.includes('stigs')) {
       //iterate: If benchmarkId is a predicate in main query, this incorrectly only shows that STIG
       joins.push('left join default_rev dr on (sa.benchmarkId=dr.benchmarkId and a.collectionId = dr.collectionId)')
@@ -262,7 +248,7 @@ exports.addOrUpdateAsset = async function ( {writeAction, assetId, body, current
         }
       }
       else {
-        throw('Invalid writeAction')
+        return
       }
   
       // Process stigs, spec requires for CREATE/REPLACE not for UPDATE
@@ -346,15 +332,6 @@ exports.addOrUpdateAsset = async function ( {writeAction, assetId, body, current
       await connection.release()
     }
   }
-
-  // // Fetch the new or updated Asset for the response
-  // try {
-  //   let row = await _this.getAsset(assetId, projections, false, userObject)
-  //   return row
-  // }
-  // catch (err) {
-  //   throw ( {status: 500, message: err.message, stack: err.stack} )
-  // }  
 }
 
 exports.queryChecklist = async function (inPredicates) {
@@ -673,7 +650,6 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
   let connection
   try {
     let revisionStrResolved // Will hold specific revision string value, as opposed to "latest"
-    const createdAt = new Date().toISOString()
     const cklb = {
       title: '',
       id: uuid.v1(),
@@ -963,15 +939,14 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
       where
         r.revId = ?`  
 
-    let result, revId
+    let result
     if (revisionStr === 'latest') {
       ;[result] = await connection.query(sqlGetRevision, [benchmarkId])
-      revId = result[0].revId
       revisionStrResolved = `V${result[0].version}R${result[0].release}`
     }
     else {
       const {version, release} = dbUtils.parseRevisionStr(revisionStr)
-      revId = `${benchmarkId}-${version}-${release}`
+      const revId = `${benchmarkId}-${version}-${release}`
       ;[result] = await connection.query(sqlGetRevision, [revId])
       revisionStrResolved = revisionStr
     }
@@ -1003,9 +978,8 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
         })  
       }
     }
-    const re = /^urn:/
     for (const key in metadata) {
-      if (re.test(key)) {
+      if (key.startsWith('urn:')) {
         fact.push({
           '@_name': key,
           '@_type': 'string',
@@ -1270,10 +1244,6 @@ exports.removeStigsFromAsset = async function (assetId, grant, svcStatus) {
   }
 }
 
-exports.deleteAssetStigGrant = async function (assetId, benchmarkId, userId, elevate, userObject ) {
-  // TODO
-}
-
 exports.getAsset = async function({assetId, projections, grant}) {
   const rows = await _this.queryAssets({
     projections, 
@@ -1306,7 +1276,7 @@ exports.getStigsByAssetSlow = async function ({assetId, grant}) {
     'left join revision rev on dr.revId = rev.revId'
   ]
   if (grant.roleId === 1) {
-    ctes.push(dbUtils.cteAclEffective({cgIds: grant.grantIds}))
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
     joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
   }
 
@@ -1323,47 +1293,35 @@ exports.getStigsByAssetSlow = async function ({assetId, grant}) {
 }
 
 exports.getStigsByAsset = async function ({assetId, grant}) {
-
-  const connection = await dbUtils.pool.getConnection()
-  try{
-    const ctes = []
-    const columns = [
-      'distinct sa.benchmarkId', 
-      `concat('V', rev.version, 'R', rev.release) as revisionStr`, 
-      `date_format(rev.benchmarkDateSql,'%Y-%m-%d') as revisionDate`,
-      'rev.ruleCount as ruleCount'
-    ]
-    const joins = [
-      'asset a',
-      'left join collection c on a.collectionId = c.collectionId',
-      'inner join stig_asset_map sa on a.assetId = sa.assetId',
-      'left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)',
-      'left join revision rev on dr.revId = rev.revId'
-    ]
-    if (grant.roleId === 1) {
-      //ctes.push(dbUtils.cteAclEffective({cgIds: grant.grantIds}))
-      await dbUtils.cteAclEffective3({cgIds: grant.grantIds, connection: connection})
-      joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
-    }
-  
-    // PREDICATES
-    const predicates = {
-      statements: ['a.assetId = ?'],
-      binds: [assetId]
-    }
-    const orderBy = ['sa.benchmarkId']
-  
-    const sql = dbUtils.makeQueryString({ctes, columns, joins, predicates, orderBy, format: true})
-    let [rows] = await connection.query(sql)
-    return (rows)
-  }
-  catch (err) {
-    throw err
-  }
-  finally {
-    connection.release()
+  const ctes = []
+  const columns = [
+    'distinct sa.benchmarkId', 
+    `concat('V', rev.version, 'R', rev.release) as revisionStr`, 
+    `date_format(rev.benchmarkDateSql,'%Y-%m-%d') as revisionDate`,
+    'rev.ruleCount as ruleCount'
+  ]
+  const joins = [
+    'asset a',
+    'left join collection c on a.collectionId = c.collectionId',
+    'inner join stig_asset_map sa on a.assetId = sa.assetId',
+    'left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)',
+    'left join revision rev on dr.revId = rev.revId'
+  ]
+  if (grant.roleId === 1) {
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
+    joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
   }
 
+  // PREDICATES
+  const predicates = {
+    statements: ['a.assetId = ?'],
+    binds: [assetId]
+  }
+  const orderBy = ['sa.benchmarkId']
+
+  const sql = dbUtils.makeQueryString({ctes, columns, joins, predicates, orderBy, format: true})
+  let [rows] = await dbUtils.pool.query(sql)
+  return (rows)
 }
 
 exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionStr, format) {
@@ -1417,7 +1375,7 @@ exports.getAssetsByStig = async function({collectionId, benchmarkId, labels, gra
     'inner join asset a on c.collectionId = a.collectionId',
     'left join stig_asset_map sa on a.assetId = sa.assetId',
   ]
-  ctes.push(dbUtils.cteAclEffective({cgIds: grant.grantIds}))
+  ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
   joins.push(`${grant.roleId === 1 ? 'inner' : 'left'} join cteAclEffective cae on sa.saId = cae.saId`)
 
   // PREDICATES

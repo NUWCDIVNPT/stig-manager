@@ -296,7 +296,7 @@ exports.postReviewBatch = async function ({
   }
   const cteCollectionSetting = cteCollectionSettingGen()
   const cteCandidate = cteCandidateGen({skipGrantCheck, action, updateFilters})
-  const cteAclEffective = dbUtils.cteAclEffective({cgIds: grant.grantIds})
+  const cteAclEffective = dbUtils.cteAclEffective({grantIds: grant.grantIds})
   const sqlTempTable = `
 CREATE TEMPORARY TABLE IF NOT EXISTS validated_reviews (
   INDEX idx_reviewId (reviewId),
@@ -544,7 +544,7 @@ from
     if (typeof connection !== 'undefined') {
       await connection.rollback()
     }    
-    throw ( {status: 500, message: err.message, stack: err.stack} ) ;
+    throw (err) ;
   }
   finally {
     if (typeof connection !== 'undefined') {
@@ -558,7 +558,7 @@ from
 Generalized queries for review(s).
 **/
 exports.getReviews = async function ({projections = [], filter = {}, grant}) {
-  const ctes = [dbUtils.cteAclEffective({cgIds: grant.grantIds})]
+  const ctes = [dbUtils.cteAclEffective({grantIds: grant.grantIds})]
   const hints = ['NO_MERGE(cae)']
   const columns = [
     'CAST(r.assetId as char) as assetId',
@@ -907,7 +907,7 @@ exports.deleteReviewByAssetRule = async function({assetId, ruleId, projections, 
     if (typeof connection !== 'undefined') {
       await connection.rollback()
     }    
-    throw ( {status: 500, message: err.message, stack: err.stack} ) ;
+    throw (err) ;
   }
   finally {
     if (typeof connection !== 'undefined') {
@@ -933,7 +933,7 @@ CREATE TEMPORARY TABLE IF NOT EXISTS tt_validated_review (
   PRIMARY KEY (ruleId),
   UNIQUE KEY (\`version\`, checkDigest)
 )
-REPLACE WITH ${dbUtils.cteAclEffective({cgIds: grant.grantIds})},
+REPLACE WITH ${dbUtils.cteAclEffective({grantIds: grant.grantIds})},
 cteCollectionSetting AS (
 SELECT 
   c.settings->>"$.fields.detail.required" AS detailRequired,
@@ -1321,7 +1321,7 @@ where
 // Returns a Boolean
 exports.checkRuleByAssetUser = async function ({ruleId, assetId, collectionId, grant, checkWritable}) {
   const binds = []
-  let sql = `with ${dbUtils.cteAclEffective({cgIds: grant.grantIds})}
+  let sql = `with ${dbUtils.cteAclEffective({grantIds: grant.grantIds})}
     select
       rgr.ruleId 
     from 

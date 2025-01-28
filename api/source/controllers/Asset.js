@@ -146,7 +146,6 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
     const revisionStr = req.params.revisionStr
     const format = req.query.format || 'json'
 
-    // const access = await dbUtils.getUserAssetStigAccess3({assetId, benchmarkId, grants: req.userObject.grants})
     const access = await dbUtils.getUserAssetStigAccess({assetId, benchmarkId, grants: req.userObject.grants})
     if (access === 'none') throw new SmError.PrivilegeError()
 
@@ -279,16 +278,7 @@ module.exports.replaceAsset = async function replaceAsset (req, res, next) {
 
     const {assetId, grant} = await getAssetInfoAndVerifyAccess(req)
 
-    // If this user has no grants permitting access to the asset, the response will be undefined
     const currentAsset = await AssetService.getAsset({assetId, projections, grant})
-    // if (!currentAsset) {
-    //   throw new SmError.PrivilegeError('User has insufficient privilege to modify this asset.')
-    // }
-    // // Check if the user has an appropriate grant to the asset's collection
-    // const currentCollectionGrant = req.userObject.grants[currentAsset.collection.collectionId]
-    // if ( !currentCollectionGrant || currentCollectionGrant.roleId < 3 ) {
-      
-    // }
     // Check if the asset is being transferred
     const transferring = body.collectionId && currentAsset.collection.collectionId !== body.collectionId ? 
       {oldCollectionId: currentAsset.collection.collectionId, newCollectionId: body.collectionId} : null
