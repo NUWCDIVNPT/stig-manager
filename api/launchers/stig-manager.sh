@@ -80,10 +80,11 @@
 #==============================================================================
 # STIGMAN_CLIENT_EXTRA_SCOPES
 #
-#  | No default. | OAuth2 scopes to request in addition to "stig-manager:stig"
-#  "stig-manager:stig:read" "stig-manager:collection" "stig-manager:user" "stig-
-#  manager:user:read" "stig-manager:op". Some OIDC providers (Okta) generate a
-#  refresh token only if the scope "offline_access" is requested
+#  | No default. | A space separated list of OAuth2 scopes to request in
+#  addition to "stig-manager:stig" "stig-manager:stig:read" "stig-
+#  manager:collection" "stig-manager:user" "stig-manager:user:read" "stig-
+#  manager:op". Some OIDC providers (Okta) generate a refresh token only if the
+#  scope "offline_access" is requested
 #
 #  Affects: Client
 #==============================================================================
@@ -135,10 +136,12 @@
 #==============================================================================
 # STIGMAN_CLIENT_WELCOME_IMAGE 
 #
-#  | No default. | An image URL that will be rendered in the Home tab Welcome
-#  widget. The image will be scaled to a max width or height of 125 pixels - If
-#  no alternate image is specified, the seal of the Department of the Navy (the
-#  project sponsor)  will be displayed.
+#  | No default. | The URL of an image hosted elsewhere that will be rendered in
+#  the Home tab Welcome widget. The STIGMan app does not serve the image itself,
+#  only the reference to it. The URL should be in relation to and accessible
+#  from the client's browser. The image will be scaled to a max width or height
+#  of 125 pixels - If no alternate image is specified, the seal of the
+#  Department of the Navy (the project sponsor)  will be displayed.
 #
 #  Affects: Client Appearance
 #==============================================================================
@@ -285,6 +288,15 @@
 #==============================================================================
 # export STIGMAN_DOCS_DISABLED=
 
+#==============================================================================
+# STIGMAN_EXPERIMENTAL_APPDATA
+#
+#  | Default:  "false" | Set to "true" to enable the experimental AppData
+#  import/export API endpoints and User Interface.
+#
+#  Affects: API, Client
+#==============================================================================
+# export STIGMAN_EXPERIMENTAL_APPDATA=
 
 #==============================================================================
 # STIGMAN_LOG_LEVEL
@@ -309,6 +321,18 @@
 #  Affects: API
 #==============================================================================
 # export STIGMAN_LOG_MODE=
+
+#==============================================================================
+# STIGMAN_JWT_ASSERTION_CLAIM
+#
+#  | Default: "jti" | The access token claim whose value is the OIDC provider's
+#  Assertion ID. Updates to this value trigger the API to update a User's
+#  "lastClaims" property. The claim MUST be a top-level claim and cannot be
+#  nested.
+#
+#  Affects: API
+#==============================================================================
+# export STIGMAN_JWT_ASSERTION_CLAIM=
 
 #==============================================================================
 # STIGMAN_JWT_EMAIL_CLAIM
