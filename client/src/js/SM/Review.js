@@ -416,7 +416,7 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
       if (access !== 'rw') {
         btn2.disable()
         btn2.setText('Read only')
-        btn2.setIconClass('sm-disk-icon')
+        btn2.setIconClass('sm-read-only-icon')
       }
       else if (isReviewSubmittable()) {
         btn1.show()

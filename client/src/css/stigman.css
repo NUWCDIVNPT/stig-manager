@@ -2380,6 +2380,11 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 	height: 18px;
 }
 
+.sm-read-only-icon {
+  background-size: 16px 16px;
+  background-image: url(../img/read-only.svg);
+}
+
 .sm-checklist-read, .sm-checklist-read-write {
 	float: right;
 	color: #f2f2f2;
