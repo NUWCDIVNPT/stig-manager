@@ -309,36 +309,36 @@ First Steps
 Configure Users
 --------------------------
 
-Users are not created in the STIG Manager application itself. All users must be authenticated by your Authentication Provider (Often, Keycloak) and be assigned the appropriate tokens, scopes, and roles before they can access the system. Upon first access after successful Authentication, STIGMan will create a user profile to which it assigns Collection Grants and assignments. 
+Users are not created in the STIG Manager application itself. All users must be authenticated by your Authentication Provider (often, Keycloak), which must provide the appropriate tokens, scopes, and privileges before they can access the system. Upon first access after successful Authentication, STIGMan will create a user profile to which it assigns Collection Grants and assignments. 
 
-User privileges are controlled by the Authentication Provider. This can be done by configuring and assigning Users the appropriate roles. In Keycloak, this can be done using the "Role Mappings" tab for that user, or you can set these roles as defaults using the Configure->Roles->Default Roles interface.  See the :ref:`Authentication and Identity<authentication>` section for more information. 
+User privileges are controlled by the OIDC Provider. This can be done by configuring the OIDC provider to generate tokens for Users that include their privileges and scopes in the specified claims (``STIGMAN_JWT_PRIVILEGES_CLAIM`` and ``STIGMAN_JWT_SCOPE_CLAIM``).  In most OIDC Providers, this can be done in multiple ways, depending on your use case.  One option for Keycloak is using the "Role Mappings" tab for that user, or you can set these privileges as defaults using the Configure->Roles->Default Roles interface.  See the :ref:`Authentication and Identity<authentication>` section for more information. 
 
-Assign at least one User the ``admin`` role when setting up STIG Manager for the first time. 
+Assign at least one User the ``admin`` privilege when setting up STIG Manager for the first time. 
 
-.. list-table:: STIG Manager User Types, STIG Manager Privileges, and suggested Roles: 
+.. list-table:: STIG Manager User Types, STIG Manager Privileges, and possible Keycloak Roles: 
   :widths: 20 60 20
   :header-rows: 1
   :class: tight-table
 
   * - User Type
     - Privileges
-    - Roles
+    - Keycloak Roles
   * - Administrator User
     - Access STIG Manager, Manage Collections, Import STIGs, Manage Users, Import/Export App data
     - admin, user
   * - Collection Creator User
     - Access STIG Manager, Create Collections
     - user, create_collection
-  * - Restricted User  
+  * - User
     - Access STIG Manager
     - user
 
 .. note::
    All Users must be explicitly granted access to Collections in order to see the Assets, STIGs, and Evaluations contained therein. Administrators can grant themselves or others access to any Collection. 
 
-It is recommended that most users should be "Collection Creator Users"(ie. assigned the "user" and "create_collection" roles). A Restricted User will only have access to grants they have been assigned by other users. Collection Creator Users can create and manage their own collections, as well as be assigned grants from other users.
+It is recommended that most users should be "Collection Creator Users"(ie. assigned the "create_collection" privilege).  Collection Creator Users can create and manage their own collections, as well as be assigned grants from other users.
 
-STIG Manager will automatically create its own user associations for Collection grants once an authenticated user accesses the system. The roles Admin and Collection Creator are visible in the User Grants administrative tab, but must be managed in the Authentication Provider. Specific Grants to Collections and Assets/STIGs are managed in the STIG Manager app.
+STIG Manager will automatically create its own user associations for Collection grants once an authenticated user accesses the system. User Privileges (ie. "admin" and/or "create_collection") are visible in the User administrative tab, but must be managed in the Authentication Provider. Specific Grants to Collections and Assets/STIGs are managed in the STIG Manager app.
 
 
 Import STIGs

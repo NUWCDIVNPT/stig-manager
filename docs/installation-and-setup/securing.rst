@@ -8,7 +8,7 @@ Securing and Assessing STIG Manager Deployments
   You must secure and assess your deployments in compliance with your individual or organizational security requirements. The discussions below are educational. Encouragement to do things a particular way does not constitute advice that overrides your specific requirements.
 
 
-The STIG Manager application can be orchestrated several ways, each with unique security requirements. We know many deployments must comply with the Application Security and Development STIG - commonly known as the ASD. Therefore we have organized this section around ASD requirements, to provide guidance for those tasked with securing and assessing STIG-compliant STIG Manager deployments.
+The STIG Manager application can be orchestrated several ways, each with unique security requirements and goals. We know many deployments must comply with the Application Security and Development STIG - commonly known as the ASD. Therefore we have organized this section around ASD requirements, to provide guidance for those tasked with securing and assessing STIG-compliant STIG Manager deployments.
 
 .. note::
   The ASD assesses many application components, and application governance, using a single checklist of 286 checks (as of V5R1).  Unfortunately, the current ASD provides limited guidance if you're using modern security technologies such as Single Sign On, OpenID Connect, OAuth2 authorization, and containerization. If you are required to complete an ASD assessment, we encourage focusing on the spirit of the checklist until it is updated or re-imagined.
@@ -26,12 +26,12 @@ We strongly encourage STIG Manager deployments to be containerized. Containeriza
 .. note::
   If you are subject to ASD-compliance you are likely subject to other DoD requirements. We encourage an in-depth familiarity with the `Container Image Creation and Deployment Guide <https://dl.dod.cyber.mil/wp-content/uploads/devsecops/pdf/DevSecOps_Enterprise_Container_Image_Creation_and_Deployment_Guide_2.6-Public-Release.pdf>`_ from DISA. The STIG Manager Project adheres to DISA image creation guidance when defining and building container images, and we encourage STIG Manager deployments to follow the container deployment guidance.
 
-Image Choice
-~~~~~~~~~~~~
+Image Choices
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-Many deployments might directly orchestrate `one of our published images <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_. For most ASD-compliant deployments, you should deploy one of our Iron Bank based images. Those images follow the naming convention ``nuwcdivnpt/stig-manager:[SEMANTIC-VERSION]-ironbank``. Example: ``nuwcdivnpt/stig-manager:1.0.40-ironbank``. Our Iron Bank-based images are built from the Iron Bank Node.js image, a hardened image that is based on the Iron Bank Universal Base Image (UBI). The UBI is a hardened Red Hat image that has been configured in accordance with applicable DoD requirements.
+Many deployments might directly orchestrate `one of our images published on Docker Hub <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_. For most ASD-compliant deployments, you may want to deploy one of our `images offered on Iron Bank. <https://ironbank.dso.mil/repomap/details;registry1Path=opensource%252Fstig-manager%252Fstig-manager?page=1&sort=0&order=1&cardsPerPage=3>`_  Our Iron Bank images are built from the Iron Bank Nodejs-slim images, hardened images with reduced surface area that are based on the Iron Bank Alpine Linux Image.  To use Iron Bank Images, you will need an account at https://ironbank.dso.mil/.
 
-Some deployments might prefer a custom container image of STIG Manager created by `modifying the Dockerfile from our repo <https://github.com/NUWCDIVNPT/stig-manager/blob/main/Dockerfile>`_ or basing their custom image on one of our published images. In these cases, we strongly encourage use of the relevant Iron Bank base images. To build from the actual Iron Bank Node.js or UBI image, you will need an account at https://ironbank.dso.mil/.
+Some deployments might prefer a custom container image of STIG Manager created by `modifying the Dockerfile from our repo <https://github.com/NUWCDIVNPT/stig-manager/blob/main/Dockerfile>`_ or basing their custom image on one of our published images. In these cases, we strongly encourage use of the relevant Iron Bank base images. 
 
 If you need to understand how a container image was built, we encourage familiarity with the `docker history` command.
 
@@ -39,14 +39,14 @@ If you need to understand how a container image was built, we encourage familiar
 Vulnerability Scanning
 ~~~~~~~~~~~~~~~~~~~~~~
 
-We encourage all deployments to perform vulnerability scanning of our published container images. The Project scans our published images with anchore and proprietary Amazon Web Service and Azure tools. We do not currently publish those results but efforts are being considered to make them available.
+We encourage all deployments to perform vulnerability scanning of our published container images and source code. The Project makes use of automated tools such as GitHub Dependabot, Docker Scout, and Iron Bank scan reports to respond to any vulnerability issues.  Iron Bank makes their scan result artifacts `available on the STIG Manager page on Iron Bank. <https://ironbank.dso.mil/repomap/details;registry1Path=opensource%252Fstig-manager%252Fstig-manager?page=1&sort=0&order=1&cardsPerPage=3>`_
 
 Organizations should consider deploying their own container registry with embedded image scanning. Choices include the open-source Harbor registry with built-in Clair testing, and cloud-based offerings from Amazon, Azure and Google.
 
 Validating Image Signatures
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Project signs each image we publish to Docker Hub using Docker Content Trust (DCT).
+The Project signs each image we publish to Docker Hub using Docker Content Trust (DCT). Images on Iron Bank are `automatically signed by that platform. <https://docs-ironbank.dso.mil/tutorials/cosign/>`_ 
 
 .. note::
   For secure DCT image verification, you should understand trust-pinning. The default "Trust On First Use" (TOFU) behavior of the docker CE client may not be appropriate for your security requirements. Our `root.json <https://github.com/NUWCDIVNPT/stig-manager/blob/main/root.json>`_ file will be helpful if you wish to pin trust on our signing key.
@@ -79,7 +79,7 @@ Discretionary Access Control (DAC) and Role Based Access Control (RBAC)
 
 The API grants or denies access to STIG Manager data objects (Collections, Assets, Asset/STIG maps, and Reviews) based on the the OAuth2 ``username`` claim (or configured equivalent). The username value indexes into the internal STIG Manager DAC system which includes per-Collection RBAC lists (i.e, Collection Grants and Restricted User Access Lists).
 
-Correct implementation of the STIG Manager data flow, especially the DAC and RBAC logic, is verified by an `automated workflow <https://github.com/NUWCDIVNPT/stig-manager/blob/main/.github/workflows/api-tests.yml>`_ that is performed when any change to the codebase is proposed (a Pull Request or PR). Over 2000 assertions are evaluated using `tests you can review here. <https://github.com/NUWCDIVNPT/stig-manager/tree/main/test/api>`_ These tests are run against every commit to the release branch to evaluate all features of the API and actively try to cross defined access boundaries to test our DAC and RBAC implementations. 
+Correct implementation of the STIG Manager data flow, especially the DAC and RBAC logic, is verified by an `automated workflow <https://github.com/NUWCDIVNPT/stig-manager/blob/main/.github/workflows/>`_ that is performed when any change to the codebase is proposed (a Pull Request or PR). Over 2000 assertions are evaluated using `tests you can review here. <https://github.com/NUWCDIVNPT/stig-manager/tree/main/test/api>`_ These tests are run against every commit to the release branch to evaluate all features of the API and actively try to cross defined access boundaries to test our DAC and RBAC implementations. 
 
 OpenID Connect (OIDC) and OAuth2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -127,7 +127,6 @@ Security Updates, Advisories, and Policies
 ---------------------------------------------
 
 The ASD requires application deployment representatives to be aware of application updates, advisories, processes, and policies.  The project's Security Policy and Security Advisories can be found on the `Security page of our GitHub site. <https://github.com/NUWCDIVNPT/stig-manager/security>`_  We encourage you to acquaint yourself with our published Security Policy, subscribe for notifications of new releases, and report any vulnerabilities you may find on your own in a responsible way. 
-
 
 
 Assessing Your Deployment
