@@ -8,7 +8,8 @@ let _this = this
 /**
 Generalized queries for asset(s).
 **/
-exports.queryAssets = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) {
+exports.queryAssets = async function ({projections = [], filter = {}, grant = {}}) {
+  const ctes = []
   const columns = [
     'CAST(a.assetId as char) as assetId',
     'a.name',
@@ -36,116 +37,58 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
   const joins = [
     'asset a',
     'left join collection c on a.collectionId = c.collectionId',
-    'left join collection_grant cg on c.collectionId = cg.collectionId',
-    'left join stig_asset_map sa on a.assetId = sa.assetId',
-    'left join user_stig_asset_map usa on sa.saId = usa.saId'
+    'left join stig_asset_map sa on a.assetId = sa.assetId'
   ]
-
-  // PROJECTIONS
-  if (inProjection.includes('statusStats')) {
-    columns.push(`(select json_object(
-      'stigCount', COUNT(saStatusStats.benchmarkId),
-      'ruleCount', SUM(rStatusStats.ruleCount),
-      'acceptedCount', SUM(saStatusStats.accepted),
-      'rejectedCount', SUM(saStatusStats.rejected),
-      'submittedCount', SUM(saStatusStats.submitted),
-      'savedCount', SUM(saStatusStats.saved),
-      'minTs', DATE_FORMAT(LEAST(MIN(saStatusStats.minTs), MIN(saStatusStats.maxTs)),'%Y-%m-%dT%H:%i:%sZ'),
-      'maxTs', DATE_FORMAT(GREATEST(MAX(saStatusStats.minTs), MAX(saStatusStats.maxTs)),'%Y-%m-%dT%H:%i:%sZ')
-      )
-      from
-		    stig_asset_map saStatusStats
-        left join asset aStatusStats using (assetId)
-        left join default_rev drStatusStats on (saStatusStats.benchmarkId = drStatusStats.benchmarkId and aStatusStats.collectionId = drStatusStats.collectionId)
-        left join revision rStatusStats on drStatusStats.revId = rStatusStats.revId
-	    where
-        FIND_IN_SET(saStatusStats.saId, GROUP_CONCAT(sa.saId))
-      ) as "statusStats"`)
-  }
-  if (inProjection.includes('stigGrants')) {
-    columns.push(`(select
-      CASE WHEN COUNT(byStig.stigAssetUsers) > 0 THEN json_arrayagg(byStig.stigAssetUsers) ELSE json_array() END
-    from
-      (select
-        json_object('benchmarkId', r.benchmarkId, 'users',
-        -- empty array on null handling 
-        case when count(r.users) > 0 then json_arrayagg(r.users) else json_array() end ) as stigAssetUsers
-      from
-      (select
-        sa.benchmarkId,
-        -- if no user, return null instead of object with null property values
-        case when ud.userId is not null then
-          json_object(
-            'userId', CAST(ud.userId as char), 
-            'username', ud.username
-          ) 
-        else NULL end as users
-        FROM 
-          stig_asset_map sa
-          left join user_stig_asset_map usa on sa.saId = usa.saId
-          left join user_data ud on usa.userId = ud.userId
-        WHERE
-        sa.assetId = a.assetId) as r
-      group by r.benchmarkId) as byStig) as "stigGrants"`)
-  }
-  if ( inProjection.includes('reviewers')) {
-    // This projection is only available for endpoint /stigs/{benchmarkId}/assets
-    // Subquery relies on predicate :benchmarkId being set
-    columns.push(`(select
-        case when count(u.userId > 0) then json_arrayagg(
-        -- if no user, return null instead of object with null property values
-        case when u.userId is not null then json_object('userId', CAST(u.userId as char), 'username', u.username) else NULL end) 
-        else json_array() end as reviewers
-      FROM 
-        stig_asset_map sa
-        left join user_stig_asset_map usa on sa.saId = usa.saId
-        left join user u on usa.userId = u.userId
-      WHERE
-        sa.assetId = a.assetId and sa.benchmarkId = :benchmarkId) as "reviewers"`)
-  }
-  if (inProjection.includes('stigs')) {
-    //TODO: If benchmarkId is a predicate in main query, this incorrectly only shows that STIG
-    joins.push('left join default_rev dr on (sa.benchmarkId=dr.benchmarkId and a.collectionId = dr.collectionId)')
-    joins.push('left join revision on dr.revId = revision.revId')
-    columns.push(`cast(
-      concat('[', 
-        coalesce (
-          group_concat(distinct 
-            case when sa.benchmarkId is not null then 
-              json_object(
-                'benchmarkId', sa.benchmarkId, 
-                'revisionStr', revision.revisionStr, 
-                'benchmarkDate', date_format(revision.benchmarkDateSql,'%Y-%m-%d'),
-                'revisionPinned', CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END, 
-                'ruleCount', revision.ruleCount)
-            else null end 
-          order by sa.benchmarkId),
-          ''),
-      ']')
-    as json) as "stigs"`)
-
-    // joins.push('left join current_rev cr on sa.benchmarkId=cr.benchmarkId')
-    // joins.push('left join stig st on cr.benchmarkId=st.benchmarkId')
-    // columns.push(`cast(
-    //   concat('[', 
-    //     coalesce (
-    //       group_concat(distinct 
-    //         case when cr.benchmarkId is not null then 
-    //           json_object(
-    //             'benchmarkId', cr.benchmarkId, 
-    //             'lastRevisionStr', concat('V', cr.version, 'R', cr.release), 
-    //             'lastRevisionDate', date_format(cr.benchmarkDateSql,'%Y-%m-%d'),
-    //             'title', st.title,
-    //             'ruleCount', cr.ruleCount,
-    //             'revisionStrs', (select json_arrayagg(concat('V', rev2.version, 'R', rev2.release)) from revision rev2 where rev2.benchmarkId = cr.benchmarkId ))
-    //         else null end 
-    //   order by cr.benchmarkId),
-    //       ''),
-    //   ']')
-    // as json) as "stigs"`)
+  if (grant.roleId === 1) {
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
+    joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
   }
 
-  // PREDICATES
+    // PROJECTIONS
+    if (projections.includes('statusStats')) {
+      columns.push(`(select json_object(
+        'stigCount', COUNT(saStatusStats.benchmarkId),
+        'ruleCount', SUM(rStatusStats.ruleCount),
+        'acceptedCount', SUM(saStatusStats.accepted),
+        'rejectedCount', SUM(saStatusStats.rejected),
+        'submittedCount', SUM(saStatusStats.submitted),
+        'savedCount', SUM(saStatusStats.saved),
+        'minTs', DATE_FORMAT(LEAST(MIN(saStatusStats.minTs), MIN(saStatusStats.maxTs)),'%Y-%m-%dT%H:%i:%sZ'),
+        'maxTs', DATE_FORMAT(GREATEST(MAX(saStatusStats.minTs), MAX(saStatusStats.maxTs)),'%Y-%m-%dT%H:%i:%sZ')
+        )
+        from
+          stig_asset_map saStatusStats
+          left join asset aStatusStats using (assetId)
+          left join default_rev drStatusStats on (saStatusStats.benchmarkId = drStatusStats.benchmarkId and aStatusStats.collectionId = drStatusStats.collectionId)
+          left join revision rStatusStats on drStatusStats.revId = rStatusStats.revId
+        where
+          FIND_IN_SET(saStatusStats.saId, GROUP_CONCAT(sa.saId))
+        ) as "statusStats"`)
+    }
+
+    if (projections.includes('stigs')) {
+      //iterate: If benchmarkId is a predicate in main query, this incorrectly only shows that STIG
+      joins.push('left join default_rev dr on (sa.benchmarkId=dr.benchmarkId and a.collectionId = dr.collectionId)')
+      joins.push('left join revision on dr.revId = revision.revId')
+      columns.push(`cast(
+        concat('[', 
+          coalesce (
+            group_concat(distinct 
+              case when sa.benchmarkId is not null then 
+                json_object(
+                  'benchmarkId', sa.benchmarkId, 
+                  'revisionStr', revision.revisionStr, 
+                  'benchmarkDate', date_format(revision.benchmarkDateSql,'%Y-%m-%d'),
+                  'revisionPinned', CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END, 
+                  'ruleCount', revision.ruleCount)
+              else null end 
+            order by sa.benchmarkId),
+            ''),
+        ']')
+      as json) as "stigs"`)
+    }
+
+      // PREDICATES
   const predicates = {
     statements: [
       `a.state = "enabled"`,
@@ -153,161 +96,77 @@ exports.queryAssets = async function (inProjection = [], inPredicates = {}, elev
     ],
     binds: []
   }
-  if (inPredicates.assetId) {
+  if (filter.assetId) {
     predicates.statements.push('a.assetId = ?')
-    predicates.binds.push(inPredicates.assetId)
+    predicates.binds.push(filter.assetId)
   }
-  if (inPredicates.labels?.labelNames || inPredicates.labels?.labelIds || inPredicates.labels?.labelMatch) {
+  if (filter.labels?.labelNames || filter.labels?.labelIds || filter.labels?.labelMatch) {
     joins.push(
       'left join collection_label_asset_map cla2 on a.assetId = cla2.assetId',
       'left join collection_label cl2 on cla2.clId = cl2.clId'
     )
     const labelPredicates = []
-    if (inPredicates.labels.labelIds) {
+    if (filter.labels.labelIds) {
       labelPredicates.push('cl2.uuid IN ?')
-      const uuidBinds = inPredicates.labels.labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+      const uuidBinds = filter.labels.labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
       predicates.binds.push([uuidBinds])
     }
-    if (inPredicates.labels.labelNames) {
+    if (filter.labels.labelNames) {
       labelPredicates.push('cl2.name IN ?')
-      predicates.binds.push([inPredicates.labels.labelNames])
+      predicates.binds.push([filter.labels.labelNames])
     }
-    if (inPredicates.labels.labelMatch === 'null') {
+    if (filter.labels.labelMatch === 'null') {
       labelPredicates.push('cl2.uuid IS NULL')
     }
     const labelPredicatesClause = `(${labelPredicates.join(' OR ')})`
     predicates.statements.push(labelPredicatesClause)
   }
-  if ( inPredicates.name ) {
+  if ( filter.name ) {
     let matchStr = '= ?'
-    if ( inPredicates.nameMatch && inPredicates.nameMatch !== 'exact') {
+    if ( filter.nameMatch && filter.nameMatch !== 'exact') {
       matchStr = 'LIKE ?'
-      switch (inPredicates.nameMatch) {
+      switch (filter.nameMatch) {
         case 'startsWith':
-          inPredicates.name = `${inPredicates.name}%`
+          filter.name = `${filter.name}%`
           break
         case 'endsWith':
-          inPredicates.name = `%${inPredicates.name}`
+          filter.name = `%${filter.name}`
           break
         case 'contains':
-          inPredicates.name = `%${inPredicates.name}%`
+          filter.name = `%${filter.name}%`
           break
       }
     }
     predicates.statements.push(`a.name ${matchStr}`)
-    predicates.binds.push(inPredicates.name)
+    predicates.binds.push(filter.name)
   }
-  if (inPredicates.collectionId) {
+  if (filter.collectionId) {
     predicates.statements.push('a.collectionId = ?')
-    predicates.binds.push(inPredicates.collectionId)
+    predicates.binds.push(filter.collectionId)
   }
-  if (inPredicates.benchmarkId) {
+  if (filter.benchmarkId) {
     predicates.statements.push('sa.benchmarkId = ?')
-    predicates.binds.push(inPredicates.benchmarkId)
+    predicates.binds.push(filter.benchmarkId)
   }
-  if ( inPredicates.metadata ) {
-    for (const pair of inPredicates.metadata) {
+  if (filter.metadata ) {
+    for (const pair of filter.metadata) {
       const [key, value] = pair.split(/:(.*)/s)
       predicates.statements.push('JSON_CONTAINS(a.metadata, ?, ?)')
       predicates.binds.push( JSON.stringify(value), `$.${key}`)
     }
   }
-  predicates.statements.push('cg.userId = ?')
-  predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END')
-  predicates.binds.push(userObject.userId)
 
   const groupBy = [
     'a.assetId'
   ]
   const orderBy = []
 
-  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
-  let [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  const sql = dbUtils.makeQueryString({ctes, columns, joins, predicates, groupBy, orderBy, format: true})
+  let [rows] = await dbUtils.pool.query(sql)
   return (rows)
 }
 
-exports.queryStigsByAsset = async function (inPredicates = {}, elevate = false, userObject) {
-  const columns = [
-    'distinct sa.benchmarkId', 
-    `concat('V', rev.version, 'R', rev.release) as revisionStr`, 
-    `date_format(rev.benchmarkDateSql,'%Y-%m-%d') as revisionDate`,
-    'rev.ruleCount as ruleCount'
-  ]
-  const joins = [
-    'asset a',
-    'left join collection c on a.collectionId = c.collectionId',
-    'left join collection_grant cg on c.collectionId = cg.collectionId',
-    'left join stig_asset_map sa on a.assetId = sa.assetId',
-    'left join user_stig_asset_map usa on sa.saId = usa.saId',
-    'inner join default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)',
-    'left join revision rev on dr.revId = rev.revId'
-  ]
-  // PREDICATES
-  const predicates = {
-    statements: [],
-    binds: []
-  }
-  if (inPredicates.assetId) {
-    predicates.statements.push('a.assetId = ?')
-    predicates.binds.push( inPredicates.assetId )
-  }
-  if (inPredicates.benchmarkId) {
-    predicates.statements.push('sa.benchmarkId = ?')
-    predicates.binds.push( inPredicates.benchmarkId )
-  }
-  predicates.statements.push('cg.userId = ?')
-  predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END')
-  predicates.binds.push( userObject.userId )
-  const orderBy = ['sa.benchmarkId']
-
-  // CONSTRUCT MAIN QUERY
-  const sql = dbUtils.makeQueryString({columns, joins, predicates, orderBy})
-
-  let [rows] = await dbUtils.pool.query(sql, predicates.binds)
-  return (rows)
-}
-
-exports.queryUsersByAssetStig = async function (inPredicates = {}, elevate = false, userObject) {
-  const columns = [
-    'CAST(ud.userId as char) as userId',
-    'ud.username'
-  ]
-  const joins = [
-    'asset a',
-    'inner join collection c on a.collectionId = c.collectionId',
-    'inner join collection_grant cg on c.collectionId = cg.collectionId',
-    'inner join stig_asset_map sa on a.assetId = sa.assetId',
-    'inner join user_stig_asset_map usa on sa.saId = usa.saId',
-    'inner join user_data ud on usa.userId = ud.userId',
-  ]
-  // PREDICATES
-  const predicates = {
-    statements: [],
-    binds: []
-  }
-  if (inPredicates.assetId) {
-    predicates.statements.push('a.assetId = ?')
-    predicates.binds.push( inPredicates.assetId )
-  }
-  if (inPredicates.benchmarkId) {
-    predicates.statements.push('sa.benchmarkId = ?')
-    predicates.binds.push( inPredicates.benchmarkId )
-  }
-  if (inPredicates.userId) {
-    predicates.statements.push('usa.userId = ?')
-    predicates.binds.push( inPredicates.userId )
-  }
-  predicates.statements.push('cg.userId = ?')
-  predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END')
-  predicates.binds.push( userObject.userId )
-  const orderBy = ['ud.userId']
-
-  const sql = dbUtils.makeQueryString({columns, joins, predicates, orderBy})
-  let [rows] = await dbUtils.pool.query(sql, predicates.binds)
-  return (rows)
-}
-
-exports.addOrUpdateAsset = async function ( {writeAction, assetId, body, projection, currentCollectionId, transferring, userObject, svcStatus = {}} ) {
+exports.addOrUpdateAsset = async function ( {writeAction, assetId, body, currentCollectionId, transferring, svcStatus = {}} ) {
   let connection
   try {
     // CREATE: assetId will be null
@@ -358,10 +217,10 @@ exports.addOrUpdateAsset = async function ( {writeAction, assetId, body, project
                 assetId = ?`
           await connection.query(sqlUpdate, [assetFields, assetId])
           if (transferring) {
-            let sqlDeleteRestrictedUsers = 
-              `DELETE user_stig_asset_map FROM user_stig_asset_map INNER JOIN stig_asset_map USING (saId) WHERE stig_asset_map.assetId = ?`
-            await connection.query(sqlDeleteRestrictedUsers, [assetId])
-            
+            await connection.query(
+              `DELETE FROM collection_grant_acl WHERE assetId = ?`,
+              [assetId]
+            )  
             const sqlGetAssetLabels = `SELECT name, description, color FROM collection_label_asset_map inner join collection_label using (clId) WHERE assetId = ?`
             const [assetLabels] = await connection.query(sqlGetAssetLabels, [assetId])
             
@@ -389,7 +248,7 @@ exports.addOrUpdateAsset = async function ( {writeAction, assetId, body, project
         }
       }
       else {
-        throw('Invalid writeAction')
+        return
       }
   
       // Process stigs, spec requires for CREATE/REPLACE not for UPDATE
@@ -460,6 +319,7 @@ exports.addOrUpdateAsset = async function ( {writeAction, assetId, body, project
       await connection.commit()
     }
     await dbUtils.retryOnDeadlock(transaction, svcStatus)
+    return assetId
   }
   catch (err) {
     if (typeof connection !== 'undefined') {
@@ -472,18 +332,9 @@ exports.addOrUpdateAsset = async function ( {writeAction, assetId, body, project
       await connection.release()
     }
   }
-
-  // Fetch the new or updated Asset for the response
-  try {
-    let row = await _this.getAsset(assetId, projection, false, userObject)
-    return row
-  }
-  catch (err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }  
 }
 
-exports.queryChecklist = async function (inProjection, inPredicates, elevate, userObject) {
+exports.queryChecklist = async function (inPredicates) {
   let connection
   try {
     const columns = [
@@ -553,96 +404,7 @@ exports.queryChecklist = async function (inProjection, inPredicates, elevate, us
   }
 }
 
-exports.queryStigAssets = async function (inProjection = [], inPredicates = {}, elevate = false, userObject) {
-  const columns = [
-    'DISTINCT CAST(a.assetId as char) as assetId',
-    'a.name',
-    `coalesce(
-      (select
-        json_arrayagg(BIN_TO_UUID(cl.uuid,1))
-      from
-        collection_label_asset_map cla
-        left join collection_label cl on cla.clId = cl.clId
-      where
-        cla.assetId = a.assetId),
-      json_array()
-    ) as assetLabelIds`,
-    'CAST(a.collectionId as char) as collectionId'
-  ]
-  const joins = [
-    'collection c',
-    'left join collection_grant cg on c.collectionId = cg.collectionId',
-    'inner join asset a on c.collectionId = a.collectionId',
-    'left join stig_asset_map sa on a.assetId = sa.assetId',
-    'left join user_stig_asset_map usa on sa.saId = usa.saId'
-  ]
-  // PROJECTIONS
-  if (inProjection.includes('restrictedUserAccess')) {
-    joins.push('left join user_data ud on usa.userId = ud.userId')
-    columns.push(`cast(
-      concat('[', 
-        coalesce (
-          group_concat(distinct 
-            case when ud.userId is not null then 
-              json_object(
-                'userId', cast(ud.userId as char), 
-                'username', ud.username)
-            else null end 
-          order by ud.username),
-          ''),
-      ']')
-    as json) as "restrictedUserAccess"`)
-  }
-  // PREDICATES
-  const predicates = {
-    statements: [
-      'a.state = "enabled"'
-    ],
-    binds: []
-  }
-  if (inPredicates.collectionId) {
-    // Mandatory by OpenAPI spec
-    predicates.statements.push('c.collectionId = ?')
-    predicates.binds.push( inPredicates.collectionId )
-  }
-  if (inPredicates.benchmarkId) {
-    // Mandatory by OpenAPI spec
-    predicates.statements.push('sa.benchmarkId = ?')
-    predicates.binds.push( inPredicates.benchmarkId )
-  }
-  if (inPredicates.labels?.labelNames || inPredicates.labels?.labelIds || inPredicates.labels?.labelMatch) {
-    joins.push(
-      'left join collection_label_asset_map cla2 on a.assetId = cla2.assetId',
-      'left join collection_label cl2 on cla2.clId = cl2.clId'
-    )
-    const labelPredicates = []
-    if (inPredicates.labels.labelIds) {
-      labelPredicates.push('cl2.uuid IN ?')
-      const uuidBinds = inPredicates.labels.labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
-      predicates.binds.push([uuidBinds])
-    }
-    if (inPredicates.labels.labelNames) {
-      labelPredicates.push('cl2.name IN ?')
-      predicates.binds.push([inPredicates.labels.labelNames])
-    }
-    if (inPredicates.labels.labelMatch === 'null') {
-      labelPredicates.push('cl2.uuid IS NULL')
-    }
-    const labelPredicatesClause = `(${labelPredicates.join(' OR ')})`
-    predicates.statements.push(labelPredicatesClause)
-  }
-  predicates.statements.push('cg.userId = ?')
-  predicates.statements.push('CASE WHEN cg.accessLevel = 1 THEN usa.userId = cg.userId ELSE TRUE END')
-  predicates.binds.push( userObject.userId )
-  const groupBy = [ 'a.assetId', 'a.name', 'a.collectionId' ]
-  const orderBy = [ 'a.name' ]
-
-  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})  
-  let [rows] = await dbUtils.pool.query(sql, predicates.binds)
-  return (rows)
-}
-
-exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs, elevate, userObject) {
+exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
   let connection
   try {
     let revisionStrResolved // Will hold specific revision string value, as opposed to "latest" 
@@ -888,7 +650,6 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
   let connection
   try {
     let revisionStrResolved // Will hold specific revision string value, as opposed to "latest"
-    const createdAt = new Date().toISOString()
     const cklb = {
       title: '',
       id: uuid.v1(),
@@ -1110,7 +871,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
   }
 }
 
-exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr = 'latest', includeCheckContent = true) {
+exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr = 'latest') {
     // queries and query methods
   const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from asset where assetId = ?"
   const sqlGetChecklist =`SELECT 
@@ -1178,15 +939,14 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
       where
         r.revId = ?`  
 
-    let result, revId
+    let result
     if (revisionStr === 'latest') {
       ;[result] = await connection.query(sqlGetRevision, [benchmarkId])
-      revId = result[0].revId
       revisionStrResolved = `V${result[0].version}R${result[0].release}`
     }
     else {
       const {version, release} = dbUtils.parseRevisionStr(revisionStr)
-      revId = `${benchmarkId}-${version}-${release}`
+      const revId = `${benchmarkId}-${version}-${release}`
       ;[result] = await connection.query(sqlGetRevision, [revId])
       revisionStrResolved = revisionStr
     }
@@ -1218,9 +978,8 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
         })  
       }
     }
-    const re = /^urn:/
     for (const key in metadata) {
-      if (re.test(key)) {
+      if (key.startsWith('urn:')) {
         fact.push({
           '@_name': key,
           '@_type': 'string',
@@ -1322,30 +1081,29 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
   return ({assetName: resultGetAsset[0].name, xmlJs, revisionStrResolved: revision.revisionStr})
 }
 
-exports.createAsset = async function({body, projection, elevate, userObject, svcStatus = {}}) {
+exports.createAsset = async function({body, svcStatus = {}}) {
   return _this.addOrUpdateAsset({
     writeAction: dbUtils.WRITE_ACTION.CREATE,
-    body, projection, elevate, userObject, svcStatus
+    body,
+    svcStatus
   })
 }
 
-exports.deleteAsset = async function(assetId, projection, elevate, userObject, svcStatus = {}) {
-
+exports.deleteAsset = async function(assetId, userId, svcStatus) {
   let connection
   try {
     connection = await dbUtils.pool.getConnection()
     async function transaction () {
       await connection.query('START TRANSACTION')
       const sqlDelete = `UPDATE asset SET state = "disabled", stateDate = NOW(), stateUserId = ? where assetId = ?`
-      await connection.query(sqlDelete, [userObject.userId, assetId])
+      await connection.query(sqlDelete, [userId, assetId])
       // changes above might have affected need for records in collection_rev_map
       await dbUtils.pruneCollectionRevMap(connection)
       await dbUtils.updateDefaultRev(connection, {})
       await connection.commit()
     }
-    const rows = await _this.queryAssets(projection, {assetId: assetId}, elevate, userObject)
     await dbUtils.retryOnDeadlock(transaction, svcStatus)
-    return (rows[0])
+    return true
   }
   catch (err) {
     if (typeof connection !== 'undefined') {
@@ -1360,15 +1118,14 @@ exports.deleteAsset = async function(assetId, projection, elevate, userObject, s
   }
 }
 
-exports.deleteAssets = async function(assetIds, userObject, svcStatus = {}) {
-
+exports.deleteAssets = async function(assetIds, userId, svcStatus) {
   let connection
   try{
     connection = await dbUtils.pool.getConnection()
     async function transaction () {
       await connection.query('START TRANSACTION')
       const sqlDelete = `UPDATE asset SET state = "disabled", stateDate = NOW(), stateUserId = ? where assetId IN ?`
-      await connection.query(sqlDelete, [userObject.userId, [assetIds]])
+      await connection.query(sqlDelete, [userId, [assetIds]])
       // changes above might have affected need for records in collection_rev_map 
       await dbUtils.pruneCollectionRevMap(connection)
       await dbUtils.updateDefaultRev(connection, {})
@@ -1389,8 +1146,7 @@ exports.deleteAssets = async function(assetIds, userObject, svcStatus = {}) {
   }
 }
 
-exports.attachStigToAsset = async function( {assetId, benchmarkId, collectionId, elevate, userObject, svcStatus = {}} ) {
-
+exports.attachStigToAsset = async function ({assetId, benchmarkId, grant, svcStatus = {}}) {
   let connection
   try {
     connection = await dbUtils.pool.getConnection()
@@ -1401,29 +1157,25 @@ exports.attachStigToAsset = async function( {assetId, benchmarkId, collectionId,
       if (resultInsert[0].affectedRows != 0) {
         // Inserted a new row, so update stats and default rev
         await dbUtils.updateDefaultRev(connection, {
-          collectionId: collectionId,
-          benchmarkId: benchmarkId
+          collectionId: grant.collectionId,
+          benchmarkId
         })        
         await dbUtils.updateStatsAssetStig(connection, {
-          assetId: assetId,
-          benchmarkId: benchmarkId
+          assetId,
+          benchmarkId
         })
 
       }   
       await connection.commit()  
     }
     await dbUtils.retryOnDeadlock(transaction, svcStatus)
-    //Transaction complete, now get the updated stig_asset_map rows
-    const rows = await _this.queryStigsByAsset( {
-      assetId: assetId
-    }, elevate, userObject)
-    return (rows)          
+    return true        
   }
   catch (err) {
     if (typeof connection !== 'undefined') {
       await connection.rollback()
     }
-    throw ( {status: 500, message: err.message, stack: err.stack} )
+    throw (err)
   }
   finally {
     if (typeof connection !== 'undefined') {
@@ -1432,8 +1184,7 @@ exports.attachStigToAsset = async function( {assetId, benchmarkId, collectionId,
   }
 }
 
-exports.removeStigFromAsset = async function (assetId, benchmarkId, elevate, userObject, svcStatus = {}) {
-  
+exports.removeStigFromAsset = async function ({assetId, benchmarkId, grant, svcStatus} ) {
   let connection
   try{
     connection = await dbUtils.pool.getConnection()
@@ -1442,15 +1193,12 @@ exports.removeStigFromAsset = async function (assetId, benchmarkId, elevate, use
       const sqlDelete = `DELETE FROM stig_asset_map where assetId = ? and benchmarkId = ?`
       await connection.query(sqlDelete, [assetId, benchmarkId])
       // changes above might have affected need for records in collection_rev_map
-      const rows = await _this.queryStigsByAsset( {
-        assetId: assetId
-      }, elevate, userObject)
       await dbUtils.pruneCollectionRevMap(connection)
       await dbUtils.updateDefaultRev(connection, {})
       await connection.commit()
-      return (rows)
+      return true
     }
-    return await dbUtils.retryOnDeadlock(transaction, svcStatus)
+    return dbUtils.retryOnDeadlock(transaction, svcStatus)
   }
   catch (err) {
     if (typeof connection !== 'undefined') {
@@ -1465,8 +1213,7 @@ exports.removeStigFromAsset = async function (assetId, benchmarkId, elevate, use
   }
 }
 
-exports.removeStigsFromAsset = async function (assetId, elevate, userObject, svcStatus = {}) {
-
+exports.removeStigsFromAsset = async function (assetId, grant, svcStatus) {
   let connection
 
   try{
@@ -1478,11 +1225,11 @@ exports.removeStigsFromAsset = async function (assetId, elevate, userObject, svc
       
       // changes above might have affected need for records in collection_rev_map
       await dbUtils.pruneCollectionRevMap(connection)
-      await dbUtils.updateDefaultRev(connection, {})
+      await dbUtils.updateDefaultRev(connection, {collectionId: grant.collectionId})
       await connection.commit()
     }
     await dbUtils.retryOnDeadlock(transaction, svcStatus)
-    return await _this.queryStigsByAsset( {assetId: assetId}, elevate, userObject)
+    return true
   }
   catch (err) {
     if (typeof connection !== 'undefined') {
@@ -1497,86 +1244,179 @@ exports.removeStigsFromAsset = async function (assetId, elevate, userObject, svc
   }
 }
 
-exports.deleteAssetStigGrant = async function (assetId, benchmarkId, userId, elevate, userObject ) {
-  // TODO
-}
-
-exports.getAsset = async function(assetId, projection, elevate, userObject) {
-  const rows = await _this.queryAssets(projection, {
-    assetId: assetId
-  }, elevate, userObject)
+exports.getAsset = async function({assetId, projections, grant}) {
+  const rows = await _this.queryAssets({
+    projections, 
+    filter: {assetId},
+    grant})
   return (rows[0])
 }
 
-exports.getAssets = async function(collectionId, labels, name, nameMatch, benchmarkId, metadata, projection, elevate, userObject) {
-  const rows = await _this.queryAssets(projection, {
-    collectionId,
-    labels,
-    name,
-    nameMatch,
-    benchmarkId,
-    metadata
-  }, elevate, userObject)
+exports.getAssets = async function({filter, projections, grant}) {
+ return _this.queryAssets({
+    filter,
+    projections,
+    grant
+  })
+}
+
+exports.getStigsByAssetSlow = async function ({assetId, grant}) {
+  const ctes = []
+  const columns = [
+    'distinct sa.benchmarkId', 
+    `concat('V', rev.version, 'R', rev.release) as revisionStr`, 
+    `date_format(rev.benchmarkDateSql,'%Y-%m-%d') as revisionDate`,
+    'rev.ruleCount as ruleCount'
+  ]
+  const joins = [
+    'asset a',
+    'left join collection c on a.collectionId = c.collectionId',
+    'inner join stig_asset_map sa on a.assetId = sa.assetId',
+    'left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)',
+    'left join revision rev on dr.revId = rev.revId'
+  ]
+  if (grant.roleId === 1) {
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
+    joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
+  }
+
+  // PREDICATES
+  const predicates = {
+    statements: ['a.assetId = ?'],
+    binds: [assetId]
+  }
+  const orderBy = ['sa.benchmarkId']
+
+  const sql = dbUtils.makeQueryString({ctes, columns, joins, predicates, orderBy, format: true})
+  let [rows] = await dbUtils.pool.query(sql)
   return (rows)
 }
 
-exports.getStigsByAsset = async function (assetId, elevate, userObject ) {
-  const rows = await _this.queryStigsByAsset({
-    assetId: assetId
-  }, elevate, userObject)
+exports.getStigsByAsset = async function ({assetId, grant}) {
+  const ctes = []
+  const columns = [
+    'distinct sa.benchmarkId', 
+    `concat('V', rev.version, 'R', rev.release) as revisionStr`, 
+    `date_format(rev.benchmarkDateSql,'%Y-%m-%d') as revisionDate`,
+    'rev.ruleCount as ruleCount'
+  ]
+  const joins = [
+    'asset a',
+    'left join collection c on a.collectionId = c.collectionId',
+    'inner join stig_asset_map sa on a.assetId = sa.assetId',
+    'left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)',
+    'left join revision rev on dr.revId = rev.revId'
+  ]
+  if (grant.roleId === 1) {
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
+    joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
+  }
+
+  // PREDICATES
+  const predicates = {
+    statements: ['a.assetId = ?'],
+    binds: [assetId]
+  }
+  const orderBy = ['sa.benchmarkId']
+
+  const sql = dbUtils.makeQueryString({ctes, columns, joins, predicates, orderBy, format: true})
+  let [rows] = await dbUtils.pool.query(sql)
   return (rows)
 }
 
-exports.getUsersByAssetStig = async function (assetId, benchmarkId, elevate, userObject ) {
-  const rows = await _this.queryUsersByAssetStig({
-    assetId: assetId,
-    benchmarkId: benchmarkId
-  }, elevate, userObject)
-  return (rows)
-}
-
-exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionStr, format, elevate, userObject) {
+exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionStr, format) {
   switch (format) {
     case 'json':
-      const rows = await _this.queryChecklist(null, {
-        assetId: assetId,
-        benchmarkId: benchmarkId,
-        revisionStr: revisionStr
-      }, elevate, userObject)
-      return (rows)
-    case 'ckl':
-      const cklObject = await _this.cklFromAssetStigs(assetId, [{benchmarkId, revisionStr}], elevate, userObject)
-      return (cklObject)
+    case 'json-access': {
+      return _this.queryChecklist({
+        assetId,
+        benchmarkId,
+        revisionStr
+      })
+    }
+    case 'ckl': 
+      return _this.cklFromAssetStigs(assetId, [{benchmarkId, revisionStr}])
     case 'cklb':
-      const cklbObject = await _this.cklbFromAssetStigs(assetId, [{benchmarkId, revisionStr}], elevate, userObject)
-      return (cklbObject)
+      return _this.cklbFromAssetStigs(assetId, [{benchmarkId, revisionStr}])
     case 'xccdf':
-      const xccdfObject = await _this.xccdfFromAssetStig(assetId, benchmarkId, revisionStr)
-      return (xccdfObject)
+      return _this.xccdfFromAssetStig(assetId, benchmarkId, revisionStr)
   }
 }
 
-exports.getChecklistByAsset = async function(assetId, benchmarks, format, elevate, userObject) {
+exports.getChecklistByAsset = async function(assetId, benchmarks, format) {
   switch (format) {
     case 'ckl':
-      let cklObject = await _this.cklFromAssetStigs(assetId, benchmarks, elevate, userObject)
-      return (cklObject)
+      return _this.cklFromAssetStigs(assetId, benchmarks)
     case 'cklb':
-      let cklbObject = await _this.cklbFromAssetStigs(assetId, benchmarks, elevate, userObject)
-      return (cklbObject)
+      return _this.cklbFromAssetStigs(assetId, benchmarks)
     }
 }
 
-exports.getAssetsByStig = async function( collectionId, benchmarkId, labels, projection, elevate, userObject) {
-  const rows = await _this.queryStigAssets(projection, {
-    collectionId,
-    benchmarkId,
-    labels
-  }, elevate, userObject)
+exports.getAssetsByStig = async function({collectionId, benchmarkId, labels, grant}) {
+  const ctes = []
+  const columns = [
+    'DISTINCT CAST(a.assetId as char) as assetId',
+    'a.name',
+    'coalesce(any_value(cae.access), "rw") as access',
+    `coalesce(
+      (select
+        json_arrayagg(BIN_TO_UUID(cl.uuid,1))
+      from
+        collection_label_asset_map cla
+        left join collection_label cl on cla.clId = cl.clId
+      where
+        cla.assetId = a.assetId),
+      json_array()
+    ) as assetLabelIds`,
+    'CAST(a.collectionId as char) as collectionId'
+  ]
+  const joins = [
+    'collection c',
+    'inner join asset a on c.collectionId = a.collectionId',
+    'left join stig_asset_map sa on a.assetId = sa.assetId',
+  ]
+  ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
+  joins.push(`${grant.roleId === 1 ? 'inner' : 'left'} join cteAclEffective cae on sa.saId = cae.saId`)
+
+  // PREDICATES
+  const predicates = {
+    statements: [
+      'a.state = "enabled"',
+      'c.collectionId = ?',
+      'sa.benchmarkId = ?'
+    ],
+    binds: [collectionId, benchmarkId]
+  }
+  if (labels?.labelNames || labels?.labelIds || labels?.labelMatch) {
+    joins.push(
+      'left join collection_label_asset_map cla2 on a.assetId = cla2.assetId',
+      'left join collection_label cl2 on cla2.clId = cl2.clId'
+    )
+    const labelPredicates = []
+    if (labels.labelIds) {
+      labelPredicates.push('cl2.uuid IN ?')
+      const uuidBinds = labels.labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+      predicates.binds.push([uuidBinds])
+    }
+    if (labels.labelNames) {
+      labelPredicates.push('cl2.name IN ?')
+      predicates.binds.push([labels.labelNames])
+    }
+    if (labels.labelMatch === 'null') {
+      labelPredicates.push('cl2.uuid IS NULL')
+    }
+    const labelPredicatesClause = `(${labelPredicates.join(' OR ')})`
+    predicates.statements.push(labelPredicatesClause)
+  }
+  const groupBy = ['a.assetId']
+  const orderBy = [ 'a.name' ]
+
+  const sql = dbUtils.makeQueryString({ctes, columns, joins, predicates, groupBy, orderBy, format: true})  
+  const [rows] = await dbUtils.pool.query(sql)
   return (rows)
 }
 
-exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds, projection, elevate, userObject, svcStatus = {}) {
+exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds, svcStatus = {}) {
   let connection
   try {
     connection = await dbUtils.pool.getConnection()
@@ -1643,10 +1483,10 @@ exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds,
   }
 }
 
-exports.updateAsset = async function( {assetId, body, projection, currentCollectionId, transferring, userObject, svcStatus = {}} ) {
+exports.updateAsset = async function( {assetId, body, currentCollectionId, transferring, svcStatus = {}} ) {
   return _this.addOrUpdateAsset({
     writeAction: dbUtils.WRITE_ACTION.UPDATE,
-    assetId, body, projection, currentCollectionId, transferring, userObject, svcStatus
+    assetId, body, currentCollectionId, transferring, svcStatus
   })
 }
 

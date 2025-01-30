@@ -61,7 +61,7 @@ User Properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Double-click on a User, or select a user and click the "Modify User..." button to view that User's Grants and other information. 
-The pop-up will list the User's email address and other Info, as well a list of all the Collections that User has a grant to. The "Last Claims" box displays the OIDC access token information received the last time the User accessed the application. 
+The pop-up will list the User's email address and other Info, as well as the User's Group Membership and Grants. The Direct Grants tab lists the Grants that have been specifically applied to the User, and the "Effective Grants" panel includes Collection Grants for Groups the User is a member of. The "Last Claims" tab displays the OIDC access token information received the last time the User accessed the application. 
 
 .. thumbnail:: /assets/images/admin-user-properties.png
       :width: 50% 
@@ -70,8 +70,31 @@ The pop-up will list the User's email address and other Info, as well a list of 
 
 |
 
+User Groups Admin Panel
+---------------------------------
 
-------------------------------
+This Panel lists the groups created in the STIGMan system. The columns display the Group Name, Description, Creation Date, the number of Users in the group, and the number of Collections the group has access to.
+
+Only Application Managers can create or modify Groups and their User membership. Once a Group is created, it becomes available to all Collection Owners and Managers to be assigned Grants in their Collections. 
+
+
+.. thumbnail:: /assets/images/admin-user-groups.png
+      :width: 50% 
+      :show_caption: True
+      :title: User Groups Administration
+      
+
+Groups can be created, deleted, and modified with the buttons at the top of the panel. Users can be added to or removed from groups by double-clicking on the group, or selecting a group and clicking the "Modify Group..." button.
+
+Change the Users in the group by selecting the User and clicking the arrow buttons to move them between the "Available Users" and "Group Members" lists. Once Group Members is populated with the desired Users, click the "Save" button to save the changes.
+
+
+.. thumbnail:: /assets/images/admin-user-groups-popup.png
+      :width: 50% 
+      :show_caption: True
+      :title: User Group Popup Window
+
+
 
 STIG Benchmarks Admin Panel
 -----------------------------------------
@@ -113,6 +136,7 @@ The report displays the data source, date, and STIG Manager version at the top. 
   - **Requests**: Information regarding the requests made to each API endpoint, organized by operationId. This data includes the count of requests, max duration, average duration, response length, error counts, and other useful metrics.  Endpoints with ``projection`` parameters will populate the "Projections" panel with a subset of these metrics. This report also indicates users and clients that made the requests, as well as counts of any error code responses.
   - **Collections**: High level metrics about the size and state of all Collections, including "disabled" Collections and Assets, total Reviews, grants, etc. This report offers additional tabs reporting Grants, Labels, STIG Assignments, and Settings by Collection. The "Access Control Lists" panel lists users and applicable access control rules for users with limited access to the Collection, such as those with Restricted-type grants. 
   - **Users**: A report of all users of the system, their privileges, grants, and last active date.  This report also includes panels summarizing overall user counts by privilege, and by last activity date (last 30/90 days).
+  - **Groups**: A report of all User Groups in the system, their User count, grants, and creation date. 
   - **MySQL**: Information about the managed data, configuration, and status of the MySQL database. 
   - **NodeJs**: Information about the configuration of the STIGMan application, as well as status of the NodeJs server, including the version, uptime, and memory usage.
   - **JSON Tree** : A tree view of the data that is available in the report. Equivalent to the contents of the .json file that can be downloaded with the "Save" button.

@@ -473,7 +473,7 @@ SM.CollectionClone.showCollectionClone = async function ({collectionId, sourceNa
         }
       }
     })
-    fpwindow.render(document.body)
+    fpwindow.render(Ext.getBody())
     fpwindow.getTool('minimize').hide()
     fpwindow.getTool('maximize').hide()
     fpwindow.show()

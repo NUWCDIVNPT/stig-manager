@@ -372,7 +372,7 @@ SM.Library.DiffRulesGrid = Ext.extend(Ext.grid.GridPanel, {
       rightRevisionComboBox.setDisabled(disable)
     }
 
-    const stigSelectionField = new SM.StigSelectionField({
+    const stigSelectionField = new SM.Manage.Stig.SelectionComboBox({
       autoLoad: false,
       name: 'benchmarkId',
       width: 360,

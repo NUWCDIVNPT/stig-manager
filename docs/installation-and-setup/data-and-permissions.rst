@@ -16,7 +16,7 @@ Collections are composed of:
   * Assets
   * STIGs attached to those Assets
   * Reviews of the Rules that compose each attached STIG
-  * User Grants providing access to some or all of the Assets/STIGs in that Collection
+  * Grants to Usrs or Groups providing access to some or all of the Assets/STIGs in that Collection
   * Reports providing Status and Findings information
 
 Collections, Assets, and Reviews all support a JSON field called "metadata" for general use that can be used to enhance functionality and associate arbitrary data with those elements. The project is exploring best practices and uses for this feature. Clients that "play nice" with this field would be expected to preserve metadata already there unless they put it there, perhaps in a nested object with their client name as the Key.
@@ -26,7 +26,7 @@ Reference STIGs
 ---------------------------------------------
 
 STIG Manager uses a set of Reference STIGs that it makes available for assignment to Assets, tracks Rule evaluation, and against which it calculates all metrics. 
-These Reference STIGs must be imported and updated periodically as new STIGs are released or updates are made. It is responsibility of a User with the "Application Management" (or "admin") role to import these official STIGs and keep them updated. Usually, these STIGs are released by DISA on a quarterly schedule. 
+These Reference STIGs must be imported and updated periodically as new STIGs are released or updates are made. It is responsibility of a User with the "Application Management" (ie. "admin") privilege to import these official STIGs and keep them updated. Usually, these STIGs are released by DISA on a quarterly schedule. 
 
 Wherever the content of a STIG is displayed (STIG Rules, Rule Titles, Rule Descriptions, Fix Texts, Severities, etc.) this data is drawn from the Reference STIG imported by the Application Manager. It is important to note the distinction here between STIG content and "Review" content, which is usually drawn from imported .ckl files or manual results inputted into STIG Manager by Reviewers. This "Review" content only affects the "Review" or "Evaluation" portion of the data displayed in STIG Manager. They cannot change Reference STIG content via .ckl imports. 
 
@@ -156,11 +156,11 @@ Application Access, API Endpoints, Scopes, and Privilege Invocation
 
 Overall access to the STIG Manager application is controlled by the OIDC provider. 
 
-STIG Manager recognizes two "privileges" or "roles" that can be granted to users via configuration in the OIDC provider. 
+STIG Manager recognizes two "privileges" that can be granted to users via configuration in the OIDC provider. 
 
 Users with the **create_collection** privilege can create new Collections of their own, but are otherwise ordinary users. 
 
-Users with the **admin** privilege must explicitly invoke the "elevate" parameter in queries to the API to make use of their privilege. In our reference UI, this parameter is sent when certain "Application Management" functions are invoked, such as requesting a list of all Collections, or creating a new Grant in a Collection they do not otherwise have access to. 
+Users with the **admin** privilege must explicitly invoke the "elevate" parameter in queries to the API to make use of their privilege. In our reference UI, this parameter is sent when certain "Application Management" functions are invoked, such as importing new Reference STIGs, requesting a list of all Collections, or creating a new Grant in a Collection they do not otherwise have access to. 
 
 These **privileges** must be present in the token presented to the API in order to be successfully invoked. 
 
@@ -176,9 +176,9 @@ Database Entity Relationship Diagrams
 The following diagram may not always be up to date. Always refer to the implemented db structure as the authoritative source for this information. 
 
 
-.. thumbnail:: /assets/images/eer-stigman-wide.svg
+.. thumbnail:: /assets/images/eer-stigman.png
       :width: 75% 
       :show_caption: True
       :title: Entity Relationship Diagram representation of STIG Manager's MySQL data. 
 
-`View the enlarged ERD Document here. <../_images/eer-stigman-wide1.svg>`_
+`View the enlarged ERD Document here. <../_images/eer-stigman1.png>`_

@@ -19,7 +19,7 @@ jobs:
       - name: Fetch MySQL Versions
         id: fetch-versions
         run: |
-          VERSIONS=$(echo $(curl -s "https://registry.hub.docker.com/v2/repositories/library/mysql/tags/?page_size=100" | jq -r '.results[].name | select(test("^8\\.0\\.\\d+$"))' | sort -V | tail -n3 | cat <(echo "8.0.21") - | jq -Rnc '[inputs]'))
+          VERSIONS=$(echo $(curl -s "https://registry.hub.docker.com/v2/repositories/library/mysql/tags/?page_size=100" | jq -r '.results[].name | select(test("^8\\.0\\.\\d+$"))' | sort -V | tail -n3 | cat <(echo "8.0.24") - | jq -Rnc '[inputs]'))
           echo "version_array=$VERSIONS" >> $GITHUB_OUTPUT
 
   test_api:

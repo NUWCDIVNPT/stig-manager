@@ -33,35 +33,36 @@ module.exports.importBenchmark = async function importManualBenchmark (req, res,
 
 
 module.exports.deleteRevisionByString = async function deleteRevisionByString (req, res, next) {
-  if ( req.query.elevate ) {
+  try {
+    if (!req.query.elevate) throw new SmError.PrivilegeError()
     const benchmarkId = req.params.benchmarkId
     const revisionStr = req.params.revisionStr
     const force = req.query.force
-    try {
-      const response = await STIGService.getRevisionByString(benchmarkId, revisionStr, req.userObject, true)
-      if(response === undefined) {
-        throw new SmError.NotFoundError('No matching revisionStr found.')
-      }
-      const existingRevisions = await STIGService.getRevisionsByBenchmarkId(benchmarkId, req.userObject)
-      const stigAssigned = await STIGService.getStigById(benchmarkId, req.userObject, true)
-      if (stigAssigned.collectionIds.length && existingRevisions.length == 1 && !force) {
-        throw new SmError.UnprocessableError("The revisionStr is the last remaining revision for this benchmark, which is assigned to one or more Collections. Set force=true to force the delete")
-      }      
-      if (response.collectionIds.length && !force) {
-        throw new SmError.UnprocessableError("The revisionStr is pinned to one or more Collections. Set force=true to force the delete")
-      }
-      else {
-        await STIGService.deleteRevisionByString(benchmarkId, revisionStr, res.svcStatus)
-        res.json(response)
-      }
+      const response = await STIGService.getRevisionByString({
+      benchmarkId, 
+      revisionStr,
+      grants: req.userObject.grants,
+      elevate: req.query.elevate
+    })
+    if(response === undefined) {
+      throw new SmError.NotFoundError('No matching revisionStr found.')
     }
-    catch(err) {
-      next(err)
+    const existingRevisions = await STIGService.getRevisionsByBenchmarkId({benchmarkId, grants: req.userObject.grants})
+    const stigAssigned = await STIGService.getStigById(benchmarkId, req.userObject, true)
+    if (stigAssigned.collectionIds.length && existingRevisions.length == 1 && !force) {
+      throw new SmError.UnprocessableError("The revisionStr is the last remaining revision for this benchmark, which is assigned to one or more Collections. Set force=true to force the delete")
+    }      
+    if (response.collectionIds.length && !force) {
+      throw new SmError.UnprocessableError("The revisionStr is pinned to one or more Collections. Set force=true to force the delete")
+    }
+    else {
+      await STIGService.deleteRevisionByString(benchmarkId, revisionStr, res.svcStatus)
+      res.json(response)
     }
   }
-  else {
-    next(new SmError.PrivilegeError())
-  } 
+  catch(err) {
+    next(err)
+  }
 }
 
 module.exports.deleteStigById = async function deleteStigById (req, res, next) {
@@ -140,12 +141,17 @@ module.exports.getGroupsByRevision = async function getGroupsByRevision (req, re
 }
 
 module.exports.getRevisionByString = async function getRevisionByString (req, res, next) {
-  const benchmarkId = req.params.benchmarkId
-  const revisionStr = req.params.revisionStr
-  const elevate = req.query.elevate
   try {
-    const response = await STIGService.getRevisionByString(benchmarkId, revisionStr, req.userObject, elevate)
-    res.json(response)
+    const benchmarkId = req.params.benchmarkId
+    const revisionStr = req.params.revisionStr
+    const elevate = req.query.elevate
+    const response = await STIGService.getRevisionByString({
+      benchmarkId, 
+      revisionStr,
+      grants: req.userObject.grants,
+      elevate
+    })
+    res.status(response ? 200 : 404).json(response)
   }
   catch(err) {
     next(err)
@@ -156,7 +162,7 @@ module.exports.getRevisionsByBenchmarkId = async function getRevisionsByBenchmar
   const benchmarkId = req.params.benchmarkId
   const elevate = req.query.elevate
   try {
-    const response = await STIGService.getRevisionsByBenchmarkId(benchmarkId, req.userObject, elevate)
+    const response = await STIGService.getRevisionsByBenchmarkId({benchmarkId, grants: req.userObject.grants, elevate})
     res.json(response)
   }
   catch(err) {

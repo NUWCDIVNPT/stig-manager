@@ -32,7 +32,6 @@
 	visibility: hidden;
 	top: 0;
 	right: 0;
-	width: 18px;
 }
 .x-grid3-row-over .sm-grid-cell-with-toolbar .sm-dynamic-width {
 	margin-right: 28px;
@@ -41,12 +40,41 @@
 	visibility: visible;
 	filter: grayscale(100%) brightness(125%);
 }
-
 .x-grid3-row-over .sm-grid-cell-with-toolbar .sm-static-width:hover {
 	scale: 110%;
 	filter: brightness(100%);
 }
 
+
+.sm-grid-cell-with-toolbar-2 {
+	position: relative;
+}
+.sm-grid-cell-with-toolbar-2 .sm-dynamic-width {
+	margin-right: 0px;
+}
+.sm-grid-cell-with-toolbar-2 .sm-info {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+.sm-grid-cell-with-toolbar-2 .sm-static-width {
+	position: absolute;
+	visibility: hidden;
+	top: 0;
+	right: 0;
+}
+.x-grid3-row-over .sm-grid-cell-with-toolbar-2 .sm-dynamic-width {
+	margin-right: 58px;
+}
+.x-grid3-row-over .sm-grid-cell-with-toolbar-2 .sm-static-width .sm-grid-cell-tool img{
+	visibility: visible;
+	filter: grayscale(100%) brightness(125%);
+}
+.x-grid3-row-over .sm-grid-cell-with-toolbar-2 .sm-static-width .sm-grid-cell-tool:hover img {
+	cursor: pointer;
+	scale: 125%;
+	filter: brightness(100%);
+}
 
 .sm-metrics-no-assessments-body {
   color: #bbb;
@@ -197,6 +225,7 @@
   background-color: #eee
 }
 .sm-combo-list-icon {
+  border-width: 0px;
   padding-left: 20px;
   background-position: left
 }
@@ -340,7 +369,7 @@
 .sm-label-sprite {
   font: 600 10px/14px Open Sans,helvetica,sans-serif;
   top: 0;
-  padding: 0 5px!important;
+  padding: 0 5px;
   border-radius: 3px;
   margin-left: 3px;
   white-space: nowrap
@@ -393,7 +422,7 @@
 .x-grid3-hd-checker-on .x-grid3-hd-checker,
 .x-grid3-row-checked .x-grid3-row-checker,
 .x-grid3-row-selected .x-grid3-row-checker {
-  background-position: -24px 2px
+  background-position: -24px 2px;
 }
 .x-grid3-hd-checker {
   background-position: 1px 1px
@@ -530,7 +559,7 @@ a.x-grid3-hd-btn:hover {
   margin-left: 5px
 }
 .x-form-field-wrap.x-form-field-trigger-wrap .x-form-field.sm-review-combo-input[disabled] {
-  color: #000;
+  color: gray;
   background-color: transparent;
   cursor: auto
 }
@@ -846,7 +875,7 @@ body {
 }
 .ext-el-mask-modal {
 	background-color: rgb(0 0 0 / 50%);
-	backdrop-filter: blur(3px) grayscale();
+	backdrop-filter: blur(1px) grayscale();
 	animation: fadein 0.25s;
 	animation-fill-mode: forwards;
 	position: absolute;
@@ -968,6 +997,16 @@ textarea.x-form-field {
   background-image: none;
   border: 1px solid #c1c1c1
 }
+
+.x-form-search:read-only, .x-form-text:read-only, textarea.x-form-field:read-only {
+  border-color: hsl(0deg 0% 80.31%);
+  color: gray;
+}
+
+.x-form-text:read-only.x-trigger-noedit {
+  color: #000000
+}
+
 .x-tab-panel-footer,
 .x-tab-panel-header {
   background-color: transparent
@@ -1190,72 +1229,48 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .icon-excel {
   background: url(../img/excel-16.gif) 0 no-repeat!important
 }
-.cs-home-header-top,
+.sm-rule-header-top,
 .sm-rule-content-header-top {
   font: bold 22px Open Sans,helvetica,sans-serif
-}
-.cs-home-header-reviews {
-  background-image: url(../img/security_firewall_on_48.png);
-  background-position: left top;
-  background-repeat: no-repeat;
-  font: bold 28px Open Sans,helvetica,sans-serif;
-  padding-bottom: 40px;
-  padding-left: 56px;
-  padding-top: 8px
 }
 .cs-section-five-o-eight {
   font: 9px Open Sans,helvetica,sans-serif;
   text-decoration: underline;
   cursor: pointer
 }
-.cs-home-header-reports {
-  background-image: url(../img/windows_table_48.png);
-  background-position: left top;
-  background-repeat: no-repeat;
-  font: bold 28px Open Sans,helvetica,sans-serif;
-  padding-bottom: 40px;
-  padding-left: 56px;
-  padding-top: 8px
-}
-.cs-home-header-admin {
-  background-image: url(../img/Settings-icon-48.png);
-  background-position: left top;
-  background-repeat: no-repeat;
-  font: bold 28px Open Sans,helvetica,sans-serif;
-  padding-bottom: 40px;
-  padding-left: 56px;
-  padding-top: 8px
-}
-.cs-home-version {
+.sm-rule-version {
   padding: 10px;
   font: 10px Open Sans,helvetica,sans-serif
 }
-.cs-home-header-sub {
+.sm-rule-header-sub {
   padding: 20px;
   font: bold 14px Open Sans,helvetica,sans-serif
 }
-.cs-home-body-title {
+.sm-rule-body {
   padding: 10px 20px;
-  font: bold 14px Open Sans,helvetica,sans-serif;
-  background-color: #eee;
+  background-color: #ddd;
   border-radius: 6px;
+  margin-bottom: 6px;
+}
+.sm-rule-body-title {
+  font: bold 14px Open Sans,helvetica,sans-serif;
   color: #36c
 }
-.cs-home-body-text {
+.sm-rule-body-text {
   padding: 10px 20px;
   font: 11px Open Sans,helvetica,sans-serif;
   color: #000;
   word-wrap: break-word
 }
-.cs-home-body-text pre {
+.sm-rule-body-text pre {
   white-space: pre-wrap;
   font: 11px Open Sans,helvetica,sans-serif
 }
-.cs-home-body-table {
+.sm-rule-body-table {
   width: 100%;
   border-collapse: collapse
 }
-.cs-home-body-table td {
+.sm-rule-body-table td {
   padding: 2px
 }
 .sm-reviews-home-body-title {
@@ -1275,7 +1290,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .sm-reviews-home-no-tasks {
   background-color: #bbe6b8
 }
-.cs-home-body-text li {
+.sm-rule-body-text li {
   margin-top: 5px
 }
 .sm-feedback-panel-active {
@@ -1416,8 +1431,13 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .sm-department-icon {
   background-image: url(../img/department-16.png)!important
 }
-.sm-users-icon {
+.sm-user-icon {
   background-image: url(../img/user.svg)!important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px
+}
+.sm-users-icon {
+  background-image: url(../img/users.svg)!important;
   background-repeat: no-repeat;
   background-size: 16px 16px
 }
@@ -1476,6 +1496,11 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .sm-unlock-icon {
   background-image: url(../img/unlock-16.png)!important
+}
+.sm-lock-icon {
+  background-image: url(../img/lock.svg)!important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px
 }
 .sm-ready-icon {
   background-image: url(../img/ready-16.png)!important
@@ -1735,97 +1760,9 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   opacity: 1;
   background: 0 0
 }
-.cs-home-header-nessus {
-  background-image: url(../img/nessus_48.png);
-  background-position: left top;
-  background-repeat: no-repeat;
-  font: bold 28px Open Sans,helvetica,sans-serif;
-  padding-bottom: 40px;
-  padding-left: 56px;
-  padding-top: 8px
-}
-.sm-nessus-severity-4-grid-row {
-  background-color: #f9f;
-  border-color: #ddc0e6;
-  border-top: 0
-}
-.sm-nessus-severity-3-grid-row {
-  background-color: #ffcaca;
-  border-color: #e6b6b6;
-  border-top: 0
-}
-.sm-nessus-severity-2-grid-row {
-  background-color: #ffd4aa;
-  border-color: #e6bf99;
-  border-top: 0
-}
-.sm-nessus-severity-1-grid-row {
-  background-color: #b8d4ff;
-  border-color: #a6bfe6;
-  border-top: 0
-}
-.sm-nessus-severity-0-grid-row {
-  background-color: #bbf0c6;
-  border-color: #bbf0c6;
-  border-top: 0
-}
-.sm-nessus-16-icon {
-  background-image: url(../img/nessus_16.png)!important
-}
-.sm-nessus-48-icon {
-  background-image: url(../img/nessus_48.png)!important
-}
 .sm-progress-textarea {
   font-size: 8pt;
   font-family: Consolas,Courier,monospace
-}
-.cs-grid3-row-overdue {
-  background-color: #ffa0a0;
-  border-top-color: #ffa0a0
-}
-.x-grid3-row-over.cs-grid3-row-overdue {
-  background: 0 0;
-  background-color: #ffd1d1!important
-}
-.x-grid3-row-selected.cs-grid3-row-overdue {
-  background-color: #efc4cb!important;
-  border: 1px dashed #e63333
-}
-.cs-grid3-row-new-overdue {
-  background-color: plum;
-  border-top-color: plum
-}
-.x-grid3-row-over.cs-grid3-row-new-overdue {
-  background: 0 0;
-  background-color: #ebc7eb!important
-}
-.x-grid3-row-selected.cs-grid3-row-new-overdue {
-  background-color: #dec4ea!important;
-  border: 1px dashed #c256c2
-}
-.cs-grid3-row-warning {
-  background-color: #fc9;
-  border-top-color: #fc9
-}
-.x-grid3-row-over.cs-grid3-row-warning {
-  background: 0 0;
-  background-color: #ffe6cc!important
-}
-.x-grid3-row-selected.cs-grid3-row-warning {
-  background-color: #efdac8!important;
-  border: 1px dashed #ff9e3d
-}
-.cs-grid3-row-pending {
-  background-color: #7ed89b;
-  border-top-color: #7ed89b
-}
-.x-grid3-row-over.cs-grid3-row-pending {
-  background: 0 0;
-  background-color: #b4e9c5!important
-}
-.x-grid3-row-selected.cs-grid3-row-pending {
-  background-color: #cde7d7!important;
-  border: 1px dashed #2f9d52
 }
 .sm-combo-loading {
   background-image: url(../img/loading.gif);
@@ -2229,15 +2166,12 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .sm-add-assignment-icon {
   background-image: url(../img/add-assignment.svg);
-  background-size: 32px 32px;
+  background-size: 18px;
   background-repeat: no-repeat;
-}
-.x-item-disabled .sm-add-assignment-icon, .x-item-disabled .sm-remove-assignment-icon {
-  filter: grayscale(1);
 }
 .sm-remove-assignment-icon {
   background-image: url(../img/remove-assignment.svg);
-  background-size: 32px 32px;
+  background-size: 18px;
   background-repeat: no-repeat;
 }
 .x-dd-drop-nodrop .x-dd-drop-icon {
@@ -2292,7 +2226,14 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   cursor: url("../img/drag-drop-light.svg"), grabbing;
 }
 .x-item-disabled {
-	filter: saturate(0)
+	filter: saturate(0.25)
+}
+.sm-column-with-icon {
+	padding-left: 20px;
+}
+.sm-cell-with-icon {
+	padding-left: 20px;
+	line-height: 18px;
 }
 
 .sm-match-case-icon {
@@ -2402,3 +2343,55 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 	font-weight:600;
 	color: cadetblue;
 } 
+
+.sm-grid-cell-role {
+  height: 28px;
+  line-height: 28px;
+}
+.x-grid3-row-over .sm-grid-cell-with-menu {
+  background-image: url("../img/tree-elbow-minus.svg");
+  background-repeat:no-repeat;
+  background-size: 12px 12px;
+  background-position: right 3px center;
+
+}
+
+.sm-vbox-disabled .x-box-inner {
+	filter: opacity(0.25)
+}
+
+.sm-label-sprite.sm-sprite-read {
+	float: right;
+	background-color: #757c8a;
+	color: #eee;
+}
+
+.sm-label-sprite.sm-sprite-readwrite {
+	float: right;
+	background-color: #976a6e;
+	color: #eee;
+}
+
+.sm-row-readonly-icon {
+	background-size: 14px;
+	background-repeat:no-repeat;
+	background-image: url(../img/read-only.svg);
+	background-position: 0px 2px;
+	height: 18px;
+}
+
+.sm-read-only-icon {
+  background-size: 16px 16px;
+  background-image: url(../img/read-only.svg);
+}
+
+.sm-checklist-read, .sm-checklist-read-write {
+	float: right;
+	color: #f2f2f2;
+}
+.sm-checklist-read-write {
+	background-color: hsl(145.08deg 100% 23.92%);
+}
+.sm-checklist-read {
+	background-color: hsl(330 55% 24% / 1);
+}

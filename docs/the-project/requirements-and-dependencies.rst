@@ -13,7 +13,7 @@ Requirements
 Software Requirements
 ------------------------
 - Node.js LTS
-- MySql 8.0.21+
+- MySql 8.0.24+
 - OIDC Provider (Such as RedHat Keycloak 19+)
 
 

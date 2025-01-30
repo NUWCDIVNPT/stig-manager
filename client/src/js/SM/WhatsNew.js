@@ -2,6 +2,38 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2025-01-31',
+    header: `New Dynamic User Grants and User Groups Features`,
+    body: `
+    <p>The Collection Grants system has been significantly reworked to allow for more dynamic and flexible User Grant management. These new Grants also allow for restriction of Users to "Read Only" or "Read/Write" access to Collection Reviews.</p>
+    <p>In addition, Application Managers can now create User Groups. User Groups can be assigned Grants to Collections in the same manner as individual Users, to provide the same level of access to all Users in the group.</p>
+
+    <p> Access Control for these grants can be defined by creating multiple Access Control Rules with any combination of Collection, STIG, Label, or Asset properties, which will combine to granularly control a User's access to Collection Reviews.</p>
+    <p>For example, if two Access Control Rules are defined to allow a User to "Read Only" Reviews for a "Databases" label, and "Read/Write" for a the "Databases" label and the "PostgreSQL_9-x_STIG" STIG, the user will be able to view all Reviews for Assets labeled with "Databases" but will only be able to modify Reviews in the "PostgreSQL_9-x_STIG".</p>
+
+    <p>Please see the <a target="_blank" href="docs/user-guide/roles-and-access.html">STIG Manager Documentation for more details about these new Features!</a>.</p>
+
+    <p><img src="img/whatsnew/2025-01-21-collection-manage-acl-popup.png" width=750/></p>
+
+    <p><b>NOTE:</b> All existing "Restricted" Grant types have been migrated with equivalent granular Access Control Rules granting R/W access to those specific Assets and STIGs. If appropriate, you may want to remove these individual Rules and create an ACL granting R/W access to the entire Asset. This will allow the user access to new STIGs that are assigned to that Asset in the future.  </p>
+
+    `
+  },
+
+  {
+    date: '2025-01-31',
+    header: `Collection Review Workspace Changes`,
+    body: `
+    <p>The Collection Review Workspace has been reworked to give more room to Checklist statistics columns and enable future expansion. The display should now be significantly less constrained, especially when viewing extra columns that are usually hidden by default. 
+    
+    <p>Review History and Attachments features are now accessible from the History <span class="sm-whats-new-no-border"><img src="img/clock.svg" width="14" height="14"/></span> and Attachments <span class="sm-whats-new-no-border"><img src="img/attachment.svg" width="14" height="14"/></span> icons that appear when hovering over an Asset.</p>
+
+    <p><img src="img/whatsnew/2025-01-31-collection-review.png" width=750/></p>
+
+    `
+  },
+
+  {
     date: '2024-10-09',
     header: `New Application Information Report for Application Managers`,
     body: `

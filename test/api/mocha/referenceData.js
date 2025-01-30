@@ -14,6 +14,16 @@ const reference = {
   // grantCheckUserId: "85",
   // lvl1ValidStigs: ["VPN_SRG_TEST"],
   // testAssetLvl1NoAccess: "62",
+
+  // in appdata.jsonl
+  deletedCollection: {
+    collectionId: "93",
+  },
+  // in appdata.jsonl
+  deletedAsset: {
+    assetId: "247",
+  },
+
   testCollection: {
     name: "Collection X",
     collectionId: "21",
@@ -34,12 +44,54 @@ const reference = {
     lvl1LabelName: "test-label-lvl1",
     lvl1Label: "5130dc84-9a68-11ec-b1bc-0242ac110002",
     lvl1LabelAssetIds: ["42"],
+    lvl1ReadOnlyAssetId: "62",
+    lvl1ReadOnlyAssetIds: ["62", "154"],
     fullLabelName: "test-label-full",
     fullLabel: "755b8a28-9a68-11ec-b1bc-0242ac110002",
+    testGroup: {
+      userGroupId: "1",
+      name: "TestGroup",
+      description: "TestGroup",
+      users: ["lvl1"],
+      roleId: 1,
+      testCollectionGrantId: "32",
+      defaultAccess: "none",
+      acl: [
+        {
+          label: {
+            name: "test-label-lvl1",
+            color: "99CCFF",
+            labelId: "5130dc84-9a68-11ec-b1bc-0242ac110002",
+          },
+          access: "rw",
+          benchmarkId: "VPN_SRG_TEST",
+        },
+        {
+          asset: {
+            name: "Collection_X_asset",
+            assetId: "62",
+          },
+          access: "r",
+        },
+        {
+          asset: {
+            name: "Collection_X_lvl1_asset-2",
+            assetId: "154",
+          },
+          access: "r",
+          benchmarkId: "VPN_SRG_TEST",
+        },
+      ]
+    },
     labels: [
       "755b8a28-9a68-11ec-b1bc-0242ac110002",
       "5130dc84-9a68-11ec-b1bc-0242ac110002",
     ],
+    labelsMap: {
+      "test-label-full": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+      "test-label-lvl1": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+    },
+
     allMetadata: [
       {
         key: "pocEmail",
@@ -101,15 +153,8 @@ const reference = {
           username: "bizarroLvl1",
           displayName: "bizarroLvl1",
         },
-        accessLevel: 1,
-      },
-      {
-        user: {
-          userId: "85",
-          username: "lvl1",
-          displayName: "lvl1",
-        },
-        accessLevel: 1,
+        grantId: "1",
+        roleId: 1,
       },
       {
         user: {
@@ -117,7 +162,8 @@ const reference = {
           username: "lvl2",
           displayName: "lvl2",
         },
-        accessLevel: 2,
+        grantId: "3",
+        roleId: 2,
       },
       {
         user: {
@@ -125,7 +171,8 @@ const reference = {
           username: "lvl3",
           displayName: "lvl3",
         },
-        accessLevel: 3,
+        grantId: "4",
+        roleId: 3,
       },
       {
         user: {
@@ -133,7 +180,8 @@ const reference = {
           username: "admin",
           displayName: "Admin Burke",
         },
-        accessLevel: 4,
+        grantId: "5",
+        roleId: 4,
       },
       {
         user: {
@@ -141,7 +189,8 @@ const reference = {
           username: "stigmanadmin",
           displayName: "STIGMAN Admin",
         },
-        accessLevel: 4,
+        grantId: "6",
+        roleId: 4,
       },
       {
         user: {
@@ -149,24 +198,34 @@ const reference = {
           username: "lvl4",
           displayName: "lvl4",
         },
-        accessLevel: 4,
+        grantId: "7",
+        roleId: 4,
+      },
+      {
+        userGroup: {
+          name: "TestGroup",
+          description: "TestGroup",
+          userGroupId: "1",
+        },
+        grantId: "32",
+        roleId: 1,
       },
     ],
     ownersProjected: [
       {
-        email: null,
+        // email: null,
         userId: "87",
         username: "admin",
         displayName: "Admin Burke",
       },
       {
-        email: null,
+        // email: null,
         userId: "1",
         username: "stigmanadmin",
         displayName: "STIGMAN Admin",
       },
       {
-        email: null,
+        // email: null,
         userId: "45",
         username: "lvl4",
         displayName: null,
@@ -194,11 +253,11 @@ const reference = {
       checklistCount: 6,
     },
     appinfo: {
-      state: 'enabled',
+      state: "enabled",
       assets: 4,
-      assetsDisabled: 1,
+      assetsDisabled: 0,
       reviews: 17,
-      reviewsDisabled: 1
+      reviewsDisabled: 0,
     },
     labelsProjected: [
       {
@@ -214,6 +273,105 @@ const reference = {
         uses: 1,
       },
     ],
+    usersProjected: [
+      {
+        user: {
+          userId: "86",
+          username: "bizarroLvl1",
+          displayName: "bizarroLvl1",
+        },
+        grantees: [
+          {
+            userId: "86",
+            username: "bizarroLvl1",
+          },
+        ],
+        roleId: 1,
+      },
+      {
+        user: {
+          userId: "21",
+          username: "lvl2",
+          displayName: "lvl2",
+        },
+        grantees: [
+          {
+            userId: "21",
+            username: "lvl2",
+          },
+        ],
+        roleId: 2,
+      },
+      {
+        user: {
+          userId: "44",
+          username: "lvl3",
+          displayName: "lvl3",
+        },
+        grantees: [
+          {
+            userId: "44",
+            username: "lvl3",
+          },
+        ],
+        roleId: 3,
+      },
+      {
+        user: {
+          userId: "87",
+          username: "admin",
+          displayName: "Admin Burke",
+        },
+        grantees: [
+          {
+            userId: "87",
+            username: "admin",
+          },
+        ],
+        roleId: 4,
+      },
+      {
+        user: {
+          userId: "1",
+          username: "stigmanadmin",
+        },
+        grantees: [
+          {
+            userId: "1",
+            username: "stigmanadmin",
+          },
+        ],
+        roleId: 4,
+      },
+      {
+        user: {
+          userId: "45",
+          username: "lvl4",
+          displayName: "lvl4",
+        },
+        grantees: [
+          {
+            userId: "45",
+            username: "lvl4",
+          },
+        ],
+        roleId: 4,
+      },
+      {
+        user: {
+          userId: "85",
+          username: "lvl1",
+          displayName: "lvl1",
+        },
+        grantees: [
+          {
+            name: "TestGroup",
+            userGroupId: "1",
+          },
+        ],
+        roleId: 1,
+      },
+    ]
   },
   deleteCollection: {
     collectionId_adminOnly: "84",
@@ -229,7 +387,7 @@ const reference = {
 
   // Reference Asset data
 
-  testAssetLvl1NoAccess: "62",
+  testAssetLvl1NoAccess: "29",
   testAsset: {
     name: "Collection_X_lvl1_asset-1",
     assetId: "42",
@@ -238,6 +396,7 @@ const reference = {
     // benchmark: "VPN_SRG_TEST",
     validStigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST"],
     reviewCnt: 9,
+    VPN_SRG_TEST_reviewCnt: 6,
     metadataKey: "testkey",
     metadataValue: "testvalue",
     ipaddress: "1.1.1.1",
@@ -278,8 +437,7 @@ const reference = {
     metadataValue: "testvalue",
     ruleCount: 612,
     validStigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST", "RHEL_7_STIG_TEST"],
-    name: "test asset stigmanadmin"
-
+    name: "test asset stigmanadmin",
   },
   testAssetNoStigs: {
     name: "ACHERNAR_Collection_X_asset",
@@ -306,6 +464,7 @@ const reference = {
   lvl1User: {
     username: "lvl1",
     userId: "85",
+    testCollectionGrantId: "34"
   },
   stigmanadmin: {
     username: "stigmanadmin",
@@ -319,10 +478,17 @@ const reference = {
     username: "workforce-60",
     userId: "43",
   },
-
+  adminBurke: {
+    username: "admin",
+    userId: "87",
+    testCollectionGrantId: "5",
+    testCollectionrole: 4,
+  },
   scrapLvl1User: {
     userId: "86",
     username: "bizarroLvl1",
+    testCollectionGrantId
+    : "1",
   },
 
   //review data
@@ -343,7 +509,7 @@ const reference = {
   revisionStr: "V1R1",
   checklistLength: 81,
   testBenchmarkAllRevisions: ["V1R1", "V1R0"],
-  lvl1ValidStigs: ["VPN_SRG_TEST"],
+  lvl1ValidStigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST"],
   scrapBenchmark: "RHEL_7_STIG_TEST",
   testStigfile: "U_VPN_SRG_V1R1_Manual-xccdf.xml",
   windowsBenchmark: "Windows_10_STIG_TEST",
@@ -378,14 +544,12 @@ const reference = {
     id: "000015",
     status: "draft",
   },
-  // stigmanadmin: {
-  //   username: 'stigmanadmin',
-  //   userId: '1'
-  // },
+  stigmanadmin: {
+    username: 'stigmanadmin',
+    userId: '1'
+  },
   // reviewMetadataKey: 'testkey',
   // reviewMetadataValue: 'testvalue',
+}
 
-
-};
-
-module.exports = reference;
+export default reference

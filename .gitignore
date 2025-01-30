@@ -28,9 +28,12 @@ api/source/tls/mysql/init-tls-user.sql
 api/source/tls/mysql/tls.cnf
 api/source/tls/mysql2/init-tls-user.sql
 api/source/tls/mysql2/tls.cnf
+api/source/api-log.json
+api/source/response-validation-errors.json
 clients/extjs/js/keycloak.json
 .gitignore
 mochawesome-report/
+coverage/
 /docs/_build/doctrees/
 
 # macOS file

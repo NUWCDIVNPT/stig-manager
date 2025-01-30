@@ -1,4 +1,4 @@
-module.exports.ACCESS_LEVEL = { 
+module.exports.ROLES = { 
     'Restricted': 1,
     'Full': 2,
     'Manage': 3,

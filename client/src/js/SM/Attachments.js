@@ -219,7 +219,7 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
       style: 'width: 95px;',
       buttonText: `Attach image...`,
       buttonCfg: {
-          icon: "img/attach-16.png"
+          icon: "img/attachment.svg"
       },
       listeners: {
           fileselected: onFileSelected
@@ -232,7 +232,7 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
       layout: 'fit',
       cls: 'custom-artifacts',
       hideHeaders: true,
-      border: false,
+      border: this.border || false,
       store: store,
       columns: columns,
       stripeRows: true,

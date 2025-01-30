@@ -207,12 +207,10 @@ SM.Findings.ParentGrid = Ext.extend(Ext.grid.GridPanel, {
 					text: 'STIG:  '
 				},
 				' ', ' ', ' ',
-				{
-					xtype: 'sm-stig-selection-field',
+				new SM.Manage.Stig.SelectionComboBox({
 					url: `${STIGMAN.Env.apiBase}/collections/${this.panel.collectionId}/stigs`,
 					autoLoad: true,
 					includeAllItem: this.stigAllValue,
-					// root: 'stigs',
 					width: 250,
 					triggerAction: 'all',
 					allowBlank: true,
@@ -225,7 +223,7 @@ SM.Findings.ParentGrid = Ext.extend(Ext.grid.GridPanel, {
 							me.fireEvent('stigchanged', me.stigValue)
 						}
 					}
-				}
+				})
 			]
 		})
 		const generatePoamBtn = new Ext.Button({
@@ -490,7 +488,7 @@ SM.Findings.ChildGrid = Ext.extend(Ext.grid.GridPanel, {
 					}
 					labels.sort((a, b) => a.name.localeCompare(b.name))
 					metadata.attr = 'style="white-space:normal;"'
-					return SM.Collection.LabelArrayTpl.apply(labels)
+					return SM.Manage.Collection.LabelArrayTpl.apply(labels)
 				}
 			},
 			{

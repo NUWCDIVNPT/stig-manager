@@ -147,7 +147,7 @@ SM.RenderResult = {
 }
 
 SM.RuleContentTpl = new Ext.XTemplate(
-    '<div class=cs-home-header-top>{ruleId}',
+    '<div class=sm-rule-header-top>{ruleId}',
       '<span class="sm-content-sprite sm-severity-{severity}">',
         `<tpl if="severity == 'high'">CAT 1</tpl>`,
         `<tpl if="severity == 'medium'">CAT 2</tpl>`,
@@ -155,43 +155,46 @@ SM.RuleContentTpl = new Ext.XTemplate(
       '</span>',
       '<div class="sm-content-stigid">{version}</div>',
     '</div>',
-    '<div class=cs-home-header-sub>{[SM.he(values.title)]}</div>',
-    '<div class=cs-home-body-title>Manual Check',
-    '<div class=cs-home-body-text>',
-      '<pre>{[SM.he(values.check?.content?.trim())]}</pre>',
+    '<div class=sm-rule-header-sub>{[SM.he(values.title)]}</div>',
+    '<div class=sm-rule-body>',
+        '<div class=sm-rule-body-title>Manual Check',
+            '<div class=sm-rule-body-text>',
+            '<pre>{[SM.he(values.check?.content?.trim())]}</pre>',
+            '</div>',
+        '</div>',
+        '<div class=sm-rule-body-title>Fix',
+            '<div class=sm-rule-body-text>',
+            '<pre>{[SM.he(values.fix?.text?.trim())]}</pre>',
+            '</div>',
+        '</div>',
     '</div>',
-    '</div>',
-    '<div class=cs-home-body-title>Fix',
-    '<div class=cs-home-body-text>',
-    '<pre>{[SM.he(values.fix?.text?.trim())]}</pre>',
-    '</div>',
-    '</div>',
-    '<div class=cs-home-header-sub></div>',
-    '<div class=cs-home-body-title>Other Data',
-    '<tpl if="values.detail.vulnDiscussion">',
-      '<div class=cs-home-body-text><b>Vulnerability Discussion</b><br><br>',
-      '<pre>{[SM.he(values.detail.vulnDiscussion?.trim())]}</pre>',
-      '</div>',
-    '</tpl>',
-    '<tpl if="values.detail.documentable">',
-    	'<div class=cs-home-body-text><b>Documentable: </b>{[SM.he(values.detail.documentable)]}</div>',
-		'</tpl>',
-    '<tpl if="values.detail.responsibility">',
-      '<div class=cs-home-body-text><b>Responsibility: </b>{[SM.he(values.detail.responsibility)]}</div>',
-    '</tpl>',
-    '<tpl if="values.ccis.length === 0">',
-      '<div class=cs-home-body-text><b>Controls: </b>No mapped controls</div>',
-    '</tpl>',
-    '<tpl if="values.ccis.length !== 0">',
-      '<div class=cs-home-body-text><b>Controls: </b><br>',
-      '<table class=cs-home-body-table border="1">',
-      '<tr><td><b>CCI</b></td><td><b>AP Acronym</b></td><td><b>Control</b></td></tr>',
-      '<tpl for="ccis">',
-      '<tr><td>{cci}</td><td>{[SM.he(values.apAcronym)]}</td><td>{[SM.he(values.control)]}</td></tr>',
-      '</tpl>',
-      '</table>',
-      '</div>',
-    '</tpl>',
+    '<div class=sm-rule-body>',
+        '<div class=sm-rule-body-title>Other Data',
+        '<tpl if="values.detail.vulnDiscussion">',
+            '<div class=sm-rule-body-text><b>Vulnerability Discussion</b><br><br>',
+            '<pre>{[SM.he(values.detail.vulnDiscussion?.trim())]}</pre>',
+            '</div>',
+        '</tpl>',
+        '<tpl if="values.detail.documentable">',
+            '<div class=sm-rule-body-text><b>Documentable: </b>{[SM.he(values.detail.documentable)]}</div>',
+            '</tpl>',
+        '<tpl if="values.detail.responsibility">',
+            '<div class=sm-rule-body-text><b>Responsibility: </b>{[SM.he(values.detail.responsibility)]}</div>',
+        '</tpl>',
+        '<tpl if="values.ccis.length === 0">',
+            '<div class=sm-rule-body-text><b>Controls: </b>No mapped controls</div>',
+        '</tpl>',
+        '<tpl if="values.ccis.length !== 0">',
+            '<div class=sm-rule-body-text><b>Controls: </b><br>',
+            '<table class=sm-rule-body-table border="1">',
+            '<tr><td><b>CCI</b></td><td><b>AP Acronym</b></td><td><b>Control</b></td></tr>',
+            '<tpl for="ccis">',
+                '<tr><td>{cci}</td><td>{[SM.he(values.apAcronym)]}</td><td>{[SM.he(values.control)]}</td></tr>',
+            '</tpl>',
+            '</table>',
+            '</div>',
+        '</tpl>',
+        '</div>',
     '</div>'
   )
 
@@ -383,6 +386,14 @@ SM.RuleContentTpl = new Ext.XTemplate(
 
   }
 
+  SM.getContrastYIQ = function (hexcolor){
+	const r = parseInt(hexcolor.substr(0,2),16);
+	const g = parseInt(hexcolor.substr(2,2),16);
+	const b = parseInt(hexcolor.substr(4,2),16);
+	const yiq = ((r*299)+(g*587)+(b*114))/1000;
+	return (yiq >= 128) ? '#080808' : '#f7f7f7';
+}
+
   SM.Global.HelperComboBox = Ext.extend(Ext.form.ComboBox, {
     initComponent: function () {
         const config = {
@@ -565,37 +576,129 @@ SM.Global.filenameEscaped = function (value) {
     .replace(osReserved, (match) => osReserveReplace[match])
     .replace(controlChars, (match) => `&#x${match.charCodeAt(0).toString().padStart(2,'0')};`)
     .substring(0, 255)
-  }
+}
 
-  SM.Klona = function klona(val) {
+SM.Klona = function klona(val) {
     // MIT License
     // Copyright (c) Luke Edwards <luke.edwards05@gmail.com> (lukeed.com)
     // https://github.com/lukeed/klona
 
     let k, out, tmp
 
-	if (Array.isArray(val)) {
-		out = Array(k=val.length)
-		while (k--) out[k] = (tmp=val[k]) && typeof tmp === 'object' ? klona(tmp) : tmp
-		return out
-	}
+    if (Array.isArray(val)) {
+        out = Array(k = val.length)
+        while (k--) out[k] = (tmp = val[k]) && typeof tmp === 'object' ? klona(tmp) : tmp
+        return out
+    }
 
-	if (Object.prototype.toString.call(val) === '[object Object]') {
-		out = {} // null
-		for (k in val) {
-			if (k === '__proto__') {
-				Object.defineProperty(out, k, {
-					value: klona(val[k]),
-					configurable: true,
-					enumerable: true,
-					writable: true,
-				})
-			} else {
-				out[k] = (tmp=val[k]) && typeof tmp === 'object' ? klona(tmp) : tmp
-			}
-		}
-		return out
-	}
+    if (Object.prototype.toString.call(val) === '[object Object]') {
+        out = {} // null
+        for (k in val) {
+            if (k === '__proto__') {
+                Object.defineProperty(out, k, {
+                    value: klona(val[k]),
+                    configurable: true,
+                    enumerable: true,
+                    writable: true,
+                })
+            } else {
+                out[k] = (tmp = val[k]) && typeof tmp === 'object' ? klona(tmp) : tmp
+            }
+        }
+        return out
+    }
 
-	return val
-  }
+    return val
+}
+
+SM.RoleStrings = [
+    'Undefined',
+    'Restricted',
+    'Full',
+    'Manage',
+    'Owner'
+]
+
+SM.RoleComboBox = Ext.extend(Ext.form.ComboBox, {
+    initComponent: function () {
+        // const _this = this
+        this.includeOwnerRole = !!this.includeOwnerRole
+        const config = {
+            displayField: 'display',
+            valueField: 'value',
+            triggerAction: 'all',
+            mode: 'local',
+            editable: false,
+            // validator: (v) => {
+            //     // Don't keep the form from validating when I'm not active
+            //     // if (_this.grid.editor.editing == false) {
+            //     //     return true
+            //     // }
+            //     if (v === "") { return "Blank values not allowed" }
+            // }
+        }
+
+        const data = [
+            [1, SM.RoleStrings[1]],
+            [2, SM.RoleStrings[2]],
+            [3, SM.RoleStrings[3]]
+        ]
+        if (this.includeOwnerRole) {
+            data.push([4, SM.RoleStrings[4]])
+        }
+        this.store = new Ext.data.SimpleStore({
+            fields: ['value', 'display'],
+            data
+        })
+        // this.store.on('load', function (store) {
+        //     _this.setValue(store.getAt(0).get('value'))
+        // })
+
+        Ext.apply(this, Ext.apply(this.initialConfig, config))
+        this.superclass().initComponent.call(this)
+
+        // this.store.loadData(data)
+    }
+})
+
+// SM.TreeNodeRadioUI = Ext.extend(Ext.tree.TreeNodeUI, {
+//     renderElements : function(n, a, targetNode, bulkRender){
+//         // add some indent caching, this helps performance when rendering a large tree
+//         this.indentMarkup = n.parentNode ? n.parentNode.ui.getChildIndent() : '';
+
+//         let cb = Ext.isBoolean(a.checked),
+//             nel,
+//             href = this.getHref(a.href),
+//             buf = ['<li class="x-tree-node"><div ext:tree-node-id="',n.id,'" class="x-tree-node-el x-tree-node-leaf x-unselectable ', a.cls,'" unselectable="on">',
+//             '<span class="x-tree-node-indent">',this.indentMarkup,"</span>",
+//             '<img alt="" src="', this.emptyIcon, '" class="x-tree-ec-icon x-tree-elbow" />',
+//             cb ? ('<input class="x-tree-node-cb" type="radio" name="rg" ' + (a.checked ? 'checked="checked" />' : '/>')) : '',
+//             '<img alt="" src="', a.icon || this.emptyIcon, '" class="x-tree-node-icon',(a.icon ? " x-tree-node-inline-icon" : ""),(a.iconCls ? " "+a.iconCls : ""),'" unselectable="on" />',
+//             '<a hidefocus="on" class="x-tree-node-anchor" tabIndex="1" ',
+//              a.hrefTarget ? ' target="'+a.hrefTarget+'"' : "", '><span unselectable="on">',n.text,"</span></a></div>",
+//             '<ul class="x-tree-node-ct" style="display:none;"></ul>',
+//             "</li>"].join('');
+
+//         if(bulkRender !== true && n.nextSibling && (nel = n.nextSibling.ui.getEl())){
+//             this.wrap = Ext.DomHelper.insertHtml("beforeBegin", nel, buf);
+//         }else{
+//             this.wrap = Ext.DomHelper.insertHtml("beforeEnd", targetNode, buf);
+//         }
+
+//         this.elNode = this.wrap.childNodes[0];
+//         this.ctNode = this.wrap.childNodes[1];
+//         let cs = this.elNode.childNodes;
+//         this.indentNode = cs[0];
+//         this.ecNode = cs[1];
+//         this.iconNode = cs[3];
+//         let index = 3;
+//         if(cb){
+//             this.checkbox = cs[2];
+//             // fix for IE6
+//             this.checkbox.defaultChecked = this.checkbox.checked;
+//             index++;
+//         }
+//         this.anchor = cs[index];
+//         this.textNode = cs[index].firstChild;
+//     }, 
+// })

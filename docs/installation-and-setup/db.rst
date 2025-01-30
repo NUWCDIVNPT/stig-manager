@@ -17,11 +17,11 @@ The STIG Manager API requires a dedicated MySQL database (equivalent to a schema
 .. _mySQL:
 
 
-Database - MySQL 8.0.21+
+Database - MySQL 8.0.24+
 -----------------------------
 
-The STIG Manager API is tested with the latest 3 minor versions of the MySQL 8.0.x series, and 8.0.21.
-While STIG Manager will bootstrap when provided with an 8.0.21+ MySQL database, it is strongly recommended you use the latest version of MySQL 8.0.x available.
+The STIG Manager API is tested with the latest 3 minor versions of the MySQL 8.0.x series, and 8.0.24.
+While STIG Manager will bootstrap when provided with an 8.0.24+ MySQL database, it is strongly recommended you use the latest version of MySQL 8.0.x available.
 
 The API requires knowledge of 1) the DB address/port, 2) which schema (database) is used for STIG Manager, and 3) User credentials with necessary privileges on that schema. `More information about MySQL. <https://dev.mysql.com/doc/>`_
 
@@ -40,7 +40,7 @@ Example commands to prepare MySQL for initial API execution:
 
 .. note::
    Important DB configuration options:
-    - ``innodb_buffer_pool_size`` -  set to at least 1GB (1073741824) unless planning to manage a deployment with a very small amount of Assets and Reviews, and 8GB (8589934592) or more for larger deployments (>10,000 Assets).
+    - ``innodb_buffer_pool_size`` -  set to at least 4GB (4294967296) unless planning to manage a deployment with a very small amount of Assets and Reviews, and 8GB (8589934592) or more for larger deployments (>10,000 Assets).
     - ``sort_buffer_size`` - set to at least 8M (8388608), and perhaps up to 16M (Increasing the sort_buffer_size from the default of 256k may only be required if you have very large detail/comment text fields).
 
 

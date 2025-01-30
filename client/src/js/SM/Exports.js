@@ -461,7 +461,7 @@ SM.Exports.showExportTree = async function (collectionId, collectionName, treeba
     // const maxExportToCollection = STIGMAN.apiDefinition.paths['/collections/{collectionId}/export-to/{dstCollectionId}'].post.requestBody.content['application/json'].schema.maxItems
     const {minItems, maxItems} = STIGMAN.apiDefinition.paths['/collections/{collectionId}/export-to/{dstCollectionId}'].post.requestBody.content['application/json'].schema
     const dstCollectionData = curUser.collectionGrants
-    .filter(grant => grant.accessLevel >= 3 && grant.collection.collectionId != collectionId)
+    .filter(grant => grant.roleId >= 3 && grant.collection.collectionId != collectionId)
     .map(grant => [grant.collection.name, grant.collection.collectionId])
     
     const initialState = getInitialOptions(dstCollectionData)
@@ -665,7 +665,7 @@ SM.Exports.showExportTree = async function (collectionId, collectionName, treeba
       ]
     })
     fpwindow.render(Ext.getBody())
-    fpwindow.show(document.body)
+    fpwindow.show(Ext.getBody())
 
     // functions
     function getInitialOptions (dstCollectionData) {

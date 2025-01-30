@@ -93,7 +93,7 @@ Alternatively, you could situate your OIDC Provider and the Client server behind
 Service Account Client Setup
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you are using a service account to connect to the STIGMan API, the ``STIGMAN_JWT_SERVICENAME_CLAIM`` Environment Variable must specify the claim that will hold the client ID. The default is ``clientId``. There may be other Keycloak configuration required. 
+If you are using a service account to connect to the STIGMan API, the ``STIGMAN_JWT_SERVICENAME_CLAIM`` Environment Variable must specify the claim that will hold the client ID. The default is ``clientId``. There may be other OIDC Provider configuration required. 
 
 
 .. _oidc-scopes:
@@ -114,21 +114,21 @@ If your OIDC Provider requires the STIG Manager Web App to request additional sc
 
 .. _keycloak:
 
-Authentication Example - RedHat Keycloak 19+
+Authentication Example - RedHat Keycloak 19
 -------------------------------------------------------
 
 .. note::
-  The information provided below is just one way to configure Keycloak to provide a JWT that will work with STIG Manager. Please make sure you configure Keycloak in accordance with your organization's Security Policy.
+  The Keycloak project updates frequently, and may introduce changes that will make this guide incompatible with later versions. The information provided below is just one way to configure Keycloak 19 to provide a JWT that will work with STIG Manager. Please make sure you configure Keycloak in accordance with your organization's Security Policy.
 
-The web client is an OpenID Connect (OIDC) OAuth2 Relying Party and the API is an OAuth2 Resource Server. User authentication is provided by an external Identity Provider (IdP). All API access is controlled by OAUth2 JSON Web Tokens (JWTs) issued by the IdP. User roles are extracted from token claims, endpoint access is controlled by token scope. 
+The web client is an OpenID Connect (OIDC) OAuth2 Relying Party and the API is an OAuth2 Resource Server. User authentication is provided by an external Identity Provider (IdP). All API access is controlled by OAUth2 JSON Web Tokens (JWTs) issued by the IdP. User privileges are extracted from token claims and endpoint access is controlled by token scope. 
 Keycloak is readily available, actively maintained by a major OSS vendor, supports Identity Brokering and User Federation, and is used by major DoD projects such as Air Force Iron Bank.
 Keycloak supports many External Identity Providers, but has only been tested using its own authentication. 
 `More information about RedHat Keycloak. <https://www.keycloak.org/documentation>`_
 
 A sample Docker-compose orchestration, using a Keycloak image configured as specified below and containing Demo users, can be found `on our Docker Hub page. <https://hub.docker.com/r/nuwcdivnpt/stig-manager>`_
 
-Keycloak Configuration
-~~~~~~~~~~~~~~~~~~~~~~~~
+Keycloak 19 Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The configuration offered below is just one way to create a Keycloak Realm that will authenticate Users for the STIGMan API and Client. The following items in the Keycloak installation must be created and configured appropriately, and their values passed to STIG Manager in the appropriate Environment Variable: 
 
@@ -182,7 +182,7 @@ Keycloak settings for the "stigman" realm:
 
     * Enable Authorization Code Flow with PKCE (Called "Standard Flow" in Keycloak)
     * Valid Redirect URIs - The URI at which your users will access STIG Manager
-    * Web Origins - Configure according to Organizational requirements.
+    * Web Origins - Configure according to Organizational requirements. Often the same as the Valid Redirect URIs
 
   * Client Scopes:
 

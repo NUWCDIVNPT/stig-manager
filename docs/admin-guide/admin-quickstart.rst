@@ -117,14 +117,14 @@ It also includes buttons to pre-register User, unregister User, and modify User 
 
 
 .. ATTENTION::
-   Being an App Manager in STIG Manager does not give you the ability to *create* new users or assign them new Roles (Admin or Collection Creator). Creating users and assigning Roles can only be done in the Authentication provider (often the Keycloak Management Console), and you must have the proper permissions on your Authentication Provider to do this.
+   Being an App Manager in STIG Manager does not give you the ability to *create* new users or assign them new Application Privileges (Admin or Collection Creator). Creating users and assigning Application Privileges can only be done in the Authentication provider (often the Keycloak Management Console), and you must have the proper permissions on your Authentication Provider to do this.
 
 Pre-registering Users
 ----------------------------
 
-The pre-register function does not grant access to STIG Manager. User *access* is solely managed via your Authentication Provider (Keycloak, F5, etc). 
+STIG Manager will automatically creates a user record when a new Authenticated User accesses the system.  If you want to make assignments to users before they have accessed the system, it is possible to pre-register them from the ``Administration -> User Grants`` workspace.  Click the Pre-register User button, and enter their username. This username must match exactly the username that will be provided by the Authentication Provider when the user eventually shows up. 
 
-Typically, Users must access the system at least once before they can be given Collection Grants.  STIG Manager will automatically creates a user record when a new Authenticated User accesses the system.  If you want to make assignments to users before they have accessed the system, it is possible to pre-register them from the ``Administration -> User Grants`` workspace.  Click the Pre-register User button, and enter their username. This username must match exactly the username that will be provided by the Authentication Provider when the user eventually shows up. 
+It is important to note that the pre-register function does not grant access to STIG Manager. User *access* is solely managed via your Authentication Provider (Keycloak, Okta, etc). Pre-registering a user in STIG Manager will create a user record in the STIG Manager database that can be given Collection Grants before the user has accessed the system, but they will not be able to access the system until they have authenticated with the Authentication Provider.
 
 A pre-registered user will have *No value* in the Last Access column of this screen until they actually access STIG Manager. 
 
@@ -161,7 +161,7 @@ To unregister a User, select the User, and click the "Unregister User" button. T
 Modifying Users
 -----------------------
 
-The only changes that can be made to Users in the STIG Manager interface is their Collection Grants. All other data in the User pop-up is derived from information in the access token, which is managed in the Authentication Provider.
+The only changes that can be made to Users in the STIG Manager interface is their Collection Grants or Group Membership. All other data in the User pop-up is derived from information in the access token, which is managed in the Authentication Provider.
 
 .. thumbnail:: /assets/images/userAdmin.png
    :width: 50% 

@@ -95,7 +95,7 @@ SM.BatchReview.showDialog = function (fieldSettings, initialResult) {
         actionBtn.disable()
       }
       const fpwindow = new Ext.Window({
-        title: `Batch Edit  <span class="sm-navtree-sprite">preview</span>`,
+        title: `Batch Edit`,
         modal: true,
         resizable: true,
         width: 520,

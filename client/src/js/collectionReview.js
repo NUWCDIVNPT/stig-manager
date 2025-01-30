@@ -4,21 +4,19 @@ $Id: collectionReview.js 885 2018-02-20 16:26:08Z bmassey $
 
 
 async function addCollectionReview ( params ) {
-	let { leaf, selectedRule, selectedAsset, treePath } = params
+	const { leaf, selectedRule, selectedAsset, treePath } = params
 	try {
-		var idAppend = '-' + leaf.collectionId + '-' + leaf.benchmarkId.replace(/[. ]/g,'_');
-		const tab = Ext.getCmp('main-tab-panel').getItem('collection-review-tab' + idAppend);
+		const idAppend = '-creview-' + leaf.collectionId + '-' + leaf.benchmarkId.replace(/[. ]/g,'_')
+		const tab = Ext.getCmp('main-tab-panel').getItem('collection-review-tab' + idAppend)
 		if (tab) {
 			tab.show()
 			return
 		}
 	
-	
-
 		/******************************************************/
 		// 'Global' colAssets array of objects for reviewsGrid
 		/******************************************************/
-		let apiCollection = await Ext.Ajax.requestPromise({
+		const apiCollection = await Ext.Ajax.requestPromise({
 			responseType: 'json',
 			url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}`,
 			method: 'GET',
@@ -26,15 +24,16 @@ async function addCollectionReview ( params ) {
 		let apiFieldSettings = apiCollection.settings.fields
 		let apiStatusSettings = apiCollection.settings.status
 	
-		let apiAssets = await Ext.Ajax.requestPromise({
+		const apiAssets = await Ext.Ajax.requestPromise({
 			responseType: 'json',
 			url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/stigs/${leaf.benchmarkId}/assets`,
 			method: 'GET',
 		  })	
-		let colAssets = apiAssets.map( colAsset => ({
+		const colAssets = apiAssets.map( colAsset => ({
 			assetId: colAsset.assetId,
 			assetName: colAsset.name,
 			assetLabelIds: colAsset.assetLabelIds,
+			access: colAsset.access,
 			result: null,
 			detail: null,
 			comment: null,
@@ -48,7 +47,7 @@ async function addCollectionReview ( params ) {
 		/******************************************************/
 		// START Group Grid
 		/******************************************************/
-		var groupFields = Ext.data.Record.create([
+		const groupFields = Ext.data.Record.create([
 			{	
 				name:'oCnt',
 				type: 'int',
@@ -105,10 +104,10 @@ async function addCollectionReview ( params ) {
 				type: 'date',
 				mapping: 'timestamps.touchTs.max'
 			}
-		]);
+		])
 
 
-		var groupStore = new Ext.data.JsonStore({
+		const groupStore = new Ext.data.JsonStore({
 			proxy: new Ext.data.HttpProxy({
 				url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/checklists/${leaf.benchmarkId}/${leaf.revisionStr}`,
 				method: 'GET'
@@ -122,19 +121,19 @@ async function addCollectionReview ( params ) {
 			},
 			listeners: {
 				load: function (store,records,options) {
-					var ourGrid = groupGrid;
+					const ourGrid = groupGrid
 					
 					// Preselection
 					if (options.preselect !== undefined) {
 						if (options.preselect.ruleId !== undefined) {
-							var index = store.find('ruleId',options.preselect.ruleId);
-							ourGrid.getSelectionModel().selectRow(index);
-							ourGrid.getView().focusRow(index);
+							const index = store.find('ruleId',options.preselect.ruleId)
+							ourGrid.getSelectionModel().selectRow(index)
+							ourGrid.getView().focusRow(index)
 						} else {
-							ourGrid.getSelectionModel().selectFirstRow();
+							ourGrid.getSelectionModel().selectFirstRow()
 						}
 					} else {
-						ourGrid.getSelectionModel().selectFirstRow();
+						ourGrid.getSelectionModel().selectFirstRow()
 					}
 					// Filter the store
 					filterGroupStore()
@@ -151,7 +150,7 @@ async function addCollectionReview ( params ) {
 					groupGrid?.statSprites?.setText(getGroupStatsString(store))
 				}
 			}
-		});
+		})
 
 		/******************************************************/
 		// Group grid menus
@@ -161,7 +160,6 @@ async function addCollectionReview ( params ) {
 			const {idProp, titleProp} = item.colProps
 			const cm = groupGrid.getColumnModel()
 			const colNames = ['groupId','groupTitle','ruleId','ruleTitle']
-			const cols = {}
 			groupGrid.titleColumnDataIndex = titleProp
 			groupGrid.autoExpandColumn = titleProp + idAppend
 			for (const colName of colNames) {
@@ -171,7 +169,7 @@ async function addCollectionReview ( params ) {
 			}
 			groupGrid.getView().autoExpand()
 		}
-		var groupChecklistMenu = new Ext.menu.Menu({
+		const groupChecklistMenu = new Ext.menu.Menu({
 			id: 'groupChecklistMenu' + idAppend,
 			items: [
 				{
@@ -278,7 +276,7 @@ async function addCollectionReview ( params ) {
 				},
 				'-'
 			]
-		});
+		})
 		
 
 		/******************************************************/
@@ -337,6 +335,7 @@ async function addCollectionReview ( params ) {
 			text: 'CSV'
 		})
 
+		// Chrome bug: can't access groupGrid before initialization in store's datachanged handler
 		var groupGrid = new Ext.grid.GridPanel({
 			stateful: true,
 			stateId: `collection-review-grid-${leaf.collectionId}-${leaf.benchmarkId}`,
@@ -353,19 +352,12 @@ async function addCollectionReview ( params ) {
 			//collapsible: true,
 			store: groupStore,
 			stripeRows:true,
-			listeners: {
-				afterrender: {
-					fn: function (grid) {
-						var test = '1';
-					}
-				}
-			},
 			sm: new Ext.grid.RowSelectionModel ({
 				singleSelect: true,
 				listeners: {
 					rowselect: {
 						fn: function(sm,index,record) {
-							handleGroupSelectionForCollection(record, idAppend, leaf, groupGrid.sm_benchmarkId, groupGrid.sm_revisionStr); // defined below
+							handleGroupSelectionForCollection(record, idAppend, leaf, groupGrid.sm_benchmarkId, groupGrid.sm_revisionStr) // defined below
 						}
 					}
 				}
@@ -387,17 +379,17 @@ async function addCollectionReview ( params ) {
 
 				onColumnSplitterMoved : function(cellIndex, width) {
 					// override that does NOT set userResized and calls autoExpand()
-					// this.userResized = true;
-					this.grid.colModel.setColumnWidth(cellIndex, width, true);
+					// this.userResized = true
+					this.grid.colModel.setColumnWidth(cellIndex, width, true)
 	
 					if (this.forceFit) {
-							this.fitColumns(true, false, cellIndex);
-							this.updateAllColumnWidths();
+							this.fitColumns(true, false, cellIndex)
+							this.updateAllColumnWidths()
 					} else {
-							this.updateColumnWidth(cellIndex, width);
-							this.syncHeaderScroll();
+							this.updateColumnWidth(cellIndex, width)
+							this.syncHeaderScroll()
 					}
-					this.grid.fireEvent('columnresize', cellIndex, width);
+					this.grid.fireEvent('columnresize', cellIndex, width)
 					this.autoExpand()
 				}
 			}),
@@ -600,10 +592,10 @@ async function addCollectionReview ( params ) {
 					tooltip: 'Reload this grid',
 					width: 20,
 					handler: function(btn){
-						groupGrid.getStore().reload();
+						groupGrid.getStore().reload()
 						Ext.getCmp('content-panel' + idAppend).update('')
-						reviewsGrid.getStore().removeAll(true);
-						reviewsGrid.getView().refresh();
+						reviewsGrid.getStore().removeAll(true)
+						reviewsGrid.getView().refresh()
 					}
 				},
 				{
@@ -618,48 +610,48 @@ async function addCollectionReview ( params ) {
 				'-',
 				new SM.RowCountTextItem({store:groupStore, noun:'rule', iconCls: 'sm-stig-icon'})
 			]
-		});
+		})
 		
-		var handleRevisionMenu = function (item, eventObject) {
-			let store = groupGrid.getStore()
+		const handleRevisionMenu = function (item, eventObject) {
+			const store = groupGrid.getStore()
 			store.proxy.setUrl(`${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/checklists/${leaf.benchmarkId}/${item.revisionStr}`, true)
-			store.load();
+			store.load()
 			loadRevisionMenu(leaf.benchmarkId, item.revisionStr, idAppend)
 			groupGrid.sm_revisionStr = item.revisionStr
-		};
+		}
 		
 		async function loadRevisionMenu(benchmarkId, activeRevisionStr, idAppend) {
 			try {
-			let revisions = await Ext.Ajax.requestPromise({
+			const revisions = await Ext.Ajax.requestPromise({
 				responseType: 'json',
 				url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions`,
 				method: 'GET'
 			})
-			let revisionObject = getRevisionObj(revisions, activeRevisionStr, idAppend)
+			const revisionObject = getRevisionObj(revisions, activeRevisionStr, idAppend)
 			if (Ext.getCmp('revision-menuItem' + idAppend) === undefined) {
-				Ext.getCmp('groupChecklistMenu' + idAppend).addItem(revisionObject.menu);
+				Ext.getCmp('groupChecklistMenu' + idAppend).addItem(revisionObject.menu)
 			}
-			groupGrid.setTitle(SM.he(revisionObject.activeRevisionLabel));
+			groupGrid.setTitle(SM.he(revisionObject.activeRevisionLabel))
 			}
 			catch (e) {
 				SM.Error.handleError(e)
 			}
 		}
 		
-		let getRevisionObj = function (revisions, activeRevisionStr, idAppend) {
-			let returnObject = {}
-			var menu = {
+		const getRevisionObj = function (revisions, activeRevisionStr, idAppend) {
+			const returnObject = {}
+			const menu = {
 			id: 'revision-menuItem' + idAppend,
 			text: 'Revisions',
 			hideOnClick: false,
 			menu: {
 				items: []
 			}
-			};
-			for (var i = 0; i < revisions.length; i++) {
-			let r = revisions[i]
-			let benchmarkDateJs = new Date(r.benchmarkDate)
-			let item = {
+			}
+			for (let i = 0; i < revisions.length; i++) {
+			const r = revisions[i]
+			const benchmarkDateJs = new Date(r.benchmarkDate)
+			const item = {
 				id: `revision-submenu${r.benchmarkId}-${r.version}-${r.release}${idAppend}`,
 				text: SM.he(`Version ${r.version} Release ${r.release} (${benchmarkDateJs.format('j M Y')})`),
 				// revId: `${r.benchmarkId}-${r.version}-${r.release}`,
@@ -668,16 +660,16 @@ async function addCollectionReview ( params ) {
 				handler: handleRevisionMenu
 			}
 			if (item.revisionStr == activeRevisionStr || (activeRevisionStr === 'latest' && i === 0)) {
-				item.checked = true;
-				returnObject.activeRevisionLabel = item.text;
+				item.checked = true
+				returnObject.activeRevisionLabel = item.text
 			} else {
-				item.checked = false;
+				item.checked = false
 			}
-			menu.menu.items.push(item);
+			menu.menu.items.push(item)
 			}
-			returnObject.menu = menu;
-			return returnObject;
-		};
+			returnObject.menu = menu
+			return returnObject
+		}
 			
 		function filterGroupStore () {
 			groupStore.filter(groupGrid.getView().getFilterFns())
@@ -758,7 +750,7 @@ async function addCollectionReview ( params ) {
 				return conv
 		}
 
-		var reviewsFields = Ext.data.Record.create([
+		const reviewsFields = Ext.data.Record.create([
 			{	
 				name:'assetId',
 				type: 'string'
@@ -779,7 +771,7 @@ async function addCollectionReview ( params ) {
 				type: 'string'
 			},
 	    'resultEngine',
-		'touchTs',
+			'touchTs',
 			{
 				name: 'engineResult',
 				convert: engineResultConverter
@@ -804,19 +796,16 @@ async function addCollectionReview ( params ) {
 				name:'username',
 				type:'string'
 			},
-			{
-				name:'ts',
-				type:'date',
-				dateFormat: 'Y-m-d H:i:s'
-			},
+			'ts',
 			{
 				name:'status',
 				type:'string',
 				mapping: 'status?.label'
-			}
-		]);
+			},
+			'access'
+		])
 		
-		var reviewsStore = new Ext.data.JsonStore({
+		const reviewsStore = new Ext.data.JsonStore({
 			storeId: 'reviewsStore' + idAppend,
 			sortInfo: {
 				field: 'assetName',
@@ -829,66 +818,116 @@ async function addCollectionReview ( params ) {
 				save: function ( store, batch, data ) {
 					setReviewsGridButtonStates()
 					reviewsGrid?.statSprites?.setText(getReviewsStatsString(store))
-					Ext.getBody().unmask();
+					Ext.getBody().unmask()
 				},
 				datachanged: function (store) {
 					reviewsGrid?.statSprites?.setText(getReviewsStatsString(store))
 				}
 			},
-			idProperty: 'assetId'
-		});
+			idProperty: 'assetId',
+			getSelectableCount: function () {
+				let count =  0
+				for (const item of this.data.items) {
+					if (item.data.access === 'rw') {
+						count++
+					}
+				}
+				return count
+			}
+		})
+
+		function SetCheckboxSelModelHeaderState(sm) {
+			const hd = sm.grid.view.innerHd.querySelector('.x-grid3-hd-inner.x-grid3-hd-checker')
+			if (hd) {
+				const hdState = sm.selections.length === 0 ? null : sm.grid.store.getSelectableCount() === sm.selections.length ? 'on' : 'ind'
+				hd.classList.remove('x-grid3-hd-checker-on')
+				hd.classList.remove('x-grid3-hd-checker-ind')
+				if (hdState) {
+						hd.classList.add(`x-grid3-hd-checker-${hdState}`)
+				}
+			}
+		}
 
 		const sm = new Ext.grid.CheckboxSelectionModel ({
 			singleSelect: false,
 			checkOnly: false,
+			renderer: function (v, p, record) {
+				return `<div class=${record.data.access === 'r' ? '"sm-row-readonly-icon" ext:qtip="Read only"' : '"x-grid3-row-checker"'}>&#160;</div>`
+			},
 			// override selectRow to suspend events when clearing existing selections > 1
 			selectRow: function (index, keepExisting, preventViewNotify) {
 				if (this.isLocked() || (index < 0 || index >= this.grid.store.getCount()) || (keepExisting && this.isSelected(index))) {
-					return;
+					return
 				}
-				var r = this.grid.store.getAt(index);
+				const r = this.grid.store.getAt(index)
+				
 				if (r && this.fireEvent('beforerowselect', this, index, keepExisting, r) !== false) {
+					if (r.data.access === 'r') return
 					if (!keepExisting || this.singleSelect) {
 						if (this.selections.length > 1) {
-							this.suspendEvents(false);
-							this.clearSelections();
-							this.resumeEvents();
+							this.suspendEvents(false)
+							this.clearSelections()
+							this.resumeEvents()
 						}
 						else {
-							this.clearSelections();
+							this.clearSelections()
 						}
 					}
-					this.selections.add(r);
-					this.last = this.lastActive = index;
+					this.selections.add(r)
+					this.last = this.lastActive = index
 					if (!preventViewNotify) {
-						this.grid.getView().onRowSelect(index);
+						this.grid.getView().onRowSelect(index)
 					}
 					if (!this.silent) {
-						this.fireEvent('rowselect', this, index, r);
-						this.fireEvent('selectionchange', this);
+						this.fireEvent('rowselect', this, index, r)
+						this.fireEvent('selectionchange', this)
 					}
 				}
 			},
+			// override our override to set header state based on selectable record count
+			onMouseDown : function(e, t){
+        if(e.button === 0 && t.className == 'x-grid3-row-checker'){ // Only fire if left-click
+            e.stopEvent();
+            var row = e.getTarget('.x-grid3-row');
+            if(row){
+                var index = row.rowIndex;
+                if(this.isSelected(index)){
+                    this.deselectRow(index);
+                }else{
+                    this.selectRow(index, true);
+                    this.grid.getView().focusRow(index);
+                }
+            }
+            const hd = this.grid.view.innerHd.querySelector('.x-grid3-hd-row .x-grid3-td-checker .x-grid3-hd-checker')
+
+            if (hd) {
+                const hdState = this.selections.length === 0 ? null : this.grid.store.getSelectableCount() === this.selections.length ? 'on' : 'ind'
+                hd.classList.remove('x-grid3-hd-checker-on')
+                hd.classList.remove('x-grid3-hd-checker-ind')
+                if (hdState) {
+                    hd.classList.add(`x-grid3-hd-checker-${hdState}`)
+                }
+            }
+        }
+    	},
 			listeners: {
+				beforerowselect: function (sm, rowIndex, keepExisting, record) {
+					return record.data.access === 'rw'
+				},
 				selectionchange: function (sm) {
-					if (sm.getCount() == 1) { //single row selected
-						historyData.grid.enable()
-						loadResources(sm.getSelected().data.assetId, sm.grid.currentRuleId)
+					if (sm.getCount() <= 1) { // single or no row selected
 						batchEditBtn.disable()
 					} else {
-						historyData.store.removeAll()
-						historyData.grid.disable()
-						attachmentsGrid.getStore().removeAll()						
 						batchEditBtn.enable()
 
 					}
 					setReviewsGridButtonStates()
-					SM.SetCheckboxSelModelHeaderState(sm)
+					SetCheckboxSelModelHeaderState(sm)
 				}
 			}
 		})
 		
-		var reviewsCm = new Ext.grid.ColumnModel({
+		const reviewsCm = new Ext.grid.ColumnModel({
 			columns: [
 				sm,
 	      {
@@ -950,7 +989,7 @@ async function addCollectionReview ( params ) {
 							}
 							labels.sort((a,b) => a.name.localeCompare(b.name))
 							metadata.attr = 'style="white-space:nowrap;text-overflow:clip;"'
-							return SM.Collection.LabelArrayTpl.apply(labels)
+							return SM.Manage.Collection.LabelArrayTpl.apply(labels)
 					}
 				},
 				{ 
@@ -981,7 +1020,7 @@ async function addCollectionReview ( params ) {
 						listeners: {
 							select: function (combo,record,index) {
 								if (combo.startValue !== combo.value ) {
-									combo.fireEvent("blur");
+									combo.fireEvent("blur")
 								} 
 								else {
 									console.log('No Change')
@@ -1020,12 +1059,12 @@ async function addCollectionReview ( params ) {
 							focus: function (cmp) {
 								reviewsGrid.getEl().set({
 									onselectstart: 'return true;'
-								});
+								})
 							},
 							blur: function (cmp) {
 								reviewsGrid.getEl().set({
 									onselectstart: 'return false;'
-								});
+								})
 							},
 							render: function (ta) {
 								ta.el.dom.maxLength = 32767
@@ -1054,12 +1093,12 @@ async function addCollectionReview ( params ) {
 							focus: function (cmp) {
 								reviewsGrid.getEl().set({
 									onselectstart: 'return true;'
-								});
+								})
 							},
 							blur: function (cmp) {
 								reviewsGrid.getEl().set({
 									onselectstart: 'return false;'
-								});
+								})
 							},
 							render: function (ta) {
 								ta.el.dom.maxLength = 32767
@@ -1088,14 +1127,40 @@ async function addCollectionReview ( params ) {
 					dataIndex: 'touchTs',
 					sortable: true,
 					renderer: renderDurationToNow
-				  }
-			
+				},
+				{
+					header: '',
+					width: 50,
+					fixed: true,
+					sortable: false,
+					renderer: function (v, m, r) {
+						return r.data.ts ? 
+						`<div class="sm-grid-cell-with-toolbar-2">
+								<div class="sm-dynamic-width">
+									<div class="sm-info">         
+										&nbsp;
+									</div>
+								</div>
+								<div class="sm-static-width">
+									<span class="sm-grid-cell-tool" style="padding-right:4px"><img data-action="showHistory" ext:qtip="History" src="img/clock.svg" width="14" height="14"></span>                
+									<span class="sm-grid-cell-tool" style="padding-right:4px"><img data-action="showAttachments" ext:qtip="Attachments" src="img/attachment.svg" width="14" height="14"></span>                
+								</div>
+							</div>` : ''
+					},
+					listeners: {
+						mousedown: function (col, grid, index, e) {
+							if (e.target.dataset?.action) {
+								return false
+							}
+						}
+					}
+				}
 			],
 			isCellEditable: function(col, row) {
-				var record = reviewsStore.getAt(row);
+				const record = reviewsStore.getAt(row)
 
 				if (!record.data.result  && this.getDataIndex(col) !== 'result') { // review is not created yet
-					return false;
+					return false
 				}
 
 				switch (this.getDataIndex(col)) {
@@ -1103,26 +1168,120 @@ async function addCollectionReview ( params ) {
 						return true
 					case 'detail':
 						if (apiFieldSettings.detail.enabled === 'always') {
-							return true;
+							return true
 						}
 						if (apiFieldSettings.detail.enabled === 'findings') {
 							return record.data.result === 'fail'
-						} 
+						}
+						break
 					case 'comment':
 						if (apiFieldSettings.comment.enabled === 'always') {
-							return true;
+							return true
 						}
 						if (apiFieldSettings.comment.enabled === 'findings') {
 							return record.data.result === 'fail'
-						} 
+						}
+						break
 				}
 
-				return Ext.grid.ColumnModel.prototype.isCellEditable.call(this, col, row);
+				return Ext.grid.ColumnModel.prototype.isCellEditable.call(this, col, row)
 			}
-		});
+		})
+
+		const toolHandlers = {
+      showHistory,
+      showAttachments
+    }
+
+		async function getHistory({collectionId, assetId, ruleId}) {
+			try {
+				const result = await Ext.Ajax.requestPromise({
+					url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${ruleId}`,
+					method: 'GET',
+					params: {
+						projection: ['history']
+					}
+				})
+				if (result.response.status === 200) {
+					const apiReview = JSON.parse(result.response.responseText)
+					//TODO: Set the history (does not set history on handleGroupSelectionForCollection)
+					//append the current state of the review to history
+					const currentReview = {
+						ruleId: apiReview.ruleId,
+						comment: apiReview.comment,
+						resultEngine: apiReview.resultEngine,
+						autoResult: apiReview.autoResult,
+						rejectText: apiReview.rejectText,
+						result: apiReview.result,
+						detail: apiReview.detail,
+						status: apiReview.status,
+						ts: apiReview.ts,
+						touchTs: apiReview.touchTs,
+						userId: apiReview.userId,
+						username: apiReview.username
+					}
+					apiReview.history.push(currentReview)
+					return apiReview.history
+				}
+			}
+			catch (e){
+				SM.Error.handleError(e)
+			}
+		}
+
+		async function showHistory(data, record) {
+			try {
+				const historyGrid = new Sm_HistoryData().grid
+				historyGrid.getStore().loadData(await getHistory({collectionId: leaf.collectionId, assetId: data.assetId, ruleId: data.ruleId}))
+				const appwindow = new Ext.Window({
+					title: 'Review History',
+					layout: 'fit',
+					width: 600,
+					height: 600,
+					modal: true,
+					padding: 20,
+					closeAction: 'destroy',
+					items: historyGrid
+				})
+				appwindow.show()
+			}
+			catch (e){
+				SM.Error.handleError(e)
+			}
+		}
+
+		function showAttachments(data, record) {
+			const attachmentsGrid = new SM.Attachments.Grid({
+				collectionId: leaf.collectionId,
+				assetId: data.assetId,
+				ruleId: data.ruleId,
+				border: true
+			})
+			attachmentsGrid.fileUploadField.setDisabled(data.access !== 'rw')
+			const appwindow = new Ext.Window({
+				title: 'Attachments',
+				layout: 'fit',
+				width: 600,
+				height: 600,
+				modal: true,
+				padding: 20,
+				closeAction: 'destroy',
+				items: attachmentsGrid
+			})
+			appwindow.show()
+			attachmentsGrid.loadArtifacts()
+		}
+
+    function cellclick(grid, rowIndex, columnIndex, e) {
+      if (e.target.tagName === "IMG" && e.target.dataset?.action) {
+				e.stopEvent()
+        const record = grid.getStore().getAt(rowIndex)
+        toolHandlers[e.target.dataset.action](record.data, record)
+      }
+    }
 
 		function showAcceptBtn () {
-			const collectionGrant = curUser.collectionGrants.find(i => i.collection.collectionId === leaf.collectionId).accessLevel
+			const collectionGrant = curUser.collectionGrants.find(i => i.collection.collectionId === leaf.collectionId).roleId
 			const grantCondition =  collectionGrant >= apiStatusSettings.minAcceptGrant
 			const settingsCondition = apiStatusSettings.canAccept
 			return grantCondition && settingsCondition 
@@ -1169,9 +1328,10 @@ async function addCollectionReview ( params ) {
 			}
 		})
 
-		var reviewsGrid = new Ext.grid.EditorGridPanel({
+		const reviewsGrid = new Ext.grid.EditorGridPanel({
 			cls: 'sm-round-panel',
-			margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.adjacent },
+			trackMouseOver: true,
+			margins: { top: SM.Margin.adjacent, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
 			border: false,
 			region: 'center',
 			layout: 'fit',
@@ -1181,9 +1341,9 @@ async function addCollectionReview ( params ) {
 			stripeRows:true,
 			colModel: reviewsCm,
 			updateGroupStore: function (reviewsGrid) {
-				let reviewRecords = reviewsGrid.getStore().getRange()
-				let checklistRecord = reviewsGrid.currentChecklistRecord
-				let counts = {
+				const reviewRecords = reviewsGrid.getStore().getRange()
+				const checklistRecord = reviewsGrid.currentChecklistRecord
+				const counts = {
 					oCnt: 0,
 					nfCnt: 0,
 					naCnt: 0,
@@ -1231,11 +1391,12 @@ async function addCollectionReview ( params ) {
 				afterrender: function (cmp) {
 					cmp.getEl().set({
 						onselectstart: 'return false;'
-					});
+					})
 				},
 				afteredit: async function (e) {
 					try {
-						let jsonData = {}, apiReview
+						let jsonData = {}
+						let apiReview
 						if (e.record.data.status) {
 							jsonData[e.field] = e.value
 							// unset autoResult if the result has changed
@@ -1281,7 +1442,6 @@ async function addCollectionReview ( params ) {
 
 						// hack to reselect the record for setReviewsGridButtonStates()
 						e.grid.getSelectionModel().onRefresh()
-						loadResources(e.record.data.assetId, e.grid.currentRuleId)
 
 						setReviewsGridButtonStates()
 		
@@ -1294,10 +1454,12 @@ async function addCollectionReview ( params ) {
 
 
 				},
-				keydown: SM.CtrlAGridHandler
+				keydown: SM.CtrlAGridHandler,
+				cellclick
 			},
 			view: new SM.ColumnFilters.GridViewBuffered({
 				forceFit:true,
+        cellSelectorDepth: 0,
 				holdPosition: true,
 				autoFill:true,
 				emptyText: 'No data to display.',
@@ -1332,7 +1494,10 @@ async function addCollectionReview ( params ) {
 							}
 						}					
 					}
-				}
+				},
+				// getRowClass: function (record) {
+				// 	return record.data.access === 'r' ? 'sm-row-read' : ''
+				// }
 			}),
 			// width: 300,
 			tbar: new Ext.Toolbar({
@@ -1345,8 +1510,8 @@ async function addCollectionReview ( params ) {
 						text: 'Accept',
 						hidden: !showAcceptBtn(),
 						handler: function (btn) {
-							var selModel = reviewsGrid.getSelectionModel();
-							handleStatusChange (reviewsGrid,selModel,'accepted');
+							const selModel = reviewsGrid.getSelectionModel()
+							handleStatusChange (reviewsGrid,selModel,'accepted')
 						}
 					},
 					{
@@ -1361,8 +1526,8 @@ async function addCollectionReview ( params ) {
 						text: 'Reject...',
 						hidden: !showAcceptBtn(),
 						handler: function (btn) {
-							var selModel = reviewsGrid.getSelectionModel();
-							handleStatusChange (reviewsGrid,selModel,'rejected');
+							const selModel = reviewsGrid.getSelectionModel()
+							handleStatusChange (reviewsGrid,selModel,'rejected')
 						}
 					},
 					{
@@ -1376,8 +1541,8 @@ async function addCollectionReview ( params ) {
 						id: 'reviewsGrid-submitButton' + idAppend,
 						text: 'Submit',
 						handler: function (btn) {
-							var selModel = reviewsGrid.getSelectionModel();
-							handleStatusChange (reviewsGrid,selModel,'submitted');
+							const selModel = reviewsGrid.getSelectionModel()
+							handleStatusChange (reviewsGrid,selModel,'submitted')
 						}
 					},
 					{
@@ -1391,8 +1556,8 @@ async function addCollectionReview ( params ) {
 						id: 'reviewsGrid-unsubmitButton' + idAppend,
 						text: 'Unsubmit',
 						handler: function (btn) {
-							var selModel = reviewsGrid.getSelectionModel();
-							handleStatusChange (reviewsGrid,selModel,'saved');
+							const selModel = reviewsGrid.getSelectionModel()
+							handleStatusChange (reviewsGrid,selModel,'saved')
 						}
 					},
 					'-',
@@ -1414,9 +1579,9 @@ async function addCollectionReview ( params ) {
 				new SM.RowCountTextItem({store:reviewsStore, noun:'review', iconCls:'sm-assessment-icon'})
 			],
 			emptyText: 'No data to display'
-		});
+		})
 
-		reviewsGrid.on('beforeedit', beforeEdit, this );
+		reviewsGrid.on('beforeedit', beforeEdit, this )
 
 		function onFieldSettingsChanged (collectionId, fieldSettings) {
 			if (collectionId === apiCollection.collectionId) {
@@ -1436,7 +1601,7 @@ async function addCollectionReview ( params ) {
 		async function getContent(benchmarkId, revisionStr, ruleId, groupId) {
 			try {
 				// Content panel
-				const contentPanel = Ext.getCmp('content-panel' + idAppend);
+				const contentPanel = Ext.getCmp('content-panel' + idAppend)
 				const content = await Ext.Ajax.requestPromise({
 					responseType: 'json',
 					url: `${STIGMAN.Env.apiBase}/stigs/${benchmarkId}/revisions/${revisionStr}/rules/${ruleId}`,
@@ -1446,7 +1611,7 @@ async function addCollectionReview ( params ) {
 					}
 				})
 				contentPanel.update(content)
-				contentPanel.setTitle('Rule for Group ' + SM.he(groupId));
+				contentPanel.setTitle('Rule for Group ' + SM.he(groupId))
 			}
 			catch (e) {
 				SM.Error.handleError(e)
@@ -1454,12 +1619,12 @@ async function addCollectionReview ( params ) {
 		}
 
 		async function getReviews(collectionId, record) {
-			let reviewsGrid, maskTimer
+			let maskTimer
 			try {
 				// Reviews grid
-				reviewsGrid = Ext.getCmp('reviewsGrid' + idAppend);
+				const reviewsGrid = Ext.getCmp('reviewsGrid' + idAppend)
 				maskTimer = setTimeout(() => reviewsGrid.bwrap.mask(''), 150)
-				let fetchedReviews = await Ext.Ajax.requestPromise({
+				const fetchedReviews = await Ext.Ajax.requestPromise({
 					responseType: 'json',
 					url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
 					method: 'GET',
@@ -1468,11 +1633,11 @@ async function addCollectionReview ( params ) {
 						ruleId: record.data.ruleId,
 					}
 				})
-				let fetchedReviewsLookup = {}
+				const fetchedReviewsLookup = {}
 				for (const fetchedReview of fetchedReviews) {
 					fetchedReviewsLookup[fetchedReview.assetId] = fetchedReview
 				}
-				let colReviews = colAssets.map(colAsset => {
+				const colReviews = colAssets.map(colAsset => {
 					// Won't have a review.ruleId if there is no review for the asset yet
 					if (!fetchedReviewsLookup[colAsset.assetId]) {
 						return { ...colAsset, ...{ruleId: record.data.ruleId} }
@@ -1501,7 +1666,7 @@ async function addCollectionReview ( params ) {
 			getContent(benchmarkId, revisionStr, record.data.ruleId, record.data.groupId)
 			getReviews(leaf.collectionId, record)
 			//when new group is selected, deselect rows from reviews grid (to make resources panel clear)
-			reviewsGrid.getSelectionModel().clearSelections();
+			reviewsGrid.getSelectionModel().clearSelections()
 		}
 
 		function isReviewComplete (result, rcomment, acomment) {
@@ -1521,16 +1686,16 @@ async function addCollectionReview ( params ) {
 		}
 
 		function setReviewsGridButtonStates() {
-			const sm = reviewsGrid.getSelectionModel();
-			const approveBtn = Ext.getCmp('reviewsGrid-approveButton' + idAppend);
-			const rejectBtn = Ext.getCmp('reviewsGrid-rejectButton' + idAppend);
-			const submitBtn = Ext.getCmp('reviewsGrid-submitButton' + idAppend);
-			const unsubmitBtn = Ext.getCmp('reviewsGrid-unsubmitButton' + idAppend);
-			const resourcesTabPanel = Ext.getCmp('resources-tab-panel' + idAppend);
+			const sm = reviewsGrid.getSelectionModel()
+			const approveBtn = Ext.getCmp('reviewsGrid-approveButton' + idAppend)
+			const rejectBtn = Ext.getCmp('reviewsGrid-rejectButton' + idAppend)
+			const submitBtn = Ext.getCmp('reviewsGrid-submitButton' + idAppend)
+			const unsubmitBtn = Ext.getCmp('reviewsGrid-unsubmitButton' + idAppend)
 
-			const selections = sm.getSelections();
-			const selLength = selections.length;
-			let approveBtnEnabled = rejectBtnEnabled = submitBtnEnabled = unsubmitBtnEnabled = true;
+			const selections = sm.getSelections()
+			const selLength = selections.length
+			let approveBtnEnabled, rejectBtnEnabled, submitBtnEnabled, unsubmitBtnEnabled
+			approveBtnEnabled = rejectBtnEnabled = submitBtnEnabled = unsubmitBtnEnabled = true
 
 			if (selLength === 0) {
 				approveBtnEnabled = rejectBtnEnabled = submitBtnEnabled = unsubmitBtnEnabled = false
@@ -1591,7 +1756,7 @@ async function addCollectionReview ( params ) {
 					rejected:0,
 					accepted:0
 				}
-				for (i=0; i < selections.length; i++) {
+				for (let i=0; i < selections.length; i++) {
 					if (!selections[i].data.status) { // a review doesn't exist
 						counts.unsaved++
 						break
@@ -1619,11 +1784,11 @@ async function addCollectionReview ( params ) {
 				rejectBtnEnabled = counts.submitted && (!counts.unsaved && !counts.saved && !counts.savedComplete && !counts.accepted && !counts.rejected)
 		
 			}
-			approveBtn.setDisabled(!approveBtnEnabled);
-			rejectBtn.setDisabled(!rejectBtnEnabled);
-			submitBtn.setDisabled(!submitBtnEnabled);
-			unsubmitBtn.setDisabled(!unsubmitBtnEnabled);
-		};
+			approveBtn.setDisabled(!approveBtnEnabled)
+			rejectBtn.setDisabled(!rejectBtnEnabled)
+			submitBtn.setDisabled(!submitBtnEnabled)
+			unsubmitBtn.setDisabled(!unsubmitBtnEnabled)
+		}
 
 		async function handleBatchEdit(grid) {
 			const records = grid.getSelectionModel().getSelections()
@@ -1637,7 +1802,7 @@ async function addCollectionReview ( params ) {
 			const review = await SM.BatchReview.showDialog(apiFieldSettings, initialResult)
 			const ruleIds = [grid.currentChecklistRecord.data.ruleId]
 			const assetIds = []
-			for (i = 0, l = records.length; i < l; i++) {
+			for (let i = 0, l = records.length; i < l; i++) {
 				if (review.resultEngine && review.result !== records[i].data.result) {
 					review.resultEngine = null
 				}
@@ -1786,9 +1951,6 @@ async function addCollectionReview ( params ) {
 					})
 				}
 
-				if (selections.length === 1) {
-					loadResources(selections[0].data.assetId, grid.currentRuleId)
-				}
 				// ugly code follows
 				const record = groupGrid.getSelectionModel().getSelected()
 				await getReviews(leaf.collectionId, record)
@@ -1807,126 +1969,41 @@ async function addCollectionReview ( params ) {
 			finally {
 				grid.bwrap.unmask()
 			}
-		};
+		}
 
 		function beforeEdit(e) {
-			if (e.field == 'result') {
-				var editor = e.grid.getColumnModel().getCellEditor(e.column,e.row);
-				editor.gridRecord = e.record;
+			if (e.record.data.access === 'r') {
+				return false
 			}
-		};
+			if (e.field == 'result') {
+				const editor = e.grid.getColumnModel().getCellEditor(e.column,e.row)
+				editor.gridRecord = e.record
+			}
+		}
 		
 	/******************************************************/
 	// END Reviews Panel
 	/******************************************************/
 
-	let contentTpl = SM.RuleContentTpl
+		const contentTpl = SM.RuleContentTpl
 
-	/******************************************************/
-	// START Resources Panel
-	/******************************************************/
-		async function loadResources (assetId, ruleId) {
-			let activeTab
-			try {
-				activeTab = Ext.getCmp('resources-tab-panel' + idAppend).getActiveTab()
-				// activeTab.getEl().mask('Loading...')
-				const attachmentsGrid = Ext.getCmp('attachmentsGrid' + idAppend)
-				attachmentsGrid.assetId = assetId
-				attachmentsGrid.ruleId = ruleId
-        attachmentsGrid.getStore().removeAll()
-
-				let result = await Ext.Ajax.requestPromise({
-					url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${assetId}/${ruleId}`,
-					method: 'GET',
-					params: {
-						projection: ['history']
-					}
-				})
-				if (result.response.status === 200) {
-					let apiReview = JSON.parse(result.response.responseText)
-					//TODO: Set the history (does not set history on handleGroupSelectionForCollection)
-					//append the current state of the review to history
-					let currentReview = {
-						ruleId: apiReview.ruleId,
-						comment: apiReview.comment,
-						resultEngine: apiReview.resultEngine,
-						autoResult: apiReview.autoResult,
-						rejectText: apiReview.rejectText,
-						result: apiReview.result,
-						detail: apiReview.detail,
-						status: apiReview.status,
-						ts: apiReview.ts,
-						touchTs: apiReview.touchTs,
-						userId: apiReview.userId,
-						username: apiReview.username
-					}
-					apiReview.history.push(currentReview)
-					Ext.getCmp('historyGrid' + idAppend).getStore().loadData(apiReview.history)
-		
-					// Attachments
-				attachmentsGrid.loadArtifacts()	
-				}
-			}
-			catch (e) {
-				SM.Error.handleError(e)
-			}
-			finally {
-				activeTab.getEl().unmask()
-			}
-		}
-		
-	/******************************************************/
-	// START Resources Panel/History
-	/******************************************************/
-		var historyData = new Sm_HistoryData(idAppend);
-
-	/******************************************************/
-	// END Resources Panel/History
-	/******************************************************/
-
-  /******************************************************/
-  // START Attachments Panel
-  /******************************************************/
-  const attachmentsGrid = new SM.Attachments.Grid({
-    id: 'attachmentsGrid' + idAppend,
-    title: 'Attachments',
-    collectionId: leaf.collectionId
-  })
-  /******************************************************/
-  // END Attachments Panel
-  /******************************************************/
-
-	/******************************************************/
-	// END Resources Panel
-	/******************************************************/
-
-		var tabItems = [
+		const tabItems2 = [
 			{
-				region: 'west',
-				layout: 'border',
-				width: '40%',
+				xtype: 'panel',
+				region: 'east',
+				width: 430,
 				minWidth: 330,
 				border: false,
 				split:true,
-				collapsible: false,
-				id: 'west-panel' + idAppend,
-				items: [
-					groupGrid,
-					{
-						region: 'center',
-						xtype: 'panel',
-						cls: 'sm-round-panel',
-						margins: { top: SM.Margin.adjacent, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
-						border: false,
-						split:true,
-						collapsible: false,
-						padding: 20,
-						autoScroll: true,
-						id: 'content-panel' + idAppend,
-						title: 'Rule',
-						tpl: contentTpl
-					}
-				]
+				collapsible: true,
+				cls: 'sm-round-panel',
+				margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
+				border: false,
+				padding: 20,
+				autoScroll: true,
+				id: 'content-panel' + idAppend,
+				title: 'Rule',
+				tpl: contentTpl
 			},
 			{
 				region: 'center',
@@ -1936,42 +2013,43 @@ async function addCollectionReview ( params ) {
 				collapsible: false,
 				id: 'center-panel' + idAppend,
 				items: [
+					groupGrid,
 					reviewsGrid,
-					{
-						region: 'south',
-						xtype: 'tabpanel',
-						cls: 'sm-round-panel',
-						style: {
-							'background-color': 'transparent'
-						},
-						margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
-						border: false,
-						id: 'resources-tab-panel' + idAppend,
-						height: '33%',
-						split:true,
-						collapsible: false,
-						activeTab: 'history',
-						items: [
-							{
-								title: 'History',
-								itemId: 'history',
-								layout: 'fit',
-								id: 'history-tab' + idAppend,
-								items: historyData.grid
-							},
-							{
-								title: 'Attachments',
-								id: 'attachment-panel' + idAppend,
-								layout: 'fit',
-								items: attachmentsGrid
-							}
-						]
-					}
+					// {
+					// 	region: 'south',
+					// 	xtype: 'tabpanel',
+					// 	cls: 'sm-round-panel',
+					// 	style: {
+					// 		'background-color': 'transparent'
+					// 	},
+					// 	margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.adjacent },
+					// 	border: false,
+					// 	id: 'resources-tab-panel' + idAppend,
+					// 	height: '33%',
+					// 	split:true,
+					// 	collapsible: false,
+					// 	activeTab: 'history',
+					// 	items: [
+					// 		{
+					// 			title: 'History',
+					// 			itemId: 'history',
+					// 			layout: 'fit',
+					// 			id: 'history-tab' + idAppend,
+					// 			items: historyData.grid
+					// 		},
+					// 		{
+					// 			title: 'Attachments',
+					// 			id: 'attachment-panel' + idAppend,
+					// 			layout: 'fit',
+					// 			items: attachmentsGrid
+					// 		}
+					// 	]
+					// }
 				]
 			}
-		];
+		]
 		
-		let colReviewTab = new Ext.Panel ({
+		const colReviewTab = new Ext.Panel ({
 			id: 'collection-review-tab' + idAppend,
 			iconCls: 'sm-stig-icon',
 			title: '',
@@ -1982,7 +2060,7 @@ async function addCollectionReview ( params ) {
 			closable:true,
 			layout: 'border',
 			border: false,
-			items: tabItems,
+			items: tabItems2,
 			sm_TabType: 'asset_review',
 			sm_tabMode: 'ephemeral',
 			sm_treePath: treePath,
@@ -2001,25 +2079,25 @@ async function addCollectionReview ( params ) {
 			colReviewTab.updateTitle.call(colReviewTab)
 		}
 		
-		let tp = Ext.getCmp('main-tab-panel')
-		let ephTabIndex = tp.items.findIndex('sm_tabMode', 'ephemeral')
+		const tp = Ext.getCmp('main-tab-panel')
+		const ephTabIndex = tp.items.findIndex('sm_tabMode', 'ephemeral')
 		let thisTab
 		if (ephTabIndex !== -1) {
-		  let ephTab = tp.items.itemAt(ephTabIndex)
+		  const ephTab = tp.items.itemAt(ephTabIndex)
 		  tp.remove(ephTab)
-		  thisTab = tp.insert(ephTabIndex, colReviewTab);
+		  thisTab = tp.insert(ephTabIndex, colReviewTab)
 		} else {
 		  thisTab = tp.add( colReviewTab )
 		}
 		thisTab.updateTitle.call(thisTab)
-		thisTab.show();
+		thisTab.show()
 
 		groupGrid.getStore().load({
 			preselect: {
 				ruleId: selectedRule,
 				assetId: selectedAsset
 			}		
-		});
+		})
 		loadRevisionMenu(leaf.benchmarkId, leaf.revisionStr, idAppend)
 	}
 	catch (e) {
@@ -2030,26 +2108,26 @@ async function addCollectionReview ( params ) {
 
 
 function renderOpen(value, metaData, record, rowIndex, colIndex, store) {
-	var returnValue = value;
+	let returnValue = value
 	if (value > 0) {
-		metaData.css = 'sm-cell-red';
+		metaData.css = 'sm-cell-red'
 	} else {
-		returnValue = '-';
-		metaData.css = 'sm-cell-green';
+		returnValue = '-'
+		metaData.css = 'sm-cell-green'
 	}
-	return returnValue;
+	return returnValue
 }
 
 function renderCounts(value, metaData, record, rowIndex, colIndex, store) {
-	var returnValue = value;
-	if (value == 0) { returnValue = '-'; }
-	metaData.css = 'sm-cell-grey';
-	return returnValue;
+	let returnValue = value
+	if (value == 0) { returnValue = '-' }
+	metaData.css = 'sm-cell-grey'
+	return returnValue
 }
 
 function renderStatusCounts(value, metaData, record, rowIndex, colIndex, store) {
-	var returnValue = value;
-	if (value == 0) { returnValue = '-'; }
-	metaData.css = 'sm-cell-status';
-	return returnValue;
+	let returnValue = value
+	if (value == 0) { returnValue = '-' }
+	metaData.css = 'sm-cell-status'
+	return returnValue
 }
