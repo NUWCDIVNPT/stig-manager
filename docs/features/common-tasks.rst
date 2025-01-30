@@ -72,7 +72,7 @@ To a Collection
 -------------------
 
 If you have Manage or Owner access to a Collection, you can grant access to that Collection to other Users. 
-Check ou the :ref:`User Grants <grants-panel>` section of the user guide for a description of this feature, or the :ref:`glossary <terminology>` for more information about :term:`User Access Levels. <User>`
+Check out the :ref:`User Grants <grants-panel>` section of the user guide for a description of this feature, or the :ref:`glossary <terminology>` for more information about :term:`User Access Levels. <User>`
 
 
 To the System

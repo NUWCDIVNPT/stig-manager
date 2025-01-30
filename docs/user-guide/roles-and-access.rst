@@ -4,122 +4,175 @@
 Collection Grants, Roles, Access, and User Groups
 ####################################################
 
-STIG Manager uses a Role-Based Access Control (RBAC) system to manage access to Collections.  This system allows the Collection Owner or Manager to Grant Users a Role in their Collection, and then assign Access Controls to those Grants.
+STIG Manager uses a Role-Based Access Control (RBAC) system to manage access to Collections.  This system allows the Collection Owner or Manager to Grant Users a Role in their Collection, and then create an Access Control List (ACL) for each Grant.
 
 
 .. note:: 
 
-  The Collection Roles and Access are distinct from the overall Application Privileges, which are managed by the configured OIDC Identity Provider. Collection Grants, Roles, and Access are specific to each Collection and its contents.
+  The Collection Roles and Access are distinct from the overall Application Privileges, which are managed by the configured OIDC Provider. Collection Grants, Roles, and Access are specific to each Collection and its contents.
 
 
 Grants
 --------------------------------------------------------
 
-A Grant is a record of a User or User Group being given a Role in a Collection.  A User/Group can have Grants in multiple Collections, and have different Roles in each Collection. Collection Owners and Managers can create, modify, and remove Collection Grants for Users and Groups, controlling access to their Collection.
+A Grant is a record of a User or User Group being given a Role in a Collection.  A User or Group can have Grants in multiple Collections, with different Roles in each Collection. Users with the Owner or Manage Role can create, modify, and remove Grants to the Collection.
 
 Grants are composed of the following elements:
-  - Grantee: The User or Group who is being granted a Role in the Collection.
-  - Role: The Role that the Grantee is being given in the Collection.
-  - Access Controls: The Access Controls that define what Assets and STIGs the Grantee can see and Evaluate in the Collection.
+
+  - **Grantee:** The User or Group who is being granted a Role in the Collection.
+  - **Role:** The Role that the Grantee is being given in the Collection.
+  - **Access Control List:** Rules that define which Reviews the Grantee can see and Evaluate in the Collection.
 
 
 Roles
 --------------------------------------------------------
 
-There are four Roles available in STIG Manager, defined below. Roles differ in the actions they can perform in a Collection, and their default Access to Assets and Reviews. 
+There are four Roles available in STIG Manager, defined below. The Roles differ based on:
 
-Each Role in STIG Manager combines two distinct aspects:
-- Collection Management Capabilities: Actions the user can perform on the Collection itself.
-- Default Access: The base level of access granted to Assets and their Reviews. This access can be further refined with Access Controls.
+    - **Collection Management Capabilities:** Actions the user can perform on the Collection itself.
+    - **Default Access:** The base level of access allowed to Reviews. This access can be further refined by an ACL.
+
+Each Role is also given a **Priority**, to handle scenarios where a User is a member of multiple Groups having Grants with different Roles.
 
 The following Collection Roles are available:
 
-.. list-table:: Role Capabilities and Access 
-    :widths: 20 40 40 
+.. list-table:: Role Capability, Default Access, and Priority 
+    :widths: 20 40 40 10
     :header-rows: 1
     :class: tight-table
 
     * - Role
       - Collection Management Capabilities  
       - Default Access
+      - Priority
     * - Owner
-      - Add/Remove/Modify Assets, STIG assignments, Labels, and User Grants. Can delete the Collection.
-      - Read/Write access to all Assets/Reviews (Can be restricted with Access Controls)
+      - Add/Remove/Modify Assets, STIG assignments, Labels, and Grants. Can delete the Collection. Can "Accept" and "Reject" reviews from evaluators.
+      - Read/Write access to Reviews for all Assets/STIGs
+      - 4
     * - Manage
-      - Add/Remove/Modify Assets, STIG assignments, Labels, and User Grants with the exception of "Owner" grants. Optionally responsible for "Accepting" and "Rejecting" reviews from evaluators.
-      - Read/Write access to all Assets/Reviews (Can be restricted with Access Controls)
+      - Add/Remove/Modify Assets, STIG assignments, Labels, and Grants with the exception of "Owner" grants. Optionally can "Accept" and "Reject" reviews from evaluators.
+      - Read/Write access to Reviews for all Assets/STIGs
+      - 3
     * - Full
       - None
-      - Read/Write access to all Assets/Reviews (Can be restricted with Access Controls)
+      - Read/Write access to Reviews for all Assets/STIGs
+      - 2
     * - Restricted
       - None
-      - None (Access to Assets derived solely from Access Controls configured by Owner or Manager)
+      - None (Access derived solely from the ACL)
+      - 1
 
+
+.. _EffectiveGrant:
+
+Effective Grant
+--------------------------------------------------------
+
+To determine a User's Grant to a Collection, STIG Manager calculates an Effective Grant from all the Grants that apply to the User. These rules are followed when calculating the Effective Grant:
+
+**1. Direct Grants to Users take precedence over Group Grants**
+  - If User1 is a member of Group1, and both User1 and Group1 have Grants in the Collection, only the Grant given directly to User1 will apply. The Grant given to Group1 will be ignored for User1.
+
+**2. When a User belongs to multiple Groups with Grants, the Group Grant with the highest priority Role is selected**
+  - If User1 is a member of Group1 and Group2, and Group1 has a "Manage" Role and Group2 has a "Full" Role in the Collection, User1 will have the "Manage" Role in the Collection.
+
+**3. When a User belongs to multiple Groups with Grants having an identical highest priority Role, the Grant is for that Role and the Group ACLs will be merged**
+  - If User1 is a member of Group1 and Group2, and Group1 and Group2 both have a "Full" Role in the Collection, User1 will have the "Full" Role in the Collection and their :ref:`Effective ACL<EffectiveACL>` will merge rules from both Group Grants.
+
+Access Control List (ACL)
+--------------------------------------------------------
+
+An ACL includes one or more Access Control Rules, which allow fine-grained management of which Reviews users can view and modify in a Collection. They are particularly important for users with the Restricted role, as these users have no default access.
+
+.. note::
+  The order of Rules in an ACL is not significant.
 
 Access Control Rules
 --------------------------------------------------------
 
-Access Controls Rules allow fine-grained management of what Assets and STIGs users can see and Evaluate in a Collection. They are particularly important for users with the Restricted role, as these users have no default access and rely entirely on Access Controls to perform their work.
+Rules are composed of a **Resource** and an **Access** level.
 
-Access Controls can be defined based on any combination of the following elements:
-  - **Collection**: Add a rule that applies to all Assets and STIGs in the Collection.
-  - **Assets**: Specific Assets in the Collection
-  - **STIGs**: Security Technical Implementation Guides assigned to Assets
-  - **Labels**: Tags that group Assets together
+A **Resource** is defined from the following elements:
 
-The level of Access to the resources defined by the above elements can be set to one of three levels:
-  - **Read**: Can view reviews and results
-  - **Read/Write**: Can create and modify reviews
-  - **None**: No access (Restricted role only)
+  - **Collection**: All Assets in the Collection and their assigned STIGs.
+  - **Asset**: An Asset and its assigned STIGs. Can be combined with a STIG element.
+  - **STIG**: A STIG and its assigned Assets. Can be combined with an Asset or a Label element.
+  - **Label**: All Assets tagged with the Label and their assigned STIGs. Can be combined with a STIG element.
 
-Access Controls can be applied to individual Assets, STIGs, or Labels, and can be combined to create complex access rules. For example, a user could be granted Read access to all Assets with the "Database" label, and Read/Write access to the "PostgreSQL_9-x_STIG" STIG. This will have the effect of letting the user **view** all reviews for all STIGs assigned to "Database" Assets, but only **create and modify** reviews for the PostgreSQL STIG on those Assets.
+The **Access** level is set as one of three values:
+
+  - **Read**: Can view reviews, but cannot create or modify them
+  - **Read/Write**: Can view, create and modify reviews
+  - **None**: No access (Available to ACLs for the Restricted role only)
+
+Rules can be defined for individual Assets, STIGs, or Labels, or can be combined to create complex access rules. For example, a user could be allowed Read access to the "Database" label, and Read/Write access to the "PostgreSQL_9-x_STIG" STIG. This will have the effect of letting the user **view** reviews for all STIGs assigned to Assets tagged with the "Database" label, but also **create and modify** reviews for the PostgreSQL STIG on those Assets.
 
 
-Access Control Priority
+.. _EffectiveACL:
+
+Effective ACL
 --------------------------------------------------------
 
-When multiple Access Controls apply to the same Asset or STIG, the following rules determine the final access level:
-
-**1. The most specific resource takes precedence. For example, a Restricted User grant that has the following ACL applied:**
-  - An ACL Rule granting Read/Write access to "Asset-123 + Windows-10-STIG" is more specific than
-  - An ACL Rule granting Read access to assets with the Label 'Windows Workstation'
-  - In this case, if Asset-123 has the label "Windows Workstation", the first rule would take precedence where they overlap, and the User would have Read/Write access to the Windows-10-STIG on Asset-123, and Read only access on other STIGs on that Asset, and all STIGs on all Assets with the "Windows Workstation" label.
-
-**2. When access levels conflict, the most restrictive access level is applied. For example, a Restricted User grant that has the following ACL applied:**
-  - An ACL Rule granting Read/Write access to "Asset-123 + Windows-10-STIG" has the same specificity as
-  - An ACL Rule granting Read access to "Label 'Windows Workstation' + Windows-10-STIG"
-  - In this case, if Asset-123 has the label "Windows Workstation", both rules are composed of two elements, and apply to the same STIG on Asset-123. The Read access rule is more restrictive, so the User would have Read access to the Windows-10-STIG on Asset-123, AND Read access for the Windows-10-STIG on all other Assets with the 'Windows Workstation' label. 
-
-**3. Direct Grants to Users take precedence over any Grant to a Group the User belongs to**
-  - If User1 is a member of Group1, and both User1 and Group1 have Grants in the Collection, only the Grant given directly to User1 will apply. The Grant given to Group1 will be ignored for User1.
-
-**4. When a user belongs to multiple Groups, the Grant with the highest priority Role is selected**
-  - If User1 is a member of Group1 and Group2, and Group1 has a "Manage" Role and Group2 has a "Full" Role in the Collection, User1 will have the "Manage" Role in the Collection.
-
-These controls allow Collection Owners and Managers to precisely define who can access what within their Collection.
-The Users tab in the Manage Collection interface provides a granular view of the effective access for each User in the Collection, based on their Grants and Access Controls.
+When determining a User's access to Resources in a Collection, STIG Manager calculates an Effective ACL from the ACL of the User's :ref:`Effective Grant<EffectiveGrant>`. In the Effective ACL, each rule is an Asset/STIG combination and an Access level.
 
 
-
-Role-Based Access Control (RBAC) Details
-------------------------------------------------
-
-For a granular breakdown of the RBAC model in STIG Manager, see the following description:
-:doc:`Role-Based Access Control Details <rbac>`
+.. note::
+  In many cases, only one Grant's ACL needs to be considered. However, if a User belongs to multiple Groups, and those Groups have Grants with the identical highest priority Role, the Effective ACL is calculated after merging the Rules from each Group's ACL.
 
 
+The following rules are applied when calculating the Effective ACL:
+
+**1. When an Asset/STIG matches multiple Rules, the Rule with the most specific Resource takes precedence.**
+
+Specificity is calculated from the elements of the Resource, by summing each element where Asset = 1, STIG = 1, Label = 1, and Asset/STIG = 1. Therefore, a Collection resource has specificity of 0. Resources defined by only an Asset, STIG or Label have specificity of 1. A Label/STIG resource has specificity of 2, and an Asset/STIG resource has specificity of 3.
+
+For example, Asset-123 has the label "Windows Workstation" and is assigned the Windows_10_STIG. A User is requesting access to the Windows_10_STIG on Asset-123. Their Effective Grant has an ACL with the following rules:
+
+.. list-table::
+    :widths: 40 10
+    :header-rows: 1
+    :class: tight-table
+
+    * - Resource
+      - Access  
+    * - Asset "Asset-123" + STIG "Windows_10_STIG"
+      - Read/Write
+    * - Label "Windows Workstation" + STIG "Windows_10_STIG"
+      - Read
+
+In this case, even though Asset-123 has the label "Windows Workstation", the first rule takes precedence because it has higher specificity. STIG Manager will allow Read/Write access to the Windows_10_STIG on Asset-123, and Read only access to the Windows_10_STIG on other Assets with the "Windows Workstation" label.
+
+**2. When Access levels conflict, the most restrictive Access level is applied.**
+
+For example, Asset-123 has the label "Current Priorities" and is assigned the Windows_10_STIG. A User is requesting access to the Windows_10_STIG on Asset-123. Their Effective Grant has an ACL with the following rules:
+
+.. list-table::
+    :widths: 40 10
+    :header-rows: 1
+    :class: tight-table
+
+    * - Resource
+      - Access  
+    * - Label "Current Priorities"
+      - Read/Write
+    * - STIG "Windows_10_STIG"
+      - Read
+
+In this case, since Asset-123 has Label "Current Priorities" and is also assigned Windows_10_STIG, both rules could apply since they have the same specificity. However, Read access is more restrictive so STIG Manager would allow only Read access to the Windows_10_STIG on Asset-123. 
+
+To display the Effective ACL for a User, navigate to the Users tab in the Manage Collection interface. Hover over the row for a User and click the target icon to open the display.
 
 Examples
 --------------------------------------------------------
 
-All examples below can apply to individual User Grants or Group Grants. 
+All examples below apply to Grants to Users or User Groups. 
 These actions can be performed by the Collection Owner or Manager in the Manage Collection interface.
-To edit the Access Control list for Grant, click the "Edit ACL" button next to the User or Group.
+To edit the ACL for a Grant, click the "Edit ACL" button displayed when hovering over the Grant.
 
 .. thumbnail:: /assets/images/collection-manage-grants-w-edit-acl-highlighted-trimmed.png
       :width: 25% 
       :show_caption: True
-      :title: Click the Edit ACL button to manage Access Controls for a Grant.
+      :title: Click the Edit ACL button to manage the ACL for a Grant.
 
 
 **Grant a User or Group Read/Write on an entire Collection**
