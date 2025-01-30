@@ -1,21 +1,21 @@
 .. _roles-and-access:
 
 
-Collection Grants, Roles, Access, and User Groups
+Collection Grants, Roles, and Access Control
 ####################################################
 
-STIG Manager uses a Role-Based Access Control (RBAC) system to manage access to Collections.  This system allows the Collection Owner or Manager to Grant Users a Role in their Collection, and then create an Access Control List (ACL) for each Grant.
+STIG Manager implements a Role-Based Access Control (RBAC) system to manage access to Collections.  This system allows the Collection Owner or Manager to Grant Users a Role in their Collection, and optionally create an Access Control List (ACL) for each Grant.
 
 
 .. note:: 
 
-  The Collection Roles and Access are distinct from the overall Application Privileges, which are managed by the configured OIDC Provider. Collection Grants, Roles, and Access are specific to each Collection and its contents.
+  Collection Grants are specific to each Collection and its contents. They are distinct from :ref:`User Privileges<user-roles-privs>`, which allow Application-wide management functions and Collection creation. User Privileges are managed through the configured OIDC Provider. 
 
 
 Grants
 --------------------------------------------------------
 
-A Grant is a record of a User or User Group being given a Role in a Collection.  A User or Group can have Grants in multiple Collections, with different Roles in each Collection. Users with the Owner or Manage Role can create, modify, and remove Grants to the Collection.
+A Grant is a record of a User or User Group being given a Role in a Collection.  A User or Group can be given Grants in multiple Collections, with different Roles in each Collection. Users with the Owner or Manage Role can create, modify, and remove Grants to the Collection.
 
 Grants are composed of the following elements:
 
@@ -36,7 +36,7 @@ Each Role is also given a **Priority**, to handle scenarios where a User is a me
 
 The following Collection Roles are available:
 
-.. list-table:: Role Capability, Default Access, and Priority 
+.. list-table:: 
     :widths: 20 40 40 10
     :header-rows: 1
     :class: tight-table
@@ -68,26 +68,30 @@ The following Collection Roles are available:
 Effective Grant
 --------------------------------------------------------
 
-To determine a User's Grant to a Collection, STIG Manager calculates an Effective Grant from all the Grants that apply to the User. These rules are followed when calculating the Effective Grant:
+When a User interacts with a Collection, STIG Manager selects the User's Effective Grant from the User and Group Grants that include the User. These rules are followed when selecting the Effective Grant:
 
 **1. Direct Grants to Users take precedence over Group Grants**
-  - If User1 is a member of Group1, and both User1 and Group1 have Grants in the Collection, only the Grant given directly to User1 will apply. The Grant given to Group1 will be ignored for User1.
 
-**2. When a User belongs to multiple Groups with Grants, the Group Grant with the highest priority Role is selected**
-  - If User1 is a member of Group1 and Group2, and Group1 has a "Manage" Role and Group2 has a "Full" Role in the Collection, User1 will have the "Manage" Role in the Collection.
+  If User1 is a member of Group1, and both User1 and Group1 have Grants in the Collection, only the Grant given directly to User1 will apply. The Grant given to Group1 will be ignored for User1.
 
-**3. When a User belongs to multiple Groups with Grants having an identical highest priority Role, the Grant is for that Role and the Group ACLs will be merged**
-  - If User1 is a member of Group1 and Group2, and Group1 and Group2 both have a "Full" Role in the Collection, User1 will have the "Full" Role in the Collection and their :ref:`Effective ACL<EffectiveACL>` will merge rules from both Group Grants.
+**2. When a User belongs to multiple Groups given Grants, the Group Grant with the highest Role Priority is selected**
+
+  If User1 is a member of Group1 and Group2, and Group1 has a "Manage" Role and Group2 has a "Full" Role in the Collection, User1 will have the "Manage" Role in the Collection.
+
+**3. When a User belongs to multiple Groups given Grants with an identical highest Role Priority, the Effective Grant is for that Role and the Grant ACLs will be merged**
+
+  If User1 is a member of Group1 and Group2, and Group1 and Group2 both have a "Full" Role in the Collection, User1 will have the "Full" Role in the Collection and their :ref:`Effective ACL<EffectiveACL>` will merge rules from both Group Grants.
 
 Access Control List (ACL)
 --------------------------------------------------------
 
-An ACL includes one or more Access Control Rules, which allow fine-grained management of which Reviews users can view and modify in a Collection. They are particularly important for users with the Restricted role, as these users have no default access.
+A Grant's ACL includes one or more Access Rules, which allow fine-grained management of which Reviews users can view and modify in a Collection. They are particularly important for users with the Restricted role, as these users have no default access.
 
 .. note::
-  The order of Rules in an ACL is not significant.
+  For Grants having the Owner, Manage or Full Role, an ACL is optional and used only to disallow Write Access to Resources. By default, these Roles have Read/Write access to all Reviews in the Collection.
 
-Access Control Rules
+
+Access Rules
 --------------------------------------------------------
 
 Rules are composed of a **Resource** and an **Access** level.
@@ -103,7 +107,12 @@ The **Access** level is set as one of three values:
 
   - **Read**: Can view reviews, but cannot create or modify them
   - **Read/Write**: Can view, create and modify reviews
-  - **None**: No access (Available to ACLs for the Restricted role only)
+  - **None**: No access (available only in ACLs for the Restricted role)
+
+
+.. note::
+  The order of Rules in an ACL is not significant.
+
 
 Rules can be defined for individual Assets, STIGs, or Labels, or can be combined to create complex access rules. For example, a user could be allowed Read access to the "Database" label, and Read/Write access to the "PostgreSQL_9-x_STIG" STIG. This will have the effect of letting the user **view** reviews for all STIGs assigned to Assets tagged with the "Database" label, but also **create and modify** reviews for the PostgreSQL STIG on those Assets.
 
@@ -117,7 +126,7 @@ When determining a User's access to Resources in a Collection, STIG Manager calc
 
 
 .. note::
-  In many cases, only one Grant's ACL needs to be considered. However, if a User belongs to multiple Groups, and those Groups have Grants with the identical highest priority Role, the Effective ACL is calculated after merging the Rules from each Group's ACL.
+  In many cases, only one Grant's ACL needs to be considered. However, if a User belongs to multiple Groups, and those Groups have Grants with an identical highest Role Priority, the Effective ACL is calculated after merging the Rules from each Group's ACL.
 
 
 The following rules are applied when calculating the Effective ACL:
@@ -162,11 +171,11 @@ In this case, since Asset-123 has Label "Current Priorities" and is also assigne
 
 To display the Effective ACL for a User, navigate to the Users tab in the Manage Collection interface. Hover over the row for a User and click the target icon to open the display.
 
-Examples
+Examples of ACL Management
 --------------------------------------------------------
 
-All examples below apply to Grants to Users or User Groups. 
-These actions can be performed by the Collection Owner or Manager in the Manage Collection interface.
+All examples below apply to Grants to both Users or User Groups. 
+These actions can be performed by a Collection Owner or Manager in the Manage Collection interface.
 To edit the ACL for a Grant, click the "Edit ACL" button displayed when hovering over the Grant.
 
 .. thumbnail:: /assets/images/collection-manage-grants-w-edit-acl-highlighted-trimmed.png
@@ -175,18 +184,21 @@ To edit the ACL for a Grant, click the "Edit ACL" button displayed when hovering
       :title: Click the Edit ACL button to manage the ACL for a Grant.
 
 
-**Grant a User or Group Read/Write on an entire Collection**
+**Grant Read/Write on an entire Collection**
   - Create a Grant for the User or Group with the Full Role
-  - No specific ACL required. Default access for the Full Role grants Read/Write access to Reviews for all Assets and STIGs in the Collection.
+  - No specific ACL is required. Default access for the Full Role allows Read/Write access to Reviews for all Assets and STIGs in the Collection.
   
-**Let a User change Reviews for all Assets and STIGs in a Collection, except for those with the "For Reference" label**
+**Allow a User to change Reviews for all Assets and STIGs in a Collection, except for those with the "For Reference" label**
   - Grant the User a Full, Manage, or Owner Role
-  - Select "For Reference" from the "Labels" node of the navigation tree, and "Add -> with Read Only" access. Save.
-  - By default, these roles have Read/Write access to all Assets and STIGs in the Collection. Adding this rule restricts access only to Assets with the "For Reference" label to "Read Only".
+  - Click the "Edit ACL" button displayed when hovering over the Grant.
+  - Select "For Reference" from the "Labels" node of the Collection Resources tree, and "Add -> with Read Only" access. Save.
+  - By default, these roles have Read/Write access to all Assets and STIGs in the Collection. Adding this rule restricts access to Assets with the "For Reference" label to "Read Only".
 
 
 **Make the entire Collection Read-only for a specific User or Group**
-  - Select the "Collection" item in the Navigation Tree.
+  - Grant the User any Role
+  - Click the "Edit ACL" button displayed when hovering over the Grant.
+  - Select the "Collection" node in the Collection Resources Tree.
   - Click the "Add" button and select "with Read Only access." Save.
   
 
