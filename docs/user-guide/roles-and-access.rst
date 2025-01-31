@@ -6,6 +6,9 @@ Collection Grants, Roles, and Access Control
 
 STIG Manager implements a Role-Based Access Control (RBAC) system to manage access to Collections.  This system allows the Collection Owner or Manager to Grant Users a Role in their Collection, and optionally create an Access Control List (ACL) for each Grant.
 
+This page describes the concepts of Grants, Roles, and ACLs in STIG Manager, and how they affect access to Collections.
+Check the :ref:`User Walkthrough <create-a-grant>` for the quick steps to create a Grant, and the :ref:`Collection Management section of the User Guide <grants-panel>` for a detailed look at the UI components that affect Grants.
+
 
 .. note:: 
 

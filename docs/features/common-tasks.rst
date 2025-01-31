@@ -71,14 +71,14 @@ Add Users
 To a Collection
 -------------------
 
-If you have Manage or Owner access to a Collection, you can grant access to that Collection to other Users. 
-Check out the :ref:`User Grants <grants-panel>` section of the user guide for a description of this feature, or the :ref:`glossary <terminology>` for more information about :term:`User Access Levels. <User>`
+If you have a Manage or Owner Role in a Collection, you can assign Roles to other Users or User Groups with a Collection Grant. 
+Check the :ref:`User Walkthrough <create-a-grant>` for the quick steps to create a Grant, and the :ref:`Collection Management section of the User Guide <grants-panel>` for a detailed look at the UI components that affect Grants.
 
 
 To the System
 ------------------
 
-Adding a user to STIG Manager will be dependent on the way your Organization has configured your Authentication. Check out the :ref:`Adding Users` portion of the Setup Guide for more information. 
+Adding a user to STIG Manager will be dependent on the way your Organization has configured your Authentication Provider. Check out the :ref:`Adding Users` portion of the Setup Guide for more information. 
 
 
 Export Results

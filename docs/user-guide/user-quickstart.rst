@@ -103,6 +103,9 @@ Attach STIGs to Assets in your Collection
 
 * The Assets you create and the STIGs you attach to them are presented in the Collection Management tab (In the Asset and STIG panels on the right) as well as the Nav Tree entry for that collection on the left.
 
+
+.. _create-a-grant:
+
 Grant Users Roles in your Collection
 ======================================
 
