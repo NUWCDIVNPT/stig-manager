@@ -691,9 +691,8 @@ If the application does not provide an explicit logoff message indicating the us
           <ATTRIBUTE_DATA>CCI-002364</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>The SPA does not display an explicit &apos;logged out&apos; screen, it immediately redirects to the login screen of the configured OIDC Provider.
-
-Addressed by Issue #485</FINDING_DETAILS>
+        <FINDING_DETAILS>The SPA does not itself display an explicit &apos;logged out&apos; screen, it immediately redirects the user to the logout screen of the configured OIDC Provider, which handles session termination.
+        </FINDING_DETAILS>
         <COMMENTS></COMMENTS>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -6721,7 +6720,7 @@ If HTTP headers are not logged, this is a finding.</ATTRIBUTE_DATA>
           <ATTRIBUTE_DATA>CCI-000169</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Addressed by Issue #179, allowing different log levels and configuration to affect headers included in audit record.</FINDING_DETAILS>
+        <FINDING_DETAILS>Application supports configuration of logging behavior, including log levels that will include request headers in log entries.</FINDING_DETAILS>
         <COMMENTS></COMMENTS>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -7038,7 +7037,7 @@ If the application does not log when successful and unsuccessful attempts to gra
           <ATTRIBUTE_DATA>CCI-000172</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Addressed by Issue #179, must include POST content and JSON reply in audit record.</FINDING_DETAILS>
+        <FINDING_DETAILS>Requests invoking elevated privilege include POST content and JSON reply in audit record.</FINDING_DETAILS>
         <COMMENTS></COMMENTS>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -7481,7 +7480,7 @@ If the application does not log when successful and unsuccessful attempts to mod
           <ATTRIBUTE_DATA>CCI-000172</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Addressed by Issue #179, must include POST content and JSON reply in audit record.</FINDING_DETAILS>
+        <FINDING_DETAILS>Requests invoking elevated privilege include POST content and JSON reply in audit record.</FINDING_DETAILS>
         <COMMENTS></COMMENTS>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -7928,7 +7927,7 @@ If the application does not log when successful and unsuccessful attempts to del
           <ATTRIBUTE_DATA>CCI-000172</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Addressed by Issue #179, must include POST content and JSON reply in audit record.</FINDING_DETAILS>
+        <FINDING_DETAILS>Requests invoking elevated privilege include POST content and JSON reply in audit record.</FINDING_DETAILS>
         <COMMENTS></COMMENTS>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -9138,7 +9137,7 @@ If the application is not recording application shutdown events in either the ap
           <ATTRIBUTE_DATA>CCI-000130</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>The API emits audit records after receiving the SIGINT or SIGTERM signal that initiates a shutdown. Addressed by Issue #484
+        <FINDING_DETAILS>The API emits audit records after receiving the SIGINT or SIGTERM signal that initiates a shutdown. 
 
 Your local definition of &apos;application shutdown&apos; may include other components (i.e, OIDC Provider, database, reverse proxies, log servers, etc.) whose compliance with this check must be individually evaluated.</FINDING_DETAILS>
         <COMMENTS></COMMENTS>
@@ -9248,8 +9247,8 @@ If the IP address of the remote system is not recorded along with the event in t
           <VULN_ATTRIBUTE>CCI_REF</VULN_ATTRIBUTE>
           <ATTRIBUTE_DATA>CCI-000130</ATTRIBUTE_DATA>
         </STIG_DATA>
-        <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>The API emits audit records containing the destination IP when retrieving token signing keys from the OIDC Provider or when optionally downloading STIG compilations during  the initial database bootstrap.</FINDING_DETAILS>
+        <STATUS>Not_Reviewed</STATUS>
+        <FINDING_DETAILS>The API does not initiate any connections to remote systems, only its configured dependencies. The configuration of the OIDC Provider and Database dependencies are locally defined and implemented.</FINDING_DETAILS>
         <COMMENTS></COMMENTS>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -10119,8 +10118,7 @@ If the application does not log the full text recording of privileged commands o
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
         <FINDING_DETAILS>When logging endpoint requests, if the request includes parameter &apos;elevate&apos; == true, the API emits audit records that include the JSON POST content and the JSON reply
-
-Addressed by Issue #179</FINDING_DETAILS>
+        </FINDING_DETAILS>
         <COMMENTS></COMMENTS>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -23907,7 +23905,7 @@ If the application displays any application technical data such as database vers
           <ATTRIBUTE_DATA>CCI-002420</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Error messages addressed by Issue #483</FINDING_DETAILS>
+        <FINDING_DETAILS>Error messages do not include sensitive or privileged information.</FINDING_DETAILS>
         <COMMENTS></COMMENTS>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -25135,7 +25133,7 @@ Use generic error messages.</ATTRIBUTE_DATA>
           <ATTRIBUTE_DATA>CCI-001312</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Error messages addressed by Issue #483</FINDING_DETAILS>
+        <FINDING_DETAILS>Error messages do not include sensitive or privileged information.</FINDING_DETAILS>
         <COMMENTS></COMMENTS>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>
@@ -25248,7 +25246,7 @@ Use generic error messages for non-privileged users.</ATTRIBUTE_DATA>
           <ATTRIBUTE_DATA>CCI-001314</ATTRIBUTE_DATA>
         </STIG_DATA>
         <STATUS>NotAFinding</STATUS>
-        <FINDING_DETAILS>Error messages addressed by Issue #483</FINDING_DETAILS>
+        <FINDING_DETAILS>Error messages do not include sensitive or privileged information.</FINDING_DETAILS>
         <COMMENTS></COMMENTS>
         <SEVERITY_OVERRIDE/>
         <SEVERITY_JUSTIFICATION/>

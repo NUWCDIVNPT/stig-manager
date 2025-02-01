@@ -10,10 +10,7 @@ This is a glossary with definitions for terms like :term:`Asset`:
 .. glossary::
 
     Access Control List
-        A list of Access Control Rules applied to a grant to determine what the grantee can access in a Collection.  Access Control Lists are managed in the Grants panel of the Manage Collection interface.  See :ref:`roles-and-access` for more information.
-
-    ACL
-        See :term:`Access Control List` 
+        A list of Access Control Rules applied to a grant to determine what the Grantee can access in a Collection.  Access Control Lists are managed in the Grants panel of the Manage Collection interface.  See :ref:`roles-and-access` for more information.
 
     Access Control Rule
         An individual item describing varying levels of Access to the components of a Collection, such as specific Assets, STIGs, Labels, or the entire Collection. The overall Access Control List for a Grant is composed of these Access Control Rules. See :ref:`roles-and-access` for more information.
@@ -77,6 +74,9 @@ This is a glossary with definitions for terms like :term:`Asset`:
     Grant
         A Grant is a record of a User or User Group being given a Role in a Collection.  A User can have Grants in multiple Collections, and have different Roles in each Collection. Collection Owners or Managers can create/remove/modify Grants. :term:`Access Control List` rules can be applied to Grants to further refine the User's access to the Collection.  See :ref:`roles-and-access` for more information.
 
+    Grantee
+        The User or User Group that is the recipient of a Grant. See :ref:`roles-and-access` for more information.
+
     Label
         A Label is a user-defined tag that can be applied to Assets in a Collection. Labels can be used to filter Assets in the Collection Dashboard and other views, and can be used in Access Control Rules to restrict or enable access to Assets based on their Labels.
 
@@ -94,14 +94,11 @@ This is a glossary with definitions for terms like :term:`Asset`:
             * Status Text - Contextual text describing status change. Most often used when a Review is "Rejected" and requires further work by the original Evaluator.
 		
           * In order to be Submitted, the Evaluation must have a Result of "Not A Finding," "Not Applicable," or "Open," and must meet any additional requirements set for that Collection. Hover over the ``(?)`` symbol for submission requirements. 
-          * In order to be Rejected, the Owner must specify a Return Comment, providing direction to the Evaluator.
-
-
+          * In order to be Rejected, the Owner must specify a Rejection Comment, providing direction to the Evaluator.
 
     	Each Review maintains a History, which is available to the User in the Review Resources panel. Contextual data such as the User who evaluated the Requirement, the user who set the Status of a Review, and timestamps for those actions are also collected.
 
-
-        The use of Review Status fields is **optional**, but many users find it handy to "Save" Reviews in progress, and then mark them "Submitted" when they consider it complete.  Collection Owners (or, optionally, Managers) then have the option to set an "Accepted" Status for Reviews they might submit as part of an RMF package, or "Reject" Reviews that are unsatisfactory in their current state, or that they want more clarification on.  This Status will be visible to the User that evaluated the Review, and they can re-Submit the review once they have made changes.   
+        The use of Review Status fields is **optional**, but many users find it handy to "Save" Reviews in progress, and then mark them "Submitted" when they consider it complete.  Collection Owners (or, optionally, Managers) then have the option to set an "Accepted" Status for Reviews they might submit as part of an RMF package, or "Reject" Reviews that are unsatisfactory in their current state, or needs clarification.  This Status will be visible to the User that evaluated the Review, and they can re-Submit the review once they have made changes.   
 
         See our section on :ref:`Review Handling and Matching<review-handling>` for more information about how STIGMan tracks Reviews.
 
@@ -110,26 +107,6 @@ This is a glossary with definitions for terms like :term:`Asset`:
 
         There are four Roles available in STIG Manager. Roles differ in the actions they can perform in a Collection, and their default Access to Assets and Reviews.  See :ref:`roles-and-access` for more information.
 
-        .. list-table:: Role Capabilities and Access 
-            :widths: 20 40 40 
-            :header-rows: 1
-            :class: tight-table
-
-            * - Role
-              - Collection Management Capabilities  
-              - Default Access
-            * - Owner
-              - Add/Remove/Modify Assets, STIG assignments, Labels, and User Grants. Can delete the Collection.
-              - Full access to all Assets/Reviews (Can be restricted with Access Controls)
-            * - Manage
-              - Add/Remove/Modify Assets, STIG assignments, Labels, and User Grants with the exception of "Owner" grants. Optionally responsible for "Accepting" and "Rejecting" reviews from evaluators.
-              - Full access to all Assets/Reviews (Can be restricted with Access Controls)
-            * - Full
-              - None
-              - Full access to all Assets/Reviews (Can be restricted with Access Controls)
-            * - Restricted
-              - None
-              - None (requires Access Controls)
 
     STIG
         Secure Technical Implementation Guidelines published by the Defense Information Security Agency. STIGs are published in XCCDF format that can be imported into STIG Manager. Automated results in XCCDF format, such as those produced by the DISA SCC Tool, can also be imported. Manually evaluated STIG Results are often recorded in a .ckl file, a different format, which is produced by the DISA tool STIG Viewer, and can also be imported into STIG Manager. 

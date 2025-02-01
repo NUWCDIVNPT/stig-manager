@@ -16,10 +16,31 @@ Collections are composed of:
   * Assets
   * STIGs attached to those Assets
   * Reviews of the Rules that compose each attached STIG
-  * Grants to Usrs or Groups providing access to some or all of the Assets/STIGs in that Collection
-  * Reports providing Status and Findings information
+  * Grants to Users or Groups providing access to some or all of the Assets/STIGs in that Collection
+  * Metrics providing Status and Findings counts for each Asset and STIG in the Collection
 
-Collections, Assets, and Reviews all support a JSON field called "metadata" for general use that can be used to enhance functionality and associate arbitrary data with those elements. The project is exploring best practices and uses for this feature. Clients that "play nice" with this field would be expected to preserve metadata already there unless they put it there, perhaps in a nested object with their client name as the Key.
+
+
+Metadata
+---------------------------------------------
+
+Collections, Assets, and Reviews all support a JSON field called "metadata" for general use that can be used to enhance functionality and associate arbitrary data with those elements. The project is exploring best practices and uses for this feature. Third-party Clients that "play nice" with this field would be expected to preserve metadata already there unless they put it there, perhaps in a nested object with their client name as the Key.
+
+The Project Clients and API make use of the following metadata keys. These keys are reserved for use by the STIG Manager project and should not be used by third-party Clients:
+
+* Collection Metadata:
+    - ``importOptions`` - Guidance for clients to follow when posting reviews for this collection that are NOT enforced by the API. See :ref:`import-options` for more information.
+* Asset Metadata
+    - ``cklWebOrDatabase`` - A boolean indicating whether the Asset is a Web or Database server. See :ref:`ckl-processing`
+    - ``cklHostName`` - The hostname of the Asset as it appears in a .ckl file. See :ref:`ckl-processing`
+    - ``cklWebDbSite`` - The Web or Database Site of the Asset as it appears in a .ckl file. See :ref:`ckl-processing`
+    - ``cklWebDbInstance`` - The Web or Database Instance of the Asset as it appears in a .ckl file. See :ref:`ckl-processing`
+* Review Metadata
+    - ``artifacts`` - Array of objects describing the artifacts attached to the review. Each item includes name, type, size, description, user, timestamp, and digest of the artifact content. 
+    - ``<digest-specified-by-artifact-object>`` - Base64-encoded content of the artifact.
+
+.. note::
+   This usage of Review metadata for artifacts is experimental and subject to change or deprecation.  
 
 
 Reference STIGs
@@ -31,12 +52,12 @@ These Reference STIGs must be imported and updated periodically as new STIGs are
 Wherever the content of a STIG is displayed (STIG Rules, Rule Titles, Rule Descriptions, Fix Texts, Severities, etc.) this data is drawn from the Reference STIG imported by the Application Manager. It is important to note the distinction here between STIG content and "Review" content, which is usually drawn from imported .ckl files or manual results inputted into STIG Manager by Reviewers. This "Review" content only affects the "Review" or "Evaluation" portion of the data displayed in STIG Manager. They cannot change Reference STIG content via .ckl imports. 
 
 
-"Checklists" - .ckl and XCCDF 
+"Checklists" - .ckl/b and XCCDF 
 ---------------------------------------------
 
 Assets and the STIGs assigned to them are generally presented as Checklists, the lists of Rules and Checks that compose the assigned STIG, and the Reviews that satisfy those Rules. STIG Manager associates Reviews with specific content of Rules (Rule Version and Rule Check Content), independent of the STIGs that are assigned to Assets. This allows for different and more useful presentations of the data than when the Reviews are expressed in flat files, such as .ckl or XCCDF files. 
 
-It is important to note that STIG Manager does not retain the actual .ckl or XCCDF files that are imported into it in any way. The files are parsed for the information they contain, and that information is stored in the database. Manual edits via the UI and new imports all contribute to the current state of an Assets reviews as presented by the UI and API. NEW .ckl or XCCDF files are generated on demand reflecting the current state of a Collections Assets, STIGs, and reviews. 
+It is important to note that STIG Manager does not retain the actual .ckl or XCCDF files that are imported into it in any way. The files are parsed for the information they contain, and that information is stored in the database. Manual edits via the UI and new imports all contribute to the current state of an Asset's reviews as presented by the UI and API. NEW .ckl/b or XCCDF files are generated on demand reflecting the current state of a Collections Assets, STIGs, and reviews. 
 This approach provides several advantages:
 
 - Reviews are associated with the specific content of a Rule (Rule Version and Rule Check Content).
@@ -140,18 +161,11 @@ STIGMan serializes elements containing data that are STIGMan specific, as well a
 
 
 
-Permissions
-======================
-
-Grants
-------------------------------------------------
-
-Individual access to a Collection is controlled solely by the Grants that Collection Owners and Managers can delegate to other users. 
-See the :term:`User` definition for more info on these grants. This is access to Collections is distinct from overall Application access, which is described below. 
+Application Access
+=============================
 
 
-
-Application Access, API Endpoints, Scopes, and Privilege Invocation
+API Endpoints, Scopes, and Privilege Invocation
 ------------------------------------------------------------------------
 
 Overall access to the STIG Manager application is controlled by the OIDC provider. 
@@ -168,6 +182,10 @@ Access to specific endpoints is controlled by the **scopes** present in a user's
   
 See our :ref:`Authentication and Identity <authentication>` documentation and our `API Specification <https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/stig-manager.yaml>`_ for more information about how these scopes and privileges interrelate. 
 
+
+.. note::
+    An authorized user will not have access to Collection data until they have been assigned a Grant to one by a Collection Owner or Manager, or create a Collection themselves.
+    See :ref:`roles-and-access` for more information about how Grants are managed. 
 
 
 Database Entity Relationship Diagrams

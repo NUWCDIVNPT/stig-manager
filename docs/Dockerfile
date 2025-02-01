@@ -1,4 +1,4 @@
-FROM sphinxdoc/sphinx:7.1.2
+FROM sphinxdoc/sphinx:7.4.7
 
 WORKDIR /docs
 ADD requirements.txt /docs
