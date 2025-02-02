@@ -4,39 +4,119 @@ const jwksClient = require('jwks-rsa')
 const jwt = require('jsonwebtoken')
 const retry = require('async-retry')
 const _ = require('lodash')
-const {promisify} = require('util')
 const UserService = require(`../service/UserService`)
 const axios = require('axios')
 const SmError = require('./error')
+const http = require("node:http")
 
 let jwksUri
 let client
 
 const privilegeGetter = new Function("obj", "return obj?." + config.oauth.claims.privileges + " || [];");
 
-const verifyRequest = async function (req, requiredScopes, securityDefinition) {
-    const token = getBearerToken(req)
-    if (!token) {
-        throw(new SmError.AuthorizeError("OIDC bearer token must be provided"))
+// express middleware to validate token
+const validateToken = async function (req, res, next) {
+    try {
+        const tokenJWT = getBearerToken(req)
+        if (tokenJWT) {
+            const tokenObj = jwt.decode(tokenJWT, {complete: true})
+            
+            let signingKey
+            try {
+                signingKey = await client.getSigningKey(tokenObj.header.kid)
+            }
+            catch (e) {
+                let message = e.message
+                if (e.errors?.length) {
+                    message = e.errors[0].message
+                }
+                throw new SmError.OIDCProviderError(message)
+            }
+            
+            try {
+                jwt.verify(tokenJWT, signingKey.publicKey, {algorithms: ['RS256']})
+            }
+            catch (e) {
+                throw new SmError.AuthorizeError("Token verification failed")
+            }
+            
+            req.access_token = tokenObj.payload
+            req.bearer = tokenJWT
+        }
+        next()
     }
-    
-    const decoded = await verifyAndDecodeToken (token, getKey, {algorithms: ['RS256']})
-    req.access_token = decoded
-    req.bearer = token
+    catch (e) {
+        next(e)
+    }
+}
 
-    // Get username from configured claims in token, or fall back through precedence list. 
-    const usernamePrecedence = [config.oauth.claims.username, "preferred_username", config.oauth.claims.servicename, "azp", "client_id", "clientId"]
-    const username = decoded[usernamePrecedence.find(element => !!decoded[element])]
-    // If no username found, throw Privilege error
-    if (username === undefined) {
-        throw(new SmError.PrivilegeError("No token claim mappable to username found"))
+// express middleware to setup user object, expects to be called after validateToken()
+const setupUser = async function (req, res, next) {
+    try {
+        if (req.access_token) {
+            // Get decoded JWT payload from request
+            const tokenPayload = req.access_token
+    
+            // Get username from configured claims in token, or fall back through precedence list. 
+            const usernamePrecedence = [config.oauth.claims.username, "preferred_username", config.oauth.claims.servicename, "azp", "client_id", "clientId"]
+            const username = tokenPayload[usernamePrecedence.find(element => !!tokenPayload[element])]
+            // If no username found, throw Privilege error
+            if (username === undefined) {
+                throw new SmError.PrivilegeError("No token claim mappable to username found")
+            }
+            
+            const userObject = await UserService.getUserObject(username) ?? {username} 
+            
+            const refreshFields = {}
+            let now = new Date().toUTCString()
+            now = new Date(now).getTime()
+            now = now / 1000 | 0 //https://stackoverflow.com/questions/7487977/using-bitwise-or-0-to-floor-a-number
+    
+            if (!userObject?.lastAccess || now - userObject?.lastAccess >= config.settings.lastAccessResolution) {
+                refreshFields.lastAccess = now
+            }
+            if (!userObject?.lastClaims || tokenPayload[config.oauth.claims.assertion] !== userObject?.lastClaims?.[config.oauth.claims.assertion]) {
+                refreshFields.lastClaims = JSON.stringify(tokenPayload)
+            }
+            if (refreshFields.lastAccess || refreshFields.lastClaims) {
+                const userId = await UserService.setUserData(userObject, refreshFields)
+                if (userId != userObject.userId) {
+                    userObject.userId = userId.toString()
+                }
+            }
+
+            // Get privileges and check elevate param  
+            userObject.privileges = {
+                create_collection: privilegeGetter(tokenPayload).includes('create_collection'),
+                admin: privilegeGetter(tokenPayload).includes('admin')
+            }
+
+            if ('elevate' in req.query && (req.query.elevate === 'true' && !userObject.privileges.admin)) {
+                throw new SmError.InvalidElevationError() 
+            }
+
+            req.userObject = userObject
+        }
+        next()
     }
+    catch (e) {
+        next(e)
+    }
+}
+
+// express-openapi-validator security handler
+const validateOauthSecurity = function (req, requiredScopes) {
+    if (!req.access_token) {
+        throw new SmError.NoTokenError() 
+    }
+    // Get decoded JWT payload from request
+    const tokenPayload = req.access_token
 
     // Check scopes
-    const grantedScopes = typeof decoded[config.oauth.claims.scope] === 'string' ? 
-        decoded[config.oauth.claims.scope].split(' ') : 
-        decoded[config.oauth.claims.scope]
-    const commonScopes = _.intersectionWith(grantedScopes, requiredScopes, function(gs,rs) {
+    const grantedScopes = typeof tokenPayload[config.oauth.claims.scope] === 'string' ? 
+        tokenPayload[config.oauth.claims.scope].split(' ') : 
+        tokenPayload[config.oauth.claims.scope]
+    const commonScopes = _.intersectionWith(grantedScopes, requiredScopes, function(gs, rs) {
         if (gs === rs) return gs
         let gsTokens = gs.split(":").filter(i => i.length)
         let rsTokens = rs.split(":").filter(i => i.length)
@@ -48,91 +128,64 @@ const verifyRequest = async function (req, requiredScopes, securityDefinition) {
         }
     })
     if (commonScopes.length == 0) {
-        throw(new SmError.PrivilegeError("Not in scope"))
+        throw new SmError.OutOfScopeError()
     }
 
-    // Get privileges and check elevate param  
-    const privileges = {
-        create_collection: privilegeGetter(decoded).includes('create_collection'),
-        admin: privilegeGetter(decoded).includes('admin')
-    }
-    if ('elevate' in req.query && (req.query.elevate === 'true' && !privileges.admin)) {
-        throw(new SmError.PrivilegeError("User has insufficient privilege to complete this request."))
-    }
-
-    const userObject = await UserService.getUserObject(username) ?? {username} 
-    
-    const refreshFields = {}
-    let now = new Date().toUTCString()
-    now = new Date(now).getTime()
-    now = now / 1000 | 0 //https://stackoverflow.com/questions/7487977/using-bitwise-or-0-to-floor-a-number
-
-    if (!userObject?.lastAccess || now - userObject?.lastAccess >= config.settings.lastAccessResolution) {
-        refreshFields.lastAccess = now
-    }
-    if (!userObject?.lastClaims || decoded[config.oauth.claims.assertion] !== userObject?.lastClaims?.[config.oauth.claims.assertion]) {
-        refreshFields.lastClaims = JSON.stringify(decoded)
-    }
-    if (refreshFields.lastAccess || refreshFields.lastClaims) {
-        const userId = await UserService.setUserData(userObject, refreshFields)
-        if (userId != userObject.userId) {
-            userObject.userId = userId.toString()
-        }
-    }
-
-    userObject.privileges = privileges
-    req.userObject = userObject
     return true
 }
 
-const verifyAndDecodeToken = promisify(jwt.verify)
-
+// utility to extract bearer token from request
 const getBearerToken = req => {
     if (!req.headers.authorization) return
     const headerParts = req.headers.authorization.split(' ')
     if (headerParts[0].toLowerCase() === 'bearer') return headerParts[1]
 }
 
-function getKey(header, callback){
-    client.getSigningKey(header.kid, function(err, key) {
-        if (!err) {
-            let signingKey = key.publicKey || key.rsaPublicKey
-            callback(null, signingKey)
-        } else {
-            callback(err, null)
-        }
+// setup the JWKS key handling client
+const setupJwks = async function (jwksUri) {
+    client = jwksClient({
+        jwksUri,
+        timeout: 5000,
+        cacheMaxAge: 600000
     })
+    // preflight request to JWKS endpoint. jwks-rsa library does NOT cache this response.
+    const signingKeys = await client.getSigningKeys()
+
+    // Refetch first signing key using the library's only caching method. Yes, this is redundant and inefficient.
+    await client.getSigningKey(signingKeys[0].kid)
+
+    logger.writeDebug('oidc', 'discovery', { jwksUri, signingKeys })
 }
 
 let initAttempt = 0
 async function initializeAuth(depStatus) {
     const retries = 24
-    const wellKnown = `${config.oauth.authority}/.well-known/openid-configuration`
+    const metadataUri = `${config.oauth.authority}/.well-known/openid-configuration`
+    let jwksUri
     async function getJwks() {
-        logger.writeDebug('oidc', 'discovery', { metadataUri: wellKnown, attempt: ++initAttempt })
-
-        const openidConfig = (await axios.get(wellKnown)).data
-
-        logger.writeDebug('oidc', 'discovery', { metadataUri: wellKnown, metadata: openidConfig})
+        logger.writeDebug('oidc', 'discovery', { metadataUri, attempt: ++initAttempt })
+        const openidConfig = (await axios.get(metadataUri)).data
+        logger.writeDebug('oidc', 'discovery', { metadataUri, metadata: openidConfig})
+        
         if (!openidConfig.jwks_uri) {
             throw( new Error('No jwks_uri property found') )
         }
         jwksUri = openidConfig.jwks_uri
-        client = jwksClient({
-            jwksUri: jwksUri
-        })
+        await setupJwks(jwksUri)
     }
-    await retry ( getJwks, {
+    
+    await retry(getJwks, {
         retries,
         factor: 1,
         minTimeout: 5 * 1000,
         maxTimeout: 5 * 1000,
         onRetry: (error) => {
-            logger.writeError('oidc', 'discovery', { success: false, metadataUri: wellKnown, message: error.message })
+            logger.writeError('oidc', 'discovery', { success: false, metadataUri, message: error.message })
         }
     })
-    logger.writeInfo('oidc', 'discovery', { success: true, metadataUri: wellKnown, jwksUri: jwksUri })
+
+    logger.writeInfo('oidc', 'discovery', { success: true, metadataUri, jwksUri })
     depStatus.auth = 'up'
 }
 
-module.exports = {verifyRequest, initializeAuth, privilegeGetter}
+module.exports = {validateToken, setupUser, validateOauthSecurity, initializeAuth, privilegeGetter}
