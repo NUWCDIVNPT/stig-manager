@@ -1,6 +1,5 @@
 
-
-name: Build and Test Binary Artifacts
+name: Test Binary Artifacts
 on:
   workflow_dispatch:
   pull_request:
@@ -10,6 +9,7 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-binary-tests.yml"
+      - ".github/workflows/build-binary-artifacts.yml"
   push:
     branches:
       - main
@@ -17,6 +17,7 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-binary-tests.yml"
+      - ".github/workflows/build-binary-artifacts.yml"
 env:
   STIGMAN_API_PORT: 64001
   STIGMAN_DB_HOST: localhost
@@ -30,51 +31,12 @@ env:
   STIGMAN_EXPERIMENTAL_APPDATA: 'true'
   STIGMAN_OIDC_PROVIDER: http://127.0.0.1:8080/auth/realms/stigman
 jobs:
-  build-binary-artifacts:
-    name: Build binary artifacts
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Get repository metadata
-        id: repo
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const repo = await github.rest.repos.get(context.repo)
-            return repo.data     
-      - name: install uglify
-        run: |
-          sudo npm install -g uglify-js    
-      - name: run build script
-        id: run-the-build-script
-        working-directory: ./api
-        run: ./build.sh
-   
-      - name: Upload builds
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: binary-artifacts
-          path: ./api/bin/
-          if-no-files-found: error
-
-      - name: Upload archives
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: binary-archives
-          path: ./api/dist/
-          if-no-files-found: error
-
+  build-artifacts:
+    uses: nuwcdivnpt/stig-manager/.github/workflows/build-binary-artifacts.yml@main
   run-test-linux-binary-artifact:
     name: Run and test linux artifact
+    needs: build-artifacts
     runs-on: ubuntu-latest
-    needs: build-binary-artifacts  
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -87,9 +49,6 @@ jobs:
         working-directory: test/api/mock-keycloak
         run: |
           python3 -m http.server 8080 &
-      
-      - name: wait 5 seconds
-        run: sleep 5
 
       - name: Run MySQL container
         id: mysql-run
@@ -110,17 +69,17 @@ jobs:
           name: binary-artifacts  
           path: ./binary-artifacts
 
-      - name: List downloaded files
-        run: ls -l ./binary-artifacts
-
       - name: Set execute permissions on binary
         run: chmod +x ./binary-artifacts/stig-manager-linuxstatic
       
-      - name: Run linux binary 
+      - name: Run linux binary and log output
         working-directory: ./
         run: |
+          mkdir -p ./binary-artifacts/logs
           echo "Running tests on binary artifacts"
-          ./binary-artifacts/stig-manager-linuxstatic &
+          ./binary-artifacts/stig-manager-linuxstatic > ./binary-artifacts/logs/output.log 2>&1 &
+          echo $! > binary-artifacts/stig-manager.pid
+
       - name: Wait for bootstrap
         run: for i in {1..10}; do [ $i -gt 1 ] && sleep 5; curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration && s=0 && break || s=$?; printf '.'; done; (exit $s)
           
@@ -128,6 +87,21 @@ jobs:
         run: npm ci
         working-directory: ./test/api/
 
-      - name: Run tests with coverage
+      - name: Run tests with coverage and log output
         working-directory: ./test/api/
-        run: npm test
+        run: |
+          npm test > ../../binary-artifacts/logs/test-output.log 2>&1
+
+      - name: Stop linux binary
+        if: always()
+        run: |
+          if [ -f binary-artifacts/stig-manager.pid ]; then
+            kill $(cat binary-artifacts/stig-manager.pid) || true
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: ./binary-artifacts/logs/
