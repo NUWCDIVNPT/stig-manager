@@ -1,8 +1,8 @@
 
 name: Build Binary Artifacts and Sign
 on:
-  workflow_dispatch:
   workflow_call:
+  workflow_dispatch:
   push:
     branches:
       - main
