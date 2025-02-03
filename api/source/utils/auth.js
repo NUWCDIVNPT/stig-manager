@@ -7,9 +7,7 @@ const _ = require('lodash')
 const UserService = require(`../service/UserService`)
 const axios = require('axios')
 const SmError = require('./error')
-const http = require("node:http")
 
-let jwksUri
 let client
 
 const privilegeGetter = new Function("obj", "return obj?." + config.oauth.claims.privileges + " || [];");
@@ -20,12 +18,14 @@ const validateToken = async function (req, res, next) {
         const tokenJWT = getBearerToken(req)
         if (tokenJWT) {
             const tokenObj = jwt.decode(tokenJWT, {complete: true})
-            
             let signingKey
             try {
                 signingKey = await client.getSigningKey(tokenObj.header.kid)
             }
             catch (e) {
+                if (e.name === 'SigningKeyNotFoundError') {
+                    throw new SmError.SigningKeyNotFoundError(e.message)
+                }
                 let message = e.message
                 if (e.errors?.length) {
                     message = e.errors[0].message
@@ -34,7 +34,7 @@ const validateToken = async function (req, res, next) {
             }
             
             try {
-                jwt.verify(tokenJWT, signingKey.publicKey, {algorithms: ['RS256']})
+                jwt.verify(tokenJWT, signingKey.publicKey)
             }
             catch (e) {
                 throw new SmError.AuthorizeError("Token verification failed")
@@ -150,9 +150,6 @@ const setupJwks = async function (jwksUri) {
     })
     // preflight request to JWKS endpoint. jwks-rsa library does NOT cache this response.
     const signingKeys = await client.getSigningKeys()
-
-    // Refetch first signing key using the library's only caching method. Yes, this is redundant and inefficient.
-    await client.getSigningKey(signingKeys[0].kid)
 
     logger.writeDebug('oidc', 'discovery', { jwksUri, signingKeys })
 }

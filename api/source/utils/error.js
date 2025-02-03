@@ -54,15 +54,23 @@ class UnprocessableError extends SmError {
 class InternalError extends SmError {
   constructor(error) {
     super(error.message)
-    this.status = 422
+    this.status = 500
     this.detail = { error }
   }
 }
 
 class OIDCProviderError extends SmError {
   constructor(detail) {
-    super('OIDC Provider is unreachable, unable to validate tokens.')
+    super('OIDC Provider is unreachable, unable to validate token.')
     this.status = 503
+    this.detail = detail
+  }
+}
+
+class SigningKeyNotFoundError extends SmError {
+  constructor(detail) {
+    super('Unknown signing key, unable to validate token.')
+    this.status = 403
     this.detail = detail
   }
 }
@@ -107,6 +115,7 @@ module.exports = {
   ClientError,
   UnprocessableError,
   OIDCProviderError,
+  SigningKeyNotFoundError,
   NoTokenError,
   OutOfScopeError,
   ElevationError,
