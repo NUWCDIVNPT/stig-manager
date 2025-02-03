@@ -33,6 +33,8 @@ env:
 jobs:
   build-artifacts:
     uses: nuwcdivnpt/stig-manager/.github/workflows/build-binary-artifacts.yml@main
+    secrets:
+      STIGMAN_PRIVATE_KEY: ${{ secrets.STIGMAN_PRIVATE_KEY }}
   run-test-linux-binary-artifact:
     name: Run and test linux artifact
     needs: build-artifacts
