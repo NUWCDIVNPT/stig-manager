@@ -54,6 +54,36 @@ describe('GET - Metrics', function () {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
+            it("test metrics on empty collection", async function () {
+
+                const res = await utils.executeRequest(`${config.baseUrl}/collections/${'84'}/metrics/detail`, 'GET', iteration.token)
+                if(iteration.name !== "stigmanadmin"){
+                    expect(res.status).to.eql(403)
+                    return
+                }
+                expect(res.status).to.eql(200)
+                expect(res.body).to.be.empty
+
+            })
+            it("test metrics on collection with labelMatch=null", async function () {
+
+                const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/metrics/detail?labelMatch=null`, 'GET', iteration.token)
+                if(iteration.name === "collectioncreator"){
+                    expect(res.status).to.eql(403)
+                    return
+                }
+                expect(res.status).to.eql(200)
+                const expectedData = metrics[this.test.title]
+
+                if(iteration.name === 'lvl1'){
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['lvl1'])
+                }
+                else 
+                {
+                    expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
+                }
+
+            })
         })
 
         describe('GET - getMetricsDetailByCollectionAggAsset - /collections/{collectionId}/metrics/detail/asset', function () {
