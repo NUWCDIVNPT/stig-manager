@@ -97,7 +97,10 @@ app.use((req, res, next) => {
   }
 })
 
-const apiSpecPath = path.join(__dirname, './specification/stig-manager.yaml');
+app.use('/api', auth.validateToken)
+app.use('/api', auth.setupUser)
+
+const apiSpecPath = path.join(__dirname, './specification/stig-manager.yaml')
 app.use( "/api", openApiMiddleware ({
   apiSpec: apiSpecPath,
   validateRequests: {
@@ -115,7 +118,7 @@ app.use( "/api", openApiMiddleware ({
   },
   validateSecurity: {
     handlers:{
-      oauth: auth.verifyRequest 
+      oauth: auth.validateOauthSecurity 
     }
   },
   fileUploader: false
