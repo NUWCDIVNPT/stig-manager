@@ -200,6 +200,66 @@ SM.ResourcesWidget = Ext.extend(Ext.Panel, {
 })
 Ext.reg('sm-home-widget-resources', SM.ResourcesWidget)
 
+SM.DeploymentInfo = Ext.extend(Ext.Panel, {
+  initComponent: function() {
+      const me = this
+      me.userListId = Ext.id()
+
+      const tpl = new Ext.XTemplate(
+       `<div class="sm-home-widget-header">`,
+      `<div class="sm-home-widget-title">Deployment Information</div>`,
+      `</div>`,
+      `<div class="sm-home-widget-text">`,
+      `<div class="sm-home-widget-subtitle">App Managers:</div>`,
+      `<div id="${me.userListId}" class="sm-user-list"></div>`,
+      `</div>`
+        )
+      const config = {
+        tpl: tpl,
+        bodyCssClass: 'sm-home-widget-body',
+        border: false,
+        data: {},
+        autoScroll: false
+      }
+      Ext.apply(this, Ext.apply(this.initialConfig, config))
+      SM.DeploymentInfo.superclass.initComponent.call(this)
+      this.on('afterrender', this.loadDeploymentInfo, this)
+  },
+  loadDeploymentInfo: async function () {
+    const me = this;
+    try {
+      const response = await Ext.Ajax.requestPromise({
+        responseType: 'json',
+        url: `${STIGMAN.Env.apiBase}/users?privilege=admin`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json;charset=utf-8' },
+      })
+
+      const userList = Ext.get(me.userListId)
+      if (userList) {
+        const userItems = response
+          .map((user) => {
+            const email = user.email ? user.email : "Email not available"
+            return `
+           <li class="sm-user-item">
+              <div class="sm-user-details">
+                <span class="sm-user-name">${user.displayName}</span>
+                ${user.email 
+                  ? `<span class="sm-user-email">&lt;${user.email}&gt;</span>` 
+                  : `<span class="sm-user-email">No Email Available</span>`}
+              </div>
+          </li>`
+          })
+          .join('')
+        userList.update(`<ul>${userItems}</ul>`)
+      }
+    } catch (e) {
+      SM.Error.handleError(e)
+    }
+  }
+})
+Ext.reg('sm-home-widget-deployment', SM.DeploymentInfo)
+
 SM.StigWidget = Ext.extend(Ext.Panel, {
   initComponent: function() {
       const me = this

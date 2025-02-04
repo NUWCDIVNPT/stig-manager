@@ -126,12 +126,12 @@ async function loadApp () {
 
 					}
 				},
-				columns: 3
+				columns: 4
 			},
 			items: [
 				{
 					html: appTitleHtml,
-					colspan: 3,
+					colspan: 4,
 					border: false
 				},
 				{
@@ -142,6 +142,9 @@ async function loadApp () {
 				},
 				{
 					xtype: 'sm-home-widget-resources'
+				},
+				{
+					xtype: 'sm-home-widget-deployment'
 				}
 			]
 		})
