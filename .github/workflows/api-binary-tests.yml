@@ -1,0 +1,109 @@
+
+name: Test Binary Artifacts
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "api/source/**"
+      - "test/api/**"
+      - ".github/workflows/api-binary-tests.yml"
+      - ".github/workflows/build-binary-artifacts.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "api/source/**"
+      - "test/api/**"
+      - ".github/workflows/api-binary-tests.yml"
+      - ".github/workflows/build-binary-artifacts.yml"
+env:
+  STIGMAN_API_PORT: 64001
+  STIGMAN_DB_HOST: localhost
+  STIGMAN_DB_PORT: 3306
+  STIGMAN_DB_PASSWORD: stigman
+  STIGMAN_API_AUTHORITY: http://127.0.0.1:8080/auth/realms/stigman
+  STIGMAN_SWAGGER_ENABLED: true
+  STIGMAN_SWAGGER_SERVER: http://127.0.0.1:64001/api
+  STIGMAN_SWAGGER_REDIRECT: http://127.0.0.1:64001/api-docs/oauth2-redirect.html
+  STIGMAN_DEV_RESPONSE_VALIDATION: logOnly
+  STIGMAN_EXPERIMENTAL_APPDATA: 'true'
+  STIGMAN_OIDC_PROVIDER: http://127.0.0.1:8080/auth/realms/stigman
+jobs:
+  build-artifacts:
+    uses: nuwcdivnpt/stig-manager/.github/workflows/build-binary-artifacts.yml@main
+    secrets:
+      STIGMAN_PRIVATE_KEY: ${{ secrets.STIGMAN_PRIVATE_KEY }}
+  run-test-linux-binary-artifact:
+    name: Run and test linux artifact
+    needs: build-artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Run mock Keycloak
+        id: idp-run
+        working-directory: test/api/mock-keycloak
+        run: |
+          python3 -m http.server 8080 &
+
+      - name: Run MySQL container
+        id: mysql-run
+        run: |
+          docker run -d --name stig-manager-db \
+          -p 3306:3306 \
+          -e MYSQL_ROOT_PASSWORD=rootpw \
+          -e MYSQL_DATABASE=stigman \
+          -e MYSQL_USER=stigman \
+          -e MYSQL_PASSWORD=stigman \
+          mysql:8.0.24
+      - name: wait 10 seconds
+        run: sleep 10
+
+      - name: Download builds
+        uses: actions/download-artifact@v4
+        with:
+          name: binary-artifacts  
+          path: ./binary-artifacts
+
+      - name: Set execute permissions on binary
+        run: chmod +x ./binary-artifacts/stig-manager-linuxstatic
+      
+      - name: Run linux binary and log output
+        working-directory: ./
+        run: |
+          mkdir -p ./binary-artifacts/logs
+          echo "Running tests on binary artifacts"
+          ./binary-artifacts/stig-manager-linuxstatic > ./binary-artifacts/logs/output.log 2>&1 &
+          echo $! > binary-artifacts/stig-manager.pid
+
+      - name: Wait for bootstrap
+        run: for i in {1..10}; do [ $i -gt 1 ] && sleep 5; curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration && s=0 && break || s=$?; printf '.'; done; (exit $s)
+          
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: ./test/api/
+
+      - name: Run tests with coverage and log output
+        working-directory: ./test/api/
+        run: |
+          npm test > ../../binary-artifacts/logs/test-output.log 2>&1
+
+      - name: Stop linux binary
+        if: always()
+        run: |
+          if [ -f binary-artifacts/stig-manager.pid ]; then
+            kill $(cat binary-artifacts/stig-manager.pid) || true
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: ./binary-artifacts/logs/
