@@ -234,12 +234,10 @@ SM.DeploymentInfo = Ext.extend(Ext.Panel, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json;charset=utf-8' },
       })
-
       const userList = Ext.get(me.userListId)
       if (userList) {
         const userItems = response
           .map((user) => {
-            const email = user.email ? user.email : "Email not available"
             return `
            <li class="sm-user-item">
               <div class="sm-user-details">
@@ -253,6 +251,7 @@ SM.DeploymentInfo = Ext.extend(Ext.Panel, {
           .join('')
         userList.update(`<ul>${userItems}</ul>`)
       }
+ 
     } catch (e) {
       SM.Error.handleError(e)
     }
