@@ -1,5 +1,25 @@
+1.5.3
+-------
+
+Changes:
+
+  - (API/UI/DB) The Collection Grants system has been significantly reworked to allow for more dynamic and flexible Grant management. The new Grant system also allows for "Read Only" access to Collection Reviews. Details of the new Role-Based Access Control system are found in the [STIG Manager documentation](https://stig-manager.readthedocs.io/en/latest/user-guide/roles-and-access.html).
+  - (API/UI/DB) [New User Groups feature.](https://stig-manager.readthedocs.io/en/latest/admin-guide/admin-guide.html#user-groups-admin-panel)
+  - (UI) The Collection Review Workspace has been reworked to give more room to Checklist statistics columns and enable future expansion. The display should now be significantly less constrained, especially when viewing extra columns that are usually hidden by default.
+  - (OAS/API) Updates to the OpenAPI definition. 
+  - (API) Refactoring of API token validation processing. 
+  - (Docs) Updated sphinx and other documentation build dependencies.
+  - (Build) Fixed issue preventing binary versions from creating POA&M.
+  - (Workflows) Automated testing of linux binaries.
+
+**NOTES:** 
+  - This release includes a database migration to support new features. 
+  - This release changes the minimum required MySQL version from 8.0.21 => 8.0.24
+  - This migration will convert any existing "Asset-STIG" style assignments for Restricted Users to the equivalent Access Control List style Grants under the new system. After migration, you may want to remove the granular Access Control Rules and create new ones with the more flexible system (for example, creating one Access Control Rule granting access to an entire Asset, rather than each individual Asset-STIG).
+  - **This release introduces "breaking" changes to the API and STIG Manager OpenAPI definition.** If you have custom integrations or clients that rely on the STIG Manager API, you may need to update them to accommodate these changes. Check the [rbac v2 implementation Pull Request](https://github.com/NUWCDIVNPT/stig-manager/pull/1487) for details of the changes to the API with this release.
+
 1.5.2
------
+-------
 
 Changes:
 
@@ -10,17 +30,15 @@ Changes:
 
   - **NOTE:** This release includes a database migration that changes the data type of the review_history.historyId column to a bigint. This migration may take quite some time to complete on deployments maintaining large numbers of Review History records.  
 
-
 1.5.1
------
+-------
 
 Changes:
 
   - (UI) fix: Handle STIG Ids with spaces 
 
-
 1.5.0
------
+-------
 
 Changes:
 
@@ -29,19 +47,17 @@ Changes:
   - (UI) provide detailed status during web app bootstrap; handle token errors; test oidc state before token request
   - (Docs) Update license/contributors for 2025
   - (Docs) Update build dependency
-  
-  
- 1.4.19
------
+
+1.4.19
+-------
 
 Changes:
 
   - (API) chore: Update dependency Cross-Spawn 
   - (API) fix: Allow for use and proper handling of backslashes in metadata values
- 
 
 1.4.18
------
+-------
 
 Changes:
 
@@ -54,7 +70,7 @@ Changes:
   - (API) Dependency updates
 
 1.4.17
------
+--------
 
 Changes:
 
@@ -66,7 +82,7 @@ Changes:
   - **NOTE:** This release includes a database migration that adds an index for the ``state`` columns in the ``asset`` and ``collection`` tables. 
 
 1.4.16
------
+-------
 
 Changes:
 
@@ -81,7 +97,7 @@ Changes:
   - **NOTE:** The "Experimental" Export/Import Data feature that used to share the "App Info" tab must now be enabled explicitly with an Environment Variable (`STIGMAN_EXPERIMENTAL_APPDATA=true`). When enabled, it will have its own node in the Application Management NavTree. See the documentation for more details.
 
 1.4.15
------
+-------
 
 Changes:
 
@@ -91,7 +107,7 @@ Changes:
   - (API) chore: dependency updates
 
 1.4.14
------
+-------
 
 Changes:
 
@@ -105,7 +121,7 @@ Changes:
   - (API) chore: dependency updates
 
 1.4.13
------
+-------
 
 Changes:
 
@@ -119,7 +135,7 @@ Changes:
   - (API) chore: dependency updates
 
 1.4.12
------
+-------
 
 Changes:
 
@@ -135,21 +151,21 @@ Changes:
   - **Includes database migration to update settings for existing Collections to reflect the new Review History cap where appropriate. No history is altered as part of the migration, history entries will be trimmed to new max as Reviews are subsequently updated.**
 
 1.4.11
------
+-------
 
 Changes:
 
   - (UI/API) Removing feature from Release 1.4.8 adding resultEngine, user, statusUser columns to Detail metrics exports. The feature was found to cause poor performance in large deployments. 
 
 1.4.10
------
+-------
 
 Changes:
 
   - (API) bugfix: Resolves issue allowing Collection Owner/Managers to create restricted grant assignments outside of Collection boundary
   
 1.4.9
------
+------
 
 Changes:
 
