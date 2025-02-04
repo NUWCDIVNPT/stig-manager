@@ -219,7 +219,7 @@ describe('user', () => {
 
         describe(`getUserByUserId - /users{userId}`, async () => {
 
-          it('Return a user', async () => {
+          it('Return wfTest user user', async () => {
             const res = await utils.executeRequest(`${config.baseUrl}/users/${reference.wfTest.userId}?elevate=true&projection=collectionGrants&projection=statistics`, 'GET', iteration.token)
             if(iteration.name != "stigmanadmin"){
               expect(res.status).to.eql(403)
@@ -231,6 +231,19 @@ describe('user', () => {
             expect(res.body).to.have.property('statistics')
             expect(res.body.username, "expect username to be wf-Test").to.equal(reference.wfTest.username)
             expect(res.body.userId, "expect userId to be wf-Test userId (22)").to.equal(reference.wfTest.userId)
+            expect(res.body.privileges).to.eql({admin: false, create_collection: false})
+          })
+          it("return adminBurke user and verify its privileges", async () => {
+
+            const res = await utils.executeRequest(`${config.baseUrl}/users/${reference.adminBurke.userId}?elevate=true`, 'GET', iteration.token)
+            if(iteration.name != "stigmanadmin"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+            expect(res.body.username, "expect username to be admin").to.equal(reference.adminBurke.username)
+            expect(res.body.userId, "expect userId to be admin userId").to.equal(reference.adminBurke.userId)
+            expect(res.body.privileges).to.eql({admin: true, create_collection: true})
           })
           it("return lvl1 user and verify its group membership", async () => {
             const res =  await utils.executeRequest(`${config.baseUrl}/users/${reference.lvl1User.userId}?elevate=true&projection=userGroups`, 'GET', iteration.token)
