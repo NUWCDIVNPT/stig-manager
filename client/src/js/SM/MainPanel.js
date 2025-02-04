@@ -243,7 +243,7 @@ SM.DeploymentInfo = Ext.extend(Ext.Panel, {
               <div class="sm-user-details">
                 <span class="sm-user-name">${user.displayName}</span>
                 ${user.email 
-                  ? `<span class="sm-user-email">&lt;${user.email}&gt;</span>` 
+                  ? `<span class="sm-user-email">${user.email}</span>` 
                   : `<span class="sm-user-email">No Email Available</span>`}
               </div>
           </li>`
