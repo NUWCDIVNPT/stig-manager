@@ -2905,6 +2905,766 @@ export const metrics = {
       }
     ]
   },
+  'test metrics on collection with labelMatch=null': {
+    stigmanadmin: [
+      {
+        assetId: "154",
+        name: "Collection_X_lvl1_asset-2",
+        labels: [
+        ],
+        benchmarkId: "VPN_SRG_TEST",
+        title: "Virtual Private Network (VPN) Security Requirements Guide",
+        revisionStr: "V1R1",
+        revisionPinned: false,
+        metrics: {
+          maxTs: "2022-02-02T20:20:18Z",
+          minTs: "2020-08-11T22:30:42Z",
+          results: {
+            fail: {
+              total: 3,
+              resultEngine: 0,
+            },
+            pass: {
+              total: 1,
+              resultEngine: 0,
+            },
+            error: {
+              total: 0,
+              resultEngine: 0,
+            },
+            fixed: {
+              total: 0,
+              resultEngine: 0,
+            },
+            unknown: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notchecked: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notselected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            informational: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notapplicable: {
+              total: 1,
+              resultEngine: 0,
+            },
+          },
+          assessed: 5,
+          findings: {
+            low: 1,
+            high: 0,
+            medium: 2,
+          },
+          statuses: {
+            saved: {
+              total: 3,
+              resultEngine: 0,
+            },
+            accepted: {
+              total: 0,
+              resultEngine: 0,
+            },
+            rejected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            submitted: {
+              total: 2,
+              resultEngine: 0,
+            },
+          },
+          maxTouchTs: "2022-02-02T20:20:18Z",
+          assessments: 81,
+          assessmentsBySeverity: {
+            low: 7,
+            high: 11,
+            medium: 63,
+          },
+        },
+      },
+      {
+        assetId: "154",
+        name: "Collection_X_lvl1_asset-2",
+        labels: [
+        ],
+        benchmarkId: "Windows_10_STIG_TEST",
+        title: "Windows 10 Security Technical Implementation Guide",
+        revisionStr: "V1R23",
+        revisionPinned: false,
+        metrics: {
+          maxTs: null,
+          minTs: null,
+          results: {
+            fail: {
+              total: 0,
+              resultEngine: 0,
+            },
+            pass: {
+              total: 0,
+              resultEngine: 0,
+            },
+            error: {
+              total: 0,
+              resultEngine: 0,
+            },
+            fixed: {
+              total: 0,
+              resultEngine: 0,
+            },
+            unknown: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notchecked: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notselected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            informational: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notapplicable: {
+              total: 0,
+              resultEngine: 0,
+            },
+          },
+          assessed: 0,
+          findings: {
+            low: 0,
+            high: 0,
+            medium: 0,
+          },
+          statuses: {
+            saved: {
+              total: 0,
+              resultEngine: 0,
+            },
+            accepted: {
+              total: 0,
+              resultEngine: 0,
+            },
+            rejected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            submitted: {
+              total: 0,
+              resultEngine: 0,
+            },
+          },
+          maxTouchTs: null,
+          assessments: 287,
+          assessmentsBySeverity: {
+            low: 18,
+            high: 26,
+            medium: 243,
+          },
+        },
+      },
+    ],
+    lvl1: [
+      {
+        assetId: "154",
+        name: "Collection_X_lvl1_asset-2",
+        labels: [
+        ],
+        benchmarkId: "VPN_SRG_TEST",
+        title: "Virtual Private Network (VPN) Security Requirements Guide",
+        revisionStr: "V1R1",
+        revisionPinned: false,
+        metrics: {
+          maxTs: "2022-02-02T20:20:18Z",
+          minTs: "2020-08-11T22:30:42Z",
+          results: {
+            fail: {
+              total: 3,
+              resultEngine: 0,
+            },
+            pass: {
+              total: 1,
+              resultEngine: 0,
+            },
+            error: {
+              total: 0,
+              resultEngine: 0,
+            },
+            fixed: {
+              total: 0,
+              resultEngine: 0,
+            },
+            unknown: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notchecked: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notselected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            informational: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notapplicable: {
+              total: 1,
+              resultEngine: 0,
+            },
+          },
+          assessed: 5,
+          findings: {
+            low: 1,
+            high: 0,
+            medium: 2,
+          },
+          statuses: {
+            saved: {
+              total: 3,
+              resultEngine: 0,
+            },
+            accepted: {
+              total: 0,
+              resultEngine: 0,
+            },
+            rejected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            submitted: {
+              total: 2,
+              resultEngine: 0,
+            },
+          },
+          maxTouchTs: "2022-02-02T20:20:18Z",
+          assessments: 81,
+          assessmentsBySeverity: {
+            low: 7,
+            high: 11,
+            medium: 63,
+          },
+        },
+      },
+    ],
+    lvl2: [
+      {
+        assetId: "154",
+        name: "Collection_X_lvl1_asset-2",
+        labels: [
+        ],
+        benchmarkId: "VPN_SRG_TEST",
+        title: "Virtual Private Network (VPN) Security Requirements Guide",
+        revisionStr: "V1R1",
+        revisionPinned: false,
+        metrics: {
+          maxTs: "2022-02-02T20:20:18Z",
+          minTs: "2020-08-11T22:30:42Z",
+          results: {
+            fail: {
+              total: 3,
+              resultEngine: 0,
+            },
+            pass: {
+              total: 1,
+              resultEngine: 0,
+            },
+            error: {
+              total: 0,
+              resultEngine: 0,
+            },
+            fixed: {
+              total: 0,
+              resultEngine: 0,
+            },
+            unknown: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notchecked: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notselected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            informational: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notapplicable: {
+              total: 1,
+              resultEngine: 0,
+            },
+          },
+          assessed: 5,
+          findings: {
+            low: 1,
+            high: 0,
+            medium: 2,
+          },
+          statuses: {
+            saved: {
+              total: 3,
+              resultEngine: 0,
+            },
+            accepted: {
+              total: 0,
+              resultEngine: 0,
+            },
+            rejected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            submitted: {
+              total: 2,
+              resultEngine: 0,
+            },
+          },
+          maxTouchTs: "2022-02-02T20:20:18Z",
+          assessments: 81,
+          assessmentsBySeverity: {
+            low: 7,
+            high: 11,
+            medium: 63,
+          },
+        },
+      },
+      {
+        assetId: "154",
+        name: "Collection_X_lvl1_asset-2",
+        labels: [
+        ],
+        benchmarkId: "Windows_10_STIG_TEST",
+        title: "Windows 10 Security Technical Implementation Guide",
+        revisionStr: "V1R23",
+        revisionPinned: false,
+        metrics: {
+          maxTs: null,
+          minTs: null,
+          results: {
+            fail: {
+              total: 0,
+              resultEngine: 0,
+            },
+            pass: {
+              total: 0,
+              resultEngine: 0,
+            },
+            error: {
+              total: 0,
+              resultEngine: 0,
+            },
+            fixed: {
+              total: 0,
+              resultEngine: 0,
+            },
+            unknown: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notchecked: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notselected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            informational: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notapplicable: {
+              total: 0,
+              resultEngine: 0,
+            },
+          },
+          assessed: 0,
+          findings: {
+            low: 0,
+            high: 0,
+            medium: 0,
+          },
+          statuses: {
+            saved: {
+              total: 0,
+              resultEngine: 0,
+            },
+            accepted: {
+              total: 0,
+              resultEngine: 0,
+            },
+            rejected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            submitted: {
+              total: 0,
+              resultEngine: 0,
+            },
+          },
+          maxTouchTs: null,
+          assessments: 287,
+          assessmentsBySeverity: {
+            low: 18,
+            high: 26,
+            medium: 243,
+          },
+        },
+      },
+    ],
+    lvl3: [
+      {
+        assetId: "154",
+        name: "Collection_X_lvl1_asset-2",
+        labels: [
+        ],
+        benchmarkId: "VPN_SRG_TEST",
+        title: "Virtual Private Network (VPN) Security Requirements Guide",
+        revisionStr: "V1R1",
+        revisionPinned: false,
+        metrics: {
+          maxTs: "2022-02-02T20:20:18Z",
+          minTs: "2020-08-11T22:30:42Z",
+          results: {
+            fail: {
+              total: 3,
+              resultEngine: 0,
+            },
+            pass: {
+              total: 1,
+              resultEngine: 0,
+            },
+            error: {
+              total: 0,
+              resultEngine: 0,
+            },
+            fixed: {
+              total: 0,
+              resultEngine: 0,
+            },
+            unknown: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notchecked: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notselected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            informational: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notapplicable: {
+              total: 1,
+              resultEngine: 0,
+            },
+          },
+          assessed: 5,
+          findings: {
+            low: 1,
+            high: 0,
+            medium: 2,
+          },
+          statuses: {
+            saved: {
+              total: 3,
+              resultEngine: 0,
+            },
+            accepted: {
+              total: 0,
+              resultEngine: 0,
+            },
+            rejected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            submitted: {
+              total: 2,
+              resultEngine: 0,
+            },
+          },
+          maxTouchTs: "2022-02-02T20:20:18Z",
+          assessments: 81,
+          assessmentsBySeverity: {
+            low: 7,
+            high: 11,
+            medium: 63,
+          },
+        },
+      },
+      {
+        assetId: "154",
+        name: "Collection_X_lvl1_asset-2",
+        labels: [
+        ],
+        benchmarkId: "Windows_10_STIG_TEST",
+        title: "Windows 10 Security Technical Implementation Guide",
+        revisionStr: "V1R23",
+        revisionPinned: false,
+        metrics: {
+          maxTs: null,
+          minTs: null,
+          results: {
+            fail: {
+              total: 0,
+              resultEngine: 0,
+            },
+            pass: {
+              total: 0,
+              resultEngine: 0,
+            },
+            error: {
+              total: 0,
+              resultEngine: 0,
+            },
+            fixed: {
+              total: 0,
+              resultEngine: 0,
+            },
+            unknown: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notchecked: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notselected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            informational: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notapplicable: {
+              total: 0,
+              resultEngine: 0,
+            },
+          },
+          assessed: 0,
+          findings: {
+            low: 0,
+            high: 0,
+            medium: 0,
+          },
+          statuses: {
+            saved: {
+              total: 0,
+              resultEngine: 0,
+            },
+            accepted: {
+              total: 0,
+              resultEngine: 0,
+            },
+            rejected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            submitted: {
+              total: 0,
+              resultEngine: 0,
+            },
+          },
+          maxTouchTs: null,
+          assessments: 287,
+          assessmentsBySeverity: {
+            low: 18,
+            high: 26,
+            medium: 243,
+          },
+        },
+      },
+    ],
+    lvl4: [
+      {
+        assetId: "154",
+        name: "Collection_X_lvl1_asset-2",
+        labels: [
+        ],
+        benchmarkId: "VPN_SRG_TEST",
+        title: "Virtual Private Network (VPN) Security Requirements Guide",
+        revisionStr: "V1R1",
+        revisionPinned: false,
+        metrics: {
+          maxTs: "2022-02-02T20:20:18Z",
+          minTs: "2020-08-11T22:30:42Z",
+          results: {
+            fail: {
+              total: 3,
+              resultEngine: 0,
+            },
+            pass: {
+              total: 1,
+              resultEngine: 0,
+            },
+            error: {
+              total: 0,
+              resultEngine: 0,
+            },
+            fixed: {
+              total: 0,
+              resultEngine: 0,
+            },
+            unknown: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notchecked: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notselected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            informational: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notapplicable: {
+              total: 1,
+              resultEngine: 0,
+            },
+          },
+          assessed: 5,
+          findings: {
+            low: 1,
+            high: 0,
+            medium: 2,
+          },
+          statuses: {
+            saved: {
+              total: 3,
+              resultEngine: 0,
+            },
+            accepted: {
+              total: 0,
+              resultEngine: 0,
+            },
+            rejected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            submitted: {
+              total: 2,
+              resultEngine: 0,
+            },
+          },
+          maxTouchTs: "2022-02-02T20:20:18Z",
+          assessments: 81,
+          assessmentsBySeverity: {
+            low: 7,
+            high: 11,
+            medium: 63,
+          },
+        },
+      },
+      {
+        assetId: "154",
+        name: "Collection_X_lvl1_asset-2",
+        labels: [
+        ],
+        benchmarkId: "Windows_10_STIG_TEST",
+        title: "Windows 10 Security Technical Implementation Guide",
+        revisionStr: "V1R23",
+        revisionPinned: false,
+        metrics: {
+          maxTs: null,
+          minTs: null,
+          results: {
+            fail: {
+              total: 0,
+              resultEngine: 0,
+            },
+            pass: {
+              total: 0,
+              resultEngine: 0,
+            },
+            error: {
+              total: 0,
+              resultEngine: 0,
+            },
+            fixed: {
+              total: 0,
+              resultEngine: 0,
+            },
+            unknown: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notchecked: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notselected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            informational: {
+              total: 0,
+              resultEngine: 0,
+            },
+            notapplicable: {
+              total: 0,
+              resultEngine: 0,
+            },
+          },
+          assessed: 0,
+          findings: {
+            low: 0,
+            high: 0,
+            medium: 0,
+          },
+          statuses: {
+            saved: {
+              total: 0,
+              resultEngine: 0,
+            },
+            accepted: {
+              total: 0,
+              resultEngine: 0,
+            },
+            rejected: {
+              total: 0,
+              resultEngine: 0,
+            },
+            submitted: {
+              total: 0,
+              resultEngine: 0,
+            },
+          },
+          maxTouchTs: null,
+          assessments: 287,
+          assessmentsBySeverity: {
+            low: 18,
+            high: 26,
+            medium: 243,
+          },
+        },
+      },
+    ]
+
+  },
   'Return detail metrics - assset agg': {
     stigmanadmin: [
       {
