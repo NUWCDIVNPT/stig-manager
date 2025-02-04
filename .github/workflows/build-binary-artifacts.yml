@@ -2,6 +2,9 @@
 name: Build Binary Artifacts and Sign
 on:
   workflow_call:
+    secrets:
+      STIGMAN_PRIVATE_KEY:
+        required: true
   workflow_dispatch:
   push:
     branches:
