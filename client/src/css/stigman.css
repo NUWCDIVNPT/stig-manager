@@ -2428,3 +2428,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .sm-checklist-read {
 	background-color: hsl(330 55% 24% / 1);
 }
+.sm-flexbox-layout-ct {
+	display: flex;
+	flex-wrap: wrap;
+}

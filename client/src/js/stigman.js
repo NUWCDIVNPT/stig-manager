@@ -117,34 +117,34 @@ async function loadApp () {
 		const homeTab = new SM.HomeTab({
 			border: false,
 			region: 'center',
-			layout: 'table',
+			layout: 'vbox',
 			layoutConfig: {
-				tableAttrs: {
-					style: {
-						padding: '20px',
-						"table-layout": 'fixed'
-
-					}
-				},
-				columns: 4
+				align: 'stretch',
 			},
 			items: [
 				{
 					html: appTitleHtml,
-					colspan: 4,
+					height: 80,
 					border: false
 				},
 				{
-					xtype: 'sm-home-widget-welcome'
-				},
-				{
-					xtype: 'sm-home-widget-doc'
-				},
-				{
-					xtype: 'sm-home-widget-resources'
-				},
-				{
-					xtype: 'sm-home-widget-deployment'
+					layout: 'sm-flexbox',
+					flex: 1,
+					border: false,
+					items: [
+						{
+							xtype: 'sm-home-widget-welcome'
+						},
+						{
+							xtype: 'sm-home-widget-doc'
+						},
+						{
+							xtype: 'sm-home-widget-resources'
+						},
+						{
+							xtype: 'sm-home-widget-deployment'
+						}
+					]
 				}
 			]
 		})
