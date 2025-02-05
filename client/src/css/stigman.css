@@ -2432,5 +2432,8 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 	display: flex;
 	flex-wrap: wrap;
 	overflow: auto;
-	
+	scrollbar-width: none;
+}
+.sm-flexbox-layout-ct:hover {
+	scrollbar-width: auto;
 }
