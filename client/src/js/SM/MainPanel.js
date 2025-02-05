@@ -207,10 +207,9 @@ SM.DeploymentInfo = Ext.extend(Ext.Panel, {
 
       const tpl = new Ext.XTemplate(
        `<div class="sm-home-widget-header">`,
-      `<div class="sm-home-widget-title">Deployment Information</div>`,
+      `<div class="sm-home-widget-title">Application Managers</div>`,
       `</div>`,
       `<div class="sm-home-widget-text">`,
-      `<div class="sm-home-widget-subtitle">App Managers:</div>`,
       `<div id="${me.userListId}" class="sm-user-list"></div>`,
       `</div>`
         )

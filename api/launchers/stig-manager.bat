@@ -79,6 +79,16 @@
 :: set STIGMAN_CLIENT_DISABLED=
 
 ::==============================================================================
+:: STIGMAN_CLIENT_DISPLAY_APPMANAGERS
+::
+::  | Default:  "false" | Set to "true" to display application manager names
+::   along with their email addresses on the Stig-Manager home page.
+::
+::  Affects: Client
+::==============================================================================
+:: set STIGMAN_CLIENT_DISPLAY_APPMANAGERS=
+
+::==============================================================================
 :: STIGMAN_CLIENT_EXTRA_SCOPES
 ::
 ::  | No default. | A space separated list of OAuth2 scopes to request in
