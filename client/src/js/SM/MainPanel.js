@@ -200,7 +200,7 @@ SM.ResourcesWidget = Ext.extend(Ext.Panel, {
 })
 Ext.reg('sm-home-widget-resources', SM.ResourcesWidget)
 
-SM.DeploymentInfo = Ext.extend(Ext.Panel, {
+SM.ApplicationManagers = Ext.extend(Ext.Panel, {
   initComponent: function() {
       const me = this
       me.userListId = Ext.id()
@@ -221,10 +221,10 @@ SM.DeploymentInfo = Ext.extend(Ext.Panel, {
         autoScroll: false
       }
       Ext.apply(this, Ext.apply(this.initialConfig, config))
-      SM.DeploymentInfo.superclass.initComponent.call(this)
-      this.on('afterrender', this.loadDeploymentInfo, this)
+      SM.ApplicationManagers.superclass.initComponent.call(this)
+      this.on('afterrender', this.loadApplicationManagers, this)
   },
-  loadDeploymentInfo: async function () {
+  loadApplicationManagers: async function () {
     const me = this;
     try {
       const response = await Ext.Ajax.requestPromise({
@@ -256,7 +256,7 @@ SM.DeploymentInfo = Ext.extend(Ext.Panel, {
     }
   }
 })
-Ext.reg('sm-home-widget-deployment', SM.DeploymentInfo)
+Ext.reg('sm-home-widget-app-managers', SM.ApplicationManagers)
 
 SM.StigWidget = Ext.extend(Ext.Panel, {
   initComponent: function() {

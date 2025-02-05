@@ -140,7 +140,7 @@ async function loadApp () {
 						{
 							xtype: 'sm-home-widget-resources'
 						},
-						...(STIGMAN.Env.displayAppManagers ? [{ xtype: 'sm-home-widget-deployment' }] : [])
+						...(STIGMAN.Env.displayAppManagers ? [{ xtype: 'sm-home-widget-app-managers' }] : [])
 					]
 				}
 			]
