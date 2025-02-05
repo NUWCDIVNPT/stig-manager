@@ -264,6 +264,18 @@ The table below describes the fields that are included in the exports available 
      - Total number of required Evaluations assigned to this item (ie. total number of Rules in all assigned STIGs). 
      - **X**
      - **X**
+   * - assessmentsLow
+     - Total number of Rules assigned to this item with a Severity 3 category 
+     - 
+     - **X**
+   * - assessmentsMedium
+     - Total number of Rules assigned to this item with a Severity 2 category 
+     - 
+     - **X**
+   * - assessmentsHigh
+     - Total number of Rules assigned to this item with a Severity 1 category 
+     - 
+     - **X**
    * - assessed
      - Total number of Reviews that have been marked "pass," "fail," or "notapplicable."
      - **X**
@@ -398,18 +410,6 @@ The table below describes the fields that are included in the exports available 
      - **X**
    * - fixedResultEngine
      - Number of Reviews with a "fixed" result that were evaluated by an automated tool. 
-     - 
-     - **X**
-   * - resultEngines
-     - Array of JSON objects containing an entry for each version of a resultEngine (ie. Evaluate-STIG 1.2, Evaluate-STIG 2.4, OpenSCAP, etc.) that is associated with a current Review in the Collection, and the number of Reviews that tool evaluated.
-     - 
-     - **X**
-   * - users
-     - Array of JSON objects containing an entry for each User that has set the current Evaluation of a Review in the Collection, and the number of Reviews they evaluated.
-     - 
-     - **X**
-   * - statusUsers
-     - Array of JSON objects containing an entry for each User that set the current Status of a Review in the Collection, and the number of Reviews they have set the Status for.
      - 
      - **X**
 
