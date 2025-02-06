@@ -1111,21 +1111,35 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   margin: 10px;
   height: 400px;
   width: 380px;
+}
+
+.sm-scroll-home-widget-body {
+  max-height: 340px; 
   overflow: auto;
+  scrollbar-width: thin;
+  margin-right: 8px;
+  margin-top: 5px;
 }
 
 .sm-user-list {
   list-style: none;
-  margin: 0;
-  background-color: #dedede;
-  max-height: 400px;
-  overflow: auto;
+  max-height: 340px;
+  padding : 0;
+  margin-left: 0;
+
 }
+
 .sm-user-item {
   padding: 3px;
   display: flex;
   align-items: left;
+}
 
+.sm-user-item::before {
+  content: "• ";
+  font-size: 16px;
+  color: #dedede; 
+  margin-right: 3px;
 }
 
 .sm-user-details {

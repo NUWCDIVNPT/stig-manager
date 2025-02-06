@@ -90,18 +90,22 @@ SM.WelcomeWidget = Ext.extend(Ext.Panel, {
           `<div class=sm-home-widget-header>`,
             `<div class='sm-home-widget-title'>Welcome</div>`,
           `</div>`,
-          `<div class='sm-home-widget-text'>`,
-            `<div class=sm-home-widget-image-text-wrap>`,
-              `<img src=${STIGMAN.Env.welcome.image ? `"${STIGMAN.Env.welcome.image}" onerror="this.onerror=null;this.src='img/navy.svg';"` : '"img/navy.svg"'} style="max-width:100%;max-height:100%;"/>`,
-            `</div>`,
-            `<b>STIG Manager</b> is an API and Web client for managing the assessment of Information Systems for compliance with <a href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States Defense Information Systems Agency (DISA). The software is <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager">an open source project</a> maintained by the Naval Sea Systems Command (NAVSEA) of the United States Navy.`,
-          `</div>`, 
-          `<div class='sm-home-widget-text'>`,
-            `<div class='sm-home-widget-subtitle'>${STIGMAN.Env.welcome.title ? SM.he(STIGMAN.Env.welcome.title) : STIGMAN.Env.welcome.message || STIGMAN.Env.welcome.link ? 'Support' : ''}</div>`,
-            `${SM.he(STIGMAN.Env.welcome.message)}${STIGMAN.Env.welcome.message && STIGMAN.Env.welcome.link ? '<br><br>' : ''}`,
-            `${STIGMAN.Env.welcome.link ? '<a href="' + STIGMAN.Env.welcome.link + '">' + STIGMAN.Env.welcome.link  + '</a>': ''}`,
-          `</div>`
+          `<div class="sm-scroll-home-widget-body">`,
+            `<div class='sm-home-widget-text'>`,
+              `<div class=sm-home-widget-image-text-wrap>`,
+                `<img src=${STIGMAN.Env.welcome.image ? `"${STIGMAN.Env.welcome.image}" onerror="this.onerror=null;this.src='img/navy.svg';"` : '"img/navy.svg"'} style="max-width:100%;max-height:100%;"/>`,
+              `</div>`,
+              `<b>STIG Manager</b> is an API and Web client for managing the assessment of Information Systems for compliance with <a href="https://public.cyber.mil/stigs/">security checklists</a> published by the United States Defense Information Systems Agency (DISA). The software is <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager">an open source project</a> maintained by the Naval Sea Systems Command (NAVSEA) of the United States Navy.`,
+            `</div>`, 
 
+            `<div class='sm-home-widget-text'>`,
+              `<div class='sm-home-widget-subtitle'>
+                ${STIGMAN.Env.welcome.title ? SM.he(STIGMAN.Env.welcome.title) : STIGMAN.Env.welcome.message || STIGMAN.Env.welcome.link ? 'Support' : ''}
+                </div>`,
+                `${SM.he(STIGMAN.Env.welcome.message)}${STIGMAN.Env.welcome.message && STIGMAN.Env.welcome.link ? '<br><br>' : ''}`,
+                `${STIGMAN.Env.welcome.link ? '<a href="' + STIGMAN.Env.welcome.link + '">' + STIGMAN.Env.welcome.link  + '</a>': ''}`,
+            `</div>`,
+          `</div>`,
         )
       const config = {
         tpl: tpl,
@@ -206,12 +210,18 @@ SM.ApplicationManagers = Ext.extend(Ext.Panel, {
       me.userListId = Ext.id()
 
       const tpl = new Ext.XTemplate(
-       `<div class="sm-home-widget-header">`,
-      `<div class="sm-home-widget-title">Application Managers</div>`,
+      `<div class="sm-home-widget-header">`,
+        `<div class="sm-home-widget-title">
+          Application Managers
+        </div>`,
       `</div>`,
-      `<div class="sm-home-widget-text">`,
-      `<div id="${me.userListId}" class="sm-user-list"></div>`,
+      `<div class="sm-scroll-home-widget-body">`,
+        `<div class="sm-home-widget-text">`,
+          `<div id="${me.userListId}" class="sm-user-list">
+          </div>`,
+        `</div>`,
       `</div>`
+      
         )
       const config = {
         tpl: tpl,

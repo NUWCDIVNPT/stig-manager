@@ -81,7 +81,7 @@
 ::==============================================================================
 :: STIGMAN_CLIENT_DISPLAY_APPMANAGERS
 ::
-::  | Default:  "false" | Set to "true" to display application manager names
+::  | Default:  "true" | Set to "false" to hide application manager names
 ::   along with their email addresses on the Stig-Manager home page.
 ::
 ::  Affects: Client
