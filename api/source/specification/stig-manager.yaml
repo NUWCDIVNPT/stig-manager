@@ -6848,6 +6848,10 @@ components:
           $ref: '#/components/schemas/ResultEngine'
         rule:
           $ref: '#/components/schemas/RuleAbbr'
+        ruleIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleId'
         status:
           $ref: '#/components/schemas/ReviewStatusRead'
         stigs:
@@ -6938,7 +6942,7 @@ components:
         ruleIds:
           type: array
           items:
-            $ref: '#/components/schemas/String255'
+            $ref: '#/components/schemas/RuleId'
           maxItems: 500
           minItems: 1
           uniqueItems: true
@@ -7275,7 +7279,7 @@ components:
         ruleIds:
           type: array
           items:
-            $ref: '#/components/schemas/String255'
+            $ref: '#/components/schemas/RuleId'
         status:
           $ref: '#/components/schemas/ReviewStatusRead'
         stigs:
