@@ -951,9 +951,12 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
                     else {
                       const apiUser = await Ext.Ajax.requestPromise({
                         responseType: 'json',
-                        url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}?elevate=${curUser.privileges.admin}&projection=collectionGrants&projection=statistics`,
+                        url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}?elevate=${curUser.privileges.admin}&projection=collectionGrants&projection=statistics&projection=userGroups`,
                         method: 'PATCH',
-                        jsonData: { collectionGrants: [] }
+                        jsonData: {
+                          collectionGrants: [],
+                          userGroups: [],
+                        }
                       })
                       // userStore.remove(user)
                       SM.Dispatcher.fireEvent('userchanged', apiUser)
