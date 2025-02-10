@@ -16,6 +16,7 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-binary-tests.yml"
+      
 env:
   STIGMAN_API_PORT: 64001
   STIGMAN_DB_HOST: localhost
