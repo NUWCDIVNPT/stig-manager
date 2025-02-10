@@ -133,7 +133,7 @@ jobs:
       - name: Run tests with coverage and log output
         working-directory: ./test/api/
         run: |
-          npm test > ../../binary-artifacts/logs/test-output.log 2>&1
+          npm test 2>&1 | tee ../../binary-artifacts/logs/test-output.log
 
       - name: Stop linux binary
         if: always()
