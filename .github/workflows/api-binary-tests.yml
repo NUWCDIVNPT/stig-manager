@@ -1,5 +1,5 @@
 
-name: Test Binary Artifacts
+name: Build and Test Linux Binary
 on:
   workflow_dispatch:
   pull_request:
@@ -9,7 +9,6 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-binary-tests.yml"
-      - ".github/workflows/build-binary-artifacts.yml"
   push:
     branches:
       - main
@@ -17,7 +16,7 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-binary-tests.yml"
-      - ".github/workflows/build-binary-artifacts.yml"
+      
 env:
   STIGMAN_API_PORT: 64001
   STIGMAN_DB_HOST: localhost
@@ -32,9 +31,48 @@ env:
   STIGMAN_OIDC_PROVIDER: http://127.0.0.1:8080/auth/realms/stigman
 jobs:
   build-artifacts:
-    uses: nuwcdivnpt/stig-manager/.github/workflows/build-binary-artifacts.yml@main
-    secrets:
-      STIGMAN_PRIVATE_KEY: ${{ secrets.STIGMAN_PRIVATE_KEY }}
+    name: Build binary artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Get repository metadata
+        id: repo
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const repo = await github.rest.repos.get(context.repo)
+            return repo.data     
+
+      - name: install uglify
+        run: |
+          sudo npm install -g uglify-js    
+
+      - name: run build script
+        id: run-the-build-script
+        working-directory: ./api
+        run: ./build.sh
+
+      - name: Upload builds
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-artifacts
+          path: ./api/bin/
+          if-no-files-found: error
+
+      - name: Upload archives
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-archives
+          path: ./api/dist/
+          if-no-files-found: error
+
   run-test-linux-binary-artifact:
     name: Run and test linux artifact
     needs: build-artifacts
@@ -92,7 +130,7 @@ jobs:
       - name: Run tests with coverage and log output
         working-directory: ./test/api/
         run: |
-          npm test > ../../binary-artifacts/logs/test-output.log 2>&1
+          npm test 2>&1 | tee ../../binary-artifacts/logs/test-output.log
 
       - name: Stop linux binary
         if: always()
