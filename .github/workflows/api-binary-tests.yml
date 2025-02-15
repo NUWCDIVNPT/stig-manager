@@ -11,7 +11,7 @@ on:
       - ".github/workflows/api-binary-tests.yml"
       - "api/build.sh"
       - "client/build.sh"
-      - "/docs/build.sh"
+      - "docs/build.sh"
 
   push:
     branches:
