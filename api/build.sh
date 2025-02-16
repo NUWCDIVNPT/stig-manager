@@ -2,7 +2,7 @@
 
 # This file is used to build API binaries on the team workstations. It is not tested elsewhere, yet.
 # Requires:
-# - Node.js and module "pkg" (npm install -g pkg)
+# - Node.js and module "@yao-pkg/pkg" (npm install -g @yao-pkg/pkg)
 # - zip
 # - tar
 
@@ -32,7 +32,7 @@ echo "Fetching node_modules"
 rm -rf ./source/node_modules
 cd ./source
 npm ci
-npm install -g pkg
+npm install -g @yao-pkg/pkg
 cd ..
 ../client/build.sh
 ../docs/build.sh
@@ -43,7 +43,7 @@ echo $DESCRIBE
 
 # Make binaries
 echo "Building binaries"
-pkg -C gzip --public --public-packages=* --no-bytecode pkg.config.json
+pkg ./source/index.js -C gzip --public --public-packages=* --no-bytecode -c pkg.config.json
 check_exit_status "Building binaries" 1
 
 echo "Creating archives with launchers"
