@@ -1,5 +1,5 @@
 
-const path = require('path')
+const path = require('node:path')
 const multer  = require('multer')
 const express = require('express')
 const cors = require('cors')
@@ -106,7 +106,7 @@ function configureOpenApi(app) {
           coerceTypes: false,
           allowUnknownQueryParameters: false,
       },
-      validateResponses: buildResponseValidationConfig(),
+      validateResponses: buildResponseValidationConfig(config.settings.responseValidation === "logOnly"),
       validateApiSpec: true,
       $refParser: {
           mode: 'dereference',

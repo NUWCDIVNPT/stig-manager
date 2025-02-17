@@ -2,6 +2,7 @@
 const startTime = process.hrtime.bigint()
 const express = require('express')
 const logger = require('./utils/logger')
+const config = require('./utils/config')
 const { serializeError } = require('./utils/serializeError')
 const configureMiddleware  = require('./bootstrap/middlewares.js')
 const bootstrapUtils = require('./bootstrap/bootstrapUtils.js')
@@ -9,7 +10,7 @@ const client = require('./bootstrap/client.js')
 const docs = require('./bootstrap/docs.js')
 const startServer = require('./bootstrap/server')
 
-const config = bootstrapUtils.logAppConfig()
+bootstrapUtils.logAppConfig(config)
 
 //Catch unhandled errors. 
 process.on('uncaughtException', (err, origin) => {

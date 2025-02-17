@@ -1,6 +1,5 @@
-const path = require('path')
+const path = require('node:path')
 const logger = require('../utils/logger')
-const config = require('../utils/config')
 const packageJson = require("../package.json")
 
 function modulePathResolver( handlersPath, route, apiDoc ) {
@@ -18,8 +17,8 @@ function modulePathResolver( handlersPath, route, apiDoc ) {
     return handler[method]
 }
 
-function buildResponseValidationConfig() {
-    if ( config.settings.responseValidation == "logOnly" ){
+function buildResponseValidationConfig(willValidateResponse) {
+    if (willValidateResponse){
         return {
             onError: (error, body, req) => {
                 logger.writeError('rest', 'responseValidation', {
@@ -35,7 +34,7 @@ function buildResponseValidationConfig() {
     }
 }
 
-function logAppConfig() {
+function logAppConfig(config) {
     logger.writeInfo('bootstrapUtils', 'starting bootstrap', {
       version: packageJson.version,
       env: logger.serializeEnvironment(),
@@ -44,7 +43,6 @@ function logAppConfig() {
     })
     logger.writeInfo('bootstrapUtils', 'configuration', config)
   
-    return config
 }
   
 module.exports = {

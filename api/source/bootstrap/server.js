@@ -1,4 +1,4 @@
-const http = require('http')
+const http = require('node:http')
 const logger = require('../utils/logger')
 const OperationSvc = require(`../service/OperationService`)
 const {serializeError} = require('../utils/serializeError')
