@@ -9,6 +9,10 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-binary-tests.yml"
+      - "api/build.sh"
+      - "client/build.sh"
+      - "docs/build.sh"
+
   push:
     branches:
       - main
@@ -16,6 +20,10 @@ on:
       - "api/source/**"
       - "test/api/**"
       - ".github/workflows/api-binary-tests.yml"
+      - "api/build.sh"
+      - "client/build.sh"
+      - "docs/build.sh"
+
       
 env:
   STIGMAN_API_PORT: 64001
