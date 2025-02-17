@@ -2,7 +2,7 @@
 
 # This file is used to build API binaries on the team workstations. It is not tested elsewhere, yet.
 # Requires:
-# - Node.js and module "@yao-pkg/pkg" (npm install -g @yao-pkg/pkg)
+# - Node.js and module "@yao-pkg/pkg" (npm install -g @yao-pkg/pkg@6.3.0)
 # - zip
 # - tar
 
@@ -32,7 +32,7 @@ echo "Fetching node_modules"
 rm -rf ./source/node_modules
 cd ./source
 npm ci
-npm install -g @yao-pkg/pkg
+npm install -g @yao-pkg/pkg@6.3.0
 cd ..
 ../client/build.sh
 ../docs/build.sh

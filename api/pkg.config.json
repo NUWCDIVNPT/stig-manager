@@ -1,6 +1,5 @@
 {
     "name": "stig-manager",
-    "bin": "./source/index.js",
     "pkg": {
         "scripts": ["./source/controllers/**/*.js", "./source/service/**/*.js"],
         "assets": [
