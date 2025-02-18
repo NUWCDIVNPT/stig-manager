@@ -1,10 +1,17 @@
 {
     "name": "stig-manager",
-    "bin": "./source/index.js",
     "pkg": {
         "scripts": ["./source/controllers/**/*.js", "./source/service/**/*.js"],
-        "assets": ["../client/dist/**/*", "../docs/_build/html", "./source/service/**/*.sql", "./source/node_modules/csv-stringify/**/*", "./source/node_modules/swagger-ui-dist/**/*", "./source/node_modules/axios/**/*", "./source/utils/*.xlsx"],
-        "targets": [ "node18-win", "node18-linuxstatic" ],
+        "assets": [
+            "../client/dist/**/*",
+            "../docs/_build/html",
+            "./source/service/**/*.sql",
+            "./source/node_modules/csv-stringify/**/*",
+            "./source/node_modules/swagger-ui-dist/**/*",
+            "./source/node_modules/axios/**/*",
+            "./source/utils/*.xlsx"
+        ],
+        "targets": ["node22-win", "node22-linuxstatic"],
         "outputPath": "./bin"
     }
 }
