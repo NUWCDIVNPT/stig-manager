@@ -29,8 +29,8 @@ function configureMiddleware(app) {
 
   logger.writeInfo('middleware', 'bootstrap', { message: 'configuring middleware' })
 
-  for (let i = 0; i < middlewareConfigFunctions.length; i++) {
-      middlewareConfigFunctions[i](app)
+  for (const middlewareConfigFunction of middlewareConfigFunctions) {
+      middlewareConfigFunction(app)
   }
 
   logger.writeInfo('middleware', 'bootstrap', { message: 'middleware configured' })
