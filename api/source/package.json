@@ -24,7 +24,7 @@
     "fast-xml-parser": "^4.5.0",
     "he": "^1.2.0",
     "js-yaml": "^4.1.0",
-    "jsonpath-plus": "^10.0.7",
+    "jsonpath-plus": "^10.3.0",
     "jsonwebtoken": "^9.0.2",
     "jszip": "^3.10.1",
     "jwks-rsa": "^3.1.0",
