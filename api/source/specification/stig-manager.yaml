@@ -7508,8 +7508,16 @@ components:
           $ref: '#/components/schemas/GroupTitle'
         ruleId:
           $ref: '#/components/schemas/RuleId'
+        ruleIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleId'
         severity:
           type: string
+        stigs:  
+          type: array
+          items:
+            $ref: '#/components/schemas/RevisionBasic'
         title:
           $ref: '#/components/schemas/RuleTitle'
         version:
@@ -8514,6 +8522,8 @@ components:
             - ccis
             - check
             - fix
+            - ruleIds
+            - stigs
     RuleSeverityQuery:
       name: severity
       in: query

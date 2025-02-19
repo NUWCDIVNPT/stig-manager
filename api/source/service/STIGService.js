@@ -449,7 +449,46 @@ exports.queryRules = async function ( ruleId, inProjection ) {
     columns.push(`json_object('fixref', rgr.fixref,'text', ft.text) as fix`)
     joins.push('left join fix_text ft on rgr.fixDigest = ft.digest')
   }
+  
+  if (inProjection?.includes('ruleIds')) {
+    columns.push(`cast(concat('[', group_concat(distinct '"' , rvcd2.ruleId , '"'), ']') as json) as ruleIds`)
+    joins.push(
+      'left join rule_version_check_digest rvcd on (rgr.version = rvcd.version and rgr.checkDigest = rvcd.checkDigest)',
+      'left join rule_version_check_digest rvcd2 on (rgr.version = rvcd2.version and rgr.checkDigest = rvcd2.checkDigest)',
+    )
+  }
+    
+  if (inProjection?.includes('stigs')) {
+    columns.push(`cast(
+      concat('[', 
+        coalesce (
+          group_concat(distinct 
+            case when sa.benchmarkId is not null then 
+              json_object(
+                'benchmarkId', sa.benchmarkId, 
+                'revisionStr', revision.revisionStr
+                )
+            else null end 
+          order by sa.benchmarkId),
+          ''),
+      ']')
+    as json) as "stigs"`)
+      
+    joins.push(
+      'left join revision on rgr.revId = revision.revId',
+      'left join stig_asset_map sa on revision.benchmarkId = sa.benchmarkId',
+    )
 
+    groupBy = [
+      "rgr.ruleId", 
+      "rgr.version",
+      "rgr.title",
+      "rgr.severity",
+      "rgr.groupId",
+      "rgr.groupTitle"
+    ]
+  }
+  
   // CONSTRUCT MAIN QUERY
   const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
 
