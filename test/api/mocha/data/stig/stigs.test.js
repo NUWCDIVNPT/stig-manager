@@ -82,6 +82,23 @@ describe('GET - Stig', () => {
                     expect(res.body.version, "expect fix version to be the test version").to.be.equal(reference.testRule.version)
                     
                 })
+                it("get test rule data with all projections, uses a ruleId present in two revisions", async () => {
+
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/rules/${reference.VPN_SRG_TEST_sharedRule}?projection=detail&projection=ccis&projection=check&projection=fix&projection=stigs&projection=ruleIds`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
+                    expect(res.body).to.be.an('object')
+                    expect(res.body.ruleId, "expect ruleId returned to be the test ruleId").to.be.equal(reference.VPN_SRG_TEST_sharedRule)
+                    expect(res.body.groupId, "expect fix groupId to be the test groupId").to.be.equal("V-97043")
+                    expect(res.body.version, "expect fix version to be the test version").to.be.equal("SRG-NET-000041-VPN-000110")
+                    expect(res.body.stigs, "expect to get back two stig revisions").to.be.lengthOf(2)
+                    for(let stig of res.body.stigs){
+                        expect(stig.benchmarkId, "expect to get back test benchmark").to.be.equal(reference.benchmark)
+                        expect(stig.revisionStr, "expect to get back test revision string").to.be.oneOf(["V1R1", "V1R0"])                   
+                    }
+                    for(let rule of res.body.ruleIds){
+                        expect(rule, "expect ruleId returned to be the test ruleId").to.be.equal(reference.VPN_SRG_TEST_sharedRule)
+                    }
+                })
                 it("get test rule data with stigs projection, expecting to get two stig revisions back which will contain a shared ruleId", async () => {
 
                     const res = await utils.executeRequest(`${config.baseUrl}/stigs/rules/${reference.VPN_SRG_TEST_sharedRule}?projection=stigs`, 'GET', iteration.token)
