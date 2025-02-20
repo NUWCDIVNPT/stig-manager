@@ -3399,7 +3399,9 @@ paths:
     get:
       tags:
         - STIG
-      summary: Return the defintion and associated check and fix for the specified Rule
+      summary: Return the definition and associated check and fix for the specified Rule
+      description: |
+        Note: A very small number of edge cases are known to exist where published STIGs have updated Rule Content without updating the associated RuleId. In these cases, it is possible this endpoint may return inconsistent Rule info. If you need specific Rule information for a given STIG Revision, use the `/stigs/{benchmarkId}/revisions/{revisionStr}/rules/{ruleId}` endpoint.
       operationId: getRuleByRuleId
       parameters:
         - $ref: '#/components/parameters/RuleProjectionQuery'
