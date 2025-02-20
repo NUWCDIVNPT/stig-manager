@@ -451,10 +451,9 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   }
   
   if (inProjection?.includes('ruleIds')) {
-    columns.push(`cast(concat('[', group_concat(distinct '"' , rvcd2.ruleId , '"'), ']') as json) as ruleIds`)
+    columns.push(`cast(concat('[', group_concat(distinct '"' , rvcd.ruleId , '"'), ']') as json) as ruleIds`)
     joins.push(
       'left join rule_version_check_digest rvcd on (rgr.version = rvcd.version and rgr.checkDigest = rvcd.checkDigest)',
-      'left join rule_version_check_digest rvcd2 on (rgr.version = rvcd2.version and rgr.checkDigest = rvcd2.checkDigest)',
     )
   }
     
@@ -490,9 +489,9 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   }
   
   // CONSTRUCT MAIN QUERY
-  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy, format: true})
 
-  const [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  const [rows] = await dbUtils.pool.query(sql)
   return (rows[0])
 }
 
