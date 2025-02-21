@@ -66,9 +66,9 @@ describe('GET - Op', () => {
           expect(res.status).to.eql(200)
           const expectedSchema =  [
             {
-              "maximum": 4,
-              "minimum": 1,
-              "type": "integer"
+              maximum: 4,
+              minimum: 1,
+              type: "integer"
             }
           ]
           expect(res.body).to.eql(expectedSchema)
