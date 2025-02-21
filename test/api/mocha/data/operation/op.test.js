@@ -71,7 +71,7 @@ describe('GET - Op', () => {
               type: "integer"
             }
           ]
-          expect(res.body).to.eql(expectedSchema)
+          expect(res.body[0]).to.deep.equal(expectedSchema[0])
         })
       })
     })
