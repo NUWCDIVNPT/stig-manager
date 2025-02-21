@@ -521,6 +521,7 @@ const reference = {
     groupId: "V-97041",
     version: "SRG-NET-000019-VPN-000040",
   },
+  VPN_SRG_TEST_sharedRule: "SV-106181r1_rule",
   testRuleNoMetadata: {
     ruleId: "SV-106191r1_rule",
   },

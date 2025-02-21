@@ -392,7 +392,12 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   ]
   
   let groupBy = [
-    'rgr.rgrId'
+    "rgr.ruleId", 
+    "rgr.version",
+    "rgr.title",
+    "rgr.severity",
+    "rgr.groupId",
+    "rgr.groupTitle"
   ]
 
   const orderBy = ['substring(rgr.ruleId from 4) + 0']
@@ -415,17 +420,17 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   // PROJECTIONS
   if ( inProjection?.includes('detail') ) {
     columns.push(`json_object(
-      'weight', rgr.weight,
-      'vulnDiscussion', rgr.vulnDiscussion,
-      'falsePositives', rgr.falsePositives,
-      'falseNegatives', rgr.falseNegatives,
-      'documentable', rgr.documentable,
-      'mitigations', rgr.mitigations,
-      'severityOverrideGuidance', rgr.severityOverrideGuidance,
-      'potentialImpacts', rgr.potentialImpacts,
-      'thirdPartyTools', rgr.thirdPartyTools,
-      'mitigationControl', rgr.mitigationControl,
-      'responsibility', rgr.responsibility
+      'weight', any_value(rgr.weight),
+      'vulnDiscussion', any_value(rgr.vulnDiscussion),
+      'falsePositives', any_value(rgr.falsePositives),
+      'falseNegatives', any_value(rgr.falseNegatives),
+      'documentable', any_value(rgr.documentable),
+      'mitigations', any_value(rgr.mitigations),
+      'severityOverrideGuidance', any_value(rgr.severityOverrideGuidance),
+      'potentialImpacts', any_value(rgr.potentialImpacts),
+      'thirdPartyTools', any_value(rgr.thirdPartyTools),
+      'mitigationControl', any_value(rgr.mitigationControl),
+      'responsibility', any_value(rgr.responsibility)
     ) as detail`)
   }
 
@@ -441,19 +446,31 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   }
 
   if ( inProjection?.includes('check') ) {
-    columns.push(`json_object('system', rgr.checkSystem,'content', cc.content) as \`check\``)
+    columns.push(`json_object('system', any_value(rgr.checkSystem),'content', any_value(cc.content)) as \`check\``)
     joins.push('left join check_content cc on rgr.checkDigest = cc.digest')
   }
 
   if ( inProjection?.includes('fix') ) {
-    columns.push(`json_object('fixref', rgr.fixref,'text', ft.text) as fix`)
+    columns.push(`json_object('fixref', any_value(rgr.fixref),'text', any_value(ft.text)) as fix`)
     joins.push('left join fix_text ft on rgr.fixDigest = ft.digest')
   }
-
+  
+  if (inProjection?.includes('ruleIds')) {
+    columns.push(`cast(concat('[', group_concat(distinct '"' , rvcd.ruleId , '"'), ']') as json) as ruleIds`)
+    joins.push(
+      'left join rule_version_check_digest rvcd on (rgr.version = rvcd.version and rgr.checkDigest = rvcd.checkDigest)',
+    )
+  }
+    
+  if (inProjection?.includes('stigs')) {
+    columns.push(`cast(concat('[', group_concat(distinct json_object('benchmarkId',revision.benchmarkId,'revisionStr',revision.revisionStr)), ']') as json) as stigs`)
+    joins.push('left join revision on rgr.revId = revision.revId')
+  }
+  
   // CONSTRUCT MAIN QUERY
-  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy})
+  const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy, format: true})
 
-  const [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  const [rows] = await dbUtils.pool.query(sql)
   return (rows[0])
 }
 

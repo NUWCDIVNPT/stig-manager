@@ -17,6 +17,7 @@ describe('GET - Stig', () => {
     before(async function () {
         await utils.loadAppData()
         await utils.uploadTestStig("U_VPN_SRG_V1R0_Manual-xccdf.xml")
+        await utils.uploadTestStig("U_VPN_SRG-OTHER_V1R1_twoRules-matchingFingerprints.xml")
     })
 
     for(const iteration of iterations){
@@ -72,7 +73,7 @@ describe('GET - Stig', () => {
                 })
             })
             describe('GET - getRuleByRuleId - /stigs/rules/{ruleId}', () => {
-                it('get test ruledata with all projections', async () => {
+                it('get test ruledata with all projections besides stigs and ruleIds', async () => {
                     const res = await utils.executeRequest(`${config.baseUrl}/stigs/rules/${reference.testRule.ruleId}?projection=detail&projection=ccis&projection=check&projection=fix`, 'GET', iteration.token)
                     expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('object')
@@ -80,6 +81,63 @@ describe('GET - Stig', () => {
                     expect(res.body.groupId, "expect fix groupId to be the test groupId").to.be.equal(reference.testRule.groupId)
                     expect(res.body.version, "expect fix version to be the test version").to.be.equal(reference.testRule.version)
                     
+                })
+                it("get test rule data with all projections, uses a ruleId present in two revisions", async () => {
+
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/rules/${reference.VPN_SRG_TEST_sharedRule}?projection=detail&projection=ccis&projection=check&projection=fix&projection=stigs&projection=ruleIds`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
+                    expect(res.body).to.be.an('object')
+                    expect(res.body.ruleId, "expect ruleId returned to be the test ruleId").to.be.equal(reference.VPN_SRG_TEST_sharedRule)
+                    expect(res.body.groupId, "expect fix groupId to be the test groupId").to.be.equal("V-97043")
+                    expect(res.body.version, "expect fix version to be the test version").to.be.equal("SRG-NET-000041-VPN-000110")
+                    expect(res.body.stigs, "expect to get back two stig revisions").to.be.lengthOf(2)
+                    for(let stig of res.body.stigs){
+                        expect(stig.benchmarkId, "expect to get back test benchmark").to.be.equal(reference.benchmark)
+                        expect(stig.revisionStr, "expect to get back test revision string").to.be.oneOf(["V1R1", "V1R0"])                   
+                    }
+                    for(let rule of res.body.ruleIds){
+                        expect(rule, "expect ruleId returned to be the test ruleId").to.be.equal(reference.VPN_SRG_TEST_sharedRule)
+                    }
+                })
+                it("get test rule data with stigs projection, expecting to get two stig revisions back which will contain a shared ruleId", async () => {
+
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/rules/${reference.VPN_SRG_TEST_sharedRule}?projection=stigs`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
+                    expect(res.body).to.be.an('object')
+                    expect(res.body.ruleId, "expect ruleId returned to be the test ruleId").to.be.equal(reference.VPN_SRG_TEST_sharedRule)
+                    expect(res.body.groupId, "expect fix groupId to be the test groupId").to.be.equal("V-97043")
+                    expect(res.body.version, "expect fix version to be the test version").to.be.equal("SRG-NET-000041-VPN-000110")
+                    expect(res.body.stigs, "expect to get back two stig revisions").to.be.lengthOf(2)
+                    for(let stig of res.body.stigs){
+                        expect(stig.benchmarkId, "expect to get back test benchmark").to.be.equal(reference.benchmark)
+                        expect(stig.revisionStr, "expect to get back test revision string").to.be.oneOf(["V1R1", "V1R0"])                   
+                    }
+                })
+                it("get test rule data with ruleIds projection, should return ruleIds with equivalent check content hash + version. will query for both ruleIds in a single test", async () => {
+
+                    const rule1 = "SV-106179r1_zzzzzz"
+                    const rule2 = "SV-106179r1_xxxx"
+
+                    const res = await utils.executeRequest(`${config.baseUrl}/stigs/rules/${rule1}?projection=ruleIds`, 'GET', iteration.token)
+                    expect(res.status).to.eql(200)
+                    expect(res.body.ruleId, "expect ruleId returned to be the test ruleId").to.be.equal(rule1)
+                    expect(res.body.groupId, "expect fix groupId to be the test groupId").to.be.equal("V-97041")
+                    expect(res.body.version, "expect fix version to be the test version").to.be.equal("SRG-NET-000019-VPN-000040")
+                    expect(res.body.ruleIds, "expect to get back two ruleIds with equivalent check content hash + version. ").to.be.lengthOf(2)
+                    for(let rule of res.body.ruleIds){
+                        expect(rule, "expect ruleId returned to be the test ruleId").to.be.oneOf([rule1, rule2])
+                    }
+
+                    const res2 = await utils.executeRequest(`${config.baseUrl}/stigs/rules/${rule2}?projection=ruleIds`, 'GET', iteration.token)
+                    expect(res2.status).to.eql(200)
+                    expect(res2.body.ruleId, "expect ruleId returned to be the test ruleId").to.be.equal(rule2)
+                    expect(res2.body.groupId, "expect fix groupId to be the test groupId").to.be.equal(res.body.groupId)
+                    expect(res2.body.version, "expect fix version to be equal to previous clone rule").to.be.equal(res.body.version)
+                    expect(res2.body.ruleIds, "expect to get back two ruleIds with equivalent check content hash + version. ").to.be.lengthOf(2)
+                    for(let rule of res2.body.ruleIds){
+                        expect(rule, "expect ruleId returned to be the test ruleId").to.be.oneOf([rule1, rule2])
+                    }
+
                 })
             })
             describe('GET - getScapMap - /stigs/scap-maps', () => {
