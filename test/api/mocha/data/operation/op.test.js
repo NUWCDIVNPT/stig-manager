@@ -60,6 +60,20 @@ describe('GET - Op', () => {
           expect(res.status).to.eql(200)
         })
       })
+      describe('getDefinition - /op/definition - with jsonPath param', () => {
+        it('Return API Deployment Definition', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/op/definition?jsonpath=%24.components.schemas.RoleId`, 'GET', iteration.token)
+          expect(res.status).to.eql(200)
+          const expectedSchema =  [
+            {
+              maximum: 4,
+              minimum: 1,
+              type: "integer"
+            }
+          ]
+          expect(res.body[0]).to.deep.equal(expectedSchema[0])
+        })
+      })
     })
   }
 })

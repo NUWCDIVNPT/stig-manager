@@ -22,15 +22,14 @@ function serveDocs(app) {
 }
 
 function serveApiDocs(app) {
- 
-     if (config.swaggerUi.enabled) {
-        const oasDoc = getOAS()
+    const oasDoc = getOAS()
+    if (config.swaggerUi.enabled) {
         configureSwaggerUI(app, oasDoc)
-     }
-     else 
-     {
+    }
+    else 
+    {
         logger.writeDebug('serveApiDocs', 'SwaggerUI', { message: 'Swagger UI is disabled in configuration' })
-     }
+    }
 }
 
 function getOAS(){
