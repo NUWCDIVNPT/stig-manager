@@ -4859,9 +4859,9 @@ components:
         uniqueStigs:
           $ref: '#/components/schemas/IntegerMinimumZeroNullableNullable'
         stigAssignments:
-          $ref: '#/components/schemas/IntegerMinimumZeroNullableNullable'
+          $ref: '#/components/schemas/IntegerMinimumZeroNullable'
         rules:
-          $ref: '#/components/schemas/IntegerMinimumZeroNullableNullable'
+          $ref: '#/components/schemas/IntegerMinimumZeroNullable'
         reviews:
           $ref: '#/components/schemas/Integer64MinimumZeroNullable'
         reviewsDisabled:
@@ -4940,9 +4940,9 @@ components:
       type: object
       properties:
         userId:
-          $ref: '#/components/schemas/IntegerMinimumZeroNullableNullable'
+          $ref: '#/components/schemas/IntegerMinimumZeroNullable'
         userGroupId:
-          $ref: '#/components/schemas/IntegerMinimumZeroNullableNullable'
+          $ref: '#/components/schemas/IntegerMinimumZeroNullable'
       required:
         - userId
         - userGroupId
@@ -6662,7 +6662,7 @@ components:
       $ref: '#/components/schemas/String255Nullable'
     IndexDisa:
       $ref: '#/components/schemas/String255'
-    IntegerMinimumZeroNullableNullable:
+    IntegerMinimumZeroNullable:
       type: integer
       minimum: 0
       nullable: true
@@ -6675,9 +6675,6 @@ components:
       format: int64
       minimum: 0
       nullable: true
-    IntegerMinimumZeroNullable:
-      type: integer
-      minimum: 0
     Label:
       additionalProperties: false
       type: object
