@@ -232,6 +232,19 @@ describe('GET - Collection', function () {
             expect(distinct.validStigs).to.include(stig.benchmarkId)
           }          
         })
+        it('pass non-existent collection Id with elevate, expect 404 (mostly just testing getCollectionInfoAndCheckPermission here) ',async function () {
+
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${'123456'}?elevate=true`, 'GET', iteration.token)
+
+          if(iteration.name === 'stigmanadmin'){
+            expect(res.status).to.eql(404)
+            expect(res.body.error).to.equal("Resource not found.")
+            expect(res.body.detail).to.equal("Collection not found")
+          }
+          else{
+            expect(res.status).to.eql(403)
+          }
+        })
       })
 
       describe('getChecklistByCollectionStig - /collections/{collectionId}/checklists/{benchmarkId}/{revisionStr}', function () {
