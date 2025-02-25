@@ -432,6 +432,12 @@ exports.queryCollections = async function ({projections = [], filter = {}, eleva
     return rows  
 }
 
+exports.doesCollectionExist = async function (collectionId) {
+  const sql = `SELECT collectionId FROM collection WHERE collectionId = ?`
+  const [rows] = await dbUtils.pool.query(sql, [collectionId])
+  return rows.length > 0
+}
+
 
 exports.addOrUpdateCollection = async function(writeAction, collectionId, body, projection, userObject, svcStatus = {}) {
   // CREATE: collectionId will be null
