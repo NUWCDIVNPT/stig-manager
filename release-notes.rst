@@ -1,3 +1,18 @@
+1.5.4
+-------
+
+Changes:
+
+  - (UI/API) Display Application Managers in Home Tab (configurable with envvar)
+  - (API/Docs) fix: Handle STIGMAN_JWT_PRIVILEGES_CLAIM values with `-` characters and other characters that require double-quoting; Clarification of valid token claim values
+  - (API) New projections "stigs" and "ruleIds" added to GET /stigs/rules/{ruleId} endpoint
+  - (API) Refactor and modularize index.js
+  - (UI) fix: When deregistering User, remove them from all User Groups
+  - (Docs) added missing descriptions for a few detailed metrics
+  - (Workflows) Binary test workflow updates
+  - (Workflows) Replace deprecated `pkg` package with supported fork
+  - (API) Dependency Updates
+
 1.5.3
 -------
 
