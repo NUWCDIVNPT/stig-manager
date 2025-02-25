@@ -84,7 +84,7 @@ function addCollectionAdmin( params ) {
     iconCls: 'sm-collection-icon',
     title: 'Collections',
     closable: true,
-    layout: 'fit',
+    layout: 'border',
     border: false,
     items: [collectionGrid, adminPropsPanel],
     listeners: {
