@@ -256,7 +256,7 @@ module.exports.getAssetsByStig = async function getAssetsByStig (req, res, next)
     const labelMatch = req.query.labelMatch
     const projections = req.query.projection
 
-    const {collectionId, grant} = Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
+    const {collectionId, grant} = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
     const response = await AssetService.getAssetsByStig({
       collectionId, 
       benchmarkId, 
@@ -309,7 +309,7 @@ module.exports.attachAssetsToStig = async function attachAssetsToStig (req, res,
     let assetIds = req.body
     let projections = req.query.projection
 
-    const { collectionId, grant } = Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
+    const { collectionId, grant } = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
     let collection = await CollectionService.getCollection( collectionId, ['assets'], false, req.userObject)
     let collectionAssets = collection.assets.map( a => a.assetId)
     if (assetIds.every( a => collectionAssets.includes(a))) {
