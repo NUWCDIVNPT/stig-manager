@@ -4643,7 +4643,7 @@ components:
         indexLength:
           $ref: '#/components/schemas/IntegerMinimumZeroNullable'
         autoIncrement:
-          $ref: '#/components/schemas/IntegerMinimumZeroNullableNullable'
+          $ref: '#/components/schemas/IntegerMinimumZeroNullable'
         createTime:
           $ref: '#/components/schemas/Created'
         updateTime:
@@ -4688,7 +4688,7 @@ components:
     AppInfoPrivilegeTimeSeriesCounts:
       type: object
       additionalProperties:
-        $ref: '#/components/schemas/IntegerMinimumZeroNullableNullable'
+        $ref: '#/components/schemas/IntegerMinimumZeroNullable'
     AppInfoUserInfo:
       type: object
       properties:
@@ -4853,11 +4853,11 @@ components:
         settings:
           $ref: '#/components/schemas/AppInfoCollectionSettings'
         assets:
-          $ref: '#/components/schemas/IntegerMinimumZeroNullableNullable'
+          $ref: '#/components/schemas/IntegerMinimumZeroNullable'
         assetsDisabled:
-          $ref: '#/components/schemas/IntegerMinimumZeroNullableNullable'
+          $ref: '#/components/schemas/IntegerMinimumZeroNullable'
         uniqueStigs:
-          $ref: '#/components/schemas/IntegerMinimumZeroNullableNullable'
+          $ref: '#/components/schemas/IntegerMinimumZeroNullable'
         stigAssignments:
           $ref: '#/components/schemas/IntegerMinimumZeroNullable'
         rules:
@@ -8422,7 +8422,7 @@ components:
     UserId:
       $ref: '#/components/schemas/StringIntId'
     UserLastAccess:
-      $ref: '#/components/schemas/IntegerMinimumZeroNullableNullable'
+      $ref: '#/components/schemas/IntegerMinimumZeroNullable'
     UserPrivileges:
       type: object
       additionalProperties: false
