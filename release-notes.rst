@@ -1,3 +1,12 @@
+1.5.5
+-------
+
+Changes:
+
+  - (UI) fix: Display Collection Properties panel in App Management->Collections interface
+  - (APIs) fix: return 404 on elevated requests for unknown collectionId
+  - (OAS) Added fully defined appInfo schema to OAS
+
 1.5.4
 -------
 
