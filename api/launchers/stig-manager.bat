@@ -81,8 +81,8 @@
 ::==============================================================================
 :: STIGMAN_CLIENT_DISPLAY_APPMANAGERS
 ::
-::  | Default:  "true" | Set to "false" to hide application manager names
-::   along with their email addresses on the Stig-Manager home page.
+::  | Default: "true" | Whether to display application managers the home page of
+::  web client
 ::
 ::  Affects: Client
 ::==============================================================================
@@ -277,6 +277,17 @@
 :: set STIGMAN_DB_USER=
 
 ::==============================================================================
+:: STIGMAN_DEPENDENCY_RETRIES
+::
+::  | Default: "24" | During startup, the number of attempts made to establish
+::  connections to the database and OIDC Provider. Retries are made every 5
+::  seconds and the API process exits if unsuccessful.
+::
+::  Affects: API
+::==============================================================================
+:: set STIGMAN_DEPENDENCY_RETRIES=
+
+::==============================================================================
 :: STIGMAN_DOCS_DIRECTORY
 ::
 ::  | Default: "./docs" | The location of the documentation files, relative to
@@ -339,8 +350,8 @@
 ::
 ::  | Default: "jti" | The access token claim whose value is the OIDC provider's
 ::  Assertion ID. Updates to this value trigger the API to update a User's
-::  "lastClaims" property. The claim MUST be a top-level claim and cannot be
-::  nested.
+::  "lastClaims" property. The claim MUST NOT be nested and MUST be a valid
+::  ECMAScript identifier.
 ::
 ::  Affects: API
 ::==============================================================================
@@ -350,7 +361,8 @@
 :: STIGMAN_JWT_EMAIL_CLAIM
 ::
 ::  | Default: "email" | The access token claim whose value is the user's email
-::  address
+::  address. The claim MUST NOT be nested and MUST be a valid ECMAScript
+::  identifier.
 ::
 ::  Affects: API, Client
 ::==============================================================================
@@ -360,7 +372,8 @@
 :: STIGMAN_JWT_NAME_CLAIM
 ::
 ::  | Default: "name" | The access token claim whose value is the user's full
-::  name
+::  name. The claim MUST NOT be nested and MUST be a valid ECMAScript
+::  identifier.
 ::
 ::  Affects: API, Client
 ::==============================================================================
@@ -370,7 +383,8 @@
 :: STIGMAN_JWT_PRIVILEGES_CLAIM
 ::
 ::  | Default: "realm_access.roles" | The access token claim whose value is the
-::  user’s privileges
+::  user’s privileges. The claim MAY be nested but SHOULD avoid invalid
+::  ECMAScript identifiers.
 ::
 ::  Affects: API, Client
 ::==============================================================================
@@ -381,7 +395,8 @@
 ::
 ::  | Default: "scope" | The access token claim whose value is the user's
 ::  scopes. Some OIDC Providers (Okta, Azure AD) use the claim "scp" to
-::  enumerate scopes
+::  enumerate scopes. The claim MUST NOT be nested and MUST be a valid
+::  ECMAScript identifier.
 ::
 ::  Affects: API, Client
 ::==============================================================================
@@ -391,7 +406,8 @@
 :: STIGMAN_JWT_SERVICENAME_CLAIM
 ::
 ::  | Default: "clientId" | The access token claim whose value is the user's
-::  client
+::  client. The claim MUST NOT be nested and MUST be a valid ECMAScript
+::  identifier.
 ::
 ::  Affects: API, Client
 ::==============================================================================
@@ -401,7 +417,8 @@
 :: STIGMAN_JWT_USERNAME_CLAIM
 ::
 ::  | Default: "preferred_username" | The access token claim whose value is the
-::  user's username
+::  user's username. The claim MUST NOT be nested and MUST be a valid ECMAScript
+::  identifier.
 ::
 ::  Affects: API, Client
 ::==============================================================================
