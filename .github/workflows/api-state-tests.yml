@@ -1,9 +1,6 @@
 name: API state tests
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - '.github/workflows/api-state-tests.yml'
   pull_request:
     branches:
       - main
