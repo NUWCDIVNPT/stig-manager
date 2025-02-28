@@ -1,0 +1,37 @@
+name: API state tests
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/api-state-tests.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "api/source/**"
+      - "test/state/**"
+      - ".github/workflows/api-state-tests.yml"
+jobs:
+  api-state-tests:
+    name: all state tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - name: Install api libraries
+        working-directory: ./api/source
+        run: npm ci
+      - name: Install Test dependencies
+        working-directory: ./test/state
+        run: npm ci
+      - name: Run tests
+        working-directory: ./test/state
+        run: npm test
+      - name: Upload mocha test report
+        id: artifact-upload-mocha
+        uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: mocha-report
+          path: ./test/state/mochawesome-report
+

@@ -8,6 +8,7 @@ const fs = require("fs")
 const semverLt = require('semver/functions/lt')
 const semverCoerce = require('semver/functions/coerce')
 const Importer = require('./migrations/lib/mysql-import.js')
+const state = require('../utils/state')
 const minMySqlVersion = '8.0.24'
 let _this = this
 let initAttempt = 0
@@ -74,39 +75,21 @@ function getPoolConfig() {
   }
   return poolConfig
 }
-/*
-* setDepStatus is a function that sets the status of a dependency
-*/
-module.exports.initializeDatabase = async function (setDepStatus) {
+
+module.exports.initializeDatabase = async function () {
   // Create the connection pool
   const poolConfig = getPoolConfig()
   logger.writeDebug('mysql', 'poolConfig', { ...poolConfig })
   _this.pool = mysql.createPool(poolConfig)
+  state.dbPool = _this.pool
   // Set common session variables
   _this.pool.on('connection', function (connection) {
     connection.query('SET SESSION group_concat_max_len=10000000')
   })
 
-  // Call the pool destruction methods on SIGTERM and SEGINT
-  async function closePoolAndExit(signal) {
-    logger.writeInfo('app', 'shutdown', { signal })
-    try {
-      await _this.pool.end()
-      logger.writeInfo('mysql', 'close', { success: true })
-      process.exit(0)
-    } catch(err) {
-      logger.writeError('mysql', 'close', { success: false, message: err.message })
-      process.exit(1)
-    }
-  }   
-  process.on('SIGPIPE', closePoolAndExit)
-  process.on('SIGHUP', closePoolAndExit)
-  process.on('SIGTERM', closePoolAndExit)
-  process.on('SIGINT', closePoolAndExit)
-
   // Preflight the pool every 5 seconds
   const {detectedTables,detectedMySqlVersion} = await retry(_this.testConnection, {
-    retries: 24,
+    retries: config.settings.dependencyRetries,
     factor: 1,
     minTimeout: 5 * 1000,
     maxTimeout: 5 * 1000,
@@ -116,13 +99,14 @@ module.exports.initializeDatabase = async function (setDepStatus) {
   })
   if (semverLt(semverCoerce(detectedMySqlVersion), minMySqlVersion) ) {
     logger.writeError('mysql', 'preflight', { success: false, message: `MySQL release ${detectedMySqlVersion} is too old. Update to release ${minMySqlVersion} or later.` })
-    process.exit(1)
+    state.setDbStatus(false)
+    throw new Error('MySQL release is too old.')
   } 
   else {
     logger.writeInfo('mysql', 'preflight', { 
       success: true,
       version: detectedMySqlVersion
-      })
+    })
   }
 
   try {
@@ -152,7 +136,7 @@ module.exports.initializeDatabase = async function (setDepStatus) {
         logger.writeInfo('mysql', 'migration', { message: 'MySQL schema has no migrations to revert' })
       }
       logger.writeInfo('mysql', 'migration', { message: 'MySQL revert migration has completed' })
-      process.exit(1)
+      state.setState('stop')
     }
     const migrations = await umzug.pending()
     if (migrations.length > 0) {
@@ -163,13 +147,13 @@ module.exports.initializeDatabase = async function (setDepStatus) {
     else {
       logger.writeInfo('mysql', 'migration', { message: `MySQL schema is up to date` })
     }
-    setDepStatus('db', 'up')
+    state.setDbStatus(true)
     const migrated = await umzug.executed()
     config.lastMigration = parseInt(migrated[migrated.length -1].file.substring(0,4))
   }
   catch (error) {
     logger.writeError('mysql', 'initalization', { message: error.message })
-    setDepStatus('db', 'failed')
+    state.setDbStatus(false)
     throw new Error('Failed during database initialization or migration.')
   } 
 }
