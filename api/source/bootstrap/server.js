@@ -1,5 +1,6 @@
 const http = require('node:http')
 const logger = require('../utils/logger')
+const state = require('../utils/state')
 const OperationSvc = require(`../service/OperationService`)
 const {serializeError} = require('../utils/serializeError')
 const config = require('../utils/config')
@@ -10,7 +11,7 @@ async function startServer(app, startTime) {
   const server = http.createServer(app)
   const onListenError = (e) => {
     logger.writeError('server', 'shutdown', {message:`Server failed establishing or while listening on port ${config.http.port}`, error: serializeError(e)})
-    process.exit(1)  
+    state.setState('fail')  
   }
   server.on('error', onListenError)
   

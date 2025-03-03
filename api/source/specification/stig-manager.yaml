@@ -3293,6 +3293,19 @@ paths:
       security:
         - oauth:
             - stig-manager:op:read
+  /op/state:
+    get:
+      tags:
+        - Operation
+      summary: Return information about the API state
+      operationId: getState
+      responses:
+        '200':
+          description: Detail response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StateResponse'
   /stigs:
     get:
       tags:
@@ -8062,6 +8075,37 @@ components:
         - lastRevisionDate
         - ruleCount
         - collectionIds
+    StateResponse:
+      type: object
+      properties:
+        state:
+          $ref: '#/components/schemas/State'
+        stateDate:
+          $ref: '#/components/schemas/StringDateTime' 
+        mode:
+          $ref: '#/components/schemas/Mode'
+        dependencies:
+          $ref: '#/components/schemas/Dependencies'
+    State:
+      type: string
+      enum:
+        - starting
+        - available
+        - unavailable
+        - fail
+        - stop
+    Mode:
+      type: string
+      enum:
+        - normal
+        - maintenance
+    Dependencies:
+      type: object
+      properties:
+        db:
+          type: boolean
+        oidc:
+          type: boolean
     StatusText:
       $ref: '#/components/schemas/String511Nullable'
     StigTitle:

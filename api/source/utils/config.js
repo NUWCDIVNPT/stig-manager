@@ -14,7 +14,8 @@ const config = {
         // Supported STIGMAN_DEV_RESPONSE_VALIDATION values: 
         // "logOnly" (logs failing response, but still sends them) 
         // "none"(no validation performed)
-        responseValidation: process.env.STIGMAN_DEV_RESPONSE_VALIDATION || "none"
+        responseValidation: process.env.STIGMAN_DEV_RESPONSE_VALIDATION || "none",
+        dependencyRetries: process.env.STIGMAN_DEPENDENCY_RETRIES || 24
     },
     client: {
         clientId: process.env.STIGMAN_CLIENT_ID || "stig-manager",

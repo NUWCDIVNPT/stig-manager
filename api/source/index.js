@@ -2,6 +2,8 @@
 const startTime = process.hrtime.bigint()
 const express = require('express')
 const logger = require('./utils/logger')
+const state = require('./utils/state')
+const signals = require('./bootstrap/signals')
 const config = require('./utils/config')
 const { serializeError } = require('./utils/serializeError')
 const configureMiddleware  = require('./bootstrap/middlewares.js')
@@ -10,6 +12,7 @@ const client = require('./bootstrap/client.js')
 const docs = require('./bootstrap/docs.js')
 const startServer = require('./bootstrap/server')
 
+signals.setupSignalHandlers()
 bootstrapUtils.logAppConfig(config)
 
 //Catch unhandled errors. 
@@ -33,7 +36,7 @@ function run() {
   }
   catch (err) {
     logger.writeError(err.message)
-    process.exit(1)
+    state.setState('fail')
   }
 }
 

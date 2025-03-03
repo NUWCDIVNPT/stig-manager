@@ -3,6 +3,7 @@ const OperationService = require(`../service/OperationService`)
 const escape = require('../utils/escape')
 const {JSONPath} = require('jsonpath-plus')
 const SmError = require('../utils/error.js')
+const state = require('../utils/state')
 
 module.exports.getConfiguration = async function getConfiguration (req, res, next) {
   try {
@@ -103,6 +104,15 @@ module.exports.getAppInfo = async function getAppInfo (req, res, next) {
     else {
       throw new SmError.PrivilegeError()
     }
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getState = function (req, res, next) {
+  try {
+    res.json(state.apiState)
   }
   catch (err) {
     next(err)

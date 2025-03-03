@@ -10,7 +10,7 @@ const { modulePathResolver, buildResponseValidationConfig } = require('./bootstr
 const auth = require('../utils/auth')
 const configureErrorHandlers = require('./errorHandlers')
 const { requestLogger } = require('../utils/logger')
-const { getDepStatus } = require('./dependencies')
+const state = require('../utils/state')
 const logger = require('../utils/logger')
 
 function configureMiddleware(app) {
@@ -70,12 +70,11 @@ function configureCompression(app) {
 function configureServiceCheck(app) {
     app.use((req, res, next) => {
       try {
-          let depStatus = getDepStatus()
-          if ((depStatus.db === 'up' && depStatus.auth === 'up') || req.url.startsWith('/api/op/definition')) {
+          if ((state.dependencyStatus.db && state.dependencyStatus.oidc) || req.url.startsWith('/api/op/state')) {
               next()
           }
           else {
-              res.status(503).json({status: depStatus})
+              res.status(503).json(state.apiState)
           }
       }
       catch(e) {
