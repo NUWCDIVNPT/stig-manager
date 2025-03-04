@@ -55,20 +55,21 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AssetCreateOrReplace'
+              oneOf:
+                - $ref: '#/components/schemas/AssetCreateBatch'
+                - $ref: '#/components/schemas/AssetCreateOrReplace'
       responses:
         '201':
           description: AssetProjected response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AssetProjected'
-        '400':
-          description: Client Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientErrorDuplicateAsset'
+               oneOf:
+                - $ref: '#/components/schemas/AssetProjected'
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/AssetProjected'
+      
         default:
           description: unexpected error
           content:
@@ -98,12 +99,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AssetsPatchResponse'
-        '400':
-          description: Client Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientErrorDuplicateAsset'
         default:
           description: unexpected error
           content:
@@ -5108,6 +5103,54 @@ components:
     AssetCount:
       minimum: 0
       type: integer
+    AssetCreateBatch:
+      additionalProperties: false
+      type: object
+      properties:
+        collectionId:
+          $ref: '#/components/schemas/CollectionId'
+        assets: 
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetBatchItem'
+          minItems: 1
+      required:
+        - collectionId
+        - assets
+    AssetBatchItem: 
+      additionalProperties: false
+      type: object
+      properties:
+        description:
+          $ref: '#/components/schemas/AssetDescription'
+        fqdn:
+          $ref: '#/components/schemas/AssetFqdn'
+        ip:
+          $ref: '#/components/schemas/AssetIp'
+        labelIds:
+          items:
+            $ref: '#/components/schemas/LabelId'
+          type: array
+        mac:
+          $ref: '#/components/schemas/AssetMac'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        name:
+          $ref: '#/components/schemas/AssetName'
+        noncomputing:
+          $ref: '#/components/schemas/AssetNoncomputing'
+        stigs:
+          description: The benchmarkIds mapped to this Asset
+          items:
+            type: string
+          type: array
+      required:
+        - name
+        - description
+        - ip
+        - noncomputing
+        - metadata
+        - stigs
     AssetCreateOrReplace:
       additionalProperties: false
       type: object
