@@ -89,3 +89,5 @@
 | The redirect URL sent by SwaggerUI to the OIDC provider when authorizing","API"
 "STIGMAN_SWAGGER_SERVER","| **Default** ``http://localhost:54000/api``
 | The API server URL relative to the SwaggerUI ","API"
+"STIGMAN_DEV_ALLOW_INSECURE_TOKENS","| **Default** ``false``
+| Controls whether known insecure JWT signing keys are allowed. Only for development/testing purposes. Setting to 'true' is NOT recommended for production environments. ","API"

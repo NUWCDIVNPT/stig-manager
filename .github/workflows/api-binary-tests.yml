@@ -37,6 +37,7 @@ env:
   STIGMAN_DEV_RESPONSE_VALIDATION: logOnly
   STIGMAN_EXPERIMENTAL_APPDATA: 'true'
   STIGMAN_OIDC_PROVIDER: http://127.0.0.1:8080/auth/realms/stigman
+  STIGMAN_DEV_ALLOW_INSECURE_TOKENS: 'true'
 jobs:
   build-artifacts:
     name: Build binary artifacts

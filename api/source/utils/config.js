@@ -1,5 +1,8 @@
 const package = require("../package.json")
 
+// Array of known insecure kid values
+const insecureKids = ['FJ86GcF3jTbNLOco4NvZkUCIUmfYCqoqtOQeMfbhNlE']
+
 const config = {
     version: package.version,
     commit: {
@@ -73,6 +76,8 @@ const config = {
     },
     oauth: {
         authority: process.env.STIGMAN_OIDC_PROVIDER || process.env.STIGMAN_API_AUTHORITY || "http://localhost:8080/realms/stigman",
+        allowInsecureTokens: process.env.STIGMAN_DEV_ALLOW_INSECURE_TOKENS === "true",
+        insecureKids: insecureKids,
         claims: {
             scope: process.env.STIGMAN_JWT_SCOPE_CLAIM || "scope",
             username: process.env.STIGMAN_JWT_USERNAME_CLAIM,
@@ -107,4 +112,4 @@ function formatMySqlJsonPath(path) {
     return path?.split('.').map(p => `"${p}"`).join('.')
 }
   
-module.exports = config 
+module.exports = config

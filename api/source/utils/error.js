@@ -35,6 +35,7 @@ class PrivilegeError extends SmError {
     this.detail = detail
   }
 }
+
 class NotFoundError extends SmError {
   constructor(detail) {
     super('Resource not found.')
@@ -70,6 +71,14 @@ class OIDCProviderError extends SmError {
 class SigningKeyNotFoundError extends SmError {
   constructor(detail) {
     super('Unknown signing key, unable to validate token.')
+    this.status = 403
+    this.detail = detail
+  }
+}
+
+class InsecureTokenError extends SmError {
+  constructor(detail) {
+    super('Insecure token presented and STIGMAN_DEV_ALLOW_INSECURE_TOKENS is false.')
     this.status = 403
     this.detail = detail
   }
@@ -120,5 +129,6 @@ module.exports = {
   OutOfScopeError,
   ElevationError,
   InvalidElevationError,
-  InternalError 
+  InternalError,
+  InsecureTokenError
 }
