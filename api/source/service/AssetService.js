@@ -101,10 +101,9 @@ exports.queryAssets = async function ({projections = [], filter = {}, grant = {}
     predicates.binds.push(filter.assetId)
   }
   
-  if (Array.isArray(filter.assetIds) && filter.assetIds.length > 0) {
-    const assetIdPlaceholders = filter.assetIds.map(() => '?').join(', ')
-    predicates.statements.push(`a.assetId IN (${assetIdPlaceholders})`)
-    predicates.binds.push(...filter.assetIds)
+  if (filter.assetIds && filter.assetIds.length > 0) {
+    predicates.statements.push(`a.assetId IN ?`)
+    predicates.binds.push([filter.assetIds])
   }
   if (filter.labels?.labelNames || filter.labels?.labelIds || filter.labels?.labelMatch) {
     joins.push(
@@ -171,123 +170,6 @@ exports.queryAssets = async function ({projections = [], filter = {}, grant = {}
   let [rows] = await dbUtils.pool.query(sql)
   return (rows)
 }
-
-
-exports.createAssets = async function ({ assets, collectionId, svcStatus = {} }) {
-  let insertedAssets = []
-
-  async function transactionFn(connection) {
-    await connection.query("START TRANSACTION")
-
-    // INSERT into assets
-    let sql = `
-      INSERT INTO asset (name, fqdn, ip, mac, description, collectionId, noncomputing, metadata)
-      SELECT 
-          name, fqdn, ip, mac, description, collectionId, noncomputing, metadata
-      FROM JSON_TABLE(?, '$[*]'
-        COLUMNS (
-          name VARCHAR(255) PATH '$.name',
-          fqdn VARCHAR(255) PATH '$.fqdn',
-          ip VARCHAR(255) PATH '$.ip',
-          mac VARCHAR(255) PATH '$.mac',
-          description TEXT PATH '$.description',
-          collectionId INT PATH '$.collectionId',
-          noncomputing TINYINT PATH '$.noncomputing',
-          metadata JSON PATH '$.metadata'
-        )
-      ) AS incoming_assets;`
-
-    await connection.query(sql, [JSON.stringify(assets)])
-
-    let fetchAssetIds = 
-      `SELECT assetId, name FROM asset 
-      WHERE name IN (SELECT name FROM JSON_TABLE(?, '$[*]'
-      COLUMNS (name VARCHAR(255) PATH '$.name')) AS jt)
-      AND collectionId = ?`
-
-    // get created assetId and name for created assets
-    let [fetchedAssets] = await connection.query(fetchAssetIds, [JSON.stringify(assets), collectionId])
-
-    let assetIdMap = new Map(
-      fetchedAssets.map((asset) => [asset.name, asset.assetId])
-    )
-
-    // map assetId to asset name in request body
-    // keep track of inserted assetIds
-    for (let asset of assets) {
-      asset.assetId = assetIdMap.get(asset.name)
-      insertedAssets.push(asset.assetId)
-    }
-
-    let sqlInsertStigs = `
-    INSERT IGNORE INTO stig_asset_map (benchmarkId, assetId)
-      SELECT stigs.benchmarkId, a.assetId
-      FROM JSON_TABLE(?, '$[*]'
-          COLUMNS (
-              name VARCHAR(255) PATH '$.name',
-              stigs JSON PATH '$.stigs'
-          )
-      ) AS jt
-      JOIN JSON_TABLE(jt.stigs, '$[*]'
-          COLUMNS (
-              benchmarkId VARCHAR(255) PATH '$'
-          )
-      ) AS stigs
-      JOIN asset a 
-          ON a.name = jt.name
-          AND a.collectionId = ?;`
-
-    const [resultInsertStigs] = await connection.query(sqlInsertStigs, [JSON.stringify(assets), collectionId])
-
-    const didInsertStigs = resultInsertStigs.affectedRows > 0
-
-    let sqlInsertLabels = `
-        INSERT IGNORE INTO collection_label_asset_map (assetId, clId)
-          SELECT jt.assetId, cl.clId
-          FROM JSON_TABLE(?, '$[*]'
-              COLUMNS (
-                  assetId INT PATH '$.assetId',
-                  labelIds JSON PATH '$.labelIds'
-              )
-          ) AS jt
-          JOIN JSON_TABLE(jt.labelIds, '$[*]'
-              COLUMNS (
-                  labelUuid VARCHAR(255) PATH '$'
-              )
-          ) AS labels
-          JOIN collection_label cl 
-              ON cl.uuid = UUID_TO_BIN(labels.labelUuid, 1) 
-              AND cl.collectionId = ?;`
-
-    await connection.query(sqlInsertLabels, [JSON.stringify(assets), collectionId])
-
-    async function handleStigUpdates({ connection, fetchedAssets, collectionId }) {
-      if (fetchedAssets.length === 1) {
-          // Handle single asset case
-          const assetId = fetchedAssets[0].assetId
-          await dbUtils.updateStatsAssetStig(connection, { assetId })
-      } else {
-          // Handle multiple assets case
-          const assetIds = fetchedAssets.map((asset) => asset.assetId)
-          await dbUtils.updateStatsAssetStig(connection, { assetIds })
-      }
-  
-      // Update collection revision map and default revision
-      await dbUtils.pruneCollectionRevMap(connection)
-      await dbUtils.updateDefaultRev(connection, {
-          collectionId: parseInt(collectionId),
-      })
-    }
-
-    //Only update if stigs were inserted
-    if (didInsertStigs) {
-      await handleStigUpdates({ connection, fetchedAssets, collectionId })
-    }
-  }
-  await dbUtils.retryOnDeadlock2({transactionFn, statusObj: svcStatus})
-  return insertedAssets
-}
-
 
 exports.queryChecklist = async function (inPredicates) {
   let connection
@@ -1036,12 +918,201 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
   return ({assetName: resultGetAsset[0].name, xmlJs, revisionStrResolved: revision.revisionStr})
 }
 
-exports.createAsset = async function({assets, collectionId, svcStatus = {}}) {
-  return _this.createAssets({
-    assets,
-    collectionId,
-    svcStatus
-  })
+// exports.createAssets = async function({assets, collectionId, svcStatus = {}}) {
+//   let insertedAssetIds = []
+
+//   async function transactionFn(connection) {
+
+//     // INSERT into assets
+//     let sql = `
+//       INSERT INTO asset (name, fqdn, ip, mac, description, collectionId, noncomputing, metadata)
+//       SELECT 
+//           name, fqdn, ip, mac, description, collectionId, noncomputing, metadata
+//       FROM JSON_TABLE(?, '$[*]'
+//         COLUMNS (
+//           name VARCHAR(255) PATH '$.name',
+//           fqdn VARCHAR(255) PATH '$.fqdn',
+//           ip VARCHAR(255) PATH '$.ip',
+//           mac VARCHAR(255) PATH '$.mac',
+//           description TEXT PATH '$.description',
+//           collectionId INT PATH '$.collectionId',
+//           noncomputing TINYINT PATH '$.noncomputing',
+//           metadata JSON PATH '$.metadata'
+//         )
+//       ) AS incoming_assets;`
+
+//     await connection.query(sql, [JSON.stringify(assets)])
+
+//     let fetchAssetIds = 
+//       `SELECT assetId, name FROM asset 
+//       WHERE name IN (SELECT name FROM JSON_TABLE(?, '$[*]'
+//       COLUMNS (name VARCHAR(255) PATH '$.name')) AS jt)
+//       AND collectionId = ?`
+
+//     // get created assetId and name for created assets
+//     let [fetchedAssets] = await connection.query(fetchAssetIds, [JSON.stringify(assets), collectionId])
+
+//     let assetIdMap = new Map(
+//       fetchedAssets.map((asset) => [asset.name, asset.assetId])
+//     )
+
+//     // map assetId to asset name in request body
+//     // keep track of inserted assetIds
+//     for (let asset of assets) {
+//       asset.assetId = assetIdMap.get(asset.name)
+//       insertedAssetIds.push(asset.assetId)
+//     }
+
+ 
+//     let sqlInsertStigs = `
+//     INSERT INTO stig_asset_map (benchmarkId, assetId) 
+//       SELECT jt.benchmarkId, jt.assetId
+//       FROM JSON_TABLE(?, '$[*]'
+//           COLUMNS (
+//               assetId INT PATH '$.assetId',
+//               NESTED PATH '$.stigs[*]' COLUMNS (benchmarkId VARCHAR(255) path '$')
+//           )
+//       ) AS jt`
+
+//     const [resultInsertStigs] = await connection.query(sqlInsertStigs, [JSON.stringify(assets), collectionId])
+
+//     const didInsertStigs = resultInsertStigs.affectedRows > 0
+
+//     let sqlInsertLabels = `
+//         INSERT INTO collection_label_asset_map (assetId, clId)
+//           SELECT jt.assetId, cl.clId
+//           FROM JSON_TABLE(?, '$[*]'
+//               COLUMNS (
+//                   assetId INT PATH '$.assetId',
+//                   labelIds JSON PATH '$.labelIds'
+//               )
+//           ) AS jt
+//           INNER JOIN JSON_TABLE(jt.labelIds, '$[*]'
+//               COLUMNS (
+//                   labelUuid VARCHAR(255) PATH '$'
+//               )
+//           ) AS labels
+//           INNER JOIN collection_label cl 
+//               ON cl.uuid = UUID_TO_BIN(labels.labelUuid, 1) 
+//               AND cl.collectionId = ?;`
+
+//     await connection.query(sqlInsertLabels, [JSON.stringify(assets), collectionId])
+
+//     //Only update if stigs were inserted
+//     if (didInsertStigs) {
+//       await dbUtils.pruneCollectionRevMap(connection)
+//       await dbUtils.updateDefaultRev(connection, {collectionId: parseInt(collectionId)})
+//     }
+//   }
+//   await dbUtils.retryOnDeadlock2({transactionFn, statusObj: svcStatus})
+//   return insertedAssetIds
+// }
+
+
+exports.createAssets = async function({ assets, collectionId, svcStatus = {} }) {
+  let insertedAssetIds = []
+
+  async function transactionFn(connection) {
+    await connection.query('DROP TEMPORARY TABLE IF EXISTS temp_assets')
+
+    // create temp table to hold incoming assets
+    const createTempTableSQL = `
+        CREATE TEMPORARY TABLE temp_assets (
+            tempId INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255),
+            fqdn VARCHAR(255),
+            ip VARCHAR(255),
+            mac VARCHAR(255),
+            description TEXT,
+            collectionId INT,
+            noncomputing TINYINT,
+            metadata JSON,
+            benchmarkIds JSON,
+            labelIds JSON,
+            assetId INT NULL
+        );`
+
+    await connection.query(createTempTableSQL)
+
+    const assetsJson = JSON.stringify(assets)
+
+    const insertTempAssetsSQL = `
+      INSERT INTO temp_assets (name, fqdn, ip, mac, description, collectionId, noncomputing, metadata, benchmarkIds, labelIds)
+      SELECT name, fqdn, ip, mac, description, collectionId, noncomputing, metadata, benchmarkIds, labelIds
+      FROM JSON_TABLE(?, '$[*]'
+          COLUMNS (
+              name VARCHAR(255) PATH '$.name',
+              fqdn VARCHAR(255) PATH '$.fqdn',
+              ip VARCHAR(255) PATH '$.ip',
+              mac VARCHAR(255) PATH '$.mac',
+              description TEXT PATH '$.description',
+              collectionId INT PATH '$.collectionId',
+              noncomputing TINYINT PATH '$.noncomputing',
+              metadata JSON PATH '$.metadata',
+              benchmarkIds JSON PATH '$.stigs',
+              labelIds JSON PATH '$.labelIds'
+          )
+      ) AS jt`
+
+    await connection.query(insertTempAssetsSQL, [assetsJson]);
+
+    // insert into asset table
+    const insertAssetsSQL = `
+        INSERT INTO asset (name, fqdn, ip, mac, description, collectionId, noncomputing, metadata)
+        SELECT name, fqdn, ip, mac, description, collectionId, noncomputing, metadata
+        FROM temp_assets;`
+    await connection.query(insertAssetsSQL)
+
+    // update temp table with create assets assetIds
+    const updateTempWithAssetIdsSQL = `
+        UPDATE temp_assets t
+        INNER JOIN asset a
+            ON a.name = t.name
+            AND a.collectionId = t.collectionId
+            AND a.state = 'enabled'
+        SET t.assetId = a.assetId;`
+    await connection.query(updateTempWithAssetIdsSQL)
+
+
+    const insertStigsSQL = `
+        INSERT INTO stig_asset_map (benchmarkId, assetId)
+        SELECT jt.benchmarkId, t.assetId
+        FROM temp_assets t
+        INNER JOIN JSON_TABLE(t.benchmarkIds, '$[*]'
+            COLUMNS (benchmarkId VARCHAR(255) PATH '$')
+        ) AS jt
+        WHERE t.benchmarkIds IS NOT NULL;`
+
+    const [stigInsertResult] = await connection.query(insertStigsSQL)
+
+    const didInsertStigs = stigInsertResult.affectedRows > 0
+
+    // not sure abnout this left hoin ior not 
+    const insertLabelsSQL = `
+        INSERT INTO collection_label_asset_map (assetId, clId)
+        SELECT t.assetId, cl.clId
+        FROM temp_assets t
+        INNER JOIN JSON_TABLE(t.labelIds, '$[*]'
+            COLUMNS (labelUuid VARCHAR(255) PATH '$')
+        ) AS labels
+        LEFT JOIN collection_label cl
+            ON cl.uuid = UUID_TO_BIN(labels.labelUuid, 1)
+            AND cl.collectionId = t.collectionId
+        WHERE t.labelIds IS NOT NULL;`
+    await connection.query(insertLabelsSQL)
+
+    // get assetIds of newly created assets
+    const [newAssets] = await connection.query('SELECT assetId FROM temp_assets')
+    insertedAssetIds = newAssets.map(asset => asset.assetId)
+
+    // if assets with stig assignment inserted, update default rev and collection revision map
+    if (didInsertStigs) {
+        await dbUtils.pruneCollectionRevMap(connection)
+        await dbUtils.updateDefaultRev(connection, { collectionId: parseInt(collectionId) })
+    }
+  }
+  await dbUtils.retryOnDeadlock2({ transactionFn, statusObj: svcStatus })
+  return insertedAssetIds
 }
 
 exports.deleteAsset = async function(assetId, userId, svcStatus) {

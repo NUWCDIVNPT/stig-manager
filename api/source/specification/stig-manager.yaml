@@ -55,21 +55,14 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-                - $ref: '#/components/schemas/AssetCreateBatch'
-                - $ref: '#/components/schemas/AssetCreateOrReplace'
+              $ref: '#/components/schemas/AssetCreateOrReplace'
       responses:
         '201':
           description: AssetProjected response
           content:
             application/json:
               schema:
-               oneOf:
-                - $ref: '#/components/schemas/AssetProjected'
-                - type: array
-                  items:
-                    $ref: '#/components/schemas/AssetProjected'
-      
+               $ref: '#/components/schemas/AssetProjected'
         default:
           description: unexpected error
           content:
@@ -108,7 +101,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
-
   '/assets/{assetId}':
     parameters:
       - $ref: '#/components/parameters/AssetIdPath'
@@ -871,6 +863,42 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+  '/collection/{collectionId}/assets':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+    post:
+      tags:
+        - Asset
+        - Collection
+      summary: Create Multiple Assets
+      operationId: createAssets
+      parameters:
+        - $ref: '#/components/parameters/CollectionIdPath'
+        - $ref: '#/components/parameters/AssetProjectionQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetCreateBatch'
+      responses:
+        '201':
+          description: Array of AssetProjected responses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AssetProjected'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
   '/collections/{collectionId}/archive/xccdf':
     post:
       tags:
@@ -5107,15 +5135,12 @@ components:
       additionalProperties: false
       type: object
       properties:
-        collectionId:
-          $ref: '#/components/schemas/CollectionId'
         assets: 
           type: array
           items:
             $ref: '#/components/schemas/AssetBatchItem'
           minItems: 1
       required:
-        - collectionId
         - assets
     AssetBatchItem: 
       additionalProperties: false

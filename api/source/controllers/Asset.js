@@ -14,71 +14,78 @@ const {escapeForXml} = require('../utils/escape')
 
 
 module.exports.createAsset = async function createAsset (req, res, next) {
-
-  /**
-   * Normalizes the given assets by ensuring they are in an array and adding a collectionId and noncomputing properties.
-   *
-   * @param {Object|Object[]} assets - The asset or array of assets to normalize.
-   * @param {string} collectionId - The collection ID to add to each asset.
-   * @returns {Object[]} The normalized array of assets.
-   */
-  function normalizeAssets(assets, collectionId) {
-      // cast single asset to array
-    if (!Array.isArray(assets)) {
-      assets = [body]
-    }
-    return assets.map(asset => ({
-      ...asset,
-      collectionId,
-      noncomputing: asset.hasOwnProperty("noncomputing") ? (asset.noncomputing ? 1 : 0) : 0
-    }))
-  }
-
   try {
     let projections = req.query.projection
-    let { collectionId, assets } = req.body
-    const isBatch = !!assets
+    let assets = req.body
+    const collectionId = req.body.collectionId
 
-    const grant = req.userObject.grants[req.body.collectionId]
+    const grant = req.userObject.grants[collectionId]
     if (!grant || grant.roleId < 3) throw new SmError.PrivilegeError()
 
-    // if batch normalize assets (put collection Id into the asset object), otherwise make single asset an array
-    assets = isBatch ? normalizeAssets(assets, collectionId): [req.body]
+    assets.noncomputing = assets.hasOwnProperty("noncomputing") ? (assets.noncomputing ? 1 : 0) : 0
+    assets = [assets]
 
-    let assetIds
-    try {
-      assetIds = await AssetService.createAsset( {assets, collectionId, svcStatus: res.svcStatus})
-     }
-    catch (err) {
-      throw err.code === 'ER_DUP_ENTRY' ? new SmError.UnprocessableError('Duplicate name exists.') : err
+    const failures = await dbUtils.validateItems({assets, collectionId})
+
+    if (failures.length > 0) {
+      throw new  SmError.UnprocessableError(failures)
     }
+
+    let assetId
+    assetId = await AssetService.createAssets({assets, collectionId, svcStatus: res.svcStatus})
     
-    let response
-    // if batch regardless of the number of assets return the batch response
-    if (isBatch) {
-      // Fetch multiple assets using getAssets
-      response = await AssetService.getAssets({
-        filter: {
-          collectionId: collectionId,
-          assetIds,
-        },
-        projections,
-        grant,
-      })
-    // if single asset return the single asset response
-    } else {
-      // Fetch a single asset using getAsset
-      response = await AssetService.getAsset({
-        assetId: assetIds[0],
-        projections,
-        grant,
-      })
-    }
+    const response = await AssetService.getAsset({
+      assetId,
+      projections,
+      grant,
+    })
     res.status(201).json(response)
   }
   catch (err) {
     next(err)
   }
+}
+
+module.exports.createAssets = async function createAssets (req, res, next) {
+  try {
+
+    let projections = req.query.projection
+    const collectionId  = req.params.collectionId
+    let assets = req.body.assets
+
+    const grant = req.userObject.grants[collectionId]
+    if (!grant || grant.roleId < 3) throw new SmError.PrivilegeError()
+
+    // if batch normalize assets (put collection Id into the asset object) and make non-computing a 'boolean int'
+    assets = assets.map(asset => ({
+      ...asset,
+      collectionId,
+      noncomputing: asset.hasOwnProperty("noncomputing") ? (asset.noncomputing ? 1 : 0) : 0
+    }))
+
+    const failures = await dbUtils.validateItems({assets, collectionId})
+
+    if (failures.length > 0) {
+      throw new  SmError.UnprocessableError(failures)
+    }
+
+    let assetIds
+    assetIds = await AssetService.createAssets( {assets, collectionId, svcStatus: res.svcStatus})
+    
+    const response = await AssetService.getAssets({
+      filter: {
+        collectionId: collectionId,
+        assetIds,
+      },
+      projections,
+      grant,
+    })
+    res.status(201).json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+
 }
 
 module.exports.deleteAsset = async function deleteAsset (req, res, next) {
