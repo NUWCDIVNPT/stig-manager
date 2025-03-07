@@ -69,6 +69,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientErrorBadAssetPost'
       security:
         - oauth:
             - 'stig-manager:collection'
@@ -890,6 +896,13 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/AssetProjected'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ClientErrorBadAssetPost'
         default:
           description: unexpected error
           content:
@@ -5929,20 +5942,41 @@ components:
       xml:
         name: Benchmark
         namespace: http://checklists.nist.gov/xccdf/1.2
-    ClientErrorDuplicateAsset:
+    ClientErrorBadAssetPost:
       additionalProperties: false
       type: object
       properties:
         code:
-          type: integer
-          enum:
-            - 400
-        data:
-          $ref: '#/components/schemas/Asset'
-        message:
           type: string
           enum:
-            - Duplicate name
+            - "422"
+        error:
+          type: string
+        detail:
+          type: array
+          items:
+            type: object
+            properties:
+              failure: 
+                type: string
+              detail:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  assetIndex:
+                    type: integer
+                  benchmarkId:
+                    type: string
+                  benchmarkIdIndex:
+                    type: integer
+                  labelId:
+                    type: string
+                  labelIdIndex:
+                    type: integer
+      required:
+        - error
+        - detail
     ClientErrorDuplicateCollection:
       additionalProperties: false
       type: object
