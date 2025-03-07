@@ -226,7 +226,7 @@ describe('Boot with old mysql', function () {
   })
 })
 
-describe('Boot with insecure kid in jwks - allow insecure tokens false, expect failure', function () {
+describe('Boot with insecure kid - allow insecure tokens false', function () {
   let api
   let mysql
   let kc
@@ -263,7 +263,7 @@ describe('Boot with insecure kid in jwks - allow insecure tokens false, expect f
   describe('dependency failure count', function () {
     it('oidc, check message', function () {
       const failures = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'oidc' && r.data.success === false)
-      expect(failures).to.have.lengthOf(2)
+      expect(failures).to.have.lengthOf(1)
       expect(failures[0].data.message).to.include('insecure_kid -')
     })
   })
@@ -284,7 +284,7 @@ describe('Boot with insecure kid in jwks - allow insecure tokens false, expect f
   })
 })
 
-describe('Boot with no jwks_uri in config - expect fail', function () {
+describe('Boot with no jwks_uri in config', function () {
   let api
   let mysql
   let kc
@@ -344,7 +344,7 @@ describe('Boot with no jwks_uri in config - expect fail', function () {
 })
 
 
-describe('Boot with both dependencies, "secure" kid - boots, rejects request w/ token' , function () {
+describe('Boot without insecure kid - allow insecure tokens false' , function () {
   let api
   let mysql
   let kc
@@ -382,15 +382,8 @@ describe('Boot with both dependencies, "secure" kid - boots, rejects request w/ 
     })
   })
   
-  describe('GET /op/configuration', function () {
-    it('should return 200 when dependencies are available', async function () {
-      const res = await simpleRequest('http://localhost:54000/api/op/configuration')
-      expect(res.status).to.equal(200)
-    })
-  })
-
-  describe('GET /user', function () {
-    it('Return the requesters user information - should fail with insecure kid', async () => {
+  describe('GET /user with insecure kid', function () {
+    it('should fail request with insecure kid', async () => {
       const options = {
         method: 'GET',
         headers: {

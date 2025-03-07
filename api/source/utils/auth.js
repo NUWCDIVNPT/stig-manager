@@ -11,7 +11,7 @@ const state = require('./state')
 
 let client
 
-const privilegeGetter = new Function("obj", "return obj?." + config.oauth.claims.privilegesChain + " || [];");
+const privilegeGetter = new Function("obj", "return obj?." + config.oauth.claims.privilegesChain + " || [];")
 
 // express middleware to validate token
 const validateToken = async function (req, res, next) {
@@ -165,12 +165,7 @@ const setupJwks = async function (jwksUri) {
     
     // Check for insecure kids in the signing keys
     if (!config.oauth.allowInsecureTokens && containsInsecureKids(signingKeys)) {
-        const message = 'insecure_kid - JWKS contains insecure key IDs and STIGMAN_DEV_ALLOW_INSECURE_TOKENS is false';
-        logger.writeError('oidc', 'discovery', { 
-            success: false, 
-            message
-        });
-        throw new Error(message);
+        throw new Error('insecure_kid - JWKS contains insecure key IDs and STIGMAN_DEV_ALLOW_INSECURE_TOKENS is false')
     }
 
     logger.writeDebug('oidc', 'discovery', { jwksUri, signingKeys })
@@ -193,8 +188,8 @@ async function initializeAuth() {
         if (!openidConfig.jwks_uri) {
             const message = "No jwks_uri property found in oidcConfig"
             logger.writeError('oidc', 'discovery', { success: false, metadataUri, message })
-            bail(new Error(message)); // Bail if jwks_uri is not found
-            return; // return after bail
+            bail(new Error(message)) // Bail if jwks_uri is not found
+            return // return after bail
         }
         jwksUri = openidConfig.jwks_uri
         
@@ -202,12 +197,12 @@ async function initializeAuth() {
             await setupJwks(jwksUri)
         } catch (error) {
             // If the error is from insecure kids detection, bail immediately
-            if (error.message.includes('insecure_kid -')) {
+            if (error.message.startsWith('insecure_kid -')) {
                 logger.writeError('oidc', 'discovery', { success: false, metadataUri, message: error.message })
-                bail(error); // This will immediately stop retrying
-                return; // Make sure to return after bail
+                bail(error) // This will immediately stop retrying
+                return // Make sure to return after bail
             }
-            throw error; // Other errors will be retried
+            throw error // Other errors will be retried
         }
     }
     
