@@ -1601,10 +1601,7 @@ describe('GET - putAssetsByCollectionLabelId - /collections/{collectionId}/label
                 "collectionId": reference.scrapCollection.collectionId,
                 "description": "test desc",
                 "ip": "1.1.1.1",
-                "labelIds": [
-                    "8fd5f19e-9b5e-11ec-adb1-0242c0a86004",
-                    "1630332d-f4d5-4634-9d67-314d774050de"
-                    ],
+                "labelIds": [],
                 "noncomputing": true,
                 "metadata": {
                     "pocName": "poc2Put",
