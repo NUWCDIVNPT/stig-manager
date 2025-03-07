@@ -5132,16 +5132,10 @@ components:
       minimum: 0
       type: integer
     AssetCreateBatch:
-      additionalProperties: false
-      type: object
-      properties:
-        assets: 
-          type: array
-          items:
-            $ref: '#/components/schemas/AssetBatchItem'
-          minItems: 1
-      required:
-        - assets
+      type: array
+      items:
+        $ref: '#/components/schemas/AssetBatchItem'
+      minItems: 1
     AssetBatchItem: 
       additionalProperties: false
       type: object

@@ -51,7 +51,7 @@ module.exports.createAssets = async function createAssets (req, res, next) {
 
     let projections = req.query.projection
     const collectionId  = req.params.collectionId
-    let assets = req.body.assets
+    let assets = req.body
 
     const grant = req.userObject.grants[collectionId]
     if (!grant || grant.roleId < 3) throw new SmError.PrivilegeError()
