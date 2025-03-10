@@ -62,19 +62,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AssetProjected'
-        '400':
-          description: Client Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientErrorDuplicateAsset'
+               $ref: '#/components/schemas/AssetProjected'
         default:
           description: unexpected error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientErrorBadAssetPost'
       security:
         - oauth:
             - 'stig-manager:collection'
@@ -98,12 +98,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AssetsPatchResponse'
-        '400':
-          description: Client Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientErrorDuplicateAsset'
         default:
           description: unexpected error
           content:
@@ -113,7 +107,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
-
   '/assets/{assetId}':
     parameters:
       - $ref: '#/components/parameters/AssetIdPath'
@@ -876,6 +869,49 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+  '/collection/{collectionId}/assets':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+    post:
+      tags:
+        - Asset
+        - Collection
+      summary: Create Multiple Assets
+      operationId: createAssets
+      parameters:
+        - $ref: '#/components/parameters/CollectionIdPath'
+        - $ref: '#/components/parameters/AssetProjectionQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetCreateBatch'
+      responses:
+        '201':
+          description: Array of AssetProjected responses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AssetProjected'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ClientErrorBadAssetPost'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
   '/collections/{collectionId}/archive/xccdf':
     post:
       tags:
@@ -5108,6 +5144,45 @@ components:
     AssetCount:
       minimum: 0
       type: integer
+    AssetCreateBatch:
+      type: array
+      items:
+        $ref: '#/components/schemas/AssetBatchItem'
+      minItems: 1
+    AssetBatchItem: 
+      additionalProperties: false
+      type: object
+      properties:
+        description:
+          $ref: '#/components/schemas/AssetDescription'
+        fqdn:
+          $ref: '#/components/schemas/AssetFqdn'
+        ip:
+          $ref: '#/components/schemas/AssetIp'
+        labelIds:
+          items:
+            $ref: '#/components/schemas/LabelId'
+          type: array
+        mac:
+          $ref: '#/components/schemas/AssetMac'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        name:
+          $ref: '#/components/schemas/AssetName'
+        noncomputing:
+          $ref: '#/components/schemas/AssetNoncomputing'
+        stigs:
+          description: The benchmarkIds mapped to this Asset
+          items:
+            type: string
+          type: array
+      required:
+        - name
+        - description
+        - ip
+        - noncomputing
+        - metadata
+        - stigs
     AssetCreateOrReplace:
       additionalProperties: false
       type: object
@@ -5867,20 +5942,41 @@ components:
       xml:
         name: Benchmark
         namespace: http://checklists.nist.gov/xccdf/1.2
-    ClientErrorDuplicateAsset:
+    ClientErrorBadAssetPost:
       additionalProperties: false
       type: object
       properties:
         code:
-          type: integer
-          enum:
-            - 400
-        data:
-          $ref: '#/components/schemas/Asset'
-        message:
           type: string
           enum:
-            - Duplicate name
+            - "422"
+        error:
+          type: string
+        detail:
+          type: array
+          items:
+            type: object
+            properties:
+              failure: 
+                type: string
+              detail:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  assetIndex:
+                    type: integer
+                  benchmarkId:
+                    type: string
+                  benchmarkIdIndex:
+                    type: integer
+                  labelId:
+                    type: string
+                  labelIdIndex:
+                    type: integer
+      required:
+        - error
+        - detail
     ClientErrorDuplicateCollection:
       additionalProperties: false
       type: object

@@ -80,7 +80,7 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
                 "collectionId": collectionToDelete,
                 "description": "test desc",
                 "ip": "1.1.1.1",
-                "labelIds": [reference.testCollection.fullLabel],
+                "labelIds": [],
                 "noncomputing": true,
                 "metadata": {
                     "pocName": "poc2Put",

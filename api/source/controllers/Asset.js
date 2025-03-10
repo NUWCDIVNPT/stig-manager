@@ -16,22 +16,76 @@ const {escapeForXml} = require('../utils/escape')
 module.exports.createAsset = async function createAsset (req, res, next) {
   try {
     let projections = req.query.projection
-    const body = req.body
-    const grant = req.userObject.grants[body.collectionId]
+    let assets = req.body
+    const collectionId = req.body.collectionId
+
+    const grant = req.userObject.grants[collectionId]
     if (!grant || grant.roleId < 3) throw new SmError.PrivilegeError()
-    let assetId
-    try {
-      assetId = await AssetService.createAsset( {body, svcStatus: res.svcStatus})
-     }
-    catch (err) {
-      throw err.code === 'ER_DUP_ENTRY' ? new SmError.UnprocessableError('Duplicate name exists.') : err
+
+    assets.noncomputing = assets.hasOwnProperty("noncomputing") ? (assets.noncomputing ? 1 : 0) : 0
+    assets = [assets]
+
+    const failures = await dbUtils.validateItems({assets, collectionId})
+
+    if (failures.length > 0) {
+      throw new  SmError.UnprocessableError(failures)
     }
-    const asset = await AssetService.getAsset({assetId, projections, grant})
-    res.status(201).json(asset)
+
+    let assetId
+    assetId = await AssetService.createAssets({assets, collectionId, svcStatus: res.svcStatus})
+    
+    const response = await AssetService.getAsset({
+      assetId,
+      projections,
+      grant,
+    })
+    res.status(201).json(response)
   }
   catch (err) {
     next(err)
   }
+}
+
+module.exports.createAssets = async function createAssets (req, res, next) {
+  try {
+
+    let projections = req.query.projection
+    const collectionId  = req.params.collectionId
+    let assets = req.body
+
+    const grant = req.userObject.grants[collectionId]
+    if (!grant || grant.roleId < 3) throw new SmError.PrivilegeError()
+
+    // if batch normalize assets (put collection Id into the asset object) and make non-computing a 'boolean int'
+    assets = assets.map(asset => ({
+      ...asset,
+      collectionId,
+      noncomputing: asset.hasOwnProperty("noncomputing") ? (asset.noncomputing ? 1 : 0) : 0
+    }))
+
+    const failures = await dbUtils.validateItems({assets, collectionId})
+
+    if (failures.length > 0) {
+      throw new  SmError.UnprocessableError(failures)
+    }
+
+    let assetIds
+    assetIds = await AssetService.createAssets( {assets, collectionId, svcStatus: res.svcStatus})
+    
+    const response = await AssetService.getAssets({
+      filter: {
+        collectionId: collectionId,
+        assetIds,
+      },
+      projections,
+      grant,
+    })
+    res.status(201).json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+
 }
 
 module.exports.deleteAsset = async function deleteAsset (req, res, next) {

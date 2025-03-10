@@ -477,6 +477,70 @@ module.exports.retryOnDeadlock2 = async function ({ transactionFn, statusObj = {
 
 }
 
+
+exports.validateItems = async function({ assets, collectionId}) {
+  const assetJson = JSON.stringify(assets)
+  const validationQuery = `
+  WITH cteFails AS (
+      SELECT 
+          jt.positionA,
+          jt.positionB,
+          jt.positionL,
+          jt.name,
+          jt.benchmarkId, 
+          jt.labelId, 
+          a.name AS matchedName, 
+          s.benchmarkId AS matchedBenchmarkId, 
+          cl.clId AS matchedClId
+      FROM 
+          JSON_TABLE(?, '$[*]'
+              COLUMNS (
+                  positionA FOR ORDINALITY,
+                  name VARCHAR(255) PATH '$.name',
+                  NESTED PATH '$.stigs[*]' 
+                      COLUMNS (positionB FOR ORDINALITY, benchmarkId VARCHAR(255) PATH '$'),
+                  NESTED PATH '$.labelIds[*]' 
+                      COLUMNS (positionL FOR ORDINALITY, labelId VARCHAR(255) PATH '$')
+              )
+          ) AS jt
+      LEFT JOIN asset a 
+          ON jt.name = a.name 
+          AND a.state = 'enabled' 
+          AND a.collectionId = ?
+      LEFT JOIN stig s 
+          ON jt.benchmarkId COLLATE utf8mb4_0900_ai_ci = s.benchmarkId COLLATE utf8mb4_0900_ai_ci
+      LEFT JOIN collection_label cl 
+          ON jt.labelId = BIN_TO_UUID(cl.uuid, 1) 
+          AND cl.collectionId = ?
+  )
+  SELECT
+      'name exists' AS failure, 
+      JSON_OBJECT('assetIndex', positionA, 'name', name) AS detail
+  FROM cteFails
+  WHERE name IS NOT NULL AND matchedName IS NOT NULL
+
+  UNION
+
+  SELECT
+      'unknown benchmarkId', 
+      JSON_OBJECT('assetIndex', positionA, 'name', name, 'benchmarkIdIndex', positionB, 'benchmarkId', benchmarkId)
+  FROM cteFails
+  WHERE benchmarkId IS NOT NULL AND matchedBenchmarkId IS NULL AND matchedName IS NULL
+
+  UNION
+
+  SELECT
+      'unknown labelId', 
+      JSON_OBJECT('assetIndex', positionA, 'name', name, 'labelIndex', positionL, 'labelId', labelId)
+  FROM cteFails
+  WHERE labelId IS NOT NULL AND matchedClId IS NULL AND matchedName IS NULL
+  `
+
+  const [results] = await _this.pool.query(validationQuery, [assetJson, collectionId, collectionId])
+
+  return results  
+}
+
 module.exports.pruneCollectionRevMap = async function (connection) {
   const sql = `delete crm from collection_rev_map crm
   left join( select distinct a.collectionId, sa.benchmarkId from stig_asset_map sa left join asset a using (assetId) where a.state = "enabled" ) maps using (collectionId, benchmarkId)
