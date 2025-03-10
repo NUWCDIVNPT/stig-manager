@@ -66,6 +66,7 @@ jobs:
           -e STIGMAN_API_AUTHORITY=http://127.0.0.1:8080/auth/realms/stigman \
           -e STIGMAN_DEV_RESPONSE_VALIDATION=logOnly \
           -e STIGMAN_EXPERIMENTAL_APPDATA=true \
+          -e STIGMAN_DEV_ALLOW_INSECURE_TOKENS=true \
           ${{ matrix.container.name }}
 
       - name: Install test dependencies

@@ -11,7 +11,7 @@ const state = require('./state')
 
 let client
 
-const privilegeGetter = new Function("obj", "return obj?." + config.oauth.claims.privilegesChain + " || [];");
+const privilegeGetter = new Function("obj", "return obj?." + config.oauth.claims.privilegesChain + " || [];")
 
 // express middleware to validate token
 const validateToken = async function (req, res, next) {
@@ -19,6 +19,12 @@ const validateToken = async function (req, res, next) {
         const tokenJWT = getBearerToken(req)
         if (tokenJWT) {
             const tokenObj = jwt.decode(tokenJWT, {complete: true})
+            
+            // Check if token uses insecure kid
+            if (!config.oauth.allowInsecureTokens && config.oauth.insecureKids.includes(tokenObj.header.kid)) {
+                throw new SmError.InsecureTokenError(`Insecure kid found: ${tokenObj.header.kid}`)
+            }
+            
             let signingKey
             try {
                 signingKey = await client.getSigningKey(tokenObj.header.kid)
@@ -142,6 +148,11 @@ const getBearerToken = req => {
     if (headerParts[0].toLowerCase() === 'bearer') return headerParts[1]
 }
 
+// Check if JWKS contains any insecure key IDs
+const containsInsecureKids = (signingKeys) => {
+    return signingKeys.some(key => config.oauth.insecureKids.includes(key.kid))
+}
+
 // setup the JWKS key handling client
 const setupJwks = async function (jwksUri) {
     client = jwksClient({
@@ -151,6 +162,11 @@ const setupJwks = async function (jwksUri) {
     })
     // preflight request to JWKS endpoint. jwks-rsa library does NOT cache this response.
     const signingKeys = await client.getSigningKeys()
+    
+    // Check for insecure kids in the signing keys
+    if (!config.oauth.allowInsecureTokens && containsInsecureKids(signingKeys)) {
+        throw new Error('insecure_kid - JWKS contains insecure key IDs and STIGMAN_DEV_ALLOW_INSECURE_TOKENS is false')
+    }
 
     logger.writeDebug('oidc', 'discovery', { jwksUri, signingKeys })
 }
@@ -163,16 +179,31 @@ async function initializeAuth() {
     const retries = config.settings.dependencyRetries
     const metadataUri = `${config.oauth.authority}/.well-known/openid-configuration`
     let jwksUri
-    async function getJwks() {
+    
+    async function getJwks(bail) {
         logger.writeDebug('oidc', 'discovery', { metadataUri, attempt: ++initAttempt })
         const openidConfig = (await axios.get(metadataUri)).data
         logger.writeDebug('oidc', 'discovery', { metadataUri, metadata: openidConfig})
         
         if (!openidConfig.jwks_uri) {
-            throw( new Error('No jwks_uri property found') )
+            const message = "No jwks_uri property found in oidcConfig"
+            logger.writeError('oidc', 'discovery', { success: false, metadataUri, message })
+            bail(new Error(message)) // Bail if jwks_uri is not found
+            return // return after bail
         }
         jwksUri = openidConfig.jwks_uri
-        await setupJwks(jwksUri)
+        
+        try {
+            await setupJwks(jwksUri)
+        } catch (error) {
+            // If the error is from insecure kids detection, bail immediately
+            if (error.message.startsWith('insecure_kid -')) {
+                logger.writeError('oidc', 'discovery', { success: false, metadataUri, message: error.message })
+                bail(error) // This will immediately stop retrying
+                return // Make sure to return after bail
+            }
+            throw error // Other errors will be retried
+        }
     }
     
     await retry(getJwks, {
@@ -185,7 +216,7 @@ async function initializeAuth() {
             logger.writeError('oidc', 'discovery', { success: false, metadataUri, message: error.message })
         }
     })
-
+    
     logger.writeInfo('oidc', 'discovery', { success: true, metadataUri, jwksUri })
     state.setOidcStatus(true)
 }

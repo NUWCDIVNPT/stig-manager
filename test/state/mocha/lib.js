@@ -122,9 +122,9 @@ export async function simpleRequest(url, method) {
     method
   }
   const response = await fetch(url, options)
-  const headers = {};
+  const headers = {}
   response.headers.forEach((value, key) => {
-    headers[key] = value;
+    headers[key] = value
   })
   return {
     status: response.status,
