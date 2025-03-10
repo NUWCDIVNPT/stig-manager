@@ -90,6 +90,33 @@ describe('POST - Asset', function () {
           }
           expect(res.status).to.eql(422)
         })
+        it("create asset with name of a currently disabled asset", async function () {
+
+          const name = "deletedAsset"
+          const disabledAssetId = 247
+
+          const res = await utils.executeRequest(`${config.baseUrl}/assets`, 'POST', iteration.token, {
+              name,
+              collectionId: reference.testCollection.collectionId,
+              description: 'test',
+              ip: '1.1.1.1',
+              noncomputing: true,
+              labelIds: [],
+              metadata: {
+                pocName: 'pocName',
+              },
+              stigs: []
+            })
+
+          if(!distinct.canModifyCollection){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(201)
+          expect(res.body.name).to.equal(name)
+          expect(res.body.assetId).to.not.equal(disabledAssetId)
+
+        })
         it('Create an Asset', async function () {
           const res = await utils.executeRequest(`${config.baseUrl}/assets`, 'POST', iteration.token, {
               name: 'TestAsset' + utils.getUUIDSubString(10),
@@ -536,7 +563,7 @@ describe('POST - Asset', function () {
           })
         })
 
-        it("Create Assets where one has a  non-existing benchmarkId, expect correct 422 response", async function () {
+        it("Create Assets where one has a non-existing benchmarkId, expect correct 422 response", async function () {
 
           const assets = [{
             name: 'TestAsset' + utils.getUUIDSubString(10),
@@ -632,6 +659,34 @@ describe('POST - Asset', function () {
               })
             }
           }
+        })
+
+        it("Create Duplicate Asset with not-existing benchmark/labelId expect correct 422", async function () {
+
+          const assets = [{
+            name: reference.testAsset.name,
+            description: 'batch',
+            ip: '1.1.1.1',
+            noncomputing: true,
+            labelIds: ["07285e36-8c3b-5d50-484d-fc3e1f0e1796"],
+            metadata: {
+              batch: 'batch',
+            },
+            stigs: ["NotAStig"]
+          }]
+          const res = await utils.executeRequest(`${config.baseUrl}/collection/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
+            assets )
+          if(!distinct.canModifyCollection){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(422)
+          expect(res.body.detail).to.be.an('array').of.length(1)
+          expect(res.body.detail[0].failure).to.equal("name exists")
+          expect(res.body.detail[0].detail).to.eql({
+            name: reference.testAsset.name,
+            assetIndex: 1,
+          })
         })
 
         it("Create Duplicate Asset with not-existing benchmark/labelId expect correct 422", async function () {
