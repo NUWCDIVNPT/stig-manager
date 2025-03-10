@@ -104,7 +104,7 @@ coverage() {
     // Wait for the API to start
     setTimeout(() => {
       console.log('Running Mocha tests...')
-      const tests = spawn('mocha', ['*/**/*.test.js', '--no-timeouts', '--ignore', '*/**/node_modules/**/*', '--recursive', '--ignore', './node_modules/**'], { stdio: 'inherit'})
+      const tests = spawn('mocha', ['./test/api/mocha/**/*.test.js', '--no-timeouts', '--ignore', '*/**/node_modules/**/*', '--recursive', '--ignore', './node_modules/**'], { stdio: 'inherit'})
 
       tests.on('close', (code) => {
         console.log('Tests finished. Stopping server...')
