@@ -12,7 +12,12 @@ const state = require('../utils/state')
 const minMySqlVersion = '8.0.24'
 let _this = this
 let initAttempt = 0
-const NetKeepAlive = require('net-keepalive')
+let NetKeepAlive
+if (!process.pkg) {
+  // pkg does not support the dynamic loading used by net-keepalive.
+  // Therefore, support for TCP_USER_TIMEOUT is excluded from binaries built with pkg.
+  NetKeepAlive = require('net-keepalive')
+}
 const PoolMonitor = require('../utils/PoolMonitor.js')
 
 /**
@@ -241,7 +246,7 @@ function attachPoolEventHandlers(pool) {
       logger.writeError('mysql', 'connectionEvent', { event: 'error', message: error.message })
     })
     logger.writeDebug('mysql', 'poolEvent', { event: 'connection'})
-    NetKeepAlive.setUserTimeout(connection.stream, 20000)
+    NetKeepAlive?.setUserTimeout(connection.stream, 20000)
     connection.query('SET SESSION group_concat_max_len=10000000')
   })
   pool.on('remove', function (connection) {
