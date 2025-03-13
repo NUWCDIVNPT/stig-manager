@@ -1,4 +1,5 @@
-import { spawn } from 'node:child_process'
+import { spawn, execSync } from 'node:child_process'
+import EventEmitter from 'node:events'
 import * as readline from 'node:readline'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -8,6 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const nodeCmd = process.env.GITHUB_RUN_ID ? '/usr/local/bin/node':'node'
 const pythonCmd = process.env.GITHUB_RUN_ID ? '/usr/bin/python3':'python3'
 const dockerCmd = process.env.GITHUB_RUN_ID ? '/usr/bin/docker':'docker'
+const iptablesCmd = process.env.GITHUB_RUN_ID ? '/usr/sbin/iptables':'iptables'
 
 /**
  * Spawns the API as a node process.
@@ -35,7 +37,8 @@ export function spawnApiPromise ({
 
     const resolution = {
       process: api,
-      logRecords: []
+      logRecords: [],
+      logEvents: new EventEmitter()
     }
 
     readline.createInterface({
@@ -44,6 +47,7 @@ export function spawnApiPromise ({
     }).on('line', (line) => {
       const json = JSON.parse(line)
       resolution.logRecords.push(json)
+      resolution.logEvents.emit(json.type, json)
       if (json.type === resolveOnType) {
         resolve(resolution)
       }
@@ -70,26 +74,26 @@ export function spawnApi ({
 } = {}) {
   try {
     const api = spawn(nodeCmd, [apiPath], {env})
+
+    const value = {
+      process: api,
+      logRecords: []
+    }
+
+    readline.createInterface({
+      input: api.stdout,
+      crlfDelay: Infinity
+    }).on('line', (line) => {
+      const json = JSON.parse(line)
+      value.logRecords.push(json)
+    })
+
+    return value
   }
   catch (err) {
     console.error(err)
     return null
   }
-
-  const value = {
-    process: api,
-    logRecords: []
-  }
-
-  readline.createInterface({
-    input: api.stdout,
-    crlfDelay: Infinity
-  }).on('line', (line) => {
-    const json = JSON.parse(line)
-    value.logRecords.push(json)
-  })
-
-  return value
 }
 
 /**
@@ -149,6 +153,7 @@ export function spawnMySQL ({
 } = {}) {
   let readySeen = 0
   return new Promise((resolve, reject) => {
+    let resolved = false
     const child = spawn(dockerCmd, [
       'run', '--rm',
       '-p', `${port}:3306`,
@@ -158,15 +163,10 @@ export function spawnMySQL ({
       '-e', 'MYSQL_PASSWORD=stigman',
       `mysql:${tag}`
     ])
-    child.on('exit', (code) => {
-      if (code !== 0) {
-        reject(new Error(`EXIT: Command failed with code ${code}`))
-      }
-    })
 
     child.on('error', (err) => {
-      console.error('ERROR: Failed to start the command:', err)
-      reject(err)
+      console.error('ERROR', err)
+      if (!resolved) reject(err)
     })
 
    readline.createInterface({
@@ -176,6 +176,7 @@ export function spawnMySQL ({
       if (line.includes('mysqld: ready for connections')) {
         readySeen++
         if (readySeen === readyCount) {
+          resolved = true
           resolve(child)
         } 
       }
@@ -196,4 +197,8 @@ export function spawnHttpServer ({
 } = {}) {
   const child =  spawn(pythonCmd, ['-m', 'http.server', port], {cwd})
   return child
+}
+
+export function execIpTables (args) {
+  return execSync(`${iptablesCmd} ${args}`)
 }
