@@ -869,7 +869,7 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
-  '/collection/{collectionId}/assets':
+  '/collections/{collectionId}/assets':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
     post:

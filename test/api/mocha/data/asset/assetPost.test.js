@@ -257,7 +257,7 @@ describe('POST - Asset', function () {
         })
        
       })
-      describe(`createAssets - /collection/{collectionId}/assets`, function () {
+      describe(`createAssets - /collections/{collectionId}/assets`, function () {
 
         before(async function () {  
           await utils.loadAppData()
@@ -289,7 +289,7 @@ describe('POST - Asset', function () {
             stigs: []
           }]
 
-          const res = await utils.executeRequest(`${config.baseUrl}/collection/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
             assets
           )
             
@@ -342,7 +342,7 @@ describe('POST - Asset', function () {
             stigs: reference.testCollection.validStigs
           }]
 
-          const res = await utils.executeRequest(`${config.baseUrl}/collection/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
             assets
             )
             
@@ -395,7 +395,7 @@ describe('POST - Asset', function () {
             stigs: ["NotAStig"]
           }]
 
-          const res = await utils.executeRequest(`${config.baseUrl}/collection/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
             assets
             )
 
@@ -440,7 +440,7 @@ describe('POST - Asset', function () {
             },
             stigs: reference.testCollection.validStigs
           }]
-          const res = await utils.executeRequest(`${config.baseUrl}/collection/999/assets`, 'POST', iteration.token,
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/999/assets`, 'POST', iteration.token,
             assets
             )
           
@@ -460,7 +460,7 @@ describe('POST - Asset', function () {
             },
             stigs: reference.testCollection.validStigs
           }]
-          const res = await utils.executeRequest(`${config.baseUrl}/collection/93/assets`, 'POST', iteration.token,
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/93/assets`, 'POST', iteration.token,
             assets
             )
           expect(res.status).to.eql(403)
@@ -469,7 +469,7 @@ describe('POST - Asset', function () {
 
         it("Pass empty assets array", async function () {
 
-          const res = await utils.executeRequest(`${config.baseUrl}/collection/21/assets`, 'POST', iteration.token,
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets`, 'POST', iteration.token,
            []
             )
           expect(res.status).to.eql(400)
@@ -502,7 +502,7 @@ describe('POST - Asset', function () {
           }
         ]
 
-          const res = await utils.executeRequest(`${config.baseUrl}/collection/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
             
             assets
             )
@@ -546,7 +546,7 @@ describe('POST - Asset', function () {
             stigs: reference.testCollection.validStigs
           }]
           
-          const res = await utils.executeRequest(`${config.baseUrl}/collection/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
             assets )
           if(!distinct.canModifyCollection){
             expect(res.status).to.eql(403)
@@ -588,7 +588,7 @@ describe('POST - Asset', function () {
             stigs: reference.testCollection.validStigs
           }]
 
-          const res = await utils.executeRequest(`${config.baseUrl}/collection/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
             assets )
           if(!distinct.canModifyCollection){
             expect(res.status).to.eql(403)
@@ -632,7 +632,7 @@ describe('POST - Asset', function () {
             stigs: ["NotAStig"]
           }]
 
-          const res = await utils.executeRequest(`${config.baseUrl}/collection/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
             assets )
           if(!distinct.canModifyCollection){
             expect(res.status).to.eql(403)
@@ -674,7 +674,7 @@ describe('POST - Asset', function () {
             },
             stigs: ["NotAStig"]
           }]
-          const res = await utils.executeRequest(`${config.baseUrl}/collection/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
             assets )
           if(!distinct.canModifyCollection){
             expect(res.status).to.eql(403)
@@ -702,7 +702,7 @@ describe('POST - Asset', function () {
             },
             stigs: ["NotAStig"]
           }]
-          const res = await utils.executeRequest(`${config.baseUrl}/collection/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
             assets )
           if(!distinct.canModifyCollection){
             expect(res.status).to.eql(403)
