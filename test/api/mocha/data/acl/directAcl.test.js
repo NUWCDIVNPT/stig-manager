@@ -22,7 +22,7 @@ describe('GET - Test Effective ACL', () => {
   before(async () => {
     await utils.loadAppData()
   })
-  describe(`getEffectiveAclByCollectionUser - /collection/{collectionId}/users/{userId}/effective-acl`, () => {
+  describe(`getEffectiveAclByCollectionUser - /collections/{collectionId}/users/{userId}/effective-acl`, () => {
 
 
     it("should give lvl1 user restricted access to test collection", async () => {
