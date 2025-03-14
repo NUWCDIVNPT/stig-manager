@@ -216,7 +216,7 @@ describe('POST - Asset', function () {
           }
           expect(res.status).to.eql(422)
           expect(res.body.detail).to.be.an('array').of.length(1)
-          expect(res.body.detail[0].failure).to.equal("unknown labelId")
+          expect(res.body.detail[0].failure).to.equal("unknown labelName")
           expect(res.body.detail[0].detail).to.eql({
             name,
             labelId: "07285e36-8c3b-5d50-484d-fc3e1f0e1796",
@@ -270,7 +270,7 @@ describe('POST - Asset', function () {
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: [reference.testCollection.fullLabel, reference.testCollection.lvl1Label],
+            labelNames: [reference.testCollection.fullLabelName, reference.testCollection.lvl1LabelName],
             metadata: {
               batch: 'batch',
               batch2: 'batch2'
@@ -282,7 +282,7 @@ describe('POST - Asset', function () {
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: [],
+            labelNames: [],
             metadata: {
               batch: 'batch',
             },
@@ -335,7 +335,7 @@ describe('POST - Asset', function () {
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: [reference.testCollection.fullLabel, reference.testCollection.lvl1Label],
+            labelNames: [reference.testCollection.fullLabelName, reference.testCollection.lvl1LabelName],
             metadata: {
               batch: 'batch',
             },
@@ -377,7 +377,7 @@ describe('POST - Asset', function () {
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: [reference.testCollection.fullLabel, reference.testCollection.lvl1Label],
+            labelNames: [reference.testCollection.fullLabelName, reference.testCollection.lvl1LabelName],
             metadata: {
               batch: 'batch',
             },
@@ -388,7 +388,7 @@ describe('POST - Asset', function () {
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: [reference.testCollection.fullLabel, reference.testCollection.lvl1Label],
+            labelNames: [reference.testCollection.fullLabelName, reference.testCollection.lvl1LabelName],
             metadata: {
               batch: 'batch',
             },
@@ -434,7 +434,7 @@ describe('POST - Asset', function () {
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: [reference.testCollection.fullLabel, reference.testCollection.lvl1Label],
+            labelNames: [reference.testCollection.fullLabelName, reference.testCollection.lvl1LabelName],
             metadata: {
               batch: 'batch',
             },
@@ -454,7 +454,7 @@ describe('POST - Asset', function () {
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: [reference.testCollection.fullLabel, reference.testCollection.lvl1Label],
+            labelNames: [reference.testCollection.fullLabelName, reference.testCollection.lvl1LabelName],
             metadata: {
               batch: 'batch',
             },
@@ -484,7 +484,7 @@ describe('POST - Asset', function () {
               description: 'batch',
               ip: '1.1.1.1',
               noncomputing: true,
-              labelIds: [],
+              labelNames: [],
               metadata: {
                 batch: 'batch',
               },
@@ -494,7 +494,7 @@ describe('POST - Asset', function () {
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: [reference.testCollection.fullLabel, reference.testCollection.lvl1Label],
+            labelNames: [reference.testCollection.fullLabelName, reference.testCollection.lvl1LabelName],
             metadata: {
               batch: 'batch',
             },
@@ -521,14 +521,14 @@ describe('POST - Asset', function () {
 
         })
 
-        it("Create Assets where one has non-existing labelId, expect correct 422 response", async function () {
+        it("Create Assets where one has non-existing labelName, expect correct 422 response", async function () {
           
           const assets = [{
             name: 'TestAsset' + utils.getUUIDSubString(10),
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: ["07285e36-8c3b-5d50-484d-fc3e1f0e1796"],
+            labelNames: ["unknownLabel"],
             metadata: {
               batch: 'batch',
             },
@@ -539,7 +539,7 @@ describe('POST - Asset', function () {
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: [reference.testCollection.fullLabel, reference.testCollection.lvl1Label],
+            labelNames: [reference.testCollection.fullLabelName, reference.testCollection.lvl1LabelName],
             metadata: {
               batch: 'batch',
             },
@@ -554,10 +554,10 @@ describe('POST - Asset', function () {
           }
           expect(res.status).to.eql(422)
           expect(res.body.detail).to.be.an('array').of.length(1)
-          expect(res.body.detail[0].failure).to.equal("unknown labelId")
+          expect(res.body.detail[0].failure).to.equal("unknown labelName")
           expect(res.body.detail[0].detail).to.eql({
             name: assets[0].name,
-            labelId: "07285e36-8c3b-5d50-484d-fc3e1f0e1796",
+            labelName: "unknownLabel",
             assetIndex: 1,
             labelIndex: 1,
           })
@@ -570,7 +570,7 @@ describe('POST - Asset', function () {
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: [reference.testCollection.fullLabel, reference.testCollection.lvl1Label],
+            labelNames: [reference.testCollection.fullLabelName, reference.testCollection.lvl1LabelName],
             metadata: {
               batch: 'batch',
             },
@@ -581,7 +581,7 @@ describe('POST - Asset', function () {
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: [reference.testCollection.fullLabel, reference.testCollection.lvl1Label],
+            labelNames: [reference.testCollection.fullLabelName, reference.testCollection.lvl1LabelName],
             metadata: {
               batch: 'batch',
             },
@@ -614,7 +614,7 @@ describe('POST - Asset', function () {
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: [reference.testCollection.fullLabel, reference.testCollection.lvl1Label],
+            labelNames: [reference.testCollection.fullLabelName, reference.testCollection.lvl1LabelName],
             metadata: {
               batch: 'batch',
             },
@@ -625,7 +625,7 @@ describe('POST - Asset', function () {
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: ["07285e36-8c3b-5d50-484d-fc3e1f0e1796"],
+            labelNames: ["unknownLabel"],
             metadata: {
               batch: 'batch',
             },
@@ -641,11 +641,11 @@ describe('POST - Asset', function () {
           expect(res.status).to.eql(422)
           expect(res.body.detail).to.be.an('array').of.length(2)
           for(const error of res.body.detail) {
-            expect(error.failure).to.be.oneOf(["unknown labelId", "unknown benchmarkId"])
-            if(error.failure === "unknown labelId"){
+            expect(error.failure).to.be.oneOf(["unknown labelName", "unknown benchmarkId"])
+            if(error.failure === "unknown labelName"){
               expect(error.detail).to.eql({
                 name: assets[1].name,
-                labelId: "07285e36-8c3b-5d50-484d-fc3e1f0e1796",
+                labelName: "unknownLabel",
                 assetIndex: 2,
                 labelIndex: 1,
               })
@@ -661,14 +661,14 @@ describe('POST - Asset', function () {
           }
         })
 
-        it("Create Duplicate Asset with not-existing benchmark/labelId expect correct 422", async function () {
+        it("Create Duplicate Asset with not-existing benchmark/labelName expect correct 422", async function () {
 
           const assets = [{
             name: reference.testAsset.name,
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: ["07285e36-8c3b-5d50-484d-fc3e1f0e1796"],
+            labelNames: ["unknownLabel"],
             metadata: {
               batch: 'batch',
             },
@@ -689,14 +689,14 @@ describe('POST - Asset', function () {
           })
         })
 
-        it("Create Duplicate Asset with not-existing benchmark/labelId expect correct 422", async function () {
+        it("Create Duplicate Asset with not-existing benchmark/labelName expect correct 422", async function () {
 
           const assets = [{
             name: reference.testAsset.name,
             description: 'batch',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: ["07285e36-8c3b-5d50-484d-fc3e1f0e1796"],
+            labelNames: ["unknownLabel"],
             metadata: {
               batch: 'batch',
             },
