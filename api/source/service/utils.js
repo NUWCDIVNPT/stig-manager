@@ -488,7 +488,7 @@ exports.validateItems = async function({ assets, collectionId}) {
           jt.positionL,
           jt.name,
           jt.benchmarkId, 
-          jt.labelId, 
+          jt.labelName, 
           a.name AS matchedName, 
           s.benchmarkId AS matchedBenchmarkId, 
           cl.clId AS matchedClId
@@ -499,8 +499,8 @@ exports.validateItems = async function({ assets, collectionId}) {
                   name VARCHAR(255) PATH '$.name',
                   NESTED PATH '$.stigs[*]' 
                       COLUMNS (positionB FOR ORDINALITY, benchmarkId VARCHAR(255) PATH '$'),
-                  NESTED PATH '$.labelIds[*]' 
-                      COLUMNS (positionL FOR ORDINALITY, labelId VARCHAR(255) PATH '$')
+                  NESTED PATH '$.labelNames[*]' 
+                      COLUMNS (positionL FOR ORDINALITY, labelName VARCHAR(255) PATH '$')
               )
           ) AS jt
       LEFT JOIN asset a 
@@ -510,7 +510,7 @@ exports.validateItems = async function({ assets, collectionId}) {
       LEFT JOIN stig s 
           ON jt.benchmarkId COLLATE utf8mb4_0900_ai_ci = s.benchmarkId COLLATE utf8mb4_0900_ai_ci
       LEFT JOIN collection_label cl 
-          ON jt.labelId = BIN_TO_UUID(cl.uuid, 1) 
+          ON jt.labelName = cl.name 
           AND cl.collectionId = ?
   )
   SELECT
@@ -530,10 +530,10 @@ exports.validateItems = async function({ assets, collectionId}) {
   UNION
 
   SELECT
-      'unknown labelId', 
-      JSON_OBJECT('assetIndex', positionA, 'name', name, 'labelIndex', positionL, 'labelId', labelId)
+      'unknown labelName', 
+      JSON_OBJECT('assetIndex', positionA, 'name', name, 'labelIndex', positionL, 'labelName', labelName)
   FROM cteFails
-  WHERE labelId IS NOT NULL AND matchedClId IS NULL AND matchedName IS NULL
+  WHERE labelName IS NOT NULL AND matchedClId IS NULL AND matchedName IS NULL
   `
 
   const [results] = await _this.pool.query(validationQuery, [assetJson, collectionId, collectionId])
