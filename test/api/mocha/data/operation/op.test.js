@@ -14,14 +14,14 @@ describe('GET - Op', () => {
   for(const iteration of iterations){
     describe(`iteration:${iteration.name}`, () => {
       describe('getAppData - /op/appdata', () => {
-        // it('Export application data', async () => {
-        //   const res = await utils.executeRequest(`${config.baseUrl}/op/appdata?format=jsonl&elevate=true`, 'GET', iteration.token)
-        //   if(iteration.name !== "stigmanadmin"){
-        //     expect(res.status).to.eql(403)
-        //     return
-        //   }
-        //   expect(res.status).to.eql(200)
-        // })
+        it('Export application data', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/op/appdata?format=jsonl&elevate=true`, 'GET', iteration.token)
+          if(iteration.name !== "stigmanadmin"){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(200)
+        })
       })
       describe('getConfiguration - /op/configuration', () => {
         it('Return API version and configuration information', async () => {
