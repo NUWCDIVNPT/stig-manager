@@ -237,20 +237,32 @@ async function bootstrapRetryFn (fn) {
 }
 
 /**
+ * Formats a Node.js socket object into a string representation.
+ * 
+ * @param {net.Socket} socket - The Node.js socket object.
+ * @returns {string|undefined} A string representation of the socket's local and remote addresses and ports, or undefined if the socket is not connected.
+ */
+function formatSocket(socket) {
+  return socket.localAddress ? `${socket.localAddress}:${socket.localPort} -> ${socket.remoteAddress}:${socket.remotePort}` : undefined
+}
+
+/**
  * Attaches event handlers to the pool for connection and removal events.
  * @param {Object} pool - The mysql2 PromisePool object.
  */
 function attachPoolEventHandlers(pool) {
   pool.on('connection', function (connection) {
+    const socket = formatSocket(connection.stream)
     connection.on('error', function (error) {
-      logger.writeError('mysql', 'connectionEvent', { event: 'error', message: error.message })
+      logger.writeError('mysql', 'connectionEvent', { event: 'error', socket, message: error.message })
     })
-    logger.writeDebug('mysql', 'poolEvent', { event: 'connection'})
-    NetKeepAlive?.setUserTimeout(connection.stream, 20000)
+    logger.writeInfo('mysql', 'poolEvent', { event: 'connection', socket })
+    NetKeepAlive.setUserTimeout(connection.stream, 20000)
     connection.query('SET SESSION group_concat_max_len=10000000')
   })
   pool.on('remove', function (connection) {
-    logger.writeDebug('mysql', 'poolEvent', { event: 'remove', remaining: pool.pool._allConnections.toArray().length, authorized: connection.authorized })
+    const socket = formatSocket(connection.stream)
+    logger.writeInfo('mysql', 'poolEvent', { event: 'remove', socket, remaining: pool.pool._allConnections.toArray().length, authorized: connection.authorized })
   })  
 }
 
