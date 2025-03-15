@@ -81,7 +81,7 @@ describe('DELETE - Asset', function () {
             description: 'test',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: [reference.testCollection.fullLabel],
+            labelNames: [reference.testCollection.fullLabelName],
             metadata: {
               pocName: 'pocName',
               pocEmail: 'pocEmail@example.com',

@@ -1423,7 +1423,7 @@ exports.updateAsset = async function( {assetId, body, currentCollectionId, trans
   try {
     // Extract or initialize non-scalar properties to separate variables
     let binds
-    let { stigs, labelIds, ...assetFields } = body
+    let { stigs, labelNames, ...assetFields } = body
 
     // Convert boolean scalar values to database values (true=1 or false=0)
     if (assetFields.hasOwnProperty('noncomputing')) {
@@ -1507,15 +1507,14 @@ exports.updateAsset = async function( {assetId, body, currentCollectionId, trans
       }
   
       // Process labelIds, spec requires for CREATE/REPLACE not for UPDATE
-      if (labelIds) {
+      if (labelNames) {
         let sqlDeleteLabels = `
           DELETE FROM 
             collection_label_asset_map
           WHERE 
             assetId = ?`
         await connection.query(sqlDeleteLabels, [ assetId ])
-        if (labelIds.length > 0) {      
-          let uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+        if (labelNames.length > 0) {      
           // INSERT into stig_asset_map
           let sqlInsertLabels = `
             INSERT INTO collection_label_asset_map (assetId, clId) 
@@ -1525,8 +1524,8 @@ exports.updateAsset = async function( {assetId, body, currentCollectionId, trans
               FROM
                 collection_label
               WHERE
-                uuid IN (?) and collectionId = ?`
-          await connection.query(sqlInsertLabels, [assetId, uuidBinds, assetFields.collectionId])
+                name IN (?) and collectionId = ?`
+          await connection.query(sqlInsertLabels, [assetId, labelNames, assetFields.collectionId])
         }
       }
 

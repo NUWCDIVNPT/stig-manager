@@ -28,7 +28,7 @@ describe('POST - Asset', function () {
               description: 'test',
               ip: '1.1.1.1',
               noncomputing: true,
-              labelIds: [reference.testCollection.fullLabel],
+              labelNames: [reference.testCollection.fullLabelName],
               metadata: {
                 pocName: 'pocName',
                 pocEmail: 'pocEmail@example.com',
@@ -78,7 +78,7 @@ describe('POST - Asset', function () {
               description: 'test',
               ip: '1.1.1.1',
               noncomputing: true,
-              labelIds: [reference.testCollection.fullLabel],
+              labelNames: [reference.testCollection.fullLabelName],
               metadata: {
                 pocName: 'pocName',
               },
@@ -101,7 +101,7 @@ describe('POST - Asset', function () {
               description: 'test',
               ip: '1.1.1.1',
               noncomputing: true,
-              labelIds: [],
+              labelNames: [],
               metadata: {
                 pocName: 'pocName',
               },
@@ -124,7 +124,7 @@ describe('POST - Asset', function () {
               description: 'test',
               ip: '1.1.1.1',
               noncomputing: true,
-              labelIds: [reference.testCollection.fullLabel],
+              labelNames: [reference.testCollection.fullLabelName],
               metadata: {
                 pocName: 'pocName',
                 pocEmail: 'pocEmail@example.com',
@@ -148,7 +148,7 @@ describe('POST - Asset', function () {
               description: 'test',
               ip: '1.1.1.1',
               noncomputing: true,
-              labelIds: [reference.testCollection.fullLabel],
+              labelNames: [reference.testCollection.fullLabelName],
               metadata: {
                 pocName: 'pocName',
                 pocEmail: 'pocEmail@example.com',
@@ -171,7 +171,7 @@ describe('POST - Asset', function () {
               description: 'test',
               ip: '1.1.1.1',
               noncomputing: true,
-              labelIds: [reference.testCollection.fullLabel],
+              labelNames: [reference.testCollection.fullLabelName],
               metadata: {
                 pocName: 'pocName',
               },
@@ -192,7 +192,7 @@ describe('POST - Asset', function () {
 
         })
 
-        it("Create Asset with non-existing labelId, expect correct 422 response", async function () {
+        it("Create Asset with non-existing labelName, expect correct 422 response", async function () {
 
 
           const name = 'TestAsset' + utils.getUUIDSubString(10)
@@ -203,7 +203,7 @@ describe('POST - Asset', function () {
               description: 'test',
               ip: '1.1.1.1',
               noncomputing: true,
-              labelIds: ["07285e36-8c3b-5d50-484d-fc3e1f0e1796"],
+              labelNames: ["07285e36"],
               metadata: {
                 pocName: 'pocName',
               },
@@ -219,7 +219,7 @@ describe('POST - Asset', function () {
           expect(res.body.detail[0].failure).to.equal("unknown labelName")
           expect(res.body.detail[0].detail).to.eql({
             name,
-            labelId: "07285e36-8c3b-5d50-484d-fc3e1f0e1796",
+            labelName: "07285e36",
             assetIndex: 1,
             labelIndex: 1,
           })
@@ -235,7 +235,7 @@ describe('POST - Asset', function () {
               description: 'test',
               ip: '1.1.1.1',
               noncomputing: true,
-              labelIds: [reference.testCollection.fullLabel],
+              labelNames: [reference.testCollection.fullLabelName],
               metadata: {
                 pocName: 'pocName',
               },

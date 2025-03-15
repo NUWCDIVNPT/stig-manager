@@ -288,7 +288,7 @@ describe(`GET - Asset`, function () {
             description: 'temp',
             ip: '1.1.1.1',
             noncomputing: true,
-            labelIds: [],
+            labelNames: [],
             metadata: {
               testKey: 'test:value',
             },
@@ -672,7 +672,7 @@ describe(`GET - Asset`, function () {
             description: `test`,
             ip: `1.1.1.1`,
             noncomputing: true,
-            labelIds: [],
+            labelNames: [],
             metadata: {
               pocName: `pocName`,
             },
