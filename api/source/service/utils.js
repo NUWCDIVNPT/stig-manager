@@ -257,7 +257,7 @@ function attachPoolEventHandlers(pool) {
       logger.writeError('mysql', 'connectionEvent', { event: 'error', socket, message: error.message })
     })
     logger.writeInfo('mysql', 'poolEvent', { event: 'connection', socket })
-    NetKeepAlive.setUserTimeout(connection.stream, 20000)
+    NetKeepAlive?.setUserTimeout(connection.stream, 20000)
     connection.query('SET SESSION group_concat_max_len=10000000')
   })
   pool.on('remove', function (connection) {
