@@ -2852,6 +2852,8 @@ SM.Manage.Asset.showAssetProps = async function (assetId, initialCollectionId) {
         try {
           if (assetPropsFormPanel.getForm().isValid()) {
             let values = assetPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
+            values.labelNames = values.labelIds
+            delete values.labelIds
             // //TODO: getFieldValues should not return 'undefined' 
             delete values.undefined
             const method = assetId ? 'PUT' : 'POST'
@@ -3444,7 +3446,7 @@ SM.Manage.Asset.LabelField = Ext.extend(Ext.form.Field, {
       data: [],
     })
     const config = {
-      name: 'labelNames'
+      name: 'labelIds'
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
     this.superclass().initComponent.call(this)
