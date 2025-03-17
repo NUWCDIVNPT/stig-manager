@@ -31,8 +31,8 @@ describe('PUT - Asset', function () {
               "description": "test desc",
               "ip": "1.1.1.1",
               "noncomputing": true,
-              "labelIds": [
-                  "df4e6836-a003-11ec-b1bc-0242ac110002"
+              "labelNames": [
+                  "scrapLabel"
               ],
               "metadata": {
                   "pocName": "poc2Put",

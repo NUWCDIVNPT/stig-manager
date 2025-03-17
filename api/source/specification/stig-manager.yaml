@@ -5159,9 +5159,9 @@ components:
           $ref: '#/components/schemas/AssetFqdn'
         ip:
           $ref: '#/components/schemas/AssetIp'
-        labelIds:
+        labelNames:
           items:
-            $ref: '#/components/schemas/LabelId'
+            $ref: '#/components/schemas/LabelName'
           type: array
         mac:
           $ref: '#/components/schemas/AssetMac'
@@ -5195,9 +5195,9 @@ components:
           $ref: '#/components/schemas/AssetFqdn'
         ip:
           $ref: '#/components/schemas/AssetIp'
-        labelIds:
+        labelNames:
           items:
-            $ref: '#/components/schemas/LabelId'
+            $ref: '#/components/schemas/LabelName'
           type: array
         mac:
           $ref: '#/components/schemas/AssetMac'
@@ -5377,10 +5377,10 @@ components:
           $ref: '#/components/schemas/AssetFqdn'
         ip:
           $ref: '#/components/schemas/AssetIp'
-        labelIds:
+        labelNames:
           type: array
           items:
-            $ref: '#/components/schemas/LabelId'
+            $ref: '#/components/schemas/LabelName'
         mac:
           $ref: '#/components/schemas/AssetMac'
         metadata:

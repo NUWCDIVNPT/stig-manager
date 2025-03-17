@@ -937,7 +937,7 @@ exports.createAssets = async function({ assets, collectionId, svcStatus = {} }) 
             noncomputing TINYINT,
             metadata JSON,
             benchmarkIds JSON,
-            labelIds JSON,
+            labelNames JSON,
             assetId INT NULL
         );`
 
@@ -946,8 +946,8 @@ exports.createAssets = async function({ assets, collectionId, svcStatus = {} }) 
     const assetsJson = JSON.stringify(assets)
 
     const insertTempAssetsSQL = `
-      INSERT INTO temp_assets (name, fqdn, ip, mac, description, collectionId, noncomputing, metadata, benchmarkIds, labelIds)
-      SELECT name, fqdn, ip, mac, description, collectionId, noncomputing, metadata, benchmarkIds, labelIds
+      INSERT INTO temp_assets (name, fqdn, ip, mac, description, collectionId, noncomputing, metadata, benchmarkIds, labelNames)
+      SELECT name, fqdn, ip, mac, description, collectionId, noncomputing, metadata, benchmarkIds, labelNames
       FROM JSON_TABLE(?, '$[*]'
           COLUMNS (
               name VARCHAR(255) PATH '$.name',
@@ -959,7 +959,7 @@ exports.createAssets = async function({ assets, collectionId, svcStatus = {} }) 
               noncomputing TINYINT PATH '$.noncomputing',
               metadata JSON PATH '$.metadata',
               benchmarkIds JSON PATH '$.stigs',
-              labelIds JSON PATH '$.labelIds'
+              labelNames JSON PATH '$.labelNames'
           )
       ) AS jt`
 
@@ -1001,13 +1001,13 @@ exports.createAssets = async function({ assets, collectionId, svcStatus = {} }) 
         INSERT INTO collection_label_asset_map (assetId, clId)
         SELECT t.assetId, cl.clId
         FROM temp_assets t
-        INNER JOIN JSON_TABLE(t.labelIds, '$[*]'
-            COLUMNS (labelUuid VARCHAR(255) PATH '$')
+        INNER JOIN JSON_TABLE(t.labelNames, '$[*]'
+            COLUMNS (labelName VARCHAR(255) PATH '$')
         ) AS labels
         LEFT JOIN collection_label cl
-            ON cl.uuid = UUID_TO_BIN(labels.labelUuid, 1)
+            ON cl.name = labels.labelName
             AND cl.collectionId = t.collectionId
-        WHERE t.labelIds IS NOT NULL;`
+        WHERE t.labelNames IS NOT NULL;`
     await connection.query(insertLabelsSQL)
 
     // get assetIds of newly created assets
@@ -1423,7 +1423,7 @@ exports.updateAsset = async function( {assetId, body, currentCollectionId, trans
   try {
     // Extract or initialize non-scalar properties to separate variables
     let binds
-    let { stigs, labelIds, ...assetFields } = body
+    let { stigs, labelNames, ...assetFields } = body
 
     // Convert boolean scalar values to database values (true=1 or false=0)
     if (assetFields.hasOwnProperty('noncomputing')) {
@@ -1507,15 +1507,14 @@ exports.updateAsset = async function( {assetId, body, currentCollectionId, trans
       }
   
       // Process labelIds, spec requires for CREATE/REPLACE not for UPDATE
-      if (labelIds) {
+      if (labelNames) {
         let sqlDeleteLabels = `
           DELETE FROM 
             collection_label_asset_map
           WHERE 
             assetId = ?`
         await connection.query(sqlDeleteLabels, [ assetId ])
-        if (labelIds.length > 0) {      
-          let uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
+        if (labelNames.length > 0) {      
           // INSERT into stig_asset_map
           let sqlInsertLabels = `
             INSERT INTO collection_label_asset_map (assetId, clId) 
@@ -1525,8 +1524,8 @@ exports.updateAsset = async function( {assetId, body, currentCollectionId, trans
               FROM
                 collection_label
               WHERE
-                uuid IN (?) and collectionId = ?`
-          await connection.query(sqlInsertLabels, [assetId, uuidBinds, assetFields.collectionId])
+                name IN (?) and collectionId = ?`
+          await connection.query(sqlInsertLabels, [assetId, labelNames, assetFields.collectionId])
         }
       }
 

@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync } from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 import { fileURLToPath } from 'url';
 import { join, dirname } from 'path';
+import reference from '../referenceData.js';
 const baseUrl = config.baseUrl
 const adminToken = config.adminToken
 
@@ -160,7 +161,7 @@ const createTempAsset = async asset => {
       description: 'temp',
       ip: '1.1.1.1',
       noncomputing: true,
-      labelIds: [],
+      labelNames: [],
       metadata: {
         pocName: 'pocName',
         pocEmail: 'pocEmail@example.com',
@@ -470,6 +471,7 @@ const putReviewByAssetRule = async (collectionId, assetId, ruleId, body) => {
 }
 
 const resetTestAsset = async () => {
+
   const res = await putAsset("42", {
     name: "Collection_X_lvl1_asset-1",
     collectionId: "21",
@@ -478,9 +480,9 @@ const resetTestAsset = async () => {
     ip: "",
     noncomputing: true,
     mac: null,
-    labelIds: [
-      "755b8a28-9a68-11ec-b1bc-0242ac110002",
-      "5130dc84-9a68-11ec-b1bc-0242ac110002",
+    labelNames: [
+      reference.testCollection.fullLabelName,
+      reference.testCollection.lvl1LabelName,
     ],
     metadata: {
       testkey: "testvalue",
@@ -511,6 +513,9 @@ const resetTestAsset = async () => {
         access: 'r'
       }
     ])
+
+
+  
 }
 
 const setGroupAccess = async (collectionId, grantId, body) => {
@@ -530,18 +535,25 @@ const setGroupAccess = async (collectionId, grantId, body) => {
 }
 
 const resetScrapAsset = async () => {
-  const res = await putAsset("34", {
-    name: "test asset stigmanadmin",
-    collectionId: "1",
-    description: "test desc",
-    ip: "1.1.1.1",
-    fqdn: null,
-    noncomputing: true,
-    mac: null,
-    labelIds: [],
-    metadata: {},
-    stigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST","RHEL_7_STIG_TEST"],
-    })
+  try{ 
+    const res = await putAsset("34", {
+      name: "test asset stigmanadmin",
+      collectionId: "1",
+      description: "test desc",
+      ip: "1.1.1.1",
+      fqdn: null,
+      noncomputing: true,
+      mac: null,
+      labelNames: [],
+      metadata: {},
+      stigs: ["VPN_SRG_TEST", "Windows_10_STIG_TEST","RHEL_7_STIG_TEST"],
+      })
+  }
+  catch (e) {
+    console.error('Error resetting scrap asset:', e)
+    throw e
+  }
+
 }
 
 const setRestrictedUsers = async (collectionId, grantId, body) => {
@@ -587,6 +599,8 @@ const putAsset = async (assetId, asset) => {
     body: JSON.stringify(asset)
   })
   if (!res.ok) { 
+    // get the error message from the response if available
+    const errorText = await res.text()
     throw new Error(`HTTP error, Status: ${res.status}`)
   }
   return res.json()

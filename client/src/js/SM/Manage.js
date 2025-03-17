@@ -2852,6 +2852,8 @@ SM.Manage.Asset.showAssetProps = async function (assetId, initialCollectionId) {
         try {
           if (assetPropsFormPanel.getForm().isValid()) {
             let values = assetPropsFormPanel.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
+            values.labelNames = values.labelIds
+            delete values.labelIds
             // //TODO: getFieldValues should not return 'undefined' 
             delete values.undefined
             const method = assetId ? 'PUT' : 'POST'
@@ -3409,6 +3411,7 @@ SM.Manage.Asset.LabelField = Ext.extend(Ext.form.Field, {
   initComponent: function () {
     const _this = this
     this.labelIds = this.labelIds || []
+    this.labelNames = this.labelNames || []
     const cachedCollection = SM.Cache.CollectionMap.get(this.collectionId)
     this.labelsMenu = new SM.Manage.Collection.LabelsMenu({
       // menuTitle: 'Manage labels',
@@ -3418,14 +3421,21 @@ SM.Manage.Asset.LabelField = Ext.extend(Ext.form.Field, {
           const cachedCollection = SM.Cache.CollectionMap.get(_this.collectionId)
           _this.labelIds = item.parentMenu.getCheckedLabelIds()
           const assetLabels = cachedCollection.labels.filter(label => _this.labelIds.includes(label.labelId))
+          _this.labelNames = cachedCollection.labels
+            .filter(label => _this.labelIds.includes(label.labelId)).map(label => label.name)
           _this.previewfield.update(assetLabels)
+          
+
         },
         applied: function (labelIds) {
           const cachedCollection = SM.Cache.CollectionMap.get(_this.collectionId)
           const assetLabels = cachedCollection.labels.filter(label => labelIds.includes(label.labelId))
           _this.previewfield.update(assetLabels)
           _this.labelIds = labelIds
-        }
+          _this.labelNames = cachedCollection.labels
+              .filter(label => labelIds.includes(label.labelId))
+              .map(label => label.name)
+      }
       }
     })
     this.menuBtn = new Ext.Button({
@@ -3449,10 +3459,11 @@ SM.Manage.Asset.LabelField = Ext.extend(Ext.form.Field, {
     const assetLabels = cachedCollection.labels.filter(function (label) {
       return labelIds.includes(label.labelId)
     })
+    this.labelNames = assetLabels.map(label => label.name)
     this.previewfield.update(assetLabels)
   },
   getValue: function () {
-    return this.labelIds
+    return this.labelNames
   },
   onRender: function (ct, position) {
     SM.Manage.Asset.LabelField.superclass.onRender.call(this, ct, position);

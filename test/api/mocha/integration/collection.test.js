@@ -1570,8 +1570,8 @@ describe('GET - putAssetsByCollectionLabelId - /collections/{collectionId}/label
                 "description": "test desc",
                 "ip": "1.1.1.1",
                 "noncomputing": true,
-                "labelIds": [
-                    reference.testCollection.fullLabel
+                "labelNames": [
+                    "scrapLabel"
                 ],    
                 "metadata": {
                     "pocName": "poc2Put",
@@ -1601,7 +1601,7 @@ describe('GET - putAssetsByCollectionLabelId - /collections/{collectionId}/label
                 "collectionId": reference.scrapCollection.collectionId,
                 "description": "test desc",
                 "ip": "1.1.1.1",
-                "labelIds": [],
+                "labelNames": [],
                 "noncomputing": true,
                 "metadata": {
                     "pocName": "poc2Put",
@@ -1617,7 +1617,9 @@ describe('GET - putAssetsByCollectionLabelId - /collections/{collectionId}/label
 
             const res = await utils.executeRequest(`${config.baseUrl}/assets?projection=stigs`, 'POST', user.token, request)
             expect(res.status).to.eql(201)
-            request.labelIds = []
+            // remove labelNames property from request to match response
+            delete request.labelNames
+            request.labelIds =[]
             expect(assetGetToPost(res.body)).to.eql(request)
         })
         it('Set all properties of an Asset Copy', async () => {
@@ -1627,10 +1629,7 @@ describe('GET - putAssetsByCollectionLabelId - /collections/{collectionId}/label
                 "description": "test desc",
                 "ip": "1.1.1.1",
                 "noncomputing": true,
-                "labelIds": [
-                    "8fd5f19e-9b5e-11ec-adb1-0242c0a86004",
-                    "1630332d-f4d5-4634-9d67-314d774050de"
-                ],
+                "labelNames": [],
                 "metadata": {
                     "pocName": "poc2Put",
                     "pocEmail": "pocEmailPut@email.com",
@@ -1647,8 +1646,8 @@ describe('GET - putAssetsByCollectionLabelId - /collections/{collectionId}/label
         })
         it('check that request body without collectionId properly sets labels - GH-1293', async () => {
             const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.scrapAsset.assetId}`, 'PATCH', user.token, {
-                "labelIds": [
-                    "df4e6836-a003-11ec-b1bc-0242ac110002"
+                "labelNames": [
+                    "scrapLabel"
                 ]
             })
             expect(res.status).to.eql(200)
