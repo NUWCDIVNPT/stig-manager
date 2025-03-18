@@ -1,3 +1,23 @@
+1.5.6
+-------
+
+Changes:
+
+  - (UI) feature: Asset STIG assignment interface updated to present STIGs with the Available/Assigned convention used elsewhere in the UI
+  - (API/OAS) feature: Added endpoint to support the creation of multiple Assets in a Collection
+  - (API/OAS) feature: Created state module to consolidate API process flow, exit, and dependency retries; endpoint to report API state.
+  - (API) feature: Changes to support detection and response to database outage conditions; integrated with state module
+  - (API) feature: Added behavior that prevents bootstrap when OIDC provider is using insecure key Ids, and rejects requests made with tokens signed by such keys.
+  - (Workflows) Only generate coverage report from end-to-end API tests
+  - (Docs) Updated to describe envvars that should only be changed in Dev/Test environments.
+  - (API/Docs) Dependency Updates
+
+**NOTE:** 
+  This release changes the behavior of the API when configured to use an OIDC provider that presents realm keys identified by Key Ids used in this project's automated testing.  The API will no longer start if the initial realm keys specified by the OIDC Provider are identified by the same Key Ids used in our testing, and if started, will reject all requests that present a token signed by these keys.
+
+  This condition may occur if your deployment is using a Keycloak container based on one of our Demo containers without making additional changes. If STIGMan refuses to start and outputs a log indicating "insecure_kid - JWKS contains insecure key IDs", you should update your realm's signing keys immediately. To change the signing keys used by Keycloak, check [their documentation on generating realm keys](https://www.keycloak.org/docs/latest/server_admin/index.html#realm_keys).
+
+
 1.5.5
 -------
 
