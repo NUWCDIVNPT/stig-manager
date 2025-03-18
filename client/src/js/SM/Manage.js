@@ -2897,14 +2897,14 @@ SM.Manage.Asset.showAssetProps = async function (assetId, initialCollectionId) {
     /******************************************************/
     // Form window
     /******************************************************/
-    var appwindow = new Ext.Window({
+    const appwindow = new Ext.Window({
       id: 'assetPropsWindow',
       cls: 'sm-dialog-window sm-round-panel',
       title: assetId ? 'Asset Properties, ID ' + assetId : 'Create new Asset',
       modal: true,
       hidden: true,
-      width: 660,
-      height: 666,
+      width: 800,
+      height: 800,
       layout: 'fit',
       plain: true,
       bodyStyle: 'padding:5px;',
@@ -2928,6 +2928,10 @@ SM.Manage.Asset.showAssetProps = async function (assetId, initialCollectionId) {
       apiAsset.collectionId = apiAsset.collection.collectionId
       delete apiAsset.collection
       assetPropsFormPanel.getForm().setValues(apiAsset)
+      assetPropsFormPanel.stigSelectingPanel.initPanel(apiAsset)
+    }
+    else {
+      assetPropsFormPanel.stigSelectingPanel.initPanel({stigs: []})
     }
 
     Ext.getBody().unmask();
@@ -3487,7 +3491,7 @@ SM.Manage.Asset.LabelField = Ext.extend(Ext.form.Field, {
   }
 })
 
-SM.Manage.Asset.StigsGrid = Ext.extend(Ext.grid.GridPanel, {
+SM.Manage.Asset.StigSelectingGrid = Ext.extend(Ext.grid.GridPanel, {
   initComponent: function () {
     const fields = [
       {
@@ -3498,39 +3502,23 @@ SM.Manage.Asset.StigsGrid = Ext.extend(Ext.grid.GridPanel, {
         name: 'ruleCount',
         type: 'integer'
       }
-    ]
-    this.newRecordConstructor = Ext.data.Record.create(fields)
-    const stigAssignedStore = new Ext.data.JsonStore({
-      grid: this,
-      root: '',
-      fields: fields,
-      idProperty: 'benchmarkId',
-      sortInfo: {
-        field: 'benchmarkId',
-        direction: 'ASC' // or 'DESC' (case sensitive for local sorting)
-      }
-    })
-    // const totalTextCmp = new SM.RowCountTextItem ({
-    //     store: stigAssignedStore
-    // })
-
-
-    const stigSelectionField = new SM.Manage.Stig.SelectionComboBox({
-      submitValue: false,
-      autoLoad: true,
-      grid: this,
-      filteringStore: stigAssignedStore,
-      getListParent: function () {
-        return this.grid.editor.el;
+]
+    const sm = new Ext.grid.CheckboxSelectionModel({
+      singleSelect: false,
+      checkOnly: false,
+      listeners: {
+        selectionchange: function (sm) {
+          SM.SetCheckboxSelModelHeaderState(sm)
+        }
       }
     })
     const columns = [
+      sm,
       {
         header: "BenchmarkId",
         width: 375,
         dataIndex: 'benchmarkId',
         sortable: true,
-        editor: stigSelectionField,
         filter: { type: 'string' }
       },
       {
@@ -3538,120 +3526,270 @@ SM.Manage.Asset.StigsGrid = Ext.extend(Ext.grid.GridPanel, {
         width: 125,
         dataIndex: 'ruleCount',
         align: 'center',
-        sortable: true,
-        // editor: new Ext.form.DisplayField({submitValue: false})
+        sortable: true
       }
-    ]
-    this.editor = new Ext.ux.grid.RowEditor({
-      saveText: 'OK',
-      grid: this,
-      stigSelectionField: stigSelectionField,
-      clicksToEdit: 2,
-      onRowDblClick: Ext.emptyFn, // do nothing
-      errorSummary: false, // don't display errors during validation monitoring
-      listeners: {
-        canceledit: function (editor, forced) {
-          // The 'editing' property is set by RowEditorToolbar.js
-          if (editor.record.editing === true) { // was the edit on a new record?
-            this.grid.store.suspendEvents(false);
-            this.grid.store.remove(editor.record);
-            this.grid.store.resumeEvents();
-            this.grid.getView().refresh();
-          }
-          // Editor must remove the form fields it created; otherwise the
-          // form validation continues to include those fields
-          // editor.removeAll(false)
-          // editor.initialized = false
-        },
-        validateedit: function (editor, changes, record, index) {
-          // Get the stigSelection combo
-          let combo = editor.items.items[0]
-          // Lookup ruleCount for the selectedIndex
-          changes.ruleCount = combo.store.getAt(combo.selectedIndex).data.ruleCount
-        },
-        afteredit: function (editor, changes, record, index) {
-          // "Save" the record by reconfiguring the store's data collection
-          // Corrects the bug where new records don't deselect when clicking away
-          let mc = record.store.data
-          let generatedId = record.id
-          record.id = record.data.benchmarkId
-          record.phantom = false
-          record.dirty = false
-          delete mc.map[generatedId]
-          mc.map[record.id] = record
-          for (let x = 0, l = mc.keys.length; x < l; x++) {
-            if (mc.keys[x] === generatedId) {
-              mc.keys[x] = record.id
-            }
-          }
-          editor.removeAll(false)
-          editor.initialized = false
-        }
-      }
-    })
 
-    let tbar = new SM.RowEditorToolbar({
-      itemString: 'STIG',
-      newTitle: 'Assign STIG',
-      deleteTitle: 'Unassign STIG',
-      editor: this.editor,
-      gridId: this.id,
-      deleteProperty: 'benchmarkId',
-      newRecord: this.newRecordConstructor
+    ]
+    const store = new Ext.data.JsonStore({
+      fields,
+      idProperty: 'benchmarkId',
+      sortInfo: {
+        field: 'benchmarkId',
+        direction: 'ASC'
+      },
     })
-    tbar.delButton.disable()
+    const totalTextCmp = new SM.RowCountTextItem({
+      store,
+      noun: 'STIG',
+      iconCls: 'sm-stig-icon'
+    })
 
     const config = {
-      isFormField: true,
-      submitValue: true,
-      allowBlank: false,
-      forceSelection: true,
-      layout: 'fit',
-      plugins: [this.editor],
+      store,
+      columns,
+      sm,
+      enableDragDrop: true,
+      ddText: '{0} selected STIG{1}',
+      bodyCssClass: 'sm-grid3-draggable',
+      ddGroup: `SM.Manage.Asset.StigSelectingGrid-${this.role}`,
       border: true,
-      store: stigAssignedStore,
-      cm: new Ext.grid.ColumnModel({
-        columns: columns
-      }),
-      sm: new Ext.grid.RowSelectionModel({
-        singleSelect: true,
-        listeners: {
-          selectionchange: function (sm) {
-            tbar.delButton.setDisabled(!sm.hasSelection())
-          }
-        }
-      }),
+      loadMask: false,
+      stripeRows: true,
       view: new SM.ColumnFilters.GridView({
-        emptyText: this.emptyText || 'No records to display',
-        deferEmptyText: false,
         forceFit: true,
-        markDirty: false,
+        emptyText: 'No STIGs to display',
         listeners: {
           filterschanged: function (view, item, value) {
-            stigAssignedStore.filter(view.getFilterFns())
+            store.filter(view.getFilterFns())
           }
         }
       }),
+      bbar: new Ext.Toolbar({
+        items: [
+          {
+            xtype: 'exportbutton',
+            grid: this,
+            hasMenu: false,
+            gridBasename: 'STIGs (grid)',
+            storeBasename: 'STIGs (store)',
+            iconCls: 'sm-export-icon',
+            text: 'CSV'
+          },
+          {
+            xtype: 'tbfill'
+          },
+          {
+            xtype: 'tbseparator'
+          },
+          totalTextCmp
+        ]
+      })
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this);
+  }
+})
+
+SM.Manage.Asset.StigSelectingPanel = Ext.extend(Ext.Panel, {
+  initComponent: function () {
+    const _this = this
+    function setupDragZone(grid) {
+      const gridDragZone = grid.getView().dragZone
+      const originalGetDragData = gridDragZone.getDragData
+      gridDragZone.getDragData = function (e) {
+        const t = Ext.lib.Event.getTarget(e)
+        if (t.className === 'x-grid3-row-checker') {
+          return false
+        }
+        return originalGetDragData.call(gridDragZone, e)
+      }
+
+      const originalStartDrag = gridDragZone.startDrag
+      gridDragZone.startDrag = function (x, y) {
+        Ext.getBody().addClass('sm-grabbing')
+        return originalStartDrag.call(gridDragZone, x, y)
+      }
+
+      const originalOnDragDrop = gridDragZone.onDragDrop
+      gridDragZone.onDragDrop = function (e, id) {
+        Ext.getBody().removeClass('sm-grabbing')
+        return originalOnDragDrop.call(gridDragZone, e, id)
+      }
+
+      const originalOnInvalidDrop = gridDragZone.onInvalidDrop
+      gridDragZone.onInvalidDrop = function (e, id) {
+        Ext.getBody().removeClass('sm-grabbing')
+        return originalOnInvalidDrop.call(gridDragZone, e)
+      }
+
+    }
+    const availableGrid = new SM.Manage.Asset.StigSelectingGrid({
+      title: 'Available STIGs',
+      iconCls: 'sm-stig-icon',
+      headerCssClass: 'sm-available-panel-header',
+      role: 'available',
+      flex: 1,
       listeners: {
+        render: function (grid) {
+          setupDragZone(grid)
+          const gridDropTargetEl = grid.getView().scroller.dom;
+          const gridDropTarget = new Ext.dd.DropTarget(gridDropTargetEl, {
+            ddGroup: selectionsGrid.ddGroup,
+            notifyDrop: function (ddSource, e, data) {
+              const selectedRecords = ddSource.dragData.selections;
+              changeSelected(selectionsGrid, selectedRecords, availableGrid)
+              return true
+            }
+          })
+        },
+
+      }
+    })
+    const selectionsGrid = new SM.Manage.Asset.StigSelectingGrid({
+      title: 'Assigned STIGs',
+      iconCls: 'sm-stig-icon',
+      headerCssClass: 'sm-selections-panel-header',
+      role: 'selections',
+      flex: 1,
+      listeners: {
+        render: function (grid) {
+          setupDragZone(grid)
+          const gridDropTargetEl = grid.getView().scroller.dom;
+          const gridDropTarget = new Ext.dd.DropTarget(gridDropTargetEl, {
+            ddGroup: availableGrid.ddGroup,
+            notifyDrop: function (ddSource, e, data) {
+              const selectedRecords = ddSource.dragData.selections;
+              changeSelected(availableGrid, selectedRecords, selectionsGrid)
+              return true
+            }
+          })
+        }
+      }
+    })
+    availableGrid.getSelectionModel().on('selectionchange', handleSelections, selectionsGrid)
+    selectionsGrid.getSelectionModel().on('selectionchange', handleSelections, availableGrid)
+
+    const addBtn = new Ext.Button({
+      iconCls: 'sm-add-assignment-icon',
+      margins: "0 10 10 10",
+      disabled: true,
+      handler: function (btn) {
+        const selectedRecords = availableGrid.getSelectionModel().getSelections()
+        changeSelected(availableGrid, selectedRecords, selectionsGrid)
+        btn.disable()
+      }
+    })
+    const removeBtn = new Ext.Button({
+      iconCls: 'sm-remove-assignment-icon',
+      margins: "0 10 10 10",
+      disabled: true,
+      handler: function (btn) {
+        const selectedRecords = selectionsGrid.getSelectionModel().getSelections()
+        changeSelected(selectionsGrid, selectedRecords, availableGrid)
+        btn.disable()
+      }
+    })
+    const buttonPanel = new Ext.Panel({
+      bodyStyle: 'background-color:transparent;border:none',
+      width: 60,
+      layout: {
+        type: 'vbox',
+        pack: 'center',
+        align: 'center',
+        padding: "10 10 10 10"
       },
-      tbar: tbar,
-      // bbar: ['->', totalTextCmp],
-      getValue: function () {
-        let stigs = []
-        stigAssignedStore.data.items.forEach((i) => {
-          stigs.push(i.data.benchmarkId)
-        })
-        return stigs
+      items: [
+        addBtn,
+        removeBtn,
+        { xtype: 'panel', border: false, html: '<i>or drag</i>' }
+      ]
+    })
+
+    function handleSelections() {
+      const sm = this.selModel
+      if (sm.hasSelection()) {
+        sm.suspendEvents()
+        sm.clearSelections()
+        sm.resumeEvents()
+        SM.SetCheckboxSelModelHeaderState(sm)
+      }
+      const availableSelected = availableGrid.selModel.hasSelection()
+      const selectionsSelected = selectionsGrid.selModel.hasSelection()
+      addBtn.setDisabled(!availableSelected)
+      removeBtn.setDisabled(!selectionsSelected)
+    }
+
+    async function initPanel(apiAsset) {
+      const apiAvailableStigs = await Ext.Ajax.requestPromise({
+        responseType: 'json',
+        url: `${STIGMAN.Env.apiBase}/stigs`,
+        method: 'GET'
+      })
+
+      const assignedStigs = apiAsset?.stigs?.map(stig => stig.benchmarkId) ?? []
+      _this.originalStigs = assignedStigs
+      const available = []
+      const assigned = []
+      apiAvailableStigs.reduce((accumulator, stig) => {
+        const property = assignedStigs.includes(stig.benchmarkId) ? 'assigned' : 'available'
+        accumulator[property].push(stig)
+        return accumulator
+      }, { available, assigned })
+
+      availableGrid.store.loadData(available)
+      selectionsGrid.store.loadData(assigned)
+    }
+
+    function fireSelectedChanged () {
+      _this.fireEvent('selectedchanged', selectionsGrid.store.getRange().map( r => r.data.userId ))
+    }
+
+    function changeSelected(srcGrid, records, dstGrid) {
+      srcGrid.store.suspendEvents()
+      dstGrid.store.suspendEvents()
+      srcGrid.store.remove(records)
+      dstGrid.store.add(records)
+      const { field, direction } = dstGrid.store.getSortState()
+      dstGrid.store.sort(field, direction)
+      dstGrid.getSelectionModel().selectRecords(records)
+      srcGrid.store.resumeEvents()
+      dstGrid.store.resumeEvents()
+
+      srcGrid.store.fireEvent('datachanged', srcGrid.store)
+      dstGrid.store.fireEvent('datachanged', dstGrid.store)
+      srcGrid.store.fireEvent('update', srcGrid.store)
+      dstGrid.store.fireEvent('update', dstGrid.store)
+      dstGrid.store.filter(dstGrid.getView().getFilterFns())
+      dstGrid.getView().focusRow(dstGrid.store.indexOfId(records[0].data.assetId))
+
+      fireSelectedChanged ()
+    }
+
+    function getValue() {
+      const records = selectionsGrid.store.snapshot?.items ?? selectionsGrid.store.getRange()
+      return records.map(record => record.data.benchmarkId)
+    }
+
+    const config = {
+      layout: 'hbox',
+      layoutConfig: {
+        align: 'stretch'
       },
-      setValue: function (v) {
-        const data = v.map((sr) => ({
-          benchmarkId: sr.benchmarkId,
-          ruleCount: sr.ruleCount
-        }))
-        stigAssignedStore.loadData(data)
-      },
-      markInvalid: Ext.emptyFn,
-      clearInvalid: Ext.emptyFn,
+      name: 'stigs',
+      border: false,
+      items: [
+        availableGrid,
+        buttonPanel,
+        selectionsGrid
+      ],
+      availableGrid,
+      selectionsGrid,
+      initPanel,
+      getValue,
+      // need fns below so Ext handles us like a form field
+      setValue: () => { },
+      markInvalid: function () { },
+      clearInvalid: function () { },
       isValid: () => true,
       getName: () => this.name,
       validate: () => true
@@ -3663,8 +3801,10 @@ SM.Manage.Asset.StigsGrid = Ext.extend(Ext.grid.GridPanel, {
 
 SM.Manage.Asset.PropertiesFormPanel = Ext.extend(Ext.form.FormPanel, {
   initComponent: function () {
-    this.stigGrid = new SM.Manage.Asset.StigsGrid({
-      name: 'stigs'
+    this.stigSelectingPanel = new SM.Manage.Asset.StigSelectingPanel({
+      name: 'stigs',
+      isFormField: true,
+      submitValue: true
     })
     if (!this.initialCollectionId) {
       throw (new Error('missing property initialCollectionId'))
@@ -3816,7 +3956,7 @@ SM.Manage.Asset.PropertiesFormPanel = Ext.extend(Ext.form.FormPanel, {
           anchor: "100% -290",
           layout: 'fit',
           items: [
-            this.stigGrid
+            this.stigSelectingPanel
           ]
         }
 
