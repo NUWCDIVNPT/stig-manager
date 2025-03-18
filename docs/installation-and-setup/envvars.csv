@@ -57,6 +57,10 @@
 | During startup, the number of attempts made to establish connections to the database and OIDC Provider. Retries are made every 5 seconds and the API process exits if unsuccessful.","API"
 "STIGMAN_DEV_ALLOW_INSECURE_TOKENS","| **Default** ``false``
 | Controls whether known insecure JWT signing keys are allowed. Only for development/testing purposes. Setting to 'true' is NOT recommended for production environments. ","API"
+"STIGMAN_DEV_LOG_OPT_STATS","| **Default** ``true``
+| Controls whether the API will track API operation statistics used for populating ``Requests`` portion of ``/op/appinfo`` response body. Setting to 'false' is NOT recommended for production environments, as this info can be useful for troubleshooting. ","API"
+"STIGMAN_DEV_RESPONSE_VALIDATION","| **Default** ``none``
+| Controls whether the API will perform response validation on API responses. If set to 'logOnly' the API will output log entries indicating deviations from the OAS specification. Intended for development/testing purposes. Available values: ``none``, ``logOnly`` ","API"
 "STIGMAN_DOCS_DIRECTORY","| **Default** ``./docs``
 | The location of the documentation files, relative to the API source directory. Note that if running source from a clone of the GitHub repository, the docs are located at `../../docs/_build/html` relative to the API directory. ","API, documentation"
 "STIGMAN_DOCS_DISABLED","| **Default** ``false``
