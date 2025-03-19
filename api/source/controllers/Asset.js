@@ -52,6 +52,7 @@ module.exports.createAssets = async function createAssets (req, res, next) {
     let projections = req.query.projection
     const collectionId  = req.params.collectionId
     let assets = req.body
+    let dryRun = req.query.dryRun
 
     const grant = req.userObject.grants[collectionId]
     if (!grant || grant.roleId < 3) throw new SmError.PrivilegeError()
@@ -66,9 +67,14 @@ module.exports.createAssets = async function createAssets (req, res, next) {
     const failures = await dbUtils.validateItems({assets, collectionId})
 
     if (failures.length > 0) {
-      throw new  SmError.UnprocessableError(failures)
+      throw new SmError.UnprocessableError(failures)
     }
 
+    if(dryRun) {
+      res.status(200).json({ message: "Validation successful, no errors detected." })
+      return
+    }
+    
     let assetIds
     assetIds = await AssetService.createAssets( {assets, collectionId, svcStatus: res.svcStatus})
     
