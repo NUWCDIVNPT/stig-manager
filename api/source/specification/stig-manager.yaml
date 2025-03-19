@@ -894,9 +894,11 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AssetProjected'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Validation successful, no errors detected."
         '201':
           description: Array of AssetProjected responses
           content:
