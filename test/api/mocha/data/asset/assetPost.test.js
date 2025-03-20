@@ -263,7 +263,7 @@ describe('POST - Asset', function () {
           await utils.loadAppData()
         })
 
-        it("Create Assets in batch all projections", async function () {
+        it("Create Assets in batch all projections dry run false ", async function () {
 
           const assets = [{
             name: 'TestAsset' + utils.getUUIDSubString(10),
@@ -289,7 +289,7 @@ describe('POST - Asset', function () {
             stigs: []
           }]
 
-          const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets?projection=stigs&projection=statusStats`, 'POST', iteration.token,
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets?projection=stigs&projection=statusStats&dryRun=false`, 'POST', iteration.token,
             assets
           )
             
@@ -716,7 +716,73 @@ describe('POST - Asset', function () {
             assetIndex: 1,
           })
         })
-        
+
+        it("Create Valid asset with dry run option expect 200", async function () {
+
+          const assets = [{
+            name: 'TestAsset' + utils.getUUIDSubString(10),
+            description: 'batch',
+            ip: '1.1.1.1',
+            noncomputing: true,
+            labelNames: [reference.testCollection.fullLabelName, reference.testCollection.lvl1LabelName],
+            metadata: {
+              batch: 'batch',
+            },
+            stigs: reference.testCollection.validStigs
+          }]
+
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets?dryRun=true&projection=stigs&projection=statusStats`, 'POST', iteration.token,
+            assets )
+          if(!distinct.canModifyCollection){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(204)
+        })
+
+        it("Create Valid asset with dry run option and non-existing labelname expect 422 and correct response", async function () {
+
+          const assets = [{
+            name: 'TestAsset' + utils.getUUIDSubString(10),
+            description: 'batch',
+            ip: '1.1.1.1',
+            noncomputing: true,
+            labelNames: [],
+            metadata: {
+              batch: 'batch',
+            },
+            stigs: reference.testCollection.validStigs
+          },
+          {
+            name: 'TestAsset' + utils.getUUIDSubString(10),
+            description: 'batch',
+            ip: '1.1.1.1',
+            noncomputing: true,
+            labelNames: ["unknownLabel"],
+            metadata: {
+              batch: 'batch',
+            },
+            stigs: reference.testCollection.validStigs
+          },
+        ]
+
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets?dryRun=true&projection=stigs&projection=statusStats`, 'POST', iteration.token,
+            assets )
+
+          if(!distinct.canModifyCollection){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(422)
+          expect(res.body.detail).to.be.an('array').of.length(1)
+          expect(res.body.detail[0].failure).to.equal("unknown labelName")
+          expect(res.body.detail[0].detail).to.eql({
+            name: assets[1].name,
+            labelName: "unknownLabel",
+            assetIndex: 2,
+            labelIndex: 1,
+          })
+        })
       })
     })
   }

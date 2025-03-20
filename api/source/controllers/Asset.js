@@ -25,7 +25,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
     assets.noncomputing = assets.hasOwnProperty("noncomputing") ? (assets.noncomputing ? 1 : 0) : 0
     assets = [assets]
 
-    const failures = await dbUtils.validateItems({assets, collectionId})
+    const failures = await dbUtils.createAssetValidation({assets, collectionId})
 
     if (failures.length > 0) {
       throw new  SmError.UnprocessableError(failures)
@@ -52,6 +52,7 @@ module.exports.createAssets = async function createAssets (req, res, next) {
     let projections = req.query.projection
     const collectionId  = req.params.collectionId
     let assets = req.body
+    let dryRun = req.query.dryRun
 
     const grant = req.userObject.grants[collectionId]
     if (!grant || grant.roleId < 3) throw new SmError.PrivilegeError()
@@ -63,12 +64,17 @@ module.exports.createAssets = async function createAssets (req, res, next) {
       noncomputing: asset.hasOwnProperty("noncomputing") ? (asset.noncomputing ? 1 : 0) : 0
     }))
 
-    const failures = await dbUtils.validateItems({assets, collectionId})
+    const failures = await dbUtils.createAssetValidation({assets, collectionId})
 
     if (failures.length > 0) {
-      throw new  SmError.UnprocessableError(failures)
+      throw new SmError.UnprocessableError(failures)
     }
 
+    if(dryRun) {
+      res.status(204).send()
+      return
+    }
+    
     let assetIds
     assetIds = await AssetService.createAssets( {assets, collectionId, svcStatus: res.svcStatus})
     

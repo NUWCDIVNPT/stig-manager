@@ -625,7 +625,7 @@ module.exports.retryOnDeadlock2 = async function ({ transactionFn, statusObj = {
 }
 
 
-exports.validateItems = async function({ assets, collectionId}) {
+exports.createAssetValidation = async function({ assets, collectionId}) {
   const assetJson = JSON.stringify(assets)
   const validationQuery = `
   WITH cteFails AS (
