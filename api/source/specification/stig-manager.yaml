@@ -7016,6 +7016,20 @@ components:
                 - low
                 - medium
                 - high
+            unassessed:
+              additionalProperties: false
+              type: object
+              properties:
+                high:
+                  type: integer
+                low:
+                  type: integer
+                medium:
+                  type: integer
+              required:
+                - low
+                - medium
+                - high
             maxTouchTs:
               $ref: '#/components/schemas/StringDateTimeNullable'
             maxTs:
@@ -7075,6 +7089,7 @@ components:
             - results
             - statuses
             - findings
+            - unassessed
       required:
         - metrics
     MetricsDetailAggAsset:
@@ -7165,6 +7180,20 @@ components:
                 - submitted
                 - accepted
                 - rejected
+            unassessed:
+              additionalProperties: false
+              type: object
+              properties:
+                high:
+                  type: integer
+                low:
+                  type: integer
+                medium:
+                  type: integer
+              required:
+                - low
+                - medium
+                - high                
           required:
             - assessments
             - assessed
@@ -7174,6 +7203,7 @@ components:
             - results
             - statuses
             - findings
+            - unassessed
       required:
         - metrics
     MetricsSummaryAggAsset:
