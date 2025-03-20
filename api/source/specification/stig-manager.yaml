@@ -889,16 +889,8 @@ paths:
             schema:
               $ref: '#/components/schemas/AssetCreateBatch'
       responses:
-        '200':
-          description: Array of AssetProjected responses. Dry run successful, returns expected response structure without persisting data.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Validation successful, no errors detected."
+        '204':
+          description: Dry run successful. Validation passed, but no data was persisted.
         '201':
           description: Array of AssetProjected responses
           content:
@@ -911,7 +903,6 @@ paths:
           description: Unprocessable Entity
           content:
             application/json:
-
               schema:
                 $ref: '#/components/schemas/ClientErrorBadAssetPost'
         default:

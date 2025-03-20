@@ -25,7 +25,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
     assets.noncomputing = assets.hasOwnProperty("noncomputing") ? (assets.noncomputing ? 1 : 0) : 0
     assets = [assets]
 
-    const failures = await dbUtils.validateItems({assets, collectionId})
+    const failures = await dbUtils.createAssetValidation({assets, collectionId})
 
     if (failures.length > 0) {
       throw new  SmError.UnprocessableError(failures)
@@ -64,14 +64,14 @@ module.exports.createAssets = async function createAssets (req, res, next) {
       noncomputing: asset.hasOwnProperty("noncomputing") ? (asset.noncomputing ? 1 : 0) : 0
     }))
 
-    const failures = await dbUtils.validateItems({assets, collectionId})
+    const failures = await dbUtils.createAssetValidation({assets, collectionId})
 
     if (failures.length > 0) {
       throw new SmError.UnprocessableError(failures)
     }
 
     if(dryRun) {
-      res.status(200).json({ message: "Validation successful, no errors detected." })
+      res.status(204).send()
       return
     }
     

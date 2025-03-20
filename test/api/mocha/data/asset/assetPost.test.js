@@ -737,8 +737,7 @@ describe('POST - Asset', function () {
             expect(res.status).to.eql(403)
             return
           }
-          expect(res.status).to.eql(200)
-          expect(res.body.message).to.equal("Validation successful, no errors detected.")
+          expect(res.status).to.eql(204)
         })
 
         it("Create Valid asset with dry run option and non-existing labelname expect 422 and correct response", async function () {
