@@ -1,5 +1,5 @@
-{"version":"1.4.17","commit":{"branch":"na","sha":"na","tag":"na","describe":"na"},"date":"2024-10-30T19:44:42.171Z","lastMigration":36}
-{"tables":[{"table":"asset","rowCount":15},{"table":"check_content","rowCount":614},{"table":"collection","rowCount":8},{"table":"collection_grant","rowCount":24},{"table":"collection_grant_acl","rowCount":4},{"table":"collection_label","rowCount":3},{"table":"collection_label_asset_map","rowCount":3},{"table":"collection_rev_map","rowCount":0},{"table":"current_rev","rowCount":5},{"table":"default_rev","rowCount":8},{"table":"fix_text","rowCount":615},{"table":"rev_group_rule_cci_map","rowCount":844},{"table":"rev_group_rule_map","rowCount":620},{"table":"review","rowCount":19},{"table":"review_history","rowCount":7},{"table":"revision","rowCount":5},{"table":"rule_version_check_digest","rowCount":618},{"table":"stig","rowCount":5},{"table":"stig_asset_map","rowCount":16},{"table":"user_data","rowCount":10},{"table":"user_group","rowCount":1},{"table":"user_group_user_map","rowCount":1},{"table":"user_stig_asset_map","rowCount":4}],"totalRows":3449}
+{"version":"1.5.6","commit":{"branch":"na","sha":"na","tag":"na","describe":"na"},"date":"2025-03-20T00:21:32.834Z","lastMigration":37}
+{"tables":[{"table":"asset","rowCount":15},{"table":"check_content","rowCount":614},{"table":"collection","rowCount":8},{"table":"collection_grant","rowCount":24},{"table":"collection_grant_acl","rowCount":4},{"table":"collection_label","rowCount":3},{"table":"collection_label_asset_map","rowCount":3},{"table":"collection_rev_map","rowCount":0},{"table":"current_rev","rowCount":5},{"table":"default_rev","rowCount":8},{"table":"fix_text","rowCount":615},{"table":"rev_group_rule_cci_map","rowCount":844},{"table":"rev_group_rule_map","rowCount":620},{"table":"review","rowCount":19},{"table":"review_history","rowCount":7},{"table":"revision","rowCount":5},{"table":"rule_version_check_digest","rowCount":618},{"table":"stig","rowCount":5},{"table":"stig_asset_map","rowCount":16},{"table":"user_data","rowCount":10},{"table":"user_group","rowCount":1},{"table":"user_group_user_map","rowCount":1}],"totalRows":3445}
 {"table":"asset","columns":"`assetId`,`name`,`fqdn`,`collectionId`,`ip`,`mac`,`description`,`noncomputing`,`metadata`,`state`,`stateDate`,`stateUserId`","rowCount":15}
 [29,"ACHERNAR_Collection_X_asset",null,21,"10.0.0.18",null,"",false,"{}","enabled",null,null]
 [34,"test asset stigmanadmin",null,1,"1.1.1.1",null,"test desc",true,"{}","enabled",null,null]
@@ -3435,25 +3435,25 @@
 ["VPN_SRG_OTHER","Virtual Private Network (VPN) Security Requirements Guide - replaced"]
 ["VPN_SRG_Rule-fingerprint-match-test","Virtual Private Network (VPN) Security Requirements Guide - replaced"]
 ["Windows_10_STIG_TEST","Windows 10 Security Technical Implementation Guide"]
-{"table":"stig_asset_map","columns":"`saId`,`benchmarkId`,`assetId`,`userIds`,`minTs`,`maxTs`,`saved`,`savedResultEngine`,`submitted`,`submittedResultEngine`,`rejected`,`rejectedResultEngine`,`accepted`,`acceptedResultEngine`,`highCount`,`mediumCount`,`lowCount`,`notchecked`,`notcheckedResultEngine`,`notapplicable`,`notapplicableResultEngine`,`pass`,`passResultEngine`,`fail`,`failResultEngine`,`unknown`,`unknownResultEngine`,`error`,`errorResultEngine`,`notselected`,`notselectedResultEngine`,`informational`,`informationalResultEngine`,`fixed`,`fixedResultEngine`,`maxTouchTs`","rowCount":16}
-[1,"VPN_SRG_TEST",62,"[]","2020-08-11 23:37:48","2022-01-26 01:23:06",1,0,2,0,0,0,0,0,0,1,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,"2022-01-26 01:23:06"]
-[2,"Windows_10_STIG_TEST",62,"[]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null]
-[3,"VPN_SRG_TEST",42,"[85]","2020-08-11 22:27:26","2022-02-03 00:07:05",1,0,5,0,0,0,0,0,0,2,1,0,0,1,0,2,0,3,0,0,0,0,0,0,0,0,0,0,0,"2022-02-03 00:07:07"]
-[4,"Windows_10_STIG_TEST",42,"[86]","2020-08-11 22:29:16","2020-08-18 20:48:29",1,0,2,0,0,0,0,0,0,1,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,"2020-08-18 20:48:29"]
-[5,"VPN_SRG_TEST",154,"[85]","2020-08-11 22:30:42","2022-02-02 20:20:18",3,0,2,0,0,0,0,0,0,2,1,0,0,1,0,1,0,3,0,0,0,0,0,0,0,0,0,0,0,"2022-02-02 20:20:18"]
-[6,"Windows_10_STIG_TEST",154,"[]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null]
-[7,"VPN_SRG_TEST",240,"[]","2020-08-18 02:22:23","2020-08-18 02:22:23",1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,"2020-08-18 02:22:23"]
-[8,"VPN_SRG_TEST",153,"[]","2020-08-18 02:22:56","2020-08-18 02:22:56",0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,"2020-08-18 02:22:56"]
-[9,"VPN_SRG_TEST",38,"[85]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null]
-[10,"VPN_SRG_TEST",241,"[]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null]
-[11,"Windows_10_STIG_TEST",241,"[]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null]
-[12,"RHEL_7_STIG_TEST",34,"[]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null]
-[13,"VPN_SRG_TEST",34,"[]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null]
-[14,"Windows_10_STIG_TEST",34,"[]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null]
-[15,"Windows_10_STIG_TEST",247,null,null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null]
-[16,"VPN_SRG_TEST",247,null,null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null]
+{"table":"stig_asset_map","columns":"`saId`,`benchmarkId`,`assetId`,`userIds`,`minTs`,`maxTs`,`saved`,`savedResultEngine`,`submitted`,`submittedResultEngine`,`rejected`,`rejectedResultEngine`,`accepted`,`acceptedResultEngine`,`highCount`,`mediumCount`,`lowCount`,`notchecked`,`notcheckedResultEngine`,`notapplicable`,`notapplicableResultEngine`,`pass`,`passResultEngine`,`fail`,`failResultEngine`,`unknown`,`unknownResultEngine`,`error`,`errorResultEngine`,`notselected`,`notselectedResultEngine`,`informational`,`informationalResultEngine`,`fixed`,`fixedResultEngine`,`maxTouchTs`,`unassessedHighCount`,`unassessedMediumCount`,`unassessedLowCount`","rowCount":16}
+[1,"VPN_SRG_TEST",62,"[]","2020-08-11 23:37:48","2022-01-26 01:23:06",1,0,2,0,0,0,0,0,0,1,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,"2022-01-26 01:23:06",11,60,7]
+[2,"Windows_10_STIG_TEST",62,"[]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null,26,243,18]
+[3,"VPN_SRG_TEST",42,"[85]","2020-08-11 22:27:26","2022-02-03 00:07:05",1,0,5,0,0,0,0,0,0,2,1,0,0,1,0,2,0,3,0,0,0,0,0,0,0,0,0,0,0,"2022-02-03 00:07:07",11,58,6]
+[4,"Windows_10_STIG_TEST",42,"[86]","2020-08-11 22:29:16","2020-08-18 20:48:29",1,0,2,0,0,0,0,0,0,1,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,"2020-08-18 20:48:29",26,240,18]
+[5,"VPN_SRG_TEST",154,"[85]","2020-08-11 22:30:42","2022-02-02 20:20:18",3,0,2,0,0,0,0,0,0,2,1,0,0,1,0,1,0,3,0,0,0,0,0,0,0,0,0,0,0,"2022-02-02 20:20:18",11,59,6]
+[6,"Windows_10_STIG_TEST",154,"[]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null,26,243,18]
+[7,"VPN_SRG_TEST",240,"[]","2020-08-18 02:22:23","2020-08-18 02:22:23",1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,"2020-08-18 02:22:23",11,62,7]
+[8,"VPN_SRG_TEST",153,"[]","2020-08-18 02:22:56","2020-08-18 02:22:56",0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,"2020-08-18 02:22:56",11,62,7]
+[9,"VPN_SRG_TEST",38,"[85]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null,11,63,7]
+[10,"VPN_SRG_TEST",241,"[]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null,11,63,7]
+[11,"Windows_10_STIG_TEST",241,"[]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null,26,243,18]
+[12,"RHEL_7_STIG_TEST",34,"[]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null,29,201,14]
+[13,"VPN_SRG_TEST",34,"[]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null,11,63,7]
+[14,"Windows_10_STIG_TEST",34,"[]",null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null,26,243,18]
+[15,"Windows_10_STIG_TEST",247,null,null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null,26,243,18]
+[16,"VPN_SRG_TEST",247,null,null,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,null,11,63,7]
 {"table":"user_data","columns":"`userId`,`username`,`created`,`lastAccess`,`lastClaims`","rowCount":10}
-[1,"stigmanadmin","2024-10-23 10:29:57",1643160098,"{\"acr\": \"0\", \"aud\": [\"realm-management\", \"account\"], \"azp\": \"stig-manager\", \"exp\": 1670394347, \"iat\": 1605631412, \"iss\": \"http://localhost:8080/auth/realms/stigman\", \"jti\": \"daf8b741-73d1-4eba-96af-f855ab0bd226\", \"sub\": \"eb965d15-aa78-43fc-a2a6-3d86258c1eec\", \"typ\": \"Bearer\", \"nonce\": \"73937be3-4ccc-4fa7-8202-45685523dd2c\", \"scope\": \"openid stig-manager:collection stig-manager:stig:read stig-manager:user:read stig-manager:op stig-manager:user stig-manager:stig\", \"auth_time\": 1605594347, \"realm_access\": {\"roles\": [\"create_collection\", \"admin\", \"user\"]}, \"session_state\": \"5ac2a938-1074-4e6a-8c4b-e83e4e7d763b\", \"email_verified\": false, \"resource_access\": {\"account\": {\"roles\": [\"manage-account\", \"manage-account-links\", \"view-profile\"]}, \"realm-management\": {\"roles\": [\"view-users\", \"query-groups\", \"query-users\"]}}, \"preferred_username\": \"stigmanadmin\"}"]
+[1,"stigmanadmin","2024-10-23 10:29:57",1742430092,"{\"acr\": \"0\", \"aud\": [\"realm-management\", \"account\"], \"azp\": \"stig-manager\", \"exp\": 1864681035, \"iat\": 1670540236, \"iss\": \"http://localhost:8080/auth/realms/stigman\", \"jti\": \"47f9aa7d-bac4-4098-9be8-ace75513aa7f\", \"sid\": \"87365b33-2c76-4b3c-8485-fba5dbff4b9f\", \"sub\": \"b7c78a62-b84f-4578-a983-2ebc66fd9efe\", \"typ\": \"Bearer\", \"name\": \"STIGMAN Admin\", \"nonce\": \"3378daff-0404-43b3-b4ab-ee31ff7340ac\", \"scope\": \"openid stig-manager:collection stig-manager:stig:read stig-manager:user:read stig-manager:op stig-manager:collection:read stig-manager:op:read stig-manager:user stig-manager stig-manager:stig\", \"auth_time\": 1670540235, \"given_name\": \"STIGMAN\", \"family_name\": \"Admin\", \"realm_access\": {\"roles\": [\"create_collection\", \"default-roles-stigman\", \"admin\"]}, \"session_state\": \"87365b33-2c76-4b3c-8485-fba5dbff4b9f\", \"resource_access\": {\"account\": {\"roles\": [\"manage-account\", \"manage-account-links\", \"view-profile\"]}, \"realm-management\": {\"roles\": [\"view-users\", \"query-groups\", \"query-users\"]}}, \"preferred_username\": \"stigmanadmin\"}"]
 [21,"lvl2","2024-10-23 10:29:57",1602652507,"{\"acr\": \"1\", \"aud\": \"account\", \"azp\": \"stig-manager\", \"exp\": 1602652806, \"iat\": 1602652506, \"iss\": \"http://localhost:8080/auth/realms/stigman-test\", \"jti\": \"eb5cdbd4-c912-4fc5-a1b8-10cf737d374a\", \"sub\": \"51ea2e76-d3db-43ff-b551-68dfbdf01a38\", \"typ\": \"Bearer\", \"nonce\": \"8fbd4814-621a-4b63-af57-9e62b665a529\", \"scope\": \"openid stig-manager:user:read stig-manager:collection stig-manager:user stig-manager:op stig-manager:stig stig-manager:stig:read email profile\", \"auth_time\": 1602652506, \"realm_access\": {\"roles\": [\"user\"]}, \"session_state\": \"d5a18452-599d-4a50-af6f-75fb3808f2e9\", \"email_verified\": false, \"allowed-origins\": [\"*\"], \"resource_access\": {\"account\": {\"roles\": [\"manage-account\", \"manage-account-links\", \"view-profile\"]}}, \"preferred_username\": \"lvl2\"}"]
 [22,"wf-test","2024-10-23 10:29:57",null,"{}"]
 [43,"workforce-60","2024-10-23 10:29:57",null,"{}"]
@@ -3467,8 +3467,3 @@
 [1,"TestGroup","TestGroup",87,"2024-10-30 19:39:58",87,"2024-10-30 19:39:58"]
 {"table":"user_group_user_map","columns":"`ugumId`,`userGroupId`,`userId`","rowCount":1}
 [1,1,85]
-{"table":"user_stig_asset_map","columns":"`id`,`userId`,`saId`","rowCount":4}
-[1,85,3]
-[2,86,4]
-[3,85,5]
-[4,85,9]

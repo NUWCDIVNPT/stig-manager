@@ -5,8 +5,12 @@ import { v4 as uuidv4 } from 'uuid'
 import { fileURLToPath } from 'url';
 import { join, dirname } from 'path';
 import reference from '../referenceData.js';
+
 const baseUrl = config.baseUrl
 const adminToken = config.adminToken
+const saveMetricsData = process.env.STIGMAN_SAVE_METRICS_DATA === 'true'
+// New flag to control whether to create new files or update existing ones
+const createNewMetricsFiles = process.env.STIGMAN_NEW_METRICS_FILES === 'true'
 
 const executeRequest = async (url, method, token, body = null) => {
 
@@ -30,18 +34,94 @@ const executeRequest = async (url, method, token, body = null) => {
   }
 }
 
-const metricsOutputToJSON = (testCaseName, username, responseData, outputJsonFile) => {
-  const metricsFilePath = join(import.meta.url, outputJsonFile)
-  let metricsData = JSON.parse(readFileSync(metricsFilePath, 'utf8'))
+/**
+ * Generic function to output metrics data to a JSON file
+ * @param {string} testCaseName - The test case name
+ * @param {string} username - The username
+ * @param {Object} responseData - The response data to save
+ * @param {string} outputMetricsResponsesFile - Path to the output file
+ */
+const outputMetricsToJSON = (testCaseName, username, responseData, outputMetricsResponsesFile) => {
+  // Determine the actual file path based on the createNewMetricsFiles flag
+  let actualOutputFile = outputMetricsResponsesFile
+  if (createNewMetricsFiles) {
+    // Extract directory and filename
+    const lastSlashIndex = outputMetricsResponsesFile.lastIndexOf('/')
+    const lastBackslashIndex = outputMetricsResponsesFile.lastIndexOf('\\')
+    const separatorIndex = Math.max(lastSlashIndex, lastBackslashIndex)
+    
+    if (separatorIndex >= 0) {
+      const dir = outputMetricsResponsesFile.substring(0, separatorIndex + 1)
+      const file = outputMetricsResponsesFile.substring(separatorIndex + 1)
+      actualOutputFile = `${dir}new-${file}`
+    } else {
+      // No directory in the path, just prepend 'new-'
+      actualOutputFile = `new-${outputMetricsResponsesFile}`
+    }
+  }
+ 
+  // Read existing file to preserve all data
+  let metricsData = {}
+  try {
+    const fileContent = readFileSync(actualOutputFile, 'utf8')
+    metricsData = JSON.parse(fileContent)
+  } catch (err) {
+    console.log(`Error creating new metrics file or parsing existing file: ${err.message}`)
+    // Continue with empty object if file doesn't exist or parsing fails
+  }
+  
+  // Update metrics data with new test case data
   if (!metricsData[testCaseName]) {
     metricsData[testCaseName] = {}
   }
   metricsData[testCaseName][username] = responseData
-  writeFileSync(metricsFilePath, JSON.stringify(metricsData, null, 2), 'utf8')
+  
+  // Write back to file as JSON
+  writeFileSync(actualOutputFile, JSON.stringify(metricsData, null, 2), 'utf8')
 }
+
+/**
+ * Conditionally outputs metrics data based on the STIGMAN_SAVE_METRICS_DATA environment variable
+ * Works for both regular metrics and meta metrics
+ * @param {string} testCaseName - The test case name
+ * @param {string} username - The username
+ * @param {Object} responseData - The response data to save
+ * @param {string} outputJsonFile - Path to the output file
+ */
+const conditionalMetricsOutput = (testCaseName, username, responseData, outputJsonFile) => {
+  // Only record metrics if the environment variable is set
+  if (saveMetricsData) {
+    outputMetricsToJSON(testCaseName, username, responseData, outputJsonFile)
+  }
+}
+
+
 
 const getUUIDSubString = (length = 20) => {
   return uuidv4().substring(0, length)
+}
+
+/**
+ * Export application data as JSONL
+ * @param {object} options - Options for exporting
+ * @param {string} options.format - Format of the exported data (default: 'jsonl')
+ * @returns {Promise<string>} - The exported data
+ */
+const exportAppData = async (options = {}) => {
+  const format = options.format || 'jsonl'
+  
+  const response = await fetch(`${baseUrl}/op/appdata?elevate=true&format=${format}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${adminToken}`
+    }
+  })
+  
+  if (!response.ok) {
+    throw new Error(`Failed to export data: ${response.status} ${response.statusText}`)
+  }
+  
+  return response.text()
 }
 
 const loadAppData = async (appdataFileName = 'appdata.jsonl') => {
@@ -69,6 +149,51 @@ const loadAppData = async (appdataFileName = 'appdata.jsonl') => {
   const data = await res.text()
   return data
 
+}
+
+/**
+ * Loads all appdata files from the appdata directory, then exports them as JSONL
+ * @param {string} appdataDir - Directory containing appdata files (default: 'appdata')
+ * @returns {Promise<Array>} - Results of processing each file
+ */
+const loadAndExportAllAppData = async (appdataDir = 'appdata') => {
+  const { readdir } = await import('fs/promises')
+
+  const __filename = fileURLToPath(import.meta.url)
+  const __dirname = dirname(__filename)
+  const dirPath = join(__dirname, `../../${appdataDir}`)
+  
+  // Read all files in the directory
+  const files = await readdir(dirPath)
+  const results = []
+  
+  // Process each file
+  for (const file of files) {
+    try {
+      console.log(`Loading ${file}...`)
+      // Load the appdata file
+      await loadAppData(file)
+      
+      console.log(`Exporting data as JSONL...`)
+      // Export data in JSONL format using our utility function
+      const exportedData = await exportAppData({ format: 'jsonl' })
+      
+      // Create output filename
+      const outputPath = join(dirPath, file)
+      
+      // Save to new existing file
+      writeFileSync(outputPath, exportedData, 'utf8')
+      
+      console.log(`Saved to ${outputPath}`)
+      results.push({ file, success: true, outputPath })
+    } 
+    catch (error) {
+      console.error(`Error processing ${file}:`, error)
+      results.push({ file, success: false, error: error.message })
+    }
+  }
+  
+  return results
 }
 
 const createTempCollection = async (collectionPost) => {
@@ -661,13 +786,15 @@ export {
   deleteReview,
   createCollectionLabel,
   putCollection,
-  metricsOutputToJSON,
+  conditionalMetricsOutput,
   putReviewByAssetRule,
   createUser,
   resetTestAsset,
   resetScrapAsset,
   setRestrictedUsers,
   loadAppData,
+  exportAppData,
+  loadAndExportAllAppData,
   deleteCollection,
   deleteAsset,
   putAsset,
@@ -687,5 +814,6 @@ export {
   uploadTestStig,
   deleteStigByRevision,
   getUUIDSubString,
-  executeRequest
+  executeRequest,
+  outputMetricsToJSON
 }
