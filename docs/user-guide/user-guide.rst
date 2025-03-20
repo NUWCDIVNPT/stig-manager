@@ -304,6 +304,18 @@ The table below describes the fields that are included in the exports available 
      - Number of failed Reviews for rules with a Severity 1 category. 
      - **X**
      - **X**
+   * - unassessedLow
+     - Number of unassessed Rules with a Severity 3 category. 
+     - **X**
+     - **X**
+   * - unassessedMedium
+     - Number of unassessed Rules with a Severity 2 category. 
+     - **X**
+     - **X**
+   * - unassessedHigh
+     - Number of unassessed Rules with a Severity 1 category. 
+     - **X**
+     - **X**
    * - saved
      - Total number of Reviews with a "saved" status. 
      - **X**
