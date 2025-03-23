@@ -116,6 +116,24 @@ class InvalidElevationError extends SmError {
   }
 }
 
+class UserUnavailableError extends SmError {
+  constructor(detail) {
+    super('User status is "unavailable".')
+    this.status = 403
+    this.detail = detail
+  }
+}
+
+class UserInconsistentError extends SmError {
+  constructor(detail) {
+    super('Setting collectionGrants or userGroups is inconsistent with status "unavailable".')
+    this.status = 422
+    this.detail = detail
+  }
+}
+
+
+
 module.exports = {
   SmError,
   AuthorizeError,  
@@ -130,5 +148,7 @@ module.exports = {
   ElevationError,
   InvalidElevationError,
   InternalError,
-  InsecureTokenError
+  InsecureTokenError,
+  UserUnavailableError,
+  UserInconsistentError
 }

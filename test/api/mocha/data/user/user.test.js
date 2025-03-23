@@ -467,6 +467,7 @@ describe('user', () => {
           it(`Set all properties of a user - Change Username`, async () => {
           const res = await utils.executeRequest(`${config.baseUrl}/users/${testUser.userId}?elevate=true&projection=collectionGrants&projection=statistics`, 'PUT', iteration.token, {
               "username": "putTesting",
+              "status": "available",
               "collectionGrants": [
                   {
                       "collectionId": `${reference.scrapCollection.collectionId}`,
@@ -503,6 +504,7 @@ describe('user', () => {
           it("should throw SmError.UnprocessableError collectionIds are invalid.", async () => {
             const res = await utils.executeRequest(`${config.baseUrl}/users/${testUser.userId}?elevate=true`, 'PUT', iteration.token, {
                   "username": "putTesting",
+                  "status": "available",
                   "collectionGrants": [
                       {
                           "collectionId": `1234321`,
@@ -524,6 +526,7 @@ describe('user', () => {
                 iteration.token,
                 {
                   username: "lvl1",
+                  status: "available",
                   collectionGrants: [
                     {
                       roleId: 1,
@@ -551,6 +554,7 @@ describe('user', () => {
           it("add lvl1 user back to test group", async () => {
             const res = await utils.executeRequest(`${config.baseUrl}/users/${reference.lvl1User.userId}?elevate=true&projection=userGroups&projection=collectionGrants`, 'PUT', iteration.token, {
                     username: "lvl1",
+                    status: "available",
                     collectionGrants: [],
                     userGroups: [reference.testCollection.testGroup.userGroupId]
                 })
@@ -570,6 +574,7 @@ describe('user', () => {
           it("should throw error, no elevate", async () => {  
             const res = await utils.executeRequest(`${config.baseUrl}/users/${testUser.userId}`, 'PUT', iteration.token, {
                   "username": "putTesting",
+                  "status": "available",
                   "collectionGrants": [
                       {
                           "collectionId": `${reference.scrapCollection.collectionId}`,
@@ -584,6 +589,7 @@ describe('user', () => {
 
             const res = await utils.executeRequest(`${config.baseUrl}/users/0?elevate=true`, 'PUT', iteration.token, {
                   "username": "put",
+                  "status": "available",
                   "collectionGrants": [
                       {
                           "collectionId": `${reference.scrapCollection.collectionId}`,
