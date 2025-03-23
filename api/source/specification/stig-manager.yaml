@@ -5838,6 +5838,7 @@ components:
       properties:
         results:
           type: object
+          additionalProperties: false
           properties:
             fail:
               type: integer
@@ -5845,7 +5846,7 @@ components:
               type: integer
             pass:
               type: integer
-            unassessed:
+            other:
               type: integer
         statuses:
           additionalProperties: false
@@ -7016,7 +7017,7 @@ components:
                 - low
                 - medium
                 - high
-            unassessed:
+            assessedBySeverity:
               additionalProperties: false
               type: object
               properties:
@@ -7089,7 +7090,7 @@ components:
             - results
             - statuses
             - findings
-            - unassessed
+            - assessedBySeverity
       required:
         - metrics
     MetricsDetailAggAsset:
@@ -7156,13 +7157,13 @@ components:
                   type: integer
                 pass:
                   type: integer
-                unassessed:
+                otherReviews:
                   type: integer
               required:
                 - pass
                 - fail
                 - notapplicable
-                - unassessed
+                - otherReviews
             statuses:
               additionalProperties: false
               type: object
@@ -7180,7 +7181,7 @@ components:
                 - submitted
                 - accepted
                 - rejected
-            unassessed:
+            assessedBySeverity:
               additionalProperties: false
               type: object
               properties:
@@ -7203,7 +7204,7 @@ components:
             - results
             - statuses
             - findings
-            - unassessed
+            - assessedBySeverity
       required:
         - metrics
     MetricsSummaryAggAsset:
