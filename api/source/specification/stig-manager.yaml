@@ -3908,6 +3908,7 @@ paths:
         - $ref: '#/components/parameters/UsernameQuery'
         - $ref: '#/components/parameters/PrivilegeQuery'
         - $ref: '#/components/parameters/UsernameMatchQuery'
+        - $ref: '#/components/parameters/UserStatusQuery'
       responses:
         '200':
           description: UserProjected array response
@@ -3936,7 +3937,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserCreateOrReplace'
+              $ref: '#/components/schemas/UserPost'
       responses:
         '201':
           description: UserProjected response
@@ -3989,7 +3990,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserUpdate'
+              $ref: '#/components/schemas/UserPatch'
       responses:
         '200':
           description: UserProjected response
@@ -4016,7 +4017,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserCreateOrReplace'
+              $ref: '#/components/schemas/UserPut'
       responses:
         '200':
           description: UserProjected response
@@ -8261,6 +8262,12 @@ components:
       minLength: 1
       pattern: ^[0-9]{1,10}$
       type: string
+    StringIntIdNullable:
+      nullable: true
+      maxLength: 10
+      minLength: 1
+      pattern: ^[0-9]{1,10}$
+      type: string
     StringMax:
       maxLength: 16777215
       type: string
@@ -8361,27 +8368,6 @@ components:
         - assetId
         - name
         - labels
-    User:
-      additionalProperties: false
-      type: object
-      properties:
-        displayName:
-          $ref: '#/components/schemas/DisplayName'
-        email:
-          nullable: true
-          type: string
-        lastAccess:
-          $ref: '#/components/schemas/UserLastAccess'
-        userId:
-          $ref: '#/components/schemas/UserId'
-        username:
-          $ref: '#/components/schemas/Username'
-      required:
-        - userId
-        - username
-        - displayName
-        - email
-        - lastAccess
     UserBasic:
       additionalProperties: false
       type: object
@@ -8426,6 +8412,8 @@ components:
           default: []
         username:
           $ref: '#/components/schemas/Username'
+        status:
+          $ref: '#/components/schemas/UserStatus'
       required:
         - username
         - collectionGrants
@@ -8563,6 +8551,66 @@ components:
       $ref: '#/components/schemas/StringIntId'
     UserLastAccess:
       $ref: '#/components/schemas/IntegerMinimumZeroNullable'
+    UserPatch:
+      additionalProperties: false
+      minProperties: 1
+      type: object
+      properties:
+        collectionGrants:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionGrant'
+          uniqueItems: true
+        userGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGroupId'
+          uniqueItems: true
+        username:
+          $ref: '#/components/schemas/Username'
+        status:
+          $ref: '#/components/schemas/UserStatus'
+    UserPost:
+      additionalProperties: false
+      type: object
+      properties:
+        collectionGrants:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionGrant'
+          uniqueItems: true
+        userGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGroupId'
+          uniqueItems: true
+        username:
+          $ref: '#/components/schemas/Username'
+      required:
+        - collectionGrants
+        - username
+    UserPut:
+      additionalProperties: false
+      type: object
+      properties:
+        collectionGrants:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionGrant'
+          uniqueItems: true
+        userGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGroupId'
+          uniqueItems: true
+        username:
+          $ref: '#/components/schemas/Username'
+        status:
+          $ref: '#/components/schemas/UserStatus'
+      required:
+        - collectionGrants
+        - username
+        - status
     UserPrivileges:
       type: object
       additionalProperties: false
@@ -8590,6 +8638,12 @@ components:
           $ref: '#/components/schemas/UserPrivileges'
         statistics:
           $ref: '#/components/schemas/UserStatistics'
+        status:
+          $ref: '#/components/schemas/UserStatus'
+        statusDate:
+          $ref: '#/components/schemas/UserStatusDate'
+        statusUser:
+          $ref: '#/components/schemas/UserStatusUser'
         userGroups:
           type: array
           items:
@@ -8604,6 +8658,15 @@ components:
         - displayName
         - email
         - lastAccess
+    UserStatus:
+      type: string
+      enum:
+        - available
+        - unavailable
+    UserStatusDate:
+      $ref: '#/components/schemas/StringDateTime'
+    UserStatusUser:
+      $ref: '#/components/schemas/StringIntIdNullable'
     UserStatistics:
       additionalProperties: false
       type: object
@@ -8618,22 +8681,6 @@ components:
         - created
         - collectionGrantCount
         - lastClaims
-    UserUpdate:
-      additionalProperties: false
-      type: object
-      properties:
-        collectionGrants:
-          type: array
-          items:
-            $ref: '#/components/schemas/CollectionGrant'
-          uniqueItems: true
-        userGroups:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserGroupId'
-          uniqueItems: true
-        username:
-          $ref: '#/components/schemas/Username'
     Username:
       $ref: '#/components/schemas/String255'
     Version:
@@ -9252,6 +9299,12 @@ components:
           - startsWith
           - endsWith
           - contains
+    UserStatusQuery:
+      name: status
+      in: query
+      description: A query parameter that identifies a UserStatus
+      schema:
+        $ref: '#/components/schemas/UserStatus'
     UserProjectionQuery:
       name: projection
       in: query
