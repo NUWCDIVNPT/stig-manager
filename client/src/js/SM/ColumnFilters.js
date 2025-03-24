@@ -15,7 +15,8 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
     handleHdDown: function (e, target) {
       // Modifies superclass method to support lastHide
   
-      if (target.classList[0] !== 'x-grid3-hd-inner') {
+      // to support headers with tooltip in <span>, check parent node for the hd-inner class
+      if (target.classList[0] !== 'x-grid3-hd-inner' && target.parentElement.classList[0] !== 'x-grid3-hd-inner') {
         return
       }
       e.stopEvent()
