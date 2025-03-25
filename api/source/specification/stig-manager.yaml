@@ -8610,7 +8610,6 @@ components:
       required:
         - collectionGrants
         - username
-        - status
     UserPrivileges:
       type: object
       additionalProperties: false
