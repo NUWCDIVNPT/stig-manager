@@ -72,7 +72,11 @@ const setupUser = async function (req, res, next) {
                 throw new SmError.PrivilegeError("No token claim mappable to username found")
             }
             
-            const userObject = await UserService.getUserObject(username) ?? {username} 
+            const userObject = await UserService.getUserObject(username) ?? {username}
+
+            if (userObject.status === 'unavailable') {
+                throw new SmError.UserUnavailableError()
+            }
             
             const refreshFields = {}
             let now = new Date().toUTCString()
