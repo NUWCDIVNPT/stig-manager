@@ -7141,6 +7141,20 @@ components:
                 - high                   
             assessments:
               type: integer
+            assessmentsBySeverity:
+              additionalProperties: false
+              type: object
+              properties:
+                high:
+                  type: integer
+                low:
+                  type: integer
+                medium:
+                  type: integer
+              required:
+                - low
+                - medium
+                - high              
             findings:
               additionalProperties: false
               type: object
@@ -7199,6 +7213,7 @@ components:
             - assessed
             - assessedBySeverity
             - assessments
+            - assessmentsBySeverity
             - findings
             - minTs
             - maxTs
