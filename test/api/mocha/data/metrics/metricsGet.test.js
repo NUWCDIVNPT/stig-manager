@@ -1,12 +1,17 @@
-
 import {config } from '../../testConfig.js'
 import * as utils from '../../utils/testUtils.js'
 import reference from '../../referenceData.js'
 import {iterations} from '../../iterations.js'
-import { metrics } from './metricsGet.js'
 import deepEqualInAnyOrder from 'deep-equal-in-any-order'
 import {use, expect} from 'chai'
 use(deepEqualInAnyOrder)
+import { dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+// import metrics reference file, and set update file path
+import metrics from './metricsGet.json' with { type: 'json' }
+const metricsUpdateFile = `${dirname(fileURLToPath(import.meta.url))}/metricsGet.json`
+
 
 describe('GET - Metrics', function () { 
   before(async function () {
@@ -25,6 +30,10 @@ describe('GET - Metrics', function () {
                 return
             }
             expect(res.status).to.eql(200)
+            
+            // Generates metrics reference file if config.generateMetricsReferenceData=true
+            utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+            
             const expectedData = metrics[this.test.title]
           
             if(iteration.name === 'lvl1'){
@@ -44,6 +53,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -62,6 +75,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 expect(res.body).to.be.empty
 
             })
@@ -73,6 +90,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -96,6 +117,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -114,6 +139,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -132,6 +161,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -150,6 +183,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -168,6 +205,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -186,6 +227,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -210,6 +255,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -230,6 +279,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -249,6 +302,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -267,6 +324,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -285,6 +346,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -307,6 +372,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -326,6 +395,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -345,6 +418,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -364,6 +441,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -383,6 +464,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -405,6 +490,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -425,6 +514,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -444,6 +537,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -463,6 +560,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -481,6 +582,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -507,6 +612,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -524,6 +633,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -541,6 +654,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -558,6 +675,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -575,6 +696,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -598,6 +723,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -616,6 +745,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -634,6 +767,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -653,6 +790,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -671,6 +812,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -693,6 +838,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -712,6 +861,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -731,6 +884,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -749,6 +906,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -768,6 +929,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -792,6 +957,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -811,6 +980,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -830,6 +1003,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -851,6 +1028,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -871,6 +1052,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -894,6 +1079,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -913,6 +1102,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -932,6 +1125,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -950,6 +1147,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
@@ -969,6 +1170,10 @@ describe('GET - Metrics', function () {
                     return
                 }
                 expect(res.status).to.eql(200)
+                
+                // Generates metrics reference file if config.generateMetricsReferenceData=true
+                utils.conditionalMetricsOutput(this.test.title, iteration.name, res.body, metricsUpdateFile)
+                
                 const expectedData = metrics[this.test.title]
 
                 if(iteration.name === 'lvl1'){
