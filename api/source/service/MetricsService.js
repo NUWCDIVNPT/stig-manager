@@ -268,6 +268,11 @@ const sqlMetricsDetail = `json_object(
     'high', rev.highCount
   ),
   'assessed', sa.pass + sa.fail + sa.notapplicable,
+  'assessedBySeverity', json_object(
+    'low', sa.assessedLowCount,
+    'medium', sa.assessedMediumCount,
+    'high', sa.assessedHighCount
+  ),
   'minTs', DATE_FORMAT(sa.minTs, '%Y-%m-%dT%H:%i:%sZ'),
   'maxTs', DATE_FORMAT(sa.maxTs, '%Y-%m-%dT%H:%i:%sZ'),
   'maxTouchTs', DATE_FORMAT(sa.maxTouchTs, '%Y-%m-%dT%H:%i:%sZ'),
@@ -275,11 +280,6 @@ const sqlMetricsDetail = `json_object(
     'low', sa.lowCount,
     'medium', sa.mediumCount,
     'high', sa.highCount
-  ),
-  'assessedBySeverity', json_object(
-    'low', sa.assessedLowCount,
-    'medium', sa.assessedMediumCount,
-    'high', sa.assessedHighCount
   ),
   'statuses', json_object(
     'saved', json_object('total',sa.saved,'resultEngine',sa.savedResultEngine),
@@ -307,6 +307,11 @@ const sqlMetricsDetailAgg = `json_object(
     'high', coalesce(sum(rev.highCount),0)
   ),  
   'assessed', coalesce(sum(sa.pass + sa.fail + sa.notapplicable),0),
+  'assessedBySeverity', json_object(
+    'low', coalesce(sum(sa.assessedLowCount),0),
+    'medium', coalesce(sum(sa.assessedMediumCount),0),
+    'high', coalesce(sum(sa.assessedHighCount),0)
+  ),  
   'minTs', DATE_FORMAT(MIN(sa.minTs), '%Y-%m-%dT%H:%i:%sZ'),
   'maxTs', DATE_FORMAT(MAX(sa.maxTs), '%Y-%m-%dT%H:%i:%sZ'),
   'maxTouchTs', DATE_FORMAT(MAX(sa.maxTouchTs), '%Y-%m-%dT%H:%i:%sZ'),
@@ -314,11 +319,6 @@ const sqlMetricsDetailAgg = `json_object(
     'low', coalesce(sum(sa.lowCount),0),
     'medium', coalesce(sum(sa.mediumCount),0),
     'high', coalesce(sum(sa.highCount),0)
-  ),
-  'assessedBySeverity', json_object(
-    'low', coalesce(sum(sa.assessedLowCount),0),
-    'medium', coalesce(sum(sa.assessedMediumCount),0),
-    'high', coalesce(sum(sa.assessedHighCount),0)
   ),
   'statuses', json_object(
     'saved', json_object('total',coalesce(sum(sa.saved),0),'resultEngine',coalesce(sum(sa.savedResultEngine),0)),
@@ -340,7 +340,17 @@ const sqlMetricsDetailAgg = `json_object(
 ) as metrics`
 const sqlMetricsSummary = `json_object(
   'assessments', rev.ruleCount,
+  'assessmentsBySeverity', json_object(
+    'low', rev.lowCount,
+    'medium', rev.mediumCount,
+    'high', rev.highCount
+  ),  
   'assessed', sa.pass + sa.fail + sa.notapplicable,
+  'assessedBySeverity', json_object(
+    'low', sa.assessedLowCount,
+    'medium', sa.assessedMediumCount,
+    'high', sa.assessedHighCount
+  ),  
   'minTs', DATE_FORMAT(sa.minTs, '%Y-%m-%dT%H:%i:%sZ'),
   'maxTs', DATE_FORMAT(sa.maxTs, '%Y-%m-%dT%H:%i:%sZ'),
   'maxTouchTs', DATE_FORMAT(sa.maxTouchTs, '%Y-%m-%dT%H:%i:%sZ'),
@@ -348,7 +358,7 @@ const sqlMetricsSummary = `json_object(
     'pass', sa.pass,
     'fail', sa.fail,
     'notapplicable', sa.notapplicable,
-    'otherReviews', sa.notchecked + sa.unknown + sa.error + sa.notselected + sa.informational + sa.fixed
+    'other', sa.notchecked + sa.unknown + sa.error + sa.notselected + sa.informational + sa.fixed
   ),
   'statuses', json_object(
     'saved', sa.saved,
@@ -360,16 +370,21 @@ const sqlMetricsSummary = `json_object(
     'low', sa.lowCount,
     'medium', sa.mediumCount,
     'high', sa.highCount
-  ),
-  'assessedBySeverity', json_object(
-    'low', sa.assessedLowCount,
-    'medium', sa.assessedMediumCount,
-    'high', sa.assessedHighCount
   )
 ) as metrics`
 const sqlMetricsSummaryAgg = `json_object(
   'assessments', coalesce(sum(rev.ruleCount),0),
+  'assessmentsBySeverity', json_object(
+    'low', coalesce(sum(rev.lowCount),0),
+    'medium', coalesce(sum(rev.mediumCount),0),
+    'high', coalesce(sum(rev.highCount),0)
+  ),    
   'assessed', coalesce(sum(sa.pass + sa.fail + sa.notapplicable),0),
+  'assessedBySeverity', json_object(
+    'low', coalesce(sum(sa.assessedLowCount),0),
+    'medium', coalesce(sum(sa.assessedMediumCount),0),
+    'high', coalesce(sum(sa.assessedHighCount),0)
+  ),  
   'minTs', DATE_FORMAT(MIN(sa.minTs), '%Y-%m-%dT%H:%i:%sZ'),
   'maxTs', DATE_FORMAT(MAX(sa.maxTs), '%Y-%m-%dT%H:%i:%sZ'),
   'maxTouchTs', DATE_FORMAT(MAX(sa.maxTouchTs), '%Y-%m-%dT%H:%i:%sZ'),
@@ -377,7 +392,7 @@ const sqlMetricsSummaryAgg = `json_object(
     'pass', coalesce(sum(sa.pass),0),
     'fail', coalesce(sum(sa.fail),0),
     'notapplicable', coalesce(sum(sa.notapplicable),0),
-    'otherReviews', coalesce(sum(sa.notchecked + sa.unknown + sa.error + sa.notselected + sa.informational + sa.fixed),0)
+    'other', coalesce(sum(sa.notchecked + sa.unknown + sa.error + sa.notselected + sa.informational + sa.fixed),0)
   ),
   'statuses', json_object(
     'saved', coalesce(sum(sa.saved),0),
@@ -389,11 +404,6 @@ const sqlMetricsSummaryAgg = `json_object(
     'low', coalesce(sum(sa.lowCount),0),
     'medium', coalesce(sum(sa.mediumCount),0),
     'high', coalesce(sum(sa.highCount),0)
-  ),
-  'assessedBySeverity', json_object(
-    'low', coalesce(sum(sa.assessedLowCount),0),
-    'medium', coalesce(sum(sa.assessedMediumCount),0),
-    'high', coalesce(sum(sa.assessedHighCount),0)
   )
 ) as metrics`
 const colsMetricsDetail = [
@@ -402,15 +412,15 @@ const colsMetricsDetail = [
   `rev.mediumCount as assessmentsMedium`,
   `rev.highCount as assessmentsHigh`,
   `sa.pass + sa.fail + sa.notapplicable as assessed`,
+  `sa.assessedLowCount as assessedLow`,
+  `sa.assessedMediumCount as assessedMedium`,
+  `sa.assessedHighCount as assessedHigh`,  
   `DATE_FORMAT(sa.minTs, '%Y-%m-%dT%H:%i:%sZ') as minTs`,
   `DATE_FORMAT(sa.maxTs, '%Y-%m-%dT%H:%i:%sZ') as maxTs`,
   `DATE_FORMAT(sa.maxTouchTs, '%Y-%m-%dT%H:%i:%sZ') as maxTouchTs`,
   `sa.lowCount as findingsLow`,
   `sa.mediumCount as findingsMedium`,
   `sa.highCount as findingsHigh`,
-  `sa.assessedLowCount as assessedLow`,
-  `sa.assessedMediumCount as assessedMedium`,
-  `sa.assessedHighCount as assessedHigh`,
   `sa.saved`,
   `sa.savedResultEngine`,
   `sa.submitted`,
@@ -444,15 +454,15 @@ const colsMetricsDetailAgg = [
   `coalesce(sum(rev.mediumCount),0) as assessmentsMedium`,
   `coalesce(sum(rev.highCount),0) as assessmentsHigh`,
   `coalesce(sum(sa.pass + sa.fail + sa.notapplicable),0) as assessed`,
+  `coalesce(sum(sa.assessedLowCount),0) as assessedLow`,
+  `coalesce(sum(sa.assessedMediumCount),0) as assessedMedium`,
+  `coalesce(sum(sa.assessedHighCount),0) as assessedHigh`,  
   `DATE_FORMAT(min(sa.minTs), '%Y-%m-%dT%H:%i:%sZ') as minTs`,
   `DATE_FORMAT(max(sa.maxTs), '%Y-%m-%dT%H:%i:%sZ') as maxTs`,
   `DATE_FORMAT(max(sa.maxTouchTs), '%Y-%m-%dT%H:%i:%sZ') as maxTouchTs`,
   `coalesce(sum(sa.lowCount),0) as findingsLow`,
   `coalesce(sum(sa.mediumCount),0) as findingsMedium`,
   `coalesce(sum(sa.highCount),0) as findingsHigh`,
-  `coalesce(sum(sa.assessedLowCount),0) as assessedLow`,
-  `coalesce(sum(sa.assessedMediumCount),0) as assessedMedium`,
-  `coalesce(sum(sa.assessedHighCount),0) as assessedHigh`,
   `coalesce(sum(sa.saved),0) as saved`,
   `coalesce(sum(sa.savedResultEngine),0) as savedResultEngine`,
   `coalesce(sum(sa.submitted),0) as submitted`,
@@ -483,20 +493,23 @@ const colsMetricsDetailAgg = [
 
 const colsMetricsSummary = [
   'rev.ruleCount as "assessments"', 
+  `rev.lowCount as assessmentsLow`,
+  `rev.mediumCount as assessmentsMedium`,
+  `rev.highCount as assessmentsHigh`,  
   'sa.pass + sa.fail + sa.notapplicable as "assessed"', 
+  'sa.assessedLowCount as "assessedLow"', 
+  'sa.assessedMediumCount as "assessedMedium"', 
+  'sa.assessedHighCount as "assessedHigh"',   
   `DATE_FORMAT(sa.minTs, '%Y-%m-%dT%H:%i:%sZ') as minTs`,
   `DATE_FORMAT(sa.maxTs, '%Y-%m-%dT%H:%i:%sZ') as maxTs`, 
   `DATE_FORMAT(sa.maxTouchTs, '%Y-%m-%dT%H:%i:%sZ') as maxTouchTs`, 
   'sa.lowCount as "findingsLow"', 
   'sa.mediumCount as "findingsMedium"', 
   'sa.highCount as "findingsHigh"', 
-  'sa.assessedLowCount as "assessedLow"', 
-  'sa.assessedMediumCount as "assessedMedium"', 
-  'sa.assessedHighCount as "assessedHigh"', 
   'sa.pass as "pass"', 
   'sa.fail as "fail"', 
   'sa.notapplicable as "notapplicable"', 
-  'sa.notchecked + sa.unknown + sa.error + sa.notselected + sa.informational + sa.fixed as "otherReviews"', 
+  'sa.notchecked + sa.unknown + sa.error + sa.notselected + sa.informational + sa.fixed as "other"', 
   'sa.saved as "saved"', 
   'sa.submitted as "submitted"', 
   'sa.accepted as "accepted"', 
@@ -504,20 +517,23 @@ const colsMetricsSummary = [
 ]
 const colsMetricsSummaryAgg = [
   'coalesce(sum(rev.ruleCount),0) as "assessments"', 
+  `coalesce(sum(rev.lowCount),0) as assessmentsLow`,
+  `coalesce(sum(rev.mediumCount),0) as assessmentsMedium`,
+  `coalesce(sum(rev.highCount),0) as assessmentsHigh`,
   'coalesce(sum(sa.pass + sa.fail + sa.notapplicable),0) as "assessed"', 
+  'coalesce(sum(sa.assessedLowCount),0) as "assessedLow"', 
+  'coalesce(sum(sa.assessedMediumCount),0) as "assessedMedium"', 
+  'coalesce(sum(sa.assessedHighCount),0) as "assessedHigh"',   
   `DATE_FORMAT(MIN(sa.minTs), '%Y-%m-%dT%H:%i:%sZ') as minTs`, 
   `DATE_FORMAT(MAX(sa.maxTs), '%Y-%m-%dT%H:%i:%sZ') as maxTs`, 
   `DATE_FORMAT(MAX(sa.maxTouchTs), '%Y-%m-%dT%H:%i:%sZ') as maxTouchTs`, 
   'coalesce(sum(sa.lowCount),0) as "findingsLow"', 
   'coalesce(sum(sa.mediumCount),0) as "findingsMedium"', 
   'coalesce(sum(sa.highCount),0) as "findingsHigh"', 
-  'coalesce(sum(sa.assessedLowCount),0) as "assessedLow"', 
-  'coalesce(sum(sa.assessedMediumCount),0) as "assessedMedium"', 
-  'coalesce(sum(sa.assessedHighCount),0) as "assessedHigh"', 
   'coalesce(sum(sa.pass),0) as "pass"', 
   'coalesce(sum(sa.fail),0) as "fail"', 
   'coalesce(sum(sa.notapplicable),0) as "notapplicable"', 
-  'coalesce(sum(sa.notchecked + sa.unknown + sa.error + sa.notselected + sa.informational + sa.fixed),0) as "otherReviews"', 
+  'coalesce(sum(sa.notchecked + sa.unknown + sa.error + sa.notselected + sa.informational + sa.fixed),0) as "other"', 
   'coalesce(sum(sa.saved),0) as "saved"', 
   'coalesce(sum(sa.submitted),0) as "submitted"', 
   'coalesce(sum(sa.accepted),0) as "accepted"', 
