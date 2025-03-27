@@ -71,12 +71,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 63,
-          "high": 96,
-          "medium": 727
-        },
         "assessments": 898,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
+        },
         "assessmentsBySeverity": {
           "low": 64,
           "high": 96,
@@ -155,12 +155,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 6,
-          "high": 11,
-          "medium": 58
-        },
         "assessments": 81,
+        "assessedBySeverity": {
+          "low": 1,
+          "high": 0,
+          "medium": 5
+        },
         "assessmentsBySeverity": {
           "low": 7,
           "high": 11,
@@ -239,12 +239,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 49,
-          "high": 74,
-          "medium": 601
-        },
         "assessments": 736,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
+        },
         "assessmentsBySeverity": {
           "low": 50,
           "high": 74,
@@ -323,12 +323,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 49,
-          "high": 74,
-          "medium": 601
-        },
         "assessments": 736,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
+        },
         "assessmentsBySeverity": {
           "low": 50,
           "high": 74,
@@ -407,12 +407,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 49,
-          "high": 74,
-          "medium": 601
-        },
         "assessments": 736,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
+        },
         "assessmentsBySeverity": {
           "low": 50,
           "high": 74,
@@ -491,12 +491,12 @@
           }
         },
         "maxTouchTs": null,
-        "unassessed": {
+        "assessments": 0,
+        "assessedBySeverity": {
           "low": 0,
           "high": 0,
           "medium": 0
         },
-        "assessments": 0,
         "assessmentsBySeverity": {
           "low": 0,
           "high": 0,
@@ -577,12 +577,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 49,
-          "high": 74,
-          "medium": 601
-        },
         "assessments": 736,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
+        },
         "assessmentsBySeverity": {
           "low": 50,
           "high": 74,
@@ -661,12 +661,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 6,
-          "high": 11,
-          "medium": 58
-        },
         "assessments": 81,
+        "assessedBySeverity": {
+          "low": 1,
+          "high": 0,
+          "medium": 5
+        },
         "assessmentsBySeverity": {
           "low": 7,
           "high": 11,
@@ -745,12 +745,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 49,
-          "high": 74,
-          "medium": 601
-        },
         "assessments": 736,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
+        },
         "assessmentsBySeverity": {
           "low": 50,
           "high": 74,
@@ -829,12 +829,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 49,
-          "high": 74,
-          "medium": 601
-        },
         "assessments": 736,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
+        },
         "assessmentsBySeverity": {
           "low": 50,
           "high": 74,
@@ -913,12 +913,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 49,
-          "high": 74,
-          "medium": 601
-        },
         "assessments": 736,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
+        },
         "assessmentsBySeverity": {
           "low": 50,
           "high": 74,
@@ -997,12 +997,12 @@
           }
         },
         "maxTouchTs": null,
-        "unassessed": {
+        "assessments": 0,
+        "assessedBySeverity": {
           "low": 0,
           "high": 0,
           "medium": 0
         },
-        "assessments": 0,
         "assessmentsBySeverity": {
           "low": 0,
           "high": 0,
@@ -1083,12 +1083,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 27,
-          "high": 44,
-          "medium": 244
-        },
         "assessments": 324,
+        "assessedBySeverity": {
+          "low": 1,
+          "high": 0,
+          "medium": 8
+        },
         "assessmentsBySeverity": {
           "low": 28,
           "high": 44,
@@ -1167,12 +1167,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 6,
-          "high": 11,
-          "medium": 58
-        },
         "assessments": 81,
+        "assessedBySeverity": {
+          "low": 1,
+          "high": 0,
+          "medium": 5
+        },
         "assessmentsBySeverity": {
           "low": 7,
           "high": 11,
@@ -1251,12 +1251,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 13,
-          "high": 22,
-          "medium": 118
-        },
         "assessments": 162,
+        "assessedBySeverity": {
+          "low": 1,
+          "high": 0,
+          "medium": 8
+        },
         "assessmentsBySeverity": {
           "low": 14,
           "high": 22,
@@ -1335,12 +1335,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 13,
-          "high": 22,
-          "medium": 118
-        },
         "assessments": 162,
+        "assessedBySeverity": {
+          "low": 1,
+          "high": 0,
+          "medium": 8
+        },
         "assessmentsBySeverity": {
           "low": 14,
           "high": 22,
@@ -1419,12 +1419,12 @@
           }
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 13,
-          "high": 22,
-          "medium": 118
-        },
         "assessments": 162,
+        "assessedBySeverity": {
+          "low": 1,
+          "high": 0,
+          "medium": 8
+        },
         "assessmentsBySeverity": {
           "low": 14,
           "high": 22,
@@ -1503,12 +1503,12 @@
           }
         },
         "maxTouchTs": null,
-        "unassessed": {
+        "assessments": 0,
+        "assessedBySeverity": {
           "low": 0,
           "high": 0,
           "medium": 0
         },
-        "assessments": 0,
         "assessmentsBySeverity": {
           "low": 0,
           "high": 0,
@@ -1591,12 +1591,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
-          },
           "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
+          },
           "assessmentsBySeverity": {
             "low": 50,
             "high": 74,
@@ -1676,12 +1676,12 @@
             }
           },
           "maxTouchTs": null,
-          "unassessed": {
-            "low": 14,
-            "high": 22,
-            "medium": 126
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -1763,12 +1763,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
-          },
           "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
+          },
           "assessmentsBySeverity": {
             "low": 7,
             "high": 11,
@@ -1850,12 +1850,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
-          },
           "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
+          },
           "assessmentsBySeverity": {
             "low": 50,
             "high": 74,
@@ -1937,12 +1937,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
-          },
           "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
+          },
           "assessmentsBySeverity": {
             "low": 50,
             "high": 74,
@@ -2024,12 +2024,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
-          },
           "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
+          },
           "assessmentsBySeverity": {
             "low": 50,
             "high": 74,
@@ -2114,12 +2114,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
-          },
           "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
+          },
           "assessmentsBySeverity": {
             "low": 50,
             "high": 74,
@@ -2201,12 +2201,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
-          },
           "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
+          },
           "assessmentsBySeverity": {
             "low": 7,
             "high": 11,
@@ -2288,12 +2288,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
-          },
           "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
+          },
           "assessmentsBySeverity": {
             "low": 50,
             "high": 74,
@@ -2375,12 +2375,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
-          },
           "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
+          },
           "assessmentsBySeverity": {
             "low": 50,
             "high": 74,
@@ -2462,12 +2462,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
-          },
           "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
+          },
           "assessmentsBySeverity": {
             "low": 50,
             "high": 74,
@@ -2552,12 +2552,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -2637,12 +2637,12 @@
             }
           },
           "maxTouchTs": null,
-          "unassessed": {
-            "low": 14,
-            "high": 22,
-            "medium": 126
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -2724,12 +2724,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
-          },
           "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
+          },
           "assessmentsBySeverity": {
             "low": 7,
             "high": 11,
@@ -2811,12 +2811,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -2898,12 +2898,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -2985,12 +2985,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -3075,12 +3075,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -3162,12 +3162,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
-          },
           "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
+          },
           "assessmentsBySeverity": {
             "low": 7,
             "high": 11,
@@ -3249,12 +3249,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -3336,12 +3336,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -3423,12 +3423,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -3514,12 +3514,12 @@
             }
           },
           "maxTouchTs": null,
-          "unassessed": {
-            "low": 14,
-            "high": 22,
-            "medium": 126
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -3600,12 +3600,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -3686,12 +3686,12 @@
             }
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574,
           "assessmentsBySeverity": {
             "low": 36,
             "high": 52,
@@ -3774,12 +3774,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
-          },
           "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
+          },
           "assessmentsBySeverity": {
             "low": 7,
             "high": 11,
@@ -3862,12 +3862,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -3948,12 +3948,12 @@
             }
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574,
           "assessmentsBySeverity": {
             "low": 36,
             "high": 52,
@@ -4036,12 +4036,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -4122,12 +4122,12 @@
             }
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574,
           "assessmentsBySeverity": {
             "low": 36,
             "high": 52,
@@ -4210,12 +4210,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -4296,12 +4296,12 @@
             }
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574,
           "assessmentsBySeverity": {
             "low": 36,
             "high": 52,
@@ -4387,12 +4387,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -4473,12 +4473,12 @@
             }
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574,
           "assessmentsBySeverity": {
             "low": 36,
             "high": 52,
@@ -4561,12 +4561,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
-          },
           "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
+          },
           "assessmentsBySeverity": {
             "low": 7,
             "high": 11,
@@ -4649,12 +4649,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -4735,12 +4735,12 @@
             }
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574,
           "assessmentsBySeverity": {
             "low": 36,
             "high": 52,
@@ -4823,12 +4823,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -4909,12 +4909,12 @@
             }
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574,
           "assessmentsBySeverity": {
             "low": 36,
             "high": 52,
@@ -4997,12 +4997,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -5083,12 +5083,12 @@
             }
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574,
           "assessmentsBySeverity": {
             "low": 36,
             "high": 52,
@@ -5174,12 +5174,12 @@
             }
           },
           "maxTouchTs": null,
-          "unassessed": {
-            "low": 14,
-            "high": 22,
-            "medium": 126
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -5260,12 +5260,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -5348,12 +5348,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
-          },
           "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
+          },
           "assessmentsBySeverity": {
             "low": 7,
             "high": 11,
@@ -5436,12 +5436,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -5524,12 +5524,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -5612,12 +5612,12 @@
             }
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
-          },
           "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
+          },
           "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
@@ -5640,7 +5640,7 @@
         "results": {
           "fail": 5,
           "pass": 4,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 3
         },
         "assessed": 12,
@@ -5656,12 +5656,17 @@
           "submitted": 9
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 63,
-          "high": 96,
-          "medium": 727
+        "assessments": 898,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
         },
-        "assessments": 898
+        "assessmentsBySeverity": {
+          "low": 64,
+          "high": 96,
+          "medium": 738
+        }
       }
     },
     "lvl1": {
@@ -5675,7 +5680,7 @@
         "results": {
           "fail": 3,
           "pass": 2,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 1
         },
         "assessed": 6,
@@ -5691,12 +5696,17 @@
           "submitted": 5
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 6,
-          "high": 11,
-          "medium": 58
+        "assessments": 81,
+        "assessedBySeverity": {
+          "low": 1,
+          "high": 0,
+          "medium": 5
         },
-        "assessments": 81
+        "assessmentsBySeverity": {
+          "low": 7,
+          "high": 11,
+          "medium": 63
+        }
       }
     },
     "lvl2": {
@@ -5710,7 +5720,7 @@
         "results": {
           "fail": 5,
           "pass": 4,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 3
         },
         "assessed": 12,
@@ -5726,12 +5736,17 @@
           "submitted": 9
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 49,
-          "high": 74,
-          "medium": 601
+        "assessments": 736,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
         },
-        "assessments": 736
+        "assessmentsBySeverity": {
+          "low": 50,
+          "high": 74,
+          "medium": 612
+        }
       }
     },
     "lvl3": {
@@ -5745,7 +5760,7 @@
         "results": {
           "fail": 5,
           "pass": 4,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 3
         },
         "assessed": 12,
@@ -5761,12 +5776,17 @@
           "submitted": 9
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 49,
-          "high": 74,
-          "medium": 601
+        "assessments": 736,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
         },
-        "assessments": 736
+        "assessmentsBySeverity": {
+          "low": 50,
+          "high": 74,
+          "medium": 612
+        }
       }
     },
     "lvl4": {
@@ -5780,7 +5800,7 @@
         "results": {
           "fail": 5,
           "pass": 4,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 3
         },
         "assessed": 12,
@@ -5796,12 +5816,17 @@
           "submitted": 9
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 49,
-          "high": 74,
-          "medium": 601
+        "assessments": 736,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
         },
-        "assessments": 736
+        "assessmentsBySeverity": {
+          "low": 50,
+          "high": 74,
+          "medium": 612
+        }
       }
     },
     "collectioncreator": {
@@ -5815,7 +5840,7 @@
         "results": {
           "fail": 0,
           "pass": 0,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 0
         },
         "assessed": 0,
@@ -5831,12 +5856,17 @@
           "submitted": 0
         },
         "maxTouchTs": null,
-        "unassessed": {
+        "assessments": 0,
+        "assessedBySeverity": {
           "low": 0,
           "high": 0,
           "medium": 0
         },
-        "assessments": 0
+        "assessmentsBySeverity": {
+          "low": 0,
+          "high": 0,
+          "medium": 0
+        }
       }
     }
   },
@@ -5852,7 +5882,7 @@
         "results": {
           "fail": 5,
           "pass": 4,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 3
         },
         "assessed": 12,
@@ -5868,12 +5898,17 @@
           "submitted": 9
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 49,
-          "high": 74,
-          "medium": 601
+        "assessments": 736,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
         },
-        "assessments": 736
+        "assessmentsBySeverity": {
+          "low": 50,
+          "high": 74,
+          "medium": 612
+        }
       }
     },
     "lvl1": {
@@ -5887,7 +5922,7 @@
         "results": {
           "fail": 3,
           "pass": 2,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 1
         },
         "assessed": 6,
@@ -5903,12 +5938,17 @@
           "submitted": 5
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 6,
-          "high": 11,
-          "medium": 58
+        "assessments": 81,
+        "assessedBySeverity": {
+          "low": 1,
+          "high": 0,
+          "medium": 5
         },
-        "assessments": 81
+        "assessmentsBySeverity": {
+          "low": 7,
+          "high": 11,
+          "medium": 63
+        }
       }
     },
     "lvl2": {
@@ -5922,7 +5962,7 @@
         "results": {
           "fail": 5,
           "pass": 4,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 3
         },
         "assessed": 12,
@@ -5938,12 +5978,17 @@
           "submitted": 9
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 49,
-          "high": 74,
-          "medium": 601
+        "assessments": 736,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
         },
-        "assessments": 736
+        "assessmentsBySeverity": {
+          "low": 50,
+          "high": 74,
+          "medium": 612
+        }
       }
     },
     "lvl3": {
@@ -5957,7 +6002,7 @@
         "results": {
           "fail": 5,
           "pass": 4,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 3
         },
         "assessed": 12,
@@ -5973,12 +6018,17 @@
           "submitted": 9
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 49,
-          "high": 74,
-          "medium": 601
+        "assessments": 736,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
         },
-        "assessments": 736
+        "assessmentsBySeverity": {
+          "low": 50,
+          "high": 74,
+          "medium": 612
+        }
       }
     },
     "lvl4": {
@@ -5992,7 +6042,7 @@
         "results": {
           "fail": 5,
           "pass": 4,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 3
         },
         "assessed": 12,
@@ -6008,12 +6058,17 @@
           "submitted": 9
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 49,
-          "high": 74,
-          "medium": 601
+        "assessments": 736,
+        "assessedBySeverity": {
+          "low": 37,
+          "high": 52,
+          "medium": 491
         },
-        "assessments": 736
+        "assessmentsBySeverity": {
+          "low": 50,
+          "high": 74,
+          "medium": 612
+        }
       }
     },
     "collectioncreator": {
@@ -6027,7 +6082,7 @@
         "results": {
           "fail": 0,
           "pass": 0,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 0
         },
         "assessed": 0,
@@ -6043,12 +6098,17 @@
           "submitted": 0
         },
         "maxTouchTs": null,
-        "unassessed": {
+        "assessments": 0,
+        "assessedBySeverity": {
           "low": 0,
           "high": 0,
           "medium": 0
         },
-        "assessments": 0
+        "assessmentsBySeverity": {
+          "low": 0,
+          "high": 0,
+          "medium": 0
+        }
       }
     }
   },
@@ -6064,7 +6124,7 @@
         "results": {
           "fail": 4,
           "pass": 2,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 3
         },
         "assessed": 9,
@@ -6080,12 +6140,17 @@
           "submitted": 7
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 27,
-          "high": 44,
-          "medium": 244
+        "assessments": 324,
+        "assessedBySeverity": {
+          "low": 1,
+          "high": 0,
+          "medium": 8
         },
-        "assessments": 324
+        "assessmentsBySeverity": {
+          "low": 28,
+          "high": 44,
+          "medium": 252
+        }
       }
     },
     "lvl1": {
@@ -6099,7 +6164,7 @@
         "results": {
           "fail": 3,
           "pass": 2,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 1
         },
         "assessed": 6,
@@ -6115,12 +6180,17 @@
           "submitted": 5
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 6,
-          "high": 11,
-          "medium": 58
+        "assessments": 81,
+        "assessedBySeverity": {
+          "low": 1,
+          "high": 0,
+          "medium": 5
         },
-        "assessments": 81
+        "assessmentsBySeverity": {
+          "low": 7,
+          "high": 11,
+          "medium": 63
+        }
       }
     },
     "lvl2": {
@@ -6134,7 +6204,7 @@
         "results": {
           "fail": 4,
           "pass": 2,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 3
         },
         "assessed": 9,
@@ -6150,12 +6220,17 @@
           "submitted": 7
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 13,
-          "high": 22,
-          "medium": 118
+        "assessments": 162,
+        "assessedBySeverity": {
+          "low": 1,
+          "high": 0,
+          "medium": 8
         },
-        "assessments": 162
+        "assessmentsBySeverity": {
+          "low": 14,
+          "high": 22,
+          "medium": 126
+        }
       }
     },
     "lvl3": {
@@ -6169,7 +6244,7 @@
         "results": {
           "fail": 4,
           "pass": 2,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 3
         },
         "assessed": 9,
@@ -6185,12 +6260,17 @@
           "submitted": 7
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 13,
-          "high": 22,
-          "medium": 118
+        "assessments": 162,
+        "assessedBySeverity": {
+          "low": 1,
+          "high": 0,
+          "medium": 8
         },
-        "assessments": 162
+        "assessmentsBySeverity": {
+          "low": 14,
+          "high": 22,
+          "medium": 126
+        }
       }
     },
     "lvl4": {
@@ -6204,7 +6284,7 @@
         "results": {
           "fail": 4,
           "pass": 2,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 3
         },
         "assessed": 9,
@@ -6220,12 +6300,17 @@
           "submitted": 7
         },
         "maxTouchTs": "2022-02-03T00:07:07Z",
-        "unassessed": {
-          "low": 13,
-          "high": 22,
-          "medium": 118
+        "assessments": 162,
+        "assessedBySeverity": {
+          "low": 1,
+          "high": 0,
+          "medium": 8
         },
-        "assessments": 162
+        "assessmentsBySeverity": {
+          "low": 14,
+          "high": 22,
+          "medium": 126
+        }
       }
     },
     "collectioncreator": {
@@ -6239,7 +6324,7 @@
         "results": {
           "fail": 0,
           "pass": 0,
-          "unassessed": 0,
+          "other": 0,
           "notapplicable": 0
         },
         "assessed": 0,
@@ -6255,12 +6340,17 @@
           "submitted": 0
         },
         "maxTouchTs": null,
-        "unassessed": {
+        "assessments": 0,
+        "assessedBySeverity": {
           "low": 0,
           "high": 0,
           "medium": 0
         },
-        "assessments": 0
+        "assessmentsBySeverity": {
+          "low": 0,
+          "high": 0,
+          "medium": 0
+        }
       }
     }
   },
@@ -6278,7 +6368,7 @@
           "results": {
             "fail": 5,
             "pass": 4,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 12,
@@ -6294,12 +6384,17 @@
             "submitted": 9
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
+          "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
           },
-          "assessments": 736
+          "assessmentsBySeverity": {
+            "low": 50,
+            "high": 74,
+            "medium": 612
+          }
         }
       },
       {
@@ -6314,7 +6409,7 @@
           "results": {
             "fail": 0,
             "pass": 0,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 0
           },
           "assessed": 0,
@@ -6330,12 +6425,17 @@
             "submitted": 0
           },
           "maxTouchTs": null,
-          "unassessed": {
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
             "medium": 126
-          },
-          "assessments": 162
+          }
         }
       }
     ],
@@ -6352,7 +6452,7 @@
           "results": {
             "fail": 3,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 1
           },
           "assessed": 6,
@@ -6368,12 +6468,17 @@
             "submitted": 5
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
+          "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
           },
-          "assessments": 81
+          "assessmentsBySeverity": {
+            "low": 7,
+            "high": 11,
+            "medium": 63
+          }
         }
       }
     ],
@@ -6390,7 +6495,7 @@
           "results": {
             "fail": 5,
             "pass": 4,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 12,
@@ -6406,12 +6511,17 @@
             "submitted": 9
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
+          "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
           },
-          "assessments": 736
+          "assessmentsBySeverity": {
+            "low": 50,
+            "high": 74,
+            "medium": 612
+          }
         }
       }
     ],
@@ -6428,7 +6538,7 @@
           "results": {
             "fail": 5,
             "pass": 4,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 12,
@@ -6444,12 +6554,17 @@
             "submitted": 9
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
+          "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
           },
-          "assessments": 736
+          "assessmentsBySeverity": {
+            "low": 50,
+            "high": 74,
+            "medium": 612
+          }
         }
       }
     ],
@@ -6466,7 +6581,7 @@
           "results": {
             "fail": 5,
             "pass": 4,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 12,
@@ -6482,12 +6597,17 @@
             "submitted": 9
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
+          "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
           },
-          "assessments": 736
+          "assessmentsBySeverity": {
+            "low": 50,
+            "high": 74,
+            "medium": 612
+          }
         }
       }
     ],
@@ -6507,7 +6627,7 @@
           "results": {
             "fail": 5,
             "pass": 4,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 12,
@@ -6523,12 +6643,17 @@
             "submitted": 9
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
+          "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
           },
-          "assessments": 736
+          "assessmentsBySeverity": {
+            "low": 50,
+            "high": 74,
+            "medium": 612
+          }
         }
       }
     ],
@@ -6545,7 +6670,7 @@
           "results": {
             "fail": 3,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 1
           },
           "assessed": 6,
@@ -6561,12 +6686,17 @@
             "submitted": 5
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
+          "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
           },
-          "assessments": 81
+          "assessmentsBySeverity": {
+            "low": 7,
+            "high": 11,
+            "medium": 63
+          }
         }
       }
     ],
@@ -6583,7 +6713,7 @@
           "results": {
             "fail": 5,
             "pass": 4,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 12,
@@ -6599,12 +6729,17 @@
             "submitted": 9
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
+          "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
           },
-          "assessments": 736
+          "assessmentsBySeverity": {
+            "low": 50,
+            "high": 74,
+            "medium": 612
+          }
         }
       }
     ],
@@ -6621,7 +6756,7 @@
           "results": {
             "fail": 5,
             "pass": 4,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 12,
@@ -6637,12 +6772,17 @@
             "submitted": 9
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
+          "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
           },
-          "assessments": 736
+          "assessmentsBySeverity": {
+            "low": 50,
+            "high": 74,
+            "medium": 612
+          }
         }
       }
     ],
@@ -6659,7 +6799,7 @@
           "results": {
             "fail": 5,
             "pass": 4,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 12,
@@ -6675,12 +6815,17 @@
             "submitted": 9
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 49,
-            "high": 74,
-            "medium": 601
+          "assessments": 736,
+          "assessedBySeverity": {
+            "low": 37,
+            "high": 52,
+            "medium": 491
           },
-          "assessments": 736
+          "assessmentsBySeverity": {
+            "low": 50,
+            "high": 74,
+            "medium": 612
+          }
         }
       }
     ],
@@ -6700,7 +6845,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -6716,12 +6861,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       },
       {
@@ -6736,7 +6886,7 @@
           "results": {
             "fail": 0,
             "pass": 0,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 0
           },
           "assessed": 0,
@@ -6752,12 +6902,17 @@
             "submitted": 0
           },
           "maxTouchTs": null,
-          "unassessed": {
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
             "medium": 126
-          },
-          "assessments": 162
+          }
         }
       }
     ],
@@ -6774,7 +6929,7 @@
           "results": {
             "fail": 3,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 1
           },
           "assessed": 6,
@@ -6790,12 +6945,17 @@
             "submitted": 5
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
+          "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
           },
-          "assessments": 81
+          "assessmentsBySeverity": {
+            "low": 7,
+            "high": 11,
+            "medium": 63
+          }
         }
       }
     ],
@@ -6812,7 +6972,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -6828,12 +6988,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
@@ -6850,7 +7015,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -6866,12 +7031,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
@@ -6888,7 +7058,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -6904,12 +7074,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
@@ -6929,7 +7104,7 @@
           "results": {
             "fail": 0,
             "pass": 0,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 0
           },
           "assessed": 0,
@@ -6945,12 +7120,17 @@
             "submitted": 0
           },
           "maxTouchTs": null,
-          "unassessed": {
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
             "medium": 126
-          },
-          "assessments": 162
+          }
         }
       }
     ],
@@ -6974,7 +7154,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -6990,12 +7170,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
@@ -7012,7 +7197,7 @@
           "results": {
             "fail": 3,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 1
           },
           "assessed": 6,
@@ -7028,12 +7213,17 @@
             "submitted": 5
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
+          "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
           },
-          "assessments": 81
+          "assessmentsBySeverity": {
+            "low": 7,
+            "high": 11,
+            "medium": 63
+          }
         }
       }
     ],
@@ -7050,7 +7240,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -7066,12 +7256,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
@@ -7088,7 +7283,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -7104,12 +7299,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
@@ -7126,7 +7326,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -7142,12 +7342,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
@@ -7168,7 +7373,7 @@
           "results": {
             "fail": 0,
             "pass": 0,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 0
           },
           "assessed": 0,
@@ -7184,12 +7389,17 @@
             "submitted": 0
           },
           "maxTouchTs": null,
-          "unassessed": {
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
             "medium": 126
-          },
-          "assessments": 162
+          }
         }
       },
       {
@@ -7205,7 +7415,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -7221,12 +7431,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       },
       {
@@ -7242,7 +7457,7 @@
           "results": {
             "fail": 1,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 0
           },
           "assessed": 3,
@@ -7258,12 +7473,17 @@
             "submitted": 2
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574
+          "assessmentsBySeverity": {
+            "low": 36,
+            "high": 52,
+            "medium": 486
+          }
         }
       }
     ],
@@ -7281,7 +7501,7 @@
           "results": {
             "fail": 3,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 1
           },
           "assessed": 6,
@@ -7297,12 +7517,17 @@
             "submitted": 5
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
+          "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
           },
-          "assessments": 81
+          "assessmentsBySeverity": {
+            "low": 7,
+            "high": 11,
+            "medium": 63
+          }
         }
       }
     ],
@@ -7320,7 +7545,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -7336,12 +7561,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       },
       {
@@ -7357,7 +7587,7 @@
           "results": {
             "fail": 1,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 0
           },
           "assessed": 3,
@@ -7373,12 +7603,17 @@
             "submitted": 2
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574
+          "assessmentsBySeverity": {
+            "low": 36,
+            "high": 52,
+            "medium": 486
+          }
         }
       }
     ],
@@ -7396,7 +7631,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -7412,12 +7647,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       },
       {
@@ -7433,7 +7673,7 @@
           "results": {
             "fail": 1,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 0
           },
           "assessed": 3,
@@ -7449,12 +7689,17 @@
             "submitted": 2
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574
+          "assessmentsBySeverity": {
+            "low": 36,
+            "high": 52,
+            "medium": 486
+          }
         }
       }
     ],
@@ -7472,7 +7717,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -7488,12 +7733,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       },
       {
@@ -7509,7 +7759,7 @@
           "results": {
             "fail": 1,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 0
           },
           "assessed": 3,
@@ -7525,12 +7775,17 @@
             "submitted": 2
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574
+          "assessmentsBySeverity": {
+            "low": 36,
+            "high": 52,
+            "medium": 486
+          }
         }
       }
     ],
@@ -7551,7 +7806,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -7567,12 +7822,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       },
       {
@@ -7588,7 +7848,7 @@
           "results": {
             "fail": 1,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 0
           },
           "assessed": 3,
@@ -7604,12 +7864,17 @@
             "submitted": 2
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574
+          "assessmentsBySeverity": {
+            "low": 36,
+            "high": 52,
+            "medium": 486
+          }
         }
       }
     ],
@@ -7627,7 +7892,7 @@
           "results": {
             "fail": 3,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 1
           },
           "assessed": 6,
@@ -7643,12 +7908,17 @@
             "submitted": 5
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
+          "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
           },
-          "assessments": 81
+          "assessmentsBySeverity": {
+            "low": 7,
+            "high": 11,
+            "medium": 63
+          }
         }
       }
     ],
@@ -7666,7 +7936,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -7682,12 +7952,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       },
       {
@@ -7703,7 +7978,7 @@
           "results": {
             "fail": 1,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 0
           },
           "assessed": 3,
@@ -7719,12 +7994,17 @@
             "submitted": 2
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574
+          "assessmentsBySeverity": {
+            "low": 36,
+            "high": 52,
+            "medium": 486
+          }
         }
       }
     ],
@@ -7742,7 +8022,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -7758,12 +8038,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       },
       {
@@ -7779,7 +8064,7 @@
           "results": {
             "fail": 1,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 0
           },
           "assessed": 3,
@@ -7795,12 +8080,17 @@
             "submitted": 2
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574
+          "assessmentsBySeverity": {
+            "low": 36,
+            "high": 52,
+            "medium": 486
+          }
         }
       }
     ],
@@ -7818,7 +8108,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -7834,12 +8124,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       },
       {
@@ -7855,7 +8150,7 @@
           "results": {
             "fail": 1,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 0
           },
           "assessed": 3,
@@ -7871,12 +8166,17 @@
             "submitted": 2
           },
           "maxTouchTs": "2020-08-18T20:48:29Z",
-          "unassessed": {
+          "assessments": 574,
+          "assessedBySeverity": {
             "low": 36,
             "high": 52,
             "medium": 483
           },
-          "assessments": 574
+          "assessmentsBySeverity": {
+            "low": 36,
+            "high": 52,
+            "medium": 486
+          }
         }
       }
     ],
@@ -7897,7 +8197,7 @@
           "results": {
             "fail": 0,
             "pass": 0,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 0
           },
           "assessed": 0,
@@ -7913,12 +8213,17 @@
             "submitted": 0
           },
           "maxTouchTs": null,
-          "unassessed": {
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "assessmentsBySeverity": {
             "low": 14,
             "high": 22,
             "medium": 126
-          },
-          "assessments": 162
+          }
         }
       },
       {
@@ -7934,7 +8239,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -7950,12 +8255,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
@@ -7973,7 +8283,7 @@
           "results": {
             "fail": 3,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 1
           },
           "assessed": 6,
@@ -7989,12 +8299,17 @@
             "submitted": 5
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
+          "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
           },
-          "assessments": 81
+          "assessmentsBySeverity": {
+            "low": 7,
+            "high": 11,
+            "medium": 63
+          }
         }
       }
     ],
@@ -8012,7 +8327,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -8028,12 +8343,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
@@ -8051,7 +8371,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -8067,12 +8387,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
@@ -8090,7 +8415,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -8106,12 +8431,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
@@ -8132,7 +8462,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -8148,12 +8478,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
@@ -8171,7 +8506,7 @@
           "results": {
             "fail": 3,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 1
           },
           "assessed": 6,
@@ -8187,12 +8522,17 @@
             "submitted": 5
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 6,
-            "high": 11,
-            "medium": 58
+          "assessments": 81,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 5
           },
-          "assessments": 81
+          "assessmentsBySeverity": {
+            "low": 7,
+            "high": 11,
+            "medium": 63
+          }
         }
       }
     ],
@@ -8210,7 +8550,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -8226,12 +8566,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
@@ -8249,7 +8594,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -8265,12 +8610,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
@@ -8288,7 +8638,7 @@
           "results": {
             "fail": 4,
             "pass": 2,
-            "unassessed": 0,
+            "other": 0,
             "notapplicable": 3
           },
           "assessed": 9,
@@ -8304,12 +8654,17 @@
             "submitted": 7
           },
           "maxTouchTs": "2022-02-03T00:07:07Z",
-          "unassessed": {
-            "low": 13,
-            "high": 22,
-            "medium": 118
+          "assessments": 162,
+          "assessedBySeverity": {
+            "low": 1,
+            "high": 0,
+            "medium": 8
           },
-          "assessments": 162
+          "assessmentsBySeverity": {
+            "low": 14,
+            "high": 22,
+            "medium": 126
+          }
         }
       }
     ],
