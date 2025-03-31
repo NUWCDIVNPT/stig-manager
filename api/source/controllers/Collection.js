@@ -1156,6 +1156,12 @@ module.exports.postGrantsByCollection = async function (req, res, next) {
     const { collectionId, grant: requesterGrant } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage, true)
     const grants = req.body
     const elevate = req.query.elevate
+    const userIds = grants.map(g => g.userId).filter(Boolean)
+    const invalidUserIds = await dbUtils.selectInvalidUserIds(userIds)
+    if (invalidUserIds.length > 0) {
+      throw new SmError.UserInconsistentError()
+    }
+
     const roles = grants.map( g => g.roleId)
     if (!elevate && roles.includes(4) && requesterGrant.roleId !== 4) {
       throw new SmError.PrivilegeError('cannot create owner grants')

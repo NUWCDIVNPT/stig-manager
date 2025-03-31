@@ -484,4 +484,16 @@ describe('User Status PUT Tests', function () {
       expect(res.status).to.equal(422)
     })
   })  
+  describe('POST - postGrantsByCollection - /collections/1/grants with unavailable user', function () {
+    let res
+    before(async function () {
+      res = await utils.executeRequest(`${config.baseUrl}/collections/1/grants/`, 'POST', users[0].token, [{
+        userId: '2',
+        roleId: 3
+      }])
+    })
+    it('returned a 422 status', function () {
+      expect(res.status).to.equal(422)
+    })
+  })    
 })
