@@ -5,6 +5,8 @@ const UserService = require(`../service/UserService`)
 const AssetService = require(`../service/AssetService`)
 const CollectionService = require(`../service/CollectionService`)
 const SmError = require('../utils/error')
+const dbUtils = require('../service/utils')
+
 /*  */
 module.exports.createUser = async function createUser (req, res, next) {
   try {
@@ -148,8 +150,10 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
       throw new SmError.NotFoundError("UserId not found.")
     }
 
-    if (body.status === 'unavailable' && (body.collectionGrants.length || body.userGroups.length)) {
-      throw new SmError.UserInconsistentError()
+    if (body.status === 'unavailable' || userData.status === 'unavailable') {
+      if (body.collectionGrants?.length || body.userGroups?.length) {
+        throw new SmError.UserInconsistentError()
+      }
     }
     if (body.status) {
       body.statusUser = req.userObject.userId
@@ -233,6 +237,10 @@ module.exports.createUserGroup = async (req, res, next) => {
   try {
     if (!req.query.elevate) throw new SmError.PrivilegeError()
     const {userIds, ...userGroupFields} = req.body
+    const invalidUserIds = await dbUtils.selectInvalidUserIds(userIds)
+    if (invalidUserIds.length) {
+      throw new SmError.UserInconsistentError()
+    }
     let userGroupId
     try{
       userGroupId = await UserService.addOrUpdateUserGroup({
@@ -292,6 +300,11 @@ async function putOrPatchUserGroup (req, res, next) {
   try {
     if (!req.query.elevate) throw new SmError.PrivilegeError()
     const {userIds, ...userGroupFields} = req.body
+    const invalidUserIds = await dbUtils.selectInvalidUserIds(userIds)
+    if (invalidUserIds.length) {
+      throw new SmError.UserInconsistentError()
+    }
+
     const userGroup = await UserService.queryUserGroups({
       projections: [],
       filters: {userGroupId: req.params.userGroupId}

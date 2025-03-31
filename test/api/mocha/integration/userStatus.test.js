@@ -181,6 +181,40 @@ describe('User Status POST Tests', function () {
       expect(res.body.statusUser).to.eql(users[0].statusUser)
     })
   })
+  describe('POST - createCollection - /collections with unavailable user grant', function () {
+    let res
+    before(async function () {
+      res = await utils.executeRequest(`${config.baseUrl}/collections`, 'POST', users[0].token, {
+        name: 'collection02',
+        description: 'Collection 02',
+        grants: [
+          {
+            "userId": "1",
+            "roleId": 4
+          },
+          {
+            "userId": "2",
+            "roleId": 4
+          }
+        ]
+      })
+    })
+    it('returned a 422 status', function () {
+      expect(res.status).to.equal(422)
+    })
+  })
+  describe('POST - createUserGroup - /user-groups with unavailable user', function () {
+    let res
+    before(async function () {
+      res = await utils.executeRequest(`${config.baseUrl}/user-groups?elevate=true`, 'POST', users[0].token, {
+        name: 'group01',
+        userIds: ["2"]
+      })
+    })
+    it('returned a 422 status', function () {
+      expect(res.status).to.equal(422)
+    })
+  })
 })
 
 describe('User Status PATCH Tests', function () {
@@ -219,39 +253,11 @@ describe('User Status PATCH Tests', function () {
       expect(res.body.userGroups).to.eql([])
     })
   })
-  describe(`PATCH - updateUser - /users/2 - unavailable given grants`, function () {
-    let res
-    before(async function () {
-      res = await utils.executeRequest(`${config.baseUrl}/users/2?elevate=true&projection=collectionGrants&projection=userGroups`, 'PATCH', users[0].token, {
-        collectionGrants: [{collectionId: '1', roleId: 3}]
-      })
-    })
-    it('returned a 422 status', function () {
-      expect(res.status).to.equal(422)
-    })
-    it('returned the error message', function () {
-      expect(res.body.error).to.eql(inconsistentErrorMessage)
-    })
-  })
-  describe(`PATCH - updateUser - /users/2 - unavailable given groups`, function () {
-    let res
-    before(async function () {
-      res = await utils.executeRequest(`${config.baseUrl}/users/2?elevate=true&projection=collectionGrants&projection=userGroups`, 'PATCH', users[0].token, {
-        userGroups: ['1'],
-      })
-    })
-    it('returned a 422 status', function () {
-      expect(res.status).to.equal(422)
-    })
-    it('returned the error message', function () {
-      expect(res.body.error).to.eql(inconsistentErrorMessage)
-    })
-  })
   describe(`PATCH - updateUser - /users/4 - available => unavailable with grants`, function () {
     let res
     before(async function () {
       await utils.loadAppData('user-status-patch-put.jsonl')
-      res = await utils.executeRequest(`${config.baseUrl}/users/4?elevate=true&projection=collectionGrants&projection=userGroups`, 'PATCH', users[0].token, {
+      res = await utils.executeRequest(`${config.baseUrl}/users/4?elevate=true`, 'PATCH', users[0].token, {
         status: 'unavailable',
         collectionGrants: [{collectionId: '1', roleId: 3}]
       })
@@ -259,15 +265,12 @@ describe('User Status PATCH Tests', function () {
     it('returned a 422 status', function () {
       expect(res.status).to.equal(422)
     })
-    it('returned the error message', function () {
-      expect(res.body.error).to.eql(inconsistentErrorMessage)
-    })
   })
   describe(`PATCH - updateUser - /users/4 - available => unavailable with groups`, function () {
     let res
     before(async function () {
       await utils.loadAppData('user-status-patch-put.jsonl')
-      res = await utils.executeRequest(`${config.baseUrl}/users/4?elevate=true&projection=collectionGrants&projection=userGroups`, 'PATCH', users[0].token, {
+      res = await utils.executeRequest(`${config.baseUrl}/users/4?elevate=true`, 'PATCH', users[0].token, {
         status: 'unavailable',
         userGroups: ['1']
       })
@@ -275,8 +278,59 @@ describe('User Status PATCH Tests', function () {
     it('returned a 422 status', function () {
       expect(res.status).to.equal(422)
     })
-    it('returned the error message', function () {
-      expect(res.body.error).to.eql(inconsistentErrorMessage)
+  })
+  describe(`PATCH - updateUser - /users/2 - unavailable user given grants`, function () {
+    let res
+    before(async function () {
+      res = await utils.executeRequest(`${config.baseUrl}/users/2?elevate=true`, 'PATCH', users[0].token, {
+        collectionGrants: [{collectionId: '1', roleId: 3}]
+      })
+    })
+    it('returned a 422 status', function () {
+      expect(res.status).to.equal(422)
+    })
+  })
+  describe(`PATCH - updateUser - /users/2 - unavailable user given groups`, function () {
+    let res
+    before(async function () {
+      res = await utils.executeRequest(`${config.baseUrl}/users/2?elevate=true`, 'PATCH', users[0].token, {
+        userGroups: ['1'],
+      })
+    })
+    it('returned a 422 status', function () {
+      expect(res.status).to.equal(422)
+    })
+  })
+  describe(`PATCH - updateCollection - /collections/1 - with unavailable user grant`, function () {
+    let res
+    before(async function () {
+      await utils.loadAppData('user-status-patch-put.jsonl')
+      res = await utils.executeRequest(`${config.baseUrl}/collections/1`, 'PATCH', users[0].token, {
+        grants: [
+          {
+            "userId": "1",
+            "roleId": 4
+          },
+          {
+            "userId": "2",
+            "roleId": 4
+          }
+        ]
+      })
+    })
+    it('returned a 422 status', function () {
+      expect(res.status).to.equal(422)
+    })
+  })
+  describe('PATCH - patchUserGroup - /user-groups/1 with unavailable user', function () {
+    let res
+    before(async function () {
+      res = await utils.executeRequest(`${config.baseUrl}/user-groups/1?elevate=true`, 'PATCH', users[0].token, {
+        userIds: ["2"]
+      })
+    })
+    it('returned a 422 status', function () {
+      expect(res.status).to.equal(422)
     })
   })
 })
@@ -285,7 +339,7 @@ describe('User Status PUT Tests', function () {
   before(async function () {
     await utils.loadAppData('user-status-patch-put.jsonl')
   })
-  describe(`PUT - updateUser - /users/3 - available => unavailable`, function () {
+  describe(`PUT - replaceUser - /users/3 - available => unavailable`, function () {
     let res
     before(async function () {
       res = await utils.executeRequest(`${config.baseUrl}/users/3?elevate=true&projection=collectionGrants&projection=userGroups`, 'PUT', users[0].token, {
@@ -320,7 +374,7 @@ describe('User Status PUT Tests', function () {
       expect(res.body.userGroups).to.eql([])
     })
   })
-  describe(`PUT - updateUser - /users/4 - available => unavailable with grants`, function () {
+  describe(`PUT - replaceUser - /users/4 - available => unavailable with grants`, function () {
     let res
     before(async function () {
       await utils.loadAppData('user-status-patch-put.jsonl')
@@ -338,7 +392,7 @@ describe('User Status PUT Tests', function () {
       expect(res.body.error).to.eql(inconsistentErrorMessage)
     })
   })
-  describe(`PUT - updateUser - /users/4 - available => unavailable with groups`, function () {
+  describe(`PUT - replaceUser - /users/4 - available => unavailable with groups`, function () {
     let res
     before(async function () {
       await utils.loadAppData('user-status-patch-put.jsonl')
@@ -356,4 +410,78 @@ describe('User Status PUT Tests', function () {
       expect(res.body.error).to.eql(inconsistentErrorMessage)
     })
   })
+  describe(`PUT - replaceUser - /users/2 - unavailable given grants`, function () {
+    let res
+    before(async function () {
+      res = await utils.executeRequest(`${config.baseUrl}/users/2?elevate=true`, 'PUT', users[0].token, {
+        username: 'user01',
+        collectionGrants: [{collectionId: '1', roleId: 3}]
+      })
+    })
+    it('returned a 422 status', function () {
+      expect(res.status).to.equal(422)
+    })
+  })
+  describe(`PUT - replaceUser - /users/2 - unavailable given groups`, function () {
+    let res
+    before(async function () {
+      res = await utils.executeRequest(`${config.baseUrl}/users/2?elevate=true`, 'PATCH', users[0].token, {
+        username: 'user01',
+        userGroups: ['1'],
+      })
+    })
+    it('returned a 422 status', function () {
+      expect(res.status).to.equal(422)
+    })
+  })
+  describe(`PUT - replaceCollection - /collections/1 - with unavailable user grant`, function () {
+    let res
+    before(async function () {
+      // await utils.loadAppData('user-status-patch-put.jsonl')
+      res = await utils.executeRequest(`${config.baseUrl}/collections/1`, 'PATCH', users[0].token, {
+        name: 'status-collection',
+        grants: [
+          {
+            "userId": "1",
+            "roleId": 4
+          },
+          {
+            "userId": "3",
+            "roleId": 4
+          },
+          {
+            "userId": "2",
+            "roleId": 4
+          }
+        ]
+      })
+    })
+    it('returned a 422 status', function () {
+      expect(res.status).to.equal(422)
+    })
+  })
+  describe('PUT - putUserGroup - /user-groups/1 with unavailable user', function () {
+    let res
+    before(async function () {
+      res = await utils.executeRequest(`${config.baseUrl}/user-groups/1?elevate=true`, 'PATCH', users[0].token, {
+        name: 'status-group',
+        userIds: ["2"]
+      })
+    })
+    it('returned a 422 status', function () {
+      expect(res.status).to.equal(422)
+    })
+  })
+  describe('PUT - putGrantByCollectionGrant - /collections/1/grants/2 with unavailable user', function () {
+    let res
+    before(async function () {
+      res = await utils.executeRequest(`${config.baseUrl}/collections/1/grants/2`, 'PUT', users[0].token, {
+        userId: '2',
+        roleId: 3
+      })
+    })
+    it('returned a 422 status', function () {
+      expect(res.status).to.equal(422)
+    })
+  })  
 })

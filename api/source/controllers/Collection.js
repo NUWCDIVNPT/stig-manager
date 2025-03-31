@@ -13,6 +13,7 @@ const SmError = require('../utils/error')
 const Archiver = require('archiver')
 const {XMLBuilder} = require("fast-xml-parser")
 const {escapeForXml} = require('../utils/escape')
+const dbUtils = require('../service/utils')
 
 module.exports.defaultSettings = {
   fields: {
@@ -43,7 +44,12 @@ module.exports.createCollection = async function createCollection (req, res, nex
     if ( elevate || req.userObject.privileges.create_collection ) {
       if (!hasUniqueGrants(body.grants)) {
         throw new SmError.UnprocessableError('Duplicate user or user group in grant array')
-      }  
+      }
+      const userIds = body.grants.map(g => g.userId).filter(Boolean)
+      const invalidUserIds = await dbUtils.selectInvalidUserIds(userIds)
+      if (invalidUserIds.length > 0) {
+        throw new SmError.UserInconsistentError()
+      }
       try {
         const response = await CollectionService.createCollection( body, projection, req.userObject, res.svcStatus)
         res.status(201).json(response)
@@ -247,9 +253,17 @@ module.exports.replaceCollection = async function replaceCollection (req, res, n
     const {collectionId, grant} = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage, true)
     const projection = req.query.projection
     const body = req.body
+
     if (!hasUniqueGrants(body.grants)) {
       throw new SmError.UnprocessableError('Duplicate user in grant array')
     }
+
+    const userIds = body.grants.map(g => g.userId).filter(Boolean)
+    const invalidUserIds = await dbUtils.selectInvalidUserIds(userIds)
+    if (invalidUserIds.length > 0) {
+      throw new SmError.UserInconsistentError()
+    }
+
     const existingGrants = (await CollectionService.getCollection(collectionId, ['grants'], false, req.userObject))
     ?.grants
     .map(g => {
@@ -284,6 +298,12 @@ module.exports.updateCollection = async function updateCollection (req, res, nex
       if (!hasUniqueGrants(body.grants)) {
         throw new SmError.UnprocessableError('Duplicate user in grant array')
       }
+      const userIds = body.grants.map(g => g.userId).filter(Boolean)
+      const invalidUserIds = await dbUtils.selectInvalidUserIds(userIds)
+      if (invalidUserIds.length > 0) {
+        throw new SmError.UserInconsistentError()
+      }
+  
       const existingGrants = (await CollectionService.getCollection(collectionId, ['grants'], false, req.userObject ))
         ?.grants
         .map(g => {
@@ -1072,6 +1092,13 @@ module.exports.putGrantByCollectionGrant = async function (req, res, next) {
     const grantId = req.params.grantId
     const elevate = req.query.elevate
     const grant = req.body
+
+    if (grant.userId) {
+      const invalidUserIds = await dbUtils.selectInvalidUserIds([grant.userId])
+      if (invalidUserIds.length) {
+        throw new SmError.UserInconsistentError()
+      }
+    }
 
     const {collectionId, grant: requesterGrant} = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage, true)
     const currentGrant = (await CollectionService._getCollectionGrant({collectionId, grantId}))[0]

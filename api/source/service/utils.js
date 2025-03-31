@@ -859,3 +859,12 @@ cteAclEffective as (select${includeColumnCollectionId ? ' collectionId,' : ''} s
   const sqlFormatted = mysql.format(sql, [grantIds])
   return sqlFormatted
 }
+
+module.exports.selectInvalidUserIds = async function (userIds) {
+  const sql = `select jt.inUserId as userId,ud.status from
+JSON_TABLE(?,'$[*]' COLUMNS( inUserId INT PATH '$')) as jt
+left join user_data ud on jt.inUserId = ud.userId
+where ud.userId is null or ud.status='unavailable'`
+  const [results] = await _this.pool.query(sql, [JSON.stringify(userIds)])
+  return results
+}
