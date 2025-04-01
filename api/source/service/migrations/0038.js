@@ -43,6 +43,10 @@ const upFn = async (pool, migrationName) => {
        left join rev_group_rule_map rgr on dr.revId = rgr.revId
        left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId
        left join review on (rvcd.version=review.version and rvcd.checkDigest=review.checkDigest and review.assetId=sa.assetId)
+       inner join collection c on c.collectionId = a.collectionId 
+     WHERE 
+		    a.state = "enabled"
+        and c.state = "enabled" 
      GROUP BY
        sa.assetId,
        sa.benchmarkId
