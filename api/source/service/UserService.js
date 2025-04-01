@@ -1,5 +1,6 @@
 'use strict';
-const config = require('../utils/config')
+const config = require('../utils/config');
+const SmError = require('../utils/error');
 const dbUtils = require('./utils')
 
 const _this = this
@@ -23,7 +24,10 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     `json_object(
       'create_collection', 'create_collection' member of(JSON_VALUE(ud.lastClaims, ? default '[]' on empty)),
       'admin', 'admin' member of(JSON_VALUE(ud.lastClaims, ? default '[]' on empty))
-    ) as 'privileges'`
+    ) as 'privileges'`,
+    'ud.status',
+    "date_format(ud.statusDate, '%Y-%m-%dT%TZ') as statusDate",
+    'CAST(ud.statusUser as char) as statusUser'
   ]
   const joins = new Set([
     'user_data ud'
@@ -117,6 +121,10 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
     predicates.binds.push(`$.${config.oauth.claims.privileges}`, JSON.stringify([inPredicates.privilege]))
   }
   
+  if (inPredicates.status) {
+    predicates.statements.push('ud.status = ?')
+    predicates.binds.push(inPredicates.status)
+  }
   
   if (needsCollectionGrantees) {
     ctes.push(dbUtils.sqlGrantees({userId: inPredicates.userId, username: inPredicates.username, returnCte: true}))
@@ -150,9 +158,9 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
         let sqlInsert =
           `INSERT INTO
               user_data
-              ( username )
+              ( username, status )
             VALUES
-              (:username )`
+              (:username, :status )`
         let [result] = await connection.query(sqlInsert, binds)
         userId = result.insertId
       }
@@ -302,12 +310,13 @@ exports.getUserByUsername = async function(username, projection, elevate, userOb
   }
 }
 
-exports.getUsers = async function(username, usernameMatch, privilege, projection, elevate, userObject) {
+exports.getUsers = async function(username, usernameMatch, privilege, status, projection, elevate, userObject) {
   try {
     let rows = await _this.queryUsers( projection, {
-      username: username,
-      usernameMatch: usernameMatch,
-      privilege: privilege
+      username,
+      usernameMatch,
+      privilege,
+      status
     }, elevate, userObject)
     return (rows)
   }
@@ -317,23 +326,16 @@ exports.getUsers = async function(username, usernameMatch, privilege, projection
 }
 
 exports.replaceUser = async function( userId, body, projection, elevate, userObject, svcStatus = {} ) {
-  try {
-    let row = await _this.addOrUpdateUser(dbUtils.WRITE_ACTION.REPLACE, userId, body, projection, elevate, userObject, svcStatus)
-    return (row)
-  } 
-  catch (err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  const row = await _this.addOrUpdateUser(dbUtils.WRITE_ACTION.REPLACE, userId, body, projection, elevate, userObject, svcStatus)
+  return (row)
 }
 
 exports.updateUser = async function( userId, body, projection, elevate, userObject, svcStatus = {} ) {
-  try {
-    let row = await _this.addOrUpdateUser(dbUtils.WRITE_ACTION.UPDATE, userId, body, projection, elevate, userObject, svcStatus)
-    return (row)
+  if (body.status === 'unavailable' && (body.collectionGrants?.length || body.userGroups?.length)) {
+    throw new SmError.UserInconsistentError()
   } 
-  catch (err) {
-    throw ( {status: 500, message: err.message, stack: err.stack} )
-  }
+  let row = await _this.addOrUpdateUser(dbUtils.WRITE_ACTION.UPDATE, userId, body, projection, elevate, userObject, svcStatus)
+  return (row)
 }
 
 exports.setUserData = async function (userObject, fields) {
@@ -469,6 +471,7 @@ exports.getUserObject = async function (username) {
     username,
     lastAccess,
     lastClaims,
+    status,
     (select
       coalesce(json_objectagg(
         dt2.collectionId, json_object(

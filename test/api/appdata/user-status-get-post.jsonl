@@ -1,0 +1,28 @@
+{"version":"1.5.5","commit":{"branch":"na","sha":"na","tag":"na","describe":"na"},"date":"2025-03-19T23:54:20.513Z","lastMigration":37}
+{"tables":[{"table":"asset","rowCount":0},{"table":"check_content","rowCount":0},{"table":"collection","rowCount":1},{"table":"collection_grant","rowCount":1},{"table":"collection_grant_acl","rowCount":0},{"table":"collection_label","rowCount":0},{"table":"collection_label_asset_map","rowCount":0},{"table":"collection_rev_map","rowCount":0},{"table":"current_rev","rowCount":0},{"table":"default_rev","rowCount":1},{"table":"fix_text","rowCount":0},{"table":"rev_group_rule_cci_map","rowCount":0},{"table":"rev_group_rule_map","rowCount":0},{"table":"review","rowCount":1},{"table":"review_history","rowCount":0},{"table":"revision","rowCount":1},{"table":"rule_version_check_digest","rowCount":0},{"table":"stig","rowCount":0},{"table":"stig_asset_map","rowCount":0},{"table":"user_data","rowCount":2},{"table":"user_group","rowCount":0},{"table":"user_group_user_map","rowCount":0}],"totalRows":4}
+{"table":"asset","columns":"`assetId`,`name`,`fqdn`,`collectionId`,`ip`,`mac`,`description`,`noncomputing`,`metadata`,`state`,`stateDate`,`stateUserId`","rowCount":0}
+{"table":"check_content","columns":"`ccId`,`content`","rowCount":0}
+{"table":"collection","columns":"`collectionId`,`name`,`description`,`settings`,`metadata`,`created`,`state`,`createdUserId`,`stateDate`,`stateUserId`","rowCount":1}
+[1,"status-collection","","{\"fields\": {\"detail\": {\"enabled\": \"always\", \"required\": \"always\"}, \"comment\": {\"enabled\": \"findings\", \"required\": \"findings\"}}, \"status\": {\"canAccept\": true, \"resetCriteria\": \"result\", \"minAcceptGrant\": 3}, \"history\": {\"maxReviews\": 5}}","{}","2025-03-22 18:23:18","enabled",null,null,null]
+{"table":"collection_grant","columns":"`grantId`,`collectionId`,`userId`,`userGroupId`,`roleId`","rowCount":1}
+[1,1,1,null,4]
+{"table":"collection_grant_acl","columns":"`cgAclId`,`grantId`,`benchmarkId`,`assetId`,`clId`,`access`,`modifiedUserId`,`modifiedDate`","rowCount":0}
+{"table":"collection_label","columns":"`clId`,`collectionId`,`name`,`description`,`color`,`uuid`","rowCount":0}
+{"table":"collection_label_asset_map","columns":"`claId`,`assetId`,`clId`","rowCount":0}
+{"table":"collection_rev_map","columns":"`crId`,`collectionId`,`benchmarkId`,`revId`","rowCount":0}
+{"table":"current_rev","columns":"`revId`,`benchmarkId`,`version`,`release`,`benchmarkDate`,`benchmarkDateSql`,`status`,`statusDate`,`description`,`active`,`groupCount`,`checkCount`,`fixCount`,`lowCount`,`mediumCount`,`highCount`","rowCount":0}
+{"table":"default_rev","columns":"`vdId`,`collectionId`,`benchmarkId`,`revId`,`revisionPinned`","rowCount":0}
+{"table":"fix_text","columns":"`ftId`,`text`","rowCount":0}
+{"table":"rev_group_rule_cci_map","columns":"`rgrccId`,`rgrId`,`cci`","rowCount":0}
+{"table":"rev_group_rule_map","columns":"`rgrId`,`revId`,`groupId`,`groupTitle`,`groupSeverity`,`ruleId`,`version`,`title`,`severity`,`weight`,`vulnDiscussion`,`falsePositives`,`falseNegatives`,`documentable`,`mitigations`,`severityOverrideGuidance`,`potentialImpacts`,`thirdPartyTools`,`mitigationControl`,`responsibility`,`iaControls`,`checkSystem`,`checkDigest`,`fixref`,`fixDigest`","rowCount":0}
+{"table":"review","columns":"`reviewId`,`assetId`,`ruleId`,`resultId`,`detail`,`comment`,`autoResult`,`ts`,`userId`,`statusId`,`statusText`,`statusUserId`,`statusTs`,`metadata`,`resultEngine`,`version`,`checkDigest`","rowCount":0}
+{"table":"review_history","columns":"`historyId`,`reviewId`,`resultId`,`detail`,`comment`,`autoResult`,`ts`,`userId`,`statusId`,`statusText`,`statusUserId`,`statusTs`,`touchTs`,`resultEngine`,`ruleId`","rowCount":0}
+{"table":"revision","columns":"`revId`,`benchmarkId`,`version`,`release`,`benchmarkDate`,`benchmarkDateSql`,`status`,`statusDate`,`description`,`active`,`groupCount`,`checkCount`,`fixCount`,`lowCount`,`mediumCount`,`highCount`","rowCount":0}
+{"table":"rule_version_check_digest","columns":"`ruleId`,`version`,`checkDigest`","rowCount":0}
+{"table":"stig","columns":"`benchmarkId`,`title`","rowCount":0}
+{"table":"stig_asset_map","columns":"`saId`,`benchmarkId`,`assetId`,`userIds`,`minTs`,`maxTs`,`saved`,`savedResultEngine`,`submitted`,`submittedResultEngine`,`rejected`,`rejectedResultEngine`,`accepted`,`acceptedResultEngine`,`highCount`,`mediumCount`,`lowCount`,`notchecked`,`notcheckedResultEngine`,`notapplicable`,`notapplicableResultEngine`,`pass`,`passResultEngine`,`fail`,`failResultEngine`,`unknown`,`unknownResultEngine`,`error`,`errorResultEngine`,`notselected`,`notselectedResultEngine`,`informational`,`informationalResultEngine`,`fixed`,`fixedResultEngine`,`maxTouchTs`","rowCount":0}
+{"table":"user_data","columns":"`userId`,`username`,`created`,`lastAccess`,`lastClaims`,`status`,`statusDate`,`statusUser`","rowCount":2}
+[1,"admin","2025-03-19 23:09:52",1735707600,"{}","available","2025-01-01 00:00:00",null]
+[2,"user01","2025-03-19 23:48:44",1735707600,"{}","unavailable","2025-01-01 00:00:01",1]
+{"table":"user_group","columns":"`userGroupId`,`name`,`description`,`createdUserId`,`createdDate`,`modifiedUserId`,`modifiedDate`","rowCount":0}
+{"table":"user_group_user_map","columns":"`ugumId`,`userGroupId`,`userId`","rowCount":0}

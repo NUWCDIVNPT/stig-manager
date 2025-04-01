@@ -5,6 +5,8 @@ const UserService = require(`../service/UserService`)
 const AssetService = require(`../service/AssetService`)
 const CollectionService = require(`../service/CollectionService`)
 const SmError = require('../utils/error')
+const dbUtils = require('../service/utils')
+
 /*  */
 module.exports.createUser = async function createUser (req, res, next) {
   try {
@@ -22,6 +24,7 @@ module.exports.createUser = async function createUser (req, res, next) {
         throw new SmError.UnprocessableError('One or more collectionIds are invalid.')
       }
     }
+    body.status = 'available'
     try {
       let response = await UserService.createUser(body, projection, elevate, req.userObject, res.svcStatus)
       res.status(201).json(response)
@@ -121,11 +124,12 @@ module.exports.getUsers = async function getUsers (req, res, next) {
     let username = req.query.username
     let usernameMatch = req.query['username-match']
     let privilege = req.query['privilege']
+    let status = req.query.status
     let projection = req.query.projection
     if ( !elevate && projection?.length > 0) {
       throw new SmError.PrivilegeError()
     }
-    let response = await UserService.getUsers( username, usernameMatch, privilege, projection, elevate, req.userObject)
+    let response = await UserService.getUsers( username, usernameMatch, privilege, status, projection, elevate, req.userObject)
     res.json(response)
   }
   catch(err) {
@@ -146,7 +150,17 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
       throw new SmError.NotFoundError("UserId not found.")
     }
 
-    if (body.hasOwnProperty('collectionGrants') ) {
+    if (body.status === 'unavailable' || userData.status === 'unavailable') {
+      if (body.collectionGrants?.length || body.userGroups?.length) {
+        throw new SmError.UserInconsistentError()
+      }
+    }
+    if (body.status) {
+      body.statusUser = req.userObject.userId
+      body.statusDate = new Date()
+    } 
+
+    if (body.collectionGrants?.length) {
       // Verify each grant for a valid collectionId
       let requestedIds = body.collectionGrants.map( g => g.collectionId )
       let availableCollections = await CollectionService.queryCollections({elevate})
@@ -167,32 +181,40 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
 module.exports.updateUser = async function updateUser (req, res, next) {
   try {
     let elevate = req.query.elevate
+    if (!elevate) throw new SmError.PrivilegeError()
     let userId = req.params.userId
-    if (elevate) {
-      let body = req.body
-      let projection = req.query.projection
+    let body = req.body
+    let projection = req.query.projection
 
-      let userData = await UserService.getUserByUserId(userId)
-      if (!userData) {
-        throw new SmError.NotFoundError("UserId not found.")
-      }
-
-      if (body.hasOwnProperty('collectionGrants') ) {
-        // Verify each grant for a valid collectionId
-        let requestedIds = body.collectionGrants.map( g => g.collectionId )
-        let availableCollections = await CollectionService.queryCollections({elevate})
-        let availableIds = availableCollections.map( c => c.collectionId)
-        if (! requestedIds.every( id => availableIds.includes(id) ) ) {
-          throw new SmError.UnprocessableError('One or more collectionIds are invalid.')
-        }
-      }
-
-      let response = await UserService.replaceUser(userId, body, projection, elevate, req.userObject, res.svcStatus)
-      res.json(response)
+    let userData = await UserService.getUserByUserId(userId)
+    if (!userData) {
+      throw new SmError.NotFoundError("UserId not found.")
     }
-    else {
-     throw new SmError.PrivilegeError()    
+
+    if (body.status === 'unavailable' || userData.status === 'unavailable') {
+      if (body.collectionGrants?.length || body.userGroups?.length) {
+        throw new SmError.UserInconsistentError()
+      }
+      body.collectionGrants = []
+      body.userGroups = []
     }
+    if (body.status) {
+      body.statusUser = req.userObject.userId
+      body.statusDate = new Date()
+    } 
+
+    if (body.collectionGrants?.length) {
+      // Verify each grant for a valid collectionId
+      let requestedIds = body.collectionGrants.map( g => g.collectionId )
+      let availableCollections = await CollectionService.queryCollections({elevate})
+      let availableIds = availableCollections.map( c => c.collectionId)
+      if (! requestedIds.every( id => availableIds.includes(id) ) ) {
+        throw new SmError.UnprocessableError('One or more collectionIds are invalid.')
+      }
+    }
+
+    let response = await UserService.replaceUser(userId, body, projection, elevate, req.userObject, res.svcStatus)
+    res.json(response)
   }
   catch(err) {
     next(err)
@@ -215,6 +237,10 @@ module.exports.createUserGroup = async (req, res, next) => {
   try {
     if (!req.query.elevate) throw new SmError.PrivilegeError()
     const {userIds, ...userGroupFields} = req.body
+    const invalidUserIds = await dbUtils.selectInvalidUserIds(userIds)
+    if (invalidUserIds.length) {
+      throw new SmError.UserInconsistentError()
+    }
     let userGroupId
     try{
       userGroupId = await UserService.addOrUpdateUserGroup({
@@ -274,6 +300,11 @@ async function putOrPatchUserGroup (req, res, next) {
   try {
     if (!req.query.elevate) throw new SmError.PrivilegeError()
     const {userIds, ...userGroupFields} = req.body
+    const invalidUserIds = await dbUtils.selectInvalidUserIds(userIds)
+    if (invalidUserIds.length) {
+      throw new SmError.UserInconsistentError()
+    }
+
     const userGroup = await UserService.queryUserGroups({
       projections: [],
       filters: {userGroupId: req.params.userGroupId}
