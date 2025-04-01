@@ -266,20 +266,32 @@ The table below describes the fields that are included in the exports available 
      - **X**
    * - assessmentsLow
      - Total number of Rules assigned to this item with a Severity 3 category 
-     - 
+     - **X**
      - **X**
    * - assessmentsMedium
      - Total number of Rules assigned to this item with a Severity 2 category 
-     - 
+     - **X**
      - **X**
    * - assessmentsHigh
      - Total number of Rules assigned to this item with a Severity 1 category 
-     - 
+     - **X**
      - **X**
    * - assessed
      - Total number of Reviews that have been marked "pass," "fail," or "notapplicable."
      - **X**
      - **X**
+   * - assessedLow
+     - Number of assessed Rules with a Severity 3 category. 
+     - **X**
+     - **X**
+   * - assessedMedium
+     - Number of assessed Rules with a Severity 2 category. 
+     - **X**
+     - **X**
+   * - assessedHigh
+     - Number of assessed Rules with a Severity 1 category. 
+     - **X**
+     - **X**     
    * - minTs
      - Date of the Evaluation of the oldest Review in the Collection. 
      - **X**
@@ -360,7 +372,7 @@ The table below describes the fields that are included in the exports available 
      - Number of Reviews with a "notapplicable" result that were evaluated by an automated tool. 
      - 
      - **X**
-   * - unassessed
+   * - other
      - Total number of Reviews with a result that is NOT "pass", "fail", or "notapplicable". 
      - **X**
      -      

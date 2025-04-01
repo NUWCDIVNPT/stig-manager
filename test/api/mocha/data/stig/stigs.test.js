@@ -471,7 +471,7 @@ describe('POST - Stig', () => {
                     const filename = 'appdata.jsonl'
                     const __filename = fileURLToPath(import.meta.url)
                     const __dirname = path.dirname(__filename)
-                    const filePath = path.join(__dirname, `../../../form-data-files/${filename}`)
+                    const filePath = path.join(__dirname, `../../../appdata/${filename}`)
                     
                     const fileContent = readFileSync(filePath, 'utf-8')
                     

@@ -8,6 +8,9 @@ usage() {
   echo "  -f file        Run specific test file."
   echo "  -i iteration   Run tests for specific iteration.name (see iterations.js)"
   echo "  -p pattern     Run tests matching the whole word."
+  echo "  -s mode        Saves metrics reference data files during tests."
+  echo "                 Use '-s new' to create new files with 'new-' prefix."
+  echo "                 Use '-s update' to modify existing files."
   echo -e "  -h help        examples: \n ./runMocha.sh \n ./runMocha.sh -p \"the name of my test\" \n ./runMocha.sh -p \"getCollections|getAsset\" \n ./runMocha.sh -p getCollections \n ./runMocha.sh -i lvl1 -i lvl2 -p getCollections \n ./runMocha.sh -f collectionGet.test.js \n ./runMocha.sh -d mocha/data/collection"
   exit 
 }
@@ -15,12 +18,14 @@ usage() {
 DEFAULT_COMMAND="npx mocha --reporter mochawesome --no-timeouts --showFailed --exit"
 COMMAND=$DEFAULT_COMMAND
 COVERAGE=false
+SAVE_METRICS=false
+METRICS_MODE="new"  # by default -s generates new metrics reference data files
 GREP=()
 FILES=()
 DIRECTORIES=()
 ITERATION=()
 
-while getopts "bcd:f:hi:p:" opt; do
+while getopts "bcd:f:s:hi:p:" opt; do
   case ${opt} in
     b) COMMAND+=" --bail" ;;
     c) COVERAGE=true ;;
@@ -29,6 +34,16 @@ while getopts "bcd:f:hi:p:" opt; do
     h) usage ;;
     i) ITERATION+=("${OPTARG}") ;;
     p) GREP+=("${OPTARG}") ;;
+    s) 
+       SAVE_METRICS=true
+       # Check if the argument starts with a dash, which means it's likely another option
+       if [[ "$OPTARG" == -* ]]; then
+         echo "Error: Option -s requires an argument (new or update)."
+         echo "Did you mean '-s new -f metaMetricsGet.test.js'?"
+         usage
+       fi
+       METRICS_MODE="$OPTARG"
+       ;;    
     *) usage ;;
   esac
 done
@@ -51,6 +66,23 @@ if [ ${#GREP[@]} -gt 0 ] || [ ${#ITERATION[@]} -gt 0 ]; then
   ITERATION_PATTERN=$(IFS='|'; echo "${ITERATION[*]}")
   GREP_PATTERN="${ITERATION_PATTERN:+\\biteration:(${ITERATION_PATTERN})\\b}${GREP:+.*\\b(${GREP})\\b}"
   COMMAND+=" -g \"/$GREP_PATTERN/\""
+fi
+
+# Set environment variables for metrics generation
+if $SAVE_METRICS; then
+  export STIGMAN_SAVE_METRICS_DATA=true
+  
+  # Set the appropriate mode based on the -s argument
+  if [ "$METRICS_MODE" = "update" ]; then
+    export STIGMAN_NEW_METRICS_FILES=false
+    echo "Updating existing metrics reference data files..."
+  else
+    export STIGMAN_NEW_METRICS_FILES=true
+    echo "Generating new metrics reference data files with 'new-' prefix..."
+  fi
+else
+  export STIGMAN_SAVE_METRICS_DATA=false
+  export STIGMAN_NEW_METRICS_FILES=false
 fi
 
 validate_responses() {
