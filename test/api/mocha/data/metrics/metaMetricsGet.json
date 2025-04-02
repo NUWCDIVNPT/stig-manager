@@ -73,9 +73,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 898,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 64,
@@ -241,9 +241,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 50,
@@ -325,9 +325,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 50,
@@ -409,9 +409,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 50,
@@ -579,9 +579,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 50,
@@ -747,9 +747,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 50,
@@ -831,9 +831,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 50,
@@ -915,9 +915,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 50,
@@ -1593,9 +1593,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -1852,9 +1852,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -1939,9 +1939,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -2026,9 +2026,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -2116,9 +2116,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -2290,9 +2290,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -2377,9 +2377,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -2464,9 +2464,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -3688,9 +3688,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -3950,9 +3950,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -4124,9 +4124,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -4298,9 +4298,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -4475,9 +4475,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -4737,9 +4737,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -4911,9 +4911,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -5085,9 +5085,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -5658,9 +5658,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 898,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 64,
@@ -5738,9 +5738,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 50,
@@ -5778,9 +5778,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 50,
@@ -5818,9 +5818,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 50,
@@ -5900,9 +5900,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 50,
@@ -5980,9 +5980,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 50,
@@ -6020,9 +6020,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 50,
@@ -6060,9 +6060,9 @@
         "maxTouchTs": "2022-02-03T00:07:07Z",
         "assessments": 736,
         "assessedBySeverity": {
-          "low": 37,
-          "high": 52,
-          "medium": 491
+          "low": 1,
+          "high": 0,
+          "medium": 11
         },
         "assessmentsBySeverity": {
           "low": 50,
@@ -6386,9 +6386,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -6513,9 +6513,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -6556,9 +6556,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -6599,9 +6599,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -6645,9 +6645,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -6731,9 +6731,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -6774,9 +6774,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -6817,9 +6817,9 @@
           "maxTouchTs": "2022-02-03T00:07:07Z",
           "assessments": 736,
           "assessedBySeverity": {
-            "low": 37,
-            "high": 52,
-            "medium": 491
+            "low": 1,
+            "high": 0,
+            "medium": 11
           },
           "assessmentsBySeverity": {
             "low": 50,
@@ -7475,9 +7475,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -7605,9 +7605,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -7691,9 +7691,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -7777,9 +7777,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -7866,9 +7866,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -7996,9 +7996,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -8082,9 +8082,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
@@ -8168,9 +8168,9 @@
           "maxTouchTs": "2020-08-18T20:48:29Z",
           "assessments": 574,
           "assessedBySeverity": {
-            "low": 36,
-            "high": 52,
-            "medium": 483
+            "low": 0,
+            "high": 0,
+            "medium": 3
           },
           "assessmentsBySeverity": {
             "low": 36,
