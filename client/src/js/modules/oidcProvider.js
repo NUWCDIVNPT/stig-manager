@@ -9,10 +9,12 @@ async function authorize({clientId, oidcProvider, scope, autoRefresh}) {
   state.autoRefresh = autoRefresh
   state.scope = scope
   state.oidcConfiguration = await getOpenIdConfiguration(oidcProvider)
+  state.responseMode = STIGMAN.Env.oauth.responseMode
+  state.responseSeparator = state.responseMode === 'fragment' ? '#' : '?'
 
-  // check our URL for fragment
-  const fragmentIndex = window.location.href.indexOf('#')
-  if (fragmentIndex === -1) {
+  // check our URL for parameters
+  const paramIndex = window.location.href.indexOf(state.responseSeparator)
+  if (paramIndex === -1) {
     // redirect to OP with authorization request
     const authUrl = await getAuthorizationUrl()
     window.location.href = authUrl
@@ -22,7 +24,7 @@ async function authorize({clientId, oidcProvider, scope, autoRefresh}) {
     // exchange authorization_code for token
     const lastOidc = JSON.parse(localStorage.getItem('last-oidc') ?? '{}')
     lastOidc.redirectHref = window.location.href
-    const [redirectUrl, paramStr] = window.location.href.split('#')
+    const [redirectUrl, paramStr] = window.location.href.split(state.responseSeparator)
     const params = processRedirectParams(paramStr)
 
     if (lastOidc.state !== params.state) {
@@ -234,7 +236,7 @@ async function getAuthorizationUrl() {
   params.append('client_id', state.clientId)
   params.append('redirect_uri', window.location.href)
   params.append('state', oidcState)
-  params.append('response_mode', 'fragment')
+  params.append('response_mode', state.responseMode)
   params.append('response_type', 'code')
   params.append('scope', state.scope)
   params.append('nonce', crypto.randomUUID())

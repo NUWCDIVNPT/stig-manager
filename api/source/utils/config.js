@@ -29,6 +29,7 @@ const config = {
         directory: process.env.STIGMAN_CLIENT_DIRECTORY || '../../client/dist',
         extraScopes: process.env.STIGMAN_CLIENT_EXTRA_SCOPES,
         scopePrefix: process.env.STIGMAN_CLIENT_SCOPE_PREFIX,
+        responseMode: process.env.STIGMAN_CLIENT_RESPONSE_MODE || "fragment",
         refreshToken: {
             disabled: process.env.STIGMAN_CLIENT_REFRESH_DISABLED ? process.env.STIGMAN_CLIENT_REFRESH_DISABLED === "true" : false,
         },

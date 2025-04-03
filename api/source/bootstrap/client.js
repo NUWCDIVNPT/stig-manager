@@ -46,7 +46,8 @@ function getClientEnv(){
                 disabled: ${config.client.refreshToken.disabled}
                 },
                 extraScopes: "${config.client.extraScopes ?? ''}",
-                scopePrefix: "${config.client.scopePrefix ?? ''}"
+                scopePrefix: "${config.client.scopePrefix ?? ''}",
+                responseMode: "${config.client.responseMode}"
             },
             experimental: {
                 appData: "${config.experimental.appData}"
