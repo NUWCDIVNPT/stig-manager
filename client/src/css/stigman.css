@@ -1484,6 +1484,11 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   background-repeat: no-repeat;
   background-size: 16px 16px
 }
+.sm-user-unavailable-icon {
+  background-image: url(../img/user-unavailable.svg)!important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px
+}
 .sm-users-icon {
   background-image: url(../img/users.svg)!important;
   background-repeat: no-repeat;
