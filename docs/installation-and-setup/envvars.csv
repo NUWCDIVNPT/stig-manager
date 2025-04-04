@@ -27,6 +27,8 @@
 | String used as a prefix for each scope when authenticating to the OIDC Provider. Some providers (Azure AD) expect scope requests in the format ``api://<application_id>/<scope>``, where ``api://<application_id>/`` is the required prefix.","Client"
 "STIGMAN_CLIENT_REFRESH_DISABLED","| **Default** ``false``
 | Whether the web client should use a provided refresh token to update the access token","Client"
+"STIGMAN_CLIENT_RESPONSE_MODE","| **Default** ``fragment``
+| The response_mode the web client should specify when requesting an authorization code from the OIDC provider. Available values: ``fragment``, ``query`` ","Client"
 "STIGMAN_CLIENT_WELCOME_IMAGE ","| **No default**
 | The URL of an image hosted elsewhere that will be rendered in the Home tab Welcome widget. The STIGMan app does not serve the image itself, only the reference to it. The URL should be in relation to and accessible from the client's browser. The image will be scaled to a max width or height of 125 pixels - If no alternate image is specified, the seal of the Department of the Navy (the project sponsor)  will be displayed. ","Client Appearance"
 "STIGMAN_CLIENT_WELCOME_LINK","| **No default**
