@@ -5841,14 +5841,15 @@ components:
       properties:
         results:
           type: object
+          additionalProperties: false
           properties:
             fail:
               type: integer
             notapplicable:
               type: integer
-            pass:
+            other:
               type: integer
-            unassessed:
+            pass:
               type: integer
         statuses:
           additionalProperties: false
@@ -6989,6 +6990,20 @@ components:
           properties:
             assessed:
               type: integer
+            assessedBySeverity:
+              additionalProperties: false
+              type: object
+              properties:
+                high:
+                  type: integer
+                low:
+                  type: integer
+                medium:
+                  type: integer
+              required:
+                - low
+                - medium
+                - high
             assessments:
               type: integer
             assessmentsBySeverity:
@@ -7069,15 +7084,16 @@ components:
                 submitted:
                   $ref: '#/components/schemas/CollectionStatusCount'
           required:
+            - assessed
+            - assessedBySeverity
             - assessments
             - assessmentsBySeverity
-            - assessed
+            - findings
             - minTs
             - maxTs
             - maxTouchTs
             - results
             - statuses
-            - findings
       required:
         - metrics
     MetricsDetailAggAsset:
@@ -7112,8 +7128,36 @@ components:
           properties:
             assessed:
               type: integer
+            assessedBySeverity:
+              additionalProperties: false
+              type: object
+              properties:
+                high:
+                  type: integer
+                low:
+                  type: integer
+                medium:
+                  type: integer
+              required:
+                - low
+                - medium
+                - high                   
             assessments:
               type: integer
+            assessmentsBySeverity:
+              additionalProperties: false
+              type: object
+              properties:
+                high:
+                  type: integer
+                low:
+                  type: integer
+                medium:
+                  type: integer
+              required:
+                - low
+                - medium
+                - high              
             findings:
               additionalProperties: false
               type: object
@@ -7142,15 +7186,15 @@ components:
                   type: integer
                 notapplicable:
                   type: integer
+                other:
+                  type: integer
                 pass:
                   type: integer
-                unassessed:
-                  type: integer
               required:
-                - pass
                 - fail
                 - notapplicable
-                - unassessed
+                - other
+                - pass
             statuses:
               additionalProperties: false
               type: object
@@ -7167,16 +7211,18 @@ components:
                 - saved
                 - submitted
                 - accepted
-                - rejected
+                - rejected           
           required:
-            - assessments
             - assessed
+            - assessedBySeverity
+            - assessments
+            - assessmentsBySeverity
+            - findings
             - minTs
             - maxTs
             - maxTouchTs
             - results
             - statuses
-            - findings
       required:
         - metrics
     MetricsSummaryAggAsset:

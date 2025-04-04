@@ -75,7 +75,7 @@ SM.CollectionPanel.CommonFields = [
   {
     name: 'unassessed',
     type: 'integer',
-    mapping: 'metrics.results.unassessed'
+    mapping: 'metrics.results.other'
   },
   {
     name: 'assessedPct',
@@ -832,7 +832,7 @@ SM.CollectionPanel.ProgressPanel = Ext.extend(Ext.Panel, {
     const calcMetrics = function (metrics) {
       return {
         unassessed: metrics.assessments - metrics.assessed,
-        assessed: metrics.statuses.saved - metrics.results.unassessed,
+        assessed: metrics.statuses.saved - metrics.results.other,
         submitted: metrics.statuses.submitted,
         accepted: metrics.statuses.accepted,
         rejected: metrics.statuses.rejected,

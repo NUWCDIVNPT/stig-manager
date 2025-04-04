@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "testing",
   "scripts": {
-    "test": "mocha --reporter mochawesome --timeout 10000 --showFailed --exit './mocha/**/*.test.js'"
+    "test": "mocha --reporter mochawesome --timeout 10000 --showFailed --exit './mocha/**/*.test.js'",
+    "update-appdata": "node ./mocha/utils/run-appdata-update.js"
   },
   "keywords": [],
   "author": "",
