@@ -239,7 +239,7 @@ SM.ApplicationManagers = Ext.extend(Ext.Panel, {
     try {
       const response = await Ext.Ajax.requestPromise({
         responseType: 'json',
-        url: `${STIGMAN.Env.apiBase}/users?privilege=admin`,
+        url: `${STIGMAN.Env.apiBase}/users?privilege=admin&status=available`,
         method: 'GET',
         headers: { 'Content-Type': 'application/json;charset=utf-8' },
       })

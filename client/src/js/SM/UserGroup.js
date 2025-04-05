@@ -479,7 +479,7 @@ SM.UserGroup.UserSelectingPanel = Ext.extend(Ext.Panel, {
     async function initPanel(apiUserGroup) {
       const apiAvailableUsers = await Ext.Ajax.requestPromise({
         responseType: 'json',
-        url: `${STIGMAN.Env.apiBase}/users`,
+        url: `${STIGMAN.Env.apiBase}/users?status=available`,
         method: 'GET'
       })
 
