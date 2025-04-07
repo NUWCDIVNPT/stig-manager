@@ -101,31 +101,7 @@ const getUUIDSubString = (length = 20) => {
   return uuidv4().substring(0, length)
 }
 
-/**
- * Export application data as JSONL
- * @param {object} options - Options for exporting
- * @param {string} options.format - Format of the exported data (default: 'jsonl')
- * @returns {Promise<string>} - The exported data
- */
-const exportAppData = async (options = {}) => {
-  const format = options.format || 'jsonl'
-  
-  const response = await fetch(`${baseUrl}/op/appdata?elevate=true&format=${format}`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${adminToken}`
-    }
-  })
-  
-  if (!response.ok) {
-    throw new Error(`Failed to export data: ${response.status} ${response.statusText}`)
-  }
-  
-  return response.text()
-}
-
 const loadAppData = async (appdataFileName = 'appdata.jsonl') => {
-
 
   const __filename = fileURLToPath(import.meta.url)
   const __dirname = dirname(__filename)
@@ -151,50 +127,6 @@ const loadAppData = async (appdataFileName = 'appdata.jsonl') => {
 
 }
 
-/**
- * Loads all appdata files from the appdata directory, then exports them as JSONL
- * @param {string} appdataDir - Directory containing appdata files (default: 'appdata')
- * @returns {Promise<Array>} - Results of processing each file
- */
-const loadAndExportAllAppData = async (appdataDir = 'appdata') => {
-  const { readdir } = await import('fs/promises')
-
-  const __filename = fileURLToPath(import.meta.url)
-  const __dirname = dirname(__filename)
-  const dirPath = join(__dirname, `../../${appdataDir}`)
-  
-  // Read all files in the directory
-  const files = await readdir(dirPath)
-  const results = []
-  
-  // Process each file
-  for (const file of files) {
-    try {
-      console.log(`Loading ${file}...`)
-      // Load the appdata file
-      await loadAppData(file)
-      
-      console.log(`Exporting data as JSONL...`)
-      // Export data in JSONL format using our utility function
-      const exportedData = await exportAppData({ format: 'jsonl' })
-      
-      // Create output filename
-      const outputPath = join(dirPath, file)
-      
-      // Save to new existing file
-      writeFileSync(outputPath, exportedData, 'utf8')
-      
-      console.log(`Saved to ${outputPath}`)
-      results.push({ file, success: true, outputPath })
-    } 
-    catch (error) {
-      console.error(`Error processing ${file}:`, error)
-      results.push({ file, success: false, error: error.message })
-    }
-  }
-  
-  return results
-}
 
 const createTempCollection = async (collectionPost) => {
   // if no collecitonPost is passed in, use the default
@@ -793,8 +725,6 @@ export {
   resetScrapAsset,
   setRestrictedUsers,
   loadAppData,
-  exportAppData,
-  loadAndExportAllAppData,
   deleteCollection,
   deleteAsset,
   putAsset,
