@@ -40,20 +40,31 @@ The columns list the Collection Name, Description, Owners, total User members, t
 
 ----------------------
 
-User Grants Admin Panel
+Users Admin Panel
 ---------------------------------
-This Panel lists every User known to the STIGMan system. The columns display usernames, Display Name, date of first User access, last User access, User's privileges ( Create Collection or Administrator), and their internal userid.
+This Panel lists every User known to the STIGMan system. The columns display usernames, Display Name, Status, Groups, date of first User access, last User access, User's privileges ( Create Collection or Administrator), and their internal userid.
 
 STIG Manager's Users are automatically created when they have successfully used your Authentication Provider to authenticate and are redirected back to the STIGMan application.
 
 Users can be pre-registered before they have authenticated with your Authentication Provider, but the username must match exactly.
 
-Users can be Unregistered from STIG Manager, which will delete STIGMan's information about the User. If the User accesses STIG Manager again, they will appear as a new User, with no STIG Assignments or Collection Grants.
+Users can be Unregistered from STIG Manager. If the User has never accessed the system, their User record will be deleted. If the User has accessed the system, the User's Grant and Group assignments will be removed, but their User record will be retained for auditing and attribution purposes. The User will still be able to access the system if granted access by the Authentication Provider.
 
-.. thumbnail:: /assets/images/admin-user-grants.png
+Application Managers can change a User's Status by selecting the user, and clicking the "Set Un/Available" button in the toolbar. 
+
+User Statuses:
+  - **Available** - Default Status. Allows an authenticated User access to the system and allows them to be assigned Grants and Group memberships.
+  - **Unavailable** - The User will not be able to access the system, and will not appear in User lists for the purposes of assigning Grants or Group membership. 
+
+When an App Manager sets a User's Status to "Unavailable," all the User's existing Grants and Group memberships will be removed. The User's record will remain in the system for auditing and attribution purposes.
+
+By default, the Users Admin panel enables a filter on the "Status" column, so that only "Available" Users are displayed. To view all Users, check the "(Select All)" box in the Status column filter.
+
+
+.. thumbnail:: /assets/images/admin-users.png
       :width: 50% 
       :show_caption: True
-      :title: User Grants Administration
+      :title: Users Administration
 
 |
 

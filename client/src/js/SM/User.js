@@ -844,7 +844,7 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
       else {
         buttons.yes ='Set Available'
         status = 'available'
-        msg = `Set user ${user.data.username} status to Available?<br><br>This action will permit the user to be assigned to Collection Grants and User Groups.`
+        msg = `Set user ${user.data.username} status to Available?<br><br>This action will permit the user to access the system, and be assigned to Collection Grants and User Groups.`
       }
 
       Ext.Msg.show({
