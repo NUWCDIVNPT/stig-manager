@@ -712,7 +712,7 @@ exports.getCollection = async function(collectionId, projections, elevate, userO
 }
 
 
-exports.getFindingsByCollection = async function( {collectionId, aggregator, benchmarkId, assetId, acceptedOnly, projections, grant} ) {
+exports.getFindingsByCollection = async function( {collectionId, aggregator, benchmarkId, assetId, acceptedOnly, projections = [], grant} ) {
   let columns, groupBy, orderBy
   switch (aggregator) {
     case 'ruleId':
