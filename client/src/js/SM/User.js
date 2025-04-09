@@ -821,13 +821,25 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
 
     const statusBtnHandler = function () {
       let user = _this.getSelectionModel().getSelected()
+      
+      // Prevent users from setting themselves as unavailable
+      if (user.data.userId === curUser.userId && user.data.status === 'available') {
+        Ext.Msg.show({
+          title: 'Action not allowed',
+          icon: Ext.Msg.WARNING,
+          msg: 'You cannot set yourself to Unavailable.',
+          buttons: { ok: 'OK' }
+        })
+        return
+      }
+      
       let buttons = { no: 'Cancel' }
       let status
       let msg
       if (user.data.status === 'available') {
         buttons.yes = 'Set Unavailable'
         status = 'unavailable'
-        msg = `Set user ${user.data.username} status to Unavailable?<br><br>This action will remove all Collection Grants and User Group assignments for the user. A record will be retained in the system for auditing and attribution purposes.`
+        msg = `Set User ${user.data.username} status to Unavailable?<br><br>This action will remove the User's Collection Grants and User Group assignments.<br> The User will no longer be able to access the system or receive new Grant or Group assignments.<br><br> A record will be retained in the system for auditing and attribution purposes.`
       }
       else {
         buttons.yes ='Set Available'
@@ -1011,7 +1023,7 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
           handler: function () {
             let user = _this.getSelectionModel().getSelected();
             let buttons = { yes: 'Unregister', no: 'Cancel' }
-            let confirmStr = `Unregister user ${user.data.username}?<br><br>This action will remove all Collection Grants for the user. A record will be retained in the system for auditing and attribution purposes.`;
+            let confirmStr = `Unregister user ${user.data.username}?<br><br>This action will remove the User's Collection Grants and User Group assignments.<br> The User will still be able to use the system if granted access by the Authentication Provider.`;
             if (user.data.lastAccess === 0) {
               confirmStr = `Delete user ${user.data.username}?<br><br>This user has never accessed the system, and will be deleted from the system entirely.`;
               buttons.yes = 'Delete'
