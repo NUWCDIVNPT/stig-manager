@@ -340,6 +340,16 @@ describe('GET - Collection', function () {
             }
         })
 
+        it('Return the Findings for the specified Collection by cci, no projections', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/findings?aggregator=cci&acceptedOnly=false`, 'GET', iteration.token)
+            if (distinct.grant === "none"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+            expect(res.body).to.have.lengthOf(distinct.findings.findingsByCciCnt)
+        })
+
         it('Return the Findings for the specified Collection for benchmarkId x ruleId',async function () {
           const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/findings?aggregator=ruleId&acceptedOnly=false&benchmarkId=${reference.benchmark}&projection=assets`, 'GET', iteration.token)
             if (distinct.grant === "none"){
@@ -373,6 +383,7 @@ describe('GET - Collection', function () {
               expect(finding.assets[0].assetId).to.equal(reference.testAsset.assetId)
             }
         })
+
       })
 
       describe('getEffectiveAclByCollectionUser - /collections/{collectionId}/users/{userId}/effective-acl', function () {
