@@ -762,6 +762,18 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
         type: 'string'
       },
       {
+        name: 'status',
+        type: 'string'
+      },
+      {
+        name: 'statusDate',
+        type: 'string'
+      },
+      {
+        name: 'statusUser',
+        type: 'string'
+      },
+      {
         name: 'groupNames',
         convert: (v, r) => r.userGroups.map(userGroup => userGroup.name)
       },
@@ -789,6 +801,7 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
       }),
       baseParams: {
         elevate: curUser.privileges.admin,
+        // status: 'available',
         projection: ['userGroups', 'statistics']
       },
       root: '',
@@ -805,9 +818,79 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
       }
     })
     const totalTextCmp = new SM.RowCountTextItem({ store })
+
+    const statusBtnHandler = function () {
+      let user = _this.getSelectionModel().getSelected()
+      
+      // Prevent users from setting themselves as unavailable
+      if (user.data.userId === curUser.userId && user.data.status === 'available') {
+        Ext.Msg.show({
+          title: 'Action not allowed',
+          icon: Ext.Msg.WARNING,
+          msg: 'You cannot set yourself to Unavailable.',
+          buttons: { ok: 'OK' }
+        })
+        return
+      }
+      
+      let buttons = { no: 'Cancel' }
+      let status
+      let msg
+      if (user.data.status === 'available') {
+        buttons.yes = 'Set Unavailable'
+        status = 'unavailable'
+        msg = `Set User ${user.data.username} status to Unavailable?<br><br>This action will remove the User's Collection Grants and User Group assignments.<br> The User will no longer be able to access the system or receive new Grant or Group assignments.<br><br> A record will be retained in the system for auditing and attribution purposes.`
+      }
+      else {
+        buttons.yes ='Set Available'
+        status = 'available'
+        msg = `Set user ${user.data.username} status to Available?<br><br>This action will permit the user to access the system, and be assigned to Collection Grants and User Groups.`
+      }
+
+      Ext.Msg.show({
+        title: 'Confirm action',
+        icon: Ext.Msg.WARNING,
+        msg,
+        buttons,
+        fn: async function (btn, text) {
+          try {
+            if (btn == 'yes') {
+              const apiUser = await Ext.Ajax.requestPromise({
+                responseType: 'json',
+                url: `${STIGMAN.Env.apiBase}/users/${user.data.userId}?elevate=${curUser.privileges.admin}&projection=collectionGrants&projection=statistics&projection=userGroups`,
+                method: 'PATCH',
+                jsonData: {
+                  status,
+                  collectionGrants: [],
+                  userGroups: [],
+                }
+              })
+              SM.Dispatcher.fireEvent('userchanged', apiUser)
+            }
+          }
+          catch (e) {
+            SM.Error.handleError(e)
+          }
+        }
+      })
+    }
     const config = {
       store,
-      sm: new Ext.grid.RowSelectionModel({ singleSelect: true }),
+      sm: new Ext.grid.RowSelectionModel({ 
+        singleSelect: true,
+        listeners: {
+          rowselect: function (sm, rowIndex, record) {
+            if (store.getAt(rowIndex).data.status === 'available') {
+              _this.statusBtn.setText('Set Unavailable')
+              _this.statusBtn.setIconClass('sm-user-unavailable-icon')
+            } 
+            else {
+              _this.statusBtn.setText('Set Available')
+              _this.statusBtn.setIconClass('sm-user-icon')
+            } 
+          }
+        }
+      }),
       columns: [
         {
           header: "Username",
@@ -822,6 +905,21 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
           dataIndex: 'displayName',
           sortable: true,
           filter: { type: 'string' }
+        },
+        {
+          header: "Status",
+          width: 150,
+          dataIndex: 'status',
+          sortable: true,
+          filter: { type: 'values' },
+          renderer: function (value, metadata, record, ri, ci, store) {
+            let qtipContent
+            if (record.data.statusUser) {
+              qtipContent = `ext:qtip="<b>Status:</b> ${value}<br><b>Set by:</b> userId ${record.data.statusUser}<br><b>Date:</b> ${Ext.util.Format.date(record.data.statusDate,'Y-m-d H:i T')}"`
+            }
+            metadata.attr = 'style="line-height: 17px;white-space:normal;"'
+            return `<span class="sm-label-sprite" style="color:black;background-color:${value === 'available' ? 'green' : 'red'};" ${qtipContent}>${value}</span>`
+          }
         },
         {
           header: "Groups",
@@ -904,8 +1002,8 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
       }),
       listeners: {
         rowdblclick: function (grid, rowIndex, e) {
-          let r = grid.getStore().getAt(rowIndex);
-          SM.User.showUserProps(r.get('userId'));
+          const r = grid.getStore().getAt(rowIndex)
+          SM.User.showUserProps(r.get('userId'))
         }
       },
       tbar: [
@@ -925,7 +1023,7 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
           handler: function () {
             let user = _this.getSelectionModel().getSelected();
             let buttons = { yes: 'Unregister', no: 'Cancel' }
-            let confirmStr = `Unregister user ${user.data.username}?<br><br>This action will remove all Collection Grants for the user. A record will be retained in the system for auditing and attribution purposes.`;
+            let confirmStr = `Unregister user ${user.data.username}?<br><br>This action will remove the User's Collection Grants and User Group assignments.<br> The User will still be able to use the system if granted access by the Authentication Provider.`;
             if (user.data.lastAccess === 0) {
               confirmStr = `Delete user ${user.data.username}?<br><br>This user has never accessed the system, and will be deleted from the system entirely.`;
               buttons.yes = 'Delete'
@@ -969,6 +1067,13 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
               }
             })
           }
+        },
+        '-',
+        {
+          ref: '../statusBtn',
+          iconCls: 'icon-edit',
+          text: ' ',
+          handler: statusBtnHandler
         },
         '-',
         {
@@ -1589,6 +1694,21 @@ SM.User.showUserAdmin = function (params) {
 	})
 	thisTab.show()
 	
+  function afterLoad(store, records) {
+    if (records.some(record => record.data.status !== 'available')) {
+      const statusFilterMenu = userGrid.view.hmenu.filterItems.selectItems[0]
+      statusFilterMenu.checked = false
+      statusFilterMenu.valueItems[0].checked = true
+      statusFilterMenu.valueItems[1].checked = false
+      userGrid.view.setColumnFilteredStyle()
+      const cm = userGrid.getColumnModel()
+      cm.getColumnById(cm.findColumnIndex('status')).filtered = true
+      userGrid.view.fireEvent('filterschanged', userGrid.view)
+    }
+    store.un('load', afterLoad)
+  }
+  userGrid.getStore().on('load', afterLoad)
 	userGrid.getStore().load()
+
 }
 

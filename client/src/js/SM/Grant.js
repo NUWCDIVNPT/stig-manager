@@ -217,7 +217,7 @@ SM.Grant.GranteeTreePanel = Ext.extend(Ext.tree.TreePanel, {
       if (nodeId === 'grantee-users-node') {
         const apiUsers = await Ext.Ajax.requestPromise({
           responseType: 'json',
-          url: `${STIGMAN.Env.apiBase}/users`,
+          url: `${STIGMAN.Env.apiBase}/users?status=available`,
           method: 'GET'
         })
         const availUsers = apiUsers.filter( user => !excludedUserIds.includes(user.userId))
