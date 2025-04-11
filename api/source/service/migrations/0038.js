@@ -61,14 +61,6 @@ const upFn = async (pool, migrationName) => {
 }
   
 
-// Remove assessed severity count columns from stig_asset_map table
-const downMigration = [
-  `ALTER TABLE stig_asset_map
-   DROP COLUMN assessedHighCount,
-   DROP COLUMN assessedMediumCount, 
-   DROP COLUMN assessedLowCount`
-]
-
 module.exports = {
   up: async pool => {
     try {
