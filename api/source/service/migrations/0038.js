@@ -81,7 +81,5 @@ module.exports = {
       throw (e)
     }
   },
-  down: async (pool) => {
-    await migrationHandler.down(pool, __filename)
-  }
+  down: () => {}
 }
