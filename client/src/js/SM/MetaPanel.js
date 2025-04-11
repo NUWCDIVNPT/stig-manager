@@ -674,7 +674,7 @@ SM.MetaPanel.ProgressPanel = Ext.extend(Ext.Panel, {
     const calcMetrics = function (metrics) {
       return {
         unassessed: metrics.assessments - metrics.assessed,
-        assessed: metrics.statuses.saved - metrics.results.unassessed,
+        assessed: metrics.statuses.saved - metrics.results.other,
         submitted: metrics.statuses.submitted,
         accepted: metrics.statuses.accepted,
         rejected: metrics.statuses.rejected,
