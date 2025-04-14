@@ -1338,6 +1338,33 @@ exports.createCollectionLabel = async function (collectionId, label) {
   return resultGet[0].uuid
 }
 
+exports.createCollectionLabels = async function (collectionId, labels) {
+
+  const placeholders = labels.map(() => '(?, ?, ?, ?, UUID_TO_BIN(UUID(),1))').join(', ')
+  const values = []
+
+  for (const label of labels) {
+    values.push(collectionId, label.name, label.description, label.color)
+  }
+
+  const insertSql = `
+    INSERT INTO collection_label (collectionId, name, description, color, uuid)
+    VALUES ${placeholders}
+  `
+
+  const [resultInsert] = await dbUtils.pool.query(insertSql, values)
+
+  const [rows] = await dbUtils.pool.query(
+    `SELECT BIN_TO_UUID(uuid,1) as uuid
+     FROM collection_label
+     WHERE clId >= ? AND clId < ?`,
+    [resultInsert.insertId, resultInsert.insertId + labels.length]
+  )
+
+  return rows.map(row => row.uuid)
+}
+
+
 exports.getCollectionLabelById = async function (collectionId, labelId, grant) {
   const ctes = []
   const columns = [

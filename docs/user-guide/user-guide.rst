@@ -1260,6 +1260,70 @@ Click the Create Asset button to create an Asset manually. Enter relevant Asset 
 
 -------------------------------
 
+Create Asset Batch
+~~~~~~~~~~~~~~~
+
+Example CSV File that can be used to create multiple Assets at once:  
+:download:`Download Sample Asset CSV </user-guide/Stig-Manager-Asset-Batch-Import.csv>`
+
+The uploaded CSV must follow this format:
+
+.. list-table:: 
+   :header-rows: 1
+
+   * - Column Name
+     - Description
+     - Data Requirements
+   * - Name
+     - The name of the asset
+     - (Required) Must be between 1 and 255 characters long. 
+   * - Description
+     - Description of the asset
+     - (Optional) 255 characters max, any characters over 255 will be truncated
+   * - IP
+     - The IP address of the asset
+     - (Optional) 255 characters max, any characters over 255 will be truncated
+   * - FQDN
+     -  Fully Qualified Domain Name of the asset
+     - (Optional) 255 characters max, any characters over 255 will be truncated
+   * - MAC
+     - The MAC address of the asset
+     - (Optional) 255 characters max, any characters over 255 will be truncated
+   * - Non-Computing
+     - Indicates if the asset is a non-computing device
+     - (Optional) Will default to FALSE if not provided. Valid values are TRUE or FALSE.
+   * - STIGs
+     - The STIGs to be assigned to the asset
+     - (Optional) Newline separated list of STIG BenchmarkIds. STIG installed in STIG Manager before they can be assigned to an Asset.
+   * - Labels
+     - The labels to be assigned to the asset
+     - (Optional) Newline separated list of Label Names. Labels in the file will be created if they do not already exist in the Collection.
+   * - Metadata
+     - The metadata to be assigned to the asset
+     - (Optional) JSON-encoded object for key-value metadata. Only one layer deep is supported. The keys and the values must be strings. The keys must be unique within the object.
+
+
+Click the Import Assets CSV to create an Asset from a CSV File. 
+
+.. thumbnail:: /assets/images/collection-manage-csv-batch-create.png
+      :width: 50% 
+      :show_caption: True
+      :title: Select 'Import Assets CSV' button
+
+
+Begin by selecting a CSV that contains asset data. Once uploaded, the system parses each row, validating the entries before proceeding. Only rows with valid data are considered for submission — any invalid rows are automatically ignored for submission with the respective errors on that row shown. During validation, the system checks for existing labels referenced in the CSV and automatically creates any missing ones. After validation completes, the user can submit the data. Submission is only enabled if at least one valid asset is detected.
+
+.. thumbnail:: /assets/images/collection-manage-asset-csv-importer.png
+      :width: 50% 
+      :show_caption: True
+      :title: View the Report of the Asset CSV Importer
+
+
+-------------------------------
+
+
+
+
 .. index::
    single: Collection Builder
 
@@ -1402,6 +1466,19 @@ The user can select whether single-STIG .ckls, multi-STIG .ckls, or XCCDF files 
 
 
 --------------------------
+
+
+Export Assets CSV File
++++++++++++++++++++++++++++++++++++++++++++++++
+
+To Export Assets as CSV, select one or more Assets (no assets selected will imply all assets), and click the "Export Assets CSV" button. The CSV export will contain the Asset Name, Description, IP, FQDN, MAC, Non-Computing, STIGs, Labels, and Metadata. The CSV will also contain the STIGs assigned to each Asset in the Collection. This file 
+
+.. thumbnail:: /assets/images/collection-manage-results-export-assets-csv.png
+      :width: 50% 
+      :show_caption: True
+      :title: Export Assets CSV Button
+
+|
 
 Delete Asset
 ~~~~~~~~~~~~~~~~~~~~

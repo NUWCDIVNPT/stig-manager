@@ -1925,6 +1925,41 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+  '/collections/{collectionId}/labels/batch':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+    post:
+      tags:
+        - Collection
+      summary: Create multiple labels in the specified Collection
+      operationId: createCollectionLabels
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/LabelCreate'
+      responses:
+        201:
+          description: Labels response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Label'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
   '/collections/{collectionId}/labels/{labelId}':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'

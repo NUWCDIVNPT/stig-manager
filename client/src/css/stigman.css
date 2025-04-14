@@ -2458,3 +2458,15 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .sm-flexbox-layout-ct:hover {
 	scrollbar-width: auto;
 }
+
+.sm-status-csv {
+  color: #eee;
+  padding: 4px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.sm-error-icon {
+  background-image: url(../img/1361787379_101.png);
+}
