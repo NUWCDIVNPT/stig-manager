@@ -555,18 +555,15 @@ module.exports.createCollectionLabels = async function (req, res, next) {
   try {
     const { collectionId, grant } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
 
-    const labelIDs = await CollectionService.createCollectionLabels(collectionId, req.body)
+    const createdLabelNames = await CollectionService.createCollectionLabels(collectionId, req.body)
 
-    const responses = await Promise.all(
-      labelIDs.map(id => CollectionService.getCollectionLabelById(collectionId, id, grant))
-    )
+    const createdLabels = await CollectionService.getCollectionLabelsByName(collectionId, createdLabelNames, grant)
 
-    res.status(201).json(responses)
+    res.status(201).json(createdLabels)
   } catch (err) {
     next(err)
   }
 }
-
 
 module.exports.getCollectionLabelById = async function (req, res, next) {
   try {
