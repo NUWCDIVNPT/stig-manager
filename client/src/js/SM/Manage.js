@@ -3624,7 +3624,6 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
     const labelGrid = new Ext.grid.GridPanel({
       title: '<span style="padding-left: 20px; background-size: 15px;"class="sm-label-icon">New Labels To Be Created</span>',
       store: labelStore,
-      height: 400,
       viewConfig: {
         forceFit: true
       },
@@ -3650,23 +3649,23 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
 
         title: '<span style="padding-left: 20px; background-size: 15px;"class="sm-asset-icon">New Assets To Be Created</span>',
         store: assetStore,
-        flex: 1,
+        flex: 2,
         viewConfig: {
           forceFit: true
         },
         autoScroll: true,
         columns: [
-            { header: 'Csv Row #', dataIndex: 'CSVRow', width: 75 },
-            { header: 'Asset Name', dataIndex: 'name',},
-            { header: 'Description', dataIndex: 'description', width: 200  },
-            { header: 'Noncomputing', dataIndex: 'noncomputing', width: 100, renderer: function (value) { return value ? 'Yes' : 'No' } },
+            { header: 'Row', dataIndex: 'CSVRow', width: 50 },
+            { header: 'Asset Name', dataIndex: 'name', width: 120 },
+            { header: 'Description', dataIndex: 'description', width: 150  },
+            { header: 'Noncomputing', dataIndex: 'noncomputing', width: 100, renderer: function (value) { return value ? 'True' : 'False' } },
             { header: 'IP', dataIndex: 'ip', width: 100 },
             { header: 'FQDN', dataIndex: 'fqdn', width: 100 },
             { header: 'MAC', dataIndex: 'mac', width: 100},
             { 
               header: 'Metadata', 
               dataIndex: 'metadata', 
-              width: 200, 
+              width: 150, 
               renderer: function (value) {
                 if (!value || (typeof value === 'object' && Object.keys(value).length === 0)) {
                   return ''
@@ -3677,7 +3676,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
             {
                 header: 'Labels',
                 dataIndex: 'labelNames',
-                width: 150,
+                width: 125,
                 renderer: function (value) {
                     return Array.isArray(value) && value.length ? `<div style="white-space: pre-wrap;">${value.join('\n')}</div>` : ''
                 }
@@ -3685,7 +3684,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
             {
               header: 'STIGs',
               dataIndex: 'stigs',
-              width: 150,
+              width: 200,
               renderer: function (value) {
                 return Array.isArray(value) ? `<div style="white-space: pre-wrap;">${value.join('\n')}</div>` : ''
               }
@@ -3721,13 +3720,13 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
       store: errorStore,
       hidden: false,
       margins: { top: 0, right: 10, bottom: 0, left: 0 },
-      height: 400,
+      flex: 2,
       viewConfig: {
         forceFit: true
       },
       autoScroll: true,
       columns: [
-        { header: 'CSV Row #', dataIndex: 'row', width: 100 },
+        { header: 'Row', dataIndex: 'row', width: 100 },
         { header: 'Errors', dataIndex: 'messages', renderer: errorRenderer, width: 800 }
       ],
       bbar: [
@@ -3751,7 +3750,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
       }
     })
 
-    SM.Manage.Asset.validationLogic = async function() { 
+    const doValidation = async function() { 
 
       const updateButtonStates = () => {
         const hasAssets = validAssets.length > 0
@@ -3759,7 +3758,6 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
       
         finalSubmitButton.setDisabled(!hasAssets)
       
-        const statusCmp = Ext.getCmp('statusBox')
         if (hasAssets && !hasErrors) {
           SM.Manage.Asset.updateStatus('valid', 'All rows valid. Ready to submit.')
         } else if (hasAssets && hasErrors) {
@@ -3769,7 +3767,6 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
         } else {
           SM.Manage.Asset.updateStatus('none', 'No assets to submit.')
         }
-        
       }
 
       Ext.getBody().mask('Loading... ')
@@ -3811,7 +3808,6 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
         // dry run fail
       }
       catch (error) {
-        Ext.getBody().unmask()
         if (error.status === 422) {
             let responseData = JSON.parse(error.responseText)
             
@@ -3870,17 +3866,21 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
       }
     } 
 
-    let appwindow = new Ext.Window({
+    const vpSize = Ext.getBody().getViewSize()
+    let height = vpSize.height * 0.9
+    let width = vpSize.width * 0.9 <= 1700 ? vpSize.width * 0.9 : 1700
+
+    const appwindow = new Ext.Window({
         id: 'parsedDataWindow',
         cls: 'sm-dialog-window sm-round-panel',
         title: 'Import Assets From CSV',
         modal: true,
-        width: 1500,
-        height: 1000,
+        width,
+        height,
         layout: 'vbox',
         plain: true,
         layoutConfig: {
-          padding: '10 20 20 20',
+          padding: '0 20 0 20',
           align: 'stretch',
         },
         buttonAlign: 'right',
@@ -3890,8 +3890,12 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
           assetGrid,
           {
             xtype: 'container',
-            margins: { top: 20, right: 0, bottom: 0, left: 0 },
+            flex: 1,
+            margins: { top: 12, right: 0, bottom: 6, left: 0 },
             layout: 'hbox',
+            layoutConfig: {
+              align: 'stretch'
+            },    
             items: [
               errorGrid,
               labelGrid,
@@ -3909,9 +3913,9 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
         ]
     })
     appwindow.show(Ext.getBody())
-    SM.Manage.Asset.validationLogic()
-      
-  } catch (e) {
+    doValidation()
+  } 
+  catch (e) {
       SM.Error.handleError(e)
   }
 
