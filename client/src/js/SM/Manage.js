@@ -3390,7 +3390,7 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
               fileselected: function (field, value) {
                 onFileSelected(field, value, me.collectionId)
               }
-          }
+            }
           },
           '-',
           {

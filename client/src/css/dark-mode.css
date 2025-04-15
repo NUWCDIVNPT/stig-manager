@@ -3112,3 +3112,9 @@ embed[type="application/pdf"] {
     color: #000000;
 }
 
+.x-form-file-wrap:hover {
+	background-color: #3d5c1e;
+	border-radius: 5px;
+}
+
+
