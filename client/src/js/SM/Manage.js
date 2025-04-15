@@ -3827,7 +3827,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
               .map(err => {
                 // extract error specifics
                 const errorSpecifics = []
-                if (err.detail.name) errorSpecifics.push(`• Asset Effected: ${err.detail.name}`)
+                if (err.detail.name) errorSpecifics.push(`• Asset Affected: ${err.detail.name}`)
                 if (err.detail.benchmarkId) errorSpecifics.push(`• STIG Unknown: ${err.detail.benchmarkId}`)
                 if (err.detail.benchmarkIdIndex != null) errorSpecifics.push(`• STIG Unknown Index: ${err.detail.benchmarkIdIndex}`)
 

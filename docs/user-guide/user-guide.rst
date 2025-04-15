@@ -1261,7 +1261,7 @@ Click the Create Asset button to create an Asset manually. Enter relevant Asset 
 -------------------------------
 
 Create Asset Batch
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Example CSV File that can be used to create multiple Assets at once:  
 :download:`Download Sample Asset CSV </user-guide/Stig-Manager-Asset-Batch-Import.csv>`
@@ -1311,7 +1311,7 @@ Click the Import Assets CSV to create an Asset from a CSV File.
       :title: Select 'Import Assets CSV' button
 
 
-Begin by selecting a CSV that contains asset data. Once uploaded, the system parses each row, validating the entries before proceeding. Only rows with valid data are considered for submission — any invalid rows are automatically ignored for submission with the respective errors on that row shown. During validation, the system checks for existing labels referenced in the CSV and automatically creates any missing ones. After validation completes, the user can submit the data. Submission is only enabled if at least one valid asset is detected.
+Begin by selecting a CSV that contains asset data. Once uploaded, the importer parses each row, validating the entries before proceeding. Only rows with valid data are considered for submission — any invalid rows are automatically ignored for submission with the respective errors on that row shown. During validation, the importer checks for non-existing labels referenced in the CSV and automatically marks them to be created upon submission. After validation completes, the user can submit the data. Submission is only enabled if at least one valid asset is detected.
 
 .. thumbnail:: /assets/images/collection-manage-asset-csv-importer.png
       :width: 50% 
@@ -1471,7 +1471,7 @@ The user can select whether single-STIG .ckls, multi-STIG .ckls, or XCCDF files 
 Export Assets CSV File
 +++++++++++++++++++++++++++++++++++++++++++++++
 
-To Export Assets as CSV, select one or more Assets (no assets selected will imply all assets), and click the "Export Assets CSV" button. The CSV export will contain the Asset Name, Description, IP, FQDN, MAC, Non-Computing, STIGs, Labels, and Metadata. The CSV will also contain the STIGs assigned to each Asset in the Collection. This file 
+To Export Assets as CSV, select one or more Assets (no assets selected will imply all assets), and click the "Export Assets CSV" button. The CSV export will contain the Asset Name, Description, IP, FQDN, MAC, Non-Computing, STIGs, Labels, and Metadata. The CSV will also contain the STIGs assigned to each Asset in the Collection.
 
 .. thumbnail:: /assets/images/collection-manage-results-export-assets-csv.png
       :width: 50% 
