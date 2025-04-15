@@ -3302,7 +3302,6 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
     const onFileSelected = async function (field, fileName, collectionId) {
       const file = field.fileInput.dom.files[0]
       if (!file) {
-        console.warn("No file selected!")
         return
       }
 
@@ -3320,7 +3319,6 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
           return
         }
         SM.Manage.Asset.showParsedData(assets, errors, collectionId)
-        field.reset()
       }
       catch (e) {
         SM.Error.handleError(e)
@@ -3380,7 +3378,7 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
             buttonOnly: true,
             accept: '.csv',
             webkitdirectory: false,
-            style: 'width: 110px;',
+            style: 'width: 115px;',
             buttonCfg: {
               icon: "img/add.svg"
             },
@@ -3388,7 +3386,7 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
             buttonText: 'Import Assets CSV',
             listeners: {
               fileselected: function (field, value) {
-                onFileSelected(field, value, me.collectionId)
+                onFileSelected(field, value, me.collectionId);
               }
             }
           },
