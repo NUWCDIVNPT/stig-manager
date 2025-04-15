@@ -1319,9 +1319,22 @@ Begin by selecting a CSV that contains asset data. Once uploaded, the importer p
       :title: View the Report of the Asset CSV Importer
 
 
+-------------------------------------------------------------------------------------------
+
+
+Export Assets CSV File
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+To Export Assets as CSV, select one or more Assets (no assets selected will imply all assets), and click the "Export Assets CSV" button. The CSV export will contain the Asset Name, Description, IP, FQDN, MAC, Non-Computing, STIGs, Labels, and Metadata. The CSV will also contain the STIGs assigned to each Asset in the Collection.
+
+.. thumbnail:: /assets/images/collection-manage-results-export-assets-csv.png
+      :width: 50% 
+      :show_caption: True
+      :title: Export Assets CSV Button
+
+|
+
 -------------------------------
-
-
 
 
 .. index::
@@ -1466,19 +1479,6 @@ The user can select whether single-STIG .ckls, multi-STIG .ckls, or XCCDF files 
 
 
 --------------------------
-
-
-Export Assets CSV File
-+++++++++++++++++++++++++++++++++++++++++++++++
-
-To Export Assets as CSV, select one or more Assets (no assets selected will imply all assets), and click the "Export Assets CSV" button. The CSV export will contain the Asset Name, Description, IP, FQDN, MAC, Non-Computing, STIGs, Labels, and Metadata. The CSV will also contain the STIGs assigned to each Asset in the Collection.
-
-.. thumbnail:: /assets/images/collection-manage-results-export-assets-csv.png
-      :width: 50% 
-      :show_caption: True
-      :title: Export Assets CSV Button
-
-|
 
 Delete Asset
 ~~~~~~~~~~~~~~~~~~~~
