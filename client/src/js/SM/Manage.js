@@ -2173,8 +2173,11 @@ SM.Manage.Collection.LabelNameEditor = Ext.extend(Ext.form.Field, {
         }
         if (v === "") { return "Blank values not allowed" }
         // Is there an item in the store like _this?
-        let searchIdx = _this.grid.store.findExact('name', v)
-        // Is it _this?
+
+        let searchIdx = _this.grid.store.findBy(function (rec) {
+          return rec.get('name')?.toLowerCase() === v.toLowerCase()
+        })
+
         let isMe = _this.grid.selModel.isSelected(searchIdx)
         if (searchIdx == -1 || isMe) {
           return true
