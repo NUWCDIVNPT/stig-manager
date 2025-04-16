@@ -3315,6 +3315,7 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
           errors = result.errors
           assets = result.assets
         } catch (e) {
+          field.fileInput.dom.value = null
           SM.Error.handleError(e)
           return
         }
@@ -3323,6 +3324,7 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
 
       }
       catch (e) {
+        field.fileInput.dom.value = null
         SM.Error.handleError(e)
       }
     }
