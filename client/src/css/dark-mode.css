@@ -3112,8 +3112,8 @@ embed[type="application/pdf"] {
     color: #000000;
 }
 
-.x-form-file-wrap:hover {
-	background-color: #3d5c1e;
+.x-form-field-wrap:hover .x-form-file-btn {
+	background-color: var(--metrics-status-chart-submitted-dark);
 	border-radius: 5px;
 }
 
