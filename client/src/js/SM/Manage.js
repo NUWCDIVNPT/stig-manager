@@ -3319,6 +3319,8 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
           return
         }
         SM.Manage.Asset.showParsedData(assets, errors, collectionId)
+        field.fileInput.dom.value = null
+
       }
       catch (e) {
         SM.Error.handleError(e)
