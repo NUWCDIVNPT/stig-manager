@@ -2,7 +2,7 @@
 --
 -- Host: 127.0.0.1    Database: stigman
 -- ------------------------------------------------------
--- Server version	8.0.38
+-- Server version	8.0.41
 
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
@@ -555,6 +555,9 @@ CREATE TABLE `stig_asset_map` (
   `fixed` int DEFAULT NULL,
   `fixedResultEngine` int DEFAULT NULL,
   `maxTouchTs` datetime DEFAULT NULL,
+  `assessedHighCount` int DEFAULT NULL,
+  `assessedMediumCount` int DEFAULT NULL,
+  `assessedLowCount` int DEFAULT NULL,
   PRIMARY KEY (`saId`),
   UNIQUE KEY `IDX_BAID` (`benchmarkId`,`assetId`),
   KEY `IDX_ASSETID` (`assetId`),
@@ -573,8 +576,12 @@ CREATE TABLE `user_data` (
   `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `lastAccess` int DEFAULT NULL,
   `lastClaims` json DEFAULT (_utf8mb4'{}'),
+  `status` enum('available','unavailable') NOT NULL DEFAULT 'available',
+  `statusDate` datetime NOT NULL DEFAULT (`created`),
+  `statusUser` int DEFAULT NULL,
   PRIMARY KEY (`userId`),
-  UNIQUE KEY `INDEX_username` (`username`)
+  UNIQUE KEY `INDEX_username` (`username`),
+  KEY `INDEX_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -702,4 +709,4 @@ DROP TABLE IF EXISTS `v_latest_rev`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-01-17  7:10:02
+-- Dump completed on 2025-04-16 10:30:12
