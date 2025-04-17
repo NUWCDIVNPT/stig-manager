@@ -1,0 +1,7 @@
+Name,Description,IP,FQDN,MAC,Non-Computing,STIGs,Labels,Metadata
+Asset 1,Asset1 Description,1.1.1.1,Asset-1.f.q.d.n,AB-12-AB-12-AB,TRUE,"VPN_SRG_TEST
+Windows_10_STIG_TEST","Label1
+Label2
+Label3
+Label5 ","{""key:3"":""value:3""}"
+Asset 2,,,,,,,,

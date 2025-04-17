@@ -3302,6 +3302,35 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
         SM.Manage.Asset.showAssetProps(r.get('assetId'), me.collectionId);
       }
     })
+    const onFileSelected = async function (field, fileName, collectionId) {
+      const file = field.fileInput.dom.files[0]
+      if (!file) {
+        return
+      }
+
+      try {
+        const parser = new STIGMAN.ClientModules.AssetParser()
+        let assets = []
+        let errors = []
+        
+        try {
+          const result = await parser.parse(file)
+          errors = result.errors
+          assets = result.assets
+        } catch (e) {
+          field.fileInput.dom.value = null
+          SM.Error.handleError(e)
+          return
+        }
+        SM.Manage.Asset.showParsedData(assets, errors, collectionId)
+        field.fileInput.dom.value = null
+
+      }
+      catch (e) {
+        field.fileInput.dom.value = null
+        SM.Error.handleError(e)
+      }
+    }
     const config = {
       layout: 'fit',
       loadMask: { msg: '' },
@@ -3351,13 +3380,43 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
             }
           },
           '-',
-
+          {
+            xtype: 'fileuploadfield',
+            buttonOnly: true,
+            accept: '.csv',
+            webkitdirectory: false,
+            style: 'width: 115px;',
+            buttonCfg: {
+              icon: "img/add.svg"
+            },
+            tooltip: "Import New Assets from CSV",
+            buttonText: 'Import Assets CSV',
+            listeners: {
+              fileselected: function (field, value) {
+                onFileSelected(field, value, me.collectionId);
+              }
+            }
+          },
+          '-',
+          {
+            text: 'Export Assets CSV',
+            iconCls: 'sm-export-icon',
+            tooltip: 'Export selected assets to CSV',
+            handler: function () {
+              let selectedAssets = me.getSelectionModel().getSelections().map(r => r.data)
+              if (selectedAssets.length === 0) {
+                selectedAssets = assetStore.getRange().map(r => r.data)
+              }
+              SM.Manage.Asset.exportAssetsCSV(me.collectionId,  me.collectionName, selectedAssets)
+            },
+          },
+          '-',
           {
             iconCls: 'sm-import-icon',
             text: 'Import CKL(B) or XCCDF...',
             tooltip: SM.TipContent.ImportFromCollectionManager,
             handler: function () {
-              showImportResultFiles(me.collectionId);
+              showImportResultFiles(me.collectionId)
             }
           },
           '-',
@@ -3412,6 +3471,544 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
     SM.Dispatcher.addListener('labeldeleted', this.onLabelDeleted, this)
   }
 })
+
+
+SM.Manage.Asset.exportAssetsCSV = async function (collectionId, collectionName, selectedAssets) {
+
+  Ext.MessageBox.show({
+    title: 'Exporting Assets',
+    msg: 'Generating CSV, Please do not refresh.',
+    progressText: 'Saving...',
+    width:300,
+    wait:true,
+    waitConfig: {interval:200},
+    animEl: 'mb7'
+  })
+
+  try {
+    const assetIds = selectedAssets.map(a => a.assetId)
+
+    const assets = await Ext.Ajax.requestPromise({
+      responseType: 'json',
+      url: `${STIGMAN.Env.apiBase}/assets?collectionId=${collectionId}`,
+      method: 'GET',
+      params: {
+        projection: ['stigs']
+      }
+    })
+
+
+    const labels = await Ext.Ajax.requestPromise({
+      responseType: 'json',
+      url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`,
+      method: 'GET'
+    })
+
+
+    const assetResponses = assets.filter(asset => assetIds.includes(asset.assetId))
+
+    for (const assetResponse of assetResponses) {
+      const labelIds = assetResponse.labelIds
+      const labelNames = labels.filter(label => labelIds.includes(label.labelId)).map(label => label.name)
+      assetResponse.labelNames = labelNames
+      delete assetResponse.labelIds
+    }
+
+
+    const csvContent = generateCsvFromAssets(assetResponses)
+    downloadCsv(csvContent, collectionName)
+
+    Ext.MessageBox.hide()
+  } catch (e) {
+    Ext.MessageBox.hide()
+    SM.Error.handleError(e)
+  }
+
+  function downloadCsv(content, collectionName) {
+    const date = new Date().toISOString().split('T')[0]
+    const filename = `assets-${collectionName}-${date}.csv`
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.setAttribute('download', filename)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  function generateCsvFromAssets(assets) {
+    const headers = [
+      'Name',
+      'Description',
+      'IP',
+      'FQDN',
+      'MAC',
+      'Non-Computing',
+      'STIGs',
+      'Labels',
+      'Metadata',
+    ]
+
+    const escapeCsv = (value) => {
+      if (value == null) return ''
+      const str = String(value)
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
+    }
+
+    const rows = assets.map(asset => {
+      const row = {
+        Name: asset.name,
+        Description: asset.description,
+        IP: asset.ip,
+        FQDN: asset.fqdn,
+        MAC: asset.mac,
+        'Non-Computing': asset.noncomputing ? 'True' : 'False',
+        STIGs: asset.stigs ? asset.stigs.map(stig => stig.benchmarkId).join('\n') : '',
+        Labels: asset.labelNames ? asset.labelNames.join('\n') : '',
+        Metadata: asset.metadata ? JSON.stringify(asset.metadata) : ''
+      }
+
+      return headers.map(h => escapeCsv(row[h])).join(',')
+    })
+
+    return [headers.join(','), ...rows].join('\n')
+  }
+}
+
+SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
+  try {
+
+    let parsedAssets = assets
+    let parserErrors = errors
+    let validAssets = []
+    let newLabels = []
+
+    const assetStore = new Ext.data.JsonStore({
+      fields: [
+          { name: 'CSVRow', type: 'integer' },
+          { name: 'name', type: 'string' },
+          { name: 'description', type: 'string' },
+          { name: 'noncomputing', type: 'boolean' },
+          { name: 'ip', type: 'string' },
+          { name: 'fqdn', type: 'string' },
+          { name: 'mac', type: 'string' },
+          { name: 'stigs', type: 'auto' },
+          { name: 'metadata', type: 'auto' },
+          { name: 'labelNames', type: 'auto' }
+      ],
+      data: [],
+      sortInfo: {
+        field: 'CSVRow',
+        direction: 'ASC' 
+      }
+    })
+
+    const errorStore = new Ext.data.JsonStore({
+      fields: ['row', 'messages'],
+      data: [],
+      sortInfo: {
+        field: 'row',
+        direction: 'ASC' 
+      }
+    })
+
+    const labelStore = new Ext.data.JsonStore({
+      fields: ['labelName'],
+      data: [],
+      sortInfo: {
+        field: 'labelName',
+        direction: 'ASC' 
+      }
+    })
+
+    const labelTotalTextCmp = new SM.RowCountTextItem({
+      store: labelStore,
+      noun: 'label',
+      iconCls: 'sm-label-icon'
+   
+    })
+
+    const labelGrid = new Ext.grid.GridPanel({
+      title: '<span style="padding-left: 20px; background-size: 15px;"class="sm-label-icon">New Labels To Be Created</span>',
+      store: labelStore,
+      viewConfig: {
+        forceFit: true
+      },
+      autoScroll: true,
+      columns: [
+        { header: 'Label Name', dataIndex: 'labelName'},
+      ],
+      flex: 1,
+      bbar: [
+        '->',
+        labelTotalTextCmp
+      ]
+    })
+
+    const assetTotalTextCmp = new SM.RowCountTextItem({
+      store: assetStore,
+      noun: 'asset',
+      iconCls: 'sm-asset-icon'
+
+    })
+
+    const assetGrid = new Ext.grid.GridPanel({
+
+        title: '<span style="padding-left: 20px; background-size: 15px;"class="sm-asset-icon">New Assets To Be Created</span>',
+        store: assetStore,
+        flex: 2,
+        viewConfig: {
+          forceFit: true
+        },
+        autoScroll: true,
+        columns: [
+            { header: 'Row', dataIndex: 'CSVRow', width: 50 },
+            { header: 'Asset Name', dataIndex: 'name', width: 120 },
+            { header: 'Description', dataIndex: 'description', width: 150  },
+            { header: 'Noncomputing', dataIndex: 'noncomputing', width: 100, renderer: function (value) { return value ? 'True' : 'False' } },
+            { header: 'IP', dataIndex: 'ip', width: 100 },
+            { header: 'FQDN', dataIndex: 'fqdn', width: 100 },
+            { header: 'MAC', dataIndex: 'mac', width: 100},
+            { 
+              header: 'Metadata', 
+              dataIndex: 'metadata', 
+              width: 150, 
+              renderer: function (value) {
+                if (!value || (typeof value === 'object' && Object.keys(value).length === 0)) {
+                  return ''
+                }
+                return JSON.stringify(value)
+              } 
+            },
+            {
+                header: 'Labels',
+                dataIndex: 'labelNames',
+                width: 125,
+                renderer: function (value) {
+                    return Array.isArray(value) && value.length ? `<div style="white-space: pre-wrap;">${value.join('\n')}</div>` : ''
+                }
+            },
+            {
+              header: 'STIGs',
+              dataIndex: 'stigs',
+              width: 200,
+              renderer: function (value) {
+                return Array.isArray(value) ? `<div style="white-space: pre-wrap;">${value.join('\n')}</div>` : ''
+              }
+            }
+        ],
+        bbar: [
+          '->',
+          assetTotalTextCmp
+        ]
+    })
+
+    const statusBox = new Ext.Panel({
+      id: 'statusBox',
+      height: 30,
+      border: false,
+      bodyStyle: 'padding: 5px; font-weight: bold; font-size: 13px;',
+      html: '<span style="color:#444;">🛈 Parsing Data ....</span>'
+    })
+
+    function errorRenderer(value) {
+      return `<div style="white-space: pre-wrap; line-height: 1.5em;">${value}</div>`
+    }
+
+    const errorTotalTextCmp = new SM.RowCountTextItem({
+      store: errorStore,
+      noun: 'error',
+      iconCls: 'sm-error-icon'
+
+    })
+
+    const errorGrid = new Ext.grid.GridPanel({
+      title: '<span>❌&nbsp;  File Errors</span>',
+      store: errorStore,
+      hidden: false,
+      margins: { top: 0, right: 10, bottom: 0, left: 0 },
+      flex: 2,
+      viewConfig: {
+        forceFit: true
+      },
+      autoScroll: true,
+      columns: [
+        { header: 'Row', dataIndex: 'row', width: 100 },
+        { header: 'Errors', dataIndex: 'messages', renderer: errorRenderer, width: 800 }
+      ],
+      bbar: [
+      '->',
+        errorTotalTextCmp
+      ]
+    })
+    
+    const finalSubmitButton = new Ext.Button({
+      text: 'Submit',
+      disabled: true,
+      handler: function () {
+        SM.Manage.Asset.submitFinalBatch(validAssets, newLabels, collectionId, appwindow)
+      }
+    })
+
+    const groupedErrors = Object.entries(parserErrors).map(([row, messages]) => {
+      return {
+        row: parseInt(row, 10),
+        messages: messages.map(m => `${m}`).join('\n') // proper newline format
+      }
+    })
+
+    const doValidation = async function() { 
+
+      const updateButtonStates = () => {
+        const hasAssets = validAssets.length > 0
+        const hasErrors = errorStore.getCount() > 0
+      
+        finalSubmitButton.setDisabled(!hasAssets)
+      
+        if (hasAssets && !hasErrors) {
+          SM.Manage.Asset.updateStatus('valid', 'All rows valid. Ready to submit.')
+        } else if (hasAssets && hasErrors) {
+          SM.Manage.Asset.updateStatus('mixed', 'Some rows have errors. Valid assets are ready to submit.')
+        } else if (!hasAssets && hasErrors) {
+          SM.Manage.Asset.updateStatus('invalid', 'No valid rows available. Please fix all errors.')
+        } else {
+          SM.Manage.Asset.updateStatus('none', 'No assets to submit.')
+        }
+      }
+
+      Ext.getBody().mask('Loading... ')
+      assetStore.loadData(validAssets)
+      errorStore.loadData(groupedErrors)
+      labelStore.loadData([])
+      updateButtonStates()
+
+      // remove csvrow for api call
+      let parsedAssetsCopy = parsedAssets.map(asset => {
+        const { CSVRow, ...rest } = asset
+        return { ...rest }
+      })
+      
+      try {
+        // dry run 
+        if(parsedAssetsCopy.length) {
+          const dryRunResponse = await Ext.Ajax.requestPromise({
+            responseType: 'json',
+            url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/assets/?dryRun=true`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            jsonData: parsedAssetsCopy
+          })
+      
+          Ext.getBody().unmask()
+    
+          // dry run success
+          if (dryRunResponse === "" || Object.keys(dryRunResponse).length === 0) {
+            // update state 
+            validAssets = parsedAssets
+            assetStore.loadData(validAssets)
+            errorStore.loadData(groupedErrors)
+            labelStore.loadData([])
+            updateButtonStates()
+            return
+          }
+        }
+        // dry run fail
+      }
+      catch (error) {
+        if (error.status === 422) {
+            let responseData = JSON.parse(error.responseText)
+            
+            // gather errors from the response
+            let newErrors = responseData.detail
+              // remove label errors
+              .filter(err => {
+                const isLabelError = err.detail && err.detail.labelName
+                return !isLabelError
+              })
+              .map(err => {
+                // extract error specifics
+                const errorSpecifics = []
+                if (err.detail.name) errorSpecifics.push(`• Asset Affected: ${err.detail.name}`)
+                if (err.detail.benchmarkId) errorSpecifics.push(`• STIG Unknown: ${err.detail.benchmarkId}`)
+                if (err.detail.benchmarkIdIndex != null) errorSpecifics.push(`• STIG Unknown Index: ${err.detail.benchmarkIdIndex}`)
+
+                // determine the CSV row number 
+                let csvRow = 0
+                if (err.detail.name) {
+                  // find the asset by name in the parsedAssets array which was returned from parsing
+                  const matchedAsset = parsedAssets.find(asset => asset.name === err.detail.name)
+                  if (matchedAsset) {
+                    csvRow = matchedAsset.CSVRow || "n/a"
+                  }
+                }
+                const msg = `Data error: ${err.failure}${errorSpecifics.length ? '\n' + errorSpecifics.join('\n ') : ''}`
+                return {
+                  row: csvRow,
+                  messages: msg
+                }
+              })
+            
+            // append new errors to the existing error store
+            const existingErrors = errorStore.getRange().map(rec => rec.data)
+            const allErrors = existingErrors.concat(newErrors)
+            errorStore.loadData(allErrors)
+          
+            // Remove assets in assets grid associated with these errored rows
+            const erroredRows = new Set(allErrors.map(e => e.row ))
+            validAssets = parsedAssets.filter(asset => !erroredRows.has(asset.CSVRow))
+            assetStore.loadData(validAssets)
+            updateButtonStates()
+  
+            // get unknown labels
+            let unknownLabels = [...new Set(responseData.detail.map(e => e.detail.labelName).filter(Boolean))]
+            newLabels = unknownLabels.map(label => ({ labelName: label }))
+            labelStore.loadData(newLabels)
+        }
+        else {
+          SM.Error.handleError(error)
+        }
+      }
+      finally {
+        Ext.getBody().unmask()
+      }
+    } 
+
+    const vpSize = Ext.getBody().getViewSize()
+    let height = vpSize.height * 0.9
+    let width = vpSize.width * 0.9 <= 1700 ? vpSize.width * 0.9 : 1700
+
+    const appwindow = new Ext.Window({
+        id: 'parsedDataWindow',
+        cls: 'sm-dialog-window sm-round-panel',
+        title: 'Import Assets From CSV',
+        modal: true,
+        width,
+        height,
+        layout: 'vbox',
+        plain: true,
+        layoutConfig: {
+          padding: '0 20 0 20',
+          align: 'stretch',
+        },
+        buttonAlign: 'right',
+        items: 
+        [
+          statusBox,
+          assetGrid,
+          {
+            xtype: 'container',
+            flex: 1,
+            margins: { top: 12, right: 0, bottom: 6, left: 0 },
+            layout: 'hbox',
+            layoutConfig: {
+              align: 'stretch'
+            },    
+            items: [
+              errorGrid,
+              labelGrid,
+            ]
+          }
+        ],
+        buttons: [
+          finalSubmitButton,
+          {
+              text: 'Cancel',
+              handler: function () {
+                  appwindow.close()
+              }
+          }
+        ]
+    })
+    appwindow.show(Ext.getBody())
+    doValidation()
+  } 
+  catch (e) {
+      SM.Error.handleError(e)
+  }
+
+}
+
+SM.Manage.Asset.updateStatus = function (type, message) {
+  const statusCmp = Ext.getCmp('statusBox')
+  if (!statusCmp) return
+
+  const styles = {
+    valid: 'background-color: #2e7d32; color: #fff;',      // green
+    invalid: 'background-color: #c62828; color: #fff;',    // red
+    mixed: 'background-color: #f9a825; color: #000;',      // yellowish
+    none: 'background-color: #757575; color: #fff;',       // gray
+  }
+
+  const icons = {
+    valid: '✅',
+    invalid: '❌',
+    mixed: '⚠️',
+    none: '🛈',
+  }
+
+  const html = `<span class="sm-status-csv" style="${styles[type] || ''}">
+    ${icons[type] || ''} ${message}
+  </span>`
+
+  statusCmp.update(html)
+}
+
+SM.Manage.Asset.submitFinalBatch = async function (validAssets, newLabels, collectionId, appwindow){
+
+  async function createLabels(labels) {
+    try {
+      const payload = labels.map(label => ({
+        name: label.labelName,
+        description: '',
+        color: '4568F2',
+      }))
+  
+      await Ext.Ajax.requestPromise({
+        responseType: 'json',
+        url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels/batch`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        jsonData: payload
+      })
+    } catch (e) {
+      SM.Error.handleError(e)
+    }
+  }
+
+  try {
+    Ext.getBody().mask('')
+
+    let parsedAssetsCopy = validAssets.map(asset => {
+      const { CSVRow, ...rest } = asset
+      return { ...rest }
+    })
+
+    if(newLabels.length) {
+      await createLabels(newLabels)
+    }
+    
+    SM.Cache.updateCollectionLabels(collectionId)
+
+    const responses = await Ext.Ajax.requestPromise({
+      responseType: 'json',
+      url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/assets`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      jsonData: parsedAssetsCopy
+    })
+
+  
+    SM.Dispatcher.fireEvent('assetcreated', {collection:{collectionId}})
+
+    appwindow.close()
+  }
+  catch (e) {
+    SM.Error.handleError(e)
+  }
+  finally {
+    Ext.getBody().unmask()
+  }
+}
 
 SM.Manage.Asset.LabelField = Ext.extend(Ext.form.Field, {
   defaultAutoCreate: { tag: "div" },
