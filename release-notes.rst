@@ -1,3 +1,19 @@
+1.5.7
+-------
+
+Changes:
+
+  - (UI/API) feature: Support for Batch Asset creation via CSV import; export CSV representation of Collection Assets
+  - (UI/API) feature: User Status feature added to User Admin panel; allows for disabling of users without removing them from the database.
+  - (UI/API) feature: Added AssessedBySeverity breakout to summary and detail metrics responses (Available in metrics downloads from UI)
+  - (UI/API) feature: support for alternate OAUTH2 response_mode `query` 
+  - (API) chore: update baseline DB schema and static data 
+  - (UI) bugfix: filter issue on Results column in Collection Review Workspace
+  - (UI) bugfix: case-insensitive check for duplicate label names
+  - (API) bugfix: handle absent projection in getFindingsByCollection
+  - (UI) Updated to stigman-client-modules v1.5.3 for new CSV parser and other bugfixes 
+  - (UI/API) dependency updates
+
 1.5.6
 -------
 
