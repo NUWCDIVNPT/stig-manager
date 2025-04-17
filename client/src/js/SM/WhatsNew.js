@@ -2,6 +2,32 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2025-04-17',
+    header: `Create Assets in Bulk with a CSV File`,
+    body: `
+    <p>Collection Owners and Managers can now create Assets in bulk by importing a CSV file. This feature supports all properties of an Asset, including Labels, Metadata, and STIG assignments. New Labels, if needed, will be created on import.</p>
+
+    <p>To import an Assets CSV, click the "Import Assets CSV" button, and select a file. You will be presented with the Assets and Labels to be created, as well as any rows that could not be processed (for example, due to duplicate Asset names or unknown STIGs). Click "Submit" to create all valid Assets/Labels found in the CSV, or "Cancel" if you would prefer to fix any errors in the file and try again.</p>
+
+    <p>To generate a CSV file representation of the Assets in your Collection, click the "Export Assets CSV" button in the Collection Management workspace. If Assets are selected, this will create a CSV file representation of all of the selected Assets, including their Labels and STIG assignments. If no Assets are selected, all Assets will be included in the CSV.</p>
+
+    <p>For the required CSV format, <a target="_blank" href="docs/user-guide/user-guide.html#create-asset-batch">refer to our documentation for detailed field requirements,</a> or click the "Export Assets CSV" button and modify its contents.</p>
+
+    <p><img src="img/whatsnew/2025-04-17-asset-csv.png" width=750/></p>
+
+    `
+  },  
+  {
+    date: '2025-04-10',
+    header: `Set User Status to Control Access`,
+    body: `
+    <p>Application Managers can now set a User's Status to "Available" or "Unavailable" by selecting a User and clicking the "Set Un/Available" button in the toolbar. Setting a User to "Unavailable" will prevent them from accessing the system, remove any of their existing Collection Grant or User Group assignments, and prevent them from being assigned new ones.</p>
+    <p>By default, the "Users" Application Management interface applies a filter on the new Status column to hide "Unavailable" Users. To set a User's status back to "Available", disable the filter, select an "Unavailable" User, and click the "Set Available" button in the toolbar.</p>
+
+    <p><img src="img/whatsnew/2025-04-10-user-status.png" width=750/></p>
+    `
+  },    
+  {
     date: '2025-01-31',
     header: `New Dynamic User Grants and User Groups Features`,
     body: `
