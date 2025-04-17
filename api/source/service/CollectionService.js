@@ -1338,6 +1338,60 @@ exports.createCollectionLabel = async function (collectionId, label) {
   return resultGet[0].uuid
 }
 
+exports.createCollectionLabels = async function (collectionId, labels) {
+  const placeholders = labels.map(() => '(?, ?, ?, ?, UUID_TO_BIN(UUID(),1))').join(', ')
+  const values = []
+
+  for (const label of labels) {
+    values.push(collectionId, label.name, label.description, label.color)
+  }
+
+  const insertSql = `
+    INSERT INTO collection_label (collectionId, name, description, color, uuid)
+    VALUES ${placeholders}
+  `
+  await dbUtils.pool.query(insertSql, values)
+
+  return labels.map(label => label.name)
+}
+
+exports.getCollectionLabelsByName = async function (collectionId, labelNames, grant) {
+
+  const ctes = []
+  const columns = [
+    'BIN_TO_UUID(cl.uuid,1) labelId',
+    'cl.name',
+    'cl.description',
+    'cl.color',
+    'count(distinct cla.claId) as uses'
+  ]
+  const joins = [
+    'collection_label cl', 
+    'left join asset a on cl.collectionId = a.collectionId and a.state = "enabled"',
+    'left join stig_asset_map sa on a.assetId = sa.assetId',
+    'left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a.assetId'
+  ]
+ 
+  const namePlaceholders = labelNames.map(() => '?').join(', ')
+  const predicates = {
+    statements: [
+      'cl.collectionId = ?',
+      `cl.name IN (${namePlaceholders})`
+    ],
+    binds: [collectionId, ...labelNames]
+  }
+
+  const groupBy = ['cl.clId']
+  const orderBy = []
+  if (grant.roleId === 1) {
+    ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
+    joins.push('inner join cteAclEffective cae on sa.saId = cae.saId')
+  }
+  const sql = dbUtils.makeQueryString({ctes, columns, joins, predicates, groupBy, orderBy, format: true})
+  const [rows] = await dbUtils.pool.query(sql)
+  return (rows)
+}
+
 exports.getCollectionLabelById = async function (collectionId, labelId, grant) {
   const ctes = []
   const columns = [

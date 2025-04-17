@@ -952,6 +952,64 @@ describe('POST - Collection - not all tests run for all iterations', function ()
         })
       })
 
+      describe("createCollectionLabels - /collections/{collectionId}/labels/batch", function () {
+
+        let labels = null
+
+        it("Create Label in a Collection",async function () {
+
+          const request = [
+            {
+              "color": "aa33cc",
+              "description": "label-POST-1",
+              "name": "label-POST-1"
+            },
+            {
+              "color": "aa34cc",
+              "description": "label-POST-2",
+              "name": "label-POST-2"
+            },
+            {
+              "color": "aa35cc",
+              "description": "label-POST-3",
+              "name": "label-POST-3"
+            }
+          ]
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.scrapCollection.collectionId}/labels/batch`, 'POST', iteration.token, request)
+
+          if(distinct.canModifyCollection === false){
+            expect(res.status).to.eql(403)
+            return
+          }
+          labels = res.body
+          expect(res.status).to.eql(201)
+          expect(res.body).to.be.an('array').of.length(3)
+
+          for(const label of res.body){
+            expect(label.name).to.be.oneOf(request.map(l => l.name))
+            expect(label.description).to.be.oneOf(request.map(l => l.description))
+            expect(label.color).to.be.oneOf(request.map(l => l.color))
+            expect(label.uses).to.equal(0)
+          }
+  
+        })
+        it("Clean up - delete labels",async function () {
+            if(labels){
+              for(const label of labels){
+                const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.scrapCollection.collectionId}/labels/${label.labelId}`, 'DELETE', iteration.token)
+                expect(res.status).to.eql(204)
+              }
+            }
+        })
+
+        it("should throw error, post must be array of length one.", async function () {
+
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.scrapCollection.collectionId}/labels/batch`, 'POST', iteration.token, [])
+          expect(res.status).to.eql(400)
+
+        })
+      })
+
       describe("writeStigPropsByCollectionStig - /collections/{collectionId}/stigs/{benchmarkId}", function () {
         before(async function () {
           await utils.loadAppData()

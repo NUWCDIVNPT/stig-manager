@@ -551,6 +551,20 @@ module.exports.createCollectionLabel = async function (req, res, next) {
   }
 }
 
+module.exports.createCollectionLabels = async function (req, res, next) {
+  try {
+    const { collectionId, grant } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
+
+    const createdLabelNames = await CollectionService.createCollectionLabels(collectionId, req.body)
+
+    const createdLabels = await CollectionService.getCollectionLabelsByName(collectionId, createdLabelNames, grant)
+
+    res.status(201).json(createdLabels)
+  } catch (err) {
+    next(err)
+  }
+}
+
 module.exports.getCollectionLabelById = async function (req, res, next) {
   try {
     const { collectionId, grant } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
