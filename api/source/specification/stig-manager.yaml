@@ -5974,9 +5974,9 @@ components:
                     type: string
                   benchmarkIdIndex:
                     type: integer
-                  labelId:
+                  labelName:
                     type: string
-                  labelIdIndex:
+                  labelIndex:
                     type: integer
       required:
         - error
