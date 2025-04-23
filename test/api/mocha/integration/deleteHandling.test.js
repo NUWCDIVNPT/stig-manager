@@ -44,6 +44,14 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
                     },
                     "history": {
                         "maxReviews": 11
+                    },
+                    "importOptions": {
+                        "autoStatus": "submitted",
+                        "unreviewed": "commented",
+                        "unreviewedCommented": "informational",
+                        "emptyDetail": "replace",
+                        "emptyComment": "ignore",
+                        "allowCustom": true
                     }
               },
                 "metadata": {

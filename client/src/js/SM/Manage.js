@@ -1582,6 +1582,7 @@ SM.Manage.Collection.Panel = Ext.extend(Ext.Panel, {
   initComponent: function () {
     let _this = this
     this.canModifyOwners = !!this.canModifyOwners
+    
     async function apiPatchSettings(value) {
       const apiCollection = await Ext.Ajax.requestPromise({
         responseType: 'json',
@@ -1591,22 +1592,18 @@ SM.Manage.Collection.Panel = Ext.extend(Ext.Panel, {
           settings: value
         }
       })
+      SM.Dispatcher.fireEvent('collectionsettingschanged', _this.collectionId, value)
       return apiCollection || undefined
     }
-    async function apiPutImportOptions(value) {
-      await Ext.Ajax.requestPromise({
-        url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/metadata/keys/importOptions`,
-        method: 'PUT',
-        jsonData: JSON.stringify(value)
-      })
-      SM.Dispatcher.fireEvent('importoptionschanged', _this.collectionId, value)
-    }
+   
     async function updateSettings() {
       const apiCollection = await apiPatchSettings({
         fields: settingsReviewFields.serialize(),
         status: settingsStatusFields.serialize(),
-        history: settingsHistoryFields.serialize()
+        history: settingsHistoryFields.serialize(),
+        importOptions: settingsImportOptions.getOptions()
       })
+      
       return apiCollection
     }
 
@@ -1756,11 +1753,11 @@ SM.Manage.Collection.Panel = Ext.extend(Ext.Panel, {
     })
     const settingsImportOptions = new SM.ReviewsImport.ParseOptionsFieldSet({
       iconCls: 'sm-import-icon',
-      initialOptions: SM.safeJSONParse(_this.apiCollection?.metadata?.importOptions),
+      initialOptions: _this.apiCollection?.settings?.importOptions,
       canAccept: true,
       onOptionChanged: async function (fieldset) {
         try {
-          await apiPutImportOptions(JSON.stringify(fieldset.getOptions()))
+          await updateSettings()
         }
         catch (e) {
           SM.Error.handleError(e)

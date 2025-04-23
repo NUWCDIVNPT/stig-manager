@@ -90,6 +90,14 @@ describe('GET - Collection', function () {
                 },
                 history: {
                   maxReviews: 11
+                },
+                importOptions: {
+                  autoStatus: "submitted",
+                  unreviewed: "commented",
+                  unreviewedCommented: "informational",
+                  emptyDetail: "replace",
+                  emptyComment: "ignore",
+                  allowCustom: true
                 }
               },
               metadata: {
@@ -116,16 +124,17 @@ describe('GET - Collection', function () {
           expect(res.body[0].collectionId).to.equal(tempCollectionWithMetadata.collectionId)
         })
         it('Return a list of Collections accessible to the requester NAME exact',async function () {
-        const res = await utils.executeRequest(`${config.baseUrl}/collections?name=${reference.testCollection.name}&name-match=exact`, 'GET', iteration.token)
-        expect(res.status).to.eql(200)
-        expect(res.body).to.be.an('array')
-        expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionExactMatchCnt)
-        if (distinct.collectionMatch.collectionExactMatchCnt == 0) {
-          return
-        }
-        const regex  = new RegExp(reference.testCollection.name)
-        expect(res.body[0].name).to.match(regex)
-        expect(res.body[0].collectionId).to.equal(reference.testCollection.collectionId)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections?name=${reference.testCollection.name}&name-match=exact`, 'GET', iteration.token)
+          expect(res.status).to.eql(200)
+          expect(res.body).to.be.an('array')
+          expect(res.body).to.have.lengthOf(distinct.collectionMatch.collectionExactMatchCnt)
+          if (distinct.collectionMatch.collectionExactMatchCnt == 0) {
+            return
+          }
+          const regex  = new RegExp(reference.testCollection.name)
+          expect(res.body[0].name).to.match(regex)
+          expect(res.body[0].collectionId).to.equal(reference.testCollection.collectionId)
+          expect(res.body[0].settings.importOptions).to.deep.equalInAnyOrder(reference.testCollection.importOptions)
         })
         it('Return a list of Collections accessible to the requester NAME starts With',async function () {
         const res = await utils.executeRequest(`${config.baseUrl}/collections?name=${'Collection'}&name-match=startsWith`, 'GET', iteration.token)
@@ -209,6 +218,18 @@ describe('GET - Collection', function () {
               expect(groupIds).to.include(grant.userGroup.userGroupId);
             }
           }
+
+          expect(res.body.settings.history.maxReviews).to.eql(5)
+          expect(res.body.settings.fields.detail.enabled).to.eql('always')
+          expect(res.body.settings.fields.detail.required).to.eql('always')
+          expect(res.body.settings.fields.comment.enabled).to.eql('findings')
+          expect(res.body.settings.fields.comment.required).to.eql('findings')
+
+          expect(res.body.settings.status.canAccept).to.eql(true)
+          expect(res.body.settings.status.minAcceptGrant).to.eql(3)
+          expect(res.body.settings.status.resetCriteria).to.eql('result')
+
+          expect(res.body.settings.importOptions).to.deep.equalInAnyOrder(reference.testCollection.importOptions)  
 
 
           // assets projection
@@ -531,6 +552,14 @@ describe('GET - Collection', function () {
               },
               history: {
                 maxReviews: 11
+              },
+              importOptions: {
+                autoStatus: "submitted",
+                unreviewed: "commented",
+                unreviewedCommented: "informational",
+                emptyDetail: "replace",
+                emptyComment: "ignore",
+                allowCustom: true
               }
             },
             metadata: {},

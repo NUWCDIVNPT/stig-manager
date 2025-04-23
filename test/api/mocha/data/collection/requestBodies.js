@@ -60,7 +60,18 @@ export const requestBodies = {
         canAccept: true,
         minAcceptGrant: 2,
         resetCriteria: 'result'
-      }
+      },
+      history: {
+        maxReviews: 11,
+      },
+      importOptions: {
+        autoStatus: "submitted",
+        unreviewed: "commented",
+        unreviewedCommented: "informational",
+        emptyDetail: "replace",
+        emptyComment: "ignore",
+        allowCustom: true,
+      },
     },
     metadata: {
       pocName: 'poc2Patched',
@@ -123,7 +134,15 @@ export const requestBodies = {
       },
       history: {
         maxReviews: 11
-      }
+      },
+      importOptions: {
+        autoStatus: 'saved',
+        unreviewed: 'commented',
+        unreviewedCommented: 'informational',
+        emptyDetail: 'replace',
+        emptyComment: 'ignore',
+        allowCustom: true
+      },
     },
     metadata: {
       pocName: 'poc2Put',
@@ -166,6 +185,14 @@ export const requestBodies = {
       },
       history: {
         maxReviews: 11
+      },
+      importOptions: {
+        autoStatus: "submitted",
+        unreviewed: "commented",
+        unreviewedCommented: "informational",
+        emptyDetail: "replace",
+        emptyComment: "ignore",
+        allowCustom: true
       }
     },
     metadata: {
@@ -213,6 +240,14 @@ export const requestBodies = {
       },
       history: {
         maxReviews: 5
+      },
+      importOptions: {
+        autoStatus: "submitted",
+        unreviewed: "commented",
+        unreviewedCommented: "informational",
+        emptyDetail: "replace",
+        emptyComment: "ignore",
+        allowCustom: true
       }
     },
     metadata: {

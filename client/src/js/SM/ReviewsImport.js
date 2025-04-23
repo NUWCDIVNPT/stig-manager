@@ -1997,7 +1997,7 @@ async function showImportResultFiles(collectionId, createObjects = true) {
         const cachedCollection = SM.Cache.CollectionMap.get(collectionId)
         const userGrant = curUser.collectionGrants.find( i => i.collection.collectionId === cachedCollection.collectionId )?.roleId
         const canAccept = cachedCollection.settings.status.canAccept && (userGrant >= cachedCollection.settings.status.minAcceptGrant)
-        const initialOptions = SM.safeJSONParse(cachedCollection.metadata.importOptions) ?? SM.ReviewsImport.DefaultOptions
+        const initialOptions = cachedCollection.settings.importOptions ?? SM.ReviewsImport.DefaultOptions
         if (initialOptions?.autoStatus === 'accepted' && !canAccept) {
             initialOptions.autoStatus = 'submitted'
         }
@@ -2434,7 +2434,7 @@ async function showImportResultFile(params) {
         const cachedCollection = SM.Cache.CollectionMap.get(params.collectionId)
         const userGrant = curUser.collectionGrants.find( i => i.collection.collectionId === cachedCollection.collectionId )?.roleId
         const canAccept = cachedCollection.settings.status.canAccept && (userGrant >= cachedCollection.settings.status.minAcceptGrant)
-        const initialOptions = SM.safeJSONParse(cachedCollection.metadata.importOptions) ?? SM.ReviewsImport.DefaultOptions
+        const initialOptions = cachedCollection.settings.importOptions ?? SM.ReviewsImport.DefaultOptions
         if (initialOptions?.autoStatus === 'accepted' && !canAccept) {
             initialOptions.autoStatus = 'submitted'
         }

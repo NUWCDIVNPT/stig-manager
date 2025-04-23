@@ -12,7 +12,6 @@ import {use, expect} from 'chai'
 use(deepEqualInAnyOrder)
 
 
-
 describe('POST - Collection - not all tests run for all iterations', function () {
 
   before(async function () {
@@ -64,10 +63,14 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           expect(res.body.settings.status.minAcceptGrant).to.equal(post.settings.status.minAcceptGrant)
           expect(res.body.settings.status.resetCriteria).to.equal(post.settings.status.resetCriteria)
           expect(res.body.settings.history.maxReviews).to.equal(post.settings.history.maxReviews)
+
+          expect(res.body.settings.importOptions).to.deep.equalInAnyOrder(reference.defaultImportOptions)
+
           expect(res.body.metadata.pocName).to.equal(post.metadata.pocName)
           expect(res.body.metadata.pocEmail).to.equal(post.metadata.pocEmail)
           expect(res.body.metadata.pocPhone).to.equal(post.metadata.pocPhone)
           expect(res.body.metadata.reqRar).to.equal(post.metadata.reqRar)
+
 
           // grants projection
           expect(res.body.grants).to.have.lengthOf(1)
@@ -781,6 +784,8 @@ describe('POST - Collection - not all tests run for all iterations', function ()
                       for(const label of messageObj.collection.labels){
                           expect(label.name).to.be.oneOf(reference.testCollection.labelsProjected.map(l => l.name))
                       }
+
+                      expect(messageObj.collection.settings.importOptions).to.deep.equalInAnyOrder(reference.testCollection.importOptions)
 
                       // confirm that ACLs have been transfered. will check with the testGroup acl in new collection 
                       const testGroupGrantId = messageObj.collection.grants.find(g => g.userGroup?.userGroupId === reference.testCollection.testGroup.userGroupId).grantId

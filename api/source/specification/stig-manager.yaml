@@ -626,33 +626,40 @@ paths:
         - Collection
       summary: Create a Collection
       description: |
-        The `settings` property is optional and can be partially provided.
-        - If `settings` is not provided, the Collection will be created with the default settings.
-        - If a partial `settings` object is provided, the Collection will be created with settings merged from the provided object and the default settings.
+        # The `settings` property is optional and can be partially provided.
+        # - If `settings` is not provided, the Collection will be created with the default settings.
+        # - If a partial `settings` object is provided, the Collection will be created with settings merged from the provided object and the default settings.
 
-        The default settings are:
-        ```
-         {
-            fields: {
-              detail: {
-                enabled: 'always',
-                required: 'always'
-              },
-              comment: {
-                enabled: 'findings',
-                required: 'findings'
-              }
-            },
-            status: {
-              canAccept: true,
-              resetCriteria: 'result',
-              minAcceptGrant: 3
-            },
-            history: {
-              maxReviews: 5
-            }
-          }
-        ```
+        # The default settings are:
+        # ```
+        #  {
+        #     fields: {
+        #       detail: {
+        #         enabled: 'always',
+        #         required: 'always'
+        #       },
+        #       comment: {
+        #         enabled: 'findings',
+        #         required: 'findings'
+        #       }
+        #     },
+        #     status: {
+        #       canAccept: true,
+        #       resetCriteria: 'result',
+        #       minAcceptGrant: 3
+        #     },
+        #     history: {
+        #       maxReviews: 5
+        #     }
+        #     importOptions: {
+        #       autoStatus: 'saved',
+        #       unreviewed: 'commented',
+        #       unreviewedCommented: 'informational',
+        #       emptyDetail: 'replace',
+        #       emptyComment: 'ignore',
+        #       allowCustom: true
+        #     }
+        # ```
       operationId: createCollection
       parameters:
         - $ref: '#/components/parameters/CollectionProjectionQuery'
@@ -5056,9 +5063,13 @@ components:
           $ref: '#/components/schemas/CollectionStatusSettings'
         history:
           $ref: '#/components/schemas/CollectionHistorySettings'
+        importOptions:
+          $ref: '#/components/schemas/CollectionImportOptions'          
       required:
         - fields
         - status
+        - history
+        - importOptions
     AppInfoCollectionState:
       type: string
       enum:
@@ -6353,6 +6364,75 @@ components:
         - maxReviews
     CollectionId:
       $ref: '#/components/schemas/StringIntId'
+    CollectionImportOptions:
+      additionalProperties: false
+      type: object
+      properties:
+        autoStatus:
+          description: |
+            Determines how to set the status property of imported reviews.
+            - 'null': Don't set a status (Keep existing Review Status)
+            - 'saved': Always set status to 'saved'
+            - 'submitted': Set status to 'submitted' if the review is submittable per Collection settings
+            - 'accepted': Set status to 'accepted' if the review is submittable, and User has permission to accept,  otherwise 'submitted'
+          type: string
+          enum:
+            - "null"
+            - saved
+            - submitted
+            - accepted
+        unreviewed:
+          description: |
+            Controls how to handle unreviewed rules (those with result = 'notchecked').
+            - 'never': Don't import unreviewed rules
+            - 'commented': Import unreviewed rules that have comments, using the result specified in unreviewedCommented
+            - 'always': Import all unreviewed rules, using the result specified in unreviewedCommented for those with comments
+          type: string
+          enum:
+            - never
+            - commented
+            - always
+        unreviewedCommented:
+          description: |
+            The result to use for unreviewed rules that have comments, when unreviewed is set to 'commented' or 'always'.
+          type: string
+          enum:
+            - notchecked
+            - informational
+        emptyDetail:
+          description: |
+            Controls how to handle rules with empty finding details.
+            - 'ignore': Leave the detail field null
+            - 'import': Import the empty detail (as an empty string)
+            - 'replace': Replace with a default message
+          type: string
+          enum:
+            - ignore
+            - import
+            - replace
+        emptyComment:
+          description: |
+            Controls how to handle rules with empty comments.
+            - 'ignore': Leave the comment field null
+            - 'import': Import the empty comment (as an empty string)
+            - 'replace': Replace with a default message
+          type: string
+          enum:
+            - ignore
+            - import
+            - replace
+        allowCustom:
+          description: |
+            Flag indicating whether Clients may POST reviews that do not conform to importOptions specified.
+          type: boolean
+          default: true
+      required:
+        - autoStatus
+        - unreviewed
+        - unreviewedCommented
+        - emptyDetail
+        - emptyComment
+        - allowCustom      
     CollectionName:
       $ref: '#/components/schemas/String45'
     CollectionProjected:
@@ -6413,6 +6493,13 @@ components:
           $ref: '#/components/schemas/CollectionHistorySettings'
         status:
           $ref: '#/components/schemas/CollectionStatusSettings'
+        importOptions:
+          $ref: '#/components/schemas/CollectionImportOptions'
+      required:
+        - fields
+        - history
+        - status
+        - importOptions   
     CollectionStatistics:
       additionalProperties: false
       type: object
