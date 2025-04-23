@@ -25,10 +25,11 @@ SM.Cache.updateCollectionLabels = async function (collectionId) {
   return collection.labelMap
 }
 
-SM.Cache.updateCollectionMetadataKey = function(collectionId, key, value) {
+
+SM.Cache.updateCollectionSettings = async function (collectionId, settings) {
   const collection = SM.Cache.CollectionMap.get(collectionId)
   if (collection) {
-    collection.metadata[key] = value
+    collection.settings = settings
   }
 }
 
@@ -110,6 +111,6 @@ SM.Dispatcher.addListener('labeldeleted', function (collectionId, labelId) {
   collection.labels = Array.from(collection.labelMap.values()).sort((a,b) => a.name.localeCompare(b.name))
 })
 
-SM.Dispatcher.addListener('importoptionschanged', function (collectionId, value) {
-  SM.Cache.updateCollectionMetadataKey(collectionId, 'importOptions', value)
+SM.Dispatcher.addListener('collectionsettingschanged', function (collectionId, settings) {
+  SM.Cache.updateCollectionSettings(collectionId, settings)
 })

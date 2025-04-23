@@ -20,6 +20,6 @@ SM.Dispatcher.addEvents(
     'labelchanged',
     'labeldeleted',
     'labelfilter',
-    'importoptionschanged',
+    'collectionsettingschanged',
     'themechanged'
 )

@@ -147,10 +147,33 @@ describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{asset
                             reqRar: "true",
                         },
                         settings: {
-                            history: {
-                                maxReviews: 2,
+                            fields: {
+                              detail: {
+                                enabled: 'always',
+                                required: 'findings'
+                              },
+                              comment: {
+                                enabled: 'always',
+                                required: 'findings'
+                              }
                             },
-                        },
+                            status: {
+                              canAccept: true,
+                              minAcceptGrant: 2,
+                              resetCriteria: 'result'
+                            },
+                            history: {
+                              maxReviews: 2
+                            },
+                            importOptions: {
+                              autoStatus: "submitted",
+                              unreviewed: "commented",
+                              unreviewedCommented: "informational",
+                              emptyDetail: "replace",
+                              emptyComment: "ignore",
+                              allowCustom: true
+                            }
+                          },
                     })
 
                     if(user.name  == "lvl1" || user.name  == "lvl2" || user.name  == "collectioncreator" ){

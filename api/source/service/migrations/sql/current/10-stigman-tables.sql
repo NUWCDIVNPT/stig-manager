@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.3.0, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.41, for Linux (x86_64)
 --
 -- Host: 127.0.0.1    Database: stigman
 -- ------------------------------------------------------
--- Server version	8.0.41
+-- Server version	8.0.40
 
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
@@ -709,4 +709,4 @@ DROP TABLE IF EXISTS `v_latest_rev`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-16 10:30:12
+-- Dump completed on 2025-04-23 12:26:43

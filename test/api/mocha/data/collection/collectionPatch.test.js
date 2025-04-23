@@ -6,7 +6,9 @@ import reference from '../../referenceData.js'
 import {requestBodies} from "./requestBodies.js"
 import {iterations} from '../../iterations.js'
 import {expectations} from './expectations.js'
-import { expect } from 'chai'
+import deepEqualInAnyOrder from 'deep-equal-in-any-order'
+import {use, expect} from 'chai'
+use(deepEqualInAnyOrder)
 
 
 describe('PATCH - Collection', function () {
@@ -60,6 +62,50 @@ describe('PATCH - Collection', function () {
                 }
             }
           })
+
+          it("should change the collection settings import options",async function () {
+
+            const patchRequest = {
+              settings: {
+                fields: {
+                  comment: {
+                    enabled: "always",
+                    required: "findings",
+                  },
+                  detail: {
+                    enabled: "always",
+                    required: "findings",
+                  },
+                },
+                history: {
+                  maxReviews: 5,
+                },
+                status: {
+                  canAccept: true,
+                  minAcceptGrant: 2,
+                  resetCriteria: "result",
+                },
+                importOptions: {
+                  autoStatus: "saved",
+                  unreviewed: "never",
+                  unreviewedCommented: "notchecked",
+                  emptyDetail: "ignore",
+                  emptyComment: "ignore",
+                  allowCustom: true,
+                },
+              },
+            }
+
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}`, 'PATCH', iteration.token, patchRequest)
+            if(distinct.canModifyCollection === false){
+                expect(res.status).to.eql(403)
+                return
+            }
+            expect(res.status).to.eql(200)
+            expect(res.body.settings).to.deep.equalInAnyOrder(patchRequest.settings)
+          
+          })
+
           it("should throw SmError.UnprocessableError when updating due to duplicate user in grant array.",async function () {
 
             const patchRequest = JSON.parse(JSON.stringify(requestBodies.updateCollection))

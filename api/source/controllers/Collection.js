@@ -33,6 +33,14 @@ module.exports.defaultSettings = {
   },
   history: {
     maxReviews: 5
+  },
+  importOptions:{
+    autoStatus: 'saved',
+    unreviewed: 'commented',
+    unreviewedCommented: 'informational',
+    emptyDetail: 'replace',
+    emptyComment: 'ignore',
+    allowCustom: true
   }
 }
 
