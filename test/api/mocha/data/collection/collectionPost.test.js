@@ -103,7 +103,6 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             expect(createdCollection).to.exist
         })
 
-
         it("Create a Collection with no settings, expect the default",async function () {
           const defaultSettings = {
             fields: {
@@ -148,6 +147,65 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           }
           expect(res.body.name).to.equal(post.name)
           expect(res.body.settings).to.deep.equalInAnyOrder(defaultSettings)
+
+        })
+
+
+        it("Create a Collection with partial settings, expect the defaults for the rest",async function () {
+          const defaultSettings = {
+            fields: {
+              detail: {
+                enabled: 'always',
+                required: 'always'
+              },
+              comment: {
+                enabled: 'findings',
+                required: 'findings'
+              }
+            },
+            status: {
+              canAccept: true,
+              resetCriteria: 'result',
+              minAcceptGrant: 3
+            },
+            history: {
+              maxReviews: 5
+            },
+            importOptions:{
+              autoStatus: 'saved',
+              unreviewed: 'commented',
+              unreviewedCommented: 'informational',
+              emptyDetail: 'replace',
+              emptyComment: 'ignore',
+              allowCustom: true
+            }
+          }
+
+          
+          const post = JSON.parse(JSON.stringify(requestBodies.collectionWithNoSettings))
+          post.name = post.name + utils.getUUIDSubString()
+          post.settings = {
+            history: {
+              maxReviews: 10
+            },
+          }
+          const res = await utils.executeRequest(`${config.baseUrl}/collections?elevate=${distinct.canElevate}&projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`, 'POST', iteration.token, post)
+          if(distinct.canCreateCollection === false){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(201)
+          if (distinct.grant === 'none') {  
+            // grant = none iteration can create a collection, but does not give itself access to the collection
+            // TODO: Should eventually be changed to respond with empty object
+            return
+          }
+          expect(res.body.name).to.equal(post.name)
+          expect(res.body.settings.fields).to.deep.equalInAnyOrder(defaultSettings.fields)
+          expect(res.body.settings.status).to.deep.equalInAnyOrder(defaultSettings.status)
+          expect(res.body.settings.history).to.deep.equalInAnyOrder(post.settings.history)
+          expect(res.body.settings.importOptions).to.deep.equalInAnyOrder(defaultSettings.importOptions)
+
 
         })
         it("Create A colleciton with grant to a user group",async function () {

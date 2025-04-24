@@ -4944,7 +4944,7 @@ components:
         state:
           $ref: '#/components/schemas/AppInfoCollectionState'
         settings:
-          $ref: '#/components/schemas/AppInfoCollectionSettings'
+          $ref: '#/components/schemas/CollectionSettings'
         assets:
           $ref: '#/components/schemas/IntegerMinimumZeroNullable'
         assetsDisabled:
@@ -5064,11 +5064,6 @@ components:
           $ref: '#/components/schemas/CollectionHistorySettings'
         importOptions:
           $ref: '#/components/schemas/CollectionImportOptions'          
-      required:
-        - fields
-        - status
-        - history
-        - importOptions
     AppInfoCollectionState:
       type: string
       enum:
@@ -6424,7 +6419,6 @@ components:
           description: |
             Flag indicating whether Clients may POST reviews that do not conform to importOptions specified.
           type: boolean
-          default: true
       required:
         - autoStatus
         - unreviewed
@@ -6494,11 +6488,6 @@ components:
           $ref: '#/components/schemas/CollectionStatusSettings'
         importOptions:
           $ref: '#/components/schemas/CollectionImportOptions'
-      required:
-        - fields
-        - history
-        - status
-        - importOptions   
     CollectionStatistics:
       additionalProperties: false
       type: object
