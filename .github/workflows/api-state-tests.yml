@@ -10,7 +10,7 @@ on:
       - ".github/workflows/api-state-tests.yml"
 jobs:
   api-state-tests:
-    name: bootstrap tests
+    name: state tests
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -20,6 +20,9 @@ jobs:
         run: npm ci
       - name: Install Test dependencies
         working-directory: ./test/state
+        run: npm ci
+      - name: Install Test dependencies 2
+        working-directory: ./test/api
         run: npm ci
       - name: Run state tests
         working-directory: ./test/state
