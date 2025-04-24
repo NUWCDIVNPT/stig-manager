@@ -85,7 +85,7 @@ describe('Boot with no dependencies', function () {
   })
 })
 
-describe('Boot with both dependencies', function () {
+describe.only('Boot with both dependencies', function () {
   let api
   let mysql
   let kc
