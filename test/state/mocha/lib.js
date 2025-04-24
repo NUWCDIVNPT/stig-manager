@@ -9,7 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const nodeCmd = process.env.GITHUB_RUN_ID ? '/usr/local/bin/node':'node'
 const pythonCmd = process.env.GITHUB_RUN_ID ? '/usr/bin/python3':'python3'
 const dockerCmd = process.env.GITHUB_RUN_ID ? '/usr/bin/docker':'docker'
-const iptablesCmd = process.env.GITHUB_RUN_ID ? '/usr/sbin/iptables':'iptables'
+const iptablesCmd = process.env.GITHUB_RUN_ID ? '/usr/sbin/iptables':'sudo iptables'
 
 /**
  * Spawns the API as a node process.
@@ -26,10 +26,17 @@ export function spawnApiPromise ({
   resolveOnType = 'started',
   resolveOnClose = true,
   apiPath = `${__dirname}/../../../api/source/index.js`,
+  inspect = false,
+  consoleLog = false,
   env
 } = {}) {
   return new Promise((resolve, reject) => {
-    const api = spawn(nodeCmd, [apiPath], {env})
+    const options = []
+    if (inspect) {
+      options.push('--inspect-brk')
+    }
+    options.push(apiPath)
+    const api = spawn(nodeCmd, options, {env})
     
     api.on('error', (err) => {
       reject(err)
@@ -45,6 +52,7 @@ export function spawnApiPromise ({
       input: api.stdout,
       crlfDelay: Infinity
     }).on('line', (line) => {
+      if (consoleLog) console.log(line)
       const json = JSON.parse(line)
       resolution.logRecords.push(json)
       resolution.logEvents.emit(json.type, json)
@@ -58,6 +66,9 @@ export function spawnApiPromise ({
         resolve(resolution)
       }
     })
+    if (resolveOnType === null) {
+      resolve(resolution)
+    }
   })
 }
 
@@ -136,6 +147,26 @@ export async function simpleRequest(url, method) {
     body: await response.json().catch(() => ({}))
   }
 }
+
+export async function bearerRequest({url, method, token}) {
+  const options = {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    }
+  }
+  const response = await fetch(url, options)
+  const headers = {}
+  response.headers.forEach((value, key) => {
+    headers[key] = value
+  })
+  return {
+    status: response.status,
+    headers,
+    body: await response.json().catch(() => ({}))
+  }
+}
+
 
 /**
  * Spawns a MySQL container.

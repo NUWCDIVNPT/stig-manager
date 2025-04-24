@@ -71,7 +71,7 @@ class OIDCProviderError extends SmError {
 class SigningKeyNotFoundError extends SmError {
   constructor(detail) {
     super('Unknown signing key, unable to validate token.')
-    this.status = 403
+    this.status = 401
     this.detail = detail
   }
 }
@@ -79,7 +79,7 @@ class SigningKeyNotFoundError extends SmError {
 class InsecureTokenError extends SmError {
   constructor(detail) {
     super('Insecure token presented and STIGMAN_DEV_ALLOW_INSECURE_TOKENS is false.')
-    this.status = 403
+    this.status = 401
     this.detail = detail
   }
 }

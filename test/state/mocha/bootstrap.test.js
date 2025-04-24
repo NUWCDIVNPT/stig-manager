@@ -59,8 +59,8 @@ describe('Boot with no dependencies', function () {
       const failures = api.logRecords.filter(r => r.type === 'preflight' && r.component === 'mysql' && r.data.success === false)
       expect(failures).to.have.lengthOf(STIGMAN_DEPENDENCY_RETRIES)
     })
-    it('oidc', function () {
-      const failures = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'oidc' && r.data.success === false)
+    it('auth', function () {
+      const failures = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'auth' && r.data.success === false)
       expect(failures).to.have.lengthOf(STIGMAN_DEPENDENCY_RETRIES)
     })
   })
@@ -70,8 +70,8 @@ describe('Boot with no dependencies', function () {
       const successes = api.logRecords.filter(r => r.type === 'preflight' && r.component === 'mysql' && r.data.success === true)
       expect(successes).to.have.lengthOf(0)
     })
-    it('oidc', function () {
-      const successes = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'oidc' && r.data.success === true)
+    it('auth', function () {
+      const successes = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'auth' && r.data.success === true)
       expect(successes).to.have.lengthOf(0)
     })
   })
@@ -134,8 +134,8 @@ describe('Boot with both dependencies', function () {
       const failures = api.logRecords.filter(r => r.type === 'preflight' && r.component === 'mysql' && r.data.success === false)
       expect(failures).to.have.lengthOf(0)
     })
-    it('oidc', function () {
-      const failures = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'oidc' && r.data.success === false)
+    it('auth', function () {
+      const failures = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'auth' && r.data.success === false)
       expect(failures).to.have.lengthOf(0)
     })
   })
@@ -145,8 +145,8 @@ describe('Boot with both dependencies', function () {
       const successes = api.logRecords.filter(r => r.type === 'preflight' && r.component === 'mysql' && r.data.success === true)
       expect(successes).to.have.lengthOf(1)
     })
-    it('oidc', function () {
-      const successes = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'oidc' && r.data.success === true)
+    it('auth', function () {
+      const successes = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'auth' && r.data.success === true)
       expect(successes).to.have.lengthOf(1)
     })
   })
@@ -200,8 +200,8 @@ describe('Boot with old mysql', function () {
       expect(failures).to.have.lengthOf(1)
       expect(failures[0].data.message).to.equal('MySQL release 8.0.23 is too old. Update to release 8.0.24 or later.')
     })
-    it('oidc', function () {
-      const failures = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'oidc' && r.data.success === false)
+    it('auth', function () {
+      const failures = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'auth' && r.data.success === false)
       expect(failures).to.have.lengthOf(0)
     })
   })
@@ -211,8 +211,8 @@ describe('Boot with old mysql', function () {
       const successes = api.logRecords.filter(r => r.type === 'preflight' && r.component === 'mysql' && r.data.success === true)
       expect(successes).to.have.lengthOf(0)
     })
-    it('oidc', function () {
-      const successes = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'oidc' && r.data.success === true)
+    it('auth', function () {
+      const successes = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'auth' && r.data.success === true)
       expect(successes).to.have.lengthOf(1)
     })
   })
@@ -261,16 +261,16 @@ describe('Boot with insecure kid - allow insecure tokens false', function () {
   })  
 
   describe('dependency failure count', function () {
-    it('oidc, check message', function () {
-      const failures = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'oidc' && r.data.success === false)
+    it('auth, check message', function () {
+      const failures = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'auth' && r.data.success === false)
       expect(failures).to.have.lengthOf(1)
       expect(failures[0].data.message).to.include('insecure_kid -')
     })
   })
 
   describe('dependency success count', function () {
-    it('oidc', function () {
-      const successes = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'oidc' && r.data.success === true)
+    it('auth', function () {
+      const successes = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'auth' && r.data.success === true)
       expect(successes).to.have.lengthOf(0)
     })
   })
@@ -320,16 +320,16 @@ describe('Boot with no jwks_uri in config', function () {
   })  
 
   describe('dependency failure count', function () {
-    it('oidc, check message', function () {
-      const failures = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'oidc' && r.data.success === false)
+    it('auth, check message', function () {
+      const failures = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'auth' && r.data.success === false)
       expect(failures).to.have.lengthOf(1)
       expect(failures[0].data.message).to.include('No jwks_uri property found')
     })
   })
 
   describe('dependency success count', function () {
-    it('oidc', function () {
-      const successes = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'oidc' && r.data.success === true)
+    it('auth', function () {
+      const successes = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'auth' && r.data.success === true)
       expect(successes).to.have.lengthOf(0)
     })
   })
@@ -392,7 +392,7 @@ describe('Boot without insecure kid - allow insecure tokens false' , function ()
         }
       }
       const res = await fetch(`http://localhost:54000/api/user`, options)
-      expect(res.status).to.eql(403)
+      expect(res.status).to.eql(401)
       const responseBody = await res.json()
       expect(responseBody).to.have.property('error')
         .that.equals('Insecure token presented and STIGMAN_DEV_ALLOW_INSECURE_TOKENS is false.')
@@ -402,3 +402,68 @@ describe('Boot without insecure kid - allow insecure tokens false' , function ()
   })
 
 })
+
+describe('Boot with STIGMAN_JWKS_CACHE_MAX_AGE out of range', function () {
+  let api
+  let mysql
+  let kc
+   
+  before(async function () {
+    this.timeout(60000)
+    kc = spawnHttpServer({port:'8080'})
+    mysql = await spawnMySQL({tag:'8.0.24', port:'3311'})
+  })
+
+  after(function () {
+    api.process.kill()
+    mysql.kill()
+    kc.kill()
+    addContext(this, {title: 'api-log', value: api.logRecords})
+  })
+
+  describe('Mimimum value enforced', function () {
+    before(async function () {
+      this.timeout(60000)
+      api = await spawnApiPromise({
+        resolveOnType: 'started',
+        env: {
+          STIGMAN_DEPENDENCY_RETRIES: 2,
+          STIGMAN_DB_PASSWORD: 'stigman',
+          STIGMAN_DB_PORT: '3311',
+          STIGMAN_OIDC_PROVIDER: `http://localhost:8080/auth/realms/stigman`,
+          STIGMAN_JWKS_CACHE_MAX_AGE: 0
+        }
+      })
+    })
+    after(function () {
+      api.process.kill()
+    })
+    it('should return minimum oauth.maxCacheAge (1)', async function () {
+      const configLog = api.logRecords.filter(r => r.type === 'configuration')[0]
+      expect(configLog.data.oauth.cacheMaxAge).to.eql(1)
+    })
+  })
+
+  describe('Maximum value enforced', function () {
+    before(async function () {
+      this.timeout(60000)
+      api = await spawnApiPromise({
+        resolveOnType: 'started',
+        env: {
+          STIGMAN_DEPENDENCY_RETRIES: 2,
+          STIGMAN_DB_PASSWORD: 'stigman',
+          STIGMAN_DB_PORT: '3311',
+          STIGMAN_OIDC_PROVIDER: `http://localhost:8080/auth/realms/stigman`,
+          STIGMAN_JWKS_CACHE_MAX_AGE: 36000
+        }
+      })
+    })
+    after(function () {
+      api.process.kill()
+    })
+    it('should return maximum oauth.maxCacheAge (35791)', async function () {
+      const configLog = api.logRecords.filter(r => r.type === 'configuration')[0]
+      expect(configLog.data.oauth.cacheMaxAge).to.eql(35791)
+    })
+  })
+}) 

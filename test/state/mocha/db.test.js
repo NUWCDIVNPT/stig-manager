@@ -1,10 +1,6 @@
 import { expect } from 'chai'
 import { spawnApiPromise, spawnHttpServer, spawnMySQL, simpleRequest, execIpTables } from './lib.js'
 import addContext from 'mochawesome/addContext.js'
-import { execFileSync } from 'child_process'
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
-const __dirname = dirname(fileURLToPath(import.meta.url))
 
 
 describe('DB outage: shutdown', function () {
