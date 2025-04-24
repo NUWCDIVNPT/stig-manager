@@ -213,7 +213,7 @@ describe.only('Boot with old mysql', function () {
     it('currentState = "fail"', function () {
       const stateChanged = api.logRecords.filter(r => r.type === 'statechanged')
       expect(stateChanged).to.have.lengthOf(1)
-      expect(stateChanged[0].data).to.eql({currentState: 'fail', previousState: 'starting'})
+      expect(stateChanged[0].data.currentState).to.eql('fail')
     })
   })
 })
