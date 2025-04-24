@@ -92,7 +92,7 @@ describe('Boot with both dependencies', function () {
    
   before(async function () {
     this.timeout(60000)
-    kc = spawnHttpServer({port:'8080'})
+    kc = spawnHttpServer({port:'9080'})
     mysql = await spawnMySQL({tag:'8.0.24'})
     api = await spawnApiPromise({
       resolveOnType: 'started',
@@ -100,7 +100,7 @@ describe('Boot with both dependencies', function () {
         STIGMAN_DEPENDENCY_RETRIES: 2,
         STIGMAN_DB_PASSWORD: 'stigman',
         STIGMAN_DB_PORT: '3306',
-        STIGMAN_OIDC_PROVIDER: `http://localhost:8080/auth/realms/stigman`,
+        STIGMAN_OIDC_PROVIDER: `http://localhost:9080/auth/realms/stigman`,
         STIGMAN_DEV_ALLOW_INSECURE_TOKENS: 'true'
       }
     })
