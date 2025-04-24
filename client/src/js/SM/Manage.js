@@ -3791,6 +3791,7 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
       try {
         // dry run 
         if(parsedAssetsCopy.length) {
+
           const dryRunResponse = await Ext.Ajax.requestPromise({
             responseType: 'json',
             url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/assets/?dryRun=true`,
@@ -3811,15 +3812,11 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
             updateButtonStates()
             return
           }
-        }
-        // dry run fail
-      }
-      catch (error) {
-        if (error.status === 422) {
-            let responseData = JSON.parse(error.responseText)
+          // dry run fail
+          if (dryRunResponse.error) {
             
             // gather errors from the response
-            let newErrors = responseData.detail
+            let newErrors = dryRunResponse.detail
               // remove label errors
               .filter(err => {
                 const isLabelError = err.detail && err.detail.labelName
@@ -3860,13 +3857,14 @@ SM.Manage.Asset.showParsedData = function (assets, errors, collectionId) {
             updateButtonStates()
   
             // get unknown labels
-            let unknownLabels = [...new Set(responseData.detail.map(e => e.detail.labelName).filter(Boolean))]
+            let unknownLabels = [...new Set(dryRunResponse.detail.map(e => e.detail.labelName).filter(Boolean))]
             newLabels = unknownLabels.map(label => ({ labelName: label }))
             labelStore.loadData(newLabels)
+          }
         }
-        else {
-          SM.Error.handleError(error)
-        }
+      }
+      catch (error) {
+        SM.Error.handleError(error)
       }
       finally {
         Ext.getBody().unmask()

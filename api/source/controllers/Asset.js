@@ -28,7 +28,7 @@ module.exports.createAsset = async function createAsset (req, res, next) {
     const failures = await dbUtils.createAssetValidation({assets, collectionId})
 
     if (failures.length > 0) {
-      throw new  SmError.UnprocessableError(failures)
+      throw new SmError.UnprocessableError(failures)
     }
 
     let assetId
@@ -67,7 +67,11 @@ module.exports.createAssets = async function createAssets (req, res, next) {
     const failures = await dbUtils.createAssetValidation({assets, collectionId})
 
     if (failures.length > 0) {
-      throw new SmError.UnprocessableError(failures)
+      res.status(200).json({
+        error: 'Validation Error',
+        detail: failures
+      })
+      return
     }
 
     if(dryRun) {
