@@ -160,7 +160,7 @@ describe('Boot with both dependencies', function () {
   })
 })
 
-describe.only('Boot with old mysql', function () {
+describe('Boot with old mysql', function () {
   let api
   let mysql
   let kc
