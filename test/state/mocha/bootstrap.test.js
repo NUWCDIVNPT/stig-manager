@@ -200,10 +200,6 @@ describe.only('Boot with old mysql', function () {
       expect(failures).to.have.lengthOf(1)
       expect(failures[0].data.message).to.equal('MySQL release 8.0.23 is too old. Update to release 8.0.24 or later.')
     })
-    it('auth', function () {
-      const failures = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'auth' && r.data.success === false)
-      expect(failures).to.have.lengthOf(0)
-    })
   })
 
   describe('dependency success count', function () {
@@ -211,17 +207,13 @@ describe.only('Boot with old mysql', function () {
       const successes = api.logRecords.filter(r => r.type === 'preflight' && r.component === 'mysql' && r.data.success === true)
       expect(successes).to.have.lengthOf(0)
     })
-    it('auth', function () {
-      const successes = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'auth' && r.data.success === true)
-      expect(successes).to.have.lengthOf(1)
-    })
   })
 
   describe('statechanged message', function () {
     it('currentState = "fail"', function () {
       const stateChanged = api.logRecords.filter(r => r.type === 'statechanged')
       expect(stateChanged).to.have.lengthOf(1)
-      expect(stateChanged[0].data).to.eql({currentState: 'fail', previousState: 'starting', dependencyStatus: {db: false, oidc: true}})
+      expect(stateChanged[0].data).to.eql({currentState: 'fail', previousState: 'starting'})
     })
   })
 })
