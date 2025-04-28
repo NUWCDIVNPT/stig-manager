@@ -79,6 +79,7 @@ class MockOidc {
       authorization_endpoint: `http://${origin}/auth`,
       token_endpoint: `http://${origin}/token`,
       jwks_uri: `http://${origin}/jwks`,
+      end_session_endpoint: `http://${origin}/logout`,
     }
   }
 
@@ -413,6 +414,16 @@ class MockOidc {
   onRequest (request, response) {
     const url = new URL(request.url, `http://${request.headers.host}`)
     let data
+
+    const getCookie = (cookieName) => {
+      const cookies = request.headers.cookie; // Retrieve the 'Cookie' header
+      if (!cookies) return null; // Return null if no cookies are present
+  
+      // Split cookies into key-value pairs and find the desired cookie
+      const cookie = cookies.split(';').find((c) => c.trim().startsWith(`${cookieName}=`));
+      return cookie ? cookie.split('=')[1] : null; // Return the cookie value or null
+    };
+  
     if (url.pathname === '/.well-known/openid-configuration') {
       data = this.getMetadata(request.headers.host)
     } else if (url.pathname === '/jwks') {
@@ -430,7 +441,50 @@ class MockOidc {
       data = this.getJwks()
     } else if (url.pathname === '/auth') {
       const { redirect_uri, response_mode, state } = this.parseQueryParams(request)
-
+      const sid = getCookie('sid')
+      if (sid) {
+        const sessionParams = this.sids[sid]
+        if (sessionParams) {
+          const {
+            privileges, 
+            scope, 
+            username, 
+            expiresIn, 
+            refreshExpiresIn, 
+            auth_time, 
+            algorithm, 
+            issuedAt, 
+            kid,
+            privilegesClaim,
+            usernameClaim,
+            scopeClaim
+          } = sessionParams
+          const accessToken = this.getToken({ privileges, scope, username, expiresIn, algorithm, issuedAt, kid, sid, auth_time, privilegesClaim, usernameClaim, scopeClaim })
+          const refreshToken = this.getRefreshToken({ sid, expiresIn:refreshExpiresIn, algorithm, kid })
+          const code = crypto.randomBytes(16).toString('hex')
+          this.authCodes[code] = {accessToken, refreshToken, expiresIn}
+    
+          const responseUrl = new URL(redirect_uri)
+          const searchParams = new URLSearchParams()
+          searchParams.append('code', code)
+          if (state) {
+            searchParams.append('state', state)
+          }
+          if (response_mode === 'fragment') {
+            responseUrl.hash = searchParams.toString()
+          } else {
+            responseUrl.search = searchParams.toString()
+          }
+    
+          response.writeHead(302, {
+            Location: responseUrl.toString(),
+            'Set-Cookie': `sid=${sid}; Path=/;`
+          })
+        
+          response.end()
+          return
+        }
+      }
       response.writeHead(200, { 'Content-Type': 'text/html'})
       response.end(this.getAuthHtml({ redirect_uri, response_mode, state }))
       return
@@ -484,7 +538,11 @@ class MockOidc {
         responseUrl.search = searchParams.toString()
       }
 
-      response.writeHead(302, { Location: responseUrl.toString() })
+      response.writeHead(302, {
+        Location: responseUrl.toString(),
+        'Set-Cookie': `sid=${sid}; Path=/;`
+      })
+    
       response.end()
       return
     } else if (url.pathname === '/token' && request.method === 'POST') {
@@ -573,6 +631,45 @@ class MockOidc {
         response.end(JSON.stringify(data))
       })
 
+      return
+    } else if (url.pathname === '/logout') {
+      const sid = getCookie('sid')
+      if (!sid) {
+        response.writeHead(400, {'Access-Control-Allow-Origin': '*' })
+        response.end('Missing sid cookie')
+        return
+      }
+      delete this.sids[sid]
+      // const responseUrl = new URL(post_logout_redirect_uri)
+      // response.writeHead(302, { Location: responseUrl.toString() })
+      // response.end()
+      response.writeHead(200, { 'Content-Type': 'text/html', 'Access-Control-Allow-Origin': '*' })
+      response.end(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Logout</title>
+          <style>
+            body {
+              background-color: #121212;
+              color: #ffffff;
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+            }
+            h1 {
+              color: #bb86fc;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Logged out successfully</h1>
+        </body>
+        </html>
+      `)
       return
     } else if (request.method === 'OPTIONS') {
       response.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers':  'X-Requested-With'})
