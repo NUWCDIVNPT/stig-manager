@@ -15,14 +15,14 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
-      - name: Install api libraries
+      - name: Install api packages
         working-directory: ./api/source
         run: npm ci
-      - name: Install Test dependencies
+      - name: Install Test state packages
         working-directory: ./test/state
         run: npm ci
-      - name: Install Test dependencies 2
-        working-directory: ./test/api
+      - name: Install Test utils packages
+        working-directory: ./test/utils
         run: npm ci
       - name: Run state tests
         working-directory: ./test/state
