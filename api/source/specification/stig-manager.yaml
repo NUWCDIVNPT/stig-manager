@@ -6488,6 +6488,23 @@ components:
           $ref: '#/components/schemas/CollectionStatusSettings'
         importOptions:
           $ref: '#/components/schemas/CollectionImportOptions'
+    CollectionSettingsRequired:
+      additionalProperties: false
+      type: object
+      properties:
+        fields:
+          $ref: '#/components/schemas/CollectionFieldSettings'
+        history:
+          $ref: '#/components/schemas/CollectionHistorySettings'
+        status:
+          $ref: '#/components/schemas/CollectionStatusSettings'
+        importOptions:
+          $ref: '#/components/schemas/CollectionImportOptions'
+      required:
+        - fields
+        - history
+        - status
+        - importOptions
     CollectionStatistics:
       additionalProperties: false
       type: object
@@ -6612,6 +6629,7 @@ components:
     CollectionUpdate:
       type: object
       additionalProperties: false
+      minProperties: 1
       properties:
         description:
           $ref: '#/components/schemas/CollectionDescription'

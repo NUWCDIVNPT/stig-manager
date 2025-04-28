@@ -329,7 +329,7 @@ module.exports.updateCollection = async function updateCollection (req, res, nex
         throw new SmError.PrivilegeError('Cannot create or modify owner grants.')
       }
     }
-    let response = await CollectionService.replaceCollection(collectionId, body, projection, req.userObject, res.svcStatus)
+    let response = await CollectionService.updateCollection(collectionId, body, projection, req.userObject, res.svcStatus)
     res.json(response)
   }
   catch (err) {

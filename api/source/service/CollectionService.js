@@ -448,7 +448,13 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
     // Stringify JSON values
     collectionFields.metadata = JSON.stringify(collectionFields.metadata ?? {})
     // Merge default settings with any provided settings
-    collectionFields.settings = JSON.stringify({...MyController.defaultSettings, ...collectionFields.settings})
+
+    if( writeAction === dbUtils.WRITE_ACTION.CREATE || writeAction === dbUtils.WRITE_ACTION.REPLACE ) {
+      collectionFields.settings = JSON.stringify({...MyController.defaultSettings, ...collectionFields.settings})
+    }
+    else if(collectionFields.settings) {
+      collectionFields.settings = JSON.stringify(collectionFields.settings)
+    }
   
     // Connect to MySQL
     connection = await dbUtils.pool.getConnection()
