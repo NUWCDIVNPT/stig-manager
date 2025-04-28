@@ -44,7 +44,10 @@ const isValidImportOptions = (options) => {
 
 const upFn = async (pool, migrationName) => {
 
-  const collectionsData = await pool.query(`SELECT c.collectionId, c.settings, c.metadata FROM collection c`)
+  const connection = await pool.getConnection()
+  
+
+  const collectionsData = await connection.query(`SELECT c.collectionId, c.settings, c.metadata FROM collection c`)
 
   const collections = collectionsData[0]
 
@@ -71,10 +74,12 @@ const upFn = async (pool, migrationName) => {
     name: migrationName,
     updates: updates.length
   })
+  // get connection
 
-  await pool.query(`SET @json = ?`, [JSON.stringify(updates)])
 
-  await pool.query(`UPDATE
+  await connection.query(`SET @json = ?`, [JSON.stringify(updates)])
+
+  await connection.query(`UPDATE
 	collection c
     LEFT JOIN 
     JSON_TABLE(@json, '$[*]' COLUMNS(
