@@ -723,10 +723,6 @@ paths:
       tags:
         - Collection
       summary: Merge provided properties with a Collection
-      description: |
-        The `settings` property can be partially provided. If a partial `settings` object is provided, the Collection settings will be updated to the provided object merged with the **default** settings. This sets existing property values not specified in the partial object to their default values.
-
-        The default settings are found in the description of `POST /collection`
       operationId: updateCollection
       requestBody:
         required: true
