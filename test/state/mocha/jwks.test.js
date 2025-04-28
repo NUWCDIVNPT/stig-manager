@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
 import { spawnApiPromise, spawnMySQL, bearerRequest } from './lib.js'
-import MockOidc from '../../api/mocha/utils/mockOidc.js'
+import MockOidc from '../../utils/mockOidc.js'
 import addContext from 'mochawesome/addContext.js'
 import chaiDateTime from 'chai-datetime'
 
@@ -17,7 +17,7 @@ describe('JWKS Tests', function () {
   before(async function () {
     this.timeout(30000)
     oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
-    tokens.rotation0 = oidc.getToken({username: 'prerotation', roles:['create_collection']}) // default roles
+    tokens.rotation0 = oidc.getToken({username: 'prerotation', privileges:['create_collection']}) // default privileges
     oidc.rotateKeys({keyCount: 1, includeInsecureKid: false})
     await oidc.start({port: oidcPort})
     console.log('    ✔ oidc started')
@@ -60,7 +60,7 @@ describe('JWKS Tests', function () {
       const res = await bearerRequest({
         url: 'http://localhost:54000/api/user',
         method: 'GET',
-        token: oidc.getToken({username, roles:['create_collection']})
+        token: oidc.getToken({username, privileges:['create_collection']})
       })
       expect(res.status).to.equal(200)
       expect(res.body.username).to.eql(username)
@@ -73,20 +73,20 @@ describe('JWKS Tests', function () {
       const res = await bearerRequest({
         url: 'http://localhost:54000/api/user',
         method: 'GET',
-        token: oidc.getToken({username, roles:['create_collection', 'admin']})
+        token: oidc.getToken({username, privileges:['create_collection', 'admin']})
       })
       expect(res.status).to.equal(200)
       expect(res.body.username).to.eql(username)
       expect(res.body.privileges).to.eql({create_collection: true, admin: true})
       expect(new Date(res.body.statistics.created)).to.be.closeToTime(new Date(), 1000)
     })
-    it('should return newly created user with no roles', async function () {
+    it('should return newly created user with no privileges', async function () {
       this.timeout(20000)
       const username = 'user03'
       const res = await bearerRequest({
         url: 'http://localhost:54000/api/user',
         method: 'GET',
-        token: oidc.getToken({username, roles:[]})
+        token: oidc.getToken({username, privileges:[]})
       })
       expect(res.status).to.equal(200)
       expect(res.body.username).to.eql(username)
@@ -139,7 +139,7 @@ describe('JWKS Tests', function () {
       const res = await bearerRequest({
           url: 'http://localhost:54000/api/user',
           method: 'GET',
-          token: oidc.getToken({username: '', roles:[]})
+          token: oidc.getToken({username: '', privileges:[]})
         })
       expect(res.status).to.equal(401)
       expect(res.body.detail).to.equal('No token claim mappable to username found')

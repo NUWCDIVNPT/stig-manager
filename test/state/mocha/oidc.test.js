@@ -1,10 +1,10 @@
 import { expect } from 'chai'
 import { spawnApiPromise, spawnMySQL, simpleRequest, execIpTables } from './lib.js'
-import MockOidc from '../../api/mocha/utils/mockOidc.js'
+import MockOidc from '../../utils/mockOidc.js'
 import addContext from 'mochawesome/addContext.js'
 
 
-describe('OIDC outage: cache fresh => stale => fresh', function () {
+describe('OIDC state', function () {
   let api
   let mysql
   let oidc
