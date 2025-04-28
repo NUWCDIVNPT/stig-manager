@@ -3480,17 +3480,17 @@ SM.AppInfo.generateSharable = function (data, options) {
   const kloned = SM.Klona(data)
   const { collections, requests, users, groups, nodejs } = kloned
   if (options.collectionName) {
-    const padLength = Object.keys(collections).at(-1).length
+    const padLength = Object.keys(collections).at(-1)?.length
     for (const id in collections) {
       collections[id].name = id.padStart(padLength, '0')
     }
   }
   if (options.userAndGroupName) {
-    const padLengthUsers = Object.keys(users.userInfo).at(-1).length
+    const padLengthUsers = Object.keys(users.userInfo).at(-1)?.length
     for (const id in users.userInfo) {
       users.userInfo[id].username = id.padStart(padLengthUsers, '0')
     }
-    const padLengthGroups = Object.keys(groups).at(-1).length
+    const padLengthGroups = Object.keys(groups).at(-1)?.length
     for (const id in groups) {
       groups[id].name = id.padStart(padLengthGroups, '0')
     }    
