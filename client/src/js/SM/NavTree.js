@@ -160,7 +160,8 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
         const collectionLeaf = me.getCollectionLeaf(apiCollection.collectionId)
         if (collectionLeaf) {
           collectionLeaf.collectionName = apiCollection.name
-          collectionLeaf.setText(SM.he(collectionLeaf.collectionName))
+          const text = SM.he(collectionLeaf.collectionName) + '<img class="sm-tree-toolbar" src="img/gear.svg" width="12" height="12" ext:qtip="Manage Collection">'
+          collectionLeaf.setText(text)
           collectionLeaf.parentNode.sort(sortFn)
         }
       }
