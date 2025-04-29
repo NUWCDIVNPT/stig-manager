@@ -263,7 +263,7 @@ describe('POST - Asset', function () {
           await utils.loadAppData()
         })
 
-        it("Create Assets in batch all projections dry run false ", async function () {
+        it("Create Assets in batch all projections dry run false should create assets", async function () {
 
           const assets = [{
             name: 'TestAsset' + utils.getUUIDSubString(10),
@@ -370,7 +370,7 @@ describe('POST - Asset', function () {
           }
         })
 
-        it("create two incorrect asssets both have stig that doesnt exist", async function () {
+        it("create two incorrect asssets both have stig that doesnt exist should return 200 for unsucessful dry run ", async function () {
 
           const assets = [{
             name: 'TestAsset' + utils.getUUIDSubString(10),
@@ -403,7 +403,7 @@ describe('POST - Asset', function () {
             expect(res.status).to.eql(403)
             return
           }
-          expect(res.status).to.eql(422)
+          expect(res.status).to.eql(200)
           expect(res.body.detail).to.be.an('array').of.length(2)
           for(const error of res.body.detail) {
             expect(error.failure).to.equal("unknown benchmarkId")
@@ -427,7 +427,7 @@ describe('POST - Asset', function () {
 
         })
 
-        it("Pass non existing collectionId", async function () {
+        it("Pass non existing collectionId should return 403", async function () {
 
           const assets = [{
             name: 'TestAsset' + utils.getUUIDSubString(10),
@@ -447,7 +447,7 @@ describe('POST - Asset', function () {
           expect(res.status).to.eql(403)
         })
 
-        it("Pass disabled collectionId", async function () {
+        it("Pass disabled collectionId should return 403 ", async function () {
 
           const assets = [{
             name: 'TestAsset' + utils.getUUIDSubString(10),
@@ -467,7 +467,7 @@ describe('POST - Asset', function () {
 
         })
 
-        it("Pass empty assets array", async function () {
+        it("Pass empty assets array should violate OAS for min items of 1", async function () {
 
           const res = await utils.executeRequest(`${config.baseUrl}/collections/21/assets`, 'POST', iteration.token,
            []
@@ -476,7 +476,7 @@ describe('POST - Asset', function () {
 
         })
 
-        it("Create assets with one that already exists, expect correct 422 response ", async function () {
+        it("Create assets with one that already exists, expect correct 200 response for dry run failure", async function () {
 
           const assets = [
             {
@@ -511,7 +511,7 @@ describe('POST - Asset', function () {
             expect(res.status).to.eql(403)
             return
           }
-          expect(res.status).to.eql(422)
+          expect(res.status).to.eql(200)
           expect(res.body.detail).to.be.an('array').of.length(1)
           expect(res.body.detail[0].failure).to.equal('name exists')
           expect(res.body.detail[0].detail).to.eql({
@@ -521,7 +521,7 @@ describe('POST - Asset', function () {
 
         })
 
-        it("Create Assets where one has non-existing labelName, expect correct 422 response", async function () {
+        it("Create Assets where one has non-existing labelName, expect correct 200 response for dry run failure", async function () {
           
           const assets = [{
             name: 'TestAsset' + utils.getUUIDSubString(10),
@@ -552,7 +552,7 @@ describe('POST - Asset', function () {
             expect(res.status).to.eql(403)
             return
           }
-          expect(res.status).to.eql(422)
+          expect(res.status).to.eql(200)
           expect(res.body.detail).to.be.an('array').of.length(1)
           expect(res.body.detail[0].failure).to.equal("unknown labelName")
           expect(res.body.detail[0].detail).to.eql({
@@ -563,7 +563,7 @@ describe('POST - Asset', function () {
           })
         })
 
-        it("Create Assets where one has a non-existing benchmarkId, expect correct 422 response", async function () {
+        it("Create Assets where one has a non-existing benchmarkId, expect correct 200 response for dry run failure", async function () {
 
           const assets = [{
             name: 'TestAsset' + utils.getUUIDSubString(10),
@@ -594,7 +594,7 @@ describe('POST - Asset', function () {
             expect(res.status).to.eql(403)
             return
           }
-          expect(res.status).to.eql(422)
+          expect(res.status).to.eql(200)
           expect(res.body.detail).to.be.an('array').of.length(1)
           expect(res.body.detail[0].failure).to.equal("unknown benchmarkId")
           expect(res.body.detail[0].detail).to.eql({
@@ -607,7 +607,7 @@ describe('POST - Asset', function () {
 
         })
 
-        it("Create Assets where one has one correct label/benchmark and one non-existing label/benchmark, expect correct 422 response", async function () {
+        it("Create Assets where one has one correct label/benchmark and one non-existing label/benchmark, expect correct 200 response for dry run failure", async function () {
           
           const assets = [{
             name: 'TestAsset' + utils.getUUIDSubString(10),
@@ -638,7 +638,7 @@ describe('POST - Asset', function () {
             expect(res.status).to.eql(403)
             return
           }
-          expect(res.status).to.eql(422)
+          expect(res.status).to.eql(200)
           expect(res.body.detail).to.be.an('array').of.length(2)
           for(const error of res.body.detail) {
             expect(error.failure).to.be.oneOf(["unknown labelName", "unknown benchmarkId"])
@@ -661,7 +661,7 @@ describe('POST - Asset', function () {
           }
         })
 
-        it("Create Duplicate Asset with not-existing benchmark/labelName expect correct 422", async function () {
+        it("Create Duplicate Asset with not-existing benchmark/labelName expect correct 200 for dry run failure", async function () {
 
           const assets = [{
             name: reference.testAsset.name,
@@ -680,7 +680,7 @@ describe('POST - Asset', function () {
             expect(res.status).to.eql(403)
             return
           }
-          expect(res.status).to.eql(422)
+          expect(res.status).to.eql(200)
           expect(res.body.detail).to.be.an('array').of.length(1)
           expect(res.body.detail[0].failure).to.equal("name exists")
           expect(res.body.detail[0].detail).to.eql({
@@ -689,7 +689,7 @@ describe('POST - Asset', function () {
           })
         })
 
-        it("Create Duplicate Asset with not-existing benchmark/labelName expect correct 422", async function () {
+        it("Create Duplicate Asset with not-existing benchmark/labelName expect correct 200 for dry run failure", async function () {
 
           const assets = [{
             name: reference.testAsset.name,
@@ -708,7 +708,7 @@ describe('POST - Asset', function () {
             expect(res.status).to.eql(403)
             return
           }
-          expect(res.status).to.eql(422)
+          expect(res.status).to.eql(200)
           expect(res.body.detail).to.be.an('array').of.length(1)
           expect(res.body.detail[0].failure).to.equal("name exists")
           expect(res.body.detail[0].detail).to.eql({
@@ -717,7 +717,7 @@ describe('POST - Asset', function () {
           })
         })
 
-        it("Create Valid asset with dry run option expect 200", async function () {
+        it("Create Valid asset with dry run option expect 204 no content sucessful dry run", async function () {
 
           const assets = [{
             name: 'TestAsset' + utils.getUUIDSubString(10),
@@ -740,7 +740,7 @@ describe('POST - Asset', function () {
           expect(res.status).to.eql(204)
         })
 
-        it("Create Valid asset with dry run option and non-existing labelname expect 422 and correct response", async function () {
+        it("Create Valid asset with dry run option and non-existing labelname expect 200 and correct response for dry run failure", async function () {
 
           const assets = [{
             name: 'TestAsset' + utils.getUUIDSubString(10),
@@ -773,7 +773,7 @@ describe('POST - Asset', function () {
             expect(res.status).to.eql(403)
             return
           }
-          expect(res.status).to.eql(422)
+          expect(res.status).to.eql(200)
           expect(res.body.detail).to.be.an('array').of.length(1)
           expect(res.body.detail[0].failure).to.equal("unknown labelName")
           expect(res.body.detail[0].detail).to.eql({

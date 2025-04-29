@@ -889,8 +889,12 @@ paths:
             schema:
               $ref: '#/components/schemas/AssetCreateBatch'
       responses:
-        '204':
-          description: Dry run successful. Validation passed, but no data was persisted.
+        '200':
+          description: Dry Run Failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientErrorBadAssetPost'
         '201':
           description: Array of AssetProjected responses
           content:
@@ -899,12 +903,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/AssetProjected'
-        '422':
-          description: Unprocessable Entity
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientErrorBadAssetPost'
+        '204':
+          description: Dry run successful. Validation passed, but no data was persisted.
         default:
           description: unexpected error
           content:
@@ -5989,6 +5989,7 @@ components:
           type: string
           enum:
             - "422"
+          nullable: true
         error:
           type: string
         detail:
