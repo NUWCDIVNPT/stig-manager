@@ -89,6 +89,8 @@ const upFn = async (pool, migrationName) => {
 SET
 	c.settings = JSON_SET(c.settings, '$.importOptions', jt.importOptions),
 	c.metadata = JSON_REMOVE(c.metadata, '$.importOptions')`)
+
+  await connection.release()
 }
   
 
