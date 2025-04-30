@@ -45,7 +45,13 @@ export function spawnApiPromise ({
     const resolution = {
       process: api,
       logRecords: [],
-      logEvents: new EventEmitter()
+      logEvents: new EventEmitter(),
+      stop: async function () {
+        if (this.process) {
+          this.process.kill()
+          await waitChildClose(this.process)
+        }
+      }
     }
 
     readline.createInterface({
@@ -114,7 +120,7 @@ export function spawnApi ({
  */
 export function waitChildClose (child) {
   return new Promise((resolve, reject) => {
-    if (child.exitCode) {
+    if (child.exitCode !== null) {
       resolve(child.exitCode)
     }
     child.on('close', (code) => {
@@ -124,6 +130,16 @@ export function waitChildClose (child) {
       reject(err)
     })
   })
+}
+
+export function getPorts (basePort) {
+  return {
+    apiPort: basePort,
+    dbPort: basePort + 1,
+    oidcPort: basePort + 2,
+    apiOrigin: `http://localhost:${basePort}`,
+    oidcOrigin: `http://localhost:${basePort + 2}`,
+  }
 }
 
 /**
@@ -194,6 +210,16 @@ export function spawnMySQL ({
       '-e', 'MYSQL_PASSWORD=stigman',
       `mysql:${tag}`
     ])
+    const resolution = {
+      process: child,
+      stop: async function () {
+        if (this.process) {
+          this.process.kill()
+          await waitChildClose(this.process)
+        }
+      }
+    }
+
 
     child.on('error', (err) => {
       console.error('ERROR', err)
@@ -208,7 +234,7 @@ export function spawnMySQL ({
         readySeen++
         if (readySeen === readyCount) {
           resolved = true
-          resolve(child)
+          resolve(resolution)
         } 
       }
     })

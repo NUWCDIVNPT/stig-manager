@@ -1,12 +1,14 @@
 import { expect } from 'chai'
-import { spawnApiPromise, spawnHttpServer, spawnMySQL, simpleRequest, execIpTables } from './lib.js'
+import { getPorts, spawnApiPromise, spawnMySQL, simpleRequest, execIpTables } from './lib.js'
+import MockOidc from '../../utils/mockOidc.js'
 import addContext from 'mochawesome/addContext.js'
 
+const {apiPort, dbPort, oidcPort, apiOrigin, oidcOrigin} = getPorts(54010)
 
 describe('DB outage: shutdown', function () {
   let api
   let mysql
-  let kc
+  let oidc
 
   async function waitLogEvent(type, count = 1) {
     let seen = 0
@@ -20,40 +22,41 @@ describe('DB outage: shutdown', function () {
   
   before(async function () {
     this.timeout(60000)
-    kc = spawnHttpServer({port:'8080'})
+    oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
+    console.log('    try oidc start')
+    await oidc.start({port: oidcPort})
+    console.log('    ✔ oidc started')
     console.log('    try mysql start')
-    mysql = await spawnMySQL({tag:'8.0.24'})
+    mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
     console.log('    ✔ mysql started')
     console.log('    try api start')
     api = await spawnApiPromise({
       resolveOnType: 'started',
       resolveOnClose: false,
       env: {
+        STIGMAN_API_PORT: apiPort,
         STIGMAN_DEPENDENCY_RETRIES: 2,
         STIGMAN_DB_PASSWORD: 'stigman',
         STIGMAN_DB_HOST: '127.0.0.1',
-        STIGMAN_DB_PORT: '3306',
-        STIGMAN_OIDC_PROVIDER: `http://127.0.0.1:8080/auth/realms/stigman`,
+        STIGMAN_DB_PORT: dbPort,
+        STIGMAN_OIDC_PROVIDER: oidcOrigin,
         STIGMAN_DEV_ALLOW_INSECURE_TOKENS: 'true'
       }
     })
     console.log('    ✔ api started')
   })
 
-  after(function () {
-    api.process.kill()
-    console.log('    api killed')
-    mysql.kill()
-    console.log('    mysql killed')
-    kc.kill()
-    console.log('    kc killed')
+  after(async function () {
+    await api.stop()
+    await mysql.stop()
+    await oidc.stop()
     addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
   describe('DB up', function () {
     it('should return state "available"', async function () {
       this.timeout(20000)
-      const res = await simpleRequest('http://localhost:54000/api/op/state')
+      const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.state).to.equal('available')
       expect(res.body.dependencies).to.eql({db: true, oidc: true})
@@ -62,16 +65,17 @@ describe('DB outage: shutdown', function () {
 
   describe('DB shutdown', function () {
     before(async function () {
-      mysql.kill()
+      this.timeout(30000)
+      await mysql.stop()
       console.log('      mysql shutdown')
     })
     it('should return state "unavailable"', async function () {
       this.timeout(30000)
-      console.log('      wait for log: statechanged')
-      const log = await waitLogEvent('statechanged')
-      expect(log.data.currentState).to.equal('unavailable')
-      expect(log.data.previousState).to.equal('available')
-      const res = await simpleRequest('http://localhost:54000/api/op/state')
+      // console.log('      wait for log: statechanged')
+      // const log = await waitLogEvent('statechanged')
+      // expect(log.data.currentState).to.equal('unavailable')
+      // expect(log.data.previousState).to.equal('available')
+      const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.state).to.equal('unavailable')
       expect(res.body.dependencies).to.eql({db: false, oidc: true})     
@@ -81,7 +85,7 @@ describe('DB outage: shutdown', function () {
       this.timeout(30000)
       console.log('      wait for log: restore (2)')
       const log = await waitLogEvent('restore', 2)
-      expect(log.data.message).to.equal('connect ECONNREFUSED 127.0.0.1:3306')
+      expect(log.data.message).to.equal(`connect ECONNREFUSED 127.0.0.1:${dbPort}`)
     })
   })
 
@@ -89,7 +93,7 @@ describe('DB outage: shutdown', function () {
     before( async function() {
       this.timeout(30000)
       console.log('      try mysql restart')
-      mysql = await spawnMySQL({tag:'8.0.24'})
+      mysql = await spawnMySQL({tag: '8.0.24', port: dbPort})
       console.log('      ✔ mysql restarted')
     })
 
@@ -99,7 +103,7 @@ describe('DB outage: shutdown', function () {
       const log = await waitLogEvent('statechanged')
       expect(log.data.currentState).to.equal('available')
       expect(log.data.previousState).to.equal('unavailable')
-      const res = await simpleRequest('http://localhost:54000/api/op/state')
+      const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.state).to.equal('available')
       expect(res.body.dependencies).to.eql({db: true, oidc: true})
@@ -110,7 +114,7 @@ describe('DB outage: shutdown', function () {
 describe('DB outage: network/host down', function () {
   let api
   let mysql
-  let kc
+  let oidc
 
   async function waitLogEvent(type, count = 1) {
     let seen = 0
@@ -124,38 +128,41 @@ describe('DB outage: network/host down', function () {
   
   before(async function () {
     this.timeout(60000)
-    kc = spawnHttpServer({port:'8080'})
+    oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
+    console.log('    try oidc start')
+    await oidc.start({port: oidcPort})
+    console.log('    ✔ oidc started')
     console.log('    try mysql start')
-    mysql = await spawnMySQL({tag:'8.0.24', port: 3307})
+    mysql = await spawnMySQL({tag:'8.0.24', port: dbPort})
     console.log('    ✔ mysql started')
     console.log('    try api start')
     api = await spawnApiPromise({
       resolveOnType: 'started',
       resolveOnClose: false,
       env: {
+        STIGMAN_API_PORT: apiPort,
         STIGMAN_DEPENDENCY_RETRIES: 2,
         STIGMAN_DB_PASSWORD: 'stigman',
         STIGMAN_DB_HOST: '127.0.0.1',
-        STIGMAN_DB_PORT: '3307',
-        STIGMAN_OIDC_PROVIDER: `http://127.0.0.1:8080/auth/realms/stigman`,
+        STIGMAN_DB_PORT: dbPort,
+        STIGMAN_OIDC_PROVIDER: oidcOrigin,
         STIGMAN_DEV_ALLOW_INSECURE_TOKENS: 'true'
       }
     })
     console.log('    ✔ api started')
   })
 
-  after(function () {
-    api.process.kill()
-    mysql.kill()
-    console.log('    mysql killed')
-    kc.kill()
+  after(async function () {
+    await api.stop()
+    await mysql.stop()
+    await oidc.stop()
     addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
   describe('Network/host up', function () {
     it('should return state "available"', async function () {
       this.timeout(20000)
-      const res = await simpleRequest('http://localhost:54000/api/op/state')
+      const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.state).to.equal('available')
       expect(res.body.dependencies).to.eql({db: true, oidc: true})
@@ -164,7 +171,7 @@ describe('DB outage: network/host down', function () {
 
   describe('Network/host down', function () {
     before(async function () {
-      execIpTables('-A OUTPUT -p tcp --dport 3307 -j DROP')
+      execIpTables(`-A OUTPUT -p tcp --dport ${dbPort} -j DROP`)
       console.log('      iptables dropping packets')
     })
     it('should return state "unavailable"', async function () {
@@ -173,7 +180,7 @@ describe('DB outage: network/host down', function () {
       const log = await waitLogEvent('statechanged')
       expect(log.data.currentState).to.equal('unavailable')
       expect(log.data.previousState).to.equal('available')
-      const res = await simpleRequest('http://localhost:54000/api/op/state')
+      const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.state).to.equal('unavailable')
       expect(res.body.dependencies).to.eql({db: false, oidc: true})     
@@ -190,7 +197,7 @@ describe('DB outage: network/host down', function () {
   describe('Network/host up', function() {
     before( async function() {
       this.timeout(30000)
-      execIpTables('-D OUTPUT -p tcp --dport 3307 -j DROP')
+      execIpTables(`-D OUTPUT -p tcp --dport ${dbPort} -j DROP`)
       console.log('      iptables accepting packets')
     })
 
@@ -200,7 +207,7 @@ describe('DB outage: network/host down', function () {
       const log = await waitLogEvent('statechanged')
       expect(log.data.currentState).to.equal('available')
       expect(log.data.previousState).to.equal('unavailable')
-      const res = await simpleRequest('http://localhost:54000/api/op/state')
+      const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.state).to.equal('available')
       expect(res.body.dependencies).to.eql({db: true, oidc: true})

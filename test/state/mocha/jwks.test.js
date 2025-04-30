@@ -1,5 +1,5 @@
 import { expect, use } from 'chai'
-import { spawnApiPromise, spawnMySQL, bearerRequest } from './lib.js'
+import { getPorts, spawnApiPromise, spawnMySQL, bearerRequest } from './lib.js'
 import MockOidc from '../../utils/mockOidc.js'
 import addContext from 'mochawesome/addContext.js'
 import chaiDateTime from 'chai-datetime'
@@ -11,8 +11,8 @@ describe('JWKS Tests', function () {
   let mysql
   let oidc
   const tokens = {}
-  const oidcPort = 8081
-  const mysqlPort = 3308
+
+  const {apiPort, dbPort, oidcPort, apiOrigin, oidcOrigin} = getPorts(54020)
 
   before(async function () {
     this.timeout(30000)
@@ -22,7 +22,7 @@ describe('JWKS Tests', function () {
     await oidc.start({port: oidcPort})
     console.log('    ✔ oidc started')
     console.log('    try mysql start')
-    mysql = await spawnMySQL({tag:'8.0.24', port: mysqlPort})
+    mysql = await spawnMySQL({tag:'8.0.24', port: dbPort})
     console.log('    ✔ mysql started')
     console.log('    try api start')
     api = await spawnApiPromise({
@@ -30,27 +30,24 @@ describe('JWKS Tests', function () {
       resolveOnClose: false,
       inspect: false,
       env: {
+        STIGMAN_API_PORT: apiPort,
         STIGMAN_DEPENDENCY_RETRIES: 2,
         STIGMAN_DB_PASSWORD: 'stigman',
         STIGMAN_DB_HOST: '127.0.0.1',
-        STIGMAN_DB_PORT: `${mysqlPort}`, 
-        STIGMAN_OIDC_PROVIDER: `http://127.0.0.1:${oidcPort}`,
+        STIGMAN_DB_PORT: `${dbPort}`, 
+        STIGMAN_OIDC_PROVIDER: oidcOrigin,
         STIGMAN_LOG_LEVEL: '4',
-        STIGMAN_JWKS_CACHE_MAX_AGE: 1,
-        STIGMAN_DEV_ALLOW_INSECURE_TOKENS: 'true'
+        STIGMAN_JWKS_CACHE_MAX_AGE: 1
       }
     })
     console.log('    ✔ api started')
   })
 
   after(async function () {
-    api?.process?.kill()
-    console.log('    api killed')
-    mysql.kill()
-    console.log('    mysql killed')
+    await api.stop()
+    await mysql.stop()
     await oidc.stop()
-    console.log('    oidc stopped')
-    addContext(this, {title: 'api-log', value: api?.logRecords})
+    addContext(this, {title: 'api-log', value: api.logRecords})
   })
   
   describe('Create user according to token', function () {
@@ -58,7 +55,7 @@ describe('JWKS Tests', function () {
       this.timeout(20000)
       const username = 'user01'
       const res = await bearerRequest({
-        url: 'http://localhost:54000/api/user',
+        url: `${apiOrigin}/api/user`,
         method: 'GET',
         token: oidc.getToken({username, privileges:['create_collection']})
       })
@@ -71,7 +68,7 @@ describe('JWKS Tests', function () {
       this.timeout(20000)
       const username = 'user02'
       const res = await bearerRequest({
-        url: 'http://localhost:54000/api/user',
+        url: `${apiOrigin}/api/user`,
         method: 'GET',
         token: oidc.getToken({username, privileges:['create_collection', 'admin']})
       })
@@ -84,7 +81,7 @@ describe('JWKS Tests', function () {
       this.timeout(20000)
       const username = 'user03'
       const res = await bearerRequest({
-        url: 'http://localhost:54000/api/user',
+        url: `${apiOrigin}/api/user`,
         method: 'GET',
         token: oidc.getToken({username, privileges:[]})
       })
@@ -100,7 +97,7 @@ describe('JWKS Tests', function () {
       this.timeout(20000)
       const logLength = api.logRecords.length
       const res = await bearerRequest({
-          url: 'http://localhost:54000/api/user',
+          url: `${apiOrigin}/api/user`,
           method: 'GET',
           token: tokens.rotation0
         })
@@ -119,7 +116,7 @@ describe('JWKS Tests', function () {
       this.timeout(20000)
       const logLength = api.logRecords.length
       const res = await bearerRequest({
-          url: 'http://localhost:54000/api/user',
+          url: `${apiOrigin}/api/user`,
           method: 'GET',
           token: tokens.rotation0
         })
@@ -137,7 +134,7 @@ describe('JWKS Tests', function () {
     it('should reject empty username', async function () {
       this.timeout(20000)
       const res = await bearerRequest({
-          url: 'http://localhost:54000/api/user',
+          url: `${apiOrigin}/api/user`,
           method: 'GET',
           token: oidc.getToken({username: '', privileges:[]})
         })
@@ -163,7 +160,7 @@ describe('JWKS Tests', function () {
         }
       })
       const res = await bearerRequest({
-        url: 'http://localhost:54000/api/user',
+        url: `${apiOrigin}/api/user`,
         method: 'GET',
         token
       })
@@ -188,7 +185,7 @@ describe('JWKS Tests', function () {
         }
       })
       const res = await bearerRequest({
-        url: 'http://localhost:54000/api/user',
+        url: `${apiOrigin}/api/user`,
         method: 'GET',
         token
       })
@@ -196,7 +193,4 @@ describe('JWKS Tests', function () {
       expect(res.body.detail).to.equal('Token verification failed')
     })
   })
-
-
-
 })

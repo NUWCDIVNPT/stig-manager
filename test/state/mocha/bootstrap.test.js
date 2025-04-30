@@ -1,11 +1,9 @@
 import { expect } from 'chai'
-import { spawnApiPromise, spawnHttpServer, spawnMySQL, simpleRequest, waitChildClose } from './lib.js'
-import {config } from '../../api/mocha/testConfig.js'
-const adminToken = config.adminToken
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
-const __dirname = dirname(fileURLToPath(import.meta.url))
+import { getPorts, spawnApiPromise, spawnMySQL, simpleRequest, waitChildClose } from './lib.js'
+import MockOidc from '../../utils/mockOidc.js'
 import addContext from 'mochawesome/addContext.js'
+
+const {apiPort, dbPort, oidcPort, apiOrigin} = getPorts(54000)
 
 describe('Boot with no dependencies', function () {
   let api
@@ -16,19 +14,20 @@ describe('Boot with no dependencies', function () {
     api = await spawnApiPromise({
       resolveOnType: 'listening',
       env:{
-        STIGMAN_DEPENDENCY_RETRIES
+        STIGMAN_DEPENDENCY_RETRIES,
+        STIGMAN_API_PORT: apiPort,
       }
     })
   })
 
-  after(function () {
-    api.process.kill()
+  after(async function () {
+    await api.stop()
     addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
   describe('GET /op/state', function () {
     it('should return state "starting"', async function () {
-      const res = await simpleRequest('http://localhost:54000/api/op/state')
+      const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.state).to.equal('starting')
       expect(res.body.dependencies).to.eql({db: false, oidc: false})
@@ -37,7 +36,7 @@ describe('Boot with no dependencies', function () {
   
   describe('GET /op/configuration', function () {
     it('should return 503 when dependencies are not available', async function () {
-      const res = await simpleRequest('http://localhost:54000/api/op/configuration')
+      const res = await simpleRequest(`${apiOrigin}/api/op/configuration`)
       expect(res.status).to.equal(503)
       expect(res.body.state).to.equal('starting')
       expect(res.body.dependencies).to.eql({db: false, oidc: false})
@@ -88,34 +87,35 @@ describe('Boot with no dependencies', function () {
 describe('Boot with both dependencies', function () {
   let api
   let mysql
-  let kc
+  let oidc
    
   before(async function () {
     this.timeout(60000)
-    kc = spawnHttpServer({port:'8080'})
-    mysql = await spawnMySQL({tag:'8.0.24'})
+    oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
+    await oidc.start({port: oidcPort})
+    mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
     api = await spawnApiPromise({
       resolveOnType: 'started',
       env: {
+        STIGMAN_API_PORT: apiPort,
         STIGMAN_DEPENDENCY_RETRIES: 2,
         STIGMAN_DB_PASSWORD: 'stigman',
-        STIGMAN_DB_PORT: '3306',
-        STIGMAN_OIDC_PROVIDER: `http://localhost:8080/auth/realms/stigman`,
-        STIGMAN_DEV_ALLOW_INSECURE_TOKENS: 'true'
+        STIGMAN_DB_PORT: dbPort,
+        STIGMAN_OIDC_PROVIDER: `http://localhost:${oidcPort}`,
       }
     })
   })
 
-  after(function () {
-    api.process.kill()
-    mysql.kill()
-    kc.kill()
+  after(async function () {
+    await api.stop()
+    await mysql.stop()
+    await oidc.stop()
     addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
   describe('GET /op/state', function () {
     it('should return state "available"', async function () {
-      const res = await simpleRequest('http://localhost:54000/api/op/state')
+      const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.state).to.equal('available')
       expect(res.body.dependencies).to.eql({db: true, oidc: true})
@@ -124,7 +124,7 @@ describe('Boot with both dependencies', function () {
   
   describe('GET /op/configuration', function () {
     it('should return 200 when dependencies are available', async function () {
-      const res = await simpleRequest('http://localhost:54000/api/op/configuration')
+      const res = await simpleRequest(`${apiOrigin}/api/op/configuration`)
       expect(res.status).to.equal(200)
     })
   })
@@ -163,28 +163,29 @@ describe('Boot with both dependencies', function () {
 describe('Boot with old mysql', function () {
   let api
   let mysql
-  let kc
+  let oidc
 
   before(async function () {
     this.timeout(60000)
-    kc = spawnHttpServer({port:'8080'})
-    mysql = await spawnMySQL({tag:'8.0.23', port:'3307'})
+    oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
+    await oidc.start({port: oidcPort})
+    mysql = await spawnMySQL({tag:'8.0.23', port:dbPort})
     api = await spawnApiPromise({
       resolveOnClose: true,
       env:{
+        STIGMAN_API_PORT: apiPort,
         STIGMAN_DEPENDENCY_RETRIES: 2,
         STIGMAN_DB_PASSWORD: 'stigman',
-        STIGMAN_DB_PORT: '3307',
-        STIGMAN_OIDC_PROVIDER: `http://localhost:8080/auth/realms/stigman`,
-        STIGMAN_DEV_ALLOW_INSECURE_TOKENS: 'true'
+        STIGMAN_DB_PORT: dbPort,
+        STIGMAN_OIDC_PROVIDER: `http://localhost:${oidcPort}`
       }
     })
   })
 
-  after(function () {
-    api.process.kill()
-    mysql.kill()
-    kc.kill()
+  after(async function () {
+    await api.stop()
+    await mysql.stop()
+    await oidc.stop()
     addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
@@ -221,28 +222,30 @@ describe('Boot with old mysql', function () {
 describe('Boot with insecure kid - allow insecure tokens false', function () {
   let api
   let mysql
-  let kc
+  let oidc
    
   before(async function () {
     this.timeout(60000)
-    kc = spawnHttpServer({port:'8080'})
-    mysql = await spawnMySQL({tag:'8.0.24', port:'3308'})
+    oidc = new MockOidc({keyCount: 0, includeInsecureKid: true})
+    await oidc.start({port: oidcPort})
+    mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
     api = await spawnApiPromise({
       resolveOnClose: true,
       env: {
+        STIGMAN_API_PORT: apiPort,
         STIGMAN_DEPENDENCY_RETRIES: 2,
         STIGMAN_DB_PASSWORD: 'stigman',
-        STIGMAN_DB_PORT: '3308',
-        STIGMAN_OIDC_PROVIDER: `http://localhost:8080/auth/realms/stigman`,
+        STIGMAN_DB_PORT: dbPort,
+        STIGMAN_OIDC_PROVIDER: `http://localhost:${oidcPort}`,
         STIGMAN_DEV_ALLOW_INSECURE_TOKENS: 'false'
       }
     })
   })
 
-  after(function () {
-    api.process.kill()
-    mysql.kill()
-    kc.kill()
+  after(async function () {
+    await api.stop()
+    await mysql.stop()
+    await oidc.stop()
     addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
@@ -276,98 +279,42 @@ describe('Boot with insecure kid - allow insecure tokens false', function () {
   })
 })
 
-describe('Boot with no jwks_uri in config', function () {
+describe('Boot without insecure kid - request with insecure token' , function () {
   let api
   let mysql
-  let kc
+  let oidc
+  let insecureToken
    
   before(async function () {
     this.timeout(60000)
-    const cwd = `${__dirname}/../../api/mock-keycloak-test-cases/no-jwks`
-    kc = spawnHttpServer({port:'8080', cwd})    
-    mysql = await spawnMySQL({tag:'8.0.24', port:'3309'})
-    api = await spawnApiPromise({
-      resolveOnClose: true,
-      env: {
-        STIGMAN_DEPENDENCY_RETRIES: 2,
-        STIGMAN_DB_PASSWORD: 'stigman',
-        STIGMAN_DB_PORT: '3309',
-        STIGMAN_OIDC_PROVIDER: `http://localhost:8080/auth/realms/stigman`,
-        STIGMAN_DEV_ALLOW_INSECURE_TOKENS: 'false'
-      }
-    })
-  })
-
-  after(function () {
-    api.process.kill()
-    mysql.kill()
-    kc.kill()
-    addContext(this, {title: 'api-log', value: api.logRecords})
-  })
-
-  describe('exit code', function () {
-    it('should have exited with code 1', function () {
-      expect(api.process.exitCode).to.equal(1)
-    })
-  })  
-
-  describe('dependency failure count', function () {
-    it('auth, check message', function () {
-      const failures = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'auth' && r.data.success === false)
-      expect(failures).to.have.lengthOf(1)
-      expect(failures[0].data.message).to.include('No jwks_uri property found')
-    })
-  })
-
-  describe('dependency success count', function () {
-    it('auth', function () {
-      const successes = api.logRecords.filter(r => r.type === 'discovery' && r.component === 'auth' && r.data.success === true)
-      expect(successes).to.have.lengthOf(0)
-    })
-  })
-
-  describe('statechanged message', function () {
-    it('currentState = "fail"', function () {
-      const stateChanged = api.logRecords.filter(r => r.type === 'statechanged')
-      expect(stateChanged).to.have.lengthOf(1)
-      expect(stateChanged[0].data).to.eql({currentState: 'fail', previousState: 'starting', dependencyStatus: {db: false, oidc: false}})
-    })
-  })
-})
-
-
-describe('Boot without insecure kid - allow insecure tokens false' , function () {
-  let api
-  let mysql
-  let kc
-   
-  before(async function () {
-    this.timeout(60000)
-    const cwd = `${__dirname}/../../api/mock-keycloak-test-cases/secure-kid`
-    kc = spawnHttpServer({port:'8080', cwd})
-    mysql = await spawnMySQL({tag:'8.0.24', port:'3310'})
+    oidc = new MockOidc({keyCount: 0, includeInsecureKid: true})
+    insecureToken = oidc.getToken({username: 'insecure'})
+    oidc.rotateKeys({keyCount: 1, includeInsecureKid: false})
+    await oidc.start({port: oidcPort})
+    mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
     api = await spawnApiPromise({
       resolveOnType: 'started',
       env: {
+        STIGMAN_API_PORT: apiPort,
         STIGMAN_DEPENDENCY_RETRIES: 2,
         STIGMAN_DB_PASSWORD: 'stigman',
-        STIGMAN_DB_PORT: '3310',
-        STIGMAN_OIDC_PROVIDER: `http://localhost:8080/auth/realms/stigman`,
+        STIGMAN_DB_PORT: dbPort,
+        STIGMAN_OIDC_PROVIDER: `http://localhost:${oidcPort}`,
         STIGMAN_DEV_ALLOW_INSECURE_TOKENS: 'false'
       }
     })
   })
 
-  after(function () {
-    api.process.kill()
-    mysql.kill()
-    kc.kill()
+  after(async function () {
+    await api.stop()
+    await mysql.stop()
+    await oidc.stop()
     addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
   describe('GET /op/state', function () {
     it('should return state "available"', async function () {
-      const res = await simpleRequest('http://localhost:54000/api/op/state')
+      const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.state).to.equal('available')
       expect(res.body.dependencies).to.eql({db: true, oidc: true})
@@ -379,11 +326,11 @@ describe('Boot without insecure kid - allow insecure tokens false' , function ()
       const options = {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${adminToken}`,
+          Authorization: `Bearer ${insecureToken}`,
           'Content-Type': 'application/json'
         }
       }
-      const res = await fetch(`http://localhost:54000/api/user`, options)
+      const res = await fetch(`${apiOrigin}/api/user`, options)
       expect(res.status).to.eql(401)
       const responseBody = await res.json()
       expect(responseBody).to.have.property('error')
@@ -398,18 +345,19 @@ describe('Boot without insecure kid - allow insecure tokens false' , function ()
 describe('Boot with STIGMAN_JWKS_CACHE_MAX_AGE out of range', function () {
   let api
   let mysql
-  let kc
+  let oidc
    
   before(async function () {
     this.timeout(60000)
-    kc = spawnHttpServer({port:'8080'})
-    mysql = await spawnMySQL({tag:'8.0.24', port:'3311'})
+    oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
+    await oidc.start({port: oidcPort})
+    mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
   })
 
-  after(function () {
-    api.process.kill()
-    mysql.kill()
-    kc.kill()
+  after(async function () {
+    await mysql.stop()
+    await oidc.stop()
+    await api.stop()
     addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
@@ -421,14 +369,14 @@ describe('Boot with STIGMAN_JWKS_CACHE_MAX_AGE out of range', function () {
         env: {
           STIGMAN_DEPENDENCY_RETRIES: 2,
           STIGMAN_DB_PASSWORD: 'stigman',
-          STIGMAN_DB_PORT: '3311',
-          STIGMAN_OIDC_PROVIDER: `http://localhost:8080/auth/realms/stigman`,
+          STIGMAN_DB_PORT: dbPort,
+          STIGMAN_OIDC_PROVIDER: `http://localhost:${oidcPort}`,
           STIGMAN_JWKS_CACHE_MAX_AGE: 0
         }
       })
     })
-    after(function () {
-      api.process.kill()
+    after(async function () {
+      await api.stop()
     })
     it('should return minimum oauth.maxCacheAge (1)', async function () {
       const configLog = api.logRecords.filter(r => r.type === 'configuration')[0]
@@ -444,14 +392,14 @@ describe('Boot with STIGMAN_JWKS_CACHE_MAX_AGE out of range', function () {
         env: {
           STIGMAN_DEPENDENCY_RETRIES: 2,
           STIGMAN_DB_PASSWORD: 'stigman',
-          STIGMAN_DB_PORT: '3311',
-          STIGMAN_OIDC_PROVIDER: `http://localhost:8080/auth/realms/stigman`,
+          STIGMAN_DB_PORT: dbPort,
+          STIGMAN_OIDC_PROVIDER: `http://localhost:${oidcPort}`,
           STIGMAN_JWKS_CACHE_MAX_AGE: 36000
         }
       })
     })
-    after(function () {
-      api.process.kill()
+    after(async function () {
+      await api.stop()
     })
     it('should return maximum oauth.maxCacheAge (35791)', async function () {
       const configLog = api.logRecords.filter(r => r.type === 'configuration')[0]

@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { spawnApiPromise, spawnMySQL, simpleRequest, execIpTables } from './lib.js'
+import { getPorts, spawnApiPromise, spawnMySQL, simpleRequest } from './lib.js'
 import MockOidc from '../../utils/mockOidc.js'
 import addContext from 'mochawesome/addContext.js'
 
@@ -9,9 +9,9 @@ describe('OIDC state', function () {
   let mysql
   let oidc
   let cachedKid
-  const oidcPort = 8081
-  const mysqlPort = 3309
 
+  const {apiPort, dbPort, oidcPort, apiOrigin, oidcOrigin} = getPorts(54030)
+  
   async function waitLogType(type, count = 1) {
     let seen = 0
     return new Promise((resolve) => {
@@ -28,18 +28,19 @@ describe('OIDC state', function () {
     await oidc.start({port: oidcPort})
     console.log('    ✔ oidc started')
     console.log('    try mysql start')
-    mysql = await spawnMySQL({tag:'8.0.24', port: mysqlPort})
+    mysql = await spawnMySQL({tag:'8.0.24', port: dbPort})
     console.log('    ✔ mysql started')
     console.log('    try api start')
     api = await spawnApiPromise({
       resolveOnType: null,
       resolveOnClose: false,
       env: {
+        STIGMAN_API_PORT: apiPort,
         STIGMAN_DEPENDENCY_RETRIES: 2,
         STIGMAN_DB_PASSWORD: 'stigman',
         STIGMAN_DB_HOST: '127.0.0.1',
-        STIGMAN_DB_PORT: `${mysqlPort}`, 
-        STIGMAN_OIDC_PROVIDER: `http://127.0.0.1:${oidcPort}`,
+        STIGMAN_DB_PORT: dbPort, 
+        STIGMAN_OIDC_PROVIDER: oidcOrigin,
         STIGMAN_LOG_LEVEL: '4',
         STIGMAN_JWKS_CACHE_MAX_AGE: 1
       }
@@ -48,12 +49,9 @@ describe('OIDC state', function () {
   })
 
   after(async function () {
-    api.process.kill()
-    console.log('    api killed')
-    mysql.kill()
-    console.log('    mysql killed')
+    await api.stop()
+    await mysql.stop()
     await oidc.stop()
-    console.log('    oidc stopped')
     addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
@@ -70,7 +68,7 @@ describe('OIDC state', function () {
     it('should return state "available"', async function () {
       this.timeout(20000)
       await waitLogType('started')
-      const res = await simpleRequest('http://localhost:54000/api/op/state')
+      const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.state).to.equal('available')
       expect(res.body.dependencies).to.eql({db: true, oidc: true})
@@ -86,7 +84,7 @@ describe('OIDC state', function () {
       this.timeout(45000)
       console.log('      wait for log: refreshing cache')
       const log = await waitLogType('refreshing cache')
-      expect(log.data.uri).to.equal(`http://127.0.0.1:${oidcPort}/jwks`)
+      expect(log.data.uri).to.equal(`${oidcOrigin}/jwks`)
     })
     it('should log refresh error', async function () {
       this.timeout(15000)
@@ -119,7 +117,7 @@ describe('OIDC state', function () {
     })
     it('should return state "available"', async function () {
       this.timeout(75000)
-      const res = await simpleRequest('http://localhost:54000/api/op/state')
+      const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.state).to.equal('available')
       expect(res.body.dependencies).to.eql({db: true, oidc: true})     
