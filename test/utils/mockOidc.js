@@ -757,7 +757,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
 
   try {
     await oidc.start({ port: options.port })
-    console.log(`Mock OIDC server started on port ${options.port}`)
+    console.log(`Mock OIDC server started on port ${options.port}, with ${options.keyCount} key${options.keyCount !== 1 ? 's':''}${options.includeInsecureKid ? ' (plus insecure key)' : ''}`)
   } catch (err) {
     console.error('Failed to start Mock OIDC server:', err)
     process.exit(1)
