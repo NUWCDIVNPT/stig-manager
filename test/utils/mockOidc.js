@@ -1,10 +1,9 @@
 import http from 'node:http'
-import { URL } from 'node:url'
+import { URL, fileURLToPath } from 'node:url'
 import jsonwebtoken from 'jsonwebtoken'
 import crypto from 'node:crypto'
 import ms from 'ms'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 class MockOidc {
   constructor ({includeInsecureKid = false, keyCount = 1} = {}) {
