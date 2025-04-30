@@ -3,6 +3,8 @@ import { URL } from 'node:url'
 import jsonwebtoken from 'jsonwebtoken'
 import crypto from 'node:crypto'
 import ms from 'ms'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 class MockOidc {
   constructor ({includeInsecureKid = false, keyCount = 1} = {}) {
@@ -717,7 +719,7 @@ class MockOidc {
 
 export default MockOidc
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   // Parse command-line arguments
   const args = process.argv.slice(2) // Exclude "node" and script name
   const options = {
