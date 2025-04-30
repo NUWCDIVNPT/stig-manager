@@ -1,3 +1,4 @@
+const { connect } = require('node:http2')
 const logger = require('../../utils/logger')
 const path = require('node:path')
 
@@ -84,6 +85,9 @@ const upFn = async (pool, migrationName) => {
 SET
 	c.settings = JSON_SET(c.settings, '$.importOptions', jt.importOptions),
 	c.metadata = JSON_REMOVE(c.metadata, '$.importOptions')`)
+
+
+  connection.release()
 }
   
 
