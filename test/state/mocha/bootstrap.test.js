@@ -406,4 +406,28 @@ describe('Boot with STIGMAN_JWKS_CACHE_MAX_AGE out of range', function () {
       expect(configLog.data.oauth.cacheMaxAge).to.eql(35791)
     })
   })
+
+  describe('Handle non-number', function () {
+    before(async function () {
+      this.timeout(60000)
+      api = await spawnApiPromise({
+        resolveOnType: 'started',
+        env: {
+          STIGMAN_DEPENDENCY_RETRIES: 2,
+          STIGMAN_DB_PASSWORD: 'stigman',
+          STIGMAN_DB_PORT: dbPort,
+          STIGMAN_OIDC_PROVIDER: `http://localhost:${oidcPort}`,
+          STIGMAN_JWKS_CACHE_MAX_AGE: '2gether4ever'
+        }
+      })
+    })
+    after(async function () {
+      await api.stop()
+    })
+    it('should return default oauth.maxCacheAge (10)', async function () {
+      const configLog = api.logRecords.filter(r => r.type === 'configuration')[0]
+      expect(configLog.data.oauth.cacheMaxAge).to.eql(10)
+    })
+  })
+
 }) 
