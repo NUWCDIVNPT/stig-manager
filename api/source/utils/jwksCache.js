@@ -45,12 +45,13 @@ class JWKSCache extends EventEmitter {
     logger.writeInfo('jwksCache', 'refreshing cache', { uri: this.jwksUri })
     clearTimeout(this.refreshTimeoutId)
     const result = await this.updateCache()
-    if (!result) {
+    if (result) {
+      this.refreshTimeoutId = setTimeout(this.refreshCache.bind(this), this.cacheRefreshAge)
+    }
+    else {
       logger.writeError('jwksCache', 'refresh error', { message: 'updateCache returned false' })
       if (retryOnFailure) this.refreshTimeoutId = setTimeout(this.refreshCache.bind(this), 10000)
-      return result
     }
-    this.refreshTimeoutId = setTimeout(this.refreshCache.bind(this), this.cacheRefreshAge)
     return result
   }
 
@@ -156,16 +157,7 @@ class JWKSCache extends EventEmitter {
           logger.writeDebug('jwksCache', 'socketEvent', {event: 'lookup', address, family, host, message: error?.message })
         })
       }
-  
-      function onError(error) {
-        // if (error.socket) {
-        //   console.error(`req error, remote port: ${error.socket.remotePort}`);
-        // } else {
-        //   console.error("req error, but no socket information available.");
-        // }
-        reject(error)
-      }
-  
+   
       function onTimeout() {
         console.log('Request timed out', formatSocket(socketInfo))
         httpRequest.destroy()
@@ -174,7 +166,7 @@ class JWKSCache extends EventEmitter {
       httpRequest
         .on('socket', onSocket)
         .on('timeout', onTimeout)
-        .on('error', onError)
+        .on('error', reject)
         .end()
     })
   }
@@ -198,7 +190,7 @@ class JWKSCache extends EventEmitter {
           alg: jwk.alg
         })
       }
-      catch (err) {
+      catch {
         continue
       }
     }

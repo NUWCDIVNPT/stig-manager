@@ -12,51 +12,70 @@ let jwksCache
 
 const privilegeGetter = new Function("obj", "return obj?." + config.oauth.claims.privilegesChain + " || [];")
 
+// Helper function to decode and validate the JWT structure
+function decodeToken(tokenJWT) {
+    const tokenObj = jwt.decode(tokenJWT, { complete: true })
+    if (!tokenObj) {
+        throw new SmError.AuthorizeError("Token is not valid JWT")
+    }
+    return tokenObj
+}
+
+// Helper function to check for insecure kids
+function checkInsecureKid(tokenObj) {
+    if (!config.oauth.allowInsecureTokens && config.oauth.insecureKids.includes(tokenObj.header.kid)) {
+        throw new SmError.InsecureTokenError(`Insecure kid found: ${tokenObj.header.kid}`)
+    }
+}
+
+// Helper function to retrieve the signing key
+async function getSigningKey(tokenObj, req) {
+    let signingKey = jwksCache.getKey(tokenObj.header.kid)
+    logger.writeDebug('auth', 'signingKey', { signingKey, url: req.url })
+
+    if (signingKey === null) {
+        const result = await jwksCache.refreshCache(false) // Will not retry on failure
+        if (result) {
+            signingKey = jwksCache.getKey(tokenObj.header.kid)
+        }
+        if (!result || !signingKey) {
+            signingKey = 'unknown'
+            jwksCache.setKey(tokenObj.header.kid, signingKey)
+            logger.writeWarn('auth', 'unknownKid', { kid: tokenObj.header.kid })
+        }
+    }
+
+    if (signingKey === 'unknown') {
+        throw new SmError.SigningKeyNotFoundError(`Signing key unknown for kid: ${tokenObj.header.kid}`)
+    }
+
+    return signingKey
+}
+
+// Helper function to verify the token
+function verifyToken(tokenJWT, signingKey) {
+    try {
+        jwt.verify(tokenJWT, signingKey)
+    } catch {
+        throw new SmError.AuthorizeError("Token verification failed")
+    }
+}
+
 // express middleware to validate token
 const validateToken = async function (req, res, next) {
     try {
         const tokenJWT = getBearerToken(req)
         if (tokenJWT) {
-            const tokenObj = jwt.decode(tokenJWT, {complete: true})
-            if (!tokenObj) {
-                throw new SmError.AuthorizeError("Token is not valid JWT")
-            }
-            
-            // Check if token uses insecure kid
-            if (!config.oauth.allowInsecureTokens && config.oauth.insecureKids.includes(tokenObj.header.kid)) {
-                throw new SmError.InsecureTokenError(`Insecure kid found: ${tokenObj.header.kid}`)
-            }
-            
-            let signingKey = jwksCache.getKey(tokenObj.header.kid)
-            logger.writeDebug('auth', 'signingKey', { signingKey, url: req.url })
-            if (signingKey === null) {
-                const result = await jwksCache.refreshCache(false) // will not retry on failure
-                if (result) {
-                    signingKey = jwksCache.getKey(tokenObj.header.kid)
-                }
-                if (!result || !signingKey) {
-                    signingKey = 'unknown'
-                    jwksCache.setKey(tokenObj.header.kid, signingKey)
-                    logger.writeWarn('auth', 'unknownKid', { kid: tokenObj.header.kid })
-                }
-            }
-            if (signingKey === 'unknown') {
-                throw new SmError.SigningKeyNotFoundError(`Signing key unknown for kid: ${tokenObj.header.kid}`)
-            }
-            
-            try {
-                jwt.verify(tokenJWT, signingKey)
-            }
-            catch (e) {
-                throw new SmError.AuthorizeError("Token verification failed")
-            }
-            
+            const tokenObj = decodeToken(tokenJWT)
+            checkInsecureKid(tokenObj)
+            const signingKey = await getSigningKey(tokenObj, req)
+            verifyToken(tokenJWT, signingKey)
+
             req.access_token = tokenObj.payload
             req.bearer = tokenJWT
         }
         next()
-    }
-    catch (e) {
+    } catch (e) {
         next(e)
     }
 }
