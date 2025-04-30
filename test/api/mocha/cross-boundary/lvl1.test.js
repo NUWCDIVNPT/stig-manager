@@ -277,6 +277,17 @@ describe("lvl1 cross-boundary tests", () => {
                           "canAccept": true,
                           "minAcceptGrant": 2,
                           "resetCriteria": "result"
+                      },
+                      "history": {
+                        "maxReviews": 11
+                      },
+                      "importOptions": {
+                        "autoStatus": "submitted",
+                        "unreviewed": "commented",
+                        "unreviewedCommented": "informational",
+                        "emptyDetail": "replace",
+                        "emptyComment": "ignore",
+                        "allowCustom": true
                       }
                     },
                     "metadata": {

@@ -628,7 +628,6 @@ paths:
       description: |
         The `settings` property is optional and can be partially provided.
         - If `settings` is not provided, the Collection will be created with the default settings.
-        - If a partial `settings` object is provided, the Collection will be created with settings merged from the provided object and the default settings.
 
         The default settings are:
         ```
@@ -651,7 +650,14 @@ paths:
             history: {
               maxReviews: 5
             }
-          }
+            importOptions: {
+              autoStatus: 'saved',
+              unreviewed: 'commented',
+              unreviewedCommented: 'informational',
+              emptyDetail: 'replace',
+              emptyComment: 'ignore',
+              allowCustom: true
+            }
         ```
       operationId: createCollection
       parameters:
@@ -717,10 +723,6 @@ paths:
       tags:
         - Collection
       summary: Merge provided properties with a Collection
-      description: |
-        The `settings` property can be partially provided. If a partial `settings` object is provided, the Collection settings will be updated to the provided object merged with the **default** settings. This sets existing property values not specified in the partial object to their default values.
-
-        The default settings are found in the description of `POST /collection`
       operationId: updateCollection
       requestBody:
         required: true
@@ -4938,7 +4940,7 @@ components:
         state:
           $ref: '#/components/schemas/AppInfoCollectionState'
         settings:
-          $ref: '#/components/schemas/AppInfoCollectionSettings'
+          $ref: '#/components/schemas/CollectionSettings'
         assets:
           $ref: '#/components/schemas/IntegerMinimumZeroNullable'
         assetsDisabled:
@@ -5056,9 +5058,8 @@ components:
           $ref: '#/components/schemas/CollectionStatusSettings'
         history:
           $ref: '#/components/schemas/CollectionHistorySettings'
-      required:
-        - fields
-        - status
+        importOptions:
+          $ref: '#/components/schemas/CollectionImportOptions'          
     AppInfoCollectionState:
       type: string
       enum:
@@ -6354,6 +6355,74 @@ components:
         - maxReviews
     CollectionId:
       $ref: '#/components/schemas/StringIntId'
+    CollectionImportOptions:
+      additionalProperties: false
+      type: object
+      properties:
+        autoStatus:
+          description: |
+            Determines how to set the status property of imported reviews.
+            - 'null': Don't set a status (Keep existing Review Status)
+            - 'saved': Always set status to 'saved'
+            - 'submitted': Set status to 'submitted' if the review is submittable per Collection settings
+            - 'accepted': Set status to 'accepted' if the review is submittable, and User has permission to accept,  otherwise 'submitted'
+          type: string
+          enum:
+            - "null"
+            - saved
+            - submitted
+            - accepted
+        unreviewed:
+          description: |
+            Controls how to handle unreviewed rules (those with result = 'notchecked').
+            - 'never': Don't import unreviewed rules
+            - 'commented': Import unreviewed rules that have comments, using the result specified in unreviewedCommented
+            - 'always': Import all unreviewed rules, using the result specified in unreviewedCommented for those with comments
+          type: string
+          enum:
+            - never
+            - commented
+            - always
+        unreviewedCommented:
+          description: |
+            The result to use for unreviewed rules that have comments, when unreviewed is set to 'commented' or 'always'.
+          type: string
+          enum:
+            - notchecked
+            - informational
+        emptyDetail:
+          description: |
+            Controls how to handle rules with empty finding details.
+            - 'ignore': Leave the detail field null
+            - 'import': Import the empty detail (as an empty string)
+            - 'replace': Replace with a default message
+          type: string
+          enum:
+            - ignore
+            - import
+            - replace
+        emptyComment:
+          description: |
+            Controls how to handle rules with empty comments.
+            - 'ignore': Leave the comment field null
+            - 'import': Import the empty comment (as an empty string)
+            - 'replace': Replace with a default message
+          type: string
+          enum:
+            - ignore
+            - import
+            - replace
+        allowCustom:
+          description: |
+            Flag indicating whether Clients may POST reviews that do not conform to importOptions specified.
+          type: boolean
+      required:
+        - autoStatus
+        - unreviewed
+        - unreviewedCommented
+        - emptyDetail
+        - emptyComment
+        - allowCustom      
     CollectionName:
       $ref: '#/components/schemas/String45'
     CollectionProjected:
@@ -6414,6 +6483,25 @@ components:
           $ref: '#/components/schemas/CollectionHistorySettings'
         status:
           $ref: '#/components/schemas/CollectionStatusSettings'
+        importOptions:
+          $ref: '#/components/schemas/CollectionImportOptions'
+    CollectionSettingsRequired:
+      additionalProperties: false
+      type: object
+      properties:
+        fields:
+          $ref: '#/components/schemas/CollectionFieldSettings'
+        history:
+          $ref: '#/components/schemas/CollectionHistorySettings'
+        status:
+          $ref: '#/components/schemas/CollectionStatusSettings'
+        importOptions:
+          $ref: '#/components/schemas/CollectionImportOptions'
+      required:
+        - fields
+        - history
+        - status
+        - importOptions
     CollectionStatistics:
       additionalProperties: false
       type: object
@@ -6538,6 +6626,7 @@ components:
     CollectionUpdate:
       type: object
       additionalProperties: false
+      minProperties: 1
       properties:
         description:
           $ref: '#/components/schemas/CollectionDescription'

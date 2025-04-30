@@ -97,53 +97,66 @@ describe('PUT - Collection', function () {
 
         it('Set all properties of a Collection- with metadata',async function () {
 
-            const putRequest = {
-                name: "TestPutCollection",
-                settings: {
-                fields: {
-                    detail: {
-                    enabled: "findings",
-                    required: "findings",
-                    },
-                    comment: {
-                    enabled: "always",
-                    required: "findings",
-                    },
+          const putRequest = {
+            name: "TestPutCollection",
+            settings: {
+              fields: {
+                detail: {
+                  enabled: "findings",
+                  required: "findings",
                 },
-                status: {
-                    canAccept: true,
-                    minAcceptGrant: 2,
-                    resetCriteria: "result",
+                comment: {
+                  enabled: "always",
+                  required: "findings",
                 },
-                },
+              },
+              status: {
+                canAccept: true,
+                minAcceptGrant: 2,
+                resetCriteria: "result",
+              },
+              history: {
+                maxReviews: 11,
+              },
+              importOptions: {
+                autoStatus: "submitted",
+                unreviewed: "commented",
+                unreviewedCommented: "informational",
+                emptyDetail: "replace",
+                emptyComment: "ignore",
+                allowCustom: true,
+              },
+            },
 
-                description: "hellodescription",
-                metadata: {
-                [reference.testCollection.metadataKey]: reference.testCollection.metadataValue,
-                },
-                grants: [
-                {
-                    userId: "1",
-                    roleId: 4,
-                },
-                {
-                    userId: "21",
-                    roleId: 2,
-                },
-                {
-                    userId: "44",
-                    roleId: 3,
-                },
-                {
-                    userId: "45",
-                    roleId: 4,
-                },
-                {
-                    userId: "87",
-                    roleId: 4,
-                },
-                ],
-            }
+            description: "hellodescription",
+            metadata: {
+              [reference.testCollection.metadataKey]:
+                reference.testCollection.metadataValue,
+            },
+            grants: [
+              {
+                userId: "1",
+                roleId: 4,
+              },
+              {
+                userId: "21",
+                roleId: 2,
+              },
+              {
+                userId: "44",
+                roleId: 3,
+              },
+              {
+                userId: "45",
+                roleId: 4,
+              },
+              {
+                userId: "87",
+                roleId: 4,
+              },
+            ],
+          }
+
       
             const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}?projection=grants&projection=owners&projection=statistics&projection=stigs&projection=assets`, 'PUT', iteration.token, putRequest)
             if(distinct.canModifyCollection === false){ 
@@ -157,6 +170,13 @@ describe('PUT - Collection', function () {
             expect(res.body.settings.fields.detail.required).to.equal(putRequest.settings.fields.detail.required)
             expect(res.body.settings.fields.comment.enabled).to.equal(putRequest.settings.fields.comment.enabled)
             expect(res.body.settings.fields.comment.required).to.equal(putRequest.settings.fields.comment.required)
+            expect(res.body.settings.history.maxReviews).to.equal(putRequest.settings.history.maxReviews)
+            expect(res.body.settings.importOptions.autoStatus).to.equal(putRequest.settings.importOptions.autoStatus)
+            expect(res.body.settings.importOptions.unreviewed).to.equal(putRequest.settings.importOptions.unreviewed)
+            expect(res.body.settings.importOptions.unreviewedCommented).to.equal(putRequest.settings.importOptions.unreviewedCommented)
+            expect(res.body.settings.importOptions.emptyDetail).to.equal(putRequest.settings.importOptions.emptyDetail)
+            expect(res.body.settings.importOptions.emptyComment).to.equal(putRequest.settings.importOptions.emptyComment)
+            expect(res.body.settings.importOptions.allowCustom).to.equal(putRequest.settings.importOptions.allowCustom)
             expect(res.body.settings.status.canAccept).to.equal(putRequest.settings.status.canAccept)
             expect(res.body.settings.status.minAcceptGrant).to.equal(putRequest.settings.status.minAcceptGrant)
             expect(res.body.settings.status.resetCriteria).to.equal(putRequest.settings.status.resetCriteria)

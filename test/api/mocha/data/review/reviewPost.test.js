@@ -994,6 +994,14 @@ describe('POST - Review', () => {
                 },
                 history: {
                   maxReviews: 11
+                },
+                importOptions: {
+                  autoStatus: "submitted",
+                  unreviewed: "commented",
+                  unreviewedCommented: "informational",
+                  emptyDetail: "replace",
+                  emptyComment: "ignore",
+                  allowCustom: true
                 }
               },
               metadata: {

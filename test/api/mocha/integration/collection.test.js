@@ -148,7 +148,18 @@ describe('PATCH - updateCollection - /collections/{collectionId}', () => {
                           "canAccept": true,
                           "minAcceptGrant": 2,
                           "resetCriteria": "result"
-                      }
+                        },
+                        "history": {
+                            "maxReviews": 11,
+                        },
+                        "importOptions": {
+                            "autoStatus": "submitted",
+                            "unreviewed": "commented",
+                            "unreviewedCommented": "informational",
+                            "emptyDetail": "replace",
+                            "emptyComment": "ignore",
+                            "allowCustom": true,
+                        },
                 },
                 "metadata": {
                   "pocName": "poc2Patched",
@@ -205,7 +216,18 @@ describe('POST - createCollection - /collections', () => {
                         "canAccept": true,
                         "minAcceptGrant": 3,
                         "resetCriteria": "result"
-                    }
+                    },
+                    "history": {
+                        "maxReviews": 11,
+                    },
+                    "importOptions": {
+                        "autoStatus": "submitted",
+                        "unreviewed": "commented",
+                        "unreviewedCommented": "informational",
+                        "emptyDetail": "replace",
+                        "emptyComment": "ignore",
+                        "allowCustom": true,
+                    },
               },
                 "metadata": {},
                 "grants": [
@@ -1059,6 +1081,14 @@ describe('POST - exportToCollection - /collections/{collectionId}/export-to/{dst
                     },
                     "history": {
                         "maxReviews": 15
+                    },
+                    "importOptions": {
+                        "autoStatus": "submitted",
+                        "unreviewed": "commented",
+                        "unreviewedCommented": "informational",
+                        "emptyDetail": "replace",
+                        "emptyComment": "ignore",
+                        "allowCustom": true
                     }
                 },  
                 "grants": [
@@ -1243,7 +1273,16 @@ describe('POST - exportToCollection - /collections/{collectionId}/export-to/{dst
                     },
                     "history": {
                         "maxReviews": 15
+                    },
+                    "importOptions": {
+                        "autoStatus": "submitted",
+                        "unreviewed": "commented",
+                        "unreviewedCommented": "informational",
+                        "emptyDetail": "replace",
+                        "emptyComment": "ignore",
+                        "allowCustom": true
                     }
+                    
                 },  
                 "grants": [
                     {

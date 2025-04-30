@@ -48,6 +48,14 @@ const reference = {
     lvl1ReadOnlyAssetIds: ["62", "154"],
     fullLabelName: "test-label-full",
     fullLabel: "755b8a28-9a68-11ec-b1bc-0242ac110002",
+    importOptions: {
+      autoStatus: "submitted",
+      unreviewed: "commented",
+      unreviewedCommented: "informational",
+      emptyDetail: "replace",
+      emptyComment: "ignore",
+      allowCustom: true
+    },
     testGroup: {
       userGroupId: "1",
       name: "TestGroup",
@@ -383,6 +391,14 @@ const reference = {
     scrapLabel: "df4e6836-a003-11ec-b1bc-0242ac110002",
     collectionMetadataKey: "pocName",
     collectionMetadataValue: "poc2Patched",
+  },
+  defaultImportOptions: {
+    autoStatus: 'saved',
+    unreviewed: 'commented',
+    unreviewedCommented: 'informational',
+    emptyDetail: 'replace',
+    emptyComment: 'ignore',
+    allowCustom: true
   },
 
   // Reference Asset data
