@@ -19,6 +19,8 @@ describe('JWKS Tests', function () {
     oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
     tokens.rotation0 = oidc.getToken({username: 'prerotation', privileges:['create_collection']}) // default privileges
     oidc.rotateKeys({keyCount: 1, includeInsecureKid: false})
+    tokens.rotation1 = oidc.getToken({username: 'rotation1', privileges:['create_collection']}) // default privileges
+    oidc.rotateKeys({keyCount: 1, includeInsecureKid: false})    
     await oidc.start({port: oidcPort})
     console.log('    ✔ oidc started')
     console.log('    try mysql start')
@@ -129,6 +131,36 @@ describe('JWKS Tests', function () {
       expect(cacheUpdateCount).to.equal(0)
     })
   })
+
+  describe('Reject token with NEW unknown kid while OIDC is unavailable', function () {
+    before( function () {
+      oidc.stop()
+    })
+
+    after(async function () {
+      await oidc.start({port: oidcPort})
+    })
+
+    it('should reject unknown kid when oidc unavailable', async function () {
+      this.timeout(5000)
+      const logLength = api.logRecords.length
+      const res = await bearerRequest({
+          url: `${apiOrigin}/api/user`,
+          method: 'GET',
+          token: tokens.rotation1
+        })
+        
+      expect(res.status).to.equal(401)
+      expect(res.body.error).to.equal('Unknown signing key, unable to validate token.')
+
+      const logSlice = api.logRecords.slice(logLength)
+      const cacheUpdateCount = logSlice.filter(log => log.type === 'jwksCacheEvent' && log.data.event === 'cacheUpdate').length
+      expect(cacheUpdateCount).to.equal(0)
+      const updateCacheError = logSlice.filter(log => log.type === 'refresh error' && log.data.message === 'updateCache returned false').length
+      expect(updateCacheError).to.equal(1)
+    })
+  })  
+
 
   describe('Reject token with empty username', function () {
     it('should reject empty username', async function () {
