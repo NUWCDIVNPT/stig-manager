@@ -86,7 +86,11 @@ describe('PATCH - Collection', function () {
                   resetCriteria: "result",
                 },
                 importOptions: {
-                  autoStatus: "saved",
+                  autoStatus: {
+                    fail: "saved",
+                    notapplicable: "saved",
+                    pass: "saved",
+                  },
                   unreviewed: "never",
                   unreviewedCommented: "notchecked",
                   emptyDetail: "ignore",

@@ -166,7 +166,11 @@ describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{asset
                               maxReviews: 2
                             },
                             importOptions: {
-                              autoStatus: "submitted",
+                             autoStatus: {
+                                fail: "submitted",
+                                notapplicable: "submitted",
+                                pass: "submitted",
+                              },
                               unreviewed: "commented",
                               unreviewedCommented: "informational",
                               emptyDetail: "replace",

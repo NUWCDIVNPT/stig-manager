@@ -6360,18 +6360,14 @@ components:
       type: object
       properties:
         autoStatus:
+          $ref: '#/components/schemas/CollectionImportAutoStatus'
           description: |
             Determines how to set the status property of imported reviews.
             - 'null': Don't set a status (Keep existing Review Status)
             - 'saved': Always set status to 'saved'
             - 'submitted': Set status to 'submitted' if the review is submittable per Collection settings
             - 'accepted': Set status to 'accepted' if the review is submittable, and User has permission to accept,  otherwise 'submitted'
-          type: string
-          enum:
-            - "null"
-            - saved
-            - submitted
-            - accepted
+   
         unreviewed:
           description: |
             Controls how to handle unreviewed rules (those with result = 'notchecked').
@@ -6423,6 +6419,42 @@ components:
         - emptyDetail
         - emptyComment
         - allowCustom      
+    CollectionImportAutoStatus:
+      type: object
+      additionalProperties: false
+      description: |
+        Determines how to set the status property of imported reviews for each evaluation result.
+        Each property must be one of:
+         - 'null': Don't set a status (Keep existing Review Status)
+         - 'saved': Always set status to 'saved'
+         - 'submitted': Set status to 'submitted' if the review is submittable per Collection settings
+         - 'accepted': Set status to 'accepted' if the review is submittable, and User has permission to accept,  otherwise 'submitted'
+      properties:
+        fail:
+          type: string
+          enum:
+            - "null"
+            - saved
+            - submitted
+            - accepted
+        notapplicable:
+          type: string
+          enum:
+            - "null"
+            - saved
+            - submitted
+            - accepted
+        pass:
+          type: string
+          enum:
+            - "null"
+            - saved
+            - submitted
+            - accepted
+      required:
+      - fail
+      - notapplicable
+      - pass
     CollectionName:
       $ref: '#/components/schemas/String45'
     CollectionProjected:
@@ -6644,7 +6676,7 @@ components:
         name:
           $ref: '#/components/schemas/CollectionName'
         settings:
-          $ref: '#/components/schemas/CollectionSettings'
+          $ref: '#/components/schemas/CollectionSettingsRequired'
     CollectionsProjected:
       additionalProperties: false
       type: object
