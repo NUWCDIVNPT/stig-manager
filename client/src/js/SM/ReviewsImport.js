@@ -862,7 +862,7 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
         this.initialOptions = this.initialOptions
         this.autoStatusCombo = new SM.ReviewsImport.AutoStatusOpenComboBox({
             value: this.initialOptions.autoStatus.fail,
-            name: 'autoStatus',
+            name: 'autoStatus.fail',
             readOnly: this.context === 'wizard',
             canAccept: this.canAccept,
             listeners: {
@@ -871,7 +871,7 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
         })
         this.autoStatusNotApplicable = new SM.ReviewsImport.AutoStatusNotApplicableComboBox({
             value: this.initialOptions.autoStatus?.notapplicable,
-            name: 'autoStatus',
+            name: 'autoStatus.notapplicable',
             readOnly: this.context === 'wizard',
             canAccept: this.canAccept,
             listeners: {
@@ -881,7 +881,7 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
         
         this.autoStatusPass = new SM.ReviewsImport.AutoStatusPassComboBox({
             value: this.initialOptions.autoStatus?.pass,
-            name: 'autoStatus',
+            name: 'autoStatus.pass',
             readOnly: this.context === 'wizard',
             canAccept: this.canAccept,
             listeners: { 
@@ -929,6 +929,7 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
             border: true,
             autoHeight: true,
             layout: 'form',
+            readOnly: this.context === 'wizard',
             labelWidth: 200,
             items: [
                 this.autoStatusCombo,
@@ -936,8 +937,16 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
                 this.autoStatusPass
             ]
         })
+
+        this.autoStatusFieldGroup.setReadOnly = function (readOnly) {
+            _this.autoStatusCombo.setReadOnly(readOnly)
+            _this.autoStatusNotApplicable.setReadOnly(readOnly)
+            _this.autoStatusPass.setReadOnly(readOnly)
+        }
+        
         
         this.optionComboBoxes = [
+            this.autoStatusFieldGroup,
             this.unreviewedCombo,
             this.unreviewedCommentedCombo,
             this.emptyDetailCombo,
@@ -993,9 +1002,14 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
 
         this.restoreOptions = function (options = _this.initialOptions) {
             for (const combo of this.optionComboBoxes) {
-                combo.setValue(options[combo.name])
+                if (typeof combo.setValue === 'function') {
+                    combo.setValue(options[combo.name])
+                }
             }
             _this.unreviewedCommentedCombo.setDisabled(_this.unreviewedCombo.value === 'never')
+            _this.autoStatusCombo.setValue(options.autoStatus.fail)
+            _this.autoStatusNotApplicable.setValue(options.autoStatus.notapplicable)
+            _this.autoStatusPass.setValue(options.autoStatus.pass)
         }
 
         this.getOptions = function () {
@@ -1026,6 +1040,7 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
         const config = {
             title: 'Import options',
             labelWidth: 200,
+            autoScroll: true,
             items
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -1381,7 +1396,7 @@ SM.ReviewsImport.MultiSelectPanel = Ext.extend(Ext.Panel, {
     initComponent: function () {
         const _this = this
         this.parseOptionsFieldSet = new SM.ReviewsImport.ParseOptionsFieldSet({
-            height: 200,
+            height: 300,
             context: this.optionsContext,
             canAccept: true,
             initialOptions: this.initialOptions,
@@ -2106,7 +2121,7 @@ async function showImportResultFiles(collectionId, createObjects = true) {
         }
 
         const vpSize = Ext.getBody().getViewSize()
-        let height = vpSize.height * 0.75
+        let height = vpSize.height * 0.85
         let width = vpSize.width * 0.75 <= 1024 ? vpSize.width * 0.75 : 1024
 
         const fp = new SM.ReviewsImport.MultiSelectPanel({
@@ -2543,7 +2558,7 @@ async function showImportResultFile(params) {
         }
 
         const vpSize = Ext.getBody().getViewSize()
-        let height = vpSize.height * 0.75
+        let height = vpSize.height * 0.85
         let width = vpSize.width * 0.75 <= 1024 ? vpSize.width * 0.75 : 1024
 
         const fp = new SM.ReviewsImport.SelectFilesPanel({
