@@ -1347,6 +1347,7 @@ SM.MetaPanel.AggStigPanel = Ext.extend(Ext.Panel, {
       const selectedRowNorth = gridNorth.getSelectionModel().getSelected()
       gridSouth.store.proxy.setUrl(`${STIGMAN.Env.apiBase}/collections/${record.data.collectionId}/metrics/summary`)
       gridSouth.collectionId = record.data.collectionId
+      await SM.Cache.updateCollectionLabels(record.data.collectionId)
       await gridSouth.store.loadPromise({
         benchmarkId: selectedRowNorth.data.benchmarkId
       })

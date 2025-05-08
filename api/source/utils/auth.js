@@ -1,58 +1,81 @@
 const config = require('./config')
 const logger = require('./logger')
-const jwksClient = require('jwks-rsa')
 const jwt = require('jsonwebtoken')
 const retry = require('async-retry')
 const _ = require('lodash')
 const UserService = require(`../service/UserService`)
-const axios = require('axios')
 const SmError = require('./error')
 const state = require('./state')
+const JWKSCache = require('./jwksCache')
 
-let client
+let jwksCache
 
 const privilegeGetter = new Function("obj", "return obj?." + config.oauth.claims.privilegesChain + " || [];")
+
+// Helper function to decode and validate the JWT structure
+function decodeToken(tokenJWT) {
+    const tokenObj = jwt.decode(tokenJWT, { complete: true })
+    if (!tokenObj) {
+        throw new SmError.AuthorizeError("Token is not valid JWT")
+    }
+    return tokenObj
+}
+
+// Helper function to check for insecure kids
+function checkInsecureKid(tokenObj) {
+    if (!config.oauth.allowInsecureTokens && config.oauth.insecureKids.includes(tokenObj.header.kid)) {
+        throw new SmError.InsecureTokenError(`Insecure kid found: ${tokenObj.header.kid}`)
+    }
+}
+
+// Helper function to retrieve the signing key
+async function getSigningKey(tokenObj, req) {
+    let signingKey = jwksCache.getKey(tokenObj.header.kid)
+    logger.writeDebug('auth', 'signingKey', { kid: tokenObj.header.kid, url: req.url })
+
+    if (signingKey === null) {
+        const result = await jwksCache.refreshCache(false) // Will not retry on failure
+        if (result) {
+            signingKey = jwksCache.getKey(tokenObj.header.kid)
+        }
+        if (!result || !signingKey) {
+            signingKey = 'unknown'
+            jwksCache.setKey(tokenObj.header.kid, signingKey)
+            logger.writeWarn('auth', 'unknownKid', { kid: tokenObj.header.kid })
+        }
+    }
+
+    if (signingKey === 'unknown') {
+        throw new SmError.SigningKeyNotFoundError(`Signing key unknown for kid: ${tokenObj.header.kid}`)
+    }
+
+    return signingKey
+}
+
+// Helper function to verify the token
+function verifyToken(tokenJWT, signingKey) {
+    try {
+        jwt.verify(tokenJWT, signingKey)
+    } catch (e) {
+        throw new SmError.AuthorizeError(e.message)
+    }
+}
 
 // express middleware to validate token
 const validateToken = async function (req, res, next) {
     try {
         const tokenJWT = getBearerToken(req)
         if (tokenJWT) {
-            const tokenObj = jwt.decode(tokenJWT, {complete: true})
-            
-            // Check if token uses insecure kid
-            if (!config.oauth.allowInsecureTokens && config.oauth.insecureKids.includes(tokenObj.header.kid)) {
-                throw new SmError.InsecureTokenError(`Insecure kid found: ${tokenObj.header.kid}`)
-            }
-            
-            let signingKey
-            try {
-                signingKey = await client.getSigningKey(tokenObj.header.kid)
-            }
-            catch (e) {
-                if (e.name === 'SigningKeyNotFoundError') {
-                    throw new SmError.SigningKeyNotFoundError(e.message)
-                }
-                let message = e.message
-                if (e.errors?.length) {
-                    message = e.errors[0].message
-                }
-                throw new SmError.OIDCProviderError(message)
-            }
-            
-            try {
-                jwt.verify(tokenJWT, signingKey.publicKey)
-            }
-            catch (e) {
-                throw new SmError.AuthorizeError("Token verification failed")
-            }
-            
+            const tokenObj = decodeToken(tokenJWT)
+            checkInsecureKid(tokenObj)
+            const signingKey = await getSigningKey(tokenObj, req)
+            verifyToken(tokenJWT, signingKey)
+
             req.access_token = tokenObj.payload
             req.bearer = tokenJWT
         }
         next()
-    }
-    catch (e) {
+    } catch (e) {
         next(e)
     }
 }
@@ -69,7 +92,7 @@ const setupUser = async function (req, res, next) {
             const username = tokenPayload[usernamePrecedence.find(element => !!tokenPayload[element])]
             // If no username found, throw Privilege error
             if (username === undefined) {
-                throw new SmError.PrivilegeError("No token claim mappable to username found")
+                throw new SmError.AuthorizeError("No token claim mappable to username found")
             }
             
             const userObject = await UserService.getUserObject(username) ?? {username}
@@ -153,26 +176,36 @@ const getBearerToken = req => {
 }
 
 // Check if JWKS contains any insecure key IDs
-const containsInsecureKids = (signingKeys) => {
-    return signingKeys.some(key => config.oauth.insecureKids.includes(key.kid))
+const containsInsecureKids = (kids) => {
+    return kids.some(kid => config.oauth.insecureKids.includes(kid))
 }
 
 // setup the JWKS key handling client
 const setupJwks = async function (jwksUri) {
-    client = jwksClient({
+    jwksCache = new JWKSCache({
         jwksUri,
-        timeout: 5000,
-        cacheMaxAge: 600000
+        cacheMaxAge: config.oauth.cacheMaxAge * 60 * 1000, // convert minutes to milliseconds
     })
-    // preflight request to JWKS endpoint. jwks-rsa library does NOT cache this response.
-    const signingKeys = await client.getSigningKeys()
-    
-    // Check for insecure kids in the signing keys
-    if (!config.oauth.allowInsecureTokens && containsInsecureKids(signingKeys)) {
+    jwksCache.on('cacheUpdate', (cache) => {
+        logger.writeDebug('auth', 'jwksCacheEvent', { event: 'cacheUpdate', kids: jwksCache.getKidTypes() })
+    })
+    jwksCache.on('cacheStale', (cache) => {
+        logger.writeDebug('auth', 'jwksCacheEvent', { event: 'cacheStale', message: cache })
+        state.setOidcStatus(false)
+        jwksCache.once('cacheUpdate', (cache) => {
+            state.setOidcStatus(true)
+        })
+    })
+
+    // refresh cache of signing keys
+    const cacheResult = await jwksCache.refreshCache(false) // will not retry on failure
+    if (!cacheResult) throw new Error('refresh jwks cache failed')
+    const kids = jwksCache.getKids()
+    if (!config.oauth.allowInsecureTokens && containsInsecureKids(kids)) {
         throw new Error('insecure_kid - JWKS contains insecure key IDs and STIGMAN_DEV_ALLOW_INSECURE_TOKENS is false')
     }
 
-    logger.writeDebug('oidc', 'discovery', { jwksUri, signingKeys })
+    logger.writeDebug('auth', 'discovery', { jwksUri, kids: jwksCache.getKidTypes() })
 }
 
 let initAttempt = 0
@@ -185,13 +218,14 @@ async function initializeAuth() {
     let jwksUri
     
     async function getJwks(bail) {
-        logger.writeDebug('oidc', 'discovery', { metadataUri, attempt: ++initAttempt })
-        const openidConfig = (await axios.get(metadataUri)).data
-        logger.writeDebug('oidc', 'discovery', { metadataUri, metadata: openidConfig})
+        logger.writeDebug('auth', 'discovery', { metadataUri, attempt: ++initAttempt })
+        const response = await fetch(metadataUri, { method: 'GET' })
+        const openidConfig = await response.json()
+        logger.writeDebug('auth', 'discovery', { metadataUri, metadata: openidConfig})
         
         if (!openidConfig.jwks_uri) {
             const message = "No jwks_uri property found in oidcConfig"
-            logger.writeError('oidc', 'discovery', { success: false, metadataUri, message })
+            logger.writeError('auth', 'discovery', { success: false, metadataUri, message })
             bail(new Error(message)) // Bail if jwks_uri is not found
             return // return after bail
         }
@@ -202,7 +236,7 @@ async function initializeAuth() {
         } catch (error) {
             // If the error is from insecure kids detection, bail immediately
             if (error.message.startsWith('insecure_kid -')) {
-                logger.writeError('oidc', 'discovery', { success: false, metadataUri, message: error.message })
+                logger.writeError('auth', 'discovery', { success: false, metadataUri, message: error.message })
                 bail(error) // This will immediately stop retrying
                 return // Make sure to return after bail
             }
@@ -217,11 +251,11 @@ async function initializeAuth() {
         maxTimeout: 5 * 1000,
         onRetry: (error) => {
             state.setOidcStatus(false)
-            logger.writeError('oidc', 'discovery', { success: false, metadataUri, message: error.message })
+            logger.writeError('auth', 'discovery', { success: false, metadataUri, message: error.message })
         }
     })
     
-    logger.writeInfo('oidc', 'discovery', { success: true, metadataUri, jwksUri })
+    logger.writeInfo('auth', 'discovery', { success: true, metadataUri, jwksUri })
     state.setOidcStatus(true)
 }
 
