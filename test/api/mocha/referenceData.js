@@ -49,7 +49,11 @@ const reference = {
     fullLabelName: "test-label-full",
     fullLabel: "755b8a28-9a68-11ec-b1bc-0242ac110002",
     importOptions: {
-      autoStatus: "submitted",
+      autoStatus: {
+        fail: "submitted",
+        notapplicable: "submitted",
+        pass: "submitted",
+      },
       unreviewed: "commented",
       unreviewedCommented: "informational",
       emptyDetail: "replace",
@@ -393,7 +397,11 @@ const reference = {
     collectionMetadataValue: "poc2Patched",
   },
   defaultImportOptions: {
-    autoStatus: 'saved',
+    autoStatus: {
+      fail: "saved",
+      notapplicable: "saved",
+      pass: "saved",
+    },
     unreviewed: 'commented',
     unreviewedCommented: 'informational',
     emptyDetail: 'replace',

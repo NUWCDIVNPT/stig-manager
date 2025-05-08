@@ -65,7 +65,11 @@ export const requestBodies = {
         maxReviews: 11,
       },
       importOptions: {
-        autoStatus: "submitted",
+        autoStatus: {
+          fail: "submitted",
+          notapplicable: "submitted",
+          pass: "submitted",
+        },
         unreviewed: "commented",
         unreviewedCommented: "informational",
         emptyDetail: "replace",
@@ -148,7 +152,11 @@ export const requestBodies = {
         maxReviews: 11
       },
       importOptions: {
-        autoStatus: 'saved',
+        autoStatus: {
+          fail: "saved",
+          notapplicable: "saved",
+          pass: "saved",
+        },
         unreviewed: 'commented',
         unreviewedCommented: 'informational',
         emptyDetail: 'replace',
@@ -199,7 +207,11 @@ export const requestBodies = {
         maxReviews: 11
       },
       importOptions: {
-        autoStatus: "submitted",
+        autoStatus: {
+          fail: "submitted",
+          notapplicable: "submitted",
+          pass: "submitted",
+        },
         unreviewed: "commented",
         unreviewedCommented: "informational",
         emptyDetail: "replace",
@@ -254,7 +266,11 @@ export const requestBodies = {
         maxReviews: 5
       },
       importOptions: {
-        autoStatus: "submitted",
+        autoStatus: {
+          fail: "submitted",
+          notapplicable: "submitted",
+          pass: "submitted",
+        },
         unreviewed: "commented",
         unreviewedCommented: "informational",
         emptyDetail: "replace",

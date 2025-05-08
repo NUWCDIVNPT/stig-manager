@@ -119,7 +119,11 @@ describe('PUT - Collection', function () {
                 maxReviews: 11,
               },
               importOptions: {
-                autoStatus: "submitted",
+                autoStatus: {
+                  fail: "submitted",
+                  notapplicable: "submitted",
+                  pass: "submitted",
+                },
                 unreviewed: "commented",
                 unreviewedCommented: "informational",
                 emptyDetail: "replace",
@@ -171,7 +175,7 @@ describe('PUT - Collection', function () {
             expect(res.body.settings.fields.comment.enabled).to.equal(putRequest.settings.fields.comment.enabled)
             expect(res.body.settings.fields.comment.required).to.equal(putRequest.settings.fields.comment.required)
             expect(res.body.settings.history.maxReviews).to.equal(putRequest.settings.history.maxReviews)
-            expect(res.body.settings.importOptions.autoStatus).to.equal(putRequest.settings.importOptions.autoStatus)
+            expect(res.body.settings.importOptions.autoStatus).to.eql(putRequest.settings.importOptions.autoStatus)
             expect(res.body.settings.importOptions.unreviewed).to.equal(putRequest.settings.importOptions.unreviewed)
             expect(res.body.settings.importOptions.unreviewedCommented).to.equal(putRequest.settings.importOptions.unreviewedCommented)
             expect(res.body.settings.importOptions.emptyDetail).to.equal(putRequest.settings.importOptions.emptyDetail)

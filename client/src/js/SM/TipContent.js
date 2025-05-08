@@ -7,7 +7,9 @@ SM.TipContent.ImportOptions.AutoStatus = `Choose the "Goal" status for imported 
 <br><br><b>Saved:</b> Set Reviews to "Saved" status.
 <br><br><b>Submitted:</b> Set Review to "Submitted" status. If review does not meet Submit requirements, Review will be set to Saved.
 <br><br><b>Accepted:</b> If importing user has the proper grant, set Review to "Accepted". If they cannot Accept, Reviews will be set to "Submitted." If review does not meet Submit requirements, Review will be set to "Saved."
+<br><br>Note: Informational and Not Reviewed reviews will always be set to "Saved" status.
 `
+
 SM.TipContent.ImportOptions.Unreviewed = `Should Reviews without a compliance result (NF, NA, O) be imported? 
 <br><br><b>Never:</b> Ignore these Reviews. Existing Reviews will not change.  
 <br><br><b>Having Comments:</b> Import these Reviews only if Detail or Comment is also provided. This is usually only seen in CKL sources.

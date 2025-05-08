@@ -46,7 +46,11 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
                         "maxReviews": 11
                     },
                     "importOptions": {
-                        "autoStatus": "submitted",
+                        "autoStatus": {
+                            "fail": "submitted",
+                            "notapplicable": "submitted",
+                            "pass": "submitted",
+                        },
                         "unreviewed": "commented",
                         "unreviewedCommented": "informational",
                         "emptyDetail": "replace",

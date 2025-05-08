@@ -153,7 +153,11 @@ describe('PATCH - updateCollection - /collections/{collectionId}', () => {
                             "maxReviews": 11,
                         },
                         "importOptions": {
-                            "autoStatus": "submitted",
+                            "autoStatus": {
+                                "fail": "submitted",
+                                "notapplicable": "submitted",
+                                "pass": "submitted",
+                              },
                             "unreviewed": "commented",
                             "unreviewedCommented": "informational",
                             "emptyDetail": "replace",
@@ -221,7 +225,11 @@ describe('POST - createCollection - /collections', () => {
                         "maxReviews": 11,
                     },
                     "importOptions": {
-                        "autoStatus": "submitted",
+                        "autoStatus": {
+                            "fail": "submitted",
+                            "notapplicable": "submitted",
+                            "pass": "submitted",
+                        },
                         "unreviewed": "commented",
                         "unreviewedCommented": "informational",
                         "emptyDetail": "replace",
@@ -1083,7 +1091,11 @@ describe('POST - exportToCollection - /collections/{collectionId}/export-to/{dst
                         "maxReviews": 15
                     },
                     "importOptions": {
-                        "autoStatus": "submitted",
+                       "autoStatus": {
+                            "fail": "submitted",
+                            "notapplicable": "submitted",
+                            "pass": "submitted",
+                        },
                         "unreviewed": "commented",
                         "unreviewedCommented": "informational",
                         "emptyDetail": "replace",
@@ -1275,7 +1287,11 @@ describe('POST - exportToCollection - /collections/{collectionId}/export-to/{dst
                         "maxReviews": 15
                     },
                     "importOptions": {
-                        "autoStatus": "submitted",
+                        "autoStatus": {
+                            "fail": "submitted",
+                            "notapplicable": "submitted",
+                            "pass": "submitted",
+                        },
                         "unreviewed": "commented",
                         "unreviewedCommented": "informational",
                         "emptyDetail": "replace",
