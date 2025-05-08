@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "chai": "^5.2.0",
+    "chai-datetime": "^1.8.1",
     "mochawesome": "^7.1.3"
   }
 }

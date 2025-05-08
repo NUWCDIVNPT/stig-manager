@@ -73,6 +73,8 @@
 | Controls the granularity of the generated log output, from 1 to 4. Each level is inclusive of the ones before it. Level 1 will log only errors, level 2 includes warnings, level 3 includes status and transaction logs, and level 4 includes debug-level logs","API"
 "STIGMAN_LOG_MODE","| **Default** ``combined``
 | Controls whether the logs will create one “combined” log entry for http requests that includes both the request and response information; or two separate log entries, one for the request and one for the response, that can be correlated via a generated Request GUID in each entry","API"
+"STIGMAN_JWKS_CACHE_MAX_AGE","| **Default** ``10``
+| The time in minutes after which the API's cache of JWT signing keys is deemed stale and the API becomes unavailable. Cache refreshes are scheduled at intervals of half this value and also occur when an unknown signing key is presented. Scheduled refresh failures are retried every 10 seconds.","API"
 "STIGMAN_JWT_ASSERTION_CLAIM","| **Default** ``jti``
 | The access token claim whose value is the OIDC provider's Assertion ID. Updates to this value trigger the API to update a User's ``lastClaims`` property. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API"
 "STIGMAN_JWT_EMAIL_CLAIM","| **Default** ``email``
