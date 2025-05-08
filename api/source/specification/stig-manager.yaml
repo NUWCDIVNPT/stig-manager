@@ -6431,26 +6431,11 @@ components:
          - 'accepted': Set status to 'accepted' if the review is submittable, and User has permission to accept,  otherwise 'submitted'
       properties:
         fail:
-          type: string
-          enum:
-            - "null"
-            - saved
-            - submitted
-            - accepted
+          $ref: '#/components/schemas/ReviewStatusOption'
         notapplicable:
-          type: string
-          enum:
-            - "null"
-            - saved
-            - submitted
-            - accepted
+          $ref: '#/components/schemas/ReviewStatusOption'
         pass:
-          type: string
-          enum:
-            - "null"
-            - saved
-            - submitted
-            - accepted
+          $ref: '#/components/schemas/ReviewStatusOption'
       required:
       - fail
       - notapplicable
@@ -8135,6 +8120,13 @@ components:
         - text
         - user
         - ts
+    ReviewStatusOption:
+      enum:
+        - "null"
+        - saved
+        - submitted
+        - accepted
+      type: string
     ReviewStatusWrite:
       oneOf:
         - $ref: '#/components/schemas/ReviewStatusLabel'

@@ -684,7 +684,7 @@ SM.ReviewsImport.AutoStatusOpenComboBox = Ext.extend(SM.Global.HelperComboBox, {
         })
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.ReviewsImport.AutoStatusOpenComboBox.superclass.initComponent.call(this)
+        this.superclass().initComponent.call(this)
 
         this.store.loadData(data)
     }
@@ -719,8 +719,7 @@ SM.ReviewsImport.AutoStatusNotApplicableComboBox = Ext.extend(SM.Global.HelperCo
         })
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.ReviewsImport.AutoStatusNotApplicableComboBox.superclass.initComponent.call(this)
-
+        this.superclass().initComponent.call(this)
         this.store.loadData(data)
     }
 })
@@ -754,8 +753,7 @@ SM.ReviewsImport.AutoStatusPassComboBox = Ext.extend(SM.Global.HelperComboBox, {
         })
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.ReviewsImport.AutoStatusPassComboBox.superclass.initComponent.call(this)
-
+        this.superclass().initComponent.call(this)
         this.store.loadData(data)
     }
 })
@@ -859,7 +857,6 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
     initComponent: function () {
         const _this = this
         this.context = this.context ?? 'manage' // 'or 'wizard'
-        this.initialOptions = this.initialOptions
         this.autoStatusCombo = new SM.ReviewsImport.AutoStatusOpenComboBox({
             value: this.initialOptions.autoStatus.fail,
             name: 'autoStatus.fail',
@@ -884,7 +881,7 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
             name: 'autoStatus.pass',
             readOnly: this.context === 'wizard',
             canAccept: this.canAccept,
-            listeners: { 
+            listeners: {
                 select: onSelect
             }
         })
@@ -1040,7 +1037,6 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
         const config = {
             title: 'Import options',
             labelWidth: 200,
-            autoScroll: true,
             items
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -1480,7 +1476,7 @@ SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
         }
 
         this.parseOptionsFieldSet = new SM.ReviewsImport.ParseOptionsFieldSet({
-            height: 200,
+            height: 300,
             context: 'wizard',
             initialOptions: this.initialOptions,
             canAccept: this.canAccept
