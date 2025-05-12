@@ -1752,11 +1752,12 @@ a.x-menu-item {
 
 .x-combo-list {
     border-color: #3e4446;
-    background-color: #2b2f31
+    background-color: #2b2f31;
+    box-shadow: 0 0 5px 3px #2c2ab0;
 }
 
 .x-combo-list-inner {
-    background-color: #181a1b
+    background-color: #3a3b3c;
 }
 
 .x-combo-list-hd {
@@ -1774,7 +1775,7 @@ a.x-menu-item {
 }
 
 .x-combo-list .x-combo-selected {
-    background-color: #202325;
+    background-color: #626262;
     border-color: #655e53!important
 }
 
