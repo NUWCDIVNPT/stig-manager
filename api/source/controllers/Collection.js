@@ -35,7 +35,11 @@ module.exports.defaultSettings = {
     maxReviews: 5
   },
   importOptions:{
-    autoStatus: 'saved',
+    autoStatus: {
+      fail: 'saved',
+      notapplicable: 'saved',
+      pass: 'saved'
+    },
     unreviewed: 'commented',
     unreviewedCommented: 'informational',
     emptyDetail: 'replace',

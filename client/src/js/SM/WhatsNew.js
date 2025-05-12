@@ -2,6 +2,34 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2025-05-12',
+    header: `Set Review Status for Each Result Type`,
+    body: ` 
+      <p>
+      Collection Owners and Managers can now configure collection import options more granularly by specifying the desired Review Status for each result type—Fail, Not Applicable, and Pass. This allows for precise control over how imported review results are assigned statuses.
+    </p>
+
+    <p>You can configure separate status values for each result type:</p>
+
+    <ul>
+      <li><strong>Fail</strong></li>
+      <li><strong>Not Applicable</strong></li>
+      <li><strong>Pass</strong></li>
+    </ul>
+
+    <p>Each of these can be set to one of the following statuses:</p>
+
+    <ul>
+      <li><strong>Saved</strong></li>
+      <li><strong>Submitted</strong></li>
+      <li><strong>Accepted</strong></li>
+      <li><strong>Keep Existing</strong> (preserves the current Review Status if one exists)</li>
+    </ul>
+    <p><img src="img/whatsnew/2025-05-12-import-options.png" width=350/></p>
+    <p><img src="img/whatsnew/2025-05-12-import-options-additional.png" width=750/></p>
+    `
+  },
+  {
     date: '2025-04-17',
     header: `Create Assets in Bulk with a CSV File`,
     body: `
