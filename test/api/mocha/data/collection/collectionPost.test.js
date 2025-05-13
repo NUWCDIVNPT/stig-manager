@@ -124,7 +124,11 @@ describe('POST - Collection - not all tests run for all iterations', function ()
               maxReviews: 5
             },
             importOptions:{
-              autoStatus: 'saved',
+              autoStatus: {
+                fail: "saved",
+                notapplicable: "saved",
+                pass: "saved",
+              },
               unreviewed: 'commented',
               unreviewedCommented: 'informational',
               emptyDetail: 'replace',
@@ -172,7 +176,11 @@ describe('POST - Collection - not all tests run for all iterations', function ()
               maxReviews: 5
             },
             importOptions:{
-              autoStatus: 'saved',
+              autoStatus: {
+                fail: "saved",
+                notapplicable: "saved",
+                pass: "saved",
+              },
               unreviewed: 'commented',
               unreviewedCommented: 'informational',
               emptyDetail: 'replace',

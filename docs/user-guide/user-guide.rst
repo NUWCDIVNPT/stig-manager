@@ -1129,14 +1129,20 @@ Import Options
 ++++++++++++++++++++++++++++++++++++
 
 
-The options described below allow you to have fine-grained control over how the reviews from .ckl and XCCDF files are imported into your STIG Manager Collection.  The settings specified here will become the default behavior for all users importing results from files into STIG Manager.  **This includes any instances of the STIGMan Watcher utility that may be importing into your Collection.**  
+The options described below allow you to have fine-grained control over how the reviews from .ckl and XCCDF files are imported into your STIG Manager Collection.  The settings specified here will become the default behavior for all users importing results from files into the collection.  **This includes any instances of the STIGMan Watcher utility that may be importing into your Collection.**  
 
 These import setting preferences can be locked for your Collection, or you can allow other users to customize them as they see fit when they perform their own imports. 
 
+.. thumbnail:: /assets/images/collection-manage-review-import-options.png 
+      :width: 50% 
+      :show_caption: True
+      :title: Review Import Options Fields
+|
 
-If possible, set Review status to:
-  This setting allows you to set a "Goal" status for your review of Accepted, Submitted, Saved, OR, for existing reviews, to leave the status as it was, if possible. 
 
+Review Status Per Result:
+  This setting allows you to define the desired Review Status—Accepted, Submitted, Saved, or Keep Existing if possible (for existing reviews)—for each result type: Fail, Not Applicable, or Pass.
+  
   - **Keep Existing**: Keep the existing Status, if possible. New reviews are set to "Saved" status. The resulting Status will also take into consideration the "Reset to Saved" configuration that is set in the Review Status section of Collection Settings. 
   - **Accepted**: If importing user has the proper grant, set Review to "Accepted." If they cannot Accept, Reviews will be set to "Submitted." If review does not meet Submit requirements, Review will be set to "Saved."
   - **Submitted**: Set Review to "Submitted" status. If review does not meet Submit requirements, Review will be set to Saved.

@@ -660,7 +660,6 @@ SM.ReviewsImport.AutoStatusComboBox = Ext.extend(SM.Global.HelperComboBox, {
         const _this = this
         const config = {
             displayField: 'display',
-            fieldLabel: this.fieldLabel ?? 'If possible, set Review status to',
             valueField: 'value',
             triggerAction: 'all',
             mode: 'local',
@@ -671,7 +670,7 @@ SM.ReviewsImport.AutoStatusComboBox = Ext.extend(SM.Global.HelperComboBox, {
         const data = [
             ['null', 'Keep Existing'],
             ['saved', 'Saved'],
-            ['submitted', 'Submitted']
+            ['submitted', 'Submitted'],
         ]
         if (this.canAccept) {
             data.push(['accepted', 'Accepted'])
@@ -684,11 +683,12 @@ SM.ReviewsImport.AutoStatusComboBox = Ext.extend(SM.Global.HelperComboBox, {
         })
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
-        SM.ReviewsImport.AutoStatusComboBox.superclass.initComponent.call(this)
+        this.superclass().initComponent.call(this)
 
         this.store.loadData(data)
     }
 })
+
 SM.ReviewsImport.UnreviewedComboBox = Ext.extend(SM.Global.HelperComboBox, {
     initComponent: function () {
         const _this = this
@@ -781,22 +781,36 @@ SM.ReviewsImport.EmptyCommentComboBox = Ext.extend(SM.Global.HelperComboBox, {
         this.store.loadData(data)
     }
 })
-SM.ReviewsImport.DefaultOptions = {
-    autoStatus: 'saved',
-    unreviewed: 'commented',
-    unreviewedCommented: 'informational',
-    emptyDetail: 'replace',
-    emptyComment: 'ignore',
-    allowCustom: true
-}
+
 SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
     initComponent: function () {
         const _this = this
         this.context = this.context ?? 'manage' // 'or 'wizard'
-        this.initialOptions = {...SM.ReviewsImport.DefaultOptions, ...this.initialOptions}
         this.autoStatusCombo = new SM.ReviewsImport.AutoStatusComboBox({
-            value: this.initialOptions.autoStatus,
-            name: 'autoStatus',
+            value: this.initialOptions.autoStatus.fail,
+            name: 'autoStatus.fail',
+            fieldLabel: 'Fail',
+            readOnly: this.context === 'wizard',
+            canAccept: this.canAccept,
+            listeners: {
+                select: onSelect
+            }
+        })
+        this.autoStatusNotApplicable = new SM.ReviewsImport.AutoStatusComboBox({
+            value: this.initialOptions.autoStatus?.notapplicable,
+            name: 'autoStatus.notapplicable',
+            fieldLabel: 'Not Applicable',
+            readOnly: this.context === 'wizard',
+            canAccept: this.canAccept,
+            listeners: {
+                select: onSelect
+            }
+        })
+        
+        this.autoStatusPass = new SM.ReviewsImport.AutoStatusComboBox({
+            value: this.initialOptions.autoStatus?.pass,
+            name: 'autoStatus.pass',
+            fieldLabel: 'Pass',
             readOnly: this.context === 'wizard',
             canAccept: this.canAccept,
             listeners: {
@@ -838,8 +852,30 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
                 select: onSelect
             }
         })
+
+        this.autoStatusFieldGroup = new Ext.form.FieldSet({
+            title: 'Review Status Per Result',
+            border: true,
+            autoHeight: true,
+            layout: 'form',
+            readOnly: this.context === 'wizard',
+            labelWidth: 200,
+            items: [
+                this.autoStatusCombo,
+                this.autoStatusNotApplicable,
+                this.autoStatusPass
+            ]
+        })
+
+        this.autoStatusFieldGroup.setReadOnly = function (readOnly) {
+            _this.autoStatusCombo.setReadOnly(readOnly)
+            _this.autoStatusNotApplicable.setReadOnly(readOnly)
+            _this.autoStatusPass.setReadOnly(readOnly)
+        }
+        
+        
         this.optionComboBoxes = [
-            this.autoStatusCombo,
+            this.autoStatusFieldGroup,
             this.unreviewedCombo,
             this.unreviewedCommentedCombo,
             this.emptyDetailCombo,
@@ -895,14 +931,23 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
 
         this.restoreOptions = function (options = _this.initialOptions) {
             for (const combo of this.optionComboBoxes) {
-                combo.setValue(options[combo.name])
+                if (typeof combo.setValue === 'function') {
+                    combo.setValue(options[combo.name])
+                }
             }
             _this.unreviewedCommentedCombo.setDisabled(_this.unreviewedCombo.value === 'never')
+            _this.autoStatusCombo.setValue(options.autoStatus.fail)
+            _this.autoStatusNotApplicable.setValue(options.autoStatus.notapplicable)
+            _this.autoStatusPass.setValue(options.autoStatus.pass)
         }
 
         this.getOptions = function () {
             const options = {
-                autoStatus: _this.autoStatusCombo.value,
+                autoStatus: {
+                    fail: _this.autoStatusCombo.value,
+                    notapplicable: _this.autoStatusNotApplicable.value,
+                    pass: _this.autoStatusPass.value
+                },
                 unreviewed: _this.unreviewedCombo.value,
                 unreviewedCommented: _this.unreviewedCommentedCombo.value ,  
                 emptyDetail: _this.emptyDetailCombo.value,
@@ -916,7 +961,8 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
         if (this.context === 'wizard') {
             items.push(this.initialOptions.allowCustom ? this.customizeCb : this.noCustomizeDisplay)
         }
-        items.push(...this.optionComboBoxes)       
+        items.push(this.autoStatusFieldGroup, ...this.optionComboBoxes)
+
         if (this.context !== 'wizard') {
             items.push(this.allowCustomCb)
         }
@@ -1278,10 +1324,10 @@ SM.ReviewsImport.MultiSelectPanel = Ext.extend(Ext.Panel, {
     initComponent: function () {
         const _this = this
         this.parseOptionsFieldSet = new SM.ReviewsImport.ParseOptionsFieldSet({
-            height: 200,
+            height: 300,
             context: this.optionsContext,
             canAccept: true,
-            initialOptions: {...SM.ReviewsImport.DefaultOptions, ...this.initialOptions}
+            initialOptions: this.initialOptions,
         })
         this.selectFilesGrid = new SM.ReviewsImport.SelectFilesGrid({
             flex: 3,
@@ -1362,7 +1408,7 @@ SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
         }
 
         this.parseOptionsFieldSet = new SM.ReviewsImport.ParseOptionsFieldSet({
-            height: 200,
+            height: 300,
             context: 'wizard',
             initialOptions: this.initialOptions,
             canAccept: this.canAccept
@@ -1997,13 +2043,13 @@ async function showImportResultFiles(collectionId, createObjects = true) {
         const cachedCollection = SM.Cache.CollectionMap.get(collectionId)
         const userGrant = curUser.collectionGrants.find( i => i.collection.collectionId === cachedCollection.collectionId )?.roleId
         const canAccept = cachedCollection.settings.status.canAccept && (userGrant >= cachedCollection.settings.status.minAcceptGrant)
-        const initialOptions = cachedCollection.settings.importOptions ?? SM.ReviewsImport.DefaultOptions
+        const initialOptions = cachedCollection.settings.importOptions
         if (initialOptions?.autoStatus === 'accepted' && !canAccept) {
             initialOptions.autoStatus = 'submitted'
         }
 
         const vpSize = Ext.getBody().getViewSize()
-        let height = vpSize.height * 0.75
+        let height = vpSize.height * 0.85
         let width = vpSize.width * 0.75 <= 1024 ? vpSize.width * 0.75 : 1024
 
         const fp = new SM.ReviewsImport.MultiSelectPanel({
@@ -2434,13 +2480,13 @@ async function showImportResultFile(params) {
         const cachedCollection = SM.Cache.CollectionMap.get(params.collectionId)
         const userGrant = curUser.collectionGrants.find( i => i.collection.collectionId === cachedCollection.collectionId )?.roleId
         const canAccept = cachedCollection.settings.status.canAccept && (userGrant >= cachedCollection.settings.status.minAcceptGrant)
-        const initialOptions = cachedCollection.settings.importOptions ?? SM.ReviewsImport.DefaultOptions
+        const initialOptions = cachedCollection.settings.importOptions
         if (initialOptions?.autoStatus === 'accepted' && !canAccept) {
             initialOptions.autoStatus = 'submitted'
         }
 
         const vpSize = Ext.getBody().getViewSize()
-        let height = vpSize.height * 0.75
+        let height = vpSize.height * 0.85
         let width = vpSize.width * 0.75 <= 1024 ? vpSize.width * 0.75 : 1024
 
         const fp = new SM.ReviewsImport.SelectFilesPanel({
