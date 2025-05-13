@@ -1,3 +1,20 @@
+1.5.8
+-------
+
+Changes:
+
+  - (UI/API) feature: Offer granular import options to specify desired Status for each Result when importing Reviews
+  - (UI/Dependency) Update stig-manager-client-modules to 1.5.4 to support new import options
+  - (API) feature: New JWKS caching implementation to improve performance and resiliency when connection to OIDC provider is degraded
+  - (UI) fix: disappearing gear icon after modifying collection
+  - (UI) fix: use optional chaining in generateSharable in AppInfo
+  - (UI) fix: Collection Metapanel labels showing error when navigating directly to STIGs tab
+
+  Note 1: Update STIGMan Watcher to 1.5.2 to take advantage of new granular import options feature
+  Note 2: This release includes a database migration to support new features.
+  Note 3: API Breaking Change - The autoStatus property in Collection Settings Import Options has been expanded into an object to hold import preferences for each result type.
+
+
 1.5.7
 -------
 
@@ -13,6 +30,10 @@ Changes:
   - (API) bugfix: handle absent projection in getFindingsByCollection
   - (UI) Updated to stigman-client-modules v1.5.3 for new CSV parser and other bugfixes 
   - (UI/API) dependency updates
+
+  Note 1: This release includes a database migration to support new features.
+  Note 2: API Breaking Change - The API now stores Collection Import Options in the Collection Settings object rather than Collection Metadata.
+
 
 1.5.6
 -------
