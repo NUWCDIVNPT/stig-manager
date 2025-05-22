@@ -44,13 +44,24 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
       },
       {
         width: 25,
+        header: 'view', // not shown, used in cellclick handler
+        fixed: true,
+        dataIndex: 'none',
+        renderer: function (value, metadata, record) {
+          metadata.css = 'artifact-view'
+          metadata.attr = 'ext:qtip="View artifact"'
+          return ''
+        }
+      },
+      {
+        width: 25,
         header: 'download', // not shown, used in cellclick handler
         fixed: true,
         dataIndex: 'none',
         renderer: function (value, metadata, record) {
-          metadata.css = 'artifact-view';
-          metadata.attr = 'ext:qtip="View artifact"';
-          return '';
+          metadata.css = 'artifact-download'
+          metadata.attr = 'ext:qtip="Download artifact"'
+          return ''
         }
       },
       {
@@ -211,6 +222,24 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
        SM.Error.handleError(e)
       }
     }
+    const downloadArtifact = async function (artifactObj) {
+      try {
+        const imageB64 = await getMetadataValue(artifactObj.digest)
+        
+        // Create a link element for download
+        const link = document.createElement('a')
+        link.href = `data:${artifactObj.type};base64,${encodeURI(imageB64)}`
+        link.download = artifactObj.name
+        
+        // Append to document, trigger click, and remove
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      }
+      catch (e) {
+        SM.Error.handleError(e)
+      }
+    }
     const fileUploadField = new Ext.ux.form.FileUploadField({
       buttonOnly: true,
       accept: '.gif,.jpg,.jpeg,.svg,.png,.bmp',
@@ -254,12 +283,15 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
           var r = grid.getStore().getAt(rowIndex)
           var header = grid.getColumnModel().getColumnHeader(columnIndex)
           switch (header) {
-            case 'download':
+            case 'view':
               showImage(r.data)
-              break;
+              break
+            case 'download':
+              downloadArtifact(r.data)
+              break
             case 'delete':
               removeArtifact(r)
-              break;
+              break
           }
         }
       }
