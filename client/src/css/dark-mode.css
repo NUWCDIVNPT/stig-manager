@@ -3118,4 +3118,21 @@ embed[type="application/pdf"] {
 	border-radius: 5px;
 }
 
+.sm-cora-box-left {
+    background-color: #292C2E;
+    border: 1px solid #444;
+}
 
+.sm-cora-box-title {
+    color: white;
+}
+
+.sm-cora-cat {
+    border: 1px solid #444;
+}
+
+.sm-cora-box-right {
+    border: 1px solid #444;
+}
+
+  
