@@ -2470,3 +2470,123 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .sm-error-icon {
   background-image: url(../img/x-red-svg.svg);
 }
+
+.sm-cora-column {
+  width: 40px;
+  border-radius: 5px;
+  color: black;
+  font-weight: 500;
+  text-align: center;
+  margin: 0 auto;
+
+}
+
+.sm-cora-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.sm-cora-box-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #bbb;
+  width: fit-content;
+}
+
+.sm-cora-box-title {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+.sm-cora-cat {
+  color: black;
+  border-radius: 5px;
+  font-weight: 700;
+  padding: 4px 8px;
+  text-align: center;
+  border: 1px solid #bbb;
+}
+
+.sm-cat1 { background-color: hsl(0deg 36% 64%) }
+.sm-cat2 { background-color: hsl(38deg 56% 51%) }
+.sm-cat3 { background-color: hsl(230deg 41% 76%) }
+
+.sm-cora-box-right {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #bbb;
+  text-align: center;
+  width: 160px;
+}
+
+.sm-cora-score-header {
+  font-weight: 700;
+  font-size: 14px;
+  color: black;
+  margin-bottom: 3px;
+}
+
+.sm-cora-score-risk-level {
+  margin-top: 8px;
+  color: black;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sm-risk-indicator {
+  width: 60px;
+  height: 50px;
+  border-radius: 50%;
+  line-height: 50px;
+  margin: 5px auto;
+  font-weight: bold;
+  font-size: 14px;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.sm-cora-risk-very-low .sm-risk-indicator {
+  border: 3px solid rgb(0, 100, 0);
+} 
+
+.sm-cora-risk-low .sm-risk-indicator {
+  border: 3px solid rgb(14, 90, 161);
+}
+
+.sm-cora-risk-moderate .sm-risk-indicator {
+  border: 3px solid rgb(204, 153, 0);
+}
+
+.sm-cora-risk-high .sm-risk-indicator {
+  border: 3px solid rgb(146, 50, 18); 
+}
+
+.sm-cora-risk-very-high .sm-risk-indicator {
+  border: 3px solid rgb(88, 12, 21);
+}
+
+.sm-cora-risk-very-high { 
+  background-color: rgb(231 66 66);
+  color:rgb(88, 12, 21);
+ }
+.sm-cora-risk-high {
+  background-color: rgb(228 141 40);
+  color:rgb(146, 50, 18); 
+}
+.sm-cora-risk-moderate {
+  background-color:rgb(253, 251, 151);
+  color:rgb(204, 153, 0);
+}
+.sm-cora-risk-low {
+  background-color:rgb(132 190 244);
+  color:rgb(14, 90, 161);
+}
+.sm-cora-risk-very-low {
+  background-color:rgb(100 167 90);
+  color: rgb(0, 100, 0);
+}
+

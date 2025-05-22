@@ -607,3 +607,87 @@ function columnWrap(val, meta){
 	meta.css = 'sm-col-wrap'
 	return val
 }
+
+// quick access to css classes by risk rating
+function getRiskClass(riskRating) {
+  switch (riskRating) {
+    case 'Very High Risk': return 'sm-cora-risk-very-high';
+    case 'High Risk': return 'sm-cora-risk-high';
+    case 'Moderate Risk': return 'sm-cora-risk-moderate';
+    case 'Low Risk': return 'sm-cora-risk-low';
+    case 'Very Low Risk': return 'sm-cora-risk-very-low';
+  }
+}
+
+function calculateCoraRiskRating(metrics) {
+  const weights = {
+    catI: 10,
+    catII: 4,
+    catIII: 1
+  }
+
+  const totalWeight = weights.catI + weights.catII + weights.catIII
+
+  const assessments = metrics.assessmentsBySeverity
+  const assessed = metrics.assessedBySeverity
+  const findings = metrics.findings 
+
+  // CAT I (High)
+  const assignedHigh = assessments.high
+  const assessedHigh = assessed.high
+  const findingsHigh = findings.high
+  const rawCatI = assignedHigh > 0 ? ((assignedHigh - assessedHigh) + findingsHigh) / assignedHigh: 0
+  const weightedCatI = (rawCatI * weights.catI) / totalWeight
+
+  // CAT II (Medium)
+  const assignedMed = assessments.medium
+  const assessedMed = assessed.medium
+  const findingsMed = findings.medium
+  const rawCatII = assignedMed > 0 ? ((assignedMed - assessedMed) + findingsMed) / assignedMed: 0
+  const weightedCatII = (rawCatII * weights.catII) / totalWeight
+
+  // CAT III (Low)
+  const assignedLow = assessments.low
+  const assessedLow = assessed.low
+  const findingsLow = findings.low
+  const rawCatIII = assignedLow > 0 ? ((assignedLow - assessedLow) + findingsLow) / assignedLow : 0
+  const weightedCatIII = (rawCatIII * weights.catIII) / totalWeight
+
+  const weightedAvg = (
+    (rawCatI * weights.catI) +
+    (rawCatII * weights.catII) +
+    (rawCatIII * weights.catIII)
+  ) / totalWeight
+
+  let riskRating = ''
+
+  const isVeryLowRisk = rawCatI === 0 && rawCatII === 0 && rawCatIII === 0
+  const isLowRisk = rawCatI === 0 && rawCatII < 0.05 && rawCatIII < 0.05
+
+  if (isVeryLowRisk) {
+    riskRating = 'Very Low Risk'
+  } else if (isLowRisk) {
+    riskRating = 'Low Risk'
+  } else if (weightedAvg >= 0.2) {
+    riskRating = 'Very High Risk'
+  } else if (weightedAvg >= 0.1) {
+    riskRating = 'High Risk'
+  } else if (weightedAvg > 0) {
+    riskRating = 'Moderate Risk'
+  }
+
+  return {
+    weightedAvg,
+    riskRating,
+    percentages: {
+      catI: rawCatI,
+      catII: rawCatII,
+      catIII: rawCatIII
+    },
+    weightedContributions: {
+      catI: weightedCatI,
+      catII: weightedCatII,
+      catIII: weightedCatIII
+    }
+  }
+}
