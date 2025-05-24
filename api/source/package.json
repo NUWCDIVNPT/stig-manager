@@ -19,7 +19,7 @@
     "cors": "^2.8.5",
     "csv-stringify": "^6.5.1",
     "express": "^4.21.2",
-    "express-openapi-validator": "^5.3.5",
+    "express-openapi-validator": "^5.5.3",
     "fast-xml-parser": "^4.5.0",
     "he": "^1.2.0",
     "js-yaml": "^4.1.0",
