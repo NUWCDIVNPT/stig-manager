@@ -939,6 +939,40 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             expect(clonedCollection.grants).to.have.lengthOf(sourceCollection.grants.length)
             expect(clonedCollection.labels).to.have.lengthOf(sourceCollection.labels.length)
             expect(clonedCollection.owners).to.have.lengthOf(sourceCollection.owners.length)
+
+            const sourceMetricsResponse = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/metrics/detail`, 'GET', iteration.token)
+            expect(sourceMetricsResponse.status).to.eql(200)
+            const clonedMetricsResponse = await utils.executeRequest(`${config.baseUrl}/collections/${clonedCollectionId}/metrics/detail`, 'GET', iteration.token)
+            expect(clonedMetricsResponse.status).to.eql(200)
+            
+            // Normalize metrics responses by removing assetId, labelIds, and timestamp fields that are expected to differ
+            const normalizeMetrics = (metricsArray) => {
+              return metricsArray.map(item => {
+                const normalized = { ...item }
+                delete normalized.assetId
+                
+                // Remove labelId from labels array
+                if (normalized.labels && Array.isArray(normalized.labels)) {
+                  normalized.labels = normalized.labels.map(label => {
+                    const { labelId, ...labelWithoutId } = label
+                    return labelWithoutId
+                  })
+                }
+                
+                // Remove timestamp fields from metrics
+                if (normalized.metrics) {
+                  const { maxTs, minTs, maxTouchTs, ...metricsWithoutTs } = normalized.metrics
+                  normalized.metrics = metricsWithoutTs
+                }
+                
+                return normalized
+              })
+            }
+            
+            const normalizedSource = normalizeMetrics(sourceMetricsResponse.body)
+            const normalizedCloned = normalizeMetrics(clonedMetricsResponse.body)
+            expect(normalizedSource).to.deep.equalInAnyOrder(normalizedCloned)
+
           }
         })
       })
