@@ -400,24 +400,16 @@ async function addReview( params ) {
             // Create folder for this rule
             const ruleFolder = zip.folder(`Rule_${review.ruleId}`)
             
-            // Download each artifact
+            // Add each artifact to the rule folder
             for (const artifact of artifacts) {
               try {
-                // Get the artifact data using its digest
-                const artifactUrl = `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}/${review.ruleId}/metadata/keys/${artifact.digest}`
-                const artifactResponse = await fetch(artifactUrl, {
-                  method: 'GET',
-                  headers: new Headers({
-                    'Authorization': `Bearer ${window.oidcProvider.token}`
-                  })
-                })
-                
-                if (artifactResponse.ok) {
-                  const base64Data = await artifactResponse.text()
+                // Get the artifact data from metadata using the digest as key
+                const base64Data = review.metadata[artifact.digest]
+                if (base64Data) {
                   // Add file to the rule folder
                   ruleFolder.file(artifact.name, base64Data, { base64: true })
                 } else {
-                  console.warn(`Failed to fetch artifact ${artifact.name} for rule ${review.ruleId}`)
+                  console.warn(`No data found for artifact ${artifact.name} (digest: ${artifact.digest}) in rule ${review.ruleId}`)
                 }
               } catch (e) {
                 console.warn(`Error processing artifact ${artifact.name} for rule ${review.ruleId}:`, e)
@@ -439,7 +431,9 @@ async function addReview( params ) {
       
       // Generate and download the ZIP file
       const content = await zip.generateAsync({ type: 'blob' })
-      const filename = `${leaf.assetName}-${leaf.benchmarkId}-artifacts.zip`
+      const now = new Date()
+      const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}Z`
+      const filename = `${leaf.assetName}-${leaf.benchmarkId}-artifacts_${timestamp}.zip`
       saveAs(content, filename)
       
     } catch (e) {
