@@ -194,7 +194,7 @@ async function addReview( params ) {
       {
         text: 'Export to file',
         iconCls: 'sm-export-icon',
-        tooltip: 'Download this checklist and/or artifacts',
+        tooltip: 'Download this checklist and/or attachments',
         hideOnClick: false,
         menu: {
           items: [
@@ -331,9 +331,9 @@ async function addReview( params ) {
             },
             '-',
             {
-              text: 'Archive with CKL + Artifacts',
+              text: 'Archive with CKL + Attachments',
               iconCls: 'sm-export-icon',
-              tooltip: 'Download checklist in CKL format with artifacts in a ZIP archive',
+              tooltip: 'Download checklist in CKL format with attachments in a ZIP archive',
               handler: async function (item, eventObject) {
                 try {
                   document.body.style.cursor = 'wait'
@@ -347,9 +347,9 @@ async function addReview( params ) {
               }
             },
             {
-              text: 'Archive with CKLB + Artifacts',
+              text: 'Archive with CKLB + Attachments',
               iconCls: 'sm-export-icon',
-              tooltip: 'Download checklist in CKLB format with artifacts in a ZIP archive',
+              tooltip: 'Download checklist in CKLB format with attachments in a ZIP archive',
               handler: async function (item, eventObject) {
                 try {
                   document.body.style.cursor = 'wait'
@@ -363,9 +363,9 @@ async function addReview( params ) {
               }
             },
             {
-              text: 'Archive with XCCDF + Artifacts',
+              text: 'Archive with XCCDF + Attachments',
               iconCls: 'sm-export-icon',
-              tooltip: 'Download checklist in XCCDF format with artifacts in a ZIP archive',
+              tooltip: 'Download checklist in XCCDF format with attachments in a ZIP archive',
               handler: async function (item, eventObject) {
                 try {
                   document.body.style.cursor = 'wait'
@@ -380,7 +380,7 @@ async function addReview( params ) {
             },
             '-',
             {
-              text: 'Artifacts Only',
+              text: 'Attachments Only',
               iconCls: 'sm-export-icon',
               tooltip: 'Download all review attachments as a ZIP archive',
               handler: async function () {
@@ -461,8 +461,8 @@ async function addReview( params ) {
       const reviews = await reviewsResponse.json()
       let hasArtifacts = false
       
-      // Create an "artifacts" folder in the ZIP
-      const artifactsFolder = zip.folder('artifacts')
+      // Create an "attachments" folder in the ZIP
+      const artifactsFolder = zip.folder('attachments')
       
       // Process each review that has artifacts
       for (const review of reviews) {
@@ -477,7 +477,7 @@ async function addReview( params ) {
           
           if (artifacts && artifacts.length > 0) {
             hasArtifacts = true
-            // Create folder for this rule within artifacts folder
+            // Create folder for this rule within attachments folder
             const ruleFolder = artifactsFolder.folder(`Rule_${review.ruleId}`)
             
             // Add each artifact to the rule folder
@@ -503,7 +503,7 @@ async function addReview( params ) {
       const content = await zip.generateAsync({ type: 'blob' })
       const now = new Date()
       const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}Z`
-      const suffix = hasArtifacts ? `${format}-with-artifacts` : format
+      const suffix = hasArtifacts ? `${format}-with-attachments` : format
       const filename = `${leaf.assetName}-${leaf.benchmarkId}-${suffix}_${timestamp}.zip`
       saveAs(content, filename)
       
@@ -574,8 +574,8 @@ async function addReview( params ) {
       
       if (!hasArtifacts) {
         Ext.Msg.show({
-          title: 'No Artifacts',
-          msg: 'No artifacts found for this checklist.',
+          title: 'No Attachments',
+          msg: 'No attachments found for this checklist.',
           buttons: Ext.Msg.OK,
         })
         return
@@ -585,7 +585,7 @@ async function addReview( params ) {
       const content = await zip.generateAsync({ type: 'blob' })
       const now = new Date()
       const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}Z`
-      const filename = `${leaf.assetName}-${leaf.benchmarkId}-artifacts_${timestamp}.zip`
+      const filename = `${leaf.assetName}-${leaf.benchmarkId}-attachments_${timestamp}.zip`
       saveAs(content, filename)
       
     } catch (e) {
