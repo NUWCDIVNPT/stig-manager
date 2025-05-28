@@ -1332,6 +1332,7 @@ exports.checkRuleByAssetUser = async function ({ruleId, assetId, collectionId, g
       left join rev_group_rule_map rgr using (revId)
     where 
       a.assetId = ?
+      and a.state = 'enabled'
       and rgr.ruleId = ?
       ${checkWritable ? "and coalesce(cae.access, 'rw') = 'rw'" : ''}
       ${collectionId ? "and a.collectionId = ?" : ''}`
