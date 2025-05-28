@@ -103,7 +103,7 @@ SM.TipContent.ImportFromCollectionPanel = `Will not create new Assets or STIG as
 SM.TipContent.ImportFromCollectionManager = `Will create new Assets and STIG assignments if they do not exist in this Collection.`
 
 SM.TipContent.CORA =`
- <b>RiskRating</b> is calculated from the <b>WeightedAvg</b> percentage, which reflects the number and severity of <i>open</i> or <i>not reviewed</i> rules.<br>
+ <b>Risk Rating</b> is calculated from the <b>WeightedAvg</b> percentage, which reflects the number and severity of <i>open</i> or <i>not reviewed</i> rules.<br>
 
   <b>Unreviewed rules</b> are treated as <i>open</i>.<br><br>
   Each severity category (CAT I, II, III) contributes to the score using weighted math:<br><br>
