@@ -333,6 +333,22 @@ async function addReview( params ) {
         }
       },
       {
+        text: 'Export Artifacts...',
+        iconCls: 'sm-export-icon',
+        tooltip: 'Download all review attachments as a ZIP archive',
+        handler: async function () {
+          try {
+            document.body.style.cursor = 'wait'
+            await exportArtifacts(leaf)
+            document.body.style.cursor = 'default'
+          }
+          catch (e) {
+            document.body.style.cursor = 'default'
+            SM.Error.handleError(e)
+          }
+        }
+      },
+      {
         text: 'Import Results...',
         ref: 'importItem',
         iconCls: 'sm-import-icon',
@@ -342,6 +358,94 @@ async function addReview( params ) {
       }
     ]
   });
+
+  /******************************************************/
+  // Export Artifacts function
+  /******************************************************/
+  async function exportArtifacts(leaf) {
+    try {
+      // Fetch all reviews for this asset with metadata projection
+      await window.oidcProvider.updateToken(10)
+      const url = `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}?benchmarkId=${leaf.benchmarkId}&projection=metadata`
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: new Headers({
+          'Authorization': `Bearer ${window.oidcProvider.token}`
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch reviews: ${response.statusText}`)
+      }
+      
+      const reviews = await response.json()
+      
+      // Create a new ZIP file
+      const zip = new JSZip()
+      let hasArtifacts = false
+      
+      // Process each review that has artifacts
+      for (const review of reviews) {
+        if (review.metadata && review.metadata.artifacts) {
+          let artifacts
+          try {
+            artifacts = JSON.parse(review.metadata.artifacts)
+          } catch (e) {
+            console.warn(`Failed to parse artifacts for rule ${review.ruleId}:`, e)
+            continue
+          }
+          
+          if (artifacts && artifacts.length > 0) {
+            hasArtifacts = true
+            // Create folder for this rule
+            const ruleFolder = zip.folder(`Rule_${review.ruleId}`)
+            
+            // Download each artifact
+            for (const artifact of artifacts) {
+              try {
+                // Get the artifact data using its digest
+                const artifactUrl = `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}/${review.ruleId}/metadata/keys/${artifact.digest}`
+                const artifactResponse = await fetch(artifactUrl, {
+                  method: 'GET',
+                  headers: new Headers({
+                    'Authorization': `Bearer ${window.oidcProvider.token}`
+                  })
+                })
+                
+                if (artifactResponse.ok) {
+                  const base64Data = await artifactResponse.text()
+                  // Add file to the rule folder
+                  ruleFolder.file(artifact.name, base64Data, { base64: true })
+                } else {
+                  console.warn(`Failed to fetch artifact ${artifact.name} for rule ${review.ruleId}`)
+                }
+              } catch (e) {
+                console.warn(`Error processing artifact ${artifact.name} for rule ${review.ruleId}:`, e)
+              }
+            }
+          }
+        }
+      }
+      
+      if (!hasArtifacts) {
+        SM.Msg.show({
+          title: 'No Artifacts',
+          msg: 'No artifacts found for this checklist.',
+          buttons: SM.Msg.OK,
+          icon: SM.Msg.INFO
+        })
+        return
+      }
+      
+      // Generate and download the ZIP file
+      const content = await zip.generateAsync({ type: 'blob' })
+      const filename = `${leaf.assetName}-${leaf.benchmarkId}-artifacts.zip`
+      saveAs(content, filename)
+      
+    } catch (e) {
+      throw new Error(`Failed to export artifacts: ${e.message}`)
+    }
+  }
 
   /******************************************************/
   // Group grid statistics string
