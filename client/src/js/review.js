@@ -976,95 +976,104 @@ async function addReview( params ) {
     '</tpl>'
   )
 
-  otherGrid.on('rowdblclick', function(grid, rowIndex, e) {
-    const record = grid.getStore().getAt(rowIndex)
-    const resultMap = {
-      pass: 'Not a Finding',
-      notapplicable: 'Not Applicable',
-      fail: 'Open',
-      informational: 'Informational',
-      notchecked: 'Not Reviewed'
-    }
-    const data = record.json
-    const html = `
-      <div class="sm-round-panel">
-        <div class="sm-review-form" style="font-size: 13px;">
 
-          <fieldset style="margin-bottom: 10px; padding: 12px; border-radius: 8px; border: 1px solid #3e4446;">
-            <legend style="font-weight: bold; color: hsl(0deg 0% 57%); padding: 0 6px;">Evaluation</legend>
-            <div style="margin-bottom: 12px;">
-              <label style="display: inline-block; width: 45px; font-weight: bold; color: #ccc;">Result:</label>
-                <span>${resultMap[data.result]}</span>
-            </div>
+  otherGrid.on('rowdblclick', function (grid, rowIndex, e) {
+  const record = grid.getStore().getAt(rowIndex)
+  const data = record.json
 
-            ${data.detail ? `
-              <div style="margin-bottom: 6px;">
-                <label style="display: inline-block;width: 50px; font-weight: bold; color: #ccc;">Detail:</label>
-                <div style="border: 1px solid #444; padding: 8px; border-radius: 6px; height: 200px; overflow: auto;">
-                  ${data.detail}
-                </div>
-              </div>
-            ` : ''}
+  const resultMap = {
+    pass: 'Not a Finding',
+    notapplicable: 'Not Applicable',
+    fail: 'Open',
+    informational: 'Informational',
+    notchecked: 'Not Reviewed'
+  }
 
-            ${data.comment ? `
-              <div style="margin-bottom: 6px;">
-                <label style="display: inline-block;width: 50px; font-weight: bold; color: #ccc;">Comment:</label>
-                <div style="border: 1px solid #444; padding: 8px; border-radius: 6px; height: 200px; overflow: auto;">
-                  ${data.comment}
-                </div>
-              </div>
-            ` : ''}
-          </fieldset>
-
-          <fieldset style="margin-bottom: 6px; padding: 10px; border-radius: 8px; border: 1px solid #3e4446; ">
-            <legend style="font-weight: bold; color: hsl(0deg 0% 57%);">Attributions</legend>
-            <div style="margin-bottom: 12px;">
-              <label style="display: inline-block; width: 70px; font-weight: bold;">Evaluated:</label>
-              <span class="sm-review-sprite sm-review-sprite-date">${formatDate(data.ts)}</span>
-              <span class="sm-review-sprite sm-review-sprite-user">${data.username}</span>
-              <span class="sm-review-sprite sm-review-sprite-rule">${data.ruleId}</span>
-            </div>
-
-            <div style="margin-bottom: 8px;">
-              <label style="display: inline-block; width: 70px; font-weight: bold;">Statused:</label>
-              <span class="sm-review-sprite sm-review-sprite-date">${formatDate(data.touchTs)}</span>
-              <span class="sm-review-sprite sm-review-sprite-user">${data.username}</span>
-              <span class="sm-review-sprite sm-review-sprite-${data.status.label}"></span>
-            </div>
-          </fieldset>
-        </div>
-      </div>
-    `
-
-    function formatDate(dateString) {
-      if( !dateString ) {
-        return '-'
+  const resultDisplay = resultMap[data.result] || data.result || '-'
+  const formPanel = new Ext.FormPanel({
+    bodyStyle: 'padding: 12px; font-size: 13px;',
+    autoScroll: true,
+    defaults: {
+      anchor: '100%',
+      labelWidth: 60,
+      labelStyle: 'font-weight:bold; color: #ccc;',
+    },
+    items: [
+      {
+        xtype: 'fieldset',
+        title: 'Evaluation',
+        style: 'margin-bottom: 10px; padding: 10px; border-radius: 8px; border: 1px solid #3e4446;',
+        items: [
+          {
+            xtype: 'displayfield',
+            fieldLabel: 'Result',
+            value: resultDisplay,
+            style: 'margin-bottom: 12px;'
+          },
+          new SM.Review.Form.DetailTextArea({
+            fieldLabel: 'Detail',
+            value: data.detail,
+            readOnly: true,
+            style: 'margin-bottom: 12px; padding: 6px; height: 200px; overflow: auto; width: 570px;'
+          }),
+          new SM.Review.Form.CommentTextArea({
+            fieldLabel: 'Comment',
+            value: data.comment,
+            readOnly: true,
+            style: 'margin-bottom: 12px; padding: 6px; height: 200px; overflow: auto; width: 570px'
+          })
+        ]
+      },
+      {
+        xtype: 'fieldset',
+        title: 'Attributions',
+        style: 'margin-bottom: 6px; padding: 10px; border-radius: 8px; border: 1px solid #3e4446;',
+        items: [
+          new SM.Review.Form.EvaluatedAttributions({
+            value: {
+              ts: data.ts,
+              username: data.username,
+              ruleId: data.ruleId,
+              ruleIds: data.ruleIds || []
+            },
+            style: 'margin-bottom: 8px;'
+          }),
+          new SM.Review.Form.StatusedAttributions({
+            value: {
+              ts: data.touchTs,
+              user: { username: data.username },
+              label: data.status.label
+            },
+            style: 'margin-bottom: 8px;'
+          })
+        ]
       }
-      const d = new Date(dateString)
-      return Ext.util.Format.date(d,'Y-m-d H:i T')
-    }
+    ]
+  })
 
-    const win = new Ext.Window({
-      title: `Review on ${data.assetName}`,
-      modal: true,
-      width: 700,
-      height: 800,
-      layout: 'fit',
-      padding: 20,
-      autoScroll: true,
-      cls: 'sm-round-panel',
-      bodyCssClass: 'sm-review-form',
-      footerCssClass: 'sm-review-footer',
-      html: html,
-      buttons: [{
+  const win = new Ext.Window({
+    title: `Review on ${data.assetName}`,
+    modal: true,
+    width: 700,
+    height: 760,
+    layout: 'fit',
+    autoScroll: true,
+    cls: 'sm-round-panel',
+    bodyCssClass: 'sm-review-form',
+    footerCssClass: 'sm-review-footer',
+    items: [formPanel],
+    buttons: [
+      {
         text: 'Close',
-        handler: function() {
+        handler: function () {
           win.close()
         }
-      }]
-    })
-    win.show()
+      }
+    ]
   })
+  win.show()
+  })
+
 
   otherGrid.on('render', function (grid) {
     const store = grid.getStore()  
