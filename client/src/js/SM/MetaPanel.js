@@ -12,18 +12,6 @@ SM.MetaPanel.CommonColumns = [
     renderer: SM.MetaPanel.numberRenderer
   },
   {
-    header: "CORA",
-    width: 50,
-    align: "center",
-    dataIndex: 'coraScore',
-    sortable: true,
-    renderer: function (v, md, r) {
-      const detailedCora = r.get('coraScoreDetail')
-      let riskClass = getRiskClass(detailedCora.riskRating)
-      return `<div class="sm-cora-column ${riskClass}" style="color: black">${(detailedCora.weightedAvg * 100).toFixed(1)}%</div>`
-    }
-  },
-  {
     header: 'Oldest',
     width: 50,
     dataIndex: 'minTs',
@@ -78,6 +66,18 @@ SM.MetaPanel.CommonColumns = [
     // align: "center",
     sortable: true,
     renderer: renderPctAllHigh
+  },
+  {
+    header: "CORA %",
+    width: 50,
+    align: "center",
+    dataIndex: 'coraScore',
+    sortable: true,
+    renderer: function (v, md, r) {
+      const detailedCora = r.get('coraScoreDetail')
+      let riskClass = getRiskClass(detailedCora.riskRating)
+      return `<div class="sm-cora-column ${riskClass}">${(detailedCora.weightedAvg * 100).toFixed(1)}</div>`
+    }
   },
   {
     header: "CAT 3",
@@ -851,93 +851,6 @@ SM.MetaPanel.FindingsPanel = Ext.extend(Ext.Panel, {
   }
 })
 
-SM.MetaPanel.CORAPanel = Ext.extend(Ext.Panel, {
-  initComponent: function () {
-    const _this = this
-    
-    _this.helpIconTooltip = null
-
-    _this.tpl = new Ext.XTemplate(
-      '<div class="sm-cora-container">',
-        '<div class="sm-cora-box-left">',
-          '<div class="sm-cora-box-title">Open or Not Reviewed</div>',
-          '<div class="sm-cora-cat sm-cat1">CAT 1: {catI}</div>',
-          '<div class="sm-cora-cat sm-cat2">CAT 2: {catII}</div>',
-          '<div class="sm-cora-cat sm-cat3">CAT 3: {catIII}</div>',
-        '</div>',
-        '<div class="sm-cora-box-right {riskClass}">',
-          '<div class="sm-cora-score-header">',
-            'CORA Risk Score ',
-          '</div>',
-          '<div class="sm-risk-indicator">{weightedAvg}%</div>',
-          '<div class="sm-cora-score-risk-level">',
-            '<div>{riskRating}</div>',
-          '</div>',
-        '</div>',
-      '</div>'
-    )
-
-    const htmlContainer = new Ext.BoxComponent({
-      tpl: _this.tpl,
-      data: this.data
-    })
-
-    Ext.apply(this, {
-      title: 'CORA' +  '&nbsp; <i class="fa fa-question-circle sm-question-circle"></i>', 
-      items: [htmlContainer],
-      listeners: {
-        afterrender: function() {
-          _this.createTooltips()
-        }
-      }
-    })
-
-    _this.createTooltips = function() {
-      setTimeout(function() {
-        const helpIcon = _this.getEl().select('.sm-question-circle').first()
-        if (helpIcon) {
-          _this.helpIconTooltip = new Ext.ToolTip({
-            target: helpIcon,
-            html: SM.TipContent.CORA,
-            showDelay: 0,
-            hideDelay: 0,
-            autoWidth: true,
-          })
-        }
-      }, 150)
-    }
-
-    _this.updateMetrics = function (metrics) {
-      const coraMetrics = calculateCoraRiskRating(metrics)
-
-      const riskClass = getRiskClass(coraMetrics.riskRating)
-      const { assessmentsBySeverity, assessedBySeverity, findings } = metrics
-
-      function getUnreviewedOrOpen(sev) {
-        return (assessmentsBySeverity[sev] - assessedBySeverity[sev]) + findings[sev]
-      }
-
-      const data = {
-        riskRating: coraMetrics.riskRating,
-        weightedAvg: (coraMetrics.weightedAvg * 100).toFixed(1),
-        catI: getUnreviewedOrOpen('high'),
-        catII: getUnreviewedOrOpen('medium'),
-        catIII: getUnreviewedOrOpen('low'),
-        riskClass
-      }
-
-      htmlContainer.tpl.overwrite(htmlContainer.getEl(), data)
-      if (_this.helpIconTooltip) {
-        _this.helpIconTooltip.destroy()
-      }
-      _this.createTooltips()
-    }
-    this.superclass().initComponent.call(this)
-  }
-})
-
-
-
 SM.MetaPanel.ExportPanel = Ext.extend(Ext.Panel, {
   initComponent: function () {
     const _this = this
@@ -1140,7 +1053,7 @@ SM.MetaPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       toolTemplate,
       border: true
     })
-    this.coraPanel = new SM.MetaPanel.CORAPanel({
+    this.coraPanel = new SM.CollectionPanel.CORAPanel({
       cls: 'sm-round-inner-panel',
       bodyStyle: 'padding: 10px;',
       title: 'CORA',
@@ -1225,8 +1138,8 @@ SM.MetaPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       toolTemplate,
       items: [
         this.progressPanel,
-        this.inventoryPanel,
         this.coraPanel,
+        this.inventoryPanel,
         this.findingsPanel,
         this.agesPanel,
         this.exportPanel

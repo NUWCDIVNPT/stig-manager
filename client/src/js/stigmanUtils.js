@@ -611,11 +611,11 @@ function columnWrap(val, meta){
 // quick access to css classes by risk rating
 function getRiskClass(riskRating) {
   switch (riskRating) {
-    case 'Very High Risk': return 'sm-cora-risk-very-high';
-    case 'High Risk': return 'sm-cora-risk-high';
-    case 'Moderate Risk': return 'sm-cora-risk-moderate';
-    case 'Low Risk': return 'sm-cora-risk-low';
-    case 'Very Low Risk': return 'sm-cora-risk-very-low';
+    case 'Very High': return 'sm-cora-risk-very-high';
+    case 'High': return 'sm-cora-risk-high';
+    case 'Moderate': return 'sm-cora-risk-moderate';
+    case 'Low': return 'sm-cora-risk-low';
+    case 'Very Low': return 'sm-cora-risk-very-low';
   }
 }
 
@@ -678,15 +678,15 @@ function calculateCoraRiskRating(metrics) {
   const isLowRisk = rawCatI === 0 && rawCatII < 0.05 && rawCatIII < 0.05
 
   if (isVeryLowRisk) {
-    riskRating = 'Very Low Risk'
+    riskRating = 'Very Low'
   } else if (isLowRisk) {
-    riskRating = 'Low Risk'
+    riskRating = 'Low'
   } else if (weightedAvg >= 0.2) {
-    riskRating = 'Very High Risk'
+    riskRating = 'Very High'
   } else if (weightedAvg >= 0.1) {
-    riskRating = 'High Risk'
+    riskRating = 'High'
   } else if (weightedAvg > 0) {
-    riskRating = 'Moderate Risk'
+    riskRating = 'Moderate'
   }
 
   return {

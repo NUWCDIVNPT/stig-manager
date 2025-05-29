@@ -135,18 +135,6 @@ SM.CollectionPanel.CommonColumns = [
     sortable: true
   },
   {
-    header: "CORA",
-    width: 50,
-    align: "center",
-    dataIndex: 'coraScore',
-    sortable: true,
-    renderer: function (v, md, r) {
-      const detailedCora = r.get('coraScoreDetail')
-      let riskClass = getRiskClass(detailedCora.riskRating)
-      return `<div class="sm-cora-column ${riskClass}" style="color: black">${(detailedCora.weightedAvg * 100).toFixed(1)}%</div>`
-    }
-  },
-  {
     header: 'Oldest',
     width: 50,
     dataIndex: 'minTs',
@@ -201,6 +189,18 @@ SM.CollectionPanel.CommonColumns = [
     // align: "center",
     sortable: true,
     renderer: renderPctAllHigh
+  },
+  {
+    header: "CORA %",
+    width: 50,
+    align: "center",
+    dataIndex: 'coraScore',
+    sortable: true,
+    renderer: function (v, md, r) {
+      const detailedCora = r.get('coraScoreDetail')
+      let riskClass = getRiskClass(detailedCora.riskRating)
+      return `<div class="sm-cora-column ${riskClass}">${(detailedCora.weightedAvg * 100).toFixed(1)}</div>`
+    }
   },
   {
     header: "CAT 3",
@@ -507,6 +507,8 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
         emptyText: this.emptyText || 'No records to display',
         deferEmptyText: false,
         forceFit: true,
+        forceFitMin: 900,
+        forceFitMax: 2500,
         cellSelectorDepth: 5,
         // custom row height
         rowHeight: 21,
@@ -518,7 +520,97 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
           filterschanged: function (view, item, value) {
             store.filter(view.getFilterFns())
           }
-        }
+        },
+                initElements : function() {
+          var Element  = Ext.Element,
+              el       = Ext.get(this.grid.getGridEl().dom.firstChild),
+              mainWrap = new Element(el.child('div.x-grid3-viewport')),
+              mainHd   = new Element(mainWrap.child('div.x-grid3-header')),
+              scroller = new Element(mainWrap.child('div.x-grid3-scroller'));
+          
+          if (this.grid.hideHeaders) {
+              mainHd.setDisplayed(false);
+          }
+          
+          if (this.forceFit) {
+              scroller.setStyle('overflow-x', 'auto');
+          }
+          
+          /**
+           * <i>Read-only</i>. The GridView's body Element which encapsulates all rows in the Grid.
+           * This {@link Ext.Element Element} is only available after the GridPanel has been rendered.
+           * @type Ext.Element
+           * @property mainBody
+           */
+          
+          Ext.apply(this, {
+              el      : el,
+              mainWrap: mainWrap,
+              scroller: scroller,
+              mainHd  : mainHd,
+              innerHd : mainHd.child('div.x-grid3-header-inner').dom,
+              mainBody: new Element(Element.fly(scroller).child('div.x-grid3-body')),
+              focusEl : new Element(Element.fly(scroller).child('a')),
+              
+              resizeMarker: new Element(el.child('div.x-grid3-resize-marker')),
+              resizeProxy : new Element(el.child('div.x-grid3-resize-proxy'))
+          });
+          
+          this.focusEl.swallowEvent('click', true);
+        },
+        layout : function(initial) {
+          if (!this.mainBody) {
+              return; // not rendered
+          }
+
+          var grid       = this.grid,
+              gridEl     = grid.getGridEl(),
+              gridSize   = gridEl.getSize(true),
+              gridWidth  = gridSize.width,
+              gridHeight = gridSize.height,
+              scroller   = this.scroller,
+              scrollStyle, headerHeight, scrollHeight;
+          
+          if (gridWidth < 20 || gridHeight < 20) {
+              return;
+          }
+          
+          if (grid.autoHeight) {
+              scrollStyle = scroller.dom.style;
+              scrollStyle.overflow = 'visible';
+              
+              if (Ext.isWebKit) {
+                  scrollStyle.position = 'static';
+              }
+          } else {
+              this.el.setSize(gridWidth, gridHeight);
+              
+              headerHeight = this.mainHd.getHeight();
+              scrollHeight = gridHeight - headerHeight;
+              
+              scroller.setSize(gridWidth, scrollHeight);
+              
+              if (this.innerHd) {
+                  this.innerHd.style.width = (gridWidth) + "px";
+              }
+          }
+          
+          if (this.forceFit && (gridWidth > this.forceFitMin  && gridWidth < this.forceFitMax )|| (initial === true && this.autoFill)) {
+            // if (this.forceFitMin > gridWidth && this.forceFitMax < gridWidth) {
+            //   scroller.setStyle('overflow-x', 'auto')
+            // }
+              if (this.lastViewWidth != gridWidth) {
+                  this.fitColumns(false, false);
+                  this.lastViewWidth = gridWidth;
+              }
+          } else {
+              this.autoExpand();
+              this.syncHeaderScroll();
+          }
+          
+          this.onLayout(gridWidth, scrollHeight);
+        },
+
       }),
       bbar: new Ext.Toolbar({
         items: [
@@ -722,6 +814,8 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
         emptyText: this.emptyText || 'No records to display',
         deferEmptyText: false,
         forceFit: true,
+        forceFitMin: 1000,
+        forceFitMax: 2500,
         cellSelectorDepth: 5,
         // custom row height
         rowHeight: 21,
@@ -1237,14 +1331,14 @@ SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
     _this.tpl = new Ext.XTemplate(
       '<div class="sm-cora-container">',
         '<div class="sm-cora-box-left">',
-          '<div class="sm-cora-box-title">Open or Not Reviewed</div>',
-          '<div class="sm-cora-cat sm-cat1">CAT 1: {catI}</div>',
-          '<div class="sm-cora-cat sm-cat2">CAT 2: {catII}</div>',
-          '<div class="sm-cora-cat sm-cat3">CAT 3: {catIII}</div>',
+          '<div class="sm-cora-box-title">Open or Unassessed</div>',
+          '<div class="sm-cora-cat sm-cat1">{catI}</div>',
+          '<div class="sm-cora-cat sm-cat2">{catII}</div>',
+          '<div class="sm-cora-cat sm-cat3">{catIII}</div>',
         '</div>',
         '<div class="sm-cora-box-right {riskClass}">',
           '<div class="sm-cora-score-header">',
-            'CORA Risk Score ',
+            'CORA Risk',
           '</div>',
           '<div class="sm-risk-indicator">{weightedAvg}%</div>',
           '<div class="sm-cora-score-risk-level">',
@@ -1260,7 +1354,7 @@ SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
     })
 
     Ext.apply(this, {
-      title: 'CORA' +  '&nbsp; <i class="fa fa-question-circle sm-question-circle"></i>', 
+      title: 'CORA' +  '<i class="fa fa-question-circle sm-question-circle"></i>', 
       items: [htmlContainer],
       listeners: {
         afterrender: function() {
@@ -1278,6 +1372,7 @@ SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
             html: SM.TipContent.CORA,
             showDelay: 0,
             hideDelay: 0,
+            dismissDelay: 0,
             autoWidth: true,
           })
         }
@@ -1433,8 +1528,8 @@ SM.CollectionPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       toolTemplate,
       items: [
         this.progressPanel,
-        this.inventoryPanel,
         this.coraPanel,
+        this.inventoryPanel,
         this.findingsPanel,
         this.agesPanel,
         this.exportPanel

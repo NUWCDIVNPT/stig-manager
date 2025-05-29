@@ -103,6 +103,7 @@ SM.TipContent.ImportFromCollectionPanel = `Will not create new Assets or STIG as
 SM.TipContent.ImportFromCollectionManager = `Will create new Assets and STIG assignments if they do not exist in this Collection.`
 
 SM.TipContent.CORA =`
+ <b>Cyber Operational Readiness Assessment (CORA)</b> evaluates the effectiveness of security controls and operational processes.<br><br>
  <b>Risk Rating</b> is calculated from the <b>WeightedAvg</b> percentage, which reflects the number and severity of <i>open</i> or <i>not reviewed</i> rules.<br>
 
   <b>Unreviewed rules</b> are treated as <i>open</i>.<br><br>
@@ -114,10 +115,10 @@ SM.TipContent.CORA =`
   - <code>wₙ</code> = weight (CAT I = 10, CAT II = 4, CAT III = 1)<br><br>
   The resulting weighted average determines the Risk Rating:<br>
   <ul style="padding-left: 16px; margin: 4px 0;">
-    <li><span style="color: rgb(231 66 66);"><b>Very High Risk</b></span>: ≥ 20%</li>
-    <li><span style="color: rgb(228 141 40);"><b>High Risk</b></span>: ≥ 10% and &lt; 20%</li>
-    <li><span style="color: rgb(253, 251, 151);"><b>Moderate Risk</b></span>: &gt; 0% and &lt; 10%</li>
-    <li><span style="color: rgb(132 190 244);"><b>Low Risk</b></span>: CAT I = 0, CAT II &amp; III &lt; 5%</li>
-    <li><span style="color: rgb(100 167 90);"><b>Very Low Risk</b></span>: 0% total</li>
+    <li><span class="sm-cora-risk-very-high"><b>Very High Risk</b></span>: ≥ 20%</li>
+    <li><span class="sm-cora-risk-high"><b>High Risk</b></span>: ≥ 10% and &lt; 20%</li>
+    <li><span class="sm-cora-risk-moderate"><b>Moderate Risk</b></span>: &gt; 0% and &lt; 10%</li>
+    <li><span class="sm-cora-risk-low"><b>Low Risk</b></span>: CAT I = 0, CAT II &amp; III &lt; 5%</li>
+    <li><span class="sm-cora-risk-very-low"><b>Very Low Risk</b></span>: 0% total</li>
   </ul>
 `
