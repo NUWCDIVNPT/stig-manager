@@ -194,7 +194,7 @@ async function addReview( params ) {
       {
         text: 'Export to file',
         iconCls: 'sm-export-icon',
-        tooltip: 'Download this checklist in CKL or XCCDF format',
+        tooltip: 'Download this checklist and/or attachments',
         hideOnClick: false,
         menu: {
           items: [
@@ -328,7 +328,73 @@ async function addReview( params ) {
                   throw new SM.Error.SmError('No Content-Disposition header')
                 }           
               }
-            }      
+            },
+            '-',
+            {
+              text: 'Archive with CKL + Attachments',
+              iconCls: 'sm-export-icon',
+              tooltip: 'Download checklist in CKL format with attachments in a ZIP archive',
+              handler: async function (item, eventObject) {
+                try {
+                  document.body.style.cursor = 'wait'
+                  await exportChecklistWithArtifacts(leaf, 'ckl')
+                  document.body.style.cursor = 'default'
+                }
+                catch (e) {
+                  document.body.style.cursor = 'default'
+                  SM.Error.handleError(e)
+                }
+              }
+            },
+            {
+              text: 'Archive with CKLB + Attachments',
+              iconCls: 'sm-export-icon',
+              tooltip: 'Download checklist in CKLB format with attachments in a ZIP archive',
+              handler: async function (item, eventObject) {
+                try {
+                  document.body.style.cursor = 'wait'
+                  await exportChecklistWithArtifacts(leaf, 'cklb')
+                  document.body.style.cursor = 'default'
+                }
+                catch (e) {
+                  document.body.style.cursor = 'default'
+                  SM.Error.handleError(e)
+                }
+              }
+            },
+            {
+              text: 'Archive with XCCDF + Attachments',
+              iconCls: 'sm-export-icon',
+              tooltip: 'Download checklist in XCCDF format with attachments in a ZIP archive',
+              handler: async function (item, eventObject) {
+                try {
+                  document.body.style.cursor = 'wait'
+                  await exportChecklistWithArtifacts(leaf, 'xccdf')
+                  document.body.style.cursor = 'default'
+                }
+                catch (e) {
+                  document.body.style.cursor = 'default'
+                  SM.Error.handleError(e)
+                }
+              }
+            },
+            '-',
+            {
+              text: 'Attachments Only',
+              iconCls: 'sm-export-icon',
+              tooltip: 'Download all review attachments as a ZIP archive',
+              handler: async function () {
+                try {
+                  document.body.style.cursor = 'wait'
+                  await exportArtifacts(leaf)
+                  document.body.style.cursor = 'default'
+                }
+                catch (e) {
+                  document.body.style.cursor = 'default'
+                  SM.Error.handleError(e)
+                }
+              }
+            }
           ]
         }
       },
@@ -342,6 +408,190 @@ async function addReview( params ) {
       }
     ]
   });
+
+  /******************************************************/
+  // Export Checklist with Artifacts function
+  /******************************************************/
+  async function exportChecklistWithArtifacts(leaf, format) {
+    try {
+      // Create a new ZIP file
+      const zip = new JSZip()
+      
+      // First, get the checklist file
+      await window.oidcProvider.updateToken(10)
+      const checklistUrl = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=${format}`
+      const checklistResponse = await fetch(checklistUrl, {
+        method: 'GET',
+        headers: new Headers({
+          'Authorization': `Bearer ${window.oidcProvider.token}`
+        })
+      })
+      
+      if (!checklistResponse.ok) {
+        throw new Error(`Failed to fetch checklist: ${checklistResponse.statusText}`)
+      }
+      
+      // Get the checklist filename from Content-Disposition header
+      const contentDispo = checklistResponse.headers.get("content-disposition")
+      let checklistFilename = `checklist.${format}`
+      if (contentDispo) {
+        const match = contentDispo.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^\r\n"']*)['"]?;?/)
+        if (match) {
+          checklistFilename = match[1]
+        }
+      }
+      
+      // Add checklist to ZIP
+      const checklistBlob = await checklistResponse.blob()
+      zip.file(checklistFilename, checklistBlob)
+      
+      // Now get the artifacts
+      const reviewsUrl = `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}?benchmarkId=${leaf.benchmarkId}&projection=metadata`
+      const reviewsResponse = await fetch(reviewsUrl, {
+        method: 'GET',
+        headers: new Headers({
+          'Authorization': `Bearer ${window.oidcProvider.token}`
+        })
+      })
+      
+      if (!reviewsResponse.ok) {
+        throw new Error(`Failed to fetch reviews: ${reviewsResponse.statusText}`)
+      }
+      
+      const reviews = await reviewsResponse.json()
+      let hasArtifacts = false
+      
+      // Create an "attachments" folder in the ZIP
+      const artifactsFolder = zip.folder('attachments')
+      
+      // Process each review that has artifacts
+      for (const review of reviews) {
+        if (review.metadata && review.metadata.artifacts) {
+          let artifacts
+          try {
+            artifacts = JSON.parse(review.metadata.artifacts)
+          } catch (e) {
+            console.warn(`Failed to parse artifacts for rule ${review.ruleId}:`, e)
+            continue
+          }
+          
+          if (artifacts && artifacts.length > 0) {
+            hasArtifacts = true
+            // Create folder for this rule within attachments folder
+            const ruleFolder = artifactsFolder.folder(`Rule_${review.ruleId}`)
+            
+            // Add each artifact to the rule folder
+            for (const artifact of artifacts) {
+              try {
+                // Get the artifact data from metadata using the digest as key
+                const base64Data = review.metadata[artifact.digest]
+                if (base64Data) {
+                  // Add file to the rule folder
+                  ruleFolder.file(artifact.name, base64Data, { base64: true })
+                } else {
+                  console.warn(`No data found for artifact ${artifact.name} (digest: ${artifact.digest}) in rule ${review.ruleId}`)
+                }
+              } catch (e) {
+                console.warn(`Error processing artifact ${artifact.name} for rule ${review.ruleId}:`, e)
+              }
+            }
+          }
+        }
+      }
+      
+      // Generate and download the ZIP file
+      const content = await zip.generateAsync({ type: 'blob' })
+      const now = new Date()
+      const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}Z`
+      const suffix = hasArtifacts ? `${format}-with-attachments` : format
+      const filename = `${leaf.assetName}-${leaf.benchmarkId}-${suffix}_${timestamp}.zip`
+      saveAs(content, filename)
+      
+    } catch (e) {
+      throw new Error(`Failed to export checklist with artifacts: ${e.message}`)
+    }
+  }
+
+  /******************************************************/
+  // Export Artifacts function
+  /******************************************************/
+  async function exportArtifacts(leaf) {
+    try {
+      // Fetch all reviews for this asset with metadata projection
+      await window.oidcProvider.updateToken(10)
+      const url = `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}?benchmarkId=${leaf.benchmarkId}&projection=metadata`
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: new Headers({
+          'Authorization': `Bearer ${window.oidcProvider.token}`
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch reviews: ${response.statusText}`)
+      }
+      
+      const reviews = await response.json()
+      
+      // Create a new ZIP file
+      const zip = new JSZip()
+      let hasArtifacts = false
+      
+      // Process each review that has artifacts
+      for (const review of reviews) {
+        if (review.metadata && review.metadata.artifacts) {
+          let artifacts
+          try {
+            artifacts = JSON.parse(review.metadata.artifacts)
+          } catch (e) {
+            console.warn(`Failed to parse artifacts for rule ${review.ruleId}:`, e)
+            continue
+          }
+          
+          if (artifacts && artifacts.length > 0) {
+            hasArtifacts = true
+            // Create folder for this rule
+            const ruleFolder = zip.folder(`Rule_${review.ruleId}`)
+            
+            // Add each artifact to the rule folder
+            for (const artifact of artifacts) {
+              try {
+                // Get the artifact data from metadata using the digest as key
+                const base64Data = review.metadata[artifact.digest]
+                if (base64Data) {
+                  // Add file to the rule folder
+                  ruleFolder.file(artifact.name, base64Data, { base64: true })
+                } else {
+                  console.warn(`No data found for artifact ${artifact.name} (digest: ${artifact.digest}) in rule ${review.ruleId}`)
+                }
+              } catch (e) {
+                console.warn(`Error processing artifact ${artifact.name} for rule ${review.ruleId}:`, e)
+              }
+            }
+          }
+        }
+      }
+      
+      if (!hasArtifacts) {
+        Ext.Msg.show({
+          title: 'No Attachments',
+          msg: 'No attachments found for this checklist.',
+          buttons: Ext.Msg.OK,
+        })
+        return
+      }
+      
+      // Generate and download the ZIP file
+      const content = await zip.generateAsync({ type: 'blob' })
+      const now = new Date()
+      const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}Z`
+      const filename = `${leaf.assetName}-${leaf.benchmarkId}-attachments_${timestamp}.zip`
+      saveAs(content, filename)
+      
+    } catch (e) {
+      throw new Error(`Failed to export artifacts: ${e.message}`)
+    }
+  }
 
   /******************************************************/
   // Group grid statistics string
