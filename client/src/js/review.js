@@ -994,9 +994,7 @@ async function addReview( params ) {
     bodyStyle: 'padding: 12px; font-size: 13px;',
     autoScroll: true,
     defaults: {
-      anchor: '100%',
       labelWidth: 60,
-      labelStyle: 'font-weight:bold; color: #ccc;',
     },
     items: [
       {
