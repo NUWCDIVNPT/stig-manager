@@ -968,108 +968,108 @@ async function addReview( params ) {
     '<tpl>',
       '<i style="color:#999;">Double-click row to view full review contents.</i>',
       '<tpl if="data.detail">',
-        '<p><b>Detail:</b> {[SM.TruncateOnly(values, "detail")]}</p>',
+        '<p><b>Detail:</b> {[SM.Truncate(values, "detail")]}</p>',
       '</tpl>',
       '<tpl if="data.comment">',
-        '<p><b>Comment:</b> {[SM.TruncateOnly(values, "comment")]}</p>',
+        '<p><b>Comment:</b> {[SM.Truncate(values, "comment")]}</p>',
       '</tpl>',
     '</tpl>'
   )
 
 
   otherGrid.on('rowdblclick', function (grid, rowIndex, e) {
-  const record = grid.getStore().getAt(rowIndex)
-  const data = record.json
+    const record = grid.getStore().getAt(rowIndex)
+    const data = record.json
 
-  const resultMap = {
-    pass: 'Not a Finding',
-    notapplicable: 'Not Applicable',
-    fail: 'Open',
-    informational: 'Informational',
-    notchecked: 'Not Reviewed'
-  }
+    const resultMap = {
+      pass: 'Not a Finding',
+      notapplicable: 'Not Applicable',
+      fail: 'Open',
+      informational: 'Informational',
+      notchecked: 'Not Reviewed'
+    }
 
-  const resultDisplay = resultMap[data.result] || data.result || '-'
-  const formPanel = new Ext.FormPanel({
-    bodyStyle: 'padding: 12px; font-size: 13px;',
-    autoScroll: true,
-    defaults: {
-      labelWidth: 60,
-    },
-    items: [
-      {
-        xtype: 'fieldset',
-        title: 'Evaluation',
-        style: 'margin-bottom: 10px; padding: 10px; border-radius: 8px; border: 1px solid #3e4446;',
-        items: [
-          {
-            xtype: 'displayfield',
-            fieldLabel: 'Result',
-            value: resultDisplay,
-            style: 'margin-bottom: 12px;'
-          },
-          new SM.Review.Form.DetailTextArea({
-            fieldLabel: 'Detail',
-            value: data.detail,
-            readOnly: true,
-            style: 'margin-bottom: 12px; padding: 6px; height: 200px; overflow: auto; width: 570px;'
-          }),
-          new SM.Review.Form.CommentTextArea({
-            fieldLabel: 'Comment',
-            value: data.comment,
-            readOnly: true,
-            style: 'margin-bottom: 12px; padding: 6px; height: 200px; overflow: auto; width: 570px'
-          })
-        ]
+    const resultDisplay = resultMap[data.result]
+    const formPanel = new Ext.FormPanel({
+      bodyStyle: 'padding: 12px; font-size: 13px;',
+      autoScroll: true,
+      defaults: {
+        labelWidth: 60,
       },
-      {
-        xtype: 'fieldset',
-        title: 'Attributions',
-        style: 'margin-bottom: 6px; padding: 10px; border-radius: 8px; border: 1px solid #3e4446;',
-        items: [
-          new SM.Review.Form.EvaluatedAttributions({
-            value: {
-              ts: data.ts,
-              username: data.username,
-              ruleId: data.ruleId,
-              ruleIds: data.ruleIds || []
+      items: [
+        {
+          xtype: 'fieldset',
+          title: 'Evaluation',
+          style: 'margin-bottom: 10px; padding: 10px; border-radius: 8px; border: 1px solid #3e4446;',
+          items: [
+            {
+              xtype: 'displayfield',
+              fieldLabel: 'Result',
+              value: resultDisplay,
+              style: 'margin-bottom: 12px;'
             },
-            style: 'margin-bottom: 8px;'
-          }),
-          new SM.Review.Form.StatusedAttributions({
-            value: {
-              ts: data.touchTs,
-              user: { username: data.username },
-              label: data.status.label
-            },
-            style: 'margin-bottom: 8px;'
-          })
-        ]
-      }
-    ]
-  })
-
-  const win = new Ext.Window({
-    title: `Review on ${data.assetName}`,
-    modal: true,
-    width: 700,
-    height: 760,
-    layout: 'fit',
-    autoScroll: true,
-    cls: 'sm-round-panel',
-    bodyCssClass: 'sm-review-form',
-    footerCssClass: 'sm-review-footer',
-    items: [formPanel],
-    buttons: [
-      {
-        text: 'Close',
-        handler: function () {
-          win.close()
+            new SM.Review.Form.DetailTextArea({
+              fieldLabel: 'Detail',
+              value: data.detail,
+              readOnly: true,
+              style: 'margin-bottom: 12px; padding: 6px; height: 200px; overflow: auto; width: 570px;'
+            }),
+            new SM.Review.Form.CommentTextArea({
+              fieldLabel: 'Comment',
+              value: data.comment,
+              readOnly: true,
+              style: 'margin-bottom: 12px; padding: 6px; height: 200px; overflow: auto; width: 570px'
+            })
+          ]
+        },
+        {
+          xtype: 'fieldset',
+          title: 'Attributions',
+          style: 'margin-bottom: 6px; padding: 10px; border-radius: 8px; border: 1px solid #3e4446;',
+          items: [
+            new SM.Review.Form.EvaluatedAttributions({
+              value: {
+                ts: data.ts,
+                username: data.username,
+                ruleId: data.ruleId,
+                ruleIds: data.ruleIds
+              },
+              style: 'margin-bottom: 8px;'
+            }),
+            new SM.Review.Form.StatusedAttributions({
+              value: {
+                ts: data.touchTs,
+                user: { username: data.username },
+                label: data.status.label
+              },
+              style: 'margin-bottom: 8px;'
+            })
+          ]
         }
-      }
-    ]
-  })
-  win.show()
+      ]
+    })
+
+    const win = new Ext.Window({
+      title: `Review on ${data.assetName}`,
+      modal: true,
+      width: 700,
+      height: 760,
+      layout: 'fit',
+      autoScroll: true,
+      cls: 'sm-round-panel',
+      bodyCssClass: 'sm-review-form',
+      footerCssClass: 'sm-review-footer',
+      items: [formPanel],
+      buttons: [
+        {
+          text: 'Close',
+          handler: function () {
+            win.close()
+          }
+        }
+      ]
+    })
+    win.show()
   })
 
 

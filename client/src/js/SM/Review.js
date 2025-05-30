@@ -57,7 +57,7 @@ SM.Review.Form.DetailTextArea = Ext.extend(Ext.form.TextArea, {
       lastSavedData: "",
       allowBlank: true,
       // emptyText: 'Please address the specific items in the review.',
-      fieldLabel: this.initialConfig.fieldLabel || 'Detail<i class="fa fa-question-circle sm-question-circle"></i>',
+      fieldLabel: this.initialConfig.fieldLabel || 'Detail<i class= "fa fa-question-circle sm-question-circle"></i>',
       labelSeparator: '',
       autoScroll: 'auto',
       name: 'detail',
@@ -91,7 +91,7 @@ SM.Review.Form.CommentTextArea = Ext.extend(Ext.form.TextArea, {
       cls: 'sm-review-action-textarea',
       lastSavedData: "",
       allowBlank: true,
-      fieldLabel: this.initialConfig.fieldLabel || 'Comment<i class="fa fa-question-circle sm-question-circle"></i>',
+      fieldLabel: this.initialConfig.fieldLabel || 'Comment<i class= "fa fa-question-circle sm-question-circle"></i>',
       labelSeparator: '',
       autoScroll: 'auto',
       name: 'comment',
@@ -232,7 +232,6 @@ SM.Review.Form.EvaluatedAttributions = Ext.extend(Ext.form.DisplayField, {
 
 SM.Review.Form.StatusedAttributions = Ext.extend(Ext.form.DisplayField, {
  
-
   formatValue: function (v) {
     this.setValue(
       `<span class="sm-review-sprite sm-review-sprite-date">${new Date(v.ts).format('Y-m-d H:i T')}</span>

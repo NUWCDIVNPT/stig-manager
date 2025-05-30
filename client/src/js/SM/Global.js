@@ -237,35 +237,26 @@ SM.RuleContentTpl = new Ext.XTemplate(
   }
 
   SM.TruncateLimit = 256
-  SM.Truncate = function (value, storeId, recordId) {
-    if (value.length > SM.TruncateLimit) {
-        return `${value.slice(0,SM.TruncateLimit)}...`
-    }
-    else {
-        return value
-    }
-  }
-  SM.TruncateRecordProperty = function (record, property) {
-      const value = SM.he(record.data[property])
-      if (!value) return
-
-      if (value.length > SM.TruncateLimit) {
-         return `${value.slice(0,SM.TruncateLimit)}... <span class=sm-truncated-action onclick="SM.ShowUntruncated('${record.store.storeId}','${record.id}','${property}')">Full text</span>`
-      }
-      else {
-          return value
-      }
-    }
-
-    SM.TruncateOnly = function (record, property) {
+    SM.Truncate = function (record, property) {
         const value = SM.he(record.data[property])
         if (!value) return ''
 
         return value.length > SM.TruncateLimit
             ? value.slice(0, SM.TruncateLimit) + '......'
             : value
-    }
+        }
 
+  SM.TruncateRecordProperty = function (record, property) {
+      const value = SM.he(record.data[property])
+      if (!value) return
+
+      if (value.length > SM.TruncateLimit) {
+          return `${value.slice(0,SM.TruncateLimit)}... <span class=sm-truncated-action onclick="SM.ShowUntruncated('${record.store.storeId}','${record.id}','${property}')">Full text</span>`
+      }
+      else {
+          return value
+      }
+  }
 
   SM.ShowUntruncated = function (storeId, recordId, property) {
     const record = Ext.StoreMgr.get(storeId).getById(recordId)
