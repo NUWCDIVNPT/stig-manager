@@ -284,7 +284,7 @@ describe(`Test Restricted user access controls`, () => {
       autoResult: false
     })
     expect(res.status).to.eql(403)
-    expect(res.body.detail).to.equal('no grant for this asset/ruleId')
+    expect(res.body.detail).to.equal('User has insufficient privilege to put the review of this rule.')
   })
   it('should reject PATCH modification to read only review on test asset with test ruleId', async () => {
     const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`, 'PATCH', lvl1.token, {
@@ -376,7 +376,7 @@ describe(`Test manage user access control`, () => {
       autoResult: false
     })
     expect(res.status).to.eql(403)
-    expect(res.body.detail).to.equal('no grant for this asset/ruleId')
+    expect(res.body.detail).to.equal('User has insufficient privilege to put the review of this rule.')
   })
   it('should reject PATCH modification to read only review on test asset with test ruleId', async () => {
     const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`, 'PATCH', lvl3.token, {
@@ -497,7 +497,7 @@ describe('Test restricted user group access controls', () => {
       autoResult: false
     })
     expect(res.status).to.eql(403)
-    expect(res.body.detail).to.equal('no grant for this asset/ruleId')
+    expect(res.body.detail).to.equal('User has insufficient privilege to put the review of this rule.')
   })
   it('should reject PATCH modification to read only review on test asset with test ruleId', async () => {
     const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`, 'PATCH', lvl1.token, {
@@ -618,7 +618,7 @@ describe('Test manage user group access control', () => {
       autoResult: false
     })
     expect(res.status).to.eql(403)
-    expect(res.body.detail).to.equal('no grant for this asset/ruleId')
+    expect(res.body.detail).to.equal('User has insufficient privilege to put the review of this rule.')
   })
   it('should reject PATCH modification to read only review on test asset with test ruleId', async () => {
     const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`, 'PATCH', lvl1.token, {
