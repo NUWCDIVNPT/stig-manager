@@ -21,7 +21,7 @@ const reference = {
   },
   // in appdata.jsonl
   deletedAsset: {
-    assetId: "247",
+    assetId: "248",
   },
 
   testCollection: {
@@ -267,9 +267,9 @@ const reference = {
     appinfo: {
       state: "enabled",
       assets: 4,
-      assetsDisabled: 0,
+      assetsDisabled: 1,
       reviews: 17,
-      reviewsDisabled: 0,
+      reviewsDisabled: 1,
     },
     labelsProjected: [
       {

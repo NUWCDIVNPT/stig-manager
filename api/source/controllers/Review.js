@@ -7,6 +7,7 @@ const Collection = require(`./Collection`)
 const SmError = require('../utils/error')
 const Security = require('../utils/roles')
 const dbUtils = require('../service/utils')
+const AssetService = require('../service/AssetService')
 
 const _this = this
 
@@ -15,6 +16,11 @@ module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res,
     const { collectionId } = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
     const assetId = req.params.assetId
     const reviews = req.body
+    //check if asset exists and is available for review
+    const asset = await AssetService.doesAssetExist(assetId)
+    if (!asset) {
+      throw new SmError.NotFoundError()
+    }
     const result = await ReviewService.putReviewsByAsset({
       assetId,
       reviews,
@@ -145,6 +151,10 @@ module.exports.putReviewByAssetRule = async function (req, res, next) {
     const {assetId, ruleId} = {...req.params}
     const review = {...req.body, ruleId}
     const projections = req.query.projection
+    const userHasRule = await ReviewService.checkRuleByAssetUser({ruleId, assetId, collectionId, grant, checkWritable: true})
+    if (!userHasRule) {
+      throw new SmError.PrivilegeError('User has insufficient privilege to put the review of this rule.')
+    }
     const result = await ReviewService.putReviewsByAsset({
       assetId,
       reviews: [review],
@@ -221,7 +231,7 @@ module.exports.getReviewMetadata = async function (req, res, next) {
       res.json(response)
     }
     else {
-      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
+      throw new SmError.PrivilegeError('User has insufficient privilege to get the review of this rule.')
     }
   }
   catch (err) {
@@ -285,7 +295,7 @@ module.exports.getReviewMetadataKeys = async function (req, res, next) {
       res.json(response)
     }
     else {
-      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
+      throw new SmError.PrivilegeError('User has insufficient privilege to get the review of this rule.')
     }
   }
   catch (err) {
@@ -308,7 +318,7 @@ module.exports.getReviewMetadataValue = async function (req, res, next) {
       res.json(response)
     }
     else {
-      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
+      throw new SmError.PrivilegeError('User has insufficient privilege to get the review of this rule.')
     }
   }
   catch (err) {
@@ -329,7 +339,7 @@ module.exports.putReviewMetadataValue = async function (req, res, next) {
       res.status(204).send()
     }
     else {
-      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
+      throw new SmError.PrivilegeError('User has insufficient privilege to put the review of this rule.')
     }
   }
   catch (err) {
@@ -349,7 +359,7 @@ module.exports.deleteReviewMetadataKey = async function (req, res, next) {
       res.status(204).send()
     }
     else {
-      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
+      throw new SmError.PrivilegeError('User has insufficient privilege to delete the review of this rule.')
     }
   }
   catch (err) {
