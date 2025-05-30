@@ -1187,6 +1187,13 @@ exports.getAsset = async function({assetId, projections, grant}) {
   return (rows[0])
 }
 
+exports.doesAssetExist = async function (assetId) {
+  const sql = `SELECT assetId FROM asset WHERE assetId = ? AND state = 'enabled'`
+  const [rows] = await dbUtils.pool.query(sql, [assetId])
+  return rows.length > 0
+}
+
+
 exports.getAssets = async function({filter, projections, grant}) {
  return _this.queryAssets({
     filter,

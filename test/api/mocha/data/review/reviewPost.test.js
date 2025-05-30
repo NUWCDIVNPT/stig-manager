@@ -1233,8 +1233,8 @@ describe('POST - Review', () => {
           ])
           expect(res.status).to.eql(403) 
         })
-        it('Import reviews for deleted asset', async () => {
-          const res = await utils.executeRequest(`${config.baseUrl}/collections/${deletedCollection}/reviews/${reference.testAsset.assetId}`, 'POST', iteration.token, [
+        it('Import reviews for deleted Asset in an enabled collection', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${deletedAsset}`, 'POST', iteration.token, [
               {
               "ruleId": `${reference.testCollection.ruleId}`,
               "result": "pass",
@@ -1244,7 +1244,7 @@ describe('POST - Review', () => {
               "status": "submitted"
               }
           ])
-          expect(res.status).to.eql(403) 
+          expect(res.status).to.eql(404) 
         })
       })
     })

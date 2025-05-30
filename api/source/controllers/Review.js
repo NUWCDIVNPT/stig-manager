@@ -7,6 +7,7 @@ const Collection = require(`./Collection`)
 const SmError = require('../utils/error')
 const Security = require('../utils/roles')
 const dbUtils = require('../service/utils')
+const AssetService = require('../service/AssetService')
 
 const _this = this
 
@@ -15,6 +16,11 @@ module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res,
     const { collectionId } = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
     const assetId = req.params.assetId
     const reviews = req.body
+    //check if asset exists and is available for review
+    const asset = await AssetService.doesAssetExist(assetId)
+    if (!asset) {
+      throw new SmError.NotFoundError()
+    }
     const result = await ReviewService.putReviewsByAsset({
       assetId,
       reviews,
