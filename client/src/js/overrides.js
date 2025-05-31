@@ -367,6 +367,92 @@ Ext.override(Ext.grid.GridView, {
     }
 });
 
+// Force fit Min & Max
+Ext.override(Ext.grid.GridView, {
+    initElements : function() {
+        var Element  = Ext.Element,
+            el       = Ext.get(this.grid.getGridEl().dom.firstChild),
+            mainWrap = new Element(el.child('div.x-grid3-viewport')),
+            mainHd   = new Element(mainWrap.child('div.x-grid3-header')),
+            scroller = new Element(mainWrap.child('div.x-grid3-scroller'));
+        
+        if (this.grid.hideHeaders) {
+            mainHd.setDisplayed(false);
+        }
+        
+        // Removed setting overflow-x to 'hidden' in scroller
+        
+        Ext.apply(this, {
+            el      : el,
+            mainWrap: mainWrap,
+            scroller: scroller,
+            mainHd  : mainHd,
+            innerHd : mainHd.child('div.x-grid3-header-inner').dom,
+            mainBody: new Element(Element.fly(scroller).child('div.x-grid3-body')),
+            focusEl : new Element(Element.fly(scroller).child('a')),
+            
+            resizeMarker: new Element(el.child('div.x-grid3-resize-marker')),
+            resizeProxy : new Element(el.child('div.x-grid3-resize-proxy'))
+        });
+        
+        this.focusEl.swallowEvent('click', true);
+    },
+    layout : function(initial) {
+        if (!this.mainBody) {
+            return; // not rendered
+        }
+
+        var grid       = this.grid,
+            gridEl     = grid.getGridEl(),
+            gridSize   = gridEl.getSize(true),
+            gridWidth  = gridSize.width,
+            gridHeight = gridSize.height,
+            scroller   = this.scroller,
+            scrollStyle, headerHeight, scrollHeight,
+            // added support for forceFitMin and forceFitMax
+            forceFitMin = this.forceFitMin || 0,
+            forceFitMax = this.forceFitMax || Infinity;
+        
+        if (gridWidth < 20 || gridHeight < 20) {
+            return;
+        }
+        
+        if (grid.autoHeight) {
+            scrollStyle = scroller.dom.style;
+            scrollStyle.overflow = 'visible';
+            
+            if (Ext.isWebKit) {
+                scrollStyle.position = 'static';
+            }
+        } else {
+            this.el.setSize(gridWidth, gridHeight);
+            
+            headerHeight = this.mainHd.getHeight();
+            scrollHeight = gridHeight - headerHeight;
+            
+            scroller.setSize(gridWidth, scrollHeight);
+            
+            if (this.innerHd) {
+                this.innerHd.style.width = (gridWidth) + "px";
+            }
+        }
+        
+        // added support for forceFitMin and forceFitMax
+        if (this.forceFit && (gridWidth > forceFitMin  && gridWidth < forceFitMax )|| (initial === true && this.autoFill)) {
+            if (this.lastViewWidth != gridWidth) {
+                this.fitColumns(false, false);
+                this.lastViewWidth = gridWidth;
+            }
+        } else {
+            this.autoExpand();
+            this.syncHeaderScroll();
+        }
+        
+        this.onLayout(gridWidth, scrollHeight);
+    },
+
+})
+
 // Two overrides below keep the backscape in a readOnly text field from causing the browser to go back in history
 Ext.override(Ext.form.TextField, {
 	enableKeyEvents : true,

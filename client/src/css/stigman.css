@@ -24,6 +24,8 @@
   --color-risk-low-text:rgb(14, 90, 161);
   --color-risk-very-low:#c3deab;
   --color-risk-very-low-text:rgb(0, 100, 0);
+  --color-scrollbar-idle: #d0d0d0;
+  --color-scrollbar-hover:#b0b0b0;
 }
 
 .x-tree-node-collapsed .x-tree-node-icon, .x-tree-node-expanded .x-tree-node-icon, .x-tree-node-leaf .x-tree-node-icon {
@@ -2582,3 +2584,21 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   color: var(--color-risk-very-low-text);
 }
 
+.x-grid3-scroller {
+	overflow-x: auto;
+	scrollbar-color: var(--color-scrollbar-idle) transparent;
+	transition: scrollbar-color 0.125s;
+}
+.x-grid3-scroller:hover {
+	overflow-x: auto;
+	scrollbar-color: var(--color-scrollbar-hover) transparent;
+}
+
+.sm-round-panel .x-panel-body {
+  scrollbar-color: var(--color-scrollbar-idle) transparent;
+  transition: scrollbar-color 0.125s;
+}
+
+.sm-round-panel .x-panel-body:hover {
+	scrollbar-color: var(--color-scrollbar-hover) transparent;
+}

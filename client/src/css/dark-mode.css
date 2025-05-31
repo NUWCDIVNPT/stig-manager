@@ -5,6 +5,9 @@
   --color-severity-low:rgb(169 177 219);
   --color-risk-moderate: rgb(230 210 0);
   --color-risk-very-low:rgb(100 167 90);
+  --color-scrollbar-idle: #333333;
+  --color-scrollbar-hover:#505050;
+
 }
 
 html {
@@ -2169,11 +2172,11 @@ a.x-menu-item {
 }
 
 .sm-result-pass {
-    color: #12ca12
+    color: hsl(120 84% 42% / 1);
 }
 
 .sm-result-fail {
-    color: #ff5100
+    color: hsl(19 100% 40% / 1);
 }
 
 .sm-result-na {
