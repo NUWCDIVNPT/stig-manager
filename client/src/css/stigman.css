@@ -1739,13 +1739,13 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   background-repeat: no-repeat
 }
 .sm-artifact-download-icon {
-  background-image: url(../img/download-16.png)
+  background-image: url(../img/download.svg)
 }
 .sm-artifact-edit-icon {
   background-image: url(../img/edit-16.png)
 }
 .x-grid3-row-over .artifact-download {
-  background-image: url(../img/download-16.png);
+  background-image: url(../img/download.svg);
   background-size: 14px 14px;
   background-position: 2px 5px;
   background-repeat: no-repeat
@@ -1770,7 +1770,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .x-grid3-row-over .artifact-download :active,
 .x-grid3-row-over .artifact-download:active {
-  background-image: url(../img/download-16.png);
+  background-image: url(../img/download.svg);
   background-size: 14px 14px;
   background-position: 4px 10px;
   background-repeat: no-repeat
