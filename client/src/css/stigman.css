@@ -211,6 +211,21 @@
   color: #111;
   margin: 0 auto
 }
+
+.sm-cora-tooltip-label {
+  border-radius: 5px;
+  outline: #bbb solid 1px;
+  outline-offset: -1px;
+  width: auto;           /* Allow width to fit content */
+  min-width: 80px;       /* Ensure minimum width for consistency */
+  font-weight: 500;      /* Lighter weight */
+  color: #111;
+  margin: 0 auto;
+  padding: 2px 6px;      /* Add padding for better text spacing */
+  display: inline-block;
+  text-align: center;
+}
+
 .sm-metrics-high-box {
   background-color: var(--color-severity-high)
 }

@@ -117,10 +117,10 @@ SM.TipContent.CORA =`
   - <code>wₙ</code> = weight (CAT I = 10, CAT II = 4, CAT III = 1)<br><br>
   The <b>Risk Rating</b> is primarily determined by the <b>Weighted Average</b>, except for the special "Low" risk condition :<br>
   <ul style="padding-left: 16px; margin: 4px 0;">
-    <li><span class="sm-cora-risk-very-high"><b>Very High Risk</b></span>: ≥ 20%</li>
-    <li><span class="sm-cora-risk-high"><b>High Risk</b></span>: ≥ 10% and &lt; 20%</li>
-    <li><span class="sm-cora-risk-moderate"><b>Moderate Risk</b></span>: &gt; 0% and &lt; 10%</li>
-    <li><span class="sm-cora-risk-low"><b>Low Risk</b></span>: CAT I = 0; CAT II &amp; III each &lt; 5% <i>unweighted</i></li>
-    <li><span class="sm-cora-risk-very-low"><b>Very Low Risk</b></span>: 0% total</li>
+    <li><span class="sm-cora-tooltip-label sm-cora-risk-very-high"><b>Very High</b></span><b> ≥ 20%</b></li>
+    <li><span class="sm-cora-tooltip-label sm-cora-risk-high"><b>High</b></span><b> ≥ 10% and &lt; 20%</b></li>
+    <li><span class="sm-cora-tooltip-label sm-cora-risk-moderate"><b>Moderate</b></span><b> &gt; 0% and &lt; 10%</b></li>
+    <li><span class="sm-cora-tooltip-label sm-cora-risk-low"><b>Low</b></span><b> CAT I = 0; CAT II &amp; III each &lt; 5% <i>unweighted</i></b></li>
+    <li><span class="sm-cora-tooltip-label sm-cora-risk-very-low"><b>Very Low</b></span><b> 0% total</b></li>
   </ul>
 `
