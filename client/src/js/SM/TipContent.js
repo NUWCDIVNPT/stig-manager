@@ -104,21 +104,23 @@ SM.TipContent.ImportFromCollectionManager = `Will create new Assets and STIG ass
 
 SM.TipContent.CORA =`
  <b>Cyber Operational Readiness Assessment (CORA)</b> evaluates the effectiveness of security controls and operational processes.<br><br>
- <b>Risk Rating</b> is calculated from the <b>WeightedAvg</b> percentage, which reflects the number and severity of <i>open</i> or <i>not reviewed</i> rules.<br>
-
-  <b>Unreviewed rules</b> are treated as <i>open</i>.<br><br>
-  Each severity category (CAT I, II, III) contributes to the score using weighted math:<br><br>
-  <b>WeightedAvg</b> formula:<br>
+ <b>Risk Rating</b> is calculated from the <b>Weighted Average</b> percentage, which reflects the number and severity of <i>open</i> or <i>unassessed</i> rules.<br>
+ Reviews with <i>Open</i>, <i>Not a Finding</i>, or <i>Not Applicable</i> results are considered <i>assessed</i>.<br>
+ Reviews with other results (such as <i>Not Reviewed</i> or <i>Informational</i>) are treated as <i>unassessed</i>.
+ <br><br>
+  Each severity category (CAT I, II, III) contributes to the score using weighted math:
+  <br>
+  <b>Weighted Average</b> formula:<br>
   <code>(p₁·w₁ + p₂·w₂ + p₃·w₃) / (w₁ + w₂ + w₃)</code><br>
   where:<br>
   - <code>pₙ</code> = % of open + not reviewed rules in that category<br>
   - <code>wₙ</code> = weight (CAT I = 10, CAT II = 4, CAT III = 1)<br><br>
-  The resulting weighted average determines the Risk Rating:<br>
+  The <b>Risk Rating</b> is primarily determined by the <b>Weighted Average</b>, except for the special "Low" risk condition :<br>
   <ul style="padding-left: 16px; margin: 4px 0;">
     <li><span class="sm-cora-risk-very-high"><b>Very High Risk</b></span>: ≥ 20%</li>
     <li><span class="sm-cora-risk-high"><b>High Risk</b></span>: ≥ 10% and &lt; 20%</li>
     <li><span class="sm-cora-risk-moderate"><b>Moderate Risk</b></span>: &gt; 0% and &lt; 10%</li>
-    <li><span class="sm-cora-risk-low"><b>Low Risk</b></span>: CAT I = 0, CAT II &amp; III &lt; 5%</li>
+    <li><span class="sm-cora-risk-low"><b>Low Risk</b></span>: CAT I = 0; CAT II &amp; III each &lt; 5% <i>unweighted</i></li>
     <li><span class="sm-cora-risk-very-low"><b>Very Low Risk</b></span>: 0% total</li>
   </ul>
 `

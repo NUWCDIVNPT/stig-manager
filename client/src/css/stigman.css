@@ -2552,10 +2552,6 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .sm-cora-risk-very-high {
   background-color: var(--color-risk-very-high);
  }
-.x-tip-body .sm-cora-risk-very-high {
-	color:var(--color-risk-very-high);
-	background-color: unset;
-}
  .sm-cora-risk-very-high .sm-cora-score-risk-level {
   color: var(--color-risk-very-high-text);
  }
