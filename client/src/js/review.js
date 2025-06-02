@@ -431,9 +431,7 @@ async function addReview( params ) {
       
       // Generate and download the ZIP file
       const content = await zip.generateAsync({ type: 'blob' })
-      const now = new Date()
-      const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}Z`
-      const filename = `${leaf.assetName}-${leaf.benchmarkId}-attachments_${timestamp}.zip`
+      const filename = `${leaf.assetName}-${leaf.benchmarkId}-attachments_${SM.Global.filenameComponentFromDate()}.zip`
       saveAs(content, filename)
       
     } catch (e) {
