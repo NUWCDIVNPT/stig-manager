@@ -19,7 +19,7 @@ module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res,
     //check if asset exists and is available for review
     const asset = await AssetService.doesAssetExist(assetId)
     if (!asset) {
-      throw new SmError.NotFoundError()
+      throw new SmError.PrivilegeError()
     }
     const result = await ReviewService.putReviewsByAsset({
       assetId,

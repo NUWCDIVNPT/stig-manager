@@ -320,6 +320,22 @@ describe('PUT - Review', () => {
                     expect(res.body.comment).to.equal(putBody.comment)
                     expect(res.body.status.label).to.equal(putBody.status)
                 })
+                it("Attempt to put a review to a disabled asset in an enabled collection, expect 403", async () => {
+
+                    const deletedAssetId = reference.deletedAsset.assetId
+
+                    const putBody = {
+                        result: 'pass',
+                        detail: 'test\nvisible to lvl1',
+                        comment: 'sure',
+                        autoResult: false,
+                        status: 'submitted'
+                    }
+
+                    const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${deletedAssetId}/${reference.testCollection.ruleId}`, 'PUT', iteration.token, putBody)
+                    expect(res.status).to.eql(403)
+
+                })
             })
 
             describe('PUT - putReviewMetadata - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata', () => {
