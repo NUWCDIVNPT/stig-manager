@@ -57,7 +57,7 @@ SM.Review.Form.DetailTextArea = Ext.extend(Ext.form.TextArea, {
       lastSavedData: "",
       allowBlank: true,
       // emptyText: 'Please address the specific items in the review.',
-      fieldLabel: 'Detail<i class= "fa fa-question-circle sm-question-circle"></i>',
+      fieldLabel: this.initialConfig.fieldLabel || 'Detail<i class= "fa fa-question-circle sm-question-circle"></i>',
       labelSeparator: '',
       autoScroll: 'auto',
       name: 'detail',
@@ -65,15 +65,17 @@ SM.Review.Form.DetailTextArea = Ext.extend(Ext.form.TextArea, {
       listeners: {
         render: function (ta) {
           ta.el.dom.maxLength = 32767
-          ta.mon( ta.el, 'input', _this.onInput)
-          _this.infoTip = new Ext.ToolTip({
-            target: ta.label.dom.getElementsByClassName('fa')[0],
-            showDelay: 0,
-            dismissDelay: 0,
-            autoWidth: true,
-            tpl: SM.DetailTipTpl,
-            data: _this.fieldSettings.detail
-          }) 
+           if (!_this.readOnly) {
+            ta.mon( ta.el, 'input', _this.onInput)
+            _this.infoTip = new Ext.ToolTip({
+              target: ta.label.dom.getElementsByClassName('fa')[0],
+              showDelay: 0,
+              dismissDelay: 0,
+              autoWidth: true,
+              tpl: SM.DetailTipTpl,
+              data: _this.fieldSettings.detail
+            }) 
+          }
         }
       }
     }
@@ -89,27 +91,29 @@ SM.Review.Form.CommentTextArea = Ext.extend(Ext.form.TextArea, {
       cls: 'sm-review-action-textarea',
       lastSavedData: "",
       allowBlank: true,
-      fieldLabel: 'Comment<i class= "fa fa-question-circle sm-question-circle"></i>',
+      fieldLabel: this.initialConfig.fieldLabel || 'Comment<i class= "fa fa-question-circle sm-question-circle"></i>',
       labelSeparator: '',
       autoScroll: 'auto',
       name: 'comment',
       listeners: {
         'render': function (ta) {
           ta.el.dom.maxLength = 32767
-          ta.mon( ta.el, 'input', _this.onInput)
-          _this.infoTip = new Ext.ToolTip({
-            target: ta.label.dom.getElementsByClassName('fa')[0],
-            showDelay: 0,
-            dismissDelay: 0,
-            autoWidth: true,
-            tpl: SM.CommentTipTpl,
-            data: _this.fieldSettings.comment
-          }) 
+          if (!_this.readOnly) {
+            ta.mon(ta.el, 'input', _this.onInput)
+            _this.infoTip = new Ext.ToolTip({
+              target: ta.label.dom.getElementsByClassName('fa')[0],
+              showDelay: 0,
+              dismissDelay: 0,
+              autoWidth: true,
+              tpl: SM.CommentTipTpl,
+              data: _this.fieldSettings.comment
+            }) 
+          }
         }
       }
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
-    SM.Review.Form.CommentTextArea.superclass.initComponent.call(this)
+    this.superclass().initComponent.call(this)
   }
 })
 
@@ -200,6 +204,58 @@ SM.Review.Form.ResultEngineSprite = Ext.extend(Ext.form.DisplayField, {
   }
 })
 
+SM.Review.Form.EvaluatedAttributions = Ext.extend(Ext.form.DisplayField, {
+
+  formatValue: function (v) {
+    const otherRules = v.ruleIds.filter(item => item !== v.ruleId).join('<br>')
+    this.setValue(
+      `<span class="sm-review-sprite sm-review-sprite-date">${new Date(v.ts).format('Y-m-d H:i T')}</span>
+       <span class="sm-review-sprite sm-review-sprite-user">${v.username}</span>
+       <span class="sm-review-sprite sm-review-sprite-rule" ${otherRules ? `ext:qtip="${otherRules}" ext:qdmdelay="60000" ext:qwidth="200" ext:qtitle="Also applies to:"` : ''}>${v.ruleId}</span>`
+    )
+  },
+
+  initComponent: function () {
+    const config = {
+      name: 'editStr',
+      fieldLabel: 'Evaluated',
+      hideLabel: false,
+      allowBlank: true,
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+    if (this.value) {
+      this.formatValue(this.value)
+    }
+  }
+})
+
+SM.Review.Form.StatusedAttributions = Ext.extend(Ext.form.DisplayField, {
+ 
+  formatValue: function (v) {
+    this.setValue(
+      `<span class="sm-review-sprite sm-review-sprite-date">${new Date(v.ts).format('Y-m-d H:i T')}</span>
+       <span class="sm-review-sprite sm-review-sprite-user">${v.user.username}</span>
+       <span class="sm-review-sprite sm-review-sprite-${v.label}"></span>`
+    )
+  },
+
+  initComponent: function () {
+    const config = {
+      name: 'status',
+      fieldLabel: 'Statused',
+      hideLabel: false,
+      allowBlank: true,
+    }
+      
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+    if (this.value) {
+      this.formatValue(this.value)
+    }
+  }
+})
+
 SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
   initComponent: function () {
     const _this = this
@@ -255,30 +311,9 @@ SM.Review.Form.Panel = Ext.extend(Ext.form.FormPanel, {
         }
       }
     })
-    const mdf = new Ext.form.DisplayField({
-      // anchor: '100% 2%',
-      fieldLabel: 'Evaluated',
-      hideLabel: false,
-      allowBlank: true,
-      name: 'editStr',
-      formatValue: function (v) {
-        const otherRules = v.ruleIds.filter(item => item !== v.ruleId).join('<br>')
-        this.setValue(`<span class="sm-review-sprite sm-review-sprite-date">${new Date(v.ts).format('Y-m-d H:i T')}</span>
-        <span class="sm-review-sprite sm-review-sprite-user">${v.username}</span>
-        <span class="sm-review-sprite sm-review-sprite-rule" ${otherRules ? `ext:qtip="${otherRules}" ext:qdmdelay="60000" ext:qwidth="200" ext:qtitle="Also applies to:"` : ''}>${v.ruleId}</span>`)
-      }
-    })
-    const sdf = new Ext.form.DisplayField({
-      fieldLabel: 'Statused',
-      hideLabel: false,
-      allowBlank: true,
-      name: 'status',
-      formatValue: function (v) {
-        this.setValue(`<span class="sm-review-sprite sm-review-sprite-date">${new Date(v.ts).format('Y-m-d H:i T')}</span>
-        <span class="sm-review-sprite sm-review-sprite-user">${v.user.username}</span>
-        <span class="sm-review-sprite sm-review-sprite-${v.label}"></span>`)
-      }
-    })
+    const mdf = new SM.Review.Form.EvaluatedAttributions({})
+    const sdf = new SM.Review.Form.StatusedAttributions({})
+
     const btn1 = new Ext.Button({
       hidden: true,
       hideMode: 'visibility',
