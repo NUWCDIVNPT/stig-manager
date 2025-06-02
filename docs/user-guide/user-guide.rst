@@ -211,6 +211,7 @@ The Assets and STIGS presented in the Collection Dashboard can be filtered by cl
 
 
       - **Progress Chart** - Presents the proportion of Reviews that have been Assessed out of the total number of Assessments required in a Collection (ie. The total number of Rules contained in all STIGs that have been assigned to all Assets). The number of Assessed Reviews is further broken down by the Status of each of those Reviews. Depending on your process, you may want all your Reviews to wind up with an "Assessed," "Submitted," or "Accepted" status (The "Assessed" proportion here is the number of Reviews that have been "Saved" with :ref:`a valid Assessment Result <assessment note>`).  **The "Import..." button allows users to update their Reviews by importing .ckl(b) or XCCDF checklist files. Imports will NOT create new Assets and STIG assignments when initiated from the Collection Dashboard.**
+      - **CORA** - CORA scoring is calculated from a Weighted Average that reflects the number and severity of Open or Unassessed  rules.  The CORA panel displays a count of Open or Unassessed Rules for each Severity Category, the overall Weighted Percentage, and the Risk Rating for the Collection. The Risk Rating is color-coded to indicate the level of risk, with categories ranging from Very Low to Very High. The CORA panel is responsive to the filters applied in the Dashboard. The same scoring is available more granularly in the grid displays of the STIGs, Assets, and Labels tabs. See below for more information about the CORA Score calculation.
       - **Inventory** - Total number of Assets, unique STIGs, and checklists (STIGs assigned to Assets) in this Collection. If you are a Manager or Owner for this Collection, you will see a "Manage" button on the right of this box's header. Click it to open the  :ref:`manage-collection-workspace`.
       - **Findings** - Total number of "Open" Findings in a Collection, broken down by Severity Category. Click the "Details" button on the right of this box's header to open the Findings Report. The Findings Report provides a way to engage with all "Open" findings in a Collection, and generate a precursor POA&M from them. See :ref:`Findings Report` for more info.
       - **Review Ages** - The age of the oldest Review in a Collection and the newest Review in a Collection. Whenever Review *content* (Result or commentary) is modified, its timestamp is updated, and this is used to calculate the ages presented here as "oldest" and "newest." The "Updated" block represents the last time the *Status* of a Review changed (ie. when a Saved, Submitted, Accepted, or Rejected status was applied).
@@ -225,6 +226,35 @@ The Assets and STIGS presented in the Collection Dashboard can be filtered by cl
             :title: Collection Dashboard Filtering
 
 |
+
+
+CORA Score Calculation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Cyber Operational Readiness Assessment (CORA)** evaluates the effectiveness of security controls and operational processes.
+
+**Risk Rating** is calculated from a **Weighted Average** that reflects the number and severity of *open* or *unassessed* rules.
+Reviews with *Open*, *Not a Finding*, or *Not Applicable* results are considered *assessed*.
+Reviews with other results (such as *Not Reviewed* or *Informational*) are treated as *unassessed*.
+
+Each severity category (CAT I, II, III) is weighted differently when calculating the overall score:
+
+**Weighted Average** formula:
+
+``(p₁·w₁ + p₂·w₂ + p₃·w₃) / (w₁ + w₂ + w₃)``
+
+where:
+  - ``pₙ`` = % of open + unassessed rules in that category
+  - ``wₙ`` = weight **(CAT I = 10, CAT II = 4, CAT III = 1)**
+
+The **Risk Rating** is primarily determined by the **Weighted Average**, except for the special "Low" risk condition. If a score would be evaluated as "Moderate" but meets the requirements for "Low" risk, it is assigned "Low" risk instead:
+
+- **Very High:** **≥ 20%**
+- **High:** **≥ 10% and < 20%**
+- **Moderate:** **> 0% and < 10%**
+- **Low:** **CAT I = 0; CAT II & III each < 5%** *unweighted*
+- **Very Low:** **0% total**
+
 
 Metrics Export Options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
