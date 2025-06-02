@@ -76,7 +76,7 @@ SM.MetaPanel.CommonColumns = [
     renderer: function (v, md, r) {
       const detailedCora = r.get('coraScoreDetail')
       let riskClass = getRiskClass(detailedCora.riskRating)
-      return `<div class="sm-cora-column ${riskClass}">${(detailedCora.weightedAvg * 100).toFixed(1)}</div>`
+      return `<div class="sm-cora-column ${riskClass}" ext:qtip="<div style='white-space: nowrap;'>${detailedCora.riskRating}</div>">${(detailedCora.weightedAvg * 100).toFixed(1)}</div>`
     }
   },
   {
