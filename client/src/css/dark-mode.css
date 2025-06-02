@@ -2835,7 +2835,7 @@ td.sort-asc, td.sort-desc, td.x-grid3-hd-menu-open, td.x-grid3-hd-over {
 }
 
 .sm-artifact-download-icon {
-    background-image: url("../img/download-16.png")
+    background-image: url("../img/download.svg")
 }
 
 .sm-artifact-edit-icon {
@@ -2843,7 +2843,7 @@ td.sort-asc, td.sort-desc, td.x-grid3-hd-menu-open, td.x-grid3-hd-over {
 }
 
 .x-grid3-row-over .artifact-download {
-    background-image: url("../img/download-16.png")
+    background-image: url("../img/download.svg")
 }
 
 .x-grid3-row-over .artifact-view {
@@ -2859,7 +2859,7 @@ td.sort-asc, td.sort-desc, td.x-grid3-hd-menu-open, td.x-grid3-hd-over {
 }
 
 .x-grid3-row-over .artifact-download :active, .x-grid3-row-over .artifact-download:active {
-    background-image: url("../img/download-16.png")
+    background-image: url("../img/download.svg")
 }
 
 .sm-reviews-home-background {

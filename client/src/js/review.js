@@ -194,7 +194,7 @@ async function addReview( params ) {
       {
         text: 'Export to file',
         iconCls: 'sm-export-icon',
-        tooltip: 'Download this checklist in CKL or XCCDF format',
+        tooltip: 'Download this checklist and/or attachments',
         hideOnClick: false,
         menu: {
           items: [
@@ -328,7 +328,24 @@ async function addReview( params ) {
                   throw new SM.Error.SmError('No Content-Disposition header')
                 }           
               }
-            }      
+            },
+            '-',
+            {
+              text: 'Attachments Archive',
+              iconCls: 'sm-export-icon',
+              tooltip: 'Download all review attachments as a ZIP archive',
+              handler: async function () {
+                try {
+                  document.body.style.cursor = 'wait'
+                  await exportArtifacts(leaf)
+                  document.body.style.cursor = 'default'
+                }
+                catch (e) {
+                  document.body.style.cursor = 'default'
+                  SM.Error.handleError(e)
+                }
+              }
+            }
           ]
         }
       },
@@ -342,6 +359,85 @@ async function addReview( params ) {
       }
     ]
   });
+
+  /******************************************************/
+  // Export Artifacts function
+  /******************************************************/
+  async function exportArtifacts(leaf) {
+    try {
+      // Fetch all reviews for this asset with metadata projection
+      await window.oidcProvider.updateToken(10)
+      const url = `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}?benchmarkId=${leaf.benchmarkId}&projection=metadata`
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: new Headers({
+          'Authorization': `Bearer ${window.oidcProvider.token}`
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch reviews: ${response.statusText}`)
+      }
+      
+      const reviews = await response.json()
+      
+      // Create a new ZIP file
+      const zip = new JSZip()
+      let hasArtifacts = false
+      
+      // Process each review that has artifacts
+      for (const review of reviews) {
+        if (review.metadata && review.metadata.artifacts) {
+          let artifacts
+          try {
+            artifacts = JSON.parse(review.metadata.artifacts)
+          } catch (e) {
+            console.warn(`Failed to parse artifacts for rule ${review.ruleId}:`, e)
+            continue
+          }
+          
+          if (artifacts && artifacts.length > 0) {
+            hasArtifacts = true
+            // Create folder for this rule
+            const ruleFolder = zip.folder(`Rule_${review.ruleId}`)
+            
+            // Add each artifact to the rule folder
+            for (const artifact of artifacts) {
+              try {
+                // Get the artifact data from metadata using the digest as key
+                const base64Data = review.metadata[artifact.digest]
+                if (base64Data) {
+                  // Add file to the rule folder
+                  ruleFolder.file(artifact.name, base64Data, { base64: true })
+                } else {
+                  console.warn(`No data found for artifact ${artifact.name} (digest: ${artifact.digest}) in rule ${review.ruleId}`)
+                }
+              } catch (e) {
+                console.warn(`Error processing artifact ${artifact.name} for rule ${review.ruleId}:`, e)
+              }
+            }
+          }
+        }
+      }
+      
+      if (!hasArtifacts) {
+        Ext.Msg.show({
+          title: 'No Attachments',
+          msg: 'No attachments found for this checklist.',
+          buttons: Ext.Msg.OK,
+        })
+        return
+      }
+      
+      // Generate and download the ZIP file
+      const content = await zip.generateAsync({ type: 'blob' })
+      const filename = `${leaf.assetName}-${leaf.benchmarkId}-attachments_${SM.Global.filenameComponentFromDate()}.zip`
+      saveAs(content, filename)
+      
+    } catch (e) {
+      throw new Error(`Failed to export artifacts: ${e.message}`)
+    }
+  }
 
   /******************************************************/
   // Group grid statistics string
