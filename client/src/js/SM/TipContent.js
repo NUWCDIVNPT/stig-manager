@@ -104,18 +104,18 @@ SM.TipContent.ImportFromCollectionManager = `Will create new Assets and STIG ass
 
 SM.TipContent.CORA =`
  <b>Cyber Operational Readiness Assessment (CORA)</b> evaluates the effectiveness of security controls and operational processes.<br><br>
- <b>Risk Rating</b> is calculated from the <b>Weighted Average</b> percentage, which reflects the number and severity of <i>open</i> or <i>unassessed</i> rules.<br>
+ <b>Risk Rating</b> is calculated from a <b>Weighted Average</b> that reflects the number and severity of <i>open</i> or <i>unassessed</i> rules.<br>
  Reviews with <i>Open</i>, <i>Not a Finding</i>, or <i>Not Applicable</i> results are considered <i>assessed</i>.<br>
  Reviews with other results (such as <i>Not Reviewed</i> or <i>Informational</i>) are treated as <i>unassessed</i>.
  <br><br>
-  Each severity category (CAT I, II, III) contributes to the score using weighted math:
+  Each severity category (CAT I, II, III) is weighted differently when calculating the overall score:
   <br>
   <b>Weighted Average</b> formula:<br>
   <code>(p₁·w₁ + p₂·w₂ + p₃·w₃) / (w₁ + w₂ + w₃)</code><br>
   where:<br>
-  - <code>pₙ</code> = % of open + not reviewed rules in that category<br>
-  - <code>wₙ</code> = weight (CAT I = 10, CAT II = 4, CAT III = 1)<br><br>
-  The <b>Risk Rating</b> is primarily determined by the <b>Weighted Average</b>, except for the special "Low" risk condition :<br>
+  - <code>pₙ</code> = % of open + unassessed rules in that category<br>
+  - <code>wₙ</code> = weight <b>(CAT I = 10, CAT II = 4, CAT III = 1)</b><br><br>
+  The <b>Risk Rating</b> is primarily determined by the <b>Weighted Average</b>, except for the special "Low" risk condition:<br>
   <ul style="padding-left: 16px; margin: 4px 0;">
     <li><span class="sm-cora-tooltip-label sm-cora-risk-very-high"><b>Very High</b></span><b> ≥ 20%</b></li>
     <li><span class="sm-cora-tooltip-label sm-cora-risk-high"><b>High</b></span><b> ≥ 10% and &lt; 20%</b></li>
