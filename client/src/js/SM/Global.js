@@ -237,14 +237,15 @@ SM.RuleContentTpl = new Ext.XTemplate(
   }
 
   SM.TruncateLimit = 256
-  SM.Truncate = function (value, storeId, recordId) {
-    if (value.length > SM.TruncateLimit) {
-        return `${value.slice(0,SM.TruncateLimit)}...`
-    }
-    else {
-        return value
-    }
-  }
+    SM.Truncate = function (record, property) {
+        const value = SM.he(record.data[property])
+        if (!value) return ''
+
+        return value.length > SM.TruncateLimit
+            ? value.slice(0, SM.TruncateLimit) + '......'
+            : value
+        }
+
   SM.TruncateRecordProperty = function (record, property) {
       const value = SM.he(record.data[property])
       if (!value) return
