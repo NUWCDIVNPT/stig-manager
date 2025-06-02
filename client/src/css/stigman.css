@@ -220,7 +220,7 @@
   min-width: 80px;       /* Ensure minimum width for consistency */
   font-weight: 500;      /* Lighter weight */
   color: #111;
-  margin: 0 auto;
+  margin: 2px auto;
   padding: 2px 6px;      /* Add padding for better text spacing */
   display: inline-block;
   text-align: center;
