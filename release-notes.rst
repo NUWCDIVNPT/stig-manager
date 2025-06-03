@@ -1,3 +1,16 @@
+1.5.9
+-------
+
+Changes:
+
+  - (UI) feature: CORA Scoring added to Collection and Meta Dashboard panels and grids
+  - (UI) feature: Double-click on a Review in the "Other Assets" tab will now open a modal presenting the entire review
+  - (UI) feature: Download individual Review Attachments or an Archive of all Attachments for a Checklist
+  - (API) fix: Clone Collection operation now clones AssessedBySeverity columns
+  - (UI) fix: correctly handles new response for duplicate asset name
+  - (API) Dependency updates
+  
+  
 1.5.8
 -------
 
