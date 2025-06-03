@@ -191,7 +191,9 @@ module.exports.updateUser = async function updateUser (req, res, next) {
       throw new SmError.NotFoundError("UserId not found.")
     }
 
-    if (body.status === 'unavailable' || userData.status === 'unavailable') {
+    // Determine intended status: body.status or current status
+    const intendedStatus = body.status || userData.status
+    if (intendedStatus === 'unavailable') {
       if (body.collectionGrants?.length || body.userGroups?.length) {
         throw new SmError.UserInconsistentError()
       }
