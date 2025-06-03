@@ -150,7 +150,8 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
       throw new SmError.NotFoundError("UserId not found.")
     }
 
-    if (body.status === 'unavailable' || userData.status === 'unavailable') {
+    const intendedStatus = body.status || userData.status
+    if (intendedStatus === 'unavailable') {
       if (body.collectionGrants?.length || body.userGroups?.length) {
         throw new SmError.UserInconsistentError()
       }
