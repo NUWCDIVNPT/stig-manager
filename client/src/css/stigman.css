@@ -10,7 +10,22 @@
   --metrics-status-chart-accepted-dark: hsl(146deg 90% 25%);
   --metrics-status-chart-unassessed-dark: hsl(0 0% 18% / 1);
   --metrics-status-chart-unsaved-dark: hsl(0deg 0% 18%);
-  --metrics-status-chart-rejected-dark: hsl(5deg 90% 25%)
+  --metrics-status-chart-rejected-dark: hsl(5deg 90% 25%);
+  --color-severity-high:hsl(13deg 68% 75%);
+  --color-severity-medium:hsl(38 100% 78% / 1);
+  --color-severity-low:hsl(230deg 41% 86%);
+  --color-risk-very-high: var(--color-severity-high);
+  --color-risk-very-high-text: rgb(88, 12, 21);
+  --color-risk-high: var(--color-severity-medium);
+  --color-risk-high-text: rgb(146, 50, 18);
+  --color-risk-moderate: hsl(60 100% 80% / 1);
+  --color-risk-moderate-text:#805500;
+  --color-risk-low:var(--color-severity-low);
+  --color-risk-low-text:rgb(14, 90, 161);
+  --color-risk-very-low:#c3deab;
+  --color-risk-very-low-text:rgb(0, 100, 0);
+  --color-scrollbar-idle: #d0d0d0;
+  --color-scrollbar-hover:#b0b0b0;
 }
 
 .x-tree-node-collapsed .x-tree-node-icon, .x-tree-node-expanded .x-tree-node-icon, .x-tree-node-leaf .x-tree-node-icon {
@@ -143,7 +158,7 @@
   background-color: var(--metrics-status-chart-assessed-light)
 }
 .sm-metrics-status-table .sm-metrics-submitted {
-  background-color: var(--metrics-status-chart-submitted-light)
+  background-color: var(--metrics-status-chart-submitted-light);
 }
 .sm-metrics-status-table .sm-metrics-accepted {
   background-color: var(--metrics-status-chart-accepted-light)
@@ -187,7 +202,7 @@
   font-weight: 800;
   font-size: large
 }
-.sm-metrics-findings-count-cell {
+.sm-cora-column, .sm-metrics-findings-count-cell {
   border-radius: 5px;
   outline: #bbb solid 1px;
   outline-offset: -1px;
@@ -196,14 +211,29 @@
   color: #111;
   margin: 0 auto
 }
+
+.sm-cora-tooltip-label {
+  border-radius: 5px;
+  outline: #bbb solid 1px;
+  outline-offset: -1px;
+  width: auto;           /* Allow width to fit content */
+  min-width: 80px;       /* Ensure minimum width for consistency */
+  font-weight: 500;      /* Lighter weight */
+  color: #111;
+  margin: 2px auto;
+  padding: 2px 6px;      /* Add padding for better text spacing */
+  display: inline-block;
+  text-align: center;
+}
+
 .sm-metrics-high-box {
-  background-color: hsl(13deg 68% 75%)
+  background-color: var(--color-severity-high)
 }
 .sm-metrics-medium-box {
-  background-color: hsl(38 100% 78% / 1)
+  background-color: var(--color-severity-medium)
 }
 .sm-metrics-low-box {
-  background-color: hsl(230deg 41% 86%)
+  background-color: var(--color-severity-low)
 }
 .sm-metrics-inventory-box {
   background-color: hsl(21deg 41% 86%)
@@ -543,7 +573,8 @@ a.x-grid3-hd-btn:hover {
 }
 .x-form-cb-label .sm-question-circle,
 .x-form-item-label .sm-question-circle,
-.x-grid3-hd .sm-question-circle {
+.x-grid3-hd .sm-question-circle,
+.x-panel-header .sm-question-circle {
   color: hsl(0deg 0% 60%);
   margin-left: 3px;
   font-size: 13px
@@ -2469,4 +2500,116 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 
 .sm-error-icon {
   background-image: url(../img/x-red-svg.svg);
+}
+
+.sm-cora-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.sm-cora-box-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.sm-cora-box-title {
+  text-align: center;
+  font-weight: 600;
+}
+
+.sm-cora-cat {
+  color: #111;
+  border-radius: 5px;
+  border: 1px solid #bbb;
+  font-weight: 700;
+  text-align: right;
+  padding: 0px 6px;
+  margin: 0px 12px;
+}
+
+.sm-cat1 {background-color: var(--color-severity-high);}
+.sm-cat2 {background-color: var(--color-severity-medium);}
+.sm-cat3 {background-color: var(--color-severity-low);}
+.sm-cat1::before {content:"CAT 1"; float:left; font-weight:600}
+.sm-cat2::before {content:"CAT 2"; float:left; font-weight:600}
+.sm-cat3::before {content:"CAT 3"; float:left; font-weight:600}
+
+.sm-cora-box-right {
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid #bbb;
+  text-align: center;
+  width: 110px;
+}
+
+.sm-cora-score-header {
+  font-weight: 600;
+  font-size: larger;
+  color: #111;
+}
+
+.sm-cora-score-risk-level {
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.sm-risk-indicator {
+  margin: auto;
+  font-weight: 800;
+  font-size: 18px;
+  color: #111;
+}
+
+.sm-cora-risk-very-high {
+  background-color: var(--color-risk-very-high);
+ }
+ .sm-cora-risk-very-high .sm-cora-score-risk-level {
+  color: var(--color-risk-very-high-text);
+ }
+.sm-cora-risk-high {
+  background-color: var(--color-risk-high);
+}
+ .sm-cora-risk-high .sm-cora-score-risk-level {
+  color: var(--color-risk-high-text);
+ }
+.sm-cora-risk-moderate {
+  background-color: var(--color-risk-moderate);
+}
+.sm-cora-risk-moderate .sm-cora-score-risk-level {
+  color: var(--color-risk-moderate-text);
+}
+.sm-cora-risk-low {
+  background-color: var(--color-risk-low);
+}
+.sm-cora-risk-low .sm-cora-score-risk-level {
+  color: var(--color-risk-low-text);
+}
+.sm-cora-risk-very-low {
+  background-color: var(--color-risk-very-low);
+}
+.sm-cora-risk-very-low .sm-cora-score-risk-level {
+  color: var(--color-risk-very-low-text);
+}
+
+.x-grid3-scroller {
+	overflow-x: auto;
+	scrollbar-color: var(--color-scrollbar-idle) transparent;
+	transition: scrollbar-color 0.125s;
+}
+.x-grid3-scroller:hover {
+	overflow-x: auto;
+	scrollbar-color: var(--color-scrollbar-hover) transparent;
+}
+
+.sm-round-panel .x-panel-body {
+  scrollbar-color: var(--color-scrollbar-idle) transparent;
+  transition: scrollbar-color 0.125s;
+}
+
+.sm-round-panel .x-panel-body:hover {
+	scrollbar-color: var(--color-scrollbar-hover) transparent;
 }

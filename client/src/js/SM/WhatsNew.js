@@ -1,6 +1,45 @@
 Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
+    {
+    date: '2025-06-02',
+    header: `CORA Score Now Available in the Collection and Meta Dashboards`,
+    body: ` 
+      <p>
+ <b>Cyber Operational Readiness Assessment (CORA)</b>-style scoring is now available in the Collection and Meta Dashboards. 
+ CORA scoring treats Unassessed rules as if they were Open, and uses a weighted average to calculate the overall risk rating for a Collection, or portion thereof.
+       <p>
+
+ The dashboard panel displays a count of Open or Unassessed Rules for each Severity Category, the overall Weighted Percentage, and the Risk Rating for the Collection. The Risk Rating is color-coded to indicate the level of risk, with categories ranging from Very Low to Very High. The CORA panel is responsive to the filters applied in the Dashboard.
+ 
+  <p><img src="img/whatsnew/2025-06-02-cora-score-panel.png" width=350/></p>
+
+  The same scoring is available more granularly in the grid displays of the STIGs, Assets, and Labels tabs:
+
+  <p><img src="img/whatsnew/2025-06-02-cora-score-columns.png" width=750/></p>
+
+<br>
+ Reviews with <i>Open</i>, <i>Not a Finding</i>, or <i>Not Applicable</i> results are considered <i>assessed</i>.<br>
+ Reviews with other results (such as <i>Not Reviewed</i> or <i>Informational</i>) are treated as <i>unassessed</i>.
+ <br><br>
+  Each severity category (CAT I, II, III) is weighted differently when calculating the overall score:
+  <br>
+  <b>Weighted Average</b> formula:<br>
+  <code>(p₁·w₁ + p₂·w₂ + p₃·w₃) / (w₁ + w₂ + w₃)</code><br>
+  where:<br>
+  - <code>pₙ</code> = % of open + unassessed rules in that category<br>
+  - <code>wₙ</code> = weight <b>(CAT I = 10, CAT II = 4, CAT III = 1)</b><br><br>
+  The <b>Risk Rating</b> is primarily determined by the <b>Weighted Average</b>, except for the special "Low" risk condition:<br>
+  <ul style="padding-left: 16px; margin: 4px 0;">
+    <li><span class="sm-cora-tooltip-label sm-cora-risk-very-high"><b>Very High</b></span><b> ≥ 20%</b></li>
+    <li><span class="sm-cora-tooltip-label sm-cora-risk-high"><b>High</b></span><b> ≥ 10% and &lt; 20%</b></li>
+    <li><span class="sm-cora-tooltip-label sm-cora-risk-moderate"><b>Moderate</b></span><b> &gt; 0% and &lt; 10%</b></li>
+    <li><span class="sm-cora-tooltip-label sm-cora-risk-low"><b>Low</b></span><b> CAT I = 0; CAT II &amp; III each &lt; 5% <i>unweighted</i></b></li>
+    <li><span class="sm-cora-tooltip-label sm-cora-risk-very-low"><b>Very Low</b></span><b> 0% total</b></li>
+  </ul>
+
+    `
+  },
   {
     date: '2025-05-12',
     header: `Set Review Status for Each Result Type When Importing Checklists`,

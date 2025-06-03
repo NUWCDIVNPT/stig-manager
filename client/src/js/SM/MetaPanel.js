@@ -68,6 +68,18 @@ SM.MetaPanel.CommonColumns = [
     renderer: renderPctAllHigh
   },
   {
+    header: "CORA %",
+    width: 50,
+    align: "center",
+    dataIndex: 'coraScore',
+    sortable: true,
+    renderer: function (v, md, r) {
+      const detailedCora = r.get('coraScoreDetail')
+      let riskClass = getRiskClass(detailedCora.riskRating)
+      return `<div class="sm-cora-column ${riskClass}" ext:qtip="<div style='white-space: nowrap;'>${detailedCora.riskRating}</div>">${(detailedCora.weightedAvg * 100).toFixed(1)}</div>`
+    }
+  },
+  {
     header: "CAT 3",
     width: 50,
     dataIndex: 'low',
@@ -1041,6 +1053,13 @@ SM.MetaPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       toolTemplate,
       border: true
     })
+    this.coraPanel = new SM.CollectionPanel.CORAPanel({
+      cls: 'sm-round-inner-panel',
+      bodyStyle: 'padding: 10px;',
+      title: 'CORA',
+      toolTemplate,
+      border: true
+    })
     this.progressPanel = new SM.MetaPanel.ProgressPanel({
       cls: 'sm-round-inner-panel',
       bodyStyle: 'padding: 10px;',
@@ -1081,6 +1100,7 @@ SM.MetaPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       _this.progressPanel.updateMetrics(data.metrics)
       _this.agesPanel.updateMetrics(data.metrics)
       _this.findingsPanel.updateMetrics(data.metrics.findings)
+      _this.coraPanel.updateMetrics(data.metrics)
       _this.lastRefreshedTextItem.update({
         date: data.date
       })
@@ -1118,6 +1138,7 @@ SM.MetaPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       toolTemplate,
       items: [
         this.progressPanel,
+        this.coraPanel,
         this.inventoryPanel,
         this.findingsPanel,
         this.agesPanel,

@@ -28,6 +28,18 @@ SM.CollectionPanel.CommonFields = [
     mapping: 'metrics.findings.low'
   },
   {
+    name: 'coraScore',
+    type: 'float',
+    convert: (v, r) => {
+      return calculateCoraRiskRating(r.metrics).weightedAvg
+    }
+  },
+  {
+    name: 'coraScoreDetail',
+    type: 'auto',
+    convert: (v, r) => calculateCoraRiskRating(r.metrics)
+  },
+  {
     name: 'medium',
     type: 'integer',
     mapping: 'metrics.findings.medium'
@@ -177,6 +189,18 @@ SM.CollectionPanel.CommonColumns = [
     // align: "center",
     sortable: true,
     renderer: renderPctAllHigh
+  },
+  {
+    header: "CORA %",
+    width: 50,
+    align: "center",
+    dataIndex: 'coraScore',
+    sortable: true,
+    renderer: function (v, md, r) {
+      const detailedCora = r.get('coraScoreDetail')
+      let riskClass = getRiskClass(detailedCora.riskRating)
+      return `<div class="sm-cora-column ${riskClass}" ext:qtip="<div style='white-space: nowrap;'>${detailedCora.riskRating}</div>">${(detailedCora.weightedAvg * 100).toFixed(1)}</div>`
+    }
   },
   {
     header: "CAT 3",
@@ -483,6 +507,8 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
         emptyText: this.emptyText || 'No records to display',
         deferEmptyText: false,
         forceFit: true,
+        forceFitMin: 900,
+        forceFitMax: 2500,
         cellSelectorDepth: 5,
         // custom row height
         rowHeight: 21,
@@ -494,7 +520,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
           filterschanged: function (view, item, value) {
             store.filter(view.getFilterFns())
           }
-        }
+        },
       }),
       bbar: new Ext.Toolbar({
         items: [
@@ -698,6 +724,8 @@ SM.CollectionPanel.UnaggGrid = Ext.extend(Ext.grid.GridPanel, {
         emptyText: this.emptyText || 'No records to display',
         deferEmptyText: false,
         forceFit: true,
+        forceFitMin: 1000,
+        forceFitMax: 2500,
         cellSelectorDepth: 5,
         // custom row height
         rowHeight: 21,
@@ -1204,6 +1232,93 @@ SM.CollectionPanel.InventoryPanel = Ext.extend(Ext.Panel, {
   }
 })
 
+SM.CollectionPanel.CORAPanel = Ext.extend(Ext.Panel, {
+  initComponent: function () {
+    const _this = this
+    
+    _this.helpIconTooltip = null
+
+    _this.tpl = new Ext.XTemplate(
+      '<div class="sm-cora-container">',
+        '<div class="sm-cora-box-left">',
+          '<div class="sm-cora-box-title">Open or Unassessed</div>',
+          '<div class="sm-cora-cat sm-cat1">{catI}</div>',
+          '<div class="sm-cora-cat sm-cat2">{catII}</div>',
+          '<div class="sm-cora-cat sm-cat3">{catIII}</div>',
+        '</div>',
+        '<div class="sm-cora-box-right {riskClass}">',
+          '<div class="sm-cora-score-header">',
+            'CORA Risk',
+          '</div>',
+          '<div class="sm-risk-indicator">{weightedAvg}%</div>',
+          '<div class="sm-cora-score-risk-level">',
+            '<div>{riskRating}</div>',
+          '</div>',
+        '</div>',
+      '</div>'
+    )
+
+    const htmlContainer = new Ext.BoxComponent({
+      tpl: _this.tpl,
+      data: this.data
+    })
+
+    Ext.apply(this, {
+      title: 'CORA' +  '<i class="fa fa-question-circle sm-question-circle"></i>', 
+      items: [htmlContainer],
+      listeners: {
+        afterrender: function() {
+          _this.createTooltips()
+        }
+      }
+    })
+
+    _this.createTooltips = function() {
+      setTimeout(function() {
+        const helpIcon = _this.getEl().select('.sm-question-circle').first()
+        if (helpIcon) {
+          _this.helpIconTooltip = new Ext.ToolTip({
+            target: helpIcon,
+            html: SM.TipContent.CORA,
+            showDelay: 0,
+            hideDelay: 0,
+            dismissDelay: 0,
+            autoWidth: true,
+          })
+        }
+      }, 150)
+    }
+
+    _this.updateMetrics = function (metrics) {
+      const coraMetrics = calculateCoraRiskRating(metrics)
+
+      const riskClass = getRiskClass(coraMetrics.riskRating)
+      const { assessmentsBySeverity, assessedBySeverity, findings } = metrics
+
+      function getUnreviewedOrOpen(sev) {
+        return (assessmentsBySeverity[sev] - assessedBySeverity[sev]) + findings[sev]
+      }
+
+      const data = {
+        riskRating: coraMetrics.riskRating,
+        weightedAvg: (coraMetrics.weightedAvg * 100).toFixed(1),
+        catI: getUnreviewedOrOpen('high'),
+        catII: getUnreviewedOrOpen('medium'),
+        catIII: getUnreviewedOrOpen('low'),
+        riskClass
+      }
+
+      htmlContainer.tpl.overwrite(htmlContainer.getEl(), data)
+      if (_this.helpIconTooltip) {
+        _this.helpIconTooltip.destroy()
+      }
+      _this.createTooltips()
+    }
+
+    this.superclass().initComponent.call(this)
+  }
+})
+
 SM.CollectionPanel.OverviewPanel = Ext.extend(Ext.Panel, {
   initComponent: function () {
     const _this = this
@@ -1235,6 +1350,15 @@ SM.CollectionPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       toolTemplate,
       border: true
     })
+    
+    this.coraPanel = new SM.CollectionPanel.CORAPanel({
+      cls: 'sm-round-inner-panel',
+      bodyStyle: 'padding: 10px;',
+      title: 'CORA',
+      toolTemplate,
+      border: true
+    })
+
     this.progressPanel = new SM.CollectionPanel.ProgressPanel({
       cls: 'sm-round-inner-panel',
       bodyStyle: 'padding: 10px;',
@@ -1276,6 +1400,7 @@ SM.CollectionPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       _this.progressPanel.updateMetrics(data.metrics)
       _this.agesPanel.updateMetrics(data.metrics)
       _this.findingsPanel.updateMetrics(data.metrics.findings)
+      _this.coraPanel.updateMetrics(data.metrics)
       _this.lastRefreshedTextItem.update({
         date: data.date
       })
@@ -1313,6 +1438,7 @@ SM.CollectionPanel.OverviewPanel = Ext.extend(Ext.Panel, {
       toolTemplate,
       items: [
         this.progressPanel,
+        this.coraPanel,
         this.inventoryPanel,
         this.findingsPanel,
         this.agesPanel,
