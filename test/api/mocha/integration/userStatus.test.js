@@ -313,6 +313,92 @@ describe('User Status PATCH Tests', function () {
       expect(res.status).to.equal(422)
     })
   })
+  // user 01 with id of 2 is unavailable at this point
+  describe(`PATCH - updateUser - /users/2 - unavailable => available`, function () {
+    let res
+    before(async function () {
+      res = await utils.executeRequest(`${config.baseUrl}/users/2?elevate=true&projection=collectionGrants&projection=userGroups`, 'PATCH', users[0].token, {
+        status: 'available',
+      })
+    })
+    it('returned a 200 status', function () {
+      expect(res.status).to.equal(200)
+    })
+    it('returned the userId', function () {
+      expect(res.body.userId).to.be.a('string')
+    })
+    it('returned the username', function () {
+      expect(res.body.username).to.eql('user01')
+    })
+    it('returned status = available', function () {
+      expect(res.body.status).to.eql('available')
+    })
+    it('returned statusDate = now', function () {
+      expect(new Date(res.body.statusDate)).to.be.closeToTime(new Date(), 1)
+    })
+    it('returned statusUser = 1', function () {
+      expect(res.body.statusUser).to.eql('1')
+    })
+    it ('returned empty collection grants', function () {
+      expect(res.body.collectionGrants).to.eql([])
+    })
+    it ('returned empty user groups', function () {
+      expect(res.body.userGroups).to.eql([])
+    })
+  })
+  describe(`PATCH - updateUser - /users/2 - unavailable => available with grants/groups`, function () {
+    let res
+    before(async function () {
+      res = await utils.executeRequest(`${config.baseUrl}/users/2?elevate=true&projection=collectionGrants&projection=userGroups`, 'PATCH', users[0].token, {
+        status: 'available',
+        collectionGrants: [ { collectionId: '1', roleId: 3 } ],
+        userGroups:[ '1' ]
+      })
+    })
+    it('returned a 200 status', function () {
+      expect(res.status).to.equal(200)
+    })
+    it('returned the userId', function () {
+      expect(res.body.userId).to.be.a('string')
+    })
+    it('returned the username', function () {
+      expect(res.body.username).to.eql("user01")
+    })
+    it('returned status = available', function () {
+      expect(res.body.status).to.eql('available')
+    })
+    it('returned statusDate = now', function () {
+      expect(new Date(res.body.statusDate)).to.be.closeToTime(new Date(), 1)
+    })
+    it('returned statusUser = 1', function () {
+      expect(res.body.statusUser).to.eql('1')
+    })
+    it ('returned correct collection grants to collection 1', function () {
+      expect(res.body.collectionGrants).to.eql([
+        {
+          roleId: 3,
+          grantees: [
+            {
+              userId: "2",
+              username: "user01",
+            },
+          ],
+          collection: {
+            name: "status-collection",
+            collectionId: "1",
+          },
+        },
+      ])
+    })
+    it ('returned correct user groups to groupId 1', function () {
+      expect(res.body.userGroups).to.eql([
+        {
+          name: "status-group",
+          userGroupId: "1",
+        },
+      ])
+    })
+  })
   describe(`PATCH - updateCollection - /collections/1 - with unavailable user grant`, function () {
     let res
     before(async function () {
@@ -495,5 +581,97 @@ describe('User Status PUT Tests', function () {
     it('returned a 422 status', function () {
       expect(res.status).to.equal(422)
     })
-  })  
+  })
+  // user 02 is unavailable at this point
+  describe(`PUT - replaceUser - /users/2 - unavailable => available`, function () {
+    let res
+    let username = 'user02' + utils.getUUIDSubString(5)
+    before(async function () {
+      res = await utils.executeRequest(`${config.baseUrl}/users/2?elevate=true&projection=collectionGrants&projection=userGroups`, 'PUT', users[0].token, {
+        status: 'available',
+        username: username,
+        collectionGrants: [],
+        userGroups:[]
+      })
+    })
+    it('returned a 200 status', function () {
+      expect(res.status).to.equal(200)
+    })
+    it('returned the userId', function () {
+      expect(res.body.userId).to.be.a('string')
+    })
+    it('returned the username', function () {
+      expect(res.body.username).to.eql(username)
+    })
+    it('returned status = available', function () {
+      expect(res.body.status).to.eql('available')
+    })
+    it('returned statusDate = now', function () {
+      expect(new Date(res.body.statusDate)).to.be.closeToTime(new Date(), 1)
+    })
+    it('returned statusUser = 1', function () {
+      expect(res.body.statusUser).to.eql('1')
+    })
+    it ('returned empty collection grants', function () {
+      expect(res.body.collectionGrants).to.eql([])
+    })
+    it ('returned empty user groups', function () {
+      expect(res.body.userGroups).to.eql([])
+    })
+  })
+  describe(`PUT - replaceUser - /users/2 - unavailable => available with grants/groups`, function () {
+    let res
+    let username = 'user02' + utils.getUUIDSubString(5)
+    before(async function () {
+      res = await utils.executeRequest(`${config.baseUrl}/users/2?elevate=true&projection=collectionGrants&projection=userGroups`, 'PUT', users[0].token, {
+        status: 'available',
+        username: username,
+        collectionGrants: [ { collectionId: '1', roleId: 3 } ],
+        userGroups:[ '1' ]
+      })
+    })
+    it('returned a 200 status', function () {
+      expect(res.status).to.equal(200)
+    })
+    it('returned the userId', function () {
+      expect(res.body.userId).to.be.a('string')
+    })
+    it('returned the username', function () {
+      expect(res.body.username).to.eql(username)
+    })
+    it('returned status = available', function () {
+      expect(res.body.status).to.eql('available')
+    })
+    it('returned statusDate = now', function () {
+      expect(new Date(res.body.statusDate)).to.be.closeToTime(new Date(), 1)
+    })
+    it('returned statusUser = 1', function () {
+      expect(res.body.statusUser).to.eql('1')
+    })
+    it ('returned correct collection grants to collection 1', function () {
+      expect(res.body.collectionGrants).to.eql([
+        {
+          roleId: 3,
+          grantees: [
+            {
+              userId: "2",
+              username: username,
+            },
+          ],
+          collection: {
+            name: "status-collection",
+            collectionId: "1",
+          },
+        },
+      ])
+    })
+    it ('returned correct user groups to groupId 1', function () {
+      expect(res.body.userGroups).to.eql([
+        {
+          name: "status-group",
+          userGroupId: "1",
+        },
+      ])
+    })
+  })
 })

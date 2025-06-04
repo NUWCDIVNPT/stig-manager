@@ -881,10 +881,12 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
         listeners: {
           rowselect: function (sm, rowIndex, record) {
             if (store.getAt(rowIndex).data.status === 'available') {
+              _this.modifyBtn.setDisabled(false)
               _this.statusBtn.setText('Set Unavailable')
               _this.statusBtn.setIconClass('sm-user-unavailable-icon')
             } 
             else {
+              _this.modifyBtn.setDisabled(true)
               _this.statusBtn.setText('Set Available')
               _this.statusBtn.setIconClass('sm-user-icon')
             } 
@@ -1077,6 +1079,7 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
         },
         '-',
         {
+          ref: '../modifyBtn',
           iconCls: 'icon-edit',
           text: 'Modify User',
           handler: function () {
