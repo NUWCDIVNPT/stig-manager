@@ -1332,6 +1332,7 @@ exports.checkRuleByAssetUser = async function ({ruleId, assetId, collectionId, g
       left join rev_group_rule_map rgr using (revId)
     where 
       a.assetId = ?
+      and a.state = 'enabled'
       and rgr.ruleId = ?
       ${checkWritable ? "and coalesce(cae.access, 'rw') = 'rw'" : ''}
       ${collectionId ? "and a.collectionId = ?" : ''}`
@@ -1339,6 +1340,36 @@ exports.checkRuleByAssetUser = async function ({ruleId, assetId, collectionId, g
   let [rows] = await dbUtils.pool.query(sql, binds)
   return rows.length > 0
 }
+
+exports.checkRulesByAssetUser = async function ({ruleIds, assetId, collectionId, grant, checkWritable}) {
+
+  const binds = []
+  const placeholders = ruleIds.map(() => '?').join(', ') 
+  
+  let sql = `with ${dbUtils.cteAclEffective({grantIds: grant.grantIds})}
+    select
+      rgr.ruleId 
+    from 
+      asset a
+      left join stig_asset_map sa using (assetId)
+      ${grant.roleId === 1 ? 'inner' : 'left'} join cteAclEffective cae on sa.saId = cae.saId
+      left join revision rev on sa.benchmarkId = rev.benchmarkId
+      left join rev_group_rule_map rgr using (revId)
+    where 
+      a.assetId = ?
+      and a.state = 'enabled'
+      and rgr.ruleId in (${placeholders})
+      ${checkWritable ? "and coalesce(cae.access, 'rw') = 'rw'" : ''}
+      ${collectionId ? "and a.collectionId = ?" : ''}`
+
+  binds.push(assetId, ...ruleIds)
+  if (collectionId) binds.push(collectionId)
+
+  const [rows] = await dbUtils.pool.query(sql, binds)
+
+  return rows.length > 0
+}
+
 
 exports.getReviewMetadataKeys = async function ( assetId, ruleId ) {
   const binds = []

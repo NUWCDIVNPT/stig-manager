@@ -1170,15 +1170,12 @@ describe('POST - Review', () => {
               "status": "submitted"
               }
           ])
-          
-          expect(res.status).to.eql(200)
+         
           if(iteration.name == "lvl1"){
-            expect(res.body.rejected).to.have.length(1)
-            expect(res.body.rejected[0].reason).to.eql("no grant for this asset/ruleId")
-            expect(res.body.affected.inserted).to.eql(0)
-            expect(res.body.affected.updated).to.eql(0)
+           expect(res.status).to.eql(403)
           }
           else {
+            expect(res.status).to.eql(200)
             expect(res.body.rejected).to.have.length(0)
             expect(res.body.affected.inserted).to.eql(0)
             expect(res.body.affected.updated).to.eql(1)
@@ -1233,8 +1230,8 @@ describe('POST - Review', () => {
           ])
           expect(res.status).to.eql(403) 
         })
-        it('Import reviews for deleted asset', async () => {
-          const res = await utils.executeRequest(`${config.baseUrl}/collections/${deletedCollection}/reviews/${reference.testAsset.assetId}`, 'POST', iteration.token, [
+        it('Import reviews for deleted Asset in an enabled collection', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${deletedAsset}`, 'POST', iteration.token, [
               {
               "ruleId": `${reference.testCollection.ruleId}`,
               "result": "pass",

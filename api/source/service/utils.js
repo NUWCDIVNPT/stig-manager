@@ -343,6 +343,7 @@ module.exports.getUserAssetStigAccess = async function ({assetId, benchmarkId, g
     coalesce(ae.access, 'rw') as access
   from
 	  stig_asset_map sa
+    inner join asset a on sa.assetId = a.assetId and a.state = 'enabled'
     ${grant.roleId === 1 ? 'inner' : 'left'} join cteAclEffective ae using (saId)
   where
 	  sa.assetId = ? and sa.benchmarkId = ?`

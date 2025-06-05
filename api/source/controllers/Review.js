@@ -7,7 +7,6 @@ const Collection = require(`./Collection`)
 const SmError = require('../utils/error')
 const Security = require('../utils/roles')
 const dbUtils = require('../service/utils')
-
 const _this = this
 
 module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res, next) {
@@ -15,6 +14,20 @@ module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res,
     const { collectionId } = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
     const assetId = req.params.assetId
     const reviews = req.body
+    
+    const ruleIds = reviews.map(r => r.ruleId)
+    const userHasRules = await ReviewService.checkRulesByAssetUser({
+      ruleIds,
+      assetId,
+      collectionId,
+      grant: req.userObject.grants[collectionId],
+      checkWritable: true
+    })
+
+    if (!userHasRules) {
+      throw new SmError.PrivilegeError('User has insufficient privilege to post the reviews of these rules.')
+    }
+ 
     const result = await ReviewService.putReviewsByAsset({
       assetId,
       reviews,
@@ -37,7 +50,7 @@ module.exports.deleteReviewByAssetRule = async function deleteReviewByAssetRule 
     let projections = req.query.projection
     
     const {collectionId, grant} = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
-    const userHasRule = await ReviewService.checkRuleByAssetUser({ruleId, assetId, collectionId, grant, checkWritable: true})
+    const userHasRule = await ReviewService.checkRulesByAssetUser({ruleIds: [ruleId], assetId, collectionId, grant, checkWritable: true})
     if (userHasRule) {
       let response = await ReviewService.deleteReviewByAssetRule({assetId, ruleId, projections, grant, svcStatus: res.svcStatus})
       res.status(response ? 200 : 204).json(response)
@@ -145,6 +158,10 @@ module.exports.putReviewByAssetRule = async function (req, res, next) {
     const {assetId, ruleId} = {...req.params}
     const review = {...req.body, ruleId}
     const projections = req.query.projection
+    const userHasRule = await ReviewService.checkRulesByAssetUser({ruleIds: [ruleId], assetId, collectionId, grant, checkWritable: true})
+    if (!userHasRule) {
+      throw new SmError.PrivilegeError('User has insufficient privilege to put the review of this rule.')
+    }
     const result = await ReviewService.putReviewsByAsset({
       assetId,
       reviews: [review],
@@ -215,13 +232,13 @@ module.exports.getReviewMetadata = async function (req, res, next) {
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
     const {collectionId, grant} = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
-    const userHasRule = await ReviewService.checkRuleByAssetUser({ruleId, assetId, collectionId, grant: grant})
+    const userHasRule = await ReviewService.checkRulesByAssetUser({ruleIds: [ruleId], assetId, collectionId, grant})
     if (userHasRule) {
       let response = await ReviewService.getReviewMetadata( assetId, ruleId, req.userObject)
       res.json(response)
     }
     else {
-      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
+      throw new SmError.PrivilegeError('User has insufficient privilege to get the review of this rule.')
     }
   }
   catch (err) {
@@ -235,7 +252,7 @@ module.exports.patchReviewMetadata = async function (req, res, next) {
     let ruleId = req.params.ruleId
     let metadata = req.body
     const {collectionId, grant} = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
-    const userHasRule = await ReviewService.checkRuleByAssetUser({ruleId, assetId, collectionId, grant: grant, checkWritable: true})
+    const userHasRule = await ReviewService.checkRulesByAssetUser({ruleIds: [ruleId], assetId, collectionId, grant: grant, checkWritable: true})
     if (userHasRule) {
       await ReviewService.patchReviewMetadata( assetId, ruleId, metadata)
       let response = await ReviewService.getReviewMetadata( assetId, ruleId)
@@ -256,7 +273,7 @@ module.exports.putReviewMetadata = async function (req, res, next) {
     let ruleId = req.params.ruleId
     let body = req.body
     const {collectionId, grant} = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
-    const userHasRule = await ReviewService.checkRuleByAssetUser({ruleId, assetId, collectionId, grant: grant, checkWritable: true})
+    const userHasRule = await ReviewService.checkRulesByAssetUser({ruleIds: [ruleId], assetId, collectionId, grant: grant, checkWritable: true})
     if (userHasRule) {
       await ReviewService.putReviewMetadata( assetId, ruleId, body)
       let response = await ReviewService.getReviewMetadata( assetId, ruleId)
@@ -276,7 +293,7 @@ module.exports.getReviewMetadataKeys = async function (req, res, next) {
     let assetId = req.params.assetId
     let ruleId = req.params.ruleId
     const {collectionId, grant} = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
-    const userHasRule = await ReviewService.checkRuleByAssetUser({ruleId, assetId, collectionId, grant: grant})
+    const userHasRule = await ReviewService.checkRulesByAssetUser({ruleIds: [ruleId], assetId, collectionId, grant})
     if (userHasRule) {
       let response = await ReviewService.getReviewMetadataKeys( assetId, ruleId, req.userObject)
       if (!response) {
@@ -285,7 +302,7 @@ module.exports.getReviewMetadataKeys = async function (req, res, next) {
       res.json(response)
     }
     else {
-      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
+      throw new SmError.PrivilegeError('User has insufficient privilege to get the review of this rule.')
     }
   }
   catch (err) {
@@ -299,7 +316,7 @@ module.exports.getReviewMetadataValue = async function (req, res, next) {
     let ruleId = req.params.ruleId
     let key = req.params.key
     const {collectionId, grant} = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
-    const userHasRule = await ReviewService.checkRuleByAssetUser({ruleId, assetId, collectionId, grant: grant})
+    const userHasRule = await ReviewService.checkRulesByAssetUser({ruleIds: [ruleId], assetId, collectionId, grant: grant})
     if (userHasRule) {
       let response = await ReviewService.getReviewMetadataValue( assetId, ruleId, key, req.userObject)
       if (!response) {
@@ -308,7 +325,7 @@ module.exports.getReviewMetadataValue = async function (req, res, next) {
       res.json(response)
     }
     else {
-      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
+      throw new SmError.PrivilegeError('User has insufficient privilege to get the review of this rule.')
     }
   }
   catch (err) {
@@ -323,13 +340,13 @@ module.exports.putReviewMetadataValue = async function (req, res, next) {
     let key = req.params.key
     let value = req.body
     const {collectionId, grant} = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
-    const userHasRule = await ReviewService.checkRuleByAssetUser({ruleId, assetId, collectionId, grant: grant, checkWritable: true})
+    const userHasRule = await ReviewService.checkRulesByAssetUser({ruleIds: [ruleId], assetId, collectionId, grant: grant, checkWritable: true})
     if (userHasRule) {
       await ReviewService.putReviewMetadataValue( assetId, ruleId, key, value)
       res.status(204).send()
     }
     else {
-      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
+      throw new SmError.PrivilegeError('User has insufficient privilege to put the review of this rule.')
     }
   }
   catch (err) {
@@ -343,13 +360,13 @@ module.exports.deleteReviewMetadataKey = async function (req, res, next) {
     let ruleId = req.params.ruleId
     let key = req.params.key
     const {collectionId, grant} = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
-    const userHasRule = await ReviewService.checkRuleByAssetUser({ruleId, assetId, collectionId, grant: grant, checkWritable: true})
+    const userHasRule = await ReviewService.checkRulesByAssetUser({ruleIds: [ruleId], assetId, collectionId, grant: grant, checkWritable: true})
     if (userHasRule) {
       await ReviewService.deleteReviewMetadataKey( assetId, ruleId, key, req.userObject)
       res.status(204).send()
     }
     else {
-      throw new SmError.PrivilegeError('User has insufficient privilege to patch the review of this rule.')
+      throw new SmError.PrivilegeError('User has insufficient privilege to delete the review of this rule.')
     }
   }
   catch (err) {
