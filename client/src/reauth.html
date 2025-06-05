@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>STIGMan OIDC Popup</title>
+  <style>
+    body {
+      background: #000;
+      color: #ccc;
+      font-family: sans-serif;
+    }
+
+    #status {
+      margin-top: 1em;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Signing In...</h2>
+  <div id="status"></div>
+  <script type="module">
+    // Main logic for handling OIDC re-authentication
+    const OW = new SharedWorker("js/oidcWorker.js", { name: 'stigman-oidc-worker', type: "module" })
+    OW.port.start()
+    const init = await sendWorkerRequest({ request: 'initialize' })
+    await run()
+
+    // Helper functions
+    function sendWorkerRequest(request) {
+      const requestId = crypto.randomUUID()
+      OW.port.postMessage({ ...request, requestId })
+      return new Promise((resolve) => {
+        function handler(event) {
+          if (event.data.requestId === requestId) {
+            OW.port.removeEventListener('message', handler)
+            resolve(event.data.response)
+          }
+        }
+        OW.port.addEventListener('message', handler)
+      })
+    }
+
+    async function run() {
+      const url = new URL(window.location.href)
+      const redirectUri = `${url.origin}${url.pathname}`
+      const paramStr = extractParamString(url)
+      if (!paramStr) {
+        document.getElementById('status').innerText = 'No parameters found in the URL.'
+        return
+      }
+      const response = await handleRedirectAndParameters(redirectUri, paramStr, init.env.clientId)
+      if (response.success) {
+        window.close()
+      } else {
+        document.getElementById('status').innerText = 'Error exchanging code for token: ' + response.error
+      }
+
+      function extractParamString(url) {
+        if (url.hash) return url.hash.substring(1) // Remove the leading '#'
+        if (url.search) return url.search.substring(1) // Remove the leading '?'
+        return ''
+      }
+
+    }
+
+    async function handleRedirectAndParameters(redirectUri, paramStr, clientId) {
+      const params = processRedirectParams(paramStr)
+      if (!params.code) {
+        appendError('No authorization code provided in the URL parameters.')
+        return
+      }
+      if (!params.state || params.state !== localStorage.getItem('reauth-oidcState')) {
+        appendError('State mismatch. The state parameter does not match the expected value.')
+        return
+      }
+      const response = await sendWorkerRequest({
+        request: 'exchangeCodeForToken',
+        code: params.code,
+        codeVerifier: localStorage.getItem('reauth-codeVerifier'),
+        clientId,
+        redirectUri
+      })
+      localStorage.removeItem('reauth-oidcState')
+      localStorage.removeItem('reauth-codeVerifier')
+      return response
+
+      function processRedirectParams(paramStr) {
+        const params = {}
+        const usp = new URLSearchParams(paramStr)
+        for (const [key, value] of usp) {
+          params[key] = value
+        }
+        return params
+      }
+    }
+
+  </script>
+</body>
+
+</html>

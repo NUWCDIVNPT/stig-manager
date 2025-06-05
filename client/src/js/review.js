@@ -219,8 +219,8 @@ async function addReview( params ) {
                   var url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=ckl`
                   xhr.open('GET', url)
                   xhr.responseType = 'blob'
-                  await window.oidcProvider.updateToken(10)
-                  xhr.setRequestHeader('Authorization', 'Bearer ' + window.oidcProvider.token)
+                  
+                  xhr.setRequestHeader('Authorization', 'Bearer ' + window.oidcWorker.token)
                   xhr.onload = function () {
                     if (this.status >= 200 && this.status < 300) {
                       var contentDispo = this.getResponseHeader('Content-Disposition')
@@ -267,8 +267,8 @@ async function addReview( params ) {
                   var url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=cklb`
                   xhr.open('GET', url)
                   xhr.responseType = 'blob'
-                  await window.oidcProvider.updateToken(10)
-                  xhr.setRequestHeader('Authorization', 'Bearer ' + window.oidcProvider.token)
+                  
+                  xhr.setRequestHeader('Authorization', 'Bearer ' + window.oidcWorker.token)
                   xhr.onload = function () {
                     if (this.status >= 200 && this.status < 300) {
                       var contentDispo = this.getResponseHeader('Content-Disposition')
@@ -309,12 +309,12 @@ async function addReview( params ) {
                 }
               },
               getXccdf: async function (leaf) {
-                await window.oidcProvider.updateToken(10)
+                
                 const url = `${STIGMAN.Env.apiBase}/assets/${leaf.assetId}/checklists/${groupGrid.sm_benchmarkId}/${groupGrid.sm_revisionStr}?format=xccdf`
                 let response = await fetch(url, {
                   method: 'GET',
                   headers: new Headers({
-                    'Authorization': `Bearer ${window.oidcProvider.token}`
+                    'Authorization': `Bearer ${window.oidcWorker.token}`
                   })
                 })
                 const contentDispo = response.headers.get("content-disposition")

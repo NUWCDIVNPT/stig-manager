@@ -461,7 +461,7 @@ class MockOidc {
             scopeClaim
           } = sessionParams
           const accessToken = this.getToken({ privileges, scope, username, expiresIn, algorithm, issuedAt, kid, sid, auth_time, privilegesClaim, usernameClaim, scopeClaim })
-          const refreshToken = this.getRefreshToken({ sid, expiresIn:refreshExpiresIn, algorithm, kid })
+          const refreshToken = refreshExpiresIn !== '0' ? this.getRefreshToken({ sid, expiresIn:refreshExpiresIn, algorithm, kid }) : undefined
           const code = crypto.randomBytes(16).toString('hex')
           this.authCodes[code] = {accessToken, refreshToken, expiresIn}
     
@@ -523,7 +523,7 @@ class MockOidc {
         scopeClaim
       }
       const accessToken = this.getToken({ privileges, scope, username, expiresIn, algorithm, issuedAt, kid, sid, auth_time, privilegesClaim, usernameClaim, scopeClaim })
-      const refreshToken = this.getRefreshToken({ sid, expiresIn:refreshExpiresIn, algorithm, kid })
+      const refreshToken = refreshExpiresIn !== '0' ? this.getRefreshToken({ sid, expiresIn:refreshExpiresIn, algorithm, kid }) : undefined
       const code = crypto.randomBytes(16).toString('hex')
       this.authCodes[code] = {accessToken, refreshToken, expiresIn}
 

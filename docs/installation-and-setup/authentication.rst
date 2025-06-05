@@ -213,3 +213,58 @@ Most commonly, STIG Manager will require the below Environment Variable to be sp
 
 A sample Keycloak image, recommended only for testing purposes, is available on `Docker Hub. <https://hub.docker.com/repository/docker/nuwcdivnpt/stig-manager-auth>`_ Most of the default values for the above Environment variables will work with this image. 
 
+.. _stigman_client_reauth_action:
+
+``STIGMAN_CLIENT_REAUTH_ACTION``
+-------------------------------------------------------
+
+The ``STIGMAN_CLIENT_REAUTH_ACTION`` environment variable controls how the STIG Manager web application responds when a user's credentials have expired and re-authentication is required. This setting determines **where** and **how** the OIDC (OpenID Connect) authorization flow is initiated for the user.
+
+Possible Values
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**popup** (default)  
+    Opens the OIDC authorization endpoint in a new browser popup window.
+
+**iframe**  
+    Opens the OIDC authorization endpoint in an embedded iframe within the app.
+
+**tab**  
+    Opens the OIDC authorization endpoint in a new browser tab.
+
+**reload**  
+    Reloads the current application tab, which will trigger the authentication redirect.
+
+Comparison Table
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. list-table:: STIGMAN_CLIENT_REAUTH_ACTION Options
+   :widths: 10 10 30 30
+   :header-rows: 1
+   :class: tight-table
+
+
+   * - Action
+     - UX
+     - Upsides
+     - Downsides
+   * - **popup**
+     - Good
+     - - Keeps the main application context intact. User can complete authentication without reloading the main app.
+       - Permitted natively by browsers, since the popup is opened by a user action.
+     - May be blocked by third-party browser popup blockers, requiring user intervention.  
+   * - **iframe**
+     - Best
+     - - No new browser windows or tabs, the main application remains loaded and visible.
+     - The OIDC Provider must allow being embedded in an iframe by setting an appropriate ``frame_ancestors`` directive in the Content-Security-Policy (CSP) header. See `frame_ancestors documentation on MDN <https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors>`_ 🔗
+   * - **tab**
+     - Acceptable  
+     - - Less likely to be blocked by third-party popup blockers compared to popups.
+       - Main application remains open in the original tab.
+     - User will be switched back to the original tab after authentication, which can be confusing if multiple tabs are open.
+   * - **reload**
+     - Poor
+     - - Compatible with all browsers and OIDC providers.  
+       - No issues with popup blockers or CSP.
+     - The application state is lost; any unsaved work will be discarded.  
+

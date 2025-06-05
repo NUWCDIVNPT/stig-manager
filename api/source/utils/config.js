@@ -33,6 +33,7 @@ const config = {
         refreshToken: {
             disabled: process.env.STIGMAN_CLIENT_REFRESH_DISABLED ? process.env.STIGMAN_CLIENT_REFRESH_DISABLED === "true" : false,
         },
+        reauthAction: process.env.STIGMAN_CLIENT_REAUTH_ACTION || "popup",
         welcome: {
             image: process.env.STIGMAN_CLIENT_WELCOME_IMAGE || "",
             message: process.env.STIGMAN_CLIENT_WELCOME_MESSAGE || "",
