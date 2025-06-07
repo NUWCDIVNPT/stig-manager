@@ -1,6 +1,8 @@
 Ext.Ajax.timeout = 30000000
 Ext.Msg.minWidth = 300
 Ext.USE_NATIVE_JSON = true
+Ext.Ajax.disableCaching = false
+start()
 
 function GetXmlHttpObject() {
 	if (window.XMLHttpRequest)
@@ -24,7 +26,6 @@ function myContextMenu (e,t,eOpts) {
 	}
 }
 
-Ext.Ajax.disableCaching = false
 
 async function start () {
 	const el = Ext.get('loading-text').dom
@@ -44,11 +45,11 @@ async function start () {
 		if (curUser.username !== undefined) {
 			loadApp();
 		} else {
-			el.innerHTML += `<br/>No account for ${window.oidcProvider.token}`
+			el.innerHTML += `<br/>No account for ${window.oidcWorker.token}`
 		}
 	}
 	catch (e) {
-		el.innerHTML += `<br/></br/><textarea wrap="off" rows=12 cols=80 style="font-size: 10px" readonly>${JSON.stringify(STIGMAN.serializeError(e), null, 2)}</textarea>`
+		el.innerHTML += `<br/></br/><textarea class="sm-bootstrap-error" wrap="off" rows=24 cols=80 style="font-size: 10px" readonly>${JSON.stringify(STIGMAN.serializeError(e), null, 2)}</textarea>`
 	}
 }
 
@@ -68,6 +69,9 @@ async function loadApp () {
 		Ext.data.DataProxy.on('exception', function(proxy, type, action, e) {
 			SM.Error.handleError(new SM.Error.ExtDataProxyError(e))
 		})
+
+		const oidcWorkerChannel = new BroadcastChannel('stigman-oidc-worker')
+		oidcWorkerChannel.onmessage = broadcastHandler
 
 		const opRequests = [
 			Ext.Ajax.requestPromise({
@@ -101,7 +105,6 @@ async function loadApp () {
 			border: false
 		})
 
-		const appTitleQTipAttrs = `ext:qtitle="Commit info" ext:qwidth=200 ext:qtip="branch: ${STIGMAN.Env.commit.branch}&lt;br/&gt;sha: ${STIGMAN.Env.commit.sha}&lt;br/&gt;describe: ${STIGMAN.Env.commit.describe}"`
 		// Register a quick tip for the version element
 		Ext.QuickTips.register({
 			target: 'sm-home-version-sprite',
@@ -237,4 +240,108 @@ async function loadApp () {
 
 } //end loadApp()
 
-start()
+let reauthAlert, reauthWindow, reauthPopup, reauthTab
+function broadcastHandler (event)  {
+	console.log('[stigman] Received from worker:', event.type, event.data)
+	if (event.data.type === 'noToken') {
+		reauthenticate(event.data)
+	}
+	else if (event.data.type === 'accessToken') {
+		reauthAlert?.close()
+		reauthWindow?.close()
+		reauthWindow = null
+		reauthTab?.close()
+		reauthTab = null
+		reauthPopup?.close()
+		reauthPopup = null
+	}
+}
+
+function reauthenticate({ codeVerifier, redirect, state }) {
+	reauthAlert?.close()
+	reauthAlert = null
+	reauthWindow?.close()
+	reauthWindow = null
+	reauthTab?.close()
+	reauthTab = null
+	reauthPopup?.close()
+	reauthPopup = null
+
+	const reauthText = STIGMAN.Env.oauth.reauthAction === 'reload' ? 'reload the app' : 'sign in again'
+	const reauthBtnText = STIGMAN.Env.oauth.reauthAction === 'reload' ? 'Reload' : 'Sign In'
+	const reauthBtnIcon = STIGMAN.Env.oauth.reauthAction === 'reload' ? 'icon-refresh' : 'sm-login-icon'
+	
+	const reauthButton = new Ext.Button({
+		text: reauthBtnText,
+		iconCls: reauthBtnIcon,
+		handler: reauthHandler,
+	})
+
+	function reauthHandler () {
+		console.log('[stigman] navigator.userActivation:', navigator.userActivation)
+		const width = 600
+		const height = 740
+		const left = window.screenX + (window.outerWidth - width) / 2
+		const top = window.screenY + (window.outerHeight - height) / 2
+		
+		
+		const action = STIGMAN.Env.oauth.reauthAction || 'popup'
+		if (action !== 'reload') {
+			localStorage.setItem('reauth-codeVerifier', codeVerifier)
+			localStorage.setItem('reauth-oidcState', state)
+		}
+		if (action === 'popup') {
+			if (!reauthPopup || reauthPopup.closed || reauthPopup.closed === undefined) {
+				reauthPopup = window.open(
+					redirect,
+					'_blank',
+					`popup=yes,width=${width},height=${height},left=${left},top=${top}`
+					)
+				}	
+			else {
+				reauthPopup.focus()
+			}
+		}
+		else if (action === 'iframe') {
+			if (!reauthWindow) {
+				reauthWindow = new Ext.Window({
+					header: false,
+					layout: 'fit',
+					title: 'STIG Manager Sign In',
+					width,
+					height,
+					modal: false,
+					closeAction: 'hide',
+					html: `<iframe src="${redirect}" width="100%" height="100%" frameborder="0"></iframe>`,
+				})
+			}
+			reauthWindow.show()
+		}
+		else if (action === 'tab') {
+			if (!reauthTab || reauthTab.closed || reauthTab.closed === undefined) {
+				reauthTab = window.open(
+					redirect,
+					'_blank'
+				)
+			}	
+			else {
+				reauthTab.focus()
+			}
+		}
+		else if (action === 'reload') {
+			window.location.reload()
+		}	
+	}
+
+
+	reauthAlert = new Ext.Window({
+		title: '<div class="sm-alert-icon" style="padding-left:20px">Credentials Expired</div>',
+		width: 400,
+		height: 110,
+		modal: true,
+		html: `<div style="padding: 10px">Your credentials have expired and we need you to ${reauthText}.</div>`,
+		closable: false,
+		buttons: [reauthButton]
+	})
+	reauthAlert.show()
+}

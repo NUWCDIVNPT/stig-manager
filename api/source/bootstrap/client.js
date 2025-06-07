@@ -47,7 +47,8 @@ function getClientEnv(){
                 },
                 extraScopes: "${config.client.extraScopes ?? ''}",
                 scopePrefix: "${config.client.scopePrefix ?? ''}",
-                responseMode: "${config.client.responseMode}"
+                responseMode: "${config.client.responseMode}",
+                reauthAction: "${config.client.reauthAction}"
             },
             experimental: {
                 appData: "${config.experimental.appData}"
