@@ -6,17 +6,12 @@ const tokens = {
   refreshToken: null
 }
 let ENV = null
-let oidcProvider = null
 let oidcConfiguration = null
 let initialized = false
 let authorizations = {}
 let accessTimeoutId = null
 let refreshTimeoutId = null
 let redirectUri = null
-let clientId = null
-let autoRefresh = null
-let scope = null
-let responseMode = null
 const bc = new BroadcastChannel('stigman-oidc-worker')
 
 // Utility functions
@@ -73,11 +68,6 @@ async function initialize(options) {
     redirectUri = options.redirectUri
     ENV = options.env || null
 
-    oidcProvider = ENV.authority
-    clientId = ENV.clientId
-    autoRefresh = ENV.autoRefresh
-    scope = getScopeStr()
-    responseMode = ENV.responseMode
     try {
       oidcConfiguration = await fetchOpenIdConfiguration()
     }
@@ -98,15 +88,15 @@ function validateOidcConfiguration() {
   const result = {
     success: true
   }
-  if (!oidcConfiguration?.authorization_endpoint) {
+  if (!oidcConfiguration.authorization_endpoint) {
     result.success = false
     result.error = 'Missing authorization endpoint in OIDC configuration'
-  } else if (!oidcConfiguration?.token_endpoint) {
+  } else if (!oidcConfiguration.token_endpoint) {
     result.success = false
     result.error = 'Missing token endpoint in OIDC configuration'
-  } else if (!oidcConfiguration?.code_challenge_methods_supported?.includes('S256')) {
+  } else if (ENV.strictPkce && !oidcConfiguration.code_challenge_methods_supported?.includes('S256')) {
     result.success = false
-    result.error = 'PKCE with S256 not supported by OIDC provider'
+    result.error = 'OP does not advertise PKCE and STIGMAN_CLIENT_STRICT_PKCE=true'
   }
   return result 
 }
@@ -133,7 +123,7 @@ async function fetchOpenIdConfiguration() {
   if (oidcConfiguration) {
     return oidcConfiguration
   }
-  const url = `${oidcProvider}/.well-known/openid-configuration`
+  const url = `${ENV.authority}/.well-known/openid-configuration`
   const response = await fetch(url)
   if (!response.ok) {
     throw new Error(`failed to get: ${url}`)
@@ -147,16 +137,15 @@ async function createAuthorization(_redirectUri = redirectUri) {
   const pkce = await getPkce()
   const state = crypto.randomUUID()
   const params = new URLSearchParams()
-  params.append('client_id', clientId)
+  params.append('client_id', ENV.clientId)
   params.append('redirect_uri', _redirectUri)
   params.append('state', state)
-  params.append('response_mode', responseMode)
+  params.append('response_mode', ENV.responseMode)
   params.append('response_type', 'code')
-  params.append('scope', scope)
+  params.append('scope', getScopeStr())
   params.append('nonce', crypto.randomUUID())
   params.append('code_challenge', pkce.codeChallenge)
   params.append('code_challenge_method', 'S256')
-  params.append('display', 'popup')
 
   const authEndpoint = oidcConfiguration.authorization_endpoint
   const redirect = `${authEndpoint}?${params.toString()}`
@@ -333,7 +322,7 @@ async function refreshAccessToken() {
   }
   const params = new URLSearchParams()
   params.append('grant_type', 'refresh_token')
-  params.append('client_id', clientId)
+  params.append('client_id', ENV.clientId)
   params.append('refresh_token', tokens.refreshToken)
 
   let response
@@ -376,7 +365,7 @@ async function refreshAccessToken() {
     }
   }
 }
-async function exchangeCodeForToken({ code, codeVerifier, clientId = 'stig-manager', redirectUri }) {
+async function exchangeCodeForToken({ code, codeVerifier, clientId, redirectUri }) {
   if (authorizations[redirectUri] && authorizations[redirectUri].codeVerifier !== codeVerifier) {
     // verifier does not match the saved redirectUri
     console.error(logPrefix, 'Code verifier does not match the saved redirectUri', redirectUri, authorizations[redirectUri])
@@ -388,7 +377,7 @@ async function exchangeCodeForToken({ code, codeVerifier, clientId = 'stig-manag
   delete authorizations[redirectUri]
   const params = new URLSearchParams()
   params.append('grant_type', 'authorization_code')
-  params.append('client_id', clientId)
+  params.append('client_id', ENV.clientId)
   params.append('redirect_uri', redirectUri)
   params.append('code', code)
   params.append('code_verifier', codeVerifier)
