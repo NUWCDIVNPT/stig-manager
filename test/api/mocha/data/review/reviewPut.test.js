@@ -11,7 +11,6 @@ import { expect } from 'chai'
 describe('PUT - Review', () => {
 
     let deletedCollection = reference.deletedCollection.collectionId
-    let deletedAsset = reference.deletedAsset.assetId    
     before(async function () {
         await utils.loadAppData()
     })
@@ -213,7 +212,7 @@ describe('PUT - Review', () => {
                         autoResult: false,
                         status: 'submitted'
                     }
-                    const res = await utils.executeRequest(`${config.baseUrl}/collections/${deletedCollection}/reviews/${deletedAsset}/${reference.testCollection.ruleId}`, 'PUT', iteration.token, putBody)
+                    const res = await utils.executeRequest(`${config.baseUrl}/collections/${deletedCollection}/reviews/${reference.testCollection.testAssetId}/${reference.testCollection.ruleId}`, 'PUT', iteration.token, putBody)
 
                     expect(res.status).to.eql(403)
                 })
@@ -320,6 +319,22 @@ describe('PUT - Review', () => {
                     expect(res.body.detail).to.equal(putBody.detail)
                     expect(res.body.comment).to.equal(putBody.comment)
                     expect(res.body.status.label).to.equal(putBody.status)
+                })
+                it("Attempt to put a review to a disabled asset in an enabled collection, expect 403", async () => {
+
+                    const deletedAssetId = reference.deletedAsset.assetId
+
+                    const putBody = {
+                        result: 'pass',
+                        detail: 'test\nvisible to lvl1',
+                        comment: 'sure',
+                        autoResult: false,
+                        status: 'submitted'
+                    }
+
+                    const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${deletedAssetId}/${reference.testCollection.ruleId}`, 'PUT', iteration.token, putBody)
+                    expect(res.status).to.eql(403)
+
                 })
             })
 
