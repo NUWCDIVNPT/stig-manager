@@ -42,12 +42,11 @@ function getClientEnv(){
             oauth: {
                 authority:  "${config.client.authority}",
                 clientId: "${config.client.clientId}",
-                refreshToken: {
-                disabled: ${config.client.refreshToken.disabled}
-                },
                 extraScopes: "${config.client.extraScopes ?? ''}",
                 scopePrefix: "${config.client.scopePrefix ?? ''}",
-                responseMode: "${config.client.responseMode}"
+                responseMode: "${config.client.responseMode}",
+                reauthAction: "${config.client.reauthAction}",
+                strictPkce: "${config.client.strictPkce}"
             },
             experimental: {
                 appData: "${config.experimental.appData}"

@@ -469,11 +469,11 @@ SM.StigRevision.ImportStigs = function ( grid ) {
             initProgress("Importing file", "Initializing...");
             updateStatusText (file.name)
     
-            await window.oidcProvider.updateToken(10)
+            
             let response = await fetch(`${STIGMAN.Env.apiBase}/stigs?elevate=true&clobber=${clobber ? 'true':'false'}`, {
               method: 'POST',
               headers: new Headers({
-                'Authorization': `Bearer ${window.oidcProvider.token}`
+                'Authorization': `Bearer ${window.oidcWorker.token}`
               }),
               body: formData
             })
@@ -515,12 +515,12 @@ SM.StigRevision.ImportStigs = function ( grid ) {
               let fd = new FormData()
               fd.append('importFile', data, xml)
 
-              await window.oidcProvider.updateToken(10)
+              
               let response = await fetch(`${STIGMAN.Env.apiBase}/stigs?elevate=true&clobber=${clobber ? 'true':'false'}`, {
                 method: 'POST',
                 params: { clobber },
                 headers: new Headers({
-                  'Authorization': `Bearer ${window.oidcProvider.token}`
+                  'Authorization': `Bearer ${window.oidcWorker.token}`
                 }),
                 body: fd
               })
