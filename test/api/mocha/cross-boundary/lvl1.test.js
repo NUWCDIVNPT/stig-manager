@@ -115,86 +115,86 @@ describe("lvl1 cross-boundary tests", () => {
               ])
             expect(res.status).to.eql(200)
         })
-        // it('Import one or more Reviews from a JSON body - ADMIN - lvl1 no asset access', async () => {
-        //     const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAssetLvl1NoAccess}`, 'POST', admin.token, [
-        //     {
-        //         ruleId: reference.testRule.ruleId,
-        //         result: "pass",
-        //         detail: "ADMIN POSTED THIS",
-        //         comment: "sure",
-        //         autoResult: false,
-        //         status: "submitted",
-        //     },
-        //     {
-        //         ruleId: reference.ruleIdLvl1NoAccess,
-        //         result: "pass",
-        //         detail: "ADMIN POSTED THIS",
-        //         comment: "sure",
-        //         autoResult: false,
-        //         status: "submitted",
-        //     },
-        //     ])
-        // expect(res.status).to.eql(200)
-        // })
-        // it('Import one or more Reviews from a JSON body - no Asset Access', async () => {
-        //     const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAssetLvl1NoAccess}`, 'POST', user.token, [
-        //         {
-        //         "ruleId": "{{testRuleId}}",
-        //         "result": "pass",
-        //         "detail": "LVL1 POSTED THIS",
-        //         "comment": "sure",
-        //         "autoResult": false,
-        //         "status": "submitted"
-        //         }
-        //     ])
-        //     expect(res.status).to.eql(200)
-        //     expect(res.body).to.be.an('object')
-        //     expect(res.body.affected.updated).to.eql(0)
-        //     expect(res.body.affected.inserted).to.eql(0)
-        //     expect(res.body.rejected).to.have.lengthOf(1)
-        // })
-        // it('Import one or more Reviews from a JSON body - no Asset Access - multiple posts', async () => {
-        //     const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAssetLvl1NoAccess}`, 'POST', user.token, [
-        //         {
-        //         "ruleId": "{{testRuleId}}",
-        //         "result": "pass",
-        //         "detail": "LVL1 POSTED THIS",
-        //         "comment": "sure",
-        //         "autoResult": false,
-        //         "status": "submitted"
-        //         },
-        //         {
-        //         "ruleId": "{{testRuleId-lvl1NoAccess}}",
-        //         "result": "pass",
-        //         "detail": "LVL1 POSTED THIS",
-        //         "comment": "sure",
-        //         "autoResult": false,
-        //         "status": "submitted"
-        //         }
-        //     ])
-        //     expect(res.status).to.eql(200)
-        //     expect(res.body).to.be.an('object')
-        //     expect(res.body.affected.updated).to.eql(0)
-        //     expect(res.body.affected.inserted).to.eql(0)
-        //     expect(res.body.rejected).to.have.lengthOf(2)
-        // })
-        // it('Import one or more Reviews from a JSON body - no STIG-Asset Access', async () => {
-        //     const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}`, 'POST', user.token, [
-        //         {
-        //           ruleId: reference.ruleIdLvl1NoAccess,
-        //           result: "pass",
-        //           detail: "LVL1 POSTED THIS",
-        //           comment: "sure",
-        //           autoResult: false,
-        //           status: "submitted",
-        //         },
-        //       ])
-        //     expect(res.status).to.eql(200)
-        //     expect(res.body).to.be.an('object')
-        //     expect(res.body.affected.updated).to.eql(0)
-        //     expect(res.body.affected.inserted).to.eql(0)
-        //     expect(res.body.rejected).to.have.lengthOf(1)
-        // })
+        it('Import one or more Reviews from a JSON body - ADMIN - lvl1 no asset access', async () => {
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAssetLvl1NoAccess}`, 'POST', admin.token, [
+            {
+                ruleId: reference.testRule.ruleId,
+                result: "pass",
+                detail: "ADMIN POSTED THIS",
+                comment: "sure",
+                autoResult: false,
+                status: "submitted",
+            },
+            {
+                ruleId: reference.ruleIdLvl1NoAccess,
+                result: "pass",
+                detail: "ADMIN POSTED THIS",
+                comment: "sure",
+                autoResult: false,
+                status: "submitted",
+            },
+            ])
+        expect(res.status).to.eql(200)
+        })
+        it('Import one or more Reviews from a JSON body - no Asset Access', async () => {
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAssetLvl1NoAccess}`, 'POST', user.token, [
+                {
+                "ruleId": "{{testRuleId}}",
+                "result": "pass",
+                "detail": "LVL1 POSTED THIS",
+                "comment": "sure",
+                "autoResult": false,
+                "status": "submitted"
+                }
+            ])
+            expect(res.status).to.eql(200)
+            expect(res.body).to.be.an('object')
+            expect(res.body.affected.updated).to.eql(0)
+            expect(res.body.affected.inserted).to.eql(0)
+            expect(res.body.rejected).to.have.lengthOf(1)
+        })
+        it('Import one or more Reviews from a JSON body - no Asset Access - multiple posts', async () => {
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAssetLvl1NoAccess}`, 'POST', user.token, [
+                {
+                "ruleId": "{{testRuleId}}",
+                "result": "pass",
+                "detail": "LVL1 POSTED THIS",
+                "comment": "sure",
+                "autoResult": false,
+                "status": "submitted"
+                },
+                {
+                "ruleId": "{{testRuleId-lvl1NoAccess}}",
+                "result": "pass",
+                "detail": "LVL1 POSTED THIS",
+                "comment": "sure",
+                "autoResult": false,
+                "status": "submitted"
+                }
+            ])
+            expect(res.status).to.eql(200)
+            expect(res.body).to.be.an('object')
+            expect(res.body.affected.updated).to.eql(0)
+            expect(res.body.affected.inserted).to.eql(0)
+            expect(res.body.rejected).to.have.lengthOf(2)
+        })
+        it('Import one or more Reviews from a JSON body - no STIG-Asset Access', async () => {
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}`, 'POST', user.token, [
+                {
+                  ruleId: reference.ruleIdLvl1NoAccess,
+                  result: "pass",
+                  detail: "LVL1 POSTED THIS",
+                  comment: "sure",
+                  autoResult: false,
+                  status: "submitted",
+                },
+              ])
+            expect(res.status).to.eql(200)
+            expect(res.body).to.be.an('object')
+            expect(res.body.affected.updated).to.eql(0)
+            expect(res.body.affected.inserted).to.eql(0)
+            expect(res.body.rejected).to.have.lengthOf(1)
+        })
         it('Import one or more Reviews from a JSON body - no STIG-Asset Access - multiple reviews', async () => {
             const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}`, 'POST', user.token, [
                 {

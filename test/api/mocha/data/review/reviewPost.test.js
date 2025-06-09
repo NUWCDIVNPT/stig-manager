@@ -1170,12 +1170,14 @@ describe('POST - Review', () => {
               "status": "submitted"
               }
           ])
-         
+          expect(res.status).to.eql(200)
           if(iteration.name == "lvl1"){
-           expect(res.status).to.eql(403)
+            expect(res.body.rejected).to.have.length(1)
+            expect(res.body.rejected[0].reason).to.eql("no grant for this asset/ruleId")
+            expect(res.body.affected.inserted).to.eql(0)
+            expect(res.body.affected.updated).to.eql(0)
           }
           else {
-            expect(res.status).to.eql(200)
             expect(res.body.rejected).to.have.length(0)
             expect(res.body.affected.inserted).to.eql(0)
             expect(res.body.affected.updated).to.eql(1)
