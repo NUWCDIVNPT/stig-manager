@@ -1005,7 +1005,9 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
       listeners: {
         rowdblclick: function (grid, rowIndex, e) {
           const r = grid.getStore().getAt(rowIndex)
-          SM.User.showUserProps(r.get('userId'))
+          if (r.data.status === 'available'){
+            SM.User.showUserProps(r.get('userId'))
+          }
         }
       },
       tbar: [
