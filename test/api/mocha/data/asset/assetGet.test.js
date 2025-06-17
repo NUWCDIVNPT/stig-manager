@@ -822,6 +822,16 @@ describe(`GET - Asset`, function () {
           expect(res.status).to.eql(200)
           expect(res.body).to.be.an(`array`).of.length(reference.checklistLength)
         })
+
+        it("Return checklist for a disabled asset in an enabled collection. expect 404. ", async function () {
+
+          const deletedAsset  = reference.deletedAsset.assetId
+
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${deletedAsset}/checklists/${reference.benchmark}/${reference.revisionStr}`, 'GET', iteration.token)
+
+          expect(res.status).to.eql(403)
+
+        })
       })
       describe(`getStigsByAsset - /assets/{assetId}/stigs`, function () {
 

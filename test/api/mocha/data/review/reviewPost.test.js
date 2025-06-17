@@ -1038,7 +1038,7 @@ describe('POST - Review', () => {
             await utils.deleteCollection(tempCollectionCanAcceptFalse.collectionId)
           })
 
-          it(`should throw SmError.PriviledgeError`, async () => {
+          it(`should throw SmError.PrivilegeError`, async () => {
 
             const postreview = {
               source: {
@@ -1057,7 +1057,7 @@ describe('POST - Review', () => {
             
             expect(res.status).to.eql(403)
           })
-          it(`should throw SmError.PriviledgeError`, async () => {
+          it(`should throw SmError.PrivilegeError`, async () => {
 
             const postreview = {
               source: {
@@ -1075,7 +1075,7 @@ describe('POST - Review', () => {
             const res = await utils.executeRequest(`${config.baseUrl}/collections/${tempCollectionCanAcceptFalse.collectionId}/reviews`, 'POST', iteration.token, postreview)
             expect(res.status).to.eql(403)
           })
-          it("should throw SmError.PriviledgeError, lvl1 user no acccess to asset ", async () => {
+          it("should throw SmError.PrivilegeError, lvl1 user no acccess to asset ", async () => {
 
             const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews`, 'POST', iteration.token, {
                 source: {
@@ -1170,7 +1170,6 @@ describe('POST - Review', () => {
               "status": "submitted"
               }
           ])
-          
           expect(res.status).to.eql(200)
           if(iteration.name == "lvl1"){
             expect(res.body.rejected).to.have.length(1)
@@ -1233,8 +1232,8 @@ describe('POST - Review', () => {
           ])
           expect(res.status).to.eql(403) 
         })
-        it('Import reviews for deleted asset', async () => {
-          const res = await utils.executeRequest(`${config.baseUrl}/collections/${deletedCollection}/reviews/${reference.testAsset.assetId}`, 'POST', iteration.token, [
+        it('Import reviews for deleted Asset in an enabled collection', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${deletedAsset}`, 'POST', iteration.token, [
               {
               "ruleId": `${reference.testCollection.ruleId}`,
               "result": "pass",

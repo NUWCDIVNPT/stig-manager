@@ -389,7 +389,7 @@ describe("lvl1 cross-boundary tests", () => {
     })
     describe('GET - getReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
    
-      it('Should throw SmError.PriviledgeError no access to review rule', async () => {
+      it('Should throw SmError.PrivilegeError no access to review rule', async () => {
         const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata/keys/notakey`, 'GET', user.token)
         expect(res.status).to.eql(403)
         expect(res.body.error).to.be.equal("User has insufficient privilege to complete this request.")
@@ -397,7 +397,7 @@ describe("lvl1 cross-boundary tests", () => {
     })
     describe('PUT - putReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
 
-      it('should throw SmError.PriviledgeError User has insufficient privilege to put the review of this rule. no acess to review rule', async () => {
+      it('should throw SmError.PrivilegeError User has insufficient privilege to put the review of this rule. no acess to review rule', async () => {
           const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata/keys/${reference.reviewMetadataKey}`, 'PUT', user.token, `${JSON.stringify(reference.reviewMetadataValue)}`)
           expect(res.status).to.eql(403)
           expect(res.body.error).to.be.equal("User has insufficient privilege to complete this request.")
@@ -405,7 +405,7 @@ describe("lvl1 cross-boundary tests", () => {
     })
     describe('DELETE - deleteReviewMetadataKey - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
 
-      it('should throw SmError.PriviledgeError User has insufficient privilege to delete the review of this rule. no acess to review rule', async () => {
+      it('should throw SmError.PrivilegeError User has insufficient privilege to delete the review of this rule. no acess to review rule', async () => {
         const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata/keys/${reference.reviewMetadataKey}`, 'DELETE', user.token, `${JSON.stringify(reference.reviewMetadataValue)}`)
         expect(res.status).to.eql(403)
         expect(res.body.error).to.be.equal("User has insufficient privilege to complete this request.")
