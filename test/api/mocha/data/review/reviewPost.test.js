@@ -1038,7 +1038,7 @@ describe('POST - Review', () => {
             await utils.deleteCollection(tempCollectionCanAcceptFalse.collectionId)
           })
 
-          it(`should throw SmError.PriviledgeError`, async () => {
+          it(`should throw SmError.PrivilegeError`, async () => {
 
             const postreview = {
               source: {
@@ -1057,7 +1057,7 @@ describe('POST - Review', () => {
             
             expect(res.status).to.eql(403)
           })
-          it(`should throw SmError.PriviledgeError`, async () => {
+          it(`should throw SmError.PrivilegeError`, async () => {
 
             const postreview = {
               source: {
@@ -1075,7 +1075,7 @@ describe('POST - Review', () => {
             const res = await utils.executeRequest(`${config.baseUrl}/collections/${tempCollectionCanAcceptFalse.collectionId}/reviews`, 'POST', iteration.token, postreview)
             expect(res.status).to.eql(403)
           })
-          it("should throw SmError.PriviledgeError, lvl1 user no acccess to asset ", async () => {
+          it("should throw SmError.PrivilegeError, lvl1 user no acccess to asset ", async () => {
 
             const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews`, 'POST', iteration.token, {
                 source: {

@@ -47,7 +47,7 @@ describe('user', () => {
             }
           })
 
-          it("Return the requesters user information verify last access and priviledges data", async () => {
+          it("Return the requesters user information verify last access and privileges data", async () => {
             const res = await utils.executeRequest(`${config.baseUrl}/user`, 'GET', iteration.token)
 
             expect(res.status).to.eql(200)
