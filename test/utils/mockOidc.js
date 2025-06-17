@@ -81,12 +81,14 @@ class MockOidc {
       token_endpoint: `http://${origin}/token`,
       jwks_uri: `http://${origin}/jwks`,
       end_session_endpoint: `http://${origin}/logout`,
+      code_challenge_methods_supported: ['S256'],
     }
   }
 
   getToken({
     privileges = ['create_collection', 'admin'],
     scope = 'stig-manager',
+    audience,
     username = 'admin',
     expiresIn = '1h',
     algorithm = 'RS256',
@@ -153,6 +155,9 @@ class MockOidc {
     }
     if (auth_time) {
       payload.auth_time = auth_time
+    }
+    if (audience) {
+      payload.aud = audience
     }
 
     const options = {
@@ -272,6 +277,8 @@ class MockOidc {
           'privilegesClaim': 'realm_access.roles',
           'expiresIn': '60s',
           'refreshExpiresIn': '180s',
+          'sessionExpiresIn': '*unimplemented*',
+          'audience': 'stig-manager',
           'scope': 'stig-manager',
           'scopeClaim': 'scope',
           'algorithm': 'RS256',
@@ -298,7 +305,7 @@ class MockOidc {
       }
   
       function saveFormValues() {
-        const fields = ['username', 'usernameClaim', 'privilege-admin', 'privilege-create-collection', 'privilegesClaim', 'expiresIn', 'refreshExpiresIn', 'scope', 'scopeClaim', 'algorithm', 'kid'];
+        const fields = ['username', 'usernameClaim', 'audience', 'privilege-admin', 'privilege-create-collection', 'privilegesClaim', 'expiresIn', 'refreshExpiresIn', 'scope', 'scopeClaim', 'algorithm', 'kid'];
         for (const field of fields) {
           const input = document.getElementById(field);
           if (input && input.type === 'checkbox') {
@@ -357,12 +364,20 @@ class MockOidc {
         <input type="text" id="privilegesClaim" name="privilegesClaim">
       </div>
       <div class="form-group">
-        <label for="expiresIn">Expires In (e.g., 1h):</label>
+        <label for="expiresIn">Expires In (e.g., 20s):</label>
         <input type="text" id="expiresIn" name="expiresIn">
       </div>
       <div class="form-group">
-        <label for="refreshExpiresIn">Refresh Expires In (e.g., 1h):</label>
+        <label for="refreshExpiresIn">Refresh Expires In (e.g., 1m):</label>
         <input type="text" id="refreshExpiresIn" name="refreshExpiresIn">
+      </div>
+      <div class="form-group">
+        <label for="sessionExpiresIn">Session Expires In (e.g., 1h):</label>
+        <input type="text" id="sessionExpiresIn" name="sessionExpiresIn" disabled>
+      </div>
+      <div class="form-group">
+        <label for="audience">Audience:</label>
+        <input type="text" id="audience" name="audience">
       </div>
       <div class="form-group">
         <label for="scope">Scope:</label>
@@ -430,8 +445,8 @@ class MockOidc {
     } else if (url.pathname === '/jwks') {
        data = this.getJwks()
     } else if ( url.pathname === '/api/get-token') {
-      const { privileges, scope, username, expiresIn, algorithm, kid, issuedAt } = this.parseQueryParams(request)
-      const token = this.getToken({ privileges: privileges === '' ? [] : privileges, scope, username, expiresIn, algorithm, kid, issuedAt })
+      const { privileges, audience, scope, username, expiresIn, algorithm, kid, issuedAt } = this.parseQueryParams(request)
+      const token = this.getToken({ privileges: privileges === '' ? [] : privileges, audience, scope, username, expiresIn, algorithm, kid, issuedAt })
       data = {
         token,
         tokenDecoded: jsonwebtoken.decode(token, {complete: true})
@@ -446,24 +461,10 @@ class MockOidc {
       if (sid) {
         const sessionParams = this.sids[sid]
         if (sessionParams) {
-          const {
-            privileges, 
-            scope, 
-            username, 
-            expiresIn, 
-            refreshExpiresIn, 
-            auth_time, 
-            algorithm, 
-            issuedAt, 
-            kid,
-            privilegesClaim,
-            usernameClaim,
-            scopeClaim
-          } = sessionParams
-          const accessToken = this.getToken({ privileges, scope, username, expiresIn, algorithm, issuedAt, kid, sid, auth_time, privilegesClaim, usernameClaim, scopeClaim })
-          const refreshToken = refreshExpiresIn !== '0' ? this.getRefreshToken({ sid, expiresIn:refreshExpiresIn, algorithm, kid }) : undefined
+          const accessToken = this.getToken(sessionParams)
+          const refreshToken = sessionParams.refreshExpiresIn !== '0' ? this.getRefreshToken(sessionParams) : undefined
           const code = crypto.randomBytes(16).toString('hex')
-          this.authCodes[code] = {accessToken, refreshToken, expiresIn}
+          this.authCodes[code] = {accessToken, refreshToken, expiresIn: sessionParams.expiresIn}
     
           const responseUrl = new URL(redirect_uri)
           const searchParams = new URLSearchParams()
@@ -499,6 +500,8 @@ class MockOidc {
         username, 
         expiresIn, 
         refreshExpiresIn, 
+        sessionExpiresIn,
+        audience,
         algorithm, 
         issuedAt, 
         kid,
@@ -509,11 +512,14 @@ class MockOidc {
       const auth_time = Math.floor(Date.now() / 1000)
       const sid = crypto.randomBytes(16).toString('hex')
       this.sids[sid] = {
+        sid,
         privileges, 
         scope, 
         username, 
         expiresIn, 
         refreshExpiresIn, 
+        sessionExpiresIn,
+        audience,
         auth_time, 
         algorithm, 
         issuedAt, 
@@ -522,7 +528,7 @@ class MockOidc {
         usernameClaim,
         scopeClaim
       }
-      const accessToken = this.getToken({ privileges, scope, username, expiresIn, algorithm, issuedAt, kid, sid, auth_time, privilegesClaim, usernameClaim, scopeClaim })
+      const accessToken = this.getToken({ privileges, scope, audience, username, expiresIn, algorithm, issuedAt, kid, sid, auth_time, privilegesClaim, usernameClaim, scopeClaim })
       const refreshToken = refreshExpiresIn !== '0' ? this.getRefreshToken({ sid, expiresIn:refreshExpiresIn, algorithm, kid }) : undefined
       const code = crypto.randomBytes(16).toString('hex')
       this.authCodes[code] = {accessToken, refreshToken, expiresIn}
@@ -586,8 +592,8 @@ class MockOidc {
             response.end('Invalid refresh token')
             return
           }
-          const { privileges, scope, username, expiresIn, refreshExpiresIn, auth_time, algorithm, issuedAt, kid } = sessionParams
-          const newAccessToken = this.getToken({ privileges, scope, username, expiresIn, algorithm, issuedAt, kid, sid, auth_time })
+          const { privileges, audience, scope, username, expiresIn, refreshExpiresIn, auth_time, algorithm, issuedAt, kid } = sessionParams
+          const newAccessToken = this.getToken({ privileges, audience, scope, username, expiresIn, algorithm, issuedAt, kid, sid, auth_time })
           const newRefreshToken = this.getRefreshToken({ sid, expiresIn:refreshExpiresIn, algorithm, kid })
               
           data = {

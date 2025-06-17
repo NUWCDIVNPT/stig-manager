@@ -79,6 +79,8 @@
 | The time in minutes after which the API's cache of JWT signing keys is deemed stale and the API becomes unavailable. Cache refreshes are scheduled at intervals of half this value and also occur when an unknown signing key is presented. Scheduled refresh failures are retried every 10 seconds.","API"
 "STIGMAN_JWT_ASSERTION_CLAIM","| **Default** ``jti``
 | The access token claim whose value is the OIDC provider's Assertion ID. Updates to this value trigger the API to update a User's ``lastClaims`` property. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API"
+"STIGMAN_JWT_AUD_VALUE","| **No default**
+| If present, a string which must be included in the access token ``aud`` claim for requests to endpoints requiring authorization.","API"
 "STIGMAN_JWT_EMAIL_CLAIM","| **Default** ``email``
 | The access token claim whose value is the user's email address. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API, Client"
 "STIGMAN_JWT_NAME_CLAIM","| **Default** ``name``

@@ -1,3 +1,4 @@
+
 #loading-mask {
   position: absolute;
   left: 0;
@@ -5,18 +6,21 @@
   width: 100%;
   height: 100%;
   z-index: 20000;
+  display: flex;
+  align-items: start;
+  justify-content: center;
   background-color: #2a3037;
+  color: #d0cec5;
 }
 
 #loading {
   position: absolute;
-  padding: 10px;
-  left: 50%;
-  top: 33%;
-  width: 500px;
-  margin-left: -250px;
-  margin-top: -50px;
-  z-index: 20001;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px; /* space between items */
 }
 
 #loading .loading-indicator {

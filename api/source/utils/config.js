@@ -76,12 +76,13 @@ const config = {
     },
     oauth: {
         authority: process.env.STIGMAN_OIDC_PROVIDER || process.env.STIGMAN_API_AUTHORITY || "http://localhost:8080/realms/stigman",
+        audienceValue: process.env.STIGMAN_JWT_AUD_VALUE,
         allowInsecureTokens: process.env.STIGMAN_DEV_ALLOW_INSECURE_TOKENS === "true",
         insecureKids,
         cacheMaxAge: Math.min(Math.max(process.env.STIGMAN_JWKS_CACHE_MAX_AGE, 1) || 10, 35791),
         claims: {
             scope: process.env.STIGMAN_JWT_SCOPE_CLAIM || "scope",
-            username: process.env.STIGMAN_JWT_USERNAME_CLAIM,
+            username: process.env.STIGMAN_JWT_USERNAME_CLAIM || "preferred_username",
             servicename: process.env.STIGMAN_JWT_SERVICENAME_CLAIM,
             name: process.env.STIGMAN_JWT_NAME_CLAIM || process.env.STIGMAN_JWT_USERNAME_CLAIM || "name",
             privileges: formatMySqlJsonPath(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles"),

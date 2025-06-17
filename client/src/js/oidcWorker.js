@@ -14,54 +14,57 @@ let refreshTimeoutId = null
 let redirectUri = null
 const bc = new BroadcastChannel('stigman-oidc-worker')
 
-// Utility functions
-function dec2hex(dec) {
-  return ('0' + dec.toString(16)).substr(-2)
+// Worker entry point
+onconnect = function (e) {
+  const port = e.ports[0]
+  port.onmessage = onMessage
+  port.start()
 }
-function generateRandomString() {
-  const array = new Uint32Array(56 / 2)
-  crypto.getRandomValues(array)
-  return Array.from(array, dec2hex).join('')
+
+// Message handlers
+const messageHandlers = {
+  getAccessToken,
+  exchangeCodeForToken,
+  initialize,
+  logout
 }
-async function sha256(plain) {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(plain)
-  return crypto.subtle.digest('SHA-256', data)
-}
-function base64UrlEncode(a) {
-  let str = ''
-  const bytes = new Uint8Array(a)
-  const len = bytes.byteLength
-  for (let i = 0; i < len; i++) {
-    str += String.fromCharCode(bytes[i])
+
+function getAccessToken() {
+  if (!tokens.accessToken) {
+    console.log(logPrefix, 'getAccessToken, redirecting to authorization')
+    return createAuthorization()
   }
-  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-}
-async function challengeFromVerifier(v) {
-  const hashed = await sha256(v)
-  const base64encoded = base64UrlEncode(hashed)
-  return base64encoded
-}
-function decodeToken(str) {
-  try {
-    str = str.split('.')[1]
-    str = str.replace(/-/g, '+')
-    str = str.replace(/_/g, '/')
-    switch (str.length % 4) {
-      case 0: break
-      case 2: str += '=='; break
-      case 3: str += '='; break
-      default: throw new Error('Invalid token')
-    }
-    str = decodeURIComponent(escape(atob(str)))
-    str = JSON.parse(str)
-    return str
-  } catch {
-    return false
+  return {
+    accessToken: tokens.accessToken,
+    accessTokenPayload: decodeToken(tokens.accessToken)
   }
 }
 
-// Core logic
+async function exchangeCodeForToken({ code, codeVerifier, clientId = ENV.clientId, redirectUri }) {
+  if (authorizations[redirectUri] && authorizations[redirectUri].codeVerifier !== codeVerifier) {
+    // verifier does not match the saved redirectUri
+    console.error(logPrefix, 'Code verifier does not match the saved redirectUri', redirectUri, authorizations[redirectUri])
+    return { success: false, error: 'Code verifier does not match the saved redirectUri' }
+  }
+
+  console.log(logPrefix, 'Exchange code for token', code, codeVerifier)
+
+  delete authorizations[redirectUri]
+  const params = new URLSearchParams()
+  params.append('grant_type', 'authorization_code')
+  params.append('client_id', clientId)
+  params.append('redirect_uri', redirectUri)
+  params.append('code', code)
+  params.append('code_verifier', codeVerifier)
+
+  try {
+    return await fetchTokens(params)
+  }
+  catch (e) {
+    return { success: false, error: e.message}
+  }
+}
+
 async function initialize(options) {
   if (!initialized) {
     initialized = true
@@ -84,6 +87,81 @@ async function initialize(options) {
   return { success: true, env: ENV }
 }
 
+function logout() {
+  return {
+    success: true,
+    redirect: oidcConfiguration.end_session_endpoint
+  }
+}
+
+async function onMessage(e) {
+  const port = e.target
+  const { requestId, request, ...options } = e.data
+  const handler = messageHandlers[request]
+  if (handler) {
+    try {
+      const response = await handler(options)
+      port.postMessage({ requestId, response })
+    } catch (error) {
+      port.postMessage({ requestId, error: error.message })
+    }
+  } else {
+    port.postMessage({ requestId, error: 'Unknown request' })
+  }
+}
+
+// Support functions
+function dec2hex(dec) {
+  return ('0' + dec.toString(16)).substr(-2)
+}
+
+function generateRandomString() {
+  const array = new Uint32Array(56 / 2)
+  crypto.getRandomValues(array)
+  return Array.from(array, dec2hex).join('')
+}
+
+async function sha256(plain) {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(plain)
+  return crypto.subtle.digest('SHA-256', data)
+}
+
+function base64UrlEncode(a) {
+  let str = ''
+  const bytes = new Uint8Array(a)
+  const len = bytes.byteLength
+  for (let i = 0; i < len; i++) {
+    str += String.fromCharCode(bytes[i])
+  }
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+async function challengeFromVerifier(v) {
+  const hashed = await sha256(v)
+  const base64encoded = base64UrlEncode(hashed)
+  return base64encoded
+}
+
+function decodeToken(str) {
+  try {
+    str = str.split('.')[1]
+    str = str.replace(/-/g, '+')
+    str = str.replace(/_/g, '/')
+    switch (str.length % 4) {
+      case 0: break
+      case 2: str += '=='; break
+      case 3: str += '='; break
+      default: throw new Error('Invalid token')
+    }
+    str = decodeURIComponent(escape(atob(str)))
+    str = JSON.parse(str)
+    return str
+  } catch {
+    return false
+  }
+}
+
 function validateOidcConfiguration() {
   const result = {
     success: true
@@ -100,7 +178,6 @@ function validateOidcConfiguration() {
   }
   return result 
 }
-
 
 function getScopeStr() {
   const scopePrefix = ENV.scopePrefix
@@ -159,17 +236,6 @@ async function getPkce() {
   return { codeChallenge, codeVerifier }
 }
 
-function getAccessToken() {
-  if (!tokens.accessToken) {
-    console.log(logPrefix, 'getAccessToken, redirecting to authorization')
-    return createAuthorization()
-  }
-  return {
-    accessToken: tokens.accessToken,
-    accessTokenPayload: decodeToken(tokens.accessToken)
-  }
-}
-
 async function broadcastNoToken() {
   console.log(logPrefix, 'Broadcasting no token')
   let baseRedirectUri = redirectUri?.endsWith('index.html')
@@ -212,6 +278,7 @@ function setAccessTokenTimer(delayMs) {
     }
   }, delayMs)
 }
+
 function setRefreshTokenTimer(delayMs) {
   clearRefreshTokenTimer()
   refreshTimeoutId = setTimeout(async () => {
@@ -221,6 +288,7 @@ function setRefreshTokenTimer(delayMs) {
     }
   }, delayMs)
 }
+
 function getTokenTimes(token, timeoutBufferS = 10) {
   const expS = decodeToken(token)?.exp
   if (!expS) {
@@ -250,6 +318,7 @@ function getTokenTimes(token, timeoutBufferS = 10) {
     timeoutInMs
   }
 }
+
 function setTokensAccessOnly(tokensResponse) {
   const accessTimes = getTokenTimes(tokensResponse.access_token)
   if (!accessTimes || accessTimes.timeoutInS <= 0) {
@@ -261,6 +330,7 @@ function setTokensAccessOnly(tokensResponse) {
   console.log(logPrefix, 'Access token expires: ', accessTimes.expiresDateISO, ' timeout: ', accessTimes.timeoutDateISO)
   setAccessTokenTimer(accessTimes.timeoutInMs)
 }
+
 function setTokensWithRefresh(tokensResponse) {
   const accessTimes = getTokenTimes(tokensResponse.access_token)
   const refreshTimes = getTokenTimes(tokensResponse.refresh_token, 0) // no timeout buffer for refresh token
@@ -288,8 +358,76 @@ function setTokensWithRefresh(tokensResponse) {
     console.log(logPrefix, 'Access token expires: ', accessTimes.expiresDateISO, ' timeout disabled')
   }
 }
-function processTokenResponseAndSetTokens(tokensResponse) {
-  console.log(logPrefix, 'Token response', tokensResponse)
+
+function validateTokensResponse(tokensResponse) {
+  if (!tokensResponse.access_token) {
+    throw new Error('No access_token in tokensResponse')
+  }
+  const accessPayload = decodeToken(tokensResponse.access_token)
+  if (!accessPayload) {
+    throw new Error('Invalid access_token in tokensResponse')
+  }
+  validateAudience(accessPayload)
+  validateClaims(accessPayload)
+  return true
+}
+
+function validateScope(scopeStr, isAdmin = false) {
+  const scopes = scopeStr.split(' ')
+  const hasScope = (s) => scopes.includes(s)
+
+  // Required scopes for each privilege
+  const requiredAdminScopes = [
+    'stig-manager:stig',
+    'stig-manager:user',
+    'stig-manager:op',
+    'stig-manager:collection'
+  ]
+  const requiredUserScopes = [
+    'stig-manager:stig:read',
+    'stig-manager:user:read',
+    'stig-manager:op',
+    'stig-manager:collection'
+  ]
+
+  // Top-level scope grants all
+  if (hasScope('stig-manager')) return true
+
+  const required = isAdmin ? requiredAdminScopes : requiredUserScopes
+  for (const s of required) {
+    if (!hasScope(s)) {
+      throw new Error(`Missing required scope "${ENV.scopePrefix}${s}" for ${isAdmin ? 'admin' : 'user'} in access token payload`)
+    }
+  }
+  return true
+}
+
+function validateClaims(payload) {
+  if (!payload[ENV.claims.scope]) {
+    throw new Error(`Missing scope claim (${ENV.claims.scope}) in access token payload`)
+  }
+  if (!payload[ENV.claims.username]) {
+    throw new Error(`Missing username claim (${ENV.claims.username}) in access token payload`)
+  }
+  
+  const privilegeChain = ENV.claims.privileges.split('.').map(p => p.replace(/(^")|("$)/g, ''))
+  const privileges = privilegeChain.reduce((obj, key) => obj?.[key], payload)
+  if (!privileges) {
+    throw new Error(`Missing privileges claim (${ENV.claims.privileges}) in access token payload`)
+  }
+  validateScope(payload[ENV.claims.scope], privileges.includes('admin'))
+
+  return true
+}
+
+function validateAudience(payload) {
+  if (ENV.audienceValue && payload.aud !== ENV.audienceValue) {
+    throw new Error(`Invalid audience in access token payload: ${payload.aud}, expected: ${ENV.audienceValue}`)
+  }
+  return true
+}
+
+function setTokens(tokensResponse) {
   clearTokens()
   if (tokensResponse.access_token && tokensResponse.refresh_token) {
     setTokensWithRefresh(tokensResponse)
@@ -299,15 +437,14 @@ function processTokenResponseAndSetTokens(tokensResponse) {
     setTokensAccessOnly(tokensResponse)
     return true
   }
-  console.error(logPrefix, 'No access_token in tokensResponse:', tokensResponse)
-  clearTokens(true) // broadcast no token
-  return false
 }
+
 function clearAccessToken(sendBroadcast = false) {
   tokens.accessToken = null
   clearAccessTokenTimer()
   if (sendBroadcast) broadcastNoToken()
 }
+
 function clearTokens(sendBroadcast = false) {
   tokens.accessToken = null
   tokens.refreshToken = null
@@ -315,6 +452,28 @@ function clearTokens(sendBroadcast = false) {
   clearRefreshTokenTimer()
   if (sendBroadcast) broadcastNoToken()
 }
+
+async function fetchTokens(params) {
+  const response = await fetch(oidcConfiguration.token_endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params
+  })
+  const tokensResponse = await response.json()
+  console.log(logPrefix, 'fetchToken() response', tokensResponse)
+
+  if (!response.ok) {
+    throw new Error(tokensResponse.error_description)
+  }
+  validateTokensResponse(tokensResponse)
+  setTokens(tokensResponse)
+  return {
+    success: true,
+    accessToken: tokens.accessToken,
+    accessTokenPayload: decodeToken(tokens.accessToken)
+  }
+}
+
 async function refreshAccessToken() {
   if (!tokens.refreshToken) {
     await broadcastNoToken()
@@ -325,135 +484,11 @@ async function refreshAccessToken() {
   params.append('client_id', ENV.clientId)
   params.append('refresh_token', tokens.refreshToken)
 
-  let response
-  let tokensResponse
   try {
-    response = await fetch(oidcConfiguration.token_endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params
-    })
+    return await fetchTokens(params)
   }
   catch (e) {
-    console.error(logPrefix, 'Refresh token fetch error', e)
-    clearTokens(true)
-    return {
-      success: false,
-      error: 'Failed to fetch from token endpoint'
-    }
+    clearTokens(true) // broadcast no token
+    return { success: false, error: e.message}
   }
-  try {
-    tokensResponse = await response.json()
-  }
-  catch (e) {
-    console.error(logPrefix, 'Refresh token response parse error', e)
-    clearTokens(true)
-    return {
-      success: false,
-      error: 'Failed to parse response from token endpoint'
-    }
-  }
-  if (!response.ok) {
-    console.error(logPrefix, 'Token refresh error response', tokensResponse)
-    clearTokens(true)
-  } else {
-    processTokenResponseAndSetTokens(tokensResponse)
-    return {
-      success: true,
-      accessToken: tokens.accessToken,
-      accessTokenPayload: decodeToken(tokens.accessToken)
-    }
-  }
-}
-async function exchangeCodeForToken({ code, codeVerifier, clientId, redirectUri }) {
-  if (authorizations[redirectUri] && authorizations[redirectUri].codeVerifier !== codeVerifier) {
-    // verifier does not match the saved redirectUri
-    console.error(logPrefix, 'Code verifier does not match the saved redirectUri', redirectUri, authorizations[redirectUri])
-    return { success: false, error: 'Code verifier does not match the saved redirectUri' }
-  }
-
-  console.log(logPrefix, 'Exchange code for token', code, codeVerifier)
-
-  delete authorizations[redirectUri]
-  const params = new URLSearchParams()
-  params.append('grant_type', 'authorization_code')
-  params.append('client_id', ENV.clientId)
-  params.append('redirect_uri', redirectUri)
-  params.append('code', code)
-  params.append('code_verifier', codeVerifier)
-
-  let tokensResponse
-  let response
-  try {
-    response = await fetch(oidcConfiguration.token_endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params
-    })
-  }
-  catch (e) {
-    console.error(logPrefix, 'Exchange code fetch error', e)
-    return { success: false, error: 'Failed to fetch from token endpoint' }
-  }
-
-  try {
-    tokensResponse = await response.json()
-  }
-  catch (e) {
-    console.error(logPrefix, 'Exchange code response parse error', e)
-    return { success: false, error: 'Failed to parse response from token endpoint' }
-  }
-
-  if (!response.ok) {
-    return { success: false, error: tokensResponse.error_description }
-  }
-  if (!processTokenResponseAndSetTokens(tokensResponse)) {
-    console.error(logPrefix, 'Failed to process token response', tokensResponse)
-    return { success: false, error: 'Failed to process token response' }
-  } else {
-    return {
-      success: true,
-      accessToken: tokens.accessToken,
-      accessTokenPayload: decodeToken(tokens.accessToken)
-    }
-  }
-}
-
-// Logout function
-function logout() {
-  return {
-    success: true,
-    redirect: oidcConfiguration.end_session_endpoint
-  }
-}
-
-// Message handler
-async function onMessage(e) {
-  const port = e.target
-  const { requestId, request, ...options } = e.data
-  const handler = messageHandlers[request]
-  if (handler) {
-    try {
-      const response = await handler(options)
-      port.postMessage({ requestId, response })
-    } catch (error) {
-      port.postMessage({ requestId, error: error.message })
-    }
-  } else {
-    port.postMessage({ requestId, error: 'Unknown request' })
-  }
-}
-
-const messageHandlers = {
-  getAccessToken,
-  exchangeCodeForToken,
-  initialize,
-  logout
-}
-
-// Worker entry point
-onconnect = function (e) {
-  const port = e.ports[0]
-  port.onmessage = onMessage
-  port.start()
 }

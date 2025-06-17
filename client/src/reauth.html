@@ -3,25 +3,21 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>STIGMan OIDC Popup</title>
-  <style>
-    body {
-      background: #000;
-      color: #ccc;
-      font-family: sans-serif;
-    }
-
-    #status {
-      margin-top: 1em;
-    }
-  </style>
+  <title>STIG Manager Authenticate</title>
+	<link rel="stylesheet" type="text/css" href="css/init.css" />
 </head>
 
 <body>
-  <h2>Signing In...</h2>
-  <div id="status"></div>
+		<div id="loading-mask">
+			<div id="loading">
+				<div id="indicator" class="loading-indicator">
+					<img src="img/shield-green-check.svg" alt="Green shield with check" width="48px" height="48px" style="position: relative;bottom: -7px;left: 0px;">
+					<div id="loading-text"></div>
+				</div>
+			</div>
+		</div>
   <script type="module">
-    // Main logic for handling OIDC re-authentication
+    const statusEl = document.getElementById("loading-text")
     const OW = new SharedWorker("js/oidcWorker.js", { name: 'stigman-oidc-worker', type: "module" })
     OW.port.start()
     const init = await sendWorkerRequest({ request: 'initialize' })
@@ -43,18 +39,19 @@
     }
 
     async function run() {
+      appendStatus('Processing OIDC redirect...')
       const url = new URL(window.location.href)
       const redirectUri = `${url.origin}${url.pathname}`
       const paramStr = extractParamString(url)
       if (!paramStr) {
-        document.getElementById('status').innerText = 'No parameters found in the URL.'
+        appendError('No parameters found in the URL.')
         return
       }
       const response = await handleRedirectAndParameters(redirectUri, paramStr, init.env.clientId)
       if (response.success) {
         window.close()
       } else {
-        document.getElementById('status').innerText = 'Error exchanging code for token: ' + response.error
+        appendError('Error exchanging code for token: ' + response.error)
       }
 
       function extractParamString(url) {
@@ -62,7 +59,6 @@
         if (url.search) return url.search.substring(1) // Remove the leading '?'
         return ''
       }
-
     }
 
     async function handleRedirectAndParameters(redirectUri, paramStr, clientId) {
@@ -95,6 +91,24 @@
         return params
       }
     }
+
+    function appendStatus(html) {
+      statusEl.innerHTML += `${statusEl.innerHTML ? '<br/><br/>' : ''}${html}`
+    }
+
+    function appendError(message) {
+      const cleanHref = window.location.origin + window.location.pathname
+      statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${message}</span><br><br><a href="${cleanHref}">Retry authorization.</a>`
+      hideSpinner()
+    }
+    function hideSpinner() {
+      const loadingEl = document.getElementById("indicator")
+      if (loadingEl) {
+        loadingEl.style.background = "none"
+      }
+    }
+
+
 
   </script>
 </body>
