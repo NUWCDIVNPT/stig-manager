@@ -717,12 +717,12 @@ SM.Exports.exportArchiveStreaming = async function ({collectionId, checklists, f
   }
 
   try {
-    await window.oidcProvider.updateToken(10)
+    
     const fetchInit = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${window.oidcProvider.token}`
+        'Authorization': `Bearer ${window.oidcWorker.token}`
       },
       body: JSON.stringify(checklists)     
     }
@@ -790,12 +790,12 @@ SM.Exports.exportToCollection = async function ({collectionId, dstCollectionId, 
     progressPanel.pb.updateProgress(1, "Sending request")
 
     const url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/export-to/${dstCollectionId}`
-    await window.oidcProvider.updateToken(10)
+    
     const fetchInit = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${window.oidcProvider.token}`
+        'Authorization': `Bearer ${window.oidcWorker.token}`
       },
       body: JSON.stringify(checklists)     
     }

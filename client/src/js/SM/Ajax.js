@@ -188,33 +188,26 @@ Ext.lib.Ajax = function() {
     // private
     function asyncRequest(method, uri, callback, postData) {
         var o = getConnectionObject() || null;
-        if (o) {
-            // Keycloak token handling, carl.a.smigielski@saic.com
-            window.oidcProvider.updateToken(10).then(function (refreshed) {
-                // console.info("updateToken() returned successfully, refreshed: " + refreshed)
-                o.conn.open(method, uri, true);
-                if (window.oidcProvider.token) {
-                    initHeader('Authorization', 'Bearer ' + window.oidcProvider.token)
-                }
-    
-                if (pub.useDefaultXhrHeader) {
-                    initHeader('X-Requested-With', pub.defaultXhrHeader);
-                }
-    
-                if(postData && pub.useDefaultHeader && (!pub.headers || !pub.headers[CONTENTTYPE])){
-                    initHeader(CONTENTTYPE, pub.defaultPostHeader);
-                }
-    
-                if (pub.defaultHeaders || pub.headers) {
-                    setHeader(o);
-                }
-    
-                handleReadyState(o, callback);
-                o.conn.send(postData || null);   
-            }).catch(function(e) {
-                console.info(`In Ext.lib.Ajax.asyncRequest - updateToken() error: ${e}`)
-                pub.abort(o, callback, false);
-            })
+
+        if (o && window.oidcWorker.token) {
+            o.conn.open(method, uri, true);
+
+            initHeader('Authorization', 'Bearer ' + window.oidcWorker.token)
+
+            if (pub.useDefaultXhrHeader) {
+                initHeader('X-Requested-With', pub.defaultXhrHeader);
+            }
+
+            if(postData && pub.useDefaultHeader && (!pub.headers || !pub.headers[CONTENTTYPE])){
+                initHeader(CONTENTTYPE, pub.defaultPostHeader);
+            }
+
+            if (pub.defaultHeaders || pub.headers) {
+                setHeader(o);
+            }
+
+            handleReadyState(o, callback);
+            o.conn.send(postData || null);
         }
         return o;
     }
