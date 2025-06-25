@@ -28,7 +28,6 @@ const scripts = [
   'js/SM/State.js',
   'js/SM/TipContent.js',
   'js/SM/Ajax.js',
-  'js/SM/Warnings.js',
   'js/SM/Classification.js',
   'js/SM/MainPanel.js',
   'js/SM/WhatsNew.js',

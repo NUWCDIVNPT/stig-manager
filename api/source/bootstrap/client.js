@@ -28,10 +28,10 @@ function getClientEnv(){
             apiBase: "${config.client.apiBase}",
             displayAppManagers: ${config.client.displayAppManagers},
             welcome: {
-            image: "${config.client.welcome.image}",
-            title: "${config.client.welcome.title.replace(/"/g, '\\"')}",
-            message: "${config.client.welcome.message.replace(/"/g, '\\"')}",
-            link: "${config.client.welcome.link}"
+                image: "${config.client.welcome.image}",
+                title: "${config.client.welcome.title.replace(/"/g, '\\"')}",
+                message: "${config.client.welcome.message.replace(/"/g, '\\"')}",
+                link: "${config.client.welcome.link}"
             },
             commit: {
                 branch: "${config.commit.branch}",
@@ -42,12 +42,13 @@ function getClientEnv(){
             oauth: {
                 authority:  "${config.client.authority}",
                 clientId: "${config.client.clientId}",
-                refreshToken: {
-                disabled: ${config.client.refreshToken.disabled}
-                },
                 extraScopes: "${config.client.extraScopes ?? ''}",
                 scopePrefix: "${config.client.scopePrefix ?? ''}",
-                responseMode: "${config.client.responseMode}"
+                responseMode: "${config.client.responseMode}",
+                reauthAction: "${config.client.reauthAction}",
+                strictPkce: "${config.client.strictPkce}",
+                audienceValue: "${config.oauth.audienceValue ?? ''}",
+                claims: ${JSON.stringify(config.oauth.claims)}
             },
             experimental: {
                 appData: "${config.experimental.appData}"
