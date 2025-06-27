@@ -46,6 +46,10 @@ describe('DELETE - Collection ', function () {
           expect(deletedCollection.status, "expect 403 response (delete worked)").to.equal(403)
         })
 
+        it("should throw 403, attempting to delete disabled collection",async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}`, 'DELETE', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe('deleteCollectionLabelById - /collections/{collectionId}/labels/{labelId}', function () {
@@ -76,6 +80,10 @@ describe('DELETE - Collection ', function () {
           expect(res.status).to.eql(404)
           expect(res.body.error).to.equal("Resource not found.")
         })
+        it("should throw 403, attempting to delete a label from a disabled collection",async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/labels/${tempLabel.labelId}`, 'DELETE', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe('deleteCollectionMetadataKey - /collections/{collectionId}/metadata/keys/{key}', function () {
@@ -93,6 +101,10 @@ describe('DELETE - Collection ', function () {
               expect(res.status).to.eql(204)
               const collection = await utils.getCollection(reference.testCollection.collectionId)
               expect(collection.metadata).to.not.have.property(reference.testCollection.collectionMetadataKey)
+        })
+        it("should throw a 403, attempting to delete a metadata key from a disabled collection",async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metadata/keys/${reference.testCollection.collectionMetadataKey}`, 'DELETE', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
 
@@ -123,6 +135,10 @@ describe('DELETE - Collection ', function () {
   
             expect(res.status).to.eql(200)
             expect(res.body.HistoryEntriesDeleted).to.be.equal(reference.testCollection.reviewHistory.deletedEntriesByDateAsset)
+        })
+        it("should throw 403, attempting to delete review history from a disabled collection",async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/review-history?retentionDate=${reference.testCollection.reviewHistory.endDate}`, 'DELETE', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
 
@@ -155,7 +171,6 @@ describe('DELETE - Collection ', function () {
           }
           expect(res.status).to.eql(200)
         })
-
         it("Delete an owner grant, using elevate should only succeed with stigmanadmin",async function () {
 
           const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/grants/${"7"}?elevate=true`, 'DELETE', iteration.token)
@@ -174,6 +189,10 @@ describe('DELETE - Collection ', function () {
             return
           }
           expect(res.status).to.eql(404)
+        })
+        it("should throw 403, attempting to delete a grant from a disabled collection",async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/grants/${reference.scrapLvl1User.testCollectionGrantId}`, 'DELETE', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
     })

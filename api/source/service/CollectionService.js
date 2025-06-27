@@ -17,7 +17,7 @@ exports.queryCollection = async function ({collectionId, projections = [], eleva
     'c.settings',
     'c.metadata'
   ]
-  const joins = ['collection c']
+  const joins = ['enabled_collection c']
 
   let requireCteGrantees = false
   let requireCteAcls = false
@@ -26,7 +26,7 @@ exports.queryCollection = async function ({collectionId, projections = [], eleva
   let requireCteLabels = ''
 
   const predicates = {
-    statements: [`c.state = "enabled"`],
+    statements: [],
     binds: []
   }
 
@@ -42,7 +42,7 @@ exports.queryCollection = async function ({collectionId, projections = [], eleva
       'name', name)`,
       orderBy: 'name'
       })}, json_array()) from
-      ${requesterRole === 1 ? 'cteAssets' : 'asset where collectionId = c.collectionId and state = "enabled"'}) as assets`
+      ${requesterRole === 1 ? 'cteAssets' : 'enabled_asset where collectionId = c.collectionId'}) as assets`
       if (requesterRole === 1) {
       requireCteAcls = true
       requireCteAssets = true
@@ -71,7 +71,7 @@ exports.queryCollection = async function ({collectionId, projections = [], eleva
         'ruleCount', revision.ruleCount
         )), json_array())
         from 
-		    (select distinct sa.benchmarkId from asset a
+		    (select distinct sa.benchmarkId from enabled_asset a
         inner join stig_asset_map sa on a.assetId = sa.assetId
         where a.collectionId = c.collectionId) cb
         left join default_rev dr on (cb.benchmarkId=dr.benchmarkId and dr.collectionId = c.collectionId)
@@ -199,8 +199,8 @@ exports.queryCollection = async function ({collectionId, projections = [], eleva
         from 
           (SELECT
           (select count(userId) from cteGrantees where collectionId = c.collectionId) as userCount,
-          (select count(distinct a.assetId) from asset a where a.collectionId = c.collectionId and state = "enabled") as assetCount,
-          (select count(saId) from asset a left join stig_asset_map sa using (assetId) where a.collectionId = c.collectionId and a.state = 'enabled') as checklistCount) dt4
+          (select count(distinct a.assetId) from enabled_asset a where a.collectionId = c.collectionId) as assetCount,
+          (select count(saId) from enabled_asset a left join stig_asset_map sa using (assetId) where a.collectionId = c.collectionId) as checklistCount) dt4
         ) as statistics`)
 
     }
@@ -218,7 +218,7 @@ exports.queryCollection = async function ({collectionId, projections = [], eleva
     ctes.push(`cteAssets as (select distinct a.assetId, a.name from 
     cteAclRules ar
     inner join stig_asset_map sa using (saId)
-    left join asset a using (assetId)
+    left join enabled_asset a using (assetId)
     order by a.name)`)
   }
   if (requireCteStigs) {
@@ -278,9 +278,9 @@ exports.queryCollections = async function ({projections = [], filter = {}, eleva
       'c.settings',
       'c.metadata'
     ]
-    const joins = ['collection c']
+    const joins = ['enabled_collection c']
     const predicates = {
-      statements: [`c.state = "enabled"`],
+      statements: [],
       binds: []
     }
     const orderBy = ['c.name']
@@ -328,9 +328,9 @@ exports.queryCollections = async function ({projections = [], filter = {}, eleva
             (SELECT
             (select roleId from cteGrantees where collectionId = c.collectionId and userId = ?) as roleId,
             (select count(userId) from cteGrantees where collectionId = c.collectionId) as userCount,
-            (select count(distinct a.assetId) from asset a where a.collectionId = c.collectionId and a.state = "enabled") as assetCount,
+            (select count(distinct a.assetId) from enabled_asset a where a.collectionId = c.collectionId) as assetCount,
             (select count(distinct sa.assetId) from cteAclEffective cae left join stig_asset_map sa using (saId) where cae.collectionId = c.collectionId) as assetGrantedCount,
-            (select count(sa.saId) from asset a left join stig_asset_map sa using (assetId) where a.collectionId = c.collectionId and a.state = "enabled") as checklistCount,
+            (select count(sa.saId) from enabled_asset a left join stig_asset_map sa using (assetId) where a.collectionId = c.collectionId) as checklistCount,
             (select count(saId) from cteAclEffective where collectionId = c.collectionId) as checklistGrantedCount
           ) dt4
         ) as statistics`)
@@ -348,8 +348,8 @@ exports.queryCollections = async function ({projections = [], filter = {}, eleva
           from 
             (SELECT
             (select count(userId) from cteGrantees where collectionId = c.collectionId) as userCount,
-            (select count(distinct a.assetId) from asset a where a.collectionId = c.collectionId and a.state = "enabled") as assetCount,
-            (select count(sa.saId) from asset a left join stig_asset_map sa using (assetId) where a.collectionId = c.collectionId and a.state = "enabled") as checklistCount) dt4
+            (select count(distinct a.assetId) from enabled_asset a where a.collectionId = c.collectionId) as assetCount,
+            (select count(sa.saId) from enabled_asset a left join stig_asset_map sa using (assetId) where a.collectionId = c.collectionId) as checklistCount) dt4
           ) as statistics`)
       }
     }
@@ -433,7 +433,7 @@ exports.queryCollections = async function ({projections = [], filter = {}, eleva
 }
 
 exports.doesCollectionExist = async function (collectionId) {
-  const sql = `SELECT collectionId FROM collection WHERE collectionId = ?`
+  const sql = `SELECT collectionId FROM enabled_collection WHERE collectionId = ?`
   const [rows] = await dbUtils.pool.query(sql, [collectionId])
   return rows.length > 0
 }
@@ -651,7 +651,7 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
   ]
 
   const joins = [
-    'asset a',
+    'enabled_asset a',
     'left join stig_asset_map sa using (assetId)',
     'left join current_rev rev using (benchmarkId)',
     'left join rev_group_rule_map rgr using (revId)',
@@ -663,7 +663,6 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
     statements: [
       'a.collectionId = ?',
       'rev.benchmarkId = ?',
-      'a.state = "enabled"'
     ],
     binds: [
       collectionId,
@@ -760,8 +759,8 @@ exports.getFindingsByCollection = async function( {collectionId, aggregator, ben
   }
   const ctes = []
   const joins = [
-    'collection c',
-    'inner join asset a on (c.collectionId = a.collectionId and a.state = "enabled")',
+    'enabled_collection c',
+    'inner join enabled_asset a on (c.collectionId = a.collectionId)',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and c.collectionId = dr.collectionId)',
     'left join rev_group_rule_map rgr on dr.revId = rgr.revId',
@@ -838,7 +837,6 @@ exports.getFindingsByCollection = async function( {collectionId, aggregator, ben
 
   const predicates = {
     statements: [
-      'c.state = "enabled"',
       'c.collectionId = ?'
     ],
     binds: [collectionId]
@@ -888,8 +886,8 @@ exports.getStigsByCollection = async function({collectionId, labelIds, labelName
   const orderBy = ['sa.benchmarkId']
 
   const joins = [
-    'collection c',
-    'left join asset a on c.collectionId = a.collectionId',
+    'enabled_collection c',
+    'left join enabled_asset a on c.collectionId = a.collectionId',
     'inner join stig_asset_map sa on a.assetId = sa.assetId',
     'left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and c.collectionId = dr.collectionId)',
     'left join revision on dr.revId = revision.revId',
@@ -899,7 +897,6 @@ exports.getStigsByCollection = async function({collectionId, labelIds, labelName
   // PREDICATES
   const predicates = {
     statements: [
-      'a.state = "enabled"',
       'c.collectionId = ?'
     ],
     binds: [collectionId]
@@ -976,7 +973,7 @@ exports.getCollectionMetadataKeys = async function ( collectionId ) {
     select
       JSON_KEYS(metadata) as keyArray
     from 
-      collection
+      enabled_collection
     where 
       collectionId = ?`
   binds.push(collectionId)
@@ -990,7 +987,7 @@ exports.getCollectionMetadata = async function ( collectionId ) {
     select
       metadata 
     from 
-      collection
+      enabled_collection
     where 
       collectionId = ?`
   binds.push(collectionId)
@@ -1032,7 +1029,7 @@ exports.getCollectionMetadataValue = async function ( collectionId, key ) {
     select
       JSON_EXTRACT(metadata, ?) as value
     from 
-      collection
+      enabled_collection
     where 
       collectionId = ?`
   binds.push(`$."${key}"`, collectionId)
@@ -1079,7 +1076,7 @@ exports.deleteReviewHistoryByCollection = async function (collectionId, retentio
     DELETE rh 
     FROM review_history rh 
       INNER JOIN review r on rh.reviewId = r.reviewId
-      INNER JOIN asset a on r.assetId = a.assetId
+      INNER JOIN enabled_asset a on r.assetId = a.assetId
     WHERE a.collectionId = :collectionId
       AND rh.touchTs < :retentionDate`
 
@@ -1158,7 +1155,7 @@ exports.getReviewHistoryByCollection = async function (collectionId, startDate, 
     'left join user_data udStatus on udStatus.userId=rh.statusUserId',
 		'INNER JOIN result on rh.resultId = result.resultId',
 		'INNER JOIN status on rh.statusId = status.statusId',
-		'inner join asset a on a.assetId = rv.assetId and a.state = "enabled"'
+		'inner join enabled_asset a on a.assetId = rv.assetId'
   ]
 
   let predicates = {
@@ -1230,7 +1227,7 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
           SELECT a.assetId, COUNT(*) as historyEntryCount, MIN(rh.touchTs) as oldestHistoryEntry
           FROM review_history rh
             INNER JOIN review rv on rh.reviewId = rv.reviewId
-            INNER JOIN asset a on rv.assetId = a.assetId
+            INNER JOIN enabled_asset a on rv.assetId = a.assetId
           WHERE a.collectionId = :collectionId
           additionalPredicates
           GROUP BY a.assetId
@@ -1242,7 +1239,7 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
   sql += `
     FROM review_history rh
       INNER JOIN review rv on rh.reviewId = rv.reviewId
-      INNER JOIN asset a on rv.assetId = a.assetId and a.state = 'enabled'
+      INNER JOIN enabled_asset a on rv.assetId = a.assetId
     WHERE a.collectionId = :collectionId
     additionalPredicates
   `
@@ -1285,7 +1282,7 @@ exports.getCollectionSettings = async function ( collectionId ) {
     select
       JSON_MERGE_PATCH('${JSON.stringify(MyController.defaultSettings)}', settings) as settings
     from 
-      collection
+      enabled_collection
     where 
       collectionId = ?`
   let [rows] = await dbUtils.pool.query(sql, [collectionId])
@@ -1303,9 +1300,9 @@ exports.getCollectionLabels = async function (collectionId, grant) {
   ]
   const joins = [
     'collection_label cl', 
-    'left join asset a on cl.collectionId = a.collectionId',
+    'left join enabled_asset a on cl.collectionId = a.collectionId',
     'left join stig_asset_map sa on a.assetId = sa.assetId',
-    'left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a.assetId and a.state = "enabled"'
+    'left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a.assetId'
   ]
   // const groupBy = [
   //   'cl.uuid',
@@ -1373,7 +1370,7 @@ exports.getCollectionLabelsByName = async function (collectionId, labelNames, gr
   ]
   const joins = [
     'collection_label cl', 
-    'left join asset a on cl.collectionId = a.collectionId and a.state = "enabled"',
+    'left join enabled_asset a on cl.collectionId = a.collectionId',
     'left join stig_asset_map sa on a.assetId = sa.assetId',
     'left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a.assetId'
   ]
@@ -1409,7 +1406,7 @@ exports.getCollectionLabelById = async function (collectionId, labelId, grant) {
   ]
   const joins = [
     'collection_label cl', 
-    'left join asset a on cl.collectionId = a.collectionId and a.state = "enabled"',
+    'left join enabled_asset a on cl.collectionId = a.collectionId',
     'left join stig_asset_map sa on a.assetId = sa.assetId',
     'left join collection_label_asset_map cla on cla.clId = cl.clId and cla.assetId = a.assetId'
   ]
@@ -1464,7 +1461,7 @@ exports.getAssetsByCollectionLabelId = async function (collectionId, labelId, gr
   const joins = [
     'collection_label cl',
     'left join collection_label_asset_map cla on cla.clId = cl.clId',
-    'inner join asset a on cla.assetId = a.assetId and a.state = "enabled"',
+    'inner join enabled_asset a on cla.assetId = a.assetId',
   ]
   const predicates = {
     statements: [
@@ -1636,7 +1633,7 @@ async function queryUnreviewedByCollection ({
   }
   const ctes = []
   const joins = [
-    'asset a',
+    'enabled_asset a',
     'left join collection_label_asset_map cla on cla.assetId = a.assetId',
     'left join collection_label cl on cla.clId = cl.clId',
     'left join stig_asset_map sa on a.assetId = sa.assetId',
@@ -1717,9 +1714,9 @@ exports.writeStigPropsByCollectionStig = async function ({collectionId, benchmar
         let sqlDeleteStigAsset = `
         DELETE stig_asset_map FROM 
           stig_asset_map
-          left join asset on stig_asset_map.assetId = asset.assetId
+          left join enabled_asset a on stig_asset_map.assetId = a.assetId
         WHERE
-          asset.collectionId = ?
+          a.collectionId = ?
           and stig_asset_map.benchmarkId = ?${assetIds.length > 0 ? ' and stig_asset_map.assetId NOT IN ?': ''}`
         
         // DELETE from stig_asset_map, which will cascade into user_stig_aset_map
@@ -1760,8 +1757,8 @@ exports.doesCollectionIncludeAssets = async function ({collectionId, assetIds}) 
       COLUMNS(
         assetId INT(11) PATH "$"
       ) ) AS jt
-    left join asset a using (assetId)
-    where a.collectionId != ? or a.collectionId is null or a.state != "enabled"`
+    left join enabled_asset a using (assetId)
+    where a.collectionId != ? or a.collectionId is null`
 
     const [rows] = await dbUtils.pool.query(sql, [JSON.stringify(assetIds), collectionId])
     return rows.length === 0
@@ -1774,7 +1771,7 @@ exports.doesCollectionIncludeAssets = async function ({collectionId, assetIds}) 
 exports.doesCollectionIncludeStig = async function ({collectionId, benchmarkId}) {
   try {
     const [rows] = await dbUtils.pool.query(
-      `select distinct sam.benchmarkId from asset a inner join stig_asset_map sam using (assetId) where a.collectionId = ? and a.state = "enabled"`,
+      `select distinct sam.benchmarkId from enabled_asset a inner join stig_asset_map sam using (assetId) where a.collectionId = ?`,
       [collectionId]
     )
     return rows.some(i => i.benchmarkId === benchmarkId)
@@ -1789,7 +1786,7 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
   try {
     const sql = {
       cloneCollection: {
-        query: `INSERT INTO collection (name, description, settings, metadata, state) SELECT @name,@description,settings, metadata, "cloning" from collection WHERE collectionId = @srcCollectionId`,
+        query: `INSERT INTO collection (name, description, settings, metadata, state) SELECT @name,@description,settings, metadata, "cloning" from enabled_collection WHERE collectionId = @srcCollectionId`,
         startText: 'Creating core properties',
         finishText: 'Creating core properties'
       },
@@ -1824,7 +1821,7 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
         finishText: 'Created Labels'
       },
       cloneAssets: {
-        query: `INSERT INTO asset (name, fqdn, collectionId, ip, mac, description, noncomputing, metadata) SELECT name,fqdn,@destCollectionId,ip,mac,description,noncomputing,metadata from asset where state = "enabled" and collectionId = @srcCollectionId`,
+        query: `INSERT INTO asset (name, fqdn, collectionId, ip, mac, description, noncomputing, metadata) SELECT name,fqdn,@destCollectionId,ip,mac,description,noncomputing,metadata from enabled_asset where collectionId = @srcCollectionId`,
         startText: 'Creating Assets',
         finishText: 'Creating Assets'
       },
@@ -1834,7 +1831,7 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
         finishText: 'Creating Assets'
       },
       createAssetMap: {
-        query: `CREATE TEMPORARY TABLE t_assetid_map SELECT a1.assetId as srcAssetId, a2.assetId as destAssetId FROM asset a1 left join asset a2 on (a1.collectionId =  @srcCollectionId and a1.name = a2.name and a1.state = "enabled") WHERE a2.collectionId = @destCollectionId`,
+        query: `CREATE TEMPORARY TABLE t_assetid_map SELECT a1.assetId as srcAssetId, a2.assetId as destAssetId FROM enabled_asset a1 left join enabled_asset a2 on (a1.collectionId =  @srcCollectionId and a1.name = a2.name) WHERE a2.collectionId = @destCollectionId`,
         startText: 'Creating Assets',
         finishText: 'Created Assets'
       },
@@ -1907,7 +1904,7 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
       },
       createReviewIdList: {
         query: `CREATE TEMPORARY TABLE t_reviewId_list (seq INT AUTO_INCREMENT PRIMARY KEY)
-      SELECT r.reviewId, am.destAssetId FROM asset a inner join t_assetid_map am on a.assetId = am.srcAssetId inner join review r on am.srcAssetId = r.assetId `,
+      SELECT r.reviewId, am.destAssetId FROM enabled_asset a inner join t_assetid_map am on a.assetId = am.srcAssetId inner join review r on am.srcAssetId = r.assetId `,
       startText: 'Creating Reviews',
       finishText: 'Creating Reviews'
       },
@@ -2120,7 +2117,7 @@ exports.exportToCollection = async function ({srcCollectionId, dstCollectionId, 
           c.settings->>"$.status.minAcceptGrant" as minAcceptGrant,
           c.settings->>"$.history.maxReviews" as historyMax
         FROM
-          collection c
+          enabled_collection c
         where
           collectionId = @dstCollectionId`,
           runningText: 'Preparing data'
@@ -2161,8 +2158,8 @@ exports.exportToCollection = async function ({srcCollectionId, dstCollectionId, 
           @userId
         FROM
           t_arg
-          left join asset srcAsset on (t_arg.assetId = srcAsset.assetId and srcAsset.isEnabled = 1)
-          left join asset dstAsset on (t_arg.assetName = dstAsset.name and dstAsset.collectionId = @dstCollectionId and dstAsset.isEnabled = 1)
+          left join enabled_asset srcAsset on t_arg.assetId = srcAsset.assetId
+          left join enabled_asset dstAsset on (t_arg.assetName = dstAsset.name and dstAsset.collectionId = @dstCollectionId)
         WHERE
           dstAsset.assetId is null
         GROUP BY
@@ -2185,8 +2182,8 @@ exports.exportToCollection = async function ({srcCollectionId, dstCollectionId, 
           dstAsset.assetId as dstAssetId
         from
           t_arg
-          inner join asset srcAsset on (t_arg.assetId = srcAsset.assetId)
-          inner join asset dstAsset on (t_arg.assetName = dstAsset.name and dstAsset.collectionId = @dstCollectionId)
+          inner join enabled_asset srcAsset on (t_arg.assetId = srcAsset.assetId)
+          inner join enabled_asset dstAsset on (t_arg.assetName = dstAsset.name and dstAsset.collectionId = @dstCollectionId)
         group by
           srcAsset.assetId, dstAsset.assetId`,
           runningText: "Preparing Assets"
@@ -2198,7 +2195,7 @@ exports.exportToCollection = async function ({srcCollectionId, dstCollectionId, 
           t_arg.benchmarkId
         from
           t_arg
-          left join asset a on (t_arg.assetName = a.name and a.collectionId = @dstCollectionId and a.isEnabled = 1)
+          left join enabled_asset a on (t_arg.assetName = a.name and a.collectionId = @dstCollectionId)
           left join stig_asset_map sa on (t_arg.benchmarkId collate utf8mb4_0900_as_cs = sa.benchmarkId and a.assetId = sa.assetId)
         where
           sa.saId is null`,
@@ -2209,7 +2206,7 @@ exports.exportToCollection = async function ({srcCollectionId, dstCollectionId, 
           sa.saId
         from
           t_arg
-          left join asset a on (t_arg.assetName = a.name and a.collectionId = @dstCollectionId and a.isEnabled = 1)
+          left join enabled_asset a on (t_arg.assetName = a.name and a.collectionId = @dstCollectionId)
           left join stig_asset_map sa on (t_arg.benchmarkId collate utf8mb4_0900_as_cs = sa.benchmarkId and a.assetId = sa.assetId)`
       },
       deleteDefaultRev: {
@@ -2514,7 +2511,7 @@ select
 	  json_array(cg.grantId) as grantIds
   from
     collection_grant cg
-    inner join collection c on (cg.collectionId = c.collectionId and c.state = 'enabled')
+    inner join enabled_collection c on (cg.collectionId = c.collectionId)
     left join user_data ud on cg.userId = ud.userId
 where
 	cg.userId is not null
@@ -2533,7 +2530,7 @@ union
       left join user_group_user_map ugu on cg.userGroupId = ugu.userGroupId
       left join user_group ug on ugu.userGroupId = ug.userGroupId
       left join collection_grant cgDirect on (cg.collectionId = cgDirect.collectionId and ugu.userId = cgDirect.userId)
-      inner join collection c on (cg.collectionId = c.collectionId and c.state = 'enabled')
+      inner join enabled_collection c on (cg.collectionId = c.collectionId)
     where
     cg.userGroupId is not null
     and cgDirect.userId is null
@@ -2591,7 +2588,7 @@ from
 		then cla.assetId = sa.assetId
 		else true
 	  end)
-	inner join asset a on sa.assetId = a.assetId and a.state = 'enabled' and cg.collectionId = a.collectionId
+	inner join enabled_asset a on sa.assetId = a.assetId and cg.collectionId = a.collectionId
 where
 	cga.grantId in (
 		select /*+ NO_MERGE() */ jt.grantId from cteGrantees left join json_table (cteGrantees.grantIds, '$[*]' COLUMNS (grantId INT PATH '$')) jt on true
@@ -2670,7 +2667,7 @@ exports._reviewAclValidate = async function ({grantId, acl}) {
     )) jt
     left join collection_grant cg on (cg.grantId = ?)
     left join collection_label cl on cl.uuid = UUID_TO_BIN(jt.labelId,1) and cg.collectionId = cl.collectionId
-    left join asset a on jt.assetId = a.assetId and a.state = 'enabled' and cg.collectionId = a.collectionId
+    left join enabled_asset a on jt.assetId = a.assetId and cg.collectionId = a.collectionId
     left join stig s on jt.benchmarkId collate utf8mb4_0900_as_cs = s.benchmarkId
   group by
     jt.assetId, jt.benchmarkId, jt.labelId, cl.clId
@@ -2809,14 +2806,14 @@ exports.queryReviewAcl = async function ({grantId, collectionId, userId, userGro
   ]
   const joins = [
     'collection_grant cg',
-    'inner join collection c on cg.collectionId = c.collectionId and c.state = "enabled"',
+    'inner join enabled_collection c on cg.collectionId = c.collectionId',
     'left join collection_grant_acl cga on cg.grantId = cga.grantId',
-    'left join asset a on cga.assetId = a.assetId',
+    'left join enabled_asset a on cga.assetId = a.assetId',
     'left join collection_label cl on cga.clId = cl.clId'
     ]
 
     const predicates = {
-    statements: [`(a.state = 'enabled' or a.assetId is null)`],
+    statements: [],
     binds: []
   }
 
