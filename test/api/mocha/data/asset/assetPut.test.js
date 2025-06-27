@@ -188,6 +188,23 @@ describe('PUT - Asset', function () {
             })
           expect(res.status).to.eql(403)
         })
+
+        it("should throw 403, asset is deleted.", async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.deletedAsset.assetId}`, 'PUT', iteration.token, {
+              "name": 'TestAsset' + utils.getUUIDSubString(),
+              "collectionId": reference.scrapCollection.collectionId,
+              "description": "test desc",
+              "ip": "1.1.1.1",
+              "noncomputing": true,
+              "metadata": {},
+              "stigs": [
+                  "VPN_SRG_TEST",
+                  "Windows_10_STIG_TEST",
+                  "RHEL_7_STIG_TEST"
+              ]
+            })
+          expect(res.status).to.eql(403)
+        })
       })
       describe(`putAssetMetadata - /assets/{assetId}/metadata`, function () {
 
@@ -207,6 +224,12 @@ describe('PUT - Asset', function () {
           const effectedAsset = await utils.getAsset(reference.scrapAsset.assetId)
           expect(effectedAsset.metadata).to.have.property(reference.scrapAsset.metadataKey)
         })
+        it("should throw 403, asset is deleted.", async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.deletedAsset.assetId}/metadata`, 'PUT', iteration.token, {
+              [reference.scrapAsset.metadataKey]: reference.scrapAsset.metadataValue
+            })
+          expect(res.status).to.eql(403)
+        })
       })
       describe(`putAssetMetadataValue - /assets/{assetId}/metadata/keys/{key}`, function () {
       
@@ -221,6 +244,10 @@ describe('PUT - Asset', function () {
           expect(res.status).to.eql(204)
           const effectedAsset = await utils.getAsset(reference.scrapAsset.assetId)
           expect(effectedAsset.metadata).to.have.property(reference.scrapAsset.metadataKey)
+        })
+        it("should throw 403, asset is deleted.", async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.deletedAsset.assetId}/metadata/keys/${reference.scrapAsset.metadataKey}`, 'PUT', iteration.token, `${JSON.stringify(reference.scrapAsset.metadataValue)}`)
+          expect(res.status).to.eql(403)
         })
       })
       describe(`attachStigToAsset - /assets/{assetId}/stigs/{benchmarkId}`, function () {
@@ -246,6 +273,10 @@ describe('PUT - Asset', function () {
               expect(stig.benchmarkId).to.equal(reference.scrapAsset.scrapBenchmark)
             }
           }
+        })
+        it("should throw 403, asset is deleted.", async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.deletedAsset.assetId}/stigs/${reference.scrapAsset.scrapBenchmark}`, 'PUT', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
       describe(`putAssetsByCollectionLabelId - /collections/{collectionId}/labels/{labelId}/assets`, function () {

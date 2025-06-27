@@ -280,6 +280,10 @@ describe('GET - Review', () => {
           expect(res.status).to.eql(200)
           expect(res.body).to.be.an('array').of.length(0)
         })
+        it("should return 403 for deleted collection", async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
       describe('GET - getReviewsByAsset - /collections/{collectionId}/reviews/{assetId}', () => {
 
@@ -445,6 +449,18 @@ describe('GET - Review', () => {
             expect(review.status.label).to.be.equal('submitted')
           }
         })
+        it("should return 403 for deleted collection", async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews/${reference.testAsset.assetId}`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
+        it("should return 403 for deleted asset", async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.deletedAsset.assetId}`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
+        it("should return 403 for deleted asset and collection", async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews/${reference.deletedAsset.assetId}`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
       describe('GET - getReviewByAssetRule - /collections/{collectionId}/reviews/{assetId}/{ruleId}', () => {
 
@@ -469,6 +485,18 @@ describe('GET - Review', () => {
           expect(review.status.label, "expect review to be submitted").to.be.oneOf(['submitted'])
           expect(review.result, "expect result to be pass").to.eql('pass')
         })
+        it("should return 403 for deleted collection", async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
+        it("should return 403 for deleted asset", async () => { 
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.deletedAsset.assetId}/${reference.scrapRuleIdWindows10}`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
+        it("should return 403 for deleted asset and collection", async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews/${reference.deletedAsset.assetId}/${reference.scrapRuleIdWindows10}`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
       describe('GET - getReviewMetadata - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata', () => {
         it('Return the metadata for a Review', async () => {
@@ -478,6 +506,16 @@ describe('GET - Review', () => {
           expect(res.body).to.be.an('object')
           expect(res.body).to.have.property(reference.reviewMetadataKey)
           expect(res.body[reference.reviewMetadataKey]).to.be.equal(reference.reviewMetadataValue)
+        })
+
+        it("should return 403 for deleted collection", async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
+
+        it("should return 403 for deleted asset", async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.deletedAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
         })
         // useless if we test other users 
         if(iteration.name === 'lvl1'){
@@ -498,6 +536,14 @@ describe('GET - Review', () => {
             expect(res.body).to.be.lengthOf(1)
             expect(res.body).to.include(reference.reviewMetadataKey)
           })
+          it("should return 403 for deleted collection", async () => {
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata/keys`, 'GET', iteration.token)
+            expect(res.status).to.eql(403)
+          })
+          it("should return 403 for deleted asset", async () => { 
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.deletedAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata/keys`, 'GET', iteration.token)
+            expect(res.status).to.eql(403)
+          })
       })
       describe('GET - getReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
 
@@ -512,6 +558,15 @@ describe('GET - Review', () => {
           expect(res.status).to.eql(404)
           expect(res.body.error).to.be.equal("Resource not found.")
         })
+        it("should return 403 for deleted collection", async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata/keys/${reference.reviewMetadataKey}`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
+        it("should return 403 for deleted asset", async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.deletedAsset.assetId}/${reference.scrapRuleIdWindows10}/metadata/keys/${reference.reviewMetadataKey}`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
+        // useless if we test other users
       })
     })
   }

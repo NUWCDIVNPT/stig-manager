@@ -1,4 +1,3 @@
-
 import { v4 as uuidv4 } from 'uuid'
 import {config } from '../../testConfig.js'
 import * as utils from '../../utils/testUtils.js'
@@ -141,6 +140,12 @@ describe('PATCH - Collection', function () {
               expect(res.body.detail).to.equal("Duplicate user in grant array")
 
           })
+
+          it('should return 403 for deleted collection', async function () {
+            const patchRequest = requestBodies.updateCollection
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}?&projection=grants&projection=stigs`, 'PATCH', iteration.token, patchRequest)
+            expect(res.status).to.eql(403)
+          })
         })
         describe('patchCollectionLabelById - /collections/{collectionId}/labels/{labelId}', function () {
 
@@ -177,6 +182,13 @@ describe('PATCH - Collection', function () {
               expect(res.status).to.eql(404)
               expect(res.body.error).to.equal("Resource not found.")
           })
+
+          it('should return 403 for deleted collection', async function () {
+            const body = requestBodies.patchCollectionLabelById
+            // Use a dummy labelId for the deleted collection
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/labels/${reference.testCollection.fullLabel}`, 'PATCH', iteration.token, body)
+            expect(res.status).to.eql(403)
+          })
         })
         describe('patchCollectionMetadata - /collections/{collectionId}/metadata', function () {
 
@@ -191,6 +203,11 @@ describe('PATCH - Collection', function () {
 
                 expect(res.status).to.eql(200)
                 expect(res.body).to.contain({[reference.testCollection.collectionMetadataKey]: reference.testCollection.collectionMetadataValue})
+          })
+
+          it('should return 403 for deleted collection', async function () {
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metadata`, 'PATCH', iteration.token, {[reference.testCollection.collectionMetadataKey]: reference.testCollection.collectionMetadataValue})
+            expect(res.status).to.eql(403)
           })
         })
       })

@@ -1,4 +1,3 @@
-
 import { v4 as uuidv4 } from 'uuid'
 import {config } from '../../testConfig.js'
 import * as utils from '../../utils/testUtils.js'
@@ -270,6 +269,10 @@ describe('GET - Collection', function () {
             expect(res.status).to.eql(403)
           }
         })
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}?projection=assets&projection=grants&projection=owners&projection=users&projection=statistics&projection=stigs&projection=labels`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe('getChecklistByCollectionStig - /collections/{collectionId}/checklists/{benchmarkId}/{revisionStr}', function () {
@@ -290,6 +293,10 @@ describe('GET - Collection', function () {
             }
             expect(res.status).to.eql(200)
             expect(res.body).to.be.an('array').of.length(reference.checklistLength)
+        })
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/checklists/${reference.benchmark}/latest`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
 
@@ -408,7 +415,10 @@ describe('GET - Collection', function () {
               expect(finding.assets[0].assetId).to.equal(reference.testAsset.assetId)
             }
         })
-
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/findings?aggregator=cci&acceptedOnly=false&projection=assets&projection=groups&projection=rules&projection=stigs&projection=ccis`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe('getEffectiveAclByCollectionUser - /collections/{collectionId}/users/{userId}/effective-acl', function () {
@@ -443,6 +453,10 @@ describe('GET - Collection', function () {
             expect(res.status).to.eql(422)
             expect(res.body.error).to.equal("Unprocessable Entity.")
         })
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/users/${iteration.userId}/effective-acl`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
   
       describe('getCollectionLabels - /collections/{collectionId}/labels', function () {
@@ -466,6 +480,10 @@ describe('GET - Collection', function () {
               
             }
 
+        })
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/labels`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
 
@@ -495,6 +513,10 @@ describe('GET - Collection', function () {
             expect(res.status).to.eql(404)
             expect(res.body.error).to.equal("Resource not found.")
         })
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/labels/${reference.testCollection.fullLabel}`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe('getCollectionMetadata - /collections/{collectionId}/metadata', function () {
@@ -511,6 +533,10 @@ describe('GET - Collection', function () {
             expect(res.status).to.eql(200)
             expect(res.body).to.be.an('object')
             expect(res.body[reference.testCollection.collectionMetadataKey]).to.equal(reference.testCollection.collectionMetadataValue)
+        })
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metadata`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
 
@@ -612,6 +638,10 @@ describe('GET - Collection', function () {
             expect(res.body).to.be.an('array').of.length(0)
             utils.deleteCollection(collectionNoMetadata.collectionId)
          })
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metadata/keys`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe('getCollectionMetadataValue - /collections/{collectionId}/metadata/keys/{key}', function () {
@@ -643,10 +673,13 @@ describe('GET - Collection', function () {
             expect(res.body.error).to.equal("Resource not found.")
             expect(res.body.detail).to.equal("metadata key not found")
         })
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metadata/keys/${reference.testCollection.collectionMetadataKey}`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe('getPoamByCollection - /collections/{collectionId}/poam', function () {
-
         it('Return a POAM-like spreadsheet aggregated by groupId',async function () {
           const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/poam?aggregator=groupId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&acceptedOnly=true`, 'GET', iteration.token)
             if (distinct.grant === "none"){
@@ -699,6 +732,11 @@ describe('GET - Collection', function () {
               return
             }
             expect(res.status).to.eql(200)
+        })
+
+        it("should return 403 for deleted collection", async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/poam?aggregator=groupId&date=01%2F01%2F1970&office=MyOffice&status=Ongoing&acceptedOnly=true`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
 
@@ -863,6 +901,11 @@ describe('GET - Collection', function () {
               }
             }
         })
+
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/review-history`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
       
       describe('getReviewHistoryStatsByCollection - /collections/{collectionId}/review-history/stats', function () {
@@ -974,6 +1017,11 @@ describe('GET - Collection', function () {
             expect(Date.parse(res.body.oldestHistoryEntryDate)).to.equal(Date.parse("2020-08-11T23:37:45.000Z"))
             expect(res.body.assetHistoryEntryCounts.length).to.eql(1)
         })
+
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/review-history/stats`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe('getStigsByCollection - /collections/{collectionId}/stigs', function () {
@@ -1064,16 +1112,20 @@ describe('GET - Collection', function () {
                 expect(stig.ruleCount).to.equal(287)
               }
             }
-          })
-          it("return the stigs mapped to test colleciton label match = null",async function () {
-            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/stigs?labelName=null`, 'GET', iteration.token)
-              if (distinct.grant === "none"){
-                expect(res.status).to.eql(403)
-                return
-              }
-              expect(res.status).to.eql(200)
-              expect(res.body).to.be.an('array').of.length(0)
-          })
+        })
+        it("return the stigs mapped to test colleciton label match = null",async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/stigs?labelName=null`, 'GET', iteration.token)
+            if (distinct.grant === "none"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+            expect(res.body).to.be.an('array').of.length(0)
+        })
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/stigs`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe('getStigByCollection - /collections/{collectionId}/stigs/{benchmarkId}', function () {
@@ -1116,6 +1168,10 @@ describe('GET - Collection', function () {
                   expect(asset.name).to.match(regex)
                 }
             })
+            it('should return 403 for deleted collection', async function () {
+              const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/stigs/${reference.benchmark}`, 'GET', iteration.token)
+              expect(res.status).to.eql(403)
+            })
       })
 
       // experimental 
@@ -1129,6 +1185,10 @@ describe('GET - Collection', function () {
           }
           expect(res.status).to.eql(200)
         })
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/unreviewed/assets`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe('getUnreviewedRulesByCollection - /collections/{collectionId}/unreviewed/rules', function () {
@@ -1140,6 +1200,10 @@ describe('GET - Collection', function () {
             return
           }
           expect(res.status).to.eql(200)
+        })
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/unreviewed/rules`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
 
@@ -1166,6 +1230,10 @@ describe('GET - Collection', function () {
             expect(res.status).to.eql(200)
             expect(res.body).to.be.an('array').of.length(reference.testCollection.grantsProjected.length)
             expect(res.body).to.deep.equalInAnyOrder(reference.testCollection.grantsProjected)
+        })
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/grants`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
 
@@ -1220,6 +1288,10 @@ describe('GET - Collection', function () {
           }
           expect(res.status).to.eql(404)
         })
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/grants/${reference.testCollection.testGroup.testCollectionGrantId}`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe('getAclRulesByCollectionGrant - /collections/{collectionId}/grants/{grantId}/acl', function () {
@@ -1262,6 +1334,11 @@ describe('GET - Collection', function () {
             return
           }
           expect(res.status).to.eql(404)
+        })
+
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/grants/${reference.testCollection.testGroup.testCollectionGrantId}/acl`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
     })

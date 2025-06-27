@@ -1,4 +1,3 @@
-
 import { XMLParser } from 'fast-xml-parser'
 import {config } from '../../testConfig.js'
 import * as utils from '../../utils/testUtils.js'
@@ -216,6 +215,22 @@ describe('PUT - Review', () => {
 
                     expect(res.status).to.eql(403)
                 })
+                it('should return 403 for deleted collection', async () => {
+                    const putBody = {
+                        result: 'pass',
+                        detail: 'irrelevant',
+                        comment: 'irrelevant',
+                        status: 'saved',
+                        autoResult: false
+                    }
+                    const res = await utils.executeRequest(
+                        `${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`,
+                        'PUT',
+                        iteration.token,
+                        putBody
+                    )
+                    expect(res.status).to.eql(403)
+                })
                 it('Test all projections are returned and contain accurate data. (besides history that is tested better elsewhere)', async () => {
 
                     const putBody = {
@@ -370,6 +385,15 @@ describe('PUT - Review', () => {
                     expect(res.status).to.eql(403)
                     expect(res.body.error).to.be.equal("User has insufficient privilege to complete this request.")
                 })
+                it('should return 403 for deleted collection', async () => {
+                    const res = await utils.executeRequest(
+                        `${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`,
+                        'PUT',
+                        iteration.token,
+                        { [reference.reviewMetadataKey]: reference.reviewMetadataValue }
+                    )
+                    expect(res.status).to.eql(403)
+                })
             })
 
             describe('PUT - putReviewMetadataValue - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
@@ -390,6 +414,15 @@ describe('PUT - Review', () => {
                         return
                     }
                     expect(res.status).to.eql(204)
+                })
+                it('should return 403 for deleted collection', async () => {
+                    const res = await utils.executeRequest(
+                        `${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata/keys/${reference.reviewMetadataKey}`,
+                        'PUT',
+                        iteration.token,
+                        `${JSON.stringify(reference.reviewMetadataValue)}`
+                    )
+                    expect(res.status).to.eql(403)
                 })
             })
         })

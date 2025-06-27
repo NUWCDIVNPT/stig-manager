@@ -69,6 +69,11 @@ module.exports.getReviewByAssetRule = async function (req, res, next) {
     let ruleId = req.params.ruleId
     let projections = req.query.projection
     const {collectionId, grant} = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
+
+    const assetExists = await AssetService.doesAssetExist(assetId) 
+    if (!assetExists) {
+      throw new SmError.PrivilegeError()
+    }
     
     let response = await ReviewService.getReviews({
       projections, 
@@ -124,6 +129,11 @@ module.exports.getReviewsByAsset = async function (req, res, next) {
     let assetId = req.params.assetId
     let projections = req.query.projection
     const {collectionId, grant} = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
+
+    const assetExists = await AssetService.doesAssetExist(assetId) 
+    if (!assetExists) {
+      throw new SmError.PrivilegeError()
+    }
     
     let response = await ReviewService.getReviews({
       projections,

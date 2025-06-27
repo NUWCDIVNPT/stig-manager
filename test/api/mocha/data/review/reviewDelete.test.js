@@ -1,4 +1,3 @@
-
 import {config } from '../../testConfig.js'
 import * as utils from '../../utils/testUtils.js'
 import reference from '../../referenceData.js'
@@ -56,6 +55,15 @@ describe('DELETE - Review', () => {
             expect(res.status).to.eql(200)
           }
         })
+
+        it('should return 403 for deleted collection', async () => {
+          const res = await utils.executeRequest(
+            `${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.testRuleId}`,
+            'DELETE',
+            iteration.token
+          )
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe('DELETE - deleteReviewMetadataKey - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata/keys/{key}', () => {
@@ -75,6 +83,16 @@ describe('DELETE - Review', () => {
           const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.testRuleId}/metadata/keys/${reference.reviewMetadataKey}`, 'DELETE', iteration.token, `${JSON.stringify(reference.reviewMetadataValue)}`)
         
           expect(res.status).to.eql(204)
+        })
+
+        it('should return 403 for deleted collection', async () => {
+          const res = await utils.executeRequest(
+            `${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testAsset.testRuleId}/metadata/keys/${reference.reviewMetadataKey}`,
+            'DELETE',
+            iteration.token,
+            `${JSON.stringify(reference.reviewMetadataValue)}`
+          )
+          expect(res.status).to.eql(403)
         })
       })
     })

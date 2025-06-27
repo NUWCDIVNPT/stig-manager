@@ -152,6 +152,10 @@ describe(`GET - Asset`, function () {
         //     expect(res.body.statusStats.submittedCount, "submitted count").to.eql(reference.testAssetNoStigs.stats.submittedCount)
         //     expect(res.body.statusStats.acceptedCount, "accepted count").to.eql(reference.testAssetNoStigs.stats.acceptedCount)
         // })
+        it("attempt to fetch a deleted Asset should 403 fail", async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.deletedAsset.assetId}`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
       describe(`getAssetMetadata - /assets/{assetId}/metadata,`, function () {
         it(`Return the Metadata for test asset`, async function () {
@@ -165,6 +169,10 @@ describe(`GET - Asset`, function () {
           expect(res.body).to.be.an(`object`)      
           expect(res.body.testkey).to.exist
           expect(res.body.testkey).to.eql(reference.testAsset.metadataValue)
+        })
+        it("should attempt to return metadata from a deleted asset, should throw 403", async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.deletedAsset.assetId}/metadata`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
       describe(`getAssetMetadataKeys - /assets/{assetId}/metadata/keys`, function () {
@@ -691,6 +699,11 @@ describe(`GET - Asset`, function () {
             
             await utils.deleteAsset(assetId)
         })
+
+        it("should return 403, asset is deleted", async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.deletedAsset.assetId}/checklists`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
       describe(`getChecklistByAssetStig - /assets/{assetId}/checklists/{benchmarkId}/{revisionStr}`, function () {
 
@@ -847,6 +860,11 @@ describe(`GET - Asset`, function () {
           for(let stig of res.body){
             expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
           }
+        })
+
+        it("should return 403, asset is deleted", async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.deletedAsset.assetId}/stigs`, 'GET', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
       describe(`getAssetsByCollectionLabelId - /collections/{collectionId}/labels/{labelId}/assets`, function () {

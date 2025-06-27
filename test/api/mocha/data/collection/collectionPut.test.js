@@ -1,4 +1,3 @@
-
 import {config } from '../../testConfig.js'
 import * as utils from '../../utils/testUtils.js'
 import reference from '../../referenceData.js'
@@ -226,6 +225,14 @@ describe('PUT - Collection', function () {
               expect(res.status).to.eql(200)
             expect(res.body[reference.testCollection.metadataKey]).to.equal(reference.testCollection.metadataValue)
         })
+
+        it('should return 403 for deleted collection', async function () {
+          const putRequest = {
+            [reference.testCollection.metadataKey]: reference.testCollection.metadataValue
+          }
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metadata`, 'PUT', iteration.token, putRequest)
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe('putCollectionMetadataValue - /collections/{collectionId}/metadata/keys/{key}', function () {
@@ -238,6 +245,11 @@ describe('PUT - Collection', function () {
             return
           }
           expect(res.status).to.eql(204)
+        })
+
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metadata/keys/${reference.testCollection.collectionMetadataKey}`, 'PUT', iteration.token, `${JSON.stringify(reference.testCollection.collectionMetadataValue)}`)
+          expect(res.status).to.eql(403)
         })
       })
 
@@ -289,6 +301,14 @@ describe('PUT - Collection', function () {
             return
           }
           expect(res.status).to.eql(404)
+        })
+
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/grants/${reference.testCollection.testGroup.testCollectionGrantId}`, 'PUT', iteration.token, {
+            "userGroupId": reference.testCollection.testGroup.userGroupId,
+            "roleId": 2
+          })
+          expect(res.status).to.eql(403)
         })
       })
 
@@ -347,6 +367,11 @@ describe('PUT - Collection', function () {
         it("Should throw 403 because collectionId does not exist", async function () {
 
           const res = await utils.executeRequest(`${config.baseUrl}/collections/${1234321}/grants/${reference.testCollection.testGroup.testCollectionGrantId}/acl`, 'PUT', iteration.token, requestBodies.putGroupAcl)
+          expect(res.status).to.eql(403)
+        })
+
+        it('should return 403 for deleted collection', async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/grants/${reference.testCollection.testGroup.testCollectionGrantId}/acl`, 'PUT', iteration.token, requestBodies.putGroupAcl)
           expect(res.status).to.eql(403)
         })
       })
