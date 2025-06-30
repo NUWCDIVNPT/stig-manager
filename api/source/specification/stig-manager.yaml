@@ -5121,6 +5121,11 @@ components:
       properties:
         assetId:
           $ref: '#/components/schemas/AssetId'
+        classification:
+          allOf:
+            - $ref: '#/components/schemas/ApiClassification'
+            - nullable: true
+          description: "Asset security classification level"
         collection:
           $ref: '#/components/schemas/CollectionBasic'
         description:
@@ -5226,6 +5231,11 @@ components:
       additionalProperties: false
       type: object
       properties:
+        classification:
+          allOf:
+            - $ref: '#/components/schemas/ApiClassification'
+            - nullable: true
+          description: "Asset security classification level"
         collectionId:
           $ref: '#/components/schemas/CollectionId'
         description:
@@ -7486,8 +7496,18 @@ components:
           type: boolean
         comment:
           $ref: '#/components/schemas/CommentaryString'
+        commentClassification:
+          allOf:
+            - $ref: '#/components/schemas/ApiClassification'
+            - nullable: true
+          description: "Classification level for review comments"
         detail:
           $ref: '#/components/schemas/CommentaryString'
+        detailClassification:
+          allOf:
+            - $ref: '#/components/schemas/ApiClassification'
+            - nullable: true
+          description: "Classification level for finding details"
         history:
           type: array
           items:
@@ -7581,8 +7601,18 @@ components:
           type: boolean
         comment:
           $ref: '#/components/schemas/CommentaryStringNullable'
+        commentClassification:
+          allOf:
+            - $ref: '#/components/schemas/ApiClassification'
+            - nullable: true
+          description: "Classification level for review comments"
         detail:
           $ref: '#/components/schemas/CommentaryStringNullable'
+        detailClassification:
+          allOf:
+            - $ref: '#/components/schemas/ApiClassification'
+            - nullable: true
+          description: "Classification level for finding details"
         metadata:
           $ref: '#/components/schemas/Metadata'
         result:
@@ -7604,8 +7634,18 @@ components:
           type: boolean
         comment:
           $ref: '#/components/schemas/CommentaryString'
+        commentClassification:
+          allOf:
+            - $ref: '#/components/schemas/ApiClassification'
+            - nullable: true
+          description: "Classification level for review comments"
         detail:
           $ref: '#/components/schemas/CommentaryString'
+        detailClassification:
+          allOf:
+            - $ref: '#/components/schemas/ApiClassification'
+            - nullable: true
+          description: "Classification level for finding details"
         history:
           type: array
           items:
@@ -8215,6 +8255,11 @@ components:
       additionalProperties: false
       type: object
       properties:
+        classification:
+          allOf:
+            - $ref: '#/components/schemas/ApiClassification'
+            - nullable: true
+          description: "Rule security classification from STIG"
         ruleId:
           $ref: '#/components/schemas/RuleId'
         severity:
