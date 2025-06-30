@@ -134,14 +134,40 @@
 # export STIGMAN_CLIENT_SCOPE_PREFIX=
 
 #==============================================================================
-# STIGMAN_CLIENT_REFRESH_DISABLED
+# STIGMAN_CLIENT_REAUTH_ACTION
 #
-#  | Default: "false" | Whether the web client should use a provided refresh
-#  token to update the access token
+#  | Default: "popup" | How to prompt for re-authentication when user
+#  credentials expire. Available values: "popup", "iframe", "tab", or "reload".
+#  See `detailed description. <../installation-and-
+#  setup/authentication.html#stigman-client-reauth-action>`_
 #
 #  Affects: Client
 #==============================================================================
-# export STIGMAN_CLIENT_REFRESH_DISABLED=
+# export STIGMAN_CLIENT_REAUTH_ACTION=
+
+#==============================================================================
+# STIGMAN_CLIENT_RESPONSE_MODE
+#
+#  | Default: "fragment" | The response_mode the web client should specify when
+#  requesting an authorization code from the OIDC provider. Available values:
+#  "fragment", "query"
+#
+#  Affects: Client
+#==============================================================================
+# export STIGMAN_CLIENT_RESPONSE_MODE=
+
+#==============================================================================
+# STIGMAN_CLIENT_STRICT_PKCE
+#
+#  | Default: "true" | Whether the web client verifies the OIDC provider is
+#  advertising PKCE/S256 support in compliance with RFC 8414. A non-compliant
+#  provider supports PKCE/S256 without advertising it. Independent of this
+#  value, the web client always exclusively uses PKCE/S256 in the Authorization
+#  Code Flow.
+#
+#  Affects: Client
+#==============================================================================
+# export STIGMAN_CLIENT_STRICT_PKCE=
 
 #==============================================================================
 # STIGMAN_CLIENT_WELCOME_IMAGE 
@@ -287,6 +313,41 @@
 # export STIGMAN_DEPENDENCY_RETRIES=
 
 #==============================================================================
+# STIGMAN_DEV_ALLOW_INSECURE_TOKENS
+#
+#  | Default: "false" | Controls whether known insecure JWT signing keys are
+#  allowed. Only for development/testing purposes. Setting to 'true' is NOT
+#  recommended for production environments.
+#
+#  Affects: API
+#==============================================================================
+# export STIGMAN_DEV_ALLOW_INSECURE_TOKENS=
+
+#==============================================================================
+# STIGMAN_DEV_LOG_OPT_STATS
+#
+#  | Default: "true" | Controls whether the API will track API operation
+#  statistics used for populating "Requests" portion of "/op/appinfo" response
+#  body. Setting to 'false' is NOT recommended for production environments, as
+#  this info can be useful for troubleshooting.
+#
+#  Affects: API
+#==============================================================================
+# export STIGMAN_DEV_LOG_OPT_STATS=
+
+#==============================================================================
+# STIGMAN_DEV_RESPONSE_VALIDATION
+#
+#  | Default: "none" | Controls whether the API will perform response validation
+#  on API responses. If set to 'logOnly' the API will output log entries
+#  indicating deviations from the OAS specification. Intended for
+#  development/testing purposes. Available values: "none", "logOnly"
+#
+#  Affects: API
+#==============================================================================
+# export STIGMAN_DEV_RESPONSE_VALIDATION=
+
+#==============================================================================
 # STIGMAN_DOCS_DIRECTORY
 #
 #  | Default: "./docs" | The location of the documentation files, relative to
@@ -344,6 +405,19 @@
 # export STIGMAN_LOG_MODE=
 
 #==============================================================================
+# STIGMAN_JWKS_CACHE_MAX_AGE
+#
+#  | Default: "10" | The time in minutes after which the API's cache of JWT
+#  signing keys is deemed stale and the API becomes unavailable. Cache refreshes
+#  are scheduled at intervals of half this value and also occur when an unknown
+#  signing key is presented. Scheduled refresh failures are retried every 10
+#  seconds.
+#
+#  Affects: API
+#==============================================================================
+# export STIGMAN_JWKS_CACHE_MAX_AGE=
+
+#==============================================================================
 # STIGMAN_JWT_ASSERTION_CLAIM
 #
 #  | Default: "jti" | The access token claim whose value is the OIDC provider's
@@ -354,6 +428,16 @@
 #  Affects: API
 #==============================================================================
 # export STIGMAN_JWT_ASSERTION_CLAIM=
+
+#==============================================================================
+# STIGMAN_JWT_AUD_VALUE
+#
+#  | No default. | If present, a string which must be included in the access
+#  token "aud" claim for requests to endpoints requiring authorization.
+#
+#  Affects: API
+#==============================================================================
+# export STIGMAN_JWT_AUD_VALUE=
 
 #==============================================================================
 # STIGMAN_JWT_EMAIL_CLAIM

@@ -25,10 +25,12 @@
 | Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended by the client when fetching metadata.","Client "
 "STIGMAN_CLIENT_SCOPE_PREFIX","| **No default**
 | String used as a prefix for each scope when authenticating to the OIDC Provider. Some providers (Azure AD) expect scope requests in the format ``api://<application_id>/<scope>``, where ``api://<application_id>/`` is the required prefix.","Client"
-"STIGMAN_CLIENT_REFRESH_DISABLED","| **Default** ``false``
-| Whether the web client should use a provided refresh token to update the access token","Client"
+"STIGMAN_CLIENT_REAUTH_ACTION","| **Default** ``popup``
+| How to prompt for re-authentication when user credentials expire. Available values: ``popup``, ``iframe``, ``tab``, or ``reload``. See `detailed description. <../installation-and-setup/authentication.html#stigman-client-reauth-action>`_","Client"
 "STIGMAN_CLIENT_RESPONSE_MODE","| **Default** ``fragment``
 | The response_mode the web client should specify when requesting an authorization code from the OIDC provider. Available values: ``fragment``, ``query`` ","Client"
+"STIGMAN_CLIENT_STRICT_PKCE","| **Default** ``true``
+| Whether the web client verifies the OIDC provider is advertising PKCE/S256 support in compliance with RFC 8414. A non-compliant provider supports PKCE/S256 without advertising it. Independent of this value, the web client always exclusively uses PKCE/S256 in the Authorization Code Flow.","Client"
 "STIGMAN_CLIENT_WELCOME_IMAGE ","| **No default**
 | The URL of an image hosted elsewhere that will be rendered in the Home tab Welcome widget. The STIGMan app does not serve the image itself, only the reference to it. The URL should be in relation to and accessible from the client's browser. The image will be scaled to a max width or height of 125 pixels - If no alternate image is specified, the seal of the Department of the Navy (the project sponsor)  will be displayed. ","Client Appearance"
 "STIGMAN_CLIENT_WELCOME_LINK","| **No default**
@@ -77,6 +79,8 @@
 | The time in minutes after which the API's cache of JWT signing keys is deemed stale and the API becomes unavailable. Cache refreshes are scheduled at intervals of half this value and also occur when an unknown signing key is presented. Scheduled refresh failures are retried every 10 seconds.","API"
 "STIGMAN_JWT_ASSERTION_CLAIM","| **Default** ``jti``
 | The access token claim whose value is the OIDC provider's Assertion ID. Updates to this value trigger the API to update a User's ``lastClaims`` property. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API"
+"STIGMAN_JWT_AUD_VALUE","| **No default**
+| If present, a string which must be included in the access token ``aud`` claim for requests to endpoints requiring authorization.","API"
 "STIGMAN_JWT_EMAIL_CLAIM","| **Default** ``email``
 | The access token claim whose value is the user's email address. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API, Client"
 "STIGMAN_JWT_NAME_CLAIM","| **Default** ``name``

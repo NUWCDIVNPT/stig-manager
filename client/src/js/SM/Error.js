@@ -22,7 +22,7 @@ class ExtRequestError extends SmError {
     this.status = detail?.response?.status
     this.responseText = detail?.response?.responseText
     this.responseHeaders = detail?.response?.getAllResponseHeaders?.()
-    const tokenParsed = { ...window.oidcProvider.tokenParsed }
+    const tokenParsed = { ...window.oidcWorker.tokenParsed }
     let expDate = new Date(tokenParsed.exp*1000)
     let iatDate = new Date(tokenParsed.iat*1000)
     let authTimeDate = new Date(tokenParsed.auth_time*1000)
@@ -44,7 +44,7 @@ class ExtDataProxyError extends SmError {
     this.status = response?.status
     this.responseText = response?.responseText
     this.responseHeaders = response?.getAllResponseHeaders?.()
-    const tokenParsed = { ...window.oidcProvider.tokenParsed }
+    const tokenParsed = { ...window.oidcWorker.tokenParsed }
     let expDate = new Date(tokenParsed.exp*1000)
     let iatDate = new Date(tokenParsed.iat*1000)
     let authTimeDate = new Date(tokenParsed.auth_time*1000)

@@ -194,7 +194,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
           {
             id: 'logout',
             qtip: 'Logout session',
-            handler: window.oidcProvider.logout
+            handler: window.oidcWorker.logout.bind(window.oidcWorker),
           },
         ],
         title: `${curUser.displayName === 'USER' ? SM.he(curUser.username) : SM.he(curUser.displayName)}`,
@@ -465,7 +465,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
           title: 'OAuth2 token payload',
           listeners: {
               show: function (tip) {
-                let tokenParsed = { ...window.oidcProvider.tokenParsed }
+                let tokenParsed = { ...window.oidcWorker.tokenParsed }
                 let expDate = new Date(tokenParsed.exp*1000)
                 let iatDate = new Date(tokenParsed.iat*1000)
                 let authTimeDate = new Date(tokenParsed.auth_time*1000)

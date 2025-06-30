@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# csv-reader.py: Example of CSV parsing in python
 import sys
 import os
 import io
