@@ -701,7 +701,7 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
           ruleId, \`version\`, title, severity, weight, vulnDiscussion, 
           falsePositives, falseNegatives, documentable, mitigations, 
           severityOverrideGuidance, potentialImpacts, thirdPartyTools, mitigationControl,
-          responsibility, iaControls, checkSystem, checkDigest, fixref, fixDigest)
+          responsibility, iaControls, checkSystem, checkDigest, fixref, fixDigest, classification)
           VALUES ?`,
         binds: []
       },
@@ -820,7 +820,8 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
           checkSystem,
           checkDigest,
           fixref,
-          fixDigest
+          fixDigest,
+          ruleBinds.classification
         ])
         
         for (const ident of idents) {

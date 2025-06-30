@@ -19,6 +19,39 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
     })
     const j = parser.parse(xccdfData.toString())
 
+    // Extract classification from XCCDF metadata
+    function extractClassification() {
+      const xmlHeader = xccdfData.toString()
+      
+      // Extract from stylesheet reference (e.g., 'STIG_unclass.xsl')
+      const stylesheetMatch = xmlHeader.match(/href=['"].*?STIG_(\w+)\.xsl['"]/)
+      if (stylesheetMatch) {
+        const styleClassification = stylesheetMatch[1].toLowerCase()
+        // Map stylesheet naming to classification levels
+        switch(styleClassification) {
+          case 'unclass': return 'U'
+          case 'fouo': return 'FOUO'
+          case 'cui': return 'CUI'
+          case 'confidential': case 'conf': return 'C'
+          case 'secret': return 'S'
+          case 'topsecret': case 'ts': return 'TS'
+          case 'sci': return 'SCI'
+          default: return null
+        }
+      }
+      
+      // Check for classification in filename patterns (U_, FOUO_, etc.)
+      // This would require filename context, but we can check document content
+      const firstLine = xmlHeader.split('\n')[0] || ''
+      if (firstLine.includes('U_') || firstLine.includes('unclass')) return 'U'
+      if (firstLine.includes('FOUO_')) return 'FOUO'
+      if (firstLine.includes('CUI_')) return 'CUI'
+      
+      return null // Default to no classification if none detected
+    }
+
+    const benchmarkClassification = extractClassification()
+
     let bIn, isScap=false
     if (j['data-stream-collection']?.[0]) {
       // SCAP
@@ -102,6 +135,7 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
           mitigationControl: desc.MitigationControl || null,
           responsibility: desc.Responsibility || null,
           iacontrols: desc.IAControls || null,
+          classification: benchmarkClassification, // Add classification to each rule
           checks,
           fixes,
           idents
