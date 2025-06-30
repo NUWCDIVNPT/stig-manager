@@ -67,3 +67,53 @@ module.exports.filenameComponentFromDate = function (dateObject = new Date()) {
   return dateObject.toISOString().replace(/:|\d{2}\.\d{3}/g,'')
 }
 
+/**
+ * Classification level hierarchy for determining highest classification
+ * Higher numbers represent higher classification levels
+ */
+const classificationLevels = {
+  'NONE': 0,
+  'U': 1,
+  'FOUO': 2,
+  'CUI': 3,
+  'C': 4,
+  'S': 5,
+  'TS': 6,
+  'SCI': 7
+}
+
+/**
+ * Determines the highest classification level from an array of classifications
+ * @param {Array<string>} classifications - Array of classification strings
+ * @returns {string|null} The highest classification level or null if no valid classifications
+ */
+module.exports.getHighestClassification = function (classifications) {
+  if (!Array.isArray(classifications) || classifications.length === 0) {
+    return null
+  }
+  
+  const validClassifications = classifications.filter(c => c && classificationLevels.hasOwnProperty(c))
+  if (validClassifications.length === 0) {
+    return null
+  }
+  
+  return validClassifications.reduce((highest, current) => {
+    return classificationLevels[current] > classificationLevels[highest] ? current : highest
+  })
+}
+
+/**
+ * Adds classification to filename if provided
+ * @param {string} baseFilename - The base filename without classification
+ * @param {string} classification - The classification level
+ * @param {string} dateString - The date string
+ * @param {string} extension - The file extension
+ * @returns {string} The filename with classification included
+ */
+module.exports.addClassificationToFilename = function (baseFilename, classification, dateString, extension) {
+  if (classification && classification !== 'NONE') {
+    return `${baseFilename}_${classification}_${dateString}.${extension}`
+  }
+  return `${baseFilename}_${dateString}.${extension}`
+}
+

@@ -268,7 +268,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
       }
     }
 
-    const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from asset where assetId = ? and asset.state = 'enabled'"
+    const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata, classification from asset where assetId = ? and asset.state = 'enabled'"
     const sqlGetChecklist =`SELECT 
       rgr.groupId,
       rgr.severity,
@@ -288,9 +288,12 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
       rgr.mitigationControl,
       rgr.responsibility,
       rgr.severityOverrideGuidance,
+      rgr.classification as "ruleClassification",
       result.ckl as "result",
       LEFT(review.detail,32767) as "detail",
       LEFT(review.comment,32767) as "comment",
+      review.detailClassification,
+      review.commentClassification,
       cc.content as "checkContent",
       ft.text as "fixText",
       group_concat(rgrcc.cci ORDER BY rgrcc.cci) as "ccis"
@@ -316,7 +319,9 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
       rgr.rgrId,
       result.ckl,
       review.detail,
-      review.comment
+      review.comment,
+      review.detailClassification,
+      review.commentClassification
     order by
       substring(rgr.groupId from 3) + 0 asc
     `
@@ -324,6 +329,9 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
 
     // ASSET
     const [resultGetAsset] = await connection.query(sqlGetAsset, [assetId])
+    // Use asset-specific classification if available, otherwise fall back to global classification
+    const assetClassification = resultGetAsset[0].classification || config.settings.setClassification
+    xmlJs.CHECKLIST.ASSET.MARKING = assetClassification
     xmlJs.CHECKLIST.ASSET.HOST_NAME = resultGetAsset[0].metadata.cklHostName ? resultGetAsset[0].metadata.cklHostName : resultGetAsset[0].name
     xmlJs.CHECKLIST.ASSET.HOST_FQDN = resultGetAsset[0].fqdn
     xmlJs.CHECKLIST.ASSET.HOST_IP = resultGetAsset[0].ip
@@ -509,7 +517,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
       stigs: []
     }
 
-    const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from asset where assetId = ? and asset.state = 'enabled'"
+    const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata, classification from asset where assetId = ? and asset.state = 'enabled'"
     const sqlGetChecklist =`SELECT 
       rgr.groupId,
       rgr.severity,
@@ -532,6 +540,8 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
       result.cklb as "result",
       LEFT(review.detail,32767) as "detail",
       LEFT(review.comment,32767) as "comment",
+      review.detailClassification,
+      review.commentClassification,
       review.ts as "createdAt",
       review.touchTs as "updatedAt",
       cc.content as "checkContent",
@@ -566,6 +576,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
 
     // cklb.target_data
     const [resultGetAsset] = await connection.query(sqlGetAsset, [assetId])
+    cklb.target_data.classification = resultGetAsset[0].classification
     cklb.target_data.host_name = resultGetAsset[0].metadata.cklHostName ? resultGetAsset[0].metadata.cklHostName : resultGetAsset[0].name
     cklb.target_data.fqdn = resultGetAsset[0].fqdn ?? ''
     cklb.target_data.ip_address = resultGetAsset[0].ip ?? ''
@@ -690,7 +701,9 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
           status: row.result || 'not_reviewed',
           overrides: {},
           comments: row.comment ?? '',
-          finding_details: row.detail ?? ''
+          comments_classification: row.commentClassification,
+          finding_details: row.detail ?? '',
+          finding_details_classification: row.detailClassification
         }
 
         // CCI_REFs
@@ -710,7 +723,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
 
 exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr = 'latest') {
     // queries and query methods
-  const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata from asset where assetId = ?"
+  const sqlGetAsset = "select name, fqdn, ip, mac, noncomputing, metadata, classification from asset where assetId = ?"
   const sqlGetChecklist =`SELECT 
     rgr.groupId,
     rgr.groupTitle,
@@ -936,6 +949,7 @@ exports.createAssets = async function({ assets, collectionId, svcStatus = {} }) 
             collectionId INT,
             noncomputing TINYINT,
             metadata JSON,
+            classification VARCHAR(10),
             benchmarkIds JSON,
             labelNames JSON,
             assetId INT NULL
@@ -946,8 +960,8 @@ exports.createAssets = async function({ assets, collectionId, svcStatus = {} }) 
     const assetsJson = JSON.stringify(assets)
 
     const insertTempAssetsSQL = `
-      INSERT INTO temp_assets (name, fqdn, ip, mac, description, collectionId, noncomputing, metadata, benchmarkIds, labelNames)
-      SELECT name, fqdn, ip, mac, description, collectionId, noncomputing, metadata, benchmarkIds, labelNames
+      INSERT INTO temp_assets (name, fqdn, ip, mac, description, collectionId, noncomputing, metadata, classification, benchmarkIds, labelNames)
+      SELECT name, fqdn, ip, mac, description, collectionId, noncomputing, metadata, classification, benchmarkIds, labelNames
       FROM JSON_TABLE(?, '$[*]'
           COLUMNS (
               name VARCHAR(255) PATH '$.name',
@@ -958,6 +972,7 @@ exports.createAssets = async function({ assets, collectionId, svcStatus = {} }) 
               collectionId INT PATH '$.collectionId',
               noncomputing TINYINT PATH '$.noncomputing',
               metadata JSON PATH '$.metadata',
+              classification VARCHAR(10) PATH '$.classification',
               benchmarkIds JSON PATH '$.stigs',
               labelNames JSON PATH '$.labelNames'
           )
@@ -967,8 +982,8 @@ exports.createAssets = async function({ assets, collectionId, svcStatus = {} }) 
 
     // insert into asset table
     const insertAssetsSQL = `
-        INSERT INTO asset (name, fqdn, ip, mac, description, collectionId, noncomputing, metadata)
-        SELECT name, fqdn, ip, mac, description, collectionId, noncomputing, metadata
+        INSERT INTO asset (name, fqdn, ip, mac, description, collectionId, noncomputing, metadata, classification)
+        SELECT name, fqdn, ip, mac, description, collectionId, noncomputing, metadata, classification
         FROM temp_assets;`
     await connection.query(insertAssetsSQL)
 

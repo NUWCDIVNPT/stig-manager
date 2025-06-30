@@ -221,9 +221,18 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
     
     const dateString = escape.filenameComponentFromDate()
     const fileBasename = `${checklist.assetName}-${benchmarkId}-${checklist.revisionStrResolved}`
+    
+    // Determine highest classification from asset and content for filename
+    const classifications = [
+      checklist.cklb?.target_data?.classification,
+      config.settings.setClassification
+    ].filter(Boolean)
+    const highestClassification = escape.getHighestClassification(classifications)
+    
     if (format === 'cklb') {
       checklist.cklb.title = fileBasename
-      writer.writeInlineFile(res, JSON.stringify(checklist.cklb), `${fileBasename}_${dateString}.cklb`, 'application/json')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
+      const filename = escape.addClassificationToFilename(fileBasename, highestClassification, dateString, 'cklb')
+      writer.writeInlineFile(res, JSON.stringify(checklist.cklb), filename, 'application/json')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
     }
     else if (format === 'ckl') {
       const builder = new XMLBuilder({
@@ -237,9 +246,10 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
         tagValueProcessor: escapeForXml,
         attrValueProcessor: escapeForXml
       })
-      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${highestClassification || config.settings.setClassification} -->\n`
       xml += builder.build(checklist.xmlJs)
-      writer.writeInlineFile(res, xml, `${fileBasename}_${dateString}.ckl`, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
+      const filename = escape.addClassificationToFilename(fileBasename, highestClassification, dateString, 'ckl')
+      writer.writeInlineFile(res, xml, filename, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
     }
     else if (format === 'xccdf') {
       const builder = new XMLBuilder({
@@ -287,8 +297,17 @@ module.exports.getChecklistByAsset = async function (req, res, next) {
     const response = await AssetService.getChecklistByAsset(assetId, stigs, format)
 
     const dateString = escape.filenameComponentFromDate()
+    
+    // Determine highest classification from asset and content for filename
+    const classifications = [
+      response.cklb?.target_data?.classification,
+      config.settings.setClassification
+    ].filter(Boolean)
+    const highestClassification = escape.getHighestClassification(classifications)
+    
     if (format === 'cklb') {
-      writer.writeInlineFile(res, JSON.stringify(response.cklb), `${response.assetName}_${dateString}.cklb`, 'application/json') 
+      const filename = escape.addClassificationToFilename(response.assetName, highestClassification, dateString, 'cklb')
+      writer.writeInlineFile(res, JSON.stringify(response.cklb), filename, 'application/json') 
     }
     else if (format === 'ckl') {
       const builder = new XMLBuilder({
@@ -304,7 +323,8 @@ module.exports.getChecklistByAsset = async function (req, res, next) {
       })
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
       xml += builder.build(response.xmlJs)
-      writer.writeInlineFile(res, xml, `${response.assetName}_${dateString}.ckl`, 'application/xml')
+      const filename = escape.addClassificationToFilename(response.assetName, highestClassification, dateString, 'ckl')
+      writer.writeInlineFile(res, xml, filename, 'application/xml')
     }
   }
   catch (err) {
