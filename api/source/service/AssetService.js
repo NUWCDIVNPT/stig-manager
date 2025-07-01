@@ -250,7 +250,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
         ASSET: {
           ROLE: 'None',
           ASSET_TYPE: 'Computing',
-          MARKING: config.settings.setClassification,
+          MARKING: null,
           HOST_NAME: null,
           HOST_IP: null,
           HOST_MAC: null,
@@ -329,9 +329,8 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
 
     // ASSET
     const [resultGetAsset] = await connection.query(sqlGetAsset, [assetId])
-    // Use asset-specific classification if available, otherwise fall back to global classification
-    const assetClassification = resultGetAsset[0].classification || config.settings.setClassification
-    xmlJs.CHECKLIST.ASSET.MARKING = assetClassification
+    // Use only asset-specific classification - do not fallback to deployment classification
+    xmlJs.CHECKLIST.ASSET.MARKING = resultGetAsset[0].classification
     xmlJs.CHECKLIST.ASSET.HOST_NAME = resultGetAsset[0].metadata.cklHostName ? resultGetAsset[0].metadata.cklHostName : resultGetAsset[0].name
     xmlJs.CHECKLIST.ASSET.HOST_FQDN = resultGetAsset[0].fqdn
     xmlJs.CHECKLIST.ASSET.HOST_IP = resultGetAsset[0].ip
@@ -665,7 +664,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
           rule_id: row.ruleId.replace('_rule', ''),
           rule_id_src: row.ruleId,
           weight: row.weight,
-          classification: config.settings.setClassification,
+          classification: row.ruleClassification,
           severity: row.severity,
           rule_version: row.version,
           group_title: row.groupTitle,

@@ -30,7 +30,6 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
         // Map stylesheet naming to classification levels
         switch(styleClassification) {
           case 'unclass': return 'U'
-          case 'fouo': return 'FOUO'
           case 'cui': return 'CUI'
           case 'confidential': case 'conf': return 'C'
           case 'secret': return 'S'
@@ -40,14 +39,28 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
         }
       }
       
-      // Check for classification in filename patterns (U_, FOUO_, etc.)
+      // Check for classification in filename patterns (U_, CUI_, etc.)
       // This would require filename context, but we can check document content
       const firstLine = xmlHeader.split('\n')[0] || ''
       if (firstLine.includes('U_') || firstLine.includes('unclass')) return 'U'
-      if (firstLine.includes('FOUO_')) return 'FOUO'
       if (firstLine.includes('CUI_')) return 'CUI'
       
       return null // Default to no classification if none detected
+    }
+
+    // Extract classification from rule title - format: "(U)", "(CUI)", etc. at start of string
+    function extractRuleClassification(title) {
+      if (!title) return null
+      const match = title.match(/^\(([^)]+)\)/)
+      if (match) {
+        const classification = match[1].toUpperCase()
+        // Validate it's a known classification level
+        const validClassifications = ['U', 'CUI', 'C', 'S', 'TS', 'SCI']
+        if (validClassifications.includes(classification)) {
+          return classification
+        }
+      }
+      return null
     }
 
     const benchmarkClassification = extractClassification()
@@ -117,11 +130,12 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
         }
 
         const desc = parseRuleDescription(rule.description?.[0]?._)
+        const ruleTitle = rule.title?.[0]._ || null
 
         return {
           ruleId: rule.id,
           version: rule.version?.[0]._ || null,
-          title: rule.title?.[0]._ || null,
+          title: ruleTitle,
           severity: rule.severity || null,
           weight: rule.weight || null,
           vulnDiscussion: desc.VulnDiscussion || null,
@@ -135,7 +149,7 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
           mitigationControl: desc.MitigationControl || null,
           responsibility: desc.Responsibility || null,
           iacontrols: desc.IAControls || null,
-          classification: benchmarkClassification, // Add classification to each rule
+          classification: extractRuleClassification(ruleTitle), // Extract classification from rule title
           checks,
           fixes,
           idents
@@ -164,6 +178,7 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
         status: bIn.status?.[0]._ || null,
         statusDate: bIn.status?.[0].date || null,
         description: bIn.description?.[0]._ || null,
+        classification: benchmarkClassification, // Add benchmark classification to revision
         groups
       }
     }

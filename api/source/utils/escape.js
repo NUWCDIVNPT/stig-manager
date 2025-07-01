@@ -74,12 +74,11 @@ module.exports.filenameComponentFromDate = function (dateObject = new Date()) {
 const classificationLevels = {
   'NONE': 0,
   'U': 1,
-  'FOUO': 2,
-  'CUI': 3,
-  'C': 4,
-  'S': 5,
-  'TS': 6,
-  'SCI': 7
+  'CUI': 2,
+  'C': 3,
+  'S': 4,
+  'TS': 5,
+  'SCI': 6
 }
 
 /**
