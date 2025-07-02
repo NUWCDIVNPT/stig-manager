@@ -326,8 +326,8 @@ module.exports.parseRevisionStr = function (revisionStr) {
 }
 
 module.exports.selectCollectionByAssetId = async function (assetId) {
-  // another possibility: return _this.pool.query(`SELECT c.* from asset a left join collection c using (collectionId) where a.assetId = ?`, [assetId])
-  return _this.pool.query(`SELECT * from collection where collectionId = (select collectionId from asset where assetId = ?)`, [assetId])
+  // another possibility: return _this.pool.query(`SELECT c.* from asset a left join enabled_collection c using (collectionId) where a.assetId = ?`, [assetId])
+  return _this.pool.query(`SELECT * from enabled_collection where collectionId = (select collectionId from enabled_asset where assetId = ?)`, [assetId])
 }
 
 module.exports.getGrantByAssetId = async function (assetId, grants) {
@@ -343,7 +343,7 @@ module.exports.getUserAssetStigAccess = async function ({assetId, benchmarkId, g
     coalesce(ae.access, 'rw') as access
   from
 	  stig_asset_map sa
-    inner join asset a on sa.assetId = a.assetId and a.state = 'enabled'
+    inner join enabled_asset a on sa.assetId = a.assetId
     ${grant.roleId === 1 ? 'inner' : 'left'} join cteAclEffective ae using (saId)
   where
 	  sa.assetId = ? and sa.benchmarkId = ?`
@@ -463,7 +463,7 @@ module.exports.updateStatsAssetStig = async function(connection, {
        sum(CASE WHEN review.resultEngine is not null and review.resultId = 9 THEN 1 ELSE 0 END) as fixedResultEngine
        
        from
-         asset a
+         enabled_asset a
          left join stig_asset_map sa using (assetId)
          left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)
          left join rev_group_rule_map rgr on dr.revId = rgr.revId
@@ -658,9 +658,8 @@ exports.createAssetValidation = async function({ assets, collectionId}) {
                       COLUMNS (positionL FOR ORDINALITY, labelName VARCHAR(255) PATH '$')
               )
           ) AS jt
-      LEFT JOIN asset a 
+      LEFT JOIN enabled_asset a 
           ON jt.name = a.name 
-          AND a.state = 'enabled' 
           AND a.collectionId = ?
       LEFT JOIN stig s 
           ON jt.benchmarkId COLLATE utf8mb4_0900_ai_ci = s.benchmarkId COLLATE utf8mb4_0900_ai_ci
@@ -698,7 +697,7 @@ exports.createAssetValidation = async function({ assets, collectionId}) {
 
 module.exports.pruneCollectionRevMap = async function (connection) {
   const sql = `delete crm from collection_rev_map crm
-  left join( select distinct a.collectionId, sa.benchmarkId from stig_asset_map sa left join asset a using (assetId) where a.state = "enabled" ) maps using (collectionId, benchmarkId)
+  left join( select distinct a.collectionId, sa.benchmarkId from stig_asset_map sa left join enabled_asset a using (assetId)) maps using (collectionId, benchmarkId)
   where maps.collectionId is null`
   await (connection ?? _this.pool).query(sql)
 }
@@ -783,7 +782,7 @@ module.exports.sqlGrantees = function ({collectionId, collectionIds, userId, use
   json_array(cg.grantId) as grantIds
 from
   collection_grant cg
-  inner join collection c on (cg.collectionId = c.collectionId and c.state = 'enabled')
+  inner join enabled_collection c on (cg.collectionId = c.collectionId)
   left join user_data ud on cg.userId = ud.userId
 where
     cg.userId is not null
@@ -806,7 +805,7 @@ from
     json_arrayagg(cg.grantId) OVER (PARTITION BY ugu.userId, cg.collectionId, cg.roleId) as grantIds
 from 
     collection_grant cg
-    inner join collection c on (cg.collectionId = c.collectionId and c.state = 'enabled')
+    inner join enabled_collection c on cg.collectionId = c.collectionId
     left join user_group_user_map ugu on cg.userGroupId = ugu.userGroupId
     left join user_group ug on ugu.userGroupId = ug.userGroupId
     left join user_data ud on ugu.userId = ud.userId
@@ -851,7 +850,7 @@ from
 		then cla.assetId = sa.assetId
 		else true
 	  end)
-	inner join asset a on sa.assetId = a.assetId and a.state = 'enabled' and cg.collectionId = a.collectionId
+	inner join enabled_asset a on sa.assetId = a.assetId and cg.collectionId = a.collectionId
 where
 	cga.grantId in (${inClause})
 ),

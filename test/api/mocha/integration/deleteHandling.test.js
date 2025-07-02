@@ -189,7 +189,7 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
         it('Return a deleted Collection no data returned 204', async () => {
 
             const res = await utils.executeRequest(`${config.baseUrl}/collections/${collectionToDelete}?elevate=true&projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`, 'GET', user.token)
-            expect(res.status).to.eql(204)
+            expect(res.status).to.eql(404)
         })
         it('Create an Asset in deleted collection should fail', async () => {
 
