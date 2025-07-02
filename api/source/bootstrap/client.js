@@ -46,7 +46,7 @@ function getClientEnv(){
                 scopePrefix: "${config.client.scopePrefix ?? ''}",
                 responseMode: "${config.client.responseMode}",
                 reauthAction: "${config.client.reauthAction}",
-                strictPkce: "${config.client.strictPkce}",
+                strictPkce: ${config.client.strictPkce},
                 audienceValue: "${config.oauth.audienceValue ?? ''}",
                 claims: ${JSON.stringify(config.oauth.claims)}
             },
