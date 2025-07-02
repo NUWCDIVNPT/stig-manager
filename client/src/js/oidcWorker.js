@@ -335,23 +335,23 @@ function setTokensWithRefresh(tokensResponse) {
   const accessTimes = getTokenTimes(tokensResponse.access_token)
   const refreshTimes = getTokenTimes(tokensResponse.refresh_token, 0) // no timeout buffer for refresh token
 
-  if (!accessTimes || accessTimes.timeoutInS <= 0) {
+  if (accessTimes?.timeoutInS <= 0) {
     broadcastNoToken()
     return
   } else {
     tokens.accessToken = tokensResponse.access_token
     broadcastToken()
   }
-  if (refreshTimes.timeoutInS > 0) {
+  if (refreshTimes?.timeoutInS > 0) {
     tokens.refreshToken = tokensResponse.refresh_token
     console.log(logPrefix, 'Refresh token expires: ', refreshTimes.expiresDateISO, ' timeout: ', refreshTimes.timeoutDateISO)
     setRefreshTokenTimer(refreshTimes.timeoutInMs)
   } else {
-    // how would we end up here?
-    console.log(logPrefix, 'Refresh has expired, Access token expires: ', accessTimes.expiresDateISO, ' timeout: ', accessTimes.timeoutDateISO)
+    console.log(logPrefix, 'Refresh expiration unknown or zero, Access token expires: ', accessTimes.expiresDateISO, ' timeout: ', accessTimes.timeoutDateISO)
     setAccessTokenTimer(accessTimes.timeoutInMs)
+    return
   }
-  if (accessTimes.expiresInS < refreshTimes.expiresInS) {
+  if (accessTimes.expiresInS < refreshTimes?.expiresInS) {
     console.log(logPrefix, 'Access token expires: ', accessTimes.expiresDateISO, ' timeout: ', accessTimes.timeoutDateISO)
     setAccessTokenTimer(accessTimes.timeoutInMs)
   } else {
