@@ -181,12 +181,12 @@ SM.AppData.ReplacePanel = Ext.extend(Ext.Panel, {
 
 SM.AppData.doDownload = async function (format = 'gzip') {
   try {
-    await window.oidcProvider.updateToken(10)
+    
     const fetchInit = {
       url: `${STIGMAN.Env.apiBase}/op/appdata?format=${format}&elevate=true`,
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${window.oidcProvider.token}`
+        'Authorization': `Bearer ${window.oidcWorker.token}`
       }
     }
     const href = await SM.ServiceWorker.getDownloadUrl(fetchInit)
@@ -378,11 +378,11 @@ SM.AppData.doReplace = function () {
 
       rp.updateStatusText('Sending file. Awaiting API response...', false, true)
 
-      await window.oidcProvider.updateToken(10)
+      
       const response = await fetch(`${STIGMAN.Env.apiBase}/op/appdata?elevate=true`, {
         method: 'POST',
         headers: new Headers({
-          'Authorization': `Bearer ${window.oidcProvider.token}`
+          'Authorization': `Bearer ${window.oidcWorker.token}`
         }),
         body: fileObj
       })

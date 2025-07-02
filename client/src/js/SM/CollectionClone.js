@@ -330,12 +330,12 @@ SM.CollectionClone.showCollectionClone = async function ({collectionId, sourceNa
 
         progressPanel.pb.updateProgress(0, "Cloning")
 
-        await window.oidcProvider.updateToken(10)
+        
         const response = await fetch(`${STIGMAN.Env.apiBase}/collections/${collectionId}/clone?projection=owners&projection=labels&projection=statistics`, {
           method: 'POST',
           headers: new Headers({
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${window.oidcProvider.token}`
+            'Authorization': `Bearer ${window.oidcWorker.token}`
           }),
           body: JSON.stringify(jsonData)
         })

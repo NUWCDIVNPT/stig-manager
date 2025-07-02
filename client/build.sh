@@ -84,11 +84,14 @@ cp -r $SrcDir/img $DistDir
 
 # HTML
 echo "Preparing HTML resources"
-cp -r $SrcDir/index.html $DistDir/index.html
+cp $SrcDir/index.html $DistDir/index.html
+cp $SrcDir/reauth.html $DistDir/reauth.html
 
-# Service Worker
-echo "Preparing Service Worker resources"
-cp -r $SrcDir/serviceWorker.js $DistDir/serviceWorker.js
+# Workers
+echo "Preparing Worker resources"
+cp $SrcDir/serviceWorker.js $DistDir/serviceWorker.js
+mkdir -p $DistDir/js
+cp $SrcDir/js/oidcWorker.js $DistDir/js/oidcWorker.js
 
 # npm
 echo "Preparing npm resources"
@@ -98,7 +101,6 @@ cd $ScriptDir
 
 # JS
 echo "Preparing JavaScript resources"
-mkdir $DistDir/js
 cp $SrcDir/js/resources-dist.js $DistDir/js/resources.js
 cp $SrcDir/js/init.js $DistDir/js/init.js
 cp $SrcDir/js/Env.js.example $DistDir/js
@@ -119,7 +121,6 @@ uglifyjs \
 'SM/State.js' \
 'SM/TipContent.js' \
 'SM/Ajax.js' \
-'SM/Warnings.js' \
 'SM/Classification.js' \
 'SM/MainPanel.js' \
 'SM/WhatsNew.js' \

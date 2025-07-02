@@ -954,11 +954,11 @@ SM.MetaPanel.ExportPanel = Ext.extend(Ext.Panel, {
 
         const attachment = SM.Global.filenameEscaped(`Meta-${agg}-${style}_${SM.Global.filenameComponentFromDate()}.${format}`)
 
-        await window.oidcProvider.updateToken(10)
+        
         const fetchInit = {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${window.oidcProvider.token}`,
+            'Authorization': `Bearer ${window.oidcWorker.token}`,
             'Accept': `${format === 'csv' ? 'text/csv' : 'application/json'}`
           },
           attachment
@@ -1596,10 +1596,26 @@ SM.MetaPanel.showMetaTab = async function (options) {
       }
     })
 
+    const bc = new BroadcastChannel('stigman-oidc-worker')
+    bc.onmessage = (event) => {
+      if (metaTab.hidden) {
+        return
+      }
+      if (event.data.type === 'noToken') {
+		    cancelTimers()
+      } else if (event.data.type === 'accessToken') {
+        if (!gState.updateDataTimerId && !gState.refreshViewTimerId) {
+          updateData({event: 'updatedata'})
+        }
+      }
+	  }
+
+
     SM.Dispatcher.addListener('collectionfilter', onCollectionFilter)
     metaTab.on('beforedestroy', () => {
       SM.Dispatcher.removeListener('collectionfilter', onCollectionFilter)
       cancelTimers()
+      bc.close()
     })
 
     SM.AddPanelToMainTab(metaTab, 'permanent')

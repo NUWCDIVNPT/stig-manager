@@ -1,6 +1,20 @@
 Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
+  {
+    date: '2025-06-25',
+    header: `Reauthenticate Without Losing Your Workspace State`,
+    body: `
+    <p>STIGManager now supports reauthentication via a popup window, tab, iframe, or traditional redirect (the old behavior). When configured to use any of the first three options, when a session expires, users will be prompted to reauthenticate without losing the current state of their workspace.</p>
+
+    <p>This feature also brings the ability to use STIG Manager in more than one browser tab or window simultaneously.</p>
+
+    <p><img src="img/whatsnew/2025-06-25-reauth-prompt.png" width=500/></p>
+
+    <p><img src="img/whatsnew/2025-06-25-reauth-popup.png" width=600/></p>
+
+    `
+  },    
     {
     date: '2025-06-02',
     header: `CORA Score Now Available in the Collection and Meta Dashboards`,
