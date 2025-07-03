@@ -396,7 +396,7 @@ function validateScope(scopeValue, isAdmin = false) {
   const required = isAdmin ? requiredAdminScopes : requiredUserScopes
   for (const s of required) {
     if (!hasScope(s)) {
-      throw new Error(`Missing required scope "${ENV.scopePrefix}${s}" for ${isAdmin ? 'admin' : 'user'} in access token payload`)
+      throw new Error(`Missing required scope "${ENV.scopePrefix}${s}" for ${isAdmin ? 'admin' : 'user'} in access token payload. Received scopes: ${JSON.stringify(scopes)}`)
     }
   }
   return true
