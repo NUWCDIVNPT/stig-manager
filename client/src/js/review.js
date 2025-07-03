@@ -1244,12 +1244,48 @@ async function addReview( params ) {
       border: false,
       deferredRender: false,
       id: 'resources-tabs' + idAppend,
-      activeTab: ('undefined' !== typeof selectedResource ? selectedResource : 'other-tab' + idAppend),
+      activeTab: ('undefined' !== typeof selectedResource ? selectedResource : 'history-tab' + idAppend),
       listeners: {
-        beforerender: function (tabs) {
+        tabchange: async function (tabs, tab) {
+          if (tab.id === 'other-tab' + idAppend) {
+            const selected = groupGrid.getSelectionModel().getSelected()
+            // if no rule is selected, clear the otherGrid store
+            if (!selected) {
+              otherGrid.getStore().removeAll()
+              return
+            }
+            
+            // get all reviews for that ruleId
+            try {
+              otherGrid.getEl().mask()
+              const reviews = await Ext.Ajax.requestPromise({
+                responseType: 'json', 
+                url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews`,
+                method: 'GET',
+                params: {
+                  rules: 'all',
+                  ruleId: selected.data.ruleId
+                }
+              })
+              // remove the current asset being shown 
+              const otherReviews = reviews.filter(r => r.assetId != leaf.assetId)
+              otherGrid.getStore().loadData(otherReviews)
+            } catch (e) {
+              otherGrid.getStore().removeAll()
+              SM.Error.handleError(e)
+            } finally {
+              otherGrid.getEl().unmask()
+            }
+          }
         }
       },
       items: [
+        {
+          title: 'History',
+          layout: 'fit',
+          id: 'history-tab' + idAppend,
+          items: historyData.grid
+        },
         {
           title: 'Other Assets',
           border: false,
@@ -1267,12 +1303,6 @@ async function addReview( params ) {
               'white-space': 'pre-wrap',
               'overflow-wrap': 'break-word'
           }
-        },
-        {
-          title: 'History',
-          layout: 'fit',
-          id: 'history-tab' + idAppend,
-          items: historyData.grid
         }
       ]
     }]
@@ -1351,12 +1381,8 @@ async function addReview( params ) {
         }),
         Ext.Ajax.requestPromise({
           responseType: 'json',
-          url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews`,
+          url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
           method: 'GET',
-          params: {
-            rules: 'all',
-            ruleId: groupGridRecord.data.ruleId
-          }
         }),
         Ext.Ajax.requestPromise({
           responseType: 'json',
@@ -1368,15 +1394,13 @@ async function addReview( params ) {
         })      
       ]
 
-      const [content, reviews, reviewProjected] = await Promise.all(requests)
+      const [content, review, reviewProjected] = await Promise.all(requests)
 
       // CONTENT
       reviewTab.contentPanel.update(content)
       reviewTab.contentPanel.setTitle('Rule for Group ' + SM.he(groupGridRecord.data.groupId))
   
       // REVIEW
-      let review = reviews.filter(review => review.assetId == assetId)[0] || {}
-      let otherReviews = reviews.filter(review => review.assetId != assetId)
   
       // load review
       let form = reviewForm.getForm()
@@ -1388,11 +1412,6 @@ async function addReview( params ) {
       reviewForm.loadValues(review)
       reviewForm.isLoaded = true
       reviewForm.setReviewFormItemStates()
-  
-      // load others
-      otherGrid.getStore().loadData(otherReviews);
-  
-      // Log, Feedback 
   
       if (! reviewProjected) {
         historyData.store.removeAll()
