@@ -182,7 +182,6 @@ function validateOidcConfiguration() {
 function getScopeStr() {
   const scopePrefix = ENV.scopePrefix
   let scopes = [
-    `openid`,
     `${scopePrefix}stig-manager:stig`,
     `${scopePrefix}stig-manager:stig:read`,
     `${scopePrefix}stig-manager:collection`,
@@ -372,8 +371,9 @@ function validateTokensResponse(tokensResponse) {
   return true
 }
 
-function validateScope(scopeStr, isAdmin = false) {
-  const scopes = scopeStr.split(' ')
+function validateScope(scopeValue, isAdmin = false) {
+  // Depending on OIDC provider, scopeValue can be a space-separated string (the standard) or an array of scopes. If a string, split it on spaces into an array.
+  const scopes = typeof scopeValue === 'string' ? scopeValue.split(' ') : scopeValue
   const hasScope = (s) => scopes.includes(s)
 
   // Required scopes for each privilege
