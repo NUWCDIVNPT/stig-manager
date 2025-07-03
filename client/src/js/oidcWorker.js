@@ -373,7 +373,9 @@ function validateTokensResponse(tokensResponse) {
 
 function validateScope(scopeValue, isAdmin = false) {
   // Depending on OIDC provider, scopeValue can be a space-separated string (the standard) or an array of scopes. If a string, split it on spaces into an array.
-  const scopes = typeof scopeValue === 'string' ? scopeValue.split(' ') : scopeValue
+  const scopes = typeof scopeValue === 'string' ? scopeValue.split(' ')
+	    : Array.isArray(scopeValue) ? scopeValue
+	    : []
   const hasScope = (s) => scopes.includes(s)
 
   // Required scopes for each privilege
@@ -396,7 +398,7 @@ function validateScope(scopeValue, isAdmin = false) {
   const required = isAdmin ? requiredAdminScopes : requiredUserScopes
   for (const s of required) {
     if (!hasScope(s)) {
-      throw new Error(`Missing required scope "${ENV.scopePrefix}${s}" for ${isAdmin ? 'admin' : 'user'} in access token payload. Received scopes: ${JSON.stringify(scopes)}`)
+      throw new Error(`Missing required scope "${ENV.scopePrefix}${s}" for ${isAdmin ? 'admin' : 'user'} in access token payload. Received scopes: ${JSON.stringify(scopeValue)}`)
     }
   }
   return true
