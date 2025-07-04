@@ -62,7 +62,7 @@ jobs:
           [[ ${{ github.ref_type }} == "tag" ]] && TAGS="$TAGS,${DOCKER_IMAGE}:${{ github.ref_name }}" 
           echo "version=${TAG}" >> $GITHUB_OUTPUT
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
-          echo "tab=${TAG}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
           echo "describe=${DESCRIBE}" >> $GITHUB_OUTPUT
@@ -149,7 +149,7 @@ jobs:
           [[ ${{ github.ref_type }} == "tag" ]] && TAGS="$TAGS,${DOCKER_IMAGE}:${{ github.ref_name }}-ironbank" 
           echo "version=${TAG}" >> $GITHUB_OUTPUT
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
-          echo "tab=${TAG}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
           echo "describe=${DESCRIBE}" >> $GITHUB_OUTPUT

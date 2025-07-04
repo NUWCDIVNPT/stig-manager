@@ -47,7 +47,7 @@ jobs:
           TAGS=${DOCKER_IMAGE}:${BRANCH}-rc
           echo "version=${TAG}" >> $GITHUB_OUTPUT
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
-          echo "tab=${TAG}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
           echo "describe=${DESCRIBE}" >> $GITHUB_OUTPUT
