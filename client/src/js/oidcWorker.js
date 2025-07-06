@@ -187,7 +187,8 @@ function getScopeStr() {
     `${scopePrefix}stig-manager:collection`,
     `${scopePrefix}stig-manager:user`,
     `${scopePrefix}stig-manager:user:read`,
-    `${scopePrefix}stig-manager:op`
+    `${scopePrefix}stig-manager:op`,
+    `${scopePrefix}stig-manager:op:read`
   ]
   if (ENV.extraScopes) {
     scopes.push(...ENV.extraScopes.split(" "))
@@ -388,7 +389,7 @@ function validateScope(scopeValue, isAdmin = false) {
   const requiredUserScopes = [
     'stig-manager:stig:read',
     'stig-manager:user:read',
-    'stig-manager:op',
+    'stig-manager:op:read',
     'stig-manager:collection'
   ]
 
