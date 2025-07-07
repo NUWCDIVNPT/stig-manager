@@ -769,7 +769,7 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
       else {
         data = JSON.stringify(response.cklb)
       }
-      let filename = response.marking + '_' + arg.assetName
+      let filename = `${response.marking ? response.marking + '_' : ''}${arg.assetName}`
       if (format === 'ckl-mono' || format === 'cklb-mono' || format === 'xccdf') {
         filename += `-${arg.stigs[0].benchmarkId}-${response.revisionStrResolved}`
       }

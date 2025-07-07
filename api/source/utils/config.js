@@ -12,7 +12,7 @@ const config = {
         describe: process.env.COMMIT_DESCRIBE || 'na'
     },
     settings: {
-        setClassification: process.env.STIGMAN_CLASSIFICATION,
+        setClassification: process.env.STIGMAN_CLASSIFICATION ?? "NONE",
         lastAccessResolution: 60,
         // Supported STIGMAN_DEV_RESPONSE_VALIDATION values: 
         // "logOnly" (logs failing response, but still sends them) 

@@ -250,7 +250,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
         ASSET: {
           ROLE: 'None',
           ASSET_TYPE: 'Computing',
-          MARKING: config.settings.setClassification,
+          MARKING: null,
           HOST_NAME: null,
           HOST_IP: null,
           HOST_MAC: null,
