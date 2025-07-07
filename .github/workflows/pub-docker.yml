@@ -60,6 +60,7 @@ jobs:
           TAG=$(git describe --tags --abbrev=0)
           TAGS=${DOCKER_IMAGE}:latest
           [[ ${{ github.ref_type }} == "tag" ]] && TAGS="$TAGS,${DOCKER_IMAGE}:${{ github.ref_name }}" 
+          [[ ${{ github.event_name }} == "workflow_dispatch" && "${BRANCH}" != "main" ]] && TAGS="${DOCKER_IMAGE}:${BRANCH}"
           echo "version=${TAG}" >> $GITHUB_OUTPUT
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
@@ -146,6 +147,7 @@ jobs:
           TAG=$(git describe --tags --abbrev=0)
           TAGS="${DOCKER_IMAGE}:latest-ironbank"
           [[ ${{ github.ref_type }} == "tag" ]] && TAGS="$TAGS,${DOCKER_IMAGE}:${{ github.ref_name }}-ironbank" 
+          [[ ${{ github.event_name }} == "workflow_dispatch" && "${BRANCH}" != "main" ]] && TAGS="${DOCKER_IMAGE}:${BRANCH}-ironbank"
           echo "version=${TAG}" >> $GITHUB_OUTPUT
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
