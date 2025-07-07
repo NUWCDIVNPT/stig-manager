@@ -247,11 +247,11 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
     let rowdblclick = () => { }
     let cellmousedown = () => { }
 
-    function renderWithToolbar(v) {
+    function renderWithToolbar(v, md, r) {
       return `
       <div class="sm-grid-cell-with-toolbar">
         <div class="sm-dynamic-width">
-          <div class="sm-info">${v}</div>
+          <div class="sm-info">${v} ${r.data.marking ? `<span class="sm-sprite-${r.data.marking}"></span>` : ''}</div>
         </div>
         <div class="sm-static-width"><img class="sm-grid-cell-toolbar-edit" ext:qtip="Open checklist" src="img/shield-green-check.svg" width="14" height="14"></div>
       </div>`
@@ -395,6 +395,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
         fields.push(
           { name: 'benchmarkId', type: 'string' },
           { name: 'title', type: 'string' },
+          { name: 'marking', type: 'string' },
           { name: 'revisionStr', type: 'string' },
           { name: 'revisionPinned' },
           'assets'
@@ -1825,7 +1826,7 @@ SM.CollectionPanel.AggLabelPanel = Ext.extend(Ext.Panel, {
   }
 })
 
-SM.CollectionPanel.showCollectionTab = async function (options) {
+SM.CollectionPanel.showCollectionTab = function (options) {
   try {
     const { collectionId, collectionName, treePath, initialLabelIds = [] } = options
     const tab = Ext.getCmp('main-tab-panel').getItem(`collection-panel-${collectionId}`)

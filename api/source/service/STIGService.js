@@ -113,6 +113,7 @@ exports.queryStigs = async function ({filter, projections, grants, elevate = fal
     'b.benchmarkId',
     'b.title',
     `cr.status`,
+    `cr.marking`, 
     `concat('V', cr.version, 'R', cr.release) as "lastRevisionStr"`,
     `date_format(cr.benchmarkDateSql,'%Y-%m-%d') as "lastRevisionDate"`,
     `cr.ruleCount`,
@@ -146,6 +147,7 @@ exports.queryStigs = async function ({filter, projections, grants, elevate = fal
     'benchmarkId',
     'title',
     '`status`',
+    'marking',
     `lastRevisionStr`,
     `lastRevisionDate`,
     `ruleCount`,
@@ -169,7 +171,8 @@ exports.queryStigs = async function ({filter, projections, grants, elevate = fal
         "benchmarkDate", revision.benchmarkDateSql,
         "status", revision.status,
         "statusDate", revision.statusDate,
-        "ruleCount", revision .ruleCount,
+        "marking", revision.marking,
+        "ruleCount", revision.ruleCount,
         "collectionIds", coalesce(rc.collectionIds,json_array())
       )) OVER (PARTITION BY b.benchmarkId ORDER BY revision.benchmarkDateSql DESC) as revisions`)
     cteStigJoins.push('left join cte_rev_collection rc on revision.revId = rc.revId')
@@ -498,6 +501,7 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
       return {
         benchmarkId: dml.revision.binds.benchmarkId,
         revisionStr: `V${dml.revision.binds.version}R${dml.revision.binds.release}`,
+        marking: dml.revision.binds.marking,
         action: 'preserved'
       }
     }
@@ -565,6 +569,7 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
         benchmarkDateSql,
         status,
         statusDate,
+        marking,
         description,
         active,
         groupCount,
@@ -582,6 +587,7 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
           benchmarkDateSql,
           status,
           statusDate,
+          marking,
           description,
           active,
           groupCount,
@@ -634,224 +640,227 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
     }
   }
 
-  function queriesFromBenchmarkData(b) {
-    const tempFlag = true
-    const ddl = {
-      tempRuleCci: {
-        drop: 'drop table if exists temp_rule_cci',
-        create: `CREATE${tempFlag ? ' TEMPORARY' : ''} TABLE temp_rule_cci (
-          ruleId varchar(255) NOT NULL,
-          cci varchar(20))`
-      }
+}
+
+function queriesFromBenchmarkData(b) {
+  const tempFlag = true
+  const ddl = {
+    tempRuleCci: {
+      drop: 'drop table if exists temp_rule_cci',
+      create: `CREATE${tempFlag ? ' TEMPORARY' : ''} TABLE temp_rule_cci (
+        ruleId varchar(255) NOT NULL,
+        cci varchar(20))`
     }
-    const dml = {
-      stig: {
-        sql: "insert into stig (title, benchmarkId) VALUES (:title, :benchmarkId) as new on duplicate key update stig.title = new.title"
-      },
-      revision: {
-        sql: `insert into revision (
-  revId, 
-  benchmarkId, 
-  \`version\`, 
-  \`release\`, 
-  benchmarkDate, 
-  benchmarkDateSql, 
-  status, 
-  statusDate, 
-  description,
-  groupCount,
-  checkCount,
-  fixCount,
-  lowCount,
-  mediumCount,
-  highCount
-) VALUES (
-  :revId, 
-  :benchmarkId, 
-  :version, 
-  :release, 
-  :benchmarkDate, 
-  STR_TO_DATE(:benchmarkDateSql, '%Y-%m-%d'),
-  :status, 
-  :statusDate, 
-  :description,
-  :groupCount,
-  :checkCount,
-  :fixCount,
-  :lowCount,
-  :mediumCount,
-  :highCount)`,
-      },
-      checkContent: {
-        sql: `insert ignore into check_content (content) VALUES ?`,
-        binds: []
-      },
-      fixText: {
-        sql: `insert ignore into fix_text (\`text\`) VALUES ?`,
-        binds: []
-      },
-      tempRuleCci: {
-        sql: `insert ignore into temp_rule_cci (ruleId, cci) VALUES ?`,
-        binds: []
-      },
-      revGroupRuleMap: {
-        sql: `INSERT INTO rev_group_rule_map (
-          revId,
-          groupId, groupTitle, groupSeverity,
-          ruleId, \`version\`, title, severity, weight, vulnDiscussion, 
-          falsePositives, falseNegatives, documentable, mitigations, 
-          severityOverrideGuidance, potentialImpacts, thirdPartyTools, mitigationControl,
-          responsibility, iaControls, checkSystem, checkDigest, fixref, fixDigest)
-          VALUES ?`,
-        binds: []
-      },
-      revGroupRuleCciMap: {
-        sql: `INSERT IGNORE INTO rev_group_rule_cci_map (rgrId, cci)
-          SELECT 
-            rgr.rgrId,
-            tt.cci
-          FROM
-            rev_group_rule_map rgr
-            inner join temp_rule_cci tt using (ruleId)
-          WHERE 
-            rgr.revId = :revId`
-      },
-      ruleVersionCheckDigest: {
-        sql: `INSERT INTO rule_version_check_digest (ruleId, \`version\`, checkDigest)
-        with currentRuleVersionCheckDigest as (
-        select
-          rgr.ruleId,
-          rgr.version,
-          rgr.checkDigest,
-          rev.benchmarkDateSql,
-          rev.revId,
-          ROW_NUMBER() OVER (PARTITION BY rgr.ruleId ORDER BY rev.benchmarkDateSql DESC) as rowNum
-        from
-          rev_group_rule_map rgr
-          left join revision rev using (revId)
-        where
-          rgr.checkDigest is not null
-          and rev.benchmarkId = ?
-        )
-        select
-          ruleId,
-          \`version\`,
-          checkDigest
-        from
-          currentRuleVersionCheckDigest crvcd 
-        where
-          rowNum = 1
-        ON DUPLICATE KEY UPDATE
-          \`version\`=crvcd.version,
-          checkDigest=crvcd.checkDigest`,
-        binds: []
-      }
-    }
-
-    let { revision, ...benchmarkBinds } = b
-    // QUERY: stig
-    dml.stig.binds = benchmarkBinds
-    delete dml.stig.binds.scap
-
-    let { groups, ...revisionBinds } = revision
-    delete revisionBinds.revisionStr
-    revisionBinds.benchmarkId = benchmarkBinds.benchmarkId
-    revisionBinds.revId = `${revisionBinds.benchmarkId}-${revisionBinds.version}-${revisionBinds.release}`
-    revisionBinds.benchmarkDateSql = revisionBinds.benchmarkDate8601
-    delete revisionBinds.benchmarkDate8601
-    revisionBinds.lowCount = revisionBinds.mediumCount = revisionBinds.highCount = 0
-    // QUERY: revision
-    dml.revision.binds = revisionBinds
-
-    let ruleCount = 0
-    let checkCount = 0
-    let fixCount = 0
-    for (const group of groups) {
-      let { rules, ...groupBinds } = group
-
-      let groupSeverity
-      for (const rule of rules) {
-        ruleCount++
-        let { checks, fixes, idents, ...ruleBinds } = rule
-        // Group severity calculation
-        if (!groupSeverity) {
-          groupSeverity = ruleBinds.severity
-        }
-        else if (groupSeverity !== ruleBinds.severity) {
-          groupSeverity = 'mixed'
-        }
-        checkCount += checks.length
-        fixCount += fixes.length
-        const checkSystem = checks.map( check => check.system).join(',')
-        const checkContent = checks.map( check => check.content).join('\n\n-----AND-----\n\n')
-        const checkDigest = createHash('sha256').update(checkContent).digest()
-        const fixref = fixes.map( fix => fix.fixref).join(',')
-        const fixText = fixes.map( fix => fix.text).join('\n\n-----AND-----\n\n')
-        const fixDigest = createHash('sha256').update(fixText).digest()
-
-        // QUERY: checkContent
-        dml.checkContent.binds.push([checkContent])
-
-        // QUERY: fixText
-        dml.fixText.binds.push([fixText])
-        
-        // QUERY: revGroupRuleMap
-        dml.revGroupRuleMap.binds.push([
-          revisionBinds.revId,
-          groupBinds.groupId,
-          groupBinds.title,
-          ruleBinds.severity, // groupSeverity hack
-          ruleBinds.ruleId,
-          ruleBinds.version,
-          ruleBinds.title,
-          ruleBinds.severity,
-          ruleBinds.weight,
-          ruleBinds.vulnDiscussion,
-          ruleBinds.falsePositives,
-          ruleBinds.falseNegatives,
-          ruleBinds.documentable,
-          ruleBinds.mitigations,
-          ruleBinds.severityOverrideGuidance,
-          ruleBinds.potentialImpacts,
-          ruleBinds.thirdPartyTools,
-          ruleBinds.mitigationControl,
-          ruleBinds.responsibility,
-          ruleBinds.iaControls,
-          checkSystem,
-          checkDigest,
-          fixref,
-          fixDigest
-        ])
-        
-        for (const ident of idents) {
-          if (ident.system === 'http://iase.disa.mil/cci' || ident.system === 'http://cyber.mil/cci') {
-            dml.tempRuleCci.binds.push([
-              rule.ruleId,
-              ident.ident.replace('CCI-', '')])
-          }
-        }
-      }
-
-      // QUERY: rev_group_rule_cci_map
-      dml.revGroupRuleCciMap.binds = { revId: revisionBinds.revId }
-    }
-
-    dml.revision.binds.groupCount = groups.length
-    dml.revision.binds.checkCount = checkCount
-    dml.revision.binds.fixCount = fixCount
-
-    // add rule severity counts to the revision binds. groupRule[7] is the location of the severity value
-    dml.revision.binds = dml.revGroupRuleMap.binds.reduce((binds, groupRule) => {
-      const prop = `${groupRule[7]}Count`
-      binds[prop] = (binds[prop] ?? 0) + 1
-      return binds
-    }, dml.revision.binds)
-
-    // QUERY: ruleVersionCheckDigest
-    dml.ruleVersionCheckDigest.binds.push(benchmarkBinds.benchmarkId)
-
-    return {ddl, dml}
   }
+  const dml = {
+    stig: {
+      sql: "insert into stig (title, benchmarkId) VALUES (:title, :benchmarkId) as new on duplicate key update stig.title = new.title"
+    },
+    revision: {
+      sql: `insert into revision (
+revId, 
+benchmarkId, 
+\`version\`, 
+\`release\`, 
+benchmarkDate, 
+benchmarkDateSql, 
+status, 
+statusDate,
+marking, 
+description,
+groupCount,
+checkCount,
+fixCount,
+lowCount,
+mediumCount,
+highCount
+) VALUES (
+:revId, 
+:benchmarkId, 
+:version, 
+:release, 
+:benchmarkDate, 
+STR_TO_DATE(:benchmarkDateSql, '%Y-%m-%d'),
+:status, 
+:statusDate,
+:marking,
+:description,
+:groupCount,
+:checkCount,
+:fixCount,
+:lowCount,
+:mediumCount,
+:highCount)`,
+    },
+    checkContent: {
+      sql: `insert ignore into check_content (content) VALUES ?`,
+      binds: []
+    },
+    fixText: {
+      sql: `insert ignore into fix_text (\`text\`) VALUES ?`,
+      binds: []
+    },
+    tempRuleCci: {
+      sql: `insert ignore into temp_rule_cci (ruleId, cci) VALUES ?`,
+      binds: []
+    },
+    revGroupRuleMap: {
+      sql: `INSERT INTO rev_group_rule_map (
+        revId,
+        groupId, groupTitle, groupSeverity,
+        ruleId, \`version\`, title, severity, weight, vulnDiscussion, 
+        falsePositives, falseNegatives, documentable, mitigations, 
+        severityOverrideGuidance, potentialImpacts, thirdPartyTools, mitigationControl,
+        responsibility, iaControls, checkSystem, checkDigest, fixref, fixDigest)
+        VALUES ?`,
+      binds: []
+    },
+    revGroupRuleCciMap: {
+      sql: `INSERT IGNORE INTO rev_group_rule_cci_map (rgrId, cci)
+        SELECT 
+          rgr.rgrId,
+          tt.cci
+        FROM
+          rev_group_rule_map rgr
+          inner join temp_rule_cci tt using (ruleId)
+        WHERE 
+          rgr.revId = :revId`
+    },
+    ruleVersionCheckDigest: {
+      sql: `INSERT INTO rule_version_check_digest (ruleId, \`version\`, checkDigest)
+      with currentRuleVersionCheckDigest as (
+      select
+        rgr.ruleId,
+        rgr.version,
+        rgr.checkDigest,
+        rev.benchmarkDateSql,
+        rev.revId,
+        ROW_NUMBER() OVER (PARTITION BY rgr.ruleId ORDER BY rev.benchmarkDateSql DESC) as rowNum
+      from
+        rev_group_rule_map rgr
+        left join revision rev using (revId)
+      where
+        rgr.checkDigest is not null
+        and rev.benchmarkId = ?
+      )
+      select
+        ruleId,
+        \`version\`,
+        checkDigest
+      from
+        currentRuleVersionCheckDigest crvcd 
+      where
+        rowNum = 1
+      ON DUPLICATE KEY UPDATE
+        \`version\`=crvcd.version,
+        checkDigest=crvcd.checkDigest`,
+      binds: []
+    }
+  }
+
+  let { revision, ...benchmarkBinds } = b
+  // QUERY: stig
+  dml.stig.binds = benchmarkBinds
+  delete dml.stig.binds.scap
+
+  let { groups, ...revisionBinds } = revision
+  delete revisionBinds.revisionStr
+  revisionBinds.benchmarkId = benchmarkBinds.benchmarkId
+  revisionBinds.revId = `${revisionBinds.benchmarkId}-${revisionBinds.version}-${revisionBinds.release}`
+  revisionBinds.benchmarkDateSql = revisionBinds.benchmarkDate8601
+  delete revisionBinds.benchmarkDate8601
+  revisionBinds.lowCount = revisionBinds.mediumCount = revisionBinds.highCount = 0
+  // QUERY: revision
+  dml.revision.binds = revisionBinds
+
+  let ruleCount = 0
+  let checkCount = 0
+  let fixCount = 0
+  for (const group of groups) {
+    let { rules, ...groupBinds } = group
+
+    let groupSeverity
+    for (const rule of rules) {
+      ruleCount++
+      let { checks, fixes, idents, ...ruleBinds } = rule
+      // Group severity calculation
+      if (!groupSeverity) {
+        groupSeverity = ruleBinds.severity
+      }
+      else if (groupSeverity !== ruleBinds.severity) {
+        groupSeverity = 'mixed'
+      }
+      checkCount += checks.length
+      fixCount += fixes.length
+      const checkSystem = checks.map( check => check.system).join(',')
+      const checkContent = checks.map( check => check.content).join('\n\n-----AND-----\n\n')
+      const checkDigest = createHash('sha256').update(checkContent).digest()
+      const fixref = fixes.map( fix => fix.fixref).join(',')
+      const fixText = fixes.map( fix => fix.text).join('\n\n-----AND-----\n\n')
+      const fixDigest = createHash('sha256').update(fixText).digest()
+
+      // QUERY: checkContent
+      dml.checkContent.binds.push([checkContent])
+
+      // QUERY: fixText
+      dml.fixText.binds.push([fixText])
+      
+      // QUERY: revGroupRuleMap
+      dml.revGroupRuleMap.binds.push([
+        revisionBinds.revId,
+        groupBinds.groupId,
+        groupBinds.title,
+        ruleBinds.severity, // groupSeverity hack
+        ruleBinds.ruleId,
+        ruleBinds.version,
+        ruleBinds.title,
+        ruleBinds.severity,
+        ruleBinds.weight,
+        ruleBinds.vulnDiscussion,
+        ruleBinds.falsePositives,
+        ruleBinds.falseNegatives,
+        ruleBinds.documentable,
+        ruleBinds.mitigations,
+        ruleBinds.severityOverrideGuidance,
+        ruleBinds.potentialImpacts,
+        ruleBinds.thirdPartyTools,
+        ruleBinds.mitigationControl,
+        ruleBinds.responsibility,
+        ruleBinds.iaControls,
+        checkSystem,
+        checkDigest,
+        fixref,
+        fixDigest
+      ])
+      
+      for (const ident of idents) {
+        if (ident.system === 'http://iase.disa.mil/cci' || ident.system === 'http://cyber.mil/cci') {
+          dml.tempRuleCci.binds.push([
+            rule.ruleId,
+            ident.ident.replace('CCI-', '')])
+        }
+      }
+    }
+
+    // QUERY: rev_group_rule_cci_map
+    dml.revGroupRuleCciMap.binds = { revId: revisionBinds.revId }
+  }
+
+  dml.revision.binds.groupCount = groups.length
+  dml.revision.binds.checkCount = checkCount
+  dml.revision.binds.fixCount = fixCount
+
+  // add rule severity counts to the revision binds. groupRule[7] is the location of the severity value
+  dml.revision.binds = dml.revGroupRuleMap.binds.reduce((binds, groupRule) => {
+    const prop = `${groupRule[7]}Count`
+    binds[prop] = (binds[prop] ?? 0) + 1
+    return binds
+  }, dml.revision.binds)
+
+  // QUERY: ruleVersionCheckDigest
+  dml.ruleVersionCheckDigest.binds.push(benchmarkBinds.benchmarkId)
+
+  return {ddl, dml}
 }
 
 /**
@@ -881,6 +890,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
         benchmarkDateSql,
         status,
         statusDate,
+        marking,
         description,
         active,
         groupCount,
@@ -898,6 +908,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
         benchmarkDateSql,
         status,
         statusDate,
+        marking,
         description,
         active,
         groupCount,
@@ -1303,6 +1314,7 @@ exports.getRevisionsByBenchmarkId = async function({benchmarkId, grants, userObj
     `date_format(r.benchmarkDateSql,'%Y-%m-%d') as "benchmarkDate"`,
     'r.status',
     'r.statusDate',
+    'r.marking',
     'r.ruleCount',
     'coalesce(rc.collectionIds,json_array()) as collectionIds'
   ]

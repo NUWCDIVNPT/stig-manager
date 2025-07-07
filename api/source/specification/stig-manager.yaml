@@ -7103,6 +7103,8 @@ components:
           $ref: '#/components/schemas/BenchmarkId'
         collections:
           type: integer
+        marking:
+          $ref: '#/components/schemas/RevisionMarkingNullable'
         revisionPinned:
           type: boolean
         revisionStr:
@@ -7113,6 +7115,7 @@ components:
           $ref: '#/components/schemas/StigTitle'
       required:
         - benchmarkId
+        - marking
         - title
         - assets
         - revisionStr
@@ -8145,6 +8148,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CollectionId'
+        marking:
+          $ref: '#/components/schemas/RevisionMarkingNullable'
         release:
           $ref: '#/components/schemas/RevisionRelease'
         revisionStr:
@@ -8180,6 +8185,10 @@ components:
         - revisionStr
     RevisionDate:
       $ref: '#/components/schemas/StringDate'
+    RevisionMarkingNullable:
+      type: string
+      nullable: true
+      pattern: ^CUI|U|FOUO$
     RevisionPost:
       additionalProperties: false
       type: object
@@ -8341,6 +8350,8 @@ components:
           $ref: '#/components/schemas/StringDateNullable'
         lastRevisionStr:
           type: string
+        marking:
+          $ref: '#/components/schemas/RevisionMarkingNullable'
         revisionStrs:
           type: array
           items:

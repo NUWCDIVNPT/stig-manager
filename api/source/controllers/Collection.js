@@ -374,7 +374,7 @@ function requestedOwnerGrantsMatchExisting(requestedGrants, existingGrants) {
  * @param {Object} request - The request object.
  * @param {number} minimumRole - The minimum rokle required. Defaults to Security.ROLES.Manage.
  * @param {boolean} allowElevate - Whether to allow elevation of access level. Defaults to false.
- * @returns {Object} - An object containing the collectionId and grant.
+ * @returns {Promise} - An object containing the collectionId and grant.
  * @throws {SmError.PrivilegeError} - If the user does not have sufficient privileges.
  */
 async function getCollectionInfoAndCheckPermission(request, minimumRole = Security.ROLES.Manage, supportsElevation = false) {
@@ -763,13 +763,13 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
       }
       let data
       if (response.xmlJs) {
-        data = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
+        data = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${response.marking} -->\n`
         data += builder.build(response.xmlJs)  
       }
       else {
         data = JSON.stringify(response.cklb)
       }
-      let filename = arg.assetName
+      let filename = response.marking + '_' + arg.assetName
       if (format === 'ckl-mono' || format === 'cklb-mono' || format === 'xccdf') {
         filename += `-${arg.stigs[0].benchmarkId}-${response.revisionStrResolved}`
       }
