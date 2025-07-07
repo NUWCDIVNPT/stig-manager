@@ -299,13 +299,13 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const zip = await JSZip.loadAsync(resBuffer)
           const fileNames = Object.keys(zip.files)
           expect(fileNames).to.have.lengthOf(2)
-          const data = await zip.files["Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.ckl"].async("string")
+          const data = await zip.files["U_Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.ckl"].async("string")
           const assetData = reviewsFromCkl({
             data,                    
             fieldSettings: config.fieldSettings,  
             allowAccept: true,       
             importOptions: config.importOptions, 
-            sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.ckl"
+            sourceRef: "U_Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.ckl"
           })
           expect(assetData.target.name).to.equal(reference.testAsset.name)
           expect(assetData.target.metadata.cklRole).to.exist
@@ -361,13 +361,13 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const zip = await JSZip.loadAsync(resBuffer)
             const fileNames = Object.keys(zip.files)
             expect(fileNames).to.have.lengthOf(2)
-            const data = await zip.files["Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.ckl"].async("string")
+            const data = await zip.files["U_Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.ckl"].async("string")
             const assetData = reviewsFromCkl({
               data,                    
               fieldSettings: config.fieldSettings,  
               allowAccept: true,       
               importOptions: config.importOptions, 
-              sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.ckl"
+              sourceRef: "U_Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.ckl"
             })
             expect(assetData.target.name).to.equal(reference.testAsset.name)
             expect(assetData.target.metadata.cklRole).to.exist
@@ -410,13 +410,13 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const zip = await JSZip.loadAsync(resBuffer)
             const fileNames = Object.keys(zip.files)
             expect(fileNames).to.have.lengthOf(2)
-            const data = await zip.files["Collection_X_lvl1_asset-1.ckl"].async("string")
+            const data = await zip.files["U_Collection_X_lvl1_asset-1.ckl"].async("string")
             const assetData = reviewsFromCkl({
               data,                    
               fieldSettings: config.fieldSettings,  
               allowAccept: true,       
               importOptions: config.importOptions, 
-              sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.ckl"
+              sourceRef: "U_Collection_X_lvl1_asset-1.ckl"
             })
             expect(assetData.target.name).to.equal(reference.testAsset.name)
             expect(assetData.target.metadata.cklRole).to.exist
@@ -468,13 +468,13 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const zip = await JSZip.loadAsync(resBuffer)
           const fileNames = Object.keys(zip.files)
           expect(fileNames).to.have.lengthOf(2)
-          const data = await zip.files["Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.cklb"].async("string")
+          const data = await zip.files["U_Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.cklb"].async("string")
           const assetData = reviewsFromCklb({
             data,                    
             fieldSettings: config.fieldSettings,  
             allowAccept: true,       
             importOptions: config.importOptions, 
-            sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.cklb"
+            sourceRef: "U_Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.cklb"
           })
           expect(assetData.target.name).to.equal(reference.testAsset.name)
           expect(assetData.target.metadata.cklRole).to.exist
@@ -540,13 +540,13 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const zip = await JSZip.loadAsync(resBuffer)
             const fileNames = Object.keys(zip.files)
             expect(fileNames).to.have.lengthOf(2)
-            const data = await zip.files["Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.cklb"].async("string")
+            const data = await zip.files["U_Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.cklb"].async("string")
             const assetData = reviewsFromCklb({
               data,                    
               fieldSettings: config.fieldSettings,  
               allowAccept: true,       
               importOptions: config.importOptions, 
-              sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.cklb"
+              sourceRef: "U_Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.cklb"
             })
             expect(assetData.target.name).to.equal(reference.testAsset.name)
             expect(assetData.target.metadata.cklRole).to.exist
@@ -585,13 +585,13 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const zip = await JSZip.loadAsync(resBuffer)
           const fileNames = Object.keys(zip.files)
           expect(fileNames).to.have.lengthOf(2)
-          const data = await zip.files["Collection_X_lvl1_asset-1.cklb"].async("string")
+          const data = await zip.files["U_Collection_X_lvl1_asset-1.cklb"].async("string")
           const assetData = reviewsFromCklb({
             data,                    
             fieldSettings: config.fieldSettings,  
             allowAccept: true,       
             importOptions: config.importOptions, 
-            sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1.cklb"
+            sourceRef: "U_Collection_X_lvl1_asset-1.cklb"
           })
           expect(assetData.target.name).to.equal(reference.testAsset.name)
           expect(assetData.target.metadata.cklRole).to.exist
@@ -661,13 +661,13 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const zip = await JSZip.loadAsync(resBuffer)
           const fileNames = Object.keys(zip.files)
           expect(fileNames).to.have.lengthOf(2)
-          const data = await zip.files["Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"].async("string")
+          const data = await zip.files["U_Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"].async("string")
           const assetData = reviewsFromScc({
             data,                    
             fieldSettings: config.fieldSettings,  
             allowAccept: true,       
             importOptions: config.importOptions, 
-            sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"
+            sourceRef: "U_Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"
           })
           expect(assetData.target.name).to.equal(reference.testAsset.name)
           expect(assetData.target.metadata.testkey).to.exist
@@ -719,13 +719,13 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const zip = await JSZip.loadAsync(resBuffer)
           const fileNames = Object.keys(zip.files)
           expect(fileNames).to.have.lengthOf(2)
-          const data = await zip.files["Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"].async("string")
+          const data = await zip.files["U_Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"].async("string")
           const assetData = reviewsFromScc({
             data,                    
             fieldSettings: config.fieldSettings,  
             allowAccept: true,       
             importOptions: config.importOptions, 
-            sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"
+            sourceRef: "U_Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"
           })
           expect(assetData.target.name).to.equal(reference.testAsset.name)
           expect(assetData.target.metadata.testkey).to.exist
@@ -772,14 +772,14 @@ describe('POST - Collection - not all tests run for all iterations', function ()
             expect(fileNames).to.have.lengthOf(3)
           }
           
-          const dataVPN = await zip.files["Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"].async("string")
+          const dataVPN = await zip.files["U_Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml"].async("string")
             
           const assetDataVPN = reviewsFromScc({
             data: dataVPN,                    
             fieldSettings: config.fieldSettings,  
             allowAccept: true,       
             importOptions: config.importOptions, 
-            sourceRef: "Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml",
+            sourceRef: "U_Collection_X_lvl1_asset-1-VPN_SRG_TEST-V1R1-xccdf.xml",
             scapBenchmarkMap
           })
           expect(assetDataVPN.target.name).to.equal(reference.testAsset.name)
@@ -794,13 +794,13 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           if(iteration.name === "lvl1"){
             return
           }
-          const dataWindows = await zip.files["Collection_X_lvl1_asset-1-Windows_10_STIG_TEST-V1R23-xccdf.xml"].async("string")
+          const dataWindows = await zip.files["U_Collection_X_lvl1_asset-1-Windows_10_STIG_TEST-V1R23-xccdf.xml"].async("string")
           const assetDataWindows = reviewsFromScc({
             data: dataWindows,
             fieldSettings: config.fieldSettings,
             allowAccept: true,
             importOptions: config.importOptions,
-            sourceRef: "Collection_X_lvl1_asset-1-Windows_10_STIG_TEST-V1R23-xccdf.xml",
+            sourceRef: "U_Collection_X_lvl1_asset-1-Windows_10_STIG_TEST-V1R23-xccdf.xml",
             scapBenchmarkMap
           })
           expect(assetDataWindows.target.name).to.equal(reference.testAsset.name)

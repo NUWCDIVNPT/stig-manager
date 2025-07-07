@@ -611,6 +611,7 @@ const baseCols = {
   metaStig: [
     'rev.benchmarkId',
     'stig.title',
+    'rev.marking',
     'rev.revisionStr',
     'count(distinct a.collectionId) as collections',
     'count(distinct a.assetId) as assets',
@@ -663,6 +664,7 @@ const baseColsFlat = {
   metaStig: [
     'rev.benchmarkId',
     'stig.title',
+    'rev.marking',
     'rev.revisionStr',
     'count(distinct a.collectionId) as collections',
     'count(distinct a.assetId) as assets',

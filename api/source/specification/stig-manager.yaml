@@ -8203,6 +8203,8 @@ components:
           $ref: '#/components/schemas/BenchmarkId'
         revisionStr:
           $ref: '#/components/schemas/RevisionStr'
+        marking:
+          $ref: '#/components/schemas/RevisionMarkingNullable'
       required:
         - benchmarkId
         - revisionStr

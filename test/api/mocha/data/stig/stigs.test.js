@@ -433,6 +433,7 @@ describe('POST - Stig', () => {
                     let expectedRevData = {
                         benchmarkId: "VPN_SRG_TEST",
                         revisionStr: "V1R1",
+                        marking: "U",
                         action: "inserted",
                     }
                     if(iteration.name !== "stigmanadmin"){
@@ -520,6 +521,7 @@ describe('POST - Stig', () => {
                     {
                         "benchmarkId": "VPN_SRG_TEST",
                         "revisionStr": "V1R1",
+                        "marking": "U",
                         "action": "preserved"
                     }
                     if(iteration.name !== "stigmanadmin"){
@@ -554,6 +556,7 @@ describe('POST - Stig', () => {
                     {
                         "benchmarkId": "VPN_SRG_TEST",
                         "revisionStr": "V1R1",
+                        "marking": "U",
                         "action": "replaced"
                     }
                     if(iteration.name !== "stigmanadmin"){

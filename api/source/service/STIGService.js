@@ -623,6 +623,7 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
       return {
         benchmarkId: dml.revision.binds.benchmarkId,
         revisionStr: `V${dml.revision.binds.version}R${dml.revision.binds.release}`,
+        marking: dml.revision.binds.marking,
         action
       }
     }

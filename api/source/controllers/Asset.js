@@ -302,7 +302,7 @@ module.exports.getChecklistByAsset = async function (req, res, next) {
         tagValueProcessor: escapeForXml,
         attrValueProcessor: escapeForXml
       })
-      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${checklist.marking} -->\n`
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${response.marking} -->\n`
       xml += builder.build(response.xmlJs)
       writer.writeInlineFile(res, xml, `${response.marking}_${response.assetName}_${dateString}.ckl`, 'application/xml')
     }

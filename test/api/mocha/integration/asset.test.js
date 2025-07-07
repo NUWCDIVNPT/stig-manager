@@ -71,20 +71,20 @@ describe(`GET - getChecklistByAssetStig - /assets/{assetId}/checklists/{benchmar
     it('Return the ckl for Asset with reserved chars', async function () {
       const res = await utils.executeRequest(`${config.baseUrl}/assets/${createdAssetId}/checklists/${reference.benchmark}/${reference.testCollection.defaultRevision}?format=ckl`, 'GET', user.token)
       expect(res.status).to.eql(200)
-      const regex = /^inline; filename="TxxxxxEST_&bsol;slash&colon;colon\.\.x2-VPN_SRG_TEST-V1R1/
+      const regex = /^inline; filename="U_TxxxxxEST_&bsol;slash&colon;colon\.\.x2-VPN_SRG_TEST-V1R1/
       expect(res.headers['content-disposition'], "Content-Disposition is set with expected filename").to.match(regex)
 
     })
     it('Return the cklB for Asset with reserved chars', async function () {
       const res = await utils.executeRequest(`${config.baseUrl}/assets/${createdAssetId}/checklists/${reference.benchmark}/${reference.testCollection.defaultRevision}?format=cklb`, 'GET', user.token)
       expect(res.status).to.eql(200)
-      const regex = /^inline; filename="TxxxxxEST_&bsol;slash&colon;colon\.\.x2-VPN_SRG_TEST-V1R1/
+      const regex = /^inline; filename="U_TxxxxxEST_&bsol;slash&colon;colon\.\.x2-VPN_SRG_TEST-V1R1/
       expect(res.headers['content-disposition'], "Content-Disposition is set with expected filename").to.match(regex)
     })
     it('Return the xccdf for Asset with reserved chars', async function () {
       const res = await utils.executeRequest(`${config.baseUrl}/assets/${createdAssetId}/checklists/${reference.benchmark}/${reference.testCollection.defaultRevision}?format=xccdf`, 'GET', user.token)
       expect(res.status).to.eql(200)
-      const regex = /^inline; filename="TxxxxxEST_&bsol;slash&colon;colon\.\.x2-VPN_SRG_TEST-V1R1/
+      const regex = /^inline; filename="U_TxxxxxEST_&bsol;slash&colon;colon\.\.x2-VPN_SRG_TEST-V1R1/
       expect(res.headers['content-disposition'], "Content-Disposition is set with expected filename").to.match(regex)
     })
   })
