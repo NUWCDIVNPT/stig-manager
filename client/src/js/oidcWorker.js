@@ -182,6 +182,7 @@ function validateOidcConfiguration() {
 function getScopeStr() {
   const scopePrefix = ENV.scopePrefix
   let scopes = [
+    `openid`,
     `${scopePrefix}stig-manager:stig`,
     `${scopePrefix}stig-manager:stig:read`,
     `${scopePrefix}stig-manager:collection`,
