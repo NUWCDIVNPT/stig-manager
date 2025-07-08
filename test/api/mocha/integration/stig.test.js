@@ -207,7 +207,8 @@ describe(`POST - importBenchmark - /stigs`, () => {
       {
         "benchmarkId": "VPN_SRG_TEST",
         "revisionStr": "V1R1",
-        "action": "replaced"
+        "action": "replaced",
+        marking: "U"
       }
       expect(res.status).to.eql(200)
       const data = await res.json()
@@ -239,7 +240,8 @@ describe(`POST - importBenchmark - /stigs`, () => {
       {
         "benchmarkId": "VPN_SRG_OTHER",
         "revisionStr": "V2R2",
-        "action": "inserted"
+        "action": "inserted",
+        "marking": "U"
     }
       const data = await res.json()
       expect(data).to.eql(expectedRevData)
@@ -325,7 +327,8 @@ describe(`POST - importBenchmark - /stigs`, () => {
       {
           "benchmarkId": "VPN_SRG_TEST",
           "revisionStr": "V1R1",
-          "action": "replaced"
+          "action": "replaced",
+          "marking": "U"
       }
       expect(res.status).to.eql(200)
       const data = await res.json() 
