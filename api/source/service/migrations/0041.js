@@ -6,44 +6,111 @@ const migrationName = path.basename(__filename, '.js')
 const upFn = async (pool, migrationName) => {
   const connection = await pool.getConnection()
 
-  // drop isEnabled from asset if it exists
-  const [assetCol] = await connection.query(`
-    SELECT COUNT(*) AS count
-    FROM INFORMATION_SCHEMA.COLUMNS
+  // drop indexes that use virtual isEnabled column
+
+  // check if the indexes exist before dropping them
+  const [assetIndexExists] = await connection.query(`
+    SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.STATISTICS
     WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = 'asset'
-      AND COLUMN_NAME = 'isEnabled'
-  `)
-
-  if (assetCol[0].count === 1) {
-    const dropIndex = `DROP INDEX INDEX_NAME_COLLECTION_ENABLED ON asset`
-    const dropAsset = `ALTER TABLE asset DROP COLUMN isEnabled`
-
-    logger.writeInfo('mysql', 'migration', { status: 'running', name: migrationName, statement: dropIndex })
-    await connection.query(dropIndex)
-
-    logger.writeInfo('mysql', 'migration', { status: 'running', name: migrationName, statement: dropAsset })
-    await connection.query(dropAsset)
-  }
-
-  // drop isEnabled from collection if it exists
-  const [collectionCol] = await connection.query(`
-    SELECT COUNT(*) AS count
-    FROM INFORMATION_SCHEMA.COLUMNS
+      AND INDEX_NAME = 'INDEX_NAME_COLLECTION_ENABLED'`)  
+  const [collectionIndexExists] = await connection.query(`
+    SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.STATISTICS
     WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = 'collection'
-      AND COLUMN_NAME = 'isEnabled'
-  `)
+      AND INDEX_NAME = 'index2'`) 
+  // If the indexes exist, drop them
+  if( assetIndexExists[0].count > 0) {
+    const dropEnabledAssetIndex = `ALTER TABLE asset DROP INDEX INDEX_NAME_COLLECTION_ENABLED`
+    logger.writeInfo('mysql', 'migration', { status: 'running', name: migrationName, statement: dropEnabledAssetIndex })
+    await connection.query(dropEnabledAssetIndex)
+  }
 
-  if (collectionCol[0].count === 1) {
-    const dropIndex = `DROP INDEX index2 ON collection`
-    const dropCollection = `ALTER TABLE collection DROP COLUMN isEnabled`
+  if( collectionIndexExists[0].count > 0) {
+    const dropEnabledCollectionIndex = `ALTER TABLE collection DROP INDEX index2`
+    logger.writeInfo('mysql', 'migration', { status: 'running', name: migrationName, statement: dropEnabledCollectionIndex })
+    await connection.query(dropEnabledCollectionIndex)
+  }
+ 
+  // Drop old virtual isEnabled column on 'asset' if it exists
+  const [assetColumnsDrop] = await connection.query(`
+    SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'asset'
+      AND COLUMN_NAME = 'isEnabled'`)
+  if (assetColumnsDrop[0].count > 0) {
+    const dropEnabledAssetColumn = `ALTER TABLE asset DROP COLUMN isEnabled`
+    logger.writeInfo('mysql', 'migration', { status: 'running', name: migrationName, statement: dropEnabledAssetColumn })
+    await connection.query(dropEnabledAssetColumn)
+  }
 
-    logger.writeInfo('mysql', 'migration', { status: 'running', name: migrationName, statement: dropIndex })
-    await connection.query(dropIndex)
+  // Drop old virtual isEnabled column on 'collection' if it exists
+  const [collectionColumnsDrop] = await connection.query(`
+    SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'collection'
+      AND COLUMN_NAME = 'isEnabled'`)
+  if (collectionColumnsDrop[0].count > 0) {
+    const dropEnabledCollectionColumn = `ALTER TABLE collection DROP COLUMN isEnabled`
+    logger.writeInfo('mysql', 'migration', { status: 'running', name: migrationName, statement: dropEnabledCollectionColumn })
+    await connection.query(dropEnabledCollectionColumn)
+  }
 
-    logger.writeInfo('mysql', 'migration', { status: 'running', name: migrationName, statement: dropCollection })
-    await connection.query(dropCollection)
+
+  // Check if 'isEnabled' exists on 'asset'
+  const [assetColumns] = await connection.query(`
+  SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'asset'
+    AND COLUMN_NAME = 'isEnabled'`)
+    
+  // If it does not exist, create the new stored column
+  if (assetColumns[0].count === 0) {
+    const createEnabledAssetColumn = `
+      ALTER TABLE asset ADD COLUMN isEnabled
+      TINYINT GENERATED ALWAYS AS (CASE WHEN state = 'enabled' THEN 1 ELSE NULL END) STORED`
+    logger.writeInfo('mysql', 'migration', { status: 'running', name: migrationName, statement: createEnabledAssetColumn })
+    await connection.query(createEnabledAssetColumn)
+  }
+
+  // Check if 'isEnabled' exists on 'collection'
+  const [collectionColumns] = await connection.query(`
+    SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'collection'
+      AND COLUMN_NAME = 'isEnabled'`)
+  // If it does not exist, create the new stored column
+  if (collectionColumns[0].count === 0) {
+    const createEnabledCollectionColumn = `
+      ALTER TABLE collection ADD COLUMN isEnabled
+      TINYINT GENERATED ALWAYS AS (CASE WHEN state = 'enabled' THEN 1 ELSE NULL END) STORED`
+    logger.writeInfo('mysql', 'migration', { status: 'running', name: migrationName, statement: createEnabledCollectionColumn })
+    await connection.query(createEnabledCollectionColumn)
+  }
+
+  // recreate indexes for new stored isEnabled column
+  const [assetIndexes] = await connection.query(`
+  SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'asset'
+    AND INDEX_NAME = 'INDEX_NAME_COLLECTION_ENABLED'`)
+    // If the index does not exist, create it
+  if (assetIndexes[0].count === 0) {
+    const createEnabledAssetIndex = `ALTER TABLE asset ADD UNIQUE INDEX INDEX_NAME_COLLECTION_ENABLED (name, collectionId, isEnabled)`
+    logger.writeInfo('mysql', 'migration', { status: 'running', name: migrationName, statement: createEnabledAssetIndex })
+    await connection.query(createEnabledAssetIndex)
+  }
+
+  
+  const [collectionIndexes] = await connection.query(`
+  SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'collection'
+    AND INDEX_NAME = 'index2'`)
+  if (collectionIndexes[0].count === 0) {
+    const createEnabledCollectionIndex = `ALTER TABLE collection ADD UNIQUE INDEX index2 (name, isEnabled)`
+    logger.writeInfo('mysql', 'migration', { status: 'running', name: migrationName, statement: createEnabledCollectionIndex })
+    await connection.query(createEnabledCollectionIndex)
   }
 
   // create or replace new views
