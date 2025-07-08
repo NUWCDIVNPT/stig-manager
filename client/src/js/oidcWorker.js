@@ -423,8 +423,16 @@ function validateClaims(payload) {
 }
 
 function validateAudience(payload) {
-  if (ENV.audienceValue && payload.aud !== ENV.audienceValue) {
-    throw new Error(`Invalid audience in access token payload: ${payload.aud}, expected: ${ENV.audienceValue}`)
+  if (Array.isArray(payload.aud)) {
+    if (!payload.aud.includes(ENV.audienceValue)) {
+      throw new Error(`Invalid audience in access token payload: ${payload.aud.join(', ')}, expected: ${ENV.audienceValue}`)
+    }
+  } else if (typeof payload.aud === 'string') {
+    if (payload.aud !== ENV.audienceValue) {
+      throw new Error(`Invalid audience in access token payload: ${payload.aud}, expected: ${ENV.audienceValue}`)
+    }
+  } else {
+    throw new Error(`Invalid audience type in access token payload: ${typeof payload.aud}, expected string or array`)
   }
   return true
 }
