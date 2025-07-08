@@ -60,9 +60,10 @@ jobs:
           TAG=$(git describe --tags --abbrev=0)
           TAGS=${DOCKER_IMAGE}:latest
           [[ ${{ github.ref_type }} == "tag" ]] && TAGS="$TAGS,${DOCKER_IMAGE}:${{ github.ref_name }}" 
+          [[ ${{ github.event_name }} == "workflow_dispatch" && "${BRANCH}" != "main" ]] && TAGS="${DOCKER_IMAGE}:${BRANCH}"
           echo "version=${TAG}" >> $GITHUB_OUTPUT
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
-          echo "tab=${TAG}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
           echo "describe=${DESCRIBE}" >> $GITHUB_OUTPUT
@@ -89,7 +90,6 @@ jobs:
             COMMIT_DESCRIBE=${{ steps.prep.outputs.describe }}
           tags: ${{ steps.prep.outputs.tags }}
           labels: |
-            stig-manager.last-migration.mysql=1.2.1
             org.opencontainers.image.title=${{ fromJson(steps.repo.outputs.result).name }}
             org.opencontainers.image.description=${{ fromJson(steps.repo.outputs.result).description }}
             org.opencontainers.image.url=${{ fromJson(steps.repo.outputs.result).html_url }}
@@ -108,89 +108,3 @@ jobs:
           repository: ${{ env.DOCKERHUB_REPOSITORY }}
           short-description: An API and Web client for managing STIG assessments.
           readme-filepath: ./docs/the-project/DockerHub_Readme.md
-  build-push-ironbank:
-    name: Build and push from Iron Bank base
-    needs:
-      - build-client
-      - build-docs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
-      - name: Download client distribution
-        uses: actions/download-artifact@v4
-        with:
-          name: client-dist
-          path: ./client/dist
-      - name: Download documentation
-        uses: actions/download-artifact@v4
-        with:
-          name: docs-build
-          path: ./docs/_build/html
-      - name: Get repository metadata
-        id: repo
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const repo = await github.rest.repos.get(context.repo)
-            return repo.data
-      - name: Prepare variables
-        id: prep
-        run: |
-          DOCKER_IMAGE=${{ env.DOCKERHUB_REPOSITORY }}
-          BRANCH=$(git symbolic-ref --short HEAD)
-          SHA=$(git rev-parse --short=10 HEAD)
-          DESCRIBE=$(git describe --tags)
-          TAG=$(git describe --tags --abbrev=0)
-          TAGS="${DOCKER_IMAGE}:latest-ironbank"
-          [[ ${{ github.ref_type }} == "tag" ]] && TAGS="$TAGS,${DOCKER_IMAGE}:${{ github.ref_name }}-ironbank" 
-          echo "version=${TAG}" >> $GITHUB_OUTPUT
-          echo "sha=${SHA}" >> $GITHUB_OUTPUT
-          echo "tab=${TAG}" >> $GITHUB_OUTPUT
-          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
-          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
-          echo "describe=${DESCRIBE}" >> $GITHUB_OUTPUT
-          echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4b4e9c3e2d4531116a6f8ba8e71fc6e2cb6e6c8c # pin@v2
-      - name: Login to DockerHub
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # pin@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_ORG_OWNER_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_ORG_OWNER_PW }}
-      - name: Login to Iron Bank
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # pin@v2
-        with:
-          registry: registry1.dso.mil
-          username: ${{ secrets.IRONBANK_USERNAME }}
-          password: ${{ secrets.IRONBANK_CLI_TOKEN }}
-      - name: Build and push
-        id: docker_build
-        uses: docker/build-push-action@1104d471370f9806843c095c1db02b5a90c5f8b6 # pin@v3
-        with:
-          context: .
-          platforms: linux/amd64
-          file: ./Dockerfile
-          push: true
-          build-args: |
-            BASE_IMAGE=registry1.dso.mil/ironbank/opensource/nodejs/nodejs18:18.18
-            COMMIT_BRANCH=${{ steps.prep.outputs.branch }}
-            COMMIT_SHA=${{ steps.prep.outputs.sha }}
-            COMMIT_TAG=${{ steps.prep.outputs.tag }}
-            COMMIT_DESCRIBE=${{ steps.prep.outputs.describe }}
-          tags: ${{ steps.prep.outputs.tags }}
-          labels: |
-            stig-manager.last-migration.mysql=1.2.1
-            org.opencontainers.image.title=${{ fromJson(steps.repo.outputs.result).name }}
-            org.opencontainers.image.description=${{ fromJson(steps.repo.outputs.result).description }}
-            org.opencontainers.image.url=${{ fromJson(steps.repo.outputs.result).html_url }}
-            org.opencontainers.image.source=${{ fromJson(steps.repo.outputs.result).clone_url }}
-            org.opencontainers.image.version=${{ steps.prep.outputs.version }}
-            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
-            org.opencontainers.image.revision=${{ steps.prep.outputs.describe }}
-            org.opencontainers.image.licenses=${{ fromJson(steps.repo.outputs.result).license.spdx_id }}
-      - name: Image digest
-        run: echo ${{ steps.docker_build.outputs.digest }}
