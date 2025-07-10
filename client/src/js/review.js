@@ -1248,34 +1248,7 @@ async function addReview( params ) {
       listeners: {
         tabchange: async function (tabs, tab) {
           if (tab.id === 'other-tab' + idAppend) {
-            const selected = groupGrid.getSelectionModel().getSelected()
-            // if no rule is selected, clear the otherGrid store
-            if (!selected) {
-              otherGrid.getStore().removeAll()
-              return
-            }
-            
-            // get all reviews for that ruleId
-            try {
-              otherGrid.getEl().mask()
-              const reviews = await Ext.Ajax.requestPromise({
-                responseType: 'json', 
-                url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews`,
-                method: 'GET',
-                params: {
-                  rules: 'all',
-                  ruleId: selected.data.ruleId
-                }
-              })
-              // remove the current asset being shown 
-              const otherReviews = reviews.filter(r => r.assetId != leaf.assetId)
-              otherGrid.getStore().loadData(otherReviews)
-            } catch (e) {
-              otherGrid.getStore().removeAll()
-              SM.Error.handleError(e)
-            } finally {
-              otherGrid.getEl().unmask()
-            }
+            await loadOtherGridData()
           }
         }
       },
@@ -1306,7 +1279,43 @@ async function addReview( params ) {
         }
       ]
     }]
-  });
+  })
+
+
+  async function loadOtherGridData() {
+    const selected = groupGrid.getSelectionModel().getSelected()
+    if (!selected) {
+      otherGrid.getStore().removeAll()
+      return
+    }
+    try {
+      otherGrid.getEl().mask()
+      const reviews = await Ext.Ajax.requestPromise({
+        responseType: 'json',
+        url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews`,
+        method: 'GET',
+        params: {
+          rules: 'all',
+          ruleId: selected.data.ruleId
+        }
+      })
+      const otherReviews = reviews.filter(r => r.assetId != leaf.assetId)
+      otherGrid.getStore().loadData(otherReviews)
+    } catch (e) {
+      otherGrid.getStore().removeAll()
+      SM.Error.handleError(e)
+    } finally {
+      otherGrid.getEl().unmask()
+    }
+  }
+
+
+  groupGrid.getSelectionModel().on('rowselect', async function () {
+    const tabs = Ext.getCmp('resources-tabs' + idAppend)
+    if (tabs.getActiveTab().id === 'other-tab' + idAppend) {
+      await loadOtherGridData()
+    }
+  })
 
   /******************************************************/
   // END Resources panel
