@@ -1736,7 +1736,7 @@ SM.CollectionPanel.AggLabelPanel = Ext.extend(Ext.Panel, {
       }
       let assets = await(await fetch(url, fetchOptions)).json()
       
-      if (_this.baseParams.labelId) {
+      if (_this.baseParams.labelId && _this.baseParams.labelId.length > 0) {
         const labelIds = _this.baseParams.labelId
         const labelMatch = _this.baseParams.labelMatch || 'any'
         

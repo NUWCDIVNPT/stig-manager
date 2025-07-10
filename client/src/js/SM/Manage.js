@@ -2504,6 +2504,9 @@ SM.Manage.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
       this.labelMatch = item.labelMatchMode
       localStorage.setItem('labelFilterMode', this.labelMatch)
       this.updateMatchModeItems()
+      // Apply the filter immediately with the new mode
+      const labelIds = this.getCheckedLabelIds()
+      this.fireEvent('applied', labelIds, this.labelMatch)
     }
   },
   getCheckedLabelIds: function (excludeUnused = false) {

@@ -106,6 +106,7 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
               // the record data is an Array of values
                 if (Array.isArray(condition)) {
                   if (condition.includes('') && cellValue.length === 0) return true
+                  if (condition.length === 0) return true // No filter applied
                   
                   // Check if this is a label filter and use the stored label match mode
                   const labelMatchMode = localStorage.getItem('labelFilterMode') || 'any'
