@@ -106,7 +106,16 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
               // the record data is an Array of values
                 if (Array.isArray(condition)) {
                   if (condition.includes('') && cellValue.length === 0) return true
-                  return cellValue.some( v => condition.includes(v))
+                  
+                  // Check if this is a label filter and use the stored label match mode
+                  const labelMatchMode = localStorage.getItem('labelFilterMode') || 'any'
+                  if (dataIndex === 'labelIds' && labelMatchMode === 'all') {
+                    // AND logic: cellValue must contain ALL values in condition
+                    return condition.every(v => cellValue.includes(v))
+                  } else {
+                    // OR logic: cellValue must contain ANY value in condition (default)
+                    return cellValue.some( v => condition.includes(v))
+                  }
                 }
               }
   

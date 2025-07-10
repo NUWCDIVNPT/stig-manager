@@ -1737,7 +1737,19 @@ SM.CollectionPanel.AggLabelPanel = Ext.extend(Ext.Panel, {
       let assets = await(await fetch(url, fetchOptions)).json()
       
       if (_this.baseParams.labelId) {
-        assets = assets.filter(asset => asset.labels.some(label => _this.baseParams.labelId.includes(label.labelId)) || (_this.baseParams.labelMatch === 'null' ? asset.labels.length === 0 : false))
+        const labelIds = _this.baseParams.labelId
+        const labelMatch = _this.baseParams.labelMatch || 'any'
+        
+        if (labelMatch === 'all') {
+          // AND logic: asset must have ALL selected labels
+          assets = assets.filter(asset => {
+            const assetLabelIds = asset.labels.map(label => label.labelId)
+            return labelIds.every(labelId => assetLabelIds.includes(labelId))
+          })
+        } else {
+          // OR logic: asset must have ANY selected label (default behavior)
+          assets = assets.filter(asset => asset.labels.some(label => labelIds.includes(label.labelId)) || (_this.baseParams.labelMatch === 'null' ? asset.labels.length === 0 : false))
+        }
       }
       aggAssetGrid.store.loadData(assets)
     }
@@ -1839,6 +1851,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
     const gState = {}
 
     gState.labelIds = initialLabelIds
+    gState.labelMatch = localStorage.getItem('labelFilterMode') || 'any'
     gState.filterableLabels = []
 
     const UPDATE_DATA_DELAY = 300000
@@ -1852,8 +1865,15 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
       showHeader: true,
       showApply: true,
       listeners: {
-        applied: function (labelIds) {
-          SM.Dispatcher.fireEvent('labelfilter', collectionId, labelIds)
+        applied: function (labelIds, labelMatch) {
+          SM.Dispatcher.fireEvent('labelfilter', collectionId, labelIds, labelMatch)
+        },
+        itemcheckchanged: function (item, checked) {
+          // Refresh column filters when label filter mode changes
+          if (item.labelMatchMode) {
+            // Force refresh of any active column filters
+            this.fireEvent('labelfilterModeChanged', item.labelMatchMode)
+          }
         }
       }
     })
@@ -1966,7 +1986,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
       reloadBtnHandler
     })
 
-    setCurrentBaseParams(initialLabelIds)
+    setCurrentBaseParams(initialLabelIds, gState.labelMatch)
 
     const aggTabPanel = new Ext.TabPanel({
       activeTab: 0,
@@ -2051,15 +2071,21 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
 
     // functions
 
-    function setCurrentBaseParams(labelIds) {
+    function setCurrentBaseParams(labelIds, labelMatch) {
       const params = {}
+      let hasNullLabel = false
       for (let x = 0, length = labelIds.length; x < length; x++) {
         if (labelIds[x] === null) {
           params.labelMatch = 'null'
+          hasNullLabel = true
         }
         else {
           ; (params.labelId ??= []).push(labelIds[x])
         }
+      }
+      // Add labelMatch parameter if we have real labelIds (but not when only filtering for null labels)
+      if (params.labelId && params.labelId.length > 0 && labelMatch) {
+        params.labelMatch = labelMatch
       }
       aggAssetPanel?.updateBaseParams(params)
       aggStigPanel?.updateBaseParams(params)
@@ -2082,7 +2108,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
         // remove from gState.labelIds any missing labelIds
         gState.labelIds = gState.labelIds.filter(labelId => filterableLabelIds.includes(labelId))
         // reset base parameters
-        setCurrentBaseParams(gState.labelIds)
+        setCurrentBaseParams(gState.labelIds, gState.labelMatch)
         labelsMenu.refreshItems(gState.filterableLabels)
 
         return gState.filterableLabels
@@ -2103,7 +2129,7 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
     function reloadBtnHandler() { updateData({event: 'reload'}) }
 
     // handle change to label filters in NavTree
-    async function onLabelFilter(srcCollectionId, srcLabelIds) {
+    async function onLabelFilter(srcCollectionId, srcLabelIds, srcLabelMatch) {
       try {
         if (srcCollectionId === collectionId) {
           if (gState.filterableLabels.every( i => srcLabelIds.includes(i.labelId) )) {
@@ -2112,7 +2138,8 @@ SM.CollectionPanel.showCollectionTab = async function (options) {
           else {
             gState.labelIds = srcLabelIds
           }
-          gState.baseParams = setCurrentBaseParams(gState.labelIds)
+          gState.labelMatch = srcLabelMatch || 'any'
+          gState.baseParams = setCurrentBaseParams(gState.labelIds, gState.labelMatch)
           await overviewPanel.updateData()
           updateOverviewTitle()
           const activePanel = aggTabPanel.getActiveTab()
