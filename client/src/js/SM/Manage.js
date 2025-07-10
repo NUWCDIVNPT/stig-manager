@@ -2616,7 +2616,8 @@ SM.Manage.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
     }
     
     labels.sort((a, b) => {
-      if (a.name === null) return -1
+      if (a.labelId === null) return -1
+      if (b.labelId === null) return 1
       return a.name.localeCompare(b.name)
     })
     
