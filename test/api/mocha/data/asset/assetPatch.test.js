@@ -165,6 +165,13 @@ describe('PATCH - Asset', function () {
           })
           expect(res.status).to.eql(403)
         })
+
+        it("should 403, asset is deleted", async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.deletedAsset.assetId}`, 'PATCH', iteration.token, {
+              "description": "scrap",
+          })
+          expect(res.status).to.eql(403)
+        })
       })
 
       describe(`patchAssetMetadata - /assets/{assetId}/metadata`, function () {
@@ -203,8 +210,16 @@ describe('PATCH - Asset', function () {
               "testkey": "poc2Patched"
             })
         })
+
+        it("should 403, asset is deleted", async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.deletedAsset.assetId}`, 'PATCH', iteration.token, {
+              "description": "scrap",
+          })
+          expect(res.status).to.eql(403)
+        })
+
       })
-      
+
       describe(`patchAssets - /assets`, function () {
 
         let asset1 = null

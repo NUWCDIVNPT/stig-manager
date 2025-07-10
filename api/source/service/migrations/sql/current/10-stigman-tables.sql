@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.41, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.42, for Linux (x86_64)
 --
 -- Host: 127.0.0.1    Database: stigman
 -- ------------------------------------------------------
@@ -41,7 +41,7 @@ CREATE TABLE `asset` (
   `state` enum('enabled','disabled') NOT NULL,
   `stateDate` datetime DEFAULT NULL,
   `stateUserId` int DEFAULT NULL,
-  `isEnabled` tinyint GENERATED ALWAYS AS ((case when (`state` = _utf8mb4'enabled') then 1 else NULL end)) VIRTUAL,
+  `isEnabled` tinyint GENERATED ALWAYS AS ((case when (`state` = _utf8mb4'enabled') then 1 else NULL end)) STORED,
   PRIMARY KEY (`assetId`),
   UNIQUE KEY `INDEX_NAME_COLLECTION_ENABLED` (`name`,`collectionId`,`isEnabled`),
   KEY `INDEX_COMPUTING` (`noncomputing`),
@@ -118,8 +118,8 @@ CREATE TABLE `collection` (
   `createdUserId` int DEFAULT NULL,
   `stateDate` datetime DEFAULT NULL,
   `stateUserId` int DEFAULT NULL,
-  `isEnabled` tinyint GENERATED ALWAYS AS ((case when (`state` = _utf8mb4'enabled') then 1 else NULL end)) VIRTUAL,
   `isNameUnavailable` tinyint GENERATED ALWAYS AS ((case when ((`state` = _utf8mb4'cloning') or (`state` = _utf8mb4'enabled')) then 1 else NULL end)) VIRTUAL,
+  `isEnabled` tinyint GENERATED ALWAYS AS ((case when (`state` = _utf8mb4'enabled') then 1 else NULL end)) STORED,
   PRIMARY KEY (`collectionId`),
   UNIQUE KEY `index2` (`name`,`isEnabled`),
   UNIQUE KEY `index3` (`name`,`isNameUnavailable`),
@@ -277,6 +277,47 @@ CREATE TABLE `default_rev` (
   KEY `index4` (`revId`),
   CONSTRAINT `fk_default_rev_2` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Temporary view structure for view `enabled_asset`
+--
+
+DROP TABLE IF EXISTS `enabled_asset`;
+/*!50001 DROP VIEW IF EXISTS `enabled_asset`*/;
+/*!50001 CREATE VIEW `enabled_asset` AS SELECT 
+ 1 AS `assetId`,
+ 1 AS `name`,
+ 1 AS `fqdn`,
+ 1 AS `collectionId`,
+ 1 AS `ip`,
+ 1 AS `mac`,
+ 1 AS `description`,
+ 1 AS `noncomputing`,
+ 1 AS `metadata`,
+ 1 AS `state`,
+ 1 AS `stateDate`,
+ 1 AS `stateUserId`,
+ 1 AS `isEnabled`*/;
+
+--
+-- Temporary view structure for view `enabled_collection`
+--
+
+DROP TABLE IF EXISTS `enabled_collection`;
+/*!50001 DROP VIEW IF EXISTS `enabled_collection`*/;
+/*!50001 CREATE VIEW `enabled_collection` AS SELECT 
+ 1 AS `collectionId`,
+ 1 AS `name`,
+ 1 AS `description`,
+ 1 AS `settings`,
+ 1 AS `metadata`,
+ 1 AS `created`,
+ 1 AS `state`,
+ 1 AS `createdUserId`,
+ 1 AS `stateDate`,
+ 1 AS `stateUserId`,
+ 1 AS `isNameUnavailable`,
+ 1 AS `isEnabled`*/;
 
 --
 -- Table structure for table `fix_text`
@@ -670,6 +711,28 @@ DROP TABLE IF EXISTS `v_latest_rev`;
  1 AS `revisionStr`*/;
 
 --
+-- Final view structure for view `enabled_asset`
+--
+
+/*!50001 DROP VIEW IF EXISTS `enabled_asset`*/;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50001 VIEW `enabled_asset` AS select `asset`.`assetId` AS `assetId`,`asset`.`name` AS `name`,`asset`.`fqdn` AS `fqdn`,`asset`.`collectionId` AS `collectionId`,`asset`.`ip` AS `ip`,`asset`.`mac` AS `mac`,`asset`.`description` AS `description`,`asset`.`noncomputing` AS `noncomputing`,`asset`.`metadata` AS `metadata`,`asset`.`state` AS `state`,`asset`.`stateDate` AS `stateDate`,`asset`.`stateUserId` AS `stateUserId`,`asset`.`isEnabled` AS `isEnabled` from `asset` where (`asset`.`state` = 'enabled') */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `enabled_collection`
+--
+
+/*!50001 DROP VIEW IF EXISTS `enabled_collection`*/;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50001 VIEW `enabled_collection` AS select `collection`.`collectionId` AS `collectionId`,`collection`.`name` AS `name`,`collection`.`description` AS `description`,`collection`.`settings` AS `settings`,`collection`.`metadata` AS `metadata`,`collection`.`created` AS `created`,`collection`.`state` AS `state`,`collection`.`createdUserId` AS `createdUserId`,`collection`.`stateDate` AS `stateDate`,`collection`.`stateUserId` AS `stateUserId`,`collection`.`isNameUnavailable` AS `isNameUnavailable`,`collection`.`isEnabled` AS `isEnabled` from `collection` where (`collection`.`state` = 'enabled') */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
 -- Final view structure for view `v_current_rev`
 --
 
@@ -709,4 +772,4 @@ DROP TABLE IF EXISTS `v_latest_rev`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-23 12:26:43
+-- Dump completed on 2025-07-08 15:08:22
