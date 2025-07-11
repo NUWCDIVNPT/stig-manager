@@ -170,7 +170,8 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
       const hmenu = this.hmenu
       hmenu.filterItems = {
         stringItems: [],
-        selectItems: []
+        selectItems: [],
+        labelModeItems: []
       }
       // disables keyboard navigation, needed to support left-right arrow in search input
       hmenu.keyNav = new Ext.KeyNav(document.body, {disabled: true})
@@ -200,6 +201,12 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
           hmenu.remove(selectAllItem)
         }
         hmenu.filterItems.selectItems = []
+        
+        // Remove label mode items
+        for (const labelModeItem of hmenu.filterItems.labelModeItems) {
+          hmenu.remove(labelModeItem)
+        }
+        hmenu.filterItems.labelModeItems = []
         
         // iterate the dynamic columns and create menu items, restoring saved values if not loading
         for (const col of dynamicColumns) {
@@ -235,8 +242,8 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
           if (col.dataIndex === 'labelIds') {
             const currentMode = localStorage.getItem('labelFilterMode') || 'any'
             
-            hmenu.addItem('-')
-            hmenu.addItem({
+            const sep1 = hmenu.addItem('-')
+            const matchLabel = hmenu.addItem({
               hideOnClick: false,
               activeClass: '',
               text: '<b>Match:</b>',
@@ -254,7 +261,7 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
                 checkchange: function (item, checked) {
                   if (checked) {
                     localStorage.setItem('labelFilterMode', 'any')
-                    _this.onFilterChange(item, 'any')
+                    _this.fireEvent('filterschanged', _this)
                   }
                 }
               }
@@ -271,13 +278,16 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
                 checkchange: function (item, checked) {
                   if (checked) {
                     localStorage.setItem('labelFilterMode', 'all')
-                    _this.onFilterChange(item, 'all')
+                    _this.fireEvent('filterschanged', _this)
                   }
                 }
               }
             })
             
-            hmenu.addItem('-')
+            const sep2 = hmenu.addItem('-')
+            
+            // Track these items for cleanup
+            hmenu.filterItems.labelModeItems.push(sep1, matchLabel, anyModeItem, allModeItem, sep2)
           }
 
           // add the Select All item
