@@ -245,12 +245,20 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
           if (col.dataIndex === 'labelIds') {
             const currentMode = localStorage.getItem('labelFilterMode') || 'any'
             
-            const sep1 = hmenu.addItem('-')
+            const sep1 = hmenu.addItem({
+              text: '-',
+              filter: {
+                dataIndex: col.dataIndex
+              }
+            })
             const matchLabel = hmenu.addItem({
               hideOnClick: false,
               activeClass: '',
               text: '<b>Match:</b>',
-              cls: 'sm-menuitem-filter-label'
+              cls: 'sm-menuitem-filter-label',
+              filter: {
+                dataIndex: col.dataIndex
+              }
             })
             
             const anyModeItem = hmenu.addItem({
@@ -260,6 +268,9 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
               checked: currentMode === 'any',
               group: 'labelFilterMode_' + col.dataIndex,
               labelMatchMode: 'any',
+              filter: {
+                dataIndex: col.dataIndex
+              },
               listeners: {
                 checkchange: function (item, checked) {
                   if (checked) {
@@ -277,6 +288,9 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
               checked: currentMode === 'all',
               group: 'labelFilterMode_' + col.dataIndex,
               labelMatchMode: 'all',
+              filter: {
+                dataIndex: col.dataIndex
+              },
               listeners: {
                 checkchange: function (item, checked) {
                   if (checked) {
@@ -294,6 +308,9 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
               checked: currentMode === 'exclude',
               group: 'labelFilterMode_' + col.dataIndex,
               labelMatchMode: 'exclude',
+              filter: {
+                dataIndex: col.dataIndex
+              },
               listeners: {
                 checkchange: function (item, checked) {
                   if (checked) {
@@ -304,7 +321,12 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
               }
             })
             
-            const sep2 = hmenu.addItem('-')
+            const sep2 = hmenu.addItem({
+              text: '-',
+              filter: {
+                dataIndex: col.dataIndex
+              }
+            })
             
             // Track these items for cleanup
             hmenu.filterItems.labelModeItems.push(sep1, matchLabel, anyModeItem, allModeItem, excludeModeItem, sep2)
