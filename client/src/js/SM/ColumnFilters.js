@@ -113,6 +113,9 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
                   if (dataIndex === 'labelIds' && labelMatchMode === 'all') {
                     // AND logic: cellValue must contain ALL values in condition
                     return condition.every(v => cellValue.includes(v))
+                  } else if (dataIndex === 'labelIds' && labelMatchMode === 'exclude') {
+                    // EXCLUDE logic: cellValue must contain NONE of the values in condition
+                    return !cellValue.some(v => condition.includes(v))
                   } else {
                     // OR logic: cellValue must contain ANY value in condition (default)
                     return cellValue.some( v => condition.includes(v))
@@ -284,10 +287,27 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
               }
             })
             
+            const excludeModeItem = hmenu.addItem({
+              text: 'EXCLUDE selected labels',
+              xtype: 'menucheckitem',
+              hideOnClick: false,
+              checked: currentMode === 'exclude',
+              group: 'labelFilterMode_' + col.dataIndex,
+              labelMatchMode: 'exclude',
+              listeners: {
+                checkchange: function (item, checked) {
+                  if (checked) {
+                    localStorage.setItem('labelFilterMode', 'exclude')
+                    _this.fireEvent('filterschanged', _this)
+                  }
+                }
+              }
+            })
+            
             const sep2 = hmenu.addItem('-')
             
             // Track these items for cleanup
-            hmenu.filterItems.labelModeItems.push(sep1, matchLabel, anyModeItem, allModeItem, sep2)
+            hmenu.filterItems.labelModeItems.push(sep1, matchLabel, anyModeItem, allModeItem, excludeModeItem, sep2)
           }
 
           // add the Select All item
