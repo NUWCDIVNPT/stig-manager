@@ -231,6 +231,55 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
               }
             })
           }
+          // add filter mode selection for labelIds columns
+          if (col.dataIndex === 'labelIds') {
+            const currentMode = localStorage.getItem('labelFilterMode') || 'any'
+            
+            hmenu.addItem('-')
+            hmenu.addItem({
+              hideOnClick: false,
+              activeClass: '',
+              text: '<b>Match:</b>',
+              cls: 'sm-menuitem-filter-label'
+            })
+            
+            const anyModeItem = hmenu.addItem({
+              text: 'ANY selected labels',
+              xtype: 'menucheckitem',
+              hideOnClick: false,
+              checked: currentMode === 'any',
+              group: 'labelFilterMode_' + col.dataIndex,
+              labelMatchMode: 'any',
+              listeners: {
+                checkchange: function (item, checked) {
+                  if (checked) {
+                    localStorage.setItem('labelFilterMode', 'any')
+                    _this.onFilterChange(item, 'any')
+                  }
+                }
+              }
+            })
+            
+            const allModeItem = hmenu.addItem({
+              text: 'ALL selected labels',
+              xtype: 'menucheckitem',
+              hideOnClick: false,
+              checked: currentMode === 'all',
+              group: 'labelFilterMode_' + col.dataIndex,
+              labelMatchMode: 'all',
+              listeners: {
+                checkchange: function (item, checked) {
+                  if (checked) {
+                    localStorage.setItem('labelFilterMode', 'all')
+                    _this.onFilterChange(item, 'all')
+                  }
+                }
+              }
+            })
+            
+            hmenu.addItem('-')
+          }
+
           // add the Select All item
           const selectAllItem = hmenu.addItem({
             text: '<i>(Select All)</i>',
