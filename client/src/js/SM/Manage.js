@@ -2484,7 +2484,6 @@ SM.Manage.Collection.LabelsGrid = Ext.extend(Ext.grid.GridPanel, {
 SM.Manage.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
   initComponent: function () {
     this.addEvents('applied')
-    this.labelMatch = localStorage.getItem('labelFilterMode') || 'any'
     const config = {
       items: [],
       listeners: {
@@ -2498,15 +2497,7 @@ SM.Manage.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
   onItemClick: function (item, e) {
     if (item.hideOnClick) { // only the Apply item
       const labelIds = this.getCheckedLabelIds()
-      this.fireEvent('applied', labelIds, this.labelMatch)
-    }
-    if (item.labelMatchMode) {
-      this.labelMatch = item.labelMatchMode
-      localStorage.setItem('labelFilterMode', this.labelMatch)
-      this.updateMatchModeItems()
-      // Apply the filter immediately with the new mode
-      const labelIds = this.getCheckedLabelIds()
-      this.fireEvent('applied', labelIds, this.labelMatch)
+      this.fireEvent('applied', labelIds)
     }
   },
   getCheckedLabelIds: function (excludeUnused = false) {
@@ -2544,24 +2535,6 @@ SM.Manage.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
       iconCls: 'sm-menuitem-filter-icon',
       cls: 'sm-menuitem-filter-label'
     }
-  },
-
-  getMatchModeItemConfig: function (mode, text) {
-    return {
-      xtype: 'menucheckitem',
-      hideOnClick: false,
-      text,
-      labelMatchMode: mode,
-      checked: this.labelMatch === mode,
-      group: 'labelMatchMode'
-    }
-  },
-
-  updateMatchModeItems: function () {
-    const anyItem = this.find('labelMatchMode', 'any')[0]
-    const allItem = this.find('labelMatchMode', 'all')[0]
-    if (anyItem) anyItem.setChecked(this.labelMatch === 'any', true)
-    if (allItem) allItem.setChecked(this.labelMatch === 'all', true)
   },
 
   getActionItemConfig: function (text = '<b>Apply</b>') {
@@ -2630,16 +2603,6 @@ SM.Manage.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
       }
     }
     if (this.showApply) {
-      this.addItem('-')
-      // Add match mode options
-      this.addItem({
-        hideOnClick: false,
-        activeClass: '',
-        text: '<b>Match:</b>',
-        cls: 'sm-menuitem-filter-label'
-      })
-      this.addItem(this.getMatchModeItemConfig('any', 'Match ANY selected labels'))
-      this.addItem(this.getMatchModeItemConfig('all', 'Match ALL selected labels'))
       this.addItem('-')
       this.addItem(this.getActionItemConfig())
     }
