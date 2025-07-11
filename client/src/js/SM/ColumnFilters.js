@@ -246,7 +246,7 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
             const currentMode = localStorage.getItem('labelFilterMode') || 'any'
             
             const sep1 = hmenu.addItem({
-              text: '-',
+              xtype: 'menuseparator',
               filter: {
                 dataIndex: col.dataIndex
               }
@@ -322,7 +322,7 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
             })
             
             const sep2 = hmenu.addItem({
-              text: '-',
+              xtype: 'menuseparator',
               filter: {
                 dataIndex: col.dataIndex
               }
