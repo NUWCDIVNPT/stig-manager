@@ -106,7 +106,20 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
               // the record data is an Array of values
                 if (Array.isArray(condition)) {
                   if (condition.includes('') && cellValue.length === 0) return true
-                  return cellValue.some( v => condition.includes(v))
+                  if (condition.length === 0) return true // No filter applied
+                  
+                  // Check if this is a label filter and use the stored label match mode
+                  const labelMatchMode = localStorage.getItem('labelFilterMode') || 'any'
+                  if (dataIndex === 'labelIds' && labelMatchMode === 'all') {
+                    // AND logic: cellValue must contain ALL values in condition
+                    return condition.every(v => cellValue.includes(v))
+                  } else if (dataIndex === 'labelIds' && labelMatchMode === 'exclude') {
+                    // EXCLUDE logic: cellValue must contain NONE of the values in condition
+                    return !cellValue.some(v => condition.includes(v))
+                  } else {
+                    // OR logic: cellValue must contain ANY value in condition (default)
+                    return cellValue.some( v => condition.includes(v))
+                  }
                 }
               }
   
@@ -160,7 +173,8 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
       const hmenu = this.hmenu
       hmenu.filterItems = {
         stringItems: [],
-        selectItems: []
+        selectItems: [],
+        labelModeItems: []
       }
       // disables keyboard navigation, needed to support left-right arrow in search input
       hmenu.keyNav = new Ext.KeyNav(document.body, {disabled: true})
@@ -190,6 +204,12 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
           hmenu.remove(selectAllItem)
         }
         hmenu.filterItems.selectItems = []
+        
+        // Remove label mode items
+        for (const labelModeItem of hmenu.filterItems.labelModeItems) {
+          hmenu.remove(labelModeItem)
+        }
+        hmenu.filterItems.labelModeItems = []
         
         // iterate the dynamic columns and create menu items, restoring saved values if not loading
         for (const col of dynamicColumns) {
@@ -221,6 +241,97 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
               }
             })
           }
+          // add filter mode selection for labelIds columns
+          if (col.dataIndex === 'labelIds') {
+            const currentMode = localStorage.getItem('labelFilterMode') || 'any'
+            
+            const sep1 = hmenu.addItem({
+              xtype: 'menuseparator',
+              filter: {
+                dataIndex: col.dataIndex
+              }
+            })
+            const matchLabel = hmenu.addItem({
+              hideOnClick: false,
+              activeClass: '',
+              text: '<b>Match:</b>',
+              cls: 'sm-menuitem-filter-label',
+              filter: {
+                dataIndex: col.dataIndex
+              }
+            })
+            
+            const anyModeItem = hmenu.addItem({
+              text: 'ANY selected labels',
+              xtype: 'menucheckitem',
+              hideOnClick: false,
+              checked: currentMode === 'any',
+              group: 'labelFilterMode_' + col.dataIndex,
+              labelMatchMode: 'any',
+              filter: {
+                dataIndex: col.dataIndex
+              },
+              listeners: {
+                checkchange: function (item, checked) {
+                  if (checked) {
+                    localStorage.setItem('labelFilterMode', 'any')
+                    _this.fireEvent('filterschanged', _this)
+                  }
+                }
+              }
+            })
+            
+            const allModeItem = hmenu.addItem({
+              text: 'ALL selected labels',
+              xtype: 'menucheckitem',
+              hideOnClick: false,
+              checked: currentMode === 'all',
+              group: 'labelFilterMode_' + col.dataIndex,
+              labelMatchMode: 'all',
+              filter: {
+                dataIndex: col.dataIndex
+              },
+              listeners: {
+                checkchange: function (item, checked) {
+                  if (checked) {
+                    localStorage.setItem('labelFilterMode', 'all')
+                    _this.fireEvent('filterschanged', _this)
+                  }
+                }
+              }
+            })
+            
+            const excludeModeItem = hmenu.addItem({
+              text: 'EXCLUDE selected labels',
+              xtype: 'menucheckitem',
+              hideOnClick: false,
+              checked: currentMode === 'exclude',
+              group: 'labelFilterMode_' + col.dataIndex,
+              labelMatchMode: 'exclude',
+              filter: {
+                dataIndex: col.dataIndex
+              },
+              listeners: {
+                checkchange: function (item, checked) {
+                  if (checked) {
+                    localStorage.setItem('labelFilterMode', 'exclude')
+                    _this.fireEvent('filterschanged', _this)
+                  }
+                }
+              }
+            })
+            
+            const sep2 = hmenu.addItem({
+              xtype: 'menuseparator',
+              filter: {
+                dataIndex: col.dataIndex
+              }
+            })
+            
+            // Track these items for cleanup
+            hmenu.filterItems.labelModeItems.push(sep1, matchLabel, anyModeItem, allModeItem, excludeModeItem, sep2)
+          }
+
           // add the Select All item
           const selectAllItem = hmenu.addItem({
             text: '<i>(Select All)</i>',
