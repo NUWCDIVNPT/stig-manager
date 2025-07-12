@@ -1219,6 +1219,9 @@ async function addReview( params ) {
     assetId: leaf.assetId
   })
   
+  // Track whether a review exists in the database
+  attachmentsGrid.reviewExists = false
+  
   /******************************************************/
   // END Attachments Panel
   /******************************************************/
@@ -1420,6 +1423,11 @@ async function addReview( params ) {
       reviewForm.groupGridRecord = groupGridRecord
       reviewForm.loadValues(review)
       reviewForm.isLoaded = true
+      
+      // Check if review exists in database and update attachment button accordingly
+      attachmentsGrid.reviewExists = !!review
+      attachmentsGrid.updateAttachmentButtonState(attachmentsGrid.reviewExists, reviewForm.defaultAccess === 'rw')
+      
       reviewForm.setReviewFormItemStates()
   
       if (! reviewProjected) {
@@ -1674,6 +1682,11 @@ async function addReview( params ) {
         saveParams.sm.selectRow(saveParams.index);
         return
       }
+      
+      // After successful save, review now exists in database
+      attachmentsGrid.reviewExists = true
+      attachmentsGrid.updateAttachmentButtonState(true, reviewForm.defaultAccess === 'rw')
+      
       reviewForm.setReviewFormItemStates(reviewForm)
     }
     catch (e) {
