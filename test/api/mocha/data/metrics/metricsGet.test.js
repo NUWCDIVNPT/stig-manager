@@ -105,6 +105,10 @@ describe('GET - Metrics', function () {
                 }
 
             })
+            it('should return 403 for deleted collection', async function () {
+                const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metrics/detail`, 'GET', iteration.token)
+                expect(res.status).to.eql(403)
+            })
         })
 
         describe('GET - getMetricsDetailByCollectionAggAsset - /collections/{collectionId}/metrics/detail/asset', function () {
@@ -241,6 +245,10 @@ describe('GET - Metrics', function () {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
+            it('should return 403 for deleted collection', async function () {
+                const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metrics/detail/asset`, 'GET', iteration.token)
+                expect(res.status).to.eql(403)
+            })
         })
 
         describe('GET - getMetricsDetailByCollectionAgg - /collections/{collectionId}/metrics/detail/collection', function () {
@@ -360,6 +368,10 @@ describe('GET - Metrics', function () {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
+            it('should return 403 for deleted collection', async function () {
+                const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metrics/detail/collection`, 'GET', iteration.token)
+                expect(res.status).to.eql(403)
+            })
         })
 
         describe('GET - getMetricsDetailByCollectionAggLabel - /collections/{collectionId}/metrics/detail/label', function () {
@@ -477,6 +489,10 @@ describe('GET - Metrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+            })
+            it('should return 403 for deleted collection', async function () {
+                const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metrics/detail/label`, 'GET', iteration.token)
+                expect(res.status).to.eql(403)
             })
         })
 
@@ -596,6 +612,10 @@ describe('GET - Metrics', function () {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
+            it('should return 403 for deleted collection', async function () {
+                const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metrics/detail/stig`, 'GET', iteration.token)
+                expect(res.status).to.eql(403)
+            })
         })
 
 
@@ -709,6 +729,10 @@ describe('GET - Metrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+            })
+            it('should return 403 for deleted collection', async function () {
+                const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metrics/summary`, 'GET', iteration.token)
+                expect(res.status).to.eql(403)
             })
         })
 
@@ -826,6 +850,10 @@ describe('GET - Metrics', function () {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
+            it('should return 403 for deleted collection', async function () {
+                const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metrics/summary/asset`, 'GET', iteration.token)
+                expect(res.status).to.eql(403)
+            })
         })
 
         describe('GET - getMetricsSummaryByCollectionAgg - /collections/{collectionId}/metrics/summary/collection', function () {
@@ -942,6 +970,10 @@ describe('GET - Metrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+            })
+            it('should return 403 for deleted collection', async function () {
+                const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metrics/summary/collection`, 'GET', iteration.token)
+                expect(res.status).to.eql(403)
             })
         })
 
@@ -1066,6 +1098,10 @@ describe('GET - Metrics', function () {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
+            it('should return 403 for deleted collection', async function () {
+                const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metrics/summary/label`, 'GET', iteration.token)
+                expect(res.status).to.eql(403)
+            })
         })
 
         describe('GET - getMetricsSummaryByCollectionAggStig - /collections/{collectionId}/metrics/summary/stig', function () {
@@ -1183,6 +1219,10 @@ describe('GET - Metrics', function () {
                 {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
+            })
+            it('should return 403 for deleted collection', async function () {
+                const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/metrics/summary/stig`, 'GET', iteration.token)
+                expect(res.status).to.eql(403)
             })
         })
     })

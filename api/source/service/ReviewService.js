@@ -61,12 +61,11 @@ exports.postReviewBatch = async function ({
     else if (benchmarkIds?.length) {
       const sql = `select distinct assetId 
       from
-        asset a
+        enabled_asset a
         left join stig_asset_map sa using (assetId)
         ${roleId === 1 ? 'inner' : 'left'} join cteAclEffective cae on sa.saId = cae.saId
       where
         a.collectionId = @collectionId 
-        and a.state = "enabled"
         and coalesce(cae.access, 'rw') = 'rw'
         and sa.benchmarkId IN ?`
       cte = dbUtils.pool.format(sql,[[benchmarkIds]])
@@ -99,7 +98,7 @@ exports.postReviewBatch = async function ({
     distinct a.assetId,
     rgr.ruleId 
   from 
-    asset a
+    enabled_asset a
     left join stig_asset_map sa using (assetId)
     ${roleId === 1 ? 'inner' : 'left'} join cteAclEffective cae on sa.saId = cae.saId
     left join revision rev on sa.benchmarkId = rev.benchmarkId
@@ -120,7 +119,7 @@ exports.postReviewBatch = async function ({
     c.settings->>"$.status.resetCriteria" as resetCriteria,
     c.settings->>"$.status.minAcceptGrant" as minAcceptGrant
   FROM
-    collection c
+    enabled_collection c
   where
     collectionId = @collectionId`
     return `cteCollectionSetting AS (${cte})`
@@ -562,7 +561,7 @@ exports.getReviews = async function ({projections = [], filter = {}, grant}) {
   const hints = ['NO_MERGE(cae)']
   const columns = [
     'CAST(r.assetId as char) as assetId',
-    'asset.name as "assetName"',
+    'a.name as "assetName"',
     `coalesce(
       (select
         json_arrayagg(BIN_TO_UUID(cl.uuid,1))
@@ -596,7 +595,7 @@ exports.getReviews = async function ({projections = [], filter = {}, grant}) {
   ]
   const groupBy = [
     'r.reviewId',
-    'asset.name',
+    'a.name',
     'result.api',
     'status.api',
     'ud.username',
@@ -612,9 +611,9 @@ exports.getReviews = async function ({projections = [], filter = {}, grant}) {
     'left join status on r.statusId = status.statusId',
     'left join user_data ud on r.userId = ud.userId',
     'left join user_data udStatus on r.statusUserId = udStatus.userId',
-    'left join asset on r.assetId = asset.assetId',
-    'left join default_rev dr on (rgr.revId = dr.revId and asset.collectionId = dr.collectionId)',
-    'left join collection c on asset.collectionId = c.collectionId',
+    'left join enabled_asset a on r.assetId = a.assetId',
+    'left join default_rev dr on (rgr.revId = dr.revId and a.collectionId = dr.collectionId)',
+    'left join enabled_collection c on a.collectionId = c.collectionId',
     'left join stig_asset_map sa on (r.assetId = sa.assetId and revision.benchmarkId = sa.benchmarkId)',
   ]
 
@@ -704,10 +703,7 @@ exports.getReviews = async function ({projections = [], filter = {}, grant}) {
   }
 
   const predicates = {
-    statements: [
-      'asset.state = "enabled"',
-      'c.state = "enabled"'
-    ],
+    statements: [],
     binds: []
   }
   
@@ -729,7 +725,7 @@ exports.getReviews = async function ({projections = [], filter = {}, grant}) {
   }
 
   if (filter.collectionId) {
-    predicates.statements.push('asset.collectionId = ?')
+    predicates.statements.push('a.collectionId = ?')
     predicates.binds.push(filter.collectionId)
   }
   if (filter.result) {
@@ -806,8 +802,8 @@ exports.exportReviews = async function (includeHistory = false) {
   ]
   const joins = [
     'review r',
-    'inner join asset a on r.assetId = a.assetId AND a.state = "enabled"',
-    'inner join collection c on c.collectionId = a.collectionId and c.state = "enabled"',
+    'inner join enabled_asset a on r.assetId = a.assetId',
+    'inner join enabled_collection c on c.collectionId = a.collectionId',
     'left join result on r.resultId = result.resultId',
     'left join status on r.statusId = status.statusId',
   ]
@@ -946,7 +942,7 @@ SELECT
   c.settings->>"$.status.resetCriteria" AS resetCriteria,
   c.settings->>"$.history.maxReviews" AS maxReviews
 FROM
-  collection c
+  enabled_collection c
 WHERE
   c.collectionId = @collectionId
 ),
@@ -984,7 +980,7 @@ cteGrant AS (
 select
   distinct rgr.ruleId 
 from 
-  asset a
+  enabled_asset a
   left join stig_asset_map sa using (assetId)
   ${grant.roleId === 1 ? 'inner' : 'left'} join cteAclEffective cae on sa.saId = cae.saId
   left join revision rev on sa.benchmarkId = rev.benchmarkId
@@ -1166,7 +1162,7 @@ FROM
    review_history
    left join historyRecs on review_history.historyId = historyRecs.historyId 
 WHERE 
-   historyRecs.rowNum > (select c.settings->>"$.history.maxReviews" FROM collection c where collectionId = @collectionId) - 1
+   historyRecs.rowNum > (select c.settings->>"$.history.maxReviews" FROM enabled_collection c where collectionId = @collectionId) - 1
 `
   const sqlHistory = `  
 INSERT INTO review_history (
@@ -1266,7 +1262,7 @@ where
     
     const sqlSetVariables = `set @collectionId = ?, @assetId = ?, @userId = ?, @roleId = ?, @reviews = ?, @utcTimestamp = UTC_TIMESTAMP()`
     await connection.query(sqlSetVariables, [parseInt(collectionId), parseInt(assetId), parseInt(userId), grant.roleId, JSON.stringify(reviews)])
-    const [settings] = await connection.query(`select c.settings->>"$.history.maxReviews" as maxReviews FROM collection c where collectionId = @collectionId`)
+    const [settings] = await connection.query(`select c.settings->>"$.history.maxReviews" as maxReviews FROM enabled_collection c where collectionId = @collectionId`)
     const historyMaxReviews = settings[0].maxReviews
     await connection.query(sqlCreateTableValidatedReview)
     let [counts] = await connection.query(`select
@@ -1325,14 +1321,13 @@ exports.checkRuleByAssetUser = async function ({ruleId, assetId, collectionId, g
     select
       rgr.ruleId 
     from 
-      asset a
+      enabled_asset a
       left join stig_asset_map sa using (assetId)
       ${grant.roleId === 1 ? 'inner' : 'left'} join cteAclEffective cae on sa.saId = cae.saId
       left join revision rev on sa.benchmarkId = rev.benchmarkId
       left join rev_group_rule_map rgr using (revId)
     where 
       a.assetId = ?
-      and a.state = 'enabled'
       and rgr.ruleId = ?
       ${checkWritable ? "and coalesce(cae.access, 'rw') = 'rw'" : ''}
       ${collectionId ? "and a.collectionId = ?" : ''}`

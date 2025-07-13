@@ -40,7 +40,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
   if (inProjection?.includes('collectionGrants')) {
     needsCollectionGrantees = true
     joins.add('left join cteGrantees cgs on ud.userId = cgs.userId')
-    joins.add('left join collection c on cgs.collectionId = c.collectionId')
+    joins.add('left join enabled_collection c on cgs.collectionId = c.collectionId')
     columns.push(`case when count(cgs.collectionId) > 0
     then 
       ${dbUtils.jsonArrayAggDistinct(`json_object(
@@ -443,13 +443,13 @@ exports.queryUserGroups = async function ({projections = [], filters = {}, eleva
   }
   if (projections.includes('collections')) {
     joins.add('left join collection_grant cgg using (userGroupId)')
-    joins.add('left join collection on cgg.collectionId = collection.collectionId and collection.state = "enabled"')
+    joins.add('left join enabled_collection on cgg.collectionId = enabled_collection.collectionId')
     groupBy.add('ug.userGroupId')
     columns.push(`CASE WHEN count(cgg.collectionId)=0 
     THEN json_array()
     ELSE cast(concat('[', group_concat(distinct json_object(
       'collectionId', cast(cgg.collectionId as char),
-      'name', collection.name)
+      'name', enabled_collection.name)
     ), ']') as json)
     END as collections`)
   }
@@ -487,7 +487,7 @@ exports.getUserObject = async function (username) {
         json_array(cg.grantId) as grantIds
       from
         collection_grant cg
-        inner join collection c on (cg.collectionId = c.collectionId and c.state = 'enabled')
+        inner join enabled_collection c on (cg.collectionId = c.collectionId)
         left join user_data ud2 on cg.userId = ud2.userId
       where
         ud2.userId = ud.userId
@@ -506,7 +506,7 @@ exports.getUserObject = async function (username) {
           json_arrayagg(cg.grantId) OVER (PARTITION BY ugu.userId, cg.collectionId, cg.roleId) as grantIds
         from 
           collection_grant cg
-          inner join collection c on (cg.collectionId = c.collectionId and c.state = 'enabled')
+          inner join enabled_collection c on (cg.collectionId = c.collectionId)
           left join user_group_user_map ugu on cg.userGroupId = ugu.userGroupId
           left join user_group ug on ugu.userGroupId = ug.userGroupId
           left join user_data ud3 on ugu.userId = ud3.userId

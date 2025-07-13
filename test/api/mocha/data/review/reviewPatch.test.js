@@ -1,4 +1,3 @@
-
 import {config } from '../../testConfig.js'
 import * as utils from '../../utils/testUtils.js'
 import reference from '../../referenceData.js'
@@ -89,6 +88,15 @@ describe('PATCH - Review', () => {
           }
           expect(res.status).to.eql(200)
         })
+        it('should return 403 for deleted collection', async () => {
+          const res = await utils.executeRequest(
+            `${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`,
+            'PATCH',
+            iteration.token,
+            { detail: "irrelevant" }
+          )
+          expect(res.status).to.eql(403)
+        })
       })
       describe('PATCH - patchReviewMetadata - /collections/{collectionId}/reviews/{assetId}/{ruleId}/metadata', () => {
 
@@ -117,6 +125,15 @@ describe('PATCH - Review', () => {
           }
           expect(res.status).to.eql(403)
           expect(res.body.error).to.be.equal("User has insufficient privilege to complete this request.")
+        })
+        it('should return 403 for deleted collection', async () => {
+          const res = await utils.executeRequest(
+            `${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}/metadata`,
+            'PATCH',
+            iteration.token,
+            { [reference.reviewMetadataKey]: reference.reviewMetadataValue }
+          )
+          expect(res.status).to.eql(403)
         })
       })
     })
