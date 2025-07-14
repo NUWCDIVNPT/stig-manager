@@ -66,7 +66,14 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
   async function handleRedirectAndParameters(redirectUri, paramStr) {
     const params = processRedirectParams(paramStr)
     if (!params.code) {
-      appendError('No authorization code provided in the URL parameters.')
+      let errorMessage = 'No authorization code provided in the URL parameters.'
+      if (params.error) {
+        errorMessage += ` Error: ${params.error}`
+        if (params.error_description) {
+          errorMessage += ` - ${params.error_description}`
+        }
+      }
+      appendError(errorMessage)
       return
     }
     if (!params.state || params.state !== sessionStorage.getItem('oidcState')) {
