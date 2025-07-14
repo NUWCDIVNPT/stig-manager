@@ -43,6 +43,10 @@ describe('DELETE - Asset', function () {
           const asset = await utils.getAsset(reference.testAsset.assetId)
           expect(asset.metadata).to.not.have.property(reference.testAsset.metadataKey)
         })
+        it("attempt to delete metadata key on deleted asset, should fail. ", async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.deletedAsset.assetId}/metadata/keys/${reference.testAsset.metadataKey}`, 'DELETE', iteration.token)
+          expect(res.status).to.eql(403)
+        })
       })
       describe(`removeStigFromAsset - /assets/{assetId}/stigs/{benchmarkId}`, function () {
         it('Delete a STIG assignment to an Asset', async function () {
@@ -55,6 +59,10 @@ describe('DELETE - Asset', function () {
 
           const asset = await utils.getAsset(reference.testAsset.assetId)
           expect(asset.stigs).to.not.include(reference.benchmark)
+        })
+        it("attempt to delete stig on deleted asset, should fail. ", async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.deletedAsset.assetId}/stigs/${reference.benchmark}`, 'DELETE', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
       describe(`removeStigsFromAsset -/assets/{assetId}/stigs`, function () {
@@ -117,6 +125,11 @@ describe('DELETE - Asset', function () {
             expect(stig.benchmarkId).to.be.oneOf(reference.testAsset.validStigs)
           }
 
+        })
+
+        it("attempt to delete an already deleted Asset", async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.deletedAsset.assetId}`, 'DELETE', iteration.token)
+          expect(res.status).to.eql(403)
         })
       })
     })

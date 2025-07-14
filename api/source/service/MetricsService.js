@@ -32,7 +32,6 @@ module.exports.queryMetrics = async function ({
 
   const predicates = {
     statements: [
-      'a.state = "enabled"',
       'a.collectionId = ? '
     ],
     binds: [collectionId]
@@ -40,7 +39,7 @@ module.exports.queryMetrics = async function ({
   const ctes = []
   const columns = returnType === 'csv' ? [...baseColsFlat[aggregation]] : [...baseCols[aggregation]]
   const joins = [
-    'asset a',
+    'enabled_asset a',
     'left join stig_asset_map sa on a.assetId = sa.assetId',
     'left join default_rev dr on a.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId',
     'left join revision rev on dr.revId = rev.revId',
@@ -61,7 +60,7 @@ module.exports.queryMetrics = async function ({
       labelMatch: filter.labelMatch,
       collectionLabelTableAlias: 'clPred'
     })
-    const innerQueryRaw = `select distinct assetId from asset left join collection_label_asset_map using (assetId)
+    const innerQueryRaw = `select distinct assetId from enabled_asset left join collection_label_asset_map using (assetId)
     left join collection_label clPred using(clId) where a.collectionId = ${collectionId} and ${statement}`
     const innerQueryFormatted = dbUtils.pool.format(innerQueryRaw, binds )
     predicates.statements.push(`a.assetId IN (${innerQueryFormatted})`)
@@ -91,7 +90,7 @@ module.exports.queryMetrics = async function ({
       orderBy.push('rev.benchmarkId')
       break
     case 'collection':
-      joins.push(`left join collection c on a.collectionId = c.collectionId`)
+      joins.push(`left join enabled_collection c on a.collectionId = c.collectionId`)
       groupBy.push('c.collectionId')
       orderBy.push('c.name')
       break
@@ -156,14 +155,14 @@ module.exports.queryMetaMetrics = async function ({
   const ctes = []
   const columns = returnType === 'csv' ? [...baseColsFlat[aggregation]] : [...baseCols[aggregation]]
   const joins = [
-    'asset a',
+    'enabled_asset a',
     'left join stig_asset_map sa on a.assetId = sa.assetId',
     'left join default_rev dr on a.collectionId = dr.collectionId and sa.benchmarkId = dr.benchmarkId',
     'left join revision rev on dr.revId = rev.revId',
     'left join stig on rev.benchmarkId = stig.benchmarkId'
   ]
   const predicates = {
-    statements: ['a.state != "disabled"'],
+    statements: [],
     binds: []
   }
   const groupBy = []
@@ -220,7 +219,7 @@ module.exports.queryMetaMetrics = async function ({
       predicates.statements.push('sa.benchmarkId IS NOT NULL')
       break
     case 'collection':
-      joins.push('left join collection c on a.collectionId = c.collectionId')
+      joins.push('left join enabled_collection c on a.collectionId = c.collectionId')
       groupBy.push('c.collectionId')
       orderBy.push('c.name')
       break
