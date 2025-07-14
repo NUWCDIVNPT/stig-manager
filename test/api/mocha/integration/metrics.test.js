@@ -192,6 +192,7 @@ describe('GET - getMetricsSummaryByCollectionAggStig - /collections/{collectionI
             {
                 "benchmarkId": "VPN_SRG_TEST",
                 "revisionStr": "V1R1",
+                "marking": "U",
                 "action": "replaced"
             }
             expect(res.status).to.eql(200)

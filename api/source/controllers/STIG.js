@@ -23,6 +23,10 @@ module.exports.importBenchmark = async function importManualBenchmark (req, res,
     if (benchmark.scap) {
       throw new SmError.UnprocessableError('SCAP Benchmarks are not imported.')
     }
+
+    const markingMatch = req.file.originalname.match(/^(CUI|U|FOUO)_/)
+    benchmark.revision.marking = markingMatch?.[1] ?? null
+
     const revision = await STIGService.insertManualBenchmark(benchmark, clobber, res.svcStatus)
     res.json(revision)
   }

@@ -26,6 +26,13 @@
   --color-risk-very-low-text:rgb(0, 100, 0);
   --color-scrollbar-idle: #d0d0d0;
   --color-scrollbar-hover:#b0b0b0;
+  --color-marking-unclassified:#007a33;
+  --color-marking-cui:#502b85;
+  --color-marking-confidential:#0033a0;
+  --color-marking-fouo:#502b85;
+  --color-marking-secret:#c8102e;
+  --color-marking-topsecret:#ff671f;
+  --color-marking-sci:#f7ea48;
 }
 
 .x-tree-node-collapsed .x-tree-node-icon, .x-tree-node-expanded .x-tree-node-icon, .x-tree-node-leaf .x-tree-node-icon {
@@ -1217,32 +1224,32 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   color: #36c
 }
 .sm-banner-unclassified {
-  background-color: #007a33;
+  background-color: var(--color-marking-unclassified);
   color: #fff;
   height: 20px
 }
 .sm-banner-cui {
-  background-color: #502b85;
+  background-color: var(--color-marking-cui);
   color: #fff;
   height: 20px
 }
 .sm-banner-confidential {
-  background-color: #0033a0;
+  background-color: var(--color-marking-confidential);
   color: #fff;
   height: 20px
 }
 .sm-banner-secret {
-  background-color: #c8102e;
+  background-color: var(--color-marking-secret);
   color: #fff;
   height: 20px
 }
 .sm-banner-topsecret {
-  background-color: #ff671f;
+  background-color: var(--color-marking-topsecret);
   color: #fff;
   height: 20px
 }
 .sm-banner-sci {
-  background-color: #f7ea48;
+  background-color: var(--color-marking-sci);
   color: #000;
   height: 20px
 }
@@ -2483,6 +2490,33 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .sm-checklist-read {
 	background-color: hsl(330 55% 24% / 1);
+}
+.sm-sprite-U {
+  background-color: var(--color-marking-unclassified);
+  border-radius: 6px;
+}
+.sm-sprite-U::before {
+  content: "U";
+  font-weight: 800;
+  margin: 2px;
+}
+.sm-sprite-CUI {
+  background-color: var(--color-marking-cui);
+  border-radius: 6px;
+}
+.sm-sprite-CUI::before {
+  content: "CUI";
+  font-weight: 800;
+  margin: 2px;
+}
+.sm-sprite-FOUO::before {
+  content: "FOUO";
+  font-weight: 800;
+  margin: 2px;
+}
+.sm-sprite-FOUO {
+  background-color: var(--color-marking-unclassified);
+  border-radius: 6px;
 }
 .sm-flexbox-layout-ct {
 	display: flex;

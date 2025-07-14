@@ -220,7 +220,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
     }
     
     const dateString = escape.filenameComponentFromDate()
-    const fileBasename = `${checklist.assetName}-${benchmarkId}-${checklist.revisionStrResolved}`
+    const fileBasename = `${checklist.marking}_${checklist.assetName}-${benchmarkId}-${checklist.revisionStrResolved}`
     if (format === 'cklb') {
       checklist.cklb.title = fileBasename
       writer.writeInlineFile(res, JSON.stringify(checklist.cklb), `${fileBasename}_${dateString}.cklb`, 'application/json')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
@@ -237,7 +237,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
         tagValueProcessor: escapeForXml,
         attrValueProcessor: escapeForXml
       })
-      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${checklist.marking} -->\n`
       xml += builder.build(checklist.xmlJs)
       writer.writeInlineFile(res, xml, `${fileBasename}_${dateString}.ckl`, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
     }
@@ -255,7 +255,7 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
         tagValueProcessor: escapeForXml,
         attrValueProcessor: escapeForXml
       })
-      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${config.settings.setClassification} -->\n`
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${checklist.marking} -->\n`
       xml += builder.build(checklist.xmlJs)
       writer.writeInlineFile(res, xml, `${fileBasename}-xccdf_${dateString}.xml`, 'application/xml')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
     }
@@ -302,9 +302,9 @@ module.exports.getChecklistByAsset = async function (req, res, next) {
         tagValueProcessor: escapeForXml,
         attrValueProcessor: escapeForXml
       })
-      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n`
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- STIG Manager ${config.version} -->\n<!-- Classification: ${response.marking} -->\n`
       xml += builder.build(response.xmlJs)
-      writer.writeInlineFile(res, xml, `${response.assetName}_${dateString}.ckl`, 'application/xml')
+      writer.writeInlineFile(res, xml, `${response.marking}_${response.assetName}_${dateString}.ckl`, 'application/xml')
     }
   }
   catch (err) {
