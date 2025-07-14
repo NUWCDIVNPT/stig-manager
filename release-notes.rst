@@ -1,3 +1,22 @@
+1.5.10
+-------
+
+Changes:
+
+  - (UI) feature: New OIDC SharedWorker implementation for better token management across browser tabs allows STIG Manager to be used in more than one browser tab at once. 
+  - (UI) feature: New options for Client reauthentication: popup window (new default), tab, iframe, or traditional redirect (the old behavior). When configured to use any of the first three options, when a session expires, users will be prompted to reauthenticate without losing the current state of their workspace. Control with new envvar: `STIGMAN_CLIENT_REAUTH_ACTION`. 
+  - (UI) feature: Added support for opaque refresh tokens to improve compatibility with various OIDC providers
+  - (UI) enhancement: Better error handling during app startup
+  - (UI) performance: "Other Assets" data now loads only when that tab is opened, improving load times
+  - (API) enhancement: Easier handling of disabled Assets and Collections with database views
+  - (API) fix: Better handling of reviews posted for disabled Assets and Collections
+  - (API) fix: Allow "unavailable" user properties to be set if the request also changes their status to "available" 
+  - (UI) enhancement: Updated to stigman-client-modules v1.5.5 for improved duplicate asset name detection and handling
+  - (API) Dependencies: Various security updates
+
+  Note 1: This release includes a database migration to support new features.
+  Note 2: Some OIDC providers do not properly advertise their support of the Authorization Code Flow with PKCE in their configuration metadata. If you experience issues with OIDC authentication, you may need to set the environment variable `STIGMAN_CLIENT_STRICT_PKCE =false` to disable the strict PKCE check by the STIG Manager client. STIG Manager Client will still use PKCE for the OIDC flow, but will not require the OIDC provider to advertise its support for PKCE in its metadata. 
+
 1.5.9
 -------
 
