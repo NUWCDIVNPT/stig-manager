@@ -75,9 +75,10 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
       const hmenu = this.hmenu
       const stringItems = hmenu.filterItems.stringItems
       const selectItems = hmenu.filterItems.selectItems
+      const valuesPanelItems = hmenu.filterItems.valuesPanelItems
       const conditions = {}
       const filterFns = []
-  
+
       // // iterate the menu items and set the condition(s) for each dataIndex
       for (const stringItem of stringItems) {
         const value = stringItem.getValue()
@@ -108,17 +109,16 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
                   if (condition.includes('') && cellValue.length === 0) return true
                   if (condition.length === 0) return true // No filter applied
                   
-                  // Check if this is a label filter and use the stored label match mode
-                  const labelMatchMode = localStorage.getItem('labelFilterMatchMode') || 'any'
-                  const labelFilterMode = localStorage.getItem('labelFilterMode') || 'include'
-                  
-                  if (dataIndex === 'labelIds') {
+                  // Check if there's a ValuesPanel for this dataIndex
+                  const valuesPanel = valuesPanelItems.find(panel => panel.column.dataIndex === dataIndex)
+                  if (valuesPanel) {
+                    const panelValue = valuesPanel.getValue()
                     let matchResult = false
                     
-                    if (labelMatchMode === 'all') {
+                    if (panelValue.matchMode === 'all') {
                       // ALL logic: cellValue must contain ALL values in condition
                       matchResult = condition.every(v => cellValue.includes(v))
-                    } else if (labelMatchMode === 'exactly') {
+                    } else if (panelValue.matchMode === 'exactly') {
                       // EXACTLY logic: cellValue must contain exactly the values in condition
                       matchResult = condition.length === cellValue.length && condition.every(v => cellValue.includes(v))
                     } else {
@@ -127,9 +127,9 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
                     }
                     
                     // Apply include/exclude filter
-                    return labelFilterMode === 'include' ? matchResult : !matchResult
+                    return panelValue.filterMode === 'include' ? matchResult : !matchResult
                   } else {
-                    // OR logic: cellValue must contain ANY value in condition (default)
+                    // Default behavior for non-labelIds columns
                     return cellValue.some( v => condition.includes(v))
                   }
                 }
@@ -186,7 +186,8 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
       hmenu.filterItems = {
         stringItems: [],
         selectItems: [],
-        labelModeItems: []
+        labelModeItems: [],
+        valuesPanelItems: []
       }
       // disables keyboard navigation, needed to support left-right arrow in search input
       hmenu.keyNav = new Ext.KeyNav(document.body, {disabled: true})
@@ -223,6 +224,12 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
         }
         hmenu.filterItems.labelModeItems = []
         
+        // Remove values panel items
+        for (const valuesPanelItem of hmenu.filterItems.valuesPanelItems) {
+          hmenu.remove(valuesPanelItem)
+        }
+        hmenu.filterItems.valuesPanelItems = []
+        
         // iterate the dynamic columns and create menu items, restoring saved values if not loading
         for (const col of dynamicColumns) {
           if (isLoading) col.filtered = false
@@ -255,9 +262,6 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
           }
           // add filter mode selection for labelIds columns
           if (col.dataIndex === 'labelIds') {
-            const currentMatchMode = localStorage.getItem('labelFilterMatchMode') || 'any'
-            const currentFilterMode = localStorage.getItem('labelFilterMode') || 'include'
-            
             const sep1 = hmenu.addItem({
               xtype: 'menuseparator',
               filter: {
@@ -265,97 +269,22 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
               }
             })
             
-            const matchLabel = hmenu.addItem({
-              hideOnClick: false,
-              activeClass: '',
-              text: '<b>Match:</b>',
-              cls: 'sm-menuitem-filter-label',
-              filter: {
-                dataIndex: col.dataIndex
-              }
-            })
-            
-            // Create match mode dropdown
-            const matchModeStore = new Ext.data.ArrayStore({
-              fields: ['value', 'text'],
-              data: [
-                ['any', 'Any'],
-                ['all', 'All'],
-                ['exactly', 'Exactly']
-              ]
-            })
-            
-            const matchModeCombo = new Ext.form.ComboBox({
-              store: matchModeStore,
-              displayField: 'text',
-              valueField: 'value',
-              mode: 'local',
-              triggerAction: 'all',
-              editable: false,
-              value: currentMatchMode,
-              width: 120,
-              listClass: 'x-menu',
+            const valuesPanel = new SM.ColumnFilters.ValuesPanel({
+              column: col,
               listeners: {
-                select: function(combo, record) {
-                  localStorage.setItem('labelFilterMatchMode', record.get('value'))
+                filterchanged: function() {
                   _this.fireEvent('filterschanged', _this)
                 }
               }
             })
             
-            const matchModeItem = hmenu.addItem({
+            const valuesPanelItem = hmenu.addItem({
               hideOnClick: false,
               plain: true,
               filter: {
                 dataIndex: col.dataIndex
               },
-              items: [matchModeCombo]
-            })
-            
-            const filterLabel = hmenu.addItem({
-              hideOnClick: false,
-              activeClass: '',
-              text: '<b>Filter:</b>',
-              cls: 'sm-menuitem-filter-label',
-              filter: {
-                dataIndex: col.dataIndex
-              }
-            })
-            
-            // Create filter mode dropdown
-            const filterModeStore = new Ext.data.ArrayStore({
-              fields: ['value', 'text'],
-              data: [
-                ['include', 'Include'],
-                ['exclude', 'Exclude']
-              ]
-            })
-            
-            const filterModeCombo = new Ext.form.ComboBox({
-              store: filterModeStore,
-              displayField: 'text',
-              valueField: 'value',
-              mode: 'local',
-              triggerAction: 'all',
-              editable: false,
-              value: currentFilterMode,
-              width: 120,
-              listClass: 'x-menu',
-              listeners: {
-                select: function(combo, record) {
-                  localStorage.setItem('labelFilterMode', record.get('value'))
-                  _this.fireEvent('filterschanged', _this)
-                }
-              }
-            })
-            
-            const filterModeItem = hmenu.addItem({
-              hideOnClick: false,
-              plain: true,
-              filter: {
-                dataIndex: col.dataIndex
-              },
-              items: [filterModeCombo]
+              items: [valuesPanel]
             })
             
             const sep2 = hmenu.addItem({
@@ -366,7 +295,8 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
             })
             
             // Track these items for cleanup
-            hmenu.filterItems.labelModeItems.push(sep1, matchLabel, matchModeItem, filterLabel, filterModeItem, sep2)
+            hmenu.filterItems.labelModeItems.push(sep1, valuesPanelItem, sep2)
+            hmenu.filterItems.valuesPanelItems.push(valuesPanel)
           }
 
           // add the Select All item
@@ -537,6 +467,48 @@ SM.ColumnFilters.StringMatchWordButton = Ext.extend(Ext.Button, {
   }
 })
 
+SM.ColumnFilters.ValuesMatchAnyButton = Ext.extend(Ext.Button, {
+  initComponent: function () {
+    const config = {
+      enableToggle: true,
+      border: false,
+      text: 'Any',
+      tooltip: 'Match any selected labels',
+      toggleGroup: 'valuesMatch'
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
+
+SM.ColumnFilters.ValuesMatchAllButton = Ext.extend(Ext.Button, {
+  initComponent: function () {
+    const config = {
+      enableToggle: true,
+      border: false,
+      text: 'All',
+      tooltip: 'Match all selected labels',
+      toggleGroup: 'valuesMatch'
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
+
+SM.ColumnFilters.ValuesMatchExactButton = Ext.extend(Ext.Button, {
+  initComponent: function () {
+    const config = {
+      enableToggle: true,
+      border: false,
+      text: 'Exactly',
+      tooltip: 'Match exactly the selected labels',
+      toggleGroup: 'valuesMatch'
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
+
 SM.ColumnFilters.StringPanel = Ext.extend(Ext.Panel, {
   initComponent: function () {
     const _this = this
@@ -599,6 +571,109 @@ SM.ColumnFilters.StringPanel = Ext.extend(Ext.Panel, {
         },
         textfield
       ]
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
+
+SM.ColumnFilters.ValuesPanel = Ext.extend(Ext.Panel, {
+  initComponent: function () {
+    const _this = this
+
+    const onFilterChange = function () {
+      _this.column.filter.value = getValue()
+      _this.fireEvent('filterchanged', _this)
+    }
+
+    const conditionComboBox = new SM.ColumnFilters.StringMatchConditionComboBox({
+      flex: 1,
+      listeners: {
+        select: onFilterChange
+      }
+    })
+
+    const matchAnyButton = new SM.ColumnFilters.ValuesMatchAnyButton({
+      width: 50,
+      listeners: {
+        toggle: onFilterChange
+      }
+    })
+
+    const matchAllButton = new SM.ColumnFilters.ValuesMatchAllButton({
+      width: 50,
+      listeners: {
+        toggle: onFilterChange
+      }
+    })
+
+    const matchExactButton = new SM.ColumnFilters.ValuesMatchExactButton({
+      width: 60,
+      listeners: {
+        toggle: onFilterChange
+      }
+    })
+
+    function getValue () {
+      let matchMode = 'any'
+      if (matchAllButton.pressed) {
+        matchMode = 'all'
+      } else if (matchExactButton.pressed) {
+        matchMode = 'exactly'
+      }
+      
+      return {
+        matchMode: matchMode,
+        filterMode: conditionComboBox.getValue() ? 'include' : 'exclude'
+      }
+    }
+
+    // Load saved settings from localStorage
+    const savedMatchMode = localStorage.getItem('labelFilterMatchMode') || 'any'
+    const savedFilterMode = localStorage.getItem('labelFilterMode') || 'include'
+
+    const config = {
+      getValue,
+      items: [
+        {
+          layout: 'hbox',
+          items: [
+            conditionComboBox,
+            matchAnyButton,
+            matchAllButton,
+            matchExactButton
+          ]
+        }
+      ],
+      listeners: {
+        afterrender: function() {
+          // Set initial button states based on saved settings
+          if (savedMatchMode === 'all') {
+            matchAllButton.toggle(true)
+          } else if (savedMatchMode === 'exactly') {
+            matchExactButton.toggle(true)
+          } else {
+            matchAnyButton.toggle(true)
+          }
+          
+          // Set initial condition combobox value
+          conditionComboBox.setValue(savedFilterMode === 'include')
+          
+          // Save settings when they change
+          matchAnyButton.on('toggle', function(btn, pressed) {
+            if (pressed) localStorage.setItem('labelFilterMatchMode', 'any')
+          })
+          matchAllButton.on('toggle', function(btn, pressed) {
+            if (pressed) localStorage.setItem('labelFilterMatchMode', 'all')
+          })
+          matchExactButton.on('toggle', function(btn, pressed) {
+            if (pressed) localStorage.setItem('labelFilterMatchMode', 'exactly')
+          })
+          conditionComboBox.on('select', function(combo, record) {
+            localStorage.setItem('labelFilterMode', record.get('value') ? 'include' : 'exclude')
+          })
+        }
+      }
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
     this.superclass().initComponent.call(this)
