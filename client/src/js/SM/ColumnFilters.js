@@ -109,13 +109,25 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
                   if (condition.length === 0) return true // No filter applied
                   
                   // Check if this is a label filter and use the stored label match mode
-                  const labelMatchMode = localStorage.getItem('labelFilterMode') || 'any'
-                  if (dataIndex === 'labelIds' && labelMatchMode === 'all') {
-                    // AND logic: cellValue must contain ALL values in condition
-                    return condition.every(v => cellValue.includes(v))
-                  } else if (dataIndex === 'labelIds' && labelMatchMode === 'exclude') {
-                    // EXCLUDE logic: cellValue must contain NONE of the values in condition
-                    return !cellValue.some(v => condition.includes(v))
+                  const labelMatchMode = localStorage.getItem('labelFilterMatchMode') || 'any'
+                  const labelFilterMode = localStorage.getItem('labelFilterMode') || 'include'
+                  
+                  if (dataIndex === 'labelIds') {
+                    let matchResult = false
+                    
+                    if (labelMatchMode === 'all') {
+                      // ALL logic: cellValue must contain ALL values in condition
+                      matchResult = condition.every(v => cellValue.includes(v))
+                    } else if (labelMatchMode === 'exactly') {
+                      // EXACTLY logic: cellValue must contain exactly the values in condition
+                      matchResult = condition.length === cellValue.length && condition.every(v => cellValue.includes(v))
+                    } else {
+                      // ANY logic: cellValue must contain ANY value in condition (default)
+                      matchResult = cellValue.some(v => condition.includes(v))
+                    }
+                    
+                    // Apply include/exclude filter
+                    return labelFilterMode === 'include' ? matchResult : !matchResult
                   } else {
                     // OR logic: cellValue must contain ANY value in condition (default)
                     return cellValue.some( v => condition.includes(v))
@@ -243,7 +255,8 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
           }
           // add filter mode selection for labelIds columns
           if (col.dataIndex === 'labelIds') {
-            const currentMode = localStorage.getItem('labelFilterMode') || 'any'
+            const currentMatchMode = localStorage.getItem('labelFilterMatchMode') || 'any'
+            const currentFilterMode = localStorage.getItem('labelFilterMode') || 'include'
             
             const sep1 = hmenu.addItem({
               xtype: 'menuseparator',
@@ -251,6 +264,7 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
                 dataIndex: col.dataIndex
               }
             })
+            
             const matchLabel = hmenu.addItem({
               hideOnClick: false,
               activeClass: '',
@@ -261,64 +275,87 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
               }
             })
             
-            const anyModeItem = hmenu.addItem({
-              text: 'ANY selected labels',
-              xtype: 'menucheckitem',
-              hideOnClick: false,
-              checked: currentMode === 'any',
-              group: 'labelFilterMode_' + col.dataIndex,
-              labelMatchMode: 'any',
-              filter: {
-                dataIndex: col.dataIndex
-              },
+            // Create match mode dropdown
+            const matchModeStore = new Ext.data.ArrayStore({
+              fields: ['value', 'text'],
+              data: [
+                ['any', 'Any'],
+                ['all', 'All'],
+                ['exactly', 'Exactly']
+              ]
+            })
+            
+            const matchModeCombo = new Ext.form.ComboBox({
+              store: matchModeStore,
+              displayField: 'text',
+              valueField: 'value',
+              mode: 'local',
+              triggerAction: 'all',
+              editable: false,
+              value: currentMatchMode,
+              width: 120,
+              listClass: 'x-menu',
               listeners: {
-                checkchange: function (item, checked) {
-                  if (checked) {
-                    localStorage.setItem('labelFilterMode', 'any')
-                    _this.fireEvent('filterschanged', _this)
-                  }
+                select: function(combo, record) {
+                  localStorage.setItem('labelFilterMatchMode', record.get('value'))
+                  _this.fireEvent('filterschanged', _this)
                 }
               }
             })
             
-            const allModeItem = hmenu.addItem({
-              text: 'ALL selected labels',
-              xtype: 'menucheckitem',
+            const matchModeItem = hmenu.addItem({
               hideOnClick: false,
-              checked: currentMode === 'all',
-              group: 'labelFilterMode_' + col.dataIndex,
-              labelMatchMode: 'all',
+              plain: true,
               filter: {
                 dataIndex: col.dataIndex
               },
+              items: [matchModeCombo]
+            })
+            
+            const filterLabel = hmenu.addItem({
+              hideOnClick: false,
+              activeClass: '',
+              text: '<b>Filter:</b>',
+              cls: 'sm-menuitem-filter-label',
+              filter: {
+                dataIndex: col.dataIndex
+              }
+            })
+            
+            // Create filter mode dropdown
+            const filterModeStore = new Ext.data.ArrayStore({
+              fields: ['value', 'text'],
+              data: [
+                ['include', 'Include'],
+                ['exclude', 'Exclude']
+              ]
+            })
+            
+            const filterModeCombo = new Ext.form.ComboBox({
+              store: filterModeStore,
+              displayField: 'text',
+              valueField: 'value',
+              mode: 'local',
+              triggerAction: 'all',
+              editable: false,
+              value: currentFilterMode,
+              width: 120,
+              listClass: 'x-menu',
               listeners: {
-                checkchange: function (item, checked) {
-                  if (checked) {
-                    localStorage.setItem('labelFilterMode', 'all')
-                    _this.fireEvent('filterschanged', _this)
-                  }
+                select: function(combo, record) {
+                  localStorage.setItem('labelFilterMode', record.get('value'))
+                  _this.fireEvent('filterschanged', _this)
                 }
               }
             })
             
-            const excludeModeItem = hmenu.addItem({
-              text: 'EXCLUDE selected labels',
-              xtype: 'menucheckitem',
+            const filterModeItem = hmenu.addItem({
               hideOnClick: false,
-              checked: currentMode === 'exclude',
-              group: 'labelFilterMode_' + col.dataIndex,
-              labelMatchMode: 'exclude',
+              plain: true,
               filter: {
                 dataIndex: col.dataIndex
               },
-              listeners: {
-                checkchange: function (item, checked) {
-                  if (checked) {
-                    localStorage.setItem('labelFilterMode', 'exclude')
-                    _this.fireEvent('filterschanged', _this)
-                  }
-                }
-              }
+              items: [filterModeCombo]
             })
             
             const sep2 = hmenu.addItem({
@@ -329,7 +366,7 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
             })
             
             // Track these items for cleanup
-            hmenu.filterItems.labelModeItems.push(sep1, matchLabel, anyModeItem, allModeItem, excludeModeItem, sep2)
+            hmenu.filterItems.labelModeItems.push(sep1, matchLabel, matchModeItem, filterLabel, filterModeItem, sep2)
           }
 
           // add the Select All item
