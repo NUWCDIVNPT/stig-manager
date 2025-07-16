@@ -1842,7 +1842,7 @@ SM.MetaPanel.CollectionsMenu = Ext.extend(Ext.menu.Menu, {
       activeClass: '',
       text,
       iconCls: 'sm-menuitem-filter-icon',
-      cls: 'sm-menuitem-filter-collection'
+      cls: 'sm-menuitem-filter-label'
     }
   },
   getSelectAllItemConfig: function () {
