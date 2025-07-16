@@ -348,6 +348,7 @@ function setTokensWithRefresh(tokensResponse) {
     setRefreshTokenTimer(refreshTimes.timeoutInMs)
   } else {
     console.log(logPrefix, 'Refresh expiration unknown or zero, Access token expires: ', accessTimes.expiresDateISO, ' timeout: ', accessTimes.timeoutDateISO)
+    tokens.refreshToken = tokensResponse.refresh_token ?? null
     setAccessTokenTimer(accessTimes.timeoutInMs)
     return
   }
