@@ -50,6 +50,7 @@ SM.Findings.ParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				{ name: 'cci', type: 'string' },
 				{ name: 'definition', type: 'string' },
 				{ name: 'apAcronym', type: 'string' },
+				{ name: 'labels' },
 			],
 			listeners: {
 				load: function (store, records) {
@@ -112,6 +113,27 @@ SM.Findings.ParentGrid = Ext.extend(Ext.grid.GridPanel, {
 				dataIndex: 'ruleId',
 				sortable: true,
 				filter: { type: 'string' }
+			},
+			{
+				header: "Labels",
+				hidden: true,
+				width: 120,
+				dataIndex: 'labels',
+				renderer: function (v) {
+					if (!v || v.length === 0) return ''
+					return v.map(label => 
+						`<span style="background-color: #${label.color}; color: white; padding: 2px 6px; border-radius: 3px; margin: 1px; display: inline-block; font-size: 10px;">${Ext.util.Format.htmlEncode(label.name)}</span>`
+					).join(' ')
+				},
+				sortable: true,
+				filter: { 
+					type: 'values',
+					comparer: function (v1, v2) {
+						const labelNames1 = v1 && v1.length > 0 ? v1.map(l => l.name).sort() : []
+						const labelNames2 = v2 && v2.length > 0 ? v2.map(l => l.name).sort() : []
+						return JSON.stringify(labelNames1) === JSON.stringify(labelNames2)
+					}
+				}
 			},
 			{
 				header: "CCI",
@@ -288,6 +310,7 @@ SM.Findings.ParentGrid = Ext.extend(Ext.grid.GridPanel, {
 					colModel.setHidden(colIndex.severity, false)
 					colModel.setHidden(colIndex.groupId, true)
 					colModel.setHidden(colIndex.ruleId, false)
+					colModel.setHidden(colIndex.labels, false)
 					colModel.setHidden(colIndex.cci, true)
 					colModel.setHidden(colIndex.apAcronym, true)
 					colModel.setHidden(colIndex.title, false)
@@ -297,6 +320,7 @@ SM.Findings.ParentGrid = Ext.extend(Ext.grid.GridPanel, {
 					colModel.setHidden(colIndex.severity, false)
 					colModel.setHidden(colIndex.groupId, false)
 					colModel.setHidden(colIndex.ruleId, true)
+					colModel.setHidden(colIndex.labels, true)
 					colModel.setHidden(colIndex.cci, true)
 					colModel.setHidden(colIndex.apAcronym, true)
 					colModel.setHidden(colIndex.title, false)
@@ -306,6 +330,7 @@ SM.Findings.ParentGrid = Ext.extend(Ext.grid.GridPanel, {
 					colModel.setHidden(colIndex.severity, true)
 					colModel.setHidden(colIndex.groupId, true)
 					colModel.setHidden(colIndex.ruleId, true)
+					colModel.setHidden(colIndex.labels, true)
 					colModel.setHidden(colIndex.cci, false)
 					colModel.setHidden(colIndex.apAcronym, false)
 					colModel.setHidden(colIndex.title, true)
