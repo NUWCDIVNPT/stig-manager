@@ -725,7 +725,20 @@ exports.getFindingsByCollection = async function( {collectionId, aggregator, ben
         'rgr.ruleId',
         'rgr.title',
         'rgr.severity',
-        'count(distinct a.assetId) as assetCount'
+        'count(distinct a.assetId) as assetCount',
+        `coalesce(
+          (select
+            json_arrayagg(json_object(
+              'labelId', BIN_TO_UUID(cl.uuid,1),
+              'name', cl.name,
+              'color', cl.color
+              ))
+          from
+            collection_label_rule_map clr
+            left join collection_label cl on clr.clId = cl.clId
+          where
+            clr.ruleId = rgr.ruleId and cl.collectionId = ${collectionId}),
+          json_array()) as labels`
       ]
       groupBy = [
         'rgr.rgrId'
@@ -1514,6 +1527,84 @@ exports.putAssetsByCollectionLabelId = async function (collectionId, labelId, as
         let sqlInsert = `
         INSERT IGNORE INTO 
           collection_label_asset_map (clId, assetId)
+        VALUES
+          ?`
+        await connection.query(sqlInsert, [ binds ])
+      }
+      // Commit the changes
+      await connection.commit()
+    }
+    await dbUtils.retryOnDeadlock(transaction, svcStatus)
+  }
+  catch (err) {
+    if (typeof connection !== 'undefined') {
+      await connection.rollback()
+    }
+    throw err
+  }
+  finally {
+    if (typeof connection !== 'undefined') {
+      await connection.release()
+    }
+  }
+}
+
+exports.getRulesByCollectionLabelId = async function (collectionId, labelId, grant) {
+  const ctes = []
+  const columns = [
+    'r.ruleId',
+    'r.title',
+    'r.severity'
+  ]
+  const joins = [
+    'collection_label cl',
+    'left join collection_label_rule_map clr on clr.clId = cl.clId',
+    'inner join rule r on clr.ruleId = r.ruleId'
+  ]
+  const predicates = {
+    statements: [
+      'cl.collectionId = ?',
+      'cl.uuid = UUID_TO_BIN(?,1)'
+    ],
+    binds: [collectionId, labelId]
+  }
+  const groupBy = []
+  const orderBy = ['r.ruleId']
+  
+  const sql = dbUtils.makeQueryString({ctes, columns, joins, predicates, groupBy, orderBy, format: true})
+  const [rows] = await dbUtils.pool.query(sql)
+  return (rows)
+}
+
+exports.putRulesByCollectionLabelId = async function (collectionId, labelId, ruleIds, svcStatus = {}) {
+  let connection
+  try {
+    connection = await dbUtils.pool.getConnection()
+    async function transaction() {
+      await connection.query('START TRANSACTION')
+
+      const sqlGetClId = `select clId from collection_label where uuid = UUID_TO_BIN(?,1)`
+      const [clIdRows] = await connection.query( sqlGetClId, [ labelId ] )
+      const clId = clIdRows[0].clId
+  
+      let sqlDelete = `
+      DELETE FROM 
+        collection_label_rule_map
+      WHERE 
+        clId = ?`
+      if (ruleIds.length > 0) {
+        sqlDelete += ' and ruleId NOT IN ?'
+      }  
+      await connection.query( sqlDelete, [ clId, [ruleIds] ] )
+      // Push any bind values
+      const binds = []
+      for (const ruleId of ruleIds) {
+        binds.push([clId, ruleId])
+      }
+      if (binds.length > 0) {
+        let sqlInsert = `
+        INSERT IGNORE INTO 
+          collection_label_rule_map (clId, ruleId)
         VALUES
           ?`
         await connection.query(sqlInsert, [ binds ])

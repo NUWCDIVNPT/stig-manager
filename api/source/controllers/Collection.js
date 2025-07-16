@@ -657,6 +657,37 @@ module.exports.putAssetsByCollectionLabelId = async function (req, res, next) {
   }
 }
 
+module.exports.getRulesByCollectionLabelId = async function (req, res, next) {
+  try {
+    const {collectionId, grant} = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
+    const response = await CollectionService.getRulesByCollectionLabelId( collectionId, req.params.labelId, grant )
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.putRulesByCollectionLabelId = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req)
+    const labelId = req.params.labelId
+    const ruleIds = req.body
+    let collection = await CollectionService.getCollection( collectionId, ['labels'], false, req.userObject)
+
+    if (!collection.labels.find( l => l.labelId === labelId)) {
+      throw new SmError.PrivilegeError('The labelId is not associated with this Collection.')
+    }
+
+    await CollectionService.putRulesByCollectionLabelId( collectionId, labelId, ruleIds, res.svcStatus )
+    const response = await CollectionService.getRulesByCollectionLabelId( collectionId, req.params.labelId, req.userObject )
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
 module.exports.postCklArchiveByCollection = async function (req, res, next) {
   try {
     const { collectionId, grant } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
