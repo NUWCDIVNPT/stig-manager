@@ -248,7 +248,8 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
       style: 'width: 95px;',
       buttonText: `Attach image...`,
       buttonCfg: {
-          icon: "img/attachment.svg"
+          icon: "img/attachment.svg",
+          tooltip: ''
       },
       listeners: {
           fileselected: onFileSelected
@@ -257,6 +258,18 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
     const config = {
       loadArtifacts: loadArtifacts,
       fileUploadField: fileUploadField,
+      updateAttachmentButtonState: function(reviewExists, hasWriteAccess) {
+        fileUploadField.setDisabled(!reviewExists || !hasWriteAccess)
+        if (fileUploadField.button) {
+          if (!reviewExists) {
+            fileUploadField.button.setTooltip('Save the review before attaching evidence')
+          } else if (!hasWriteAccess) {
+            fileUploadField.button.setTooltip('No write access')
+          } else {
+            fileUploadField.button.setTooltip('Attach an image file as evidence for this review')
+          }
+        }
+      },
       disableSelection: true,
       layout: 'fit',
       cls: 'custom-artifacts',
