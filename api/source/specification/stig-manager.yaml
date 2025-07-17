@@ -2091,6 +2091,66 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+  '/collections/{collectionId}/labels/{labelId}/rules':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/LabelIdPath'
+    get:
+      tags:
+        - Collection
+        - Rule
+      summary: Return the Rules mapped to the Label
+      operationId: getRulesByCollectionLabelId
+      responses:
+        '200':
+          description: Rule response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RuleBasic'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    put:
+      tags:
+        - Collection
+        - Rule
+      summary: Replace the Label's Rule mappings
+      operationId: putRulesByCollectionLabelId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/RuleId'
+      responses:
+        '200':
+          description: The Label's Rule mappings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RuleBasic'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
   '/collections/{collectionId}/metadata':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -8233,6 +8293,20 @@ components:
       type: integer
     RuleId:
       $ref: '#/components/schemas/String45Nullable'
+    RuleBasic:
+      additionalProperties: false
+      type: object
+      properties:
+        ruleId:
+          $ref: '#/components/schemas/RuleId'
+        title:
+          $ref: '#/components/schemas/RuleTitle'
+        severity:
+          $ref: '#/components/schemas/RuleSeverity'
+      required:
+        - ruleId
+        - title
+        - severity
     RuleProjected:
       additionalProperties: false
       type: object
