@@ -28,7 +28,7 @@
     "jszip": "^3.10.1",
     "jwks-rsa": "^3.1.0",
     "lodash": "^4.17.21",
-    "multer": "^2.0.0",
+    "multer": "^2.0.2",
     "mysql2": "^3.11.2",
     "net-keepalive": "^4.0.17",
     "on-finished": "^2.4.1",
