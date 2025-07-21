@@ -362,7 +362,7 @@
   display: none
 }
 /* Always show Meta Dashboard button (grid icon) */
-.sm-tree-toolbar[src*="grid.svg"] {
+.sm-tree-toolbar.sm-tree-toolbar-persistent {
   display: inline;
   position: absolute;
   right: 10px;
