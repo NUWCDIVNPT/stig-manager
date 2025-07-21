@@ -13,6 +13,7 @@ let accessTimeoutId = null
 let refreshTimeoutId = null
 let redirectUri = null
 const bc = new BroadcastChannel('stigman-oidc-worker')
+let idleTimeoutId = null
 
 // Worker entry point
 onconnect = function (e) {
@@ -83,6 +84,9 @@ async function initialize(options) {
       console.error(logPrefix, 'OIDC configuration validation failed', validation.error)
       return { success: false, error: validation.error }
     }
+    // if (ENV.idleTimeoutM) {
+    //   setIdleHandler()
+    // }
   }
   return { success: true, env: ENV }
 }
@@ -97,16 +101,21 @@ function logout() {
 async function onMessage(e) {
   const port = e.target
   const { requestId, request, ...options } = e.data
-  const handler = messageHandlers[request]
-  if (handler) {
-    try {
-      const response = await handler(options)
-      port.postMessage({ requestId, response })
-    } catch (error) {
-      port.postMessage({ requestId, error: error.message })
-    }
+  if (requestId === 'contextActive' && tokens.accessToken) {
+      console.log(logPrefix, 'Received contextActive message, setting idle handler')
+      setIdleHandler()
   } else {
-    port.postMessage({ requestId, error: 'Unknown request' })
+    const handler = messageHandlers[request]
+    if (handler) {
+      try {
+        const response = await handler(options)
+        port.postMessage({ requestId, response })
+      } catch (error) {
+        port.postMessage({ requestId, error: error.message })
+      }
+    } else {
+      port.postMessage({ requestId, error: 'Unknown request' })
+    }
   }
 }
 
@@ -329,6 +338,10 @@ function setTokensAccessOnly(tokensResponse) {
   broadcastToken()
   console.log(logPrefix, 'Access token expires: ', accessTimes.expiresDateISO, ' timeout: ', accessTimes.timeoutDateISO)
   setAccessTokenTimer(accessTimes.timeoutInMs)
+  if (ENV.idleTimeoutM && !idleTimeoutId) {
+    setIdleHandler()
+  }
+
 }
 
 function setTokensWithRefresh(tokensResponse) {
@@ -357,6 +370,9 @@ function setTokensWithRefresh(tokensResponse) {
     setAccessTokenTimer(accessTimes.timeoutInMs)
   } else {
     console.log(logPrefix, 'Access token expires: ', accessTimes.expiresDateISO, ' timeout disabled')
+  }
+  if (ENV.idleTimeoutM && !idleTimeoutId) {
+    setIdleHandler()
   }
 }
 
@@ -506,3 +522,22 @@ async function refreshAccessToken() {
     return { success: false, error: e.message}
   }
 }
+
+function setIdleHandler() {
+  idleTimeoutId && clearTimeout(idleTimeoutId)
+  idleTimeoutId = setTimeout(() => {
+      idleTimeoutId = null
+      console.log(logPrefix, 'Idle timeout reached, clearing tokens with broadcast')
+      clearTokens(true) // broadcast no token
+    }, (ENV.idleTimeoutM || 15) * 60 * 1000) // default to 15 minutes if not set
+  console.log(logPrefix, 'Idle handler installed, timeout set for', ENV.idleTimeoutM , 'minutes')
+}
+
+function clearIdleHandler() {
+  if (idleTimeoutId) {
+    clearTimeout(idleTimeoutId)
+    idleTimeoutId = null
+    console.log(logPrefix, 'Idle handler cleared')
+  }
+}
+

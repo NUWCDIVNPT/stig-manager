@@ -48,7 +48,8 @@ function getClientEnv(){
                 reauthAction: "${config.client.reauthAction}",
                 strictPkce: ${config.client.strictPkce},
                 audienceValue: "${config.oauth.audienceValue ?? ''}",
-                claims: ${JSON.stringify(config.oauth.claims)}
+                claims: ${JSON.stringify(config.oauth.claims)},
+                idleTimeoutM: ${config.client.idleTimeoutM},
             },
             experimental: {
                 appData: "${config.experimental.appData}"

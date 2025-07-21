@@ -23,6 +23,7 @@ const config = {
     client: {
         clientId: process.env.STIGMAN_CLIENT_ID || "stig-manager",
         displayAppManagers: process.env.STIGMAN_CLIENT_DISPLAY_APPMANAGERS || "true",
+        idleTimeoutM: parseInt(process.env.STIGMAN_CLIENT_IDLE_TIMEOUT) || 15,
         authority: process.env.STIGMAN_CLIENT_OIDC_PROVIDER || process.env.STIGMAN_OIDC_PROVIDER || "http://localhost:8080/realms/stigman",
         apiBase: process.env.STIGMAN_CLIENT_API_BASE || "api",
         disabled: process.env.STIGMAN_CLIENT_DISABLED === "true",

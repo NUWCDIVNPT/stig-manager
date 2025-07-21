@@ -21,6 +21,8 @@
 | A space separated list of OAuth2 scopes to request in addition to ``stig-manager:stig`` ``stig-manager:stig:read`` ``stig-manager:collection`` ``stig-manager:user`` ``stig-manager:user:read`` ``stig-manager:op``. Some OIDC providers (Okta) generate a refresh token only if the scope ``offline_access`` is requested","Client"
 "STIGMAN_CLIENT_ID","| **Default** ``stig-manager``
 | The OIDC clientId of the web client","Client"
+"STIGMAN_CLIENT_IDLE_TIMEOUT","| **Default** ``15``
+| The maximum time (in minutes) a user can be inactive in the web client before expiring their access token and requiring reauthorization. Activity is defined as mouse click, keypress, or scrolling in any tab or window of a same-origin browsing context group. Set to zero to disable idle detection.","Client"
 "STIGMAN_CLIENT_OIDC_PROVIDER","| **Default** Value of ``STIGMAN_OIDC_PROVIDER``
 | Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended by the client when fetching metadata.","Client "
 "STIGMAN_CLIENT_SCOPE_PREFIX","| **No default**

@@ -2,6 +2,7 @@ Ext.Ajax.timeout = 30000000
 Ext.Msg.minWidth = 300
 Ext.USE_NATIVE_JSON = true
 Ext.Ajax.disableCaching = false
+
 start()
 
 function GetXmlHttpObject() {
@@ -26,11 +27,11 @@ function myContextMenu (e,t,eOpts) {
 	}
 }
 
-
 async function start () {
 	const el = Ext.get('loading-text').dom
 
 	try {
+		SM.IdleHandler.setup()
 		if ('serviceWorker' in navigator) {
 			await navigator.serviceWorker.register('serviceWorker.js')
 		}
@@ -244,14 +245,19 @@ let reauthAlert, reauthWindow, reauthPopup, reauthTab
 function broadcastHandler (event)  {
 	console.log('[stigman] Received from worker:', event.type, event.data)
 	if (event.data.type === 'noToken') {
+		SM.IdleHandler.remove()
 		reauthenticate(event.data)
 	}
 	else if (event.data.type === 'accessToken') {
+		SM.IdleHandler.setup()
 		reauthAlert?.close()
+
 		reauthWindow?.close()
 		reauthWindow = null
+
 		reauthTab?.close()
 		reauthTab = null
+
 		reauthPopup?.close()
 		reauthPopup = null
 	}
@@ -278,7 +284,6 @@ function reauthenticate({ codeVerifier, redirect, state }) {
 	})
 
 	function reauthHandler () {
-		console.log('[stigman] navigator.userActivation:', navigator.userActivation)
 		const width = 600
 		const height = 740
 		const left = window.screenX + (window.outerWidth - width) / 2
@@ -332,7 +337,6 @@ function reauthenticate({ codeVerifier, redirect, state }) {
 			window.location.reload()
 		}	
 	}
-
 
 	reauthAlert = new Ext.Window({
 		title: '<div class="sm-alert-icon" style="padding-left:20px">Credentials Expired</div>',

@@ -163,6 +163,9 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
           port.addEventListener('message', handler)
         })
       },
+      postContextActiveMessage: function () {
+        this.worker.port.postMessage({ requestId: 'contextActive' })
+      },
       worker: new SharedWorker("js/oidcWorker.js", { name: 'stigman-oidc-worker', type: "module" })
     }
 
