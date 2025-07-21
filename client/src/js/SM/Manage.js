@@ -2215,9 +2215,9 @@ SM.Manage.Collection.LabelNameEditor = Ext.extend(Ext.form.Field, {
               // Safely attempt to select the color, handling case where color doesn't exist in palette
               try {
                 cpm.palette.select(_this.previewfield.color, true) //suppress event
-              } catch (error) {
+              } catch {
                 // Color not found in palette, ignore the error
-                console.warn('Color not found in palette:', _this.previewfield.color)
+                return
               }
             }
           })
