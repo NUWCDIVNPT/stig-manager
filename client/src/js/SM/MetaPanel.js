@@ -1915,13 +1915,12 @@ SM.MetaPanel.CollectionsMenu = Ext.extend(Ext.menu.Menu, {
     }
     
     // Add Apply button and Select All at the top
-    let selectAllItem = null
     if (this.showApply) {
       this.addItem(this.getActionItemConfig())
       this.addItem('-')
-      selectAllItem = this.addItem(this.getSelectAllItemConfig())
-      this.addItem('-')
     }
+    const selectAllItem = this.addItem(this.getSelectAllItemConfig())
+    this.addItem('-')
     
     collections.sort(this.sorter)
     
@@ -1931,7 +1930,7 @@ SM.MetaPanel.CollectionsMenu = Ext.extend(Ext.menu.Menu, {
       const checked = collectionIdSet.has(collection.collectionId)
       const collectionItem = this.addItem(this.getCollectionItemConfig(collection, checked))
       
-      if (selectAllItem && collectionItem) {
+      if (collectionItem) {
         collectionItems.push(collectionItem)
         // Set up listener to update Select All state when individual items change
         collectionItem.on('checkchange', function() {
@@ -1941,10 +1940,8 @@ SM.MetaPanel.CollectionsMenu = Ext.extend(Ext.menu.Menu, {
     }
     
     // Connect Select All with collection items
-    if (selectAllItem) {
-      selectAllItem.collectionItems = collectionItems
-      selectAllItem.onCollectionItemChanged() // Initialize Select All state
-    }
+    selectAllItem.collectionItems = collectionItems
+    selectAllItem.onCollectionItemChanged() // Initialize Select All state
   },
   rerender: function () {
     if (this.rendered) {

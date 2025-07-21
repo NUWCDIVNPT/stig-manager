@@ -2607,13 +2607,12 @@ SM.Manage.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
     }
     
     // Add Apply button and Select All at the top
-    let selectAllItem = null
     if (this.showApply) {
       this.addItem(this.getActionItemConfig())
       this.addItem('-')
-      selectAllItem = this.addItem(this.getSelectAllItemConfig())
-      this.addItem('-')
     }
+    const selectAllItem = this.addItem(this.getSelectAllItemConfig())
+    this.addItem('-')
     
     labels.sort((a, b) => {
       if (a.labelId === null) return -1
@@ -2637,7 +2636,7 @@ SM.Manage.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
         labelItem = this.addItem(this.getLabelItemConfig(label, checked))
       }
       
-      if (selectAllItem && labelItem) {
+      if (labelItem) {
         labelItems.push(labelItem)
         // Set up listener to update Select All state when individual items change
         labelItem.on('checkchange', function() {
@@ -2647,10 +2646,8 @@ SM.Manage.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
     }
     
     // Connect Select All with label items
-    if (selectAllItem) {
-      selectAllItem.labelItems = labelItems
-      selectAllItem.onLabelItemChanged() // Initialize Select All state
-    }
+    selectAllItem.labelItems = labelItems
+    selectAllItem.onLabelItemChanged() // Initialize Select All state
   },
   rerender: function () {
     if (this.rendered) {
