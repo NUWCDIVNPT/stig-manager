@@ -289,7 +289,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
               {
                 id: `collections-root`,
                 node: 'collections',
-                text: 'Collections<img class="sm-tree-toolbar" src="img/grid.svg" width="12" height="12" ext:qtip="Meta Dashboard">',
+                text: 'Collections<img class="sm-tree-toolbar sm-tree-toolbar-persistent" src="img/grid.svg" width="12" height="12" ext:qtip="Meta Dashboard">',
                 iconCls: 'sm-collection-icon',
                 expanded: true,
                 listeners: {

@@ -361,6 +361,15 @@
 .sm-tree-toolbar {
   display: none
 }
+/* Always show Meta Dashboard button (grid icon) */
+.sm-tree-toolbar.sm-tree-toolbar-persistent {
+  display: inline;
+  position: absolute;
+  right: 10px;
+  margin-top: 2px;
+  cursor: pointer;
+  opacity: .5
+}
 .x-tree-node-el:hover .sm-tree-toolbar,
 .x-tree-selected .sm-tree-toolbar {
 	display: inline;
