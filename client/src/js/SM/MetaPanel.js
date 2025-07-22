@@ -1860,7 +1860,7 @@ SM.MetaPanel.CollectionsMenu = Ext.extend(Ext.menu.Menu, {
       listeners: {
         checkchange: function (item, checked) {
           for (const collectionItem of item.collectionItems) {
-            collectionItem.setChecked(checked, true)
+            collectionItem.setChecked(checked, false)
           }
         }
       }

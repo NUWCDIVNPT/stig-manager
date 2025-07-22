@@ -2552,7 +2552,7 @@ SM.Manage.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
       listeners: {
         checkchange: function (item, checked) {
           for (const labelItem of item.labelItems) {
-            labelItem.setChecked(checked, true)
+            labelItem.setChecked(checked, false)
           }
         }
       }
