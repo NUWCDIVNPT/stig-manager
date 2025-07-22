@@ -829,7 +829,8 @@ exports.getFindingsByCollection = async function( {collectionId, aggregator, ben
       then json_object(
         'cci', cci.cci,
         'definition', cci.definition,
-        'apAcronym', cci.apAcronym)
+        'apAcronym', cci.apAcronym,
+        'control', (select textRefNist from cci_reference_map crm where crm.cci = cci.cci limit 1))
       else null end order by cci.cci),
       ''),
     ']') as json) as "ccis"`)
