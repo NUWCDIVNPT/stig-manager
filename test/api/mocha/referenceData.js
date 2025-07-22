@@ -495,7 +495,7 @@ const reference = {
     userId: "1",
     webPreferences: {
       darkMode: true,
-      lastWhatsNew: "01-01-2000"
+      lastWhatsNew: "2000-01-01"
     }
   },
   wfTest: {
@@ -503,7 +503,7 @@ const reference = {
     userId: "22",
     webPreferences: {
       darkMode: true,
-      lastWhatsNew: "01-01-2000"
+      lastWhatsNew: "2000-01-01"
     }
   },
   deleteUser: {

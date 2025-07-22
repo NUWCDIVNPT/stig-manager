@@ -16,7 +16,7 @@ const upFn = async (pool, migrationName) => {
   // If it does not exist, create the webPreferences column
   if (cols[0].count === 0) {
     const addWebPreferencesColumn = `
-      ALTER TABLE user_data ADD COLUMN webPreferences JSON NOT NULL DEFAULT ('{"darkMode": true, "lastWhatsNew": "01-01-2000"}')`
+      ALTER TABLE user_data ADD COLUMN webPreferences JSON NOT NULL DEFAULT ('{"darkMode": true, "lastWhatsNew": "2000-01-01"}')`
     logger.writeInfo('mysql', 'migration', { status: 'running', name: migrationName, statement: addWebPreferencesColumn })
     await connection.query(addWebPreferencesColumn)
   }

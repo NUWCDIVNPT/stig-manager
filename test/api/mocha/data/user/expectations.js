@@ -14,7 +14,7 @@ export const expectations = {
     },
     webPreferences: {
       darkMode: true,
-      lastWhatsNew: "01-01-2000"
+      lastWhatsNew: "2000-01-01"
     }
   },
   lvl1: {
@@ -130,7 +130,7 @@ export const expectations = {
     },
     webPreferences: {
       darkMode: true,
-      lastWhatsNew: "01-01-2000"
+      lastWhatsNew: "2000-01-01"
     }
    
   },
@@ -148,7 +148,7 @@ export const expectations = {
     },
     webPreferences: {
       darkMode: true,
-      lastWhatsNew: "01-01-2000"
+      lastWhatsNew: "2000-01-01"
     }
   },
   lvl3: {
@@ -165,7 +165,7 @@ export const expectations = {
     },
     webPreferences: {
       darkMode: true,
-      lastWhatsNew: "01-01-2000"
+      lastWhatsNew: "2000-01-01"
     }
   },
   lvl4: {
@@ -182,7 +182,7 @@ export const expectations = {
     },
     webPreferences: {
       darkMode: true,
-      lastWhatsNew: "01-01-2000"
+      lastWhatsNew: "2000-01-01"
     }
   },
   collectioncreator: {
@@ -196,7 +196,7 @@ export const expectations = {
     },
     webPreferences: {
       darkMode: true,
-      lastWhatsNew: "01-01-2000"
+      lastWhatsNew: "2000-01-01"
     }
   },
 }
