@@ -493,10 +493,18 @@ const reference = {
   stigmanadmin: {
     username: "stigmanadmin",
     userId: "1",
+    webPreferences: {
+      darkMode: true,
+      lastWhatsNew: "01-01-2000"
+    }
   },
   wfTest: {
     username: "wf-test",
     userId: "22",
+    webPreferences: {
+      darkMode: true,
+      lastWhatsNew: "01-01-2000"
+    }
   },
   deleteUser: {
     username: "workforce-60",

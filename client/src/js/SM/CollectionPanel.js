@@ -874,7 +874,7 @@ SM.CollectionPanel.ProgressPanel = Ext.extend(Ext.Panel, {
       data: {
         datasets: [{
           data: [0, 0, 0, 0, 0],
-          backgroundColor: SM.CollectionPanel.ProgressPanelColors(localStorage.getItem('darkMode') === '1' ? 'dark' : 'light'),
+          backgroundColor: SM.CollectionPanel.ProgressPanelColors(curUser?.webPreferences?.darkMode ? 'dark' : 'light'),
           borderWidth: [1, 1],
           borderColor: '#bbbbbb'
         }],

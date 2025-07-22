@@ -118,7 +118,15 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
       link.rel = 'stylesheet'
       link.async = false
       if (href === 'css/dark-mode.css') {
-        link.disabled = (localStorage.getItem('darkMode') !== '1')
+        try {
+          const response = await fetch('/api/user/web-preferences/keys/darkMode', {
+            headers: { 'Authorization': `Bearer ${OW.token}` }
+          })
+          const isDarkMode = await response.json()
+          link.disabled = !isDarkMode
+        } catch (err) {
+          link.disabled = true 
+        }
       }
       document.head.appendChild(link)
     }

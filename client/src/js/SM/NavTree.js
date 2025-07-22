@@ -333,7 +333,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                     id: 'dark-mode',
                     text: 'Dark mode',
                     leaf: true,
-                    checked: localStorage.getItem('darkMode') == '1',
+                    checked: curUser?.webPreferences?.darkMode,
                     iconCls: 'sm-dark-mode-icon',
                     listeners: {
                       beforeclick: function (node , e) {
@@ -341,9 +341,18 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                         node.fireEvent('checkchange', node, node.ui.checkbox.checked)
                         return false
                       },
-                      checkchange: function (node, checked) {
+                      checkchange: async function (node, checked) {
                         document.querySelector("link[href='css/dark-mode.css']").disabled = !checked
-                        localStorage.setItem('darkMode', checked ? '1' : '0')
+                        try {
+                          await Ext.Ajax.requestPromise({
+                            responseType: 'json',
+                            url: `${STIGMAN.Env.apiBase}/user/web-preferences/keys/darkMode`,
+                            method: 'PUT',
+                            jsonData: JSON.stringify(checked),
+                          })
+                        } catch (error) {
+                            SM.Error.handleError(error)
+                        }
                         SM.Dispatcher.fireEvent('themechanged', checked ? 'dark' : 'light')
                       }
                     }

@@ -7,6 +7,12 @@ const CollectionService = require(`../service/CollectionService`)
 const SmError = require('../utils/error')
 const dbUtils = require('../service/utils')
 
+const preferenceTypes = {
+  darkMode: 'boolean',
+  lastWhatsNew: 'date',
+}
+
+
 /*  */
 module.exports.createUser = async function createUser (req, res, next) {
   try {
@@ -88,7 +94,12 @@ module.exports.exportUserGroups = async function exportUserGroups (projections, 
 
 module.exports.getUser = async function getUser (req, res, next) {
   try {
-    let response = await UserService.getUserByUserId(req.userObject.userId, ['collectionGrants', 'statistics', 'userGroups'])
+    const projection = ['collectionGrants', 'statistics', 'userGroups']
+    if (req.query.projection) {
+      projection.push(req.query.projection)
+    }
+
+    let response = await UserService.getUserByUserId(req.userObject.userId, projection)
     response.privileges = req.userObject.privileges
     res.json(response)
 }
@@ -349,4 +360,107 @@ module.exports.deleteUserGroup = async (req, res, next) => {
     next(err)
   }
 }
+
+module.exports.getUserWebPreferences = async (req, res, next) => {
+  try {
+    const response = await UserService.getUserWebPreferences(req.userObject.userId)
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.putUserWebPreferences = async (req, res, next) => {
+  try {
+    const body = req.body
+    await UserService.putUserWebPreferences(req.userObject.userId, body)
+    const response = await UserService.getUserWebPreferences(req.userObject.userId)
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.patchUserWebPreferences = async (req, res, next) => {
+  try {
+    const body = req.body
+    await UserService.patchUserWebPreferences(req.userObject.userId, body)
+    const response = await UserService.getUserWebPreferences(req.userObject.userId)
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getUserWebPreferencesKeys = async (req, res, next) => {
+  try {  
+    const response = await UserService.getUserWebPreferenceKeys(req.userObject.userId)
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getUserWebPreferenceByKey = async (req, res, next) => {
+  try {
+    const key = req.params.key
+    // make sure the key is a valid preference key
+    if (!(key in preferenceTypes)) {
+      throw new SmError.UnprocessableError('Invalid web preference key')
+    }
+    // get the user web preference by key
+    const response = await UserService.getUserWebPreferenceByKey(req.userObject.userId, key)
+    if (response === null) {
+      throw new SmError.NotFoundError('web preference key not found')
+    }
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.putUserWebPreferenceByKey = async (req, res, next) => {
+
+  function isValidWebPreferenceValue(value, expectedType) {
+      if (expectedType === 'boolean') {
+        return typeof value === 'boolean'
+      }
+      if (expectedType === 'date') {
+        // YYYY-MM-DD format
+        return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+      }
+      return false
+  }
+ 
+  try {
+    const key = req.params.key
+    const value = req.body
+    // make sure the key is a valid preference key
+    if (!(key in preferenceTypes)) {
+      throw new SmError.UnprocessableError('Invalid web preference key')
+    }
+    // validate key value type
+    const expectedType = preferenceTypes[key]
+    if (!isValidWebPreferenceValue(value, expectedType)) {
+      throw new SmError.UnprocessableError(`web preference value must be of type ${expectedType}`)
+    }
+    // get the current value to ensure it exists in the database
+    const currentKeyValue = await UserService.getUserWebPreferenceByKey(req.userObject.userId, key)
+    // if the key does not exist, throw an error
+    if (currentKeyValue === null) {
+      throw new SmError.NotFoundError('web preference key not found')
+    }
+    await UserService.putUserWebPreferenceByKey(req.userObject.userId, key, value)
+    res.json(value)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
 
