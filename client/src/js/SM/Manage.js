@@ -2543,6 +2543,27 @@ SM.Manage.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
     }
   },
 
+  getSelectAllItemConfig: function () {
+    return {
+      xtype: 'menucheckitem',
+      hideOnClick: false,
+      text: '<i>(Select All)</i>',
+      labelId: 'select-all',
+      checked: true,
+      labelItems: [],
+      onLabelItemChanged: function () {
+        const state = this.labelItems.every(i => i.checked)
+        this.setChecked(state, true)
+      },
+      listeners: {
+        checkchange: function (item, checked) {
+          for (const labelItem of item.labelItems) {
+            labelItem.setChecked(checked, false)
+          }
+        }
+      }
+    }
+  },
   getActionItemConfig: function (text = '<b>Apply</b>') {
     return {
       xtype: 'menuitem',
@@ -2590,28 +2611,49 @@ SM.Manage.Collection.LabelsMenu = Ext.extend(Ext.menu.Menu, {
     if (this.showHeader) {
       this.addItem(this.getTextItemConfig())
     }
+    
+    // Add Apply button and Select All at the top
+    if (this.showApply) {
+      this.addItem(this.getActionItemConfig())
+      this.addItem('-')
+    }
+    const selectAllItem = this.addItem(this.getSelectAllItemConfig())
+    this.addItem('-')
+    
     labels.sort((a, b) => {
-      if (a.name === null) return -1
+      if (a.labelId === null) return -1
+      if (b.labelId === null) return 1
       return a.name.localeCompare(b.name)
     })
+    
+    const labelItems = []
     for (const label of labels) {
       if (label.uses === 0 && this.ignoreUnusedLabels) continue
       const checked = labelIdSet.has(label.labelId)
+      let labelItem
       if (label.labelId === null) {
-        this.addItem(this.getLabelItemConfig({
+        labelItem = this.addItem(this.getLabelItemConfig({
           color: '000000',
           name: 'no label',
           isUnlabeled: true
         }, checked))
       }
       else {
-        this.addItem(this.getLabelItemConfig(label, checked))
+        labelItem = this.addItem(this.getLabelItemConfig(label, checked))
+      }
+      
+      if (labelItem) {
+        labelItems.push(labelItem)
+        // Set up listener to update Select All state when individual items change
+        labelItem.on('checkchange', function() {
+          selectAllItem.onLabelItemChanged()
+        })
       }
     }
-    if (this.showApply) {
-      this.addItem('-')
-      this.addItem(this.getActionItemConfig())
-    }
+    
+    // Connect Select All with label items
+    selectAllItem.labelItems = labelItems
+    selectAllItem.onLabelItemChanged() // Initialize Select All state
   },
   rerender: function () {
     if (this.rendered) {
