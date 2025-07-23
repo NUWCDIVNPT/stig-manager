@@ -139,6 +139,7 @@ jobs:
       - name: Run tests with coverage and log output
         working-directory: ./test/api/
         run: |
+          set -o pipefail
           npm test 2>&1 | tee ../../binary-artifacts/logs/test-output.log
 
       - name: Stop linux binary
