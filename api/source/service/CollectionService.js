@@ -830,7 +830,10 @@ exports.getFindingsByCollection = async function( {collectionId, aggregator, ben
         'cci', cci.cci,
         'definition', cci.definition,
         'apAcronym', cci.apAcronym,
-        'control', (select textRefNist from cci_reference_map crm where crm.cci = cci.cci limit 1))
+        'control', (select parentControl from cci_reference_map crm 
+                   where crm.cci = cci.cci 
+                   order by case when parentControl not like '%(%' then 0 else 1 end, parentControl 
+                   limit 1))
       else null end order by cci.cci),
       ''),
     ']') as json) as "ccis"`)
