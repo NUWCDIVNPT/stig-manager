@@ -12,6 +12,23 @@ const saveMetricsData = process.env.STIGMAN_SAVE_METRICS_DATA === 'true'
 // New flag to control whether to create new files or update existing ones
 const createNewMetricsFiles = process.env.STIGMAN_NEW_METRICS_FILES === 'true'
 
+const getAppInfo = async () => {
+  const res = await fetch(`${baseUrl}/op/appinfo?elevate=true`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${adminToken}`,
+      'Content-Type': 'application/json'
+    },
+  })
+  if (!res.ok) {
+    const errorText = await res.text()
+    throw new Error(`HTTP error! Status: ${res.status}, Message: ${errorText}`)
+  }
+  const data = await res.json()
+  return data
+}
+
+
 const executeRequest = async (url, method, token, body = null) => {
 
   const options = {
@@ -757,5 +774,6 @@ export {
   deleteStigByRevision,
   getUUIDSubString,
   executeRequest,
-  outputMetricsToJSON
+  outputMetricsToJSON,
+  getAppInfo
 }

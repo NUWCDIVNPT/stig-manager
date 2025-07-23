@@ -22,5 +22,8 @@ export const config = {
             "enabled": "always",
             "required": "always"
         }
+    },
+    "db": {
+        "password": "stigman",
     }
 }

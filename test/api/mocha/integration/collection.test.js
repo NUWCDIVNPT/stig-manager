@@ -9,6 +9,9 @@ import * as utils from '../utils/testUtils.js'
 import reference from '../referenceData.js'
 import { expect } from 'chai'
 import { v4 as uuidv4 } from 'uuid'
+import mysql from 'mysql2/promise'
+import { updateStatsAssetStig } from '../../../../api/source/service/utils.js';
+
 const user = {
   name: "admin",
   grant: "Owner",
@@ -1843,6 +1846,35 @@ describe('getCollection - /collections/{collectionId} -  check that empty usergr
       for(const user of res.body.users){
         expect(user.grantees[0].userGroupId).to.not.eql(userGroup.userGroupId)
       }
+    })
+})
+
+describe('updateStatsAssetStig - NA - Check that disabled collection does not update stats', function () {
+
+    let connection 
+
+    before(async function () {
+        await utils.loadAppData()
+        // get db config info from appinfo 
+        const appinfo = await utils.getAppInfo()
+        const dbConfig = {
+            host: appinfo.nodejs.environment.STIGMAN_DB_HOST,
+            port: appinfo.nodejs.environment.STIGMAN_DB_PORT,
+            user: appinfo.nodejs.environment.STIGMAN_DB_USER,
+            password: config.db.password,
+            database: appinfo.nodejs.environment.STIGMAN_DB_SCHEMA
+        }
+        connection = await mysql.createConnection(dbConfig)
+    })
+
+    it("should  not update any stats when giving collectionId of disabled collection and benchmarkID", async function () {
+        const mysql2metadata = await updateStatsAssetStig(connection, {collectionId: reference.deletedCollection.collectionId, benchmarkId: reference.benchmark})
+        expect(mysql2metadata.affectedRows).to.eql(0)
+    })
+
+    it("should update stats asset stig with test collection and test benchmark", async function () {
+        const mysql2metadata = await updateStatsAssetStig(connection, {collectionId: reference.testCollection.collectionId, benchmarkId: reference.benchmark})
+        expect(mysql2metadata.affectedRows).to.not.eql(0)
     })
 })
 
