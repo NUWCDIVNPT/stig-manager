@@ -1392,18 +1392,13 @@ async function addReview( params ) {
           responseType: 'json',
           url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
           method: 'GET',
-        }),
-        Ext.Ajax.requestPromise({
-          responseType: 'json',
-          url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}/${groupGridRecord.data.ruleId}`,
-          method: 'GET',
           params: { 
             projection: ['history']
           }
         })      
       ]
 
-      const [content, review, reviewProjected] = await Promise.all(requests)
+      const [content, reviewProjected] = await Promise.all(requests)
 
       // CONTENT
       reviewTab.contentPanel.update(content)
@@ -1418,7 +1413,7 @@ async function addReview( params ) {
         
       // Display the review
       reviewForm.groupGridRecord = groupGridRecord
-      reviewForm.loadValues(review)
+      reviewForm.loadValues(reviewProjected)
       reviewForm.isLoaded = true
       reviewForm.setReviewFormItemStates()
   
