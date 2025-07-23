@@ -14,6 +14,7 @@ let refreshTimeoutId = null
 let redirectUri = null
 const bc = new BroadcastChannel('stigman-oidc-worker')
 let idleTimeoutId = null
+let idleTimeoutM = null
 
 // Worker entry point
 onconnect = function (e) {
@@ -84,9 +85,6 @@ async function initialize(options) {
       console.error(logPrefix, 'OIDC configuration validation failed', validation.error)
       return { success: false, error: validation.error }
     }
-    // if (ENV.idleTimeoutM) {
-    //   setIdleHandler()
-    // }
   }
   return { success: true, env: ENV }
 }
@@ -101,7 +99,7 @@ function logout() {
 async function onMessage(e) {
   const port = e.target
   const { requestId, request, ...options } = e.data
-  if (requestId === 'contextActive' && tokens.accessToken) {
+  if (requestId === 'contextActive' && tokens.accessToken && idleTimeoutM) {
       console.log(logPrefix, 'Received contextActive message, setting idle handler')
       setIdleHandler()
   } else {
@@ -338,7 +336,7 @@ function setTokensAccessOnly(tokensResponse) {
   broadcastToken()
   console.log(logPrefix, 'Access token expires: ', accessTimes.expiresDateISO, ' timeout: ', accessTimes.timeoutDateISO)
   setAccessTokenTimer(accessTimes.timeoutInMs)
-  if (ENV.idleTimeoutM && !idleTimeoutId) {
+  if (idleTimeoutM && !idleTimeoutId) {
     setIdleHandler()
   }
 
@@ -371,7 +369,7 @@ function setTokensWithRefresh(tokensResponse) {
   } else {
     console.log(logPrefix, 'Access token expires: ', accessTimes.expiresDateISO, ' timeout disabled')
   }
-  if (ENV.idleTimeoutM && !idleTimeoutId) {
+  if (idleTimeoutM && !idleTimeoutId) {
     setIdleHandler()
   }
 }
@@ -434,6 +432,14 @@ function validateClaims(payload) {
   if (!privileges) {
     throw new Error(`Missing privileges claim (${ENV.claims.privileges}) in access token payload`)
   }
+
+  // move idle handling out of here eventually
+  if (privileges.includes('admin')) {
+    idleTimeoutM = ENV.idleTimeoutAdmin
+  } else {
+    idleTimeoutM = ENV.idleTimeoutUser
+  }
+
   validateScope(payload[ENV.claims.scope], privileges.includes('admin'))
 
   return true
@@ -524,13 +530,15 @@ async function refreshAccessToken() {
 }
 
 function setIdleHandler() {
-  idleTimeoutId && clearTimeout(idleTimeoutId)
-  idleTimeoutId = setTimeout(() => {
+  clearTimeout(idleTimeoutId)
+  if (idleTimeoutM) {
+    idleTimeoutId = setTimeout(() => {
       idleTimeoutId = null
       console.log(logPrefix, 'Idle timeout reached, clearing tokens with broadcast')
       clearTokens(true) // broadcast no token
-    }, (ENV.idleTimeoutM || 15) * 60 * 1000) // default to 15 minutes if not set
-  console.log(logPrefix, 'Idle handler installed, timeout set for', ENV.idleTimeoutM , 'minutes')
+    }, idleTimeoutM * 60 * 1000) // default to 15 minutes if not set
+    console.log(logPrefix, 'Idle handler installed, timeout set for', idleTimeoutM , 'minutes')
+  }
 }
 
 function clearIdleHandler() {

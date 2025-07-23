@@ -1,21 +1,22 @@
-class IdleHandler {
+class ActivityHandler {
   #lastMessageTime = 0;
   #messageTime = 0;
   #messageThrottle = 1000; // 1 second
 
   #events = ['click', 'keypress', 'scroll'];
   #boundHandler = null;
-  
-  #logPrefix = '[IdleHandler]';
 
-  setup() {
-    if (!this.#boundHandler && STIGMAN.Env.oauth.idleTimeoutM > 0) {
+  #logPrefix = '[ActivityHandler]';
+  reportActivity = true;
+  
+  add() {
+    if (!this.#boundHandler && this.reportActivity) {
       this.#boundHandler = this.throttledActiveMessage.bind(this);
       this.#events.forEach(event => {
         window.addEventListener(event, this.#boundHandler, true);
       });
-      console.log(`${this.#logPrefix} idle event handlers added`);
-    }
+      console.log(`${this.#logPrefix} activity event handlers added`);
+    } 
   }
 
   remove() {
@@ -24,7 +25,7 @@ class IdleHandler {
         window.removeEventListener(event, this.#boundHandler, true);
       });
       this.#boundHandler = null;
-      console.log(`${this.#logPrefix} idle event handlers removed`);
+      console.log(`${this.#logPrefix} activity event handlers removed`);
     }
   }
 
@@ -38,4 +39,4 @@ class IdleHandler {
   }
 }
 
-SM.IdleHandler = new IdleHandler();
+SM.ActivityHandler = new ActivityHandler();

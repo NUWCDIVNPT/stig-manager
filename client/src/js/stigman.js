@@ -31,7 +31,6 @@ async function start () {
 	const el = Ext.get('loading-text').dom
 
 	try {
-		SM.IdleHandler.setup()
 		if ('serviceWorker' in navigator) {
 			await navigator.serviceWorker.register('serviceWorker.js')
 		}
@@ -233,7 +232,11 @@ async function loadApp () {
 		window.addEventListener('error', function (e) {
 			SM.Error.handleError(e)
 		})
-		
+
+		const isAdmin = curUser.privileges.admin
+		SM.ActivityHandler.reportActivity = (STIGMAN.Env.oauth.idleTimeoutUser && !isAdmin) || (STIGMAN.Env.oauth.idleTimeoutAdmin && isAdmin)
+		SM.ActivityHandler.add()
+
 	}
 	catch (e) {
 		Ext.get( 'indicator' ).dom.innerHTML = e.message
@@ -245,11 +248,11 @@ let reauthAlert, reauthWindow, reauthPopup, reauthTab
 function broadcastHandler (event)  {
 	console.log('[stigman] Received from worker:', event.type, event.data)
 	if (event.data.type === 'noToken') {
-		SM.IdleHandler.remove()
+		SM.ActivityHandler.remove()
 		reauthenticate(event.data)
 	}
 	else if (event.data.type === 'accessToken') {
-		SM.IdleHandler.setup()
+		SM.ActivityHandler.add()
 		reauthAlert?.close()
 
 		reauthWindow?.close()

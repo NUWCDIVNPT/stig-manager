@@ -49,7 +49,8 @@ function getClientEnv(){
                 strictPkce: ${config.client.strictPkce},
                 audienceValue: "${config.oauth.audienceValue ?? ''}",
                 claims: ${JSON.stringify(config.oauth.claims)},
-                idleTimeoutM: ${config.client.idleTimeoutM},
+                idleTimeoutUser: ${config.client.idleTimeoutUser},
+                idleTimeoutAdmin: ${config.client.idleTimeoutAdmin},
             },
             experimental: {
                 appData: "${config.experimental.appData}"

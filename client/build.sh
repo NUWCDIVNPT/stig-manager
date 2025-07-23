@@ -113,7 +113,7 @@ uglifyjs \
 'SM/Global.js' \
 'SM/StackTrace.js' \
 'SM/Error.js' \
-'SM/IdleHandler.js' \
+'SM/ActivityHandler.js' \
 'SM/FlexboxLayout.js' \
 'BufferView.js' \
 'SM/EventDispatcher.js' \
