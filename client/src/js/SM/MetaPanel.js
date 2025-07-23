@@ -1842,7 +1842,28 @@ SM.MetaPanel.CollectionsMenu = Ext.extend(Ext.menu.Menu, {
       activeClass: '',
       text,
       iconCls: 'sm-menuitem-filter-icon',
-      cls: 'sm-menuitem-filter-collection'
+      cls: 'sm-menuitem-filter-label'
+    }
+  },
+  getSelectAllItemConfig: function () {
+    return {
+      xtype: 'menucheckitem',
+      hideOnClick: false,
+      text: '<i>(Select All)</i>',
+      collectionId: 'select-all',
+      checked: true,
+      collectionItems: [],
+      onCollectionItemChanged: function () {
+        const state = this.collectionItems.every(i => i.checked)
+        this.setChecked(state, true)
+      },
+      listeners: {
+        checkchange: function (item, checked) {
+          for (const collectionItem of item.collectionItems) {
+            collectionItem.setChecked(checked, false)
+          }
+        }
+      }
     }
   },
   getActionItemConfig: function (text = '<b>Apply</b>') {
@@ -1892,16 +1913,35 @@ SM.MetaPanel.CollectionsMenu = Ext.extend(Ext.menu.Menu, {
     if (this.showHeader) {
       this.addItem(this.getTextItemConfig())
     }
+    
+    // Add Apply button and Select All at the top
+    if (this.showApply) {
+      this.addItem(this.getActionItemConfig())
+      this.addItem('-')
+    }
+    const selectAllItem = this.addItem(this.getSelectAllItemConfig())
+    this.addItem('-')
+    
     collections.sort(this.sorter)
+    
+    const collectionItems = []
     for (const collection of collections) {
       if (this.isExcluded(collection)) continue
       const checked = collectionIdSet.has(collection.collectionId)
-      this.addItem(this.getCollectionItemConfig(collection, checked))
+      const collectionItem = this.addItem(this.getCollectionItemConfig(collection, checked))
+      
+      if (collectionItem) {
+        collectionItems.push(collectionItem)
+        // Set up listener to update Select All state when individual items change
+        collectionItem.on('checkchange', function() {
+          selectAllItem.onCollectionItemChanged()
+        })
+      }
     }
-    if (this.showApply) {
-      this.addItem('-')
-      this.addItem(this.getActionItemConfig())
-    }
+    
+    // Connect Select All with collection items
+    selectAllItem.collectionItems = collectionItems
+    selectAllItem.onCollectionItemChanged() // Initialize Select All state
   },
   rerender: function () {
     if (this.rendered) {
