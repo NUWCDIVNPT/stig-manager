@@ -14,7 +14,7 @@ SM.he = Ext.util.Format.htmlEncode
 SM.hd = Ext.util.Format.htmlDecode
 SM.GetUserObject = async function () {
     let result = await Ext.Ajax.requestPromise({
-        url: `${STIGMAN.Env.apiBase}/user`,
+        url: `${STIGMAN.Env.apiBase}/user?projection=webPreferences`,
         method: 'GET'
     })
     curUser = JSON.parse(result.response.responseText)

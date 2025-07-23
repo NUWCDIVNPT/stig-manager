@@ -580,8 +580,18 @@ SM.WhatsNew.showDialog = function (lastDate) {
 
   const btnRemember = new Ext.Button({
     text: `&nbsp;Don't show these features again&nbsp;`,
-    handler: function (b, e) {
-      localStorage.setItem('lastWhatsNew', SM.WhatsNew.Sources[0].date)
+    handler: async function (b, e) {
+      const lastWhatsNew = SM.WhatsNew.Sources[0].date
+      try {
+        await Ext.Ajax.requestPromise({
+          responseType: 'json',
+          url: `${STIGMAN.Env.apiBase}/user/web-preferences/keys/lastWhatsNew`,
+          method: 'PUT',
+          jsonData: JSON.stringify(lastWhatsNew),
+        })
+      } catch (error) {
+          SM.Error.handleError(error)
+      }
       fpwindow.close()
     }
   })
@@ -608,12 +618,12 @@ SM.WhatsNew.showDialog = function (lastDate) {
 }
 
 SM.WhatsNew.autoShow = function () {
-  let lastWhatsNew = localStorage.getItem('lastWhatsNew') || '0000-00-00'
-  
+  let lastWhatsNew = curUser?.webPreferences?.lastWhatsNew
+
   // transform any non-standard date from a previous release
   const dateParts = lastWhatsNew.split('-')
   lastWhatsNew = `${dateParts[0]}-${dateParts[1].padStart(2, '0')}-${dateParts[2].padStart(2, '0')}`
-  
+
   if (SM.WhatsNew.Sources[0].date > lastWhatsNew) {
     SM.WhatsNew.showDialog(lastWhatsNew)
   }
