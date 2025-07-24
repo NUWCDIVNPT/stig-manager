@@ -2,6 +2,7 @@ Ext.Ajax.timeout = 30000000
 Ext.Msg.minWidth = 300
 Ext.USE_NATIVE_JSON = true
 Ext.Ajax.disableCaching = false
+
 start()
 
 function GetXmlHttpObject() {
@@ -25,7 +26,6 @@ function myContextMenu (e,t,eOpts) {
 		return false;
 	}
 }
-
 
 async function start () {
 	const el = Ext.get('loading-text').dom
@@ -232,7 +232,11 @@ async function loadApp () {
 		window.addEventListener('error', function (e) {
 			SM.Error.handleError(e)
 		})
-		
+
+		const isAdmin = curUser.privileges.admin
+		SM.ActivityHandler.reportActivity = (STIGMAN.Env.oauth.idleTimeoutUser && !isAdmin) || (STIGMAN.Env.oauth.idleTimeoutAdmin && isAdmin)
+		SM.ActivityHandler.add()
+
 	}
 	catch (e) {
 		Ext.get( 'indicator' ).dom.innerHTML = e.message
@@ -244,20 +248,25 @@ let reauthAlert, reauthWindow, reauthPopup, reauthTab
 function broadcastHandler (event)  {
 	console.log('[stigman] Received from worker:', event.type, event.data)
 	if (event.data.type === 'noToken') {
+		SM.ActivityHandler.remove()
 		reauthenticate(event.data)
 	}
 	else if (event.data.type === 'accessToken') {
+		SM.ActivityHandler.add()
 		reauthAlert?.close()
+
 		reauthWindow?.close()
 		reauthWindow = null
+
 		reauthTab?.close()
 		reauthTab = null
+
 		reauthPopup?.close()
 		reauthPopup = null
 	}
 }
 
-function reauthenticate({ codeVerifier, redirect, state }) {
+function reauthenticate({ codeVerifier, redirect, state, isIdle }) {
 	reauthAlert?.close()
 	reauthAlert = null
 	reauthWindow?.close()
@@ -278,7 +287,6 @@ function reauthenticate({ codeVerifier, redirect, state }) {
 	})
 
 	function reauthHandler () {
-		console.log('[stigman] navigator.userActivation:', navigator.userActivation)
 		const width = 600
 		const height = 740
 		const left = window.screenX + (window.outerWidth - width) / 2
@@ -333,13 +341,12 @@ function reauthenticate({ codeVerifier, redirect, state }) {
 		}	
 	}
 
-
 	reauthAlert = new Ext.Window({
-		title: '<div class="sm-alert-icon" style="padding-left:20px">Credentials Expired</div>',
+		title: `<div class="sm-alert-icon" style="padding-left:20px">${isIdle ? 'Session Timeout' : 'Credentials Expired'}</div>`,
 		width: 400,
 		height: 110,
 		modal: true,
-		html: `<div style="padding: 10px">Your credentials have expired and we need you to ${reauthText}.</div>`,
+		html: `<div style="padding: 10px">Your ${isIdle ? 'session has timed out' : 'credentials have expired'} and we need you to ${reauthText}.</div>`,
 		closable: false,
 		buttons: [reauthButton]
 	})

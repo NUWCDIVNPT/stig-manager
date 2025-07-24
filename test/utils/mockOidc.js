@@ -462,7 +462,11 @@ class MockOidc {
         const sessionParams = this.sids[sid]
         if (sessionParams) {
           const accessToken = this.getToken(sessionParams)
-          const refreshToken = sessionParams.refreshExpiresIn !== '0' ? this.getRefreshToken(sessionParams) : undefined
+          const refreshToken = sessionParams.refreshExpiresIn !== '0' ? this.getRefreshToken({ 
+            sid: sessionParams.sid, 
+            expiresIn:sessionParams.refreshExpiresIn, 
+            algorithm:sessionParams.algorithm, 
+            kid:sessionParams.kid }) : undefined
           const code = crypto.randomBytes(16).toString('hex')
           this.authCodes[code] = {accessToken, refreshToken, expiresIn: sessionParams.expiresIn}
     
