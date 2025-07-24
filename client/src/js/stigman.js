@@ -266,7 +266,7 @@ function broadcastHandler (event)  {
 	}
 }
 
-function reauthenticate({ codeVerifier, redirect, state }) {
+function reauthenticate({ codeVerifier, redirect, state, isIdle }) {
 	reauthAlert?.close()
 	reauthAlert = null
 	reauthWindow?.close()
@@ -342,11 +342,11 @@ function reauthenticate({ codeVerifier, redirect, state }) {
 	}
 
 	reauthAlert = new Ext.Window({
-		title: '<div class="sm-alert-icon" style="padding-left:20px">Credentials Expired</div>',
+		title: `<div class="sm-alert-icon" style="padding-left:20px">${isIdle ? 'Session Timeout' : 'Credentials Expired'}</div>`,
 		width: 400,
 		height: 110,
 		modal: true,
-		html: `<div style="padding: 10px">Your credentials have expired and we need you to ${reauthText}.</div>`,
+		html: `<div style="padding: 10px">Your ${isIdle ? 'session has timed out' : 'credentials have expired'} and we need you to ${reauthText}.</div>`,
 		closable: false,
 		buttons: [reauthButton]
 	})
