@@ -464,6 +464,7 @@ module.exports.updateStatsAssetStig = async function(connection, {
        
        from
          enabled_asset a
+         ${(benchmarkId || benchmarkIds) ? 'inner join enabled_collection ec on a.collectionId = ec.collectionId' : ''}
          left join stig_asset_map sa using (assetId)
          left join default_rev dr on (sa.benchmarkId = dr.benchmarkId and a.collectionId = dr.collectionId)
          left join rev_group_rule_map rgr on dr.revId = rgr.revId

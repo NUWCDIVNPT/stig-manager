@@ -28,6 +28,8 @@ on:
 env:
   STIGMAN_API_PORT: 64001
   STIGMAN_DB_HOST: localhost
+  STIGMAN_DB_SCHEMA: stigman
+  STIGMAN_DB_USER: stigman
   STIGMAN_DB_PORT: 3306
   STIGMAN_DB_PASSWORD: stigman
   STIGMAN_API_AUTHORITY: http://127.0.0.1:8080/auth/realms/stigman
