@@ -100,11 +100,12 @@ jobs:
             org.opencontainers.image.licenses=${{ fromJson(steps.repo.outputs.result).license.spdx_id }}
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
-      # - name: Update Docker Hub Description
-      #   uses: peter-evans/dockerhub-description@202973a37c8a723405c0c5f0a71b6d99db470dae # pin@v3
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_ORG_OWNER_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_ORG_OWNER_PW }}
-      #     repository: ${{ env.DOCKERHUB_REPOSITORY }}
-      #     short-description: An API and Web client for managing STIG assessments.
-      #     readme-filepath: ./docs/the-project/DockerHub_Readme.md
+      - name: Update Docker Hub Description
+        if: github.event_name != 'workflow_dispatch'
+        uses: peter-evans/dockerhub-description@202973a37c8a723405c0c5f0a71b6d99db470dae # pin@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_ORG_OWNER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ORG_OWNER_PW }}
+          repository: ${{ env.DOCKERHUB_REPOSITORY }}
+          short-description: An API and Web client for managing STIG assessments.
+          readme-filepath: ./docs/the-project/DockerHub_Readme.md
