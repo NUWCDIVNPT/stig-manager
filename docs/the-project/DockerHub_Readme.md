@@ -32,8 +32,6 @@ Built from a point release tag on our `main` branch:
 ```
 # STIG Manager docker-compose orchestration
 
-version: '3.7'
-
 services:
   auth:
     image: nuwcdivnpt/stig-manager-auth
@@ -48,6 +46,8 @@ services:
       - MYSQL_USER=stigman
       - MYSQL_PASSWORD=stigman
       - MYSQL_DATABASE=stigman
+    command: --innodb-buffer-pool-size=1024M --sort_buffer_size=16M 
+
     cap_add:
       - SYS_NICE  # workaround MySQL logging bug => mbind: Operation not permitted 
   api:
@@ -110,7 +110,7 @@ docker run --name stig-manager-db \
   -e MYSQL_DATABASE=stigman \
   -e MYSQL_USER=stigman \
   -e MYSQL_PASSWORD=stigman \
-  mysql:8
+  mysql:8 --innodb-buffer-pool-size=1024M --sort_buffer_size=16M
 ```
 
 ### API
