@@ -247,7 +247,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
     let rowdblclick = () => { }
     let cellmousedown = () => { }
 
-    function renderWithToolbar(v) {
+    function renderWithToolbar(v, md) {
       return `
       <div class="sm-grid-cell-with-toolbar">
         <div class="sm-dynamic-width">
@@ -1825,7 +1825,7 @@ SM.CollectionPanel.AggLabelPanel = Ext.extend(Ext.Panel, {
   }
 })
 
-SM.CollectionPanel.showCollectionTab = async function (options) {
+SM.CollectionPanel.showCollectionTab = function (options) {
   try {
     const { collectionId, collectionName, treePath, initialLabelIds = [] } = options
     const tab = Ext.getCmp('main-tab-panel').getItem(`collection-panel-${collectionId}`)
