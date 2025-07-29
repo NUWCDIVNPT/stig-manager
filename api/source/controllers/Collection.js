@@ -727,12 +727,20 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
   const dateString = escape.filenameComponentFromDate(started)
   
   // Query for highest classification marking of STIG revisions
-  const uniqueRevisions = Array.from(parsedRequest.assetStigArguments.reduce((map, arg) => {
-    arg.stigs.forEach(stig => map.set(`${stig.benchmarkId}:${stig.revisionStr}`, stig))
-    return map
-  }, new Map()).values())
-  const highestMarking = await STIGService.getHighestMarkingByRevisions(uniqueRevisions)
-  const classificationPrefix = highestMarking === 'CUI' || highestMarking === 'FOUO' ? 'CUI' : 'U'
+  let classificationPrefix = 'U'
+  if (config.settings.setClassification === 'NONE') {
+    classificationPrefix = 'U'
+  } else if (config.settings.setClassification === 'U' || config.settings.setClassification === 'CUI') {
+    const uniqueRevisions = Array.from(parsedRequest.assetStigArguments.reduce((map, arg) => {
+      arg.stigs.forEach(stig => map.set(`${stig.benchmarkId}:${stig.revisionStr}`, stig))
+      return map
+    }, new Map()).values())
+    const highestMarking = await STIGService.getHighestMarkingByRevisions(uniqueRevisions)
+    classificationPrefix = highestMarking === 'CUI' || highestMarking === 'FOUO' ? 'CUI' : 'U'
+  } else {
+    // For other classifications (C, S, TS, SCI, etc.), use the system setting
+    classificationPrefix = config.settings.setClassification
+  }
   
   const attachmentName = escape.escapeFilename(`${classificationPrefix}_${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 
     'CKL' : format.startsWith('cklb-') ? 'CKLB' : 'XCCDF'}_${dateString}.zip`)
