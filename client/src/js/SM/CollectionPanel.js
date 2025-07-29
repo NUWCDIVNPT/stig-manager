@@ -247,11 +247,11 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
     let rowdblclick = () => { }
     let cellmousedown = () => { }
 
-    function renderWithToolbar(v, md, r) {
+    function renderWithToolbar(v, md) {
       return `
       <div class="sm-grid-cell-with-toolbar">
         <div class="sm-dynamic-width">
-          <div class="sm-info">${v} ${r.data.marking ? `<span class="sm-sprite-${r.data.marking}"></span>` : ''}</div>
+          <div class="sm-info">${v}</div>
         </div>
         <div class="sm-static-width"><img class="sm-grid-cell-toolbar-edit" ext:qtip="Open checklist" src="img/shield-green-check.svg" width="14" height="14"></div>
       </div>`
@@ -395,7 +395,6 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
         fields.push(
           { name: 'benchmarkId', type: 'string' },
           { name: 'title', type: 'string' },
-          { name: 'marking', type: 'string' },
           { name: 'revisionStr', type: 'string' },
           { name: 'revisionPinned' },
           'assets'

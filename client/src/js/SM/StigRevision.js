@@ -71,6 +71,7 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
     const fields = Ext.data.Record.create([
       {name: 'benchmarkId', type: 'string', sortType: Ext.data.SortTypes.asUCString},
       'title',
+      'marking',
       'status',
       'lastRevisionStr',
       'lastRevisionDate',
@@ -133,7 +134,10 @@ SM.StigRevision.StigGrid = Ext.extend(Ext.grid.GridPanel, {
         width: 300,
         dataIndex: 'benchmarkId',
         sortable: true,
-        filter: {type: 'string'}
+        filter: {type: 'string'},
+        renderer: function(v, md, r) {
+          return `${v} ${r.data.marking ? `<span class="sm-sprite-${r.data.marking}"></span>` : ''}`
+        }
       },
       { 	
         header: "Title",
