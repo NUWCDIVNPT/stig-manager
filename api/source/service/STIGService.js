@@ -1434,3 +1434,34 @@ exports.getRevisionStrsByBenchmarkIds = async function (benchmarkIds) {
   }
   return returnObj
 }
+
+exports.getHighestMarkingByRevisions = async function (stigRevisions) {
+  if (stigRevisions.length === 0) {
+    return 'U'
+  }
+  
+  const revisionCriteria = stigRevisions.map(() => {
+    return `(r.benchmarkId = ? AND r.revisionStr = ?)`
+  }).join(' OR ')
+  
+  const binds = []
+  for (const {benchmarkId, revisionStr} of stigRevisions) {
+    binds.push(benchmarkId, revisionStr)
+  }
+  
+  const sql = `
+    SELECT r.marking 
+    FROM revision r 
+    WHERE (${revisionCriteria}) AND r.marking IS NOT NULL
+    ORDER BY r.marking ASC
+    LIMIT 1
+  `
+  
+  const [rows] = await dbUtils.pool.query(sql, binds)
+  
+  if (rows.length === 0) {
+    return 'U'
+  }
+  
+  return rows[0].marking || 'U'
+}

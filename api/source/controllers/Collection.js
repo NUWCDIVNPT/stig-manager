@@ -725,7 +725,16 @@ async function postArchiveByCollection ({format = 'ckl-mono', req, res, parsedRe
   const zip = Archiver('zip', {zlib: {level: 9}})
   const started = new Date()
   const dateString = escape.filenameComponentFromDate(started)
-  const attachmentName = escape.escapeFilename(`${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 
+  
+  // Query for highest classification marking of STIG revisions
+  const uniqueRevisions = Array.from(parsedRequest.assetStigArguments.reduce((map, arg) => {
+    arg.stigs.forEach(stig => map.set(`${stig.benchmarkId}:${stig.revisionStr}`, stig))
+    return map
+  }, new Map()).values())
+  const highestMarking = await STIGService.getHighestMarkingByRevisions(uniqueRevisions)
+  const classificationPrefix = highestMarking === 'CUI' || highestMarking === 'FOUO' ? 'CUI' : 'U'
+  
+  const attachmentName = escape.escapeFilename(`${classificationPrefix}_${parsedRequest.collection.name}-${format.startsWith('ckl-') ? 
     'CKL' : format.startsWith('cklb-') ? 'CKLB' : 'XCCDF'}_${dateString}.zip`)
   res.attachment(attachmentName)
   zip.pipe(res)
