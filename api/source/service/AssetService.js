@@ -247,7 +247,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
         ASSET: {
           ROLE: 'None',
           ASSET_TYPE: 'Computing',
-          MARKING: config.settings.setClassification,
+          MARKING: null,
           HOST_NAME: null,
           HOST_IP: null,
           HOST_MAC: null,
@@ -333,6 +333,7 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
     xmlJs.CHECKLIST.ASSET.WEB_DB_INSTANCE = resultGetAsset[0].metadata.cklWebDbInstance ?? null
     
     // CHECKLIST.STIGS.iSTIG.STIG_INFO.SI_DATA
+    const markings = []
     for (const stigItem of stigs) {
       const revisionStr = stigItem.revisionStr || 'latest'
       revisionStrResolved = revisionStr
@@ -347,7 +348,8 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
           cr.description, 
           cr.version, 
           cr.release, 
-          cr.benchmarkDate
+          cr.benchmarkDate,
+          cr.marking
         from
           current_rev cr 
           left join stig s on cr.benchmarkId = s.benchmarkId
@@ -361,7 +363,8 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
           r.description,
           r.version,
           r.release,
-          r.benchmarkDate
+          r.benchmarkDate,
+          r.marking
         from 
           stig s 
           left join revision r on s.benchmarkId=r.benchmarkId
@@ -382,6 +385,10 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
       }
   
       const stig = resultGetBenchmarkId[0]
+      // Set the marking
+      if (stig.marking) {
+        markings.push(stig.marking)
+      }
       const siDataRefs = [
         { SID_NAME: 'version', SID_DATA: stig.version },
         { SID_NAME: 'classification' },
@@ -470,7 +477,13 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
       }
       xmlJs.CHECKLIST.STIGS.iSTIG.push(iStigJs)
     }
-    return ({assetName: resultGetAsset[0].name, xmlJs, revisionStrResolved})
+    // calculate the marking for this checklist
+    let marking = config.settings.setClassification === 'NONE' ? 'U' : config.settings.setClassification
+    if (marking === 'U' || marking === 'CUI') {
+      const sortedMarkings = markings.toSorted((a, b) => a.localeCompare(b)) // because CUI, FOUO, U sort alphabetically
+      marking = sortedMarkings[0] || 'U'
+    }
+    return ({assetName: resultGetAsset[0].name, xmlJs, revisionStrResolved, marking})
   }
   finally {
     if (typeof connection !== 'undefined') {
@@ -575,6 +588,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
     cklb.target_data.web_db_instance = resultGetAsset[0].metadata.cklWebDbInstance ?? ''
     
     // cklb.stigs
+    const markings = []
     for (const stigItem of stigs) {
       const revisionStr = stigItem.revisionStr || 'latest'
       revisionStrResolved = revisionStr
@@ -590,7 +604,8 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
           cr.version, 
           cr.release, 
           cr.benchmarkDate,
-          cr.ruleCount
+          cr.ruleCount,
+          cr.marking
         from
           current_rev cr 
           left join stig s on cr.benchmarkId = s.benchmarkId
@@ -605,7 +620,8 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
           r.version,
           r.release,
           r.benchmarkDate,
-          r.ruleCount
+          r.ruleCount,
+          r.marking
         from 
           stig s 
           left join revision r on s.benchmarkId=r.benchmarkId
@@ -626,6 +642,11 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
       }
   
       const stig = resultGetBenchmarkId[0]
+      // Set the marking
+      if (stig.marking) {
+        markings.push(stig.marking)
+      }
+
       const stigUuid = uuid.v1()
       const stigObj = {
         stig_name: stig.title,
@@ -696,7 +717,15 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
       }
       cklb.stigs.push(stigObj)
     }
-    return ({assetName: resultGetAsset[0].name, cklb, revisionStrResolved})
+
+    // calculate the marking for this checklist
+    let marking = config.settings.setClassification === 'NONE' ? 'U' : config.settings.setClassification
+    if (marking === 'U' || marking === 'CUI') {
+      const sortedMarkings = markings.toSorted((a, b) => a.localeCompare(b)) // because CUI, FOUO, U sort alphabetically
+      marking = sortedMarkings[0] || 'U'
+    }
+
+    return ({assetName: resultGetAsset[0].name, cklb, revisionStrResolved, marking})
   }
   finally {
     if (typeof connection !== 'undefined') {
@@ -750,7 +779,8 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
         cr.release, 
         cr.benchmarkDate,
         cr.status,
-        cr.statusDate
+        cr.statusDate,
+        cr.marking
       from
         current_rev cr 
         left join stig s on cr.benchmarkId = s.benchmarkId
@@ -766,7 +796,8 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
         r.release,
         r.benchmarkDate,
         r.status,
-        r.statusDate
+        r.statusDate,
+        r.marking
       from 
         stig s 
         left join revision r on s.benchmarkId=r.benchmarkId
@@ -912,7 +943,11 @@ exports.xccdfFromAssetStig = async function (assetId, benchmarkId, revisionStr =
       }
     })
   }
-  return ({assetName: resultGetAsset[0].name, xmlJs, revisionStrResolved: revision.revisionStr})
+  let marking = config.settings.setClassification === 'NONE' ? 'U' : config.settings.setClassification
+  if (marking === 'U' || marking === 'CUI') {
+    marking = revision.marking || 'U' // if marking is not set, use U
+  }
+  return ({assetName: resultGetAsset[0].name, xmlJs, revisionStrResolved: revision.revisionStr, marking})
 }
 
 exports.createAssets = async function({ assets, collectionId, svcStatus = {} }) {
