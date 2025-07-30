@@ -65,6 +65,10 @@ async function loadApp () {
 			showDelay: 500,      // Show ms after entering target
 			trackMouse: false
 		});
+		
+		// Set the dark mode based on user preferences
+		document.querySelector("link[href='css/dark-mode.css']").disabled = !curUser.webPreferences?.darkMode
+
 		Ext.state.Manager.setProvider(new SM.State.LocalStorageProvider())
 		Ext.data.DataProxy.on('exception', function(proxy, type, action, e) {
 			SM.Error.handleError(new SM.Error.ExtDataProxyError(e))

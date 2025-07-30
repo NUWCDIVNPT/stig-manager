@@ -301,7 +301,7 @@ describe('user', () => {
           })
           it("should throw SmError.NotFoundError for non-existing key", async () => {
             const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/non-existing-key`, 'GET', iteration.token)
-            expect(res.status).to.eql(422)
+            expect(res.status).to.eql(400)
           })
         })
       })

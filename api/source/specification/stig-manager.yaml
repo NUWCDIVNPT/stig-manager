@@ -3940,7 +3940,7 @@ paths:
     get:
       tags:
         - User
-      summary: Return the requester's user preferences
+      summary: Return the requester's web-preferences
       operationId: getUserWebPreferences
       responses:
         '200':
@@ -3955,7 +3955,7 @@ paths:
     put:
       tags:
         - User
-      summary: Set the requester's user preferences
+      summary: Set the requester's web-preferences
       operationId: putUserWebPreferences
       requestBody:
         required: true
@@ -3983,14 +3983,14 @@ paths:
     patch:
       tags:
         - User
-      summary: Merge the provided object to the requester's user preferences
+      summary: Merge the provided object to the requester's web-preferences
       operationId: patchUserWebPreferences
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WebPreferences'
+              $ref: '#/components/schemas/WebPreferencesPatch'
       responses:
         '200':
           description: User Web Preferences response
@@ -4012,7 +4012,7 @@ paths:
     get:
       tags:
         - User
-      summary: Return the requester's user preferences keys
+      summary: Return the requester's web-preferences keys
       operationId: getUserWebPreferencesKeys
       responses:
         '200':
@@ -4020,7 +4020,9 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/WebPreferenceKeys'
+                type: array
+                items:
+                  $ref: '#/components/schemas/WebPreferenceKey'
       security:
         - oauth:
             - 'stig-manager:user:read'
@@ -9044,16 +9046,27 @@ components:
           type: string
           format: date
       additionalProperties: false
+      required:
+        - darkMode
+        - lastWhatsNew
+    WebPreferencesPatch:
+      type: object
+      properties:
+        darkMode:
+          type: boolean
+        lastWhatsNew:
+          type: string
+          format: date
+      additionalProperties: false
+      minProperties: 1
     WebPreferenceValue:
       oneOf:
         - type: boolean
         - type: string
           format: date
-    WebPreferenceKeys:
-      type: array
-      items:
-        type: string
-        enum: [darkMode, lastWhatsNew]
+    WebPreferenceKey:
+      type: string
+      enum: [darkMode, lastWhatsNew]
     Version:
       description: |
         API version string
@@ -9714,7 +9727,7 @@ components:
       required: true
       description: A path parameter that specifies a web preference key
       schema:
-        type: string
+        $ref: '#/components/schemas/WebPreferenceKey'
   responses:
     Forbidden:
       description: The requesting User does not have access rights to the content

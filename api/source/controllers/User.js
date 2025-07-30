@@ -7,12 +7,6 @@ const CollectionService = require(`../service/CollectionService`)
 const SmError = require('../utils/error')
 const dbUtils = require('../service/utils')
 
-const preferenceTypes = {
-  darkMode: 'boolean',
-  lastWhatsNew: 'date',
-}
-
-
 /*  */
 module.exports.createUser = async function createUser (req, res, next) {
   try {
@@ -408,10 +402,6 @@ module.exports.getUserWebPreferencesKeys = async (req, res, next) => {
 module.exports.getUserWebPreferenceByKey = async (req, res, next) => {
   try {
     const key = req.params.key
-    // make sure the key is a valid preference key
-    if (!(key in preferenceTypes)) {
-      throw new SmError.UnprocessableError('Invalid web preference key')
-    }
     // get the user web preference by key
     const response = await UserService.getUserWebPreferenceByKey(req.userObject.userId, key)
     if (response === null) {
@@ -426,37 +416,12 @@ module.exports.getUserWebPreferenceByKey = async (req, res, next) => {
 
 module.exports.putUserWebPreferenceByKey = async (req, res, next) => {
 
-  function isValidWebPreferenceValue(value, expectedType) {
-      if (expectedType === 'boolean') {
-        return typeof value === 'boolean'
-      }
-      if (expectedType === 'date') {
-        // YYYY-MM-DD format
-        return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
-      }
-      return false
-  }
- 
   try {
     const key = req.params.key
     const value = req.body
-    // make sure the key is a valid preference key
-    if (!(key in preferenceTypes)) {
-      throw new SmError.UnprocessableError('Invalid web preference key')
-    }
-    // validate key value type
-    const expectedType = preferenceTypes[key]
-    if (!isValidWebPreferenceValue(value, expectedType)) {
-      throw new SmError.UnprocessableError(`web preference value must be of type ${expectedType}`)
-    }
-    // get the current value to ensure it exists in the database
-    const currentKeyValue = await UserService.getUserWebPreferenceByKey(req.userObject.userId, key)
-    // if the key does not exist, throw an error
-    if (currentKeyValue === null) {
-      throw new SmError.NotFoundError('web preference key not found')
-    }
     await UserService.putUserWebPreferenceByKey(req.userObject.userId, key, value)
-    res.json(value)
+    const currentKeyValue = await UserService.getUserWebPreferenceByKey(req.userObject.userId, key)
+    res.json(currentKeyValue)
   }
   catch (err) {
     next(err)
