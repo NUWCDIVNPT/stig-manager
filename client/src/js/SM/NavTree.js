@@ -294,7 +294,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                 expanded: true,
                 listeners: {
                   beforeclick: function (n, e) {
-                    if (e.target.className === "sm-tree-toolbar") {
+                    if (e.target.className === "sm-tree-toolbar sm-tree-toolbar-persistent") {
                       SM.MetaPanel.showMetaTab({
                         treePath: n.getPath(),
                         initialCollectionIds: SM.safeJSONParse(localStorage.getItem('metaCollectionIds')) ?? []
