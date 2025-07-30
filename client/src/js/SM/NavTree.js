@@ -353,6 +353,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                         } catch (error) {
                             SM.Error.handleError(error)
                         }
+                        curUser.webPreferences.darkMode = checked
                         SM.Dispatcher.fireEvent('themechanged', checked ? 'dark' : 'light')
                       }
                     }
