@@ -36,7 +36,7 @@ describe('user', () => {
         describe(`getUser - /user`, () => {
 
           it('Return the requesters user information - check user', async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/user`, 'GET', iteration.token)
+            const res = await utils.executeRequest(`${config.baseUrl}/user?projection=webPreferences`, 'GET', iteration.token)
 
             expect(res.status).to.eql(200)
             expect(res.body.username, "expect username to be current user").to.equal(iteration.name)
@@ -45,6 +45,10 @@ describe('user', () => {
             for(const grant of res.body.collectionGrants) {
               expect(grant.collection.collectionId).to.be.oneOf(distinct.collectionGrants)
             }
+            expect(res.body.status).to.be.eql('available')
+            expect(res.body.userId, "expect userId to be current user").to.equal(iteration.userId)
+            expect(res.body.webPreferences).to.be.an('object')
+            expect(res.body.webPreferences).to.eql(distinct.webPreferences)
           })
 
           it("Return the requesters user information verify last access and privileges data", async () => {
@@ -63,7 +67,7 @@ describe('user', () => {
         describe(`getUsers - /user`, () => {
 
           it('Return a list of users accessible to the requester USERNAME', async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/users?elevate=true&username=${reference.wfTest.username}&projection=collectionGrants&projection=statistics`, 'GET', iteration.token)
+            const res = await utils.executeRequest(`${config.baseUrl}/users?elevate=true&username=${reference.wfTest.username}&projection=collectionGrants&projection=statistics&projection=webPreferences`, 'GET', iteration.token)
 
             if(iteration.name != "stigmanadmin"){
               expect(res.status).to.eql(403)
@@ -73,6 +77,15 @@ describe('user', () => {
             expect(res.body).to.be.an('array')
             expect(res.body[0].username, "expect user to be wf-test").to.equal('wf-test')
             expect(res.body[0].userId, "expect userId to be wfTest userId").to.equal(reference.wfTest.userId)
+            expect(res.body[0].collectionGrants).to.be.an('array')
+            expect(res.body[0].statistics).to.be.an('object')
+            expect(res.body[0].webPreferences).to.be.an('object')
+            expect(res.body[0].webPreferences).to.eql(reference.wfTest.webPreferences)
+            for(let grant of res.body[0].collectionGrants) {
+              expect(grant).to.have.property('collection')
+              expect(grant).to.have.property('roleId')
+              expect(grant.collection.collectionId, "expect collectionId to be scrapCollection Id").to.equal(reference.scrapCollection.collectionId)
+            }
           })
           it('Return a list of users accessible to the requester username with match=exact', async () => {
             const res = await utils.executeRequest(`${config.baseUrl}/users?elevate=true&username=${reference.wfTest.username}&username-match=exact&projection=collectionGrants&projection=statistics`, 'GET', iteration.token)
@@ -220,7 +233,7 @@ describe('user', () => {
         describe(`getUserByUserId - /users{userId}`, async () => {
 
           it('Return wfTest user user', async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/users/${reference.wfTest.userId}?elevate=true&projection=collectionGrants&projection=statistics`, 'GET', iteration.token)
+            const res = await utils.executeRequest(`${config.baseUrl}/users/${reference.wfTest.userId}?elevate=true&projection=collectionGrants&projection=statistics&projection=webPreferences`, 'GET', iteration.token)
             if(iteration.name != "stigmanadmin"){
               expect(res.status).to.eql(403)
               return
@@ -232,6 +245,7 @@ describe('user', () => {
             expect(res.body.username, "expect username to be wf-Test").to.equal(reference.wfTest.username)
             expect(res.body.userId, "expect userId to be wf-Test userId (22)").to.equal(reference.wfTest.userId)
             expect(res.body.privileges).to.eql({admin: false, create_collection: false})
+            expect(res.body.webPreferences).eql(reference.wfTest.webPreferences)
           })
           it("return adminBurke user and verify its privileges", async () => {
 
@@ -257,6 +271,37 @@ describe('user', () => {
             expect(res.body.userGroups).to.be.an('array')
             expect(res.body.userGroups, "expect user to be in TestGroup").to.eql([{ userGroupId: reference.testCollection.testGroup.userGroupId, name: reference.testCollection.testGroup.name }])
 
+          })
+        })
+        
+        describe(`getUserWebPreferences - /user/web-preferences`, () => {
+          it("should return user web preferences for user", async () => {
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'GET', iteration.token)
+            expect(res.status).to.eql(200)
+            expect(res.body).to.be.an('object')
+            expect(res.body.darkMode).to.eql(distinct.webPreferences.darkMode)
+            expect(res.body.lastWhatsNew).to.eql(distinct.webPreferences.lastWhatsNew)
+          })
+        })
+
+        describe(`getUserWebPreferencesKeys - /user/web-preferences/keys`, () => {
+          it("should return user web preferences keys for user", async () => {
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys`, 'GET', iteration.token)
+            expect(res.status).to.eql(200)
+            expect(res.body).to.be.an('array').to.have.lengthOf(2)
+            expect(res.body).to.include.members(['darkMode', 'lastWhatsNew'])
+          })
+        })
+
+        describe(`getUserWebPreferenceByKey - /user/web-preferences/{key}`, () => {
+          it("should return user web preference by key for user", async () => {
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/darkMode`, 'GET', iteration.token)
+            expect(res.status).to.eql(200)
+            expect(res.body).to.eql(distinct.webPreferences.darkMode)
+          })
+          it("should throw SmError.NotFoundError for non-existing key", async () => {
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/non-existing-key`, 'GET', iteration.token)
+            expect(res.status).to.eql(422)
           })
         })
       })
@@ -459,10 +504,49 @@ describe('user', () => {
                 expect(res.status).to.eql(404)
           })
         })
-      })
 
+        describe(`PATCH - patchUserWebPreferences - /user/web-preferences`, () => {
+          it("should update user web preferences for user", async () => {
+            const patch = {
+              darkMode: false,
+              lastWhatsNew: "2025-01-01"
+            }
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'PATCH', iteration.token, patch)
+            expect(res.status).to.eql(200)
+            expect(res.body).to.eql({
+              "darkMode": false,
+              "lastWhatsNew": "2025-01-01"
+            })
+          })
+
+          it('should reject request with invalid key', async () => {
+            const patch = {
+              invalidKey: false
+            }
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'PATCH', iteration.token, patch)
+            expect(res.status).to.eql(400)
+          })
+
+          it('should reject request with invalid value type fir darkMode', async () => {
+            const patch = {
+              darkMode: "not-a-boolean"
+            }
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'PATCH', iteration.token, patch)
+            expect(res.status).to.eql(400)
+          })
+
+          it('should reject request with invalid value type for lastWhatsNew', async () => {  
+            const patch = {
+              lastWhatsNew: 1234567890 
+            }
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'PATCH', iteration.token, patch)
+            expect(res.status).to.eql(400)
+          })
+        })
+      })
+        
       describe('PUT - user', () => {
-        describe(`PUT - replaceUser - /users{userId}`, async () => {
+        describe(`PUT - replaceUser - /users{/userId}`, async () => {
 
           it(`Set all properties of a user - Change Username`, async () => {
           const res = await utils.executeRequest(`${config.baseUrl}/users/${testUser.userId}?elevate=true&projection=collectionGrants&projection=statistics`, 'PUT', iteration.token, {
@@ -599,6 +683,62 @@ describe('user', () => {
           })
 
         })
+
+        describe(`PUT - putUserWebPreferences - /user/web-preferences`, () => {
+          it("should update user web preferences for user", async () => {
+            const put = {
+              darkMode: true,
+              lastWhatsNew: "2025-02-02"
+            }
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'PUT', iteration.token, put)
+            expect(res.status).to.eql(200)
+            expect(res.body).to.eql({
+              "darkMode": true,
+              "lastWhatsNew": "2025-02-02"
+            })
+          })
+
+          it('should reject request with invalid key', async () => {
+            const put = {
+              test: true,
+              lastWhatsNew: "2025-02-02"
+            }
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'PUT', iteration.token, put)
+            expect(res.status).to.eql(400)
+          })
+        })
+
+        describe(`PUT - putUserWebPreferenceByKey - /user/web-preferences/keys/{key}`, () => {
+          it("should update user web preferences for user by key lastWhatsNew", async () => {
+            const value = '2025-03-03'
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/lastWhatsNew`, 'PUT', iteration.token, value)
+            expect(res.status).to.eql(200)
+            expect(res.body).to.eql(value)
+          })
+
+          it("should update user web preferences for user by key darkMode", async () => {
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/darkMode`, 'PUT', iteration.token, true)
+            expect(res.status).to.eql(200)
+            expect(res.body).to.eql(true)
+          })
+
+          it("should throw SmError.NotFoundError for non-existing key", async () => {
+            const put = {
+              value: "test"
+            }
+            const res = await utils.executeRequest(`${config.baseUrl}/users/${reference.wfTest.userId}/web-preferences/keys/non-existing-key`, 'PUT', iteration.token, put)
+            expect(res.status).to.eql(404)
+          })
+
+          it('should throw, because of invalid value type for key darkMode', async () => {
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/darkMode`, 'PUT', iteration.token, "not-a-boolean")
+            expect(res.status).to.eql(400)
+          })
+          it('should throw, because of invalid value type for key lastWhatsNew', async () => {
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/lastWhatsNew`, 'PUT', iteration.token, false)
+            expect(res.status).to.eql(400)
+          })
+        })
       })
 
       describe('DELETE - user', () => {
@@ -633,7 +773,6 @@ describe('user', () => {
             })
           }
         })
-      
       })
     })
   }
