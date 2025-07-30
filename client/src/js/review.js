@@ -979,7 +979,7 @@ async function addReview( params ) {
         dataIndex: 'assetLabelIds',
         sortable: false,
         filter: {
-            type: 'values', 
+            type: 'multi-value', 
             collectionId: apiCollection.collectionId,
             renderer: SM.ColumnFilters.Renderers.labels
         },

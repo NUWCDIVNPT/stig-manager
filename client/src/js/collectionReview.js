@@ -974,7 +974,7 @@ async function addCollectionReview ( params ) {
 					dataIndex: 'assetLabelIds',
 					sortable: false,
 					filter: {
-							type: 'values', 
+							type: 'multi-value', 
 							collectionId: apiCollection.collectionId,
 							comparer: function (a, b) {
 								return SM.ColumnFilters.CompareFns.labelIds(a, b, apiCollection.collectionId)

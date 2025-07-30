@@ -3128,4 +3128,8 @@ embed[type="application/pdf"] {
 
 .sm-metrics-age-box {
     background-color: #aaa
-}  
+}
+
+.x-btn-pressed {
+    box-shadow: inset 0px 0px 0px 1px hsl(0 0% 50% / 1);
+}

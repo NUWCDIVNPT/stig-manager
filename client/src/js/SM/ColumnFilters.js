@@ -74,7 +74,8 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
     getFilterFns: function () {
       const hmenu = this.hmenu
       const stringItems = hmenu.filterItems.stringItems
-      const selectItems = hmenu.filterItems.selectItems
+      const valuesItems = hmenu.filterItems.valuesItems
+      const multiValueItems = hmenu.filterItems.multiValueItems
       const conditions = {}
       const filterFns = []
   
@@ -85,28 +86,57 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
           conditions[stringItem.filter.dataIndex] = value
         }
       }
-      for (const selectItem of selectItems) {
-        if (!selectItem.checked) {
-          const dataIndex = selectItem.filter.dataIndex
+      for (const selectAllItem of valuesItems) {
+        if (!selectAllItem.checked) {
+          const dataIndex = selectAllItem.filter.dataIndex
           conditions[dataIndex] = []
-          for (const valueItem of selectItem.valueItems) {
+          for (const valueItem of selectAllItem.valueItems) {
             if (valueItem.checked === true) {
               conditions[dataIndex].push(valueItem.filter.value)
             }
           }
         }
       }
+      for (const multiValueItem of multiValueItems) {
+        conditions[multiValueItem.filter.dataIndex] = multiValueItem.getValue()
+      }
+
       // create a function for each dataIndex
       for (const dataIndex of Object.keys(conditions)) {
           filterFns.push({
             fn: function (record) {
               const cellValue = record.data[dataIndex]
               const condition = conditions[dataIndex]
+
               if (Array.isArray(cellValue)) { 
               // the record data is an Array of values
                 if (Array.isArray(condition)) {
                   if (condition.includes('') && cellValue.length === 0) return true
                   return cellValue.some( v => condition.includes(v))
+                }
+                if (condition.value) { // multi-value condition
+                  let matchResult
+                  if (condition.match === 'all') {
+                    // ALL logic: cellValue must contain ALL values in condition
+                    matchResult = condition.value.every(v => v ? cellValue.includes(v) : cellValue.length === 0)
+                  } else if (condition.match === 'exact') {
+                    // EXACT logic: cellValue must contain the exact values in condition
+                    if (condition.value.length === 1 &&condition.value.includes('') && cellValue.length === 0) {
+                      matchResult = true
+                    } else {
+                      matchResult = condition.value.length === cellValue.length && condition.value.every(v => cellValue.includes(v))
+                    }
+                  } else {
+                    // ANY logic: cellValue must contain ANY value in condition (default)
+                    if (condition.value.includes('') && cellValue.length === 0) {
+                      matchResult = true
+                    } else {
+                      matchResult = cellValue.some(v => condition.value.includes(v))
+                    }
+                  }
+                  
+                  // Apply include/exclude filter
+                  return condition.condition ? matchResult : !matchResult
                 }
               }
   
@@ -148,19 +178,33 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
         case 'selectall':
           item.column.filtered = !(!!value)
           break
+        case 'multi-value':
+          {
+            const itemValue = item.getValue()
+            let filtered = true
+            if (itemValue.condition && itemValue.match === 'any' && itemValue.isAllSelected) {
+              filtered = false
+            } else if (!itemValue.condition && itemValue.match === 'any' && itemValue.value.length === 0) {
+              filtered = false
+            }
+            item.column.filtered = filtered
+            break
+          }
       }
       this.fireEvent('filterschanged', this, item, value)
     },
     afterRenderUI: function () {
       const _this = this
-      const dynamicColumns = []
+      const valuesColumns = []
+      const multiValueColumns = []
   
       SM.ColumnFilters[this.extends].superclass.afterRenderUI.call(this)
   
       const hmenu = this.hmenu
       hmenu.filterItems = {
         stringItems: [],
-        selectItems: []
+        valuesItems: [],
+        multiValueItems: []
       }
       // disables keyboard navigation, needed to support left-right arrow in search input
       hmenu.keyNav = new Ext.KeyNav(document.body, {disabled: true})
@@ -174,11 +218,11 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
         cls: 'sm-menuitem-filter-label'
       })
   
-      // (Re)build the dynamic value items
-      function buildDynamicValues (records, isLoading) {
-        // iterate the dynamic menu items, save their current values if not loading, and remove them
+      // (Re)build the values items
+      function buildValues (records, isLoading) {
+        // iterate the values menu items, save their current values if not loading, and remove them
         const cVals = {}
-        for (const selectAllItem of hmenu.filterItems.selectItems) {
+        for (const selectAllItem of hmenu.filterItems.valuesItems) {
           const dataIndex = selectAllItem.filter.dataIndex
           ;(cVals[dataIndex] = cVals[dataIndex] || []).selectAllChecked = selectAllItem.checked
           for (const valueItem of selectAllItem.valueItems) {
@@ -189,14 +233,17 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
           }
           hmenu.remove(selectAllItem)
         }
-        hmenu.filterItems.selectItems = []
+        for (const multiValueItem of hmenu.filterItems.multiValueItems) {
+          hmenu.remove(multiValueItem)
+        }
+        hmenu.filterItems.valuesItems = []
+        hmenu.filterItems.multiValueItems = []
         
-        // iterate the dynamic columns and create menu items, restoring saved values if not loading
-        for (const col of dynamicColumns) {
+        // iterate the values columns and create menu items, restoring saved values if not loading
+        for (const col of valuesColumns) {
           if (isLoading) col.filtered = false
           const itemConfigs = []
           // get unique values for this column from the record set
-          // const uniqueSet = new Set(records.flatMap( r => Array.isArray(r.data[col.dataIndex] ? ).flat())
           const uniqueSet = new Set(records.flatMap( r => r.data[col.dataIndex] ? (r.data[col.dataIndex].length ? r.data[col.dataIndex] : '') : r.data[col.dataIndex] ))
           const uniqueArray = [...uniqueSet].sort(col.filter.comparer)
           const cValue = cVals[col.dataIndex]
@@ -252,18 +299,47 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
             const valueItem = hmenu.addItem(itemConfig)
             selectAllItem.valueItems.push(valueItem)
           }
-          hmenu.filterItems.selectItems.push(selectAllItem)
+          hmenu.filterItems.valuesItems.push(selectAllItem)
+        }
+
+        // add the multi-value items
+        for (const col of multiValueColumns) {
+          if (isLoading) col.filtered = false
+          // get unique values for this column from the record set
+          const uniqueSet = new Set(records.flatMap( r => r.data[col.dataIndex] ? (r.data[col.dataIndex].length ? r.data[col.dataIndex] : '') : r.data[col.dataIndex] ))
+          const uniqueArray = [...uniqueSet].sort(col.filter.comparer)
+          const multiValueData = uniqueArray.map( value => [value] )
+
+          const multiValuePanel = new SM.ColumnFilters.MultiValuePanel({
+            collectionId: col.filter.collectionId,
+            renderer: col.filter.renderer,
+            listeners: {
+              filterchanged: function () {
+                _this.onFilterChange(multiValuePanel, multiValuePanel.getValue())
+              },
+            }
+          })
+          multiValuePanel.loadData(multiValueData)
+          multiValuePanel.column = col
+          multiValuePanel.filter = {
+            dataIndex: col.dataIndex,
+            type: 'multi-value'
+          }
+          if (!isLoading){
+            hmenu.add(multiValuePanel)
+            hmenu.filterItems.multiValueItems.push(multiValuePanel)
+          }
         }
       }
   
       this.grid.store.on('load', function (store, records, opt) {
-        buildDynamicValues(store.data.items, false)
+        buildValues(store.data.items, false)
         _this.setColumnFilteredStyle()
         _this.fireEvent('filterschanged', _this)
 
       })
       this.grid.store.on('update', function (store, record) {
-        buildDynamicValues(store.snapshot ? store.snapshot.items : store.data.items, false)
+        buildValues(store.snapshot ? store.snapshot.items : store.data.items, false)
       })
   
   
@@ -306,12 +382,14 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
             break
           }
           case 'values':
-            dynamicColumns.push(col)
+            valuesColumns.push(col)
             break
+          case 'multi-value':
+            multiValueColumns.push(col)
         }
       }
       
-      buildDynamicValues(this.grid.store.data.items, true)
+      buildValues(this.grid.store.data.items, true)
     }
   })
 }
@@ -450,6 +528,181 @@ SM.ColumnFilters.StringPanel = Ext.extend(Ext.Panel, {
           ]
         },
         textfield
+      ]
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
+
+SM.ColumnFilters.MultiValueMatchAnyButton = Ext.extend(Ext.Button, {
+  initComponent: function () {
+    const config = {
+      enableToggle: true,
+      border: false,
+      text: '|',
+      tooltip: 'Match any selected labels',
+      toggleGroup: 'valuesMatch'
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
+
+SM.ColumnFilters.MultiValueMatchAllButton = Ext.extend(Ext.Button, {
+  initComponent: function () {
+    const config = {
+      enableToggle: true,
+      border: false,
+      text: '&',
+      tooltip: 'Match all selected labels',
+      toggleGroup: 'valuesMatch'
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
+
+SM.ColumnFilters.MultiValueMatchExactButton = Ext.extend(Ext.Button, {
+  initComponent: function () {
+    const config = {
+      enableToggle: true,
+      border: false,
+      text: '=',
+      tooltip: 'Match exactly the selected labels',
+      toggleGroup: 'valuesMatch'
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
+
+SM.ColumnFilters.MultiValueGridPanel = Ext.extend(Ext.grid.GridPanel, {
+  initComponent: function () {
+    const _this = this
+    
+    const collectionId = this.collectionId
+    const renderer = this.renderer
+
+    const store = new Ext.data.ArrayStore({
+      fields: ['value'],
+      data: []
+    })
+    const sm = new Ext.grid.CheckboxSelectionModel({
+      singleSelect: false,
+      checkOnly: false,
+      grid: _this,
+      listeners: {
+        selectionchange: function (sm) {
+          SM.SetCheckboxSelModelHeaderState(sm)
+          _this.fireEvent('selectionchange', sm, sm.getSelections())
+        }
+      }
+    })
+
+    function getValue() {
+      const selections = sm.getSelections()
+      if (selections.length === 0) return []
+      return selections.map( s => s.data.value )
+    }
+
+    function isAllSelected () {
+      return store.getCount() === sm.getSelections().length
+    }
+
+    const config = {
+      getValue,
+      isAllSelected,
+      store,
+      sm,
+      columns: [
+        sm,
+        {
+          header: this.header ?? 'Label',
+          dataIndex: 'value',
+          renderer: function (v) {
+            if (renderer) {
+              return renderer(v, collectionId)
+            }
+          }
+        }
+      ],
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})          
+
+SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
+  initComponent: function () {
+    const _this = this
+
+    const onFilterChange = function () {
+      _this.column.filter.value = getValue()
+      _this.fireEvent('filterchanged', _this)
+    }
+
+    const conditionComboBox = new SM.ColumnFilters.StringMatchConditionComboBox({
+      flex: 3,
+      listeners: {
+        select: onFilterChange
+      }
+    })
+    conditionComboBox.setValue(false) // default to Excludes
+    const matchAllButton = new SM.ColumnFilters.MultiValueMatchAllButton({
+      flex: 1,
+      toggleGroup: 'valuesMatch',
+      listeners: {
+        click: onFilterChange
+      }
+    })
+    const matchExactButton = new SM.ColumnFilters.MultiValueMatchExactButton({
+      flex: 1,
+      toggleGroup: 'valuesMatch',
+      listeners: {
+        click: onFilterChange
+      }
+    })
+    const grid = new SM.ColumnFilters.MultiValueGridPanel({
+      collectionId: this.collectionId,
+      renderer: this.renderer,
+      height: 250,
+      listeners: {
+        selectionchange: onFilterChange
+      }
+    })
+
+    function getValue () {
+      return {
+        value: grid.getValue() ?? [],
+        isAllSelected: grid.isAllSelected(),
+        condition: conditionComboBox.getValue(),
+        match: matchAllButton.pressed ? 'all' : matchExactButton.pressed ? 'exact' : 'any',
+      }
+    }
+
+    function loadData (data) {
+      grid.store.loadData(data)
+      // const sm = grid.getSelectionModel()
+      // sm.silent = true
+      // sm.selectAll()
+      // sm.silent = false
+    }
+    
+    const config = {
+      getValue,
+      grid,
+      loadData,
+      items: [
+        {
+          layout: 'hbox',
+          items: [
+            conditionComboBox,
+            matchAllButton,
+            matchExactButton
+          ]
+        },
+        grid
       ]
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
