@@ -1,3 +1,22 @@
+1.5.11
+-------
+
+Changes:
+
+  - (UI) feature: Support for specifying idle timeout values that will cause the web app to discard its tokens, forcing reauthentication, after the specified period of inactivity.
+  - (API/UI) feature: Persist user web preferences in the API database rather than browser local storage
+  - (UI) feature: Prefix filenames of exported checklists/archives with appropriate U/CUI markings
+  - (UI) enhancement: Add "Select All" button to Dashboard Overview Filters, move "Apply" button to the top of filter menu
+  - (API) enhancement: Exclude disabled collections when recalculating metrics for better performance
+  - (UI) enhancement: Meta-Collection Dashboard button now always visible in NavTree
+  - (UI) fix: Suppress error when label color is not in predefined palette
+  - (UI) fix: Prevent silent failure when attaching artifact to unsaved Review
+  - (UI) fix: Store refresh tokens even if they can't be read
+  - (API) Dependencies: Various security updates
+
+  Note 1: This release includes a database migration to support new features.
+  Note 2: Web App Idle thresholds can be set separately for Users and Admins with the new environment variables `STIGMAN_CLIENT_USER_TIMEOUT` and `STIGMAN_CLIENT_ADMIN_TIMEOUT`. The default setting is "0", which means no timeout. 
+
 1.5.10
 -------
 
