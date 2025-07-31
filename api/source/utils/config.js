@@ -25,12 +25,12 @@ const config = {
         displayAppManagers: process.env.STIGMAN_CLIENT_DISPLAY_APPMANAGERS || "true",
         idleTimeoutUser: (() => {
             const val = parseInt(process.env.STIGMAN_CLIENT_USER_TIMEOUT)
-            if (isNaN(val) || val < 0) return 15
+            if (isNaN(val) || val < 0) return 0
             return val
         })(),
         idleTimeoutAdmin: (() => {
             const val = parseInt(process.env.STIGMAN_CLIENT_ADMIN_TIMEOUT)
-            if (isNaN(val) || val < 0) return 10
+            if (isNaN(val) || val < 0) return 0
             return val
         })(),
         authority: process.env.STIGMAN_CLIENT_OIDC_PROVIDER || process.env.STIGMAN_OIDC_PROVIDER || "http://localhost:8080/realms/stigman",
