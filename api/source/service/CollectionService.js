@@ -829,7 +829,11 @@ exports.getFindingsByCollection = async function( {collectionId, aggregator, ben
       then json_object(
         'cci', cci.cci,
         'definition', cci.definition,
-        'apAcronym', cci.apAcronym)
+        'apAcronym', cci.apAcronym,
+        'control', (select parentControl from cci_reference_map crm 
+                   where crm.cci = cci.cci 
+                   order by case when parentControl not like '%(%' then 0 else 1 end, parentControl 
+                   limit 1))
       else null end order by cci.cci),
       ''),
     ']') as json) as "ccis"`)
