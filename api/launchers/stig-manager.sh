@@ -112,8 +112,8 @@
 #==============================================================================
 # STIGMAN_CLIENT_ADMIN_TIMEOUT
 #
-#  | Default: "10" | The maximum time (in minutes) a user with admin privileges
-#  can be inactive in the web client before expiring their access token and
+#  | Default: "0" | The maximum time (in minutes) a user with admin privileges
+#  can be inactive in the web client before discarding their access token and
 #  requiring reauthorization. Activity is defined as mouse click, keypress, or
 #  scrolling in any tab or window of a same-origin browsing context group. Set
 #  to zero to disable idle detection.
@@ -185,8 +185,8 @@
 #==============================================================================
 # STIGMAN_CLIENT_USER_TIMEOUT
 #
-#  | Default: "15" | The maximum time (in minutes) a regular user can be
-#  inactive in the web client before expiring their access token and requiring
+#  | Default: "0" | The maximum time (in minutes) a regular user can be inactive
+#  in the web client before discarding their access token and requiring
 #  reauthorization. Activity is defined as mouse click, keypress, or scrolling
 #  in any tab or window of a same-origin browsing context group. Set to zero to
 #  disable idle detection.
