@@ -117,9 +117,6 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
       link.type = 'text/css'
       link.rel = 'stylesheet'
       link.async = false
-      if (href === 'css/dark-mode.css') {
-        link.disabled = (localStorage.getItem('darkMode') !== '1')
-      }
       document.head.appendChild(link)
     }
 
