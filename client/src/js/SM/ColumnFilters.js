@@ -121,7 +121,7 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
                     matchResult = condition.value.every(v => v ? cellValue.includes(v) : cellValue.length === 0)
                   } else if (condition.match === 'exact') {
                     // EXACT logic: cellValue must contain the exact values in condition
-                    if (condition.value.length === 1 &&condition.value.includes('') && cellValue.length === 0) {
+                    if (condition.value.length === 1 && condition.value.includes('') && cellValue.length === 0) {
                       matchResult = true
                     } else {
                       matchResult = condition.value.length === cellValue.length && condition.value.every(v => cellValue.includes(v))
