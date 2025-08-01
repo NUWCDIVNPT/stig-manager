@@ -283,27 +283,6 @@ describe('user', () => {
             expect(res.body.lastWhatsNew).to.eql(distinct.webPreferences.lastWhatsNew)
           })
         })
-
-        describe(`getUserWebPreferencesKeys - /user/web-preferences/keys`, () => {
-          it("should return user web preferences keys for user", async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys`, 'GET', iteration.token)
-            expect(res.status).to.eql(200)
-            expect(res.body).to.be.an('array').to.have.lengthOf(2)
-            expect(res.body).to.include.members(['darkMode', 'lastWhatsNew'])
-          })
-        })
-
-        describe(`getUserWebPreferenceByKey - /user/web-preferences/{key}`, () => {
-          it("should return user web preference by key for user", async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/darkMode`, 'GET', iteration.token)
-            expect(res.status).to.eql(200)
-            expect(res.body).to.eql(distinct.webPreferences.darkMode)
-          })
-          it("should throw SmError.NotFoundError for non-existing key", async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/non-existing-key`, 'GET', iteration.token)
-            expect(res.status).to.eql(400)
-          })
-        })
       })
 
       describe('POST - user', () => {
@@ -527,7 +506,7 @@ describe('user', () => {
             expect(res.status).to.eql(400)
           })
 
-          it('should reject request with invalid value type fir darkMode', async () => {
+          it('should reject request with invalid value type for darkMode', async () => {
             const patch = {
               darkMode: "not-a-boolean"
             }
@@ -682,62 +661,6 @@ describe('user', () => {
             expect(res.status).to.eql(404)
           })
 
-        })
-
-        describe(`PUT - putUserWebPreferences - /user/web-preferences`, () => {
-          it("should update user web preferences for user", async () => {
-            const put = {
-              darkMode: true,
-              lastWhatsNew: "2025-02-02"
-            }
-            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'PUT', iteration.token, put)
-            expect(res.status).to.eql(200)
-            expect(res.body).to.eql({
-              "darkMode": true,
-              "lastWhatsNew": "2025-02-02"
-            })
-          })
-
-          it('should reject request with invalid key', async () => {
-            const put = {
-              test: true,
-              lastWhatsNew: "2025-02-02"
-            }
-            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'PUT', iteration.token, put)
-            expect(res.status).to.eql(400)
-          })
-        })
-
-        describe(`PUT - putUserWebPreferenceByKey - /user/web-preferences/keys/{key}`, () => {
-          it("should update user web preferences for user by key lastWhatsNew", async () => {
-            const value = '2025-03-03'
-            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/lastWhatsNew`, 'PUT', iteration.token, value)
-            expect(res.status).to.eql(200)
-            expect(res.body).to.eql(value)
-          })
-
-          it("should update user web preferences for user by key darkMode", async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/darkMode`, 'PUT', iteration.token, true)
-            expect(res.status).to.eql(200)
-            expect(res.body).to.eql(true)
-          })
-
-          it("should throw SmError.NotFoundError for non-existing key", async () => {
-            const put = {
-              value: "test"
-            }
-            const res = await utils.executeRequest(`${config.baseUrl}/users/${reference.wfTest.userId}/web-preferences/keys/non-existing-key`, 'PUT', iteration.token, put)
-            expect(res.status).to.eql(404)
-          })
-
-          it('should throw, because of invalid value type for key darkMode', async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/darkMode`, 'PUT', iteration.token, "not-a-boolean")
-            expect(res.status).to.eql(400)
-          })
-          it('should throw, because of invalid value type for key lastWhatsNew', async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/lastWhatsNew`, 'PUT', iteration.token, false)
-            expect(res.status).to.eql(400)
-          })
         })
       })
 

@@ -365,18 +365,6 @@ module.exports.getUserWebPreferences = async (req, res, next) => {
   }
 }
 
-module.exports.putUserWebPreferences = async (req, res, next) => {
-  try {
-    const body = req.body
-    await UserService.putUserWebPreferences(req.userObject.userId, body)
-    const response = await UserService.getUserWebPreferences(req.userObject.userId)
-    res.json(response)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
 module.exports.patchUserWebPreferences = async (req, res, next) => {
   try {
     const body = req.body
@@ -388,44 +376,4 @@ module.exports.patchUserWebPreferences = async (req, res, next) => {
     next(err)
   }
 }
-
-module.exports.getUserWebPreferencesKeys = async (req, res, next) => {
-  try {  
-    const response = await UserService.getUserWebPreferenceKeys(req.userObject.userId)
-    res.json(response)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-module.exports.getUserWebPreferenceByKey = async (req, res, next) => {
-  try {
-    const key = req.params.key
-    // get the user web preference by key
-    const response = await UserService.getUserWebPreferenceByKey(req.userObject.userId, key)
-    if (response === null) {
-      throw new SmError.NotFoundError('web preference key not found')
-    }
-    res.json(response)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
-module.exports.putUserWebPreferenceByKey = async (req, res, next) => {
-
-  try {
-    const key = req.params.key
-    const value = req.body
-    await UserService.putUserWebPreferenceByKey(req.userObject.userId, key, value)
-    const currentKeyValue = await UserService.getUserWebPreferenceByKey(req.userObject.userId, key)
-    res.json(currentKeyValue)
-  }
-  catch (err) {
-    next(err)
-  }
-}
-
 
