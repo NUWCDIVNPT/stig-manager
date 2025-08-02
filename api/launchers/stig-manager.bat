@@ -111,6 +111,19 @@
 :: set STIGMAN_CLIENT_ID=
 
 ::==============================================================================
+:: STIGMAN_CLIENT_ADMIN_TIMEOUT
+::
+::  | Default: "0" | The maximum time (in minutes) a user with admin privileges
+::  can be inactive in the web client before discarding their access token and
+::  requiring reauthorization. Activity is defined as mouse click, keypress, or
+::  scrolling in any tab or window of a same-origin browsing context group. Set
+::  to zero to disable idle detection.
+::
+::  Affects: Client
+::==============================================================================
+:: set STIGMAN_CLIENT_ADMIN_TIMEOUT=
+
+::==============================================================================
 :: STIGMAN_CLIENT_OIDC_PROVIDER
 ::
 ::  | Default: Value of "STIGMAN_OIDC_PROVIDER" | Client override of the base
@@ -169,6 +182,19 @@
 ::  Affects: Client
 ::==============================================================================
 :: set STIGMAN_CLIENT_STRICT_PKCE=
+
+::==============================================================================
+:: STIGMAN_CLIENT_USER_TIMEOUT
+::
+::  | Default: "0" | The maximum time (in minutes) a regular user can be
+::  inactive in the web client before discarding their access token and
+::  requiring reauthorization. Activity is defined as mouse click, keypress, or
+::  scrolling in any tab or window of a same-origin browsing context group. Set
+::  to zero to disable idle detection.
+::
+::  Affects: Client
+::==============================================================================
+:: set STIGMAN_CLIENT_USER_TIMEOUT=
 
 ::==============================================================================
 :: STIGMAN_CLIENT_WELCOME_IMAGE 

@@ -13,6 +13,9 @@ let accessTimeoutId = null
 let refreshTimeoutId = null
 let redirectUri = null
 const bc = new BroadcastChannel('stigman-oidc-worker')
+let idleTimeoutId = null
+let idleTimeoutM = null
+let isIdle = false
 
 // Worker entry point
 onconnect = function (e) {
@@ -58,7 +61,13 @@ async function exchangeCodeForToken({ code, codeVerifier, clientId = ENV.clientI
   params.append('code_verifier', codeVerifier)
 
   try {
-    return await fetchTokens(params)
+    isIdle = false
+    await fetchTokens(params)
+    return {
+      success: true,
+      accessToken: tokens.accessToken,
+      accessTokenPayload: decodeToken(tokens.accessToken)
+    }
   }
   catch (e) {
     return { success: false, error: e.message}
@@ -97,16 +106,22 @@ function logout() {
 async function onMessage(e) {
   const port = e.target
   const { requestId, request, ...options } = e.data
-  const handler = messageHandlers[request]
-  if (handler) {
-    try {
-      const response = await handler(options)
-      port.postMessage({ requestId, response })
-    } catch (error) {
-      port.postMessage({ requestId, error: error.message })
-    }
+  if (requestId === 'contextActive' && tokens.accessToken && idleTimeoutM) {
+      console.log(logPrefix, 'Received contextActive message, setting idle handler')
+      isIdle = false
+      setIdleHandler()
   } else {
-    port.postMessage({ requestId, error: 'Unknown request' })
+    const handler = messageHandlers[request]
+    if (handler) {
+      try {
+        const response = await handler(options)
+        port.postMessage({ requestId, response })
+      } catch (error) {
+        port.postMessage({ requestId, error: error.message })
+      }
+    } else {
+      port.postMessage({ requestId, error: 'Unknown request' })
+    }
   }
 }
 
@@ -243,7 +258,7 @@ async function broadcastNoToken() {
     : redirectUri
 
   const auth = await createAuthorization(`${baseRedirectUri}reauth.html`)
-  bc.postMessage({ type: 'noToken', ...auth })
+  bc.postMessage({ type: 'noToken', ...auth, isIdle })
 }
 
 function broadcastToken() {
@@ -329,6 +344,10 @@ function setTokensAccessOnly(tokensResponse) {
   broadcastToken()
   console.log(logPrefix, 'Access token expires: ', accessTimes.expiresDateISO, ' timeout: ', accessTimes.timeoutDateISO)
   setAccessTokenTimer(accessTimes.timeoutInMs)
+  if (idleTimeoutM && !idleTimeoutId) {
+    setIdleHandler()
+  }
+
 }
 
 function setTokensWithRefresh(tokensResponse) {
@@ -357,6 +376,9 @@ function setTokensWithRefresh(tokensResponse) {
     setAccessTokenTimer(accessTimes.timeoutInMs)
   } else {
     console.log(logPrefix, 'Access token expires: ', accessTimes.expiresDateISO, ' timeout disabled')
+  }
+  if (idleTimeoutM && !idleTimeoutId) {
+    setIdleHandler()
   }
 }
 
@@ -418,6 +440,14 @@ function validateClaims(payload) {
   if (!privileges) {
     throw new Error(`Missing privileges claim (${ENV.claims.privileges}) in access token payload`)
   }
+
+  // move idle handling out of here eventually
+  if (privileges.includes('admin')) {
+    idleTimeoutM = ENV.idleTimeoutAdmin
+  } else {
+    idleTimeoutM = ENV.idleTimeoutUser
+  }
+
   validateScope(payload[ENV.claims.scope], privileges.includes('admin'))
 
   return true
@@ -468,24 +498,30 @@ function clearTokens(sendBroadcast = false) {
 }
 
 async function fetchTokens(params) {
+  if (isIdle) {
+    console.log(logPrefix, 'Contexts are idle, will not fetch tokens')
+    return
+  }
   const response = await fetch(oidcConfiguration.token_endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params
   })
+  if (isIdle) {
+    console.log(logPrefix, 'Contexts are idle, will not get tokens response')
+    return
+  }
   const tokensResponse = await response.json()
-  console.log(logPrefix, 'fetchToken() response', tokensResponse)
+  if (isIdle) {
+    console.log(logPrefix, 'Contexts are idle, will not validate and set tokens')
+    return
+  }
 
   if (!response.ok) {
     throw new Error(tokensResponse.error_description)
   }
   validateTokensResponse(tokensResponse)
   setTokens(tokensResponse)
-  return {
-    success: true,
-    accessToken: tokens.accessToken,
-    accessTokenPayload: decodeToken(tokens.accessToken)
-  }
 }
 
 async function refreshAccessToken() {
@@ -506,3 +542,19 @@ async function refreshAccessToken() {
     return { success: false, error: e.message}
   }
 }
+
+function setIdleHandler() {
+  clearTimeout(idleTimeoutId)
+  if (idleTimeoutM) {
+    const idleTimeoutMs = idleTimeoutM * 60 * 1000 // convert minutes to milliseconds
+    const idleTimeoutDate = new Date(Date.now() + idleTimeoutMs).toISOString()
+    idleTimeoutId = setTimeout(() => {
+      console.log(logPrefix, 'Idle timeout reached, clearing tokens with broadcast')
+      idleTimeoutId = null
+      isIdle = true
+      clearTokens(true) // broadcast no token
+    }, idleTimeoutMs) // default to 15 minutes if not set
+    console.log(logPrefix, 'Idle handler installed, timeout set for', idleTimeoutDate)
+  }
+}
+

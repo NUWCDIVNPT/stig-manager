@@ -565,6 +565,7 @@ const baseCols = {
     sqlLabels,
     'rev.benchmarkId',
     'stig.title',
+    'rev.marking',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
   ],
@@ -587,6 +588,7 @@ const baseCols = {
   stig: [
     'rev.benchmarkId',
     'stig.title',
+    'rev.marking',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
     'count(distinct a.assetId) as assets',
@@ -608,6 +610,7 @@ const baseCols = {
   metaStig: [
     'rev.benchmarkId',
     'stig.title',
+    'rev.marking',
     'rev.revisionStr',
     'count(distinct a.collectionId) as collections',
     'count(distinct a.assetId) as assets',
@@ -621,6 +624,7 @@ const baseColsFlat = {
     sqlLabelsFlat,
     'rev.benchmarkId',
     'stig.title',
+    'rev.marking',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
   ],
@@ -639,6 +643,7 @@ const baseColsFlat = {
   stig: [
     'rev.benchmarkId',
     'stig.title',
+    'rev.marking',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
     'count(distinct a.assetId) as assets',
@@ -658,6 +663,7 @@ const baseColsFlat = {
   metaStig: [
     'rev.benchmarkId',
     'stig.title',
+    'rev.marking',
     'rev.revisionStr',
     'count(distinct a.collectionId) as collections',
     'count(distinct a.assetId) as assets',

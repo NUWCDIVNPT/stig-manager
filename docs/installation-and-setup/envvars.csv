@@ -21,6 +21,8 @@
 | A space separated list of OAuth2 scopes to request in addition to ``stig-manager:stig`` ``stig-manager:stig:read`` ``stig-manager:collection`` ``stig-manager:user`` ``stig-manager:user:read`` ``stig-manager:op``. Some OIDC providers (Okta) generate a refresh token only if the scope ``offline_access`` is requested","Client"
 "STIGMAN_CLIENT_ID","| **Default** ``stig-manager``
 | The OIDC clientId of the web client","Client"
+"STIGMAN_CLIENT_ADMIN_TIMEOUT","| **Default** ``0``
+| The maximum time (in minutes) a user with admin privileges can be inactive in the web client before discarding their access token and requiring reauthorization. Activity is defined as mouse click, keypress, or scrolling in any tab or window of a same-origin browsing context group. Set to zero to disable idle detection.","Client"
 "STIGMAN_CLIENT_OIDC_PROVIDER","| **Default** Value of ``STIGMAN_OIDC_PROVIDER``
 | Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended by the client when fetching metadata.","Client "
 "STIGMAN_CLIENT_SCOPE_PREFIX","| **No default**
@@ -31,6 +33,8 @@
 | The response_mode the web client should specify when requesting an authorization code from the OIDC provider. Available values: ``fragment``, ``query`` ","Client"
 "STIGMAN_CLIENT_STRICT_PKCE","| **Default** ``true``
 | Whether the web client verifies the OIDC provider is advertising PKCE/S256 support in compliance with RFC 8414. A non-compliant provider supports PKCE/S256 without advertising it. Independent of this value, the web client always exclusively uses PKCE/S256 in the Authorization Code Flow.","Client"
+"STIGMAN_CLIENT_USER_TIMEOUT","| **Default** ``0``
+| The maximum time (in minutes) a regular user can be inactive in the web client before discarding their access token and requiring reauthorization. Activity is defined as mouse click, keypress, or scrolling in any tab or window of a same-origin browsing context group. Set to zero to disable idle detection.","Client"
 "STIGMAN_CLIENT_WELCOME_IMAGE ","| **No default**
 | The URL of an image hosted elsewhere that will be rendered in the Home tab Welcome widget. The STIGMan app does not serve the image itself, only the reference to it. The URL should be in relation to and accessible from the client's browser. The image will be scaled to a max width or height of 125 pixels - If no alternate image is specified, the seal of the Department of the Navy (the project sponsor)  will be displayed. ","Client Appearance"
 "STIGMAN_CLIENT_WELCOME_LINK","| **No default**

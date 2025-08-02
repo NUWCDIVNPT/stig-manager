@@ -247,7 +247,7 @@ SM.CollectionPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
     let rowdblclick = () => { }
     let cellmousedown = () => { }
 
-    function renderWithToolbar(v) {
+    function renderWithToolbar(v, md) {
       return `
       <div class="sm-grid-cell-with-toolbar">
         <div class="sm-dynamic-width">
@@ -874,7 +874,7 @@ SM.CollectionPanel.ProgressPanel = Ext.extend(Ext.Panel, {
       data: {
         datasets: [{
           data: [0, 0, 0, 0, 0],
-          backgroundColor: SM.CollectionPanel.ProgressPanelColors(localStorage.getItem('darkMode') === '1' ? 'dark' : 'light'),
+          backgroundColor: SM.CollectionPanel.ProgressPanelColors(curUser?.webPreferences?.darkMode ? 'dark' : 'light'),
           borderWidth: [1, 1],
           borderColor: '#bbbbbb'
         }],
@@ -1825,7 +1825,7 @@ SM.CollectionPanel.AggLabelPanel = Ext.extend(Ext.Panel, {
   }
 })
 
-SM.CollectionPanel.showCollectionTab = async function (options) {
+SM.CollectionPanel.showCollectionTab = function (options) {
   try {
     const { collectionId, collectionName, treePath, initialLabelIds = [] } = options
     const tab = Ext.getCmp('main-tab-panel').getItem(`collection-panel-${collectionId}`)
