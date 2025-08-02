@@ -2039,9 +2039,14 @@ a.x-menu-item {
     background-image: url("../img/filter-solid-reverse.svg")
 }
 
+.sm-grid3-col-filterable .x-grid3-hd-btn {
+    /* background-color: transparent; */
+    background-image: url("../img/filter.svg");
+}
+
 .sm-grid3-col-filtered .x-grid3-hd-btn {
     background-color: #46515d;
-    background-image: url("../img/filter-solid-reverse.svg")
+    background-image: url("../img/filter-solid-reverse.svg");
 }
 
 .x-grid3-hd-btn {

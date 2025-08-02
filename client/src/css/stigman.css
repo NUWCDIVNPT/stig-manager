@@ -517,14 +517,18 @@ input.x-tree-node-cb {
   background-size: 14px 14px;
   background-position: 0 1px
 }
-.sm-grid3-col-filtered .x-grid3-hd-btn {
-  background-color: hsl(212deg 14% 40%);
-  background-image: url(../img/filter-solid-reverse.svg);
+.sm-grid3-col-filterable .x-grid3-hd-btn {
+  background-image: url(../img/filter.svg);
   background-size: 10px 14px;
   background-position: center;
   display: block;
   margin-top: 1px;
   margin-right: 0
+}
+
+.sm-grid3-col-filtered .x-grid3-hd-btn {
+  background-color: hsl(212deg 14% 40%);
+  background-image: url(../img/filter-solid-reverse.svg);
 }
 a.x-grid3-hd-btn:hover {
   background-position: center

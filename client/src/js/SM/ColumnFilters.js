@@ -63,10 +63,14 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
       for (let i = 0; i < colCount; i++) {
         const td = this.getHeaderCell(i)
         td.getElementsByTagName("a")[0].style.height = td.classList.contains('x-grid3-td-checker') ? 0 : (td.firstChild.offsetHeight - 1) + 'px'
+        if (this.cm.config[i].filter) {
+          td.classList.add('sm-grid3-col-filterable')
+        } else {
+          td.classList.remove('sm-grid3-col-filterable')
+        }
         if (this.cm.config[i].filtered) {
           td.classList.add('sm-grid3-col-filtered')
-        }
-        else {
+        } else {
           td.classList.remove('sm-grid3-col-filtered')
         }  
       }
@@ -98,6 +102,8 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
         }
       }
       for (const multiValueItem of multiValueItems) {
+        const value = multiValueItem.getValue()
+        if (value.isAllSelected && value.condition && value.match === 'any') continue // skip empty multi-value filters
         conditions[multiValueItem.filter.dataIndex] = multiValueItem.getValue()
       }
 
@@ -390,6 +396,8 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
       }
       
       buildValues(this.grid.store.data.items, true)
+      _this.setColumnFilteredStyle()
+
     }
   })
 }
@@ -610,11 +618,19 @@ SM.ColumnFilters.MultiValueGridPanel = Ext.extend(Ext.grid.GridPanel, {
       return store.getCount() === sm.getSelections().length
     }
 
+    const view = new Ext.grid.GridView({
+      hasRows : function() {
+          let fc = this.mainBody?.dom.firstChild;
+          return fc && fc.nodeType == 1 && fc.className != 'x-grid-empty';
+      }
+    })
+
     const config = {
       getValue,
       isAllSelected,
       store,
       sm,
+      view,
       columns: [
         sm,
         {
@@ -648,7 +664,7 @@ SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
         select: onFilterChange
       }
     })
-    conditionComboBox.setValue(false) // default to Excludes
+    // conditionComboBox.setValue(false) // default to Excludes
     const matchAllButton = new SM.ColumnFilters.MultiValueMatchAllButton({
       flex: 1,
       toggleGroup: 'valuesMatch',
@@ -665,10 +681,19 @@ SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
     })
     const grid = new SM.ColumnFilters.MultiValueGridPanel({
       collectionId: this.collectionId,
+      cls: 'sm-multi-value-grid',
       renderer: this.renderer,
       height: 250,
       listeners: {
-        selectionchange: onFilterChange
+        selectionchange: onFilterChange,
+        viewready: function (grid) {
+          const sm = grid.getSelectionModel()
+          sm.silent = true
+          sm.selectAll()
+          sm.silent = false
+          SM.SetCheckboxSelModelHeaderState(sm)
+          // onFilterChange()
+        }
       }
     })
 
@@ -683,10 +708,10 @@ SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
 
     function loadData (data) {
       grid.store.loadData(data)
-      // const sm = grid.getSelectionModel()
-      // sm.silent = true
-      // sm.selectAll()
-      // sm.silent = false
+      const sm = grid.getSelectionModel()
+      sm.silent = true
+      sm.selectAll()
+      sm.silent = false
     }
     
     const config = {
