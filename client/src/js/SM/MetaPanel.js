@@ -181,7 +181,7 @@ SM.MetaPanel.AggGrid = Ext.extend(Ext.grid.GridPanel, {
             dataIndex: 'labelIds',
             sortable: false,
             filter: {
-              type: 'values',
+              type: 'multi-value',
               collectionId: _this.collectionId,
               renderer: SM.ColumnFilters.Renderers.labels
             },
