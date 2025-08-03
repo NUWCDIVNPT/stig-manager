@@ -929,7 +929,7 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
           dataIndex: 'groupNames',
           sortable: false,
           filter: {
-            type: 'values',
+            type: 'multi-value',
             renderer: SM.ColumnFilters.Renderers.groups
           },
           renderer: function (value, metadata) {
