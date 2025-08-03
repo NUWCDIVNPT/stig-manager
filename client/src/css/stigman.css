@@ -523,6 +523,7 @@ input.x-tree-node-cb {
   background-position: center;
   display: block;
   margin-top: 1px;
+  height: 22px;
   margin-right: 0
 }
 

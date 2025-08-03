@@ -59,7 +59,8 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
       this.setColumnFilteredStyle()
     },
     setColumnFilteredStyle: function () {
-      const colCount = this.cm.getColumnCount()
+      if (!this.cm) return // handle edge case where grid was destroyed before this method is called
+      const colCount = this.cm?.getColumnCount()
       for (let i = 0; i < colCount; i++) {
         const td = this.getHeaderCell(i)
         td.getElementsByTagName("a")[0].style.height = td.classList.contains('x-grid3-td-checker') ? 0 : (td.firstChild.offsetHeight - 1) + 'px'
