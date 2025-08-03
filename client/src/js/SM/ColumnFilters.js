@@ -240,7 +240,10 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
           }
           hmenu.remove(selectAllItem)
         }
+        const savedMultiValues = {}
         for (const multiValueItem of hmenu.filterItems.multiValueItems) {
+          const dataIndex = multiValueItem.filter.dataIndex
+          savedMultiValues[dataIndex] = multiValueItem.getValue()
           hmenu.remove(multiValueItem)
         }
         hmenu.filterItems.valuesItems = []
@@ -332,7 +335,8 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
             dataIndex: col.dataIndex,
             type: 'multi-value'
           }
-          if (!isLoading){
+          if (!isLoading) {
+            savedMultiValues[col.dataIndex] && multiValuePanel.setValue(savedMultiValues[col.dataIndex])
             hmenu.add(multiValuePanel)
             hmenu.filterItems.multiValueItems.push(multiValuePanel)
           }
@@ -689,9 +693,13 @@ SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
         selectionchange: onFilterChange,
         viewready: function (grid) {
           const sm = grid.getSelectionModel()
+          sm.suspendEvents()
           sm.silent = true
-          sm.selectAll()
+          const selected = sm.getSelections()
+          sm.selectRecords(selected)
           sm.silent = false
+          sm.resumeEvents()
+
           SM.SetCheckboxSelModelHeaderState(sm)
           // onFilterChange()
         }
@@ -707,16 +715,46 @@ SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
       }
     }
 
-    function loadData (data) {
+    function setValue(value) {
+      conditionComboBox.setValue(value.condition)
+      matchAllButton.toggle(value.match === 'all')
+      matchExactButton.toggle(value.match === 'exact')
+      const selections = []
+      if (value.value?.length) {
+        for (const v of value.value) {
+          const record = grid.store.getAt(grid.store.findExact('value', v))
+          if (record) {
+            selections.push(record)
+          }
+        }
+      }
+      if (selections.length) {
+        const sm = grid.getSelectionModel()
+        sm.suspendEvents()
+        sm.silent = true
+        sm.selectRecords(selections)
+        sm.silent = false
+        sm.resumeEvents()
+      }
+    }
+
+    function loadData (data, value) {
       grid.store.loadData(data)
       const sm = grid.getSelectionModel()
-      sm.silent = true
-      sm.selectAll()
-      sm.silent = false
+      if (!value) {
+        sm.suspendEvents()
+        sm.silent = true
+        sm.selectAll()
+        sm.silent = false
+        sm.resumeEvents()
+      } else {
+        setValue(value)
+      }
     }
     
     const config = {
       getValue,
+      setValue,
       grid,
       loadData,
       items: [
