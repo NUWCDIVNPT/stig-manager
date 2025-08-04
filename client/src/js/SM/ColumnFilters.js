@@ -323,6 +323,7 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
           const multiValuePanel = new SM.ColumnFilters.MultiValuePanel({
             collectionId: col.filter.collectionId,
             renderer: col.filter.renderer,
+            removeMode: 'container', // the menu <li> is removed when the panel is removed
             listeners: {
               filterchanged: function () {
                 _this.onFilterChange(multiValuePanel, multiValuePanel.getValue())
@@ -378,6 +379,7 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
             }
             const stringItem = hmenu.add(new SM.ColumnFilters.StringPanel({
               hideOnClick: false,
+              removeMode: 'container', // the menu <li> is removed when the panel is removed
               column: col,
               filter: { dataIndex: col.dataIndex, type: 'string'},
               listeners: {
@@ -639,7 +641,7 @@ SM.ColumnFilters.MultiValueGridPanel = Ext.extend(Ext.grid.GridPanel, {
       columns: [
         sm,
         {
-          header: this.header ?? 'Label',
+          header: this.header ?? 'Select all',
           dataIndex: 'value',
           renderer: function (v) {
             if (renderer) {
@@ -719,23 +721,30 @@ SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
       conditionComboBox.setValue(value.condition)
       matchAllButton.toggle(value.match === 'all')
       matchExactButton.toggle(value.match === 'exact')
-      const selections = []
-      if (value.value?.length) {
-        for (const v of value.value) {
-          const record = grid.store.getAt(grid.store.findExact('value', v))
-          if (record) {
-            selections.push(record)
+      
+      const sm = grid.getSelectionModel()
+      sm.suspendEvents()
+      sm.silent = true
+      
+      if (value.isAllSelected) {
+        sm.selectAll()
+      } 
+      else {
+        const selections = []
+        if (value.value?.length) {
+          for (const v of value.value) {
+            const record = grid.store.getAt(grid.store.findExact('value', v))
+            if (record) {
+              selections.push(record)
+            }
           }
         }
+        if (selections.length) {
+          sm.selectRecords(selections)
+        }
       }
-      if (selections.length) {
-        const sm = grid.getSelectionModel()
-        sm.suspendEvents()
-        sm.silent = true
-        sm.selectRecords(selections)
-        sm.silent = false
-        sm.resumeEvents()
-      }
+      sm.silent = false
+      sm.resumeEvents()
     }
 
     function loadData (data, value) {
