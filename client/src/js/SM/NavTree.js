@@ -383,6 +383,9 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                     node.ui.checkbox.checked = !node.ui.checkbox.checked
                     SM.Dispatcher.fireEvent('themechanged', node.ui.checkbox.checked ? 'dark' : 'light', 'local')
                     return false
+                  },
+                  checkchange: function (node, checked) {
+                    SM.Dispatcher.fireEvent('themechanged', checked ? 'dark' : 'light', 'local')
                   }
                 }
               }
