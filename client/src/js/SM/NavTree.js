@@ -346,9 +346,9 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                         try {
                           await Ext.Ajax.requestPromise({
                             responseType: 'json',
-                            url: `${STIGMAN.Env.apiBase}/user/web-preferences/keys/darkMode`,
-                            method: 'PUT',
-                            jsonData: JSON.stringify(checked),
+                            url: `${STIGMAN.Env.apiBase}/user/web-preferences`,
+                            method: 'PATCH',
+                            jsonData: {darkMode: checked}
                           })
                         } catch (error) {
                             SM.Error.handleError(error)

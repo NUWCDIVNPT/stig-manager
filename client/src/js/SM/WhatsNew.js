@@ -585,9 +585,9 @@ SM.WhatsNew.showDialog = function (lastDate) {
       try {
         await Ext.Ajax.requestPromise({
           responseType: 'json',
-          url: `${STIGMAN.Env.apiBase}/user/web-preferences/keys/lastWhatsNew`,
-          method: 'PUT',
-          jsonData: JSON.stringify(lastWhatsNew),
+          url: `${STIGMAN.Env.apiBase}/user/web-preferences`,
+          method: 'PATCH',
+          jsonData: { lastWhatsNew }
         })
       } catch (error) {
           SM.Error.handleError(error)

@@ -3952,34 +3952,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user:read'
-    put:
-      tags:
-        - User
-      summary: Set the requester's web-preferences
-      operationId: putUserWebPreferences
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WebPreferences'
-      responses:
-        '200':
-          description: User Web Preferences response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WebPreferences'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-        # not semantically correct but needed 
-            - 'stig-manager:user:read'
     patch:
       tags:
         - User
@@ -4006,83 +3978,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - oauth:
-        # not semantically correct but needed 
-            - 'stig-manager:user:read'
-  /user/web-preferences/keys:
-    get:
-      tags:
-        - User
-      summary: Return the requester's web-preferences keys
-      operationId: getUserWebPreferencesKeys
-      responses:
-        '200':
-          description: UserWebPreferencesKeys response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/WebPreferenceKey'
-      security:
-        - oauth:
-            - 'stig-manager:user:read'
-  /user/web-preferences/keys/{key}:
-    get:
-      tags:
-        - User
-      summary: Return the requester's user preference for the specified key
-      operationId: getUserWebPreferenceByKey
-      description: | 
-        Acceptable Keys: "darkMode" (bool), "lastWhatsNew" (date).
-      parameters:
-        - $ref: '#/components/parameters/WebPreferenceKeyPath'
-      responses:
-        '200':
-          description: UserWebPreference response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WebPreferenceValue'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - 'stig-manager:user:read'
-    put:
-      tags:
-        - User
-      summary: Set the requester's user preference for the specified key
-      description: | 
-        Acceptable Keys: "darkMode" (bool), "lastWhatsNew" (date).
-      operationId: putUserWebPreferenceByKey
-      parameters:
-        - $ref: '#/components/parameters/WebPreferenceKeyPath'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WebPreferenceValue'
-      responses:
-        '200':
-          description: UserPreference response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WebPreferenceValue'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-        # not semantically correct but needed 
+        # not semantically correct but needed for backwards compatability
             - 'stig-manager:user:read'
   /users:
     parameters:
@@ -9059,14 +8955,6 @@ components:
           format: date
       additionalProperties: false
       minProperties: 1
-    WebPreferenceValue:
-      oneOf:
-        - type: boolean
-        - type: string
-          format: date
-    WebPreferenceKey:
-      type: string
-      enum: [darkMode, lastWhatsNew]
     Version:
       description: |
         API version string
@@ -9721,13 +9609,6 @@ components:
             - statistics
             - userGroups
             - webPreferences
-    WebPreferenceKeyPath:
-      name: key
-      in: path
-      required: true
-      description: A path parameter that specifies a web preference key
-      schema:
-        $ref: '#/components/schemas/WebPreferenceKey'
   responses:
     Forbidden:
       description: The requesting User does not have access rights to the content
