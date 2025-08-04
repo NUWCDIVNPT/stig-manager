@@ -4,7 +4,7 @@ const ourPackage = require("../package.json")
 const insecureKids = ['FJ86GcF3jTbNLOco4NvZkUCIUmfYCqoqtOQeMfbhNlE']
 
 const config = {
-    version: ourPackage.version,
+    version: `${process.env.COMMIT_DESCRIBE ? process.env.COMMIT_DESCRIBE.replace(/-g[0-9a-f]+$/, "").replace(/-/g, "+") : ourPackage.version}`,
     commit: {
         branch: process.env.COMMIT_BRANCH || 'na',
         sha: process.env.COMMIT_SHA || 'na',
