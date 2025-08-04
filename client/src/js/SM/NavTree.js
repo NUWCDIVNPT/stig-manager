@@ -379,11 +379,15 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                 checked: curUser?.webPreferences?.darkMode,
                 iconCls: 'sm-dark-mode-icon',
                 listeners: {
+                  //beforeclick gets click events on the text of the node, but not checkbox clicks
                   beforeclick: function (node) {
+                    //toggle the checkbox state
                     node.ui.checkbox.checked = !node.ui.checkbox.checked
-                    SM.Dispatcher.fireEvent('themechanged', node.ui.checkbox.checked ? 'dark' : 'light', 'local')
+                    // Fire checkchange event manually to centralize the theme change logic
+                    node.fireEvent('checkchange', node, node.ui.checkbox.checked)
                     return false
                   },
+                  // checkchange captures the click event on the checkbox, then fires the themechanged event
                   checkchange: function (node, checked) {
                     SM.Dispatcher.fireEvent('themechanged', checked ? 'dark' : 'light', 'local')
                   }
