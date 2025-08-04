@@ -172,6 +172,17 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
         }
       }
 
+      this.onThemeChanged = function (theme, source) {
+        if (source === 'broadcast') {
+          // Update the dark mode checkbox state if the interface node is expanded
+          const interfaceNode = me.getRootNode()?.findChild('id', 'interface-root')
+          if (interfaceNode?.expanded) {
+            const darkModeNode = interfaceNode.findChild('id', 'dark-mode')
+            darkModeNode && (darkModeNode.ui.checkbox.checked = theme === 'dark')
+          }
+        }
+      }
+
       this.getApiStig = async (benchmarkId) => {
         try {
           let result = await Ext.Ajax.requestPromise({
@@ -227,6 +238,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
       SM.Dispatcher.addListener('collectioncreated', this.onCollectionCreated)
       SM.Dispatcher.addListener('collectionchanged', this.onCollectionChanged)
       SM.Dispatcher.addListener('collectiondeleted', this.onCollectionDeleted)
+      SM.Dispatcher.addListener('themechanged', this.onThemeChanged)
     },
     loadTree: async function (node, cb) {
         try {
@@ -317,54 +329,16 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
             )
             content.push(
               {
-                id: `theme-root`,
+                id: `interface-root`,
                 node: 'theme',
                 text: 'Interface',
                 iconCls: 'sm-setting-icon',
                 expanded: false,
-                children: [
-                  {
-                    id: 'whats-new',
-                    text: "What's New",
-                    iconCls: 'sm-stig-icon',
-                    leaf: true
-                  },
-                  {
-                    id: 'dark-mode',
-                    text: 'Dark mode',
-                    leaf: true,
-                    checked: curUser?.webPreferences?.darkMode,
-                    iconCls: 'sm-dark-mode-icon',
-                    listeners: {
-                      beforeclick: function (node , e) {
-                        node.ui.checkbox.checked = !node.ui.checkbox.checked
-                        node.fireEvent('checkchange', node, node.ui.checkbox.checked)
-                        return false
-                      },
-                      checkchange: async function (node, checked) {
-                        document.querySelector("link[href='css/dark-mode.css']").disabled = !checked
-                        try {
-                          await Ext.Ajax.requestPromise({
-                            responseType: 'json',
-                            url: `${STIGMAN.Env.apiBase}/user/web-preferences`,
-                            method: 'PATCH',
-                            jsonData: {darkMode: checked}
-                          })
-                        } catch (error) {
-                            SM.Error.handleError(error)
-                        }
-                        curUser.webPreferences.darkMode = checked
-                        SM.Dispatcher.fireEvent('themechanged', checked ? 'dark' : 'light')
-                      }
-                    }
-                  }
-                ]
               }
             )
             cb(content, { status: true })
             return
-          }
-          if (node === 'library-root') {
+          } else if (node === 'library-root') {
             const apiStigs = await Ext.Ajax.requestPromise({
               responseType: 'json',
               url: `${STIGMAN.Env.apiBase}/stigs?projection=revisions`,
@@ -373,8 +347,7 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
             let content = SM.NavTree.LibraryNodesConfig(apiStigs)
             cb(content, { status: true })
             return
-          }
-          if (node === 'collections-root') {
+          } else if (node === 'collections-root') {
             const collectionMap = await SM.Cache.getCollections()
             const apiCollections = [...collectionMap.values()].sort((a, b) => a.name.localeCompare(b.name))
             let content = apiCollections.map(collection => SM.NavTree.CollectionLeafConfig(collection))
@@ -391,7 +364,39 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
             }
             cb(content, { status: true })
             return
-          }     
+          } else if (node === 'interface-root') {
+            const content = [
+              {
+                id: 'whats-new',
+                text: "What's New",
+                iconCls: 'sm-stig-icon',
+                leaf: true
+              },
+              {
+                id: 'dark-mode',
+                text: 'Dark mode',
+                leaf: true,
+                checked: curUser?.webPreferences?.darkMode,
+                iconCls: 'sm-dark-mode-icon',
+                listeners: {
+                  //beforeclick gets click events on the text of the node, but not checkbox clicks
+                  beforeclick: function (node) {
+                    //toggle the checkbox state
+                    node.ui.checkbox.checked = !node.ui.checkbox.checked
+                    // Fire checkchange event manually to centralize the theme change logic
+                    node.fireEvent('checkchange', node, node.ui.checkbox.checked)
+                    return false
+                  },
+                  // checkchange captures the click event on the checkbox, then fires the themechanged event
+                  checkchange: function (node, checked) {
+                    SM.Dispatcher.fireEvent('themechanged', checked ? 'dark' : 'light', 'local')
+                  }
+                }
+              }
+            ]
+            cb(content, { status: true })
+            return
+          }
         }
         catch (e) {
           SM.Error.handleError(e)
