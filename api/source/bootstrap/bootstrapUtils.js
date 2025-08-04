@@ -1,6 +1,5 @@
 const path = require('node:path')
 const logger = require('../utils/logger')
-const packageJson = require("../package.json")
 
 function modulePathResolver( handlersPath, route, apiDoc ) {
     const pathKey = route.openApiRoute.substring(route.basePath.length)
@@ -36,7 +35,7 @@ function buildResponseValidationConfig(willValidateResponse) {
 
 function logAppConfig(config) {
     logger.writeInfo('bootstrapUtils', 'starting bootstrap', {
-      version: packageJson.version,
+      version: config.version,
       env: logger.serializeEnvironment(),
       dirname: __dirname,
       cwd: process.cwd()
