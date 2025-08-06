@@ -50,7 +50,13 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
             this.lastHide = new Date()
         }, this, {single:true});
         
-        // menu.show(target, 'tl-bl?');    
+        // menu.show(target, 'tl-bl?');
+        if (this.cm.config[this.hdCtxIndex]?.filter?.type === 'multi-value') {
+          const multiValueItem = menu.filterItems.multiValueItems.find( i => i.filter.dataIndex === this.cm.config[this.hdCtxIndex].dataIndex)
+          if (multiValueItem) {
+            multiValueItem.setGridSizeForXY(e.xy)
+          }
+        }  
         menu.showAt(e.xy);    
       }
     },
@@ -188,13 +194,16 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
         case 'multi-value':
           {
             const itemValue = item.getValue()
-            let filtered = true
-            if (itemValue.condition && itemValue.match === 'any' && itemValue.isAllSelected) {
-              filtered = false
-            } else if (!itemValue.condition && itemValue.match === 'any' && itemValue.value.length === 0) {
-              filtered = false
+            item.column.filtered = true
+            if (
+              itemValue.match === 'any' &&
+              (
+                (itemValue.condition && itemValue.isAllSelected) ||
+                (!itemValue.condition && itemValue.value.length === 0)
+              )
+            ) {
+              item.column.filtered = false
             }
-            item.column.filtered = filtered
             break
           }
       }
@@ -332,7 +341,7 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
 
       })
       this.grid.store.on('update', function (store, record) {
-        this.buildValues(store.snapshot ? store.snapshot.items : store.data.items, false)
+        _this.buildValues(store.snapshot ? store.snapshot.items : store.data.items, false)
       })
   
       // Hide menuitems not associated with the clicked column
@@ -620,6 +629,13 @@ SM.ColumnFilters.MultiValueGridPanel = Ext.extend(Ext.grid.GridPanel, {
       return selections.map( s => s.data.value )
     }
 
+    function getUnscrolledHeight() {
+      const headerHeight = view.getHeaderPanel().getHeight()
+      const rowHeight = view.getRow(0).offsetHeight
+      const rowsHeight = store.getCount() * rowHeight + 2 // +2 for grid border
+      return headerHeight + rowsHeight
+    }
+
     function isAllSelected () {
       return store.getCount() === sm.getSelections().length
     }
@@ -634,6 +650,7 @@ SM.ColumnFilters.MultiValueGridPanel = Ext.extend(Ext.grid.GridPanel, {
     const config = {
       getValue,
       isAllSelected,
+      getUnscrolledHeight,
       store,
       sm,
       view,
@@ -684,7 +701,6 @@ SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
         click: onFilterChange
       }
     })
-
     const matchExactButton = new SM.ColumnFilters.MultiValueMatchExactButton({
       flex: 1,
       toggleGroup: 'valuesMatch',
@@ -763,10 +779,22 @@ SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
         setValue(value)
       }
     }
+
+    function setGridSizeForXY(xy) {
+      const nonGridHeight = 142 // height of the non-grid elements (sorting items, column item, filter label, controls)
+      const gridHeaderHeight = 24 // height of the grid header
+      const gridRowHeight = 23 // height of each grid row
+      const gridUnscrolledHeight = grid.store.getCount() * gridRowHeight + gridHeaderHeight + 2 // +2 for grid border
+      const bodyHeight = Ext.getBody().getHeight()
+      const newGridHeight = Math.min(gridUnscrolledHeight, bodyHeight - xy[1] - nonGridHeight)
+      grid.setHeight(newGridHeight)
+    }
+
     
     const config = {
       getValue,
       setValue,
+      setGridSizeForXY,
       grid,
       loadData,
       items: [
