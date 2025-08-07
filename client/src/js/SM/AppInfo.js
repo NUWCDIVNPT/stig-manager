@@ -2277,7 +2277,7 @@ SM.AppInfo.Requests.OperationsGrid = Ext.extend(Ext.grid.GridPanel, {
         renderer: SM.AppInfo.numberRenderer
       },
       {
-        header: "ReqLenMin",
+        header: "ReqLenMax",
         dataIndex: 'maxReqLength',
         sortable: true,
         align: 'right',
