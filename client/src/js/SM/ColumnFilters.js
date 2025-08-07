@@ -513,6 +513,11 @@ SM.ColumnFilters.StringPanel = Ext.extend(Ext.Panel, {
     })
     const textfield = new SM.ColumnFilters.StringMatchTextField({
       height: 24,
+      style: {
+        marginTop: '2px'
+      },
+      flex: 1,
+      emptyText: 'Type to filter',
       listeners: {
         input: onFilterChange,
         keyup: function (item, e) {
@@ -535,9 +540,11 @@ SM.ColumnFilters.StringPanel = Ext.extend(Ext.Panel, {
     }
     const config = {
       getValue,
+      border: false,
       items: [
         {
           layout: 'hbox',
+          border: false,
           items: [
             conditionComboBox,
             matchCaseButton,
@@ -629,18 +636,12 @@ SM.ColumnFilters.MultiValueGridPanel = Ext.extend(Ext.grid.GridPanel, {
       return selections.map( s => s.data.value )
     }
 
-    function getUnscrolledHeight() {
-      const headerHeight = view.getHeaderPanel().getHeight()
-      const rowHeight = view.getRow(0).offsetHeight
-      const rowsHeight = store.getCount() * rowHeight + 2 // +2 for grid border
-      return headerHeight + rowsHeight
-    }
-
     function isAllSelected () {
       return store.getCount() === sm.getSelections().length
     }
 
     const view = new Ext.grid.GridView({
+      forceFit: true,
       hasRows : function() {
           let fc = this.mainBody?.dom.firstChild;
           return fc && fc.nodeType == 1 && fc.className != 'x-grid-empty';
@@ -650,14 +651,13 @@ SM.ColumnFilters.MultiValueGridPanel = Ext.extend(Ext.grid.GridPanel, {
     const config = {
       getValue,
       isAllSelected,
-      getUnscrolledHeight,
       store,
       sm,
       view,
       columns: [
         sm,
         {
-          header: this.header ?? 'Select all',
+          header: this.header ?? '<i>(Select All)</i>',
           dataIndex: 'value',
           renderer: function (v) {
             if (renderer) {
@@ -666,6 +666,7 @@ SM.ColumnFilters.MultiValueGridPanel = Ext.extend(Ext.grid.GridPanel, {
           }
         }
       ],
+      cls: 'sm-multi-value-grid',
     }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
     this.superclass().initComponent.call(this)
@@ -713,12 +714,18 @@ SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
       cls: 'sm-multi-value-grid',
       renderer: this.renderer,
       height: 250,
+      style: {
+        marginTop: '2px'
+      },
       listeners: {
         selectionchange: onFilterChange,
         viewready: function (grid) {
           grid.view.refresh()
           SM.SetCheckboxSelModelHeaderState(grid.selModel)
-        }
+        },
+        // beforeshow: function (grid) {
+        //   grid.view.refresh()
+        // }
       }
     })
 
@@ -781,13 +788,14 @@ SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
     }
 
     function setGridSizeForXY(xy) {
-      const nonGridHeight = 142 // height of the non-grid elements (sorting items, column item, filter label, controls)
+      const nonGridHeight = 144 // height of the non-grid elements (sorting items, column item, filter label, controls)
       const gridHeaderHeight = 24 // height of the grid header
       const gridRowHeight = 23 // height of each grid row
       const gridUnscrolledHeight = grid.store.getCount() * gridRowHeight + gridHeaderHeight + 2 // +2 for grid border
       const bodyHeight = Ext.getBody().getHeight()
       const newGridHeight = Math.min(gridUnscrolledHeight, bodyHeight - xy[1] - nonGridHeight)
       grid.setHeight(newGridHeight)
+      // if (grid.viewReady) grid.view.refresh(true)
     }
 
     
@@ -796,10 +804,12 @@ SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
       setValue,
       setGridSizeForXY,
       grid,
+      border: false,
       loadData,
       items: [
         {
           layout: 'hbox',
+          border: false,
           items: [
             conditionComboBox,
             matchAnyButton,
