@@ -86,7 +86,7 @@ SM.BatchReview.showDialog = function (fieldSettings, initialResult) {
         listeners: {
           fieldschanged: function () {
             const values = fp.getForm().getFieldValues()
-            actionBtn.setDisabled(!(values.result !== initialResult || values.detail || values.comment))
+            actionBtn.setDisabled(!(values.result !== initialResult && values.result && (values.detail || values.comment)))
           }
         }
       })
