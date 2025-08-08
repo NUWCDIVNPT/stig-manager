@@ -2669,3 +2669,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .sm-multi-value-grid .x-grid3-row-selected {
     background-color: transparent !important;
 }
+
+.x-menu-list-item:has(> .x-hide-display) {
+	padding: 0
+}

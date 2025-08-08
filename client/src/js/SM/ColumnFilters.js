@@ -55,8 +55,10 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
           const multiValueItem = menu.filterItems.multiValueItems.find( i => i.filter.dataIndex === this.cm.config[this.hdCtxIndex].dataIndex)
           if (multiValueItem) {
             multiValueItem.setGridSizeForXY(e.xy)
+            multiValueItem.sortGrid()
+            multiValueItem.prepareForShow()
           }
-        }  
+        }
         menu.showAt(e.xy);    
       }
     },
@@ -306,6 +308,7 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
         if (!isLoading) {
           savedMultiValues[col.dataIndex] && multiValueItem.setValue(savedMultiValues[col.dataIndex])
         }
+        multiValueItem.prepareForShow()
         this.onFilterChange(multiValueItem, multiValueItem.getValue())
       } 
     },
@@ -317,6 +320,7 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
       SM.ColumnFilters[this.extends].superclass.afterRenderUI.call(this)
   
       const hmenu = this.hmenu
+      hmenu.zIndex = 8999 // lower than any modal mask
       hmenu.filterItems = {
         stringItems: [],
         valuesItems: [],
@@ -620,7 +624,7 @@ SM.ColumnFilters.MultiValueGridPanel = Ext.extend(Ext.grid.GridPanel, {
     })
     const sm = new Ext.grid.CheckboxSelectionModel({
       singleSelect: false,
-      checkOnly: false,
+      checkOnly: true,
       grid: _this,
       listeners: {
         selectionchange: function (sm) {
@@ -767,10 +771,6 @@ SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
       }
       sm.silent = false
       sm.resumeEvents()
-      if (grid.viewReady) {
-        grid.view.refresh()
-        SM.SetCheckboxSelModelHeaderState(sm)
-      }
     }
 
     function loadData (data, value) {
@@ -788,21 +788,47 @@ SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
     }
 
     function setGridSizeForXY(xy) {
-      const nonGridHeight = 144 // height of the non-grid elements (sorting items, column item, filter label, controls)
+      const nonGridHeight = 170 // height of the non-grid elements (sorting items, column item, filter label, controls)
       const gridHeaderHeight = 24 // height of the grid header
       const gridRowHeight = 23 // height of each grid row
       const gridUnscrolledHeight = grid.store.getCount() * gridRowHeight + gridHeaderHeight + 2 // +2 for grid border
-      const bodyHeight = Ext.getBody().getHeight()
+      const bodyHeight = document.body.clientHeight
       const newGridHeight = Math.min(gridUnscrolledHeight, bodyHeight - xy[1] - nonGridHeight)
       grid.setHeight(newGridHeight)
-      // if (grid.viewReady) grid.view.refresh(true)
+
+      // Wait for the style to be applied using setTimeout
+      setTimeout(() => {
+        if (grid.viewReady){
+            grid.view.layout()
+        }
+      }, 0)
     }
 
-    
+    function sortGrid() {
+      const compareFn = _this.column.filter.comparer
+      const selected = grid.selModel.getSelections().sort((a,b) => compareFn(a.data.value, b.data.value))
+      const unselected = grid.store.getRange().filter( r => !selected.includes(r) ).sort((a,b) => compareFn(a.data.value, b.data.value))
+      const sorted = [...selected, ...unselected]
+      for (let i = 0; i < sorted.length; i++) {
+        grid.store.data.items[i] = sorted[i]
+        grid.store.data.keys[i] = sorted[i].id
+      }
+    }
+
+    function prepareForShow() {
+      if (grid.viewReady) {
+        grid.view.refresh(true)
+        grid.view.scrollToTop()
+        SM.SetCheckboxSelModelHeaderState(grid.selModel)
+      }
+    }
+
     const config = {
       getValue,
       setValue,
       setGridSizeForXY,
+      sortGrid,
+      prepareForShow,
       grid,
       border: false,
       loadData,
