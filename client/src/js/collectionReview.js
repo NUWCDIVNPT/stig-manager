@@ -1739,7 +1739,7 @@ async function addCollectionReview ( params ) {
 							rejectBtnEnabled = true
 							break
 						case 'accepted':
-							approveBtnEnabled = false
+							approveBtnEnabled = true
 							submitBtnEnabled = false
 							unsubmitBtnEnabled = true
 							rejectBtnEnabled = false
@@ -1848,9 +1848,10 @@ async function addCollectionReview ( params ) {
 			setReviewsGridButtonStates()
 		}
 
-		function promptForStatusText () {
+		function promptForStatusText (existingText = '') {
 			return new Promise ((resolve, reject) => {
 				const textArea = new Ext.form.TextArea({
+					value: existingText,
 					emptyText: 'Provide feedback explaining this rejection.',
 					maxLength: 511,
 					enableKeyEvents: true,
@@ -1869,7 +1870,7 @@ async function addCollectionReview ( params ) {
 					text: 'Reject with this feedback',
 					action: 'reject',
 					iconCls: 'sm-rejected-icon',
-					disabled: true,
+					disabled: !existingText || existingText.trim().length === 0,
 					handler
 				})
 				const cancelBtn = new Ext.Button(	{
@@ -1910,7 +1911,21 @@ async function addCollectionReview ( params ) {
 			try {
 				if (status === 'rejected') {
 					try {
-						const text = await promptForStatusText()
+						const selections = sm.getSelections()
+						let existingText = ''
+						
+						// For single selection, get existing reject text
+						if (selections.length === 1) {
+							// Fetch the current review to get existing reject text
+							const currentReview = await Ext.Ajax.requestPromise({
+								responseType: 'json',
+								url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${selections[0].data.assetId}/${grid.currentRuleId}`,
+								method: 'GET'
+							})
+							existingText = currentReview.status?.text || ''
+						}
+						
+						const text = await promptForStatusText(existingText)
 						status = {label: status, text}
 					}
 					catch (e) {
