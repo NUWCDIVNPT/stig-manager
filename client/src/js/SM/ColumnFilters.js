@@ -57,7 +57,10 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
             multiValueItem.setGridSizeForXY(e.xy)
             multiValueItem.sortGrid()
             multiValueItem.prepareForShow()
+            menu.setWidth(180)
           }
+        } else {
+          menu.setWidth(150)
         }
         menu.showAt(e.xy);    
       }
@@ -520,7 +523,7 @@ SM.ColumnFilters.StringPanel = Ext.extend(Ext.Panel, {
       style: {
         marginTop: '2px'
       },
-      flex: 1,
+      width: '100%',
       emptyText: 'Type to filter',
       listeners: {
         input: onFilterChange,
