@@ -805,7 +805,7 @@ SM.ColumnFilters.MultiValuePanel = Ext.extend(Ext.Panel, {
     }
 
     function sortGrid() {
-      const compareFn = _this.column.filter.comparer
+      const compareFn = _this.column.filter.comparer || ((a, b) => a.localeCompare(b))
       const selected = grid.selModel.getSelections().sort((a,b) => compareFn(a.data.value, b.data.value))
       const unselected = grid.store.getRange().filter( r => !selected.includes(r) ).sort((a,b) => compareFn(a.data.value, b.data.value))
       const sorted = [...selected, ...unselected]
