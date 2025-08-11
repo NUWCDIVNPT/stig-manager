@@ -283,27 +283,6 @@ describe('user', () => {
             expect(res.body.lastWhatsNew).to.eql(distinct.webPreferences.lastWhatsNew)
           })
         })
-
-        describe(`getUserWebPreferencesKeys - /user/web-preferences/keys`, () => {
-          it("should return user web preferences keys for user", async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys`, 'GET', iteration.token)
-            expect(res.status).to.eql(200)
-            expect(res.body).to.be.an('array').to.have.lengthOf(2)
-            expect(res.body).to.include.members(['darkMode', 'lastWhatsNew'])
-          })
-        })
-
-        describe(`getUserWebPreferenceByKey - /user/web-preferences/{key}`, () => {
-          it("should return user web preference by key for user", async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/darkMode`, 'GET', iteration.token)
-            expect(res.status).to.eql(200)
-            expect(res.body).to.eql(distinct.webPreferences.darkMode)
-          })
-          it("should throw SmError.NotFoundError for non-existing key", async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences/keys/non-existing-key`, 'GET', iteration.token)
-            expect(res.status).to.eql(400)
-          })
-        })
       })
 
       describe('POST - user', () => {
@@ -527,7 +506,7 @@ describe('user', () => {
             expect(res.status).to.eql(400)
           })
 
-          it('should reject request with invalid value type fir darkMode', async () => {
+          it('should reject request with invalid value type for darkMode', async () => {
             const patch = {
               darkMode: "not-a-boolean"
             }

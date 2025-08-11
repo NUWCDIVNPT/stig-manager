@@ -77,6 +77,13 @@ async function loadApp () {
 		const oidcWorkerChannel = new BroadcastChannel('stigman-oidc-worker')
 		oidcWorkerChannel.onmessage = broadcastHandler
 
+		STIGMAN.webPreferencesChannel = new BroadcastChannel('stigman-web-preferences')
+		STIGMAN.webPreferencesChannel.onmessage = function (event) {
+			if (event.data.darkMode !== undefined) {
+				SM.Dispatcher.fireEvent('themechanged', event.data.darkMode ? 'dark' : 'light', 'broadcast')
+			}
+		}
+
 		const opRequests = [
 			Ext.Ajax.requestPromise({
 				responseType: 'json',
@@ -236,6 +243,25 @@ async function loadApp () {
 		window.addEventListener('error', function (e) {
 			SM.Error.handleError(e)
 		})
+
+		SM.Dispatcher.addListener('themechanged', onThemeChanged)
+		async function onThemeChanged (theme, source) {
+			curUser.webPreferences.darkMode = theme === 'dark'
+			document.querySelector("link[href='css/dark-mode.css']").disabled = theme !== 'dark'
+			if (source === 'local') {
+				STIGMAN.webPreferencesChannel.postMessage({ darkMode: theme === 'dark' })
+				try {
+					await Ext.Ajax.requestPromise({
+						responseType: 'json',
+						url: `${STIGMAN.Env.apiBase}/user/web-preferences`,
+						method: 'PATCH',
+						jsonData: {darkMode: theme === 'dark'}
+					})
+				} catch (error) {
+						SM.Error.handleError(error)
+				}
+			}
+		}	
 
 		const isAdmin = curUser.privileges.admin
 		SM.ActivityHandler.reportActivity = (STIGMAN.Env.oauth.idleTimeoutUser && !isAdmin) || (STIGMAN.Env.oauth.idleTimeoutAdmin && isAdmin)
