@@ -492,16 +492,16 @@ input.x-tree-node-cb {
   background-color: #fad6a2
 }
 .sm-menuitem-filter-label {
-  background-color: #586574;
+  background-color: #d3d8de;
   font-weight: 700;
   font-size: 9px;
-  color: hsl(0deg 0% 85%)!important;
+  color: hsl(0 0% 50% / 1) !important;
   height: 10px;
   line-height: 10px!important
 }
 .sm-menuitem-filter-icon {
-  background-image: url(../img/filter-solid-reverse.svg);
-  background-size: 8px 8px;
+  background-image: url(../img/bars-filter.svg);
+  background-size: 16px;
   background-position: center;
   background-repeat: no-repeat;
   top: 0
@@ -517,18 +517,22 @@ input.x-tree-node-cb {
   background-size: 14px 14px;
   background-position: 0 1px
 }
-.sm-grid3-col-filtered .x-grid3-hd-btn {
-  background-color: hsl(212deg 14% 40%);
-  background-image: url(../img/filter-solid-reverse.svg);
+.sm-grid3-col-filterable .x-grid3-hd-btn {
+  background-image: url(../img/bars-filter.svg);
   background-size: 10px 14px;
   background-position: center;
   display: block;
   margin-top: 1px;
+  height: 22px;
   margin-right: 0
 }
-a.x-grid3-hd-btn:hover {
-  background-position: center
+
+.sm-grid3-col-filtered .x-grid3-hd-btn {
+  background-color: var(--metrics-status-chart-submitted-light);
 }
+/* a.x-grid3-hd-btn:hover {
+  background-position: 0px 3px;
+} */
 .x-grid3-hd-btn {
   background-color: transparent;
   background-image: none;
@@ -2660,4 +2664,12 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 
 .sm-round-panel .x-panel-body:hover {
 	scrollbar-color: var(--color-scrollbar-hover) transparent;
+}
+
+.sm-multi-value-grid .x-grid3-row-selected {
+    background-color: transparent !important;
+}
+
+.x-menu-list-item:has(> .x-hide-display) {
+	padding: 0
 }

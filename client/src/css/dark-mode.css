@@ -1623,7 +1623,10 @@ td.x-date-mp-sep {
 }
 
 .x-menu-floating {
-    border-color: #635c51
+    border-color: hsl(200 6% 20% / 1);
+    border-width: 2px;
+    border-radius: 6px;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
 }
 
 .x-menu-nosep {
@@ -1645,11 +1648,18 @@ a.x-menu-item {
 }
 
 .x-menu-item-active {
-    background-color: #1a1d1e;
-    border-color: #474d50
+    background:  unset;
+    border:  unset;
+    margin:  unset;
+    padding: 1px;
+    background-color: #2f3537;
+    border-color: #474d50;
+    /* border: 1px solid red; */
 }
 
 .x-menu-item-active a.x-menu-item {
+    border:  unset;
+    margin:  unset;
     border-color: #474d50
 }
 
@@ -2036,12 +2046,19 @@ a.x-menu-item {
 }
 
 .sm-menuitem-filter-icon {
-    background-image: url("../img/filter-solid-reverse.svg")
+    background-image: url("../img/bars-filter-d9.svg");
+    background-size: 12px
+}
+
+.sm-grid3-col-filterable .x-grid3-hd-btn, .sm-grid3-col-filterable .x-grid3-hd-btn:hover {
+    background-image: url("../img/bars-filter-d9.svg");
+    background-position: 2px 3px;
+    opacity: 0.5;
 }
 
 .sm-grid3-col-filtered .x-grid3-hd-btn {
-    background-color: #46515d;
-    background-image: url("../img/filter-solid-reverse.svg")
+    background-color: hsl(107 57% 24% / 1);
+    opacity: 1;
 }
 
 .x-grid3-hd-btn {
@@ -3128,4 +3145,8 @@ embed[type="application/pdf"] {
 
 .sm-metrics-age-box {
     background-color: #aaa
-}  
+}
+
+.x-btn-pressed {
+    box-shadow: inset 0px 0px 0px 1px hsl(0 0% 50% / 1);
+}
