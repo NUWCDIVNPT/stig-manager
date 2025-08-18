@@ -323,7 +323,6 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
       SM.ColumnFilters[this.extends].superclass.afterRenderUI.call(this)
   
       const hmenu = this.hmenu
-      hmenu.zIndex = 8999 // lower than any modal mask
       hmenu.filterItems = {
         stringItems: [],
         valuesItems: [],
