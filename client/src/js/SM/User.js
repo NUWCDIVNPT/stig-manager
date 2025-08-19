@@ -929,7 +929,7 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
           dataIndex: 'groupNames',
           sortable: false,
           filter: {
-            type: 'values',
+            type: 'multi-value',
             renderer: SM.ColumnFilters.Renderers.groups
           },
           renderer: function (value, metadata) {
@@ -1701,7 +1701,7 @@ SM.User.showUserAdmin = function (params) {
 	
   function afterLoad(store, records) {
     if (records.some(record => record.data.status !== 'available')) {
-      const statusFilterMenu = userGrid.view.hmenu.filterItems.selectItems[0]
+      const statusFilterMenu = userGrid.view.hmenu.filterItems.valuesItems[0]
       statusFilterMenu.checked = false
       statusFilterMenu.valueItems[0].checked = true
       statusFilterMenu.valueItems[1].checked = false

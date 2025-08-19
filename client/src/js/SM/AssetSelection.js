@@ -37,7 +37,7 @@ SM.AssetSelection.GridPanel = Ext.extend(Ext.grid.GridPanel, {
         dataIndex: 'labelIds',
         sortable: false,
         filter: {
-          type: 'values',
+          type: 'multi-value',
           collectionId: this.collectionId,
           comparer: function (a, b) {
             return SM.ColumnFilters.CompareFns.labelIds(a, b, _this.collectionId)
