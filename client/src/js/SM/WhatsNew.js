@@ -2,6 +2,17 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2025-08-19',
+    header: `Enhanced Label Column Filters`,
+    body: `
+    <p>Filter operations for Label columns have been enhanced with the ability to match Any, All, or Exactly the labels selected, as well as Exclude Any, All, or Exactly the Labels selected.</p>
+    <p>Hover over the operation buttons to get a description of each operation.</p>
+
+    <p><img src="img/whatsnew/2025-05-12-new-label-filters.png" width=500/></p>
+
+    `
+  },     
+  {
     date: '2025-06-25',
     header: `Reauthenticate Without Losing Your Workspace State`,
     body: `
