@@ -660,7 +660,6 @@ describe('user', () => {
             }
             expect(res.status).to.eql(404)
           })
-
         })
       })
 

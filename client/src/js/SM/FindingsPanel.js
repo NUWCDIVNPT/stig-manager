@@ -473,7 +473,7 @@ SM.Findings.ChildGrid = Ext.extend(Ext.grid.GridPanel, {
 				dataIndex: 'assetLabelIds',
 				sortable: false,
 				filter: {
-					type: 'values',
+					type: 'multi-value',
 					collectionId: me.panel.collectionId,
 					comparer: function (a, b) {
 						return SM.ColumnFilters.CompareFns.labelIds(a, b, me.panel.collectionId)
