@@ -84,9 +84,21 @@ SM.BatchReview.showDialog = function (fieldSettings, initialResult) {
         fieldSettings,
         actionBtn,
         listeners: {
-          fieldschanged: function () {
-            const values = fp.getForm().getFieldValues()
-            actionBtn.setDisabled(!(values.result !== initialResult || values.detail || values.comment))
+            fieldschanged: function () {
+            const values = fp.getForm().getFieldValues();
+
+            const result = (values.result ?? '')
+            const hasResult = result !== ''
+
+            const resultDirty = hasResult && result !== (initialResult ?? '')
+            const commentDetailDirty =
+              (values.detail && (values.detail)!== '') ||
+              (values.comment && (values.comment) !== '')
+
+         
+            const canSubmit = hasResult && (resultDirty || commentDetailDirty)
+
+            actionBtn.setDisabled(!canSubmit)
           }
         }
       })
