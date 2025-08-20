@@ -652,7 +652,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
         stig_name: stig.title,
         display_name: stig.title.replace(' Security Technical Implementation Guide', ''),
         stig_id: stig.benchmarkId,
-        version: stig.version,
+        version: `${stig.version}`,
         release_info: `Release: ${stig.release} Benchmark Date: ${stig.benchmarkDate}`,
         uuid: stigUuid,
         reference_identifier: '0000',
