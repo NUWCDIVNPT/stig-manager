@@ -7,10 +7,8 @@ SM.ApiState = {
 }
 
 SM.ApiState.setupStateWorker = async function () {
-  this.stateWorker = new SharedWorker("js/stateWorker.js", { name: 'stigman-state-worker', type: "module" })
-  this.stateWorker.port.start()
-  const response = await this.sendWorkerRequest({ request: 'initialize', apiBase: STIGMAN.Env.apiBase })
-  this.stateWorkerChannel = new BroadcastChannel(response.channelName)
+  this.stateWorker = window.stateWorker.worker
+  this.stateWorkerChannel = window.stateWorker.workerChannel
   this.stateWorkerChannel.onmessage = this.handleBroadcastMessage.bind(this)
   return { worker: this.stateWorker, channel: this.stateWorkerChannel }
 }

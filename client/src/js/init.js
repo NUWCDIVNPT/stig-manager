@@ -3,14 +3,22 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
 (async function () {
   const statusEl = document.getElementById("loading-text")
   let OW // aka window.oidcWorker, created in setupOidcWorker()
-  if (window.isSecureContext) {
-    await setupOidcWorker()
-    await bootstrap()
-  } else {
+  if (!window.isSecureContext) {
     appendStatus(`SECURE CONTEXT REQUIRED<br><br>
     The App is not executing in a <a href=https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts target="_blank">secure context</a> and cannot continue.
     <br><br>To be considered secure, resources that are not local must be served over https:// URLs and the security 
     properties of the network channel used to deliver the resource must not be considered deprecated.`)
+    return
+  }
+
+  try {
+    await setupStateWorker()
+    await setupOidcWorker() 
+    await bootstrap()
+  } 
+  catch (error) {
+    console.error(`[init] Error during initialization:`, error)
+    appendError(error)
   }
 
   async function bootstrap() {
@@ -182,6 +190,88 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
         OW.tokenParsed = null
       }
     }
+  }
+
+  async function setupStateWorker() {
+    window.stateWorker = {
+      worker: new SharedWorker("js/workers/state-worker.js", { name: 'stigman-state-worker', type: "module" }),
+      sendWorkerRequest: function (request) {
+        const requestId = crypto.randomUUID()
+        const port = this.worker.port
+        port.postMessage({ ...request, requestId })
+        return new Promise((resolve) => {
+          function handler(event) {
+            if (event.data.requestId === requestId) {
+              port.removeEventListener('message', handler)
+              resolve(event.data.response)
+            }
+          }
+          port.addEventListener('message', handler)
+        })
+      },
+      workerChannel: null,
+      state: null
+    }
+    const SW = window.stateWorker
+    SW.worker.port.start()
+    const response = await SW.sendWorkerRequest({ request: 'initialize', apiBase: STIGMAN.Env.apiBase })
+    if (response.error) {
+      console.error(`[init] Error initializing state worker:`, response.error)
+      throw new Error(response.error)
+    }
+    SW.state = JSON.parse(response.state)
+
+    // Set up the workerChannel before waiting for available state
+    SW.workerChannel = new BroadcastChannel(response.channelName)
+    SW.workerChannel.onmessage = (event) => {
+      console.log(`[init] [${SW.workerChannel.name}] Received message:`, event.data)
+      try {
+        SW.state = JSON.parse(event.data.data)
+      } catch (error) {
+        console.error(`[init] [${SW.workerChannel.name}] Error parsing state:`, error)
+        SW.state = null
+      }
+    }
+
+    // Wait for both currentState == 'available' and mode.currentMode == 'normal'
+    function needsWait(state) {
+      if (!state) return true
+      const check = '<span style="color:green">&#10003;</span>'
+      const cross = '<span style="color:#ff5757">&#10007;</span>'
+      if (state.currentState !== 'available') {
+        appendStatus(`The API is currently in ${state.currentState} state.<br>
+          Database status: ${state.dependencies.db ? check : cross}<br>
+          OIDC status: ${state.dependencies.oidc ? check : cross}<br>
+          Waiting for the API to become available.`)
+        return true
+      }
+      if (state.mode && state.mode.currentMode === 'maintenance') {
+        appendStatus(`The API is in maintenance mode. Waiting for normal operation.`)
+        return true
+      }
+      return false
+    }
+
+    if (needsWait(SW.state)) {
+      await new Promise((resolve) => {
+        function checkReady(event) {
+          let stateObj;
+          try {
+            stateObj = JSON.parse(event.data.data)
+          } catch {
+            return
+          }
+          if (!needsWait(stateObj)) {
+            SW.workerChannel.removeEventListener('message', checkReady)
+            SW.state = stateObj
+            resolve()
+          }
+        }
+        SW.workerChannel.addEventListener('message', checkReady)
+      })
+    }
+
+    return true
   }
 
   function hideSpinner() {
