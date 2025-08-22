@@ -112,6 +112,10 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
     statusEl.innerHTML += `${statusEl.innerHTML ? '<br/><br/>' : ''}${html}`
   }
 
+  function setStatus(html) {
+    statusEl.innerHTML = html
+  }
+
   function appendError(message) {
     const cleanHref = window.location.origin + window.location.pathname
     statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${message}</span><br><br><a href="${cleanHref}">Retry authorization.</a>`
@@ -236,17 +240,17 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
     // Wait for both currentState == 'available' and mode.currentMode == 'normal'
     function needsWait(state) {
       if (!state) return true
-      const check = '<span style="color:green">&#10003;</span>'
-      const cross = '<span style="color:#ff5757">&#10007;</span>'
+      const check = '<span style="color:green">ONLINE</span>'
+      const cross = '<span style="color:#ff5757">OFFLINE</span>'
       if (state.currentState !== 'available') {
-        appendStatus(`The API is currently in ${state.currentState} state.<br>
+        setStatus(`The API is currently ${state.currentState}.<br>
           Database status: ${state.dependencies.db ? check : cross}<br>
           OIDC status: ${state.dependencies.oidc ? check : cross}<br>
-          Waiting for the API to become available.`)
+          Last update: ${new Date()}`)
         return true
       }
       if (state.mode && state.mode.currentMode === 'maintenance') {
-        appendStatus(`The API is in maintenance mode. Waiting for normal operation.`)
+        setStatus(`The API is in maintenance mode.<br>Last update: ${new Date()}  `)
         return true
       }
       return false
