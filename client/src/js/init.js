@@ -246,11 +246,11 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
         setStatus(`The API is currently ${state.currentState}.<br>
           Database status: ${state.dependencies.db ? check : cross}<br>
           OIDC status: ${state.dependencies.oidc ? check : cross}<br>
-          Last update: ${new Date()}`)
+          Last update: ${new Date().toISOString()}`)
         return true
       }
       if (state.mode && state.mode.currentMode === 'maintenance') {
-        setStatus(`The API is in maintenance mode.<br>Last update: ${new Date()}  `)
+        setStatus(`The API is in maintenance mode.<br>Last update: ${new Date().toISOString()}`)
         return true
       }
       return false

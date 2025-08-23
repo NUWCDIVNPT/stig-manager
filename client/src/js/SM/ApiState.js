@@ -40,106 +40,147 @@ SM.ApiState.AlertWindow = Ext.extend(Ext.Window, {
   }
 })
 
+// Utility to ensure only one alert is visible at a time
+SM.ApiState.showAlert = function({ modal = null, toast = null }) {
+  if (this.alertModal) {
+    this.alertModal.close();
+    this.alertModal = null;
+  }
+  if (this.alertToast) {
+    this.alertToast.close();
+    this.alertToast = null;
+  }
+  if (modal) {
+    this.alertModal = modal;
+    modal.show();
+  }
+  if (toast) {
+    this.alertToast = toast;
+    toast.show();
+  }
+};
+
+// Handler for maintenance mode
+SM.ApiState.handleMaintenanceMode = function(state) {
+  const html = `<div style="padding: 10px">
+    <p><b>The API is currently undergoing maintenance</b></p>
+    <p>Message: ${state?.mode?.message}</p>
+    ${curUser.privileges.admin ? `<p><a href="${state?.endpoints?.ui}" target="_blank">Open Maintenance App</a></p>` : ''}
+    </div>`;
+  const buttons = [];
+  if (curUser.privileges.admin) {
+    buttons.push(new Ext.Button({
+      text: 'Change to Normal Mode',
+      handler: async () => {
+        await SM.ApiState.sendWorkerRequest({ request: 'setApiMode', mode: 'normal', token: window.oidcWorker.token });
+      }
+    }));
+  }
+  const modal = new SM.ApiState.AlertWindow({ html, buttons, closable: false, modal: true });
+  SM.ApiState.showAlert({ modal });
+};
+
+// Handler for unavailable state
+SM.ApiState.handleUnavailableState = function(state) {
+  const html = `<div style="padding: 10px">
+    <p><b>The API is currently unavailable</b></p>
+    <p>Database: ${state?.dependencies?.db}</p>
+    <p>Authentication: ${state?.dependencies?.oidc}</p>
+    </div>`;
+  const modal = new SM.ApiState.AlertWindow({ html, closable: false, modal: true });
+  SM.ApiState.showAlert({ modal });
+};
+
+// Handler for state error
+SM.ApiState.handleStateError = function() {
+  if (!this.alertModal?.offlineAlert) {
+    const html = `<div style="padding: 10px">
+      <p><b>The API is offline. Waiting for it to come back online...</b></p>
+      </div>`;
+    const modal = new SM.ApiState.AlertWindow({ offlineAlert: true, html, closable: false, modal: true, cls: 'sm-round-panel sm-offline-modal' });
+    SM.ApiState.showAlert({ modal });
+  }
+};
+
+// Handler for mode change scheduled
+SM.ApiState.handleModeChangeScheduled = function(state) {
+  const html = `<div style="padding: 10px">
+    <p><b>A mode change has been scheduled</b></p>
+    <p>New mode: ${state?.mode?.scheduled?.nextMode}</p>
+    <p>Scheduled for: ${state?.mode?.scheduled?.scheduledFor}</p>
+    <p>Message: ${state?.mode?.scheduled?.scheduledMessage}</p>
+    </div>`;
+  const buttons = [];
+  if (curUser.privileges.admin) {
+    buttons.push(new Ext.Button({
+      text: 'Cancel scheduled change',
+      handler: async () => {
+        await SM.ApiState.sendWorkerRequest({ request: 'cancelScheduledApiMode', token: window.oidcWorker.token });
+      }
+    }));
+  }
+  const toast = new SM.ApiState.AlertWindow({
+    html,
+    closable: false,
+    cls: 'sm-round-panel sm-maintenance-toast',
+    modal: false,
+    y: 5,
+    buttons,
+    listeners: {
+      show: function (win) {
+        win.getEl().slideIn('t', { easing: 'easeOut', duration: 0.5 });
+      },
+      beforeclose: function (win) {
+        win.getEl().slideOut('t', { easing: 'easeIn', duration: 0.5, callback: () => win.destroy() });
+        return false; // Prevent immediate close
+      }
+    }
+  });
+  SM.ApiState.showAlert({ toast });
+};
+
+// Handler for mode change unscheduled
+SM.ApiState.handleModeChangeUnscheduled = function() {
+  this.alertToast?.close();
+  this.alertToast = null;
+};
+
+// Main message handler
 SM.ApiState.handleBroadcastMessage = function (event) {
-  console.log('[State Broadcast] Received message:', event.data)
-  this.state = SM.safeJSONParse(event.data.data)
-  const type = event.data.type
+  console.log('[State Broadcast] Received message:', event.data);
+  this.state = SM.safeJSONParse(event.data.data);
+  const type = event.data.type;
+
   if (type === 'mode-changed') {
     if (this.state?.mode?.currentMode === 'maintenance') {
-      const html = `<div style="padding: 10px">
-      <p><b>The API is currently undergoing maintenance</b></p>
-      <p>Message: ${this.state?.mode?.message}</p>
-      ${curUser.privileges.admin ? `<p><a href="${this.state?.endpoints?.ui}" target="_blank">Open Maintenance App</a></p>` : ''}
-      </div>`
-
-      const buttons = []
-      if (curUser.privileges.admin) {
-        buttons.push(new Ext.Button({
-          text: 'Change to Normal Mode',
-          handler: async () => {
-            const response = await SM.ApiState.sendWorkerRequest({ request: 'setApiMode', mode: 'normal', token: window.oidcWorker.token })
-          }
-        }))
-      }
-      this.alertModal = new SM.ApiState.AlertWindow({ html, buttons, closable: false, modal: true })
-      this.alertModal.show()
-      this.alertToast?.close()
-    }
-    else {
-      this.alertModal?.close()
+      this.handleMaintenanceMode(this.state);
+    } else {
+      this.showAlert({}); // Close any open alerts
     }
   }
   else if (type === 'state-changed') {
     if (this.state?.currentState !== 'available') {
-      const html = `<div style="padding: 10px">
-      <p><b>The API is currently unavailable</b></p>
-      <p>Database: ${this.state?.dependencies?.db}</p>
-      <p>Authentication: ${this.state?.dependencies?.oidc}</p>
-      </div>`
-      this.alertModal = new SM.ApiState.AlertWindow({ html, closable: false, modal: true })
-      this.alertModal.show()
-      this.alertToast?.close()
-
-    }
-    else {
-      this.alertModal?.close()
+      this.handleUnavailableState(this.state);
+    } else {
+      this.showAlert({});
     }
   }
   else if (type === 'state-error') {
-    const html = `<div style="padding: 10px">
-      <p><b>An error occurred while fetching the API state</b></p>
-      </div>`
-    this.alertModal = new SM.ApiState.AlertWindow({ html, closable: false, modal: true })
-    this.alertModal.show()
+    this.handleStateError();
   }
-  else if (type === 'state-report' && this.state?.mode.currentMode === 'normal' && this.state?.currentState === 'available') {
-    this.alertModal?.close()
+  else if (type === 'state-report' 
+    && this.state?.mode.currentMode === 'normal' 
+    && this.state?.currentState === 'available'
+    && !this.state?.mode.scheduled) {
+    this.showAlert({});
   }
   else if (type === 'mode-change-scheduled') {
-    const html = `<div style="padding: 10px">
-      <p><b>A mode change has been scheduled</b></p>
-      <p>New mode: ${this.state?.mode?.scheduled?.nextMode}</p>
-      <p>Scheduled for: ${this.state?.mode?.scheduled?.scheduledFor}</p>
-      <p>Message: ${this.state?.mode?.scheduled?.scheduledMessage}</p>
-      </div>`
-    const buttons = []
-      if (curUser.privileges.admin) {
-      buttons.push(new Ext.Button({
-        text: 'Cancel scheduled change',
-        handler: async () => {
-          const response = await SM.ApiState.sendWorkerRequest({ request: 'cancelScheduledApiMode', token: window.oidcWorker.token })
-        }
-      }))
-    }
-    this.alertToast = new SM.ApiState.AlertWindow({
-      html,
-      closable: false,
-      bodyStyle: {
-        backgroundColor: 'hsl(29 100% 26% / 1)',
-      },
-      modal: false,
-      y: 5,
-      buttons,
-      listeners: {
-        show: function (win) {
-          win.getEl().slideIn('t', { // Slide in from the top
-            easing: 'easeOut',
-            duration: 0.5,
-          })
-        }
-      }
-    })
-    this.alertToast.show()
+    this.handleModeChangeScheduled(this.state);
   }
   else if (type === 'mode-change-unscheduled') {
-    const html = `<div style="padding: 10px">
-      <p><b>The scheduled mode change has been cancelled</b></p>
-      </div>`
-    if (this.alertToast) this.alertToast.close()
-    this.alertToast = new SM.ApiState.AlertWindow({ html, closable: true, modal: false })
-    this.alertToast.show(Ext.getBody())
+    this.handleModeChangeUnscheduled();
   }
-}
+};
 
 SM.ApiState.showModeDialog = function ({ treePath }) {
   const _this = this
@@ -181,14 +222,23 @@ SM.ApiState.showModeDialog = function ({ treePath }) {
         text: 'Schedule Maintenance Mode',
         handler: async function () {
           try {
-            const response = await _this.sendWorkerRequest({
-              request: 'scheduleApiMode',
-              nextMode: 'maintenance',
-              nextMessage: nextMessage.getValue(),
-              scheduledMessage: scheduledMessage.getValue(),
-              scheduledIn: scheduledIn.getValue(),
-              token: window.oidcWorker.token
-            })
+            if (scheduledIn.getValue() > 0) {
+              await _this.sendWorkerRequest({
+                request: 'scheduleApiMode',
+                nextMode: 'maintenance',
+                nextMessage: nextMessage.getValue(),
+                scheduledMessage: scheduledMessage.getValue(),
+                scheduledIn: scheduledIn.getValue(),
+                token: window.oidcWorker.token
+              })
+            } else {
+              await _this.sendWorkerRequest({
+                request: 'setApiMode',
+                mode: 'maintenance',
+                message: nextMessage.getValue(),
+                token: window.oidcWorker.token
+              })
+            }
           }
           catch (error) {
             Ext.Msg.alert('Error', `Failed to set maintenance mode. Please try again. ${error}`)

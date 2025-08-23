@@ -55,7 +55,8 @@ function initialize(options) {
         'state-changed',
         'state-report',
         'mode-change-scheduled',
-        'mode-change-unscheduled'
+        'mode-change-unscheduled',
+        'dependency-changed'
       ]) {
         evtSource.addEventListener(eventName, (event) => {
           console.log(`${logPrefix} ${event.type} event:`, event);

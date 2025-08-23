@@ -186,11 +186,13 @@ module.exports.streamStateSse = function (req, res, next) {
     const modeChangedListener = () => sendEvent('mode-changed', state.apiState);
     const modeScheduledListener = () => sendEvent('mode-change-scheduled', state.apiState);
     const modeUnscheduledListener = () => sendEvent('mode-change-unscheduled', state.apiState);
+    const dependencyChangedListener = () => sendEvent('dependency-changed', state.apiState);
 
     state.on('state-changed', stateChangedListener);
     state.on('mode-changed', modeChangedListener);
     state.on('mode-scheduled', modeScheduledListener);
     state.on('mode-unscheduled', modeUnscheduledListener);
+    state.on('dependency-changed', dependencyChangedListener);
 
     // Keep-alive ping every 30 seconds
     const keepAlive = setInterval(() => {
@@ -202,6 +204,9 @@ module.exports.streamStateSse = function (req, res, next) {
       clearInterval(keepAlive);
       state.off('state-changed', stateChangedListener);
       state.off('mode-changed', modeChangedListener);
+      state.off('mode-scheduled', modeScheduledListener);
+      state.off('mode-unscheduled', modeUnscheduledListener);
+      state.off('dependency-changed', dependencyChangedListener);
       res.end();
     });
   } catch (err) {

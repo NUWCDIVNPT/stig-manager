@@ -116,6 +116,10 @@ class State extends EventEmitter {
   #emitModeUnscheduledEvent() {
     this.emit('mode-unscheduled', this.#mode)
   }
+  
+  #emitDependencyChangeEvent() {
+    this.emit('dependency-changed', this.#dependencyStatus)
+  }
 
   /**
    * Sets the state based on the dependency status.
@@ -189,6 +193,7 @@ class State extends EventEmitter {
   setDbStatus(status) {
     if (this.#dependencyStatus.db === status) return
     this.#dependencyStatus.db = status
+    this.#emitDependencyChangeEvent()
     this.#setStateFromDependencyStatus()
   }
 
@@ -199,6 +204,7 @@ class State extends EventEmitter {
   setOidcStatus(status) {
     if (this.#dependencyStatus.oidc === status) return
     this.#dependencyStatus.oidc = status
+    this.#emitDependencyChangeEvent()
     this.#setStateFromDependencyStatus()
   }
 
