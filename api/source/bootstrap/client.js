@@ -72,11 +72,24 @@ function serveStaticFiles(app){
     const staticPath = path.join(__dirname, "../",  config.client.directory)
     logger.writeDebug('serveStaticFiles', 'client', {client_static: staticPath})
     const expressStatic = express.static(staticPath)
+    const maintenancePath = path.join(__dirname, "../", '../../maintenance/vue-client/dist')
+    const maintenanceStatic = express.static(maintenancePath)
 
     app.use('/', (req, res, next) => {
         req.component = 'static'
         expressStatic(req, res, next)
     })
+
+    app.use('/maintenance', (req, res, next) => {
+        req.component = 'maintenance'
+        maintenanceStatic(req, res, next)
+    })
+
+    app.use('/maintenance/*', (req, res, next) => {
+        req.component = 'maintenance'
+        res.sendFile(path.join(maintenancePath, 'index.html'))
+    })
+
 }
 
 module.exports = {
