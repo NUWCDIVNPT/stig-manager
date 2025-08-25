@@ -24,7 +24,7 @@ function configureMiddleware(app) {
       configureServiceCheck,
       configureAuth,
       configureOpenApi,
-      configureErrorHandlers
+      configureErrorHandlers,
   ]
 
   logger.writeInfo('middleware', 'bootstrap', { message: 'configuring middleware' })
@@ -68,18 +68,19 @@ function configureCompression(app) {
 }
 
 function configureServiceCheck(app) {
-    app.use((req, res, next) => {
-      try {
-          if ((state.dependencyStatus.db && state.dependencyStatus.oidc) || req.url.startsWith('/api/op/state')) {
-              next()
-          }
-          else {
-              res.status(503).json(state.apiState)
-          }
+  app.use((req, res, next) => {
+    try {
+      if (
+        state.currentState !== 'available' && req.url.startsWith('/api') && !req.url.startsWith('/api/op/state')) {
+        res.status(503).json(state.apiState)
       }
-      catch(e) {
-          next(e)
+      else {
+        next()
       }
+    }
+    catch (e) {
+      next(e)
+    }
   })
 }
 

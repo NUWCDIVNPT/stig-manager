@@ -43,6 +43,7 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+      x-stigman-maintenance: true
     post:
       tags:
         - Asset
@@ -621,6 +622,7 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+      x-stigman-maintenance: true
     post:
       tags:
         - Collection
@@ -719,6 +721,7 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+      x-stigman-maintenance: true
     patch:
       tags:
         - Collection
@@ -3381,6 +3384,116 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StateResponse'
+      x-stigman-maintenance: true
+  /op/state/mode:
+    post:
+      tags:
+        - Operation
+      summary: Set the API operating mode (normal | maintenance)
+      operationId: setMode
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - name: force
+          in: query
+          description: Force the mode change even if the mode is locked
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/StateModePost'
+      responses:
+        '200':
+          description: StateMode response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StateMode'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op
+      x-stigman-maintenance: true
+  /op/state/mode/schedule:
+    post:
+      tags:
+        - Operation
+      summary: Schedule a mode change (normal | maintenance)
+      operationId: scheduleModeChange
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/StateModeSchedule'
+      responses:
+        '200':
+          description: StateMode response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StateMode'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op
+      x-stigman-maintenance: true
+    delete:
+      tags:
+        - Operation
+      summary: Cancel a scheduled mode change
+      operationId: cancelScheduledModeChange
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      responses:
+        '200':
+          description: StateMode response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StateMode'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op
+      x-stigman-maintenance: true
+  /op/state/sse:
+    get:
+      tags:
+      - Operation
+      operationId: streamStateSse
+      summary: Stream Server-Sent Events (SSE) about changes to the current API state
+      description: >
+        Opens a one-way stream using SSE.
+        The response is a continuous stream of events in `text/event-stream` format.
+      responses:
+        '200':
+          description: Stream of events
+          content:
+            text/event-stream:
+              schema:
+                type: string
+      x-stigman-maintenance: true  
   /stigs:
     get:
       tags:
@@ -6819,6 +6932,13 @@ components:
           type: integer
         updateTime:
           $ref: '#/components/schemas/StringDateTimeNullable'
+    Dependencies:
+      type: object
+      properties:
+        db:
+          type: boolean
+        oidc:
+          type: boolean
     DisplayName:
       $ref: '#/components/schemas/String255Nullable'
     EffectiveAcl:
@@ -6846,6 +6966,12 @@ components:
           type: string
         implementation:
           type: string
+    Endpoints:
+      additionalProperties: false
+      type: object
+      properties:
+        ui:
+          type: string  
     Error:
       type: object
       properties:
@@ -8421,17 +8547,6 @@ components:
         - lastRevisionDate
         - ruleCount
         - collectionIds
-    StateResponse:
-      type: object
-      properties:
-        state:
-          $ref: '#/components/schemas/State'
-        stateDate:
-          $ref: '#/components/schemas/StringDateTime' 
-        mode:
-          $ref: '#/components/schemas/Mode'
-        dependencies:
-          $ref: '#/components/schemas/Dependencies'
     State:
       type: string
       enum:
@@ -8440,18 +8555,83 @@ components:
         - unavailable
         - fail
         - stop
-    Mode:
-      type: string
-      enum:
-        - normal
-        - maintenance
-    Dependencies:
+    StateMode:
       type: object
       properties:
-        db:
+        currentMode:
+          type: string
+          enum:
+            - normal
+            - maintenance
+        since:
+          $ref: '#/components/schemas/StringDateTime'
+        message:
+          $ref: '#/components/schemas/String255Nullable'
+        isLocked:
           type: boolean
-        oidc:
+        scheduled:
+          $ref: '#/components/schemas/StateModeSchedule'
+    StateModeSchedule:
+      type: object
+      properties:
+        nextMode:
+          type: string
+          enum:
+            - normal
+            - maintenance
+        nextMessage:
+          $ref: '#/components/schemas/String255Nullable'
+        scheduledIn:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+        scheduledMessage:
+          $ref: '#/components/schemas/String255Nullable'
+        force:
           type: boolean
+          default: false
+    StateModeScheduled:
+      type: object
+      properties:
+        nextMode:
+          type: string
+          enum:
+            - normal
+            - maintenance
+        nextMessage:
+          $ref: '#/components/schemas/String255Nullable'
+        scheduledFor:
+          $ref: '#/components/schemas/StringDateTime'
+        scheduledMessage:
+          $ref: '#/components/schemas/String255Nullable'
+        force:
+          type: boolean
+          default: false
+    StateModePost:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum:
+            - normal
+            - maintenance
+        message:
+          $ref: '#/components/schemas/String255Nullable'
+      required:
+        - mode
+    StateResponse:
+      type: object
+      properties:
+        currentState:
+          $ref: '#/components/schemas/State'
+        since:
+          $ref: '#/components/schemas/StringDateTime'
+        mode:
+          $ref: '#/components/schemas/StateMode'
+        dependencies:
+          $ref: '#/components/schemas/Dependencies'
+        endpoints:
+          $ref: '#/components/schemas/Endpoints'
     StatusText:
       $ref: '#/components/schemas/String511Nullable'
     StigTitle:
