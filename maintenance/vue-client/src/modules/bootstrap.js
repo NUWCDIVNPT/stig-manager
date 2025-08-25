@@ -27,7 +27,7 @@ async function bootstrap() {
     await handleRedirectAndParameters(redirectUri, paramStr)
   }
   else {
-    await handleNoParameters()
+    await handleNoParameters(redirectUri)
   }
   result.success = true
   return result
@@ -49,8 +49,8 @@ function processRedirectParams(paramStr) {
   return params
 }
 
-async function handleNoParameters() {
-  const response = await OW.sendWorkerRequest({ request: 'getAccessToken' })
+async function handleNoParameters(redirectUri) {
+  const response = await OW.sendWorkerRequest({ request: 'getAccessToken', redirectUri })
   if (response.accessToken) {
     OW.token = response.accessToken
     OW.tokenParsed = response.accessTokenPayload

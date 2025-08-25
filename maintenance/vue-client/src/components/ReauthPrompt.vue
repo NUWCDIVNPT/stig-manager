@@ -9,15 +9,23 @@
 </template>
 
 <script setup>
-import { toRefs } from 'vue'
+import { toRef } from 'vue'
 
 const props = defineProps({
-  redirect: { type: String, required: true },
-  codeVerifier: { type: String, required: true },
-  state: { type: String, required: true }
+  reauth: {
+    type: Object,
+    required: true,
+    validator: (obj) =>
+      obj &&
+      typeof obj.redirect === 'string' &&
+      typeof obj.codeVerifier === 'string' &&
+      typeof obj.state === 'string'
+  }
 })
 
-const { redirect, codeVerifier, state } = toRefs(props)
+const redirect = toRef(props.reauth, 'redirect')
+const codeVerifier = toRef(props.reauth, 'codeVerifier')
+const state = toRef(props.reauth, 'state')
 
 function handleReauth() {
   const width = 600
@@ -28,7 +36,6 @@ function handleReauth() {
   localStorage.setItem('reauth-codeVerifier', codeVerifier.value)
   localStorage.setItem('reauth-oidcState', state.value)
   window.open(redirect.value, '_blank', `popup,width=${width},height=${height},left=${left},top=${top}`)
-
 }
 </script>
 

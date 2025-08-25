@@ -33,15 +33,15 @@ function setupOidcWorker() {
 
   OW.worker.port.start()
 
-  const bc = new BroadcastChannel('stigman-oidc-worker')
+  const bc = new BroadcastChannel('maintenance-oidc-worker')
   bc.onmessage = (event) => {
     if (event.data.type === 'accessToken') {
-      console.log('{init] Received from worker:', event.type, event.data)
+      console.log('[maintenance-oidc-worker] Received from broadcast:', event.type, event.data)
       OW.token = event.data.accessToken
       OW.tokenParsed = event.data.accessTokenPayload
     }
     else if (event.data.type === 'noToken') {
-      console.log('{init] Received from worker:', event.type, event.data)
+      console.log('[maintenance-oidc-worker] Received from broadcast:', event.type, event.data)
       OW.token = null
       OW.tokenParsed = null
     }

@@ -84,12 +84,6 @@ function serveStaticFiles(app){
         req.component = 'maintenance'
         maintenanceStatic(req, res, next)
     })
-
-    app.use('/maintenance/*', (req, res, next) => {
-        req.component = 'maintenance'
-        res.sendFile(path.join(maintenancePath, 'index.html'))
-    })
-
 }
 
 module.exports = {

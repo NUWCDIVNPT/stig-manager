@@ -1,24 +1,29 @@
 <script setup>
-import { ref, watch, inject } from 'vue'
+import { ref, watch, computed } from 'vue'
+import { useAuthStore } from '../stores/auth.js'
 
-const oidcWorker = inject('worker')
-const isGlowing = ref(false);
+const authStore = useAuthStore()
+const isGlowing = ref(false)
 
-watch(() => oidcWorker.tokenParsed, (newValue, oldValue) => {
+// Create a computed property to get tokenParsed from the store
+const tokenParsed = computed(() => {
+  return authStore.oidcWorker?.tokenParsed || null
+})
+
+watch(tokenParsed, (newValue, oldValue) => {
   if (newValue?.jti !== oldValue?.jti) {
-    isGlowing.value = true;
+    isGlowing.value = true
     setTimeout(() => {
-      isGlowing.value = false;
-    }, 1000); // Remove glow after 1 second
+      isGlowing.value = false
+    }, 1000) // Remove glow after 1 second
   }
-});
-
+})
 </script>
 
 <template>
   <div :class="{ 'glow': isGlowing }">
     <p>Access token</p>
-    {{ oidcWorker.tokenParsed }}
+    {{ tokenParsed }}
   </div>
 </template>
 
