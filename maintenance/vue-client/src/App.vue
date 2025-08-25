@@ -1,6 +1,7 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-import { RouterLink, RouterView } from 'vue-router'
+import { onMounted, ref, watch } from 'vue'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
+
 import HelloWorld from './components/HelloWorld.vue'
 import Token from './components/Token.vue'
 import ReauthPrompt from './components/ReauthPrompt.vue'
@@ -8,14 +9,27 @@ import { useBootstrap } from './composables/useBootstrap.js'
 import { useAuthStore } from './stores/auth.js'
 
 const authStore = useAuthStore()
-
 const { isBootstrapping, bootstrapError, runBootstrap } = useBootstrap()
-
 const reloadPage = () => {
   window.location.reload()
 }
+const route = useRoute()
 
-onMounted(runBootstrap)
+onMounted(() => {
+  if (route.name !== 'NotFound') {
+    runBootstrap()
+  }
+})
+
+// Also watch for route changes in case user navigates from 404 to a valid route
+watch(
+  () => route.name,
+  (newName, oldName) => {
+    if (oldName === 'NotFound' && newName !== 'NotFound') {
+      runBootstrap()
+    }
+  }
+)
 </script>
 
 <template>
@@ -33,23 +47,24 @@ onMounted(runBootstrap)
   
   <!-- Normal app content after successful bootstrap -->
   <template v-else>
-    <header>
-      <!-- Modal overlay, shown only if noTokenMessage is not null -->
-      <ReauthPrompt v-if="authStore.noTokenMessage" :reauth="authStore.noTokenMessage" />
-      
-      <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+    <template v-if="route.name !== 'NotFound'">
+      <header>
+        <!-- Modal overlay, shown only if noTokenMessage is not null -->
+        <ReauthPrompt v-if="authStore.noTokenMessage" :reauth="authStore.noTokenMessage" />
+        
+        <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
 
-      <div class="wrapper">
-        <Token />
-        <HelloWorld msg="You did it!" />
+        <div class="wrapper">
+          <Token />
+          <HelloWorld msg="You did it!" />
 
-        <nav>
-          <RouterLink to="/">Home</RouterLink>
-          <RouterLink to="/about">About</RouterLink>
-        </nav>
-      </div>
-    </header>
-
+          <nav>
+            <RouterLink to="/">Home</RouterLink>
+            <RouterLink to="/about">About</RouterLink>
+          </nav>
+        </div>
+      </header>
+    </template>
     <RouterView />
   </template>
 </template>
