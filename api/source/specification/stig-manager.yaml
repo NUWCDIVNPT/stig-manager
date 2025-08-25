@@ -3310,6 +3310,12 @@ paths:
       operationId: getAppInfo
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
+        - name: includeRowCounts
+          in: query
+          description: Include exact row counts for each table (slower) or use estimated counts (faster)
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: AppInfo response
