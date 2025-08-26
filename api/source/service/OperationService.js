@@ -771,7 +771,7 @@ exports.getAppInfo = async function(options = {}) {
   ] = results
 
   // Set row counts from individual queries or use null when not counting
-  if (includeRowCounts && rowCountResults) {
+  if (includeRowCounts) {
     for (const result of rowCountResults) {
       tables[result[0][0].tableName].rowCount = result[0][0].rowCount
     }
