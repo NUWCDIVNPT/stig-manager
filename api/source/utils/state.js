@@ -146,21 +146,21 @@ class State extends EventEmitter {
     this.#emitStateChangedEvent()
   }
 
-  scheduleMode({ nextMode, nextMessage = '', requestedBy = '', scheduledIn, scheduledMessage = '', force = false }) {
+  scheduleMode({ nextMode, nextMessage = '', requestedBy = '', scheduleIn, scheduledMessage = '', force = false }) {
     // clear any existing timer
     clearTimeout(this.#changeTimeoutId)
-    if (scheduledIn > 0) {
+    if (scheduleIn > 0) {
       this.#mode.scheduled = { 
         nextMode, 
         nextMessage, 
         requestedBy, 
-        scheduledFor: new Date(Date.now() + scheduledIn * 1000), 
+        scheduledFor: new Date(Date.now() + scheduleIn * 1000), 
         scheduledMessage, 
         force 
       }
       this.#changeTimeoutId = setTimeout(() => {
         this.setMode({ currentMode: nextMode, requestedBy, message: nextMessage, scheduled: undefined })
-      }, scheduledIn * 1000)
+      }, scheduleIn * 1000)
       this.#emitModeScheduledEvent()
     }
   }

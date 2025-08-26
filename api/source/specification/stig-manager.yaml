@@ -3371,6 +3371,28 @@ paths:
       security:
         - oauth:
             - stig-manager:op:read
+  /op/maintenance/socket:
+    get:
+      tags:
+        - Operation
+      summary: Opens the maintenance socket
+      operationId: getMaintenanceSocket
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      responses:
+        '204':
+          description: NoContent response
+        '101':
+          description: Switching Protocols response
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op
   /op/state:
     get:
       tags:
@@ -3384,6 +3406,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StateResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       x-stigman-maintenance: true
   /op/state/mode:
     post:
@@ -3493,6 +3521,12 @@ paths:
             text/event-stream:
               schema:
                 type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       x-stigman-maintenance: true  
   /stigs:
     get:
@@ -8581,7 +8615,7 @@ components:
             - maintenance
         nextMessage:
           $ref: '#/components/schemas/String255Nullable'
-        scheduledIn:
+        scheduleIn:
           type: integer
           maximum: 2147483647
           minimum: 1
@@ -9137,8 +9171,8 @@ components:
       minProperties: 1
     Version:
       description: |
-        API version string
-      pattern: ^\d+\.\d+\.\d+$
+        Semver as defined by the BNF at semver.org
+      pattern: ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$ 
       type: string
     VersionString:
       $ref: '#/components/schemas/String255'
