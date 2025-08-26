@@ -1,3 +1,17 @@
+1.5.12
+-------
+
+Changes:
+
+  - (UI) feature: Enhanced filters for grid columns with multiple values
+  - (UI) feature: Theme syncing across open tabs. 
+  - (UI) fix: batch edit Enable 'Apply Review' only if the result is selected or changed.
+  - (API) feat: report semver with build info
+  - (API) fix: STIG Version in .cklb output is now a string 
+  - (API/UI) feat: Lighter-weight option for fetching App Info: with or without (default) exact row counts 
+  - (UI) Dependencies: Update to latest stig-manager-client-modules (1.5.6)
+
+
 1.5.11
 -------
 
