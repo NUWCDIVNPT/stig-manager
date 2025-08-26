@@ -3438,11 +3438,13 @@ SM.AppInfo.SourcePanel = Ext.extend(Ext.Panel, {
           menu: [
             {
               text: 'Quick fetch (estimated row counts)',
+              iconCls: 'icon-refresh',
               tooltip: 'Faster fetch using estimated row counts',
               handler: () => this.onFetchFromApi?.(false) || Ext.emptyFn
             },
             {
               text: 'Full fetch (exact row counts)',
+              iconCls: 'sm-database-save-icon',
               tooltip: 'Slower fetch with exact row counts for all tables',
               handler: () => this.onFetchFromApi?.(true) || Ext.emptyFn
             }
