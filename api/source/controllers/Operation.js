@@ -132,7 +132,10 @@ module.exports.setMode = function (req, res, next) {
     }
     const { mode, message } = req.body
     const force = req.query.force === 'true' || req.query.force === true
-    state.setMode({ currentMode: mode, requestedBy: req.userObject.userId, message }, force)
+    const {success, error} = state.setMode({ currentMode: mode, requestedBy: req.userObject.userId, message }, force)
+    if (!success) {
+      throw new SmError.UnprocessableError(error)
+    }
     res.json(state.apiState)
   }
   catch (err) {
