@@ -3435,7 +3435,20 @@ SM.AppInfo.SourcePanel = Ext.extend(Ext.Panel, {
         {
           text: 'Fetch from API',
           iconCls: 'icon-refresh',
-          handler: this.onFetchFromApi || Ext.emptyFn
+          menu: [
+            {
+              text: 'Quick fetch (estimated row counts)',
+              iconCls: 'icon-refresh',
+              tooltip: 'Faster fetch using estimated row counts',
+              handler: () => this.onFetchFromApi?.(false) || Ext.emptyFn
+            },
+            {
+              text: 'Full fetch (exact row counts)',
+              iconCls: 'sm-database-save-icon',
+              tooltip: 'Slower fetch with exact row counts for all tables',
+              handler: () => this.onFetchFromApi?.(true) || Ext.emptyFn
+            }
+          ]
         },
 
       ]
@@ -3465,12 +3478,13 @@ SM.AppInfo.SourcePanel = Ext.extend(Ext.Panel, {
   }
 })
 
-SM.AppInfo.fetchFromApi = async function () {
+SM.AppInfo.fetchFromApi = async function (includeRowCounts = false) {
   return Ext.Ajax.requestPromise({
     responseType: 'json',
     url: `${STIGMAN.Env.apiBase}/op/appinfo`,
     params: {
-      elevate: curUser.privileges.admin
+      elevate: curUser.privileges.admin,
+      includeRowCounts
     },
     method: 'GET'
   })
@@ -3567,10 +3581,13 @@ SM.AppInfo.showAppInfoTab = async function (options) {
     }
   }
 
-  async function onFetchFromApi() {
+  async function onFetchFromApi(includeRowCounts = false) {
     try {
-      thisTab.getEl().mask('Fetching from API...')
-      data = await SM.AppInfo.fetchFromApi()
+      const maskMsg = includeRowCounts 
+        ? 'Fetching from API with exact row counts...' 
+        : 'Fetching from API with estimated row counts...'
+      thisTab.getEl().mask(maskMsg)
+      data = await SM.AppInfo.fetchFromApi(includeRowCounts)
       sourcePanel.loadData({ data, source: 'API' })
       tabPanel.loadData(data)
     }
@@ -3651,5 +3668,5 @@ SM.AppInfo.showAppInfoTab = async function (options) {
   })
   thisTab.show()
 
-  await onFetchFromApi()
+  await onFetchFromApi(false)
 }

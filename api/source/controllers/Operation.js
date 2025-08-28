@@ -98,7 +98,10 @@ module.exports.getAppInfo = async function getAppInfo (req, res, next) {
   try {
     let elevate = req.query.elevate
     if ( elevate ) {
-      const response = await OperationService.getAppInfo()
+      const options = {
+        includeRowCounts: req.query.includeRowCounts
+      }
+      const response = await OperationService.getAppInfo(options)
       res.json(response)
     }
     else {
