@@ -132,7 +132,21 @@ class UserInconsistentError extends SmError {
   }
 }
 
+class EndpointUnavailableError extends SmError {
+  constructor(detail) {
+    super('Endpoint is unavailable.')
+    this.status = 409
+    this.detail = detail
+  }
+}
 
+class ModeLockedError extends SmError {
+  constructor(detail) {
+    super('API mode is locked.')
+    this.status = 409
+    this.detail = detail
+  }
+}
 
 module.exports = {
   SmError,
@@ -150,5 +164,7 @@ module.exports = {
   InternalError,
   InsecureTokenError,
   UserUnavailableError,
-  UserInconsistentError
+  UserInconsistentError,
+  EndpointUnavailableError,
+  ModeLockedError
 }
