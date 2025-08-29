@@ -3359,6 +3359,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiDefinition'
+      x-stigman-maintenance: true
   /op/details:
     get:
       tags:
