@@ -43,7 +43,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
-      x-stigman-maintenance: true
     post:
       tags:
         - Asset
@@ -622,7 +621,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
-      x-stigman-maintenance: true
     post:
       tags:
         - Collection
@@ -721,7 +719,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
-      x-stigman-maintenance: true
     patch:
       tags:
         - Collection
@@ -3329,6 +3326,7 @@ paths:
       security:
         - oauth:
             - stig-manager:op:read
+      x-stigman-maintenance: true
   /op/configuration:
     get:
       tags:
@@ -3343,6 +3341,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiConfiguration'
+      x-stigman-maintenance: true
   /op/definition:
     get:
       tags:
@@ -3567,6 +3566,7 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
+      x-stigman-maintenance: true
     post:
       tags:
         - STIG
@@ -3606,6 +3606,7 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig'
+      x-stigman-maintenance: true
   '/stigs/ccis/{cci}':
     get:
       tags:
@@ -3723,6 +3724,7 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
+      x-stigman-maintenance: true
     delete:
       tags:
         - STIG
@@ -3755,6 +3757,7 @@ paths:
             - 'stig-manager:stig'
       x-rbac:
         - admin
+      x-stigman-maintenance: true
   '/stigs/{benchmarkId}/revisions':
     get:
       tags:
@@ -3863,6 +3866,7 @@ paths:
             - 'stig-manager:stig'
       x-rbac:
         - admin
+      x-stigman-maintenance: true
   '/stigs/{benchmarkId}/revisions/{revisionStr}/ccis':
     get:
       tags:
@@ -4090,6 +4094,7 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user:read'
+      x-stigman-maintenance: true
   /user/web-preferences:
     get:
       tags:
