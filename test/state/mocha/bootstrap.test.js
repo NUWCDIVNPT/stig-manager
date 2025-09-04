@@ -29,7 +29,7 @@ describe('Boot with no dependencies', function () {
     it('should return state "starting"', async function () {
       const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
-      expect(res.body.state).to.equal('starting')
+      expect(res.body.currentState).to.equal('starting')
       expect(res.body.dependencies).to.eql({db: false, oidc: false})
     })
   })
@@ -38,7 +38,7 @@ describe('Boot with no dependencies', function () {
     it('should return 503 when dependencies are not available', async function () {
       const res = await simpleRequest(`${apiOrigin}/api/op/configuration`)
       expect(res.status).to.equal(503)
-      expect(res.body.state).to.equal('starting')
+      expect(res.body.currentState).to.equal('starting')
       expect(res.body.dependencies).to.eql({db: false, oidc: false})
     })
   })
@@ -75,9 +75,9 @@ describe('Boot with no dependencies', function () {
     })
   })
 
-  describe('statechanged message', function () {
+  describe('state-changed message', function () {
     it('currentState = "fail"', function () {
-      const stateChanged = api.logRecords.filter(r => r.type === 'statechanged')
+      const stateChanged = api.logRecords.filter(r => r.type === 'state-changed')
       expect(stateChanged).to.have.lengthOf(1)
       expect(stateChanged[0].data).to.eql({currentState: 'fail', previousState: 'starting', dependencyStatus: {db: false, oidc: false}})
     })
@@ -91,9 +91,14 @@ describe('Boot with both dependencies', function () {
    
   before(async function () {
     this.timeout(60000)
+    console.log('    try oidc start')
     oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
     await oidc.start({port: oidcPort})
+    console.log('    ✔ oidc started')
+    console.log('    try mysql start')
     mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
+    console.log('    ✔ mysql started')
+    console.log('    try api start')
     api = await spawnApiPromise({
       resolveOnType: 'started',
       env: {
@@ -104,6 +109,7 @@ describe('Boot with both dependencies', function () {
         STIGMAN_OIDC_PROVIDER: `http://localhost:${oidcPort}`,
       }
     })
+    console.log('    ✔ api started')
   })
 
   after(async function () {
@@ -117,7 +123,7 @@ describe('Boot with both dependencies', function () {
     it('should return state "available"', async function () {
       const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
-      expect(res.body.state).to.equal('available')
+      expect(res.body.currentState).to.equal('available')
       expect(res.body.dependencies).to.eql({db: true, oidc: true})
     })
   })
@@ -151,9 +157,9 @@ describe('Boot with both dependencies', function () {
     })
   })
 
-  describe('statechanged message', function () {
+  describe('state-changed message', function () {
     it('currentState = "available"', function () {
-      const stateChanged = api.logRecords.filter(r => r.type === 'statechanged')
+      const stateChanged = api.logRecords.filter(r => r.type === 'state-changed')
       expect(stateChanged).to.have.lengthOf(1)
       expect(stateChanged[0].data).to.eql({currentState: 'available', previousState: 'starting', dependencyStatus: {db: true, oidc: true}})
     })
@@ -210,9 +216,9 @@ describe('Boot with old mysql', function () {
     })
   })
 
-  describe('statechanged message', function () {
+  describe('state-changed message', function () {
     it('currentState = "fail"', function () {
-      const stateChanged = api.logRecords.filter(r => r.type === 'statechanged')
+      const stateChanged = api.logRecords.filter(r => r.type === 'state-changed')
       expect(stateChanged).to.have.lengthOf(1)
       expect(stateChanged[0].data.currentState).to.eql('fail')
     })
@@ -270,9 +276,9 @@ describe('Boot with insecure kid - allow insecure tokens false', function () {
     })
   })
 
-  describe('statechanged message', function () {
+  describe('state-changed message', function () {
     it('currentState = "fail"', function () {
-      const stateChanged = api.logRecords.filter(r => r.type === 'statechanged')
+      const stateChanged = api.logRecords.filter(r => r.type === 'state-changed')
       expect(stateChanged).to.have.lengthOf(1)
       expect(stateChanged[0].data).to.deep.include({currentState: 'fail', previousState: 'starting'})
     })
@@ -316,7 +322,7 @@ describe('Boot without insecure kid - request with insecure token' , function ()
     it('should return state "available"', async function () {
       const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
-      expect(res.body.state).to.equal('available')
+      expect(res.body.currentState).to.equal('available')
       expect(res.body.dependencies).to.eql({db: true, oidc: true})
     })
   })

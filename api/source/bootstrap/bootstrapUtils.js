@@ -1,19 +1,20 @@
 const path = require('node:path')
 const logger = require('../utils/logger')
+const modeCheck = require('./modeCheck')
 
 function modulePathResolver( handlersPath, route, apiDoc ) {
     const pathKey = route.openApiRoute.substring(route.basePath.length)
     const schema = apiDoc.paths[pathKey][route.method.toLowerCase()]
     const controller = schema.tags[0]
-    const method = schema['operationId']
+    const operationId = schema['operationId']
     const modulePath = path.join(handlersPath, controller)
     const handler = require(modulePath)
-    if (handler[method] === undefined) {
+    if (handler[operationId] === undefined) {
       throw new Error(
-        `Could not find a [${method}] function in ${modulePath} when trying to route [${route.method} ${route.expressRoute}].`,
+        `Could not find a [${operationId}] function in ${modulePath} when trying to route [${route.method} ${route.expressRoute}].`,
       )
     }
-    return handler[method]
+    return modeCheck.bind(handler[operationId])
 }
 
 function buildResponseValidationConfig(willValidateResponse) {
