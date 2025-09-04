@@ -71,9 +71,9 @@ describe(`POST - setMode - /op/state/mode`, () => {
     expect(res.status).to.equal(204)
   })
 
-  it(`should allow GET /collections when in maintenance mode`, async () => {
+  it(`should allow GET /user when in maintenance mode`, async () => {
     const res = await utils.executeRequest(
-      `${config.baseUrl}/collections`,
+      `${config.baseUrl}/user`,
       'GET',
       admin.token
     )
