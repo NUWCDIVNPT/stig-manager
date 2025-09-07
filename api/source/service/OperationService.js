@@ -466,7 +466,8 @@ exports.replaceAppData = async function (buffer, contentType, progressCb = () =>
   }
 }
 
-exports.getAppInfo = async function() {
+exports.getAppInfo = async function(options = {}) {
+  const { includeRowCounts } = options
   const schema = 'stig-manager-appinfo-v1.1'
   const sqlAnalyze = `ANALYZE TABLE collection, asset, review, review_history, user`
   const sqlInfoSchema = `
@@ -731,11 +732,30 @@ exports.getAppInfo = async function() {
   const [schemaInfoArray] = await dbUtils.pool.query(sqlInfoSchema, [config.database.schema])
   const tables = createObjectFromKeyValue(schemaInfoArray, "tableName")
 
-  const rowCountQueries = []
-  for (const table in tables) {
-    rowCountQueries.push(dbUtils.pool.query(`SELECT "${table}" as tableName, count(*) as rowCount from ${table}`))
+  const queries = [
+    dbUtils.pool.query(sqlCollectionAssetStigs),
+    dbUtils.pool.query(sqlCountsByCollection),
+    dbUtils.pool.query(sqlLabelCountsByCollection),
+    dbUtils.pool.query(sqlGrantsByCollection),
+    dbUtils.pool.query(sqlRoleCountsByCollection),
+    dbUtils.pool.query(sqlUserInfo),
+    dbUtils.pool.query(sqlUserGroupInfo),
+    dbUtils.pool.query(sqlMySqlVersion),
+    dbUtils.pool.query(sqlMySqlVariablesValues),
+    dbUtils.pool.query(sqlMySqlStatusValues)
+  ]
+
+  // Conditionally add row count queries
+  if (includeRowCounts) {
+    const rowCountQueries = []
+    for (const table in tables) {
+      rowCountQueries.push(dbUtils.pool.query(`SELECT "${table}" as tableName, count(*) as rowCount from ${table}`))
+    }
+    queries.push(Promise.all(rowCountQueries))
   }
 
+  const results = await Promise.all(queries)
+  
   let [
     [assetStigByCollection],
     [countsByCollection],
@@ -748,22 +768,18 @@ exports.getAppInfo = async function() {
     [mySqlVariables],
     [mySqlStatus],
     rowCountResults
-  ] = await Promise.all([
-    dbUtils.pool.query(sqlCollectionAssetStigs),
-    dbUtils.pool.query(sqlCountsByCollection),
-    dbUtils.pool.query(sqlLabelCountsByCollection),
-    dbUtils.pool.query(sqlGrantsByCollection),
-    dbUtils.pool.query(sqlRoleCountsByCollection),
-    dbUtils.pool.query(sqlUserInfo),
-    dbUtils.pool.query(sqlUserGroupInfo),
-    dbUtils.pool.query(sqlMySqlVersion),
-    dbUtils.pool.query(sqlMySqlVariablesValues),
-    dbUtils.pool.query(sqlMySqlStatusValues),
-    Promise.all(rowCountQueries)
-  ])
+  ] = results
 
-  for (const result of rowCountResults) {
-    tables[result[0][0].tableName].rowCount = result[0][0].rowCount
+  // Set row counts from individual queries or use null when not counting
+  if (includeRowCounts) {
+    for (const result of rowCountResults) {
+      tables[result[0][0].tableName].rowCount = result[0][0].rowCount
+    }
+  } else {
+    // Use null to indicate exact row counts were not requested
+    for (const tableName in tables) {
+      tables[tableName].rowCount = null
+    }
   }
 
   // remove strings from user privileges array that are not meaningful to stigman

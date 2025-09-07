@@ -98,7 +98,10 @@ module.exports.getAppInfo = async function getAppInfo (req, res, next) {
   try {
     let elevate = req.query.elevate
     if ( elevate ) {
-      const response = await OperationService.getAppInfo()
+      const options = {
+        includeRowCounts: req.query.includeRowCounts
+      }
+      const response = await OperationService.getAppInfo(options)
       res.json(response)
     }
     else {
@@ -129,7 +132,10 @@ module.exports.setMode = function (req, res, next) {
     }
     const { mode, message } = req.body
     const force = req.query.force === 'true' || req.query.force === true
-    state.setMode({ currentMode: mode, requestedBy: req.userObject.userId, message }, force)
+    const {success, error} = state.setMode({ currentMode: mode, requestedBy: req.userObject.userId, message }, force)
+    if (!success) {
+      throw new SmError.UnprocessableError(error)
+    }
     res.json(state.apiState)
   }
   catch (err) {
@@ -211,5 +217,15 @@ module.exports.streamStateSse = function (req, res, next) {
     });
   } catch (err) {
     next(err);
+  }
+}
+
+module.exports.getMaintenanceSocket = async function (req, res, next) {
+  try {
+    if (!req.query.elevate) throw new SmError.PrivilegeError()
+    res.status(204).end()
+  }
+  catch (err) {
+    next(err)
   }
 }

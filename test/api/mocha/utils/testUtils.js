@@ -725,6 +725,7 @@ const deleteReview = async (collectionId, assetId, ruleId) => {
   return res.json()
 }
 
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 export {
   deleteReview,
@@ -757,5 +758,6 @@ export {
   deleteStigByRevision,
   getUUIDSubString,
   executeRequest,
-  outputMetricsToJSON
+  outputMetricsToJSON,
+  wait,
 }

@@ -135,7 +135,7 @@ class UserInconsistentError extends SmError {
 class EndpointUnavailableError extends SmError {
   constructor(detail) {
     super('Endpoint is unavailable.')
-    this.status = 503
+    this.status = 409
     this.detail = detail
   }
 }
@@ -143,7 +143,7 @@ class EndpointUnavailableError extends SmError {
 class ModeLockedError extends SmError {
   constructor(detail) {
     super('API mode is locked.')
-    this.status = 423
+    this.status = 409
     this.detail = detail
   }
 }

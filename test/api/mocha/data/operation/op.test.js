@@ -53,6 +53,63 @@ describe('GET - Op', () => {
            
           })
         })
+
+        it('Return API Deployment Details with includeRowCounts=true', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/op/appinfo?elevate=true&includeRowCounts=true`, 'GET', iteration.token)
+          if(iteration.name !== "stigmanadmin"){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(200)
+          expect(res.body).to.be.an('object')
+          expect(res.body.mysql).to.be.an('object')
+          expect(res.body.mysql.tables).to.be.an('object')
+          
+          // When includeRowCounts=true, rowCount should be actual numbers
+          for (const tableName in res.body.mysql.tables) {
+            const table = res.body.mysql.tables[tableName]
+            expect(table).to.have.property('rowCount')
+            expect(table.rowCount).to.be.a('number')
+          }
+        })
+
+        it('Return API Deployment Details with includeRowCounts=false', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/op/appinfo?elevate=true&includeRowCounts=false`, 'GET', iteration.token)
+          if(iteration.name !== "stigmanadmin"){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(200)
+          expect(res.body).to.be.an('object')
+          expect(res.body.mysql).to.be.an('object')
+          expect(res.body.mysql.tables).to.be.an('object')
+          
+          // When includeRowCounts=false, rowCount should be null
+          for (const tableName in res.body.mysql.tables) {
+            const table = res.body.mysql.tables[tableName]
+            expect(table).to.have.property('rowCount')
+            expect(table.rowCount).to.be.null
+          }
+        })
+
+        it('Return API Deployment Details without includeRowCounts param (should default to false)', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/op/appinfo?elevate=true`, 'GET', iteration.token)
+          if(iteration.name !== "stigmanadmin"){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(200)
+          expect(res.body).to.be.an('object')
+          expect(res.body.mysql).to.be.an('object')
+          expect(res.body.mysql.tables).to.be.an('object')
+          
+          // When includeRowCounts is not specified, it defaults to false, so rowCount should be null
+          for (const tableName in res.body.mysql.tables) {
+            const table = res.body.mysql.tables[tableName]
+            expect(table).to.have.property('rowCount')
+            expect(table.rowCount).to.be.null
+          }
+        })
       })
       describe('getDefinition - /op/definition', () => {
         it('Return API Deployment Definition', async () => {

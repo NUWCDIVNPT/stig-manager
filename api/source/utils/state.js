@@ -146,21 +146,21 @@ class State extends EventEmitter {
     this.#emitStateChangedEvent()
   }
 
-  scheduleMode({ nextMode, nextMessage = '', requestedBy = '', scheduledIn, scheduledMessage = '', force = false }) {
+  scheduleMode({ nextMode, nextMessage = '', requestedBy = '', scheduleIn, scheduledMessage = '', force = false }) {
     // clear any existing timer
     clearTimeout(this.#changeTimeoutId)
-    if (scheduledIn > 0) {
+    if (scheduleIn > 0) {
       this.#mode.scheduled = { 
         nextMode, 
         nextMessage, 
         requestedBy, 
-        scheduledFor: new Date(Date.now() + scheduledIn * 1000), 
+        scheduledFor: new Date(Date.now() + scheduleIn * 1000), 
         scheduledMessage, 
         force 
       }
       this.#changeTimeoutId = setTimeout(() => {
         this.setMode({ currentMode: nextMode, requestedBy, message: nextMessage, scheduled: undefined })
-      }, scheduledIn * 1000)
+      }, scheduleIn * 1000)
       this.#emitModeScheduledEvent()
     }
   }
@@ -179,11 +179,11 @@ class State extends EventEmitter {
    */
   setMode(mode, force = false) {
     if (this.#mode.isLocked && !force) {
-      return false
+      return {success: false, error: 'Failed to change API mode. The mode is locked and force != true'}
     }
     this.#mode = {...mode, since: new Date()}
     this.#emitModeChangedEvent()
-    return true
+    return {success: true}
   }
 
   /**
@@ -284,7 +284,7 @@ class State extends EventEmitter {
   get apiState() {
     const publicMode = {...this.#mode}
     delete publicMode.requestedBy
-    delete publicMode.scheduled?.requestedBy
+    if (publicMode.scheduled) delete publicMode.scheduled.requestedBy  
     return {
       currentState: this.#currentState,
       since: this.#stateDate,
