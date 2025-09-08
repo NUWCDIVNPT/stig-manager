@@ -175,7 +175,7 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
       postContextActiveMessage: function () {
         this.worker.port.postMessage({ requestId: 'contextActive' })
       },
-      worker: new SharedWorker("js/oidcWorker.js", { name: 'stigman-oidc-worker', type: "module" })
+      worker: new SharedWorker("js/workers/oidc-worker.js", { name: 'stigman-oidc-worker', type: "module" })
     }
 
     OW = window.oidcWorker
@@ -240,12 +240,12 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
     // Wait for both currentState == 'available' and mode.currentMode == 'normal'
     function needsWait(state) {
       if (!state) return true
-      const check = '<span style="color:green">ONLINE</span>'
-      const cross = '<span style="color:#ff5757">OFFLINE</span>'
+      const online = '<span style="color:green">ONLINE</span>'
+      const offline = '<span style="color:#ff5757">OFFLINE</span>'
       if (state.currentState !== 'available') {
         setStatus(`The API is currently ${state.currentState}.<br>
-          Database status: ${state.dependencies.db ? check : cross}<br>
-          OIDC status: ${state.dependencies.oidc ? check : cross}<br>
+          Database status: ${state.dependencies.db ? online : offline}<br>
+          OIDC status: ${state.dependencies.oidc ? online : offline}<br>
           Last update: ${new Date().toISOString()}`)
         return true
       }

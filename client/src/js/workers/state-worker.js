@@ -4,6 +4,10 @@ const channelName = 'stigman-state-worker'
 let initialized = false
 let apiBase = ''
 let state = null
+let eventSource = null
+let retryInterval = 1000; // Start with a 1-second retry delay
+const maxRetryInterval = 18000; // Cap the retry delay at 18 seconds
+const stateWorkerChannel = new BroadcastChannel(channelName);
 
 const messageHandlers = {
   initialize,
@@ -23,20 +27,20 @@ onconnect = function (e) {
 function initialize(options) {
   if (initialized) return Promise.resolve({ success: true, channelName, state });
 
+  apiBase = `../../${options.apiBase}`;
   return new Promise((resolve, reject) => {
-    apiBase = options.apiBase;
+
     const stateWorkerChannel = new BroadcastChannel(channelName);
-    const evtSource = new EventSource(`${apiBase}/op/state/sse`);
+    eventSource = new EventSource(`${apiBase}/op/state/sse`);
 
     let timeoutId;
 
-    evtSource.onerror = (event) => {
-      console.log(`${logPrefix} SSE error:`, event);
-      stateWorkerChannel.postMessage({ type: 'state-error', data: event.data });
+    eventSource.onerror = (event) => {
       if (!initialized) {
         clearTimeout(timeoutId);
         reject(new Error('SSE connection error'));
       }
+      reconnectSSE();
     };
 
     // One-time handler for the first message
@@ -47,39 +51,23 @@ function initialize(options) {
       state = event.data;
 
       // Remove this one-time handler
-      evtSource.removeEventListener('state-report', onFirstMessage);
-
-      // Setup persistent handlers
-      for (const eventName of [
-        'mode-changed',
-        'state-changed',
-        'state-report',
-        'mode-change-scheduled',
-        'mode-change-unscheduled',
-        'dependency-changed'
-      ]) {
-        evtSource.addEventListener(eventName, (event) => {
-          console.log(`${logPrefix} ${event.type} event:`, event);
-          stateWorkerChannel.postMessage({ type: event.type, data: event.data });
-          state = event.data;
-        });
-      }
-
+      eventSource.removeEventListener('state-report', onFirstMessage);
+      addListeners();
       console.log(`${logPrefix} Persistent SSE handlers attached`);
       initialized = true;
       resolve({ success: true, channelName, state });
     };
 
-    evtSource.addEventListener('state-report', onFirstMessage);
+    eventSource.addEventListener('state-report', onFirstMessage);
 
     // Set up a timeout for the first message
     timeoutId = setTimeout(() => {
-      evtSource.removeEventListener('state-report', onFirstMessage);
+      eventSource.removeEventListener('state-report', onFirstMessage);
       stateWorkerChannel.postMessage({ type: 'state-error', data: 'Timeout waiting for first SSE message' });
       reject(new Error('Timeout waiting for first SSE message'));
     }, 5000);
 
-    evtSource.onopen = () => {
+    eventSource.onopen = () => {
       console.log(`${logPrefix} SSE connection opened`);
     };
 
@@ -87,7 +75,7 @@ function initialize(options) {
   });
 }
 
-async function setApiMode({mode, message, force, token}) {
+async function setApiMode({ mode, message, force, token }) {
   const url = `${apiBase}/op/state/mode?elevate=true${force ? '&force=true' : ''}`
   const response = await fetch(url, {
     method: 'POST',
@@ -105,7 +93,7 @@ async function setApiMode({mode, message, force, token}) {
   return { success: true, data }
 }
 
-async function scheduleApiMode({nextMode, nextMessage, scheduledMessage, scheduledIn, force = false, token}) {
+async function scheduleApiMode({ nextMode, nextMessage, scheduledMessage, scheduleIn, force = false, token }) {
   const url = `${apiBase}/op/state/mode/schedule?elevate=true`
   const response = await fetch(url, {
     method: 'POST',
@@ -113,7 +101,7 @@ async function scheduleApiMode({nextMode, nextMessage, scheduledMessage, schedul
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     },
-    body: JSON.stringify({ nextMode, nextMessage, scheduledMessage, scheduledIn, force })
+    body: JSON.stringify({ nextMode, nextMessage, scheduledMessage, scheduleIn, force })
   })
   if (!response.ok) {
     throw new Error(`Failed to set mode: ${response.status} ${response.statusText}`)
@@ -166,4 +154,50 @@ async function onMessage(e) {
   }
 }
 
+function reconnectSSE() {
+  if (eventSource) {
+    eventSource.close();
+  }
+  eventSource = new EventSource(`${apiBase}/op/state/sse`);
+
+  eventSource.onopen = function (event) {
+    console.log("SSE connection opened");
+    // Reset retry interval on successful connection
+    retryInterval = 1000;
+    addListeners();
+  };
+  eventSource.onerror = function (error) {
+    console.log(`${logPrefix} SSE error:`, error);
+    stateWorkerChannel.postMessage({ type: 'state-error', data: error.data });
+    eventSource.close(); // Close the failed connection
+
+    // Implement a delay before retrying
+    setTimeout(() => {
+      console.log("Attempting to reconnect...");
+      reconnectSSE();
+    }, retryInterval);
+
+    // Exponentially increase the retry interval, up to a maximum
+    retryInterval = Math.min(retryInterval * 2, maxRetryInterval);
+  };
+}
+
+function addListeners() {
+  const events = ['state-report', 'mode-changed', 'state-changed', 'mode-change-scheduled', 'mode-change-unscheduled', 'dependency-changed'];
+  const listener = (event) => {
+    console.log(`${logPrefix} ${event.type} event:`, event);
+    stateWorkerChannel.postMessage({ type: event.type, data: event.data });
+    state = event.data;
+  }
+  for (const eventName of events) {
+    eventSource.addEventListener(eventName, listener);
+    console.log(`${logPrefix} Listener added for ${eventName}`);
+  }
+  eventSource.addEventListener('error', () => {
+    for (const eventName of events) {
+      eventSource.removeEventListener(eventName, listener);
+      console.log(`${logPrefix} Listener removed for ${eventName}`);
+    }
+  }, {once: true});
+}
 

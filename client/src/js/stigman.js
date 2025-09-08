@@ -32,7 +32,7 @@ async function start () {
 
 	try {
 		if ('serviceWorker' in navigator) {
-			await navigator.serviceWorker.register('serviceWorker.js')
+			await navigator.serviceWorker.register('js/workers/service-worker.js')
 		}
 		el.innerHTML += "<br/><br/>Fetching user data"
 		try {

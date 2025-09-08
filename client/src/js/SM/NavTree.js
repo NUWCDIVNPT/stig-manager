@@ -277,20 +277,22 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                   leaf: true,
                   iconCls: 'sm-info-circle-icon'
                 },
-                {
+              ]
+              if (STIGMAN.Env.experimental.apiMode === 'true') {
+                children.push({
                   id: 'maintenance-admin',
-                  text: 'Manage API Mode',
+                  text: 'Manage API Mode <span class="sm-navtree-sprite">experimental</span>',
                   leaf: true,
                   iconCls: 'sm-maintenance-icon'
-                }
-              ]
+                })
+              }
               if (STIGMAN.Env.experimental.appData === 'true') {
                 children.push({
-                    id: 'appdata-admin',
-                    text: 'Export/Import Data <span class="sm-navtree-sprite">experimental</span>',
-                    leaf: true,
-                    iconCls: 'sm-database-save-icon'
-                  })
+                  id: 'appdata-admin',
+                  text: 'Export/Import Data <span class="sm-navtree-sprite">experimental</span>',
+                  leaf: true,
+                  iconCls: 'sm-database-save-icon'
+                })
               }
               content.push(
                 {

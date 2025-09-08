@@ -126,6 +126,7 @@ module.exports.getDetails = module.exports.getAppInfo
 
 module.exports.setMode = function (req, res, next) {
   try {
+    if (!config.experimental.apiMode) throw new SmError.NotFoundError('endpoint disabled, to enable set STIGMAN_EXPERIMENTAL_APIMODE=true')
     if (!req.query.elevate) throw new SmError.PrivilegeError()
     if (state.mode.currentMode === req.body.mode) {
       throw new SmError.UnprocessableError(`API mode is already ${state.mode.currentMode}`)
@@ -145,6 +146,7 @@ module.exports.setMode = function (req, res, next) {
 
 module.exports.scheduleModeChange = function (req, res, next) {
   try {
+    if (!config.experimental.apiMode) throw new SmError.NotFoundError('endpoint disabled, to enable set STIGMAN_EXPERIMENTAL_APIMODE=true')
     if (!req.query.elevate) throw new SmError.PrivilegeError()
     if (state.mode.currentMode === req.body.nextMode) {
       throw new SmError.UnprocessableError(`API mode is already ${state.mode.currentMode}`)
@@ -159,6 +161,7 @@ module.exports.scheduleModeChange = function (req, res, next) {
 
 module.exports.cancelScheduledModeChange = function (req, res, next) {
   try {
+    if (!config.experimental.apiMode) throw new SmError.NotFoundError('endpoint disabled, to enable set STIGMAN_EXPERIMENTAL_APIMODE=true')
     if (!req.query.elevate) throw new SmError.PrivilegeError()
     if (!state.mode.scheduled) {
       throw new SmError.NotFoundError(`A mode change is not scheduled`)
@@ -177,6 +180,7 @@ module.exports.streamStateSse = function (req, res, next) {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // Disable buffering for nginx
 
     // Helper to send SSE events
     function sendEvent(eventName, data) {
@@ -222,6 +226,7 @@ module.exports.streamStateSse = function (req, res, next) {
 
 module.exports.getMaintenanceSocket = async function (req, res, next) {
   try {
+    if (!config.experimental.apiMode) throw new SmError.NotFoundError('endpoint disabled, to enable set STIGMAN_EXPERIMENTAL_APIMODE=true')
     if (!req.query.elevate) throw new SmError.PrivilegeError()
     res.status(204).end()
   }

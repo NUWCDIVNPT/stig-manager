@@ -8622,6 +8622,7 @@ components:
           $ref: '#/components/schemas/StateModeSchedule'
     StateModeSchedule:
       type: object
+      additionalProperties: false
       properties:
         nextMode:
           type: string
@@ -8639,6 +8640,9 @@ components:
         force:
           type: boolean
           default: false
+      required:
+        - nextMode
+        - scheduleIn
     StateModeScheduled:
       type: object
       properties:
@@ -8658,6 +8662,7 @@ components:
           default: false
     StateModePost:
       type: object
+      additionalProperties: false
       properties:
         mode:
           type: string

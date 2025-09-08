@@ -1049,6 +1049,9 @@ module.exports.cloneCollection = async function (req, res, next) {
       }
 
       res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
+      res.setHeader('X-Accel-Buffering', 'no'); // Disable buffering for nginx
+      res.setHeader('Cache-Control', 'no-cache'); // Disable caching
+
       req.noCompression = true
 
       const cloned = await CollectionService.cloneCollection({
@@ -1095,6 +1098,9 @@ module.exports.exportToCollection = async function (req, res, next) {
     const parsedRequest = await processAssetStigRequests (req.body, srcCollectionId, 'multi', grant)
     
     res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
+    res.setHeader('X-Accel-Buffering', 'no'); // Disable buffering for nginx
+    res.setHeader('Cache-Control', 'no-cache'); // Disable caching
+
     req.noCompression = true
 
     await CollectionService.exportToCollection({

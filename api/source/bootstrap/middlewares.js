@@ -20,8 +20,7 @@ function configureMiddleware(app) {
       configureExpress,
       configureCors,
       configureLogging,
-      configureCompression,
-      configureServiceCheck,
+      configureStateCheck,
       configureAuth,
       configureOpenApi,
       configureErrorHandlers,
@@ -67,7 +66,7 @@ function configureCompression(app) {
   }))
 }
 
-function configureServiceCheck(app) {
+function configureStateCheck(app) {
   app.use((req, res, next) => {
     try {
       if (

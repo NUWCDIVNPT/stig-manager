@@ -82,10 +82,12 @@ SM.ApiState.handleMaintenanceMode = function(state) {
 
 // Handler for unavailable state
 SM.ApiState.handleUnavailableState = function(state) {
+  const online = '<span style="color:green">ONLINE</span>'
+  const offline = '<span style="color:#ff5757">OFFLINE</span>'
   const html = `<div style="padding: 10px">
     <p><b>The API is currently unavailable</b></p>
-    <p>Database: ${state?.dependencies?.db}</p>
-    <p>Authentication: ${state?.dependencies?.oidc}</p>
+    <p>Database: ${state?.dependencies?.db ? online : offline}</p>
+    <p>Authentication: ${state?.dependencies?.oidc ? online : offline }</p>
     </div>`;
   const modal = new SM.ApiState.AlertWindow({ html, closable: false, modal: true });
   SM.ApiState.showAlert({ modal });
@@ -194,8 +196,8 @@ SM.ApiState.showModeDialog = function ({ treePath }) {
     anchor: '100%',
     value: 'The scheduled message for maintenance mode.'
   })
-  const scheduledIn = new Ext.form.NumberField({
-    fieldLabel: 'Scheduled In (seconds)',
+  const scheduleIn = new Ext.form.NumberField({
+    fieldLabel: 'Schedule In (seconds)',
     anchor: '100%',
     value: 20
   })
@@ -207,7 +209,7 @@ SM.ApiState.showModeDialog = function ({ treePath }) {
     padding: 20,
     modal: true,
     items: [
-      scheduledIn,
+      scheduleIn,
       scheduledMessage,
       nextMessage
     ],
@@ -222,13 +224,13 @@ SM.ApiState.showModeDialog = function ({ treePath }) {
         text: 'Schedule Maintenance Mode',
         handler: async function () {
           try {
-            if (scheduledIn.getValue() > 0) {
+            if (scheduleIn.getValue() > 0) {
               await _this.sendWorkerRequest({
                 request: 'scheduleApiMode',
                 nextMode: 'maintenance',
                 nextMessage: nextMessage.getValue(),
                 scheduledMessage: scheduledMessage.getValue(),
-                scheduledIn: scheduledIn.getValue(),
+                scheduleIn: scheduleIn.getValue(),
                 token: window.oidcWorker.token
               })
             } else {

@@ -53,7 +53,8 @@ function getClientEnv(){
                 idleTimeoutAdmin: ${config.client.idleTimeoutAdmin},
             },
             experimental: {
-                appData: "${config.experimental.appData}"
+                appData: "${config.experimental.appData}",
+                apiMode: "${config.experimental.apiMode}"
             }
         }   
     }`
