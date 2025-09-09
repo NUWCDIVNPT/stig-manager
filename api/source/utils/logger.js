@@ -102,20 +102,17 @@ function requestLogger (req, res, next) {
   res._startTime = undefined
   res.svcStatus = {}
 
-  // Response body length for appinfo and content for privileged requests
+  // Capture response body for elevated requests
   let responseBody
-  res.sm_responseLength = 0
   responseBody = ''
-  const originalSend = res.send
-  res.send = function (chunk) {
-    if (chunk !== undefined) {
-      if (req.query.elevate === true || req.query.elevate === 'true' ) {
+  if (req.query.elevate) {
+    const originalSend = res.send
+    res.send = function (chunk) {
+      if (chunk !== undefined) {
         responseBody += chunk
       }
-      res.sm_responseLength += chunk.length || 0
+      originalSend.apply(res, arguments)
     }
-    originalSend.apply(res, arguments)
-    res.end()
   }
 
   // record request start
@@ -245,20 +242,16 @@ function trackOperationStats(operationId, durationMs, res) {
   stats.totalRequests++
   stats.totalDuration += durationMs
 
-  stats.totalResLength += res.sm_responseLength
-  // Update max response length
-  stats.minResLength = Math.min(stats.minResLength, res.sm_responseLength)
-  if (res.sm_responseLength > stats.maxResLength) {
-    stats.maxResLength = res.sm_responseLength
-  }
+  const responseLength = parseInt(res.getHeader('content-length')) || 0
+  stats.totalResLength += responseLength
+  stats.minResLength = Math.min(stats.minResLength, responseLength)
+  stats.maxResLength = Math.max(stats.maxResLength, responseLength)
 
   if (acceptsRequestBody) {
-    const requestLength = parseInt(res.req.headers['content-length'] ?? '0')
+    const requestLength = parseInt(res.req.headers['content-length']) || 0
     stats.totalReqLength += requestLength
     stats.minReqLength = Math.min(stats.minReqLength, requestLength)
-    if (requestLength > stats.maxReqLength) {
-      stats.maxReqLength = requestLength
-    }
+    stats.maxReqLength = Math.max(stats.maxReqLength, requestLength)
   }
 
   // Update retries

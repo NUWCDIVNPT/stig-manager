@@ -3,7 +3,6 @@ const path = require('node:path')
 const multer  = require('multer')
 const express = require('express')
 const cors = require('cors')
-const compression = require('compression')
 const { middleware: openApiMiddleware } = require('express-openapi-validator')
 const config = require('../utils/config')
 const { modulePathResolver, buildResponseValidationConfig } = require('./bootstrapUtils')
@@ -20,7 +19,6 @@ function configureMiddleware(app) {
       configureExpress,
       configureCors,
       configureLogging,
-      configureCompression,
       configureServiceCheck,
       configureAuth,
       configureOpenApi,
@@ -53,18 +51,6 @@ function configureCors(app) {
 
 function configureLogging(app) {
   app.use(requestLogger)
-}
-
-function configureCompression(app) {  
-  // compress responses
-  app.use(compression({
-    filter: (req, res) => {
-      if (req.noCompression) {
-        return false
-      }
-      return compression.filter(req, res)
-    }
-  }))
 }
 
 function configureServiceCheck(app) {
