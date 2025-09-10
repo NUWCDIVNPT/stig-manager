@@ -45,7 +45,7 @@ const upMigration = [
     IN jobId BINARY(16)
   )
   BEGIN
-    update job set status = 'failed' where jobId = jobId;
+    update job set status = 'failed' where job.jobId = jobId;
   END`,
 
   `DROP procedure IF EXISTS job_finished`,
@@ -53,7 +53,7 @@ const upMigration = [
     IN jobId BINARY(16)
   )
   BEGIN
-    update job set status = 'finished' where jobId = jobId;
+    update job set status = 'finished' where job.jobId = jobId;
   END`,
 
   `DROP PROCEDURE IF EXISTS delete_disabled_objects`,
