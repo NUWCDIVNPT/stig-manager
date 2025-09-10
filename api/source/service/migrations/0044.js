@@ -8,9 +8,11 @@ const upMigration = [
     jobId BINARY(16) NOT NULL,
     name VARCHAR(255) NOT NULL,
     status VARCHAR(45) NOT NULL,
+    userId INT NULL,
     created TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     updated TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (id),
+    CONSTRAINT fk_job_user FOREIGN KEY (userId) REFERENCES user_data(userId) ON DELETE RESTRICT,
     UNIQUE INDEX jobId_UNIQUE (jobId ASC))`,
 
   `CREATE TABLE job_output (
@@ -34,10 +36,11 @@ const upMigration = [
   `DROP procedure IF EXISTS job_start`,
   `CREATE PROCEDURE job_start(
       IN jobId BINARY(16),
+      IN userId INT,
       IN name VARCHAR(255)
     )
     BEGIN
-      insert into job(jobId, name, status) values (jobId, name, 'started');
+      insert into job(jobId, name, userId, status) values (jobId, name, userId, 'started');
     END`,
 
   `DROP procedure IF EXISTS job_failed`,
@@ -58,7 +61,10 @@ const upMigration = [
 
   `DROP PROCEDURE IF EXISTS delete_disabled_objects`,
 
-  `CREATE PROCEDURE delete_disabled_objects(IN jobIdStr VARCHAR(36))
+  `CREATE PROCEDURE delete_disabled_objects(
+      IN jobIdStr VARCHAR(36),
+      IN userId INT
+    )
     BEGIN
     DECLARE incrementValue INT DEFAULT 10000;
     DECLARE curMinId BIGINT DEFAULT 1;
@@ -84,7 +90,11 @@ const upMigration = [
       SET jobId = UUID_TO_BIN(UUID());
     END IF;
 
-    CALL job_start (jobId, 'delete_disabled_objects');
+    IF userId IS NULL OR userId <= 0 THEN
+      SET userId = NULL;
+    END IF;
+
+    CALL job_start (jobId, userId, 'delete_disabled_objects');
 
     CALL job_output (jobId, JSON_OBJECT('message', 'Job started'));
     drop temporary table if exists t_collectionIds;

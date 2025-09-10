@@ -343,10 +343,13 @@ CREATE TABLE `job` (
   `jobId` binary(16) NOT NULL,
   `name` varchar(255) NOT NULL,
   `status` varchar(45) NOT NULL,
+  `userId` int DEFAULT NULL,
   `created` timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   `updated` timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
   PRIMARY KEY (`id`),
-  UNIQUE KEY `jobId_UNIQUE` (`jobId`)
+  UNIQUE KEY `jobId_UNIQUE` (`jobId`),
+  KEY `fk_job_user` (`userId`),
+  CONSTRAINT `fk_job_user` FOREIGN KEY (`userId`) REFERENCES `user_data` (`userId`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -754,7 +757,10 @@ DROP TABLE IF EXISTS `v_latest_rev`;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER $
-CREATE PROCEDURE `delete_disabled_objects`(IN jobIdStr VARCHAR(36))
+CREATE PROCEDURE `delete_disabled_objects`(
+      IN jobIdStr VARCHAR(36),
+      IN userId INT
+    )
 BEGIN
     DECLARE incrementValue INT DEFAULT 10000;
     DECLARE curMinId BIGINT DEFAULT 1;
@@ -780,7 +786,11 @@ BEGIN
       SET jobId = UUID_TO_BIN(UUID());
     END IF;
 
-    CALL job_start (jobId, 'delete_disabled_objects');
+    IF userId IS NULL OR userId <= 0 THEN
+      SET userId = NULL;
+    END IF;
+
+    CALL job_start (jobId, userId, 'delete_disabled_objects');
 
     CALL job_output (jobId, JSON_OBJECT('message', 'Job started'));
     drop temporary table if exists t_collectionIds;
@@ -877,7 +887,7 @@ CREATE PROCEDURE `job_failed`(
     IN jobId BINARY(16)
   )
 BEGIN
-    update job set status = 'failed' where jobId = jobId;
+    update job set status = 'failed' where job.jobId = jobId;
   END $
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -892,7 +902,7 @@ CREATE PROCEDURE `job_finished`(
     IN jobId BINARY(16)
   )
 BEGIN
-    update job set status = 'finished' where jobId = jobId;
+    update job set status = 'finished' where job.jobId = jobId;
   END $
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -921,10 +931,11 @@ DELIMITER ;
 DELIMITER $
 CREATE PROCEDURE `job_start`(
       IN jobId BINARY(16),
+      IN userId INT,
       IN name VARCHAR(255)
     )
 BEGIN
-      insert into job(jobId, name, status) values (jobId, name, 'started');
+      insert into job(jobId, name, userId, status) values (jobId, name, userId, 'started');
     END $
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -992,4 +1003,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-10  0:58:40
+-- Dump completed on 2025-09-10 17:33:44
