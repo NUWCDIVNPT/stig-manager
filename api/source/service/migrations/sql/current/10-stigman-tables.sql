@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.42, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.41, for Linux (x86_64)
 --
 -- Host: 127.0.0.1    Database: stigman
 -- ------------------------------------------------------
--- Server version	8.0.40
+-- Server version	8.0.41
 
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
@@ -247,6 +247,7 @@ CREATE TABLE `current_rev` (
   `benchmarkDateSql` date DEFAULT NULL,
   `status` varchar(45) DEFAULT NULL,
   `statusDate` varchar(45) DEFAULT NULL,
+  `marking` varchar(10) DEFAULT NULL,
   `description` varchar(4000) DEFAULT NULL,
   `active` tinyint DEFAULT NULL,
   `groupCount` int NOT NULL DEFAULT '0',
@@ -330,6 +331,37 @@ CREATE TABLE `fix_text` (
   `text` text NOT NULL,
   PRIMARY KEY (`ftId`),
   UNIQUE KEY `digest_UNIQUE` (`digest`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Table structure for table `job`
+--
+
+DROP TABLE IF EXISTS `job`;
+CREATE TABLE `job` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `jobId` binary(16) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `status` varchar(45) NOT NULL,
+  `created` timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated` timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `jobId_UNIQUE` (`jobId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Table structure for table `job_output`
+--
+
+DROP TABLE IF EXISTS `job_output`;
+CREATE TABLE `job_output` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `jobId` binary(16) NOT NULL,
+  `ts` timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `data` json DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_joboutput_job` (`jobId`),
+  CONSTRAINT `fk_joboutput_job` FOREIGN KEY (`jobId`) REFERENCES `job` (`jobId`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -487,6 +519,7 @@ CREATE TABLE `revision` (
   `benchmarkDateSql` date DEFAULT NULL,
   `status` varchar(45) DEFAULT NULL,
   `statusDate` varchar(45) DEFAULT NULL,
+  `marking` varchar(10) DEFAULT NULL,
   `description` varchar(4000) DEFAULT NULL,
   `active` tinyint DEFAULT '1',
   `groupCount` int NOT NULL DEFAULT '0',
@@ -620,6 +653,7 @@ CREATE TABLE `user_data` (
   `status` enum('available','unavailable') NOT NULL DEFAULT 'available',
   `statusDate` datetime NOT NULL DEFAULT (`created`),
   `statusUser` int DEFAULT NULL,
+  `webPreferences` json NOT NULL DEFAULT (_utf8mb4'{"darkMode": true, "lastWhatsNew": "2000-01-01"}'),
   PRIMARY KEY (`userId`),
   UNIQUE KEY `INDEX_username` (`username`),
   KEY `INDEX_status` (`status`)
@@ -677,6 +711,7 @@ DROP TABLE IF EXISTS `v_current_rev`;
  1 AS `benchmarkDateSql`,
  1 AS `status`,
  1 AS `statusDate`,
+ 1 AS `marking`,
  1 AS `description`,
  1 AS `active`,
  1 AS `groupCount`,
@@ -711,6 +746,191 @@ DROP TABLE IF EXISTS `v_latest_rev`;
  1 AS `revisionStr`*/;
 
 --
+-- Dumping routines for database 'stigman'
+--
+/*!50003 DROP PROCEDURE IF EXISTS `delete_disabled_objects` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `delete_disabled_objects`(IN jobIdStr VARCHAR(36))
+BEGIN
+    DECLARE incrementValue INT DEFAULT 10000;
+    DECLARE curMinId BIGINT DEFAULT 1;
+    DECLARE curMaxId BIGINT DEFAULT incrementValue + 1;
+    DECLARE numCollectionIds INT;
+    DECLARE numAssetIds INT;
+    DECLARE numReviewIds INT;
+    DECLARE numHistoryIds INT;
+    DECLARE jobId BINARY(16);
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+      DECLARE err_code INT;
+      DECLARE err_msg TEXT;
+      GET DIAGNOSTICS CONDITION 1
+        err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+      CALL job_output(jobId, JSON_OBJECT('message', 'error', 'error_code', err_code, 'error_message', err_msg));
+      CALL job_failed (jobId);
+    END;
+
+    IF jobIdStr IS NOT NULL AND jobIdStr REGEXP '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN
+      SET jobId = UUID_TO_BIN(jobIdStr);
+    ELSE
+      SET jobId = UUID_TO_BIN(UUID());
+    END IF;
+
+    CALL job_start (jobId, 'delete_disabled_objects');
+
+    CALL job_output (jobId, JSON_OBJECT('message', 'Job started'));
+    drop temporary table if exists t_collectionIds;
+    create temporary table t_collectionIds (seq INT AUTO_INCREMENT PRIMARY KEY)
+      select collectionId from collection where isEnabled is null;
+    select max(seq) into numCollectionIds from t_collectionIds;
+    CALL job_output (jobId, JSON_OBJECT('message', 'created table', 'table', 't_collectionIds', 'count', numCollectionIds));
+
+    drop temporary table if exists t_assetIds;
+    create temporary table t_assetIds (seq INT AUTO_INCREMENT PRIMARY KEY)
+      select assetId from asset where isEnabled is null or collectionId in (select collectionId from t_collectionIds);
+    select max(seq) into numAssetIds from t_assetIds;
+    CALL job_output (jobId, JSON_OBJECT('message', 'created table', 'table', 't_assetIds', 'count', numAssetIds));
+
+    drop temporary table if exists t_reviewIds;
+    create temporary table t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY)
+      select reviewId from review where assetId in (select assetId from t_assetIds);
+    select max(seq) into numReviewIds from t_reviewIds;
+    CALL job_output (jobId, JSON_OBJECT('message', 'created table', 'table', 't_reviewIds', 'count', numReviewIds));
+
+    drop temporary table if exists t_historyIds;
+    create temporary table t_historyIds (seq INT AUTO_INCREMENT PRIMARY KEY)
+      select historyId from review_history where reviewId in (select reviewId from t_reviewIds);
+    select max(seq) into numHistoryIds from t_historyIds;
+    CALL job_output (jobId, JSON_OBJECT('message', 'created table', 'table', 't_historyIds', 'count', numHistoryIds));
+
+    IF numHistoryIds > 0 THEN
+    REPEAT
+      CALL job_output (jobId, JSON_OBJECT('message', 'delete range', 'table', 'review_history', 'range_start', curMinId, 'range_end', curMaxId, 'range_size', numHistoryIds));
+      delete from review_history where historyId IN (
+          select historyId from t_historyIds where seq >= curMinId and seq < curMaxId 
+        );
+      SET curMinId = curMinId + incrementValue;
+      SET curMaxId = curMaxId + incrementValue;
+    UNTIL ROW_COUNT() = 0 END REPEAT;
+    END IF;
+    drop temporary table if exists t_historyIds;
+
+    SET curMinId = 1;
+    SET curMaxId = curMinId + incrementValue;
+    IF numReviewIds > 0 THEN
+      REPEAT
+        CALL job_output (jobId, JSON_OBJECT('message', 'delete range', 'table', 'review', 'range_start', curMinId, 'range_end', curMaxId, 'range_size', numReviewIds));
+        delete from review where reviewId IN (
+            select reviewId from t_reviewIds where seq >= curMinId and seq < curMaxId 
+          );
+        SET curMinId = curMinId + incrementValue;
+        SET curMaxId = curMaxId + incrementValue;
+      UNTIL ROW_COUNT() = 0 END REPEAT;
+    END IF;
+    drop temporary table if exists t_reviewIds;
+
+    SET curMinId = 1;
+    SET curMaxId = curMinId + incrementValue;
+    IF numAssetIds > 0 THEN
+      REPEAT
+        CALL job_output (jobId, JSON_OBJECT('message', 'delete range', 'table', 'asset', 'range_start', curMinId, 'range_end', curMaxId, 'range_size', numAssetIds));
+        delete from asset where assetId IN (
+            select assetId from t_assetIds where seq >= curMinId and seq < curMaxId 
+          );
+        SET curMinId = curMinId + incrementValue;
+        SET curMaxId = curMaxId + incrementValue;
+    UNTIL ROW_COUNT() = 0 END REPEAT;
+    END IF;
+    drop temporary table if exists t_assetIds;
+
+    SET curMinId = 1;
+    SET curMaxId = curMinId + incrementValue;
+    IF numCollectionIds > 0 THEN
+      REPEAT
+        CALL job_output (jobId, JSON_OBJECT('message', 'delete range', 'table', 'collection', 'range_start', curMinId, 'range_end', curMaxId, 'range_size', numCollectionIds));
+        delete from collection where collectionId IN (
+            select collectionId from t_collectionIds where seq >= curMinId and seq < curMaxId 
+          );
+        SET curMinId = curMinId + incrementValue;
+        SET curMaxId = curMaxId + incrementValue;
+      UNTIL ROW_COUNT() = 0 END REPEAT;
+    END IF;
+    drop temporary table if exists t_collectionIds;
+
+    CALL job_output (jobId, JSON_OBJECT('message', 'Job finished'));
+    CALL job_finished (jobId);
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `job_failed` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `job_failed`(
+    IN jobId BINARY(16)
+  )
+BEGIN
+    update job set status = 'failed' where jobId = jobId;
+  END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `job_finished` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `job_finished`(
+    IN jobId BINARY(16)
+  )
+BEGIN
+    update job set status = 'finished' where jobId = jobId;
+  END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `job_output` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `job_output`(
+    IN jobId BINARY(16),
+    IN data JSON
+    )
+BEGIN
+      insert into job_output (jobId, data) values (jobId, data);
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `job_start` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `job_start`(
+      IN jobId BINARY(16),
+      IN name VARCHAR(255)
+    )
+BEGIN
+      insert into job(jobId, name, status) values (jobId, name, 'started');
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
 -- Final view structure for view `enabled_asset`
 --
 
@@ -740,7 +960,7 @@ DROP TABLE IF EXISTS `v_latest_rev`;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50001 VIEW `v_current_rev` AS select `rr`.`revId` AS `revId`,`rr`.`benchmarkId` AS `benchmarkId`,`rr`.`version` AS `version`,`rr`.`release` AS `release`,`rr`.`benchmarkDate` AS `benchmarkDate`,`rr`.`benchmarkDateSql` AS `benchmarkDateSql`,`rr`.`status` AS `status`,`rr`.`statusDate` AS `statusDate`,`rr`.`description` AS `description`,`rr`.`active` AS `active`,`rr`.`groupCount` AS `groupCount`,`rr`.`ruleCount` AS `ruleCount`,`rr`.`lowCount` AS `lowCount`,`rr`.`mediumCount` AS `mediumCount`,`rr`.`highCount` AS `highCount`,`rr`.`checkCount` AS `checkCount`,`rr`.`fixCount` AS `fixCount` from (select `r`.`revId` AS `revId`,`r`.`benchmarkId` AS `benchmarkId`,`r`.`version` AS `version`,`r`.`release` AS `release`,`r`.`benchmarkDate` AS `benchmarkDate`,`r`.`benchmarkDateSql` AS `benchmarkDateSql`,`r`.`status` AS `status`,`r`.`statusDate` AS `statusDate`,`r`.`description` AS `description`,`r`.`active` AS `active`,`r`.`groupCount` AS `groupCount`,`r`.`ruleCount` AS `ruleCount`,`r`.`lowCount` AS `lowCount`,`r`.`mediumCount` AS `mediumCount`,`r`.`highCount` AS `highCount`,`r`.`checkCount` AS `checkCount`,`r`.`fixCount` AS `fixCount`,row_number() OVER (PARTITION BY `r`.`benchmarkId` ORDER BY field(`r`.`status`,'draft','accepted') desc,(`r`.`version` + 0) desc,(`r`.`release` + 0) desc )  AS `rn` from `revision` `r`) `rr` where (`rr`.`rn` = 1) */;
+/*!50001 VIEW `v_current_rev` AS select `rr`.`revId` AS `revId`,`rr`.`benchmarkId` AS `benchmarkId`,`rr`.`version` AS `version`,`rr`.`release` AS `release`,`rr`.`benchmarkDate` AS `benchmarkDate`,`rr`.`benchmarkDateSql` AS `benchmarkDateSql`,`rr`.`status` AS `status`,`rr`.`statusDate` AS `statusDate`,`rr`.`marking` AS `marking`,`rr`.`description` AS `description`,`rr`.`active` AS `active`,`rr`.`groupCount` AS `groupCount`,`rr`.`ruleCount` AS `ruleCount`,`rr`.`lowCount` AS `lowCount`,`rr`.`mediumCount` AS `mediumCount`,`rr`.`highCount` AS `highCount`,`rr`.`checkCount` AS `checkCount`,`rr`.`fixCount` AS `fixCount` from (select `r`.`revId` AS `revId`,`r`.`benchmarkId` AS `benchmarkId`,`r`.`version` AS `version`,`r`.`release` AS `release`,`r`.`benchmarkDate` AS `benchmarkDate`,`r`.`benchmarkDateSql` AS `benchmarkDateSql`,`r`.`status` AS `status`,`r`.`statusDate` AS `statusDate`,`r`.`marking` AS `marking`,`r`.`description` AS `description`,`r`.`active` AS `active`,`r`.`groupCount` AS `groupCount`,`r`.`ruleCount` AS `ruleCount`,`r`.`lowCount` AS `lowCount`,`r`.`mediumCount` AS `mediumCount`,`r`.`highCount` AS `highCount`,`r`.`checkCount` AS `checkCount`,`r`.`fixCount` AS `fixCount`,row_number() OVER (PARTITION BY `r`.`benchmarkId` ORDER BY field(`r`.`status`,'draft','accepted') desc,(`r`.`version` + 0) desc,(`r`.`release` + 0) desc )  AS `rn` from `revision` `r`) `rr` where (`rr`.`rn` = 1) */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
@@ -772,4 +992,4 @@ DROP TABLE IF EXISTS `v_latest_rev`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-07-08 15:08:22
+-- Dump completed on 2025-09-10  0:58:40
