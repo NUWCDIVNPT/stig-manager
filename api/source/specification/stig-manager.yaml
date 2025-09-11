@@ -3326,7 +3326,6 @@ paths:
       security:
         - oauth:
             - stig-manager:op:read
-      x-stigman-maintenance: true
   /op/configuration:
     get:
       tags:
@@ -3341,7 +3340,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiConfiguration'
-      x-stigman-maintenance: true
   /op/definition:
     get:
       tags:
@@ -3358,7 +3356,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiDefinition'
-      x-stigman-maintenance: true
   /op/details:
     get:
       tags:
@@ -3377,28 +3374,6 @@ paths:
       security:
         - oauth:
             - stig-manager:op:read
-  /op/maintenance/socket:
-    get:
-      tags:
-        - Operation
-      summary: Opens the maintenance socket
-      operationId: getMaintenanceSocket
-      parameters:
-        - $ref: '#/components/parameters/ElevateQuery'
-      responses:
-        '204':
-          description: NoContent response
-        '101':
-          description: Switching Protocols response
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - stig-manager:op
   /op/state:
     get:
       tags:
@@ -3418,99 +3393,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-      x-stigman-maintenance: true
-  /op/state/mode:
-    post:
-      tags:
-        - Operation
-      summary: Set the API operating mode (normal | maintenance)
-      operationId: setMode
-      parameters:
-        - $ref: '#/components/parameters/ElevateQuery'
-        - name: force
-          in: query
-          description: Force the mode change even if the mode is locked
-          schema:
-            type: boolean
-            default: false
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-                $ref: '#/components/schemas/StateModePost'
-      responses:
-        '200':
-          description: StateMode response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StateMode'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - stig-manager:op
-      x-stigman-maintenance: true
-  /op/state/mode/schedule:
-    post:
-      tags:
-        - Operation
-      summary: Schedule a mode change (normal | maintenance)
-      operationId: scheduleModeChange
-      parameters:
-        - $ref: '#/components/parameters/ElevateQuery'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-                $ref: '#/components/schemas/StateModeSchedule'
-      responses:
-        '200':
-          description: StateMode response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StateMode'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - stig-manager:op
-      x-stigman-maintenance: true
-    delete:
-      tags:
-        - Operation
-      summary: Cancel a scheduled mode change
-      operationId: cancelScheduledModeChange
-      parameters:
-        - $ref: '#/components/parameters/ElevateQuery'
-      responses:
-        '200':
-          description: StateMode response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StateMode'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-        - oauth:
-            - stig-manager:op
-      x-stigman-maintenance: true
   /op/state/sse:
     get:
       tags:
@@ -3533,7 +3415,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-      x-stigman-maintenance: true  
   /stigs:
     get:
       tags:
@@ -3566,7 +3447,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-      x-stigman-maintenance: true
     post:
       tags:
         - STIG
@@ -3606,7 +3486,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig'
-      x-stigman-maintenance: true
   '/stigs/ccis/{cci}':
     get:
       tags:
@@ -3724,7 +3603,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:stig:read'
-      x-stigman-maintenance: true
     delete:
       tags:
         - STIG
@@ -3757,7 +3635,6 @@ paths:
             - 'stig-manager:stig'
       x-rbac:
         - admin
-      x-stigman-maintenance: true
   '/stigs/{benchmarkId}/revisions':
     get:
       tags:
@@ -3866,7 +3743,6 @@ paths:
             - 'stig-manager:stig'
       x-rbac:
         - admin
-      x-stigman-maintenance: true
   '/stigs/{benchmarkId}/revisions/{revisionStr}/ccis':
     get:
       tags:
@@ -4094,7 +3970,6 @@ paths:
       security:
         - oauth:
             - 'stig-manager:user:read'
-      x-stigman-maintenance: true
   /user/web-preferences:
     get:
       tags:
@@ -8601,70 +8476,6 @@ components:
         - unavailable
         - fail
         - stop
-    StateMode:
-      type: object
-      properties:
-        currentMode:
-          type: string
-          enum:
-            - normal
-            - maintenance
-        since:
-          $ref: '#/components/schemas/StringDateTime'
-        message:
-          $ref: '#/components/schemas/String255Nullable'
-        isLocked:
-          type: boolean
-        scheduled:
-          $ref: '#/components/schemas/StateModeSchedule'
-    StateModeSchedule:
-      type: object
-      properties:
-        nextMode:
-          type: string
-          enum:
-            - normal
-            - maintenance
-        nextMessage:
-          $ref: '#/components/schemas/String255Nullable'
-        scheduleIn:
-          type: integer
-          maximum: 2147483647
-          minimum: 1
-        scheduledMessage:
-          $ref: '#/components/schemas/String255Nullable'
-        force:
-          type: boolean
-          default: false
-    StateModeScheduled:
-      type: object
-      properties:
-        nextMode:
-          type: string
-          enum:
-            - normal
-            - maintenance
-        nextMessage:
-          $ref: '#/components/schemas/String255Nullable'
-        scheduledFor:
-          $ref: '#/components/schemas/StringDateTime'
-        scheduledMessage:
-          $ref: '#/components/schemas/String255Nullable'
-        force:
-          type: boolean
-          default: false
-    StateModePost:
-      type: object
-      properties:
-        mode:
-          type: string
-          enum:
-            - normal
-            - maintenance
-        message:
-          $ref: '#/components/schemas/String255Nullable'
-      required:
-        - mode
     StateResponse:
       type: object
       properties:
@@ -8672,8 +8483,6 @@ components:
           $ref: '#/components/schemas/State'
         since:
           $ref: '#/components/schemas/StringDateTime'
-        mode:
-          $ref: '#/components/schemas/StateMode'
         dependencies:
           $ref: '#/components/schemas/Dependencies'
         endpoints:
