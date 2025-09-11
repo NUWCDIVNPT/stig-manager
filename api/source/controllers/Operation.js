@@ -32,7 +32,6 @@ module.exports.getAppData = async function getAppData (req, res, next) {
     const format = req.query.format || 'gzip'
     res.attachment(`appdata-v${config.lastMigration}_${escape.filenameComponentFromDate()}.jsonl${format==='gzip'?'.gz':''}`)
     if (format === 'jsonl') res.type('application/jsonl')
-    req.noCompression = true
 
     // the service method will stream the appdata file to the response object
     OperationService.getAppData(res, format)
@@ -70,7 +69,6 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
     const buffer = Buffer.concat(chunks)
     res.setHeader('Content-Type', 'application/jsonl; charset=utf-8')
     res.setHeader('Transfer-Encoding', 'chunked')
-    req.noCompression = true
     await OperationService.replaceAppData(buffer, req.headers['content-type'], progressCb )
     res.end()
   }
@@ -173,7 +171,6 @@ module.exports.cancelScheduledModeChange = function (req, res, next) {
 
 module.exports.streamStateSse = function (req, res, next) {
   try {
-    req.noCompression = true
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
