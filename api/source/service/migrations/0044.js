@@ -1,68 +1,68 @@
 const MigrationHandler = require('./lib/MigrationHandler')
 
 const upMigration = [
-  `DROP TABLE IF EXISTS job_output`,
-  `DROP TABLE IF EXISTS job`,
-  `CREATE TABLE job (
+  `DROP TABLE IF EXISTS task_output`,
+  `DROP TABLE IF EXISTS task`,
+  `CREATE TABLE task (
     id INT NOT NULL AUTO_INCREMENT,
-    jobId BINARY(16) NOT NULL,
+    taskId BINARY(16) NOT NULL,
     name VARCHAR(255) NOT NULL,
     status VARCHAR(45) NOT NULL,
     userId INT NULL,
     created TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     updated TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (id),
-    CONSTRAINT fk_job_user FOREIGN KEY (userId) REFERENCES user_data(userId) ON DELETE RESTRICT,
-    UNIQUE INDEX jobId_UNIQUE (jobId ASC))`,
+    CONSTRAINT fk_task_user FOREIGN KEY (userId) REFERENCES user_data(userId) ON DELETE RESTRICT,
+    UNIQUE INDEX taskId_UNIQUE (taskId ASC))`,
 
-  `CREATE TABLE job_output (
+  `CREATE TABLE task_output (
     id INT NOT NULL AUTO_INCREMENT,
-    jobId BINARY(16) NOT NULL,
+    taskId BINARY(16) NOT NULL,
     ts TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     data JSON NULL,
     PRIMARY KEY (id),
-    CONSTRAINT fk_joboutput_job FOREIGN KEY (jobId) REFERENCES job(jobId) ON DELETE CASCADE
+    CONSTRAINT fk_taskoutput_task FOREIGN KEY (taskId) REFERENCES task(taskId) ON DELETE CASCADE
   )`,
 
-  `DROP procedure IF EXISTS job_output`,
-  `CREATE PROCEDURE job_output(
-    IN jobId BINARY(16),
+  `DROP procedure IF EXISTS task_output`,
+  `CREATE PROCEDURE task_output(
+    IN taskId BINARY(16),
     IN data JSON
     )
     BEGIN
-      insert into job_output (jobId, data) values (jobId, data);
+      insert into task_output (taskId, data) values (taskId, data);
     END`,
 
-  `DROP procedure IF EXISTS job_start`,
-  `CREATE PROCEDURE job_start(
-      IN jobId BINARY(16),
+  `DROP procedure IF EXISTS task_start`,
+  `CREATE PROCEDURE task_start(
+      IN taskId BINARY(16),
       IN userId INT,
       IN name VARCHAR(255)
     )
     BEGIN
-      insert into job(jobId, name, userId, status) values (jobId, name, userId, 'started');
+      insert into task(taskId, name, userId, status) values (taskId, name, userId, 'started');
     END`,
 
-  `DROP procedure IF EXISTS job_failed`,
-  `CREATE PROCEDURE job_failed(
-    IN jobId BINARY(16)
+  `DROP procedure IF EXISTS task_failed`,
+  `CREATE PROCEDURE task_failed(
+    IN taskId BINARY(16)
   )
   BEGIN
-    update job set status = 'failed' where job.jobId = jobId;
+    update task set status = 'failed' where task.taskId = taskId;
   END`,
 
-  `DROP procedure IF EXISTS job_finished`,
-  `CREATE PROCEDURE job_finished(
-    IN jobId BINARY(16)
+  `DROP procedure IF EXISTS task_finished`,
+  `CREATE PROCEDURE task_finished(
+    IN taskId BINARY(16)
   )
   BEGIN
-    update job set status = 'finished' where job.jobId = jobId;
+    update task set status = 'finished' where task.taskId = taskId;
   END`,
 
   `DROP PROCEDURE IF EXISTS delete_disabled_objects`,
 
   `CREATE PROCEDURE delete_disabled_objects(
-      IN jobIdStr VARCHAR(36),
+      IN taskIdStr VARCHAR(36),
       IN userId INT
     )
     BEGIN
@@ -73,57 +73,57 @@ const upMigration = [
     DECLARE numAssetIds INT;
     DECLARE numReviewIds INT;
     DECLARE numHistoryIds INT;
-    DECLARE jobId BINARY(16);
+    DECLARE taskId BINARY(16);
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
       DECLARE err_code INT;
       DECLARE err_msg TEXT;
       GET DIAGNOSTICS CONDITION 1
         err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
-      CALL job_output(jobId, JSON_OBJECT('message', 'error', 'error_code', err_code, 'error_message', err_msg));
-      CALL job_failed (jobId);
+      CALL task_output(taskId, JSON_OBJECT('message', 'error', 'error_code', err_code, 'error_message', err_msg));
+      CALL task_failed (taskId);
     END;
 
-    IF jobIdStr IS NOT NULL AND jobIdStr REGEXP '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN
-      SET jobId = UUID_TO_BIN(jobIdStr);
+    IF taskIdStr IS NOT NULL AND taskIdStr REGEXP '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN
+      SET taskId = UUID_TO_BIN(taskIdStr);
     ELSE
-      SET jobId = UUID_TO_BIN(UUID());
+      SET taskId = UUID_TO_BIN(UUID());
     END IF;
 
     IF userId IS NULL OR userId <= 0 THEN
       SET userId = NULL;
     END IF;
 
-    CALL job_start (jobId, userId, 'delete_disabled_objects');
+    CALL task_start (taskId, userId, 'delete_disabled_objects');
 
-    CALL job_output (jobId, JSON_OBJECT('message', 'Job started'));
+    CALL task_output (taskId, JSON_OBJECT('message', 'Task started'));
     drop temporary table if exists t_collectionIds;
     create temporary table t_collectionIds (seq INT AUTO_INCREMENT PRIMARY KEY)
       select collectionId from collection where isEnabled is null;
     select max(seq) into numCollectionIds from t_collectionIds;
-    CALL job_output (jobId, JSON_OBJECT('message', 'created table', 'table', 't_collectionIds', 'count', numCollectionIds));
+    CALL task_output (taskId, JSON_OBJECT('message', 'created table', 'table', 't_collectionIds', 'count', numCollectionIds));
 
     drop temporary table if exists t_assetIds;
     create temporary table t_assetIds (seq INT AUTO_INCREMENT PRIMARY KEY)
       select assetId from asset where isEnabled is null or collectionId in (select collectionId from t_collectionIds);
     select max(seq) into numAssetIds from t_assetIds;
-    CALL job_output (jobId, JSON_OBJECT('message', 'created table', 'table', 't_assetIds', 'count', numAssetIds));
+    CALL task_output (taskId, JSON_OBJECT('message', 'created table', 'table', 't_assetIds', 'count', numAssetIds));
 
     drop temporary table if exists t_reviewIds;
     create temporary table t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY)
       select reviewId from review where assetId in (select assetId from t_assetIds);
     select max(seq) into numReviewIds from t_reviewIds;
-    CALL job_output (jobId, JSON_OBJECT('message', 'created table', 'table', 't_reviewIds', 'count', numReviewIds));
+    CALL task_output (taskId, JSON_OBJECT('message', 'created table', 'table', 't_reviewIds', 'count', numReviewIds));
 
     drop temporary table if exists t_historyIds;
     create temporary table t_historyIds (seq INT AUTO_INCREMENT PRIMARY KEY)
       select historyId from review_history where reviewId in (select reviewId from t_reviewIds);
     select max(seq) into numHistoryIds from t_historyIds;
-    CALL job_output (jobId, JSON_OBJECT('message', 'created table', 'table', 't_historyIds', 'count', numHistoryIds));
+    CALL task_output (taskId, JSON_OBJECT('message', 'created table', 'table', 't_historyIds', 'count', numHistoryIds));
 
     IF numHistoryIds > 0 THEN
     REPEAT
-      CALL job_output (jobId, JSON_OBJECT('message', 'delete range', 'table', 'review_history', 'range_start', curMinId, 'range_end', curMaxId, 'range_size', numHistoryIds));
+      CALL task_output (taskId, JSON_OBJECT('message', 'delete range', 'table', 'review_history', 'range_start', curMinId, 'range_end', curMaxId, 'range_size', numHistoryIds));
       delete from review_history where historyId IN (
           select historyId from t_historyIds where seq >= curMinId and seq < curMaxId 
         );
@@ -137,7 +137,7 @@ const upMigration = [
     SET curMaxId = curMinId + incrementValue;
     IF numReviewIds > 0 THEN
       REPEAT
-        CALL job_output (jobId, JSON_OBJECT('message', 'delete range', 'table', 'review', 'range_start', curMinId, 'range_end', curMaxId, 'range_size', numReviewIds));
+        CALL task_output (taskId, JSON_OBJECT('message', 'delete range', 'table', 'review', 'range_start', curMinId, 'range_end', curMaxId, 'range_size', numReviewIds));
         delete from review where reviewId IN (
             select reviewId from t_reviewIds where seq >= curMinId and seq < curMaxId 
           );
@@ -151,7 +151,7 @@ const upMigration = [
     SET curMaxId = curMinId + incrementValue;
     IF numAssetIds > 0 THEN
       REPEAT
-        CALL job_output (jobId, JSON_OBJECT('message', 'delete range', 'table', 'asset', 'range_start', curMinId, 'range_end', curMaxId, 'range_size', numAssetIds));
+        CALL task_output (taskId, JSON_OBJECT('message', 'delete range', 'table', 'asset', 'range_start', curMinId, 'range_end', curMaxId, 'range_size', numAssetIds));
         delete from asset where assetId IN (
             select assetId from t_assetIds where seq >= curMinId and seq < curMaxId 
           );
@@ -165,7 +165,7 @@ const upMigration = [
     SET curMaxId = curMinId + incrementValue;
     IF numCollectionIds > 0 THEN
       REPEAT
-        CALL job_output (jobId, JSON_OBJECT('message', 'delete range', 'table', 'collection', 'range_start', curMinId, 'range_end', curMaxId, 'range_size', numCollectionIds));
+        CALL task_output (taskId, JSON_OBJECT('message', 'delete range', 'table', 'collection', 'range_start', curMinId, 'range_end', curMaxId, 'range_size', numCollectionIds));
         delete from collection where collectionId IN (
             select collectionId from t_collectionIds where seq >= curMinId and seq < curMaxId 
           );
@@ -175,18 +175,18 @@ const upMigration = [
     END IF;
     drop temporary table if exists t_collectionIds;
 
-    CALL job_output (jobId, JSON_OBJECT('message', 'Job finished'));
-    CALL job_finished (jobId);
+    CALL task_output (taskId, JSON_OBJECT('message', 'Task finished'));
+    CALL task_finished (taskId);
     END`
 ]
 
 const downMigration = [
-  `DROP TABLE IF EXISTS job_output`,
-  `DROP TABLE IF EXISTS job`,
-  `DROP PROCEDURE IF EXISTS job_output`,
-  `DROP PROCEDURE IF EXISTS job_start`,
-  `DROP PROCEDURE IF EXISTS job_failed`,
-  `DROP PROCEDURE IF EXISTS job_finished`,
+  `DROP TABLE IF EXISTS task_output`,
+  `DROP TABLE IF EXISTS task`,
+  `DROP PROCEDURE IF EXISTS task_output`,
+  `DROP PROCEDURE IF EXISTS task_start`,
+  `DROP PROCEDURE IF EXISTS task_failed`,
+  `DROP PROCEDURE IF EXISTS task_finished`,
   `DROP PROCEDURE IF EXISTS delete_disabled_objects`,
 ]
 
