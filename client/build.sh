@@ -89,9 +89,11 @@ cp $SrcDir/reauth.html $DistDir/reauth.html
 
 # Workers
 echo "Preparing Worker resources"
-cp $SrcDir/serviceWorker.js $DistDir/serviceWorker.js
 mkdir -p $DistDir/js
-cp $SrcDir/js/oidcWorker.js $DistDir/js/oidcWorker.js
+mkdir -p $DistDir/js/workers
+cp $SrcDir/js/workers/service-worker.js $DistDir/js/workers/service-worker.js
+cp $SrcDir/js/workers/oidc-worker.js $DistDir/js/workers/oidc-worker.js
+cp $SrcDir/js/workers/state-worker.js $DistDir/js/workers/state-worker.js
 
 # npm
 echo "Preparing npm resources"
@@ -168,6 +170,7 @@ uglifyjs \
 'jszip.min.js' \
 'FileSaver.js' \
 'jsonview.bundle.js' \
+'SM/ApiState.js' \
 'stigman.js' -o ../../$DistDir/js/stig-manager.min.js -m -c --source-map "root='src',url='stig-manager.min.js.map'"
 
 echo "Copying files for sourcemap debugging"

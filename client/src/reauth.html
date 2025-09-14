@@ -18,7 +18,7 @@
 		</div>
   <script type="module">
     const statusEl = document.getElementById("loading-text")
-    const OW = new SharedWorker("js/oidcWorker.js", { name: 'stigman-oidc-worker', type: "module" })
+    const OW = new SharedWorker("js/workers/oidc-worker.js", { name: 'stigman-oidc-worker', type: "module" })
     OW.port.start()
     const init = await sendWorkerRequest({ request: 'initialize' })
     await run()
