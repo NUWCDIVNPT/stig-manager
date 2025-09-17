@@ -280,9 +280,24 @@ The Welcome Message and Image can be customized with environment variables to pr
   :title: Welcome Message Customizable Elements
 
 
+Proxy Configuration for TLS and Streaming/SSE Endpoints
+------------------------------------------------------------------
+
 TLS
-----
+~~~~~~~~~~~~~~
+
 :ref:`Set up TLS with a reverse proxy to secure connections to STIG Manager. <reverse-proxy>`
+
+Configure Proxy for Real-time Operations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+STIG Manager uses streaming responses and Server-Sent Events (SSE) for real-time collection operations and status updates. Most proxy configurations work without modification, but some may require adjustments.
+
+:ref:`Ensure your proxy properly handles streaming and SSE endpoints <reverse-proxy>` to ensure proper functionality of:
+
+* Real-time progress updates during collection export and clone operations
+* Live operation status monitoring
+* Future WebSocket-based features
 
 
 Enable Extra CA Certificates
