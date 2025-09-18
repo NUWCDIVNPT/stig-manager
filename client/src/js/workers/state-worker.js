@@ -40,7 +40,7 @@ function initialize(options) {
   if (initialized) return Promise.resolve({ success: true, channelName, state });
 
   return new Promise((resolve) => {
-    apiBase = `../../${options.apiBase}`; // Relative path from worker to API
+    apiBase = options.apiBase;
     let timeoutId;
     eventSource = new EventSource(`${apiBase}/op/state/sse`);
 

@@ -228,7 +228,7 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
     }
     const SW = window.stateWorker
     SW.worker.port.start()
-    const response = await SW.sendWorkerRequest({ request: 'initialize', apiBase: STIGMAN.Env.apiBase })
+    const response = await SW.sendWorkerRequest({ request: 'initialize', apiBase: new URL(STIGMAN.Env.apiBase, window.location.href).pathname })
     if (response.error) {
       console.error(`[init] Error initializing state worker:`, response.error)
       throw new Error(response.error)

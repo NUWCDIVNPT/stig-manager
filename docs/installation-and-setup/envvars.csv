@@ -9,7 +9,7 @@
 | The TCP port on which the server will listen ","API"
 "STIGMAN_CLASSIFICATION","| **Default** ``U``
 | Sets the classification banner, if any. Available values: ``NONE`` ``U`` ``CUI`` ``C`` ``S`` ``TS`` ``SCI`` ","API, Client"
-"STIGMAN_CLIENT_API_BASE","| **Default** ``./api``
+"STIGMAN_CLIENT_API_BASE","| **Default** ``api``
 | The base URL for Client requests to the API relative to the sever root at / ","Client"
 "STIGMAN_CLIENT_DIRECTORY","| **Default** ``./clients``
 | The location of the web client files, relative to the API source directory. Note that if running source from a clone of the GitHub repository, the client is located at `../../clients` relative to the API directory. ","API, Client"
