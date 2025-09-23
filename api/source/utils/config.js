@@ -42,6 +42,7 @@ const config = {
         responseMode: process.env.STIGMAN_CLIENT_RESPONSE_MODE || "fragment",
         reauthAction: process.env.STIGMAN_CLIENT_REAUTH_ACTION || "popup",
         strictPkce: process.env.STIGMAN_CLIENT_STRICT_PKCE !== 'false',
+        stateEvents: process.env.STIGMAN_CLIENT_STATE_EVENTS !== 'false',
         welcome: {
             image: process.env.STIGMAN_CLIENT_WELCOME_IMAGE || "",
             message: process.env.STIGMAN_CLIENT_WELCOME_MESSAGE || "",

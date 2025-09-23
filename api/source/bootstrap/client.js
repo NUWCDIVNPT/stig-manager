@@ -27,6 +27,7 @@ function getClientEnv(){
             version: "${config.version}",
             apiBase: "${config.client.apiBase}",
             displayAppManagers: ${config.client.displayAppManagers},
+            stateEvents: ${config.client.stateEvents},
             welcome: {
                 image: "${config.client.welcome.image}",
                 title: "${config.client.welcome.title.replace(/"/g, '\\"')}",
