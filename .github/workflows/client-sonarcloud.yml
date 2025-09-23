@@ -43,7 +43,7 @@ jobs:
       
       - name: Analyze client with SonarCloud
         if: env.SKIP_STEP != 'true'
-        uses: SonarSource/sonarcloud-github-action@v2.0.2
+        uses: SonarSource/sonarqube-scan-action@v6.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_CLIENT }} # Needed to push to SonarCloud
