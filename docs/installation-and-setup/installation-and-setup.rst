@@ -25,24 +25,24 @@ Required Components
 
 Every STIG Manager deployment consists of:
 
-**STIG Manager API** (Core Component)
+**STIG Manager API** (Core Component, provided by the STIGMan project)
   - RESTful API on Node.js LTS with Express framework
   - Stateless service exposing a single HTTP port
   - Handles all application logic and data operations
   - No persistent storage - all data flows to MySQL
 
-**Web Client** (User Interface)
+**Web Client** (User Interface, provided by the STIGMan project)
   - Single Page Application using ExtJS 3.4
   - Served as static content from the API container
   - Provides interactive access for users
 
-**OpenID Connect (OIDC) Provider** (Authentication Service)
+**OpenID Connect (OIDC) Provider** (Authentication Service, deployer-provided)
   - Manages user accounts and authentication
   - Issues OAuth2 JWT tokens for API access
   - Tested providers: Red Hat Keycloak, Okta, F5, Azure Entra
   - Must support Authorization Code Flow with PKCE for web clients
 
-**MySQL Database** (Data Persistence)
+**MySQL Database** (Data Persistence, deployer-provided)
   - Stores all application data
   - Supports TLS and mutual TLS authentication
   - Version 8.4+ recommended for optimal performance
@@ -54,13 +54,13 @@ Every STIG Manager deployment consists of:
 Recommended Infrastructure
 -------------------------------------------
 
-**Reverse Proxy/Load Balancer** (Highly Recommended)
+**Reverse Proxy/Load Balancer** (Highly Recommended, deployer-provided)
   - Provides TLS termination for secure connections
   - Handles CAC/PKI authentication if required
   - Must support streaming responses and Server-Sent Events (SSE)
   - Examples: nginx, Apache, HAProxy, Kubernetes Ingress
 
-**Container Orchestration** (Recommended Deployment Method)
+**Container Orchestration** (Recommended Deployment Method, deployer-provided)
   - Docker, Kubernetes, OpenShift, or similar
   - Enables scalability and high availability
   - Simplifies updates and rollbacks
