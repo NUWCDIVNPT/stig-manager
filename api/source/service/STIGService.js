@@ -348,12 +348,12 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
             'definition',  cci.definition,
             'control', cr.indexDisa
           )
-        ) 
+        )
         from
-          rev_group_rule_cci_map rgrcc 
-          left join cci cci using (cci)
+          rev_group_rule_cci_map rgrcc
+          inner join cci cci using (cci)
           left join cci_reference_map cr using (cci)
-        where 
+        where
           rgrcc.rgrId = rgr.rgrId
         ), 
         json_array()
@@ -438,13 +438,13 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   }
 
   if ( inProjection?.includes('ccis') ) {
-    columns.push(`CASE WHEN count(rgrcc.cci) = 0 
+    columns.push(`CASE WHEN count(rgrcc.cci) = 0
     THEN json_array()
-    ELSE CAST(CONCAT('[', GROUP_CONCAT(distinct json_object('cci', rgrcc.cci,'apAcronym',cci.apAcronym,'definition',cci.definition)), ']') as json) 
+    ELSE CAST(CONCAT('[', GROUP_CONCAT(distinct json_object('cci', rgrcc.cci,'apAcronym',cci.apAcronym,'definition',cci.definition)), ']') as json)
     END as ccis`)
     joins.push(
       'left join rev_group_rule_cci_map rgrcc using (rgrId)',
-      'left join cci using (cci)'
+      'inner join cci using (cci)'
     )
   }
 
@@ -1183,7 +1183,7 @@ exports.getCcisByRevision = async function(benchmarkId, revisionStr, userObject)
   
   joins.push('LEFT JOIN rev_group_rule_map rgr using (revId)')
   joins.push('INNER JOIN rev_group_rule_cci_map rgrcc using (rgrId)')
-  joins.push('LEFT JOIN cci c using (cci)')
+  joins.push('INNER JOIN cci c using (cci)')
   // joins.push('LEFT JOIN cci_reference_map crm using (cci)')
 
   // CONSTRUCT MAIN QUERY

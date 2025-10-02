@@ -79,9 +79,9 @@ exports.getAppData = async function (res, format) {
   // Execute SQL to retrieve a list of tables and their non-generated columns. The query binds
   // to the schema name and the excluded tables.
   /** @type {Array.<Array.<{table:string, columns:string[]}>} */
-  const [tableRows] = await dbUtils.pool.query(`SELECT
+const sql = `SELECT
     TABLE_NAME as \`table\`,
-    json_arrayagg(CONCAT('\`',COLUMN_NAME,'\`')) as columns
+    cast(concat('[', group_concat(CONCAT('"\`',COLUMN_NAME,'\`"') order by COLUMN_NAME), ']') as json) as columns
   FROM
     INFORMATION_SCHEMA.COLUMNS 
   where
@@ -90,7 +90,8 @@ exports.getAppData = async function (res, format) {
     and TABLE_NAME not in (?)
     and EXTRA NOT LIKE '% GENERATED'
   group by
-    TABLE_NAME`, [config.database.schema, config.database.schema, excludedTables])
+    TABLE_NAME`
+  const [tableRows] = await dbUtils.pool.query(sql, [config.database.schema, config.database.schema, excludedTables])
 
   /**
    * @type {Object.<string, {columns:string, rowCount?:number}>} object pivoted from tableRows[]

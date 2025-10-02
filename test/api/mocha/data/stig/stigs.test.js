@@ -223,13 +223,13 @@ describe('GET - Stig', () => {
                     const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}/revisions/${reference.revisionStr}/ccis`, 'GET', iteration.token)
                     expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('array')
-                    expect(res.body, "expected 85 ccis").to.be.lengthOf(85)
+                    expect(res.body, "expected 80 ccis").to.be.lengthOf(80)
                 })
                 it("Return a list of CCIs from a STIG revision latest", async () => {
                     const res = await utils.executeRequest(`${config.baseUrl}/stigs/${reference.benchmark}/revisions/${'latest'}/ccis`, 'GET', iteration.token)
                     expect(res.status).to.eql(200)
                     expect(res.body).to.be.an('array')
-                    expect(res.body, "expected 85 ccis").to.be.lengthOf(85)
+                    expect(res.body, "expected 80 ccis").to.be.lengthOf(80)
                 })
             })
             describe('GET - getGroupsByRevision - /stigs/{benchmarkId}/revisions{revisionStr}/groups', () => {
