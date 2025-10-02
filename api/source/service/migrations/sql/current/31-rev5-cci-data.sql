@@ -1,4 +1,3 @@
--- MySQL dump 10.13-csmig  Distrib 8.0.18-csmig, for Linux (x86_64)
 --
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
@@ -6,7 +5,7 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Dumping data for table `cci`
+-- Data for table `cci`
 --
 
 LOCK TABLES `cci` WRITE;
@@ -3850,7 +3849,7 @@ INSERT INTO `cci` VALUES ('000002','draft','2009-09-14','DISA FSO','policy','Dis
 UNLOCK TABLES;
 
 --
--- Dumping data for table `cci_reference_map`
+-- Data for table `cci_reference_map`
 --
 
 LOCK TABLES `cci_reference_map` WRITE;
