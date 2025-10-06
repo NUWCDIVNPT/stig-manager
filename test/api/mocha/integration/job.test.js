@@ -68,7 +68,7 @@ describe('Job endpoint tests', function () {
         tasks: ["1"],
         event: {
           type: "once",
-          starts: '2099-01-01T00:00:00Z',
+          starts: '2035-01-01T00:00:00Z',
         }
       })
       expect(res.status).to.eql(201)
@@ -92,7 +92,7 @@ describe('Job endpoint tests', function () {
             value: "1",
             field: "day"
           },
-          starts: '2099-01-01T00:00:00Z',
+          starts: '2035-01-01T00:00:00Z',
         }
       })
       expect(res.status).to.eql(201)
@@ -165,7 +165,7 @@ describe('Job endpoint tests', function () {
             value: "1",
             field: "day"
           },
-          starts: '2099-01-01T00:00:00Z',
+          starts: '2035-01-01T00:00:00Z',
           enabled: true
         }
       })
@@ -181,7 +181,7 @@ describe('Job endpoint tests', function () {
             value: "1",
             field: "day"
           },
-          starts: '2099-01-01T00:00:00Z',
+          starts: '2035-01-01T00:00:00Z',
           enabled: false
         }
       })
@@ -198,7 +198,7 @@ describe('Job endpoint tests', function () {
             value: "1",
             field: "day"
           },
-          starts: '2099-01-01T00:00:00Z',
+          starts: '2035-01-01T00:00:00Z',
           enabled: true
         }
       })
@@ -259,7 +259,7 @@ describe('Job endpoint tests', function () {
             value: "1",
             field: "day"
           },
-          starts: '2099-01-01T00:00:00Z',
+          starts: '2035-01-01T00:00:00Z',
           enabled: true
         }
       })
@@ -274,7 +274,7 @@ describe('Job endpoint tests', function () {
             value: "1",
             field: "day"
           },
-          starts: '2099-01-01T00:00:00Z',
+          starts: '2035-01-01T00:00:00Z',
           enabled: true
         }
       })
@@ -299,7 +299,7 @@ describe('Job endpoint tests', function () {
             value: "1",
             field: "day"
           },
-          starts: '2099-01-01T00:00:00Z',
+          starts: '2035-01-01T00:00:00Z',
           enabled: true
         }
       })

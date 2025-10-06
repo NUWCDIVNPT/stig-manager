@@ -367,7 +367,7 @@ CREATE TABLE `job_run` (
   `created` timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   `updated` timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
   PRIMARY KEY (`jrId`),
-  KEY `idx_job_run_runId` (`runId`),
+  UNIQUE KEY `idx_job_run_runId` (`runId`),
   KEY `fk_job_run_jobId` (`jobId`),
   CONSTRAINT `fk_job_run_jobId` FOREIGN KEY (`jobId`) REFERENCES `job` (`jobId`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

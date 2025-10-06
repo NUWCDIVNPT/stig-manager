@@ -68,7 +68,7 @@ const upMigration = [
     created TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     updated TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (jrId),
-    INDEX idx_job_run_runId (runId),
+    UNIQUE INDEX idx_job_run_runId (runId),
     CONSTRAINT fk_job_run_jobId FOREIGN KEY (jobId) REFERENCES job(jobId) ON DELETE CASCADE
   )`,
 

@@ -996,7 +996,7 @@ SM.Job.TaskSelectingPanel = Ext.extend(Ext.Panel, {
     }
 
     function fireSelectedChanged() {
-      _this.fireEvent('selectedchanged', selectionsGrid.store.getRange().map(r => r.data.userId))
+      _this.fireEvent('selectedchanged', selectionsGrid.store.getRange().map(r => r.data.taskId))
     }
 
     function changeSelected(srcGrid, records, dstGrid) {
@@ -1017,7 +1017,7 @@ SM.Job.TaskSelectingPanel = Ext.extend(Ext.Panel, {
       srcGrid.store.fireEvent('update', srcGrid.store)
       dstGrid.store.fireEvent('update', dstGrid.store)
       dstGrid.store.filter(dstGrid.getView().getFilterFns())
-      dstGrid.getView().focusRow(dstGrid.store.indexOfId(records[0].data.assetId))
+      dstGrid.getView().focusRow(dstGrid.store.indexOfId(records[0].data.taskId))
 
       fireSelectedChanged()
     }
