@@ -9,7 +9,7 @@ Changes:
   - (API) feat: report semver with build info
   - (API) fix: STIG Version in .cklb output is now a string 
   - (API/UI) feat: Lighter-weight option for fetching App Info: with or without (default) exact row counts 
-  - (UI) Dependencies: Update to latest stig-manager-client-modules (1.5.6)
+  - (UI) Dependencies: Update to latest stig-manager-client-modules (1.5.7)
 
 
 1.5.11
