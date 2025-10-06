@@ -199,7 +199,7 @@ class Importer{
 	 */
 	_fileExists(filepath){
 		return new Promise((resolve, reject)=>{
-			fs.access(filepath, fs.F_OK, err=>{
+			fs.access(filepath, fs.constants.F_OK, err=>{
 				if(err){
 					reject(err);
 				}else{

@@ -172,6 +172,89 @@ The only changes that can be made to Users in the STIG Manager interface is thei
 
 -------------------------------
 
+.. _service-jobs:
+
+Service Jobs
+============================
+
+The Service Jobs feature provides a framework for managing scheduled background operations in STIG Manager. This feature enables both system-defined and user-defined jobs that can run one or more predefined tasks either on a schedule or immediately on demand.
+
+The initial implementation provides database maintenance and cleanup tasks. However, Service Jobs will serve as the foundation for future capabilities, including Review aging operations and time-based snapshots and analysis.
+
+.. note::
+   Service Jobs require administrative privileges to access and manage. Regular users do not have visibility into the Service Jobs interface.
+
+.. note::
+   The database maintenance Jobs are not enabled by default. Administrators must enable the Jobs they wish to use. 
+
+.. warning::
+   Exercise caution when modifying or running database maintenance jobs, as these operations can affect system data. Always ensure you have appropriate backups before running destructive maintenance operations.
+
+.. rubric:: Accessing Service Jobs
+
+The Service Jobs interface is accessible from the ``Application Management -> Service Jobs`` workspace in the Navigation Tree. This interface provides App Managers with tools to view, create, modify, and monitor jobs and their execution history.
+
+.. rubric:: Job Types
+
+**System Jobs**
+   Pre-defined jobs created and maintained by STIG Manager for essential database operations. System jobs cannot be deleted and have restricted modification permissions - only their scheduling (event) properties can be modified by administrators.
+
+**User Jobs**  
+   Custom jobs created by App Managers to meet specific organizational needs. User jobs provide full flexibility in task selection, scheduling, and configuration.
+
+.. rubric:: Job Components
+
+Each job consists of the following components:
+
+**Tasks**
+   Individual operations that perform specific functions. Tasks are pre-defined by the system and can include database maintenance operations, cleanup procedures, and analytical functions. Multiple tasks can be assigned to a single job.
+
+**Schedule (Event)**
+   Optional scheduling configuration that determines when and how frequently a job runs:
+   
+   * **One-time**: Executes at a specific date and time
+   * **Recurring**: Executes on a repeating schedule with configurable intervals (daily, weekly, monthly, etc.)
+   * **Manual**: No schedule - runs only when triggered manually
+
+**Job Properties**
+   Basic job information including name, description, creator, and modification history.
+
+.. rubric:: Managing Jobs
+
+**Creating Jobs**
+   Use the "Create" button to define new user jobs. Specify the job name, description, select one or more tasks, and optionally configure a schedule.
+
+**Modifying Jobs**
+   Existing jobs can be modified using the "Modify" button. User jobs allow full modification of all properties, while system jobs only permit schedule modifications.
+
+**Running Jobs Immediately**
+   Any job can be executed immediately using the "Run now..." button, regardless of its scheduled configuration.
+
+**Removing Jobs**
+   User jobs can be deleted using the "Remove" button. System jobs cannot be deleted.
+
+.. rubric:: Monitoring Job Execution
+
+The Service Jobs interface provides detailed execution monitoring:
+
+**Job Runs**
+   View complete execution history with run states (running, completed, failed, shutdown), start times, duration, and detailed output logs.
+
+**Real-time Output**
+   Monitor job execution in real-time with detailed task-level output including timestamps, message types, and execution status.
+
+**Run Management**
+   Individual job runs can be deleted from the execution history as needed for maintenance purposes.
+
+.. rubric:: Available Tasks
+
+The system provides various pre-defined tasks for common maintenance operations:
+
+* **WipeDeletedObjects**: Removes soft-deleted records from the database
+* **DeleteUnmappedReviews**: Cleans up reviews that are no longer mapped to current STIG requirements
+* **DeleteUnmappedAssetReviews**: Removes unmapped reviews specific to individual assets
+
+Additional tasks may be available depending on your STIG Manager configuration and version.
 
 .. _automated-imports:
 

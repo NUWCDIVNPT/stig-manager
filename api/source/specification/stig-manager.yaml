@@ -3209,6 +3209,299 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+  
+  /jobs:
+    get:
+      summary: List jobs
+      tags:
+        - Job
+      operationId: getJobs
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      responses:
+        '200':
+          description: List of jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Job'
+        'default':
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op:read
+      x-elevation-required: true
+    post:
+      summary: Create a new job
+      tags:
+        - Job
+      operationId: postJob
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobCreate'
+      responses:
+        '201':
+          description: Job created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        'default':
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op
+      x-elevation-required: true
+  /jobs/{jobId}:
+    get:
+      summary: Get job by ID
+      tags:
+        - Job
+      operationId: getJob
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/JobIdPath'
+      responses:
+        '200':
+          description: Job details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        'default':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op:read
+      x-elevation-required: true
+    delete:
+      summary: Delete job by ID
+      tags:
+        - Job
+      operationId: deleteJob
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/JobIdPath'
+      responses:
+        '204':
+          description: Job deleted
+        'default':
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op
+      x-elevation-required: true
+    patch:
+      summary: Update job by ID
+      tags:
+        - Job
+      operationId: patchJob
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/JobIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobUpdate'
+      responses:
+        '200':
+          description: Job updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        'default':
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op
+      x-elevation-required: true
+  /jobs/{jobId}/runs:
+    get:
+      summary: List the job runs
+      tags:
+        - Job
+      operationId: getRunsByJob
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/JobIdPath'
+      responses:
+        '200':
+          description: List of job runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobRun'
+        'default':
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op:read
+      x-elevation-required: true
+    post:
+      summary: Start an immediate job run
+      tags:
+        - Job
+      operationId: runImmediateJob
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/JobIdPath'
+      responses:
+        '201':
+          description: Job run created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRunCreated'
+        'default':
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op
+      x-elevation-required: true
+  /jobs/runs/{runId}:
+    get:
+      summary: Get a job run by ID
+      tags:
+        - Job
+      operationId: getRunById
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/JobRunIdPath'
+      responses:
+        '200':
+          description: Job run details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobRun'
+        'default':
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op:read
+      x-elevation-required: true
+    delete:
+      summary: Delete a job run by ID
+      tags:
+        - Job
+      operationId: deleteRunById
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/JobRunIdPath'
+      responses:
+        '204':
+          description: Job run deleted
+        'default':
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op
+      x-elevation-required: true
+  /jobs/runs/{runId}/output:
+    get:
+      summary: Get the output for a job run
+      tags:
+        - Job
+      operationId: getOutputByRun
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+        - $ref: '#/components/parameters/JobRunIdPath'
+        - $ref: '#/components/parameters/RunSequenceQuery'
+      responses:
+        '200':
+          description: Job run output
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobRunOutput'
+        'default':
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op:read
+      x-elevation-required: true
+  /jobs/tasks:
+    get:
+      summary: List all tasks
+      tags:
+        - Job
+      operationId: getAllTasks
+      parameters:
+        - $ref: '#/components/parameters/ElevateQuery'
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobTask'
+        'default':
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - stig-manager:op:read
+      x-elevation-required: true
+
   /op/appdata:
     get:
       tags:
@@ -3374,6 +3667,8 @@ paths:
       security:
         - oauth:
             - stig-manager:op:read
+  
+  
   /op/state:
     get:
       tags:
@@ -7016,6 +7311,226 @@ components:
       format: int64
       minimum: 0
       nullable: true
+    Job:
+      additionalProperties: false
+      type: object
+      properties:
+        jobId:
+          $ref: '#/components/schemas/JobId'
+        name:
+          $ref: "#/components/schemas/String45"
+        description:
+          $ref: "#/components/schemas/String255Nullable"
+        createdBy:
+          $ref: '#/components/schemas/UserBasicNullable'
+        created:
+          $ref: '#/components/schemas/StringDateTime'
+        updatedBy:
+          $ref: '#/components/schemas/UserBasicNullable'
+        updated:
+          $ref: '#/components/schemas/StringDateTimeNullable'
+        tasks:
+          $ref: '#/components/schemas/JobTaskList'
+        event:
+          $ref: '#/components/schemas/JobEvent'
+        runCount:
+          type: integer
+        lastRun:
+          $ref: '#/components/schemas/JobRun'
+      required: [jobId, name, tasks, created, createdBy]
+    JobCreate:
+      additionalProperties: false
+      type: object
+      properties:
+        name:
+          $ref: "#/components/schemas/String45"
+        description:
+          $ref: "#/components/schemas/String255Nullable"
+        tasks:
+          $ref: '#/components/schemas/JobTaskListCreate'
+        event:
+          $ref: '#/components/schemas/JobEventCreate'
+      required: [name, tasks]
+    JobEvent:
+      oneOf:
+        - type: integer
+          nullable: true
+        - $ref: '#/components/schemas/JobEventRecurring'
+        - $ref: '#/components/schemas/JobEventOnce'
+    JobEventCreate:
+      oneOf:
+        - $ref: '#/components/schemas/JobEventRecurringCreate'
+        - $ref: '#/components/schemas/JobEventOnceCreate'
+        - type: integer
+          nullable: true
+    JobEventOnce:
+      additionalProperties: false
+      type: object
+      properties:
+        eventId:
+          $ref: "#/components/schemas/String45"
+        type:
+          type: string
+          enum:
+            - once
+        starts:
+          $ref: '#/components/schemas/StringDateTime'
+        enabled:
+          type: boolean
+          default: true
+      required: [eventId, starts, type]
+    JobEventOnceCreate:
+      additionalProperties: false
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - once
+        starts:
+          $ref: '#/components/schemas/StringDateTime'
+      required: [starts, type]
+    JobEventRecurring:
+      additionalProperties: false
+      type: object
+      properties:
+        eventId:
+          $ref: "#/components/schemas/String45"
+        type:
+          type: string
+          enum:
+            - recurring
+        interval:
+          $ref: '#/components/schemas/JobInterval'
+        starts:
+          $ref: '#/components/schemas/StringDateTimeNullable'
+        ends:
+          $ref: '#/components/schemas/StringDateTimeNullable'
+        enabled:
+          type: boolean
+          default: true
+      required: [eventId, type, interval]
+    JobEventRecurringCreate:
+      additionalProperties: false
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - recurring
+        interval:
+          $ref: '#/components/schemas/JobInterval'
+        starts:
+          $ref: '#/components/schemas/StringDateTimeNullable'
+        ends:
+          $ref: '#/components/schemas/StringDateTimeNullable'
+        enabled:
+          type: boolean
+          default: true
+      required: [type, interval]
+    JobInterval:
+      additionalProperties: false
+      type: object
+      properties:
+        value:
+          type: string
+        field:
+          type: string
+          enum:
+            - minute
+            - hour
+            - day
+            - week
+            - month
+      required: [value, field]
+    JobId:
+      $ref: '#/components/schemas/StringIntId'
+    JobRun:
+      additionalProperties: false
+      nullable: true
+      type: object
+      properties:
+        runId:
+          $ref: '#/components/schemas/JobRunId'
+        created:
+          $ref: '#/components/schemas/StringDateTime'
+        updated:
+          $ref: '#/components/schemas/StringDateTimeNullable'
+        state:
+          $ref: '#/components/schemas/JobRunState'
+        jobId:
+          $ref: '#/components/schemas/JobId'
+      required: [runId, created, state]
+    JobRunCreated:
+      additionalProperties: false
+      type: object
+      properties:
+        runId:
+          $ref: '#/components/schemas/JobRunId'
+      required: [runId]
+    JobRunId:
+      $ref: '#/components/schemas/StringUuid'
+    JobRunOutput:
+      additionalProperties: false
+      type: object
+      properties:
+        type:
+          type: string
+        message:
+          type: string
+        task:
+          $ref: "#/components/schemas/String45"
+        taskId:
+          $ref: "#/components/schemas/JobTaskId"
+        ts:
+          $ref: '#/components/schemas/StringDateTime'
+      required: [message, type, task, ts]
+    JobRunState:
+      type: string
+      nullable: true
+      enum:
+        - running
+        - completed
+        - failed
+    JobTask:
+      type: object
+      additionalProperties: false
+      properties:
+        taskId:
+          $ref: '#/components/schemas/StringIntId'
+        name:
+          $ref: "#/components/schemas/String45"
+        description:
+          $ref: "#/components/schemas/String255Nullable"
+        command:
+          $ref: '#/components/schemas/String255'
+      required: [taskId, name]
+    JobTaskId:
+      $ref: '#/components/schemas/StringIntId'
+    JobTaskList:
+      type: array
+      minItems: 1
+      items:
+        $ref: '#/components/schemas/JobTask'
+    JobTaskListCreate:
+      type: array
+      minItems: 1
+      items:
+        $ref: '#/components/schemas/JobTaskId'
+    JobUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          $ref: "#/components/schemas/String45"
+        description:
+          $ref: "#/components/schemas/String255Nullable"
+        tasks:
+          $ref: '#/components/schemas/JobTaskListCreate'
+        event:
+          $ref: '#/components/schemas/JobEventCreate'
+
     Label:
       additionalProperties: false
       type: object
@@ -8665,6 +9180,18 @@ components:
       required:
         - userId
         - username
+    UserBasicNullable:
+      nullable: true
+      additionalProperties: false
+      type: object
+      properties:
+        userId:
+          $ref: '#/components/schemas/UserIdNullable'
+        username:
+          $ref: '#/components/schemas/UsernameNullable'
+      required:
+        - userId
+        - username
     UserBasicWithDisplayName:
       additionalProperties: false
       type: object
@@ -8833,6 +9360,8 @@ components:
             $ref: '#/components/schemas/UserId'
     UserId:
       $ref: '#/components/schemas/StringIntId'
+    UserIdNullable:
+      $ref: '#/components/schemas/StringIntIdNullable'
     UserLastAccess:
       $ref: '#/components/schemas/IntegerMinimumZeroNullable'
     UserPatch:
@@ -8968,6 +9497,8 @@ components:
         - lastClaims
     Username:
       $ref: '#/components/schemas/String255'
+    UsernameNullable:
+      $ref: '#/components/schemas/String255Nullable'
     WebPreferences:
       type: object
       properties:
@@ -9262,6 +9793,20 @@ components:
           type: string
           enum:
             - rules
+    JobIdPath:
+      name: jobId
+      in: path
+      description: A path parameter that identifies a Job
+      required: true
+      schema:
+        $ref: '#/components/schemas/JobId'
+    JobRunIdPath:
+      name: runId
+      in: path
+      description: A path parameter that identifies a Job Run
+      required: true
+      schema:
+        $ref: '#/components/schemas/JobRunId'
     JsonPathQuery:
       name: jsonpath
       in: query
@@ -9441,6 +9986,8 @@ components:
     ReviewRulesQuery:
       name: rules
       in: query
+      description: 
+        default - rules from the default revision of a STIG in the Collection.<br>mapped - rules from any version of a STIG assigned to the Asset
       schema:
         type: string
         default: default-mapped
@@ -9448,8 +9995,10 @@ components:
           - all
           - default
           - default-mapped
+          - mapped
           - not-default
           - not-default-mapped
+          - not-mapped
     ReviewStatusQuery:
       name: status
       in: query
@@ -9517,6 +10066,13 @@ components:
         maxItems: 2
         items:
           $ref: '#/components/schemas/RuleSeverity'
+    RunSequenceQuery:
+      name: after-seq
+      in: query
+      description: The starting sequence number of the run output to retrieve. If not specified, all run output is returned.
+      schema:
+        type: integer
+        minimum: 0
     StartDateQuery:
       name: startDate
       in: query
