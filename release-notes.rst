@@ -1,3 +1,23 @@
+1.5.13
+-------
+
+Changes:
+  - (API) feature: New endpoint using Server Sent Events (SSE) to provide real-time API status
+  - (UI) feature: UI responds to new state endpoint to provide real-time API status (configurable with envvar)
+  - (API) feature: Streaming responses now include `x-accel-buffering: no` header to prevent buffering with nginx-compatible proxies
+  - (API) feature: Update to 800-53 Rev 5 based CCIs and AP mappings (DB Migration included)
+  - (API) Remove compression middleware
+  - (Docs) Updates describing streaming endpoint proxy configuration
+  - (Container) Dockerfile defaults to empty string for build arguments
+  - (Workflows) Testing against latest 2 MySQL versions for 8.0.x and 8.4.x tracks
+  - (Workflows) Update to new SonarQube scanner action
+  - (Dependencies) Update to stig-manager-client-modules 1.5.7
+
+Note 1: For the API state endpoint SSEs to be effective, proxies should be configured not to buffer responses from that endpoint (`/op/state/sse`). Many proxies honor the `x-accel-buffering: no` header that is now being sent with these responses, but your proxy may require additional configuration. Client use of the new API state reporting endpoint can be disabled by setting the environment variable `STIGMAN_CLIENT_STATE_EVENTS` to `false`.  This should only be disabled temporarily while resolving buffering issues on a reverse proxy. Proxy buffering can also interfere with responses that stream status of long-running operations, such as Collection cloning. [Check the documentation for a further discussion on proxy requirements.](https://stig-manager.readthedocs.io/en/latest/installation-and-setup/reverse-proxy.html#proxy-configuration-for-streaming-and-sse-endpoints)
+
+Note 2: This release includes a database migration to update CCIs and AP mappings to reflect changes in NIST SP 800-53 Revision 5.
+
+
 1.5.12
 -------
 
