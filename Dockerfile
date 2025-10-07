@@ -15,10 +15,10 @@
 ARG BASE_IMAGE="node:lts-alpine"
 FROM ${BASE_IMAGE}
 LABEL maintainer="carl.a.smigielski@saic.com"
-ARG COMMIT_BRANCH="unspecified"
-ARG COMMIT_SHA="unspecified"
-ARG COMMIT_TAG="unspecified"
-ARG COMMIT_DESCRIBE="unspecified"
+ARG COMMIT_BRANCH=""
+ARG COMMIT_SHA=""
+ARG COMMIT_TAG=""
+ARG COMMIT_DESCRIBE=""
 LABEL commit-branch=${COMMIT_BRANCH}
 LABEL commit-sha=${COMMIT_SHA}
 LABEL commit-tag=${COMMIT_TAG}
