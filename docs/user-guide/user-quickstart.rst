@@ -4,7 +4,7 @@
 STIG Manager User Walkthrough
 ########################################
 
-This User Walkthrough will walk you through a typical use case for STIG Manager, from creating your own Collection, creating Assets in that Collection, to evaluating STIGs and creating a POAM from your findings. Depending on your role in your organization, not all of these steps may apply to you, but should be helpful in providing context for the use of this tool. If you are comfortable, feel free to skip around using the sidebar navigation to the left.
+This User Walkthrough will walk you through a typical use case for STIG Manager, from creating your own Collection, creating Assets in that Collection, to evaluating STIGs and creating a POAM-style spreadsheet from your findings. Depending on your role in your organization, not all of these steps may apply to you, but should be helpful in providing context for the use of this tool. If you are comfortable, feel free to skip around using the sidebar navigation to the left.
 
 For more detailed information about every STIG Manager function available to users, please see the :ref:`user-guide-doc`.
 
@@ -170,7 +170,7 @@ Evaluate an Asset for STIG compliance
 #. Select a few Rules and save some Evaluations of them. For now, set a few to "Open," and provide a Comment.  You will notice that you have the option to "Save without submitting" or "Save and Submit" the Evaluations. The "Submitted" status is available if you meet the Review Settings configured for your Collection. Hover over the ``(?)`` symbol to view the applicable :ref:`Collection Settings<manage-collection-workspace>` for Reviews in this Collection. 
 
    * As you perform reviews, the STIG Checklist panel will update the status columns of each Rule. The bar at the bottom of this panel indicates overall status of the checklist. The toolbar at the top provides options for filtering the current view of the checklist, and the "Checklist" menu provides various functions, including importing results (in .ckl or XCCDF formats) and exporting results in the .ckl format.
-   * These evaluations are summarized and reported in the Reports node of the Nav Tree. Findings present just the Open rule evaluations, and can be exported as a spreadsheet or a pseudo-POAM format. Status presents an overall summary of evaluations, showing completion statuses and other info. 
+   * These evaluations are summarized and reported in the Reports node of the Nav Tree. Findings present just the Open rule evaluations, and can be exported as a .csv or a POAM-style spreadsheet. Status presents an overall summary of evaluations, showing completion statuses and other info. 
 
 
 Evaluate multiple Assets at once for STIG compliance
@@ -208,12 +208,13 @@ Findings Report
 #. From the Collection Dashboard, click the "Details" button in the header of the "Findings" box.
 
    * This report lists every Open review in the Collection. It can be aggregated by Rule, Group, or CCI, and filtered by STIG.
-   * From the bottom bar of the Aggregated Findings panel, a .csv and a POAM-like export is available for the Rule and Group aggregations.
+   * From the bottom bar of the Aggregated Findings panel, a .csv and a POAM-style spreadsheet export is available for the Rule and Group aggregations.
 
 #. Select a Finding in the Aggregated Findings panel on the left to display the Assets with those findings in the Individual Findings Panel on the right. 
 #. Click the "Generate POA&M..." button in the bottom bar of the Aggregated Findings panel.
 
-   * You will be prompted for a little more information, which will be prepopulated into the POA&M that will be generated for you.
+   * You will be prompted for a little more information, which will be prepopulated into the POA&M cells that will be generated for you.
+   * POA&Ms can take different forms, and track more information than is available in STIG Manager. The POA&M output from STIG Manager is intended to be used for reference when populating your official POA&M documents with STIG finding information, and not as a replacement for artifacts that may be directly imported into eMASS or other RMF tools.
 
 
 .. thumbnail:: /assets/images/findings-report.png
