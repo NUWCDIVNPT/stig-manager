@@ -109,7 +109,7 @@ STIG Manager is CCI-aware
 
 STIG Manager maintains relationships between STIG Rules and their associated CCIs and Assessment Procedures. Reports can be pivoted to show Open Findings sorted by Rule, CCI, or Group.
 
-STIG Manager can produce a pre-populated POA&M-like document that lists findings already decomposed into their related CCIs. 
+STIG Manager can produce a pre-populated POA&M-style spreadsheet that lists findings already decomposed into their related CCIs. 
 
 
 STIG Manager Integrates with the Continuous RMF Lifecycle approach
@@ -200,7 +200,7 @@ STIG Manager is ready to support a life-cycle approach to RMF. Your most current
   * Enforce a Review Requirements for your Collection.
   * Reports for Findings.
   * Status reports, showing STIG Evaluation completeness
-  * Generate POAM from your findings.
+  * Generate POAM-style spreadsheets from your findings.
   * Single source of truth for Evaluations and STIG Status.
 
   Workspaces

@@ -923,10 +923,11 @@ Menu Bar
 ~~~~~~~~~~~~
 The Menu Bar allows the User to aggregate this view by Group ID, Rule ID, or CCI.  It also allows the User to filter the list by STIG. 
 
-Export a .csv or POA&M 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-At the bottom of this panel are Export and Generate POA&M... buttons.  The Export button exports a .csv file, and the POA&M button will ask the User to set a few options and will then produce a pre-populated POA&M file.
+Export a .csv or POA&M-style Spreadsheet
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+At the bottom of this panel are Export and Generate POA&M... buttons.  The Export button exports a .csv file, and the POA&M button will ask the User to set a few options and will then produce a pre-populated POA&M reference file.
 
+POA&Ms can take different forms, and track more information than is available in STIG Manager. The POA&M output from STIG Manager is intended to be used for reference when populating your official POA&M documents with STIG finding information, and not as a replacement for artifacts that may be directly imported into eMASS or other RMF tools.
 
 
 Individual Findings
