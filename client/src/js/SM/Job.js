@@ -1047,7 +1047,7 @@ SM.Job.TaskSelectingPanel = Ext.extend(Ext.Panel, {
       setValue: () => { },
       markInvalid: function () { },
       clearInvalid: function () { },
-      isValid: () => selectionsGrid.getSelectionModel().hasSelection(),
+      isValid: () => selectionsGrid.store.getRange().length > 0,
       getName: () => this.name,
       validate: () => true
     }
