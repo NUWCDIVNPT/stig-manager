@@ -573,7 +573,7 @@ exports.getReviews = async function ({projections = [], filter = {}, grant}) {
       json_array()
     ) as assetLabelIds`,
     'r.ruleId',
-    `cast(concat('[', group_concat(distinct concat('"',rvcd2.ruleId,'"')), ']') as json) as ruleIds`,
+    `coalesce(cast(concat('[', group_concat(distinct concat('"',rvcd2.ruleId,'"')), ']') as json), json_array()) as ruleIds`,
     'result.api as "result"',
     'CASE WHEN r.resultEngine = 0 THEN NULL ELSE r.resultEngine END as resultEngine',
     "COALESCE(LEFT(r.detail,32767),'') as detail",
@@ -722,6 +722,13 @@ exports.getReviews = async function ({projections = [], filter = {}, grant}) {
     case 'not-default':
       predicates.statements.push(`dr.revId IS NULL`)
       break
+    case 'not-mapped':
+      predicates.statements.push(`sa.saId IS NULL`)
+      break
+    case 'mapped':
+      predicates.statements.push(`sa.saId IS NOT NULL`)
+      break
+
   }
 
   if (filter.collectionId) {

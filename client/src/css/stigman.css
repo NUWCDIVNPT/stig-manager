@@ -33,6 +33,10 @@
   --color-marking-secret:#c8102e;
   --color-marking-topsecret:#ff671f;
   --color-marking-sci:#f7ea48;
+  --color-job-run-state-completed: hsl(121 84% 50% / 1);	
+  --color-job-run-state-running: hsl(222, 84%, 50%);
+  --color-job-run-state-failed: hsl(1deg 74.55% 52.35%);
+  --color-job-run-state-missing: hsl(0 0% 73% / 1);
 }
 
 .x-tree-node-collapsed .x-tree-node-icon, .x-tree-node-expanded .x-tree-node-icon, .x-tree-node-leaf .x-tree-node-icon {
@@ -530,9 +534,6 @@ input.x-tree-node-cb {
 .sm-grid3-col-filtered .x-grid3-hd-btn {
   background-color: var(--metrics-status-chart-submitted-light);
 }
-/* a.x-grid3-hd-btn:hover {
-  background-position: 0px 3px;
-} */
 .x-grid3-hd-btn {
   background-color: transparent;
   background-image: none;
@@ -1443,7 +1444,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 }
 .sm-grid3-row-error td,
 .sm-grid3-row-italic td {
-  color: #ff4747!important
+  background-color: #ffdede !important;
 }
 .x-grid3-row-over {
   border-color: #ddd;
@@ -2191,6 +2192,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .sm-line-clamp-wrap .x-grid3-cell-inner {
   overflow: hidden;
   display: -webkit-box;
+  line-clamp: 1;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   white-space: normal;
@@ -2303,7 +2305,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .sm-stig-information-title {
   background-image: url(../img/shield-green-check.svg);
   background-repeat: no-repeat;
-  background-size: 14px 14x;
+  background-size: 14px 14px;
   padding-left: 20px;
 
 }
@@ -2673,6 +2675,89 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 .x-menu-list-item:has(> .x-hide-display) {
 	padding: 0
 }
+.sm-job-icon {
+  background-image: url(../img/job.svg)!important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px
+}
+
+.sm-job-run-icon {
+  background-image: url(../img/job-run.svg)!important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px
+}
+.sm-job-task-icon {
+  background-image: url(../img/job-task.svg)!important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px
+}
+
+.sm-run-output-icon {
+  background-image: url(../img/logs.svg)!important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px
+}
+
+.sm-job-event-icon {
+  background-image: url(../img/clock.svg)!important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px
+}
+
+.sm-move-up-icon {
+  background-image: url(../img/move-up.svg)!important;
+  background-repeat: no-repeat;
+  background-size: 18px
+}
+.sm-move-down-icon {
+  background-image: url(../img/move-down.svg)!important;
+  background-repeat: no-repeat;
+  background-size: 18px
+}
+.sm-task-description {
+  font-size: smaller;
+  font-style: italic;
+  color: #808080;
+  line-height: 12px;
+  padding-left: 6px;
+}
+
+.sm-job-sprite {
+  font: 600 10px/14px Open Sans,helvetica,sans-serif;
+  top: 0;
+  padding: 0 5px;
+  border-radius: 3px;
+  margin-left: 3px;
+  white-space: nowrap;
+  line-height: 16px;	
+}
+.sm-job-sprite.sm-job-scheduled {
+  background-color: var(--color-job-scheduled)
+}
+
+.sm-job-sprite.sm-job-unscheduled {
+  background-color: var(--color-job-unscheduled)
+}
+
+.sm-job-sprite.sm-job-run-state-completed {
+  background-color: var(--color-job-run-state-completed);
+}
+
+.sm-job-sprite.sm-job-run-state-running {
+  background-color: var(--color-job-run-state-running);
+}
+
+.sm-job-sprite.sm-job-run-state-failed {
+  background-color: var(--color-job-run-state-failed);
+}
+
+.sm-job-sprite.sm-job-run-state-missing {
+  background-color: var(--color-job-run-state-missing);
+}
+.sm-job-sprite.sm-job-run-state-shutdown {
+  background-color: var(--color-job-run-state-failed);
+}
+
 
 .sm-round-panel.sm-offline-modal {
 	background-color: hsl(0 61% 64% / 1);
@@ -2680,4 +2765,12 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 
 .sm-round-panel.sm-unavailable-modal {
 	background-color: hsl(26.39deg 62.3% 64.31%);
+}
+
+.sm-icon-column {
+	padding-left: 20px;
+	background-size: 14px;
+}
+.sm-job-event-disabled {
+	opacity: 50%;
 }

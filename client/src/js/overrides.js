@@ -450,6 +450,77 @@ Ext.override(Ext.grid.GridView, {
         
         this.onLayout(gridWidth, scrollHeight);
     },
+    fitColumns : function(preventRefresh, onlyExpand, omitColumn) {
+        // OVERRIDE: change test for being uninitialized, remove hack using gridWidth
+        // This fails in Firefox when this.getGridInnerWidth() calculates using the scroller width.
+        // In Firefox,the default is to show scrollbars on hover only, otherwise the width is only 2px.
+        // If fitColumns() is not stopped, it will set column widths in a manner that makes the last column very narrow.
+        // Substitute a test for this.mainBody existing, which it shouldn't while the view is not initialized.
+        var grid          = this.grid,
+            colModel      = this.cm,
+            totalColWidth = colModel.getTotalWidth(false),
+            gridWidth     = this.getGridInnerWidth(),
+            extraWidth    = gridWidth - totalColWidth,
+            columns       = [],
+            extraCol      = 0,
+            width         = 0,
+            colWidth, fraction, i;
+        
+        // not initialized, so don't screw up the default widths
+        // if (gridWidth < 20 || extraWidth === 0) {
+        //     return false;
+        // }
+        if (!this.mainBody) {
+            return false;
+        }
+        
+        var visibleColCount = colModel.getColumnCount(true),
+            totalColCount   = colModel.getColumnCount(false),
+            adjCount        = visibleColCount - (Ext.isNumber(omitColumn) ? 1 : 0);
+        
+        if (adjCount === 0) {
+            adjCount = 1;
+            omitColumn = undefined;
+        }
+        
+        //FIXME: the algorithm used here is odd and potentially confusing. Includes this for loop and the while after it.
+        for (i = 0; i < totalColCount; i++) {
+            if (!colModel.isFixed(i) && i !== omitColumn) {
+                colWidth = colModel.getColumnWidth(i);
+                columns.push(i, colWidth);
+                
+                if (!colModel.isHidden(i)) {
+                    extraCol = i;
+                    width += colWidth;
+                }
+            }
+        }
+        
+        fraction = (gridWidth - colModel.getTotalWidth()) / width;
+        
+        while (columns.length) {
+            colWidth = columns.pop();
+            i        = columns.pop();
+            
+            colModel.setColumnWidth(i, Math.max(grid.minColumnWidth, Math.floor(colWidth + colWidth * fraction)), true);
+        }
+        
+        //this has been changed above so remeasure now
+        totalColWidth = colModel.getTotalWidth(false);
+        
+        if (totalColWidth > gridWidth) {
+            var adjustCol = (adjCount == visibleColCount) ? extraCol : omitColumn,
+                newWidth  = Math.max(1, colModel.getColumnWidth(adjustCol) - (totalColWidth - gridWidth));
+            
+            colModel.setColumnWidth(adjustCol, newWidth, true);
+        }
+        
+        if (preventRefresh !== true) {
+            this.updateAllColumnWidths();
+        }
+        
+        return true;
+    },
 
 })
 
