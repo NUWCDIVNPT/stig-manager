@@ -246,6 +246,27 @@ SM.Job.JobsGrid = Ext.extend(Ext.grid.GridPanel, {
 SM.Job.RunsGrid = Ext.extend(Ext.grid.GridPanel, {
   initComponent: function () {
     const _this = this
+    
+    function dateRenderWithToolbar(v, md) {
+      return `
+      <div class="sm-grid-cell-with-toolbar">
+        <div class="sm-dynamic-width">
+          <div class="sm-info">${Ext.util.Format.date(v, 'Y-m-d H:i:s.u T')}</div>
+        </div>
+        <div class="sm-static-width"><img class="sm-grid-cell-toolbar-edit" ext:qtip="Delete run" src="img/trash.svg" width="14" height="14"></div>
+      </div>`
+    }
+
+    function rowmousedown(grid, rowIndex, e) {
+      if (e.target.className === "sm-grid-cell-toolbar-edit") {
+        const r = grid.getStore().getAt(rowIndex)
+        console.log('delete run', r.data.runId)
+        _this.fireEvent('deleterun', r.data.runId)
+        return false
+      }
+      return true
+    }
+
     const fields = [
       'runId',
       'state',
@@ -262,7 +283,7 @@ SM.Job.RunsGrid = Ext.extend(Ext.grid.GridPanel, {
       }
     ]
     const columns = [
-      { header: 'Started', xtype: 'datecolumn', format: 'Y-m-d H:i:s.u T', dataIndex: 'created', width: 200, sortable: true },
+      { header: 'Started', dataIndex: 'created', width: 200, sortable: true, renderer: dateRenderWithToolbar },
       {
         header: 'State', dataIndex: 'state', width: 100, sortable: true, renderer: function (v) {
           return `<span class="sm-job-sprite sm-job-run-state-${v}">${v}</span>`
@@ -294,6 +315,7 @@ SM.Job.RunsGrid = Ext.extend(Ext.grid.GridPanel, {
     const view = new SM.ColumnFilters.GridView({
       forceFit: true,
       emptyText: 'No runs found',
+      cellSelectorDepth: 5, // supports the cell toolbar
       listeners: {
         // filterschanged: function (view) {
         //   store.filter(view.getFilterFns())
@@ -332,12 +354,17 @@ SM.Job.RunsGrid = Ext.extend(Ext.grid.GridPanel, {
       ]
     })
 
+    const listeners = {
+      rowmousedown,
+    }
+
     const config = {
       store,
       columns,
       sm,
       view,
       bbar,
+      listeners,
     }
 
     Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -431,6 +458,9 @@ SM.Job.RunsPanel = Ext.extend(Ext.Panel, {
       margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
       cls: 'sm-round-panel',
       loadMask: true,
+      listeners: {
+        deleterun: (runId) => this.fireEvent('deleterun', runId)
+      }
     })
 
     const outputGrid = new SM.Job.RunOutputGrid({
@@ -1295,6 +1325,20 @@ SM.Job.showJobAdminTab = function ({ treePath }) {
     const selection = jobsGrid.getSelectionModel().getSelected()
     if (selection) {
       loadRuns(selection.data.jobId)
+    }
+  })
+
+  runsPanel.on('deleterun', async function (runId) {
+    const response = await Ext.Ajax.requestPromise({
+      responseType: 'json',
+      url: `${STIGMAN.Env.apiBase}/jobs/runs/${runId}?elevate=true`,
+      method: 'DELETE',
+    })
+    const selected = runsPanel.runsGrid.getSelectionModel().getSelected()
+    const record = runsPanel.runsGrid.getStore().getById(runId)
+    runsPanel.runsGrid.getStore().remove(record)
+    if (selected?.data.runId === runId) {
+      runsPanel.outputGrid.getStore().removeAll()
     }
   })
 
