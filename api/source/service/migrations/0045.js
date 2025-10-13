@@ -221,26 +221,51 @@ const upMigration = [
     CALL task_output (v_runId, v_taskId, 'info','task started');
 
     drop temporary table if exists t_collectionIds;
-    create temporary table t_collectionIds (seq INT AUTO_INCREMENT PRIMARY KEY)
-      select collectionId from collection where isEnabled is null;
+    create temporary table t_collectionIds (
+      seq INT AUTO_INCREMENT PRIMARY KEY,
+      collectionId INT,
+      KEY idx_collectionId (collectionId)
+    ) select collectionId from collection where isEnabled is null;
     select max(seq) into v_numCollectionIds from t_collectionIds;
     CALL task_output (v_runId, v_taskId, 'info', concat('found ', ifnull(v_numCollectionIds, 0), ' collections to delete'));
 
     drop temporary table if exists t_assetIds;
-    create temporary table t_assetIds (seq INT AUTO_INCREMENT PRIMARY KEY)
-      select assetId from asset where isEnabled is null or collectionId in (select collectionId from t_collectionIds);
+    create temporary table t_assetIds (
+      seq INT AUTO_INCREMENT PRIMARY KEY,
+      assetId INT,
+      KEY idx_assetId (assetId)
+    );
+    INSERT INTO t_assetIds (assetId)
+      SELECT a.assetId
+      FROM asset a
+      LEFT JOIN t_collectionIds tc ON a.collectionId = tc.collectionId
+      WHERE a.isEnabled IS NULL OR tc.collectionId IS NOT NULL;
     select max(seq) into v_numAssetIds from t_assetIds;
     CALL task_output (v_runId, v_taskId, 'info', concat('found ', ifnull(v_numAssetIds, 0), ' assets to delete'));
 
     drop temporary table if exists t_reviewIds;
-    create temporary table t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY)
-      select reviewId from review where assetId in (select assetId from t_assetIds);
+    create temporary table t_reviewIds (
+      seq INT AUTO_INCREMENT PRIMARY KEY,
+      reviewId INT,
+      KEY idx_reviewId (reviewId)
+    );
+    INSERT INTO t_reviewIds (reviewId)
+      SELECT r.reviewId
+      FROM review r
+      INNER JOIN t_assetIds ta ON r.assetId = ta.assetId;
     select max(seq) into v_numReviewIds from t_reviewIds;
     CALL task_output (v_runId, v_taskId, 'info', concat('found ', ifnull(v_numReviewIds, 0), ' reviews to delete'));
 
     drop temporary table if exists t_historyIds;
-    create temporary table t_historyIds (seq INT AUTO_INCREMENT PRIMARY KEY)
-      select historyId from review_history where reviewId in (select reviewId from t_reviewIds);
+    create temporary table t_historyIds (
+      seq INT AUTO_INCREMENT PRIMARY KEY,
+      historyId BIGINT,
+      KEY idx_historyId (historyId)
+    );
+    INSERT INTO t_historyIds (historyId)
+      SELECT rh.historyId
+      FROM review_history rh
+      INNER JOIN t_reviewIds tr ON rh.reviewId = tr.reviewId;
     select max(seq) into v_numHistoryIds from t_historyIds;
     CALL task_output (v_runId, v_taskId, 'info', concat('found ', ifnull(v_numHistoryIds, 0), ' history records to delete'));
 
