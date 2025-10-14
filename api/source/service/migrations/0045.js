@@ -352,7 +352,11 @@ const upMigration = [
       CALL task_output (v_runId, v_taskId, 'info', 'task started');
 
       drop temporary table if exists t_reviewIds;
-      create temporary table t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY, reviewId INT);
+      create temporary table t_reviewIds (
+        seq INT AUTO_INCREMENT PRIMARY KEY,
+        reviewId INT,
+        KEY idx_reviewId (reviewId)
+      );
       -- Context-specific logic
       IF in_context = 'system' THEN
         INSERT into t_reviewIds (reviewId)
@@ -379,8 +383,15 @@ const upMigration = [
 
       IF v_numReviewIds > 0 THEN
         drop temporary table if exists t_historyIds;
-        create temporary table t_historyIds (seq INT AUTO_INCREMENT PRIMARY KEY)
-          select historyId from review_history where reviewId in (select reviewId from t_reviewIds);
+        create temporary table t_historyIds (
+          seq INT AUTO_INCREMENT PRIMARY KEY,
+          historyId BIGINT,
+          KEY idx_historyId (historyId)
+        );
+        INSERT INTO t_historyIds (historyId)
+          SELECT rh.historyId
+          FROM review_history rh
+          INNER JOIN t_reviewIds tr ON rh.reviewId = tr.reviewId;
         select max(seq) into v_numHistoryIds from t_historyIds;
         CALL task_output (v_runId, v_taskId, 'info', concat('found ', ifnull(v_numHistoryIds, 0), ' history records to delete'));
         IF v_numHistoryIds > 0 THEN
