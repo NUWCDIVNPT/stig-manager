@@ -2930,7 +2930,7 @@ SM.Manage.Asset.showAssetProps = async function (assetId, initialCollectionId) {
         catch (e) {
           if (e.responseText) {
             const response = SM.safeJSONParse(e.responseText)
-            if (response?.detail[0].failure === 'name exists') {
+            if (response?.detail?.[0]?.failure === 'name exists') {
               Ext.Msg.alert('Name unavailable', 'The Asset name is already used in this Collection. Please try a different name.')
             }
             else {
