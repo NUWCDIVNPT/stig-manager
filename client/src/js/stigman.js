@@ -74,7 +74,7 @@ async function loadApp () {
 			SM.Error.handleError(new SM.Error.ExtDataProxyError(e))
 		})
 
-		const oidcWorkerChannel = new BroadcastChannel('stigman-oidc-worker')
+		const oidcWorkerChannel = new BroadcastChannel(window.oidcWorker.channelName)
 		oidcWorkerChannel.onmessage = broadcastHandler
 
 		STIGMAN.webPreferencesChannel = new BroadcastChannel('stigman-web-preferences')

@@ -1596,7 +1596,7 @@ SM.MetaPanel.showMetaTab = async function (options) {
       }
     })
 
-    const bc = new BroadcastChannel('stigman-oidc-worker')
+    const bc = new BroadcastChannel(window.oidcWorker.channelName)
     bc.onmessage = (event) => {
       if (metaTab.hidden) {
         return
