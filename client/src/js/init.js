@@ -36,6 +36,20 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
       appendError(response.error)
       return
     }
+    OW.channelName = response.channelName
+    const bc = new BroadcastChannel(window.oidcWorker.channelName)
+    bc.onmessage = (event) => {
+      if (event.data.type === 'accessToken') {
+        console.log('{init] Received from worker:', event.type, event.data)
+        OW.token = event.data.accessToken
+        OW.tokenParsed = event.data.accessTokenPayload
+      }
+      else if (event.data.type === 'noToken') {
+        console.log('{init] Received from worker:', event.type, event.data)
+        OW.token = null
+        OW.tokenParsed = null
+      }
+    }
     appendStatus(`Authorizing`)
 
     const paramStr = extractParamString(url)
@@ -185,25 +199,14 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
       postContextActiveMessage: function () {
         this.worker.port.postMessage({ requestId: 'contextActive' })
       },
+      channelName: null,
+      token: null,
+      tokenParsed: null,
       worker: new SharedWorker("js/workers/oidc-worker.js", { name: 'stigman-oidc-worker', type: "module" })
     }
 
     OW = window.oidcWorker
     OW.worker.port.start()
-
-    const bc = new BroadcastChannel('stigman-oidc-worker')
-    bc.onmessage = (event) => {
-      if (event.data.type === 'accessToken') {
-        console.log('{init] Received from worker:', event.type, event.data)
-        OW.token = event.data.accessToken
-        OW.tokenParsed = event.data.accessTokenPayload
-      }
-      else if (event.data.type === 'noToken') {
-        console.log('{init] Received from worker:', event.type, event.data)
-        OW.token = null
-        OW.tokenParsed = null
-      }
-    }
   }
 
   async function setupStateWorker() {

@@ -10,7 +10,7 @@
 
 const logPrefix = '[state-worker]:'
 const retryInterval = 3000; // 3-second retry delay
-const channelName = 'channel-state-worker'
+const channelName = crypto.randomUUID()
 const stateWorkerChannel = new BroadcastChannel(channelName); // Used to broadcast state events
 
 let initialized = false // True if any context has initialized the worker
