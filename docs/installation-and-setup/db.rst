@@ -39,15 +39,18 @@ Example commands to prepare MySQL for initial API execution:
   * Grant API user account all privileges on created database ``GRANT ALL ON stigman.* TO 'stigman'``
 
 .. note::
-   Important MySQL configuration:
-    - ``innodb_buffer_pool_size`` - Set to at least 8GB (8589934592) for typical deployments, 16GB (17179869184) or more for larger deployments (>10,000 Assets).
+   Important MySQL configuration for optimal performance:
+    - ``innodb_buffer_pool_size`` - Set to at least 8GB (8589934592) for typical deployments, 16GB (17179869184) or more for larger deployments (>10,000 Assets) and those supporting many concurrent users. 
     - ``sort_buffer_size`` - Set to 16M (16777216).
+    - ``innodb_redo_log_capacity`` - Set to 1G (1073741824).
+    - ``tmp_table_size`` - Set to 256M (268435456).
+    - ``max_heap_table_size`` - Set to 256M (268435456).
 
 
 Detailed MySQL Privilege Requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The example above uses ``GRANT ALL ON stigman.*`` and assumes the user and db are both ``stigman`` for simplicity. However, if you require more granular privilege assignment, the following privileges are required by STIG Manager for initial setup, migrations, and runtime operations:
+The example above uses ``GRANT ALL ON stigman.*`` and assumes the user and db are both ``stigman`` for simplicity. ``GRANT ALL`` is suggested for easier maintenance, especially when new features are introduced that may require additional privileges. If you require more granular privilege assignment, the following privileges are required by STIG Manager for initial setup, migrations, and runtime operations:
 
 .. code-block:: sql
 
