@@ -1,7 +1,12 @@
 const MigrationHandler = require('./lib/MigrationHandler')
 
 const upMigration = [
+  `DROP TABLE IF EXISTS job_task_map`,
+  `DROP TABLE IF EXISTS task_output`,
   `DROP TABLE IF EXISTS task`,
+  `DROP TABLE IF EXISTS job_run`,
+  `DROP TABLE IF EXISTS job`,
+  
   `CREATE TABLE task (
     taskId INT NOT NULL AUTO_INCREMENT,
     name VARCHAR(45) NOT NULL,
@@ -17,7 +22,6 @@ const upMigration = [
     (4, 'AnalyzeReviewTables', 'Analyze database tables for performance', 'analyze_tables(JSON_ARRAY("reviews", "review_history"))')
   `,
 
-  `DROP TABLE IF EXISTS job`,
   `CREATE TABLE job (
     jobId INT NOT NULL AUTO_INCREMENT,
     name VARCHAR(45) NOT NULL,
@@ -38,7 +42,6 @@ const upMigration = [
   `,
   `ALTER TABLE job AUTO_INCREMENT = 100`,
 
-  `DROP TABLE IF EXISTS job_task_map`,
   `CREATE TABLE job_task_map (
     jtId INT NOT NULL AUTO_INCREMENT,
     jobId INT NOT NULL,
@@ -59,7 +62,6 @@ const upMigration = [
   `,
   `ALTER TABLE job_task_map AUTO_INCREMENT = 1000`,
 
-  `DROP TABLE IF EXISTS job_run`,
   `CREATE TABLE job_run (
     jrId INT NOT NULL AUTO_INCREMENT,
     jobId INT NOT NULL,
@@ -84,8 +86,6 @@ const upMigration = [
     CONSTRAINT fk_task_output_runId FOREIGN KEY (runId) REFERENCES job_run(runId) ON DELETE CASCADE,
     CONSTRAINT fk_task_output_taskId FOREIGN KEY (taskId) REFERENCES task(taskId) ON DELETE CASCADE
   )`,
-
-
 
   `DROP procedure IF EXISTS run_job`,
   `CREATE PROCEDURE run_job(
@@ -399,6 +399,7 @@ const upMigration = [
 
     END`,
 
+  `DROP EVENT IF EXISTS \`job-1-stigman\``,
   `CREATE EVENT IF NOT EXISTS \`job-1-stigman\`
     ON SCHEDULE EVERY 1 DAY
     STARTS '2025-10-01 05:00:00'
@@ -413,16 +414,17 @@ const upMigration = [
 ]
 
 const downMigration = [
-  `DROP TABLE IF EXISTS job_run`,
   `DROP TABLE IF EXISTS job_task_map`,
-  `DROP TABLE IF EXISTS job`,
   `DROP TABLE IF EXISTS task_output`,
-  `DROP PROCEDURE IF EXISTS task_output`,
-  // `DROP PROCEDURE IF EXISTS task_start`, --- IGNORE ---
-  // `DROP PROCEDURE IF EXISTS task_failed`, --- IGNORE ---
-  // `DROP PROCEDURE IF EXISTS task_finished`, --- IGNORE ---
-  `DROP PROCEDURE IF EXISTS task_delete_disabled`
-  // `DROP PROCEDURE IF EXISTS delete_disabled_objects` --- IGNORE ---
+  `DROP TABLE IF EXISTS task`,
+  `DROP TABLE IF EXISTS job_run`,
+  `DROP TABLE IF EXISTS job`,
+  `DROP procedure IF EXISTS run_job`,
+  `DROP procedure IF EXISTS task_output`,
+  `DROP PROCEDURE IF EXISTS delete_disabled`,
+  `DROP PROCEDURE IF EXISTS delete_unmapped`,
+  `DROP PROCEDURE IF EXISTS analyze_tables`,
+  `DROP EVENT IF EXISTS \`job-1-stigman\``,
 ]
 
 const migrationHandler = new MigrationHandler(upMigration, downMigration)
