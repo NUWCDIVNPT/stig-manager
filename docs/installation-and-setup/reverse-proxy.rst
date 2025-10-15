@@ -9,8 +9,12 @@ Deploy with TLS
 Configure a Reverse Proxy or Kubernetes Ingress Controller
 --------------------------------------------------------------
 
-To support HTTPS connections, STIG Manager components should be situated behind a reverse proxy or in a Kubernetes cluster.  Configure the reverse proxy (such as nginx) or the Kubernetes Ingress Controller in accordance with publisher documentation, local security requirements, and Keycloak documentation.
-In either case, you will have to set Keycloak environment variable `PROXY_ADDRESS_FORWARDING=true`  and make sure appropriate headers are forwarded.
+To support HTTPS connections, STIG Manager components should be situated behind a reverse proxy or in a Kubernetes cluster.  Configure the reverse proxy (such as nginx) or the Kubernetes Ingress Controller in accordance with publisher documentation, local security requirements, and OIDC Provider (eg. Keycloak) documentation.
+
+**Keycloak Configuration for Reverse Proxy Environments:**
+
+- **Keycloak 26+**: Set ``KC_PROXY_HEADERS=xforwarded`` and ``KC_HTTP_ENABLED=true`` (if TLS terminates at proxy)
+- Ensure your proxy forwards appropriate headers (X-Forwarded-For, X-Forwarded-Proto, X-Forwarded-Host)
 
 
 
@@ -55,7 +59,7 @@ For proper operation of streaming and SSE endpoints, your proxy must:
 2. **Pass through streaming headers** without modification
 3. **Maintain persistent connections** for SSE endpoints
 
-The application automatically sets the ``x-accel-buffering: no`` header which nginx honors by default to disable buffering. Other proxies may require explicit configuration.
+The application automatically sets the ``x-accel-buffering: no`` header which nginx (and Azure Application Gateway) honors by default to disable buffering. Other proxies may require explicit configuration.
 
 .. warning::
 
@@ -104,19 +108,18 @@ While specific configuration varies by proxy, here are the key settings to verif
   - Ensure ``proxy_buffering`` is not forced to ``on`` globally
   - Consider setting ``proxy_read_timeout`` appropriately for SSE connections
 
-**Apache:**
-  - Does NOT recognize ``x-accel-buffering`` header
-  - Add ``flushpackets=on`` to ProxyPass directive for streaming endpoints
-  - Consider ``ProxyIOBufferSize`` and ``ProxyReceiveBufferSize`` settings
-  - Example: ``ProxyPass /op/state/sse http://backend:3001/op/state/sse flushpackets=on``
+**Apache (mod_proxy_http):**
+  - Basic ``ProxyPass`` with HTTP backends typically works for SSE
+  - Use ``ProxyPreserveHost On`` for proper host header forwarding
+  - If issues occur, may need to adjust Keep-Alive or timeout settings for SSE endpoints
 
 **HAProxy:**
   - Typically works without modification
   - Verify ``timeout server`` and ``timeout client`` for long connections
 
 **Other Proxies:**
-  - Consult documentation for disabling response buffering
-  - Look for settings related to "chunked transfer encoding" or "streaming responses"
+  - Most modern proxies automatically detect and handle SSE (Content-Type: text/event-stream)
+  - Consult proxy documentation for buffering and timeout configuration if issues occur
 
 Verifying Proper Configuration
 --------------------------------------------------------------
