@@ -56,7 +56,12 @@ exports.getAppData = async function (res, format) {
     'severity_cat_map', 
     'cci', 
     'cci_reference_map', 
-    'config'
+    'config',
+    'job',
+    'job_run',
+    'job_task_map',
+    'task',
+    'task_output'
   ]
 
   let sink
@@ -79,7 +84,7 @@ exports.getAppData = async function (res, format) {
   // Execute SQL to retrieve a list of tables and their non-generated columns. The query binds
   // to the schema name and the excluded tables.
   /** @type {Array.<Array.<{table:string, columns:string[]}>} */
-const sql = `SELECT
+  const sql = `SELECT
     TABLE_NAME as \`table\`,
     cast(concat('[', group_concat(CONCAT('"\`',COLUMN_NAME,'\`"') order by COLUMN_NAME), ']') as json) as columns
   FROM
@@ -150,7 +155,7 @@ const sql = `SELECT
           return (bytes[0] === 1)
         }
          // Designated fields returned as original MySQL strings
-        if (field.type === 'JSON' || field.type === 'DATETIME' || field.type === 'DATE') {
+        if (field.type === 'JSON' || field.type === 'DATETIME' || field.type === 'DATE' || field.type === 'TIMESTAMP' || field.type === 'TIME' || field.type === 'YEAR') {
           return (field.string("utf8"))
         }
         return next()

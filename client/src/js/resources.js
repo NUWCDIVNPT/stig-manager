@@ -63,6 +63,7 @@ const scripts = [
   'js/SM/UserGroup.js',
   'js/SM/AppInfo.js',
   'js/SM/AppData.js',
+  'js/SM/Job.js',
   'js/library.js',
   'js/collectionAdmin.js',
   'js/collectionManager.js',

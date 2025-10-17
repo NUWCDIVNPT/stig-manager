@@ -1905,7 +1905,7 @@ SM.Manage.Collection.Panel = Ext.extend(Ext.Panel, {
         qtip: 'Delete',
         handler: async function () {
           try {
-            var confirmStr = "Deleting this Collection will <b>permanently remove</b> all data associated with the Collection. This includes all Assets and their associated assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to delete the Collection?";
+            var confirmStr = "Deleting this Collection will <b>remove all data</b> associated with the Collection. This includes all Assets and their associated assessments.<br><br>Do you wish to delete the Collection?";
             Ext.Msg.confirm("Confirm", confirmStr, async function (btn, text) {
               if (btn == 'yes') {
                 let result = await Ext.Ajax.requestPromise({
@@ -3252,7 +3252,7 @@ SM.Manage.Asset.Grid = Ext.extend(Ext.grid.GridPanel, {
         try {
           let assetRecords = me.getSelectionModel().getSelections()
           const multiDelete = assetRecords.length > 1
-          const confirmStr = `Deleting ${multiDelete ? '<b>multiple assets</b>' : 'this asset'} will <b>permanently remove</b> all data associated with the asset${multiDelete ? 's' : ''}. This includes all the corresponding STIG assessments. The deleted data <b>cannot be recovered</b>.<br><br>Do you wish to continue?`;
+          const confirmStr = `Deleting ${multiDelete ? '<b>multiple assets</b>' : 'this asset'} will <b>remove all data</b> associated with the asset${multiDelete ? 's' : ''}. This includes all the corresponding STIG assessments.<br><br>Do you wish to continue?`;
           let btn = await SM.confirmPromise("Confirm Delete", confirmStr)
           if (btn == 'yes') {
             const assetIds = assetRecords.map(r => r.data.assetId)
