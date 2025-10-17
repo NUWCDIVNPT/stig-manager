@@ -129,6 +129,100 @@ Use the buttons at the top to add new STIGS, delete entire STIGs or specific rev
 
 
 
+-------------------------
+
+.. _service-jobs:
+
+Service Jobs Panel
+------------------------------------
+
+This panel allows App Managers to control and view the background Service Jobs that have been created in the STIGMan database. It includes information about the jobs, their schedule, component tasks, status, run history and output.  App Managers can create, modify, schedule, delete, and run jobs from this panel.  Jobs created by `system` cannot be deleted, but they can be disabled and their schedule can be modified. 
+
+.. thumbnail:: /assets/images/admin-service-jobs.png
+      :width: 75% 
+      :show_caption: True
+      :title: Service Jobs Administration
+
+The Service Jobs feature provides a framework for managing scheduled background operations in STIG Manager. This feature enables both system-defined and user-defined jobs that can run one or more predefined tasks either on a schedule or immediately on demand.
+
+The initial implementation provides database maintenance and cleanup tasks. However, Service Jobs will serve as the foundation for future capabilities, including Review aging operations and time-based snapshots and analysis.
+
+.. rubric:: Job Types
+
+**System Jobs**
+   Pre-defined jobs created and maintained by STIG Manager for essential database operations. System jobs cannot be deleted and have restricted modification permissions - only their scheduling (event) properties can be modified by administrators.
+
+**User Jobs**  
+   Custom jobs created by App Managers to meet specific organizational needs. User jobs provide full flexibility in task selection, scheduling, and configuration.
+
+The feature provides several built-in System Jobs that are disabled by default. It is highly recommended that you enable and schedule these jobs to maintain the health of your STIG Manager database. Scheduling these jobs to run during off-peak hours is advisable to minimize any potential performance impact on users and reduce resource usage.
+
+System-provided Jobs:
+ - **Cleanup Database**: Removes database records related to deleted Collections and Assets and their associated reviews. Disabled by default.
+ - **Delete Unmapped Asset Reviews**: Delete reviews for rules in STIGs that are no longer assigned to an Asset.  This can occur when STIGs are unassigned from an Asset by a Collection Manager. Disabled by default.
+ - **Delete Unmapped Reviews**: Delete reviews that no longer match any STIG Rule in the system. This can occur when old Reference STIGs are removed from the system by an App Manager. Disabled by default.
+
+
+.. note::
+   These database maintenance Jobs are not enabled by default. Administrators must enable the Jobs they wish to use. Exercise caution when modifying or running database maintenance jobs, as these operations can affect system data. Always ensure you have appropriate backups before running destructive maintenance operations.
+
+.. rubric:: Job Components
+
+Each job consists of the following components:
+
+**Tasks**
+   Individual operations that perform specific functions. Tasks are pre-defined by the system and can include database maintenance operations, cleanup procedures, and analytical functions. Multiple tasks can be assigned to a single job, and will be run sequentially.
+
+   The system provides various pre-defined tasks for common maintenance operations. These tasks can be combined into jobs as needed:
+   * **WipeDeletedObjects**: Removes soft-deleted records from the database
+   * **DeleteUnmappedReviews**: Cleans up reviews that are no longer mapped to current STIG requirements
+   * **DeleteUnmappedAssetReviews**: Removes unmapped reviews specific to individual assets
+   * **AnalyzeReviewTables**: Runs the `ANALYZE TABLE` command on review-related database tables to optimize query performance   
+
+**Schedule (Event)**
+   Optional scheduling configuration that determines when and how frequently a job runs:
+   
+   * **One-time**: Executes at a specific date and time
+   * **Recurring**: Executes on a repeating schedule with configurable intervals (daily, weekly, monthly, etc.)
+   * **Manual**: No schedule - runs only when triggered manually
+
+**Job Properties**
+   Basic job information including name, description, creator, and modification history.
+
+
+.. thumbnail:: /assets/images/admin-service-job-properties.png
+      :width: 50% 
+      :show_caption: True
+      :title: Service Job Properties   
+
+.. rubric:: Managing Jobs
+
+**Creating Jobs**
+   Use the "Create" button to define new user jobs. Specify the job name, description, select one or more tasks, and optionally configure a schedule.
+
+**Modifying Jobs**
+   Existing jobs can be modified using the "Modify" button. User jobs allow full modification of all properties, while system jobs only permit schedule modifications.
+
+**Running Jobs Immediately**
+   Any job can be executed immediately using the "Run now..." button, regardless of its scheduled configuration.
+
+**Removing Jobs**
+   User jobs can be deleted using the "Remove" button. System jobs cannot be deleted.
+
+.. rubric:: Monitoring Job Execution
+
+The Service Jobs interface provides detailed execution monitoring:
+
+**Job Runs**
+   View complete execution history with run states (running, completed, failed, shutdown), start times, duration, and detailed output logs. 
+
+**Real-time Output**
+   Monitor job execution in real-time with detailed task-level output including timestamps, message types, and execution status.
+
+**Run Management**
+   Individual job runs can be deleted from the execution history as needed for maintenance purposes with the Trash button in the Job Run row.
+
+
 
 -------------------------
 
