@@ -179,6 +179,11 @@ Enable Service Jobs
 
 Service Jobs are scheduled background operations that perform essential database maintenance tasks in STIG Manager. **It is highly recommended that you enable and schedule these jobs to maintain the health of your STIG Manager database.** These jobs help keep your database lean and performant by cleaning up unreferenced data that can accumulate over time.
 
+.. thumbnail:: /assets/images/admin-service-jobs.png
+      :width: 75%
+      :show_caption: True
+      :title: Service Jobs Administration
+
 .. rubric:: Recommended Setup
 
 Access the Service Jobs interface from ``Application Management -> Service Jobs`` in the Navigation Tree. You'll see three system-provided jobs that are disabled by default. Double-click each job to modify its properties and set up a schedule:
@@ -187,13 +192,12 @@ Access the Service Jobs interface from ``Application Management -> Service Jobs`
 #. **Delete Unmapped Reviews** - Cleans up reviews that no longer match any STIG Rule in the system (often because old Reference STIGs were removed). **Recommended cadence: Monthly**
 #. **Delete Unmapped Asset Reviews** - Removes reviews for STIGs that are no longer assigned to Assets. **Recommended cadence: Every 90 days**
 
-Schedule these jobs to run during off-peak hours to minimize performance impact. You can also run any job immediately using the "Run now..." button if needed.
+Schedule these jobs to run during off-peak hours to minimize performance impact. You can also run any job immediately using the "Run now..." button if needed. Be sure to click the "Enabled" checkbox to activate each job after configuring its schedule, and Save.
 
-.. thumbnail:: /assets/images/admin-service-jobs.png
-      :width: 75%
+.. thumbnail:: /assets/images/admin-service-job-properties.png
+      :width: 50% 
       :show_caption: True
-      :title: Service Jobs Administration
-
+      :title: Service Job Properties   
 
 .. note::
    Always ensure you have appropriate database backups before enabling these jobs for the first time. See the :ref:`service-jobs` section of the Admin Guide for detailed information about job configuration and monitoring.
