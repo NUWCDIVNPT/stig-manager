@@ -12,18 +12,24 @@
 
 
 #List of table names for static data.
-static_data_tables="result status _migrations"
+static_data_tables="result status _migrations task job job_task_map"
 
 # Export the schema of all tables in the 'stigman' database into a SQL file,
 # removing any AUTO_INCREMENT attribute values to prevent conflicts with existing data when imported
 # and removing statements that trigger a mysql2 bug when changing client character set
 # The '--no-data' flag means no table row data will be dumped, only the schema.
 # The '--no-create-db' flag prevents the inclusion of CREATE DATABASE statements in the dump.
-mysqldump -h 127.0.0.1 -P 3306 -u root -prootpw --no-data --no-create-db stigman |
-  sed --expression='s/ AUTO_INCREMENT=[0-9]\+//'  --expression='/DEFINER=/d' |
+mysqldump -h 127.0.0.1 -P 3306 -u root -prootpw --routines --events --no-data --no-create-db stigman |
+  sed --expression='s/ AUTO_INCREMENT=[0-9]\+//'  \
+      --expression='s/DEFINER=`stigman`@`%` *//' \
+      --expression '/SQL SECURITY DEFINER/d' \
+      --expression='s/;;/$/g' |
   awk 'tolower($0) !~ /character_set|set names/' > 10-stigman-tables.sql
 
 # Export only the data from specific tables listed in $static_data_tables into a separate SQL file. 
 # '--no-create-info' flag ensures that table creation statements are not included, just the row insertions.
 mysqldump -h 127.0.0.1 -P 3306 -u root -prootpw --no-create-info stigman $static_data_tables |
   awk 'tolower($0) !~ /character_set|set names/' > 20-stigman-static.sql
+
+echo "ALTER TABLE job AUTO_INCREMENT=100;" >> 20-stigman-static.sql
+echo "ALTER TABLE job_task_map AUTO_INCREMENT=1000;" >> 20-stigman-static.sql

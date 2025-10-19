@@ -2,6 +2,19 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2025-10-18',
+    header: `New Service Jobs Feature for Application Managers`,
+    body: `
+    <p>Application Managers can use the new Service Jobs feature to control and schedule background operations in the STIG Manager database.</p>
+    <p>The initial implementation provides database maintenance and cleanup jobs that are disabled by default. <b>It is highly recommended that Application Managers enable and schedule these jobs to run periodically to help maintain optimal system performance and minimize resource usage.</b></p>
+    
+    <p>Documentation and guidance is available in the <a target="_blank" href="./docs/admin-guide/admin-quickstart.html#enable-service-jobs">STIGMan Application Manager (Administrator) Walkthrough</a> and <a target="_blank" href="./docs/admin-guide/admin-guide.html#service-jobs-panel">Guide</a>.</p>
+
+    <p>The Service Jobs interface is accessible from the <b>Application Management -> Service Jobs</b> workspace in the Navigation Tree.</p>
+
+    <p><img src="img/whatsnew/2025-10-05-jobs-grid.png" width=800/></p>`
+  },     
+  {
     date: '2025-08-19',
     header: `Enhanced Label Column Filters`,
     body: `

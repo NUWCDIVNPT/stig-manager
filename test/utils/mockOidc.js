@@ -74,13 +74,29 @@ class MockOidc {
     }
   }
 
-  getMetadata (origin = '127.0.0.1:8080') {
+  getMetadata (request = {}) {
+    let host = '127.0.0.1:8080'
+    let proto = 'http'
+    let prefix = ''
+    if (request.headers['x-forwarded-host']) {
+      host = request.headers['x-forwarded-host']
+    } else if (request.headers.host) {
+      host = request.headers.host
+    }
+    if (request.headers['x-forwarded-proto']) {
+      proto = request.headers['x-forwarded-proto']
+    }
+    if (request.headers['x-forwarded-prefix']) {
+      prefix = request.headers['x-forwarded-prefix']
+    }
+    const origin = `${host}${prefix}`
+
     return {
-      issuer: `http://${origin}`,
-      authorization_endpoint: `http://${origin}/auth`,
-      token_endpoint: `http://${origin}/token`,
-      jwks_uri: `http://${origin}/jwks`,
-      end_session_endpoint: `http://${origin}/logout`,
+      issuer: `${proto}://${origin}`,
+      authorization_endpoint: `${proto}://${origin}/auth`,
+      token_endpoint: `${proto}://${origin}/token`,
+      jwks_uri: `${proto}://${origin}/jwks`,
+      end_session_endpoint: `${proto}://${origin}/logout`,
       code_challenge_methods_supported: ['S256'],
     }
   }
@@ -196,7 +212,7 @@ class MockOidc {
     return jsonwebtoken.sign(payload, privateKey, options)
   }
 
-  getAuthHtml({ state, redirect_uri, response_mode } = {}) {
+  getAuthHtml({ state, redirect_uri, response_mode, prefix } = {}) {
     const html = `
   <!DOCTYPE html>
   <html lang="en">
@@ -336,7 +352,7 @@ class MockOidc {
   </head>
   <body>
     <h1>Get Token</h1>
-    <form action="/auth/callback" method="GET" onsubmit="saveFormValues()">
+    <form action="${prefix}/auth/callback" method="GET" onsubmit="saveFormValues()">
       <div class="form-group">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username">
@@ -441,7 +457,7 @@ class MockOidc {
     };
   
     if (url.pathname === '/.well-known/openid-configuration') {
-      data = this.getMetadata(request.headers.host)
+      data = this.getMetadata(request)
     } else if (url.pathname === '/jwks') {
        data = this.getJwks()
     } else if ( url.pathname === '/api/get-token') {
@@ -492,7 +508,7 @@ class MockOidc {
         }
       }
       response.writeHead(200, { 'Content-Type': 'text/html'})
-      response.end(this.getAuthHtml({ redirect_uri, response_mode, state }))
+      response.end(this.getAuthHtml({ redirect_uri, response_mode, state, prefix: request.headers['x-forwarded-prefix'] || '' }))
       return
     } else if (url.pathname === '/auth/callback') {
       const {
