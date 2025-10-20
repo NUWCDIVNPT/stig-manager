@@ -5247,7 +5247,7 @@ components:
         # InnoDB Logging
         - innodb_log_buffer_size
         - innodb_log_file_size
-        - innodb_redo_log_capacity
+        # - innodb_redo_log_capacity  (8.0.30+ only)
         # InnoDB I/O and Flushing
         - innodb_io_capacity
         - innodb_io_capacity_max
