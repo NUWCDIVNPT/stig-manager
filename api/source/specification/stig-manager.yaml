@@ -4949,146 +4949,337 @@ components:
     AppInfoMysqlStatus:
       type: object
       properties:
+        # Network
         Bytes_received:
           $ref: '#/components/schemas/String255'
         Bytes_sent:
           $ref: '#/components/schemas/String255'
-        Created_tmp_files:
-          $ref: '#/components/schemas/String255'
-        Created_tmp_tables:
-          $ref: '#/components/schemas/String255'
+        # Handler operations
         Handler_commit:
           $ref: '#/components/schemas/String255'
         Handler_update:
           $ref: '#/components/schemas/String255'
         Handler_write:
           $ref: '#/components/schemas/String255'
+        # Buffer pool health - critical for performance monitoring
         Innodb_buffer_pool_bytes_data:
+          $ref: '#/components/schemas/String255'
+        Innodb_buffer_pool_pages_total:
+          $ref: '#/components/schemas/String255'
+        Innodb_buffer_pool_pages_free:
+          $ref: '#/components/schemas/String255'
+        Innodb_buffer_pool_pages_dirty:
+          $ref: '#/components/schemas/String255'
+        Innodb_buffer_pool_pages_flushed:
+          $ref: '#/components/schemas/String255'
+        Innodb_buffer_pool_read_requests:
+          $ref: '#/components/schemas/String255'
+        Innodb_buffer_pool_reads:
+          $ref: '#/components/schemas/String255'
+        Innodb_buffer_pool_wait_free:
+          $ref: '#/components/schemas/String255'
+        # Redo log / Checkpoint - detect checkpoint thrashing
+        Innodb_redo_log_current_lsn:
+          $ref: '#/components/schemas/String255'
+        Innodb_redo_log_checkpoint_lsn:
+          $ref: '#/components/schemas/String255'
+        Innodb_redo_log_flushed_to_disk_lsn:
+          $ref: '#/components/schemas/String255'
+        Innodb_log_waits:
+          $ref: '#/components/schemas/String255'
+        Innodb_log_writes:
+          $ref: '#/components/schemas/String255'
+        Innodb_os_log_fsyncs:
+          $ref: '#/components/schemas/String255'
+        # I/O operations
+        Innodb_data_reads:
+          $ref: '#/components/schemas/String255'
+        Innodb_data_writes:
+          $ref: '#/components/schemas/String255'
+        Innodb_data_fsyncs:
+          $ref: '#/components/schemas/String255'
+        Innodb_pages_read:
+          $ref: '#/components/schemas/String255'
+        Innodb_pages_written:
+          $ref: '#/components/schemas/String255'
+        Innodb_pages_created:
+          $ref: '#/components/schemas/String255'
+        # Row operations
+        Innodb_rows_read:
+          $ref: '#/components/schemas/String255'
+        Innodb_rows_updated:
+          $ref: '#/components/schemas/String255'
+        Innodb_rows_inserted:
+          $ref: '#/components/schemas/String255'
+        Innodb_rows_deleted:
+          $ref: '#/components/schemas/String255'
+        # Row locking
+        Innodb_row_lock_waits:
+          $ref: '#/components/schemas/String255'
+        Innodb_row_lock_current_waits:
+          $ref: '#/components/schemas/String255'
+        Innodb_row_lock_time:
           $ref: '#/components/schemas/String255'
         Innodb_row_lock_time_avg:
           $ref: '#/components/schemas/String255'
         Innodb_row_lock_time_max:
           $ref: '#/components/schemas/String255'
-        Innodb_row_lock_waits:
+        # Temp tables
+        Created_tmp_tables:
           $ref: '#/components/schemas/String255'
-        Innodb_rows_inserted:
+        Created_tmp_disk_tables:
           $ref: '#/components/schemas/String255'
-        Innodb_rows_read:
+        Created_tmp_files:
           $ref: '#/components/schemas/String255'
-        Innodb_rows_updated:
-          $ref: '#/components/schemas/String255'
-        Max_used_connections:
-          $ref: '#/components/schemas/String255'
+        # Table cache
         Open_tables:
           $ref: '#/components/schemas/String255'
         Opened_tables:
           $ref: '#/components/schemas/String255'
-        Queries:
+        Table_open_cache_hits:
           $ref: '#/components/schemas/String255'
-        Select_full_join:
+        Table_open_cache_misses:
+          $ref: '#/components/schemas/String255'
+        Table_open_cache_overflows:
+          $ref: '#/components/schemas/String255'
+        # Connections/Threads
+        Connections:
+          $ref: '#/components/schemas/String255'
+        Max_used_connections:
+          $ref: '#/components/schemas/String255'
+        Threads_connected:
+          $ref: '#/components/schemas/String255'
+        Threads_running:
+          $ref: '#/components/schemas/String255'
+        Threads_created:
+          $ref: '#/components/schemas/String255'
+        Threads_cached:
+          $ref: '#/components/schemas/String255'
+        Aborted_connects:
+          $ref: '#/components/schemas/String255'
+        Aborted_clients:
+          $ref: '#/components/schemas/String255'
+        # Queries
+        Queries:
           $ref: '#/components/schemas/String255'
         Slow_queries:
           $ref: '#/components/schemas/String255'
+        Select_scan:
+          $ref: '#/components/schemas/String255'
+        Select_full_join:
+          $ref: '#/components/schemas/String255'
+        Select_full_range_join:
+          $ref: '#/components/schemas/String255'
+        # Sorts
+        Sort_merge_passes:
+          $ref: '#/components/schemas/String255'
+        Sort_scan:
+          $ref: '#/components/schemas/String255'
+        Sort_range:
+          $ref: '#/components/schemas/String255'
+        Sort_rows:
+          $ref: '#/components/schemas/String255'
+        # Table locks
         Table_locks_immediate:
           $ref: '#/components/schemas/String255'
         Table_locks_waited:
           $ref: '#/components/schemas/String255'
-        Threads_created:
-          $ref: '#/components/schemas/String255'
+        # Server
         Uptime:
           $ref: '#/components/schemas/String255'
+        Uptime_since_flush_status:
+          $ref: '#/components/schemas/String255'
       required:
+        # Network
         - Bytes_received
         - Bytes_sent
-        - Created_tmp_files
-        - Created_tmp_tables
+        # Handler operations
         - Handler_commit
         - Handler_update
         - Handler_write
+        # Buffer pool health
         - Innodb_buffer_pool_bytes_data
-        - Innodb_row_lock_time_avg
-        - Innodb_row_lock_time_max
-        - Innodb_row_lock_waits
-        - Innodb_rows_inserted
+        - Innodb_buffer_pool_pages_total
+        - Innodb_buffer_pool_pages_free
+        - Innodb_buffer_pool_pages_dirty
+        - Innodb_buffer_pool_pages_flushed
+        - Innodb_buffer_pool_read_requests
+        - Innodb_buffer_pool_reads
+        - Innodb_buffer_pool_wait_free
+        # Redo log / Checkpoint
+        - Innodb_redo_log_current_lsn
+        - Innodb_redo_log_checkpoint_lsn
+        - Innodb_redo_log_flushed_to_disk_lsn
+        - Innodb_log_waits
+        - Innodb_log_writes
+        - Innodb_os_log_fsyncs
+        # I/O operations
+        - Innodb_data_reads
+        - Innodb_data_writes
+        - Innodb_data_fsyncs
+        - Innodb_pages_read
+        - Innodb_pages_written
+        - Innodb_pages_created
+        # Row operations
         - Innodb_rows_read
         - Innodb_rows_updated
-        - Max_used_connections
+        - Innodb_rows_inserted
+        - Innodb_rows_deleted
+        # Row locking
+        - Innodb_row_lock_waits
+        - Innodb_row_lock_current_waits
+        - Innodb_row_lock_time
+        - Innodb_row_lock_time_avg
+        - Innodb_row_lock_time_max
+        # Temp tables
+        - Created_tmp_tables
+        - Created_tmp_disk_tables
+        - Created_tmp_files
+        # Table cache
         - Open_tables
         - Opened_tables
+        - Table_open_cache_hits
+        - Table_open_cache_misses
+        - Table_open_cache_overflows
+        # Connections/Threads
+        - Connections
+        - Max_used_connections
+        - Threads_connected
+        - Threads_running
+        - Threads_created
+        - Threads_cached
+        - Aborted_connects
+        - Aborted_clients
+        # Queries
         - Queries
-        - Select_full_join
         - Slow_queries
+        - Select_scan
+        - Select_full_join
+        - Select_full_range_join
+        # Sorts
+        - Sort_merge_passes
+        - Sort_scan
+        - Sort_range
+        - Sort_rows
+        # Table locks
         - Table_locks_immediate
         - Table_locks_waited
-        - Threads_created
+        # Server
         - Uptime
+        - Uptime_since_flush_status
     AppInfoMysqlVariables:
       type: object
       properties:
-        binlog_cache_size:
+        # InnoDB Buffer Pool - critical for memory and caching
+        innodb_buffer_pool_size:
           $ref: '#/components/schemas/String255'
         innodb_buffer_pool_instances:
           $ref: '#/components/schemas/String255'
-        innodb_buffer_pool_size:
-          $ref: '#/components/schemas/String255'
-        innodb_flush_sync:
-          $ref: '#/components/schemas/String255'
-        innodb_io_capacity:
-          $ref: '#/components/schemas/String255'
-        innodb_io_capacity_max:
-          $ref: '#/components/schemas/String255'
-        innodb_lock_wait_timeout:
-          $ref: '#/components/schemas/String255'
+        # InnoDB Logging
         innodb_log_buffer_size:
           $ref: '#/components/schemas/String255'
         innodb_log_file_size:
           $ref: '#/components/schemas/String255'
-        join_buffer_size:
+        innodb_redo_log_capacity:
           $ref: '#/components/schemas/String255'
-        key_buffer_size:
+        # InnoDB I/O and Flushing
+        innodb_io_capacity:
           $ref: '#/components/schemas/String255'
-        long_query_time:
+        innodb_io_capacity_max:
+          $ref: '#/components/schemas/String255'
+        innodb_flush_sync:
+          $ref: '#/components/schemas/String255'
+        innodb_flush_log_at_trx_commit:
+          $ref: '#/components/schemas/String255'
+        innodb_doublewrite:
+          $ref: '#/components/schemas/String255'
+        # InnoDB Locking and Buffering
+        innodb_lock_wait_timeout:
+          $ref: '#/components/schemas/String255'
+        innodb_change_buffering:
+          $ref: '#/components/schemas/String255'
+        # Temporary Tables
+        tmp_table_size:
           $ref: '#/components/schemas/String255'
         max_heap_table_size:
+          $ref: '#/components/schemas/String255'
+        temptable_max_mmap:
+          $ref: '#/components/schemas/String255'
+        temptable_max_ram:
+          $ref: '#/components/schemas/String255'
+        # Memory Buffers
+        key_buffer_size:
+          $ref: '#/components/schemas/String255'
+        sort_buffer_size:
           $ref: '#/components/schemas/String255'
         read_buffer_size:
           $ref: '#/components/schemas/String255'
         read_rnd_buffer_size:
           $ref: '#/components/schemas/String255'
-        sort_buffer_size:
+        join_buffer_size:
           $ref: '#/components/schemas/String255'
-        temptable_max_mmap:
+        binlog_cache_size:
           $ref: '#/components/schemas/String255'
-        tmp_table_size:
+        # Connection and Table Cache
+        max_connections:
           $ref: '#/components/schemas/String255'
+        max_allowed_packet:
+          $ref: '#/components/schemas/String255'
+        thread_cache_size:
+          $ref: '#/components/schemas/String255'
+        table_open_cache:
+          $ref: '#/components/schemas/String255'
+        table_definition_cache:
+          $ref: '#/components/schemas/String255'
+        # Server Version and Query Performance
         version:
           $ref: '#/components/schemas/Version'
         version_compile_machine:
           $ref: '#/components/schemas/String255'
         version_compile_os:
           $ref: '#/components/schemas/String255'
+        long_query_time:
+          $ref: '#/components/schemas/String255'
       required:
-        - binlog_cache_size
-        - innodb_buffer_pool_instances
+        # InnoDB Buffer Pool
         - innodb_buffer_pool_size
-        - innodb_flush_sync
-        - innodb_io_capacity
-        - innodb_io_capacity_max
-        - innodb_lock_wait_timeout
+        - innodb_buffer_pool_instances
+        # InnoDB Logging
         - innodb_log_buffer_size
         - innodb_log_file_size
-        - join_buffer_size
-        - key_buffer_size
-        - long_query_time
+        - innodb_redo_log_capacity
+        # InnoDB I/O and Flushing
+        - innodb_io_capacity
+        - innodb_io_capacity_max
+        - innodb_flush_sync
+        - innodb_flush_log_at_trx_commit
+        - innodb_doublewrite
+        # InnoDB Locking and Buffering
+        - innodb_lock_wait_timeout
+        - innodb_change_buffering
+        # Temporary Tables
+        - tmp_table_size
         - max_heap_table_size
+        - temptable_max_mmap
+        - temptable_max_ram
+        # Memory Buffers
+        - key_buffer_size
+        - sort_buffer_size
         - read_buffer_size
         - read_rnd_buffer_size
-        - sort_buffer_size
-        - temptable_max_mmap
-        - tmp_table_size
+        - join_buffer_size
+        - binlog_cache_size
+        # Connection and Table Cache
+        - max_connections
+        - max_allowed_packet
+        - thread_cache_size
+        - table_open_cache
+        - table_definition_cache
+        # Server Version and Query Performance
         - version
         - version_compile_machine
         - version_compile_os
+        - long_query_time
     AppInfoMysqlTableStats:
       type: object
       additionalProperties:
