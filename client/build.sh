@@ -158,6 +158,7 @@ uglifyjs \
 'SM/UserGroup.js' \
 'SM/AppInfo.js' \
 'SM/AppData.js' \
+'SM/Job.js' \
 'library.js' \
 'collectionAdmin.js' \
 'collectionManager.js' \
