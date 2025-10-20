@@ -663,24 +663,32 @@ exports.getAppInfo = async function(options = {}) {
 
   const mySqlVariablesOnly = [
     'innodb_buffer_pool_size',
+    'innodb_buffer_pool_instances',
     'innodb_log_buffer_size',
     'innodb_log_file_size',
+    'innodb_redo_log_capacity',
+    'innodb_io_capacity',
+    'innodb_io_capacity_max',
+    'innodb_flush_sync',
+    'innodb_lock_wait_timeout',
+    'innodb_change_buffering',
+    'innodb_flush_log_at_trx_commit',
+    'innodb_doublewrite',
     'tmp_table_size',
-    'key_buffer_size',
     'max_heap_table_size',
     'temptable_max_mmap',
+    'temptable_max_ram',
+    'key_buffer_size',
     'sort_buffer_size',
     'read_buffer_size',
     'read_rnd_buffer_size',
     'join_buffer_size',
     'binlog_cache_size',
-    'tmp_table_size',
-    'innodb_buffer_pool_instances' ,  
-    'innodb_io_capacity' , 
-    'innodb_io_capacity_max' ,  
-    'innodb_flush_sync' ,  
-    'innodb_io_capacity_max' ,  
-    'innodb_lock_wait_timeout',
+    'max_connections',
+    'max_allowed_packet',
+    'thread_cache_size',
+    'table_open_cache',
+    'table_definition_cache',
     'version',
     'version_compile_machine',
     'version_compile_os',
@@ -697,30 +705,83 @@ exports.getAppInfo = async function(options = {}) {
     ORDER by variable_name
   `
   const mySqlStatusOnly = [
+  // Network
   'Bytes_received',
   'Bytes_sent',
+  // Handler operations
   'Handler_commit',
   'Handler_update',
   'Handler_write',
+  // Buffer pool health (performance monitoring)
   'Innodb_buffer_pool_bytes_data',
-  'Innodb_row_lock_waits',
+  'Innodb_buffer_pool_pages_total',
+  'Innodb_buffer_pool_pages_free',
+  'Innodb_buffer_pool_pages_dirty',
+  'Innodb_buffer_pool_pages_flushed',
+  'Innodb_buffer_pool_read_requests',
+  'Innodb_buffer_pool_reads',
+  'Innodb_buffer_pool_wait_free',
+  // Redo log / Checkpoint (detect checkpoint thrashing)
+  'Innodb_redo_log_current_lsn',
+  'Innodb_redo_log_checkpoint_lsn',
+  'Innodb_redo_log_flushed_to_disk_lsn',
+  'Innodb_log_waits',
+  'Innodb_log_writes',
+  'Innodb_os_log_fsyncs',
+  // I/O operations
+  'Innodb_data_reads',
+  'Innodb_data_writes',
+  'Innodb_data_fsyncs',
+  'Innodb_pages_read',
+  'Innodb_pages_written',
+  'Innodb_pages_created',
+  // Row operations
   'Innodb_rows_read',
   'Innodb_rows_updated',
   'Innodb_rows_inserted',
+  'Innodb_rows_deleted',
+  // Row locking
+  'Innodb_row_lock_waits',
+  'Innodb_row_lock_current_waits',
+  'Innodb_row_lock_time',
   'Innodb_row_lock_time_avg',
   'Innodb_row_lock_time_max',
-  'Created_tmp_files',
+  // Temp tables
   'Created_tmp_tables',
-  'Max_used_connections',
+  'Created_tmp_disk_tables',
+  'Created_tmp_files',
+  // Table cache
   'Open_tables',
   'Opened_tables',
+  'Table_open_cache_hits',
+  'Table_open_cache_misses',
+  'Table_open_cache_overflows',
+  // Connections/Threads
+  'Connections',
+  'Max_used_connections',
+  'Threads_connected',
+  'Threads_running',
+  'Threads_created',
+  'Threads_cached',
+  'Aborted_connects',
+  'Aborted_clients',
+  // Queries
   'Queries',
-  'Select_full_join',
   'Slow_queries',
+  'Select_scan',
+  'Select_full_join',
+  'Select_full_range_join',
+  // Sorts
+  'Sort_merge_passes',
+  'Sort_scan',
+  'Sort_range',
+  'Sort_rows',
+  // Table locks
   'Table_locks_immediate',
   'Table_locks_waited',
-  'Threads_created',
-  'Uptime'
+  // Server
+  'Uptime',
+  'Uptime_since_flush_status'
   ]
   const sqlMySqlStatusValues = `
   SELECT 
