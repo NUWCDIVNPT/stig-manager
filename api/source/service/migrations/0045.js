@@ -7,6 +7,7 @@ const upMigration = [
   `DROP TABLE IF EXISTS job_run`,
   `DROP TABLE IF EXISTS job`,
   
+  // table to hold each maintenance task, its name and its stored procedure command
   `CREATE TABLE task (
     taskId INT NOT NULL AUTO_INCREMENT,
     name VARCHAR(45) NOT NULL,
@@ -22,6 +23,8 @@ const upMigration = [
     (4, 'AnalyzeReviewTables', 'Analyze database tables for performance', 'analyze_tables(JSON_ARRAY("reviews", "review_history"))')
   `,
 
+  // table to hold each maintenance job, with its name, metadata user attributes
+  // users who have created or updated a job must exist in user_data table
   `CREATE TABLE job (
     jobId INT NOT NULL AUTO_INCREMENT,
     name VARCHAR(45) NOT NULL,
@@ -35,6 +38,7 @@ const upMigration = [
     CONSTRAINT fk_job_updatedBy FOREIGN KEY (updatedBy) REFERENCES user_data(userId) ON DELETE RESTRICT,
     CONSTRAINT fk_job_createdBy FOREIGN KEY (createdBy) REFERENCES user_data(userId) ON DELETE RESTRICT
   )`,
+  // initial jobs with fixed jobIds for reference in code
   `INSERT INTO job ( jobId, name, description, createdBy) VALUES
     (1, 'Cleanup Database', 'Wipe deleted collections and assets and their associated reviews', null),
     (2, 'Delete Unmapped Reviews', 'Delete reviews that no longer match any rule in the system', null),
@@ -42,6 +46,9 @@ const upMigration = [
   `,
   `ALTER TABLE job AUTO_INCREMENT = 100`,
 
+  // mapping jobs to tasks 
+  // if a job or task is deleted, the mapping is deleted too
+  //  defines the execution order (via jtId insertion order)
   `CREATE TABLE job_task_map (
     jtId INT NOT NULL AUTO_INCREMENT,
     jobId INT NOT NULL,
@@ -52,6 +59,7 @@ const upMigration = [
     CONSTRAINT fk_job_task_jobId FOREIGN KEY (jobId) REFERENCES job(jobId) ON DELETE CASCADE,
     CONSTRAINT fk_job_task_taskId FOREIGN KEY (taskId) REFERENCES task(taskId) ON DELETE CASCADE
   )`,
+  // pre map initial jobs to tasks
   `INSERT INTO job_task_map (jtId, jobId, taskId) VALUES
     (1, 1, 1),
     (2, 1, 4),
@@ -62,6 +70,7 @@ const upMigration = [
   `,
   `ALTER TABLE job_task_map AUTO_INCREMENT = 1000`,
 
+  // table to hold each run of a job, its state and timestamps
   `CREATE TABLE job_run (
     jrId INT NOT NULL AUTO_INCREMENT,
     jobId INT NOT NULL,
@@ -75,6 +84,9 @@ const upMigration = [
   )`,
 
   `DROP TABLE IF EXISTS task_output`,
+  // captures output from stored procedures 
+  // runid must exist in job_run table
+  // taskid must match a task 
   `CREATE TABLE task_output (
     seq INT NOT NULL AUTO_INCREMENT,
     ts TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -88,6 +100,17 @@ const upMigration = [
   )`,
 
   `DROP procedure IF EXISTS run_job`,
+  // takes in a jobId and optional runId
+  // cursor is a pointer that can iterate through rows for the parameter in_jobId, get all task names and commands mapped to that job in order of execution
+  // declare continue: : when the cursor has no more rows, set v_done to true
+  // declare exit: if any SQL exception occurs, log it and set the job run state to failed
+  // @runId is the binary(16) uuid for this job run it could be null so we can generate one
+  // @taskId is the current task being executed, null if no task is running
+  // INSERT INTO job_run = create new job run record with the runId
+  // OPEN curr == -- opening the cursor which contains all tasks info for this job
+  // FETCH curr -- pulls a single task from the cursor
+  // SET @sql = CONCAT('CALL ', v_currentCommand); -- create the sql to run the task's stored procedure command
+  // SET @taskId = NULL; -- clear the current task id and log task end
   `CREATE PROCEDURE run_job(
     IN in_jobId INT,
     IN in_runIdStr VARCHAR(36)
@@ -129,7 +152,6 @@ const upMigration = [
           SET @runId = UUID_TO_BIN(UUID(), 1);
         END IF;
         SET @taskId = NULL;
-
         INSERT INTO job_run(jobId, runId, state) VALUES (in_jobId, @runId, 'running');
         CALL task_output('info', concat('run started for jobId ', in_jobId));
 
@@ -142,7 +164,7 @@ const upMigration = [
           LEAVE main; -- No tasks to run, exit the procedure
         END IF;
 
-
+        
         OPEN cur;
         read_loop: LOOP
           FETCH cur INTO v_currentTaskId, v_currentTaskName, v_currentCommand;
@@ -169,6 +191,9 @@ const upMigration = [
     END`,
 
   `DROP procedure IF EXISTS task_output`,
+  // write a message to the task_output table
+  // if in_message is null, set it to empty string
+  // insert into task_output = -- INSERT a row into task_output(runId, taskId, type, message) using: runId = @runId (set by run_job) taskId = @taskId (set around each task) type = in_type (e.g., 'info', 'error') message= in_message
   `CREATE PROCEDURE task_output(
     IN in_type VARCHAR(45),
     IN in_message VARCHAR(255)
@@ -178,6 +203,8 @@ const upMigration = [
       insert into task_output (runId, taskId, type, message) values (@runId, @taskId, in_type, in_message);
     END`,
 
+    // deleted disabled objects in batches, uses the variables to "page"? through deletes 
+    // uses temporary tables to hold ids to delete
   `DROP PROCEDURE IF EXISTS delete_disabled`,
   `CREATE PROCEDURE delete_disabled()
     BEGIN
@@ -282,6 +309,15 @@ const upMigration = [
     END`,
 
   `DROP PROCEDURE IF EXISTS delete_unmapped`,
+  // deletes unmapped reviews in batches 
+  // deletes by system and asset 
+  // system is reviews that dont match a rule in rev_group_rule_map 
+  // asset is reviews that dont match a rule assigned to the asset via rev_group_rule_map, revision, and stig_asset_map
+  // in_context is a param that is either 'system' or 'asset'
+  //  IF in_context = 'system' insert into t_reviewIds the reviewIds to delete
+  // IF v_numReviewIds > 0 THEN -- if there are reviews to delete, delete their history first, then the reviews
+  // IF v_numHistoryIds > 0 THEN -- if there are history records to delete, delete them first
+  // REPEAT delete from review_history where historyId IN ( select ... -- delete in batches until no more rows deleted(do while loop basically)
   `CREATE PROCEDURE delete_unmapped(IN in_context VARCHAR(255))
     BEGIN
       DECLARE v_numReviewIds INT;
@@ -362,6 +398,8 @@ const upMigration = [
     END;`,
 
   `DROP PROCEDURE IF EXISTS analyze_tables`,
+  // analyzes tables for performance
+  // in_tables is a json array of table names to analyze
   `CREATE PROCEDURE analyze_tables (IN in_tables JSON)
     BEGIN
           DECLARE v_itemCount INT;
@@ -400,17 +438,13 @@ const upMigration = [
     END`,
 
   `DROP EVENT IF EXISTS \`job-1-stigman\``,
+  // default event schedule for job 1 created at migration time
   `CREATE EVENT IF NOT EXISTS \`job-1-stigman\`
     ON SCHEDULE EVERY 1 DAY
     STARTS '2025-10-01 05:00:00'
     DISABLE
     DO
       CALL run_job(1, NULL)`,
-
-  // `CREATE EVENT IF NOT EXISTS \`job-1-oneoff\`
-  //   ON SCHEDULE AT CURRENT_TIMESTAMP
-  //   DO
-  //     CALL run_job(1, NULL)`,
 ]
 
 const downMigration = [
