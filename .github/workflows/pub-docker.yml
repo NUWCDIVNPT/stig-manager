@@ -9,6 +9,7 @@ on:
     paths:
       - 'api/source/**'
       - 'client/src/**'
+      - 'client/build.sh'
       - 'docs/**'
       - 'Dockerfile'
       - '.github/workflows/build-client.yml'

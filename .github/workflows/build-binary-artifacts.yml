@@ -8,6 +8,7 @@ on:
     paths:
       - 'api/source/**'
       - 'client/src/**'
+      - 'client/build.sh'
       - 'docs/**'
       - '.github/workflows/build-client.yml'
       - '.github/workflows/build-docs.yml'
