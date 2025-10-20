@@ -5107,9 +5107,9 @@ components:
         - Innodb_buffer_pool_reads
         - Innodb_buffer_pool_wait_free
         # Redo log / Checkpoint
-        - Innodb_redo_log_current_lsn
-        - Innodb_redo_log_checkpoint_lsn
-        - Innodb_redo_log_flushed_to_disk_lsn
+        # - Innodb_redo_log_current_lsn (MySQL 8.0.30+ only)
+        # - Innodb_redo_log_checkpoint_lsn (MySQL 8.0.30+ only)
+        # - Innodb_redo_log_flushed_to_disk_lsn (MySQL 8.0.30+ only)
         - Innodb_log_waits
         - Innodb_log_writes
         - Innodb_os_log_fsyncs
