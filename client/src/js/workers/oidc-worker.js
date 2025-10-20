@@ -12,7 +12,8 @@ let authorizations = {}
 let accessTimeoutId = null
 let refreshTimeoutId = null
 let redirectUri = null
-const bc = new BroadcastChannel('stigman-oidc-worker')
+const channelName = crypto.randomUUID()
+const bc = new BroadcastChannel(channelName)
 let idleTimeoutId = null
 let idleTimeoutM = null
 let isIdle = false
@@ -93,7 +94,7 @@ async function initialize(options) {
       return { success: false, error: validation.error }
     }
   }
-  return { success: true, env: ENV }
+  return { success: true, env: ENV, channelName }
 }
 
 function logout() {
@@ -512,6 +513,7 @@ async function fetchTokens(params) {
     return
   }
   const tokensResponse = await response.json()
+  console.log(logPrefix, 'Tokens response received', Date.now(), tokensResponse)
   if (isIdle) {
     console.log(logPrefix, 'Contexts are idle, will not validate and set tokens')
     return
