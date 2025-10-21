@@ -43,15 +43,24 @@ https://github.com/NUWCDIVNPT/stigman-orchestration
 
 
 
-Proxy Configuration for Streaming and SSE Endpoints
+Additional Proxy Configuration 
 ############################################################
+
+Proxy configuration will vary greatly depending on your environment, desired network structure, and choice of reverse proxy software. Below are some general guidelines and considerations when configuring your reverse proxy for use with STIG Manager.
+
+
+Max Request Body Size
+--------------------------------------------------------------
+
+Some proxies such as nginx may have default limits on request body size that are quite small (e.g. 5MB). You will likely need to increase this limit using the appropriate directive (e.g. ``client_max_body_size 100M;`` in nginx). A 100MB limit is a reasonable starting point.
+
+
+Proxy Requirements for Streaming and SSE
+--------------------------------------------------------------
 
 .. important::
 
-   STIG Manager uses streaming responses and Server-Sent Events (SSE) for real-time operations. These require specific proxy configuration to function properly.
-
-Proxy Requirements
---------------------------------------------------------------
+   STIG Manager uses streaming responses and Server-Sent Events (SSE) for real-time operations. These may require specific proxy configuration to function properly.
 
 For proper operation of streaming and SSE endpoints, your proxy must:
 
@@ -72,7 +81,7 @@ The application automatically sets the ``x-accel-buffering: no`` header which ng
    You MUST adjust your proxy configuration to exempt the endpoints listed below.
 
 Essential Streaming Endpoints
---------------------------------------------------------------
+_________________________________
 
 The following endpoints require unbuffered, real-time response streaming:
 
@@ -99,7 +108,7 @@ The following endpoints require unbuffered, real-time response streaming:
     - opId: ``streamStateSse``
 
 Proxy-Specific Configuration Examples
---------------------------------------------------------------
+________________________________________________________
 
 While specific configuration varies by proxy, here are the key settings to verify:
 
@@ -122,7 +131,7 @@ While specific configuration varies by proxy, here are the key settings to verif
   - Consult proxy documentation for buffering and timeout configuration if issues occur
 
 Verifying Proper Configuration
---------------------------------------------------------------
+________________________________________________________
 
 **Test SSE Endpoint:**
 
@@ -145,10 +154,10 @@ Or open in a browser::
   - No events received → Headers being stripped or modified
 
 Troubleshooting Option
-------------------------------
+________________________________________________________
 
 If you experience persistent buffering issues that cannot be resolved through proxy configuration, STIG Manager provides an environment variable to temporarily disable SSE functionality:
-  ``STIGMAN_CLIENT_STATE_EVENTS=false``
+``STIGMAN_CLIENT_STATE_EVENTS=false``
 This disables the web client's SSE listening for API state events. This should only be used temporarily while resolving proxy buffering issues, as it disables real-time operation monitoring.
 
 Future Considerations
