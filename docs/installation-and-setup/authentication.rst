@@ -147,7 +147,7 @@ Keycloak settings for the "stigman" realm:
   These roles can also be set up at the Client level, rather than the Realm level. Make adjustments accordingly.
 
 * Configure->Roles->Default Roles - Recommended: set "user" and "create_collection" as default roles.   
-* Configure->Client Scopes - Create the following scopes, and assign them the specified roles in that scope's "Scope" tab: 
+* Configure->Client Scopes - Create the following scopes, and assign them the specified roles in that scope's "Scope" tab (Role assignment only required if using Roles to assign scopes, rather than setting them as Default Client Scopes): 
 
 .. _oidc-scopes-table:
 
@@ -160,21 +160,23 @@ Keycloak settings for the "stigman" realm:
    * - Client Scopes
      - Roles
    * - stig-manager:collection
-     - user   
+     - user, admin
    * - stig-manager:collection:read
      - user
    * - stig-manager:op
      - admin
    * - stig-manager:op:read
-     - admin
+     - user
    * - stig-manager:stig
      - admin
    * - stig-manager:stig:read
      - user
    * - stig-manager:user
-     - admin 
+     - user, admin 
    * - stig-manager:user:read
      - user
+   * - stig-manager
+     - Alternative catch-all scope for all roles above.
 
 * Configure->Clients->stig-manager:
 
@@ -186,7 +188,7 @@ Keycloak settings for the "stigman" realm:
 
   * Client Scopes:
 
-    * Add the scopes created above as Assigned Optional Client Scopes.
+    * Add the scopes created above as either Assigned Optional Client Scopes or Default Client Scopes.
 
 
 Other suggested Keycloak settings for the stig-manager client:
