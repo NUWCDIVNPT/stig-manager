@@ -1,3 +1,18 @@
+1.5.14
+-------
+
+Changes:
+  - (API) feature: New Service Jobs feature for managing automated database maintenance and cleanup tasks
+  - (API) feature: Additional MySQL variable and status data in the AppInfo report
+  - (UI) fix: workers initialize with random channelName to avoid cross-tab conflicts
+  - (UI) fix: use conditional chain in error handler for showAssetProps
+  - (API) fix: Update POAM columns to align with new template; clarify feature use in documentation
+  - (Docs) Updates describing additional reverse proxy configuration, database configuration, Service Job features, "POAM" clarification.
+  - (Workflows) Ensure appropriate workflows run when build.sh is modified
+
+Note: This release includes a database migration to support the Service Jobs feature. The initial implementation provides database maintenance and cleanup jobs that are disabled by default. It is highly recommended that Application Managers enable and schedule these jobs to run periodically to help maintain optimal system performance and minimize resource usage. Documentation and guidance is available in the [STIGMan Application Manager Walkthrough](https://stig-manager.readthedocs.io/en/latest/admin-guide/admin-quickstart.html#enable-service-jobs) and [Guide](https://stig-manager.readthedocs.io/en/latest/admin-guide/admin-guide.html#service-jobs-panel).
+
+
 1.5.13
 -------
 
