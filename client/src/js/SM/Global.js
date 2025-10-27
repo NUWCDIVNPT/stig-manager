@@ -218,6 +218,7 @@ SM.RuleContentTpl = new Ext.XTemplate(
         }
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         SM.RowCountTextItem.superclass.initComponent.call(this)
+        this.setText(SM.StoreRowCount(_this.store, _this.noun, _this.iconCls))
     }  
   })
 

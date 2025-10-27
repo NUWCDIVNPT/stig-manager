@@ -262,6 +262,22 @@ The report displays the data source, date, and STIG Manager version at the top. 
 
 -------------------------
 
+.. _log-stream:
+
+Log Stream Panel
+------------------------------------
+
+
+This panel provides App Managers with real-time streaming of log records from the STIG Manager backend to the web client. This can help troubleshoot issues that would otherwise require direct access to the backend logs. 
+Log records are transmitted over a WebSocket connection, which requires a properly configured reverse proxy or firewall to allow WebSocket traffic. In compatible browsers, the stream can be recorded to a file for later analysis.
+
+This feature is experimental, however it is enabled by default. It can be disabled by setting the ``STIGMAN_EXPERIMENTAL_LOGSTREAM`` environment variable to ``false``. 
+
+
+
+
+-------------------------
+
 .. _app-data:
 
 Export/Import Data Panel

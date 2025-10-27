@@ -54,7 +54,8 @@ function getClientEnv(){
                 idleTimeoutAdmin: ${config.client.idleTimeoutAdmin},
             },
             experimental: {
-                appData: "${config.experimental.appData}"
+                appData: "${config.experimental.appData}",
+                logStream: "${config.experimental.logStream}"
             }
         }   
     }`
