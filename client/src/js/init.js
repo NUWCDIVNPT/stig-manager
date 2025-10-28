@@ -31,7 +31,7 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
     const url = new URL(window.location.href)
     const redirectUri = `${url.origin}${url.pathname}`
 
-    const response = await OW.sendWorkerRequest({ request: 'initialize', redirectUri, env: STIGMAN.Env.oauth })
+    const response = await initializeOidcWorker(redirectUri)
     if (response.error) {
       appendError(response.error)
       return
@@ -59,7 +59,34 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
     else {
       return handleNoParameters()
     }
+  
   }
+
+  async function getOidcMetadata() {
+    const url = `${STIGMAN.Env.oauth.authority}/.well-known/openid-configuration`
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`failed to get: ${url}`)
+    }
+    try {
+      return await response.json()
+    } catch (error) {
+      console.error(`[init] Error fetching OIDC metadata:`, error)
+      throw new Error(`failed to parse: ${url}`)
+    }
+  }
+
+  async function initializeOidcWorker(redirectUri) {
+    const response = await OW.sendWorkerRequest({ request: 'getStatus' })
+    if (response.error) {
+      throw new Error(`OIDC Worker getStatus error: ${response.error}`)
+    }
+    if (response.initialized) {
+      return response
+    }
+    const oidcConfiguration = await getOidcMetadata()
+    return OW.sendWorkerRequest({ request: 'initialize', redirectUri, oidcConfiguration, env: STIGMAN.Env.oauth })
+  } 
 
   function extractParamString(url) {
     if (url.hash) return url.hash.substring(1) // Remove the leading '#'
