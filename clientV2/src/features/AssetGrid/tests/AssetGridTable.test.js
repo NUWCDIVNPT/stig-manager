@@ -1,12 +1,12 @@
-// src/features/AssetGrid/tests/AssetGridTable.test.js
-import { describe, it, expect, beforeEach } from 'vitest'
 import { screen } from '@testing-library/vue'
+// src/features/AssetGrid/tests/AssetGridTable.test.js
+import { beforeEach, describe, expect, it } from 'vitest'
 import { server } from '@/test/testServer'
-import { assetGridHandlers } from '../mocks/assetGrid.handler.js'
 import { renderWithProviders } from '../../../test/utils.js'
 import AssetGridTable from '../components/AssetGridTable.vue'
+import { assetGridHandlers } from '../mocks/assetGrid.handler.js'
 
-describe('AssetGridTable.vue', () => {
+describe('assetGridTable.vue', () => {
   beforeEach(() => {
     server.use(...assetGridHandlers) // add feature mocks just for this suite
   })

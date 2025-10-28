@@ -1,5 +1,5 @@
-import { inject, computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
+import { computed, inject } from 'vue'
 import config from '../../../config'
 
 export function useNavTreeData() {
@@ -11,7 +11,9 @@ export function useNavTreeData() {
       const response = await fetch(`${config.apiBase}/collections`, {
         headers: { Authorization: `Bearer ${oidcWorker?.token}` },
       })
-      if (!response.ok) throw new Error(`Collections ${response.status} ${response.statusText}`)
+      if (!response.ok) {
+        throw new Error(`Collections ${response.status} ${response.statusText}`)
+      }
       return response.json()
     },
     staleTime: 1 * 60 * 1000,

@@ -1,114 +1,30 @@
 <script setup>
-import { ref, watch, markRaw } from 'vue'
-
-import Tabs from 'primevue/tabs'
-import TabList from 'primevue/tablist'
-import Tab from 'primevue/tab'
-import TabPanels from 'primevue/tabpanels'
-import TabPanel from 'primevue/tabpanel'
+import { ref } from 'vue'
 
 import ApiTree from '../features/NavTree/components/NavTree.vue'
-import Home from '../features/Home/components/Home.vue'
-import CollectionView from '../features/CollectionView/components/CollectionView.vue'
-import AppInfo from '../features/AppInfo/components/AppInfo.vue'
-import CollectionManage from '../features/CollectionManage/components/CollectionManage.vue'
-import ExportImportManage from '../features/ExportImportManage/components/ExportImportManage.vue'
-import ServiceJobs from '../features/ServiceJobs/components/ServiceJobs.vue'
-import StigLibrary from '../features/STIGLibrary/components/StigLibrary.vue'
-import StigManage from '../features/STIGManage/components/STIGManage.vue'
-import UserGroupManage from '../features/UserGroupManage/components/UserGroupManage.vue'
-import UserManage from '../features/UserManage/components/UserManage.vue'
-
 import { useNavTreeStore } from '../features/NavTree/stores/navTreeStore.js'
+import TabList from '../features/TabList/components/TabList.vue'
+
 const { selectedData } = useNavTreeStore()
 const navOpen = ref(true)
 const peekMode = ref(false)
-
-const registry = {
-  CollectionManage: CollectionManage,
-  UsersManage: UserManage,
-  UserGroupManage: UserGroupManage,
-  StigManage: StigManage,
-  ServiceJobs,
-  AppInfo: AppInfo,
-  ExportImportManage: ExportImportManage,
-  StigLibrary: StigLibrary,
-}
-
-const tabs = ref([{ id: 'home', title: 'Home', component: markRaw(Home), props: {}, closable: false }])
-const active = ref('home')
-
-watch(selectedData, (val) => {
-  if (val && val.component) openTabFromSelection(val)
-})
-
-function resolveComponentForSelection(sel) {
-  if (/^\d+$/.test(String(sel.key))) {
-    return CollectionView
-  }
-  return registry[sel.component]
-}
-
-function openTabFromSelection(sel) {
-  const id = String(sel.key)
-  if (!tabs.value.find((t) => t.id === id)) {
-    const Comp = resolveComponentForSelection(sel)
-    tabs.value.push({
-      id,
-      title: sel.label,
-      component: markRaw(Comp),
-      props: { payload: sel },
-      closable: true,
-    })
-  }
-  active.value = id
-}
-
-function closeTab(id) {
-  const tab = tabs.value.find((t) => t.id === id)
-  if (!tab || tab.closable === false) return
-
-  const idx = tabs.value.findIndex((t) => t.id === id)
-  if (idx === -1) return
-  tabs.value.splice(idx, 1)
-  if (active.value === id) {
-    active.value = tabs.value.length ? tabs.value[Math.max(0, idx - 1)].id : null
-  }
-}
 </script>
 
 <template>
-  <div class="appGrid"
-    :style="navOpen ? (peekMode ? { '--aside': '322px' } : { '--aside': '300px' }) : { '--aside': '22px' }">
+  <div
+    class="appGrid"
+    :style="navOpen ? (peekMode ? { '--aside': '322px' } : { '--aside': '300px' }) : { '--aside': '22px' }"
+  >
     <aside class="aside">
       <ApiTree v-model:open="navOpen" v-model:peek-mode="peekMode" />
     </aside>
 
     <main class="main">
-      <Tabs v-model:value="active" :pt="{ root: { class: 'tabs-root' } }">
-        <TabList :pt="{ root: { class: 'tab-list' } }">
-          <template v-for="t in tabs" :key="t.key">
-            <Tab :value="t.id" :pt="{ root: { class: 'tab-item' } }">
-              <span class="tabTitle">{{ t.title }}</span>
-              <button v-if="t.closable !== false" type="button" class="tabClose" aria-label="Close tab" title="Close"
-                @click.stop="closeTab(t.id)">
-                ×
-              </button>
-            </Tab>
-          </template>
-        </TabList>
-
-        <TabPanels :pt="{ root: { class: 'tab-panels' } }">
-          <template v-for="t in tabs" :key="t.key">
-            <TabPanel :value="t.id" :pt="{ root: { class: 'tab-panel' } }">
-              <component :is="t.component" v-bind="t.props" class="panelInner" />
-            </TabPanel>
-          </template>
-        </TabPanels>
-      </Tabs>
+      <TabList :selection="selectedData" />
     </main>
   </div>
 </template>
+
 <style scoped>
 .appGrid {
   display: grid;

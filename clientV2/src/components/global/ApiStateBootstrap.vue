@@ -1,27 +1,3 @@
-<template>
-  <div class="api-bootstrap">
-    <div class="center">
-      <div class="spinner" aria-hidden></div>
-      <div class="content">
-        <div class="shield"><img src="/shield-green-check.svg" alt="OK" class="shield-img" /></div>
-        <h1>STIG Manager</h1>
-        <p class="msg">The API is currently unavailable.</p>
-
-        <div class="deps">
-          <div>
-            Database status: <span :class="dbTextClass">{{ dbTextClass }}</span>
-          </div>
-          <div>
-            OIDC status: <span :class="oidcTextClass">{{ oidcTextClass }}</span>
-          </div>
-        </div>
-
-        <div class="ts">Last update: {{ since }}</div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { computed } from 'vue'
 import { useStateWorker } from '../../auth/useStateWorker.js'
@@ -40,6 +16,36 @@ const since = computed(() => displayed.value?.since ?? displayed.value?.lastUpda
 const dbTextClass = computed(() => (db.value ? 'online' : 'offline'))
 const oidcTextClass = computed(() => (oidc.value ? 'online' : 'offline'))
 </script>
+
+<template>
+  <div class="api-bootstrap">
+    <div class="center">
+      <div class="spinner" aria-hidden />
+      <div class="content">
+        <div class="shield">
+          <img src="/shield-green-check.svg" alt="OK" class="shield-img">
+        </div>
+        <h1>STIG Manager</h1>
+        <p class="msg">
+          The API is currently unavailable.
+        </p>
+
+        <div class="deps">
+          <div>
+            Database status: <span :class="dbTextClass">{{ dbTextClass }}</span>
+          </div>
+          <div>
+            OIDC status: <span :class="oidcTextClass">{{ oidcTextClass }}</span>
+          </div>
+        </div>
+
+        <div class="ts">
+          Last update: {{ since }}
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .api-bootstrap {

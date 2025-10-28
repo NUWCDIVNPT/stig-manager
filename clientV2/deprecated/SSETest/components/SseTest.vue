@@ -44,17 +44,25 @@ function doReconnect() {
 <template>
   <div class="p-4 space-y-3">
     <div class="flex items-center gap-3">
-      <h2 class="text-xl font-semibold">SSE</h2>
+      <h2 class="text-xl font-semibold">
+        SSE
+      </h2>
       <span class="text-xs px-2 py-1 rounded bg-gray-200">{{ connected ? 'connected' : 'closed' }}</span>
-      <button class="px-3 py-1 rounded bg-gray-800 text-white" @click="disconnect">Disconnect</button>
-      <button class="px-3 py-1 rounded bg-green-600 text-white" @click="doReconnect">Reconnect</button>
+      <button class="px-3 py-1 rounded bg-gray-800 text-white" @click="disconnect">
+        Disconnect
+      </button>
+      <button class="px-3 py-1 rounded bg-green-600 text-white" @click="doReconnect">
+        Reconnect
+      </button>
     </div>
 
     <div>
       <p class="text-sm mt-1">
         Last tick: <span class="font-mono">{{ lastTick ?? '—' }}</span>
       </p>
-      <p class="text-xs text-gray-500">at: {{ lastTickAt ? lastTickAt.toLocaleTimeString() : '—' }}</p>
+      <p class="text-xs text-gray-500">
+        at: {{ lastTickAt ? lastTickAt.toLocaleTimeString() : '—' }}
+      </p>
     </div>
   </div>
 </template>

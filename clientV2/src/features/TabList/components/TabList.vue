@@ -1,33 +1,60 @@
 <script setup>
-import Tabs from 'primevue/tabs'
-import TabList from 'primevue/tablist'
 import Tab from 'primevue/tab'
-import TabPanels from 'primevue/tabpanels'
+import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
+import TabPanels from 'primevue/tabpanels'
+import Tabs from 'primevue/tabs'
+import { watch } from 'vue'
+
+import { useTabList } from '../composeables/useTabList.js'
+
+const props = defineProps({
+  selection: { type: Object, default: null },
+})
+
+const { tabs, active, handleTabOpen, close } = useTabList()
+
+watch(
+  () => props.selection,
+  (val) => {
+    if (val && (val.component || val.key)) {
+      handleTabOpen(val)
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
-    <Tabs v-model:value="active" :pt="{ root: { class: 'tabs-root' } }">
-        <TabList :pt="{ root: { class: 'tab-list' } }">
-            <template v-for="t in tabs" :key="t.key">
-                <Tab :value="t.id" :pt="{ root: { class: 'tab-item' } }"><span class="tabTitle">{{ t.title
-                        }}</span><button v-if="t.closable !== false" type="button" class="tabClose"
-                        aria-label="Close tab" title="Close" @click.stop="closeTab(t.id)">
-                        ×
-                    </button>
-                </Tab>
-            </template>
-        </TabList>
+  <Tabs v-model:value="active" :pt="{ root: { class: 'tabs-root' } }">
+    <TabList :pt="{ root: { class: 'tab-list' } }">
+      <template v-for="t in tabs" :key="t.key">
+        <Tab :value="t.key" :pt="{ root: { class: 'tab-item' } }">
+          <span class="tabTitle">{{ t.label }}</span>
+          <button
+            v-if="t.closable !== false"
+            type="button"
+            class="tabClose"
+            aria-label="Close tab"
+            title="Close"
+            @click.stop="close(t.key)"
+          >
+            ×
+          </button>
+        </Tab>
+      </template>
+    </TabList>
 
-        <TabPanels :pt="{ root: { class: 'tab-panels' } }">
-            <template v-for="t in tabs" :key="t.key">
-                <TabPanel :value="t.id" :pt="{ root: { class: 'tab-panel' } }">
-                    <component :is="t.component" v-bind="t.props" class="panelInner" />
-                </TabPanel>
-            </template>
-        </TabPanels>
-    </Tabs>
+    <TabPanels :pt="{ root: { class: 'tab-panels' } }">
+      <template v-for="t in tabs" :key="t.key">
+        <TabPanel :value="t.key" :pt="{ root: { class: 'tab-panel' } }">
+          <component :is="t.component" v-bind="t.props" class="panelInner" />
+        </TabPanel>
+      </template>
+    </TabPanels>
+  </Tabs>
 </template>
+
 <style scoped>
 .appGrid {
     display: grid;

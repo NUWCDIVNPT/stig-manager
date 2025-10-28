@@ -60,7 +60,7 @@ export const navTreeConfig = {
       label: 'Display Settings',
       icon: 'icon-app-management',
       children: [
-        { key: 'WhatsNew', component: 'WhatsNew', label: "What's New", icon: 'icon-green-shield' },
+        { key: 'WhatsNew', component: 'WhatsNew', label: 'What\'s New', icon: 'icon-green-shield' },
         {
           key: 'ThemeSettings',
           component: 'ThemeSettings',

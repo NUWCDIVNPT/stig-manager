@@ -6,6 +6,5 @@ export const navTreeHandlers = [
     HttpResponse.json([
       { collectionId: '21', name: 'Collection X' },
       { collectionId: '22', name: 'Collection Y' },
-    ])
-  ),
+    ])),
 ]

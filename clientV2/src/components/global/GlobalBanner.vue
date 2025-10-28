@@ -49,8 +49,10 @@ const cls = new Classification(classification)
 </script>
 
 <template>
-  <div v-if="cls.showBanner" :class="['sm-banner', `sm-banner-${cls.classificationCls}`]">
-    <div class="sm-banner-body-text">{{ cls.classificationText }}</div>
+  <div v-if="cls.showBanner" class="sm-banner" :class="[`sm-banner-${cls.classificationCls}`]">
+    <div class="sm-banner-body-text">
+      {{ cls.classificationText }}
+    </div>
   </div>
 </template>
 

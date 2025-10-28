@@ -1,8 +1,8 @@
+import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { render } from '@testing-library/vue'
-import { VueQueryPlugin, QueryClient } from '@tanstack/vue-query'
+import Column from 'primevue/column'
 import PrimeVue from 'primevue/config'
 import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
 
 export function createTestQueryClient() {
   return new QueryClient({
@@ -19,7 +19,7 @@ export function renderWithProviders(
     props = {},
     // allow turning PrimeVue on/off per test
     withPrimeVue = true,
-  } = {}
+  } = {},
 ) {
   const queryClient = createTestQueryClient()
 

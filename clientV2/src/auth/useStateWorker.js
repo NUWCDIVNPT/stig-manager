@@ -10,12 +10,18 @@ let _initPromise = null
 let _lastApiBase = null
 
 function sendWorkerRequest(payload) {
-  if (!port.value) throw new Error('state worker port is not initialized')
+  if (!port.value) {
+    throw new Error('state worker port is not initialized')
+  }
   return new Promise((resolve) => {
     const requestId = crypto.randomUUID()
     const onMessage = (ev) => {
-      if (!ev.data) return
-      if (ev.data.requestId !== requestId) return
+      if (!ev.data) {
+        return
+      }
+      if (ev.data.requestId !== requestId) {
+        return
+      }
       port.value.removeEventListener('message', onMessage)
       resolve(ev.data.response)
     }
@@ -26,7 +32,9 @@ function sendWorkerRequest(payload) {
 
 async function initialize(apiBase = '/api') {
   // cache and reuse promise so multiple callers don't race this shouldnt happen but just in case (co pilot suggested this )
-  if (_initPromise) return _initPromise
+  if (_initPromise) {
+    return _initPromise
+  }
 
   _lastApiBase = apiBase
   _initPromise = (async () => {
@@ -54,7 +62,8 @@ async function initialize(apiBase = '/api') {
       // initial state comes as a JSON string from the worker
       try {
         state.value = initResp.state ? JSON.parse(initResp.state) : null
-      } catch {
+      }
+      catch {
         state.value = null
         error.value = 'failed to parse initial state'
       }
@@ -68,7 +77,8 @@ async function initialize(apiBase = '/api') {
           if ((eventMessage.type === 'state-changed' || eventMessage.type === 'state-report') && eventMessage.data) {
             try {
               state.value = JSON.parse(eventMessage.data)
-            } catch {
+            }
+            catch {
               state.value = null
             }
             // clear previous error when we get a fresh state
@@ -81,7 +91,8 @@ async function initialize(apiBase = '/api') {
         }
       }
       return { ok: true }
-    } catch (err) {
+    }
+    catch (err) {
       error.value = String(err)
       return { ok: false, error: error.value }
     }

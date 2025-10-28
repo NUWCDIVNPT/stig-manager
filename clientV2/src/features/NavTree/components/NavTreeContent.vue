@@ -1,6 +1,6 @@
 <script setup>
-import { ref, watch } from 'vue'
 import Tree from 'primevue/tree'
+import { ref, watch } from 'vue'
 import { useNavTreeStore } from '../stores/navTreeStore'
 
 const props = defineProps({
@@ -17,17 +17,21 @@ const navTreeStore = useNavTreeStore()
 
 function findNodeByKey(key, list) {
   for (const node of list ?? []) {
-    if (node.key === key) return node
+    if (node.key === key) {
+      return node
+    }
     if (node.children?.length) {
       const hit = findNodeByKey(key, node.children)
-      if (hit) return hit
+      if (hit) {
+        return hit
+      }
     }
   }
   return null
 }
 
 watch(selectionKeys, (map) => {
-  const key = Object.keys(map ?? {}).find((k) => map[k])
+  const key = Object.keys(map ?? {}).find(k => map[k])
   const node = key ? findNodeByKey(key, props.nodes) : null
   navTreeStore.select(node ?? null)
 })
@@ -57,7 +61,7 @@ function onNodeSelect(node) {
     >
       <template #default="{ node }">
         <span class="node-inner">
-          <span :class="['icon', 'sm-icon', node.icon]" aria-hidden="true" />
+          <span class="icon sm-icon" :class="[node.icon]" aria-hidden="true" />
           <span class="node-text" :class="{ 'is-italic': node.data?.italic }">
             {{ node.label }}
           </span>

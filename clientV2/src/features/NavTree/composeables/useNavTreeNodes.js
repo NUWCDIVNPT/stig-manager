@@ -4,7 +4,7 @@ export function useNavTreeNodes(collections, config) {
   return computed(() => {
     const cols = collections?.value || []
 
-    const collectionChildren = cols.map((col) => ({
+    const collectionChildren = cols.map(col => ({
       key: String(col.collectionId),
       component: String(col.collectionId),
       label: col.name,
@@ -30,7 +30,9 @@ export function useNavTreeNodes(collections, config) {
 
     const sections = config?.sections || []
     const [appManagement, ...rest] = sections
-    if (appManagement) return [appManagement, collectionsSection, ...rest]
+    if (appManagement) {
+      return [appManagement, collectionsSection, ...rest]
+    }
     return [collectionsSection, ...sections]
   })
 }

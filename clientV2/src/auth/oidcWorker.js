@@ -3,7 +3,7 @@ import { reactive } from 'vue'
 function setupOidcWorker() {
   const worker = new SharedWorker('/oidc-worker.js', { name: 'oidc-worker', type: 'module' })
   const OW = reactive({
-    logout: async function () {
+    async logout() {
       const response = await this.sendWorkerRequest({ request: 'logout' })
       if (response.success) {
         this.token = null
@@ -11,7 +11,7 @@ function setupOidcWorker() {
         window.location.href = response.redirect
       }
     },
-    sendWorkerRequest: function (request) {
+    sendWorkerRequest(request) {
       const requestId = crypto.randomUUID()
       const port = this.worker.port
       port.postMessage({ ...request, requestId })
@@ -25,10 +25,10 @@ function setupOidcWorker() {
         port.addEventListener('message', handler)
       })
     },
-    postContextActiveMessage: function () {
+    postContextActiveMessage() {
       this.worker.port.postMessage({ requestId: 'contextActive' })
     },
-    worker: worker,
+    worker,
   })
 
   OW.worker.port.start()
@@ -39,7 +39,8 @@ function setupOidcWorker() {
       console.log('{init] Received from worker:', event.type, event.data)
       OW.token = event.data.accessToken
       OW.tokenParsed = event.data.accessTokenPayload
-    } else if (event.data.type === 'noToken') {
+    }
+    else if (event.data.type === 'noToken') {
       console.log('{init] Received from worker:', event.type, event.data)
       OW.token = null
       OW.tokenParsed = null

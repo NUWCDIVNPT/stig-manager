@@ -1,14 +1,3 @@
-<template>
-  <div class="auth-error-root">
-    <div class="card">
-      <h1>Authentication failed</h1>
-      <p>We were unable to initialize authentication. The application cannot continue without auth.</p>
-      <pre v-if="details" class="error-details">{{ details }}</pre>
-      <button @click="reload">Retry</button>
-    </div>
-  </div>
-</template>
-
 <script>
 export default {
   name: 'AuthBootstrapError',
@@ -26,6 +15,19 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="auth-error-root">
+    <div class="card">
+      <h1>Authentication failed</h1>
+      <p>We were unable to initialize authentication. The application cannot continue without auth.</p>
+      <pre v-if="details" class="error-details">{{ details }}</pre>
+      <button @click="reload">
+        Retry
+      </button>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .auth-error-root {

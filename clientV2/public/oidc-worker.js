@@ -8,7 +8,7 @@ const tokens = {
 let ENV = null
 let oidcConfiguration = null
 let initialized = false
-let authorizations = {}
+const authorizations = {}
 let accessTimeoutId = null
 let refreshTimeoutId = null
 let redirectUri = null
@@ -69,7 +69,8 @@ async function exchangeCodeForToken({ code, codeVerifier, clientId = ENV.clientI
       accessToken: tokens.accessToken,
       accessTokenPayload: decodeToken(tokens.accessToken),
     }
-  } catch (e) {
+  }
+  catch (e) {
     return { success: false, error: e.message }
   }
 }
@@ -82,7 +83,8 @@ async function initialize(options) {
 
     try {
       oidcConfiguration = await fetchOpenIdConfiguration()
-    } catch (e) {
+    }
+    catch (e) {
       console.error(logPrefix, 'Failed to fetch OIDC configuration', e)
       return { success: false, error: 'Cannot connect to the Sign-in Service.' }
     }
@@ -109,16 +111,19 @@ async function onMessage(e) {
     console.log(logPrefix, 'Received contextActive message, setting idle handler')
     isIdle = false
     setIdleHandler()
-  } else {
+  }
+  else {
     const handler = messageHandlers[request]
     if (handler) {
       try {
         const response = await handler(options)
         port.postMessage({ requestId, response })
-      } catch (error) {
+      }
+      catch (error) {
         port.postMessage({ requestId, error: error.message })
       }
-    } else {
+    }
+    else {
       port.postMessage({ requestId, error: 'Unknown request' })
     }
   }
@@ -126,7 +131,7 @@ async function onMessage(e) {
 
 // Support functions
 function dec2hex(dec) {
-  return ('0' + dec.toString(16)).substr(-2)
+  return (`0${dec.toString(16)}`).substr(-2)
 }
 
 function generateRandomString() {
@@ -177,7 +182,8 @@ function decodeToken(str) {
     str = decodeURIComponent(escape(atob(str)))
     str = JSON.parse(str)
     return str
-  } catch {
+  }
+  catch {
     return false
   }
 }
@@ -189,10 +195,12 @@ function validateOidcConfiguration() {
   if (!oidcConfiguration.authorization_endpoint) {
     result.success = false
     result.error = 'Missing authorization endpoint in OIDC configuration'
-  } else if (!oidcConfiguration.token_endpoint) {
+  }
+  else if (!oidcConfiguration.token_endpoint) {
     result.success = false
     result.error = 'Missing token endpoint in OIDC configuration'
-  } else if (ENV.strictPkce && !oidcConfiguration.code_challenge_methods_supported?.includes('S256')) {
+  }
+  else if (ENV.strictPkce && !oidcConfiguration.code_challenge_methods_supported?.includes('S256')) {
     result.success = false
     result.error = 'OP does not advertise PKCE and STIGMAN_CLIENT_STRICT_PKCE=true'
   }
@@ -201,7 +209,7 @@ function validateOidcConfiguration() {
 
 function getScopeStr() {
   const scopePrefix = ENV.scopePrefix
-  let scopes = [
+  const scopes = [
     `openid`,
     `${scopePrefix}stig-manager:stig`,
     `${scopePrefix}stig-manager:stig:read`,
@@ -230,7 +238,9 @@ async function fetchOpenIdConfiguration() {
 }
 
 async function createAuthorization(_redirectUri = redirectUri) {
-  if (authorizations[_redirectUri]) return authorizations[_redirectUri]
+  if (authorizations[_redirectUri]) {
+    return authorizations[_redirectUri]
+  }
   const pkce = await getPkce()
   const state = crypto.randomUUID()
   const params = new URLSearchParams()
@@ -258,7 +268,7 @@ async function getPkce() {
 
 async function broadcastNoToken() {
   console.log(logPrefix, 'Broadcasting no token')
-  let baseRedirectUri = redirectUri?.endsWith('index.html') ? redirectUri.slice(0, -'index.html'.length) : redirectUri
+  const baseRedirectUri = redirectUri?.endsWith('index.html') ? redirectUri.slice(0, -'index.html'.length) : redirectUri
 
   const auth = await createAuthorization(`${baseRedirectUri}reauth.html`)
   bc.postMessage({ type: 'noToken', ...auth, isIdle })
@@ -359,7 +369,8 @@ function setTokensWithRefresh(tokensResponse) {
   if (accessTimes?.timeoutInS <= 0) {
     broadcastNoToken()
     return
-  } else {
+  }
+  else {
     tokens.accessToken = tokensResponse.access_token
     broadcastToken()
   }
@@ -367,13 +378,14 @@ function setTokensWithRefresh(tokensResponse) {
     tokens.refreshToken = tokensResponse.refresh_token
     console.log(logPrefix, 'Refresh token expires: ', refreshTimes.expiresDateISO, ' timeout: ', refreshTimes.timeoutDateISO)
     setRefreshTokenTimer(refreshTimes.timeoutInMs)
-  } else {
+  }
+  else {
     console.log(
       logPrefix,
       'Refresh expiration unknown or zero, Access token expires: ',
       accessTimes.expiresDateISO,
       ' timeout: ',
-      accessTimes.timeoutDateISO
+      accessTimes.timeoutDateISO,
     )
     tokens.refreshToken = tokensResponse.refresh_token ?? null
     setAccessTokenTimer(accessTimes.timeoutInMs)
@@ -382,7 +394,8 @@ function setTokensWithRefresh(tokensResponse) {
   if (accessTimes.expiresInS < refreshTimes?.expiresInS) {
     console.log(logPrefix, 'Access token expires: ', accessTimes.expiresDateISO, ' timeout: ', accessTimes.timeoutDateISO)
     setAccessTokenTimer(accessTimes.timeoutInMs)
-  } else {
+  }
+  else {
     console.log(logPrefix, 'Access token expires: ', accessTimes.expiresDateISO, ' timeout disabled')
   }
   if (idleTimeoutM && !idleTimeoutId) {
@@ -406,20 +419,22 @@ function validateTokensResponse(tokensResponse) {
 function validateScope(scopeValue, isAdmin = false) {
   // Depending on OIDC provider, scopeValue can be a space-separated string (the standard) or an array of scopes. If a string, split it on spaces into an array.
   const scopes = typeof scopeValue === 'string' ? scopeValue.split(' ') : Array.isArray(scopeValue) ? scopeValue : []
-  const hasScope = (s) => scopes.includes(s)
+  const hasScope = s => scopes.includes(s)
 
   // Required scopes for each privilege
   const requiredAdminScopes = ['stig-manager:stig', 'stig-manager:user', 'stig-manager:op', 'stig-manager:collection']
   const requiredUserScopes = ['stig-manager:stig:read', 'stig-manager:user:read', 'stig-manager:collection']
 
   // Top-level scope grants all
-  if (hasScope('stig-manager')) return true
+  if (hasScope('stig-manager')) {
+    return true
+  }
 
   const required = isAdmin ? requiredAdminScopes : requiredUserScopes
   for (const s of required) {
     if (!hasScope(s)) {
       throw new Error(
-        `Missing required scope "${ENV.scopePrefix}${s}" for ${isAdmin ? 'admin' : 'user'} in access token payload. Received scopes: ${JSON.stringify(scopeValue)}`
+        `Missing required scope "${ENV.scopePrefix}${s}" for ${isAdmin ? 'admin' : 'user'} in access token payload. Received scopes: ${JSON.stringify(scopeValue)}`,
       )
     }
   }
@@ -434,7 +449,7 @@ function validateClaims(payload) {
     throw new Error(`Missing username claim (${ENV.claims.username}) in access token payload`)
   }
 
-  const privilegeChain = ENV.claims.privileges.split('.').map((p) => p.replace(/(^")|("$)/g, ''))
+  const privilegeChain = ENV.claims.privileges.split('.').map(p => p.replace(/(^")|("$)/g, ''))
   const privileges = privilegeChain.reduce((obj, key) => obj?.[key], payload)
   if (!privileges) {
     throw new Error(`Missing privileges claim (${ENV.claims.privileges}) in access token payload`)
@@ -443,7 +458,8 @@ function validateClaims(payload) {
   // move idle handling out of here eventually
   if (privileges.includes('admin')) {
     idleTimeoutM = ENV.idleTimeoutAdmin
-  } else {
+  }
+  else {
     idleTimeoutM = ENV.idleTimeoutUser
   }
 
@@ -458,12 +474,14 @@ function validateAudience(payload) {
       if (!payload.aud.includes(ENV.audienceValue)) {
         throw new Error(`Invalid audience in access token payload: ${payload.aud.join(', ')}, expected: ${ENV.audienceValue}`)
       }
-    } else if (typeof payload.aud === 'string') {
+    }
+    else if (typeof payload.aud === 'string') {
       if (payload.aud !== ENV.audienceValue) {
         throw new Error(`Invalid audience in access token payload: ${payload.aud}, expected: ${ENV.audienceValue}`)
       }
-    } else {
-      throw new Error(`Invalid audience type in access token payload: ${typeof payload.aud}, expected string or array`)
+    }
+    else {
+      throw new TypeError(`Invalid audience type in access token payload: ${typeof payload.aud}, expected string or array`)
     }
   }
   return true
@@ -484,7 +502,9 @@ function setTokens(tokensResponse) {
 function clearAccessToken(sendBroadcast = false) {
   tokens.accessToken = null
   clearAccessTokenTimer()
-  if (sendBroadcast) broadcastNoToken()
+  if (sendBroadcast) {
+    broadcastNoToken()
+  }
 }
 
 function clearTokens(sendBroadcast = false) {
@@ -492,7 +512,9 @@ function clearTokens(sendBroadcast = false) {
   tokens.refreshToken = null
   clearAccessTokenTimer()
   clearRefreshTokenTimer()
-  if (sendBroadcast) broadcastNoToken()
+  if (sendBroadcast) {
+    broadcastNoToken()
+  }
 }
 
 async function fetchTokens(params) {
@@ -534,7 +556,8 @@ async function refreshAccessToken() {
 
   try {
     return await fetchTokens(params)
-  } catch (e) {
+  }
+  catch (e) {
     clearTokens(true) // broadcast no token
     return { success: false, error: e.message }
   }

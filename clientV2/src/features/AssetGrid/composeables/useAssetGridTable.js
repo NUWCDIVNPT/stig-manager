@@ -1,5 +1,5 @@
-import { ref, inject, computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
+import { computed, inject, ref } from 'vue'
 import config from '../../../config'
 
 export function useAssetGridTable({ selectedCollection, apiBase = config.apiBase }) {
@@ -11,9 +11,9 @@ export function useAssetGridTable({ selectedCollection, apiBase = config.apiBase
   const metaKey = ref(true)
 
   function getContrastYIQ(hexcolor) {
-    const r = parseInt(hexcolor.substr(0, 2), 16)
-    const g = parseInt(hexcolor.substr(2, 2), 16)
-    const b = parseInt(hexcolor.substr(4, 2), 16)
+    const r = Number.parseInt(hexcolor.substr(0, 2), 16)
+    const g = Number.parseInt(hexcolor.substr(2, 2), 16)
+    const b = Number.parseInt(hexcolor.substr(4, 2), 16)
     const yiq = (r * 299 + g * 587 + b * 114) / 1000
     return yiq >= 128 ? '#080808' : '#f7f7f7'
   }
@@ -25,7 +25,9 @@ export function useAssetGridTable({ selectedCollection, apiBase = config.apiBase
       const res = await fetch(`${apiBase}/collections/${collectionId.value}/labels`, {
         headers: { Authorization: `Bearer ${oidcWorker.token}` },
       })
-      if (!res.ok) throw new Error(`Labels ${res.status} ${res.statusText}`)
+      if (!res.ok) {
+        throw new Error(`Labels ${res.status} ${res.statusText}`)
+      }
       const labelsApi = await res.json()
       const map = new Map()
       for (const label of labelsApi) {
@@ -49,10 +51,12 @@ export function useAssetGridTable({ selectedCollection, apiBase = config.apiBase
       const res = await fetch(`${apiBase}/assets?collectionId=${collectionId.value}&projection=stigs`, {
         headers: { Authorization: `Bearer ${oidcWorker.token}` },
       })
-      if (!res.ok) throw new Error(`Assets ${res.status} ${res.statusText}`)
+      if (!res.ok) {
+        throw new Error(`Assets ${res.status} ${res.statusText}`)
+      }
       return await res.json()
     },
-    placeholderData: (prev) => prev,
+    placeholderData: prev => prev,
   })
 
   const items = computed(() => assetsQuery.data?.value ?? [])

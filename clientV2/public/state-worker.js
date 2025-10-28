@@ -36,7 +36,9 @@ onconnect = function (e) {
 // Otherwise, connects to the SSE endpoint and waits for the first message (with a 5s timeout).
 // Broadcasts the first state, then attaches persistent listeners for future events.
 function initialize(options) {
-  if (initialized) return Promise.resolve({ success: true, channelName, state })
+  if (initialized) {
+    return Promise.resolve({ success: true, channelName, state })
+  }
 
   return new Promise((resolve) => {
     apiBase = options.apiBase
@@ -103,17 +105,21 @@ async function onMessage(e) {
     try {
       const response = await handler(options)
       port.postMessage({ requestId, response })
-    } catch (error) {
+    }
+    catch (error) {
       port.postMessage({ requestId, response: { success: false, error: error.message } })
     }
-  } else {
+  }
+  else {
     port.postMessage({ requestId, error: 'Unknown request' })
   }
 }
 
 // Custom reconnect logic for SSE: retries connections even on 502 errors from reverse proxies
 function reconnectSSE() {
-  if (eventSource) eventSource.close()
+  if (eventSource) {
+    eventSource.close()
+  }
   eventSource = new EventSource(`${apiBase}/op/state/sse`)
 
   eventSource.onopen = function () {
@@ -149,6 +155,6 @@ function addListeners() {
         eventSource.removeEventListener(eventName, listener)
       }
     },
-    { once: true }
+    { once: true },
   )
 }

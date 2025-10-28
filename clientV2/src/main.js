@@ -1,16 +1,15 @@
-/* eslint-disable vue/one-component-per-file */
-import { createApp, watch, h } from 'vue'
-import PrimeVue from 'primevue/config'
 import Material from '@primeuix/themes/material'
+import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
+import PrimeVue from 'primevue/config'
 import Tooltip from 'primevue/tooltip'
-import { VueQueryPlugin, QueryClient } from '@tanstack/vue-query'
-import { bootstrapAuth } from './auth/bootstrap.js'
-import './style.css'
+import { createApp, h, watch } from 'vue'
 import App from './App.vue'
 import AuthBootstrapError from './auth/AuthBootstrapError.vue'
+import { bootstrapAuth } from './auth/bootstrap.js'
 import { bootstrapStateWorker, useStateWorker } from './auth/useStateWorker.js'
-import config from './config.js'
 import ApiStateBootstrap from './components/global/ApiStateBootstrap.vue'
+import config from './config.js'
+import './style.css'
 
 if (typeof document !== 'undefined') {
   document.documentElement.classList.add('app-dark')
@@ -38,12 +37,16 @@ try {
   }
 
   // grab initial state
-  let initialState = stateResult.state ?? undefined
+  const initialState = stateResult.state ?? undefined
 
   // check if available
   const isReady = (initialState) => {
-    if (!initialState) return false
-    if (initialState.currentState === 'available') return true
+    if (!initialState) {
+      return false
+    }
+    if (initialState.currentState === 'available') {
+      return true
+    }
     return false
   }
 
@@ -58,7 +61,7 @@ try {
           darkModeSelector: '.app-dark',
         },
       },
-      //unstyled: true,
+      // unstyled: true,
     })
 
     app.use(VueQueryPlugin, {
@@ -89,7 +92,9 @@ try {
     const stop = watch(
       () => reactiveState.value,
       async (newVal) => {
-        if (!newVal) return
+        if (!newVal) {
+          return
+        }
         if (isReady(newVal)) {
           // unmount the state display and mount the real app
           stateApp.unmount()
@@ -108,9 +113,10 @@ try {
           mountApp(authBootResult)
         }
       },
-      { immediate: false }
+      { immediate: false },
     )
-  } else {
+  }
+  else {
     // state is already ready — bootstrap auth and mount
     const authBootResult = await bootstrapAuth()
     if (!authBootResult.success) {
@@ -118,11 +124,13 @@ try {
         details: authBootResult.error ? JSON.stringify(authBootResult.error, null, 2) : undefined,
       })
       errApp.mount('#app')
-    } else {
+    }
+    else {
       mountApp(authBootResult)
     }
   }
-} catch (err) {
+}
+catch (err) {
   const apiErrApp = createApp({
     render: () => h('div', { style: 'padding:24px;font-family:system-ui,Arial,Helvetica,sans-serif' }, `Bootstrap failed.${err}`),
   })

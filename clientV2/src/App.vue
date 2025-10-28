@@ -1,8 +1,8 @@
 <script setup>
 import ReauthPrompt from './auth/ReauthPrompt.vue'
-import { noTokenMessage } from './global-state/globalState.js'
-import GlobalServiceOverlay from './components/global/GlobalServiceOverlay.vue'
 import GlobalBanner from './components/global/GlobalBanner.vue'
+import GlobalServiceOverlay from './components/global/GlobalServiceOverlay.vue'
+import { noTokenMessage } from './global-state/globalState.js'
 import HomePage from './pages/StigmanSPA.vue'
 </script>
 

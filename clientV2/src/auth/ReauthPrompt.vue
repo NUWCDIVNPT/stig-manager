@@ -1,13 +1,3 @@
-<template>
-  <div class="reauth-modal">
-    <div class="reauth-content">
-      <h2>Session Expired</h2>
-      <p>Your session has expired and we need you to sign in again.</p>
-      <button @click="handleReauth">Sign in</button>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { toRefs } from 'vue'
 
@@ -30,6 +20,18 @@ function handleReauth() {
   window.open(redirect.value, '_blank', `popup,width=${width},height=${height},left=${left},top=${top}`)
 }
 </script>
+
+<template>
+  <div class="reauth-modal">
+    <div class="reauth-content">
+      <h2>Session Expired</h2>
+      <p>Your session has expired and we need you to sign in again.</p>
+      <button @click="handleReauth">
+        Sign in
+      </button>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .reauth-modal {

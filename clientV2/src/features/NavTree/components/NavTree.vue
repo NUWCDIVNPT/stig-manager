@@ -1,15 +1,15 @@
 <script setup>
-import { ref, defineModel } from 'vue'
-import { useOutsideClick } from '../composeables/useOutsideClick'
+import { defineModel, ref } from 'vue'
+import { navTreeConfig } from '../composeables/navTreeConfig'
 import { useKeyboardNav } from '../composeables/useKeyboardNav'
 import { useNavTreeData } from '../composeables/useNavTreeData'
 import { useNavTreeNodes } from '../composeables/useNavTreeNodes'
-import { navTreeConfig } from '../composeables/navTreeConfig'
+import { useOutsideClick } from '../composeables/useOutsideClick'
 
-import NavTreeTab from './NavTreeTab.vue'
+import NavTreeContent from './NavTreeContent.vue'
 import NavTreeDrawer from './NavTreeDrawer.vue'
 import NavTreeHeader from './NavTreeHeader.vue'
-import NavTreeContent from './NavTreeContent.vue'
+import NavTreeTab from './NavTreeTab.vue'
 
 const visible = defineModel('open', { type: Boolean, default: true })
 const peekMode = defineModel('peekMode', { type: Boolean, default: false })
@@ -19,7 +19,9 @@ const nodes = useNavTreeNodes(collections, navTreeConfig)
 
 const wrapperRef = ref(null)
 function closePeek() {
-  if (!peekMode.value) return
+  if (!peekMode.value) {
+    return
+  }
   visible.value = false
   peekMode.value = false
 }

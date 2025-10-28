@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
-import { setupOidcWorker } from '././oidcWorker.js'
 import { noTokenMessage } from '../global-state/globalState.js'
+import { setupOidcWorker } from '././oidcWorker.js'
 
 let OW = {}
 
@@ -19,7 +19,8 @@ async function bootstrapAuth() {
       OW.bc.addEventListener('message', (event) => {
         if (event.data?.type === 'noToken') {
           noTokenMessage.value = event.data
-        } else if (event.data?.type === 'accessToken') {
+        }
+        else if (event.data?.type === 'accessToken') {
           noTokenMessage.value = null
         }
       })
@@ -42,12 +43,14 @@ async function bootstrapAuth() {
     const paramStr = extractParamString(url)
     if (paramStr) {
       await handleRedirectAndParameters(redirectUri, paramStr)
-    } else {
+    }
+    else {
       await handleNoParameters()
     }
     result.success = true
     return result
-  } catch (error) {
+  }
+  catch (error) {
     return {
       success: false,
       error: error instanceof Error ? error.message : String(error),
@@ -56,8 +59,12 @@ async function bootstrapAuth() {
 }
 
 function extractParamString(url) {
-  if (url.hash) return url.hash.substring(1) // Remove the leading '#'
-  if (url.search) return url.search.substring(1) // Remove the leading '?'
+  if (url.hash) {
+    return url.hash.substring(1)
+  }
+  if (url.search) {
+    return url.search.substring(1)
+  }
   return ''
 }
 
@@ -76,7 +83,8 @@ async function handleNoParameters() {
     OW.token = response.accessToken
     OW.tokenParsed = response.accessTokenPayload
     return true
-  } else if (response.redirect) {
+  }
+  else if (response.redirect) {
     sessionStorage.setItem('codeVerifier', response.codeVerifier)
     sessionStorage.setItem('oidcState', response.state)
     window.location.href = response.redirect
@@ -114,7 +122,8 @@ async function handleRedirectAndParameters(redirectUri, paramStr) {
     sessionStorage.removeItem('codeVerifier')
     sessionStorage.removeItem('oidcState')
     return true
-  } else {
+  }
+  else {
     console.log(response.error || 'Failed to exchange code for token')
   }
 }

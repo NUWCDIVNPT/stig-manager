@@ -2,7 +2,9 @@ import { ref } from 'vue'
 
 let store
 export function useNavTreeStore() {
-  if (store) return store
+  if (store) {
+    return store
+  }
 
   const selectedData = ref(null)
 

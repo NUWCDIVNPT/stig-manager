@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/vue'
+import { describe, expect, it } from 'vitest'
 import HelloWorld from '../components/HelloWorld.vue'
 
-describe('HelloWorld.vue', () => {
+describe('helloWorld.vue', () => {
   it('renders message when passed', async () => {
     render(HelloWorld, {})
 

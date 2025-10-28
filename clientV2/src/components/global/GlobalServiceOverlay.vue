@@ -1,15 +1,5 @@
-<template>
-  <transition name="fade">
-    <div v-if="hasOfflineDependency || !!serviceError" class="overlay" role="alertdialog" aria-modal="true" aria-live="assertive">
-      <div class="overlay-panel">
-        <ServiceReport :has-error="!!serviceError" :db-class="dbClass" :oidc-class="oidcClass" />
-      </div>
-    </div>
-  </transition>
-</template>
-
 <script setup>
-import { computed, watch, onUnmounted } from 'vue'
+import { computed, onUnmounted, watch } from 'vue'
 import { useStateWorker } from '../../auth/useStateWorker.js'
 import ServiceReport from '../ServiceReport.vue'
 
@@ -29,11 +19,21 @@ watch(
   (on) => {
     document.body.classList.toggle('no-scroll', on)
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 onUnmounted(() => document.body.classList.remove('no-scroll'))
 </script>
+
+<template>
+  <transition name="fade">
+    <div v-if="hasOfflineDependency || !!serviceError" class="overlay" role="alertdialog" aria-modal="true" aria-live="assertive">
+      <div class="overlay-panel">
+        <ServiceReport :has-error="!!serviceError" :db-class="dbClass" :oidc-class="oidcClass" />
+      </div>
+    </div>
+  </transition>
+</template>
 
 <style scoped>
 .overlay {

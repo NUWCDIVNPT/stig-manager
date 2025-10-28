@@ -1,30 +1,3 @@
-<template>
-  <div v-if="hasError" class="error-alert" role="alert">
-    <div class="alert-icon" aria-hidden>⛔</div>
-    <div class="alert-body">
-      <div class="alert-title">Service Error</div>
-      <div class="alert-message">API is Offline</div>
-    </div>
-  </div>
-
-  <div v-else class="service-alert" role="status">
-    <div class="alert-icon" aria-hidden>⚠️</div>
-    <div class="alert-body">
-      <div class="alert-title">Service Alert</div>
-      <div class="alert-message">The API is currently unavailable</div>
-
-      <div class="status-row">
-        <div class="status-item">
-          Database: <span :class="['badge', dbClass]">{{ dbClass }}</span>
-        </div>
-        <div class="status-item">
-          Authentication: <span :class="['badge', oidcClass]">{{ oidcClass }}</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { toRefs } from 'vue'
 
@@ -36,6 +9,45 @@ const props = defineProps({
 
 const { hasError, dbClass, oidcClass } = toRefs(props)
 </script>
+
+<template>
+  <div v-if="hasError" class="error-alert" role="alert">
+    <div class="alert-icon" aria-hidden>
+      ⛔
+    </div>
+    <div class="alert-body">
+      <div class="alert-title">
+        Service Error
+      </div>
+      <div class="alert-message">
+        API is Offline
+      </div>
+    </div>
+  </div>
+
+  <div v-else class="service-alert" role="status">
+    <div class="alert-icon" aria-hidden>
+      ⚠️
+    </div>
+    <div class="alert-body">
+      <div class="alert-title">
+        Service Alert
+      </div>
+      <div class="alert-message">
+        The API is currently unavailable
+      </div>
+
+      <div class="status-row">
+        <div class="status-item">
+          Database: <span class="badge" :class="[dbClass]">{{ dbClass }}</span>
+        </div>
+        <div class="status-item">
+          Authentication: <span class="badge" :class="[oidcClass]">{{ oidcClass }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .error-alert {

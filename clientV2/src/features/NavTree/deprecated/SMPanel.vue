@@ -1,14 +1,3 @@
-<template>
-  <div class="panel">
-    <div v-if="$slots.header" class="panel-header">
-      <slot name="header"></slot>
-    </div>
-    <div v-if="isOpen !== false" class="panel-body">
-      <slot name="body"></slot>
-    </div>
-  </div>
-</template>
-
 <script>
 export default {
   props: {
@@ -19,6 +8,17 @@ export default {
   },
 }
 </script>
+
+<template>
+  <div class="panel">
+    <div v-if="$slots.header" class="panel-header">
+      <slot name="header" />
+    </div>
+    <div v-if="isOpen !== false" class="panel-body">
+      <slot name="body" />
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .panel {

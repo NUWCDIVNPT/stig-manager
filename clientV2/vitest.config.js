@@ -1,7 +1,7 @@
+import { fileURLToPath, URL } from 'node:url'
+import vue from '@vitejs/plugin-vue'
 // vitest.config.js
 import { defineConfig } from 'vitest/config'
-import vue from '@vitejs/plugin-vue'
-import { fileURLToPath, URL } from 'node:url'
 // import vue dev toosl from '@vue/devtools' --- IGNORE ---
 export default defineConfig({
   plugins: [vue()],
