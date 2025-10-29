@@ -7,7 +7,6 @@ const SmError = require('./error')
 const AsyncApiValidator = require('asyncapi-validator')
 
 const socketPath = '/socket/log-socket'
-const unauthorizedTimeoutMs = 10000
 
 class LogSession {
   constructor(ws, validator) {
@@ -20,6 +19,8 @@ class LogSession {
     this.filter = null;
     this.pingIntervalId = null
     this.unauthorizedTimerId = null
+    this.unauthorizedTimeoutMs = 10000
+    this.pingIntervalMs = 30000
   }
 
   start = () => {
@@ -78,7 +79,7 @@ class LogSession {
   }
   startHeartbeat = () => {
     this.stopHeartbeat();
-    this.pingIntervalId = setInterval(this.sendPing, 30000);
+    this.pingIntervalId = setInterval(this.sendPing, this.pingIntervalMs);
   }
 
   stopHeartbeat = () => {
@@ -222,7 +223,7 @@ class LogSession {
     if (!this.unauthorizedTimerId) {
       this.unauthorizedTimerId = setTimeout(() => {
         this.stop();
-      }, unauthorizedTimeoutMs); // Set a maximum time to be unauthorized
+      }, this.unauthorizedTimeoutMs); // Set a maximum time to be unauthorized
     }
   }
 
