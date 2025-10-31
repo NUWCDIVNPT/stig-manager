@@ -1,7 +1,4 @@
 import { markRaw, ref } from 'vue'
-
-// Internal registry of feature components used by tabs.
-// Keeping this here makes the composable self-contained and easy to reuse.
 import AppInfo from '../../AppInfo/components/AppInfo.vue'
 import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
 import CollectionView from '../../CollectionView/components/CollectionView.vue'
@@ -13,79 +10,53 @@ import StigManage from '../../STIGManage/components/STIGManage.vue'
 import UserGroupManage from '../../UserGroupManage/components/UserGroupManage.vue'
 import UserManage from '../../UserManage/components/UserManage.vue'
 
-const registry = {
+const components = {
   CollectionManage,
-  UsersManage: UserManage,
+  UserManage,
   UserGroupManage,
   StigManage,
   ServiceJobs,
   AppInfo,
   ExportImportManage,
   StigLibrary,
+  CollectionView,
 }
 
-/**
- * One composable to manage tabs end-to-end.
- * - State: tabs[], active
- * - Behavior: open, openFromSelection, setActive, close, closeActive, reset
- * - Resolution: built-in resolver maps NavTree selections to components via internal registry
- */
 export function useTabList() {
   const tabs = ref([
     { key: 'home', label: 'Home', component: markRaw(Home), props: {}, closable: false },
   ])
   const active = ref('home')
 
-  function normalizeTab(def) {
-    // this throw should go away once we are done with features it should be impossible to reach here
-    if (!def || !def.key || !def.component) {
-      throw new Error('Invalid tab definition')
-    }
-    console.log('Normalizing tab', def)
-    return {
-      key: def.key,
-      label: def.label,
-      component: markRaw(def.component),
-      props: def.props ?? {},
-      closable: def.closable !== false,
-    }
-  }
-
-  function resolveComponentName(sel) {
-    const key = sel.key
-    console.log(key)
+  function resolveComponentName(selectedTab) {
+    const key = selectedTab.key
     if (!key) {
       return null
     }
-    const isNumeric = /^\d+$/.test(key)
-    const Comp = isNumeric ? CollectionView : registry[sel.component]
+    const Comp = components[selectedTab.component]
     if (!Comp) {
       return null
     }
     return {
       key,
-      label: sel.label,
-      component: Comp,
-      props: { payload: sel },
-      closable: true,
+      label: selectedTab.label,
+      component: markRaw(Comp),
+      props: { payload: selectedTab },
+      closable: selectedTab.closable !== false,
     }
   }
 
-  function handleTabOpen(sel) {
-    console.log(sel)
-    const componentData = resolveComponentName(sel)
-    console.log(componentData)
+  function handleTabOpen(selectedTab) {
+    const existingOpenTab = tabs.value.find(t => t.key === selectedTab.key)
+    if (existingOpenTab) {
+      active.value = existingOpenTab.key
+      return
+    }
+    const componentData = resolveComponentName(selectedTab)
     if (!componentData) {
       return
     }
-    const existing = tabs.value.find(t => t.key === componentData.key)
-    if (!existing) {
-      console.log('Adding tab', componentData)
-      tabs.value.push(normalizeTab(componentData))
-    }
-    else if (componentData.key && existing.key !== componentData.key) {
-      existing.key = componentData.key
-    }
+    tabs.value.push(componentData)
     active.value = componentData.key
   }
 

@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { useEnv } from '../useEnv'
 
 const state = ref(null) // current state object from the worker
 const error = ref(null) // error messages from the worker
@@ -30,7 +31,8 @@ function sendWorkerRequest(payload) {
   })
 }
 
-async function initialize(apiBase = '/api') {
+// Default apiBase to runtime STIGMAN Env if available
+async function initialize(apiBase = (typeof window !== 'undefined' && window.STIGMAN?.Env?.apiBase) || '/api') {
   // cache and reuse promise so multiple callers don't race this shouldnt happen but just in case (co pilot suggested this )
   if (_initPromise) {
     return _initPromise
@@ -103,7 +105,7 @@ async function initialize(apiBase = '/api') {
 
 // Called from main.js to perform a one-time bootstrap and return an initial
 // snapshot (main expects { ok: true/false, state })
-export async function bootstrapStateWorker({ apiBase = '/api' } = {}) {
+export async function bootstrapStateWorker({ apiBase = (typeof window !== 'undefined' && window.STIGMAN?.Env?.apiBase) || '/api' } = {}) {
   const r = await initialize(apiBase)
   return { ...r, state: state.value }
 }

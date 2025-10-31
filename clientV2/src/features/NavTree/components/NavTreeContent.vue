@@ -55,7 +55,6 @@ function onNodeSelect(node) {
         nodeToggleButton: { class: 'tree-toggle-btn' },
         nodeToggleIcon: { class: 'tree-toggle-ico' },
         nodeChildren: { class: 'tree-children' },
-        loadingIcon: { class: 'tree-loading' },
       }"
       @node-select="onNodeSelect"
     >
@@ -172,10 +171,6 @@ function onNodeSelect(node) {
   overflow: hidden;
   transform-origin: top left;
   animation: treeFadeSlideIn 1000ms cubic-bezier(0.4, 0.8, 0.2, 1) both;
-}
-
-:deep(.tree-loading) {
-  animation: spin 1s linear infinite;
 }
 
 .node-inner {

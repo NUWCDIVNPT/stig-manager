@@ -3,12 +3,11 @@ import { afterAll, afterEach, beforeAll } from 'vitest'
 import { server } from './testServer' // if using MSW
 import '@testing-library/jest-dom'
 
-// Clean up between tests
 afterEach(() => {
   cleanup()
+  server.resetHandlers()
 })
 
 // MSW setup
-beforeAll(() => server.listen())
-afterEach(() => server.resetHandlers())
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterAll(() => server.close())
