@@ -4,9 +4,10 @@ export function useNavTreeNodes(collections, config) {
   return computed(() => {
     const cols = collections?.value || []
 
+    // this may need cleaning up idk?
     const collectionChildren = cols.map(col => ({
       key: String(col.collectionId),
-      component: String(col.collectionId),
+      component: 'CollectionView',
       label: col.name,
       data: col,
       icon: 'icon-collection',
@@ -15,7 +16,7 @@ export function useNavTreeNodes(collections, config) {
     const createNewChild = {
       key: 'new-collection-action',
       label: 'Create New Collection…',
-      component: 'CollectionView',
+      component: 'CreateCollection',
       data: { type: 'new', italic: true },
       icon: 'icon-add',
     }

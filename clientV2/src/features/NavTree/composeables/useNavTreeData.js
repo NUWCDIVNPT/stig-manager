@@ -1,14 +1,13 @@
 import { useQuery } from '@tanstack/vue-query'
 import { computed, inject } from 'vue'
-import config from '../../../config'
+import { useEnv } from '../../../useEnv'
 
 export function useNavTreeData() {
   const oidcWorker = inject('worker')
-
   const collectionsQuery = useQuery({
     queryKey: ['collections'],
     queryFn: async () => {
-      const response = await fetch(`${config.apiBase}/collections`, {
+      const response = await fetch(`${useEnv().apiUrl}/collections`, {
         headers: { Authorization: `Bearer ${oidcWorker?.token}` },
       })
       if (!response.ok) {

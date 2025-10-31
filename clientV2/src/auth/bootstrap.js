@@ -105,7 +105,9 @@ async function handleRedirectAndParameters(redirectUri, paramStr) {
     return
   }
   if (!params.state || params.state !== sessionStorage.getItem('oidcState')) {
-    console.log('State mismatch. The state parameter does not match the expected value.')
+    const reauthHref = window.location.origin + window.location.pathname
+    console.log(`[init] State mismatch. Redirecting to ${reauthHref}.`)
+    window.location.href = reauthHref
     return
   }
   const response = await OW.sendWorkerRequest({

@@ -8,7 +8,7 @@ import AuthBootstrapError from './auth/AuthBootstrapError.vue'
 import { bootstrapAuth } from './auth/bootstrap.js'
 import { bootstrapStateWorker, useStateWorker } from './auth/useStateWorker.js'
 import ApiStateBootstrap from './components/global/ApiStateBootstrap.vue'
-import config from './config.js'
+import { useEnv } from './useEnv.js'
 import './style.css'
 
 if (typeof document !== 'undefined') {
@@ -29,7 +29,7 @@ const { state: reactiveState } = useStateWorker()
 
 try {
   // bootstrapStateWorker returns an init result and initial state snapshot
-  const stateResult = await bootstrapStateWorker({ apiBase: config.apiBase })
+  const stateResult = await bootstrapStateWorker({ apiBase: useEnv().apiUrl })
 
   // fatal error (API unreachable)
   if (!stateResult.ok) {

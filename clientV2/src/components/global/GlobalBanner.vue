@@ -1,8 +1,6 @@
 <script setup>
-import config from '../../config.js'
-
 // Classification mapping
-const classification = config.classification || 'NONE'
+const classification = 'S'
 
 class Classification {
   constructor(apiClassification) {

@@ -11,7 +11,7 @@ export const navTreeConfig = {
           label: 'Collections',
           icon: 'icon-collection',
         },
-        { key: 'UsersManage', component: 'UsersManage', label: 'Users', icon: 'icon-user' },
+        { key: 'UserManage', component: 'UserManage', label: 'Users', icon: 'icon-user' },
         {
           key: 'UserGroupManage',
           component: 'UserGroupManage',

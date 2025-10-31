@@ -2,7 +2,7 @@
 import { http, HttpResponse } from 'msw'
 
 export const assetGridHandlers = [
-  http.get('http://localhost:64001/api/assets', ({ request }) => {
+  http.get('/api/assets', ({ request }) => {
     const url = new URL(request.url)
     const cid = url.searchParams.get('collectionId')
     const projection = url.searchParams.get('projection')
@@ -73,7 +73,7 @@ export const assetGridHandlers = [
     }
   }),
 
-  http.get('http://localhost:64001/api/collections/:id/labels', ({ params }) => {
+  http.get('/api/collections/:id/labels', ({ params }) => {
     if (String(params.id) === '21') {
       return HttpResponse.json([
         { labelId: 1, name: 'Prod', color: 'ffcc00', description: 'Production assets', uses: 1 },

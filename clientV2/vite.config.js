@@ -1,9 +1,20 @@
 import vue from '@vitejs/plugin-vue'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import VueDevtools from 'vite-plugin-vue-devtools'
 
-export default defineConfig({
-  plugins: [vue(), VueDevtools()],
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), 'VITE_') 
+  const apiOrigin = env.VITE_API_ORIGIN
+  return {
+    plugins: [vue(), VueDevtools()],
+    server: {
+      // Proxy requests for Env.js to the API server in development only
+      proxy: {
+        '^/js/Env\\.js$': {
+          target: apiOrigin,
+          changeOrigin: true,
+        },
+      },
+    }
+  }
 })
-
-// afet do web sockets two way with socket.io use ws in express
