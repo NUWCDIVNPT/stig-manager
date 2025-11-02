@@ -353,7 +353,7 @@ exports.setUserData = async function (userObject, fields) {
   }
 }
 
-exports.addOrUpdateUserGroup = async function ({userGroupId, userGroupFields, userIds, createdUserId, modifiedUserId, svcStatus = {}}) {
+exports.addOrUpdateUserGroup = async function ({userGroupId, userGroupFields, userIds, collectionGrants, createdUserId, modifiedUserId, svcStatus = {}}) {
   // CREATE: userGroupId is falsey
   // REPLACE/UPDATE: userGroupId is not falsey
   const isUpdate = !!userGroupId
@@ -380,6 +380,32 @@ exports.addOrUpdateUserGroup = async function ({userGroupId, userGroupFields, us
           sqlInsertUserGroupUserMap,
           [binds]
         ) 
+      }
+    }
+    // Process grants if present
+    if (collectionGrants) {
+      if (isUpdate) {
+        // DELETE from collection_grant
+        const binds = [userGroupId]
+        let sqlDeleteCollGrant = 'DELETE FROM collection_grant where userGroupId = ?'
+        if (collectionGrants.length > 0) {
+          const collectionIds = collectionGrants.map(grant => grant.collectionId)
+          sqlDeleteCollGrant += ' and collectionId NOT IN (?)'
+          binds.push(collectionIds)
+        }
+        await connection.query(sqlDeleteCollGrant, binds)
+      }
+      if (collectionGrants.length > 0) {
+        let sqlInsertCollGrant = `
+          INSERT INTO 
+            collection_grant (userGroupId, collectionId, roleId)
+          VALUES
+            ? as new
+          ON DUPLICATE KEY UPDATE
+            roleId = new.roleId`      
+        const binds = collectionGrants.map( grant => [userGroupId, grant.collectionId, grant.roleId])
+        // INSERT into collection_grant
+        await connection.query(sqlInsertCollGrant, [binds] )
       }
     }
     return userGroupId
@@ -445,17 +471,20 @@ exports.queryUserGroups = async function ({projections = [], filters = {}, eleva
     ), ']') as json)
     END as users`)
   }
-  if (projections.includes('collections')) {
+  if (projections.includes('collections') || projections.includes('collectionGrants')) {
     joins.add('left join collection_grant cgg using (userGroupId)')
     joins.add('left join enabled_collection on cgg.collectionId = enabled_collection.collectionId')
     groupBy.add('ug.userGroupId')
     columns.push(`CASE WHEN count(cgg.collectionId)=0 
     THEN json_array()
     ELSE cast(concat('[', group_concat(distinct json_object(
-      'collectionId', cast(cgg.collectionId as char),
-      'name', enabled_collection.name)
+      'roleId', cgg.roleId,
+      'collection', json_object(
+        'collectionId', cast(cgg.collectionId as char),
+        'name', enabled_collection.name
+      ))
     ), ']') as json)
-    END as collections`)
+    END as collectionGrants`)
   }
   const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy, format: true})
   const [rows] = await dbUtils.pool.query(sql)

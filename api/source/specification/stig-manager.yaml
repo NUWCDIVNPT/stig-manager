@@ -9469,6 +9469,19 @@ components:
           $ref: '#/components/schemas/String255'
         roleId:
           $ref: '#/components/schemas/RoleId'
+    UserGroupCollectionGrant:
+      additionalProperties: false
+      type: object
+      properties:
+        roleId:
+          $ref: '#/components/schemas/RoleId'
+        collection:
+          type: object
+          properties:
+            collectionId:
+              $ref: '#/components/schemas/CollectionId'
+            name:
+              $ref: '#/components/schemas/CollectionName'
     UserGroupGrant:
       type: object
       required:
@@ -9510,6 +9523,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserId'
+        collectionGrants:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionGrant'
+          uniqueItems: true
     UserGroupProjected:
       type: object
       additionalProperties: false
@@ -9528,10 +9546,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserBasicWithDisplayName'
-        collections:
+        collectionGrants:
           type: array
           items:
-            $ref: '#/components/schemas/CollectionBasic'
+            $ref: '#/components/schemas/UserGroupCollectionGrant'
         attributions:
           $ref: '#/components/schemas/Attributions'
     UserGroupPostOrPut:
@@ -9549,6 +9567,11 @@ components:
           uniqueItems: true
           items:
             $ref: '#/components/schemas/UserId'
+        collectionGrants:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionGrant'
+          uniqueItems: true
     UserId:
       $ref: '#/components/schemas/StringIntId'
     UserIdNullable:
@@ -10328,6 +10351,7 @@ components:
           enum:
             - users
             - collections
+            - collectionGrants
             - attributions
     UserIdPath:
       name: userId
