@@ -2,6 +2,18 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2025-10-29',
+    header: `New Log Stream Feature for Application Managers`,
+    body: `
+    <p>This feature provides App Managers with real-time streaming of log records from the STIG Manager backend to the web client. This stream can be recorded to help troubleshoot issues that would otherwise require direct access to the backend logs.</p>
+    
+    <p>Documentation is available in the <a target="_blank" href="./docs/admin-guide/admin-guide.html#log-stream">STIGMan Application Manager (Administrator) Guide</a>.</p>
+
+    <p>The Log Stream interface is accessible from the <b>Application Management -> Log Stream</b> workspace in the Navigation Tree.</p>
+
+    <p><img src="img/whatsnew/2025-10-29-admin-log-stream.png" width=800/></p>`
+  },     
+  {
     date: '2025-10-18',
     header: `New Service Jobs Feature for Application Managers`,
     body: `

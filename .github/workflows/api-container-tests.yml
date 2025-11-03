@@ -79,6 +79,9 @@ jobs:
       - name: Install test dependencies
         run: npm ci
         working-directory: ./test/api/
+      - name: Install utils test dependencies
+        run: npm ci
+        working-directory: ./test/utils/
 
       - name: Wait for bootstrap
         run: for i in {1..10}; do [ $i -gt 1 ] && sleep 5; curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration && s=0 && break || s=$?; printf '.'; done; (exit $s)
