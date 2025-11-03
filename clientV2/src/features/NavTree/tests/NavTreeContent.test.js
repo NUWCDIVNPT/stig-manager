@@ -39,9 +39,6 @@ function renderComponent(props = {}) {
 describe('navTreeHeader', () => {
   it('renders a loading mask when loading is true', async () => {
     const { container } = renderComponent({ loading: true })
-
-    // mask: [data-pc-section="mask"]
-    // spinner: [data-pc-section="loadingicon"]
     await waitFor(() => {
       expect(container.querySelector('[data-pc-section="mask"]')).toBeTruthy()
       expect(container.querySelector('[data-pc-section="loadingicon"]')).toBeTruthy()
@@ -77,26 +74,28 @@ describe('navTreeHeader', () => {
   it('find and click the test collection node in tree', async () => {
     renderComponent()
 
-    // If its parent is collapsed, expand via your toggle first (example against "Collections"):
+    // get root collections node
     const collectionsRow = screen
       .getByText('Collections', { selector: '.node-text' })
       .closest('.tree-node')
 
     expect(collectionsRow).toBeInTheDocument()
 
+    // toggle collection open
     const toggle = collectionsRow.querySelector('.tree-toggle-btn')
     await userEvent.click(toggle)
 
+    // get test collection node
     const collectionLabel = screen.getByText('Test Collection 1')
 
     expect(collectionLabel).toBeInTheDocument()
 
-    // If you need the whole row for clicking:
+    /// click the row of the test collection
     const collectionRow = collectionLabel.closest('.tree-node')
     await userEvent.click(collectionRow)
 
+    // expect spy for the selection in store to be called with the test collection node
     expect(selectSpy).toHaveBeenCalledTimes(1)
-
     expect(selectSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         key: '1',
@@ -106,29 +105,32 @@ describe('navTreeHeader', () => {
       }),
     )
 
+    // click it again to ensure multiple clicks work
     await userEvent.click(collectionRow)
-
     expect(selectSpy).toHaveBeenCalledTimes(2)
   })
 
   it('find and click the \'Create New Collection\' node in tree', async () => {
     renderComponent()
 
-    // If its parent is collapsed, expand via your toggle first (example against "Collections"):
+    // get root collections node
     const collectionsRow = screen
       .getByText('Collections', { selector: '.node-text' })
       .closest('.tree-node')
 
+    // toggle collection open
     const collectionsToggle = collectionsRow.querySelector('.tree-toggle-btn')
     await userEvent.click(collectionsToggle)
 
+    // get 'Create New Collection' node
     const newCollectionLabel = screen.getByText('Create New Collection…')
     expect(newCollectionLabel).toBeInTheDocument()
 
-    // If you need the whole row for clicking:
+    // click the row of the 'Create New Collection' node
     const newCollectionRow = newCollectionLabel.closest('.tree-node')
     await userEvent.click(newCollectionRow)
 
+    // expect spy for the selection in store to be called
     expect(selectSpy).toHaveBeenCalledTimes(1)
   })
 })

@@ -1,5 +1,9 @@
 <script setup>
-const emit = defineEmits(['toggle', 'toggle-alt'])
+defineProps({
+  peekMode: { type: Boolean, default: false },
+})
+
+const emit = defineEmits(['peak', 'open'])
 </script>
 
 <template>
@@ -9,19 +13,20 @@ const emit = defineEmits(['toggle', 'toggle-alt'])
     role="button"
     tabindex="0"
     aria-controls="nav-drawer"
-    @click="emit('toggle')"
-    @keydown.enter.prevent="emit('toggle')"
-    @keydown.space.prevent="emit('toggle')"
+    @click="emit('peak')"
+    @keydown.enter.prevent="emit('peak')"
+    @keydown.space.prevent="emit('peak')"
   >
     <button
+      id="drawer-tab-button"
       type="button"
       class="btn-unstyled tab-btn"
       aria-label="Toggle drawer (alt)"
-      @click.stop="emit('toggle-alt')"
-      @keydown.enter.stop.prevent="emit('toggle-alt')"
-      @keydown.space.stop.prevent="emit('toggle-alt')"
+      @click.stop="emit('open')"
+      @keydown.enter.stop.prevent="emit('open')"
+      @keydown.space.stop.prevent="emit('open')"
     >
-      <span aria-hidden="true" class="icon icon-collapse-right" />
+      <span aria-hidden="true" class="icon" :class="peekMode ? 'icon-collapse-left' : 'icon-collapse-right'" />
     </button>
   </div>
 </template>
@@ -82,5 +87,11 @@ const emit = defineEmits(['toggle', 'toggle-alt'])
   width: 14px;
   height: 14px;
   background-image: url('/src/assets/collapse-right.svg');
+}
+
+.icon-collapse-left {
+  width: 14px;
+  height: 14px;
+  background-image: url('/src/assets/collapse-left.svg');
 }
 </style>

@@ -24,16 +24,13 @@ export function useNavTreeNodes(collections, config) {
     const collectionsSection = {
       key: 'Collections',
       label: 'Collections',
-      data: { type: 'root' },
+      //    data: { type: 'root' },
       icon: 'icon-collection-color',
       children: [createNewChild, ...collectionChildren],
     }
 
-    const sections = config?.sections || []
+    const sections = config.sections
     const [appManagement, ...rest] = sections
-    if (appManagement) {
-      return [appManagement, collectionsSection, ...rest]
-    }
-    return [collectionsSection, ...sections]
+    return [appManagement, collectionsSection, ...rest]
   })
 }

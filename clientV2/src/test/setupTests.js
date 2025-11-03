@@ -5,7 +5,7 @@ import '@testing-library/jest-dom'
 
 afterEach(() => {
   cleanup()
-  server.resetHandlers()
+  server.resetHandlers() // idk how i feel abbout this
 })
 
 // MSW setup

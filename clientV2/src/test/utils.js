@@ -27,11 +27,6 @@ export function renderWithProviders(
 
   if (withPrimeVue) {
     global.plugins.push([PrimeVue])
-    // global.components = {
-    //   ...(global.components || {}),
-    //   DataTable,
-    //   Column,
-    // }
   }
 
   const utils = render(component, { props, global })

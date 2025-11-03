@@ -30,12 +30,12 @@ useOutsideClick(wrapperRef, () => closePeek(), { active: peekMode })
 
 useKeyboardNav({ Escape: () => closePeek() })
 
-function toggle() {
+function peak() {
   visible.value = true
   peekMode.value = true
 }
 
-function toggleAlt() {
+function open() {
   peekMode.value = false
   visible.value = !visible.value
 }
@@ -58,7 +58,7 @@ function onNodeSelect(node) {
 
 <template>
   <div ref="wrapperRef" class="root">
-    <NavTreeTab @toggle="toggle" @toggle-alt="toggleAlt" />
+    <NavTreeTab :peek-mode="peekMode" @peak="peak" @open="open" />
     <NavTreeDrawer :visible="visible" :peek-mode="peekMode">
       <template #header>
         <NavTreeHeader @logout="handleLogout" @close="handleClose" />
