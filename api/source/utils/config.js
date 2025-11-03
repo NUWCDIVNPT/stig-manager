@@ -61,6 +61,7 @@ const config = {
         maxUpload: process.env.STIGMAN_API_MAX_UPLOAD || "1073741824",
         tls: {
             key_file: process.env.STIGMAN_API_TLS_KEY_FILE,
+            key_passphrase: process.env.STIGMAN_API_TLS_KEY_PASSPHRASE,
             cert_file: process.env.STIGMAN_API_TLS_CERT_FILE
         }
     },

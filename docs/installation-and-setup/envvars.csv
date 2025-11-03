@@ -11,6 +11,8 @@
 | A absolute path to the file that contains the PEM encoded Server certificate used for TLS. EAdditionally requires setting ``STIGMAN_API_TLS_KEY_FILE`` to enable TLS.","API          "
 "STIGMAN_API_TLS_KEY_FILE","| **No default**
 | A absolute path to the file that contains the PEM encoded Server private key used for TLS. Additionally requires setting ``STIGMAN_API_TLS_CERT_FILE`` to enable TLS.","API          "
+"STIGMAN_API_TLS_KEY_PASSPHRASE","| **No default**
+| If necessary, the passphrase that decrypts the PEM encoded Server private key used for TLS. Additionally requires setting ``STIGMAN_API_TLS_CERT_FILE`` to enable TLS.","API          "
 "STIGMAN_CLASSIFICATION","| **Default** ``U``
 | Sets the classification banner, if any. Available values: ``NONE`` ``U`` ``CUI`` ``C`` ``S`` ``TS`` ``SCI`` ","API, Client"
 "STIGMAN_CLIENT_API_BASE","| **Default** ``api``

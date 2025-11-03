@@ -26,6 +26,9 @@ function setupTls() {
       key: key,
       cert: cert
     }
+    if (config.http.tls.key_passphrase) {
+      tlsOptions.passphrase = config.http.tls.key_passphrase
+    }
     return tlsOptions
   } else {
     return null
