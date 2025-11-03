@@ -58,7 +58,11 @@ const config = {
         address: process.env.STIGMAN_API_ADDRESS || "0.0.0.0",
         port: process.env.STIGMAN_API_PORT || 54000,
         maxJsonBody: process.env.STIGMAN_API_MAX_JSON_BODY || "31457280",
-        maxUpload: process.env.STIGMAN_API_MAX_UPLOAD || "1073741824"
+        maxUpload: process.env.STIGMAN_API_MAX_UPLOAD || "1073741824",
+        tls: {
+            key_file: process.env.STIGMAN_API_TLS_KEY_FILE,
+            cert_file: process.env.STIGMAN_API_TLS_CERT_FILE
+        }
     },
     database: {
         host: process.env.STIGMAN_DB_HOST || "localhost",
