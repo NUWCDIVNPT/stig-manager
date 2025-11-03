@@ -6,7 +6,6 @@ const OperationSvc = require(`../service/OperationService`)
 const { serializeError } = require('../utils/serializeError')
 const config = require('../utils/config')
 const { initializeDependencies } = require('./dependencies')
-const path = require('node:path')
 
 function setupTls() {
   if (config.http.tls?.key_file && config.http.tls?.cert_file) {
