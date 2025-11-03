@@ -1,0 +1,341 @@
+asyncapi: 3.0.0
+info:
+  title: Log Stream WebSocket API
+  version: 1.0.0
+  description: |
+    WebSocket API for streaming log messages with token-based authentication.
+    Provides real-time log streaming after successful JWT token authorization.
+    
+    Stream Control:
+    - Clients must send 'stream-start' command to begin receiving log messages
+    - Clients can send 'stream-stop' command to stop receiving log messages
+    - Only authorized clients can send stream control commands
+  contact:
+    name: STIG Manager Team
+  license:
+    name: MIT
+
+servers:
+  development:
+    host: localhost:64001
+    protocol: ws
+    description: Development log stream server
+    pathname: /socket/log-socket
+
+channels:
+  logStream:
+    address: /socket/log-socket
+    messages:
+      AuthorizeRequest:
+        $ref: '#/components/messages/AuthorizeRequest'
+      AuthorizeResponse:
+        $ref: '#/components/messages/AuthorizeResponse'
+      LogMessage:
+        $ref: '#/components/messages/LogMessage'
+      ErrorMessage:
+        $ref: '#/components/messages/ErrorMessage'
+      InfoMessage:
+        $ref: '#/components/messages/InfoMessage'
+      CloseMessage:
+        $ref: '#/components/messages/CloseMessage'
+      CommandMessage:
+        $ref: '#/components/messages/CommandMessage'
+
+operations:
+  receiveAuthorizeResponse:
+    action: receive
+    channel:
+      $ref: '#/channels/logStream'
+    messages:
+      - $ref: '#/channels/logStream/messages/AuthorizeResponse'
+    description: Server receives authorization tokens from clients
+
+  sendAuthorizeRequest:
+    action: send
+    channel:
+      $ref: '#/channels/logStream'
+    messages:
+      - $ref: '#/channels/logStream/messages/AuthorizeRequest'
+    description: Server sends authorization prompts or token expiration notices
+
+  sendLog:
+    action: send
+    channel:
+      $ref: '#/channels/logStream'
+    messages:
+      - $ref: '#/channels/logStream/messages/LogMessage'
+    description: Server sends log messages to authorized clients after receiving stream-start command
+
+  sendError:
+    action: send
+    channel:
+      $ref: '#/channels/logStream'
+    messages:
+      - $ref: '#/channels/logStream/messages/ErrorMessage'
+    description: Server sends error messages
+
+  sendInfo:
+    action: send
+    channel:
+      $ref: '#/channels/logStream'
+    messages:
+      - $ref: '#/channels/logStream/messages/InfoMessage'
+    description: Server sends informational messages
+
+  sendClose:
+    action: send
+    channel:
+      $ref: '#/channels/logStream'
+    messages:
+      - $ref: '#/channels/logStream/messages/CloseMessage'
+    description: Server sends close notification before terminating connection
+
+  receiveCommand:
+    action: receive
+    channel:
+      $ref: '#/channels/logStream'
+    messages:
+      - $ref: '#/channels/logStream/messages/CommandMessage'
+    description: Server receives stream control commands from authorized clients (stream-start, stream-stop)
+
+components:
+  messages:
+    AuthorizeRequest:
+      name: authorize
+      title: Authorization Request
+      summary: Server requests authorization or notifies of token expiration
+      payload:
+        $ref: '#/components/schemas/AuthorizeRequestPayload'
+      examples:
+        - name: initialRequest
+          payload:
+            type: authorize
+            data: null
+        - name: tokenExpired
+          payload:
+            type: authorize
+            data: "token expired"
+
+    LogMessage:
+      name: log
+      title: Log Message
+      summary: Server sends log data to authorized clients
+      payload:
+        $ref: '#/components/schemas/LogMessagePayload'
+      examples:
+        - name: transactionLog
+          payload:
+            type: log
+            data:
+              timestamp: "2025-09-03T10:30:00Z"
+              level: 3
+              component: "rest"
+              type: "transaction"
+              message: "API request processed"
+
+    ErrorMessage:
+      name: error
+      title: Error Message
+      summary: Server sends error information
+      payload:
+        $ref: '#/components/schemas/ErrorMessagePayload'
+      examples:
+        - name: authError
+          payload:
+            type: error
+            data: "Authorization failed: missing token"
+        - name: unexpectedMessage
+          payload:
+            type: error
+            data: "Unexpected message type"
+
+    InfoMessage:
+      name: info
+      title: Info Message
+      summary: Server sends informational messages
+      payload:
+        $ref: '#/components/schemas/InfoMessagePayload'
+      examples:
+        - name: authSuccess
+          payload:
+            type: info
+            data: "Authorization successful"
+
+    CloseMessage:
+      name: close
+      title: Close Message
+      summary: Server notifies client before closing connection
+      payload:
+        $ref: '#/components/schemas/CloseMessagePayload'
+      examples:
+        - name: closing
+          payload:
+            type: close
+            data: "Closing connection"
+
+    CommandMessage:
+      name: command
+      title: Command Message
+      summary: Client sends stream control commands to server
+      description: |
+        Clients can send the following commands to control log streaming:
+        - `stream-start`: Begin receiving log messages (requires authorization). Optionally include filters to limit which logs are streamed.
+        - `stream-stop`: Stop receiving log messages
+      payload:
+        $ref: '#/components/schemas/CommandMessagePayload'
+      examples:
+        - name: streamStart
+          summary: Start log streaming
+          payload:
+            type: command
+            data:
+              command: "stream-start"
+        - name: streamStartWithFilter
+          summary: Start log streaming with filters
+          payload:
+            type: command
+            data:
+              command: "stream-start"
+              filter:
+                logLevels: [1, 2]
+                components: ["rest"]
+        - name: streamStop
+          summary: Stop log streaming
+          payload:
+            type: command
+            data:
+              command: "stream-stop"
+
+    AuthorizeResponse:
+      name: authorize
+      title: Authorization Response
+      summary: Client sends JWT token for authorization
+      payload:
+        $ref: '#/components/schemas/AuthorizeResponsePayload'
+      examples:
+        - name: tokenAuth
+          payload:
+            type: authorize
+            data:
+              token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+
+  schemas:
+    AuthorizeRequestPayload:
+      type: object
+      properties:
+        type:
+          const: authorize
+        data:
+          type: object
+          description: Authorization state notice
+          properties:
+            state:
+              type: string
+              enum: ["unauthorized", "authorized"]
+            reason:
+              type: string
+              description: Optional reason for unauthorized state (e.g., "token expired")
+          required:
+            - state
+          additionalProperties: false
+    AuthorizeResponsePayload:
+      type: object
+      properties:
+        type:
+          const: authorize
+        data:
+          type: object
+          required:
+            - token
+          properties:
+            token:
+              type: string
+              description: JWT token for authentication
+          additionalProperties: false
+
+    LogMessagePayload:
+      type: object
+      properties:
+        type:
+          const: log
+        data:
+          type: object
+          description: Log entry object with timestamp, level, component, etc.
+          additionalProperties: true
+
+    ErrorMessagePayload:
+      type: object
+      properties:
+        type:
+          const: error
+        data:
+          type: string
+          description: Error description
+
+    InfoMessagePayload:
+      type: object
+      properties:
+        type:
+          const: info
+        data:
+          type: object
+          description: Informational message
+
+    CloseMessagePayload:
+      type: object
+      properties:
+        type:
+          const: close
+        data:
+          type: string
+          description: Close reason
+
+    CommandMessagePayload:
+      type: object
+      properties:
+        type:
+          const: command
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/StreamStartCommandData'
+            - $ref: '#/components/schemas/StreamStopCommandData'
+
+    StreamStartCommandData:
+      type: object
+      required:
+        - command
+      properties:
+        command:
+          const: "stream-start"
+          description: Instructs the server to begin sending log messages to this client. Client must be authorized.
+        filter:
+          type: object
+          description: Optional filter criteria. Only logs matching the filter will be sent.
+          properties:
+            level:
+              type: array
+              items:
+                type: integer
+                minimum: 1
+                maximum: 4
+              description: Array of log levels to include (e.g., [1, 2] for error and warn levels)
+              uniqueItems: true
+            component:
+              type: array
+              items:
+                type: string
+              description: Array of component names to include (e.g., ["rest", "auth"])
+              uniqueItems: true
+          additionalProperties: false
+      additionalProperties: false
+
+    StreamStopCommandData:
+      type: object
+      required:
+        - command
+      properties:
+        command:
+          const: "stream-stop"
+          description: Instructs the server to stop sending log messages to this client.
+      additionalProperties: false

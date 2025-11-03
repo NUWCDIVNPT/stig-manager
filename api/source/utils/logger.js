@@ -1,8 +1,11 @@
+
 const uuid = require('uuid')
 const onFinished = require('on-finished')
 const onHeaders = require('on-headers')
 const config = require('./config')
+const EventEmitter = require('node:events')
 
+const loggerEvents = new EventEmitter()
 
 // Ensure no other code will write to the console
 const _log = console.log
@@ -29,8 +32,6 @@ const writeError = config.log.level >= 1 ? function writeError () {
   write(1, ...arguments)
 } : () => {}
 
-
-
 // Stats for all requests
 const requestStats = {
   totalRequests: 0,
@@ -43,18 +44,20 @@ const requestStats = {
 async function write (level, component, type, data) {
   try {
     const date = new Date().toISOString()
-    _log(JSON.stringify({date, level, component, type, data}))  
+    const logObj = {date, level, component, type, data}
+    _log(JSON.stringify(logObj))
+    loggerEvents.emit('log', logObj)
   }
   catch (e) {
     const date = new Date().toISOString()
-    _log(JSON.stringify({date, level:1, component:'logger', type:'error', data: { message: e.message, stack: e.stack}}))  
+    const errorObj = {date, level:1, component:'logger', type:'error', data: { message: e.message, stack: e.stack}}
+    _log(JSON.stringify(errorObj))
+    loggerEvents.emit('log', errorObj)
   }
 }
 
 // Base64 decoding
 const atob = (data) => Buffer.from(data, 'base64').toString('ascii')
-
-const serializeUserObject = ({username, display, privileges}) => ({username, fullname:display, privileges})
 
 function sanitizeHeaders () {
   let {authorization, ...headers} = this
@@ -101,8 +104,9 @@ function requestLogger (req, res, next) {
   res._startAt = undefined
   res._startTime = undefined
   res.svcStatus = {}
-
-  // Capture response body for elevated requests
+  req.requestId = uuid.v1()
+  
+  // Response body length for appinfo and content for privileged requests
   let responseBody
   responseBody = ''
   if (req.query.elevate) {
@@ -119,8 +123,12 @@ function requestLogger (req, res, next) {
   recordStartTime.call(req)
 
   function logRequest () {
-    req.requestId = uuid.v1()
-    writeInfo('rest', 'request', serializeRequest(req))
+    if (req.originalUrl.startsWith('/api')) {
+      req.component = 'rest'
+    } else {
+      req.component = 'static'
+    }
+    writeInfo(req.component, 'request', serializeRequest(req))
   }
 
   function logResponse () {
@@ -168,6 +176,7 @@ function requestLogger (req, res, next) {
         status: res.statusCode,
         headers: res.getHeaders(),
         errorBody: res.errorBody,
+        responseBody,
         operationStats
       })  
     }
@@ -324,5 +333,6 @@ module.exports = {
   writeWarn, 
   writeInfo, 
   writeDebug,
-  requestStats
+  requestStats,
+  loggerEvents,
 }

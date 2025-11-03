@@ -171,6 +171,7 @@ uglifyjs \
 'jszip.min.js' \
 'FileSaver.js' \
 'jsonview.bundle.js' \
+'SM/LogStream.js' \
 'SM/ApiState.js' \
 'stigman.js' -o ../../$DistDir/js/stig-manager.min.js -m -c --source-map "root='src',url='stig-manager.min.js.map'"
 

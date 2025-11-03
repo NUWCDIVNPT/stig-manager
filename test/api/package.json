@@ -18,7 +18,8 @@
     "fast-xml-parser": "^4.5.0",
     "jszip": "^3.10.1",
     "mocha": "^11.0.1",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "mochawesome": "^7.1.3"
