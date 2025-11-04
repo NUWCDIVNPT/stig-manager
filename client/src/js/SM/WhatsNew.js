@@ -21,7 +21,7 @@ SM.WhatsNew.Sources = [
     <p>The Log Stream interface is accessible from the <b>Application Management -> Log Stream</b> workspace in the Navigation Tree.</p>
 
     <p><img src="img/whatsnew/2025-10-29-admin-log-stream.png" width=800/></p>`
-  }, 
+  },     
   {
     date: '2025-10-18',
     header: `New Service Jobs Feature for Application Managers`,
