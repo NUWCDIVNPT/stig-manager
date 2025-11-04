@@ -3,7 +3,7 @@ Ext.ns('SM.WhatsNew')
 SM.WhatsNew.Sources = [
   {
     date: '2025-11-03',
-    header: 'Application Managers can batch assign Collection Grants to User Groups',
+    header: 'Batch Assignment of Collection Grants to User Groups',
     body: `
     <p>Application Managers can now assign Collection Grants to User Groups in bulk from the User Groups management interface. This feature allows for quick and easy assignment of multiple Collection Grants to a User Group at once.</p>
     <p>To use this feature, navigate to the User Groups management interface, select a User Group, and click the "Modify Group" button. From the resulting dialog, you can select multiple Collections and assign the desired Grant type to the User Group for each selected Collection.</p>
