@@ -12,7 +12,7 @@ const props = defineProps({
   selection: { type: Object, default: null },
 })
 
-const { tabs, active, handleTabOpen, close } = useTabList()
+const { tabs, active, handleTabOpen, handleTabClose } = useTabList()
 
 watch(
   () => props.selection,
@@ -26,19 +26,20 @@ watch(
 </script>
 
 <template>
-  <div class="tabs-wrapper">
+  <div id="tabs-wrapper" class="tabs-wrapper">
     <Tabs v-model:value="active" :pt="{ root: { class: 'tabs-root' } }">
-      <TabList :pt="{ root: { class: 'tab-list' } }">
+      <TabList id="tab-list" :pt="{ root: { class: 'tab-list' } }">
         <template v-for="t in tabs" :key="t.key">
-          <Tab :value="t.key" :pt="{ root: { class: 'tab-item' } }">
+          <Tab :id="`tab-${t.key}`" :value="t.key" :pt="{ root: { class: 'tab-item' } }">
             <span class="tabTitle">{{ t.label }}</span>
             <button
               v-if="t.closable !== false"
+              :id="`tab-close-${t.key}`"
               type="button"
               class="tabClose"
               aria-label="Close tab"
               title="Close"
-              @click.stop="close(t.key)"
+              @click.stop="handleTabClose(t.key)"
             >
               ×
             </button>
@@ -46,9 +47,9 @@ watch(
         </template>
       </TabList>
 
-      <TabPanels :pt="{ root: { class: 'tab-panels' } }">
+      <TabPanels id="tab-panels" :pt="{ root: { class: 'tab-panels' } }">
         <template v-for="t in tabs" :key="t.key">
-          <TabPanel :value="t.key" :pt="{ root: { class: 'tab-panel' } }">
+          <TabPanel :id="`tab-panel-${t.key}`" :value="t.key" :pt="{ root: { class: 'tab-panel' } }">
             <component :is="t.component" v-bind="t.props" class="panelInner" />
           </TabPanel>
         </template>

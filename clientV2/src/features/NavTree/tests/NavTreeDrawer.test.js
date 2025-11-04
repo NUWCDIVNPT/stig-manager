@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/vue'
 import { describe, expect, it } from 'vitest'
-import { renderWithProviders } from '../../../test/utils'
+import { renderWithProviders } from '../../../testUtils/utils'
 import NavTreeDrawer from '../components/NavTreeDrawer.vue'
 
 describe('navTreeDrawer', () => {

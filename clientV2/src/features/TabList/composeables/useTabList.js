@@ -52,6 +52,7 @@ export function useTabList() {
       active.value = existingOpenTab.key
       return
     }
+    // if no component found dont open a tab (this is how create collection node doesnt open a tab... )
     const componentData = resolveComponentName(selectedTab)
     if (!componentData) {
       return
@@ -60,7 +61,7 @@ export function useTabList() {
     active.value = componentData.key
   }
 
-  function close(key) {
+  function handleTabClose(key) {
     const target = key
     const idx = tabs.value.findIndex(t => t.key === key)
     if (idx === -1) {
@@ -82,6 +83,6 @@ export function useTabList() {
     tabs,
     active,
     handleTabOpen,
-    close,
+    handleTabClose,
   }
 }

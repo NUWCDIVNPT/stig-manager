@@ -1,6 +1,6 @@
 import { userEvent } from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { renderWithProviders } from '../../../test/utils'
+import { renderWithProviders } from '../../../testUtils/utils'
 import NavTree from '../components/NavTree.vue'
 
 describe('navTree', () => {

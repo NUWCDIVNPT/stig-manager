@@ -1,7 +1,7 @@
 import { userEvent } from '@testing-library/user-event'
 import { screen, waitFor } from '@testing-library/vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { renderWithProviders } from '../../../test/utils'
+import { renderWithProviders } from '../../../testUtils/utils'
 import NavTreeContent from '../components/NavTreeContent.vue'
 import { navTreeConfig } from '../composeables/navTreeConfig'
 import { useNavTreeNodes } from '../composeables/useNavTreeNodes'

@@ -1,5 +1,6 @@
 import Material from '@primeuix/themes/material'
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
+import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import Tooltip from 'primevue/tooltip'
 import { createApp, h, watch } from 'vue'
@@ -8,7 +9,8 @@ import AuthBootstrapError from './auth/AuthBootstrapError.vue'
 import { bootstrapAuth } from './auth/bootstrap.js'
 import { bootstrapStateWorker, useStateWorker } from './auth/useStateWorker.js'
 import ApiStateBootstrap from './components/global/ApiStateBootstrap.vue'
-import { useEnv } from './useEnv.js'
+import { useGlobalStateStore } from './global-state/globalState.js'
+import { bootstrapEnv, useEnv } from './global-state/useEnv.js'
 import './style.css'
 
 if (typeof document !== 'undefined') {
@@ -27,7 +29,13 @@ const queryClient = new QueryClient({
 // Use the composable to get the reactive state ref so we can react to updates
 const { state: reactiveState } = useStateWorker()
 
+// Create Pinia instance early so it can be used in bootstrap
+const pinia = createPinia()
+
 try {
+  // bootstrap enviornment
+  await bootstrapEnv()
+
   // bootstrapStateWorker returns an init result and initial state snapshot
   const stateResult = await bootstrapStateWorker({ apiBase: useEnv().apiUrl })
 
@@ -53,6 +61,12 @@ try {
   // helper to mount the real app (requires an auth boot result)
   const mountApp = (authBootResult) => {
     const app = createApp(App)
+    app.use(pinia)
+
+    // set classification in global state from env
+    const globalState = useGlobalStateStore(pinia)
+    globalState.setClassification(useEnv().apiConfig?.classification || 'NONE')
+
     app.use(PrimeVue, {
       theme: {
         preset: Material,
@@ -101,7 +115,7 @@ try {
           stop()
 
           // Now that state is ready, bootstrap auth and mount the app
-          const authBootResult = await bootstrapAuth()
+          const authBootResult = await bootstrapAuth(pinia)
           if (!authBootResult.success) {
             const errApp = createApp(AuthBootstrapError, {
               details: authBootResult.error ? JSON.stringify(authBootResult.error, null, 2) : undefined,
@@ -118,7 +132,7 @@ try {
   }
   else {
     // state is already ready — bootstrap auth and mount
-    const authBootResult = await bootstrapAuth()
+    const authBootResult = await bootstrapAuth(pinia)
     if (!authBootResult.success) {
       const errApp = createApp(AuthBootstrapError, {
         details: authBootResult.error ? JSON.stringify(authBootResult.error, null, 2) : undefined,

@@ -1,0 +1,44 @@
+/* eslint-disable no-undef */
+let cachedEnv = null
+
+export async function bootstrapEnv() {
+  const stigmanEnv = STIGMAN?.Env
+  const viteEnv = import.meta.env
+
+  const isProd = viteEnv.PROD === true
+
+  const API_ORIGIN = isProd
+    ? window.location.origin
+    : viteEnv.VITE_API_ORIGIN
+
+  const API_BASE = stigmanEnv.apiBase
+
+  const API_URL = new URL(API_BASE, API_ORIGIN).toString().replace(/\/$/, '')
+  stigmanEnv.apiUrl = API_URL
+
+  // fetch op/configuration and op/definition
+  try {
+    const [configRes, defRes] = await Promise.all([
+      fetch(`${API_URL}/op/configuration`),
+      fetch(`${API_URL}/op/definition`),
+    ])
+    stigmanEnv.apiConfig = configRes.ok ? await configRes.json() : null
+    stigmanEnv.apiDefinition = defRes.ok ? await defRes.json() : null
+  }
+  catch (err) {
+    console.error('failed to fetch op/configuration or op/definition', err)
+  }
+
+  cachedEnv = {
+    ...stigmanEnv,
+  }
+
+  return cachedEnv
+}
+
+export function useEnv() {
+  if (!cachedEnv) {
+    throw new Error('useEnv called before bootstrapEnv')
+  }
+  return cachedEnv
+}

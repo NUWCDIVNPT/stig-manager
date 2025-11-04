@@ -1,10 +1,10 @@
 /* eslint-disable no-undef */
-import { noTokenMessage } from '../global-state/globalState.js'
+import { useGlobalStateStore } from '../global-state/globalState.js'
 import { setupOidcWorker } from '././oidcWorker.js'
 
 let OW = {}
 
-async function bootstrapAuth() {
+async function bootstrapAuth(pinia) {
   try {
     const result = {
       success: false,
@@ -15,13 +15,14 @@ async function bootstrapAuth() {
     result.oidcWorker = OW
 
     // Listen for noToken and accessToken events to control the global modal
-    if (OW.bc) {
+    if (pinia && OW.bc) {
+      const globalState = useGlobalStateStore(pinia)
       OW.bc.addEventListener('message', (event) => {
         if (event.data?.type === 'noToken') {
-          noTokenMessage.value = event.data
+          globalState.setNoTokenMessage(event.data)
         }
         else if (event.data?.type === 'accessToken') {
-          noTokenMessage.value = null
+          globalState.clearNoTokenMessage()
         }
       })
     }

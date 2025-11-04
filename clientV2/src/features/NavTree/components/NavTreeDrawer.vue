@@ -1,12 +1,29 @@
 <script setup>
+import { computed } from 'vue'
+import { useGlobalStateStore } from '../../../global-state/globalState.js'
+
 defineProps({
   visible: { type: Boolean, default: true },
   peekMode: { type: Boolean, default: false },
 })
+
+const globalState = useGlobalStateStore()
+
+// check if banner is shown based on classification
+const bannerHeight = computed(() => {
+  const cls = globalState.classification
+  return cls && cls !== 'NONE' ? '20px' : '0px'
+})
 </script>
 
 <template>
-  <aside id="nav-drawer" class="drawer" :class="{ 'is-open': visible, 'is-peek': peekMode }" aria-label="Navigation drawer">
+  <aside
+    id="nav-drawer"
+    class="drawer"
+    :class="{ 'is-open': visible, 'is-peek': peekMode }"
+    :style="{ '--banner-height': bannerHeight }"
+    aria-label="Navigation drawer"
+  >
     <slot name="header" />
     <div class="body" :class="{ 'peek-padding': peekMode }">
       <slot />
@@ -17,7 +34,7 @@ defineProps({
 <style scoped>
 .drawer {
   position: fixed;
-  top: 23px;
+  top: calc(var(--banner-height, 0px) + 3px);
   bottom: 10px;
   left: 0;
   width: 300px;
@@ -31,7 +48,7 @@ defineProps({
   display: flex;
   flex-direction: column;
   min-height: 0;
-  max-height: calc(100vh - 33px);
+  max-height: calc(100vh - var(--banner-height, 0px) - 13px);
   z-index: var(--z-drawer);
 }
 

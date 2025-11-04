@@ -1,20 +1,12 @@
 import { useQuery } from '@tanstack/vue-query'
 import { computed, inject } from 'vue'
-import { useEnv } from '../../../useEnv'
+import { fetchCollections } from '../api/navTreeApi'
 
 export function useNavTreeData() {
   const oidcWorker = inject('worker')
   const collectionsQuery = useQuery({
     queryKey: ['collections'],
-    queryFn: async () => {
-      const response = await fetch(`${useEnv().apiUrl}/collections`, {
-        headers: { Authorization: `Bearer ${oidcWorker?.token}` },
-      })
-      if (!response.ok) {
-        throw new Error(`Collections ${response.status} ${response.statusText}`)
-      }
-      return response.json()
-    },
+    queryFn: () => fetchCollections(oidcWorker?.token),
     staleTime: 1 * 60 * 1000,
     retry: 2,
   })

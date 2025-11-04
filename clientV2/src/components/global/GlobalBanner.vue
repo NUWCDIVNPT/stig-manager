@@ -1,6 +1,9 @@
 <script setup>
-// Classification mapping
-const classification = 'S'
+import { computed } from 'vue'
+import { useGlobalStateStore } from '../../global-state/globalState.js'
+
+const globalState = useGlobalStateStore()
+const classification = computed(() => globalState.classification || 'NONE')
 
 class Classification {
   constructor(apiClassification) {
@@ -43,7 +46,7 @@ class Classification {
   }
 }
 
-const cls = new Classification(classification)
+const cls = new Classification(classification.value)
 </script>
 
 <template>

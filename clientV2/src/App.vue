@@ -2,18 +2,20 @@
 import ReauthPrompt from './auth/ReauthPrompt.vue'
 import GlobalBanner from './components/global/GlobalBanner.vue'
 import GlobalServiceOverlay from './components/global/GlobalServiceOverlay.vue'
-import { noTokenMessage } from './global-state/globalState.js'
-import HomePage from './pages/StigmanSPA.vue'
+import { useGlobalStateStore } from './global-state/globalState.js'
+import HomePage from './SPAroot/StigmanSPA.vue'
+
+const globalState = useGlobalStateStore()
 </script>
 
 <template>
   <GlobalBanner />
   <!-- Auth bits live here so they never unmount -->
   <ReauthPrompt
-    v-if="noTokenMessage"
-    :redirect="noTokenMessage.redirect"
-    :code-verifier="noTokenMessage.codeVerifier"
-    :state="noTokenMessage.state"
+    v-if="globalState.noTokenMessage"
+    :redirect="globalState.noTokenMessage?.redirect"
+    :code-verifier="globalState.noTokenMessage?.codeVerifier"
+    :state="globalState.noTokenMessage?.state"
   />
   <GlobalServiceOverlay />
   <HomePage />

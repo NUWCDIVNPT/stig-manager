@@ -1,13 +1,13 @@
 import { screen, waitFor } from '@testing-library/vue'
 import { delay, http, HttpResponse } from 'msw'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { server } from '@/test/testServer'
-import { renderWithProviders } from '../../../test/utils'
+import { server } from '@/testUtils/testServer'
+import { renderWithProviders } from '../../../testUtils/utils'
 import { useNavTreeData } from '../composeables/useNavTreeData'
 import { navTreeHandlers } from '../mocks/navTree.handler'
 
 // Mock useEnv so useNavTreeData hits /api/collections (handled by MSW) // look for a global way to do this??
-vi.mock('../../../useEnv', () => ({
+vi.mock('../../../../useEnv', () => ({
   useEnv: () => ({ apiUrl: '/api' }),
 }))
 

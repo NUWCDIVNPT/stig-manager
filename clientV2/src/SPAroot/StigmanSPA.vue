@@ -1,19 +1,30 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import ApiTree from '../features/NavTree/components/NavTree.vue'
 import { useNavTreeStore } from '../features/NavTree/stores/navTreeStore.js'
 import TabList from '../features/TabList/components/TabList.vue'
+import { useGlobalStateStore } from '../global-state/globalState.js'
 
 const { selectedData } = useNavTreeStore()
+const globalState = useGlobalStateStore()
 const navOpen = ref(true)
 const peekMode = ref(false)
+
+// check if banner is shown based on classification
+const bannerHeight = computed(() => {
+  const cls = globalState.classification
+  return cls && cls !== 'NONE' ? '20px' : '0px'
+})
 </script>
 
 <template>
   <div
     class="appGrid"
-    :style="navOpen ? (peekMode ? { '--aside': '322px' } : { '--aside': '300px' }) : { '--aside': '22px' }"
+    :style="{
+      '--aside': navOpen ? (peekMode ? '322px' : '300px') : '22px',
+      '--banner-height': bannerHeight,
+    }"
   >
     <aside class="aside">
       <ApiTree v-model:open="navOpen" v-model:peek-mode="peekMode" />
@@ -30,16 +41,16 @@ const peekMode = ref(false)
   display: grid;
   grid-template-areas: 'sidebar main';
   grid-template-columns: var(--aside, 0px) 1fr;
-  height: calc(100vh - 10px);
-  max-height: calc(100vh - 10px);
+  height: calc(100vh - var(--banner-height, 0px));
+  max-height: calc(100vh - var(--banner-height, 0px));
   overflow: hidden;
   transition: grid-template-columns 180ms ease;
-  padding-bottom: 10px;
 }
 
 .aside {
   grid-area: sidebar;
   padding-right: 10px;
+  padding-bottom: 10px;
   overflow: hidden;
 }
 

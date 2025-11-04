@@ -1,5 +1,4 @@
 import { ref } from 'vue'
-import { useEnv } from '../useEnv'
 
 const state = ref(null) // current state object from the worker
 const error = ref(null) // error messages from the worker

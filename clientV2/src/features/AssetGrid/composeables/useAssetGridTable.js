@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/vue-query'
 import { computed, inject, ref } from 'vue'
-import { useEnv } from '../../../useEnv'
+import { useEnv } from '../../../global-state/useEnv'
 
 export function useAssetGridTable({ selectedCollection, apiBase = useEnv().apiUrl }) {
   console.debug('useAssetGridTable called with:', selectedCollection)
