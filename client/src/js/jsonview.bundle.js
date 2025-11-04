@@ -198,6 +198,9 @@ var JsonView = (function (exports) {
     var containerEl = createContainerElement();
     traverseTree(tree, function (node) {
       node.el = createNodeElement(node);
+      if (node.isExpanded) {
+        setCaretIconDown(node);
+      }
       containerEl.appendChild(node.el);
     });
     targetElement.appendChild(containerEl);

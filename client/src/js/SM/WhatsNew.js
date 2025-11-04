@@ -7,8 +7,21 @@ SM.WhatsNew.Sources = [
     body: `
     <p>Application Managers can now assign Collection Grants to User Groups in bulk from the User Groups management interface. This feature allows for quick and easy assignment of multiple Collection Grants to a User Group at once.</p>
     <p>To use this feature, navigate to the User Groups management interface, select a User Group, and click the "Modify Group" button. From the resulting dialog, you can select multiple Collections and assign the desired Grant type to the User Group for each selected Collection.</p>
+    
     <p><img src="img/whatsnew/2025-11-03-group-grants.png" width=500/></p>`
   },
+  {
+    date: '2025-10-29',
+    header: `New Log Stream Feature for Application Managers`,
+    body: `
+    <p>This feature provides App Managers with real-time streaming of log records from the STIG Manager backend to the web client. This stream can be recorded to help troubleshoot issues that would otherwise require direct access to the backend logs.</p>
+    
+    <p>Documentation is available in the <a target="_blank" href="./docs/admin-guide/admin-guide.html#log-stream">STIGMan Application Manager (Administrator) Guide</a>.</p>
+
+    <p>The Log Stream interface is accessible from the <b>Application Management -> Log Stream</b> workspace in the Navigation Tree.</p>
+
+    <p><img src="img/whatsnew/2025-10-29-admin-log-stream.png" width=800/></p>`
+  }, 
   {
     date: '2025-10-18',
     header: `New Service Jobs Feature for Application Managers`,

@@ -98,6 +98,7 @@ const config = {
             name: process.env.STIGMAN_JWT_NAME_CLAIM || process.env.STIGMAN_JWT_USERNAME_CLAIM || "name",
             privileges: formatMySqlJsonPath(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles"),
             privilegesChain: formatJsChain(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles"),
+            privilegesRaw: process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles",
             email: process.env.STIGMAN_JWT_EMAIL_CLAIM || "email",
             assertion: process.env.STIGMAN_JWT_ASSERTION_CLAIM || "jti"
         }
@@ -108,7 +109,8 @@ const config = {
         optStats: process.env.STIGMAN_DEV_LOG_OPT_STATS === "true"
     },
     experimental: {
-        appData: process.env.STIGMAN_EXPERIMENTAL_APPDATA === "true"
+        appData: process.env.STIGMAN_EXPERIMENTAL_APPDATA === "true",
+        logStream: process.env.STIGMAN_EXPERIMENTAL_LOGSTREAM !== "false"
     }
 }
 
