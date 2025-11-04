@@ -3134,11 +3134,6 @@ embed[type="application/pdf"] {
   border: 1px solid hsl(0 0% 20% / 1)
 }
 
-.sm-whats-new-sticky-header {
-  background-color: #1a1d1e;
-  border-bottom: 2px solid #3a3f42;
-}
-
 .sm-whats-new-feedback-panel {
   border-bottom: 2px solid #3a3f42;
 }
