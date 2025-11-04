@@ -3140,7 +3140,6 @@ embed[type="application/pdf"] {
 }
 
 .sm-whats-new-feedback-panel {
-  background-color: #1a1d1e;
   border-bottom: 2px solid #3a3f42;
 }
 
@@ -3159,10 +3158,6 @@ embed[type="application/pdf"] {
 
 .sm-feedback-box-content a {
   color: #7ab3e8;
-}
-
-.sm-whats-new-title {
-  background-color: #1a1d1e;
 }
 
 .x-btn {

@@ -596,20 +596,28 @@ SM.WhatsNew.addTab = function (params) {
     cls: 'sm-whats-new-feedback-panel',
     region: 'north',
     autoHeight: true,
-    margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: 0, left: SM.Margin.edge },
+    margins: { top: 0, right: 0, bottom: 0, left: 0 },
     border: false,
     html: SM.WhatsNew.FeedbackTpl.apply({})
   })
 
   const featuresPanel = new Ext.Panel({
-    title: "What's New",
     cls: 'sm-round-panel',
     autoScroll: true,
-    margins: { top: 0, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
+    margins: { top: 0, right: 0, bottom: 0, left: 0 },
     region: 'center',
     border: false,
     tpl: SM.WhatsNew.BodyTpl,
     data: SM.WhatsNew.Sources
+  })
+
+  const containerPanel = new Ext.Panel({
+    region: 'center',
+    cls: 'sm-round-panel',
+    layout: 'border',
+    margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
+    border: false,
+    items: [feedbackPanel, featuresPanel]
   })
 
   const thisTab = Ext.getCmp('main-tab-panel').add({
@@ -622,7 +630,7 @@ SM.WhatsNew.addTab = function (params) {
     layoutConfig: {
       targetCls: 'sm-border-layout-ct'
     },
-		items: [feedbackPanel, featuresPanel]
+		items: [containerPanel]
 	})
 
 	thisTab.show();

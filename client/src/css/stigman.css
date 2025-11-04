@@ -369,7 +369,6 @@
 }
 
 .sm-whats-new-feedback-panel {
-  background-color: hsl(0 0% 95% / 1);
   padding: 10px 20px 10px 20px;
   border-bottom: 2px solid #d0d0d0;
 }
@@ -401,7 +400,6 @@
 
 .sm-whats-new-title {
   padding-top: 10px;
-  background-color: hsl(0 0% 95% / 1);
 }
 
 .x-tree-node-leaf .x-tree-node-icon.sm-whats-new-icon {
