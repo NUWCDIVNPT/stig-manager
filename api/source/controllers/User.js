@@ -7,6 +7,18 @@ const CollectionService = require(`../service/CollectionService`)
 const SmError = require('../utils/error')
 const dbUtils = require('../service/utils')
 
+async function validateCollectionGrants(collectionGrants, {elevate}) {
+  if (collectionGrants?.length) {
+    // Verify each grant for a valid collectionId
+    let requestedIds = collectionGrants.map( g => g.collectionId )
+    let availableCollections = await CollectionService.queryCollections({elevate})
+    let availableIds = availableCollections.map( c => c.collectionId)
+    if (! requestedIds.every( id => availableIds.includes(id) ) ) {
+      throw new SmError.UnprocessableError('One or more collectionIds are invalid.')
+    }
+  }
+}
+
 /*  */
 module.exports.createUser = async function createUser (req, res, next) {
   try {
@@ -16,13 +28,7 @@ module.exports.createUser = async function createUser (req, res, next) {
     let projection = req.query.projection
 
     if (body.hasOwnProperty('collectionGrants') ) {
-      // Verify each grant for a valid collectionId
-      let requestedIds = body.collectionGrants.map( g => g.collectionId )
-      let availableCollections = await CollectionService.queryCollections({elevate})
-      let availableIds = availableCollections.map( c => c.collectionId)
-      if (! requestedIds.every( id => availableIds.includes(id) ) ) {
-        throw new SmError.UnprocessableError('One or more collectionIds are invalid.')
-      }
+      await validateCollectionGrants(body.collectionGrants, {elevate})
     }
     body.status = 'available'
     try {
@@ -167,13 +173,7 @@ module.exports.replaceUser = async function replaceUser (req, res, next) {
     } 
 
     if (body.collectionGrants?.length) {
-      // Verify each grant for a valid collectionId
-      let requestedIds = body.collectionGrants.map( g => g.collectionId )
-      let availableCollections = await CollectionService.queryCollections({elevate})
-      let availableIds = availableCollections.map( c => c.collectionId)
-      if (! requestedIds.every( id => availableIds.includes(id) ) ) {
-        throw new SmError.UnprocessableError('One or more collectionIds are invalid.')
-      }
+      await validateCollectionGrants(body.collectionGrants, {elevate})
     }
 
     let response = await UserService.replaceUser(userId, body, projection, elevate, req.userObject, res.svcStatus)
@@ -212,13 +212,7 @@ module.exports.updateUser = async function updateUser (req, res, next) {
     } 
 
     if (body.collectionGrants?.length) {
-      // Verify each grant for a valid collectionId
-      let requestedIds = body.collectionGrants.map( g => g.collectionId )
-      let availableCollections = await CollectionService.queryCollections({elevate})
-      let availableIds = availableCollections.map( c => c.collectionId)
-      if (! requestedIds.every( id => availableIds.includes(id) ) ) {
-        throw new SmError.UnprocessableError('One or more collectionIds are invalid.')
-      }
+      await validateCollectionGrants(body.collectionGrants, {elevate})
     }
 
     let response = await UserService.replaceUser(userId, body, projection, elevate, req.userObject, res.svcStatus)
@@ -244,16 +238,20 @@ module.exports.setUserData = async function setUserData (username, fields) {
 module.exports.createUserGroup = async (req, res, next) => {
   try {
     if (!req.query.elevate) throw new SmError.PrivilegeError()
-    const {userIds, ...userGroupFields} = req.body
+    const {userIds, collectionGrants, ...userGroupFields} = req.body
     const invalidUserIds = await dbUtils.selectInvalidUserIds(userIds)
     if (invalidUserIds.length) {
       throw new SmError.UserInconsistentError()
     }
+
+    await validateCollectionGrants(collectionGrants, {elevate: req.query.elevate})
+
     let userGroupId
     try{
       userGroupId = await UserService.addOrUpdateUserGroup({
         userGroupFields,
         userIds,
+        collectionGrants,
         createdUserId: req.userObject.userId,
         modifiedUserId: req.userObject.userId
       })
@@ -307,11 +305,13 @@ module.exports.getUserGroup = async (req, res, next) => {
 async function putOrPatchUserGroup (req, res, next) {
   try {
     if (!req.query.elevate) throw new SmError.PrivilegeError()
-    const {userIds, ...userGroupFields} = req.body
+    const {userIds, collectionGrants, ...userGroupFields} = req.body
     const invalidUserIds = await dbUtils.selectInvalidUserIds(userIds)
     if (invalidUserIds.length) {
       throw new SmError.UserInconsistentError()
     }
+
+    await validateCollectionGrants(collectionGrants, {elevate: req.query.elevate})
 
     const userGroup = await UserService.queryUserGroups({
       projections: [],
@@ -322,6 +322,7 @@ async function putOrPatchUserGroup (req, res, next) {
       userGroupId: req.params.userGroupId,
       userGroupFields,
       userIds,
+      collectionGrants,
       modifiedUserId: req.userObject.userId
     })
     const response = await UserService.queryUserGroups({

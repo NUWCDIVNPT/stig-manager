@@ -363,20 +363,34 @@ SM.User.GrantSelectingPanel = Ext.extend(Ext.Panel, {
       removeBtn.setDisabled(!selectionsSelected)
     }
 
-    async function initPanel(apiUser) {
+    async function initPanel(apiUserOrGroup) {
       const apiAvailableCollections = await Ext.Ajax.requestPromise({
         responseType: 'json',
         url: `${STIGMAN.Env.apiBase}/collections?elevate=true`,
         method: 'GET'
       })
-      
-      const assignedGrants = apiUser?.collectionGrants?.filter(grant => grant.grantees[0].userId).map(grant => ({
-        collectionId: grant.collection.collectionId,
-        name: grant.collection.name,
-        roleId: grant.roleId
-      })) ?? []
-      const assignedCollectionIds = assignedGrants.map( g => g.collectionId)
-      const availableCollections = apiAvailableCollections.filter(collection => !assignedCollectionIds.includes(collection.collectionId))
+
+      let assignedGrants = []
+
+      if (apiUserOrGroup?.collectionGrants?.length) {
+        if (apiUserOrGroup.collectionGrants[0].grantees) {
+          // is a user object
+          assignedGrants = apiUserOrGroup.collectionGrants.filter(grant => grant.grantees[0].userId).map(grant => ({
+            collectionId: grant.collection.collectionId,
+            name: grant.collection.name,
+            roleId: grant.roleId
+          }))
+        } else {
+          // is a user group object
+          assignedGrants = apiUserOrGroup.collectionGrants.map(grant => ({
+            collectionId: grant.collection.collectionId,
+            name: grant.collection.name,
+            roleId: grant.roleId
+          }))
+        }
+      }
+      const assignedCollectionIds = new Set(assignedGrants.map(g => g.collectionId))
+      const availableCollections = apiAvailableCollections.filter(collection => !assignedCollectionIds.has(collection.collectionId))
 
       availableGrid.store.loadData(availableCollections)
       selectionsGrid.store.loadData(assignedGrants)
@@ -1125,87 +1139,6 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
     }
 
 
-    Ext.apply(this, Ext.apply(this.initialConfig, config))
-    this.superclass().initComponent.call(this)
-  }
-})
-
-SM.User.PropertiesPanel = Ext.extend(Ext.Panel, {
-  initComponent: function () {
-    const _this = this
-
-    const directGrantsPanel = new SM.User.GrantSelectingPanel({
-      name: 'collectionGrants',
-      title: 'Direct Grants',
-      iconCls: 'sm-lock-icon',
-      border: false,
-      listeners: {
-        selectedchanged: function (selections) {
-          _this.fireEvent('propsupdate', this.name, selections)
-        }
-      }
-    })
-    const userGroupsPanel = new SM.User.GroupSelectingPanel({
-      title: 'User Groups',
-      iconCls: 'sm-users-icon',
-      padding: '10 10 10 10',
-      border: false,
-      isFormField: true,
-      submitValue: true,
-      listeners: {
-        selectedchanged: function (selections) {
-          _this.fireEvent('propsupdate', this.name, selections)
-        }
-      }
-    })
-    const effectiveGrantsGrid = new SM.User.EffectiveGrantsGrid({
-      name: 'effectiveGrants',
-      title: 'Effective Grants',
-      iconCls: 'sm-lock-icon',
-      isFormField: true,
-      border: true
-    })
-    const lastClaimsPanel = new Ext.Panel({
-      title: 'Last Claims',
-      name: 'lastClaims',
-      html: '',
-      tree: JsonView.createTree({status: 'No claims have been presented.'}),
-      autoScroll: true,
-      iconCls: 'sm-json-icon',
-      layout: 'fit',
-      isFormField: true,
-      setValue: function (v) {
-        if (Object.keys(v).length === 0 && v.constructor === Object) {
-          return
-        }
-        this.tree = JsonView.createTree(v)
-      },
-      getValue: Ext.emptyFn,
-      markInvalid: Ext.emptyFn,
-      clearInvalid: Ext.emptyFn,
-      isValid: () => true,
-      getName: function () { return this.name },
-      validate: () => true,
-      listeners: {
-        render: function () {
-          JsonView.render(this.tree, this.body.dom)
-          JsonView.expandChildren(this.tree)
-        }
-      }
-    })
-
-    const config = {
-      layout: 'accordion',
-      layoutConfig: {
-        animate: true
-      },
-      items: [
-        userGroupsPanel,
-        directGrantsPanel,
-        effectiveGrantsGrid,
-        lastClaimsPanel
-      ]
-    }
     Ext.apply(this, Ext.apply(this.initialConfig, config))
     this.superclass().initComponent.call(this)
   }

@@ -15,14 +15,21 @@ describe('user-group', () => {
       describe('POST - user-groups', () => {
 
         describe(`POST - createUserGroup - /user-groups`, () => {
-        
+          before(async function () {
+            await utils.loadAppData()
+          })
+
           it('should create a userGroup', async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/user-groups?elevate=true&projection=collections&projection=users&projection=attributions`, 'POST', iteration.token, {
+            const res = await utils.executeRequest(`${config.baseUrl}/user-groups?elevate=true&projection=collectionGrants&projection=users&projection=attributions`, 'POST', iteration.token, {
                   "name": "group" +  uuidv4(),
                   "description": "test group",
                   "userIds": [
                     iteration.userId,    
-                  ]
+                  ],
+                  "collectionGrants": [{
+                    collectionId: reference.testCollection.collectionId,
+                    roleId: 3 // manage
+                  }]
               })
               if(iteration.name != "stigmanadmin"){
                 expect(res.status).to.eql(403)
@@ -31,7 +38,10 @@ describe('user-group', () => {
               expect(res.status).to.eql(201)
               expect(res.body.name).to.contain('group')
               expect(res.body.description).to.equal('test group')
-              expect(res.body.collections).to.be.empty
+              for(let grant of res.body.collectionGrants) {
+                expect(grant.collection.collectionId, "expect collectionId to be equal to the collectionId returned from API").to.equal(reference.testCollection.collectionId)
+                expect(grant.roleId, "expect roleId to be equal to the roleId returned from API").to.equal(3)
+              }
               for(let user of res.body.users) {
                 expect(user.userId, "expect userId to be equal to the userId returned from API").to.equal(iteration.userId)
                 expect(user.username, "expect username to be equal to the username returned from API").to.equal(iteration.name)
@@ -46,18 +56,40 @@ describe('user-group', () => {
           
             it('should throw SmError.UnprocessableError Duplicate name exists.', async () => {
               const res = await utils.executeRequest(`${config.baseUrl}/user-groups?elevate=true`, 'POST', iteration.token, {
-                    "name": reference.testCollection.testGroup.name,
-                    "description": "test group",
-                    "userIds": [
-                      iteration.userId   
-                    ]
-                  })
-                if(iteration.name != "stigmanadmin"){
-                  expect(res.status).to.eql(403)
-                  return
-                }
-                expect(res.status).to.eql(422)
+                "name": reference.testCollection.testGroup.name,
+                "description": "test group",
+                "userIds": [
+                  iteration.userId   
+                ]
+              })
+              expect(res.status).to.eql(422)
             })
+
+            it('should throw SmError.UnprocessableError userIds contains invalid userId.', async () => {
+              const res = await utils.executeRequest(`${config.baseUrl}/user-groups?elevate=true`, 'POST', iteration.token, {
+                "name": "group" +  uuidv4(),
+                "description": "test group",
+                "userIds": [
+                  "99999999"   
+                ]
+              })
+              expect(res.status).to.eql(422)
+            })
+
+            it('should throw SmError.UnprocessableError collectionGrants contains invalid collectionId.', async () => {
+              const res = await utils.executeRequest(`${config.baseUrl}/user-groups?elevate=true`, 'POST', iteration.token, {
+                "name": "group" +  uuidv4(),
+                "description": "test group",
+                "collectionGrants": [
+                  {
+                    "collectionId": "99999999",
+                    "roleId": 3
+                  }
+                ]
+              })
+              expect(res.status).to.eql(422)
+            })
+
           }
         })
       })
@@ -71,7 +103,7 @@ describe('user-group', () => {
         describe(`getUserGroups - /user-groups`, () => {
 
           it('should return all userGroups  ', async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/user-groups?projection=users&projection=collections&elevate=true`, 'GET', iteration.token)
+            const res = await utils.executeRequest(`${config.baseUrl}/user-groups?projection=users&projection=collectionGrants&elevate=true`, 'GET', iteration.token)
             
             if(iteration.name != "stigmanadmin"){
               expect(res.status).to.eql(403)
@@ -89,11 +121,11 @@ describe('user-group', () => {
               expect(user.username, "expect username to be equal to the username returned from API").to.equal(reference.lvl1User.username)
             }
 
-            expect(res.body[0].collections).to.be.an('array').of.length(1)
+            expect(res.body[0].collectionGrants).to.be.an('array').of.length(1)
 
-            for(const collection of res.body[0].collections) {
-                expect(collection.collectionId, "expect that this group is in the test collection 21").to.equal(reference.testCollection.collectionId)
-                expect(collection.name, "expect that this group is in the test collection 21").to.equal(reference.testCollection.name)
+            for(const collection of res.body[0].collectionGrants) {
+                expect(collection.collection.collectionId, "expect that this group is in the test collection 21").to.equal(reference.testCollection.collectionId)
+                expect(collection.collection.name, "expect that this group is in the test collection 21").to.equal(reference.testCollection.name)
             }
             
           })

@@ -97,13 +97,20 @@ Only Application Managers can create or modify Groups and their User membership.
 
 Groups can be created, deleted, and modified with the buttons at the top of the panel. Users can be added to or removed from groups by double-clicking on the group, or selecting a group and clicking the "Modify Group..." button.
 
-Change the Users in the group by selecting the User and clicking the arrow buttons to move them between the "Available Users" and "Group Members" lists. Once Group Members is populated with the desired Users, click the "Save" button to save the changes.
+Change the Users in the group by selecting the User and clicking the arrow buttons to move them between the "Available Users" and "Group Members" lists. Group membership changes take effect immediately. 
 
 
 .. thumbnail:: /assets/images/admin-user-groups-popup.png
       :width: 50% 
       :show_caption: True
-      :title: User Group Popup Window
+      :title: User Group Popup Users Tab
+
+Assign Collection Grants to the Group by selecting the "Direct Grants" tab. Select one or more Collections from either list, and click the the appropriate arrow button to assign or remove the Grant for the Group. Grant changes take effect immediately.
+
+.. thumbnail:: /assets/images/admin-user-groups-popup-grants.png
+      :width: 50% 
+      :show_caption: True
+      :title: User Group Popup Grants Tab
 
 
 

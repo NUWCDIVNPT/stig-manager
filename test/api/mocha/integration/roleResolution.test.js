@@ -350,7 +350,7 @@ describe(`Multiple Group roleId Collisions`, () => {
     })
     userGroup1 = res.body
     expect(res.status).to.eql(201)
-    expect(res.body.collections).to.be.empty
+    expect(res.body.collectionGrants).to.be.empty
   })
 
   it('should create another test user group with lvl1 user in it.', async () => {
@@ -364,7 +364,7 @@ describe(`Multiple Group roleId Collisions`, () => {
     })
     userGroup2 = res.body
     expect(res.status).to.eql(201)
-    expect(res.body.collections).to.be.empty
+    expect(res.body.collectionGrants).to.be.empty
   })
   
   it("should assign both groups created to the test collection with restricted grant", async function () {
@@ -475,7 +475,7 @@ describe(`Multiple Group roleId Collisions`, () => {
     })
     userGroup3 = res.body
     expect(res.status).to.eql(201)
-    expect(res.body.collections).to.be.empty
+    expect(res.body.collectionGrants).to.be.empty
   })
 
   it("assign userGroup3 to the test collection with roleId = 4", async () => {
