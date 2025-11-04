@@ -1,3 +1,14 @@
+1.5.15
+-------
+
+Changes:
+  - (API/UI) feature: New Log Stream feature for Application Managers
+  - (API/UI) feature: Bulk assignment of Collection Grants to User Groups
+  - (UI) enhancement: Handle cross-origin OIDC with mTLS by pre-fetching openid-config from main thread
+  - (UI) enhancement: handle state mismatch by auto redirecting to OIDC Provider for smoother reauth UX
+ 
+Note: This release includes the new Log Stream feature. If STIGMan has been deployed behind a reverse proxy, additional configuration may be required for it to function correctly. Please refer to the [STIG Manager documentation](https://stig-manager.readthedocs.io/en/latest/installation-and-setup/reverse-proxy.html#proxy-requirements-for-streaming-sse-and-websocket-endpoints) for guidance on configuring your reverse proxy to support streaming endpoints and WebSockets. This feature can be disabled by setting the environment variable `STIGMAN_EXPERIMENTAL_LOGSTREAM` to `false` if necessary.
+
 1.5.14
 -------
 
