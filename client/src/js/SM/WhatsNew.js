@@ -561,9 +561,20 @@ SM.WhatsNew.Sources = [
 ]
 
 SM.WhatsNew.BodyTpl = new Ext.XTemplate(
-  `<div class="sm-home-widget-title">New Features in the STIG Manager App</div>`,
+  `<div class="sm-whats-new-sticky-header">`,
+    `<div class="sm-home-widget-title">New Features in the STIG Manager App</div>`,
+    `<div class="sm-feedback-box">`,
+      `<div class="sm-feedback-box-title">Have a Feature Request?</div>`,
+      `<div class="sm-feedback-box-content">`,
+        `New features in STIG Manager are primarily driven by user requests. `,
+        `Have an idea or feature request? We'd love to hear from you! `,
+        `Please submit your suggestions by opening an issue on our `,
+        `<a href="https://github.com/NUWCDIVNPT/stig-manager/issues" target="_blank">GitHub Issues page</a>.`,
+      `</div>`,
+    `</div>`,
+  `</div>`,
   `<tpl for=".">`,
-    `<hr style="margin-left:20px;margin-right:20px;" />`,
+    `<tpl if="xindex &gt; 1"><hr style="margin-left:20px;margin-right:20px;" /></tpl>`,
     `<div class="sm-whats-new sm-home-widget-text">`,
       `<div class=sm-home-widget-subtitle>{header}<div style="font-size:70%; font-style:italic;">({date})</div></div> `,
       `<div style="width:800px;">{body}</div>`,
@@ -606,7 +617,7 @@ SM.WhatsNew.addTab = function (params) {
 
 SM.WhatsNew.showDialog = function (lastDate) {
   const vpSize = Ext.getBody().getViewSize()
-  let height = vpSize.height * 0.75
+  let height = vpSize.height * 0.85
   let width = 850
   
   const panel = new Ext.Panel({

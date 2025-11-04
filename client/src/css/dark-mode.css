@@ -3134,6 +3134,28 @@ embed[type="application/pdf"] {
   border: 1px solid hsl(0 0% 20% / 1)
 }
 
+.sm-whats-new-sticky-header {
+  background-color: #1a1d1e;
+  border-bottom: 2px solid #3a3f42;
+}
+
+.sm-feedback-box {
+  background-color: #2d3e4a;
+  border: 1px solid #3a4d5c;
+}
+
+.sm-feedback-box-title {
+  color: #7ab3e8;
+}
+
+.sm-feedback-box-content {
+  color: hsl(36deg 10% 85%);
+}
+
+.sm-feedback-box-content a {
+  color: #7ab3e8;
+}
+
 .x-btn {
     background-color: #424242;
     border-radius: 6px;
