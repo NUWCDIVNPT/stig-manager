@@ -368,12 +368,18 @@
   border-bottom: 2px solid #d0d0d0;
 }
 
+.sm-whats-new-feedback-panel {
+  background-color: hsl(0 0% 95% / 1);
+  padding: 10px 20px 10px 20px;
+  border-bottom: 2px solid #d0d0d0;
+}
+
 .sm-feedback-box {
   background-color: #e8f4f8;
   border: 1px solid #b8d4e8;
   border-radius: 4px;
   padding: 8px 16px;
-  margin: 2px 20px 4px 20px;
+  margin: 0;
 }
 
 .sm-feedback-box-title {
@@ -391,6 +397,11 @@
 .sm-feedback-box-content a {
   color: #2c5f7c;
   text-decoration: underline;
+}
+
+.sm-whats-new-title {
+  padding-top: 10px;
+  background-color: hsl(0 0% 95% / 1);
 }
 
 .x-tree-node-leaf .x-tree-node-icon.sm-whats-new-icon {
