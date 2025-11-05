@@ -560,17 +560,15 @@ SM.WhatsNew.Sources = [
   }
 ]
 
-SM.WhatsNew.FeedbackTpl = new Ext.XTemplate(
-  `<div class="sm-feedback-box">`,
-    `<div class="sm-feedback-box-title">Have a Feature Request?</div>`,
-    `<div class="sm-feedback-box-content">`,
-      `New features in STIG Manager are primarily driven by user requests. `,
-      `Have an idea or feature request? We'd love to hear from you! `,
-      `Please submit your suggestions by opening an issue on our `,
-      `<a href="https://github.com/NUWCDIVNPT/stig-manager/issues" target="_blank">GitHub Issues page</a>.`,
-    `</div>`,
-  `</div>`
-)
+SM.WhatsNew.FeedbackHtml = `<div class="sm-feedback-box">
+    <div class="sm-feedback-box-title">Have a Feature Request?</div>
+    <div class="sm-feedback-box-content">
+      New features in STIG Manager are primarily driven by user requests.
+      Have an idea or feature request? We'd love to hear from you!
+      Please submit your suggestions by opening an issue on our 
+      <a href="https://github.com/NUWCDIVNPT/stig-manager/issues" target="_blank">GitHub Issues page</a>.
+    </div>
+  </div>`
 
 SM.WhatsNew.BodyTpl = new Ext.XTemplate(
   `<div class="sm-home-widget-title sm-whats-new-title">New Features in the STIG Manager App</div>`,
@@ -594,43 +592,31 @@ SM.WhatsNew.addTab = function (params) {
 
   const feedbackPanel = new Ext.Panel({
     cls: 'sm-whats-new-feedback-panel',
+    // margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.adjacent, left: SM.Margin.edge },
     region: 'north',
-    autoHeight: true,
-    margins: { top: 0, right: 0, bottom: 0, left: 0 },
+    height: 100,
     border: false,
-    html: SM.WhatsNew.FeedbackTpl.apply({})
+    html: SM.WhatsNew.FeedbackHtml
   })
 
   const featuresPanel = new Ext.Panel({
-    cls: 'sm-round-panel',
     autoScroll: true,
-    margins: { top: 0, right: 0, bottom: 0, left: 0 },
     region: 'center',
+    // margins: { top: SM.Margin.adjacent, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
     border: false,
     tpl: SM.WhatsNew.BodyTpl,
     data: SM.WhatsNew.Sources
   })
 
-  const containerPanel = new Ext.Panel({
-    region: 'center',
-    cls: 'sm-round-panel',
-    layout: 'border',
-    margins: { top: SM.Margin.top, right: SM.Margin.edge, bottom: SM.Margin.bottom, left: SM.Margin.edge },
-    border: false,
-    items: [feedbackPanel, featuresPanel]
-  })
-
   const thisTab = Ext.getCmp('main-tab-panel').add({
 		id: 'whats-new-tab',
 		sm_treePath: treePath,
-		iconCls: 'sm-stig-icon',
+    cls: 'sm-round-panel',
+    iconCls: 'sm-stig-icon',
 		title: "What's New",
 		closable:true,
 		layout: 'border',
-    layoutConfig: {
-      targetCls: 'sm-border-layout-ct'
-    },
-		items: [containerPanel]
+		items: [feedbackPanel, featuresPanel]
 	})
 
 	thisTab.show();
@@ -644,23 +630,18 @@ SM.WhatsNew.showDialog = function (lastDate) {
   const feedbackPanel = new Ext.Panel({
     cls: 'sm-whats-new-feedback-panel',
     region: 'north',
-    autoHeight: true,
+    height: 112,
     border: false,
-    html: SM.WhatsNew.FeedbackTpl.apply({})
+    html: SM.WhatsNew.FeedbackHtml
   })
 
   const featuresPanel = new Ext.Panel({
     region: 'center',
     border: false,
     autoScroll: true,
+    margins: { bottom: 20 },
     tpl: SM.WhatsNew.BodyTpl,
     data: SM.WhatsNew.Sources.filter( item => item.date > lastDate )
-  })
-
-  const containerPanel = new Ext.Panel({
-    layout: 'border',
-    border: false,
-    items: [feedbackPanel, featuresPanel]
   })
 
   const btnClose = new Ext.Button({
@@ -694,7 +675,7 @@ SM.WhatsNew.showDialog = function (lastDate) {
     resizable: false,
     width,
     height,
-    layout: 'fit',
+    layout: 'border',
     plain: true,
     bodyStyle: 'padding:5px;',
     buttonAlign: 'right',
@@ -702,7 +683,7 @@ SM.WhatsNew.showDialog = function (lastDate) {
       btnRemember,
       btnClose
     ],
-    items: containerPanel
+    items: [feedbackPanel, featuresPanel]
   })
 
   fpwindow.show()

@@ -3134,10 +3134,6 @@ embed[type="application/pdf"] {
   border: 1px solid hsl(0 0% 20% / 1)
 }
 
-.sm-whats-new-feedback-panel {
-  border-bottom: 2px solid #3a3f42;
-}
-
 .sm-feedback-box {
   background-color: #2d3e4a;
   border: 1px solid #3a4d5c;
