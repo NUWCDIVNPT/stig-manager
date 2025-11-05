@@ -591,6 +591,7 @@ const baseCols = {
     'rev.marking',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
+    `DATE_FORMAT(rev.benchmarkDateSql, '%Y-%m-%d') as revisionDate`,
     'count(distinct a.assetId) as assets',
     'rev.ruleCount'
   ],

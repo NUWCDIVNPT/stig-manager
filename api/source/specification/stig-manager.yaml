@@ -7908,6 +7908,8 @@ components:
           type: boolean
         revisionStr:
           $ref: '#/components/schemas/RevisionStrRaw'
+        revisionDate:
+          $ref: "#/components/schemas/StringDateNullable"
         ruleCount:
           $ref: '#/components/schemas/RuleCount'
         title:
