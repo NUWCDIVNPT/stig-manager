@@ -359,6 +359,39 @@
   border: 0px
 }
 
+.sm-whats-new-feedback-panel {
+  padding: 10px 20px 20px 20px;
+}
+
+.sm-feedback-box {
+  background-color: #e8f4f8;
+  border: 1px solid #b8d4e8;
+  border-radius: 4px;
+  padding: 8px 16px;
+  margin: 0;
+}
+
+.sm-feedback-box-title {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #2c5f7c;
+}
+
+.sm-feedback-box-content {
+  font-size: 13px;
+  color: #333;
+}
+
+.sm-feedback-box-content a {
+  color: #2c5f7c;
+  text-decoration: underline;
+}
+
+.sm-whats-new-title {
+  padding-top: 10px;
+}
+
 .x-tree-node-leaf .x-tree-node-icon.sm-whats-new-icon {
   background-image: url(../img/clock.svg);
   background-size: 16px 16px
