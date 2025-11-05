@@ -27,12 +27,12 @@ const app = express()
 configureMiddleware(app, config)
 run()
 
-function run() {
+async function run() {
   try {
     client.serveClient(app)
     docs.serveDocs(app)
     docs.serveApiDocs(app)
-    startServer(app, startTime)
+    await startServer(app, startTime)
   }
   catch (err) {
     logger.writeError(err.message)
