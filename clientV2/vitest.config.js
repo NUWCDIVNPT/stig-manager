@@ -13,5 +13,24 @@ export default defineConfig({
     globals: true,
     setupFiles: ['src/testUtils/setupTests.js'],
     css: true,
+    // Only pick up unit/component tests
+    include: [
+      'src/**/*.{test,spec}.{js,jsx,ts,tsx}',
+      'tests/unit/**/*.{test,spec}.{js,jsx,ts,tsx}',
+    ],
+    // Prevent Vitest from picking up Playwright E2E tests
+    exclude: [
+      '**/node_modules/**',
+      'tests/e2e/**',
+      'playwright-report/**',
+      'test-results/**',
+    ],
+    // Also avoid watching E2E artifacts
+    watchExclude: [
+      '**/node_modules/**',
+      'tests/e2e/**',
+      'playwright-report/**',
+      'test-results/**',
+    ],
   },
 })
