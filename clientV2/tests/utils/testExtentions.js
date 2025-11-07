@@ -1,16 +1,8 @@
-/**
- * Playwright Test Fixtures for Real API Testing with Mocked Auth
- *
- * This provides fixtures for E2E tests that:
- * - Mock authentication (no Keycloak needed)
- * - Test against real API (real data, real permissions)
- */
-
 import { test as base } from '@playwright/test'
-import { getCurrentUser, logout, setupAuthMocks, testUsers } from './auth-helpers.js'
+import { getCurrentUser, logout, setupAuthMocks, testUsers } from './mocks.js'
 
 /**
- * Extended test fixtures with authentication helpers
+ * Extended test function with authentication helpers
  */
 export const test = base.extend({
   /**
@@ -43,16 +35,13 @@ export const test = base.extend({
 
       console.log(`Switching to user: ${user.username}`)
 
-      // Re-setup auth mocks with new user
       await setupAuthMocks(page, user)
 
-      // Reload to apply new auth
       await page.reload()
       await page.waitForLoadState('domcontentloaded')
 
       console.log(`Successfully switched to: ${user.username}`)
     }
-
     await use(loginAs)
   },
 

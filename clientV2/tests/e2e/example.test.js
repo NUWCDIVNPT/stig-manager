@@ -1,4 +1,4 @@
-import { expect, test } from '../utils/fixtures.js'
+import { expect, test } from '../utils/testExtentions.js'
 
 test.describe('Logout Tests', () => {
   test('admin can open collections node and select Collection X', async ({ page, getCurrentUser }) => {
@@ -22,6 +22,10 @@ test.describe('Logout Tests', () => {
     await expect(collection).toBeVisible()
     await collection.click()
 
-    await page.screenshot({ path: 'test-results/after-select-test-collection.png' })
+    await page.waitForTimeout(1000)
+
+    const comp = page.getByText('in CollecitonVue.vue')
+
+    await expect(comp).toBeVisible()
   })
 })

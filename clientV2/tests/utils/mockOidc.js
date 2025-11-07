@@ -143,7 +143,9 @@ class MockOidc {
 
     // Helper function to construct any nested objects
     const setDynamicClaim = (obj, path, value) => {
-      if (!value) { return }
+      if (!value) {
+        return
+      }
       const keys = path.split('.')
       let current = obj
       for (let i = 0; i < keys.length - 1; i++) {
@@ -452,7 +454,9 @@ class MockOidc {
 
     const getCookie = (cookieName) => {
       const cookies = request.headers.cookie // Retrieve the 'Cookie' header
-      if (!cookies) { return null } // Return null if no cookies are present
+      if (!cookies) {
+        return null
+      }
 
       // Split cookies into key-value pairs and find the desired cookie
       const cookie = cookies.split(';').find(c => c.trim().startsWith(`${cookieName}=`))
@@ -467,7 +471,16 @@ class MockOidc {
     }
     else if (url.pathname === '/api/get-token') {
       const { privileges, audience, scope, username, expiresIn, algorithm, kid, issuedAt } = this.parseQueryParams(request)
-      const token = this.getToken({ privileges: privileges === '' ? [] : privileges, audience, scope, username, expiresIn, algorithm, kid, issuedAt })
+      const token = this.getToken({
+        privileges: privileges === '' ? [] : privileges,
+        audience,
+        scope,
+        username,
+        expiresIn,
+        algorithm,
+        kid,
+        issuedAt,
+      })
       data = {
         token,
         tokenDecoded: jsonwebtoken.decode(token, { complete: true }),

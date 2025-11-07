@@ -1,22 +1,7 @@
-/**
- * Real API Testing with MockOidc Auth
- *
- * This module provides authentication helpers for E2E tests that:
- * - Use MockOidc server to generate real, properly signed JWT tokens
- * - Test against real API endpoints (real data, real permissions)
- *
- * Best of both worlds: Real JWT tokens + Real API testing
- */
-
-/**
- * MockOidc server base URL
- * Make sure the MockOidc server is running before tests
- */
 const MOCK_OIDC_URL = 'http://localhost:8080'
 
 /**
- * Test user definitions with roles and permissions
- * These users will be used to generate real JWT tokens from MockOidc
+ * Test user definitions these are generated and not correct.
  */
 export const testUsers = {
   admin: {
@@ -24,101 +9,37 @@ export const testUsers = {
     username: 'admin',
     displayName: 'Admin User',
     email: 'admin@stigman.test',
-    roles: ['admin'], // Will be converted to ['admin', 'create_collection'] for token
-    privileges: {
-      globalAccess: true,
-      canCreateCollections: true,
-      canManageUsers: true,
-      canManageSTIGs: true,
-    },
+    privileges: ['admin', 'create_collection'],
   },
   collectionOwner: {
     userId: 'owner-001',
     username: 'collection-owner',
     displayName: 'Collection Owner',
     email: 'owner@stigman.test',
-    roles: ['user'], // Will be converted to ['create_collection'] for token
-    privileges: {
-      globalAccess: false,
-      canCreateCollections: false,
-      canManageUsers: false,
-      canManageSTIGs: false,
-    },
-    permissions: {
-      collectionIds: ['1', '2'],
-      canModify: true,
-    },
+    privileges: ['create_collection'],
   },
   reviewer: {
     userId: 'reviewer-001',
     username: 'reviewer',
     displayName: 'Reviewer User',
     email: 'reviewer@stigman.test',
-    roles: ['user'], // Will be converted to ['create_collection'] for token
-    privileges: {
-      globalAccess: false,
-      canCreateCollections: false,
-      canManageUsers: false,
-      canManageSTIGs: false,
-    },
-    permissions: {
-      collectionIds: ['1'],
-      canModify: true,
-    },
+    privileges: ['create_collection'],
   },
   readOnly: {
     userId: 'readonly-001',
     username: 'readonly',
     displayName: 'Read Only User',
     email: 'readonly@stigman.test',
-    roles: ['user'], // Will be converted to ['create_collection'] for token
-    privileges: {
-      globalAccess: false,
-      canCreateCollections: false,
-      canManageUsers: false,
-      canManageSTIGs: false,
-    },
-    permissions: {
-      collectionIds: ['1'],
-      canModify: false,
-    },
+    privileges: [],
   },
 }
 
 /**
- * Create JWT token payload for a test user
+ * Get a JWT token from MockOidc server
  */
-function createTokenPayload(user) {
-  const now = Math.floor(Date.now() / 1000)
-  const privileges = user.roles.includes('admin')
-    ? ['admin', 'create_collection']
-    : ['create_collection']
-
-  return {
-    sub: user.userId,
-    name: user.displayName,
-    preferred_username: user.username,
-    email: user.email,
-    realm_access: {
-      roles: privileges, // Use computed privileges, not user.roles
-    },
-    scope: 'stig-manager', // Single scope string as expected by API
-    aud: 'stig-manager', // Required by API
-    exp: now + 3600, // 1 hour from now
-    iat: now,
-    iss: MOCK_OIDC_URL,
-  }
-}
-
-/**
- * Get a real JWT token from MockOidc server
- */
-async function getRealToken(user) {
-  // Convert roles to privileges array format that API expects
-  // e.g., ['admin', 'user'] becomes ['admin', 'create_collection']
-  const privileges = user.roles.includes('admin')
-    ? ['admin', 'create_collection']
-    : ['create_collection']
+async function getToken(user) {
+  // Use privileges directly from user object - no conversion needed
+  const privileges = user.privileges
 
   const params = new URLSearchParams({
     username: user.username,
@@ -137,8 +58,7 @@ async function getRealToken(user) {
       throw new Error(`MockOidc returned ${response.status}: ${await response.text()}`)
     }
     const data = await response.json()
-    console.log('[Auth] Token generated for user:', user.username, 'with privileges:', privileges)
-    return data.token
+    return { token: data.token, payload: data.tokenDecoded?.payload }
   }
   catch (error) {
     console.error('Failed to get token from MockOidc:', error)
@@ -155,11 +75,6 @@ async function getRealToken(user) {
  * - OIDC worker (OAuth flow)
  * - localStorage pre-population (to skip login)
  *
- * What's NOT mocked (uses real implementation):
- * - JWT tokens (real tokens from MockOidc server)
- * - API endpoints (all backend calls hit real API)
- * - state-worker.js (real API health monitoring via SSE)
- *
  * @param {import('@playwright/test').Page} page - Playwright page object
  * @param {object} user - User object from testUsers
  */
@@ -168,9 +83,8 @@ export async function setupAuthMocks(page, user) {
     throw new Error('setupAuthMocks requires a user object')
   }
 
-  // Get a real JWT token from MockOidc server
-  const mockToken = await getRealToken(user)
-  const mockPayload = createTokenPayload(user)
+  // Get a JWT token and decoded payload from MockOidc server
+  const { token: mockToken, payload: mockPayload } = await getToken(user)
 
   // Set localStorage directly with auth tokens
   await page.addInitScript(({ token, payload }) => {
@@ -179,7 +93,7 @@ export async function setupAuthMocks(page, user) {
     localStorage.setItem('oidc.refreshToken', 'mock-refresh-token')
   }, { token: mockToken, payload: mockPayload })
 
-  // Mock the Env.js that provides OAuth configuration
+  // Mock the Env.js that provides OAuth configuration and API base URL etc
   await page.route('**/js/Env.js', async (route) => {
     await route.fulfill({
       status: 200,
@@ -202,9 +116,9 @@ export async function setupAuthMocks(page, user) {
   // Mock the OIDC worker (SharedWorker) to return the real token
   await page.route('**/oidc-worker.js', async (route) => {
     // Get real token from MockOidc for this specific request
-    const realToken = await getRealToken(user)
-    const tokenPayload = createTokenPayload(user)
+    const { token: realToken, payload: tokenPayload } = await getToken(user)
 
+    //  Respond with a mocked OIDC worker script that always returns the token
     await route.fulfill({
       status: 200,
       contentType: 'application/javascript',
@@ -268,12 +182,6 @@ export async function setupAuthMocks(page, user) {
       `,
     })
   })
-
-  // Note: state-worker.js is NOT mocked - uses real API state monitoring
-  // This allows testing real API health, SSE events, and state changes
-
-  // Note: API endpoints are NOT mocked - they hit the real API
-  // This allows testing real API responses and permissions
 }
 
 /**
