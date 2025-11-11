@@ -32,15 +32,9 @@ export const test = base.extend({
       if (!user) {
         throw new Error(`Unknown user: ${userKey}. Available: ${Object.keys(testUsers).join(', ')}`)
       }
-
-      console.log(`Switching to user: ${user.username}`)
-
       await setupAuthMocks(page, user)
-
       await page.reload()
       await page.waitForLoadState('domcontentloaded')
-
-      console.log(`Successfully switched to: ${user.username}`)
     }
     await use(loginAs)
   },

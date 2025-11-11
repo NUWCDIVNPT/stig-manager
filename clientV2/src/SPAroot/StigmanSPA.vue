@@ -58,7 +58,6 @@ const bannerHeight = computed(() => {
   grid-area: main;
   overflow: hidden;
   box-sizing: border-box;
-  display: flex;
   padding: 4px 8px 10px 10px;
   min-height: 0;
 }

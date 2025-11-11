@@ -1,5 +1,5 @@
+import { expect, test, testUsers } from '../utils/fixtures.js'
 import { setupAuthMocks } from '../utils/mocks.js'
-import { expect, test, testUsers } from '../utils/testExtentions.js'
 
 // Utility to pull raw localStorage values for validation
 async function readAuthStorage(page) {
@@ -37,7 +37,7 @@ test.describe('Auth Helpers Integration', () => {
     const initial = await getCurrentUser()
     expect(initial).toBeTruthy()
 
-    // Manually simulate logout WITHOUT reload so initScript does not re-run yet
+    // Manually simulate logout WITHOUT reload so initScript does not re-run yet (initScript adds tokens)
     await page.evaluate(() => {
       localStorage.removeItem('oidc.token')
       localStorage.removeItem('oidc.tokenParsed')

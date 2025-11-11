@@ -38,7 +38,6 @@ export const testUsers = {
  * Get a JWT token from MockOidc server
  */
 async function getToken(user) {
-  // Use privileges directly from user object - no conversion needed
   const privileges = user.privileges
 
   const params = new URLSearchParams({

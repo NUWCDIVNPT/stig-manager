@@ -135,7 +135,13 @@ watch(
 :deep(.tab-panel) {
     height: 100%;
     min-height: 0;
-    overflow: hidden;
+    overflow: auto;
+    padding: 0.75rem;
+    box-sizing: border-box;
+}
+
+:deep(.p-tabpanels) {
+    padding: 0;
 }
 
 .tabTitle {
@@ -173,10 +179,8 @@ watch(
 }
 
 .panelInner {
-    height: 100%;
-    min-height: 0;
-    overflow: auto;
+    min-height: 100%;
     box-sizing: border-box;
-    padding: 12px;
+    padding: 0;
 }
 </style>
