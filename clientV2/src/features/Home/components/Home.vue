@@ -8,6 +8,7 @@ const env = useEnv()
 const worker = inject('worker', null)
 const appManagers = ref([])
 const isLoadingManagers = ref(false)
+const customCardsRef = ref(null)
 
 onMounted(async () => {
   if (env.displayAppManagers) {
@@ -19,7 +20,6 @@ onMounted(async () => {
     }
     finally {
       isLoadingManagers.value = false
-      console.log('App Managers loaded:', appManagers.value)
     }
   }
 })
@@ -36,6 +36,7 @@ onMounted(async () => {
         <span class="badge badge-oss">OSS</span>
         <span class="badge badge-version">{{ env?.apiConfig.version }}</span>
       </div>
+      <CustomCards ref="customCardsRef" />
     </div>
 
     <div class="home-content">
@@ -112,7 +113,6 @@ onMounted(async () => {
           </div>
         </div>
 
-        <!-- Resources Section -->
         <div class="home-card">
           <h2 class="card-title">
             Resources
@@ -163,7 +163,6 @@ onMounted(async () => {
           </div>
         </div>
 
-        <!-- Application Managers Section -->
         <div v-if="env.displayAppManagers" class="home-card">
           <h2 class="card-title">
             Application Managers
@@ -191,7 +190,28 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-        <CustomCards />
+
+        <div
+          v-for="card in customCardsRef?.customCards"
+          :key="card.id"
+          class="home-card custom-card"
+        >
+          <h2 class="card-title">
+            {{ card.title }}
+            <button
+              class="delete-btn"
+              title="Delete card"
+              @click="customCardsRef.deleteCard(card.id)"
+            >
+              ×
+            </button>
+          </h2>
+          <div class="card-content">
+            <div class="custom-card-section">
+              <p class="card-text" v-html="customCardsRef.formatContent(card.content)" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -273,7 +293,7 @@ onMounted(async () => {
 }
 
 .badge-version {
-  background-color: rgba(34, 197, 94, 0.9);
+  background-color:var(--color-primary-green);
 }
 
 .home-content {
@@ -320,7 +340,7 @@ onMounted(async () => {
 .card-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #60a5fa;
+  color: var(--color-primary-blue);
   margin: 0 0 1rem 0;
   letter-spacing: -0.01em;
 }
@@ -371,7 +391,7 @@ onMounted(async () => {
 
 /* Links */
 .link {
-  color: #60a5fa;
+  color: var(--color-primary-blue);
   text-decoration: none;
   transition: all 0.15s ease;
   position: relative;
@@ -379,7 +399,7 @@ onMounted(async () => {
 }
 
 .link:hover {
-  color: #93c5fd;
+  color: var(--color-primary-blue-light);
   text-decoration: underline;
   text-decoration-color: rgba(96, 165, 250, 0.4);
   text-underline-offset: 2px;
@@ -391,7 +411,7 @@ onMounted(async () => {
   padding: 0.875rem;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 0.375rem;
-  border-left: 3px solid rgba(96, 165, 250, 0.4);
+  border-left: 3px solid rgba(131, 131, 131, 0.4);
 }
 
 .resource-links {
@@ -442,6 +462,46 @@ onMounted(async () => {
 .manager-detail {
   font-size: 0.8125rem;
   color: rgba(255, 255, 255, 0.6);
+}
+
+/* Custom Cards */
+.custom-card .card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.delete-btn {
+  opacity: 0;
+  font-size: 1.25rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.custom-card:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  background: rgba(175, 175, 175, 0.2);
+  transform: scale(1.05);
+}
+
+.custom-card-section {
+  padding: 0.875rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 0.375rem;
+  border-left: 3px solid rgba(131, 131, 131, 0.4);
 }
 
 /* Responsive Design */

@@ -9,6 +9,8 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
+  /* Classification Marking Colors */
   --color-marking-unclassified: #007a33;
   --color-marking-cui: #502b85;
   --color-marking-confidential: #0033a0;
@@ -16,6 +18,11 @@
   --color-marking-secret: #c8102e;
   --color-marking-topsecret: #ff671f;
   --color-marking-sci: #f7ea48;
+  
+  /* Brand Colors */
+  --color-primary-blue: #60a5fa;
+  --color-primary-blue-light: #93c5fd;
+  --color-primary-green: #22c55e;
 }
 
 .btn {
@@ -87,6 +94,23 @@ button:focus,
 button:focus-visible {
   outline: 4px auto Highlight;
 }
+
+/* Global form field focus color (light blue) */
+.p-inputtext:focus,
+.p-inputtextarea:focus,
+input[type="text"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: var(--color-primary-blue-light) !important;
+}
+.p-inputtext:enabled:focus{
+  outline: none !important;
+  border-color: var(--color-primary-blue-light) !important;
+}
+
 
 .card {
   padding: 2em;

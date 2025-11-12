@@ -5,10 +5,8 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { computed, inject, ref } from 'vue'
 
-// Get the OIDC worker to check user roles
 const worker = inject('worker', null)
 
-// Parse JWT token to get user roles
 const userRoles = computed(() => {
   if (!worker?.tokenParsed) {
     return []
@@ -22,17 +20,17 @@ const userRoles = computed(() => {
 })
 
 const isAdmin = computed(() => {
-  const roles = Array.isArray(userRoles.value) ? userRoles.value : [userRoles.value]
-  return roles.includes('admin') || roles.includes('Admin')
+  return userRoles.value.includes('admin')
 })
 
-// Custom cards array (will be lost on reload)
 const customCards = ref([])
 
-// Dialog state
 const showDialog = ref(false)
 const newCardTitle = ref('')
 const newCardContent = ref('')
+const isFormValid = computed(() => {
+  return newCardTitle.value.trim().length > 0 && newCardContent.value.trim().length > 0
+})
 
 function openCreateDialog() {
   showDialog.value = true
@@ -47,9 +45,9 @@ function addNewCard() {
     id: Date.now(),
     title: newCardTitle.value.trim(),
     content: newCardContent.value.trim(),
+    isCustom: true,
   })
 
-  // Reset form and close dialog
   newCardTitle.value = ''
   newCardContent.value = ''
   showDialog.value = false
@@ -64,100 +62,128 @@ function cancelNewCard() {
   newCardContent.value = ''
   showDialog.value = false
 }
+
+function formatContent(text) {
+  if (!text) {
+    return ''
+  }
+
+  const lines = text.split('\n')
+
+  return lines.map((line) => {
+    let formattedLine = line
+
+    if (/^\s*[-*]\s+/.test(formattedLine)) {
+      formattedLine = formattedLine.replace(/^\s*[-*]\s+/, '• ')
+    }
+
+    formattedLine = formattedLine.replace(/^\s*(\d+)[.)]\s+/, '$1. ')
+
+    formattedLine = formattedLine.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+
+    formattedLine = formattedLine.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="link">$1</a>')
+
+    return formattedLine
+  }).join('<br>')
+}
+defineExpose({
+  customCards,
+  deleteCard,
+  formatContent,
+  isAdmin,
+})
 </script>
 
 <template>
-  <div v-if="isAdmin" class="custom-cards-container">
-    <!-- Existing Custom Cards -->
-    <div
-      v-for="card in customCards"
-      :key="card.id"
-      class="home-card"
-    >
-      <div class="custom-card-header">
-        <h2 class="card-title">
-          {{ card.title }}
-        </h2>
-        <button
-          class="delete-btn"
-          title="Delete card"
-          @click="deleteCard(card.id)"
-        >
-          ×
-        </button>
-      </div>
-      <div class="card-content">
-        <div class="custom-section">
-          <p class="card-text">
-            {{ card.content }}
-          </p>
-        </div>
-      </div>
-    </div>
+  <button
+    v-if="isAdmin"
+    class="floating-add-btn"
+    title="Add custom card"
+    @click="openCreateDialog"
+  >
+    +
+  </button>
 
-    <!-- Add New Card Button -->
-    <div class="home-card add-card-trigger">
-      <button class="add-card-btn" @click="openCreateDialog">
-        <span class="plus-icon">+</span>
-        <span>Add Custom Card</span>
-      </button>
+  <Dialog
+    v-if="isAdmin"
+    v-model:visible="showDialog"
+    modal
+    :style="{ width: '600px' }"
+    :pt="{
+      root: { class: 'custom-dialog-root' },
+      header: { class: 'custom-dialog-header' },
+      content: { class: 'custom-dialog-content' },
+      pcCloseButton: { class: 'custom-dialog-close-button' },
+    }"
+  >
+    <template #header>
+      <span class="dialog-title">Create Card</span>
+    </template>
+    <div class="form-group">
+      <label for="card-title">Card Title:<span class="required">*</span></label>
+      <InputText
+        id="card-title"
+        v-model="newCardTitle"
+        placeholder="Enter card title..."
+        maxlength="70"
+      />
     </div>
-
-    <!-- Create Card Dialog -->
-    <Dialog
-      v-model:visible="showDialog"
-      modal
-      header="Create Custom Card"
-      :style="{ width: '500px' }"
-      :dismissable-mask="true"
-    >
-      <div class="dialog-content">
-        <div class="form-group">
-          <label for="card-title">Card Title</label>
-          <InputText
-            id="card-title"
-            v-model="newCardTitle"
-            placeholder="Enter card title..."
-            class="w-full"
-            maxlength="100"
-          />
-        </div>
-        <div class="form-group">
-          <label for="card-content">Card Content</label>
-          <Textarea
-            id="card-content"
-            v-model="newCardContent"
-            placeholder="Enter card content..."
-            rows="8"
-            class="w-full"
-          />
-        </div>
-      </div>
-      <template #footer>
-        <Button label="Cancel" severity="secondary" @click="cancelNewCard" />
-        <Button label="Create Card" @click="addNewCard" />
-      </template>
-    </Dialog>
-  </div>
+    <div class="form-group">
+      <label for="card-content">Card Content:<span class="required">*</span></label>
+      <Textarea
+        id="card-content"
+        v-model="newCardContent"
+        placeholder="Enter card content..."
+        rows="8"
+      />
+      <span class="formatting-hint">
+        Formatting: <strong>**bold**</strong> • <em>- bullet point</em> • <em>1. numbered list</em> • <em>[link text](url)</em>
+      </span>
+    </div>
+    <template #footer>
+      <Button
+        label="Cancel" severity="secondary" :pt="{
+          root: { class: 'custom-dialog-footer-cancel-button' },
+        }" @click="cancelNewCard"
+      />
+      <Button
+        label="Create" :disabled="!isFormValid" :pt="{
+          root: { class: 'custom-dialog-footer-create-button' },
+        }" @click="addNewCard"
+      />
+    </template>
+  </Dialog>
 </template>
 
 <style scoped>
-.custom-cards-container {
-  display: contents;
+.floating-add-btn {
+  background: var(--color-primary-blue);
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 300;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  margin-left: 0.5rem;
 }
 
-.custom-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.5rem;
+.floating-add-btn:hover {
+  background: var(--color-primary-blue-light);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.custom-section {
-  padding: 0.875rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 0.375rem;
-  border-left: 3px solid rgba(96, 165, 250, 0.4);
+.floating-add-btn:active {
+  transform: scale(0.95);
 }
 
 .delete-btn {
@@ -186,8 +212,8 @@ function cancelNewCard() {
 
 /* Add Card Trigger */
 .add-card-trigger {
-  background: rgba(96, 165, 250, 0.05);
-  border: 2px dashed rgba(96, 165, 250, 0.3);
+  background: transparent;
+  border: none;
   padding: 0;
   min-height: 120px;
   display: flex;
@@ -196,58 +222,112 @@ function cancelNewCard() {
 }
 
 .add-card-trigger:hover {
-  background: rgba(96, 165, 250, 0.08);
-  border-color: rgba(96, 165, 250, 0.5);
-  transform: translateY(-2px);
+  background: transparent;
+  transform: none;
 }
 
 .add-card-btn {
   background: none;
   border: none;
-  color: #60a5fa;
-  font-size: 1rem;
-  font-weight: 500;
+  color: #fff;
+  font-size: 3rem;
+  font-weight: 300;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1.5rem;
-  width: 100%;
-  height: 100%;
-  transition: all 0.15s ease;
+  padding: 0;
+  line-height: 1;
+  transition: opacity 0.15s ease;
 }
 
 .add-card-btn:hover {
-  color: #93c5fd;
-}
-
-.plus-icon {
-  font-size: 2.5rem;
-  font-weight: 300;
-  line-height: 1;
-}
-
-/* Dialog Styling */
-.dialog-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  padding: 0.5rem 0;
+  opacity: 0.7;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .form-group label {
   font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.required {
+  color: #ef4444;
+  margin-left: 0.25rem;
+}
+
+.formatting-hint {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  margin-top: 0.25rem;
+}
+
+.formatting-hint strong,
+.formatting-hint em {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+:global(.custom-dialog-root) {
+  border-radius: 0.6rem !important;
+}
+:global(.custom-dialog-header) {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  background-color: #35393b;
+  padding: 10px !important;
+  height: 35px
+}
+
+:global(.custom-dialog-content) {
+  padding: 1rem !important;
+}
+
+:global(.p-button-icon-only.p-button-rounded),
+:global(.p-dialog-header-close) {
+  border-radius: 12px !important;
+  height: 24px !important;
+  box-shadow: none !important;
+  border: none !important;
+  width: 24px !important;
+  outline: none !important;
+}
+
+:global(.p-button-icon-only.p-button-rounded:hover),
+:global(.p-button-icon-only.p-button-rounded:active),
+:global(.p-dialog-header-close:hover),
+:global(.p-dialog-header-close:active) {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff !important;
+}
+
+.dialog-title {
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
-.w-full {
-  width: 100%;
+/* Dialog Footer Buttons */
+:global(.custom-dialog-footer-cancel-button),
+:global(.custom-dialog-footer-cancel-button:focus),
+:global(.custom-dialog-footer-cancel-button:focus-visible),
+:global(.custom-dialog-footer-cancel-button:active) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+:global(.custom-dialog-footer-create-button),
+:global(.custom-dialog-footer-create-button:focus),
+:global(.custom-dialog-footer-create-button:focus-visible),
+:global(.custom-dialog-footer-create-button:active) {
+  outline: none !important;
+  box-shadow: none !important;
+  background: var(--color-primary-blue) !important;
+}
+
+:global(.custom-dialog-footer-create-button:hover) {
+  background: var(--color-primary-blue-light) !important;
 }
 </style>
