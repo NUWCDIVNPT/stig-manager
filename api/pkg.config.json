@@ -11,7 +11,7 @@
             "./source/node_modules/axios/**/*",
             "./source/utils/*.xlsx"
         ],
-        "targets": ["node22-win", "node22-linuxstatic"],
+        "targets": ["node24-win", "node24-linuxstatic"],
         "outputPath": "./bin"
     }
 }
