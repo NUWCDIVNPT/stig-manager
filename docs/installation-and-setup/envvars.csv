@@ -101,6 +101,8 @@
 | The access token claim whose value is the user's client. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API, Client"
 "STIGMAN_JWT_USERNAME_CLAIM","| **Default** ``preferred_username``
 | The access token claim whose value is the user's username. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API, Client"
+"STIGMAN_OIDC_CA_CERTS","| **No default**
+| The full path to a file with one or more PEM-encoded CA certificates for validating TLS connections to the OIDC Provider.","API"
 "STIGMAN_OIDC_PROVIDER","| **Default** ``http://localhost:8080/auth/realms/stigman``
 | The base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended when fetching metadata.","API, Client     "
 "STIGMAN_SWAGGER_ENABLED","| **Default** ``false``

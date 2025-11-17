@@ -7,8 +7,13 @@ const UserService = require(`../service/UserService`)
 const SmError = require('./error')
 const state = require('./state')
 const JWKSCache = require('./jwksCache')
+const { Agent, fetch } = require('undici');
+const fs = require('node:fs');
+const path = require('node:path')
 
 let jwksCache
+let initAttempt = 0
+
 
 // Helper function to safely traverse object properties using dot notation
 function getClaimByPath(obj, path = config.oauth.claims.privilegesRaw) {
@@ -196,9 +201,10 @@ const containsInsecureKids = (kids) => {
 }
 
 // setup the JWKS key handling client
-const setupJwks = async function (jwksUri) {
+const setupJwks = async function (jwksUri, caCerts) {
     jwksCache = new JWKSCache({
         jwksUri,
+        caCerts,
         cacheMaxAge: config.oauth.cacheMaxAge * 60 * 1000, // convert minutes to milliseconds
     })
     jwksCache.on('cacheUpdate', (cache) => {
@@ -223,18 +229,32 @@ const setupJwks = async function (jwksUri) {
     logger.writeDebug('auth', 'discovery', { jwksUri, kids: jwksCache.getKidTypes() })
 }
 
-let initAttempt = 0
-/*
-* setDepStatus is a function that sets the status of a dependency
-*/
+const getCaCerts = () => {
+    if (config.oauth.caCerts) {
+        try {
+            return fs.readFileSync(config.oauth.caCerts);
+        } catch (e) {
+            logger.writeError('auth', 'getCaCerts', { message: `Failed to read CA certificates from path: ${config.oauth.caCerts}`, error: e.message })
+            throw new Error(`Failed to read CA certificates from path: ${config.oauth.caCerts}`)
+        }
+    }
+}
+
 async function initializeAuth() {
     const retries = config.settings.dependencyRetries
     const metadataUri = `${config.oauth.authority}/.well-known/openid-configuration`
     let jwksUri
+    let dispatcher
+    let caCerts = null
+    if (config.oauth.caCerts) {
+        caCerts = getCaCerts()
+        dispatcher = new Agent({ connect: { ca: caCerts } })
+        logger.writeInfo('auth', 'initializeAuth', { message: 'Using custom CA certificates to validate OIDC provider connections' })
+    }
     
     async function getJwks(bail) {
         logger.writeDebug('auth', 'discovery', { metadataUri, attempt: ++initAttempt })
-        const response = await fetch(metadataUri, { method: 'GET' })
+        const response = await fetch(metadataUri, { method: 'GET', dispatcher })
         const openidConfig = await response.json()
         logger.writeDebug('auth', 'discovery', { metadataUri, metadata: openidConfig})
         
@@ -247,7 +267,7 @@ async function initializeAuth() {
         jwksUri = openidConfig.jwks_uri
         
         try {
-            await setupJwks(jwksUri)
+            await setupJwks(jwksUri, caCerts)
         } catch (error) {
             // If the error is from insecure kids detection, bail immediately
             if (error.message.startsWith('insecure_kid -')) {
