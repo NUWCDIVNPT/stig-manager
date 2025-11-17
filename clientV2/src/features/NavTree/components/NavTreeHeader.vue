@@ -1,10 +1,23 @@
 <script setup>
+import { computed, inject } from 'vue'
+
 const emit = defineEmits(['logout', 'close'])
+const oidcWorker = inject('worker')
+const tokenTooltip = computed(() => {
+  try {
+    return JSON.stringify(oidcWorker.tokenParsed, null, 2)
+  }
+  catch {
+    return ''
+  }
+})
 </script>
 
 <template>
   <header class="header">
-    <span class="title">Admin Burke</span>
+    <span class="title" :title="tokenTooltip">
+      {{ oidcWorker.tokenParsed.preferred_username }}
+    </span>
     <div class="controls">
       <button type="button" class="btn-unstyled ctrl-btn" aria-label="Log out" @click="emit('logout')">
         <span aria-hidden="true" class="icon icon-logout" />
@@ -37,7 +50,7 @@ const emit = defineEmits(['logout', 'close'])
 
 .title {
   font-weight: 600;
-  font-size: 12px;
+  font-size: 13px;
   color: #f4f4f5;
 }
 
