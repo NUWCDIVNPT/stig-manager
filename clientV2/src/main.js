@@ -2,7 +2,6 @@ import Material from '@primeuix/themes/material'
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
-import Tooltip from 'primevue/tooltip'
 import { createApp, h, watch } from 'vue'
 import App from './App.vue'
 import AuthBootstrapError from './auth/AuthBootstrapError.vue'
@@ -13,10 +12,12 @@ import { useGlobalStateStore } from './global-state/globalState.js'
 import { bootstrapEnv, useEnv } from './global-state/useEnv.js'
 import './style.css'
 
+// this is a dark mode override — in the future we may want to make this dynamic based on user preference
 if (typeof document !== 'undefined') {
   document.documentElement.classList.add('app-dark')
 }
 
+// vue-query client setup with default options
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -92,7 +93,6 @@ try {
 
     // Note: router removed — app is now an SPA that renders a single App component.
     app.provide('worker', authBootResult.oidcWorker)
-    app.directive('tooltip', Tooltip)
     app.mount('#app')
   }
 
@@ -104,19 +104,19 @@ try {
 
     // watch reactive state for changes and re-mount when available
     const stop = watch(
-      () => reactiveState.value,
+      () => reactiveState.value, // watch the reactive state from the worker
       async (newVal) => {
         if (!newVal) {
           return
         }
-        if (isReady(newVal)) {
-          // unmount the state display and mount the real app
-          stateApp.unmount()
-          stop()
+        if (isReady(newVal)) { // now available
+          stateApp.unmount() // remove that waiting view thing
+          stop() // stop watching
 
           // Now that state is ready, bootstrap auth and mount the app
           const authBootResult = await bootstrapAuth(pinia)
           if (!authBootResult.success) {
+            // auth bootstrap failed — show error component
             const errApp = createApp(AuthBootstrapError, {
               details: authBootResult.error ? JSON.stringify(authBootResult.error, null, 2) : undefined,
             })

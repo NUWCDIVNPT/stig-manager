@@ -1,22 +1,20 @@
 <script setup>
-import { defineModel, ref } from 'vue'
+import { defineModel, inject, ref } from 'vue'
 import { navTreeConfig } from '../composeables/navTreeConfig'
 import { useKeyboardNav } from '../composeables/useKeyboardNav'
 import { useNavTreeData } from '../composeables/useNavTreeData'
 import { useNavTreeNodes } from '../composeables/useNavTreeNodes'
 import { useOutsideClick } from '../composeables/useOutsideClick'
-
 import NavTreeContent from './NavTreeContent.vue'
 import NavTreeDrawer from './NavTreeDrawer.vue'
 import NavTreeHeader from './NavTreeHeader.vue'
 import NavTreeTab from './NavTreeTab.vue'
 
+const oidcWorker = inject('worker')
 const visible = defineModel('open', { type: Boolean, default: true })
 const peekMode = defineModel('peekMode', { type: Boolean, default: false })
-
 const { collections, loading } = useNavTreeData()
 const nodes = useNavTreeNodes(collections, navTreeConfig)
-
 const wrapperRef = ref(null)
 function closePeek() {
   if (!peekMode.value) {
@@ -41,7 +39,8 @@ function open() {
 }
 
 function handleLogout() {
-  console.log('Logout clicked')
+  const logoutHandler = oidcWorker.logout.bind(oidcWorker)
+  logoutHandler()
 }
 
 function handleClose() {
