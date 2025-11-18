@@ -8,7 +8,7 @@ import AuthBootstrapError from './auth/AuthBootstrapError.vue'
 import { bootstrapAuth } from './auth/bootstrap.js'
 import { bootstrapStateWorker, useStateWorker } from './auth/useStateWorker.js'
 import ApiStateBootstrap from './components/global/ApiStateBootstrap.vue'
-import { useGlobalStateStore } from './global-state/globalState.js'
+import { useGlobalStateStore } from './global-state/globalAuthState.js'
 import { bootstrapEnv, useEnv } from './global-state/useEnv.js'
 import './style.css'
 
@@ -111,7 +111,7 @@ try {
         }
         if (isReady(newVal)) { // now available
           stateApp.unmount() // remove that waiting view thing
-          stop() // stop watching
+          stop() // stop watching?
 
           // Now that state is ready, bootstrap auth and mount the app
           const authBootResult = await bootstrapAuth(pinia)

@@ -1,21 +1,25 @@
 <script setup>
+import { useQueryClient } from '@tanstack/vue-query'
 import { defineModel, inject, ref } from 'vue'
 import { navTreeConfig } from '../composeables/navTreeConfig'
 import { useKeyboardNav } from '../composeables/useKeyboardNav'
 import { useNavTreeData } from '../composeables/useNavTreeData'
 import { useNavTreeNodes } from '../composeables/useNavTreeNodes'
 import { useOutsideClick } from '../composeables/useOutsideClick'
+import CreateCollectionModal from './CreateCollectionModal.vue'
 import NavTreeContent from './NavTreeContent.vue'
 import NavTreeDrawer from './NavTreeDrawer.vue'
 import NavTreeHeader from './NavTreeHeader.vue'
 import NavTreeTab from './NavTreeTab.vue'
 
+const queryClient = useQueryClient()
 const oidcWorker = inject('worker')
 const visible = defineModel('open', { type: Boolean, default: true })
 const peekMode = defineModel('peekMode', { type: Boolean, default: false })
 const { collections, loading } = useNavTreeData()
 const nodes = useNavTreeNodes(collections, navTreeConfig)
 const wrapperRef = ref(null)
+const showCreateCollectionModal = ref(false)
 function closePeek() {
   if (!peekMode.value) {
     return
@@ -39,6 +43,7 @@ function open() {
 }
 
 function handleLogout() {
+  queryClient.clear()
   const logoutHandler = oidcWorker.logout.bind(oidcWorker)
   logoutHandler()
 }
@@ -50,7 +55,7 @@ function handleClose() {
 
 function onNodeSelect(node) {
   if (node.key === 'new-collection-action') {
-    console.log('Create new collection action triggered')
+    showCreateCollectionModal.value = true
   }
 }
 </script>
@@ -64,6 +69,7 @@ function onNodeSelect(node) {
       </template>
       <NavTreeContent :nodes="nodes" :loading="loading" @node-select="onNodeSelect" />
     </NavTreeDrawer>
+    <CreateCollectionModal v-model:visible="showCreateCollectionModal" />
   </div>
 </template>
 

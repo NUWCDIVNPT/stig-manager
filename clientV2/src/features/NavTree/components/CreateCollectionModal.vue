@@ -1,7 +1,199 @@
-<script setup></script>
+<script setup>
+import { useQueryClient } from '@tanstack/vue-query'
+import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import Textarea from 'primevue/textarea'
+import { computed, inject, ref, watch } from 'vue'
+import { useEnv } from '../../../global-state/useEnv'
+import { collectionKeys } from '../../../shared/queries/collectionKeys'
+
+const emit = defineEmits(['created'])
+const visible = defineModel('visible', { type: Boolean, default: false })
+const worker = inject('worker', null)
+const queryClient = useQueryClient()
+
+const name = ref('')
+const description = ref('')
+const isSubmitting = ref(false)
+const errorMessage = ref('')
+const apiUrl = useEnv().apiUrl
+
+const isFormValid = computed(() => name.value.trim().length > 0)
+
+watch(visible, (isOpen) => {
+  if (!isOpen) {
+    resetForm()
+  }
+})
+
+function resetForm() {
+  name.value = ''
+  description.value = ''
+  isSubmitting.value = false
+  errorMessage.value = ''
+}
+
+async function handleSubmit() {
+  if (!isFormValid.value || isSubmitting.value) {
+    return
+  }
+  if (!worker?.token) {
+    errorMessage.value = 'Authentication is required to create a collection.'
+    return
+  }
+
+  isSubmitting.value = true
+  errorMessage.value = ''
+
+  try {
+    const payload = {
+      name: name.value.trim(),
+      description: description.value.trim() || undefined,
+      grants: [{
+        userId: '87',
+        roleId: 4, // Owner role
+      }],
+      metadata: {},
+    }
+
+    const response = await fetch(`${apiUrl}/collections`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json;charset=utf-8',
+        'Authorization': `Bearer ${worker.token}`,
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Create collection failed: ${response.status} ${response.statusText}`)
+    }
+
+    const createdCollection = await response.json()
+    await queryClient.invalidateQueries({ queryKey: collectionKeys.all })
+    emit('created', createdCollection)
+    visible.value = false
+  }
+  catch (error) {
+    console.error(error)
+    errorMessage.value = error.message || 'Unable to create collection.'
+  }
+  finally {
+    isSubmitting.value = false
+  }
+}
+
+function handleCancel() {
+  visible.value = false
+}
+</script>
 
 <template>
-  <div>wadwa</div>
+  <Dialog
+    v-model:visible="visible"
+    modal
+    :style="{ width: '600px' }"
+    :pt="{
+      root: { class: 'create-collection-dialog' },
+      header: { class: 'dialog-header' },
+      content: { class: 'dialog-content' },
+    }"
+  >
+    <template #header>
+      <span class="dialog-title">Create Collection</span>
+    </template>
+    <form class="form" @submit.prevent="handleSubmit">
+      <div class="form-group">
+        <label for="collection-name">Collection Name<span class="required">*</span></label>
+        <InputText
+          id="collection-name"
+          v-model="name"
+          placeholder="Enter collection name..."
+          maxlength="120"
+          :disabled="isSubmitting"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="collection-description">Description</label>
+        <Textarea
+          id="collection-description"
+          v-model="description"
+          rows="6"
+          placeholder="Describe the collection (optional)..."
+          :disabled="isSubmitting"
+        />
+      </div>
+
+      <p v-if="errorMessage" class="error">
+        {{ errorMessage }}
+      </p>
+
+      <div class="actions">
+        <Button
+          type="button"
+          label="Cancel"
+          severity="secondary"
+          :disabled="isSubmitting"
+          @click="handleCancel"
+        />
+        <Button
+          type="submit"
+          label="Create"
+          :disabled="!isFormValid || isSubmitting"
+          :loading="isSubmitting"
+        />
+      </div>
+    </form>
+  </Dialog>
 </template>
 
-<style scoped></style>
+<style scoped>
+.create-collection-dialog {
+  background: #121212;
+}
+
+.dialog-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dialog-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+label {
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.required {
+  color: #ff7676;
+  margin-left: 0.25rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.error {
+  color: #ff7676;
+  font-size: 0.9rem;
+}
+</style>

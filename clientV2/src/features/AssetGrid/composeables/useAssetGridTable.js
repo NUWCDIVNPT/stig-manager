@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/vue-query'
 import { computed, inject, ref } from 'vue'
 import { useEnv } from '../../../global-state/useEnv'
+import { assetQueries } from '../queries/assetQueries'
 
 export function useAssetGridTable({ selectedCollection, apiBase = useEnv().apiUrl }) {
   console.debug('useAssetGridTable called with:', selectedCollection)
@@ -10,54 +11,23 @@ export function useAssetGridTable({ selectedCollection, apiBase = useEnv().apiUr
   const selectedAsset = ref({})
   const metaKey = ref(true)
 
-  function getContrastYIQ(hexcolor) {
-    const r = Number.parseInt(hexcolor.substr(0, 2), 16)
-    const g = Number.parseInt(hexcolor.substr(2, 2), 16)
-    const b = Number.parseInt(hexcolor.substr(4, 2), 16)
-    const yiq = (r * 299 + g * 587 + b * 114) / 1000
-    return yiq >= 128 ? '#080808' : '#f7f7f7'
-  }
+  const workerToken = computed(() => oidcWorker?.token)
 
-  const labelsQuery = useQuery({
-    queryKey: computed(() => ['collections', collectionId.value, 'labels']),
-    enabled: computed(() => !!collectionId.value),
-    queryFn: async () => {
-      const res = await fetch(`${apiBase}/collections/${collectionId.value}/labels`, {
-        headers: { Authorization: `Bearer ${oidcWorker.token}` },
-      })
-      if (!res.ok) {
-        throw new Error(`Labels ${res.status} ${res.statusText}`)
-      }
-      const labelsApi = await res.json()
-      const map = new Map()
-      for (const label of labelsApi) {
-        const bg = `#${label.color}`
-        const fg = getContrastYIQ(label.color)
-        map.set(label.labelId, {
-          id: label.labelId,
-          name: label.name,
-          bgColor: bg,
-          textColor: fg,
-        })
-      }
-      return map
-    },
-  })
+  const labelsQuery = useQuery(
+    assetQueries.labels({
+      collectionId,
+      token: workerToken,
+      apiUrl: apiBase,
+    }),
+  )
 
-  const assetsQuery = useQuery({
-    queryKey: computed(() => ['collections', collectionId.value, 'assets', 'stigs']),
-    enabled: computed(() => !!collectionId.value),
-    queryFn: async () => {
-      const res = await fetch(`${apiBase}/assets?collectionId=${collectionId.value}&projection=stigs`, {
-        headers: { Authorization: `Bearer ${oidcWorker.token}` },
-      })
-      if (!res.ok) {
-        throw new Error(`Assets ${res.status} ${res.statusText}`)
-      }
-      return await res.json()
-    },
-    placeholderData: prev => prev,
-  })
+  const assetsQuery = useQuery(
+    assetQueries.assetsWithStigs({
+      collectionId,
+      token: workerToken,
+      apiUrl: apiBase,
+    }),
+  )
 
   const items = computed(() => assetsQuery.data?.value ?? [])
   const labels = computed(() => labelsQuery.data?.value ?? null)

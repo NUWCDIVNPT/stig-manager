@@ -4,7 +4,7 @@ import { computed, ref } from 'vue'
 import ApiTree from '../features/NavTree/components/NavTree.vue'
 import { useNavTreeStore } from '../features/NavTree/stores/navTreeStore.js'
 import TabList from '../features/TabList/components/TabList.vue'
-import { useGlobalStateStore } from '../global-state/globalState.js'
+import { useGlobalStateStore } from '../global-state/globalAuthState.js'
 
 const { selectedData } = useNavTreeStore()
 const globalState = useGlobalStateStore()

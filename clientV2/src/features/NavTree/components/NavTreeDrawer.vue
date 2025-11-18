@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { useGlobalStateStore } from '../../../global-state/globalState.js'
+import { useGlobalStateStore } from '../../../global-state/globalAuthState.js'
 
 defineProps({
   visible: { type: Boolean, default: true },

@@ -1,4 +1,6 @@
 <script setup>
+import DOMPurify from 'dompurify'
+import { marked } from 'marked'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -30,6 +32,20 @@ const newCardTitle = ref('')
 const newCardContent = ref('')
 const isFormValid = computed(() => {
   return newCardTitle.value.trim().length > 0 && newCardContent.value.trim().length > 0
+})
+
+// Configure marked for better rendering
+marked.setOptions({
+  breaks: true, // Convert \n to <br>
+  gfm: true, // GitHub Flavored Markdown
+})
+
+// Computed preview of markdown content
+const markdownPreview = computed(() => {
+  if (!newCardContent.value) {
+    return ''
+  }
+  return formatContent(newCardContent.value)
 })
 
 function openCreateDialog() {
@@ -68,23 +84,14 @@ function formatContent(text) {
     return ''
   }
 
-  const lines = text.split('\n')
+  // Convert markdown to HTML
+  const html = marked(text)
 
-  return lines.map((line) => {
-    let formattedLine = line
-
-    if (/^\s*[-*]\s+/.test(formattedLine)) {
-      formattedLine = formattedLine.replace(/^\s*[-*]\s+/, '• ')
-    }
-
-    formattedLine = formattedLine.replace(/^\s*(\d+)[.)]\s+/, '$1. ')
-
-    formattedLine = formattedLine.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-
-    formattedLine = formattedLine.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="link">$1</a>')
-
-    return formattedLine
-  }).join('<br>')
+  // Sanitize to prevent XSS attacks
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'strike', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code', 'pre', 'blockquote', 'hr'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+  })
 }
 defineExpose({
   customCards,
@@ -108,7 +115,7 @@ defineExpose({
     v-if="isAdmin"
     v-model:visible="showDialog"
     modal
-    :style="{ width: '600px' }"
+    :style="{ width: '900px' }"
     :pt="{
       root: { class: 'custom-dialog-root' },
       header: { class: 'custom-dialog-header' },
@@ -130,15 +137,27 @@ defineExpose({
     </div>
     <div class="form-group">
       <label for="card-content">Card Content:<span class="required">*</span></label>
-      <Textarea
-        id="card-content"
-        v-model="newCardContent"
-        placeholder="Enter card content..."
-        rows="8"
-      />
-      <span class="formatting-hint">
-        Formatting: <strong>**bold**</strong> • <em>- bullet point</em> • <em>1. numbered list</em> • <em>[link text](url)</em>
-      </span>
+      <div class="markdown-editor">
+        <Textarea
+          id="card-content"
+          v-model="newCardContent"
+          placeholder="Enter card content using Markdown..."
+          rows="12"
+        />
+        <div class="preview-pane">
+          <div
+            v-if="!markdownPreview"
+            class="markdown-preview preview-empty"
+          >
+            Markdown preview will appear here...
+          </div>
+          <div
+            v-else
+            class="markdown-preview"
+            v-html="markdownPreview"
+          />
+        </div>
+      </div>
     </div>
     <template #footer>
       <Button
@@ -259,16 +278,127 @@ defineExpose({
   margin-left: 0.25rem;
 }
 
+.markdown-editor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  min-height: 300px;
+}
+
+.editor-pane,
+.preview-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.markdown-preview {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.375rem;
+  background: rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  min-height: 240px;
+}
+
+.preview-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  font-size: 0.875rem;
+}
+
 .formatting-hint {
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.5);
-  font-style: italic;
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
 }
 
-.formatting-hint strong,
-.formatting-hint em {
+.formatting-hint strong {
   color: rgba(255, 255, 255, 0.7);
+}
+
+/* Markdown Preview Styles */
+.markdown-preview :deep(h1),
+.markdown-preview :deep(h2),
+.markdown-preview :deep(h3),
+.markdown-preview :deep(h4),
+.markdown-preview :deep(h5),
+.markdown-preview :deep(h6) {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.markdown-preview :deep(h1) { font-size: 1.5em; }
+.markdown-preview :deep(h2) { font-size: 1.25em; }
+.markdown-preview :deep(h3) { font-size: 1.1em; }
+
+.markdown-preview :deep(p) {
+  margin: 0.5em 0;
+}
+
+.markdown-preview :deep(ul),
+.markdown-preview :deep(ol) {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.markdown-preview :deep(li) {
+  margin: 0.25em 0;
+}
+
+.markdown-preview :deep(a) {
+  color: var(--color-primary-blue);
+  text-decoration: none;
+}
+
+.markdown-preview :deep(a:hover) {
+  text-decoration: underline;
+}
+
+.markdown-preview :deep(code) {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+  font-family: 'Courier New', monospace;
+}
+
+.markdown-preview :deep(pre) {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.75em;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+
+.markdown-preview :deep(pre code) {
+  background: none;
+  padding: 0;
+}
+
+.markdown-preview :deep(blockquote) {
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  padding-left: 1em;
+  margin: 0.5em 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.markdown-preview :deep(hr) {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 1em 0;
 }
 
 :global(.custom-dialog-root) {
