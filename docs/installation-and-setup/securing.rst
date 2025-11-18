@@ -118,10 +118,12 @@ Logging and Analysis
 
 Many ASD checks specify requirements for how application log entries should collected, aggregated, managed, audited, and analysed. The STIG Manager application role in this is simple: it outputs all its log entries to STDOUT.  These log entries must be captured and retained in accordance with your log retention policy.  The developers of the STIG Manager API component have made efforts to ensure that the logs the application emits conform to requirements specified in the ASD where appropriate. However, there are several other components of a successful deployment that will produce logs that may also require management by your logging solution, such as the OIDC Provider, Database, and Container Platform.  
 
-Transport Layer Security 
+Transport Layer Security
 ---------------------------
 
-The ASD specifies the use use of TLS-secured connections to the application.  To meet this requirement, we strongly encourage deploying application components behind a reverse proxy that provides this capability. The reverse proxy should be able to handle many ASD requirements, such as TLS authentication, use of DoD Common Access Cards (CAC), and TLS encryption for the API, Web Client, and OIDC Provider.
+The ASD specifies the use of TLS-secured connections to the application. STIG Manager supports native TLS connections that can be configured using environment variables (see <Environment Variables> beginning with `STIGMAN_API_TLS_*`).
+
+A reverse proxy is still required to meet ASD requirements for mTLS authentication with DoD Common Access Cards (CAC) or client certificate authentication. The reverse proxy should be configured to handle TLS client certificate authentication and forward appropriate headers to the application. See :ref:`Deploy with Reverse Proxy <reverse-proxy>` for detailed configuration guidance.
 
 Security Updates, Advisories, and Policies
 ---------------------------------------------

@@ -1,15 +1,23 @@
 .. _reverse-proxy:
 
 
-Deploy with Reverse Proxy  
+Deploy with Reverse Proxy
 ########################################
 
 
 
-Reverse Proxy or Kubernetes Ingress Controller for TLS and CAC Authentication
----------------------------------------------------------------------------------------------------
+Reverse Proxy or Kubernetes Ingress Controller for mTLS/CAC Authentication
+-----------------------------------------------------------------------------------------
 
-To support HTTPS connections, STIG Manager components should be situated behind a reverse proxy or in a Kubernetes cluster.  Configure the reverse proxy (such as nginx) or the Kubernetes Ingress Controller in accordance with publisher documentation, local security requirements, and OIDC Provider (eg. Keycloak) documentation.
+STIG Manager supports native TLS connections without requiring a reverse proxy. You can configure HTTPS directly in the application using environment variables. See the <Environment Variables> beginning with `STIGMAN_API_TLS_*` in the documentation for details on enabling native TLS.
+
+A reverse proxy or Kubernetes Ingress Controller is still required for:
+
+- **mTLS (Mutual TLS)** for client certificate authentication (ie. CAC/PIV)
+- **Environmental requirements** such as centralized TLS termination, load balancing, or security policies
+- **Additional proxy features** like request filtering, rate limiting, or advanced routing
+
+If you need a reverse proxy, configure it (such as nginx) or your Kubernetes Ingress Controller in accordance with publisher documentation, local security requirements, and OIDC Provider (eg. Keycloak) documentation.
 
 **Keycloak Configuration for Reverse Proxy Environments:**
 
