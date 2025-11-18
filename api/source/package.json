@@ -43,8 +43,5 @@
     "uuid": "^9.0.1",
     "ws": "^8.18.3",
     "xlsx-template": "file:utils/xlsx-template-js-zip-upgrade"
-  },
-  "overrides": {
-    "glob": "10.3.6"
   }
 }
