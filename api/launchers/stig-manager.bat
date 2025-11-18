@@ -50,8 +50,8 @@
 ::==============================================================================
 :: STIGMAN_CLIENT_API_BASE
 ::
-::  | Default: "./api" | The base URL for Client requests to the API relative to
-::  the sever root at /
+::  | Default: "api" | The base URL for Client requests to the API relative to
+::  "window.location"
 ::
 ::  Affects: Client
 ::==============================================================================
@@ -136,18 +136,6 @@
 :: set STIGMAN_CLIENT_OIDC_PROVIDER=
 
 ::==============================================================================
-:: STIGMAN_CLIENT_SCOPE_PREFIX
-::
-::  | No default. | String used as a prefix for each scope when authenticating
-::  to the OIDC Provider. Some providers (Azure AD) expect scope requests in the
-::  format "api://<application_id>/<scope>", where "api://<application_id>/" is
-::  the required prefix.
-::
-::  Affects: Client
-::==============================================================================
-:: set STIGMAN_CLIENT_SCOPE_PREFIX=
-
-::==============================================================================
 :: STIGMAN_CLIENT_REAUTH_ACTION
 ::
 ::  | Default: "popup" | How to prompt for re-authentication when user
@@ -169,6 +157,29 @@
 ::  Affects: Client
 ::==============================================================================
 :: set STIGMAN_CLIENT_RESPONSE_MODE=
+
+::==============================================================================
+:: STIGMAN_CLIENT_SCOPE_PREFIX
+::
+::  | No default. | String used as a prefix for each scope when authenticating
+::  to the OIDC Provider. Some providers (Azure AD) expect scope requests in the
+::  format "api://<application_id>/<scope>", where "api://<application_id>/" is
+::  the required prefix.
+::
+::  Affects: Client
+::==============================================================================
+:: set STIGMAN_CLIENT_SCOPE_PREFIX=
+
+::==============================================================================
+:: STIGMAN_CLIENT_STATE_EVENTS
+::
+::  | Default: "true" | Whether the web client listens for server sent events
+::  (SSE) about the API state. Should only be disabled temporarily while
+::  resolving buffering issues on a reverse proxy.
+::
+::  Affects: Client
+::==============================================================================
+:: set STIGMAN_CLIENT_STATE_EVENTS=
 
 ::==============================================================================
 :: STIGMAN_CLIENT_STRICT_PKCE
@@ -408,6 +419,16 @@
 :: set STIGMAN_EXPERIMENTAL_APPDATA=
 
 ::==============================================================================
+:: STIGMAN_EXPERIMENTAL_LOGSTREAM
+::
+::  | Default:  "true" | Set to "false" to disable the experimental WebSocket
+::  for streaming API logs and the corresponding User Interface.
+::
+::  Affects: API, Client
+::==============================================================================
+:: set STIGMAN_EXPERIMENTAL_LOGSTREAM=
+
+::==============================================================================
 :: STIGMAN_LOG_LEVEL
 ::
 ::  | Default: "3" | Controls the granularity of the generated log output, from
@@ -533,6 +554,16 @@
 ::  Affects: API, Client
 ::==============================================================================
 :: set STIGMAN_JWT_USERNAME_CLAIM=
+
+::==============================================================================
+:: STIGMAN_OIDC_CA_CERTS
+::
+::  | No default. | The full path to a file with one or more PEM-encoded CA
+::  certificates for validating TLS connections to the OIDC Provider.
+::
+::  Affects: API
+::==============================================================================
+:: set STIGMAN_OIDC_CA_CERTS=
 
 ::==============================================================================
 :: STIGMAN_OIDC_PROVIDER

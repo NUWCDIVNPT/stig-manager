@@ -9,7 +9,7 @@ Deploy with Reverse Proxy
 Reverse Proxy or Kubernetes Ingress Controller for mTLS/CAC Authentication
 -----------------------------------------------------------------------------------------
 
-STIG Manager supports native TLS connections without requiring a reverse proxy. You can configure HTTPS directly in the application using environment variables. See the <Environment Variables> beginning with `STIGMAN_API_TLS_*` in the documentation for details on enabling native TLS.
+STIG Manager supports native TLS connections without requiring a reverse proxy. You can configure HTTPS directly in the application using environment variables. See the :ref:`Environment Variables` beginning with ``STIGMAN_API_TLS_*`` in the documentation for details on enabling native TLS.
 
 A reverse proxy or Kubernetes Ingress Controller is still required for:
 
