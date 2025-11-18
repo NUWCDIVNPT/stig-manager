@@ -121,7 +121,7 @@ Many ASD checks specify requirements for how application log entries should coll
 Transport Layer Security
 ---------------------------
 
-The ASD specifies the use of TLS-secured connections to the application. STIG Manager supports native TLS connections that can be configured using environment variables (see <Environment Variables> beginning with `STIGMAN_API_TLS_*`).
+The ASD specifies the use of TLS-secured connections to the application. STIG Manager supports native TLS connections that can be configured using environment variables (see :ref:`Environment Variables` beginning with ``STIGMAN_API_TLS_*``).
 
 A reverse proxy is still required to meet ASD requirements for mTLS authentication with DoD Common Access Cards (CAC) or client certificate authentication. The reverse proxy should be configured to handle TLS client certificate authentication and forward appropriate headers to the application. See :ref:`Deploy with Reverse Proxy <reverse-proxy>` for detailed configuration guidance.
 

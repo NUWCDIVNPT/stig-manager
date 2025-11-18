@@ -110,7 +110,7 @@ STIG Manager supports native TLS connections configured via environment variable
 **Native TLS:**
   - Configure HTTPS directly using environment variables
   - No reverse proxy needed for basic TLS encryption
-  - See :ref:`Environment Variables <Environment Variables>` beginning with `STIGMAN_API_TLS_*` for TLS configuration options
+  - See :ref:`Environment Variables` beginning with ``STIGMAN_API_TLS_*`` for TLS configuration options
 
 **Reverse Proxy (when required):**
   - Required for mTLS/CAC/PKI client certificate authentication
@@ -131,10 +131,12 @@ The Welcome Message and Image can be customized with environment variables to pr
   :show_caption: True 
   :title: Welcome Message Customizable Elements
 
-Enable Extra CA Certificates
-----------------------------------------
+Add Extra CA Certificates
+------------------------------------------------
 
-If your deployment requires trusting additional Certificate Authorities (CAs) beyond those built into Node.js, you can provide these via a file. You might do this if the API is connecting to an OIDC Provider using https. Set the ``NODE_EXTRA_CA_CERTS=file-path`` Node.js environment variable to direct Node to accept CA certificates you have provided, in addition to its built-in CA certs.  If using containers and an external CA file, ensure this file is mounted into the container at that path.
+If your deployment requires trusting additional Certificate Authorities (CAs) beyond those built into Node.js, you can provide these via a file. You might do this if the API is connecting to an OIDC Provider using https. You can set these specifically for STIG Manager by using the ``STIGMAN_OIDC_CA_CERTS`` environment variable to point to a file containing the additional CA certificates in PEM format. See :ref:`Environment Variables` for TLS configuration options.
+
+Alternatively, set the ``NODE_EXTRA_CA_CERTS=file-path`` Node.js environment variable to direct Node itself to accept CA certificates you have provided, in addition to its built-in CA certs.  If using containers and an external CA file, ensure this file is mounted into the container at that path.
 
 
 Iron Bank images include DoD certificates at: ``/etc/pki/ca-trust/source/anchors/Certificates_PKCS7_v5.7_DoD.pem``
