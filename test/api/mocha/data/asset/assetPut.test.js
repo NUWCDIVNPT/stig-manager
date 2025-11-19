@@ -58,6 +58,8 @@ describe('PUT - Asset', function () {
           expect(res.body.ip).to.equal('1.1.1.1')
           expect(res.body.noncomputing).to.equal(true)
           expect(res.body.labelIds, "Expect asset to have scrap label").to.eql([reference.scrapCollection.scrapLabel])
+          expect(res.body.labels).to.be.an('array').of.length(1)
+          expect(res.body.labels[0].labelId).to.equal(reference.scrapCollection.scrapLabel)
           expect(res.body.metadata.pocName).to.equal('poc2Put')
           expect(res.body.metadata.pocEmail).to.equal('pocEmailPut@email.com')
           expect(res.body.stigs, "Expect asset to have 3 stigs").to.be.an('array').of.length(3)
@@ -79,6 +81,7 @@ describe('PUT - Asset', function () {
           expect(effectedAsset.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
           expect(effectedAsset.description).to.equal('test desc')
           expect(effectedAsset.labelIds).to.have.lengthOf(1)
+          expect(effectedAsset.labels).to.be.an('array').of.length(1)
           expect(effectedAsset.stigs).to.be.an('array').of.length(3)
           for (const stig of effectedAsset.stigs) {
             expect(stig.benchmarkId).to.be.oneOf([

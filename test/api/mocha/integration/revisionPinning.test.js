@@ -376,6 +376,7 @@ describe(`POST - writeStigPropsByCollectionStig - /collections/{collectionId}/st
                               "755b8a28-9a68-11ec-b1bc-0242ac110002",
                               "5130dc84-9a68-11ec-b1bc-0242ac110002"
                               ],
+                            assetLabels: reference.testAsset.fullLabels,
                             ruleId: reference.ruleId,
                            ruleIds: [
                                   reference.ruleId
@@ -444,6 +445,7 @@ describe(`POST - writeStigPropsByCollectionStig - /collections/{collectionId}/st
                               "755b8a28-9a68-11ec-b1bc-0242ac110002",
                               "5130dc84-9a68-11ec-b1bc-0242ac110002"
                               ],
+                            assetLabels: reference.testAsset.fullLabels,
                             ruleId: reference.ruleIdPinnedRev,
                            ruleIds: [
                                   reference.ruleIdPinnedRev
@@ -512,6 +514,7 @@ describe(`POST - writeStigPropsByCollectionStig - /collections/{collectionId}/st
                               "755b8a28-9a68-11ec-b1bc-0242ac110002",
                               "5130dc84-9a68-11ec-b1bc-0242ac110002"
                               ],
+                            assetLabels: reference.testAsset.fullLabels,
                             ruleId: reference.ruleIdPinnedRev,
                            ruleIds: [
                                   reference.ruleIdPinnedRev
