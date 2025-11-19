@@ -1,6 +1,9 @@
 /* eslint-disable no-undef */
 let cachedEnv = null
 
+// this is used at boot strap to get the env and config of the api.
+// it is done like this because at bootstrap we dont load the entire app and have access
+// to things like global state, vue stuff.......
 export async function bootstrapEnv() {
   const stigmanEnv = STIGMAN?.Env
   const viteEnv = import.meta.env

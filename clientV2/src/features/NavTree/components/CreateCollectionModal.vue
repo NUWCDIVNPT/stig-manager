@@ -5,12 +5,15 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { computed, inject, ref, watch } from 'vue'
-import { useEnv } from '../../../global-state/useEnv'
-import { collectionKeys } from '../../../shared/queries/collectionKeys'
+import { collectionKeys } from '../../../shared/keys/collectionKeys.js'
+import { useEnv } from '../../../shared/stores/useEnv.js'
 
 const emit = defineEmits(['created'])
+// this is a two way binded prop that controls the visibility of the modal
 const visible = defineModel('visible', { type: Boolean, default: false })
 const worker = inject('worker', null)
+
+// needed for invalidating the collection query on creation to refetch
 const queryClient = useQueryClient()
 
 const name = ref('')
@@ -21,6 +24,7 @@ const apiUrl = useEnv().apiUrl
 
 const isFormValid = computed(() => name.value.trim().length > 0)
 
+// watch the visible prop to reset the form when the modal is closed
 watch(visible, (isOpen) => {
   if (!isOpen) {
     resetForm()
@@ -51,7 +55,7 @@ async function handleSubmit() {
       name: name.value.trim(),
       description: description.value.trim() || undefined,
       grants: [{
-        userId: '87',
+        userId: '87', /** TODO: Get current user id from stored user info  */
         roleId: 4, // Owner role
       }],
       metadata: {},

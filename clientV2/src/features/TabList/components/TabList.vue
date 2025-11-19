@@ -6,14 +6,25 @@ import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { watch } from 'vue'
 
+import { useTabCoordinatorStore } from '../../../shared/stores/tabCoordinatorStore.js'
 import { useTabList } from '../composeables/useTabList.js'
 
+// this prop is the selection from the nav tree
 const props = defineProps({
   selection: { type: Object, default: null },
 })
 
+// tabs: all open tabs
+// active: currently active tab
+// handleTabOpen: open a new tab
+// handleTabClose: close a tab
 const { tabs, active, handleTabOpen, handleTabClose } = useTabList()
 
+// tabCoordinator: handles tab lifecycle coordination
+// allows other features to request tabs to close
+const tabCoordinator = useTabCoordinatorStore()
+
+// watch for selection changes and open a new tab
 watch(
   () => props.selection,
   (val) => {
@@ -22,6 +33,18 @@ watch(
     }
   },
   { immediate: true },
+)
+
+// watch for tab close requests from the tabCoordinator
+watch(
+  () => tabCoordinator.closeSignal,
+  (signal) => {
+    if (!signal?.key) {
+      return
+    }
+    handleTabClose(signal.key)
+    tabCoordinator.clearCloseSignal()
+  },
 )
 </script>
 

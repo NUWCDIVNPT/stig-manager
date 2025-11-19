@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import { useGlobalStateStore } from '../global-state/globalAuthState.js'
+import { useGlobalStateStore } from '../shared/stores/globalAuthStore.js'
 import { setupOidcWorker } from '././oidcWorker.js'
 
 let OW = {}

@@ -1,8 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia'
 import Tree from 'primevue/tree'
 import { ref, watch } from 'vue'
 import { useNavTreeStore } from '../stores/navTreeStore'
 
+// nodes are items in the nav tree (collections)
 const props = defineProps({
   nodes: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
@@ -14,7 +16,10 @@ const expandedKeys = ref({ collections: true })
 const selectionKeys = ref({})
 
 const navTreeStore = useNavTreeStore()
+// need to use storeToRefs to keep the ref reactive
+const { selectedData } = storeToRefs(navTreeStore)
 
+// helper function to find a node by key
 function findNodeByKey(key, list) {
   for (const node of list ?? []) {
     if (node.key === key) {
@@ -30,11 +35,29 @@ function findNodeByKey(key, list) {
   return null
 }
 
-watch(selectionKeys, (map) => {
-  const key = Object.keys(map ?? {}).find(k => map[k])
-  const node = key ? findNodeByKey(key, props.nodes) : null
-  navTreeStore.select(node ?? null)
-})
+// watching the selectedKey in the Tree component to update the store.
+watch(
+  selectionKeys,
+  (map) => {
+    const key = Object.keys(map ?? {}).find(k => map[k])
+    const node = key ? findNodeByKey(key, props.nodes) : null
+    navTreeStore.select(node ?? null)
+  },
+  { deep: true },
+)
+
+// watching the selectedData in the store to update the selectionKeys in the Tree component.
+watch(
+  selectedData,
+  (node) => {
+    if (!node?.key) {
+      selectionKeys.value = {}
+      return
+    }
+    selectionKeys.value = { [node.key]: true }
+  },
+  { immediate: true },
+)
 
 function onNodeSelect(node) {
   emit('node-select', node)

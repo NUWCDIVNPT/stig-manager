@@ -1,8 +1,10 @@
 <script setup>
 import { computed } from 'vue'
-import { useCollectionAssetSummary } from '../composeables/useCollectionAssetSummary'
+import { useCollectionAssetSummary } from '../composeables/useCollectionAssetSummary.js'
+import { useDeleteCollection } from '../composeables/useDeleteCollection.js'
 import CollectionAssetTable from './CollectionAssetTable.vue'
 
+// props taken in are the object selexted in the navTree (collections data.)
 const props = defineProps({
   payload: {
     type: Object,
@@ -15,8 +17,12 @@ const collectionId = computed(() => selectedCollection.value?.collectionId ?? nu
 const collectionName = computed(() => selectedCollection.value?.name || 'Collection')
 const hasCollection = computed(() => Boolean(collectionId.value))
 
+// composable to handle fetching assets for the collection
 const { assets, isLoading, errorMessage } = useCollectionAssetSummary(collectionId)
 const assetCount = computed(() => assets.value.length)
+
+// composable to handle deleting the collection
+const { deleteCollection, isDeleting, errorMessage: deleteErrorMessage } = useDeleteCollection(collectionId)
 </script>
 
 <template>
@@ -37,13 +43,27 @@ const assetCount = computed(() => assets.value.length)
             ID: {{ collectionId }}
           </p>
         </div>
-        <div class="collection-view__stats">
-          <div class="collection-view__stat">
-            <span class="collection-view__stat-value">{{ assetCount }}</span>
-            <span class="collection-view__stat-label">Assets</span>
+        <div class="collection-view__actions">
+          <div class="collection-view__stats">
+            <div class="collection-view__stat">
+              <span class="collection-view__stat-value">{{ assetCount }}</span>
+              <span class="collection-view__stat-label">Assets</span>
+            </div>
           </div>
+          <button
+            class="collection-view__delete-button"
+            type="button"
+            :disabled="isDeleting"
+            @click="deleteCollection"
+          >
+            {{ isDeleting ? 'Deleting…' : 'Delete Collection' }}
+          </button>
         </div>
       </header>
+
+      <p v-if="deleteErrorMessage" class="collection-view__delete-error">
+        {{ deleteErrorMessage }}
+      </p>
 
       <CollectionAssetTable
         :assets="assets"
@@ -117,5 +137,38 @@ const assetCount = computed(() => assets.value.length)
 .collection-view__stat-label {
   font-size: 0.85rem;
   color: var(--sm-muted-text, #a6adba);
+}
+
+.collection-view__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.collection-view__delete-button {
+  border: 1px solid rgba(255, 120, 120, 0.4);
+  background: rgba(255, 59, 59, 0.15);
+  color: #ff8f8f;
+  border-radius: 6px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.collection-view__delete-button:hover:not(:disabled) {
+  background: rgba(255, 59, 59, 0.25);
+  border-color: rgba(255, 120, 120, 0.8);
+  color: #ffe2e2;
+}
+
+.collection-view__delete-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.collection-view__delete-error {
+  color: #ff8f8f;
+  margin: 0;
+  font-size: 0.9rem;
 }
 </style>

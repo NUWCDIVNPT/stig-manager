@@ -1,9 +1,9 @@
 <script setup>
 import { computed } from 'vue'
-import { useGlobalStateStore } from '../../global-state/globalAuthState.js'
+import { useGlobalAppStore } from '../../shared/stores/globalAppStore.js'
 
-const globalState = useGlobalStateStore()
-const classification = computed(() => globalState.classification || 'NONE')
+const globalAppState = useGlobalAppStore()
+const classification = computed(() => globalAppState.classification || 'NONE')
 
 class Classification {
   constructor(apiClassification) {

@@ -23,11 +23,14 @@ const components = {
 }
 
 export function useTabList() {
+  // default tabs
   const tabs = ref([
     { key: 'home', label: 'Home', component: markRaw(Home), props: {}, closable: false },
   ])
+  // active by default is home
   const active = ref('home')
 
+  // resolve the component name/info from the selected tab
   function resolveComponentName(selectedTab) {
     const key = selectedTab.key
     if (!key) {
@@ -47,6 +50,7 @@ export function useTabList() {
   }
 
   function handleTabOpen(selectedTab) {
+    // if tab already open, just activate it
     const existingOpenTab = tabs.value.find(t => t.key === selectedTab.key)
     if (existingOpenTab) {
       active.value = existingOpenTab.key
@@ -62,6 +66,7 @@ export function useTabList() {
   }
 
   function handleTabClose(key) {
+    // if tab is closable, close it (home is not closable)
     const target = key
     const idx = tabs.value.findIndex(t => t.key === key)
     if (idx === -1) {
@@ -71,6 +76,7 @@ export function useTabList() {
       return
     }
 
+    // if tab is active, activate the next tab (review logic)
     const wasActive = active.value === target
     tabs.value.splice(idx, 1)
     if (wasActive) {

@@ -1,19 +1,22 @@
 <script setup>
+import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 
-import ApiTree from '../features/NavTree/components/NavTree.vue'
+import NavTree from '../features/NavTree/components/NavTree.vue'
 import { useNavTreeStore } from '../features/NavTree/stores/navTreeStore.js'
 import TabList from '../features/TabList/components/TabList.vue'
-import { useGlobalStateStore } from '../global-state/globalAuthState.js'
+import { useGlobalAppStore } from '../shared/stores/globalAppStore.js'
 
-const { selectedData } = useNavTreeStore()
-const globalState = useGlobalStateStore()
+const navTreeStore = useNavTreeStore()
+// converts store state properties into reactive refs that stay connected to the store:
+const { selectedData } = storeToRefs(navTreeStore)
+const globalAppState = useGlobalAppStore()
 const navOpen = ref(true)
 const peekMode = ref(false)
 
 // check if banner is shown based on classification
 const bannerHeight = computed(() => {
-  const cls = globalState.classification
+  const cls = globalAppState.classification
   return cls && cls !== 'NONE' ? '20px' : '0px'
 })
 </script>
@@ -27,7 +30,7 @@ const bannerHeight = computed(() => {
     }"
   >
     <aside class="aside">
-      <ApiTree v-model:open="navOpen" v-model:peek-mode="peekMode" />
+      <NavTree v-model:open="navOpen" v-model:peek-mode="peekMode" />
     </aside>
 
     <main class="main">

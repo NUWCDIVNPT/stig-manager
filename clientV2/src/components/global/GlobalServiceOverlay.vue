@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onUnmounted, watch } from 'vue'
 import { useStateWorker } from '../../auth/useStateWorker.js'
-import ServiceReport from '../ServiceReport.vue'
+import ServiceReport from './ServiceReport.vue'
 
 const { state, error: serviceError } = useStateWorker()
 const displayed = computed(() => state.value ?? {})

@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
 
+// auth state global store
+// currently only used to store no token message? could be gotten rid of idk???
 export const useGlobalStateStore = defineStore('globalState', {
   state: () => ({
     noTokenMessage: null,
-    classification: null,
   }),
   actions: {
     setNoTokenMessage(msg) {
@@ -11,9 +12,6 @@ export const useGlobalStateStore = defineStore('globalState', {
     },
     clearNoTokenMessage() {
       this.noTokenMessage = null
-    },
-    setClassification(classification) {
-      this.classification = classification
     },
   },
 })

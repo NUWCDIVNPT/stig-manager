@@ -1,6 +1,7 @@
 <script setup>
 import { computed, inject } from 'vue'
 
+// emits logout and close
 const emit = defineEmits(['logout', 'close'])
 const oidcWorker = inject('worker')
 const tokenTooltip = computed(() => {

@@ -1,6 +1,6 @@
 <script setup>
 import { inject, onMounted, ref } from 'vue'
-import { useEnv } from '../../../global-state/useEnv'
+import { useEnv } from '../../../shared/stores/useEnv.js'
 import { fetchAppManagers } from '../api/api'
 import CustomCards from './CustomCards.vue'
 
@@ -17,6 +17,7 @@ onMounted(async () => {
       appManagers.value = await fetchAppManagers(worker, env.apiUrl)
     }
     catch (error) {
+      console.error('failed to fetch app managers', error)
     }
     finally {
       isLoadingManagers.value = false

@@ -6,20 +6,27 @@ import { useKeyboardNav } from '../composeables/useKeyboardNav'
 import { useNavTreeData } from '../composeables/useNavTreeData'
 import { useNavTreeNodes } from '../composeables/useNavTreeNodes'
 import { useOutsideClick } from '../composeables/useOutsideClick'
+import { useNavTreeStore } from '../stores/navTreeStore'
 import CreateCollectionModal from './CreateCollectionModal.vue'
 import NavTreeContent from './NavTreeContent.vue'
 import NavTreeDrawer from './NavTreeDrawer.vue'
 import NavTreeHeader from './NavTreeHeader.vue'
 import NavTreeTab from './NavTreeTab.vue'
 
-const queryClient = useQueryClient()
+const queryClient = useQueryClient() // needed for logout
 const oidcWorker = inject('worker')
+
+// these are two way binded props
 const visible = defineModel('open', { type: Boolean, default: true })
 const peekMode = defineModel('peekMode', { type: Boolean, default: false })
-const { collections, loading } = useNavTreeData()
+
+const navTreeStore = useNavTreeStore()
+const { collections, loading } = useNavTreeData() // fetch the data
 const nodes = useNavTreeNodes(collections, navTreeConfig)
+
 const wrapperRef = ref(null)
 const showCreateCollectionModal = ref(false)
+
 function closePeek() {
   if (!peekMode.value) {
     return
@@ -54,9 +61,22 @@ function handleClose() {
 }
 
 function onNodeSelect(node) {
+  // if the node is the new collection action, open the modal
   if (node.key === 'new-collection-action') {
     showCreateCollectionModal.value = true
   }
+}
+
+function handleCollectionCreated(collection) {
+  // close modal and select the new colletion in the navTREE
+  showCreateCollectionModal.value = false
+  navTreeStore.select({
+    key: String(collection.collectionId),
+    label: collection.name,
+    data: collection,
+    component: 'CollectionView',
+    icon: 'icon-collection',
+  })
 }
 </script>
 
@@ -69,7 +89,7 @@ function onNodeSelect(node) {
       </template>
       <NavTreeContent :nodes="nodes" :loading="loading" @node-select="onNodeSelect" />
     </NavTreeDrawer>
-    <CreateCollectionModal v-model:visible="showCreateCollectionModal" />
+    <CreateCollectionModal v-model:visible="showCreateCollectionModal" @created="handleCollectionCreated" />
   </div>
 </template>
 

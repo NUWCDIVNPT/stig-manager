@@ -1,5 +1,5 @@
 import { computed, inject } from 'vue'
-import { useCollectionsQuery } from '../queries/navTreeQueries'
+import { useCollectionsQuery } from '../queries/navTreeQueries.js'
 
 export function useNavTreeData() {
   const oidcWorker = inject('worker')

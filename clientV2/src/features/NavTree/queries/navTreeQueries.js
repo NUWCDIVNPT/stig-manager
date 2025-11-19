@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/vue-query'
 import { computed, unref } from 'vue'
-import { useEnv } from '../../../global-state/useEnv'
-import { collectionKeys } from '../../../shared/queries/collectionKeys'
+import { collectionKeys } from '../../../shared/keys/collectionKeys.js'
+import { useEnv } from '../../../shared/stores/useEnv.js'
 
 async function fetchCollections(token) {
   const response = await fetch(`${useEnv().apiUrl}/collections`, {
@@ -18,9 +18,9 @@ export function useCollectionsQuery(token, options = {}) {
     queryKey: collectionKeys.all,
     enabled: computed(() => Boolean(unref(token))),
     queryFn: () => fetchCollections(unref(token)),
-    staleTime: 2 * 60 * 1000,
-    refetchOnMount: true,
-    retry: 2,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchOnMount: true, // refetch on mount when stale time is exceeded
+    retry: 2, // retry 2 times
     ...options,
   })
 
@@ -32,6 +32,6 @@ export function useCollectionsQuery(token, options = {}) {
     collections,
     loading,
     error,
-    refetch: collectionsQuery.refetch,
+    refetch: collectionsQuery.refetch, // used for when we need to force a refresh of data
   }
 }

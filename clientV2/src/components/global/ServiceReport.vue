@@ -1,6 +1,11 @@
 <script setup>
 import { toRefs } from 'vue'
 
+/**
+ *
+ * THIS IS EXPERIMENTAL/INCOMPLETE
+ */
+
 const props = defineProps({
   hasError: { type: Boolean, default: false },
   dbClass: { type: String, default: 'offline' },

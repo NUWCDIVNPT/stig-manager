@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 
+// assets are the metrics for each asset in the collection
 const props = defineProps({
   assets: {
     type: Array,

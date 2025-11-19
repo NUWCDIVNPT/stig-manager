@@ -1,17 +1,21 @@
 <script setup>
 import { computed } from 'vue'
-import { useGlobalStateStore } from '../../../global-state/globalAuthState.js'
+import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 
+// props
+// visible: boolean, default true
+// peekMode: boolean, default false
 defineProps({
   visible: { type: Boolean, default: true },
   peekMode: { type: Boolean, default: false },
 })
 
-const globalState = useGlobalStateStore()
+// needed for banner height calculation
+const globalAppState = useGlobalAppStore()
 
 // check if banner is shown based on classification
 const bannerHeight = computed(() => {
-  const cls = globalState.classification
+  const cls = globalAppState.classification
   return cls && cls !== 'NONE' ? '20px' : '0px'
 })
 </script>

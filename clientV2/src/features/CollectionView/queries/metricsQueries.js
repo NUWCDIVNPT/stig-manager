@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/vue-query'
 import { computed, unref } from 'vue'
-import { useEnv } from '../../../global-state/useEnv'
-import { collectionKeys } from '../../../shared/queries/collectionKeys'
+import { collectionKeys } from '../../../shared/keys/collectionKeys.js'
+import { useEnv } from '../../../shared/stores/useEnv.js'
 
 async function fetchCollectionAssetSummary({ apiUrl = useEnv().apiUrl, token, collectionId }) {
   if (!collectionId) {
@@ -36,7 +36,9 @@ export function useCollectionAssetSummaryQuery({ collectionId, token }, options 
         token: unref(token),
       })
     },
-    staleTime: 2 * 60 * 1000,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchOnMount: true, // refetch on mount when stale time is exceeded
+    retry: 2, // retry 2 times
     ...options,
   })
 

@@ -8,8 +8,8 @@ import AuthBootstrapError from './auth/AuthBootstrapError.vue'
 import { bootstrapAuth } from './auth/bootstrap.js'
 import { bootstrapStateWorker, useStateWorker } from './auth/useStateWorker.js'
 import ApiStateBootstrap from './components/global/ApiStateBootstrap.vue'
-import { useGlobalStateStore } from './global-state/globalAuthState.js'
-import { bootstrapEnv, useEnv } from './global-state/useEnv.js'
+import { useGlobalAppStore } from './shared/stores/globalAppStore.js'
+import { bootstrapEnv, useEnv } from './shared/stores/useEnv.js'
 import './style.css'
 
 // this is a dark mode override — in the future we may want to make this dynamic based on user preference
@@ -64,9 +64,9 @@ try {
     const app = createApp(App)
     app.use(pinia)
 
-    // set classification in global state from env
-    const globalState = useGlobalStateStore(pinia)
-    globalState.setClassification(useEnv().apiConfig?.classification || 'NONE')
+    // set classification in global app state from env
+    const globalAppState = useGlobalAppStore(pinia)
+    globalAppState.setClassification(useEnv().apiConfig?.classification || 'NONE')
 
     app.use(PrimeVue, {
       theme: {
