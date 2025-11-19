@@ -116,10 +116,10 @@ Place the certificates in the locations specified in the .cnf file. This sample 
 
 The STIG Manager API must be configured to establish TLS connections to the MySQL database. The following environment variable must be set:
 
-  * ``STIGMAN_DB_TLS_CA_FILE`` - A file/path relative to the API /tls directory that contains the PEM encoded CA certificate used to sign the database TLS certificate. Setting this variable enables TLS connections to the database. 
+  * ``STIGMAN_DB_TLS_CA_FILE`` - An absolute path or a path relative to the API /tls directory that contains the PEM encoded CA certificate used to sign the database TLS certificate. Setting this variable enables TLS connections to the database. 
 
 .. note::
-   If using the STIG Manager API container, the CA certificate file must be mounted to the container at the path specified in the environment variable. (usually `/home/node/tls/<your-ca>.pem`)
+   For existing deployments using relative paths: Paths are resolved relative to the API /tls directory for backward compatibility. For new deployments: Absolute paths are recommended and align with the pattern used for server TLS and OIDC certificates. If using the STIG Manager API container, the CA certificate file must be mounted to the container at the specified path.
 
 
 Authenticate with Client Certificate
@@ -127,11 +127,11 @@ Authenticate with Client Certificate
 
 To authenticate to MySQL with a client certificate, the following environment variables must be set:
 
-  * *STIGMAN_DB_TLS_CERT_FILE* - A file/path relative to the API /tls directory that contains the PEM encoded Client certificate used when authenticating the database client.
-  * *STIGMAN_DB_TLS_KEY_FILE* - A file/path relative to the API /tls directory that contains the PEM encoded Client private key used when authenticating the database client.
+  * *STIGMAN_DB_TLS_CERT_FILE* - An absolute path or a path relative to the API /tls directory that contains the PEM encoded Client certificate used when authenticating the database client.
+  * *STIGMAN_DB_TLS_KEY_FILE* - An absolute path or a path relative to the API /tls directory that contains the PEM encoded Client private key used when authenticating the database client.
 
 .. note::
-   If using the STIG Manager API container, the client certificate and key files must be mounted to the container at the path specified in the environment variable. (usually `/home/node/tls/<your-client-cert/key>.pem`)
+   For existing deployments using relative paths: Paths are resolved relative to the API /tls directory for backward compatibility. For new deployments: Absolute paths are recommended and align with the pattern used for server TLS and OIDC certificates. If using the STIG Manager API container, the client certificate and key files must be mounted to the container at the specified path.
 
 The stigman API user must be altered in MySQL such that it is identified by the subject of the valid X.509 certificate it will use to authenticate. The following command, customized to suit your certificates, will accomplish this:
 ``ALTER USER stigman@'%' IDENTIFIED BY '' REQUIRE SUBJECT '/C=US/ST=California/L=Santa Clara/CN=fake-client';``

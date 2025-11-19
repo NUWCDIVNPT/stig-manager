@@ -138,6 +138,24 @@ async function setupSchema() {
 }
 
 /**
+ * Resolves a database TLS certificate path.
+ * Detects if the path is absolute or relative and returns the appropriate resolved path.
+ * Relative paths are resolved relative to the /tls directory for backward compatibility.
+ * 
+ * @param {string} certPath - The certificate path from configuration
+ * @returns {string} The resolved absolute path
+ */
+function resolveDbCertPath(certPath) {
+  if (path.isAbsolute(certPath)) {
+    // Path is already absolute, use it directly
+    return certPath
+  } else {
+    // Path is relative, resolve it relative to the /tls directory (legacy behavior)
+    return path.join(__dirname, '..', 'tls', certPath)
+  }
+}
+
+/**
  * Generates the pool configuration object based on the application configuration.
  * @returns {Object} The pool configuration object.
  */
@@ -169,13 +187,13 @@ function getPoolConfig() {
   if (config.database.tls.ca_file || config.database.tls.cert_file || config.database.tls.key_file) {
     const sslConfig = {}
     if (config.database.tls.ca_file) {
-      sslConfig.ca = fs.readFileSync(path.join(__dirname, '..', 'tls', config.database.tls.ca_file))
+      sslConfig.ca = fs.readFileSync(resolveDbCertPath(config.database.tls.ca_file))
     }
     if (config.database.tls.cert_file) {
-      sslConfig.cert = fs.readFileSync(path.join(__dirname, '..', 'tls', config.database.tls.cert_file))
+      sslConfig.cert = fs.readFileSync(resolveDbCertPath(config.database.tls.cert_file))
     }
     if (config.database.tls.key_file) {
-      sslConfig.key = fs.readFileSync(path.join(__dirname, '..', 'tls', config.database.tls.key_file))
+      sslConfig.key = fs.readFileSync(resolveDbCertPath(config.database.tls.key_file))
     }
     poolConfig.ssl = sslConfig
   }
