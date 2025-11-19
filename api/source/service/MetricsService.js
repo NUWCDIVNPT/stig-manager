@@ -568,6 +568,8 @@ const baseCols = {
     'rev.marking',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
+    `DATE_FORMAT(rev.benchmarkDateSql, '%Y-%m-%d') as revisionDate`,
+
   ],
   asset: [
     'cast(a.assetId as char) as assetId',
@@ -613,6 +615,7 @@ const baseCols = {
     'stig.title',
     'rev.marking',
     'rev.revisionStr',
+    `DATE_FORMAT(rev.benchmarkDateSql, '%Y-%m-%d') as revisionDate`,
     'count(distinct a.collectionId) as collections',
     'count(distinct a.assetId) as assets',
     'rev.ruleCount'
@@ -628,6 +631,8 @@ const baseColsFlat = {
     'rev.marking',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
+    `DATE_FORMAT(rev.benchmarkDateSql, '%Y-%m-%d') as revisionDate`,
+
   ],
   asset: [
     'cast(a.assetId as char) as assetId',
@@ -667,6 +672,7 @@ const baseColsFlat = {
     'stig.title',
     'rev.marking',
     'rev.revisionStr',
+    `DATE_FORMAT(rev.benchmarkDateSql, '%Y-%m-%d') as revisionDate`,
     'count(distinct a.collectionId) as collections',
     'count(distinct a.assetId) as assets',
     'rev.ruleCount'

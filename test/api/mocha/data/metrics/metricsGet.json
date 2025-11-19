@@ -3,10 +3,11 @@
     "lvl4": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -46,10 +47,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 2,
         "ruleCount": 287,
         "metrics": {
@@ -91,10 +93,11 @@
     "stigmanadmin": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -134,10 +137,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 2,
         "ruleCount": 287,
         "metrics": {
@@ -179,10 +183,11 @@
     "lvl1": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -222,10 +227,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -267,10 +273,11 @@
     "lvl2": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -310,10 +317,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 2,
         "ruleCount": 287,
         "metrics": {
@@ -355,10 +363,11 @@
     "lvl3": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -398,10 +407,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 2,
         "ruleCount": 287,
         "metrics": {
@@ -457,10 +467,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -554,10 +565,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -647,10 +659,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
           "minTs": "2020-08-11T23:37:48Z",
@@ -740,10 +753,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -828,10 +842,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -916,10 +931,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -1011,10 +1027,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
           "minTs": "2020-08-11T23:37:48Z",
@@ -1104,10 +1121,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -1201,10 +1219,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -1289,10 +1308,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -1375,6 +1395,194 @@
     ],
     "lvl2": [
       {
+        "assetId": "62",
+        "name": "Collection_X_asset",
+        "labels": [
+          {
+            "name": "test-label-full",
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+          }
+        ],
+        "benchmarkId": "VPN_SRG_TEST",
+        "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
+        "revisionStr": "V1R1",
+        "revisionPinned": false,
+        "revisionDate": "2019-07-19",
+        "metrics": {
+          "maxTs": "2022-01-26T01:23:06Z",
+          "minTs": "2020-08-11T23:37:48Z",
+          "results": {
+            "fail": {
+              "total": 1,
+              "resultEngine": 0
+            },
+            "pass": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "error": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "fixed": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "unknown": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notchecked": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notselected": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "informational": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notapplicable": {
+              "total": 2,
+              "resultEngine": 0
+            }
+          },
+          "assessed": 3,
+          "findings": {
+            "low": 0,
+            "high": 0,
+            "medium": 1
+          },
+          "statuses": {
+            "saved": {
+              "total": 1,
+              "resultEngine": 0
+            },
+            "accepted": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "rejected": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "submitted": {
+              "total": 2,
+              "resultEngine": 0
+            }
+          },
+          "maxTouchTs": "2022-01-26T01:23:06Z",
+          "assessments": 81,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 3
+          },
+          "assessmentsBySeverity": {
+            "low": 7,
+            "high": 11,
+            "medium": 63
+          }
+        }
+      },
+      {
+        "assetId": "62",
+        "name": "Collection_X_asset",
+        "labels": [
+          {
+            "name": "test-label-full",
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+          }
+        ],
+        "benchmarkId": "Windows_10_STIG_TEST",
+        "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
+        "revisionStr": "V1R23",
+        "revisionPinned": false,
+        "revisionDate": "2020-06-17",
+        "metrics": {
+          "maxTs": null,
+          "minTs": null,
+          "results": {
+            "fail": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "pass": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "error": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "fixed": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "unknown": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notchecked": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notselected": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "informational": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notapplicable": {
+              "total": 0,
+              "resultEngine": 0
+            }
+          },
+          "assessed": 0,
+          "findings": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "statuses": {
+            "saved": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "accepted": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "rejected": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "submitted": {
+              "total": 0,
+              "resultEngine": 0
+            }
+          },
+          "maxTouchTs": null,
+          "assessments": 287,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "assessmentsBySeverity": {
+            "low": 18,
+            "high": 26,
+            "medium": 243
+          }
+        }
+      },
+      {
         "assetId": "42",
         "name": "Collection_X_lvl1_asset-1",
         "labels": [
@@ -1388,10 +1596,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -1485,10 +1694,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -1569,200 +1779,15 @@
         }
       },
       {
-        "assetId": "62",
-        "name": "Collection_X_asset",
-        "labels": [
-          {
-            "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
-          }
-        ],
-        "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
-        "title": "Virtual Private Network (VPN) Security Requirements Guide",
-        "revisionStr": "V1R1",
-        "revisionPinned": false,
-        "metrics": {
-          "maxTs": "2022-01-26T01:23:06Z",
-          "minTs": "2020-08-11T23:37:48Z",
-          "results": {
-            "fail": {
-              "total": 1,
-              "resultEngine": 0
-            },
-            "pass": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "error": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "fixed": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "unknown": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notchecked": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notselected": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "informational": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notapplicable": {
-              "total": 2,
-              "resultEngine": 0
-            }
-          },
-          "assessed": 3,
-          "findings": {
-            "low": 0,
-            "high": 0,
-            "medium": 1
-          },
-          "statuses": {
-            "saved": {
-              "total": 1,
-              "resultEngine": 0
-            },
-            "accepted": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "rejected": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "submitted": {
-              "total": 2,
-              "resultEngine": 0
-            }
-          },
-          "maxTouchTs": "2022-01-26T01:23:06Z",
-          "assessments": 81,
-          "assessedBySeverity": {
-            "low": 0,
-            "high": 0,
-            "medium": 3
-          },
-          "assessmentsBySeverity": {
-            "low": 7,
-            "high": 11,
-            "medium": 63
-          }
-        }
-      },
-      {
-        "assetId": "62",
-        "name": "Collection_X_asset",
-        "labels": [
-          {
-            "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
-          }
-        ],
-        "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
-        "title": "Windows 10 Security Technical Implementation Guide",
-        "revisionStr": "V1R23",
-        "revisionPinned": false,
-        "metrics": {
-          "maxTs": null,
-          "minTs": null,
-          "results": {
-            "fail": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "pass": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "error": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "fixed": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "unknown": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notchecked": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notselected": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "informational": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notapplicable": {
-              "total": 0,
-              "resultEngine": 0
-            }
-          },
-          "assessed": 0,
-          "findings": {
-            "low": 0,
-            "high": 0,
-            "medium": 0
-          },
-          "statuses": {
-            "saved": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "accepted": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "rejected": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "submitted": {
-              "total": 0,
-              "resultEngine": 0
-            }
-          },
-          "maxTouchTs": null,
-          "assessments": 287,
-          "assessedBySeverity": {
-            "low": 0,
-            "high": 0,
-            "medium": 0
-          },
-          "assessmentsBySeverity": {
-            "low": 18,
-            "high": 26,
-            "medium": 243
-          }
-        }
-      },
-      {
         "assetId": "154",
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -1847,10 +1872,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -1933,6 +1959,194 @@
     ],
     "lvl3": [
       {
+        "assetId": "62",
+        "name": "Collection_X_asset",
+        "labels": [
+          {
+            "name": "test-label-full",
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+          }
+        ],
+        "benchmarkId": "VPN_SRG_TEST",
+        "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
+        "revisionStr": "V1R1",
+        "revisionPinned": false,
+        "revisionDate": "2019-07-19",
+        "metrics": {
+          "maxTs": "2022-01-26T01:23:06Z",
+          "minTs": "2020-08-11T23:37:48Z",
+          "results": {
+            "fail": {
+              "total": 1,
+              "resultEngine": 0
+            },
+            "pass": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "error": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "fixed": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "unknown": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notchecked": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notselected": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "informational": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notapplicable": {
+              "total": 2,
+              "resultEngine": 0
+            }
+          },
+          "assessed": 3,
+          "findings": {
+            "low": 0,
+            "high": 0,
+            "medium": 1
+          },
+          "statuses": {
+            "saved": {
+              "total": 1,
+              "resultEngine": 0
+            },
+            "accepted": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "rejected": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "submitted": {
+              "total": 2,
+              "resultEngine": 0
+            }
+          },
+          "maxTouchTs": "2022-01-26T01:23:06Z",
+          "assessments": 81,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 3
+          },
+          "assessmentsBySeverity": {
+            "low": 7,
+            "high": 11,
+            "medium": 63
+          }
+        }
+      },
+      {
+        "assetId": "62",
+        "name": "Collection_X_asset",
+        "labels": [
+          {
+            "name": "test-label-full",
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+          }
+        ],
+        "benchmarkId": "Windows_10_STIG_TEST",
+        "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
+        "revisionStr": "V1R23",
+        "revisionPinned": false,
+        "revisionDate": "2020-06-17",
+        "metrics": {
+          "maxTs": null,
+          "minTs": null,
+          "results": {
+            "fail": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "pass": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "error": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "fixed": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "unknown": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notchecked": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notselected": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "informational": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notapplicable": {
+              "total": 0,
+              "resultEngine": 0
+            }
+          },
+          "assessed": 0,
+          "findings": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "statuses": {
+            "saved": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "accepted": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "rejected": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "submitted": {
+              "total": 0,
+              "resultEngine": 0
+            }
+          },
+          "maxTouchTs": null,
+          "assessments": 287,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "assessmentsBySeverity": {
+            "low": 18,
+            "high": 26,
+            "medium": 243
+          }
+        }
+      },
+      {
         "assetId": "42",
         "name": "Collection_X_lvl1_asset-1",
         "labels": [
@@ -1946,10 +2160,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -2043,10 +2258,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -2127,200 +2343,15 @@
         }
       },
       {
-        "assetId": "62",
-        "name": "Collection_X_asset",
-        "labels": [
-          {
-            "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
-          }
-        ],
-        "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
-        "title": "Virtual Private Network (VPN) Security Requirements Guide",
-        "revisionStr": "V1R1",
-        "revisionPinned": false,
-        "metrics": {
-          "maxTs": "2022-01-26T01:23:06Z",
-          "minTs": "2020-08-11T23:37:48Z",
-          "results": {
-            "fail": {
-              "total": 1,
-              "resultEngine": 0
-            },
-            "pass": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "error": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "fixed": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "unknown": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notchecked": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notselected": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "informational": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notapplicable": {
-              "total": 2,
-              "resultEngine": 0
-            }
-          },
-          "assessed": 3,
-          "findings": {
-            "low": 0,
-            "high": 0,
-            "medium": 1
-          },
-          "statuses": {
-            "saved": {
-              "total": 1,
-              "resultEngine": 0
-            },
-            "accepted": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "rejected": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "submitted": {
-              "total": 2,
-              "resultEngine": 0
-            }
-          },
-          "maxTouchTs": "2022-01-26T01:23:06Z",
-          "assessments": 81,
-          "assessedBySeverity": {
-            "low": 0,
-            "high": 0,
-            "medium": 3
-          },
-          "assessmentsBySeverity": {
-            "low": 7,
-            "high": 11,
-            "medium": 63
-          }
-        }
-      },
-      {
-        "assetId": "62",
-        "name": "Collection_X_asset",
-        "labels": [
-          {
-            "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
-          }
-        ],
-        "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
-        "title": "Windows 10 Security Technical Implementation Guide",
-        "revisionStr": "V1R23",
-        "revisionPinned": false,
-        "metrics": {
-          "maxTs": null,
-          "minTs": null,
-          "results": {
-            "fail": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "pass": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "error": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "fixed": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "unknown": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notchecked": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notselected": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "informational": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notapplicable": {
-              "total": 0,
-              "resultEngine": 0
-            }
-          },
-          "assessed": 0,
-          "findings": {
-            "low": 0,
-            "high": 0,
-            "medium": 0
-          },
-          "statuses": {
-            "saved": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "accepted": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "rejected": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "submitted": {
-              "total": 0,
-              "resultEngine": 0
-            }
-          },
-          "maxTouchTs": null,
-          "assessments": 287,
-          "assessedBySeverity": {
-            "low": 0,
-            "high": 0,
-            "medium": 0
-          },
-          "assessmentsBySeverity": {
-            "low": 18,
-            "high": 26,
-            "medium": 243
-          }
-        }
-      },
-      {
         "assetId": "154",
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -2405,10 +2436,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -2491,6 +2523,194 @@
     ],
     "lvl4": [
       {
+        "assetId": "62",
+        "name": "Collection_X_asset",
+        "labels": [
+          {
+            "name": "test-label-full",
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+          }
+        ],
+        "benchmarkId": "VPN_SRG_TEST",
+        "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
+        "revisionStr": "V1R1",
+        "revisionPinned": false,
+        "revisionDate": "2019-07-19",
+        "metrics": {
+          "maxTs": "2022-01-26T01:23:06Z",
+          "minTs": "2020-08-11T23:37:48Z",
+          "results": {
+            "fail": {
+              "total": 1,
+              "resultEngine": 0
+            },
+            "pass": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "error": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "fixed": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "unknown": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notchecked": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notselected": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "informational": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notapplicable": {
+              "total": 2,
+              "resultEngine": 0
+            }
+          },
+          "assessed": 3,
+          "findings": {
+            "low": 0,
+            "high": 0,
+            "medium": 1
+          },
+          "statuses": {
+            "saved": {
+              "total": 1,
+              "resultEngine": 0
+            },
+            "accepted": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "rejected": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "submitted": {
+              "total": 2,
+              "resultEngine": 0
+            }
+          },
+          "maxTouchTs": "2022-01-26T01:23:06Z",
+          "assessments": 81,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 3
+          },
+          "assessmentsBySeverity": {
+            "low": 7,
+            "high": 11,
+            "medium": 63
+          }
+        }
+      },
+      {
+        "assetId": "62",
+        "name": "Collection_X_asset",
+        "labels": [
+          {
+            "name": "test-label-full",
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+          }
+        ],
+        "benchmarkId": "Windows_10_STIG_TEST",
+        "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
+        "revisionStr": "V1R23",
+        "revisionPinned": false,
+        "revisionDate": "2020-06-17",
+        "metrics": {
+          "maxTs": null,
+          "minTs": null,
+          "results": {
+            "fail": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "pass": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "error": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "fixed": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "unknown": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notchecked": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notselected": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "informational": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "notapplicable": {
+              "total": 0,
+              "resultEngine": 0
+            }
+          },
+          "assessed": 0,
+          "findings": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "statuses": {
+            "saved": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "accepted": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "rejected": {
+              "total": 0,
+              "resultEngine": 0
+            },
+            "submitted": {
+              "total": 0,
+              "resultEngine": 0
+            }
+          },
+          "maxTouchTs": null,
+          "assessments": 287,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "assessmentsBySeverity": {
+            "low": 18,
+            "high": 26,
+            "medium": 243
+          }
+        }
+      },
+      {
         "assetId": "42",
         "name": "Collection_X_lvl1_asset-1",
         "labels": [
@@ -2504,10 +2724,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -2601,10 +2822,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -2685,200 +2907,15 @@
         }
       },
       {
-        "assetId": "62",
-        "name": "Collection_X_asset",
-        "labels": [
-          {
-            "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
-          }
-        ],
-        "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
-        "title": "Virtual Private Network (VPN) Security Requirements Guide",
-        "revisionStr": "V1R1",
-        "revisionPinned": false,
-        "metrics": {
-          "maxTs": "2022-01-26T01:23:06Z",
-          "minTs": "2020-08-11T23:37:48Z",
-          "results": {
-            "fail": {
-              "total": 1,
-              "resultEngine": 0
-            },
-            "pass": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "error": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "fixed": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "unknown": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notchecked": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notselected": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "informational": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notapplicable": {
-              "total": 2,
-              "resultEngine": 0
-            }
-          },
-          "assessed": 3,
-          "findings": {
-            "low": 0,
-            "high": 0,
-            "medium": 1
-          },
-          "statuses": {
-            "saved": {
-              "total": 1,
-              "resultEngine": 0
-            },
-            "accepted": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "rejected": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "submitted": {
-              "total": 2,
-              "resultEngine": 0
-            }
-          },
-          "maxTouchTs": "2022-01-26T01:23:06Z",
-          "assessments": 81,
-          "assessedBySeverity": {
-            "low": 0,
-            "high": 0,
-            "medium": 3
-          },
-          "assessmentsBySeverity": {
-            "low": 7,
-            "high": 11,
-            "medium": 63
-          }
-        }
-      },
-      {
-        "assetId": "62",
-        "name": "Collection_X_asset",
-        "labels": [
-          {
-            "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
-          }
-        ],
-        "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
-        "title": "Windows 10 Security Technical Implementation Guide",
-        "revisionStr": "V1R23",
-        "revisionPinned": false,
-        "metrics": {
-          "maxTs": null,
-          "minTs": null,
-          "results": {
-            "fail": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "pass": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "error": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "fixed": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "unknown": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notchecked": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notselected": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "informational": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "notapplicable": {
-              "total": 0,
-              "resultEngine": 0
-            }
-          },
-          "assessed": 0,
-          "findings": {
-            "low": 0,
-            "high": 0,
-            "medium": 0
-          },
-          "statuses": {
-            "saved": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "accepted": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "rejected": {
-              "total": 0,
-              "resultEngine": 0
-            },
-            "submitted": {
-              "total": 0,
-              "resultEngine": 0
-            }
-          },
-          "maxTouchTs": null,
-          "assessments": 287,
-          "assessedBySeverity": {
-            "low": 0,
-            "high": 0,
-            "medium": 0
-          },
-          "assessmentsBySeverity": {
-            "low": 18,
-            "high": 26,
-            "medium": 243
-          }
-        }
-      },
-      {
         "assetId": "154",
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -2963,10 +3000,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -3064,10 +3102,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -3163,10 +3202,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -3262,10 +3302,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -3361,10 +3402,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -3460,10 +3502,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -3555,10 +3598,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -3643,10 +3687,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -3733,10 +3778,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -3823,10 +3869,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -3911,10 +3958,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -4001,10 +4049,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -4089,10 +4138,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -4179,10 +4229,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -4267,10 +4318,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -5111,8 +5163,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
@@ -5210,8 +5262,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
@@ -5300,8 +5352,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
@@ -5484,8 +5536,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
@@ -5583,8 +5635,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
@@ -5673,8 +5725,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
@@ -5857,8 +5909,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
@@ -5956,8 +6008,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
@@ -6046,8 +6098,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
@@ -17816,10 +17868,11 @@
     "stigmanadmin": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -17903,10 +17956,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 3,
         "ruleCount": 287,
         "metrics": {
@@ -17992,10 +18046,11 @@
     "lvl1": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -18079,10 +18134,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -18168,10 +18224,11 @@
     "lvl2": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -18255,10 +18312,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 3,
         "ruleCount": 287,
         "metrics": {
@@ -18344,10 +18402,11 @@
     "lvl3": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -18431,10 +18490,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 3,
         "ruleCount": 287,
         "metrics": {
@@ -18520,10 +18580,11 @@
     "lvl4": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -18607,10 +18668,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 3,
         "ruleCount": 287,
         "metrics": {
@@ -18698,10 +18760,11 @@
     "stigmanadmin": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -18787,10 +18850,11 @@
     "lvl1": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -18876,10 +18940,11 @@
     "lvl2": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -18965,10 +19030,11 @@
     "lvl3": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -19054,10 +19120,11 @@
     "lvl4": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -19145,10 +19212,11 @@
     "stigmanadmin": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -19232,10 +19300,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -19321,10 +19390,11 @@
     "lvl1": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -19410,10 +19480,11 @@
     "lvl2": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -19497,10 +19568,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -19586,10 +19658,11 @@
     "lvl3": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -19673,10 +19746,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -19762,10 +19836,11 @@
     "lvl4": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -19849,10 +19924,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -19940,10 +20016,11 @@
     "stigmanadmin": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -20027,10 +20104,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 2,
         "ruleCount": 287,
         "metrics": {
@@ -20116,10 +20194,11 @@
     "lvl1": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -20203,10 +20282,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -20292,10 +20372,11 @@
     "lvl2": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -20379,10 +20460,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 2,
         "ruleCount": 287,
         "metrics": {
@@ -20468,10 +20550,11 @@
     "lvl3": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -20555,10 +20638,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 2,
         "ruleCount": 287,
         "metrics": {
@@ -20644,10 +20728,11 @@
     "lvl4": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -20731,10 +20816,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 2,
         "ruleCount": 287,
         "metrics": {
@@ -20822,10 +20908,11 @@
     "stigmanadmin": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -20909,10 +20996,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -20998,10 +21086,11 @@
     "lvl1": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -21087,10 +21176,11 @@
     "lvl2": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -21174,10 +21264,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -21263,10 +21354,11 @@
     "lvl3": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -21350,10 +21442,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -21439,10 +21532,11 @@
     "lvl4": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -21526,10 +21620,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -21629,10 +21724,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -21682,10 +21778,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -21731,10 +21828,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
           "minTs": "2020-08-11T23:37:48Z",
@@ -21780,10 +21878,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -21824,10 +21923,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -21868,10 +21968,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -21919,10 +22020,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
           "minTs": "2020-08-11T23:37:48Z",
@@ -21968,10 +22070,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -22021,10 +22124,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -22065,10 +22169,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -22107,6 +22212,106 @@
     ],
     "lvl2": [
       {
+        "assetId": "62",
+        "name": "Collection_X_asset",
+        "labels": [
+          {
+            "name": "test-label-full",
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+          }
+        ],
+        "benchmarkId": "VPN_SRG_TEST",
+        "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
+        "revisionStr": "V1R1",
+        "revisionPinned": false,
+        "revisionDate": "2019-07-19",
+        "metrics": {
+          "maxTs": "2022-01-26T01:23:06Z",
+          "minTs": "2020-08-11T23:37:48Z",
+          "results": {
+            "fail": 1,
+            "pass": 0,
+            "other": 0,
+            "notapplicable": 2
+          },
+          "assessed": 3,
+          "findings": {
+            "low": 0,
+            "high": 0,
+            "medium": 1
+          },
+          "statuses": {
+            "saved": 1,
+            "accepted": 0,
+            "rejected": 0,
+            "submitted": 2
+          },
+          "maxTouchTs": "2022-01-26T01:23:06Z",
+          "assessments": 81,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 3
+          },
+          "assessmentsBySeverity": {
+            "low": 7,
+            "high": 11,
+            "medium": 63
+          }
+        }
+      },
+      {
+        "assetId": "62",
+        "name": "Collection_X_asset",
+        "labels": [
+          {
+            "name": "test-label-full",
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+          }
+        ],
+        "benchmarkId": "Windows_10_STIG_TEST",
+        "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
+        "revisionStr": "V1R23",
+        "revisionPinned": false,
+        "revisionDate": "2020-06-17",
+        "metrics": {
+          "maxTs": null,
+          "minTs": null,
+          "results": {
+            "fail": 0,
+            "pass": 0,
+            "other": 0,
+            "notapplicable": 0
+          },
+          "assessed": 0,
+          "findings": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "statuses": {
+            "saved": 0,
+            "accepted": 0,
+            "rejected": 0,
+            "submitted": 0
+          },
+          "maxTouchTs": null,
+          "assessments": 287,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "assessmentsBySeverity": {
+            "low": 18,
+            "high": 26,
+            "medium": 243
+          }
+        }
+      },
+      {
         "assetId": "42",
         "name": "Collection_X_lvl1_asset-1",
         "labels": [
@@ -22120,10 +22325,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -22173,10 +22379,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -22213,112 +22420,15 @@
         }
       },
       {
-        "assetId": "62",
-        "name": "Collection_X_asset",
-        "labels": [
-          {
-            "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
-          }
-        ],
-        "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
-        "title": "Virtual Private Network (VPN) Security Requirements Guide",
-        "revisionStr": "V1R1",
-        "revisionPinned": false,
-        "metrics": {
-          "maxTs": "2022-01-26T01:23:06Z",
-          "minTs": "2020-08-11T23:37:48Z",
-          "results": {
-            "fail": 1,
-            "pass": 0,
-            "other": 0,
-            "notapplicable": 2
-          },
-          "assessed": 3,
-          "findings": {
-            "low": 0,
-            "high": 0,
-            "medium": 1
-          },
-          "statuses": {
-            "saved": 1,
-            "accepted": 0,
-            "rejected": 0,
-            "submitted": 2
-          },
-          "maxTouchTs": "2022-01-26T01:23:06Z",
-          "assessments": 81,
-          "assessedBySeverity": {
-            "low": 0,
-            "high": 0,
-            "medium": 3
-          },
-          "assessmentsBySeverity": {
-            "low": 7,
-            "high": 11,
-            "medium": 63
-          }
-        }
-      },
-      {
-        "assetId": "62",
-        "name": "Collection_X_asset",
-        "labels": [
-          {
-            "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
-          }
-        ],
-        "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
-        "title": "Windows 10 Security Technical Implementation Guide",
-        "revisionStr": "V1R23",
-        "revisionPinned": false,
-        "metrics": {
-          "maxTs": null,
-          "minTs": null,
-          "results": {
-            "fail": 0,
-            "pass": 0,
-            "other": 0,
-            "notapplicable": 0
-          },
-          "assessed": 0,
-          "findings": {
-            "low": 0,
-            "high": 0,
-            "medium": 0
-          },
-          "statuses": {
-            "saved": 0,
-            "accepted": 0,
-            "rejected": 0,
-            "submitted": 0
-          },
-          "maxTouchTs": null,
-          "assessments": 287,
-          "assessedBySeverity": {
-            "low": 0,
-            "high": 0,
-            "medium": 0
-          },
-          "assessmentsBySeverity": {
-            "low": 18,
-            "high": 26,
-            "medium": 243
-          }
-        }
-      },
-      {
         "assetId": "154",
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -22359,10 +22469,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -22401,6 +22512,106 @@
     ],
     "lvl3": [
       {
+        "assetId": "62",
+        "name": "Collection_X_asset",
+        "labels": [
+          {
+            "name": "test-label-full",
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+          }
+        ],
+        "benchmarkId": "VPN_SRG_TEST",
+        "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
+        "revisionStr": "V1R1",
+        "revisionPinned": false,
+        "revisionDate": "2019-07-19",
+        "metrics": {
+          "maxTs": "2022-01-26T01:23:06Z",
+          "minTs": "2020-08-11T23:37:48Z",
+          "results": {
+            "fail": 1,
+            "pass": 0,
+            "other": 0,
+            "notapplicable": 2
+          },
+          "assessed": 3,
+          "findings": {
+            "low": 0,
+            "high": 0,
+            "medium": 1
+          },
+          "statuses": {
+            "saved": 1,
+            "accepted": 0,
+            "rejected": 0,
+            "submitted": 2
+          },
+          "maxTouchTs": "2022-01-26T01:23:06Z",
+          "assessments": 81,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 3
+          },
+          "assessmentsBySeverity": {
+            "low": 7,
+            "high": 11,
+            "medium": 63
+          }
+        }
+      },
+      {
+        "assetId": "62",
+        "name": "Collection_X_asset",
+        "labels": [
+          {
+            "name": "test-label-full",
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+          }
+        ],
+        "benchmarkId": "Windows_10_STIG_TEST",
+        "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
+        "revisionStr": "V1R23",
+        "revisionPinned": false,
+        "revisionDate": "2020-06-17",
+        "metrics": {
+          "maxTs": null,
+          "minTs": null,
+          "results": {
+            "fail": 0,
+            "pass": 0,
+            "other": 0,
+            "notapplicable": 0
+          },
+          "assessed": 0,
+          "findings": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "statuses": {
+            "saved": 0,
+            "accepted": 0,
+            "rejected": 0,
+            "submitted": 0
+          },
+          "maxTouchTs": null,
+          "assessments": 287,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "assessmentsBySeverity": {
+            "low": 18,
+            "high": 26,
+            "medium": 243
+          }
+        }
+      },
+      {
         "assetId": "42",
         "name": "Collection_X_lvl1_asset-1",
         "labels": [
@@ -22414,10 +22625,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -22467,10 +22679,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -22507,112 +22720,15 @@
         }
       },
       {
-        "assetId": "62",
-        "name": "Collection_X_asset",
-        "labels": [
-          {
-            "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
-          }
-        ],
-        "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
-        "title": "Virtual Private Network (VPN) Security Requirements Guide",
-        "revisionStr": "V1R1",
-        "revisionPinned": false,
-        "metrics": {
-          "maxTs": "2022-01-26T01:23:06Z",
-          "minTs": "2020-08-11T23:37:48Z",
-          "results": {
-            "fail": 1,
-            "pass": 0,
-            "other": 0,
-            "notapplicable": 2
-          },
-          "assessed": 3,
-          "findings": {
-            "low": 0,
-            "high": 0,
-            "medium": 1
-          },
-          "statuses": {
-            "saved": 1,
-            "accepted": 0,
-            "rejected": 0,
-            "submitted": 2
-          },
-          "maxTouchTs": "2022-01-26T01:23:06Z",
-          "assessments": 81,
-          "assessedBySeverity": {
-            "low": 0,
-            "high": 0,
-            "medium": 3
-          },
-          "assessmentsBySeverity": {
-            "low": 7,
-            "high": 11,
-            "medium": 63
-          }
-        }
-      },
-      {
-        "assetId": "62",
-        "name": "Collection_X_asset",
-        "labels": [
-          {
-            "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
-          }
-        ],
-        "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
-        "title": "Windows 10 Security Technical Implementation Guide",
-        "revisionStr": "V1R23",
-        "revisionPinned": false,
-        "metrics": {
-          "maxTs": null,
-          "minTs": null,
-          "results": {
-            "fail": 0,
-            "pass": 0,
-            "other": 0,
-            "notapplicable": 0
-          },
-          "assessed": 0,
-          "findings": {
-            "low": 0,
-            "high": 0,
-            "medium": 0
-          },
-          "statuses": {
-            "saved": 0,
-            "accepted": 0,
-            "rejected": 0,
-            "submitted": 0
-          },
-          "maxTouchTs": null,
-          "assessments": 287,
-          "assessedBySeverity": {
-            "low": 0,
-            "high": 0,
-            "medium": 0
-          },
-          "assessmentsBySeverity": {
-            "low": 18,
-            "high": 26,
-            "medium": 243
-          }
-        }
-      },
-      {
         "assetId": "154",
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -22653,10 +22769,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -22695,6 +22812,106 @@
     ],
     "lvl4": [
       {
+        "assetId": "62",
+        "name": "Collection_X_asset",
+        "labels": [
+          {
+            "name": "test-label-full",
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+          }
+        ],
+        "benchmarkId": "VPN_SRG_TEST",
+        "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
+        "revisionStr": "V1R1",
+        "revisionPinned": false,
+        "revisionDate": "2019-07-19",
+        "metrics": {
+          "maxTs": "2022-01-26T01:23:06Z",
+          "minTs": "2020-08-11T23:37:48Z",
+          "results": {
+            "fail": 1,
+            "pass": 0,
+            "other": 0,
+            "notapplicable": 2
+          },
+          "assessed": 3,
+          "findings": {
+            "low": 0,
+            "high": 0,
+            "medium": 1
+          },
+          "statuses": {
+            "saved": 1,
+            "accepted": 0,
+            "rejected": 0,
+            "submitted": 2
+          },
+          "maxTouchTs": "2022-01-26T01:23:06Z",
+          "assessments": 81,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 3
+          },
+          "assessmentsBySeverity": {
+            "low": 7,
+            "high": 11,
+            "medium": 63
+          }
+        }
+      },
+      {
+        "assetId": "62",
+        "name": "Collection_X_asset",
+        "labels": [
+          {
+            "name": "test-label-full",
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+          }
+        ],
+        "benchmarkId": "Windows_10_STIG_TEST",
+        "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
+        "revisionStr": "V1R23",
+        "revisionPinned": false,
+        "revisionDate": "2020-06-17",
+        "metrics": {
+          "maxTs": null,
+          "minTs": null,
+          "results": {
+            "fail": 0,
+            "pass": 0,
+            "other": 0,
+            "notapplicable": 0
+          },
+          "assessed": 0,
+          "findings": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "statuses": {
+            "saved": 0,
+            "accepted": 0,
+            "rejected": 0,
+            "submitted": 0
+          },
+          "maxTouchTs": null,
+          "assessments": 287,
+          "assessedBySeverity": {
+            "low": 0,
+            "high": 0,
+            "medium": 0
+          },
+          "assessmentsBySeverity": {
+            "low": 18,
+            "high": 26,
+            "medium": 243
+          }
+        }
+      },
+      {
         "assetId": "42",
         "name": "Collection_X_lvl1_asset-1",
         "labels": [
@@ -22708,10 +22925,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -22761,10 +22979,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -22801,112 +23020,15 @@
         }
       },
       {
-        "assetId": "62",
-        "name": "Collection_X_asset",
-        "labels": [
-          {
-            "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
-          }
-        ],
-        "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
-        "title": "Virtual Private Network (VPN) Security Requirements Guide",
-        "revisionStr": "V1R1",
-        "revisionPinned": false,
-        "metrics": {
-          "maxTs": "2022-01-26T01:23:06Z",
-          "minTs": "2020-08-11T23:37:48Z",
-          "results": {
-            "fail": 1,
-            "pass": 0,
-            "other": 0,
-            "notapplicable": 2
-          },
-          "assessed": 3,
-          "findings": {
-            "low": 0,
-            "high": 0,
-            "medium": 1
-          },
-          "statuses": {
-            "saved": 1,
-            "accepted": 0,
-            "rejected": 0,
-            "submitted": 2
-          },
-          "maxTouchTs": "2022-01-26T01:23:06Z",
-          "assessments": 81,
-          "assessedBySeverity": {
-            "low": 0,
-            "high": 0,
-            "medium": 3
-          },
-          "assessmentsBySeverity": {
-            "low": 7,
-            "high": 11,
-            "medium": 63
-          }
-        }
-      },
-      {
-        "assetId": "62",
-        "name": "Collection_X_asset",
-        "labels": [
-          {
-            "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
-          }
-        ],
-        "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
-        "title": "Windows 10 Security Technical Implementation Guide",
-        "revisionStr": "V1R23",
-        "revisionPinned": false,
-        "metrics": {
-          "maxTs": null,
-          "minTs": null,
-          "results": {
-            "fail": 0,
-            "pass": 0,
-            "other": 0,
-            "notapplicable": 0
-          },
-          "assessed": 0,
-          "findings": {
-            "low": 0,
-            "high": 0,
-            "medium": 0
-          },
-          "statuses": {
-            "saved": 0,
-            "accepted": 0,
-            "rejected": 0,
-            "submitted": 0
-          },
-          "maxTouchTs": null,
-          "assessments": 287,
-          "assessedBySeverity": {
-            "low": 0,
-            "high": 0,
-            "medium": 0
-          },
-          "assessmentsBySeverity": {
-            "low": 18,
-            "high": 26,
-            "medium": 243
-          }
-        }
-      },
-      {
         "assetId": "154",
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -22947,10 +23069,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -23004,10 +23127,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -23053,10 +23177,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
           "minTs": "2020-08-11T23:37:48Z",
@@ -23097,10 +23222,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -23148,10 +23274,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
           "minTs": "2020-08-11T23:37:48Z",
@@ -23201,10 +23328,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -23245,10 +23373,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -23300,10 +23429,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -23349,10 +23479,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
           "minTs": "2020-08-11T23:37:48Z",
@@ -23393,10 +23524,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -23448,10 +23580,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -23497,10 +23630,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
           "minTs": "2020-08-11T23:37:48Z",
@@ -23541,10 +23675,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -23596,10 +23731,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -23645,10 +23781,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
           "minTs": "2020-08-11T23:37:48Z",
@@ -23689,10 +23826,11 @@
         "name": "Collection_X_lvl1_asset-2",
         "labels": [],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
           "minTs": "2020-08-11T22:30:42Z",
@@ -23746,10 +23884,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -23799,10 +23938,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -23854,10 +23994,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -23909,10 +24050,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -23962,10 +24104,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -24017,10 +24160,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -24070,10 +24214,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -24125,10 +24270,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -24178,10 +24324,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -24231,10 +24378,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
           "minTs": "2020-08-11T23:37:48Z",
@@ -24280,10 +24428,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -24333,10 +24482,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -24386,10 +24536,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -24437,10 +24588,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
           "minTs": "2020-08-11T23:37:48Z",
@@ -24486,10 +24638,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -24539,10 +24692,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -24590,10 +24744,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
           "minTs": "2020-08-11T23:37:48Z",
@@ -24639,10 +24794,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -24692,10 +24848,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -24745,10 +24902,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -24796,10 +24954,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
           "minTs": "2020-08-11T23:37:48Z",
@@ -24845,10 +25004,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -24898,10 +25058,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -24951,10 +25112,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -25002,10 +25164,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
           "minTs": "2020-08-11T23:37:48Z",
@@ -25051,10 +25214,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": null,
           "minTs": null,
@@ -25104,10 +25268,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -25157,10 +25322,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -25214,10 +25380,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -25267,10 +25434,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -25322,10 +25490,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -25377,10 +25546,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -25430,10 +25600,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -25485,10 +25656,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -25538,10 +25710,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -25593,10 +25766,11 @@
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
           "minTs": "2020-08-11T22:27:26Z",
@@ -25646,10 +25820,11 @@
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "metrics": {
           "maxTs": "2020-08-18T20:48:29Z",
           "minTs": "2020-08-11T22:29:16Z",
@@ -26094,8 +26269,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
@@ -26149,8 +26324,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
@@ -26195,8 +26370,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
@@ -26291,8 +26466,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
@@ -26346,8 +26521,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
@@ -26392,8 +26567,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
@@ -26488,8 +26663,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-01-26T01:23:06Z",
@@ -26543,8 +26718,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-02-03T00:07:05Z",
@@ -26589,8 +26764,8 @@
         "fqdn": null,
         "mac": null,
         "benchmarkIds": [
-          "VPN_SRG_TEST",
-          "Windows_10_STIG_TEST"
+          "Windows_10_STIG_TEST",
+          "VPN_SRG_TEST"
         ],
         "metrics": {
           "maxTs": "2022-02-02T20:20:18Z",
@@ -32313,10 +32488,11 @@
     "stigmanadmin": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -32356,10 +32532,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 3,
         "ruleCount": 287,
         "metrics": {
@@ -32401,10 +32578,11 @@
     "lvl1": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -32444,10 +32622,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -32489,10 +32668,11 @@
     "lvl2": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -32532,10 +32712,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 3,
         "ruleCount": 287,
         "metrics": {
@@ -32577,10 +32758,11 @@
     "lvl3": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -32620,10 +32802,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 3,
         "ruleCount": 287,
         "metrics": {
@@ -32665,10 +32848,11 @@
     "lvl4": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -32708,10 +32892,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 3,
         "ruleCount": 287,
         "metrics": {
@@ -32755,10 +32940,11 @@
     "stigmanadmin": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -32800,10 +32986,11 @@
     "lvl1": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -32845,10 +33032,11 @@
     "lvl2": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -32890,10 +33078,11 @@
     "lvl3": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -32935,10 +33124,11 @@
     "lvl4": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 3,
         "ruleCount": 81,
         "metrics": {
@@ -32982,10 +33172,11 @@
     "stigmanadmin": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -33025,10 +33216,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -33070,10 +33262,11 @@
     "lvl1": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -33115,10 +33308,11 @@
     "lvl2": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -33158,10 +33352,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -33203,10 +33398,11 @@
     "lvl3": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -33246,10 +33442,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -33291,10 +33488,11 @@
     "lvl4": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 1,
         "ruleCount": 81,
         "metrics": {
@@ -33334,10 +33532,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -33381,10 +33580,11 @@
     "stigmanadmin": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -33424,10 +33624,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 2,
         "ruleCount": 287,
         "metrics": {
@@ -33469,10 +33670,11 @@
     "lvl1": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -33512,10 +33714,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 1,
         "ruleCount": 287,
         "metrics": {
@@ -33557,10 +33760,11 @@
     "lvl2": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -33600,10 +33804,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 2,
         "ruleCount": 287,
         "metrics": {
@@ -33645,10 +33850,11 @@
     "lvl3": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -33688,10 +33894,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 2,
         "ruleCount": 287,
         "metrics": {
@@ -33733,10 +33940,11 @@
     "lvl4": [
       {
         "benchmarkId": "VPN_SRG_TEST",
-        "marking": null,
         "title": "Virtual Private Network (VPN) Security Requirements Guide",
+        "marking": null,
         "revisionStr": "V1R1",
         "revisionPinned": false,
+        "revisionDate": "2019-07-19",
         "assets": 2,
         "ruleCount": 81,
         "metrics": {
@@ -33776,10 +33984,11 @@
       },
       {
         "benchmarkId": "Windows_10_STIG_TEST",
-        "marking": null,
         "title": "Windows 10 Security Technical Implementation Guide",
+        "marking": null,
         "revisionStr": "V1R23",
         "revisionPinned": false,
+        "revisionDate": "2020-06-17",
         "assets": 2,
         "ruleCount": 287,
         "metrics": {
