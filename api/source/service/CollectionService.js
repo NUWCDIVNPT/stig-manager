@@ -768,7 +768,7 @@ exports.getFindingsByCollection = async function( {collectionId, aggregator, ben
     'left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId',
     'inner join review rv on (rvcd.version = rv.version and rvcd.checkDigest = rv.checkDigest and a.assetId = rv.assetId and rv.resultId = 4)',
     'inner join cci on rgrcc.cci = cci.cci',
-    'inner join cci_reference_map crm on cci.cci = crm.cci'    
+    'inner join cci_reference_map crm on cci.cci = crm.cci'
   ]
   if (grant.roleId === 1) {
     ctes.push(dbUtils.cteAclEffective({grantIds: grant.grantIds}))
