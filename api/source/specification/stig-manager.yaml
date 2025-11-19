@@ -7139,8 +7139,6 @@ components:
           type: boolean
         revisionStr:
           $ref: '#/components/schemas/RevisionStr'
-        revisionDate:
-          $ref: '#/components/schemas/StringDateNullable'
         ruleCount:
           $ref: '#/components/schemas/RuleCount'
       required:
@@ -7148,7 +7146,6 @@ components:
         - revisionStr
         - benchmarkDate
         - revisionPinned
-        - revisionDate
         - ruleCount
     CollectionStigWithAssetCount:
       additionalProperties: false
