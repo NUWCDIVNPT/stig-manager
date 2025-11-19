@@ -572,6 +572,20 @@ exports.getReviews = async function ({projections = [], filter = {}, grant}) {
         cla.assetId = r.assetId),
       json_array()
     ) as assetLabelIds`,
+    `coalesce(
+      (select
+        json_arrayagg(json_object(
+          'labelId', BIN_TO_UUID(cl.uuid,1),
+          'name', cl.name,
+          'color', cl.color
+        ))
+      from
+        collection_label_asset_map cla
+        left join collection_label cl on cla.clId = cl.clId
+      where
+        cla.assetId = r.assetId),
+      json_array()
+    ) as assetLabels`,
     'r.ruleId',
     `coalesce(cast(concat('[', group_concat(distinct concat('"',rvcd2.ruleId,'"')), ']') as json), json_array()) as ruleIds`,
     'result.api as "result"',
