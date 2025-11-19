@@ -334,6 +334,10 @@ describe('GET - Collection', function () {
 
             // ccis projection
             expect(res.body[0].ccis).to.be.an('array').of.length(1)
+            expect(res.body[0].ccis[0]).to.have.property('cci')
+            expect(res.body[0].ccis[0]).to.have.property('definition')
+            expect(res.body[0].ccis[0]).to.have.property('apAcronym')
+            expect(res.body[0].ccis[0]).to.have.property('control')
         })
 
         it('Return the Findings for the specified Collection by groupId',async function () {
