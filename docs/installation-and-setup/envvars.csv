@@ -62,11 +62,11 @@
 "STIGMAN_DB_SCHEMA","| **Default** ``stigman``
 | The schema where the STIG Manager object are found","API"
 "STIGMAN_DB_TLS_CA_FILE","| **No default**
-| A file/path relative to the API /tls directory that contains the PEM encoded CA certificate used to sign the database TLS certificate. Setting this variable enables TLS connections to the database.","API"
+| An absolute path or a path relative to the API /tls directory that contains the PEM encoded CA certificate used to sign the database TLS certificate. Setting this variable enables TLS connections to the database.","API"
 "STIGMAN_DB_TLS_CERT_FILE","| **No default**
-| A file/path relative to the API /tls directory that contains the PEM encoded Client certificate used when authenticating the database client. Additionally requires setting values for ``STIGMAN_DB_TLS_CA_FILE`` and ``STIGMAN_DB_TLS_KEY_FILE``. ","API"
+| An absolute path or a path relative to the API /tls directory that contains the PEM encoded Client certificate used when authenticating the database client. Additionally requires setting values for ``STIGMAN_DB_TLS_CA_FILE`` and ``STIGMAN_DB_TLS_KEY_FILE``. ","API"
 "STIGMAN_DB_TLS_KEY_FILE","| **No default**
-| A file/path relative to the API /tls directory that contains the PEM encoded Client private key used when authenticating the database client. Additionally requires setting values for ``STIGMAN_DB_TLS_CA_FILE`` and ``STIGMAN_DB_TLS_CERT_FILE``.","API"
+| An absolute path or a path relative to the API /tls directory that contains the PEM encoded Client private key used when authenticating the database client. Additionally requires setting values for ``STIGMAN_DB_TLS_CA_FILE`` and ``STIGMAN_DB_TLS_CERT_FILE``.","API"
 "STIGMAN_DB_USER","| **Default** ``stigman``
 | The user account used to login to the database ","API"
 "STIGMAN_DEPENDENCY_RETRIES","| **Default** ``24``
