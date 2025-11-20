@@ -7908,6 +7908,8 @@ components:
           type: boolean
         revisionStr:
           $ref: '#/components/schemas/RevisionStrRaw'
+        revisionDate:
+          $ref: "#/components/schemas/StringDateNullable"
         ruleCount:
           $ref: '#/components/schemas/RuleCount'
         title:
@@ -7918,6 +7920,7 @@ components:
         - title
         - assets
         - revisionStr
+        - revisionDate
         - ruleCount
     MetricsDetail:
       properties:
@@ -8203,6 +8206,8 @@ components:
           type: boolean
         revisionStr:
           $ref: '#/components/schemas/RevisionStrRaw'
+        revisionDate:
+          $ref: "#/components/schemas/StringDateNullable"          
         title:
           $ref: '#/components/schemas/StigTitle'
       required:
@@ -8212,6 +8217,7 @@ components:
         - benchmarkId
         - title
         - revisionStr
+        - revisionDate
         - revisionPinned
     MinTs:
       format: date-time
