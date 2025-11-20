@@ -86,12 +86,38 @@ defineExpose({
     v-if="isAdmin"
     v-model:visible="showDialog"
     modal
-    :style="{ width: '900px' }"
     :pt="{
-      root: { class: 'custom-dialog-root' },
-      header: { class: 'custom-dialog-header' },
-      content: { class: 'custom-dialog-content' },
-      pcCloseButton: { class: 'custom-dialog-close-button' },
+      root: {
+        style: {
+          borderRadius: '0.6rem',
+          width: '900px',
+        },
+      },
+      header: {
+        style: {
+          borderTopLeftRadius: '0.5rem',
+          borderTopRightRadius: '0.5rem',
+          backgroundColor: '#35393b',
+          padding: '10px',
+          height: '35px',
+        },
+      },
+      content: {
+        style: {
+          padding: '1rem',
+        },
+      },
+      pcCloseButton: {
+        style: {
+          borderRadius: '12px',
+          height: '24px',
+          boxShadow: 'none',
+          border: 'none',
+          width: '24px',
+          outline: 'none',
+          color: '#fff',
+        },
+      },
     }"
   >
     <template #header>
@@ -112,6 +138,28 @@ defineExpose({
         id="card-content"
         v-model="newCardContent"
         editor-style="height: 320px"
+        :pt="{
+          root: {
+            style: {
+              borderRadius: '0.375rem',
+            },
+          },
+          toolbar: {
+            style: {
+              background: 'rgba(0, 0, 0, 0.3)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderBottom: 'none',
+              borderRadius: '0.375rem 0.375rem 0 0',
+            },
+          },
+          content: {
+            style: {
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '0 0 0.375rem 0.375rem',
+              background: 'rgba(0, 0, 0, 0.2)',
+            },
+          },
+        }"
       >
         <template #toolbar>
           <span class="ql-formats">
@@ -145,12 +193,23 @@ defineExpose({
     <template #footer>
       <Button
         label="Cancel" severity="secondary" :pt="{
-          root: { class: 'custom-dialog-footer-cancel-button' },
+          root: {
+            style: {
+              outline: 'none',
+              boxShadow: 'none',
+            },
+          },
         }" @click="cancelNewCard"
       />
       <Button
         label="Create" :disabled="!isFormValid" :pt="{
-          root: { class: 'custom-dialog-footer-create-button' },
+          root: {
+            style: {
+              outline: 'none',
+              boxShadow: 'none',
+              background: 'var(--color-primary-blue)',
+            },
+          },
         }" @click="addNewCard"
       />
     </template>
@@ -262,23 +321,6 @@ defineExpose({
 }
 
 /* PrimeVue Editor Styling */
-:deep(.p-editor-container) {
-  border-radius: 0.375rem;
-}
-
-:deep(.p-editor-toolbar) {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: none;
-  border-radius: 0.375rem 0.375rem 0 0;
-}
-
-:deep(.p-editor-content) {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0 0 0.375rem 0.375rem;
-  background: rgba(0, 0, 0, 0.2);
-}
-
 :deep(.ql-editor) {
   color: rgba(255, 255, 255, 0.9);
 }
@@ -288,63 +330,8 @@ defineExpose({
   font-style: italic;
 }
 
-:global(.custom-dialog-root) {
-  border-radius: 0.6rem !important;
-}
-:global(.custom-dialog-header) {
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
-  background-color: #35393b;
-  padding: 10px !important;
-  height: 35px
-}
-
-:global(.custom-dialog-content) {
-  padding: 1rem !important;
-}
-
-:global(.p-button-icon-only.p-button-rounded),
-:global(.p-dialog-header-close) {
-  border-radius: 12px !important;
-  height: 24px !important;
-  box-shadow: none !important;
-  border: none !important;
-  width: 24px !important;
-  outline: none !important;
-}
-
-:global(.p-button-icon-only.p-button-rounded:hover),
-:global(.p-button-icon-only.p-button-rounded:active),
-:global(.p-dialog-header-close:hover),
-:global(.p-dialog-header-close:active) {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff !important;
-}
-
 .dialog-title {
   font-size: 0.875rem;
   font-weight: 600;
-}
-
-/* Dialog Footer Buttons */
-:global(.custom-dialog-footer-cancel-button),
-:global(.custom-dialog-footer-cancel-button:focus),
-:global(.custom-dialog-footer-cancel-button:focus-visible),
-:global(.custom-dialog-footer-cancel-button:active) {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-:global(.custom-dialog-footer-create-button),
-:global(.custom-dialog-footer-create-button:focus),
-:global(.custom-dialog-footer-create-button:focus-visible),
-:global(.custom-dialog-footer-create-button:active) {
-  outline: none !important;
-  box-shadow: none !important;
-  background: var(--color-primary-blue) !important;
-}
-
-:global(.custom-dialog-footer-create-button:hover) {
-  background: var(--color-primary-blue-light) !important;
 }
 </style>

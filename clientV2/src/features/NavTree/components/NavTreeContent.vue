@@ -73,11 +73,56 @@ function onNodeSelect(node) {
       :loading="loading"
       selection-mode="single"
       :pt="{
-        root: { class: 'tree-root' },
-        nodeContent: { class: 'tree-node' },
-        nodeToggleButton: { class: 'tree-toggle-btn' },
-        nodeToggleIcon: { class: 'tree-toggle-ico' },
-        nodeChildren: { class: 'tree-children' },
+        root: {
+          style: {
+            'padding': '0',
+            '--z-navtab': '900',
+            '--z-drawer': '1100',
+            'minWidth': 'max-content',
+            'height': '100%',
+            'width': '100%',
+          },
+        },
+        nodeContent: {
+          style: {
+            display: 'flex',
+            width: '100%',
+            alignItems: 'center',
+            minWidth: '0',
+            lineHeight: '1.3',
+            borderRadius: '3px',
+            padding: '4px 0px 2px 0px',
+          },
+        },
+        nodeToggleButton: {
+          style: {
+            display: 'inline-grid',
+            placeItems: 'center',
+            width: '16px',
+            height: '16px',
+            padding: '0',
+            background: 'transparent',
+            border: '0',
+            borderRadius: '5px',
+            outline: 'none',
+          },
+        },
+        nodeToggleIcon: {
+          style: {
+            width: '12px',
+            height: '12px',
+            color: '#b6b3b3d2',
+          },
+        },
+        nodeChildren: {
+          style: {
+            fontSize: '13px',
+            paddingLeft: '20px',
+            overflow: 'hidden',
+            transformOrigin: 'top left',
+            animation: 'treeFadeSlideIn 1000ms cubic-bezier(0.4, 0.8, 0.2, 1) both',
+          },
+        },
       }"
       @node-select="onNodeSelect"
     >
@@ -146,54 +191,6 @@ function onNodeSelect(node) {
 
 .icon-folder {
   background-image: url('/src/assets/library.svg');
-}
-
-:deep(.tree-root) {
-  padding: 0;
-  --z-navtab: 900;
-  --z-drawer: 1100;
-  min-width: max-content;
-  height: 100%;
-  width: 100%;
-}
-
-:deep(.tree-node) {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  min-width: 0;
-  line-height: 1.3;
-  border-radius: 3px;
-  padding: 4px 0px 2px 0px;
-}
-
-:deep(.tree-toggle-btn) {
-  display: inline-grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: 5px;
-}
-
-:deep(.tree-toggle-btn:focus) {
-  outline: none;
-}
-
-:deep(.tree-toggle-ico) {
-  width: 12px;
-  height: 12px;
-  color: #b6b3b3d2;
-}
-
-:deep(.tree-children) {
-  font-size: 13px;
-  padding-left: 20px;
-  overflow: hidden;
-  transform-origin: top left;
-  animation: treeFadeSlideIn 1000ms cubic-bezier(0.4, 0.8, 0.2, 1) both;
 }
 
 .node-inner {

@@ -50,10 +50,70 @@ watch(
 
 <template>
   <div id="tabs-wrapper" class="tabs-wrapper">
-    <Tabs v-model:value="active" :pt="{ root: { class: 'tabs-root' } }">
-      <TabList id="tab-list" :pt="{ root: { class: 'tab-list' } }">
+    <Tabs
+      v-model:value="active"
+      :pt="{
+        root: {
+          style: {
+            height: '100%',
+            borderRadius: '8px',
+            overflow: 'hidden',
+          },
+        },
+      }"
+    >
+      <TabList
+        id="tab-list"
+        :pt="{
+          root: {
+            style: {
+              borderBottom: '3px solid #444',
+              background: '#000000',
+              minHeight: '30px',
+              gap: '1px',
+              marginBottom: '5px',
+            },
+          },
+          activeBar: {
+            style: {
+              bottom: '0',
+              height: '2px',
+              background: 'color-mix(in srgb, var(--p-primary-400), transparent 50%)',
+              transition: '250ms cubic-bezier(0.35, 0, 0.25, 1)',
+              border: 'none',
+            },
+          },
+        }"
+      >
         <template v-for="t in tabs" :key="t.key">
-          <Tab :id="`tab-${t.key}`" :value="t.key" :pt="{ root: { class: 'tab-item' } }">
+          <Tab
+            :id="`tab-${t.key}`"
+            :value="t.key"
+            :pt="{
+              root: ({ context }) => ({
+                style: {
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  marginLeft: '1px',
+                  marginRight: '1px',
+                  padding: '4px 10px',
+                  border: 'none',
+                  borderTopRightRadius: '5px',
+                  borderTopLeftRadius: '5px',
+                  borderBottomLeftRadius: '0',
+                  borderBottomRightRadius: '0',
+                  cursor: 'pointer',
+                  height: '30px',
+                  boxSizing: 'border-box',
+                  background: context.active ? '#444' : '#2d2d2d',
+                  color: context.active ? '#fff' : '#888',
+                  fontWeight: context.active ? '600' : 'normal',
+                  outline: 'none',
+                },
+              }),
+            }"
+          >
             <span class="tabTitle">{{ t.label }}</span>
             <button
               v-if="t.closable !== false"
@@ -70,9 +130,35 @@ watch(
         </template>
       </TabList>
 
-      <TabPanels id="tab-panels" :pt="{ root: { class: 'tab-panels' } }">
+      <TabPanels
+        id="tab-panels"
+        :pt="{
+          root: {
+            style: {
+              flex: '1 1 auto',
+              minHeight: '0',
+              paddingTop: '8px',
+              padding: '0',
+            },
+          },
+        }"
+      >
         <template v-for="t in tabs" :key="t.key">
-          <TabPanel :id="`tab-panel-${t.key}`" :value="t.key" :pt="{ root: { class: 'tab-panel' } }">
+          <TabPanel
+            :id="`tab-panel-${t.key}`"
+            :value="t.key"
+            :pt="{
+              root: {
+                style: {
+                  height: '100%',
+                  minHeight: '0',
+                  overflow: 'auto',
+                  padding: '0.75rem',
+                  boxSizing: 'border-box',
+                },
+              },
+            }"
+          >
             <component :is="t.component" v-bind="t.props" class="panelInner" />
           </TabPanel>
         </template>
@@ -88,83 +174,6 @@ watch(
     width: 100%;
     height: 100%;
     min-height: 0;
-}
-
-:deep(.tabs-root) {
-    height: 100%;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-:deep(.tab-list) {
-    border-bottom: 3px solid #444;
-    background: #000000;
-    min-height: 30px;
-    gap: 1px;
-    margin-bottom: 5px;
-}
-
-:deep(.p-tablist-active-bar) {
-    bottom: 0;
-    height: 2px;
-    background: color-mix(in srgb, var(--p-primary-400), transparent 50%);
-    transition: 250ms cubic-bezier(0.35, 0, 0.25, 1);
-    border: none;
-}
-
-:deep(.tab-item) {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-left: 1px;
-    margin-right: 1px;
-    max-width: 50;
-    padding: 4px 10px;
-    border: none;
-    border-top-right-radius: 5px;
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    background: #2d2d2d;
-    cursor: pointer;
-    height: 30px;
-    box-sizing: border-box;
-    color: #888;
-    font-weight: normal;
-}
-
-:deep(.tab-item:focus),
-:deep(.tab-item:focus-visible) {
-    outline: none;
-}
-
-:deep(.tab-item[data-p-active='true']) {
-    background: #444;
-    color: #fff;
-    font-weight: 600;
-}
-
-:deep(.tab-item:hover) {
-    background: #383838;
-    color: #fff;
-}
-
-:deep(.tab-panels) {
-    flex: 1 1 auto;
-    min-height: 0;
-    padding-top: 8px;
-}
-
-:deep(.tab-panel) {
-    height: 100%;
-    min-height: 0;
-    overflow: auto;
-    padding: 0.75rem;
-    box-sizing: border-box;
-}
-
-:deep(.p-tabpanels) {
-    padding: 0;
 }
 
 .tabTitle {
