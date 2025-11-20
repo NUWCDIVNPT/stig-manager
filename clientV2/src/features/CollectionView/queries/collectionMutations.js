@@ -12,25 +12,24 @@ export function useDeleteCollectionMutation(collectionIdRef) {
   const tabCoordinator = useTabCoordinatorStore()
 
   return useMutation({
-    // the actual API call to delete the collection
     mutationFn: () =>
       deleteCollection({
         collectionId: unref(collectionIdRef),
         token: oidcWorker?.token,
       }),
 
-    // optimistic update: update the UI before the server responds
+    // update UI immediately before API responds
     onMutate: async () => {
       const currentId = unref(collectionIdRef)
 
-      // stop any background refetches so they don't overwrite our optimistic update
+      // cancel ongoing fetches
       await queryClient.cancelQueries({ queryKey: collectionKeys.all })
 
-      // snapshot the previous value (so we can rollback if something goes wrong)
+      // save current state for potential rollback
       const previousCollections = queryClient.getQueryData(collectionKeys.all)
       const previousSelection = navTreeStore.selectedData
 
-      // optimistically remove the collection from the cache
+      // remove collection from cache
       queryClient.setQueryData(collectionKeys.all, (old) => {
         if (!Array.isArray(old)) {
           return old
@@ -38,42 +37,28 @@ export function useDeleteCollectionMutation(collectionIdRef) {
         return old.filter(col => col.collectionId !== currentId)
       })
 
-      // clear the selection in the nav immediately (easy to restore)
+      // clear selection
       navTreeStore.select(null)
 
-      // DON'T close the tab optimistically - tabs are hard to reopen on rollback
-      // We'll close it in onSuccess after server confirms the delete
-
-      // return context object with snapshots and currentId for onSuccess
       return { previousCollections, previousSelection, currentId }
     },
 
-    // rollback: if the API call fails, let onSettled handle the refetch
-    // We don't manually rollback here because concurrent deletes would overwrite each other's rollbacks
+    // restore selection if delete fails
     onError: (_err, _newTodo, context) => {
-      console.error('❌ DELETE FAILED:', _err.message)
-      console.log('🔄 onSettled will refetch to restore the correct state')
-
-      // Restore the selection immediately for better UX
       if (context?.previousSelection) {
         navTreeStore.select(context.previousSelection)
       }
-      // NOTE: We didn't close the tab optimistically, so no need to reopen it
     },
 
-    // success: close tab only after server confirms delete
+    // close tab after server confirms delete
     onSuccess: (_data, _variables, context) => {
-      console.log('✅ DELETE CONFIRMED - Closing tab')
-      // Close the tab now that delete is confirmed by the server
       if (context?.currentId) {
         tabCoordinator.requestClose(String(context.currentId))
       }
     },
 
-    // settled: refetch on both success and error to sync with server
-    // This handles concurrent deletes correctly - server is the source of truth
+    // sync with server (handles concurrent deletes correctly) fetch data
     onSettled: () => {
-      console.log('🏁 SETTLED - Refetching from server (handles concurrent operations)')
       queryClient.invalidateQueries({ queryKey: collectionKeys.all })
     },
   })

@@ -209,7 +209,7 @@ onMounted(async () => {
           </h2>
           <div class="card-content">
             <div class="custom-card-section">
-              <p class="card-text" v-html="customCardsRef.formatContent(card.content)" />
+              <p class="card-text" v-html="card.content" />
             </div>
           </div>
         </div>
