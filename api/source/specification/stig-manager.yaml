@@ -7840,7 +7840,7 @@ components:
         labels:
           type: array
           items:
-            $ref: '#/components/schemas/LabelBasic'
+            $ref: '#/components/schemas/LabelBasicWithColor'
         mac:
           $ref: '#/components/schemas/AssetMac'
         name:
@@ -8203,7 +8203,7 @@ components:
           $ref: '#/components/schemas/BenchmarkId'
         labels:
           items:
-            $ref: '#/components/schemas/LabelBasic'
+            $ref: '#/components/schemas/LabelBasicWithColor'
           type: array
         name:
           type: string

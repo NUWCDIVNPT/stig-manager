@@ -449,11 +449,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -546,11 +548,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -643,7 +647,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -736,7 +741,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -1007,7 +1013,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -1100,7 +1107,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -1193,11 +1201,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -1380,11 +1390,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -1477,11 +1489,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -1574,7 +1588,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -1667,7 +1682,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -1938,11 +1954,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -2035,11 +2053,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -2132,7 +2152,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -2225,7 +2246,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -2496,11 +2518,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -2593,11 +2617,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -2690,7 +2716,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -2783,7 +2810,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -3056,11 +3084,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -3155,11 +3185,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -3254,11 +3286,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -3353,11 +3387,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -3452,11 +3488,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -4447,7 +4485,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -4542,11 +4581,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -4733,7 +4774,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -4828,11 +4870,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -5104,7 +5148,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -5199,11 +5244,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -5477,7 +5524,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -5572,11 +5620,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -5850,7 +5900,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -5945,11 +5996,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -6138,11 +6191,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -6239,11 +6294,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -6339,11 +6396,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -6440,11 +6499,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -6541,11 +6602,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -6644,7 +6707,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -6738,11 +6802,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -6927,7 +6993,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -7021,11 +7088,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -7210,7 +7279,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -7304,11 +7374,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -7493,7 +7565,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -7587,11 +7660,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -7776,7 +7851,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -7870,11 +7946,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -8061,11 +8139,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -8161,11 +8241,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -8261,11 +8343,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -8361,11 +8445,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -8461,11 +8547,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -8563,7 +8651,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -8658,11 +8747,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -8759,7 +8850,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -8854,11 +8946,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -8954,7 +9048,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -9049,11 +9144,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -9150,7 +9247,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -9245,11 +9343,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -9346,7 +9446,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -9441,11 +9542,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -9544,7 +9647,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -9639,11 +9743,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -9740,7 +9846,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -9835,11 +9942,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -9935,7 +10044,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -10030,11 +10140,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -10131,7 +10243,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -10226,11 +10339,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -10327,7 +10442,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -10422,11 +10538,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -21621,11 +21739,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -21674,11 +21794,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -21727,7 +21849,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -21776,7 +21899,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -21915,7 +22039,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -21964,7 +22089,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -22013,11 +22139,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -22112,11 +22240,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -22165,11 +22295,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -22218,7 +22350,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -22267,7 +22400,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -22406,11 +22540,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -22459,11 +22595,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -22512,7 +22650,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -22561,7 +22700,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -22700,11 +22840,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -22753,11 +22895,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -22806,7 +22950,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -22855,7 +23000,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -22996,11 +23142,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -23049,7 +23197,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -23144,7 +23293,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -23193,11 +23343,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -23292,11 +23444,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -23345,7 +23499,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -23440,11 +23595,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -23493,7 +23650,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -23588,11 +23746,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -23641,7 +23801,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -23738,11 +23899,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -23791,11 +23954,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -23846,11 +24011,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -23901,11 +24068,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -23954,11 +24123,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -24009,11 +24180,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -24062,11 +24235,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -24117,11 +24292,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -24170,11 +24347,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -24227,7 +24406,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -24276,7 +24456,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -24325,11 +24506,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -24378,11 +24561,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -24433,7 +24618,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -24482,7 +24668,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -24531,11 +24718,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -24586,7 +24775,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -24635,7 +24825,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -24684,11 +24875,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -24737,11 +24930,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -24792,7 +24987,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -24841,7 +25037,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -24890,11 +25087,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -24943,11 +25142,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -24998,7 +25199,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -25047,7 +25249,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -25096,11 +25299,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -25149,11 +25354,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -25206,11 +25413,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -25259,11 +25468,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -25314,11 +25525,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -25369,11 +25582,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -25422,11 +25637,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -25477,11 +25694,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -25530,11 +25749,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -25585,11 +25806,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "VPN_SRG_TEST",
@@ -25638,11 +25861,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "benchmarkId": "Windows_10_STIG_TEST",
@@ -25738,7 +25963,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -25789,11 +26015,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -25892,7 +26120,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -25943,11 +26172,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -26087,7 +26318,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -26138,11 +26370,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -26284,7 +26518,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -26335,11 +26570,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -26481,7 +26718,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -26532,11 +26770,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -26637,11 +26877,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -26694,11 +26936,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -26750,11 +26994,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -26807,11 +27053,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -26864,11 +27112,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -26923,7 +27173,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -26973,11 +27224,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -27074,7 +27327,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -27124,11 +27378,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -27225,7 +27481,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -27275,11 +27532,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -27376,7 +27635,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -27426,11 +27686,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -27527,7 +27789,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -27577,11 +27840,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -27680,7 +27945,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -27731,11 +27997,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -27788,7 +28056,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -27839,11 +28108,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -27895,7 +28166,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -27946,11 +28218,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -28003,7 +28277,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -28054,11 +28329,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -28111,7 +28388,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -28162,11 +28440,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -28221,7 +28501,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -28272,11 +28553,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -28329,7 +28612,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -28380,11 +28664,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -28436,7 +28722,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -28487,11 +28774,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -28544,7 +28833,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -28595,11 +28885,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
@@ -28652,7 +28944,8 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           }
         ],
         "ip": "10.1.1.1",
@@ -28703,11 +28996,13 @@
         "labels": [
           {
             "name": "test-label-full",
-            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "755b8a28-9a68-11ec-b1bc-0242ac110002",
+            "color": "FF99CC"
           },
           {
             "name": "test-label-lvl1",
-            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002"
+            "labelId": "5130dc84-9a68-11ec-b1bc-0242ac110002",
+            "color": "99CCFF"
           }
         ],
         "ip": "",
