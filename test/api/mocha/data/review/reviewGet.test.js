@@ -65,6 +65,7 @@ describe('GET - Review', () => {
             for(let assetLabelId of review.assetLabelIds){
               expect(assetLabelId).to.be.oneOf(reference.testAsset.labels)
             }
+            expect(review.assetLabels).to.deep.equalInAnyOrder(reference.testAsset.fullLabels)
             for(let stig of review.stigs){
               expect(stig).to.have.property('benchmarkId')
               expect(stig.benchmarkId).to.be.oneOf(reference.testCollection.validStigs)
@@ -297,6 +298,7 @@ describe('GET - Review', () => {
             for(let assetLabelId of review.assetLabelIds){
               expect(assetLabelId).to.be.oneOf(reference.testAsset.labels)
             }
+            expect(review.assetLabels).to.deep.equalInAnyOrder(reference.testAsset.fullLabels)
             for(let stig of review.stigs){
               expect(stig.benchmarkId).to.be.oneOf(reference.testAsset.validStigs)
               

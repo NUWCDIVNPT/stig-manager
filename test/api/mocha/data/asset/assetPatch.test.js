@@ -74,6 +74,7 @@ describe('PATCH - Asset', function () {
           expect(res.status).to.eql(200)
           expect(res.body.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
           expect(res.body.labelIds).to.have.lengthOf(reference.testAsset.labels.length)
+          expect(res.body.labels).to.have.lengthOf(reference.testAsset.labels.length)
           expect(res.body.ip).to.equal(reference.testAsset.ipaddress)
           expect(res.body.noncomputing).to.equal(true)
           expect(res.body.metadata).to.deep.equal({})
@@ -89,6 +90,7 @@ describe('PATCH - Asset', function () {
           expect(effectedAsset.collection.collectionId).to.equal(reference.scrapCollection.collectionId)
           expect(effectedAsset.description).to.equal('test desc')
           expect(effectedAsset.labelIds).to.have.lengthOf(2)
+          expect(effectedAsset.labels).to.have.lengthOf(2)
           for (const stig of effectedAsset.stigs) {
             expect(stig.benchmarkId).to.be.oneOf([
               'VPN_SRG_TEST',

@@ -41,6 +41,8 @@ describe(`GET - Asset`, function () {
           for(const label of res.body.labelIds){
             expect(label, "expect label to be one of the test labels").to.be.oneOf(reference.testAsset.labels)
           }
+          expect(res.body.labels, "expect labels to be an array").to.be.an("array")
+          expect(res.body.labels).to.deep.equalInAnyOrder(reference.testAsset.fullLabels)
           expect(res.body.metadata, "expect metadata to equal test metadata").to.deep.equal({
             [reference.testAsset.metadataKey]: reference.testAsset.metadataValue
           })
@@ -235,6 +237,8 @@ describe(`GET - Asset`, function () {
               for(const label of asset.labelIds){
                 expect(label).to.be.oneOf(reference.testAsset.labels)
               }
+              expect(asset.labels, "expect labels to be an array").to.be.an("array")
+              expect(asset.labels).to.deep.equalInAnyOrder(reference.testAsset.fullLabels)
               expect(asset.metadata).to.deep.equal({
                 [reference.testAsset.metadataKey]: reference.testAsset.metadataValue
               })
@@ -267,6 +271,8 @@ describe(`GET - Asset`, function () {
               for(const label of asset.labelIds){
                 expect(label).to.be.oneOf(reference.testAsset.labels)
               }
+              expect(asset.labels, "expect labels to be an array").to.be.an("array")
+              expect(asset.labels).to.deep.equalInAnyOrder(reference.testAsset.fullLabels)
               expect(asset.metadata).to.deep.equal({
                 [reference.testAsset.metadataKey]: reference.testAsset.metadataValue
               })
@@ -338,6 +344,8 @@ describe(`GET - Asset`, function () {
               for(const label of asset.labelIds){
                 expect(label, "expect label to be a valid label").to.be.oneOf(reference.testAsset.labels)
               }
+              expect(asset.labels, "expect labels to be an array").to.be.an("array")
+              expect(asset.labels).to.deep.equalInAnyOrder(reference.testAsset.fullLabels)
               expect(asset.metadata, "expect metadata to match test asset").to.deep.equal({
                 [reference.testAsset.metadataKey]: reference.testAsset.metadataValue
               })
@@ -357,6 +365,7 @@ describe(`GET - Asset`, function () {
           expect(res.body).to.be.an(`array`).of.length(distinct.assetsAvailableFullLabel.length)
           for(let asset of res.body){
             expect(asset.labelIds).to.include(reference.testCollection.fullLabel)
+            expect(asset.labels, "expect labels to be an array").to.be.an("array")
             expect(asset.assetId).to.be.oneOf(distinct.assetsAvailableFullLabel)
             expect(asset.collection.collectionId).to.eql(reference.testCollection.collectionId)
           }
@@ -374,6 +383,7 @@ describe(`GET - Asset`, function () {
           expect(res.body).to.be.an(`array`).of.length(distinct.assetsAvailableNoMetadata.length)
           for(let asset of res.body){
             expect(asset.labelIds).to.be.empty
+            expect(asset.labels).to.be.empty
             expect(asset.assetId).to.be.oneOf(distinct.assetsAvailableNoMetadata)
             expect(asset.collection.collectionId).to.eql(reference.testCollection.collectionId)
           }
@@ -903,6 +913,9 @@ describe(`GET - Asset`, function () {
             for(const label of asset.assetLabelIds){
               expect(label).to.be.oneOf(reference.testCollection.labels, `Label should be one of the valid labels`)
             }
+            if(asset.assetId === reference.testAsset.assetId){
+              expect(asset.assetLabels).to.deep.equalInAnyOrder(reference.testAsset.fullLabels)
+            }
             if(asset.access === "r"){
               expect(iteration.name).to.be.oneOf(['lvl1'])
             }
@@ -926,7 +939,10 @@ describe(`GET - Asset`, function () {
             expect(asset.collectionId, "expect collectionId to be equal to reference.testCollection.collectionId").to.be.eql(reference.testCollection.collectionId)
             for(const label of asset.assetLabelIds){
               expect(label).to.be.oneOf(reference.testCollection.labels, `Label should be one of the valid labels`)
-            }      
+            }
+            if(asset.assetId === reference.testAsset.assetId){
+              expect(asset.assetLabels).to.deep.equalInAnyOrder(reference.testAsset.fullLabels)
+            }
             if(asset.access === "r"){
               expect(iteration.name).to.be.oneOf(['lvl1'])
             }
@@ -953,7 +969,10 @@ describe(`GET - Asset`, function () {
             expect(asset.collectionId, "expect collectionId to be equal to reference.testCollection.collectionId").to.be.eql(reference.testCollection.collectionId)
             for(const label of asset.assetLabelIds){
               expect(label).to.be.oneOf(reference.testCollection.labels, `Label should be one of the valid labels`)
-            }     
+            }
+            if(asset.assetId === reference.testAsset.assetId){
+              expect(asset.assetLabels).to.deep.equalInAnyOrder(reference.testAsset.fullLabels)
+            }
             if(asset.access === "r"){
               expect(iteration.name).to.be.oneOf(['lvl1'])
             }
@@ -978,7 +997,10 @@ describe(`GET - Asset`, function () {
               expect(asset.collectionId, "expect collectionId to be equal to reference.testCollection.collectionId").to.be.eql(reference.testCollection.collectionId)
               for(const label of asset.assetLabelIds){
                 expect(label).to.be.oneOf(reference.testCollection.labels, `Label should be one of the valid labels`)
-              }   
+              }
+              if(asset.assetId === reference.testAsset.assetId){
+                expect(asset.assetLabels).to.deep.equalInAnyOrder(reference.testAsset.fullLabels)
+              }
               if(asset.access === "r"){
                 expect(iteration.name).to.be.oneOf(['lvl1'])
               }

@@ -542,7 +542,8 @@ const sqlLabels = `coalesce(
   (select
     json_arrayagg(json_object(
       'labelId', BIN_TO_UUID(cl2.uuid,1),
-      'name', cl2.name
+      'name', cl2.name,
+      'color', cl2.color
       ))
   from
     collection_label_asset_map cla2

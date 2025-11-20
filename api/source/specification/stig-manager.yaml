@@ -5737,6 +5737,10 @@ components:
           items:
             $ref: '#/components/schemas/LabelId'
           type: array
+        assetLabels:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelBasicWithColor'
         collectionId:
           $ref: '#/components/schemas/CollectionId'
         name:
@@ -5865,6 +5869,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LabelId'
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelBasicWithColor'
         mac:
           $ref: '#/components/schemas/AssetMac'
         metadata:
@@ -7832,7 +7840,7 @@ components:
         labels:
           type: array
           items:
-            $ref: '#/components/schemas/LabelBasic'
+            $ref: '#/components/schemas/LabelBasicWithColor'
         mac:
           $ref: '#/components/schemas/AssetMac'
         name:
@@ -8198,7 +8206,7 @@ components:
           $ref: '#/components/schemas/BenchmarkId'
         labels:
           items:
-            $ref: '#/components/schemas/LabelBasic'
+            $ref: '#/components/schemas/LabelBasicWithColor'
           type: array
         name:
           type: string
@@ -8836,6 +8844,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LabelId'
+        assetLabels:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelBasicWithColor'
         assetName:
           $ref: '#/components/schemas/String255'
         autoResult:

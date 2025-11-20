@@ -49,6 +49,8 @@ describe('POST - Asset', function () {
             expect(res.body.ip).to.equal('1.1.1.1')
             expect(res.body.noncomputing).to.equal(true)
             expect(res.body.labelIds).to.eql([reference.testCollection.fullLabel])
+            expect(res.body.labels).to.be.an('array').of.length(1)
+            expect(res.body.labels[0].labelId).to.equal(reference.testCollection.fullLabel)
             expect(res.body.metadata.pocName).to.equal('pocName')
             expect(res.body.metadata.pocEmail).to.equal('pocEmail@example.com')
             expect(res.body.stigs).to.be.an('array').of.length(reference.testCollection.validStigs.length)
@@ -313,6 +315,7 @@ describe('POST - Asset', function () {
             expect(asset.metadata.batch).to.equal('batch')
             if(asset.name === assets[0].name){
               expect(asset.labelIds).to.eql([reference.testCollection.fullLabel, reference.testCollection.lvl1Label])
+              expect(asset.labels).to.deep.equalInAnyOrder(reference.testAsset.fullLabels)
               expect(asset.statusStats.stigCount).to.be.eql(2)
               expect(asset.statusStats.ruleCount).to.be.eql(368)
               for(const stig of asset.stigs) {
@@ -321,6 +324,7 @@ describe('POST - Asset', function () {
             }
             else {
               expect(asset.labelIds).to.eql([])
+              expect(asset.labels).to.be.empty
               expect(asset.statusStats.stigCount).to.be.eql(0)
               expect(asset.statusStats.ruleCount).to.be.eql(null)
               expect(asset.stigs).to.be.an('array').of.length(0)
@@ -359,6 +363,7 @@ describe('POST - Asset', function () {
             expect(asset.mac).to.be.null
             expect(asset.collection.collectionId).to.equal(reference.testCollection.collectionId)
             expect(asset.labelIds).to.eql([reference.testCollection.fullLabel, reference.testCollection.lvl1Label])
+            expect(asset.labels).to.deep.equalInAnyOrder(reference.testAsset.fullLabels)
             expect(asset.statusStats.maxTs).to.be.null
             expect(asset.statusStats.minTs).to.be.null
             expect(asset.statusStats.stigCount).to.be.eql(2)
