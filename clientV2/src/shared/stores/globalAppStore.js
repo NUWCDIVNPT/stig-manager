@@ -5,10 +5,14 @@ import { defineStore } from 'pinia'
 export const useGlobalAppStore = defineStore('globalApp', {
   state: () => ({
     classification: null,
+    user: null,
   }),
   actions: {
     setClassification(classification) {
       this.classification = classification
+    },
+    setUser(user) {
+      this.user = user
     },
   },
 })

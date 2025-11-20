@@ -1,6 +1,6 @@
 import { computed, unref } from 'vue'
-import { fetchCollectionAssetsWithStigs, fetchCollectionLabels } from '../api/assetGridApi'
 import { collectionKeys } from '../../../shared/queries/collectionKeys'
+import { fetchCollectionAssetsWithStigs, fetchCollectionLabels } from '../api/assetGridApi'
 
 const keepPreviousData = previous => previous
 

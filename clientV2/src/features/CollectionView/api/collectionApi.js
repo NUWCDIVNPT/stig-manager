@@ -5,6 +5,19 @@ export async function deleteCollection({ collectionId, token, apiUrl = useEnv().
     throw new Error('A collectionId is required to delete a collection.')
   }
 
+  // ============================================================
+  // 🧪 TESTING HELPERS - Uncomment to test optimistic updates
+  // ============================================================
+
+  // TEST 1: Simulate slow network (see optimistic update before API responds)
+  // await new Promise(resolve => setTimeout(resolve, 3000))
+
+  // TEST 2: Force API failure (test rollback behavior)
+  await new Promise(resolve => setTimeout(resolve, 2000))
+  throw new Error('🧪 Simulated delete failure - testing rollback!')
+  // }
+  // ============================================================
+
   const response = await fetch(`${apiUrl}/collections/${collectionId}`, {
     method: 'DELETE',
     headers: {

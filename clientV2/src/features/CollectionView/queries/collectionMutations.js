@@ -38,28 +38,42 @@ export function useDeleteCollectionMutation(collectionIdRef) {
         return old.filter(col => col.collectionId !== currentId)
       })
 
-      // close the tab and clear the selection in the nav immediately
-      if (currentId) {
-        tabCoordinator.requestClose(String(currentId))
-      }
+      // clear the selection in the nav immediately (easy to restore)
       navTreeStore.select(null)
 
-      // return context object with snapshots
-      return { previousCollections, previousSelection }
+      // DON'T close the tab optimistically - tabs are hard to reopen on rollback
+      // We'll close it in onSuccess after server confirms the delete
+
+      // return context object with snapshots and currentId for onSuccess
+      return { previousCollections, previousSelection, currentId }
     },
 
-    // rollback: if the API call fails, undo our changes
+    // rollback: if the API call fails, let onSettled handle the refetch
+    // We don't manually rollback here because concurrent deletes would overwrite each other's rollbacks
     onError: (_err, _newTodo, context) => {
-      if (context?.previousCollections) {
-        queryClient.setQueryData(collectionKeys.all, context.previousCollections)
-      }
+      console.error('❌ DELETE FAILED:', _err.message)
+      console.log('🔄 onSettled will refetch to restore the correct state')
+
+      // Restore the selection immediately for better UX
       if (context?.previousSelection) {
         navTreeStore.select(context.previousSelection)
       }
+      // NOTE: We didn't close the tab optimistically, so no need to reopen it
     },
 
-    // settle: always refetch after error or success to ensure we are in sync with server
+    // success: close tab only after server confirms delete
+    onSuccess: (_data, _variables, context) => {
+      console.log('✅ DELETE CONFIRMED - Closing tab')
+      // Close the tab now that delete is confirmed by the server
+      if (context?.currentId) {
+        tabCoordinator.requestClose(String(context.currentId))
+      }
+    },
+
+    // settled: refetch on both success and error to sync with server
+    // This handles concurrent deletes correctly - server is the source of truth
     onSettled: () => {
+      console.log('🏁 SETTLED - Refetching from server (handles concurrent operations)')
       queryClient.invalidateQueries({ queryKey: collectionKeys.all })
     },
   })

@@ -60,13 +60,28 @@ try {
   }
 
   // helper to mount the real app (requires an auth boot result)
-  const mountApp = (authBootResult) => {
+  const mountApp = async (authBootResult) => {
     const app = createApp(App)
     app.use(pinia)
 
     // set classification in global app state from env
     const globalAppState = useGlobalAppStore(pinia)
     globalAppState.setClassification(useEnv().apiConfig?.classification || 'NONE')
+
+    // Fetch user data before mounting the app
+    try {
+      const { fetchCurrentUser } = await import('./shared/api/userApi.js')
+      const userData = await fetchCurrentUser(authBootResult.oidcWorker.token, useEnv().apiUrl)
+      globalAppState.setUser(userData)
+    }
+    catch (error) {
+      console.error('Failed to fetch user data:', error)
+      const errApp = createApp(AuthBootstrapError, {
+        details: `Failed to fetch user data: ${error.message || 'Unknown error'}`,
+      })
+      errApp.mount('#app')
+      return
+    }
 
     app.use(PrimeVue, {
       theme: {
