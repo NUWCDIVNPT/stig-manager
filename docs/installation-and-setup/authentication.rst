@@ -196,7 +196,7 @@ Other suggested Keycloak settings for the stig-manager client:
   * Revoke refresh token: yes
   * Refresh Token Max Reuse: 0
   * Client or SSO Session Idle: 10 minutes
-  * The "preferred_username" claim in the token should hold the username you intend to be used in STIG Manager (this is the default setting). If changed, use `STIGMAN_JWT_USER_CLAIM` to specify.
+  * The "preferred_username" claim in the token should hold the username you intend to be used in STIG Manager (this is the default setting). If changed, use ``STIGMAN_JWT_USER_CLAIM`` to specify.
   * Set "OAuth 2.0 Device Authorization Grant Enabled" to "On."
 
 For other settings, the default Keycloak settings should work.

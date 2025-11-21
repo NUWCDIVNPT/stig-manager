@@ -30,6 +30,7 @@ const messageHandlers = {
   getAccessToken,
   exchangeCodeForToken,
   initialize,
+  getStatus,
   logout
 }
 
@@ -82,7 +83,7 @@ async function initialize(options) {
     ENV = options.env || null
 
     try {
-      oidcConfiguration = await fetchOpenIdConfiguration()
+      oidcConfiguration = options.oidcConfiguration || await fetchOpenIdConfiguration()
     }
     catch (e) {
       console.error(logPrefix, 'Failed to fetch OIDC configuration', e)
@@ -95,6 +96,15 @@ async function initialize(options) {
     }
   }
   return { success: true, env: ENV, channelName }
+}
+
+async function getStatus() {
+  return {
+    initialized,
+    redirectUri,
+    env: ENV,
+    channelName
+  }
 }
 
 function logout() {

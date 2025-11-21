@@ -42,7 +42,7 @@ describe("Multiple Group ACL Collisions", () => {
       })
       userGroup1 = res.body
       expect(res.status).to.eql(201)
-      expect(res.body.collections).to.be.empty
+      expect(res.body.collectionGrants).to.be.empty
   })
 
   it('should another test user group with lvl1 user in it.', async () => {
@@ -55,7 +55,7 @@ describe("Multiple Group ACL Collisions", () => {
       })
       userGroup2 = res.body
       expect(res.status).to.eql(201)
-      expect(res.body.collections).to.be.empty
+      expect(res.body.collectionGrants).to.be.empty
   })
 
   it("should assign both groups created to the test collection with restricted grant", async function () {

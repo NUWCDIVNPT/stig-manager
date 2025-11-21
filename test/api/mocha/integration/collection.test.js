@@ -1675,6 +1675,7 @@ describe('GET - putAssetsByCollectionLabelId - /collections/{collectionId}/label
             // remove labelNames property from request to match response
             delete request.labelNames
             request.labelIds =[]
+            request.labels =[]
             expect(assetGetToPost(res.body)).to.eql(request)
         })
         it('Set all properties of an Asset Copy', async () => {

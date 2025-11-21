@@ -30,6 +30,20 @@ exports.queryAssets = async function ({projections = [], filter = {}, grant = {}
         cla.assetId = a.assetId),
       json_array()
     ) as labelIds`,
+    `coalesce(
+      (select
+        json_arrayagg(json_object(
+          'labelId', BIN_TO_UUID(cl.uuid,1),
+          'name', cl.name,
+          'color', cl.color
+        ))
+      from
+        collection_label_asset_map cla
+        left join collection_label cl on cla.clId = cl.clId
+      where
+        cla.assetId = a.assetId),
+      json_array()
+    ) as labels`,
     'a.mac',
     'a.noncomputing',
     'a.metadata'
@@ -1340,6 +1354,20 @@ exports.getAssetsByStig = async function({collectionId, benchmarkId, labels, gra
         cla.assetId = a.assetId),
       json_array()
     ) as assetLabelIds`,
+    `coalesce(
+      (select
+        json_arrayagg(json_object(
+          'labelId', BIN_TO_UUID(cl.uuid,1),
+          'name', cl.name,
+          'color', cl.color
+        ))
+      from
+        collection_label_asset_map cla
+        left join collection_label cl on cla.clId = cl.clId
+      where
+        cla.assetId = a.assetId),
+      json_array()
+    ) as assetLabels`,
     'CAST(a.collectionId as char) as collectionId'
   ]
   const joins = [

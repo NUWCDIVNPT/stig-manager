@@ -429,7 +429,7 @@ describe('Test restricted user group access controls', () => {
     })
     userGroup = res.body
     expect(res.status).to.eql(201)
-    expect(res.body.collections).to.be.empty
+    expect(res.body.collectionGrants).to.be.empty
     for (let user of res.body.users) {
       expect(user.userId, 'expect userId to be equal to the userId returned from API').to.equal(lvl1.userId)
       expect(user.username, 'expect username to be equal to the username returned from API').to.equal(lvl1.name)
@@ -551,7 +551,7 @@ describe('Test manage user group access control', () => {
     })
     userGroup = res.body
     expect(res.status).to.eql(201)
-    expect(res.body.collections).to.be.empty
+    expect(res.body.collectionGrants).to.be.empty
     for (let user of res.body.users) {
       expect(user.userId, 'expect userId to be equal to the userId returned from API').to.equal(lvl1.userId)
       expect(user.username, 'expect username to be equal to the username returned from API').to.equal(lvl1.name)

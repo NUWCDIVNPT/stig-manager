@@ -58,7 +58,12 @@ const config = {
         address: process.env.STIGMAN_API_ADDRESS || "0.0.0.0",
         port: process.env.STIGMAN_API_PORT || 54000,
         maxJsonBody: process.env.STIGMAN_API_MAX_JSON_BODY || "31457280",
-        maxUpload: process.env.STIGMAN_API_MAX_UPLOAD || "1073741824"
+        maxUpload: process.env.STIGMAN_API_MAX_UPLOAD || "1073741824",
+        tls: {
+            key_file: process.env.STIGMAN_API_TLS_KEY_FILE,
+            key_passphrase: process.env.STIGMAN_API_TLS_KEY_PASSPHRASE,
+            cert_file: process.env.STIGMAN_API_TLS_CERT_FILE
+        }
     },
     database: {
         host: process.env.STIGMAN_DB_HOST || "localhost",
@@ -89,6 +94,7 @@ const config = {
         authority: process.env.STIGMAN_OIDC_PROVIDER || process.env.STIGMAN_API_AUTHORITY || "http://localhost:8080/realms/stigman",
         audienceValue: process.env.STIGMAN_JWT_AUD_VALUE,
         allowInsecureTokens: process.env.STIGMAN_DEV_ALLOW_INSECURE_TOKENS === "true",
+        caCerts: process.env.STIGMAN_OIDC_CA_CERTS,
         insecureKids,
         cacheMaxAge: Math.min(Math.max(process.env.STIGMAN_JWKS_CACHE_MAX_AGE, 1) || 10, 35791),
         claims: {
@@ -98,6 +104,7 @@ const config = {
             name: process.env.STIGMAN_JWT_NAME_CLAIM || process.env.STIGMAN_JWT_USERNAME_CLAIM || "name",
             privileges: formatMySqlJsonPath(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles"),
             privilegesChain: formatJsChain(process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles"),
+            privilegesRaw: process.env.STIGMAN_JWT_PRIVILEGES_CLAIM || "realm_access.roles",
             email: process.env.STIGMAN_JWT_EMAIL_CLAIM || "email",
             assertion: process.env.STIGMAN_JWT_ASSERTION_CLAIM || "jti"
         }
@@ -108,7 +115,8 @@ const config = {
         optStats: process.env.STIGMAN_DEV_LOG_OPT_STATS === "true"
     },
     experimental: {
-        appData: process.env.STIGMAN_EXPERIMENTAL_APPDATA === "true"
+        appData: process.env.STIGMAN_EXPERIMENTAL_APPDATA === "true",
+        logStream: process.env.STIGMAN_EXPERIMENTAL_LOGSTREAM !== "false"
     }
 }
 

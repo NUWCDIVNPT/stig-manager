@@ -68,6 +68,7 @@ module.exports.replaceAppData = async function replaceAppData (req, res, next) {
     }
     const buffer = Buffer.concat(chunks)
     res.setHeader('Content-Type', 'application/jsonl; charset=utf-8')
+    res.setHeader('X-Accel-Buffering', 'no'); // Disable buffering for nginx
     res.setHeader('Transfer-Encoding', 'chunked')
     await OperationService.replaceAppData(buffer, req.headers['content-type'], progressCb )
     res.end()

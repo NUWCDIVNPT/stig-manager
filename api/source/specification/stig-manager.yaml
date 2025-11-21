@@ -5737,6 +5737,10 @@ components:
           items:
             $ref: '#/components/schemas/LabelId'
           type: array
+        assetLabels:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelBasicWithColor'
         collectionId:
           $ref: '#/components/schemas/CollectionId'
         name:
@@ -5865,6 +5869,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LabelId'
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelBasicWithColor'
         mac:
           $ref: '#/components/schemas/AssetMac'
         metadata:
@@ -7832,7 +7840,7 @@ components:
         labels:
           type: array
           items:
-            $ref: '#/components/schemas/LabelBasic'
+            $ref: '#/components/schemas/LabelBasicWithColor'
         mac:
           $ref: '#/components/schemas/AssetMac'
         name:
@@ -7908,6 +7916,8 @@ components:
           type: boolean
         revisionStr:
           $ref: '#/components/schemas/RevisionStrRaw'
+        revisionDate:
+          $ref: "#/components/schemas/StringDateNullable"
         ruleCount:
           $ref: '#/components/schemas/RuleCount'
         title:
@@ -7918,6 +7928,7 @@ components:
         - title
         - assets
         - revisionStr
+        - revisionDate
         - ruleCount
     MetricsDetail:
       properties:
@@ -8195,7 +8206,7 @@ components:
           $ref: '#/components/schemas/BenchmarkId'
         labels:
           items:
-            $ref: '#/components/schemas/LabelBasic'
+            $ref: '#/components/schemas/LabelBasicWithColor'
           type: array
         name:
           type: string
@@ -8203,6 +8214,8 @@ components:
           type: boolean
         revisionStr:
           $ref: '#/components/schemas/RevisionStrRaw'
+        revisionDate:
+          $ref: "#/components/schemas/StringDateNullable"          
         title:
           $ref: '#/components/schemas/StigTitle'
       required:
@@ -8212,6 +8225,7 @@ components:
         - benchmarkId
         - title
         - revisionStr
+        - revisionDate
         - revisionPinned
     MinTs:
       format: date-time
@@ -8830,6 +8844,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LabelId'
+        assetLabels:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelBasicWithColor'
         assetName:
           $ref: '#/components/schemas/String255'
         autoResult:
@@ -9469,6 +9487,19 @@ components:
           $ref: '#/components/schemas/String255'
         roleId:
           $ref: '#/components/schemas/RoleId'
+    UserGroupCollectionGrant:
+      additionalProperties: false
+      type: object
+      properties:
+        roleId:
+          $ref: '#/components/schemas/RoleId'
+        collection:
+          type: object
+          properties:
+            collectionId:
+              $ref: '#/components/schemas/CollectionId'
+            name:
+              $ref: '#/components/schemas/CollectionName'
     UserGroupGrant:
       type: object
       required:
@@ -9510,6 +9541,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserId'
+        collectionGrants:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionGrant'
+          uniqueItems: true
     UserGroupProjected:
       type: object
       additionalProperties: false
@@ -9528,10 +9564,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserBasicWithDisplayName'
-        collections:
+        collectionGrants:
           type: array
           items:
-            $ref: '#/components/schemas/CollectionBasic'
+            $ref: '#/components/schemas/UserGroupCollectionGrant'
         attributions:
           $ref: '#/components/schemas/Attributions'
     UserGroupPostOrPut:
@@ -9549,6 +9585,11 @@ components:
           uniqueItems: true
           items:
             $ref: '#/components/schemas/UserId'
+        collectionGrants:
+          type: array
+          items:
+            $ref: '#/components/schemas/CollectionGrant'
+          uniqueItems: true
     UserId:
       $ref: '#/components/schemas/StringIntId'
     UserIdNullable:
@@ -10328,6 +10369,7 @@ components:
           enum:
             - users
             - collections
+            - collectionGrants
             - attributions
     UserIdPath:
       name: userId

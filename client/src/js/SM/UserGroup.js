@@ -40,7 +40,7 @@ SM.UserGroup.UserGroupGrid = Ext.extend(Ext.grid.GridPanel, {
       {
         name: 'collectionCount',
         type: 'integer',
-        convert: (v, r) => r.collections.length
+        convert: (v, r) => r.collectionGrants.length
 
       }
     ])
@@ -51,7 +51,7 @@ SM.UserGroup.UserGroupGrid = Ext.extend(Ext.grid.GridPanel, {
       }),
       baseParams: {
         elevate: curUser.privileges.admin,
-        projection: ['users', 'collections', 'attributions']
+        projection: ['users', 'collectionGrants', 'attributions']
       },
       root: '',
       fields,
@@ -554,10 +554,10 @@ SM.UserGroup.UserSelectingPanel = Ext.extend(Ext.Panel, {
     const config = {
       layout: 'hbox',
       layoutConfig: {
-        align: 'stretch'
+        align: 'stretch',
+        padding: 10
       },
       name: 'users',
-      border: false,
       items: [
         availableGrid,
         buttonPanel,
@@ -584,9 +584,9 @@ SM.UserGroup.UserGroupFormPanel = Ext.extend(Ext.form.FormPanel, {
   initComponent: function () {
     const _this = this
     const usersPanel = new SM.UserGroup.UserSelectingPanel({
+      title: 'Users',
       hideLabel: true,
       border: true,
-      anchor: '0 -110',
       isFormField: true,
       submitValue: true,
       listeners: {
@@ -594,6 +594,26 @@ SM.UserGroup.UserGroupFormPanel = Ext.extend(Ext.form.FormPanel, {
           _this.fireEvent('propsupdate', 'userIds', userGroupIds)
         }
       }
+    })
+    const directGrantsPanel = new SM.User.GrantSelectingPanel({
+      name: 'collectionGrants',
+      title: 'Direct Grants',
+      iconCls: 'sm-lock-icon',
+      border: true,
+      listeners: {
+        selectedchanged: function (selections) {
+          _this.fireEvent('propsupdate', this.name, selections)
+        }
+      }
+    })
+    const tabPanel = new Ext.TabPanel({
+      border: false,
+      activeTab: 0,
+      anchor: `100% -110`,
+      items: [
+        usersPanel,
+        directGrantsPanel
+      ]
     })
     const userGroupItems = [
       {
@@ -637,40 +657,16 @@ SM.UserGroup.UserGroupFormPanel = Ext.extend(Ext.form.FormPanel, {
           title: '<b>User Group information</b>',
           items: userGroupItems
         },
-        usersPanel
+        tabPanel
       ],
-      usersPanel
+      usersPanel,
+      directGrantsPanel,
+      tabPanel
     }
 
     Ext.apply(this, Ext.apply(this.initialConfig, config))
     this.superclass().initComponent.call(this)
 
-    // this.getForm().getFieldValues = function (dirtyOnly, getDisabled) {
-    //   // Override to support submitValue boolean
-    //   var o = {},
-    //     n,
-    //     key,
-    //     val;
-    //   this.items.each(function (f) {
-    //     // Added condition for f.submitValue
-    //     if (f.submitValue && (!f.disabled || getDisabled) && (dirtyOnly !== true || f.isDirty())) {
-    //       n = f.getName();
-    //       key = o[n];
-    //       val = f.getValue();
-
-    //       if (Ext.isDefined(key)) {
-    //         if (Ext.isArray(key)) {
-    //           o[n].push(val);
-    //         } else {
-    //           o[n] = [key, val];
-    //         }
-    //       } else {
-    //         o[n] = val;
-    //       }
-    //     }
-    //   });
-    //   return o;
-    // }
   }
 })
 
@@ -688,52 +684,23 @@ SM.UserGroup.showUserGroupProps = async function (userGroupId) {
       padding: '10px 15px 10px 15px',
       listeners,
       monitorValid: !userGroupId //fires clientvalidation event for new groups,
-
-      // btnHandler: async function () {
-      //   try {
-      //     if (fp.getForm().isValid()) {
-      //       const values = fp.getForm().getFieldValues(false, true) // dirtyOnly=false, getDisabled=true
-      //       const jsonData = { name: values.name, description: values.description, userIds: values.users }
-
-      //       const method = userGroupId ? 'PATCH' : 'POST'
-      //       const url = userGroupId ? `${STIGMAN.Env.apiBase}/user-groups/${userGroupId}` : `${STIGMAN.Env.apiBase}/user-groups`
-      //       const result = await Ext.Ajax.requestPromise({
-      //         url,
-      //         method,
-      //         params: {
-      //           elevate: curUser.privileges.admin,
-      //           projection: ['users', 'collections', 'attributions']
-      //         },
-      //         headers: { 'Content-Type': 'application/json;charset=utf-8' },
-      //         jsonData
-      //       })
-      //       const apiUserGroup = JSON.parse(result.response.responseText)
-      //       const event = userGroupId ? 'usergroupchanged' : 'usergroupcreated'
-      //       SM.Dispatcher.fireEvent(event, apiUserGroup)
-      //       appwindow.close()
-      //     }
-      //   }
-      //   catch (e) {
-      //     SM.Error.handleError(e)
-      //   }
-      // }
     })
 
     async function onPropsUpdate(property, value) {
-      const apiUser = await Ext.Ajax.requestPromise({
+      const apiUserGroup = await Ext.Ajax.requestPromise({
         responseType: 'json',
         url: `${STIGMAN.Env.apiBase}/user-groups/${userGroupId}`,
         method: 'PATCH',
         params: {
           elevate: curUser.privileges.admin,
-          projection: ['users', 'collections', 'attributions']
+          projection: ['users', 'collectionGrants', 'attributions']
         },
         headers: { 'Content-Type': 'application/json;charset=utf-8' },
         jsonData: {
           [property]: value
         }
       })
-      SM.Dispatcher.fireEvent('usergroupchanged', apiUser)
+      SM.Dispatcher.fireEvent('usergroupchanged', apiUserGroup)
     }
 
     function onClientValidation(formPanel, isValid) {
@@ -756,7 +723,7 @@ SM.UserGroup.showUserGroupProps = async function (userGroupId) {
               method: 'POST',
               params: {
                 elevate: curUser.privileges.admin,
-                projection: ['users', 'collections', 'attributions']
+                projection: ['users', 'collectionGrants', 'attributions']
               },
               headers: { 'Content-Type': 'application/json;charset=utf-8' },
               jsonData: values
@@ -802,13 +769,14 @@ SM.UserGroup.showUserGroupProps = async function (userGroupId) {
         url: `${STIGMAN.Env.apiBase}/user-groups/${userGroupId}`,
         params: {
           elevate: curUser.privileges.admin,
-          projection: ['users']
+          projection: ['users', 'collectionGrants']
         },
         method: 'GET'
       })
       fp.getForm().setValues(apiUserGroup)
     }
     await fp.usersPanel.initPanel(apiUserGroup)
+    await fp.directGrantsPanel.initPanel(apiUserGroup)
 
     Ext.getBody().unmask();
   }

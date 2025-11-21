@@ -20,8 +20,13 @@
     const statusEl = document.getElementById("loading-text")
     const OW = new SharedWorker("js/workers/oidc-worker.js", { name: 'stigman-oidc-worker', type: "module" })
     OW.port.start()
-    const init = await sendWorkerRequest({ request: 'initialize' })
-    await run()
+    const init = await sendWorkerRequest({ request: 'getStatus' })
+    if (init.initialized) {
+      await run()
+    }
+    else {
+      appendError('OIDC Worker is not initialized.')
+    }
 
     // Helper functions
     function sendWorkerRequest(request) {

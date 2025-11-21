@@ -542,7 +542,8 @@ const sqlLabels = `coalesce(
   (select
     json_arrayagg(json_object(
       'labelId', BIN_TO_UUID(cl2.uuid,1),
-      'name', cl2.name
+      'name', cl2.name,
+      'color', cl2.color
       ))
   from
     collection_label_asset_map cla2
@@ -568,6 +569,8 @@ const baseCols = {
     'rev.marking',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
+    `DATE_FORMAT(rev.benchmarkDateSql, '%Y-%m-%d') as revisionDate`,
+
   ],
   asset: [
     'cast(a.assetId as char) as assetId',
@@ -591,6 +594,7 @@ const baseCols = {
     'rev.marking',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
+    `DATE_FORMAT(rev.benchmarkDateSql, '%Y-%m-%d') as revisionDate`,
     'count(distinct a.assetId) as assets',
     'rev.ruleCount'
   ],
@@ -612,6 +616,7 @@ const baseCols = {
     'stig.title',
     'rev.marking',
     'rev.revisionStr',
+    `DATE_FORMAT(rev.benchmarkDateSql, '%Y-%m-%d') as revisionDate`,
     'count(distinct a.collectionId) as collections',
     'count(distinct a.assetId) as assets',
     'rev.ruleCount'
@@ -627,6 +632,8 @@ const baseColsFlat = {
     'rev.marking',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
+    `DATE_FORMAT(rev.benchmarkDateSql, '%Y-%m-%d') as revisionDate`,
+
   ],
   asset: [
     'cast(a.assetId as char) as assetId',
@@ -646,6 +653,7 @@ const baseColsFlat = {
     'rev.marking',
     'rev.revisionStr',
     'CASE WHEN dr.revisionPinned = 1 THEN CAST(true as json) ELSE CAST(false as json) END as revisionPinned',
+    `DATE_FORMAT(rev.benchmarkDateSql, '%Y-%m-%d') as revisionDate`,
     'count(distinct a.assetId) as assets',
     'rev.ruleCount'
   ],
@@ -665,6 +673,7 @@ const baseColsFlat = {
     'stig.title',
     'rev.marking',
     'rev.revisionStr',
+    `DATE_FORMAT(rev.benchmarkDateSql, '%Y-%m-%d') as revisionDate`,
     'count(distinct a.collectionId) as collections',
     'count(distinct a.assetId) as assets',
     'rev.ruleCount'

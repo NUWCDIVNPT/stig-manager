@@ -6,10 +6,11 @@ const https = require('node:https')
 const logger = require('./logger')
 
 class JWKSCache extends EventEmitter {
-  constructor({ jwksUri, cacheMaxAge = 60000 }) {
+  constructor({ jwksUri, caCerts, cacheMaxAge = 60000 }) {
     super()
     this.cache = new Map()
     this.jwksUri = jwksUri
+    this.caCerts = caCerts
     this.cacheMaxAge = Math.min(cacheMaxAge, 2 ** 31 - 1)
     this.cacheRefreshAge = this.cacheMaxAge / 2
     this.staleTimeoutId = null
@@ -84,7 +85,10 @@ class JWKSCache extends EventEmitter {
         timeout: 10000,
         ...options
       }
-  
+      if (this.caCerts) {
+        requestOptions.ca = this.caCerts
+      }
+
       const httpRequestLib = url.protocol === 'https:' ? https : http;
       const httpRequest = httpRequestLib.request(url, requestOptions
         , (res) => {

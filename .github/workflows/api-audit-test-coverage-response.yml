@@ -70,6 +70,9 @@ jobs:
       - name: Install test dependencies
         run: npm ci
         working-directory: ./test/api/
+      - name: Install utils test dependencies
+        run: npm ci
+        working-directory: ./test/utils/
       - name: Run mock Keycloak
         id: idp-run
         working-directory: ./test/api/mock-keycloak

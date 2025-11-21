@@ -54,11 +54,12 @@ Every STIG Manager deployment consists of:
 Recommended Infrastructure
 -------------------------------------------
 
-**Reverse Proxy/Load Balancer** (Highly Recommended, deployer-provided)
-  - Provides TLS termination for secure connections
-  - Handles CAC/PKI authentication if required
+**Reverse Proxy/Load Balancer** (Recommended, deployer-provided)
+  - Required for mTLS/CAC/PKI client certificate authentication
+  - May be required by environmental or security policies
   - Must support streaming responses and Server-Sent Events (SSE)
   - Examples: nginx, Apache, HAProxy, Kubernetes Ingress
+  - Note: STIG Manager supports native TLS - reverse proxy not required for basic HTTPS
 
 **Container Orchestration** (Recommended Deployment Method, deployer-provided)
   - Docker, Kubernetes, OpenShift, or similar
@@ -98,17 +99,24 @@ STIG Manager requires an OpenID Connect provider for authentication and authoriz
 
 :ref:`Authentication setup and JWT requirements <authentication>`
 
-Proxy and TLS Configuration
+TLS and Proxy Configuration
 ---------------------------
 
-Production deployments will likely require a proxy providing TLS encryption and CAC/PKI authentication. If using a proxy, it must be configured to support STIG Manager's streaming and SSE endpoints.
+.. important::
+  The STIG Manager Web Client requires a secure context (HTTPS) to function. For non-localhost connections, you must configure either native TLS or deploy behind a reverse proxy providing HTTPS. Localhost connections (127.0.0.1, ::1) can use HTTP.
 
-**Key Requirements:**
-  - TLS termination for all client connections
-  - Support for streaming responses and Server-Sent Events (SSE)
-  - Unbuffered response handling for specific endpoints
+STIG Manager supports native TLS connections configured via environment variables. A reverse proxy is only required for mTLS/CAC authentication or when mandated by environmental requirements.
 
-:ref:`Proxy configuration <reverse-proxy>`
+**Native TLS:**
+  - Configure HTTPS directly using environment variables
+  - No reverse proxy needed for basic TLS encryption
+  - See :ref:`Environment Variables` beginning with ``STIGMAN_API_TLS_*`` for TLS configuration options
+
+**Reverse Proxy (when required):**
+  - Required for mTLS/CAC/PKI client certificate authentication
+  - Must support streaming responses and Server-Sent Events (SSE)
+  - Must handle unbuffered responses for specific endpoints
+  - See :ref:`Proxy configuration <reverse-proxy>` for details
 
 Additional Suggested Configuration
 =======================================
@@ -123,10 +131,12 @@ The Welcome Message and Image can be customized with environment variables to pr
   :show_caption: True 
   :title: Welcome Message Customizable Elements
 
-Enable Extra CA Certificates
-----------------------------------------
+Add Extra CA Certificates
+------------------------------------------------
 
-If your deployment requires trusting additional Certificate Authorities (CAs) beyond those built into Node.js, you can provide these via a file. You might do this if the API is connecting to an OIDC Provider using https. Set the ``NODE_EXTRA_CA_CERTS=file-path`` Node.js environment variable to direct Node to accept CA certificates you have provided, in addition to its built-in CA certs.  If using containers and an external CA file, ensure this file is mounted into the container at that path.
+If your deployment requires trusting additional Certificate Authorities (CAs) beyond those built into Node.js, you can provide these via a file. You might do this if the API is connecting to an OIDC Provider using https. You can set these specifically for STIG Manager by using the ``STIGMAN_OIDC_CA_CERTS`` environment variable to point to a file containing the additional CA certificates in PEM format. See :ref:`Environment Variables` for TLS configuration options.
+
+Alternatively, set the ``NODE_EXTRA_CA_CERTS=file-path`` Node.js environment variable to direct Node itself to accept CA certificates you have provided, in addition to its built-in CA certs.  If using containers and an external CA file, ensure this file is mounted into the container at that path.
 
 
 Iron Bank images include DoD certificates at: ``/etc/pki/ca-trust/source/anchors/Certificates_PKCS7_v5.7_DoD.pem``
