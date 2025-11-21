@@ -6096,6 +6096,7 @@ components:
         - cci
         - apAcronym
         - definition
+        - control
     CciListItem:
       additionalProperties: false
       type: object
