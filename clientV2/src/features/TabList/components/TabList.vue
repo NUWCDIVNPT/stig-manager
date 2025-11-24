@@ -52,6 +52,7 @@ watch(
   <div id="tabs-wrapper" class="tabs-wrapper">
     <Tabs
       v-model:value="active"
+      scrollable
       :pt="{
         root: {
           style: {
@@ -82,6 +83,12 @@ watch(
               transition: '250ms cubic-bezier(0.35, 0, 0.25, 1)',
               border: 'none',
             },
+          },
+          nextButton: {
+            class: 'nav-btn',
+          },
+          prevButton: {
+            class: 'nav-btn',
           },
         }"
       >
@@ -214,5 +221,28 @@ watch(
     min-height: 100%;
     box-sizing: border-box;
     padding: 0;
+}
+
+:deep(.nav-btn) {
+    color: white;
+    width: 35px;
+    box-shadow: none;
+    outline: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    background-color: rgb(68, 68, 68);
+}
+
+:deep(.nav-btn:hover) {
+    background-color: color-mix(in srgb, rgb(68, 68, 68), white 10%);
+    color: #fff;
+}
+
+:deep(.nav-btn:active) {
+    background-color: color-mix(in srgb, rgb(68, 68, 68), white 20%);
 }
 </style>

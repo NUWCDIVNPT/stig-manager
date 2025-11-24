@@ -4,6 +4,7 @@ import Dialog from 'primevue/dialog'
 import Editor from 'primevue/editor'
 import InputText from 'primevue/inputtext'
 import { computed, inject, ref } from 'vue'
+import CloseButton from '../../../components/common/CloseButton.vue'
 
 const worker = inject('worker', null)
 
@@ -120,6 +121,9 @@ defineExpose({
       },
     }"
   >
+    <template #closebutton="{ closeCallback }">
+      <CloseButton :on-click="closeCallback" />
+    </template>
     <template #header>
       <span class="dialog-title">Create Card</span>
     </template>

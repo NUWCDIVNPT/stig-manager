@@ -5,6 +5,7 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { computed, inject, ref, watch } from 'vue'
+import CloseButton from '../../../components/common/CloseButton.vue'
 import { collectionKeys } from '../../../shared/keys/collectionKeys.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 
@@ -100,11 +101,25 @@ function handleCancel() {
     modal
     :style="{ width: '600px' }"
     :pt="{
-      root: { class: 'create-collection-dialog' },
-      header: { class: 'dialog-header' },
-      content: { class: 'dialog-content' },
+      header: {
+        style: {
+          borderTopLeftRadius: '0.5rem',
+          borderTopRightRadius: '0.5rem',
+          backgroundColor: '#35393b',
+          padding: '10px',
+          height: '35px',
+        },
+      },
+      content: {
+        style: {
+          padding: '1rem',
+        },
+      },
     }"
   >
+    <template #closebutton="{ closeCallback }">
+      <CloseButton :on-click="closeCallback" />
+    </template>
     <template #header>
       <span class="dialog-title">Create Collection</span>
     </template>
@@ -141,6 +156,14 @@ function handleCancel() {
           label="Cancel"
           severity="secondary"
           :disabled="isSubmitting"
+          :pt="{
+            root: {
+              style: {
+                outline: 'none',
+                boxShadow: 'none',
+              },
+            },
+          }"
           @click="handleCancel"
         />
         <Button
@@ -148,6 +171,15 @@ function handleCancel() {
           label="Create"
           :disabled="!isFormValid || isSubmitting"
           :loading="isSubmitting"
+          :pt="{
+            root: {
+              style: {
+                outline: 'none',
+                boxShadow: 'none',
+                background: 'var(--color-primary-blue)',
+              },
+            },
+          }"
         />
       </div>
     </form>
@@ -155,16 +187,8 @@ function handleCancel() {
 </template>
 
 <style scoped>
-.create-collection-dialog {
-  background: #121212;
-}
-
-.dialog-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
 .dialog-title {
-  font-size: 1.1rem;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
