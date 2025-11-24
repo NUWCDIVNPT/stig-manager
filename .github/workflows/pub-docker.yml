@@ -22,7 +22,7 @@ jobs:
   build-client:
     uses: nuwcdivnpt/stig-manager/.github/workflows/build-client.yml@main
   build-client-v2:
-    uses: /.github/workflows/build-client-v2.yml@${{ github.sha }}
+    uses: ./.github/workflows/build-client-v2.yml
   build-docs:
     uses: nuwcdivnpt/stig-manager/.github/workflows/build-docs.yml@main
   build-push-alpine:
