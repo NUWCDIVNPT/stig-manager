@@ -39,3 +39,4 @@ coverage/
 # macOS file
 .DS_Store
 clientV2/clientV2.code-workspace
+clientV2/dist/
