@@ -6,6 +6,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_') 
   const apiOrigin = env.VITE_API_ORIGIN
   return {
+    base: './',
     plugins: [vue(), VueDevtools()],
     server: {
       // Proxy requests for Env.js to the API server in development only

@@ -1,0 +1,24 @@
+name: Build clientV2
+on:
+  workflow_dispatch:
+  workflow_call:
+jobs:
+  builder:
+    name: builder
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - name: Install dependencies
+        working-directory: ./clientV2
+        run: npm ci
+      - name: Create distribution
+        working-directory: ./clientV2
+        run: npm run build
+      - name: Upload distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-v2-dist
+          path: ./clientV2/dist
