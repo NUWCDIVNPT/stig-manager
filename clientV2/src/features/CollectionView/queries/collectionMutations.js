@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { inject, unref } from 'vue'
 import { collectionKeys } from '../../../shared/keys/collectionKeys.js'
+import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
 import { useTabCoordinatorStore } from '../../../shared/stores/tabCoordinatorStore.js'
-import { useNavTreeStore } from '../../NavTree/stores/navTreeStore.js'
 import { deleteCollection } from '../api/collectionApi'
 
 export function useDeleteCollectionMutation(collectionIdRef) {

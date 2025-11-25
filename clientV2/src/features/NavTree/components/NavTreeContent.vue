@@ -2,7 +2,7 @@
 import { storeToRefs } from 'pinia'
 import Tree from 'primevue/tree'
 import { ref, watch } from 'vue'
-import { useNavTreeStore } from '../stores/navTreeStore'
+import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
 
 // nodes are items in the nav tree (collections)
 const props = defineProps({

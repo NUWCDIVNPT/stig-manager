@@ -1,12 +1,12 @@
 <script setup>
 import { useQueryClient } from '@tanstack/vue-query'
 import { defineModel, inject, ref } from 'vue'
+import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
 import { navTreeConfig } from '../composeables/navTreeConfig'
 import { useKeyboardNav } from '../composeables/useKeyboardNav'
 import { useNavTreeData } from '../composeables/useNavTreeData'
 import { useNavTreeNodes } from '../composeables/useNavTreeNodes'
 import { useOutsideClick } from '../composeables/useOutsideClick'
-import { useNavTreeStore } from '../stores/navTreeStore'
 import CreateCollectionModal from './CreateCollectionModal.vue'
 import NavTreeContent from './NavTreeContent.vue'
 import NavTreeDrawer from './NavTreeDrawer.vue'

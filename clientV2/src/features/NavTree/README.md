@@ -28,8 +28,8 @@ NavTree (root orchestrator)
 
 ### State Management
 
-**Store**: `navTreeStore.js`
-- Simple singleton store (not Pinia)
+**Store**: `navTreeStore.js` (located in `src/shared/stores/`)
+- Pinia store for managing navigation selection state
 - Manages `selectedData` (currently selected node)
 - Provides `select(node)` method to update selection
 
@@ -298,7 +298,7 @@ Provides a slide-out navigation drawer with hierarchical navigation items. Fetch
 - `useNavTreeData.js` - Fetches collections
 - `useNavTreeNodes.js` - Builds tree structure
 - `navTreeConfig.js` - Static navigation config
-- `navTreeStore.js` - Selection state store
+- `navTreeStore.js` (in `src/shared/stores/`) - Selection state store
 
 **Data flow:**
 API → `useNavTreeData` → `useNavTreeNodes` → `NavTreeContent` → User clicks → `navTreeStore` + parent events

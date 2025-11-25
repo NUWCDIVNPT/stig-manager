@@ -3,9 +3,9 @@ import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 
 import NavTree from '../features/NavTree/components/NavTree.vue'
-import { useNavTreeStore } from '../features/NavTree/stores/navTreeStore.js'
 import TabList from '../features/TabList/components/TabList.vue'
 import { useGlobalAppStore } from '../shared/stores/globalAppStore.js'
+import { useNavTreeStore } from '../shared/stores/navTreeStore.js'
 
 const navTreeStore = useNavTreeStore()
 // converts store state properties into reactive refs that stay connected to the store:

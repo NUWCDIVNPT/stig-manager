@@ -7,7 +7,7 @@ import { navTreeConfig } from '../composeables/navTreeConfig'
 import { useNavTreeNodes } from '../composeables/useNavTreeNodes'
 
 const selectSpy = vi.fn()
-vi.mock('../stores/navTreeStore', () => ({
+vi.mock('../../../shared/stores/navTreeStore', () => ({
   useNavTreeStore: () => ({ select: selectSpy }),
 }))
 
