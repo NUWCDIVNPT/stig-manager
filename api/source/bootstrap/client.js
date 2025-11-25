@@ -134,10 +134,14 @@ function serveStaticFiles(app){
 
     const clientV2Path = path.join(__dirname, "../", config.client.next_directory)
     logger.writeInfo('serveStaticFiles', 'clientV2', {clientV2_static: clientV2Path})
-    const expressNextStatic = express.static(clientV2Path)
+    const expressNextStatic = express.static(clientV2Path, {redirect: true})
 
     app.use('/client-v2', (req, res, next) => {
         req.component = 'static'
+        if (req.originalUrl === '/client-v2'){
+            res.redirect('client-v2/')
+            return
+        }
         expressNextStatic(req, res, next)
     })
 }
