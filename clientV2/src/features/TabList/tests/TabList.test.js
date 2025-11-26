@@ -1,7 +1,20 @@
 import { userEvent } from '@testing-library/user-event'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import TabList from '../components/TabList.vue'
+
+vi.mock('../../../shared/stores/useEnv', () => ({
+  useEnv: () => ({
+    apiUrl: 'http://localhost:3000',
+    apiConfig: {
+      version: '1.0.0',
+    },
+    displayAppManagers: false,
+    welcome: {
+      message: 'Welcome to STIG Manager',
+    },
+  }),
+}))
 
 // mocks something in primevue TabList component
 beforeAll(() => {
@@ -91,7 +104,7 @@ describe('tabList', () => {
     })
 
     const tabList = document.getElementById('tab-list')
-    const tabElements = tabList.querySelectorAll('.tab-item')
+    const tabElements = tabList.querySelectorAll('button[id^="tab-"]:not([id*="close"])')
     expect(tabElements.length).toBe(2) // home tab + one opened tab
   })
 
@@ -148,13 +161,13 @@ describe('tabList', () => {
     const user = userEvent.setup()
 
     const tabList = document.getElementById('tab-list')
-    let tabElements = tabList.querySelectorAll('.tab-item')
+    let tabElements = tabList.querySelectorAll('button[id^="tab-"]:not([id*="close"])')
     expect(tabElements.length).toBe(2)
 
     const closeButton = document.getElementById('tab-close-CollectionManage')
     await user.click(closeButton)
 
-    tabElements = tabList.querySelectorAll('.tab-item')
+    tabElements = tabList.querySelectorAll('button[id^="tab-"]:not([id*="close"])')
     expect(tabElements.length).toBe(1)
   })
 
@@ -164,12 +177,12 @@ describe('tabList', () => {
     })
 
     const tabList = document.getElementById('tab-list')
-    let tabElements = tabList.querySelectorAll('.tab-item')
+    let tabElements = tabList.querySelectorAll('button[id^="tab-"]:not([id*="close"])')
     expect(tabElements.length).toBe(1) // Only home tab
 
     await rerender({ selection: exampleSelections[1] })
 
-    tabElements = tabList.querySelectorAll('.tab-item')
+    tabElements = tabList.querySelectorAll('button[id^="tab-"]:not([id*="close"])')
     expect(tabElements.length).toBe(2) // Home + Collections
   })
 
@@ -180,7 +193,7 @@ describe('tabList', () => {
     })
 
     const tabList = document.getElementById('tab-list')
-    const tabElements = tabList.querySelectorAll('.tab-item')
+    const tabElements = tabList.querySelectorAll('button[id^="tab-"]:not([id*="close"])')
 
     expect(tabElements.length).toBe(1) // only home tab
   })
@@ -193,7 +206,7 @@ describe('tabList', () => {
     })
 
     const tabList = document.getElementById('tab-list')
-    const tabElements = tabList.querySelectorAll('.tab-item')
+    const tabElements = tabList.querySelectorAll('button[id^="tab-"]')
 
     expect(tabElements.length).toBe(1) // only home tab
   })
@@ -206,7 +219,7 @@ describe('tabList', () => {
     })
 
     const tabList = document.getElementById('tab-list')
-    const tabElements = tabList.querySelectorAll('.tab-item')
+    const tabElements = tabList.querySelectorAll('button[id^="tab-"]')
 
     expect(tabElements.length).toBe(1)
   })
@@ -298,7 +311,7 @@ describe('tabList', () => {
     })
 
     const tabList = document.getElementById('tab-list')
-    const tabElements = tabList.querySelectorAll('.tab-item')
+    const tabElements = tabList.querySelectorAll('button[id^="tab-"]')
 
     expect(tabElements.length).toBe(1)
   })
@@ -312,15 +325,15 @@ describe('tabList', () => {
     const tabList = document.getElementById('tab-list')
 
     await rerender({ selection: exampleSelections[1] })
-    let tabElements = tabList.querySelectorAll('.tab-item')
+    let tabElements = tabList.querySelectorAll('button[id^="tab-"]:not([id*="close"])')
     expect(tabElements.length).toBe(2)
 
     await rerender({ selection: exampleSelections[2] })
-    tabElements = tabList.querySelectorAll('.tab-item')
+    tabElements = tabList.querySelectorAll('button[id^="tab-"]:not([id*="close"])')
     expect(tabElements.length).toBe(3)
 
     await rerender({ selection: exampleSelections[1] })
-    tabElements = tabList.querySelectorAll('.tab-item')
+    tabElements = tabList.querySelectorAll('button[id^="tab-"]:not([id*="close"])')
     expect(tabElements.length).toBe(3)
   })
 })

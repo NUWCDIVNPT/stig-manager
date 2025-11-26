@@ -54,7 +54,7 @@ async function handleSubmit() {
   try {
     const payload = {
       name: name.value.trim(),
-      description: description.value.trim() || undefined,
+      description: description.value.trim() || null,
       grants: [{
         userId: '87', /** TODO: Get current user id from stored user info  */
         roleId: 4, // Owner role

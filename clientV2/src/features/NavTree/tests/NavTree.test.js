@@ -1,7 +1,13 @@
 import { userEvent } from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import NavTree from '../components/NavTree.vue'
+
+vi.mock('../../../shared/stores/useEnv', () => ({
+  useEnv: () => ({
+    apiUrl: 'http://localhost:3000',
+  }),
+}))
 
 describe('navTree', () => {
   it('renders with drawer open by default (not in peek mode)', async () => {

@@ -1,11 +1,12 @@
-import { fireEvent, render, screen } from '@testing-library/vue'
+import { fireEvent, screen } from '@testing-library/vue'
 import { describe, expect, it, vi } from 'vitest'
+import { renderWithProviders } from '../../../testUtils/utils'
 import NavTreeHeader from '../components/NavTreeHeader.vue'
 
 describe('navTreeHeader', () => {
   it('renders title and control buttons', () => {
-    render(NavTreeHeader)
-    expect(screen.getByText('Admin Burke')).toBeInTheDocument()
+    renderWithProviders(NavTreeHeader)
+    expect(screen.getByText('Test User')).toBeInTheDocument()
 
     expect(screen.getByRole('button', { name: /log out/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /close drawer/i })).toBeInTheDocument()
@@ -13,7 +14,7 @@ describe('navTreeHeader', () => {
 
   it('emits "logout" when clicking the logout button', async () => {
     const onLogout = vi.fn()
-    render(NavTreeHeader, {
+    renderWithProviders(NavTreeHeader, {
       // this is logout in the component's emits
       props: { onLogout },
     })
@@ -24,7 +25,7 @@ describe('navTreeHeader', () => {
 
   it('emits "close" when clicking the close button', async () => {
     const onClose = vi.fn()
-    render(NavTreeHeader, {
+    renderWithProviders(NavTreeHeader, {
       // this is close in the component's emits
       props: { onClose },
     })

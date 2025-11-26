@@ -76,9 +76,7 @@ describe('navTreeHeader', () => {
 
     // get root collections node
     const collectionsRow = screen
-      .getByText('Collections', { selector: '.node-text' })
-      .closest('.tree-node')
-
+      .getByText('Collections')
     expect(collectionsRow).toBeInTheDocument()
 
     // toggle collection open

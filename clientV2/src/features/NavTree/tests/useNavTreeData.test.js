@@ -6,8 +6,8 @@ import { renderWithProviders } from '../../../testUtils/utils'
 import { useNavTreeData } from '../composeables/useNavTreeData'
 import { navTreeHandlers } from '../mocks/navTree.handler'
 
-// Mock useEnv so useNavTreeData hits /api/collections (handled by MSW) // look for a global way to do this??
-vi.mock('../../../../useEnv', () => ({
+// Mock useEnv so useNavTreeData hits /api/collections (handled by MSW)
+vi.mock('../../../shared/stores/useEnv', () => ({
   useEnv: () => ({ apiUrl: '/api' }),
 }))
 

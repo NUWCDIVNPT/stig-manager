@@ -62,6 +62,12 @@ watch(
 function onNodeSelect(node) {
   emit('node-select', node)
 }
+
+function toggleNode(node) {
+  if (node.children && node.children.length) {
+    expandedKeys.value[node.key] = !expandedKeys.value[node.key]
+  }
+}
 </script>
 
 <template>
@@ -120,14 +126,14 @@ function onNodeSelect(node) {
             paddingLeft: '20px',
             overflow: 'hidden',
             transformOrigin: 'top left',
-            animation: 'treeFadeSlideIn 1000ms cubic-bezier(0.4, 0.8, 0.2, 1) both',
+            animation: 'treeFadeSlideIn 400ms ease-out both',
           },
         },
       }"
       @node-select="onNodeSelect"
     >
       <template #default="{ node }">
-        <span class="node-inner">
+        <span class="node-inner" @click="toggleNode(node)">
           <span class="icon sm-icon" :class="[node.icon]" aria-hidden="true" />
           <span class="node-text" :class="{ 'is-italic': node.data?.italic }">
             {{ node.label }}
@@ -222,13 +228,15 @@ function onNodeSelect(node) {
 
 @keyframes treeFadeSlideIn {
   from {
-    opacity: 0.1;
-    transform: translateY(-6px) scaleY(0.9);
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0) scaleY(1);
+    max-height: 1000px;
+    transform: translateY(0);
   }
 }
 

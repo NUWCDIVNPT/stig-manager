@@ -1,5 +1,6 @@
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { render } from '@testing-library/vue'
+import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 
 function createFreshQueryClient() {
@@ -16,13 +17,25 @@ function createFreshQueryClient() {
 
 export function renderWithProviders(
   component,
-  { workerToken = 'test-token', props = {}, withPrimeVue = true } = {},
+  {
+    worker = {
+      token: 'test-token',
+      tokenParsed: { preferred_username: 'Test User' },
+    },
+    props = {},
+    withPrimeVue = true,
+  } = {},
 ) {
   const queryClient = createFreshQueryClient()
 
   const global = {
-    plugins: [[VueQueryPlugin, { queryClient }]],
-    provide: { worker: { token: workerToken } },
+    plugins: [
+      [VueQueryPlugin, { queryClient }],
+      createPinia(),
+    ],
+    provide: {
+      worker,
+    },
   }
 
   if (withPrimeVue) {
@@ -30,5 +43,5 @@ export function renderWithProviders(
   }
 
   const utils = render(component, { props, global })
-  return { ...utils, queryClient } // optional, in case you ever need it
+  return { ...utils, queryClient }
 }
