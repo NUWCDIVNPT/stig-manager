@@ -13,6 +13,7 @@ on:
       - 'docs/**'
       - 'Dockerfile'
       - '.github/workflows/build-client.yml'
+      - '.github/workflows/build-client-v2.yml'
       - '.github/workflows/build-docs.yml'
       - '.github/workflows/pub-docker.yml'
     tags:
@@ -20,25 +21,33 @@ on:
 jobs:
   build-client:
     uses: nuwcdivnpt/stig-manager/.github/workflows/build-client.yml@main
+  build-client-v2:
+    uses: ./.github/workflows/build-client-v2.yml
   build-docs:
     uses: nuwcdivnpt/stig-manager/.github/workflows/build-docs.yml@main
   build-push-alpine:
     name: Build and push from Alpine base
     needs:
       - build-client
+      - build-client-v2
       - build-docs
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.ref }}
           fetch-depth: 0
       - name: Download client distribution
         uses: actions/download-artifact@v4
         with:
           name: client-dist
           path: ./client/dist
+      - name: Download client V2 distribution
+        uses: actions/download-artifact@v4
+        with:
+          name: client-v2-dist
+          path: ./clientV2/dist
       - name: Download documentation
         uses: actions/download-artifact@v4
         with:

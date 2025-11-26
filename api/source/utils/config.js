@@ -37,6 +37,7 @@ const config = {
         apiBase: process.env.STIGMAN_CLIENT_API_BASE || "api",
         disabled: process.env.STIGMAN_CLIENT_DISABLED === "true",
         directory: process.env.STIGMAN_CLIENT_DIRECTORY || '../../client/dist',
+        next_directory: process.env.STIGMAN_CLIENT_NEXT_DIRECTORY || '../../clientV2/dist',
         extraScopes: process.env.STIGMAN_CLIENT_EXTRA_SCOPES,
         scopePrefix: process.env.STIGMAN_CLIENT_SCOPE_PREFIX,
         responseMode: process.env.STIGMAN_CLIENT_RESPONSE_MODE || "fragment",

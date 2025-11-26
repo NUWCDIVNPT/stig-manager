@@ -10,13 +10,13 @@ export async function bootstrapEnv() {
 
   const isProd = viteEnv.PROD === true
 
-  const API_ORIGIN = isProd
-    ? window.location.origin
+  const OUR_HREF = isProd
+    ? window.location.href
     : viteEnv.VITE_API_ORIGIN
 
   const API_BASE = stigmanEnv.apiBase
 
-  const API_URL = new URL(API_BASE, API_ORIGIN).toString().replace(/\/$/, '')
+  const API_URL = new URL(API_BASE, OUR_HREF).toString().replace(/\/$/, '')
   stigmanEnv.apiUrl = API_URL
 
   // fetch op/configuration and op/definition
