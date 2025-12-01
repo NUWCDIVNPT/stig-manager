@@ -86,3 +86,7 @@ The [STIG Manager documentation](https://stig-manager.readthedocs.io/en/latest/i
 **[STIGMan Watcher](https://github.com/NUWCDIVNPT/stigman-watcher)** - A command-line utility that monitors filesystem directories and automatically imports .ckl/.cklb checklists and XCCDF scan results into STIG Manager. Useful for automated workflows and continuous integration with scanning tools.
 
 **[Reference orchestration with CAC/PKI authentication](https://github.com/NUWCDIVNPT/stigman-orchestration) demonstrates nginx reverse proxy integration** - A sample Docker Compose setup that includes nginx configured for CAC/PKI authentication in front of STIG Manager and Keycloak.
+
+## Sponsor
+
+STIG Manager is sponsored by the [NAVSEA Warfare Centers](https://www.navsea.navy.mil/Home/Warfare-Centers/). While its primary goal is to support NAVSEA compliance processes, the tool is designed to be flexible and adaptable to other workflows. This project follows [Code.mil](https://code.mil) [guidance](https://github.com/Code-dot-mil/code.mil) for open source software released by the U.S. Department of Defense.
