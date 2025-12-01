@@ -4,11 +4,11 @@ STIG Manager is an API and web client for tracking STIG assessments of Informati
 
 ## Who It's For
 
-Security professionals managing STIG compliance for their Information Systems. If you're an ISSO, security analyst, or assessor responsible for tracking evaluation status across multiple assets, STIGs, or systems, this tool addresses the challenges of managing assessment data that would otherwise be scattered across individual .ckl files or spreadsheets.
+Security professionals managing STIG compliance for their Information Systems. System administrators can record compliance status in real-time as they harden systems, while ISSOs and security managers gain live visibility into assessment progress—whether updates come from users entering evaluations directly or from automated checklist imports. If you're responsible for tracking evaluation status across multiple assets, STIGs, or systems, this tool addresses the challenges of managing assessment data that would otherwise be scattered across individual .ckl files or spreadsheets.
 
 ## Key Capabilities
 
-- **Collection-Based Organization**: Group Assets, STIGs, and Reviews into Collections that align with your RMF packages or organizational structure
+- **Collection-Based Organization**: Group Assets, STIGs, and Reviews into Collections that align with your RMF packages or organizational structure; use customizable Labels to categorize Assets and filter views
 - **Multi-Source Review Integration**: Combine manual evaluations with imported scan results (XCCDF) and checklists (CKL) in unified data management
 - **Intelligent STIG Revision Management**: When DISA releases new STIG versions, only Rules with changed check content require re-evaluation—existing reviews are automatically matched to updated Rules where appropriate
 - **Bulk Operations**: Evaluate the same Rule across multiple Assets simultaneously in the Collection Review workspace, apply batch updates, and import/export entire Collections
@@ -18,20 +18,28 @@ Security professionals managing STIG compliance for their Information Systems. I
 
 ## Screenshots
 
-### Collection Review Workspace
-*Evaluate the same STIG Rule across all Assets in a Collection, with color-coded status and the ability to apply bulk updates*
-
-![Collection Review Workspace](docs/assets/images/collection-review.png)
-
 ### Collection Dashboard
 *Real-time metrics showing assessment completion, findings by severity, and CORA risk scoring*
 
-![Collection Dashboard](docs/assets/images/metrics-report-collection.png)
+<img src="docs/assets/images/metrics-report-collection.png" alt="Collection Dashboard" width="800">
 
 ### Asset Review Workspace
 *Assessment interface with Rule details, CCI/Control mappings, and reference to previous assessments on similar Assets*
 
-![Asset Review Workspace](docs/assets/images/asset-review.png)
+<img src="docs/assets/images/asset-review.png" alt="Asset Review Workspace" width="800">
+
+### Collection Review Workspace
+*Evaluate the same STIG Rule across all Assets in a Collection, with color-coded status and the ability to apply bulk updates*
+
+<img src="docs/assets/images/collection-review.png" alt="Collection Review Workspace" width="800">
+
+### Meta-Collection Dashboard
+*Aggregate metrics across all Collections you have access to, providing organization-wide visibility into assessment status*
+
+<img src="docs/assets/images/meta-collection-dashboard.png" alt="Meta-Collection Dashboard" width="800">
+
+
+
 
 ## Role in RMF Workflows
 
