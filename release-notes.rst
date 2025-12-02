@@ -1,3 +1,18 @@
+1.5.16
+-------
+
+Changes:
+  - (API) feature: Native TLS server support with new environment variables `STIGMAN_API_TLS_CERT_FILE` and `STIGMAN_API_TLS_KEY_FILE`
+  - (API) feature: Custom CA certificate support for OIDC provider TLS validation via `STIGMAN_OIDC_CA_CERTS` environment variable
+  - (API) enhancement: Database TLS certificate paths now support absolute paths while maintaining backward compatibility with relative paths
+  - (API) feature: Complete label objects (labelId, name, color) included in API responses alongside existing labelIds arrays
+  - (API) feature: revisionDate added to STIG metrics summary responses
+  - (API) fix: Missing control field in ccis projection responses
+  - (Docs) Updated README.md and screenshots
+  - (Dependencies) Various security and maintenance updates
+
+Note: This release introduces native TLS server support for the API. TLS is enabled by setting both `STIGMAN_API_TLS_CERT_FILE` and `STIGMAN_API_TLS_KEY_FILE` environment variables. If the private key is encrypted, provide the passphrase via `STIGMAN_API_TLS_KEY_PASSPHRASE`. Additionally, deployments using custom or internal certificate authorities for their OIDC provider can now specify a CA certificate file via `STIGMAN_OIDC_CA_CERTS`. Database TLS certificate environment variables (`STIGMAN_DB_TLS_CA_FILE`, `STIGMAN_DB_TLS_CERT_FILE`, `STIGMAN_DB_TLS_KEY_FILE`) now support absolute paths; existing deployments using relative paths continue to work without modification.
+
 1.5.15
 -------
 
@@ -6,7 +21,7 @@ Changes:
   - (API/UI) feature: Bulk assignment of Collection Grants to User Groups
   - (UI) enhancement: Handle cross-origin OIDC with mTLS by pre-fetching openid-config from main thread
   - (UI) enhancement: handle state mismatch by auto redirecting to OIDC Provider for smoother reauth UX
- 
+
 Note: This release includes the new Log Stream feature. If STIGMan has been deployed behind a reverse proxy, additional configuration may be required for it to function correctly. Please refer to the [STIG Manager documentation](https://stig-manager.readthedocs.io/en/latest/installation-and-setup/reverse-proxy.html#proxy-requirements-for-streaming-sse-and-websocket-endpoints) for guidance on configuring your reverse proxy to support streaming endpoints and WebSockets. This feature can be disabled by setting the environment variable `STIGMAN_EXPERIMENTAL_LOGSTREAM` to `false` if necessary.
 
 1.5.14
