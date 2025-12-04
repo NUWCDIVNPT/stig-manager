@@ -68,7 +68,6 @@ describe('navTreeHeader', () => {
     expect(await screen.findByText('App Management')).toBeInTheDocument()
     expect(await screen.findByText('Collections')).toBeInTheDocument()
     expect(await screen.findByText('STIG Library')).toBeInTheDocument()
-    expect(await screen.findByText('Display Settings')).toBeInTheDocument()
   })
 
   it('find and click the test collection node in tree', async () => {

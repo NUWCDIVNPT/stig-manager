@@ -1,28 +1,17 @@
 <script setup>
-import { computed, inject } from 'vue'
-
-// emits logout and close
-const emit = defineEmits(['logout', 'close'])
-const oidcWorker = inject('worker')
-const tokenTooltip = computed(() => {
-  try {
-    return JSON.stringify(oidcWorker.tokenParsed, null, 2)
-  }
-  catch {
-    return ''
-  }
-})
+// emits close
+const emit = defineEmits(['close'])
 </script>
 
 <template>
   <header class="header">
-    <span class="title" :title="tokenTooltip">
-      {{ oidcWorker.tokenParsed.preferred_username }}
-    </span>
+    <div class="brand">
+      <div class="logo-container">
+        <span class="logo-icon" />
+      </div>
+      <span class="title">Stig Manager</span>
+    </div>
     <div class="controls">
-      <button type="button" class="btn-unstyled ctrl-btn" aria-label="Log out" @click="emit('logout')">
-        <span aria-hidden="true" class="icon icon-logout" />
-      </button>
       <button type="button" class="btn-unstyled ctrl-btn" aria-label="Close drawer" @click="emit('close')">
         <span aria-hidden="true" class="icon icon-collapse-left" />
       </button>
@@ -43,16 +32,29 @@ const tokenTooltip = computed(() => {
 .header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.08);
+  justify-content: space-between;
+  padding: 16px 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  display: block;
+  width: 25px;
+  height: 25px;
+  background-image: url('/src/assets/shield-green-check.svg');
+
 }
 
 .title {
   font-weight: 600;
-  font-size: 13px;
+  font-size: 16px;
   color: #f4f4f5;
+  letter-spacing: -0.01em;
 }
 
 .controls {
@@ -93,12 +95,6 @@ const tokenTooltip = computed(() => {
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
-}
-
-.icon-logout {
-  width: 16px;
-  height: 16px;
-  background-image: url('/src/assets/logout.svg');
 }
 
 .icon-collapse-left {

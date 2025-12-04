@@ -10,6 +10,7 @@ import { bootstrapStateWorker, useStateWorker } from './auth/useStateWorker.js'
 import ApiStateBootstrap from './components/global/ApiStateBootstrap.vue'
 import { useGlobalAppStore } from './shared/stores/globalAppStore.js'
 import { bootstrapEnv, useEnv } from './shared/stores/useEnv.js'
+import 'primeicons/primeicons.css'
 import './style.css'
 
 // this is a dark mode override — in the future we may want to make this dynamic based on user preference

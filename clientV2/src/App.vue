@@ -10,7 +10,6 @@ const globalState = useGlobalStateStore()
 
 <template>
   <GlobalBanner />
-  <!-- Auth bits live here so they never unmount -->
   <ReauthPrompt
     v-if="globalState.noTokenMessage"
     :redirect="globalState.noTokenMessage?.redirect"

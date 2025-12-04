@@ -129,6 +129,13 @@ function toggleNode(node) {
             animation: 'treeFadeSlideIn 400ms ease-out both',
           },
         },
+        nodeLabel: {
+          style: {
+            flex: '1',
+            minWidth: '0',
+            paddingRight: '10px',
+          },
+        },
       }"
       @node-select="onNodeSelect"
     >
@@ -200,7 +207,7 @@ function toggleNode(node) {
 }
 
 .node-inner {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   min-width: 0;
   gap: 6px;
@@ -222,8 +229,7 @@ function toggleNode(node) {
   width: 14px;
   height: 14px;
   display: inline-block;
-  margin-right: 6px;
-  border-radius: 2px;
+  margin-right: 5px;
 }
 
 @keyframes treeFadeSlideIn {
@@ -248,5 +254,21 @@ function toggleNode(node) {
   to {
     transform: rotate(360deg);
   }
+}
+
+.admin-gear {
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.2s;
+  color: #a6adba;
+  font-size: 0.9rem;
+}
+
+.node-inner:hover .admin-gear {
+  opacity: 1;
+}
+
+.admin-gear:hover {
+  color: #e4e4e7;
 }
 </style>

@@ -10,6 +10,7 @@ import { useOutsideClick } from '../composeables/useOutsideClick'
 import CreateCollectionModal from './CreateCollectionModal.vue'
 import NavTreeContent from './NavTreeContent.vue'
 import NavTreeDrawer from './NavTreeDrawer.vue'
+import NavTreeFooter from './NavTreeFooter.vue'
 import NavTreeHeader from './NavTreeHeader.vue'
 import NavTreeTab from './NavTreeTab.vue'
 
@@ -81,20 +82,73 @@ function handleCollectionCreated(collection) {
 </script>
 
 <template>
-  <div ref="wrapperRef" class="root">
-    <NavTreeTab :peek-mode="peekMode" @peak="peak" @open="open" />
-    <NavTreeDrawer :visible="visible" :peek-mode="peekMode">
-      <template #header>
-        <NavTreeHeader @logout="handleLogout" @close="handleClose" />
-      </template>
-      <NavTreeContent :nodes="nodes" :loading="loading" @node-select="onNodeSelect" />
-    </NavTreeDrawer>
-    <CreateCollectionModal v-model:visible="showCreateCollectionModal" @created="handleCollectionCreated" />
-  </div>
+  <NavTreeTab :peek-mode="peekMode" :visible="visible" @peak="peak" @open="open" />
+  <NavTreeDrawer :visible="visible" :peek-mode="peekMode">
+    <template #header>
+      <NavTreeHeader @close="handleClose" />
+    </template>
+    <NavTreeContent :nodes="nodes" :loading="loading" @node-select="onNodeSelect" />
+    <div class="bottom-links">
+      <button type="button" class="btn-unstyled nav-link" aria-label="Support">
+        <i class="pi pi-flag nav-icon" />
+        <span class="nav-label">Support</span>
+      </button>
+      <button type="button" class="btn-unstyled nav-link" aria-label="Settings">
+        <i class="pi pi-cog nav-icon" />
+        <span class="nav-label">Settings</span>
+      </button>
+    </div>
+    <template #footer>
+      <NavTreeFooter @logout="handleLogout" />
+    </template>
+  </NavTreeDrawer>
+  <CreateCollectionModal v-model:visible="showCreateCollectionModal" @created="handleCollectionCreated" />
 </template>
 
 <style scoped>
-.root {
-  position: relative;
+.bottom-links {
+  margin-top: auto;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  width: 100%;
+  border-radius: 6px;
+  color: #a1a1aa;
+  transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e4e4e7;
+}
+
+.nav-icon {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.nav-label {
+  flex: 1;
+}
+
+.btn-unstyled {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
 }
 </style>

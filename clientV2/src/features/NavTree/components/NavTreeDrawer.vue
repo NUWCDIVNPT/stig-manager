@@ -32,6 +32,9 @@ const bannerHeight = computed(() => {
     <div class="body" :class="{ 'peek-padding': peekMode }">
       <slot />
     </div>
+    <div class="drawer-footer">
+      <slot name="footer" />
+    </div>
   </aside>
 </template>
 
@@ -40,7 +43,7 @@ const bannerHeight = computed(() => {
   position: fixed;
   top: calc(var(--banner-height, 0px) + 3px);
   bottom: 10px;
-  left: 0;
+  left: 5px;
   width: 300px;
   background: #3d4245;
   color: #4d69a0;
@@ -72,6 +75,15 @@ const bannerHeight = computed(() => {
   flex-direction: column;
   background: #1f1f1f;
   color: #e4e4e7;
+  overflow: hidden;
+}
+
+.drawer-footer {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #1f1f1f;
 }
 
 .peek-padding {

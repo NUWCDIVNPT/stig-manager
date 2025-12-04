@@ -1,6 +1,7 @@
 <script setup>
 defineProps({
   peekMode: { type: Boolean, default: false },
+  visible: { type: Boolean, default: true },
 })
 
 const emit = defineEmits(['peak', 'open'])
@@ -10,6 +11,7 @@ const emit = defineEmits(['peak', 'open'])
   <div
     id="nav-tab"
     class="tab"
+    :class="{ 'is-hidden': visible && !peekMode }"
     role="button"
     tabindex="0"
     aria-controls="nav-drawer"
@@ -45,7 +47,6 @@ const emit = defineEmits(['peak', 'open'])
   position: fixed;
   top: 23px;
   bottom: 10px;
-  left: 0;
   z-index: 900;
   display: grid;
   place-items: center;
@@ -53,6 +54,11 @@ const emit = defineEmits(['peak', 'open'])
   background: #3d4245;
   cursor: pointer;
   transition: opacity 150ms linear;
+}
+
+.tab.is-hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .tab:focus {

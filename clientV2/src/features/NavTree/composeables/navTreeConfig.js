@@ -55,19 +55,5 @@ export const navTreeConfig = {
         { key: 'StigWZ', component: 'StigWZ', label: 'W-Z', icon: 'icon-folder' },
       ],
     },
-    {
-      key: 'Settings',
-      label: 'Display Settings',
-      icon: 'icon-app-management',
-      children: [
-        { key: 'WhatsNew', component: 'WhatsNew', label: 'What\'s New', icon: 'icon-green-shield' },
-        {
-          key: 'ThemeSettings',
-          component: 'ThemeSettings',
-          label: 'Theme Settings',
-          icon: 'icon-moon',
-        },
-      ],
-    },
   ],
 }
