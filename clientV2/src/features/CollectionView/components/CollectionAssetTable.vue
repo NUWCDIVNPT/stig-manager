@@ -47,6 +47,9 @@ const hasAssets = computed(() => props.assets?.length > 0)
         <thead>
           <tr>
             <th scope="col">
+              Actions
+            </th>
+            <th scope="col">
               Asset
             </th>
             <th scope="col">
@@ -71,6 +74,14 @@ const hasAssets = computed(() => props.assets?.length > 0)
         </thead>
         <tbody>
           <tr v-for="asset in assets" :key="asset.assetId">
+            <td>
+              <RouterLink
+                :to="{ name: 'asset-review', params: { assetId: asset.assetId } }"
+                class="asset-table__review-btn"
+              >
+                Review
+              </RouterLink>
+            </td>
             <td>
               <div class="asset-table__primary">
                 <p class="asset-table__name">
@@ -182,5 +193,21 @@ const hasAssets = computed(() => props.assets?.length > 0)
 
 .asset-table__chip--low {
   background-color: #5cd18b;
+}
+
+.asset-table__review-btn {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  background-color: #3a3d40;
+  color: #e4e4e7;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  transition: background-color 0.2s;
+}
+
+.asset-table__review-btn:hover {
+  background-color: #4b4e52;
+  color: #fff;
 }
 </style>

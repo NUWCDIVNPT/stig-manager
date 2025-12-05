@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 
 function setupOidcWorker() {
-  const worker = new SharedWorker('./oidc-worker.js', { name: 'oidc-worker', type: 'module' })
+  const worker = new SharedWorker('/oidc-worker.js', { name: 'oidc-worker', type: 'module' })
   const OW = reactive({
     async logout() {
       const response = await this.sendWorkerRequest({ request: 'logout' })

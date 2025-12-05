@@ -8,10 +8,12 @@ import AuthBootstrapError from './auth/AuthBootstrapError.vue'
 import { bootstrapAuth } from './auth/bootstrap.js'
 import { bootstrapStateWorker, useStateWorker } from './auth/useStateWorker.js'
 import ApiStateBootstrap from './components/global/ApiStateBootstrap.vue'
+import router from './router'
 import { useGlobalAppStore } from './shared/stores/globalAppStore.js'
 import { bootstrapEnv, useEnv } from './shared/stores/useEnv.js'
 import 'primeicons/primeicons.css'
 import './style.css'
+import 'primeicons/primeicons.css'
 
 // this is a dark mode override — in the future we may want to make this dynamic based on user preference?
 if (typeof document !== 'undefined') {
@@ -103,7 +105,7 @@ try {
     //   position: 'top-left', // can change to 'top-left', etc.
     // })
 
-    // Note: router removed — app is now an SPA that renders a single App component.
+    app.use(router)
     app.provide('worker', authBootResult.oidcWorker)
     app.mount('#app')
   }

@@ -1,6 +1,6 @@
 <script setup>
 import { useQueryClient } from '@tanstack/vue-query'
-import { defineModel, inject, ref } from 'vue'
+import { computed, defineModel, inject, ref } from 'vue'
 import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
 import { navTreeConfig } from '../composeables/navTreeConfig'
 import { useKeyboardNav } from '../composeables/useKeyboardNav'
@@ -23,7 +23,13 @@ const peekMode = defineModel('peekMode', { type: Boolean, default: false })
 
 const navTreeStore = useNavTreeStore()
 const { collections, loading } = useNavTreeData() // fetch the data
-const nodes = useNavTreeNodes(collections, navTreeConfig)
+
+const canCreateCollection = computed(() => {
+  const roles = oidcWorker?.tokenParsed?.realm_access?.roles || []
+  return roles.includes('create_collection')
+})
+
+const nodes = useNavTreeNodes(collections, navTreeConfig, canCreateCollection)
 
 const wrapperRef = ref(null)
 const showCreateCollectionModal = ref(false)

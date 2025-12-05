@@ -1,7 +1,8 @@
 <script setup>
 import { storeToRefs } from 'pinia'
 import Tree from 'primevue/tree'
-import { ref, watch } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
 
 // nodes are items in the nav tree (collections)
@@ -12,8 +13,37 @@ const props = defineProps({
 
 const emit = defineEmits(['node-select'])
 
+const worker = inject('worker')
+
+const userRoles = computed(() => {
+  if (!worker?.tokenParsed) {
+    return []
+  }
+  try {
+    return worker.tokenParsed.realm_access.roles || []
+  }
+  catch {
+    return []
+  }
+})
+
+const isAdmin = computed(() => {
+  return userRoles.value.includes('admin')
+})
+
+console.log('NavTreeContent props', props)
+
+const route = useRoute()
+const router = useRouter()
 const expandedKeys = ref({ collections: true })
 const selectionKeys = ref({})
+
+function onGearClick(node) {
+  router.push({
+    name: 'collection-manage',
+    params: { collectionId: node.key },
+  })
+}
 
 const navTreeStore = useNavTreeStore()
 // need to use storeToRefs to keep the ref reactive
@@ -22,7 +52,7 @@ const { selectedData } = storeToRefs(navTreeStore)
 // helper function to find a node by key
 function findNodeByKey(key, list) {
   for (const node of list ?? []) {
-    if (node.key === key) {
+    if (String(node.key) === String(key)) {
       return node
     }
     if (node.children?.length) {
@@ -35,13 +65,96 @@ function findNodeByKey(key, list) {
   return null
 }
 
+// Route to Key mapping (for reverse lookup: URL -> Tree Selection)
+const routeToKey = {
+  'admin-collections': 'CollectionManage',
+  'admin-users': 'UserManage',
+  'admin-user-groups': 'UserGroupManage',
+  'admin-stigs': 'StigManage',
+  'admin-service-jobs': 'ServiceJobs',
+  'admin-app-info': 'AppInfo',
+  'admin-transfer': 'ExportImportManage',
+  'library': 'StigLibrary',
+}
+
+// Component to Route mapping (for forward lookup: Tree Node -> URL)
+const componentToRoute = {
+  CollectionManage: 'admin-collections',
+  UserManage: 'admin-users',
+  UserGroupManage: 'admin-user-groups',
+  StigManage: 'admin-stigs',
+  ServiceJobs: 'admin-service-jobs',
+  AppInfo: 'admin-app-info',
+  ExportImportManage: 'admin-transfer',
+  StigLibrary: 'library',
+}
+
+function getNodeRoute(node) {
+  if (!node) {
+    return null
+  }
+
+  // Collection
+  if (node.component === 'CollectionView') {
+    return { name: 'collection', params: { collectionId: node.key } }
+  }
+
+  // Admin / Static pages
+  const routeName = componentToRoute[node.component]
+  if (routeName) {
+    return { name: routeName }
+  }
+
+  return null
+}
+
+// Sync Route -> Store Selection
+// ensures the NavTree highlights the correct item to match that URL
+function syncRouteToSelection() {
+  if (props.loading || !props.nodes.length) {
+    return
+  }
+
+  let key = null
+  if (route.name === 'collection') {
+    key = route.params.collectionId
+  }
+  else {
+    key = routeToKey[route.name]
+  }
+
+  if (key) {
+    // If already selected, do nothing
+    if (selectedData.value?.key === String(key)) {
+      return
+    }
+
+    const node = findNodeByKey(key, props.nodes)
+    if (node) {
+      navTreeStore.select(node)
+    }
+  }
+}
+
+// Watch route and nodes to sync selection
+watch(
+  [() => route.path, () => props.nodes, () => props.loading],
+  () => {
+    syncRouteToSelection()
+  },
+  { immediate: true },
+)
+
 // watching the selectedKey in the Tree component to update the store.
 watch(
   selectionKeys,
   (map) => {
     const key = Object.keys(map ?? {}).find(k => map[k])
     const node = key ? findNodeByKey(key, props.nodes) : null
-    navTreeStore.select(node ?? null)
+    // Only update if different to avoid loops
+    if (node && selectedData.value?.key !== node.key) {
+      navTreeStore.select(node)
+    }
   },
   { deep: true },
 )
@@ -97,7 +210,7 @@ function toggleNode(node) {
             minWidth: '0',
             lineHeight: '1.3',
             borderRadius: '3px',
-            padding: '4px 0px 2px 0px',
+            padding: '0',
           },
         },
         nodeToggleButton: {
@@ -140,7 +253,23 @@ function toggleNode(node) {
       @node-select="onNodeSelect"
     >
       <template #default="{ node }">
-        <span class="node-inner" @click="toggleNode(node)">
+        <RouterLink
+          v-if="getNodeRoute(node)"
+          :to="getNodeRoute(node)"
+          class="node-inner node-link"
+          @click="toggleNode(node)"
+        >
+          <span class="icon sm-icon" :class="[node.icon]" aria-hidden="true" />
+          <span class="node-text" :class="{ 'is-italic': node.data?.italic }">
+            {{ node.label }}
+          </span>
+          <i
+            v-if="isAdmin && node.component === 'CollectionView'"
+            class="pi pi-cog admin-gear"
+            @click.prevent.stop="onGearClick(node)"
+          />
+        </RouterLink>
+        <span v-else class="node-inner" @click="toggleNode(node)">
           <span class="icon sm-icon" :class="[node.icon]" aria-hidden="true" />
           <span class="node-text" :class="{ 'is-italic': node.data?.italic }">
             {{ node.label }}
@@ -211,6 +340,14 @@ function toggleNode(node) {
   align-items: center;
   min-width: 0;
   gap: 6px;
+  width: 100%;
+  padding: 4px 0px 2px 0px; /* Moved padding here */
+}
+
+.node-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .node-text {
@@ -258,6 +395,7 @@ function toggleNode(node) {
 
 .admin-gear {
   margin-left: auto;
+  margin-right: 0.5rem;
   opacity: 0;
   transition: opacity 0.2s;
   color: #a6adba;

@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 
-export function useNavTreeNodes(collections, config) {
+export function useNavTreeNodes(collections, config, canCreateCollection) {
   return computed(() => {
     const cols = collections?.value || []
 
@@ -21,12 +21,17 @@ export function useNavTreeNodes(collections, config) {
       icon: 'icon-add',
     }
 
+    const children = [...collectionChildren]
+    if (canCreateCollection?.value) {
+      children.unshift(createNewChild)
+    }
+
     const collectionsSection = {
       key: 'Collections',
       label: 'Collections',
       //    data: { type: 'root' },
       icon: 'icon-collection-color',
-      children: [createNewChild, ...collectionChildren],
+      children,
     }
 
     const sections = config.sections
