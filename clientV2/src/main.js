@@ -13,7 +13,7 @@ import { bootstrapEnv, useEnv } from './shared/stores/useEnv.js'
 import 'primeicons/primeicons.css'
 import './style.css'
 
-// this is a dark mode override — in the future we may want to make this dynamic based on user preference
+// this is a dark mode override — in the future we may want to make this dynamic based on user preference?
 if (typeof document !== 'undefined') {
   document.documentElement.classList.add('app-dark')
 }
@@ -24,31 +24,27 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 30_000,
+      staleTime: 30_000, // 30 seconds
     },
   },
 })
-// Use the composable to get the reactive state ref so we can react to updates
-const { state: reactiveState } = useStateWorker()
-
-// Create Pinia instance early so it can be used in bootstrap
-const pinia = createPinia()
 
 try {
   // bootstrap enviornment
   await bootstrapEnv()
+  // Use the composable to get the reactive state ref so we can react to updates later
+  const { state: reactiveState } = useStateWorker()
 
-  // bootstrapStateWorker returns an init result and initial state snapshot
-  const stateResult = await bootstrapStateWorker({ apiBase: useEnv().apiUrl })
+  // Create Pinia instance early so it can be used in bootstrap
+  const pinia = createPinia()
+
+  // bootstrapStateWorker returns an inital result result snapshot
+  const stateResult = await bootstrapStateWorker()
 
   // fatal error (API unreachable)
   if (!stateResult.ok) {
     throw new Error(stateResult.error || 'Unknown error during state worker bootstrap')
   }
-
-  // grab initial state
-  const initialState = stateResult.state ?? undefined
-
   // check if available
   const isReady = (initialState) => {
     if (!initialState) {
@@ -113,18 +109,15 @@ try {
   }
 
   // If initialState indicates unavailable, show the state info and keep listening
-  if (initialState && !isReady(initialState)) {
+  if (stateResult.state && !isReady(stateResult.state)) {
     // mount the state display component and pass the initial state as a prop
-    const stateApp = createApp(ApiStateBootstrap, { initialState })
+    const stateApp = createApp(ApiStateBootstrap, { initialState: stateResult.state })
     stateApp.mount('#app')
 
     // watch reactive state for changes and re-mount when available
     const stop = watch(
       () => reactiveState.value, // watch the reactive state from the worker
       async (newVal) => {
-        if (!newVal) {
-          return
-        }
         if (isReady(newVal)) { // now available
           stateApp.unmount() // remove that waiting view thing
           stop() // stop watching?
@@ -139,27 +132,31 @@ try {
             errApp.mount('#app')
             return
           }
-
+          // bootstrap auth and mount
           mountApp(authBootResult)
         }
       },
       { immediate: false },
     )
   }
+  // state is already ready
   else {
-    // state is already ready — bootstrap auth and mount
     const authBootResult = await bootstrapAuth(pinia)
+    // attempt to bootstrap auth
     if (!authBootResult.success) {
+      // auth bootstrap failed — show error component
       const errApp = createApp(AuthBootstrapError, {
         details: authBootResult.error ? JSON.stringify(authBootResult.error, null, 2) : undefined,
       })
       errApp.mount('#app')
     }
     else {
+      // bootstrap auth and mount
       mountApp(authBootResult)
     }
   }
 }
+// catch all for any errors
 catch (err) {
   const apiErrApp = createApp({
     render: () => h('div', { style: 'padding:24px;font-family:system-ui,Arial,Helvetica,sans-serif' }, `Bootstrap failed.${err}`),

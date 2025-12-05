@@ -1,7 +1,8 @@
 import { ref } from 'vue'
+import { useEnv } from '../shared/stores/useEnv.js'
 
 const state = ref(null) // current state object from the worker
-const error = ref(null) // error messages from the worker
+const error = ref(null)
 const channelName = ref(null)
 const channel = ref(null)
 const port = ref(null)
@@ -30,8 +31,7 @@ function sendWorkerRequest(payload) {
   })
 }
 
-// Default apiBase to runtime STIGMAN Env if available
-async function initialize(apiBase = (typeof window !== 'undefined' && window.STIGMAN?.Env?.apiBase) || '/api') {
+async function initialize(apiBase = useEnv().apiUrl || '/api') {
   // cache and reuse promise so multiple callers don't race this shouldnt happen but just in case (co pilot suggested this )
   if (_initPromise) {
     return _initPromise
@@ -40,7 +40,6 @@ async function initialize(apiBase = (typeof window !== 'undefined' && window.STI
   _lastApiBase = apiBase
   _initPromise = (async () => {
     try {
-      // use Vite-served worker path
       const worker = new SharedWorker('./state-worker.js', {
         name: 'app-state-worker',
         type: 'module',
@@ -60,7 +59,6 @@ async function initialize(apiBase = (typeof window !== 'undefined' && window.STI
 
       channelName.value = initResp.channelName
 
-      // initial state comes as a JSON string from the worker
       try {
         state.value = initResp.state ? JSON.parse(initResp.state) : null
       }
@@ -104,9 +102,9 @@ async function initialize(apiBase = (typeof window !== 'undefined' && window.STI
 
 // Called from main.js to perform a one-time bootstrap and return an initial
 // snapshot (main expects { ok: true/false, state })
-export async function bootstrapStateWorker({ apiBase = (typeof window !== 'undefined' && window.STIGMAN?.Env?.apiBase) || '/api' } = {}) {
-  const r = await initialize(apiBase)
-  return { ...r, state: state.value }
+export async function bootstrapStateWorker({ apiBase = useEnv().apiUrl || '/api' } = {}) {
+  const initResult = await initialize(apiBase)
+  return { ...initResult, state: state.value }
 }
 
 export function useStateWorker() {

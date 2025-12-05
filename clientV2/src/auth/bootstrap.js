@@ -9,6 +9,7 @@ async function bootstrapAuth(pinia) {
     const result = {
       success: false,
       error: null,
+      oidcWorker: null,
     }
 
     OW = setupOidcWorker()

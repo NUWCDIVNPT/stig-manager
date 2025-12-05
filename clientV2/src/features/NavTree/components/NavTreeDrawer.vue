@@ -45,7 +45,7 @@ const bannerHeight = computed(() => {
   bottom: 10px;
   left: 5px;
   width: 300px;
-  background: #3d4245;
+  background: #2f3031;
   color: #4d69a0;
   border-radius: 8px;
   transform: translateX(-110%);
@@ -73,7 +73,7 @@ const bannerHeight = computed(() => {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: #1f1f1f;
+  background: 2f3031#1f1f1f;
   color: #e4e4e7;
   overflow: hidden;
 }

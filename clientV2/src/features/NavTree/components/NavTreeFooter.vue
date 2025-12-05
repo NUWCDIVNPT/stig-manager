@@ -33,7 +33,7 @@ const tokenTooltip = computed(() => {
   align-items: center;
   justify-content: space-between;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.08);
+  background: #2f3031;
   height: 70px;
 }
 
