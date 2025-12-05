@@ -5,6 +5,7 @@ import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
 import { navTreeConfig } from '../composeables/navTreeConfig'
 import { useKeyboardNav } from '../composeables/useKeyboardNav'
 import { useNavTreeData } from '../composeables/useNavTreeData'
+import { useNavTreeNavigation } from '../composeables/useNavTreeNavigation'
 import { useNavTreeNodes } from '../composeables/useNavTreeNodes'
 import { useOutsideClick } from '../composeables/useOutsideClick'
 import CreateCollectionModal from './CreateCollectionModal.vue'
@@ -23,6 +24,7 @@ const peekMode = defineModel('peekMode', { type: Boolean, default: false })
 
 const navTreeStore = useNavTreeStore()
 const { collections, loading } = useNavTreeData() // fetch the data
+useNavTreeNavigation()
 
 const canCreateCollection = computed(() => {
   const roles = oidcWorker?.tokenParsed?.realm_access?.roles || []
