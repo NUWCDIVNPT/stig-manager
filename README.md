@@ -77,7 +77,7 @@ The application is stateless and can scale horizontally. Configuration is manage
 
 The [STIG Manager documentation](https://stig-manager.readthedocs.io/en/latest/index.html) includes User and Setup Guides, video tutorials, terminology references, and deployment scenarios.
 
-- [YouTube Channel](https://www.youtube.com/@stigmanager8057) - Video tutorials and feature demonstrations
+- [YouTube Channel](https://www.youtube.com/@stig-manager) - Video tutorials and feature demonstrations
 - [Release Notes](https://github.com/NUWCDIVNPT/stig-manager/releases) - Version history
 - [Contribution Guide](CONTRIBUTING.md) - DCO requirements and development setup
 
@@ -93,3 +93,5 @@ The [STIG Manager documentation](https://stig-manager.readthedocs.io/en/latest/i
 ## Sponsor
 
 STIG Manager is sponsored by the [NAVSEA Warfare Centers](https://www.navsea.navy.mil/Home/Warfare-Centers/). While its primary goal is to support NAVSEA compliance processes, the tool is designed to be flexible and adaptable to other workflows. This project follows [Code.mil](https://code.mil) [guidance](https://github.com/Code-dot-mil/code.mil) for open source software released by the U.S. Department of Defense.
+
+For inquiries, contact the RMF Tools team at RMF_Tools@us.navy.mil.
