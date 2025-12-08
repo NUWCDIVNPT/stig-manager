@@ -11,6 +11,9 @@ const ServiceJobs = () => import('../features/ServiceJobs/components/ServiceJobs
 const AppInfo = () => import('../features/AppInfo/components/AppInfo.vue')
 const ExportImportManage = () => import('../features/ExportImportManage/components/ExportImportManage.vue')
 const StigLibrary = () => import('../features/STIGLibrary/components/StigLibrary.vue')
+const CollectionSelection = () => import('../features/CollectionSelection/components/CollectionSelection.vue')
+const AppManagementSelection = () => import('../features/AppManagement/components/AppManagementSelection.vue')
+const StigLibrarySelection = () => import('../features/STIGLibrary/components/StigLibrarySelection.vue')
 
 const routes = [
   {
@@ -23,6 +26,21 @@ const routes = [
     name: 'collection',
     component: CollectionView,
     props: true,
+  },
+  {
+    path: '/collections',
+    name: 'collections',
+    component: CollectionSelection,
+  },
+  {
+    path: '/app-management',
+    name: 'app-management',
+    component: AppManagementSelection,
+  },
+  {
+    path: '/stig-library',
+    name: 'stig-library',
+    component: StigLibrarySelection,
   },
   {
     path: '/collection/:collectionId/manage',

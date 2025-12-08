@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router' // Import useRoute
 
 import NavTree from '../features/NavTree/components/NavTree.vue'
 import TabList from '../features/TabList/components/TabList.vue'
@@ -8,6 +9,15 @@ import { useGlobalAppStore } from '../shared/stores/globalAppStore.js'
 const globalAppState = useGlobalAppStore()
 const navOpen = ref(true)
 const peekMode = ref(false)
+const route = useRoute() // Get current route
+
+// Determine if we should show the TabList (only for collection context)
+const showTabList = computed(() => {
+  // User requested TabList only for "opening a collection"
+  // We whitelist the collection-specific routes.
+  const collectionRoutes = ['collection', 'collection-manage', 'asset-review']
+  return collectionRoutes.includes(route.name)
+})
 
 // check if banner is shown based on classification
 const bannerHeight = computed(() => {
@@ -32,7 +42,8 @@ const bannerHeight = computed(() => {
     </aside>
 
     <main class="main">
-      <TabList />
+      <TabList v-if="showTabList" />
+      <router-view v-else />
     </main>
   </div>
 </template>

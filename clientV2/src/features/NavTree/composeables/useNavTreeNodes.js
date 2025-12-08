@@ -1,41 +1,41 @@
 import { computed } from 'vue'
 
-export function useNavTreeNodes(collections, config, canCreateCollection) {
+export function useNavTreeNodes(_collections, _config, _canCreateCollection) {
   return computed(() => {
-    const cols = collections?.value || []
+    // NavTree Refactor:
+    // All top-level items (App Management, Collections, STIG Library) are now leaf nodes
+    // that navigate to their specific selection pages.
 
-    // this may need cleaning up idk?
-    const collectionChildren = cols.map(col => ({
-      key: String(col.collectionId),
-      component: 'CollectionView',
-      label: col.name,
-      data: col,
-      icon: 'icon-collection',
-    }))
-
-    const createNewChild = {
-      key: 'new-collection-action',
-      label: 'Create New Collection…',
-      component: 'CreateCollection',
-      data: { type: 'new', italic: true },
-      icon: 'icon-add',
+    // 1. App Management
+    // We grab the config but instead of using it to build children, we just make a single node.
+    // The key 'AppManagement' will need to map to 'app-management' route in NavTreeContent.
+    const appManagementNode = {
+      key: 'AppManagement',
+      label: 'App Management',
+      component: 'AppManagementSelection',
+      icon: 'icon-app-management',
     }
 
-    const children = [...collectionChildren]
-    if (canCreateCollection?.value) {
-      children.unshift(createNewChild)
-    }
-
-    const collectionsSection = {
+    // 2. Collections
+    const collectionsNode = {
       key: 'Collections',
       label: 'Collections',
-      //    data: { type: 'root' },
+      component: 'CollectionSelection',
       icon: 'icon-collection-color',
-      children,
     }
 
-    const sections = config.sections
-    const [appManagement, ...rest] = sections
-    return [appManagement, collectionsSection, ...rest]
+    // 3. STIG Library
+    // Similar to App Management, single node.
+    const stigLibraryNode = {
+      key: 'Stig',
+      label: 'STIG Library',
+      component: 'StigLibrarySelection',
+      icon: 'icon-stig-library',
+    }
+
+    // We ignore the Rest of the sections from config if they were intended to be top level.
+    // Looking at navTreeConfig.js: it has 'AppManagement' and 'Stig'. That's it.
+
+    return [appManagementNode, collectionsNode, stigLibraryNode]
   })
 }

@@ -74,7 +74,10 @@ const routeToKey = {
   'admin-service-jobs': 'ServiceJobs',
   'admin-app-info': 'AppInfo',
   'admin-transfer': 'ExportImportManage',
-  'library': 'StigLibrary',
+  'library': 'StigLibrary', // This might need to be removed or updated if 'library' route is now accessed via StigLibrarySelection
+  'collections': 'Collections',
+  'app-management': 'AppManagement',
+  'stig-library': 'Stig',
 }
 
 // Component to Route mapping (for forward lookup: Tree Node -> URL)
@@ -87,6 +90,9 @@ const componentToRoute = {
   AppInfo: 'admin-app-info',
   ExportImportManage: 'admin-transfer',
   StigLibrary: 'library',
+  CollectionSelection: 'collections',
+  AppManagementSelection: 'app-management',
+  StigLibrarySelection: 'stig-library',
 }
 
 function getNodeRoute(node) {
