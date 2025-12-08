@@ -15,9 +15,6 @@ const emit = defineEmits(['close'])
       <RouterLink to="/" class="btn-unstyled ctrl-btn" aria-label="Home">
         <i class="pi pi-home icon" style="font-size: 1rem;color: rgba(182, 179, 179, 0.824); opacity: 0.6;" />
       </RouterLink>
-      <button type="button" class="btn-unstyled ctrl-btn" aria-label="Log out" @click="emit('logout')">
-        <span aria-hidden="true" class="icon icon-logout" />
-      </button>
       <button type="button" class="btn-unstyled ctrl-btn" aria-label="Close drawer" @click="emit('close')">
         <span aria-hidden="true" class="icon icon-collapse-left" />
       </button>
@@ -67,7 +64,7 @@ const emit = defineEmits(['close'])
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
 }
 
 .ctrl-btn {

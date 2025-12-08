@@ -6,21 +6,9 @@ import NavTreeHeader from '../components/NavTreeHeader.vue'
 describe('navTreeHeader', () => {
   it('renders title and control buttons', () => {
     renderWithProviders(NavTreeHeader)
-    expect(screen.getByText('Test User')).toBeInTheDocument()
+    expect(screen.getByText('Stig Manager')).toBeInTheDocument()
 
-    expect(screen.getByRole('button', { name: /log out/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /close drawer/i })).toBeInTheDocument()
-  })
-
-  it('emits "logout" when clicking the logout button', async () => {
-    const onLogout = vi.fn()
-    renderWithProviders(NavTreeHeader, {
-      // this is logout in the component's emits
-      props: { onLogout },
-    })
-
-    await fireEvent.click(screen.getByRole('button', { name: /log out/i }))
-    expect(onLogout).toHaveBeenCalledTimes(1)
   })
 
   it('emits "close" when clicking the close button', async () => {
