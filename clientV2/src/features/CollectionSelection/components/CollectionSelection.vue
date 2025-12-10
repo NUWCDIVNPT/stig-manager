@@ -1,6 +1,5 @@
 <script setup>
 import { computed, ref } from 'vue'
-// import { useRouter } from 'vue-router'
 import { useNavTreeData } from '../../NavTree/composeables/useNavTreeData'
 
 // const router = useRouter()
@@ -73,9 +72,7 @@ function handleCreateCollection() {
           <p class="meta">
             ID: {{ col.collectionId }}
           </p>
-          <div class="stats">
-            <!-- potential future stats -->
-          </div>
+          <div class="stats" />
         </div>
         <div class="card-arrow">
           <i class="pi pi-chevron-right" />
@@ -94,8 +91,8 @@ function handleCreateCollection() {
   padding: 2rem;
   height: 100%;
   overflow-y: auto;
-  background-color: #18181b; /* zinc-900 */
-  color: #e4e4e7; /* zinc-200 */
+  background-color: #18181b;
+  color: #e4e4e7;
 }
 
 .header {

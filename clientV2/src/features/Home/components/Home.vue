@@ -28,18 +28,7 @@ onMounted(async () => {
 
 <template>
   <div class="home-component">
-    <div class="home-header">
-      <span class="stig-manager-logo" />
-      <h1 class="home-title">
-        STIG Manager
-      </h1>
-      <div class="badges">
-        <span class="badge badge-oss">OSS</span>
-        <span class="badge badge-version">{{ env?.apiConfig.version }}</span>
-      </div>
-      <CustomCards ref="customCardsRef" />
-    </div>
-
+    <CustomCards ref="customCardsRef" />
     <div class="home-content">
       <div class="home-grid">
         <div class="home-card">

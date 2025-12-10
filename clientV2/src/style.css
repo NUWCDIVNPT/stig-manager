@@ -23,7 +23,44 @@
   --color-primary-blue: #60a5fa;
   --color-primary-blue-light: #93c5fd;
   --color-primary-green: #22c55e;
+  
+  /* UI Interaction Colors */
+  --color-button-hover-bg: rgba(255, 255, 255, 0.1);
+
+  /* Metrics Status Chart Colors */
+  --metrics-status-chart-assessed: hsl(204, 91%, 29%);
+  --metrics-status-chart-submitted: hsl(41, 66%, 46%);
+  --metrics-status-chart-accepted: hsl(146, 92%, 34%);
+  --metrics-status-chart-unassessed: hsl(0 0% 18% / 1);
+  --metrics-status-chart-unsaved: hsl(0deg 0% 18%);
+  --metrics-status-chart-rejected: hsl(5, 89%, 32%);
+  /* CAT Rating Colors */
+  --color-cat1: #c68c8c;
+  --color-cat2: #d4b056;
+  --color-cat3: #a3acd6;
+  
+  /* Collection Stats Colors */
+  --color-inventory: #c4a484;
+  --color-review-age: #d4d4d8;
 }
+
+/* CORA Risk Gradients */
+.sm-cora-risk-very-high {
+  background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
+}
+.sm-cora-risk-high {
+  background: linear-gradient(135deg, #9a3412 0%, #7c2d12 100%); 
+}
+.sm-cora-risk-moderate {
+  background: linear-gradient(135deg, #854d0e 0%, #713f12 100%);
+}
+.sm-cora-risk-low {
+  background: linear-gradient(135deg, #14532d 0%, #052e16 100%);
+}
+.sm-cora-risk-very-low {
+  background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%); 
+}
+
 
 .btn {
   border-radius: 8px;

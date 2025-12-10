@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 // Lazy load components
 const Home = () => import('../features/Home/components/Home.vue')
-const CollectionView = () => import('../features/CollectionView/components/CollectionView.vue')
+const CollectionView = () => import('../features/CollectionView/components/CollectionView2.vue')
 const CollectionManage = () => import('../features/CollectionManage/components/CollectionManage.vue')
 const UserManage = () => import('../features/UserManage/components/UserManage.vue')
 const UserGroupManage = () => import('../features/UserGroupManage/components/UserGroupManage.vue')
@@ -93,6 +93,14 @@ const routes = [
     path: '/library',
     name: 'library',
     component: StigLibrary,
+  },
+  {
+    path: '/settings',
+    name: 'settings',
+  },
+  {
+    path: '/support',
+    name: 'support',
   },
 ]
 
