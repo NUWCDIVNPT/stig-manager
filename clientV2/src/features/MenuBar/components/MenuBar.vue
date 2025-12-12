@@ -1,7 +1,6 @@
 <script setup>
 import { useQueryClient } from '@tanstack/vue-query'
 import Menubar from 'primevue/menubar'
-import vRipple from 'primevue/ripple'
 import { computed, inject } from 'vue'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 
@@ -20,6 +19,7 @@ const tokenTooltip = computed(() => {
 })
 
 function handleLogout() {
+  // clear all queries
   queryClient.clear()
   const logoutHandler = oidcWorker.logout.bind(oidcWorker)
   logoutHandler()
@@ -82,6 +82,7 @@ const pt = {
       borderBottom: '2px solid #464545',
       borderRadius: '0',
       padding: '0 16px',
+      minWidth: '200px',
     },
   },
   rootList: {
@@ -151,13 +152,13 @@ const pt = {
       </div>
 
       <router-link v-else-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
-        <a v-ripple :href="href" v-bind="props.action" class="menu-item-link" @click="navigate">
+        <a :href="href" v-bind="props.action" class="menu-item-link" @click="navigate">
           <span :class="item.icon" />
           <span>{{ item.label }}</span>
           <i v-if="item.tooltip" class="pi pi-info-circle tooltip-icon" :title="item.tooltip" />
         </a>
       </router-link>
-      <a v-else v-ripple :href="item.url" :target="item.target" v-bind="props.action" class="menu-item-link">
+      <a v-else v-bind="props.action" class="menu-item-link">
         <span :class="item.icon" />
         <span>{{ item.label }}</span>
         <i v-if="item.tooltip" class="pi pi-info-circle tooltip-icon" :title="item.tooltip" />

@@ -2,11 +2,8 @@
 import Badge from 'primevue/badge'
 import Drawer from 'primevue/drawer'
 import PrimeMenu from 'primevue/menu'
-import vRipple from 'primevue/ripple'
 import { computed } from 'vue'
-import { useNavTreeData } from '../../NavTree/composeables/useNavTreeData'
-import { useNavTreeNodes } from '../../NavTree/composeables/useNavTreeNodes'
-import { COMPONENT_TO_ROUTE_MAP } from '../../NavTree/navTreeConstants.js'
+import { useMenuNodes } from '../composeables/useMenuNodes.js'
 
 const open = defineModel('open', { type: Boolean, default: false })
 
@@ -37,26 +34,17 @@ const drawerPt = {
   },
 }
 
-// Get collections using the existing composable
-const { collections } = useNavTreeData()
-
-// Use NavTree nodes composable
-// We pass null for config (defaults will be used or ignored if not needed by the specific logic we use)
-// We pass true for canCreateCollection just to satisfy the function signature if needed, though we aren't showing the create button here
-const navTreeNodes = useNavTreeNodes(collections, null, true)
+// Use Menu nodes composable
+const menuNodes = useMenuNodes()
 
 const items = computed(() => {
-  const menuItems = navTreeNodes.value.map((node) => {
+  const menuItems = menuNodes.value.map((node) => {
     let route = null
-    const routeName = COMPONENT_TO_ROUTE_MAP[node.component]
-
-    if (routeName) {
-      if (node.component === 'CollectionView' || routeName === 'collection') {
-        route = { name: 'collection', params: { collectionId: node.key } }
-      }
-      else {
-        route = { name: routeName }
-      }
+    if (node.component === 'CollectionView') {
+      route = { name: 'collection', params: { collectionId: node.key } }
+    }
+    else if (node.routeName) {
+      route = { name: node.routeName }
     }
 
     return {
@@ -75,7 +63,7 @@ const items = computed(() => {
     label: 'Recent Collections',
     icon: 'pi pi-clock',
     items: [
-      // This will be populated dynamically with recent collections
+      // This will be populated dynamically with recent collections evenetually?
     ],
   })
 
@@ -85,12 +73,13 @@ const items = computed(() => {
 
 <template>
   <div class="flex justify-center">
-    <Drawer v-model:visible="open" position="left" class="menu-drawer" :pt="drawerPt">
+    <Drawer v-model:visible="open" position="left" :pt="drawerPt">
       <template #header>
         <div class="drawer-header">
           <span class="stig-manager-logo" />
         </div>
       </template>
+      <!-- TODO: needs to be looked at this is AI written/styled -->
       <PrimeMenu :model="items" class="w-full md:w-60">
         <template #submenulabel="{ item }">
           <span class="text-primary font-bold">{{ item.label }}</span>
@@ -107,7 +96,7 @@ const items = computed(() => {
             <Badge v-if="item.badge" class="ml-auto" :value="item.badge" />
             <span v-if="item.shortcut" class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1">{{ item.shortcut }}</span>
           </router-link>
-          <a v-else v-ripple class="flex items-center" v-bind="props.action">
+          <a v-else class="flex items-center" v-bind="props.action">
             <span class="icon sm-icon" :class="item.icon" />
             <span>{{ item.label }}</span>
             <Badge v-if="item.badge" class="ml-auto" :value="item.badge" />
@@ -120,10 +109,6 @@ const items = computed(() => {
 </template>
 
 <style scoped>
-.menu-drawer .p-drawer-content {
-  padding: 0;
-}
-
 .drawer-header {
   display: flex;
   align-items: center;
@@ -139,7 +124,6 @@ const items = computed(() => {
   flex-shrink: 0;
 }
 
-/* Icon styles from NavTreeContent */
 .icon {
   display: inline-block;
   background-position: center;
@@ -174,5 +158,9 @@ const items = computed(() => {
 
 .menu-item-link:hover {
   background-color: var(--color-button-hover-bg);
+}
+
+.pi-home {
+  filter: grayscale(100%) opacity(0.6);
 }
 </style>

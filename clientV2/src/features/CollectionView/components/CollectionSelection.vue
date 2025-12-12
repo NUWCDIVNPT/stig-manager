@@ -14,7 +14,9 @@ const searchQuery = ref('')
 // })
 
 const filteredCollections = computed(() => {
-  if (!searchQuery.value) { return collections.value }
+  if (!searchQuery.value) {
+    return collections.value
+  }
   const query = searchQuery.value.toLowerCase()
   return collections.value.filter(c => c.name.toLowerCase().includes(query))
 })

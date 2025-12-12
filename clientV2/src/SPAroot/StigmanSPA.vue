@@ -43,7 +43,9 @@ function toggleMenuDrawer() {
   grid-template-rows: auto 1fr;
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
+  overflow-y: hidden;
+  overflow-x: auto;
+  min-width: 300px;
 }
 .main {
   grid-area: main;
