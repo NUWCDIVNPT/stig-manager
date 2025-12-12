@@ -3,6 +3,7 @@ import { computed, inject } from 'vue'
 import { useCollectionMetricsSummaryQuery } from '../queries/metricsQueries.js'
 import CollectionStats from './CollectionStats.vue'
 import Cora from './Cora.vue'
+import ExportMetrics from './ExportMetrics.vue'
 import Progress from './Progress.vue'
 
 const oidcWorker = inject('worker')
@@ -25,6 +26,7 @@ const { metrics, isLoading, errorMessage } = useCollectionMetricsSummaryQuery({
       <Progress :metrics="metrics" />
       <Cora :metrics="metrics" />
       <CollectionStats :metrics="metrics" />
+      <ExportMetrics :collection-id="metrics?.collectionId" />
     </div>
   </div>
 </template>

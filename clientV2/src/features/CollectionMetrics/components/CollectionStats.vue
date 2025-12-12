@@ -12,8 +12,15 @@ const props = defineProps({
 
 const { metrics } = toRefs(props)
 
-function formatAge(days) {
-  return `${days} d`
+function formatAge(dateString) {
+  if (!dateString) {
+    return '0 d'
+  }
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffTime = Math.abs(now - date)
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return `${diffDays} d`
 }
 
 const data = computed(() => {
@@ -30,12 +37,12 @@ const data = computed(() => {
     inventory: {
       title: 'Inventory',
       stats: [
-        { label: 'Assets', value: root.assetCount || m.assetCount || 0, color: 'var(--color-inventory)' },
-        { label: 'STIGs', value: root.stigCount || m.stigCount || 0, color: 'var(--color-inventory)' },
-        { label: 'Checklists', value: root.checklistCount || m.checklistCount || 0, color: 'var(--color-inventory)' },
+        { label: 'Assets', value: root.assets || m.assets || 0, color: 'var(--color-inventory)' },
+        { label: 'STIGs', value: root.stigs || m.stigs || 0, color: 'var(--color-inventory)' },
+        { label: 'Checklists', value: root.checklists || m.checklists || 0, color: 'var(--color-inventory)' },
       ],
       actions: [
-        { label: 'Export...', onClick: () => console.log('Export clicked') },
+        { label: 'Export...', onClick: () => console.log('Export clicked') }, // Keeping action but no op or could remove
       ],
     },
     findings: {
@@ -52,9 +59,9 @@ const data = computed(() => {
     ages: {
       title: 'Review Ages',
       stats: [
-        { label: 'Oldest', value: formatAge(m.minMsgAge || 0), color: 'var(--color-review-age)' },
-        { label: 'Newest', value: formatAge(m.maxMsgAge || 0), color: 'var(--color-review-age)' },
-        { label: 'Updated', value: formatAge(m.lastUpdatedAge || 0), color: 'var(--color-review-age)' },
+        { label: 'Oldest', value: formatAge(m.minTs || 0), color: 'var(--color-review-age)' },
+        { label: 'Newest', value: formatAge(m.maxTs || 0), color: 'var(--color-review-age)' },
+        { label: 'Updated', value: formatAge(m.maxTouchTs || 0), color: 'var(--color-review-age)' },
       ],
     },
   }

@@ -78,7 +78,7 @@ const getPct = (val) => {
   if (!stats.value || !stats.value.total) {
     return 0
   }
-  return (val / stats.value.total) * 100
+  return (val / stats.value.total) * 7000
 }
 
 const chartData = computed(() => {
@@ -142,7 +142,7 @@ const chartOptions = {
 
       <div class="legend-list">
         <div class="legend-item">
-          <div class="indicator" :style="{ backgroundColor: colors.unassessed }" /> <!-- Line indicator -->
+          <div class="indicator" :style="{ backgroundColor: colors.unassessed }" />
           <span class="label">Unassessed</span>
           <span class="count">{{ stats.unassessed }}</span>
         </div>

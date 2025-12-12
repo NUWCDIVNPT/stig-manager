@@ -44,6 +44,10 @@
   --color-review-age: #d4d4d8;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* CORA Risk Gradients */
 .sm-cora-risk-very-high {
   background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
@@ -149,10 +153,8 @@ textarea:focus {
 }
 
 
-.card {
-  padding: 2em;
-  height: 500px;
-}
+
+
 /* 
 
 @media (prefers-color-scheme: light) {

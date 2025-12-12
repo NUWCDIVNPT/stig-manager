@@ -1,14 +1,26 @@
 <script setup>
 import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
-import { defineProps, reactive } from 'vue'
+import { computed, defineEmits, defineProps } from 'vue'
 
 const props = defineProps({
+  visible: {
+    type: Boolean,
+    required: true,
+  },
   collectionId: {
     type: String,
     required: false,
     default: null,
   },
+})
+
+const emit = defineEmits(['update:visible'])
+
+const visible = computed({
+  get: () => props.visible,
+  set: value => emit('update:visible', value),
 })
 
 const items = {
@@ -17,26 +29,29 @@ const items = {
   format: ['JSON', 'CSV'],
 }
 
-const selected = reactive({
+const selected = {
   aggregation: 'Collection',
   style: 'Summary',
   format: 'JSON',
-})
+}
 
 function handleDownload() {
   console.log(`Downloading metrics for collection ${props.collectionId}:`, selected)
+  // Placeholder for download logic
+  // TODO: Construct API URL based on selected.aggregation, selected.style, selected.format
+  emit('update:visible', false)
 }
 </script>
 
 <template>
-  <div class="export-card">
-    <div class="header">
-      <h2 class="title">
-        Export Metrics
-      </h2>
-    </div>
-
-    <div class="content">
+  <Dialog
+    v-model:visible="visible"
+    header="Export metrics"
+    modal
+    :style="{ width: '500px' }"
+    :draggable="false"
+  >
+    <div class="export-modal-content">
       <div class="form-grid">
         <label>Grouped by:</label>
         <Select
@@ -64,70 +79,49 @@ function handleDownload() {
         <Button
           label="Download"
           icon="pi pi-download"
-          class="p-button-outlined w-full"
+          class="p-button-outlined"
           @click="handleDownload"
         />
       </div>
     </div>
-  </div>
+  </Dialog>
 </template>
 
 <style scoped>
-.export-card {
-  background-color: #18181b;
-  color: #e4e4e7;
-  border-radius: 20px;
-  padding: 15px;
-  width: 100%;
-  max-width: 400px;
-  min-width: 300px;
+.export-modal-content {
   display: flex;
-  flex-direction: column;
-  height: fit-content;
-}
-
-.header {
-  margin-bottom: 15px;
-}
-
-.title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0;
-  color: #e4e4e7;
-}
-
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+  gap: 20px;
+  align-items: center; /* Vertically align form and button */
+  padding-top: 10px;
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: 100px 1fr;
-  row-gap: 12px;
+  row-gap: 15px;
   align-items: center;
+  flex: 1;
 }
 
 label {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-  font-weight: 500;
+  color: rgba(255, 255, 255, 0.87);
+  font-size: 1rem;
 }
 
 .actions {
-  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 20px;
 }
 
 :deep(.p-select) {
-  background-color: #27272a;
-  border-color: #3f3f46;
+  background-color: #09090b !important;
+  border-color: #27272a !important;
 }
 
 :deep(.p-select-label) {
-  padding: 6px 10px;
-  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.87);
 }
 
 :deep(.p-button-outlined) {
@@ -137,9 +131,5 @@ label {
 :deep(.p-button-outlined:hover) {
   background-color: rgba(255, 255, 255, 0.05);
   border-color: #52525b;
-}
-
-.w-full {
-  width: 100%;
 }
 </style>

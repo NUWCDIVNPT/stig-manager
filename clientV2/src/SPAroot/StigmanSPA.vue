@@ -1,6 +1,5 @@
 <script setup>
 import { computed, ref } from 'vue'
-import CollectionMetrics from '../features/CollectionMetrics/components/CollectionMetrics.vue'
 import Menu from '../features/Menu/components/Menu.vue'
 import MenuBar from '../features/MenuBar/components/MenuBar.vue'
 import { useGlobalAppStore } from '../shared/stores/globalAppStore.js'
@@ -21,8 +20,7 @@ function toggleMenuDrawer() {
 </script>
 
 <template>
-  <CollectionMetrics />
-  <!-- <div
+  <div
     class="appGrid"
     :style="{
       '--banner-height': bannerHeight,
@@ -30,11 +28,10 @@ function toggleMenuDrawer() {
   >
     <MenuBar style="grid-area: header" @toggle-menu="toggleMenuDrawer" />
     <Menu v-model:open="menuDrawerOpen" />
-
     <main class="main">
       <router-view />
     </main>
-  </div> -->
+  </div>
 </template>
 
 <style scoped>

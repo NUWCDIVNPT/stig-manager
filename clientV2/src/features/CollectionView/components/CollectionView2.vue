@@ -7,9 +7,9 @@ import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, ref } from 'vue'
 import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
+import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import { useDeleteCollection } from '../composeables/useDeleteCollection.js'
 import ChecklistTable from './ChecklistTable.vue'
-import CollectionDataPane from './CollectionDataPane.vue'
 import StigAssetLabelTable from './StigAssetLabelTable.vue'
 
 const props = defineProps({
@@ -129,7 +129,7 @@ const tabPanelPt = {
             </div>
           </TabPanel>
           <TabPanel value="dashboard" :pt="tabPanelPt">
-            <CollectionDataPane :collection-id="collectionId" />
+            <CollectionMetrics :collection-id="collectionId" />
           </TabPanel>
           <TabPanel value="users" :pt="tabPanelPt">
             <div class="placeholder-panel">

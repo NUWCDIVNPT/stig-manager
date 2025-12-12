@@ -1,49 +1,27 @@
 <script setup>
-import { computed } from 'vue'
-// import { useRouter } from 'vue-router'
-import { navTreeConfig } from '../../NavTree/composeables/navTreeConfig'
+import { useAppManagementItems } from '../composeables/useAppManagementItems.js'
 
-// const router = useRouter()
-
-const appManagementConfig = computed(() => {
-  return navTreeConfig.sections.find(s => s.key === 'AppManagement')
-})
-
-const children = computed(() => {
-  return appManagementConfig.value?.children || []
-})
-
-const componentToRoute = {
-  CollectionManage: 'admin-collections',
-  UserManage: 'admin-users',
-  UserGroupManage: 'admin-user-groups',
-  StigManage: 'admin-stigs',
-  ServiceJobs: 'admin-service-jobs',
-  AppInfo: 'admin-app-info',
-  ExportImportManage: 'admin-transfer',
-}
+const { appManagementItems: APP_MANAGEMENT_ITEMS } = useAppManagementItems()
 
 function getRoute(item) {
-  const routeName = componentToRoute[item.component]
-  return routeName ? { name: routeName } : null
+  return item.routeName ? { name: item.routeName } : null
 }
 </script>
 
 <template>
   <div class="selection-page">
     <div class="header">
-      <h1>{{ appManagementConfig?.label }}</h1>
+      <h1>App Management</h1>
     </div>
 
     <div class="grid">
       <router-link
-        v-for="item in children"
+        v-for="item in APP_MANAGEMENT_ITEMS"
         :key="item.key"
         class="card"
         :to="getRoute(item) || '#'"
       >
         <div class="card-icon">
-          <!-- You might need a way to map the icon class to an image or use PrimeIcons -->
           <div class="icon-bg" :class="item.icon" />
         </div>
         <div class="card-content">
@@ -66,8 +44,6 @@ function getRoute(item) {
   color: #e4e4e7;
 }
 
-/* ... styles ... */
-
 .card {
   background: #27272a;
   border: 1px solid #3f3f46;
@@ -78,7 +54,7 @@ function getRoute(item) {
   align-items: center;
   gap: 1rem;
   transition: all 0.2s ease;
-  text-decoration: none; /* No underline */
+  text-decoration: none;
   color: inherit;
 }
 

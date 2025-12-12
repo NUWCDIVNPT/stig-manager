@@ -6,6 +6,7 @@ import vRipple from 'primevue/ripple'
 import { computed } from 'vue'
 import { useNavTreeData } from '../../NavTree/composeables/useNavTreeData'
 import { useNavTreeNodes } from '../../NavTree/composeables/useNavTreeNodes'
+import { COMPONENT_TO_ROUTE_MAP } from '../../NavTree/navTreeConstants.js'
 
 const open = defineModel('open', { type: Boolean, default: false })
 
@@ -44,23 +45,26 @@ const { collections } = useNavTreeData()
 // We pass true for canCreateCollection just to satisfy the function signature if needed, though we aren't showing the create button here
 const navTreeNodes = useNavTreeNodes(collections, null, true)
 
-// Component to Route mapping (same as NavTreeContent)
-const componentToRoute = {
-  CollectionView: key => ({ name: 'collection', params: { collectionId: key } }),
-  CollectionSelection: { name: 'collections' },
-  AppManagementSelection: { name: 'app-management' },
-  StigLibrarySelection: { name: 'stig-library' },
-}
-
-// Transform NavTree nodes to PrimeMenu format
 const items = computed(() => {
-  const menuItems = navTreeNodes.value.map(node => ({
-    label: node.label,
-    icon: node.icon,
-    route: typeof componentToRoute[node.component] === 'function'
-      ? componentToRoute[node.component](node.key)
-      : componentToRoute[node.component],
-  }))
+  const menuItems = navTreeNodes.value.map((node) => {
+    let route = null
+    const routeName = COMPONENT_TO_ROUTE_MAP[node.component]
+
+    if (routeName) {
+      if (node.component === 'CollectionView' || routeName === 'collection') {
+        route = { name: 'collection', params: { collectionId: node.key } }
+      }
+      else {
+        route = { name: routeName }
+      }
+    }
+
+    return {
+      label: node.label,
+      icon: node.icon,
+      route,
+    }
+  })
 
   // Add separator and Recent Collections
   menuItems.push({
@@ -80,7 +84,7 @@ const items = computed(() => {
 </script>
 
 <template>
-  <div class="card flex justify-center">
+  <div class="flex justify-center">
     <Drawer v-model:visible="open" position="left" class="menu-drawer" :pt="drawerPt">
       <template #header>
         <div class="drawer-header">
