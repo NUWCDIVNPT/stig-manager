@@ -40,3 +40,4 @@ coverage/
 .DS_Store
 clientV2/clientV2.code-workspace
 clientV2/dist/
+clientV2/.vite/
