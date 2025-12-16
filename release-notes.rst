@@ -1,3 +1,9 @@
+1.5.17
+-------
+
+Changes:
+  - (Dependencies) Various security and maintenance updates
+
 1.5.16
 -------
 
