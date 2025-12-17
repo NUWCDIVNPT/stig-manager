@@ -10,7 +10,6 @@ import { computed, inject, ref } from 'vue'
 import AssetReview from '../../AssetReview/components/AssetReview.vue'
 import { useAssetStigsQuery } from '../../AssetReview/queries/assetQueries.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
-import { useDeleteCollection } from '../composeables/useDeleteCollection.js'
 import { useCollectionQuery } from '../queries/collectionQueries.js'
 import {
   useCollectionAssetSummaryQuery,
@@ -43,9 +42,6 @@ const { collection } = useCollectionQuery({
 })
 
 const collectionName = computed(() => collection.value?.name || 'Collection')
-const hasCollection = computed(() => Boolean(collection.value))
-
-const { deleteCollection } = useDeleteCollection(collectionIdRef)
 
 // Review mode state
 const reviewingAsset = ref(null) // { assetId, assetName, benchmarkId }
@@ -210,15 +206,14 @@ const tabPanelPt = {
         </template>
       </Breadcrumb>
       <div class="header-actions">
-        <button
-          v-if="hasCollection"
-          type="button"
-          class="delete-btn"
-          title="Delete Collection"
-          @click="deleteCollection"
-        >
-          <i class="pi pi-trash" />
-        </button>
+        <div v-if="isReviewMode" class="search-reviews">
+          <i class="pi pi-search search-reviews__icon" />
+          <input
+            type="text"
+            class="search-reviews__input"
+            placeholder="Search reviews..."
+          >
+        </div>
       </div>
     </header>
 
@@ -392,18 +387,45 @@ const tabPanelPt = {
   padding: 0;
 }
 
-.delete-btn {
-  background: transparent;
-  border: none;
-  color: #a6adba;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.delete-btn:hover {
-  color: #f16969;
-  background-color: rgba(241, 105, 105, 0.1);
+.search-reviews {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.search-reviews__icon {
+  position: absolute;
+  left: 0.6rem;
+  color: #6b7280;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.search-reviews__input {
+  background-color: #2a2a2a;
+  border: 1px solid #3a3d40;
+  border-radius: 4px;
+  color: #e4e4e7;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem 0.4rem 2rem;
+  width: 180px;
+  outline: none;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.search-reviews__input::placeholder {
+  color: #6b7280;
+}
+
+.search-reviews__input:focus {
+  border-color: #60a5fa;
+  background-color: #1f1f1f;
 }
 
 .review-container {
