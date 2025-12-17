@@ -7,6 +7,7 @@ import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, inject, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AssetReview from '../../AssetReview/components/AssetReview.vue'
 import { useAssetStigsQuery, useStigRevisionsQuery } from '../../AssetReview/queries/assetQueries.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
@@ -29,6 +30,9 @@ const props = defineProps({
   },
 })
 
+const route = useRoute()
+const router = useRouter()
+
 const collectionIdRef = computed(() => props.collectionId)
 
 // OIDC worker for API queries
@@ -43,75 +47,100 @@ const { collection } = useCollectionQuery({
 
 const collectionName = computed(() => collection.value?.name || 'Collection')
 
-// Review mode state
-const reviewingAsset = ref(null) // { assetId, assetName, benchmarkId, revisionStr }
-const isReviewMode = computed(() => reviewingAsset.value !== null)
+// Route-based review mode
+const isReviewMode = computed(() => route.name === 'collection-asset-review')
+
+// Review params from route
+const reviewAssetId = computed(() => route.params.assetId || null)
+const reviewBenchmarkId = computed(() => route.params.benchmarkId || null)
+const reviewRevisionStr = computed(() => route.params.revisionStr || null)
 
 // Fetch STIGs for the asset being reviewed
-const reviewingAssetId = computed(() => reviewingAsset.value?.assetId || null)
 const { stigs: assetStigs } = useAssetStigsQuery({
-  assetId: reviewingAssetId,
+  assetId: reviewAssetId,
   token,
 })
 
 // Fetch available revisions for the selected benchmark
-const selectedBenchmarkForRevisions = computed(() => reviewingAsset.value?.benchmarkId || null)
 const { revisions: stigRevisions } = useStigRevisionsQuery({
-  benchmarkId: selectedBenchmarkForRevisions,
+  benchmarkId: reviewBenchmarkId,
   token,
 })
 
-// Current STIG selection for dropdown
+// Watch for assetStigs to load and update route with revision if missing
+watch(assetStigs, (stigs) => {
+  if (isReviewMode.value && !reviewRevisionStr.value && stigs.length > 0) {
+    const currentStig = stigs.find(s => s.benchmarkId === reviewBenchmarkId.value)
+    if (currentStig?.revisionStr) {
+      router.replace({
+        name: 'collection-asset-review',
+        params: {
+          collectionId: props.collectionId,
+          assetId: reviewAssetId.value,
+          benchmarkId: reviewBenchmarkId.value,
+          revisionStr: currentStig.revisionStr,
+        },
+      })
+    }
+  }
+})
+
+// Current STIG selection for dropdown - navigates on change
 const selectedStigBenchmarkId = computed({
-  get: () => reviewingAsset.value?.benchmarkId || null,
+  get: () => reviewBenchmarkId.value,
   set: (newBenchmarkId) => {
-    if (reviewingAsset.value && newBenchmarkId) {
+    if (newBenchmarkId && isReviewMode.value) {
       // Find the revision for this benchmark from the asset's STIGs
       const stigData = assetStigs.value.find(s => s.benchmarkId === newBenchmarkId)
-      reviewingAsset.value = {
-        ...reviewingAsset.value,
-        benchmarkId: newBenchmarkId,
-        revisionStr: stigData?.revisionStr || null,
-      }
+      router.push({
+        name: 'collection-asset-review',
+        params: {
+          collectionId: props.collectionId,
+          assetId: reviewAssetId.value,
+          benchmarkId: newBenchmarkId,
+          revisionStr: stigData?.revisionStr || undefined,
+        },
+      })
     }
   },
 })
 
-// Current revision selection for dropdown
+// Current revision selection for dropdown - navigates on change
 const selectedRevisionStr = computed({
-  get: () => reviewingAsset.value?.revisionStr || null,
+  get: () => reviewRevisionStr.value,
   set: (newRevisionStr) => {
-    if (reviewingAsset.value && newRevisionStr) {
-      reviewingAsset.value = {
-        ...reviewingAsset.value,
-        revisionStr: newRevisionStr,
-      }
+    if (newRevisionStr && isReviewMode.value) {
+      router.push({
+        name: 'collection-asset-review',
+        params: {
+          collectionId: props.collectionId,
+          assetId: reviewAssetId.value,
+          benchmarkId: reviewBenchmarkId.value,
+          revisionStr: newRevisionStr,
+        },
+      })
     }
   },
 })
 
+// Navigate to asset review
 function handleReviewAsset(reviewData) {
-  reviewingAsset.value = {
-    ...reviewData,
-    revisionStr: null, // Will be populated when assetStigs loads
-  }
+  router.push({
+    name: 'collection-asset-review',
+    params: {
+      collectionId: props.collectionId,
+      assetId: reviewData.assetId,
+      benchmarkId: reviewData.benchmarkId,
+    },
+  })
 }
 
-// Watch for assetStigs to load and set initial revisionStr
-watch(assetStigs, (stigs) => {
-  if (reviewingAsset.value && !reviewingAsset.value.revisionStr && stigs.length > 0) {
-    const currentStig = stigs.find(s => s.benchmarkId === reviewingAsset.value.benchmarkId)
-    if (currentStig?.revisionStr) {
-      reviewingAsset.value = {
-        ...reviewingAsset.value,
-        revisionStr: currentStig.revisionStr,
-      }
-    }
-  }
-})
-
+// Exit review mode - go back to dashboard
 function exitReviewMode() {
-  reviewingAsset.value = null
+  router.push({
+    name: 'collection-dashboard',
+    params: { collectionId: props.collectionId },
+  })
 }
 
 // Breadcrumb configuration
@@ -119,6 +148,13 @@ const breadcrumbHome = {
   label: 'Collections',
   route: '/collections',
 }
+
+// Get asset name from assetStigs or use assetId as fallback
+const reviewAssetName = computed(() => {
+  // We could fetch the asset name from the asset query, but for now use assetId
+  // The asset name could be passed via query params or fetched separately
+  return `Asset ${reviewAssetId.value}`
+})
 
 const breadcrumbItems = computed(() => {
   const items = [
@@ -130,17 +166,17 @@ const breadcrumbItems = computed(() => {
 
   if (isReviewMode.value) {
     items.push({
-      label: reviewingAsset.value.assetName,
+      label: reviewAssetName.value,
     })
     // STIG benchmark dropdown
     items.push({
-      label: reviewingAsset.value.benchmarkId,
+      label: reviewBenchmarkId.value,
       isStigDropdown: true,
     })
     // STIG revision dropdown
-    if (reviewingAsset.value.revisionStr) {
+    if (reviewRevisionStr.value) {
       items.push({
-        label: reviewingAsset.value.revisionStr,
+        label: reviewRevisionStr.value,
         isRevisionDropdown: true,
       })
     }
@@ -176,8 +212,38 @@ function handleStigSelect(benchmarkId) {
   selectedBenchmarkId.value = benchmarkId
 }
 
-// Default active tab
-const activeTab = ref('dashboard')
+// Map route name to tab value
+const routeToTab = {
+  'collection-dashboard': 'dashboard',
+  'collection-stigs': 'stigs',
+  'collection-assets': 'assets',
+  'collection-labels': 'labels',
+  'collection-users': 'users',
+  'collection-settings': 'settings',
+}
+
+const tabToRoute = {
+  dashboard: 'collection-dashboard',
+  stigs: 'collection-stigs',
+  assets: 'collection-assets',
+  labels: 'collection-labels',
+  users: 'collection-users',
+  settings: 'collection-settings',
+}
+
+// Active tab based on route
+const activeTab = computed({
+  get: () => routeToTab[route.name] || 'dashboard',
+  set: (newTab) => {
+    const routeName = tabToRoute[newTab]
+    if (routeName) {
+      router.push({
+        name: routeName,
+        params: { collectionId: props.collectionId },
+      })
+    }
+  },
+})
 
 const tabsPt = {
   root: {
@@ -279,7 +345,7 @@ const tabPanelPt = {
 
     <!-- Review Mode: Show AssetReview -->
     <div v-if="isReviewMode" class="review-container">
-      <AssetReview :asset-id="reviewingAsset.assetId" :collection-labels="rawLabels" />
+      <AssetReview :asset-id="reviewAssetId" :collection-labels="rawLabels" />
     </div>
 
     <!-- Normal Mode: Show Tabs -->
