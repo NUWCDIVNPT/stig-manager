@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/vue-query'
 import { computed, unref } from 'vue'
 import { assetKeys } from '../../../shared/keys/assetKeys.js'
+import { stigKeys } from '../../../shared/keys/stigKeys.js'
 
 import { useEnv } from '../../../shared/stores/useEnv.js'
 
@@ -91,6 +92,52 @@ export function useAssetStigsQuery({ assetId, token }, options = {}) {
 
   return {
     stigs,
+    isLoading,
+    error,
+  }
+}
+
+async function fetchStigRevisions({ apiUrl = useEnv().apiUrl, token, benchmarkId }) {
+  if (!benchmarkId) {
+    throw new Error('A benchmarkId is required to fetch STIG revisions.')
+  }
+
+  const response = await fetch(`${apiUrl}/stigs/${benchmarkId}/revisions`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`STIG revisions ${response.status} ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+export function useStigRevisionsQuery({ benchmarkId, token }, options = {}) {
+  const query = useQuery({
+    queryKey: computed(() => stigKeys.revisions(unref(benchmarkId))),
+    enabled: computed(() => Boolean(unref(benchmarkId) && unref(token))),
+    queryFn: () => {
+      return fetchStigRevisions({
+        benchmarkId: unref(benchmarkId),
+        token: unref(token),
+      })
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes - revisions don't change often
+    retry: 1,
+    ...options,
+  })
+
+  const revisions = computed(() => query.data?.value || [])
+  const isLoading = computed(() => query.isFetching?.value)
+  const error = computed(() => query.error?.value)
+
+  return {
+    revisions,
     isLoading,
     error,
   }

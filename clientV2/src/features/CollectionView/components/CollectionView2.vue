@@ -6,9 +6,9 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { computed, inject, ref } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import AssetReview from '../../AssetReview/components/AssetReview.vue'
-import { useAssetStigsQuery } from '../../AssetReview/queries/assetQueries.js'
+import { useAssetStigsQuery, useStigRevisionsQuery } from '../../AssetReview/queries/assetQueries.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import { useCollectionQuery } from '../queries/collectionQueries.js'
 import {
@@ -44,7 +44,7 @@ const { collection } = useCollectionQuery({
 const collectionName = computed(() => collection.value?.name || 'Collection')
 
 // Review mode state
-const reviewingAsset = ref(null) // { assetId, assetName, benchmarkId }
+const reviewingAsset = ref(null) // { assetId, assetName, benchmarkId, revisionStr }
 const isReviewMode = computed(() => reviewingAsset.value !== null)
 
 // Fetch STIGs for the asset being reviewed
@@ -54,22 +54,61 @@ const { stigs: assetStigs } = useAssetStigsQuery({
   token,
 })
 
+// Fetch available revisions for the selected benchmark
+const selectedBenchmarkForRevisions = computed(() => reviewingAsset.value?.benchmarkId || null)
+const { revisions: stigRevisions } = useStigRevisionsQuery({
+  benchmarkId: selectedBenchmarkForRevisions,
+  token,
+})
+
 // Current STIG selection for dropdown
 const selectedStigBenchmarkId = computed({
   get: () => reviewingAsset.value?.benchmarkId || null,
   set: (newBenchmarkId) => {
     if (reviewingAsset.value && newBenchmarkId) {
+      // Find the revision for this benchmark from the asset's STIGs
+      const stigData = assetStigs.value.find(s => s.benchmarkId === newBenchmarkId)
       reviewingAsset.value = {
         ...reviewingAsset.value,
         benchmarkId: newBenchmarkId,
+        revisionStr: stigData?.revisionStr || null,
+      }
+    }
+  },
+})
+
+// Current revision selection for dropdown
+const selectedRevisionStr = computed({
+  get: () => reviewingAsset.value?.revisionStr || null,
+  set: (newRevisionStr) => {
+    if (reviewingAsset.value && newRevisionStr) {
+      reviewingAsset.value = {
+        ...reviewingAsset.value,
+        revisionStr: newRevisionStr,
       }
     }
   },
 })
 
 function handleReviewAsset(reviewData) {
-  reviewingAsset.value = reviewData
+  reviewingAsset.value = {
+    ...reviewData,
+    revisionStr: null, // Will be populated when assetStigs loads
+  }
 }
+
+// Watch for assetStigs to load and set initial revisionStr
+watch(assetStigs, (stigs) => {
+  if (reviewingAsset.value && !reviewingAsset.value.revisionStr && stigs.length > 0) {
+    const currentStig = stigs.find(s => s.benchmarkId === reviewingAsset.value.benchmarkId)
+    if (currentStig?.revisionStr) {
+      reviewingAsset.value = {
+        ...reviewingAsset.value,
+        revisionStr: currentStig.revisionStr,
+      }
+    }
+  }
+})
 
 function exitReviewMode() {
   reviewingAsset.value = null
@@ -93,11 +132,18 @@ const breadcrumbItems = computed(() => {
     items.push({
       label: reviewingAsset.value.assetName,
     })
-    // STIG item with dropdown flag
+    // STIG benchmark dropdown
     items.push({
       label: reviewingAsset.value.benchmarkId,
-      isDropdown: true,
+      isStigDropdown: true,
     })
+    // STIG revision dropdown
+    if (reviewingAsset.value.revisionStr) {
+      items.push({
+        label: reviewingAsset.value.revisionStr,
+        isRevisionDropdown: true,
+      })
+    }
   }
 
   return items
@@ -186,13 +232,27 @@ const tabPanelPt = {
             {{ item.label }}
           </a>
           <Select
-            v-else-if="item.isDropdown"
+            v-else-if="item.isStigDropdown"
             v-model="selectedStigBenchmarkId"
             :options="assetStigs"
             option-label="benchmarkId"
             option-value="benchmarkId"
             class="breadcrumb-stig-select"
             placeholder="Select STIG"
+            :pt="{
+              root: { class: 'breadcrumb-select-root' },
+              label: { class: 'breadcrumb-select-label' },
+              dropdown: { class: 'breadcrumb-select-dropdown' },
+            }"
+          />
+          <Select
+            v-else-if="item.isRevisionDropdown"
+            v-model="selectedRevisionStr"
+            :options="stigRevisions"
+            option-label="revisionStr"
+            option-value="revisionStr"
+            class="breadcrumb-stig-select"
+            placeholder="Select Revision"
             :pt="{
               root: { class: 'breadcrumb-select-root' },
               label: { class: 'breadcrumb-select-label' },
