@@ -7,8 +7,16 @@ import ReviewForm from './ReviewForm.vue'
 import ReviewResources from './ReviewResources.vue'
 import RuleInfo from './RuleInfo.vue'
 
+const props = defineProps({
+  assetId: {
+    type: [String, Number],
+    default: null,
+  },
+})
+
 const route = useRoute()
-const assetId = computed(() => route.params.assetId)
+// Use prop if provided, otherwise fall back to route param
+const assetId = computed(() => props.assetId || route.params.assetId)
 const oidcWorker = inject('worker')
 
 const { asset, isLoading, error } = useAssetQuery({

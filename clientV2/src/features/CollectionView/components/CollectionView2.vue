@@ -1,11 +1,14 @@
 <script setup>
 import Breadcrumb from 'primevue/breadcrumb'
+import Select from 'primevue/select'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, inject, ref } from 'vue'
+import AssetReview from '../../AssetReview/components/AssetReview.vue'
+import { useAssetStigsQuery } from '../../AssetReview/queries/assetQueries.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import { useDeleteCollection } from '../composeables/useDeleteCollection.js'
 import { useCollectionQuery } from '../queries/collectionQueries.js'
@@ -43,15 +46,65 @@ const hasCollection = computed(() => Boolean(collection.value))
 
 const { deleteCollection } = useDeleteCollection(collectionIdRef)
 
+// Review mode state
+const reviewingAsset = ref(null) // { assetId, assetName, benchmarkId }
+const isReviewMode = computed(() => reviewingAsset.value !== null)
+
+// Fetch STIGs for the asset being reviewed
+const reviewingAssetId = computed(() => reviewingAsset.value?.assetId || null)
+const { stigs: assetStigs } = useAssetStigsQuery({
+  assetId: reviewingAssetId,
+  token,
+})
+
+// Current STIG selection for dropdown
+const selectedStigBenchmarkId = computed({
+  get: () => reviewingAsset.value?.benchmarkId || null,
+  set: (newBenchmarkId) => {
+    if (reviewingAsset.value && newBenchmarkId) {
+      reviewingAsset.value = {
+        ...reviewingAsset.value,
+        benchmarkId: newBenchmarkId,
+      }
+    }
+  },
+})
+
+function handleReviewAsset(reviewData) {
+  reviewingAsset.value = reviewData
+}
+
+function exitReviewMode() {
+  reviewingAsset.value = null
+}
+
 // Breadcrumb configuration
 const breadcrumbHome = {
   label: 'Collections',
   route: '/collections',
 }
 
-const breadcrumbItems = computed(() => [
-  { label: collectionName.value },
-])
+const breadcrumbItems = computed(() => {
+  const items = [
+    {
+      label: collectionName.value,
+      command: exitReviewMode,
+    },
+  ]
+
+  if (isReviewMode.value) {
+    items.push({
+      label: reviewingAsset.value.assetName,
+    })
+    // STIG item with dropdown flag
+    items.push({
+      label: reviewingAsset.value.benchmarkId,
+      isDropdown: true,
+    })
+  }
+
+  return items
+})
 
 // Data queries for STIGs, Assets, Labels
 const { stigs } = useCollectionStigSummaryQuery({
@@ -120,6 +173,24 @@ const tabPanelPt = {
               {{ item.label }}
             </a>
           </router-link>
+          <a
+            v-else-if="item.command"
+            v-bind="itemProps.action"
+            class="breadcrumb-link"
+            href="#"
+            @click.prevent="item.command"
+          >
+            {{ item.label }}
+          </a>
+          <Select
+            v-else-if="item.isDropdown"
+            v-model="selectedStigBenchmarkId"
+            :options="assetStigs"
+            option-label="benchmarkId"
+            option-value="benchmarkId"
+            class="breadcrumb-stig-select"
+            placeholder="Select STIG"
+          />
           <span v-else class="breadcrumb-current">{{ item.label }}</span>
         </template>
         <template #separator>
@@ -139,7 +210,13 @@ const tabPanelPt = {
       </div>
     </header>
 
-    <div class="tabs-container">
+    <!-- Review Mode: Show AssetReview -->
+    <div v-if="isReviewMode" class="review-container">
+      <AssetReview :asset-id="reviewingAsset.assetId" />
+    </div>
+
+    <!-- Normal Mode: Show Tabs -->
+    <div v-else class="tabs-container">
       <Tabs v-model:value="activeTab" :pt="tabsPt">
         <TabList>
           <Tab value="dashboard">
@@ -178,6 +255,7 @@ const tabPanelPt = {
                 <ChecklistTable
                   :collection-id="collectionId"
                   :benchmark-id="selectedBenchmarkId"
+                  @review-asset="handleReviewAsset"
                 />
               </div>
             </div>
@@ -242,6 +320,27 @@ const tabPanelPt = {
   font-weight: 600;
 }
 
+.breadcrumb-stig-select {
+  min-width: 200px;
+  font-size: 0.9rem;
+}
+
+:deep(.breadcrumb-stig-select .p-select-label) {
+  padding: 0.25rem 0.5rem;
+  color: #e4e4e7;
+  font-weight: 600;
+}
+
+:deep(.breadcrumb-stig-select .p-select) {
+  background: transparent;
+  border: 1px solid #3a3d40;
+  border-radius: 4px;
+}
+
+:deep(.breadcrumb-stig-select .p-select:hover) {
+  border-color: #60a5fa;
+}
+
 .breadcrumb-separator {
   color: #6b7280;
   margin: 0 0.5rem;
@@ -273,6 +372,11 @@ const tabPanelPt = {
 .delete-btn:hover {
   color: #f16969;
   background-color: rgba(241, 105, 105, 0.1);
+}
+
+.review-container {
+  flex: 1;
+  overflow: hidden;
 }
 
 .tabs-container {
