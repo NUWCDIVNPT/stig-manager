@@ -1,14 +1,14 @@
 <script setup>
-import { storeToRefs } from 'pinia'
+import Breadcrumb from 'primevue/breadcrumb'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, inject, ref } from 'vue'
-import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import { useDeleteCollection } from '../composeables/useDeleteCollection.js'
+import { useCollectionQuery } from '../queries/collectionQueries.js'
 import {
   useCollectionAssetSummaryQuery,
   useCollectionLabelSummaryQuery,
@@ -26,19 +26,32 @@ const props = defineProps({
   },
 })
 
-const navTreeStore = useNavTreeStore()
-const { selectedData } = storeToRefs(navTreeStore)
-const storeCollection = computed(() => selectedData.value || null)
-const selectedCollection = computed(() => storeCollection.value)
 const collectionIdRef = computed(() => props.collectionId)
-const collectionName = computed(() => selectedCollection.value?.label || selectedCollection.value?.data?.name || 'Collection')
-const hasCollection = computed(() => Boolean(selectedCollection.value))
-
-const { deleteCollection } = useDeleteCollection(collectionIdRef)
 
 // OIDC worker for API queries
 const oidcWorker = inject('worker')
 const token = computed(() => oidcWorker?.token)
+
+// Fetch collection details for name
+const { collection } = useCollectionQuery({
+  collectionId: collectionIdRef,
+  token,
+})
+
+const collectionName = computed(() => collection.value?.name || 'Collection')
+const hasCollection = computed(() => Boolean(collection.value))
+
+const { deleteCollection } = useDeleteCollection(collectionIdRef)
+
+// Breadcrumb configuration
+const breadcrumbHome = {
+  label: 'Collections',
+  route: '/collections',
+}
+
+const breadcrumbItems = computed(() => [
+  { label: collectionName.value },
+])
 
 // Data queries for STIGs, Assets, Labels
 const { stigs } = useCollectionStigSummaryQuery({
@@ -100,12 +113,19 @@ const tabPanelPt = {
 <template>
   <div class="collection-view-2">
     <header class="collection-header">
-      <div class="header-info">
-        <h1 class="collection-title">
-          {{ collectionName }}
-        </h1>
-        <span class="collection-id">ID: {{ collectionId }}</span>
-      </div>
+      <Breadcrumb :home="breadcrumbHome" :model="breadcrumbItems">
+        <template #item="{ item, props: itemProps }">
+          <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+            <a :href="href" v-bind="itemProps.action" class="breadcrumb-link" @click="navigate">
+              {{ item.label }}
+            </a>
+          </router-link>
+          <span v-else class="breadcrumb-current">{{ item.label }}</span>
+        </template>
+        <template #separator>
+          <span class="breadcrumb-separator">/</span>
+        </template>
+      </Breadcrumb>
       <div class="header-actions">
         <button
           v-if="hasCollection"
@@ -198,27 +218,47 @@ const tabPanelPt = {
 }
 
 .collection-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 0.5rem 1rem;
   background-color: #1f1f1f;
   border-bottom: 1px solid #3a3d40;
 }
 
-.header-info {
-  display: flex;
-  align-items: baseline;
-  gap: 1rem;
+.breadcrumb-link {
+  color: #60a5fa;
+  text-decoration: none;
+  font-size: 0.95rem;
 }
 
-.collection-title {
-  margin: 0;
-  font-size: 16px;
+.breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-current {
+  color: #e4e4e7;
+  font-size: 0.95rem;
   font-weight: 600;
 }
 
-.collection-id {
-  color: #a6adba;
-  font-size: 0.9rem;
-  font-family: monospace;
+.breadcrumb-separator {
+  color: #6b7280;
+  margin: 0 0.5rem;
+}
+
+:deep(.p-breadcrumb) {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+:deep(.p-breadcrumb-list) {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .delete-btn {
