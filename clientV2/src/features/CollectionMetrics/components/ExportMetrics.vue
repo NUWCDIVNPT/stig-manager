@@ -1,15 +1,9 @@
 <script setup>
 import Button from 'primevue/button'
 import Select from 'primevue/select'
-import { defineProps, reactive } from 'vue'
+import { defineEmits, reactive } from 'vue'
 
-const props = defineProps({
-  collectionId: {
-    type: String,
-    required: false,
-    default: null,
-  },
-})
+const emit = defineEmits(['download'])
 
 const items = {
   aggregation: ['Collection', 'Asset', 'Label', 'Stig', 'Ungrouped'],
@@ -17,14 +11,18 @@ const items = {
   format: ['JSON', 'CSV'],
 }
 
+// ref?
 const selected = reactive({
   aggregation: 'Collection',
   style: 'Summary',
   format: 'JSON',
 })
 
-function handleDownload() {
-  console.log(`Downloading metrics for collection ${props.collectionId}:`, selected)
+const buttonPt = {
+  root: {
+    style: 'color: rgba(255, 255, 255, 0.87); border-color: #3f3f46; width: 100%',
+    class: 'download-button',
+  },
 }
 </script>
 
@@ -42,21 +40,18 @@ function handleDownload() {
         <Select
           v-model="selected.aggregation"
           :options="items.aggregation"
-          class="w-full"
         />
 
         <label>Style:</label>
         <Select
           v-model="selected.style"
           :options="items.style"
-          class="w-full"
         />
 
         <label>Format:</label>
         <Select
           v-model="selected.format"
           :options="items.format"
-          class="w-full"
         />
       </div>
 
@@ -64,8 +59,8 @@ function handleDownload() {
         <Button
           label="Download"
           icon="pi pi-download"
-          class="p-button-outlined w-full"
-          @click="handleDownload"
+          :pt="buttonPt"
+          @click="emit('download')"
         />
       </div>
     </div>
@@ -120,26 +115,9 @@ label {
   margin-top: 5px;
 }
 
-:deep(.p-select) {
-  background-color: #27272a;
-  border-color: #3f3f46;
-}
-
-:deep(.p-select-label) {
-  padding: 6px 10px;
-  font-size: 0.9rem;
-}
-
-:deep(.p-button-outlined) {
-  color: rgba(255, 255, 255, 0.87);
-  border-color: #3f3f46;
-}
-:deep(.p-button-outlined:hover) {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: #52525b;
-}
-
-.w-full {
-  width: 100%;
+.download-button:hover,
+.download-button:active,
+.download-button:focus-visible {
+  background-color: rgba(96, 165, 250, 0.1) !important;
 }
 </style>

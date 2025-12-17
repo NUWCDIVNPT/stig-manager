@@ -211,7 +211,7 @@ defineExpose({
             style: {
               outline: 'none',
               boxShadow: 'none',
-              background: 'var(--color-primary-blue)',
+              background: 'var(--color-primary-highlight)',
             },
           },
         }" @click="addNewCard"
@@ -222,7 +222,7 @@ defineExpose({
 
 <style scoped>
 .floating-add-btn {
-  background: var(--color-primary-blue);
+  background: var(--color-primary-highlight);
   border: none;
   color: #fff;
   font-size: 1.5rem;
@@ -242,7 +242,7 @@ defineExpose({
 }
 
 .floating-add-btn:hover {
-  background: var(--color-primary-blue-light);
+  background: var(--color-primary-highlight-light);
   transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }

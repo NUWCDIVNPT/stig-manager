@@ -211,7 +211,7 @@ onMounted(async () => {
 /* Custom Scrollbar */
 :deep(*) {
   scrollbar-width: thin;
-  scrollbar-color: rgba(96, 165, 250, 0.3) transparent;
+  scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
 }
 
 :deep(*::-webkit-scrollbar) {
@@ -224,12 +224,12 @@ onMounted(async () => {
 }
 
 :deep(*::-webkit-scrollbar-thumb) {
-  background-color: rgba(96, 165, 250, 0.3);
+  background-color: rgba(16, 185, 129, 0.3);
   border-radius: 4px;
 }
 
 :deep(*::-webkit-scrollbar-thumb:hover) {
-  background-color: rgba(96, 165, 250, 0.5);
+  background-color: rgba(16, 185, 129, 0.5);
 }
 
 /* Header */
@@ -330,7 +330,7 @@ onMounted(async () => {
 .card-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--color-primary-blue);
+  color: var(--color-primary-highlight);
   margin: 0 0 1rem 0;
   letter-spacing: -0.01em;
 }
@@ -381,7 +381,7 @@ onMounted(async () => {
 
 /* Links */
 .link {
-  color: var(--color-primary-blue);
+  color: var(--color-primary-highlight);
   text-decoration: none;
   transition: all 0.15s ease;
   position: relative;
@@ -389,9 +389,9 @@ onMounted(async () => {
 }
 
 .link:hover {
-  color: var(--color-primary-blue-light);
+  color: var(--color-primary-highlight-light);
   text-decoration: underline;
-  text-decoration-color: rgba(96, 165, 250, 0.4);
+  text-decoration-color: rgba(16, 185, 129, 0.4);
   text-underline-offset: 2px;
 }
 
@@ -415,7 +415,7 @@ onMounted(async () => {
   padding: 0.875rem;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 0.375rem;
-  border-left: 3px solid rgba(96, 165, 250, 0.4);
+  border-left: 3px solid rgba(16, 185, 129, 0.4);
 }
 
 .manager-list {

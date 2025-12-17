@@ -1,17 +1,39 @@
 <script setup>
 import { computed, inject } from 'vue'
+import { useCollectionCora } from '../composables/useCollectionCora.js'
+import { useCollectionProgress } from '../composables/useCollectionProgress.js'
+import { useCollectionStats } from '../composables/useCollectionStats.js'
+
 import { useCollectionMetricsSummaryQuery } from '../queries/metricsQueries.js'
-import CollectionStats from './CollectionStats.vue'
 import Cora from './Cora.vue'
 import ExportMetrics from './ExportMetrics.vue'
+import FindingsStats from './FindingsStats.vue'
+import InventoryStats from './InventoryStats.vue'
 import Progress from './Progress.vue'
+
+import ReviewAgesStats from './ReviewAgesStats.vue'
+
+const props = defineProps({
+  collectionId: {
+    type: String,
+    required: true,
+  },
+})
 
 const oidcWorker = inject('worker')
 
 const { metrics, isLoading, errorMessage } = useCollectionMetricsSummaryQuery({
-  collectionId: '83',
+  collectionId: props.collectionId,
   token: computed(() => oidcWorker?.token),
 })
+
+const { stats: progressStats } = useCollectionProgress(metrics)
+const { coraData } = useCollectionCora(metrics)
+const { inventory, findings, ages } = useCollectionStats(metrics)
+
+const handleDownload = () => {
+  console.log('Download metrics')
+}
 </script>
 
 <template>
@@ -23,10 +45,14 @@ const { metrics, isLoading, errorMessage } = useCollectionMetricsSummaryQuery({
       {{ errorMessage }}
     </div>
     <div v-else class="metrics-container">
-      <Progress :metrics="metrics" />
-      <Cora :metrics="metrics" />
-      <CollectionStats :metrics="metrics" />
-      <ExportMetrics :collection-id="metrics?.collectionId" />
+      <Progress :stats="progressStats" />
+      <Cora :cora-data="coraData" />
+      <div class="stats-column">
+        <InventoryStats :inventory="inventory" />
+        <FindingsStats :findings="findings" />
+        <ReviewAgesStats :ages="ages" />
+      </div>
+      <ExportMetrics @download="handleDownload" />
     </div>
   </div>
 </template>
@@ -37,5 +63,12 @@ const { metrics, isLoading, errorMessage } = useCollectionMetricsSummaryQuery({
   flex-wrap: wrap;
   gap: 20px;
   padding: 20px;
+}
+.stats-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 400px;
+  width: 100%;
 }
 </style>

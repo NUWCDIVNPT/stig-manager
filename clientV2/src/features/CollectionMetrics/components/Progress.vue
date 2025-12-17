@@ -3,16 +3,15 @@ import Chart from 'primevue/chart'
 import { computed, defineProps, toRefs } from 'vue'
 
 const props = defineProps({
-  metrics: {
+  stats: {
     type: Object,
     required: false,
     default: null,
   },
 })
 
-const { metrics } = toRefs(props)
+const { stats } = toRefs(props)
 
-// Colors
 const colors = {
   unassessed: 'var(--metrics-status-chart-unassessed)',
   assessed: 'var(--metrics-status-chart-assessed)',
@@ -20,46 +19,6 @@ const colors = {
   accepted: 'var(--metrics-status-chart-accepted)',
   rejected: 'var(--metrics-status-chart-rejected)',
   text: '#e4e4e7',
-}
-
-const stats = computed(() => {
-  if (!metrics.value || !metrics.value.metrics) {
-    return null
-  }
-  const m = metrics.value.metrics
-
-  const assessments = m.assessments || 0
-  const assessed = m.assessed || 0
-
-  const saved = m.statuses?.saved || 0
-  const otherResults = m.results?.other || 0
-  const submitted = m.statuses?.submitted || 0
-  const accepted = m.statuses?.accepted || 0
-  const rejected = m.statuses?.rejected || 0
-
-  return {
-    unassessed: assessments - assessed,
-    assessed: saved - otherResults,
-    submitted,
-    accepted,
-    rejected,
-    total: assessments,
-    overallProgress: assessments ? (assessed / assessments * 100) : 0,
-  }
-})
-
-const formatPct = (val) => {
-  if (!stats.value || !stats.value.total) {
-    return '0%'
-  }
-  const pct = (val / stats.value.total) * 100
-  if (pct > 0 && pct < 1) {
-    return '<1%'
-  }
-  if (pct > 99 && pct < 100) {
-    return '>99%'
-  }
-  return `${pct.toFixed(1)}%`
 }
 
 // Helper to resolve CSS variables for Chart.js (Canvas) which doesn't support var()
@@ -75,10 +34,11 @@ const resolveColor = (colorVar) => {
 }
 
 const getPct = (val) => {
-  if (!stats.value || !stats.value.total) {
+  if (!stats.value || !stats.value.counts?.total) {
     return 0
   }
-  return (val / stats.value.total) * 7000
+  // The original logic used 7000 as a multiplier, preserving it for visual consistency
+  return (val / stats.value.counts.total) * 100
 }
 
 const chartData = computed(() => {
@@ -91,11 +51,11 @@ const chartData = computed(() => {
     datasets: [
       {
         data: [
-          stats.value.unassessed,
-          stats.value.assessed,
-          stats.value.submitted,
-          stats.value.accepted,
-          stats.value.rejected,
+          stats.value.counts.unassessed,
+          stats.value.counts.assessed,
+          stats.value.counts.submitted,
+          stats.value.counts.accepted,
+          stats.value.counts.rejected,
         ],
         backgroundColor: [
           resolveColor(colors.unassessed),
@@ -132,7 +92,7 @@ const chartOptions = {
       <h2 class="title">
         Progress
       </h2>
-      <span class="overall-pct">{{ stats.overallProgress.toFixed(1) }}% Assessed</span>
+      <span class="overall-pct">{{ stats.formatted.overall }}% Assessed</span>
     </div>
 
     <div class="main-content">
@@ -144,27 +104,27 @@ const chartOptions = {
         <div class="legend-item">
           <div class="indicator" :style="{ backgroundColor: colors.unassessed }" />
           <span class="label">Unassessed</span>
-          <span class="count">{{ stats.unassessed }}</span>
+          <span class="count">{{ stats.counts.unassessed }}</span>
         </div>
         <div class="legend-item">
           <div class="indicator" :style="{ backgroundColor: colors.assessed }" />
           <span class="label">Assessed</span>
-          <span class="count">{{ stats.assessed }}</span>
+          <span class="count">{{ stats.counts.assessed }}</span>
         </div>
         <div class="legend-item">
           <div class="indicator" :style="{ backgroundColor: colors.submitted }" />
           <span class="label">Submitted</span>
-          <span class="count">{{ stats.submitted }}</span>
+          <span class="count">{{ stats.counts.submitted }}</span>
         </div>
         <div class="legend-item">
           <div class="indicator" :style="{ backgroundColor: colors.accepted }" />
           <span class="label">Accepted</span>
-          <span class="count">{{ stats.accepted }}</span>
+          <span class="count">{{ stats.counts.accepted }}</span>
         </div>
         <div class="legend-item">
           <div class="indicator" :style="{ backgroundColor: colors.rejected }" />
           <span class="label">Rejected</span>
-          <span class="count">{{ stats.rejected }}</span>
+          <span class="count">{{ stats.counts.rejected }}</span>
         </div>
       </div>
     </div>
@@ -173,56 +133,56 @@ const chartOptions = {
       <div class="stat-box">
         <div
           class="stat-bar"
-          :style="{ width: `${getPct(stats.assessed)}%`, backgroundColor: colors.assessed }"
+          :style="{ width: `${getPct(stats.counts.assessed)}%`, backgroundColor: colors.assessed }"
         />
         <div class="stat-content">
           <div class="stat-label">
             ASSESSED
           </div>
           <div class="stat-value" :style="{ color: colors.assessed }">
-            {{ formatPct(stats.assessed) }}
+            {{ stats.formatted.assessed }}
           </div>
         </div>
       </div>
       <div class="stat-box">
         <div
           class="stat-bar"
-          :style="{ width: `${getPct(stats.submitted)}%`, backgroundColor: colors.submitted }"
+          :style="{ width: `${getPct(stats.counts.submitted)}%`, backgroundColor: colors.submitted }"
         />
         <div class="stat-content">
           <div class="stat-label">
             SUBMITTED
           </div>
           <div class="stat-value" :style="{ color: colors.submitted }">
-            {{ formatPct(stats.submitted) }}
+            {{ stats.formatted.submitted }}
           </div>
         </div>
       </div>
       <div class="stat-box">
         <div
           class="stat-bar"
-          :style="{ width: `${getPct(stats.accepted)}%`, backgroundColor: colors.accepted }"
+          :style="{ width: `${getPct(stats.counts.accepted)}%`, backgroundColor: colors.accepted }"
         />
         <div class="stat-content">
           <div class="stat-label">
             ACCEPTED
           </div>
           <div class="stat-value" :style="{ color: colors.accepted }">
-            {{ formatPct(stats.accepted) }}
+            {{ stats.formatted.accepted }}
           </div>
         </div>
       </div>
       <div class="stat-box">
         <div
           class="stat-bar"
-          :style="{ width: `${getPct(stats.rejected)}%`, backgroundColor: colors.rejected }"
+          :style="{ width: `${getPct(stats.counts.rejected)}%`, backgroundColor: colors.rejected }"
         />
         <div class="stat-content">
           <div class="stat-label">
             REJECTED
           </div>
           <div class="stat-value" :style="{ color: colors.rejected }">
-            {{ formatPct(stats.rejected) }}
+            {{ stats.formatted.rejected }}
           </div>
         </div>
       </div>
@@ -233,7 +193,7 @@ const chartOptions = {
         Total Checks
       </div>
       <div class="total-value">
-        {{ stats.total }}
+        {{ stats.counts.total }}
       </div>
     </div>
   </div>

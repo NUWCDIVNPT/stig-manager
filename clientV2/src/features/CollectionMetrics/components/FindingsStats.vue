@@ -1,48 +1,38 @@
 <script setup>
-import { defineProps } from 'vue'
+import { computed, defineProps, toRefs } from 'vue'
 
-defineProps({
-  title: {
-    type: String,
-    required: true,
+const props = defineProps({
+  findings: {
+    type: Object,
+    required: false,
+    default: () => ({ high: 0, medium: 0, low: 0 }),
   },
-  stats: {
-    type: Array,
-    required: true,
-    // Expected structure: [{ label: 'Assets', value: 10, color: '#abcdef' }]
-  },
-  actions: {
-    type: Array,
-    default: () => [],
-    // Expected structure: [{ label: 'Export', onClick: () => {} }]
-  },
-  borderBottom: {
-    type: Boolean,
-    default: true,
-  },
+})
+
+const { findings } = toRefs(props)
+
+const data = computed(() => {
+  return [
+    { label: 'CAT 3', value: findings.value.low || 0, color: 'var(--color-cat3)' },
+    { label: 'CAT 2', value: findings.value.medium || 0, color: 'var(--color-cat2)' },
+    { label: 'CAT 1', value: findings.value.high || 0, color: 'var(--color-cat1)' },
+  ]
 })
 </script>
 
 <template>
-  <div class="section" :class="{ 'border-none': !borderBottom }">
-    <div class="section-header">
+  <div v-if="data" class="stat-card">
+    <div class="header">
       <h3 class="title">
-        {{ title }}
+        Findings
       </h3>
-      <div v-if="actions.length" class="actions">
-        <span
-          v-for="(action, index) in actions"
-          :key="index"
-          class="action-link"
-          @click="action.onClick && action.onClick()"
-        >
-          {{ action.label }}
-        </span>
+      <div class="actions">
+        <span class="action-link" @click="console.log('Details clicked')">Details</span>
       </div>
     </div>
     <div class="badge-row">
       <div
-        v-for="(stat, index) in stats"
+        v-for="(stat, index) in data"
         :key="index"
         class="stat-badge"
         :style="{ backgroundColor: stat.color }"
@@ -55,20 +45,20 @@ defineProps({
 </template>
 
 <style scoped>
-.section {
+.stat-card {
+  background-color: #18181b;
+  color: #e4e4e7;
+  border-radius: 20px;
+  padding: 15px;
+  width: 100%;
+  max-width: 400px;
+  min-width: 320px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 10px;
 }
 
-.section.border-none {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.section-header {
+.header {
   display: flex;
   align-items: center;
 }

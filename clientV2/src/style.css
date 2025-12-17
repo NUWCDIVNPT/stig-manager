@@ -20,9 +20,8 @@
   --color-marking-sci: #f7ea48;
   
   /* Brand Colors */
-  --color-primary-blue: #60a5fa;
-  --color-primary-blue-light: #93c5fd;
-  --color-primary-green: #22c55e;
+  --color-primary-highlight: #60a5fa;
+  --color-primary-highlight-light: #93c5fd;
   
   /* UI Interaction Colors */
   --color-button-hover-bg: rgba(255, 255, 255, 0.1);
@@ -145,11 +144,11 @@ input[type="number"]:focus,
 input[type="password"]:focus,
 textarea:focus {
   outline: none !important;
-  border-color: var(--color-primary-blue-light) !important;
+  border-color: var(--color-primary-highlight-light) !important;
 }
 .p-inputtext:enabled:focus{
   outline: none !important;
-  border-color: var(--color-primary-blue-light) !important;
+  border-color: var(--color-primary-highlight-light) !important;
 }
 
 
