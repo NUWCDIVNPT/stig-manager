@@ -5,12 +5,19 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { computed, ref } from 'vue'
+import { computed, inject, ref } from 'vue'
 import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import { useDeleteCollection } from '../composeables/useDeleteCollection.js'
+import {
+  useCollectionAssetSummaryQuery,
+  useCollectionLabelSummaryQuery,
+  useCollectionStigSummaryQuery,
+} from '../queries/metricsQueries.js'
+import AssetsView from './AssetsView.vue'
 import ChecklistTable from './ChecklistTable.vue'
-import StigAssetLabelTable from './StigAssetLabelTable.vue'
+import LabelsView from './LabelsView.vue'
+import StigsView from './StigsView.vue'
 
 const props = defineProps({
   collectionId: {
@@ -29,13 +36,33 @@ const hasCollection = computed(() => Boolean(selectedCollection.value))
 
 const { deleteCollection } = useDeleteCollection(collectionIdRef)
 
+// OIDC worker for API queries
+const oidcWorker = inject('worker')
+const token = computed(() => oidcWorker?.token)
+
+// Data queries for STIGs, Assets, Labels
+const { stigs } = useCollectionStigSummaryQuery({
+  collectionId: computed(() => props.collectionId),
+  token,
+})
+
+const { assets } = useCollectionAssetSummaryQuery({
+  collectionId: computed(() => props.collectionId),
+  token,
+})
+
+const { labels } = useCollectionLabelSummaryQuery({
+  collectionId: computed(() => props.collectionId),
+  token,
+})
+
 const selectedBenchmarkId = ref(null)
 function handleStigSelect(benchmarkId) {
   selectedBenchmarkId.value = benchmarkId
 }
 
 // Default active tab
-const activeTab = ref('assets')
+const activeTab = ref('dashboard')
 
 const tabsPt = {
   root: {
@@ -95,11 +122,17 @@ const tabPanelPt = {
     <div class="tabs-container">
       <Tabs v-model:value="activeTab" :pt="tabsPt">
         <TabList>
-          <Tab value="assets">
-            Assets/Stigs
-          </Tab>
           <Tab value="dashboard">
             Dashboard
+          </Tab>
+          <Tab value="stigs">
+            STIGs
+          </Tab>
+          <Tab value="assets">
+            Assets
+          </Tab>
+          <Tab value="labels">
+            Labels
           </Tab>
           <Tab value="users">
             Users
@@ -107,16 +140,17 @@ const tabPanelPt = {
           <Tab value="settings">
             Settings
           </Tab>
-          <Tab value="manage">
-            Manage
-          </Tab>
         </TabList>
         <TabPanels :pt="tabPanelsPt">
-          <TabPanel value="assets" :pt="tabPanelPt">
-            <div class="assets-grid">
+          <TabPanel value="dashboard" :pt="tabPanelPt">
+            <CollectionMetrics :collection-id="collectionId" />
+          </TabPanel>
+          <TabPanel value="stigs" :pt="tabPanelPt">
+            <div class="stigs-grid">
               <div class="table-container">
-                <StigAssetLabelTable
+                <StigsView
                   :collection-id="collectionId"
+                  :stigs="stigs"
                   @select-stig="handleStigSelect"
                 />
               </div>
@@ -128,8 +162,15 @@ const tabPanelPt = {
               </div>
             </div>
           </TabPanel>
-          <TabPanel value="dashboard" :pt="tabPanelPt">
-            <CollectionMetrics :collection-id="collectionId" />
+          <TabPanel value="assets" :pt="tabPanelPt">
+            <div class="view-container">
+              <AssetsView :collection-id="collectionId" :assets="assets" />
+            </div>
+          </TabPanel>
+          <TabPanel value="labels" :pt="tabPanelPt">
+            <div class="view-container">
+              <LabelsView :collection-id="collectionId" :labels="labels" />
+            </div>
           </TabPanel>
           <TabPanel value="users" :pt="tabPanelPt">
             <div class="placeholder-panel">
@@ -141,12 +182,6 @@ const tabPanelPt = {
             <div class="placeholder-panel">
               <h2>Settings Panel</h2>
               <p>Collection settings content will go here.</p>
-            </div>
-          </TabPanel>
-          <TabPanel value="manage" :pt="tabPanelPt">
-            <div class="placeholder-panel">
-              <h2>Manage Panel</h2>
-              <p>Management content will go here.</p>
             </div>
           </TabPanel>
         </TabPanels>
@@ -207,7 +242,7 @@ const tabPanelPt = {
   flex-direction: column;
 }
 
-.assets-grid {
+.stigs-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
@@ -220,6 +255,12 @@ const tabPanelPt = {
   overflow: hidden;
   border: 1px solid #3a3d40;
   border-radius: 4px;
+}
+
+.view-container {
+  height: 100%;
+  padding: 0.5rem;
+  overflow: hidden;
 }
 
 .placeholder-panel {

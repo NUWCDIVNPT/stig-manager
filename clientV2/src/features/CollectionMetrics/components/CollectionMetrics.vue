@@ -9,7 +9,7 @@ import Progress from './Progress.vue'
 const oidcWorker = inject('worker')
 
 const { metrics, isLoading, errorMessage } = useCollectionMetricsSummaryQuery({
-  collectionId: '83',
+  collectionId: '17',
   token: computed(() => oidcWorker?.token),
 })
 </script>
