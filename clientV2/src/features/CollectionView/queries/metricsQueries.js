@@ -170,6 +170,61 @@ export function useCollectionLabelSummaryQuery({ collectionId, token }, options 
   }
 }
 
+async function fetchCollectionLabels({ apiUrl = useEnv().apiUrl, token, collectionId }) {
+  if (!collectionId) {
+    throw new Error('A collectionId is required to fetch collection labels.')
+  }
+
+  const response = await fetch(`${apiUrl}/collections/${collectionId}/labels`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Collection labels ${response.status} ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+export function useCollectionLabelsQuery({ collectionId, token }, options = {}) {
+  const query = useQuery({
+    queryKey: computed(() => [...collectionKeys.all, unref(collectionId), 'labels']),
+    enabled: computed(() => Boolean(unref(collectionId) && unref(token))),
+    placeholderData: keepPreviousData,
+    queryFn: () => {
+      return fetchCollectionLabels({
+        collectionId: unref(collectionId),
+        token: unref(token),
+      })
+    },
+    staleTime: 5 * 60 * 1000,
+    refetchOnMount: true,
+    retry: 2,
+    ...options,
+  })
+
+  const labels = computed(() => query.data?.value ?? [])
+  const isLoading = computed(() => Boolean(query.isFetching?.value))
+  const errorMessage = computed(() => {
+    const err = query.error?.value
+    if (!err) {
+      return null
+    }
+    return err.message || 'Unable to load collection labels.'
+  })
+
+  return {
+    labels,
+    isLoading,
+    errorMessage,
+    refetch: query.refetch,
+  }
+}
+
 async function fetchCollectionChecklistAssets({ apiUrl = useEnv().apiUrl, token, collectionId, benchmarkId }) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch checklist assets.')

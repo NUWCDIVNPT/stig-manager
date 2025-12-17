@@ -14,6 +14,7 @@ import { useDeleteCollection } from '../composeables/useDeleteCollection.js'
 import { useCollectionQuery } from '../queries/collectionQueries.js'
 import {
   useCollectionAssetSummaryQuery,
+  useCollectionLabelsQuery,
   useCollectionLabelSummaryQuery,
   useCollectionStigSummaryQuery,
 } from '../queries/metricsQueries.js'
@@ -122,6 +123,12 @@ const { labels } = useCollectionLabelSummaryQuery({
   token,
 })
 
+// Raw labels with color property for AssetReview
+const { labels: rawLabels } = useCollectionLabelsQuery({
+  collectionId: computed(() => props.collectionId),
+  token,
+})
+
 const selectedBenchmarkId = ref(null)
 function handleStigSelect(benchmarkId) {
   selectedBenchmarkId.value = benchmarkId
@@ -217,7 +224,7 @@ const tabPanelPt = {
 
     <!-- Review Mode: Show AssetReview -->
     <div v-if="isReviewMode" class="review-container">
-      <AssetReview :asset-id="reviewingAsset.assetId" />
+      <AssetReview :asset-id="reviewingAsset.assetId" :collection-labels="rawLabels" />
     </div>
 
     <!-- Normal Mode: Show Tabs -->
