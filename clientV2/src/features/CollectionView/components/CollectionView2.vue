@@ -190,6 +190,11 @@ const tabPanelPt = {
             option-value="benchmarkId"
             class="breadcrumb-stig-select"
             placeholder="Select STIG"
+            :pt="{
+              root: { class: 'breadcrumb-select-root' },
+              label: { class: 'breadcrumb-select-label' },
+              dropdown: { class: 'breadcrumb-select-dropdown' },
+            }"
           />
           <span v-else class="breadcrumb-current">{{ item.label }}</span>
         </template>
@@ -320,25 +325,45 @@ const tabPanelPt = {
   font-weight: 600;
 }
 
+/* Subtle breadcrumb-style dropdown */
 .breadcrumb-stig-select {
-  min-width: 200px;
-  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
 }
 
-:deep(.breadcrumb-stig-select .p-select-label) {
-  padding: 0.25rem 0.5rem;
+:deep(.breadcrumb-select-root) {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  min-width: auto;
+  cursor: pointer;
+}
+
+:deep(.breadcrumb-select-root:hover) {
+  background: transparent;
+}
+
+:deep(.breadcrumb-select-label) {
+  padding: 0;
   color: #e4e4e7;
+  font-size: 0.95rem;
   font-weight: 600;
 }
 
-:deep(.breadcrumb-stig-select .p-select) {
-  background: transparent;
-  border: 1px solid #3a3d40;
-  border-radius: 4px;
+:deep(.breadcrumb-select-label:hover) {
+  text-decoration: underline;
 }
 
-:deep(.breadcrumb-stig-select .p-select:hover) {
-  border-color: #60a5fa;
+:deep(.breadcrumb-select-dropdown) {
+  color: #6b7280;
+  width: auto;
+  padding-left: 0.25rem;
+}
+
+:deep(.breadcrumb-select-dropdown .p-icon) {
+  width: 0.75rem;
+  height: 0.75rem;
 }
 
 .breadcrumb-separator {
