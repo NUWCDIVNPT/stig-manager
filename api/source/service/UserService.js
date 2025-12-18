@@ -22,8 +22,12 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
       ud.lastClaims, ?
     )), ud.username) as displayName`,
     `json_object(
-      'create_collection', 'create_collection' member of(JSON_VALUE(ud.lastClaims, ? default '[]' on empty)),
-      'admin', 'admin' member of(JSON_VALUE(ud.lastClaims, ? default '[]' on empty))
+      'create_collection', 'create_collection' member of(
+        JSON_MERGE_PRESERVE(JSON_ARRAY(), COALESCE(JSON_EXTRACT(ud.lastClaims, ?), JSON_ARRAY()))
+      ),
+      'admin', 'admin' member of(
+        JSON_MERGE_PRESERVE(JSON_ARRAY(), COALESCE(JSON_EXTRACT(ud.lastClaims, ?), JSON_ARRAY()))
+      )
     ) as 'privileges'`,
     'ud.status',
     "date_format(ud.statusDate, '%Y-%m-%dT%TZ') as statusDate",
@@ -85,13 +89,14 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
   }
 
   // PREDICATES
+  const privilegesPath = `$.${config.oauth.claims.privileges}`
   let predicates = {
     statements: [],
     binds: [
       `$.${config.oauth.claims.email}`,
       `$.${config.oauth.claims.name}`,
-      `$.${config.oauth.claims.privileges}`,
-      `$.${config.oauth.claims.privileges}`
+      privilegesPath,
+      privilegesPath
     ]
   }
   if (inPredicates.userId) {
@@ -120,9 +125,12 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
   
   if (inPredicates.privilege) {
     predicates.statements.push(
-      `JSON_CONTAINS(JSON_EXTRACT(ud.lastClaims, ?), ?) `
+      `JSON_CONTAINS(
+        JSON_MERGE_PRESERVE(JSON_ARRAY(), COALESCE(JSON_EXTRACT(ud.lastClaims, ?), JSON_ARRAY())),
+        ?
+      )`
     )
-    predicates.binds.push(`$.${config.oauth.claims.privileges}`, JSON.stringify([inPredicates.privilege]))
+    predicates.binds.push(privilegesPath, JSON.stringify([inPredicates.privilege]))
   }
   
   if (inPredicates.status) {
