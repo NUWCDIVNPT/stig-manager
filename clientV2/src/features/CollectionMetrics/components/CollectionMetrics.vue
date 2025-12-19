@@ -1,5 +1,5 @@
 <script setup>
-import { computed, inject } from 'vue'
+import { computed, inject, ref } from 'vue'
 import { useCollectionCora } from '../composables/useCollectionCora.js'
 import { useCollectionProgress } from '../composables/useCollectionProgress.js'
 import { useCollectionStats } from '../composables/useCollectionStats.js'
@@ -7,6 +7,7 @@ import { useCollectionStats } from '../composables/useCollectionStats.js'
 import { useCollectionMetricsSummaryQuery } from '../queries/metricsQueries.js'
 import Cora from './Cora.vue'
 import ExportMetrics from './ExportMetrics.vue'
+import ExportMetricsModal from './ExportMetricsModal.vue'
 import FindingsStats from './FindingsStats.vue'
 import InventoryStats from './InventoryStats.vue'
 import Progress from './Progress.vue'
@@ -31,6 +32,8 @@ const { stats: progressStats } = useCollectionProgress(metrics)
 const { coraData } = useCollectionCora(metrics)
 const { inventory, findings, ages } = useCollectionStats(metrics)
 
+const showExportModal = ref(false)
+
 const handleDownload = () => {
   console.log('Download metrics')
 }
@@ -48,11 +51,12 @@ const handleDownload = () => {
       <Progress :stats="progressStats" />
       <Cora :cora-data="coraData" />
       <div class="stats-column">
-        <InventoryStats :inventory="inventory" />
+        <InventoryStats :inventory="inventory" @export="showExportModal = true" />
         <FindingsStats :findings="findings" />
         <ReviewAgesStats :ages="ages" />
       </div>
       <ExportMetrics @download="handleDownload" />
+      <ExportMetricsModal v-model:visible="showExportModal" :collection-id="props.collectionId" />
     </div>
   </div>
 </template>
@@ -67,7 +71,6 @@ const handleDownload = () => {
 .stats-column {
   display: flex;
   flex-direction: column;
-  gap: 20px;
   max-width: 400px;
   width: 100%;
 }

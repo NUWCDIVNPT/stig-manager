@@ -6,16 +6,28 @@ import { defineEmits, reactive } from 'vue'
 const emit = defineEmits(['download'])
 
 const items = {
-  aggregation: ['Collection', 'Asset', 'Label', 'Stig', 'Ungrouped'],
-  style: ['Summary', 'Detail'],
-  format: ['JSON', 'CSV'],
+  aggregation: [
+    { label: 'Collection', value: 'collection' },
+    { label: 'Asset', value: 'asset' },
+    { label: 'Label', value: 'label' },
+    { label: 'Stig', value: 'stig' },
+    { label: 'Ungrouped', value: 'ungrouped' },
+  ],
+  style: [
+    { label: 'Summary', value: 'summary' },
+    { label: 'Detail', value: 'detail' },
+  ],
+  format: [
+    { label: 'JSON', value: 'json' },
+    { label: 'CSV', value: 'csv' },
+  ],
 }
 
 // ref?
 const selected = reactive({
-  aggregation: 'Collection',
-  style: 'Summary',
-  format: 'JSON',
+  aggregation: 'collection',
+  style: 'summary',
+  format: 'json',
 })
 
 const buttonPt = {
@@ -40,18 +52,24 @@ const buttonPt = {
         <Select
           v-model="selected.aggregation"
           :options="items.aggregation"
+          option-label="label"
+          option-value="value"
         />
 
         <label>Style:</label>
         <Select
           v-model="selected.style"
           :options="items.style"
+          option-label="label"
+          option-value="value"
         />
 
         <label>Format:</label>
         <Select
           v-model="selected.format"
           :options="items.format"
+          option-label="label"
+          option-value="value"
         />
       </div>
 

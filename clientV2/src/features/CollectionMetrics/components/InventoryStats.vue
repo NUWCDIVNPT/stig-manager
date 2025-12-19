@@ -9,6 +9,8 @@ const props = defineProps({
   },
 })
 
+defineEmits(['export'])
+
 const { inventory } = toRefs(props)
 
 const data = computed(() => {
@@ -27,7 +29,7 @@ const data = computed(() => {
         Inventory
       </h3>
       <div class="actions">
-        <span class="action-link" @click="console.log('Export clicked')">Export...</span>
+        <span class="action-link" @click="$emit('export')">Export...</span>
       </div>
     </div>
     <div class="badge-row">

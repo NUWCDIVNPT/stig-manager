@@ -3,9 +3,8 @@ import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
 import { useDeleteCollection } from '../composeables/useDeleteCollection.js'
-import ChecklistTable from './ChecklistTable.vue'
-import CollectionDataPane from './CollectionDataPane.vue'
-import StigAssetLabelTable from './StigAssetLabelTable.vue'
+import CollectionAssetTable from './CollectionAssetTable.vue'
+import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
 const props = defineProps({
   collectionId: {
@@ -79,6 +78,54 @@ function handleStigSelect(benchmarkId) {
         </div>
       </section>
     </div>
+    <template v-else>
+      <header class="collection-view__header">
+        <div>
+          <p class="collection-view__eyebrow">
+            Collection
+          </p>
+          <h1 class="collection-view__title">
+            {{ collectionName }}
+          </h1>
+          <p class="collection-view__meta">
+            ID: {{ collectionId }}
+          </p>
+        </div>
+        <div class="collection-view__actions">
+          <div class="collection-view__stats">
+            <div class="collection-view__stat">
+              <span class="collection-view__stat-value">{{ assetCount }}</span>
+              <span class="collection-view__stat-label">Assets</span>
+            </div>
+          </div>
+          <button
+            class="collection-view__delete-button"
+            type="button"
+            :disabled="isDeleting"
+            @click="deleteCollection"
+          >
+            {{ isDeleting ? 'Deleting…' : 'Delete Collection' }}
+          </button>
+        </div>
+      </header>
+
+      <p v-if="deleteErrorMessage" class="collection-view__delete-error">
+        {{ deleteErrorMessage }}
+      </p>
+
+      <MetricsSummaryGrid
+        :api-metrics-summary="assets"
+        :is-loading="isLoading"
+        :error-message="errorMessage"
+      />
+      <!-- <CollectionAssetTable
+        :assets="assets"
+        :is-loading="isLoading"
+        :error-message="errorMessage"
+        :collection-name="collectionName"
+      /> -->
+    </template>
+    </section>
   </div>
 </template>
 
