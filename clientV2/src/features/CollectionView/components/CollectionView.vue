@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useCollectionAssetSummary } from '../composeables/useCollectionAssetSummary.js'
 import { useDeleteCollection } from '../composeables/useDeleteCollection.js'
 import CollectionAssetTable from './CollectionAssetTable.vue'
+import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
 // props taken in are the object selexted in the navTree (collections data.)
 const props = defineProps({
@@ -65,12 +66,17 @@ const { deleteCollection, isDeleting, errorMessage: deleteErrorMessage } = useDe
         {{ deleteErrorMessage }}
       </p>
 
-      <CollectionAssetTable
+      <MetricsSummaryGrid
+        :api-metrics-summary="assets"
+        :is-loading="isLoading"
+        :error-message="errorMessage"
+      />
+      <!-- <CollectionAssetTable
         :assets="assets"
         :is-loading="isLoading"
         :error-message="errorMessage"
         :collection-name="collectionName"
-      />
+      /> -->
     </template>
   </section>
 </template>
