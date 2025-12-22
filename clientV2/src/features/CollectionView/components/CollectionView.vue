@@ -10,7 +10,6 @@ import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import { useCollectionAssetSummary } from '../composeables/useCollectionAssetSummary.js'
 import { useDeleteCollection } from '../composeables/useDeleteCollection.js'
-import ChecklistTable from './ChecklistTable.vue'
 import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
 const props = defineProps({
@@ -31,6 +30,7 @@ const hasCollection = computed(() => Boolean(selectedCollection.value))
 const { deleteCollection } = useDeleteCollection(collectionIdRef)
 const { assets: assetsSummary, isLoading, errorMessage } = useCollectionAssetSummary(collectionIdRef)
 
+// Default active tab
 const activeTab = ref('assets')
 
 const tabsPt = {
