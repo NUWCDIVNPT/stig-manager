@@ -16,6 +16,10 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (path) => `/client-v2/Env.js`,
         },
+        '^/js/Env\\.js$': {
+          target: apiOrigin,
+          changeOrigin: true,
+        },
       },
     }
   }
