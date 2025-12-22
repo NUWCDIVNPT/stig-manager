@@ -1,28 +1,11 @@
-<template>
-  <DataTable
-    :value="data"
-    scrollable
-    scroll-height="flex"
-    :virtualScrollerOptions="{ itemSize: 45, delay: 0 }"
-    :pt="{
-        table: { style: 'min-width: 50rem; table-layout: fixed' }
-    }"
-  >
-    <template v-for="col in columns" :key="col.field">
-      <component :is="col.component" v-bind="col" style="font-size: 12px; height: 45px; width: 100px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"/>
-    </template>
-  </DataTable>
-  <!-- {{ JSON.stringify(data, null, 2) }} -->
-</template>
-
 <script setup>
-import { computed } from 'vue'
-import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import DataTable from 'primevue/datatable'
+import { computed, watch } from 'vue'
+import { calculateCoraRiskRating } from '../lib/libCora.js'
 import AssetColumn from './AssetColumn.vue'
 import DurationColumn from './DurationColumn.vue'
 import PercentageColumn from './PercentageColumn.vue'
-import { calculateCoraRiskRating } from '../lib/libCora.js'
 
 const props = defineProps({
   apiMetricsSummary: {
@@ -39,21 +22,25 @@ const props = defineProps({
   },
 })
 
+watch(() => props.apiMetricsSummary, () => {
+  console.log('apiMetricsSummary changed')
+  console.log(props.apiMetricsSummary)
+})
 
 const aggregationType = computed(() => {
   const m = props.apiMetricsSummary
-  if (m.length === 0) return null
-  if (m[0].assetId && m[0].benchmarkId) return 'unagg'
-  if (m[0].collectionId) return 'collection'
-  if (m[0].assetId) return 'asset'
-  if (m[0].labelId) return 'label'
-  if (m[0].benchmarkId) return 'stig'
+  if (m.length === 0) { return null }
+  if (m[0].assetId && m[0].benchmarkId) { return 'unagg' }
+  if (m[0].collectionId) { return 'collection' }
+  if (m[0].assetId) { return 'asset' }
+  if (m[0].labelId) { return 'label' }
+  if (m[0].benchmarkId) { return 'stig' }
 })
 
 const columns = computed(() => {
   // Common columns
   const commonColumns = [
-    { field: 'checks', header: 'Checks', component: Column  },
+    { field: 'checks', header: 'Checks', component: Column },
     { field: 'oldest', header: 'Oldest', component: DurationColumn },
     { field: 'updated', header: 'Updated', component: DurationColumn },
     { field: 'assessedPct', header: 'Assessed', component: PercentageColumn },
@@ -87,7 +74,7 @@ const columns = computed(() => {
 })
 
 const data = computed(() => {
-  return props.apiMetricsSummary.map(r => {
+  return props.apiMetricsSummary.map((r) => {
     const commonData = {
       checks: r.metrics.assessments,
       assessed: r.metrics.assessed,
@@ -119,7 +106,7 @@ const data = computed(() => {
           revision: {
             string: r.revisionStr,
             date: r.revisionDate,
-            isPinned: r.revisionPinned
+            isPinned: r.revisionPinned,
           },
           assetCnt: r.assets,
           ...commonData,
@@ -131,14 +118,29 @@ const data = computed(() => {
 })
 </script>
 
+<template>
+  <DataTable
+    :value="data"
+    scrollable
+    scroll-height="flex"
+    :virtual-scroller-options="{ itemSize: 45, delay: 0 }"
+    :pt="{
+      table: { style: 'min-width: 50rem; table-layout: fixed' },
+    }"
+  >
+    <template v-for="col in columns" :key="col.field">
+      <component :is="col.component" v-bind="col" style="font-size: 12px; height: 45px; width: 100px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
+    </template>
+  </DataTable>
+</template>
+
 <style scoped>
 .agg-grid-row {
-  font-size: 12px; 
-  height: 45px; 
-  width: 100px; 
-  overflow: hidden; 
-  white-space: nowrap; 
+  font-size: 12px;
+  height: 45px;
+  width: 100px;
+  overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 </style>

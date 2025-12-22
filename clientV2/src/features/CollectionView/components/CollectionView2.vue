@@ -8,9 +8,10 @@ import Tabs from 'primevue/tabs'
 import { computed, ref } from 'vue'
 import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
+import { useCollectionAssetSummary } from '../composeables/useCollectionAssetSummary.js'
 import { useDeleteCollection } from '../composeables/useDeleteCollection.js'
 import ChecklistTable from './ChecklistTable.vue'
-import StigAssetLabelTable from './StigAssetLabelTable.vue'
+import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
 const props = defineProps({
   collectionId: {
@@ -28,13 +29,8 @@ const collectionName = computed(() => selectedCollection.value?.label || selecte
 const hasCollection = computed(() => Boolean(selectedCollection.value))
 
 const { deleteCollection } = useDeleteCollection(collectionIdRef)
+const { assets: assetsSummary, isLoading, errorMessage } = useCollectionAssetSummary(collectionIdRef)
 
-const selectedBenchmarkId = ref(null)
-function handleStigSelect(benchmarkId) {
-  selectedBenchmarkId.value = benchmarkId
-}
-
-// Default active tab
 const activeTab = ref('assets')
 
 const tabsPt = {
@@ -113,20 +109,11 @@ const tabPanelPt = {
         </TabList>
         <TabPanels :pt="tabPanelsPt">
           <TabPanel value="assets" :pt="tabPanelPt">
-            <div class="assets-grid">
-              <div class="table-container">
-                <StigAssetLabelTable
-                  :collection-id="collectionId"
-                  @select-stig="handleStigSelect"
-                />
-              </div>
-              <div class="table-container">
-                <ChecklistTable
-                  :collection-id="collectionId"
-                  :benchmark-id="selectedBenchmarkId"
-                />
-              </div>
-            </div>
+            <MetricsSummaryGrid
+              :api-metrics-summary="assetsSummary"
+              :is-loading="isLoading"
+              :error-message="errorMessage"
+            />
           </TabPanel>
           <TabPanel value="dashboard" :pt="tabPanelPt">
             <CollectionMetrics :collection-id="collectionId" />
