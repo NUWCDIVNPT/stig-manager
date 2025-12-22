@@ -1,4 +1,3 @@
-import Material from '@primeuix/themes/material'
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
@@ -8,12 +7,12 @@ import AuthBootstrapError from './auth/AuthBootstrapError.vue'
 import { bootstrapAuth } from './auth/bootstrap.js'
 import { bootstrapStateWorker, useStateWorker } from './auth/useStateWorker.js'
 import ApiStateBootstrap from './components/global/ApiStateBootstrap.vue'
+import { BluePreset, MyPrimeVuePT } from './primevueTheme.js'
 import router from './router'
 import { useGlobalAppStore } from './shared/stores/globalAppStore.js'
 import { bootstrapEnv, useEnv } from './shared/stores/useEnv.js'
 import 'primeicons/primeicons.css'
 import './style.css'
-import 'primeicons/primeicons.css'
 
 // this is a dark mode override — in the future we may want to make this dynamic based on user preference?
 if (typeof document !== 'undefined') {
@@ -84,13 +83,13 @@ try {
 
     app.use(PrimeVue, {
       theme: {
-        preset: Material,
+        preset: BluePreset,
         options: {
           // Use the presence of .app-dark on <html> to enable dark mode
           darkModeSelector: '.app-dark',
         },
       },
-      // unstyled: true,
+      pt: MyPrimeVuePT,
     })
 
     app.use(VueQueryPlugin, {

@@ -176,7 +176,7 @@ function handleCancel() {
               style: {
                 outline: 'none',
                 boxShadow: 'none',
-                background: 'var(--color-primary-blue)',
+                background: 'var(--color-primary-highlight)',
               },
             },
           }"

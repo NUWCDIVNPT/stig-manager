@@ -1,54 +1,25 @@
 <script setup>
-import { computed } from 'vue'
-// import { useRouter } from 'vue-router'
-import { navTreeConfig } from '../../NavTree/composeables/navTreeConfig'
-// const router = useRouter()
+import { useStigLibraryItems } from '../composeables/useStigLibraryItems.js'
 
-const stigLibraryConfig = computed(() => {
-  return navTreeConfig.sections.find(s => s.key === 'Stig')
-})
+const { stigLibraryItems: STIG_LIBRARY_ITEMS } = useStigLibraryItems()
 
-const children = computed(() => {
-  return stigLibraryConfig.value?.children || []
-})
-
-// STIG Library children components don't have direct named routes usually,
-// they often point to 'library' route but maybe with query params or they *should* have sub-routes.
-// Looking at router/index.js, there is only '/library' -> StigLibrary.
-// And NavTreeConfig items are: StigAE, StigFM, etc.
-// The current NavTree implementation likely handles this via 'StigLibrary' component logic or props?
-// Let's check how NavTreeContent handles 'StigLibary' children.
-// Ah, checking 'componentToRoute' in NavTreeContent:
-// StigLibrary: 'library'
-// But the children (StigAE, etc) don't seem to have mappings.
-// Wait, in `navTreeConfig.js`, the children have `component: 'StigAE'`, etc.
-// In `NavTreeContent.vue`, `getNodeRoute` uses `componentToRoute`.
-// `StigAE`, `StigFM` are NOT in `componentToRoute`.
-// This implies that currently, clicking them in the tree might not do anything specific or
-// they are just organizational folders??
-// No, the user said "stig library ... main route then it shows the sub ones".
-// If the existing children don't point to unique routes, then clicking them in the current tree relies on something else?
-// Or maybe they act as filters on the library page?
-// Let's assume for now they all go to '/library' (StigLibrary component) but maybe we pass the key as a prop or query.
-// However, looking at the previous NavTree, let's see if there is any special handling.
-// There isn't. `getNodeRoute` would return null for `StigAE` etc.
-// So they might be just expandable folders in the current tree?
-// Since I don't see sub-routes for STIGs, I will make them all redirect to `/library` for now
-// possibly with a query param like `?group=AE`.
+function getRoute(item) {
+  return item.routeName ? { name: item.routeName } : null
+}
 </script>
 
 <template>
   <div class="selection-page">
     <div class="header">
-      <h1>{{ stigLibraryConfig?.label }}</h1>
+      <h1>STIG Library</h1>
     </div>
 
     <div class="grid">
       <router-link
-        v-for="item in children"
+        v-for="item in STIG_LIBRARY_ITEMS"
         :key="item.key"
         class="card"
-        :to="{ name: 'library' }"
+        :to="getRoute(item) || { name: 'library' }"
       >
         <div class="card-icon">
           <div class="icon-bg" :class="item.icon" />

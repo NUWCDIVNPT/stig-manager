@@ -4,6 +4,7 @@ import Tree from 'primevue/tree'
 import { computed, inject, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
+import { COMPONENT_TO_ROUTE_MAP, ROUTE_TO_KEY_MAP } from '../navTreeConstants.js'
 
 // nodes are items in the nav tree (collections)
 const props = defineProps({
@@ -65,36 +66,6 @@ function findNodeByKey(key, list) {
   return null
 }
 
-// Route to Key mapping (for reverse lookup: URL -> Tree Selection)
-const routeToKey = {
-  'admin-collections': 'CollectionManage',
-  'admin-users': 'UserManage',
-  'admin-user-groups': 'UserGroupManage',
-  'admin-stigs': 'StigManage',
-  'admin-service-jobs': 'ServiceJobs',
-  'admin-app-info': 'AppInfo',
-  'admin-transfer': 'ExportImportManage',
-  'library': 'StigLibrary', // This might need to be removed or updated if 'library' route is now accessed via StigLibrarySelection
-  'collections': 'Collections',
-  'app-management': 'AppManagement',
-  'stig-library': 'Stig',
-}
-
-// Component to Route mapping (for forward lookup: Tree Node -> URL)
-const componentToRoute = {
-  CollectionManage: 'admin-collections',
-  UserManage: 'admin-users',
-  UserGroupManage: 'admin-user-groups',
-  StigManage: 'admin-stigs',
-  ServiceJobs: 'admin-service-jobs',
-  AppInfo: 'admin-app-info',
-  ExportImportManage: 'admin-transfer',
-  StigLibrary: 'library',
-  CollectionSelection: 'collections',
-  AppManagementSelection: 'app-management',
-  StigLibrarySelection: 'stig-library',
-}
-
 function getNodeRoute(node) {
   if (!node) {
     return null
@@ -106,7 +77,8 @@ function getNodeRoute(node) {
   }
 
   // Admin / Static pages
-  const routeName = componentToRoute[node.component]
+  // Admin / Static pages
+  const routeName = COMPONENT_TO_ROUTE_MAP[node.component]
   if (routeName) {
     return { name: routeName }
   }
@@ -126,7 +98,7 @@ function syncRouteToSelection() {
     key = route.params.collectionId
   }
   else {
-    key = routeToKey[route.name]
+    key = ROUTE_TO_KEY_MAP[route.name]
   }
 
   if (key) {

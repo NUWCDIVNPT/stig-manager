@@ -65,12 +65,12 @@ const cls = new Classification(classification.value)
 .sm-banner-body-text {
   text-align: center;
   font:
-    bold 12px Open Sans,
+    bold 11px Open Sans,
     helvetica,
     sans-serif;
   padding-top: 1px;
-  height: 20px;
-  line-height: 20px;
+  height: 12px;
+  line-height: 12px;
 }
 .sm-banner-unclassified {
   background-color: var(--color-marking-unclassified);

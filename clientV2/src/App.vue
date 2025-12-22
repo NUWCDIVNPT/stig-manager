@@ -21,10 +21,4 @@ const globalState = useGlobalStateStore()
 </template>
 
 <style scoped>
-:root {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
 </style>
