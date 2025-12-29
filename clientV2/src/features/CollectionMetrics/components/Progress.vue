@@ -37,7 +37,6 @@ const getPct = (val) => {
   if (!stats.value || !stats.value.counts?.total) {
     return 0
   }
-  // The original logic used 7000 as a multiplier, preserving it for visual consistency
   return (val / stats.value.counts.total) * 100
 }
 
@@ -206,7 +205,7 @@ const chartOptions = {
   border-radius: 20px;
   padding: 25px;
   width: 100%;
-  max-width: 450px; /* Adjust as needed */
+  max-width: 450px;
   min-width: 350px;
 }
 
