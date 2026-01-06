@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/vue-query'
 import { computed, unref } from 'vue'
-import { collectionKeys } from '../../../shared/keys/collectionKeys.js'
-import { useEnv } from '../../../shared/stores/useEnv.js'
+import { collectionKeys } from '../keys/collectionKeys.js'
+import { useEnv } from '../stores/useEnv.js'
 
 async function fetchCollections(token) {
   const response = await fetch(`${useEnv().apiUrl}/collections`, {

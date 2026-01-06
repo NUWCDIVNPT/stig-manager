@@ -5,11 +5,12 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { computed, ref } from 'vue'
-import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
+import { computed, inject, ref, watch } from 'vue'
+import { useSelectedCollectionStore } from '../../../shared/stores/selectedCollection.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import { useCollectionAssetSummary } from '../composeables/useCollectionAssetSummary.js'
 import { useDeleteCollection } from '../composeables/useDeleteCollection.js'
+import { useCollectionQuery } from '../queries/collectionQueries.js'
 import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
 const props = defineProps({
@@ -19,12 +20,29 @@ const props = defineProps({
   },
 })
 
-const navTreeStore = useNavTreeStore()
-const { selectedData } = storeToRefs(navTreeStore)
+const selectedCollectionStore = useSelectedCollectionStore()
+const { selectedData } = storeToRefs(selectedCollectionStore)
 const storeCollection = computed(() => selectedData.value || null)
 const selectedCollection = computed(() => storeCollection.value)
 const collectionIdRef = computed(() => props.collectionId)
-const collectionName = computed(() => selectedCollection.value?.label || selectedCollection.value?.data?.name || 'Collection')
+const collectionName = computed(() => selectedCollection.value?.name || selectedCollection.value?.data?.name || 'Collection')
+
+const oidcWorker = inject('worker')
+const token = computed(() => oidcWorker?.token)
+
+// Fetch collection details to ensure we have data even on refresh
+const { collection: queryCollection } = useCollectionQuery({
+  collectionId: collectionIdRef,
+  token,
+})
+
+// Sync store with query result if store is empty or mismatches
+watch(queryCollection, (newData) => {
+  if (newData && (!selectedData.value || selectedData.value.collectionId !== newData.collectionId)) {
+    selectedCollectionStore.select(newData)
+  }
+}, { immediate: true })
+
 const hasCollection = computed(() => Boolean(selectedCollection.value))
 
 const { deleteCollection } = useDeleteCollection(collectionIdRef)
@@ -116,7 +134,7 @@ const tabPanelPt = {
             />
           </TabPanel>
           <TabPanel value="dashboard" :pt="tabPanelPt">
-            <CollectionMetrics :collection-id="collectionId" />
+            <CollectionMetrics :collection-id="collectionId" :collection-name="collectionName" />
           </TabPanel>
           <TabPanel value="users" :pt="tabPanelPt">
             <div class="placeholder-panel">

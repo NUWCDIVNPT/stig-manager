@@ -1,7 +1,7 @@
 import { computed, inject } from 'vue'
-import { useCollectionsQuery } from '../queries/navTreeQueries.js'
+import { useCollectionsQuery } from '../../../shared/queries/collectionQueries.js'
 
-export function useNavTreeData() {
+export function useCollectionsData() {
   const oidcWorker = inject('worker')
   return useCollectionsQuery(computed(() => oidcWorker?.token))
 }

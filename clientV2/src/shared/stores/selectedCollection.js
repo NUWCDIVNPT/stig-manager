@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 
 // nav tree store
 // handles navigation tree selection state
-export const useNavTreeStore = defineStore('navTree', {
+export const useSelectedCollectionStore = defineStore('selectedCollection', {
   state: () => ({
     selectedData: null,
   }),

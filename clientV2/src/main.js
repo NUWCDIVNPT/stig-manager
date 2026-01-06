@@ -33,6 +33,18 @@ const queryClient = new QueryClient({
 try {
   // bootstrap enviornment
   await bootstrapEnv()
+
+  // Register Service Worker
+  if ('serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register('/service-worker.js')
+      console.log('Service Worker registered successfully')
+    }
+    catch (err) {
+      console.error('Service Worker registration failed:', err)
+    }
+  }
+
   // Use the composable to get the reactive state ref so we can react to updates later
   const { state: reactiveState } = useStateWorker()
 
@@ -68,12 +80,21 @@ try {
 
     // Fetch user data before mounting the app
     try {
+      const loadingEl = document.getElementById('loading-text')
+      if (loadingEl) {
+        loadingEl.innerHTML += '<br/><br/>Fetching user data'
+      }
+
       const { fetchCurrentUser } = await import('./shared/api/userApi.js')
       const userData = await fetchCurrentUser(authBootResult.oidcWorker.token, useEnv().apiUrl)
       globalAppState.setUser(userData)
     }
     catch (error) {
       console.error('Failed to fetch user data:', error)
+      const loadingEl = document.getElementById('loading-text')
+      if (loadingEl) {
+        loadingEl.innerHTML += '<br/><br/>Error Fetching user data'
+      }
       const errApp = createApp(AuthBootstrapError, {
         details: `Failed to fetch user data: ${error.message || 'Unknown error'}`,
       })

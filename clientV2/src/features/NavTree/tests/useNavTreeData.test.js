@@ -2,11 +2,11 @@ import { screen, waitFor } from '@testing-library/vue'
 import { delay, http, HttpResponse } from 'msw'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { server } from '@/testUtils/testServer'
+import { useCollectionsData } from '../../../shared/queries/useCollectionsData'
 import { renderWithProviders } from '../../../testUtils/utils'
-import { useNavTreeData } from '../composeables/useNavTreeData'
 import { navTreeHandlers } from '../mocks/navTree.handler'
 
-// Mock useEnv so useNavTreeData hits /api/collections (handled by MSW)
+// Mock useEnv so useCollectionsData hits /api/collections (handled by MSW)
 vi.mock('../../../shared/stores/useEnv', () => ({
   useEnv: () => ({ apiUrl: '/api' }),
 }))
@@ -26,14 +26,14 @@ function renderHookComponent(options = {}) {
       </div>
     `,
     setup() {
-      return useNavTreeData()
+      return useCollectionsData()
     },
   }
 
   return renderWithProviders(Comp, { workerToken: 'TEST_TOKEN', withPrimeVue: false, ...options })
 }
 
-describe('useNavTreeData (MSW only)', () => {
+describe('useCollectionsData (MSW only)', () => {
   it('shows loading=true while fetching, then flips to false', async () => {
     server.use(
       http.get('/api/collections', async () => {

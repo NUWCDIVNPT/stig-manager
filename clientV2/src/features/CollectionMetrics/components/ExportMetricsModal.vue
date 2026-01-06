@@ -4,7 +4,9 @@ import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
 import RadioButton from 'primevue/radiobutton'
 import Select from 'primevue/select'
-import { computed, defineEmits, defineProps, ref, watch } from 'vue'
+import { computed, defineProps, inject, ref, watch } from 'vue'
+import { useEnv } from '../../../shared/stores/useEnv.js'
+import { handleInventoryExport } from '../exportMetricsUtils.js'
 
 const props = defineProps({
   visible: {
@@ -15,6 +17,11 @@ const props = defineProps({
     type: String,
     required: false,
     default: null,
+  },
+  collectionName: {
+    type: String,
+    required: false,
+    default: 'collection',
   },
 })
 
@@ -138,16 +145,21 @@ const dialogPt = {
   },
 }
 
-function handleDownload() {
-  const exportOptions = {
+const oidcWorker = inject('worker')
+
+async function handleDownload() {
+  await handleInventoryExport({
     groupBy: groupBy.value,
     format: format.value,
     csvFields: csvFields.value,
     delimiter: delimiter.value,
     include: include.value,
     prettyPrint: prettyPrint.value,
-  }
-  console.log(`Downloading metrics for collection ${props.collectionId}:`, exportOptions)
+    collectionId: props.collectionId,
+    collectionName: props.collectionName,
+    apiUrl: useEnv().apiUrl,
+    authToken: oidcWorker.token,
+  })
   emit('update:visible', false)
 }
 </script>

@@ -1,21 +1,26 @@
 <script setup>
 import { computed, inject, ref } from 'vue'
+
 import { useCollectionCora } from '../composables/useCollectionCora.js'
 import { useCollectionProgress } from '../composables/useCollectionProgress.js'
-import { useCollectionStats } from '../composables/useCollectionStats.js'
 
+import { useCollectionStats } from '../composables/useCollectionStats.js'
 import { useCollectionMetricsSummaryQuery } from '../queries/metricsQueries.js'
 import Cora from './Cora.vue'
 import ExportMetrics from './ExportMetrics.vue'
 import ExportMetricsModal from './ExportMetricsModal.vue'
 import FindingsStats from './FindingsStats.vue'
 import InventoryStats from './InventoryStats.vue'
-import Progress from './Progress.vue'
 
+import Progress from './Progress.vue'
 import ReviewAgesStats from './ReviewAgesStats.vue'
 
 const props = defineProps({
   collectionId: {
+    type: String,
+    required: true,
+  },
+  collectionName: {
     type: String,
     required: true,
   },
@@ -33,10 +38,6 @@ const { coraData } = useCollectionCora(metrics)
 const { inventory, findings, ages } = useCollectionStats(metrics)
 
 const showExportModal = ref(false)
-
-const handleDownload = () => {
-  console.log('Download metrics')
-}
 </script>
 
 <template>
@@ -55,8 +56,8 @@ const handleDownload = () => {
         <FindingsStats :findings="findings" />
         <ReviewAgesStats :ages="ages" />
       </div>
-      <ExportMetrics @download="handleDownload" />
-      <ExportMetricsModal v-model:visible="showExportModal" :collection-id="props.collectionId" />
+      <ExportMetrics :collection-id="props.collectionId" :collection-name="props.collectionName" />
+      <ExportMetricsModal v-model:visible="showExportModal" :collection-id="props.collectionId" :collection-name="props.collectionName" />
     </div>
   </div>
 </template>

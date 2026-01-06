@@ -3,6 +3,22 @@ import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import ExportMetrics from '../components/ExportMetrics.vue'
 
+// Mock useEnv
+vi.mock('../../../../src/shared/stores/useEnv.js', () => ({
+  useEnv: () => ({
+    apiUrl: 'http://test-api',
+  }),
+}))
+
+// Mock the utility
+const { handleDownloadMock } = vi.hoisted(() => ({
+  handleDownloadMock: vi.fn(),
+}))
+
+vi.mock('../exportMetricsUtils.js', () => ({
+  handleDownload: handleDownloadMock,
+}))
+
 // Mock matchMedia for PrimeVue Select component
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -10,8 +26,6 @@ Object.defineProperty(window, 'matchMedia', {
     matches: false,
     media: query,
     onchange: null,
-    addListener: vi.fn(), // deprecated
-    removeListener: vi.fn(), // deprecated
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
@@ -20,7 +34,12 @@ Object.defineProperty(window, 'matchMedia', {
 
 describe('exportMetrics', () => {
   it('renders correctly', () => {
-    renderWithProviders(ExportMetrics)
+    renderWithProviders(ExportMetrics, {
+      props: {
+        collectionId: '123',
+        collectionName: 'MyCollection',
+      },
+    })
 
     // Check Title
     expect(document.querySelector('.title')).toHaveTextContent('Export Metrics')
@@ -36,8 +55,13 @@ describe('exportMetrics', () => {
     expect(downloadBtn).toHaveTextContent('Download')
   })
 
-  it('emits download event when download button is clicked', async () => {
-    const { emitted } = renderWithProviders(ExportMetrics)
+  it('calls handleDownload from composable when download button is clicked', async () => {
+    renderWithProviders(ExportMetrics, {
+      props: {
+        collectionId: '123',
+        collectionName: 'MyCollection',
+      },
+    })
     const user = userEvent.setup()
 
     const downloadBtn = document.querySelector('.download-button')
@@ -45,7 +69,10 @@ describe('exportMetrics', () => {
 
     await user.click(downloadBtn)
 
-    expect(emitted().download).toBeTruthy()
-    expect(emitted().download.length).toBe(1)
+    expect(handleDownloadMock).toHaveBeenCalledTimes(1)
+    expect(handleDownloadMock).toHaveBeenCalledWith(expect.objectContaining({
+      collectionId: '123',
+      collectionName: 'MyCollection',
+    }))
   })
 })
