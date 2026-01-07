@@ -35,7 +35,7 @@ The JWT produced by the Identity Provider should provide the claims specified be
 
    * **Username**, **Name**, **Email**, **Assertion ID**, **Service Name**: String
    * **Scope**: A space-separated string per OAuth 2.0 RFC 6749 (e.g., ``"openid stig-manager:collection stig-manager:stig:read"``)
-   * **Privileges**: An array of strings (e.g., ``["admin", "create_collection"]``). 
+   * **Privileges**: An array of strings (e.g., ``["admin", "create_collection"]``) or ``null``. 
    * **Audience**: String or array of strings. If ``STIGMAN_JWT_AUD_VALUE`` is set, it must be present in the ``aud`` claim value.
 
 .. note::
