@@ -6,6 +6,7 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { computed, inject, ref, watch } from 'vue'
 import CloseButton from '../../../components/common/CloseButton.vue'
+import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { collectionKeys } from '../../../shared/keys/collectionKeys.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 
@@ -82,8 +83,8 @@ async function handleSubmit() {
     visible.value = false
   }
   catch (error) {
-    console.error(error)
-    errorMessage.value = error.message || 'Unable to create collection.'
+    const { triggerError } = useGlobalError()
+    triggerError(error)
   }
   finally {
     isSubmitting.value = false

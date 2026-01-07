@@ -1,4 +1,5 @@
 import { saveAs } from 'file-saver-es'
+import { useGlobalError } from '../../shared/composables/useGlobalError.js'
 import { filenameEscaped } from '../../shared/lib.js'
 import { getDownloadUrl } from '../../shared/serviceWorker.js'
 
@@ -62,8 +63,8 @@ export async function handleDownload({
     saveAs(blob, filename)
   }
   catch (error) {
-    console.error('Download failed:', error)
-    throw error // Re-throw so caller can handle if needed
+    const { triggerError } = useGlobalError()
+    triggerError(error)
   }
 }
 
@@ -188,6 +189,7 @@ export async function handleInventoryExport({
   const timestamp = filenameComponentFromDate()
   const groupLabel = groupBy === 'stig' ? 'Stig' : 'Asset'
   const filename = filenameEscaped(`${collectionName}_InventoryBy${groupLabel}_${timestamp}.${fileExtension}`)
-
+  const { triggerError } = useGlobalError()
+  triggerError(error)
   saveAs(downloadData, filename)
 }

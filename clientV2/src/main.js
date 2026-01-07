@@ -9,6 +9,7 @@ import { bootstrapStateWorker, useStateWorker } from './auth/useStateWorker.js'
 import ApiStateBootstrap from './components/global/ApiStateBootstrap.vue'
 import { BluePreset, MyPrimeVuePT } from './primevueTheme.js'
 import router from './router'
+import { useGlobalError } from './shared/composables/useGlobalError.js'
 import { useGlobalAppStore } from './shared/stores/globalAppStore.js'
 import { bootstrapEnv, useEnv } from './shared/stores/useEnv.js'
 import 'primeicons/primeicons.css'
@@ -72,6 +73,14 @@ try {
   // helper to mount the real app (requires an auth boot result)
   const mountApp = async (authBootResult) => {
     const app = createApp(App)
+
+    // Global Error Handler
+    const { triggerError } = useGlobalError()
+    app.config.errorHandler = (err, instance, info) => {
+      console.error('Unhandled Global Error:', err, info)
+      triggerError(err)
+    }
+
     app.use(pinia)
 
     // set classification in global app state from env
