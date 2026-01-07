@@ -29,7 +29,7 @@
   /* Metrics Status Chart Colors */
   --metrics-status-chart-assessed: hsl(204, 91%, 29%);
   --metrics-status-chart-submitted: hsl(41, 66%, 46%);
-  --metrics-status-chart-accepted: hsl(146, 92%, 34%);
+  --metrics-status-chart-accepted: hsl(146, 93%, 27%);
   --metrics-status-chart-unassessed: hsl(0 0% 18% / 1);
   --metrics-status-chart-unsaved: hsl(0deg 0% 18%);
   --metrics-status-chart-rejected: hsl(5, 89%, 32%);
@@ -49,19 +49,19 @@
 
 /* CORA Risk Gradients */
 .sm-cora-risk-very-high {
-  background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
+  background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
 }
 .sm-cora-risk-high {
-  background: linear-gradient(135deg, #9a3412 0%, #7c2d12 100%); 
+  background: linear-gradient(135deg, #c2410c 0%, #7c2d12 100%); 
 }
 .sm-cora-risk-moderate {
-  background: linear-gradient(135deg, #854d0e 0%, #713f12 100%);
+  background: linear-gradient(135deg, #ca8a04 0%, #713f12 100%);
 }
 .sm-cora-risk-low {
-  background: linear-gradient(135deg, #14532d 0%, #052e16 100%);
+  background: linear-gradient(135deg, #15803d 0%, #14532d 100%);
 }
 .sm-cora-risk-very-low {
-  background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%); 
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%); 
 }
 
 

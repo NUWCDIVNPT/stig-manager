@@ -135,13 +135,16 @@ const dialogPt = {
     style: 'background-color: #18181b; border: 1px solid #3f3f46; border-radius: 6px; color: #e4e4e7; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);',
   },
   header: {
-    style: 'background-color: #18181b; color: #e4e4e7; border-top-left-radius: 6px; border-top-right-radius: 6px; padding: 1.25rem; border-bottom: 1px solid #27272a;',
+    style: 'background-color: #18181b; color: #e4e4e7; border-top-left-radius: 6px; border-top-right-radius: 6px; padding: 1rem; border-bottom: 1px solid #27272a;',
   },
   content: {
     style: 'background-color: #18181b; color: #e4e4e7; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; padding: 1.5rem;',
   },
   closeButton: {
     style: 'color: #a1a1aa;',
+  },
+  title: {
+    style: 'font-size: 16px; font-weight: 600;',
   },
 }
 

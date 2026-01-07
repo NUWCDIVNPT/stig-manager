@@ -120,9 +120,7 @@ async function fetchApiDataAsText({ groupBy, includeProjection, apiUrl, collecti
 export function apiToCsv(apiData, csvFields) {
   // Function to apply double-quote escaping
   const quotify = string => `"${string.replace(/"/g, '""')}"`
-  // Initialize data
   const csvData = []
-  // Header
   const header = []
   for (const field of csvFields) {
     header.push(quotify(field.header))
