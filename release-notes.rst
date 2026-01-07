@@ -1,3 +1,12 @@
+1.6.0
+-------
+
+Changes:
+
+  - (Docs) Update license/contributors for 2025
+  - (Docs) Describe token value format requirements
+  - (Dependencies) chore: Update API dependencies
+
 1.5.17
 -------
 
