@@ -4,10 +4,10 @@
 
 ## Signed-off-by
 
-- Copyright 2020-2025 U.S. Federal Government (in countries where recognized)
-- Copyright 2020-2025 Carl Smigielski, carl.a.smigielski@saic.com
-- Copyright 2020-2025 Christopher Daley, cdaley@rite-solutions.com
-- Copyright 2023-2025 Mathew Ferreira, mferreira@rite-solutions.com
+- Copyright 2020-2026 U.S. Federal Government (in countries where recognized)
+- Copyright 2020-2026 Carl Smigielski, carl.a.smigielski@saic.com
+- Copyright 2020-2026 Christopher Daley, cdaley@rite-solutions.com
+- Copyright 2023-2026 Mathew Ferreira, mferreira@rite-solutions.com
 - Copyright 2021 Russell Johnson, russell.d.johnson@saic.com
 - Copyright 2024 Rajesh Shrestha, rshrestha@rite-solutions.com
 - Copyright 2024 David Whalen, david.whalen@usmc.mil
