@@ -2,92 +2,84 @@
 
 Legend: `[x]` done | `[~]` partial | `[ ]` todo | `[?]` needs design
 
+Folders: `Proposed` or `Proposed` ← `Current` if renaming
+
 ---
 
-## Admin Features
-- [ ] AdminCollections (create/delete, high-level properties and grants)
-- [ ] AdminUsers
-- [ ] AdminUserGroups
-- [ ] AdminSTIGs
-- [ ] AdminServiceJobs
-- [ ] AdminAppInfo
-- [ ] AdminLogStream
-- [ ] AdminAppData (import/export)
+## Admin Features → `Admin/`
+- [ ] Collections — `Admin/Collections`
+- [ ] Users — `Admin/Users` ← `UserManage`
+- [ ] User Groups — `Admin/UserGroups` ← `UserGroupManage`
+- [ ] STIGs — `Admin/STIGs` ← `STIGManage`
+- [ ] Service Jobs — `Admin/ServiceJobs` ← `ServiceJobs`
+- [ ] App Info — `Admin/AppInfo` ← `AppInfo`
+- [ ] Log Stream — `Admin/LogStream`
+- [ ] AppData (import/export) — `Admin/AppData` ← `ExportImportManage`
 
-## App Shell
-- [~] Home
-- [x] Classification Banner
-- [~] Nav Tree
-- [~] Menu Bar
-- [~] Tab System
+## App Shell (flat)
+- [~] Home — `Home`
+- [x] Classification Banner — `components/global/`
+- [~] Nav Tree — `NavTree`
+- [~] Menu Bar — `MenuBar`
+- [~] Tab System — `TabList`
 
-## User Features
+## User Features → `UserProfile`
 - [ ] Preferences
 - [ ] Token Display
 - [ ] Logout
 
-## STIG Library
-- [ ] STIG Browser
-- [ ] STIG Differ
-- [ ] STIG Search
+## STIG Library → `STIGLibrary/`
+- [ ] Browser — `STIGLibrary/Browser` ← `STIGLibrary`
+- [ ] Differ — `STIGLibrary/Differ`
+- [ ] Search — `STIGLibrary/Search`
 
-## Collection Dashboard
-- [~] Overview (Inventory, CORA, progress, ages, findings, import/export)
+## Collection Dashboard — `CollectionDashboard` ← `CollectionView`
+- [~] Overview (Inventory, CORA, progress, ages, findings, import/export) - `CollectionOverview`
 - [ ] Filter overview and Metrics by label(s)
-- [ ] Metrics By STIG (agg)
-  - [ ] Assets grid (unagg)
-- [ ] Metrics By Asset (agg)
-  - [ ] STIGs grid (unagg)
-- [ ] Metrics By Label (agg)
-  - [ ] Assets grid (agg)
-    - [ ] STIGs grid (unagg)
+- [ ] Metrics By STIG (agg) - `MetricsSummaryGrid`
+  - [ ] Assets grid (unagg) - `MetricsSummaryGrid`
+- [ ] Metrics By Asset (agg) - `MetricsSummaryGrid`
+  - [ ] STIGs grid (unagg) - `MetricsSummaryGrid`
+- [ ] Metrics By Label (agg) - `MetricsSummaryGrid`
+  - [ ] Assets grid (agg) - `MetricsSummaryGrid`
+    - [ ] STIGs grid (unagg) - `MetricsSummaryGrid`
 
-## Meta Dashboard
-- [ ] Overview (Inventory, CORA, progress, ages, findings, import/export)
+## Meta Dashboard — `MetaDashboard` ← `CollectionSelection` (or keep as is and invoke metaCollection view from there?)
+- [ ] Overview (Inventory, CORA, progress, ages, findings, import/export) - `MetaCollectionOverview`
 - [ ] Filter overview and Metrics by Collection(s)
-- [ ] Metrics By Collection (agg)
-  - [ ] STIGs grid (agg)
-    - [ ] Assets grid (unagg)
-- [ ] Metrics By STIG (agg)
-  - [ ] Collections grid (agg)
-    - [ ] Assets grid (unagg)
+- [ ] Metrics By Collection (agg) - `MetricsSummaryGrid`
+  - [ ] STIGs grid (agg) - `MetricsSummaryGrid`
+    - [ ] Assets grid (unagg) - `MetricsSummaryGrid`
+- [ ] Metrics By STIG (agg) - `MetricsSummaryGrid`
+  - [ ] Collections grid (agg) - `MetricsSummaryGrid`
+    - [ ] Assets grid (unagg) - `MetricsSummaryGrid`
 
-## Collection Features
-- [ ] Asset Review (single asset, navigate by rules in assigned STIGs)
+## Collection Features (flat)
+- [ ] Asset Review — `AssetReview`
   - [ ] Rule table
   - [ ] Rule Info panel
   - [ ] Review Resources panel
   - [ ] Edit Reviews (in-line or in panel)
-- [ ] Collection Review (single STIG across collection, navigate by rules)
+- [ ] Collection Review — `CollectionReview`
   - [ ] Rule Table
-  - [ ] Reviews grid (all assets in collection for selected rule)
+  - [ ] Reviews grid (all assets for selected rule)
   - [ ] Rule Info panel
   - [ ] Inline review editing
-- [ ] Findings
+- [ ] Findings — `Findings`
   - [ ] Findings aggregated by Rule/Group/CCI
   - [ ] Assets grid (individual assets with selected finding)
-- [ ] Collection Management (Not necessarily its own tab, but this set of features will only be presented to users with Manage/Owner privileges)
+- [ ] Collection Management — `CollectionManagement` ← `CollectionManage`
   - [ ] Properties (name, description, metadata, workflow)
   - [ ] Grants (direct user grants)
   - [ ] Access Control Rules
   - [ ] Labels (manage/assign collection labels)
-  - [ ] Assets (CRUD, labels)
-  - [ ] STIGs (assign/unassign)
-- [ ] Checklist Import Wizard
-- [ ] Checklist Export
+  - [ ] Assets (CRUD, labels)  - `MetricsSummaryGrid`
+  - [ ] STIGs (assign/unassign) - `MetricsSummaryGrid`
+- [ ] Checklist Import — `ChecklistImport`
+- [ ] Checklist Export — `ChecklistExport`
 
-## Cross-Cutting
-- [ ] Create Collection
-- [ ] Grants (user + admin contexts)
+## Cross-Cutting → `components/common/`
+- [ ] Create Collection wizard
+- [ ] Grants panel
 - [ ] Rule/Check Info Panel
-- [ ] Filtering by labels (stigs, etc?)
-
----
-
-## Naming Convention (folder structure)
-
-| Scope | Pattern | Examples |
-|-------|---------|----------|
-| Admin (app-level) | `Admin*` | `AdminCollections`, `AdminUsers`, `AdminSTIGs` |
-| Collection-level | `Collection*` | `CollectionSettings`, `CollectionReview` |
-| Entity-focused | `[Entity][Action]` | `AssetReview`, `ChecklistImport` |
+- [ ] Label filter

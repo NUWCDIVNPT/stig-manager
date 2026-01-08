@@ -192,8 +192,8 @@ Dual-panel patterns for managing relationships.
 - **RuleInfoPanel** - Discussion, documentable flag, CCIs/controls
 - **DetailedChangesPanel** - Diff view for rule comparison
 
-### Display Panels
-- **JsonPanel** - Formatted JSON with syntax highlighting
+### JSON Display Panel
+- **JsonPanel** - Formatted JSON with syntax highlighting (token, appInfo, logStream)
 
 ### Action Panels
 - **ImportProgress** - CKL/SCAP import progress
@@ -206,14 +206,14 @@ Dual-panel patterns for managing relationships.
 
 ```javascript
 // formatters.js
-formatDuration(date)      // → "5 d", "2 h", "now"
-formatPercent(value)      // → "< 1%", "50%", "> 99%"
-formatTooltipList(items)  // → "Item1, Item2, +3 more"
+formatDuration(date) // → "5 d", "2 h", "now"
+formatPercent(value) // → "< 1%", "50%", "> 99%"
+formatTooltipList(items) // → "Item1, Item2, +3 more"
 
 // severity.js
-getSeverityColor(cat)     // Cat I/II/III → color
-getCoraSeverity(rating)   // Very Low → success, Very High → danger
-getHttpSeverity(code)     // 200 → success, 500 → danger
+getSeverityColor(cat) // Cat I/II/III → color
+getCoraSeverity(rating) // Very Low → success, Very High → danger
+getHttpSeverity(code) // 200 → success, 500 → danger
 getResultSeverity(result) // Pass → success, Fail → danger
-getStatusIcon(status)     // Saved → pi-save, etc.
+getStatusIcon(status) // Saved → pi-save, etc.
 ```
