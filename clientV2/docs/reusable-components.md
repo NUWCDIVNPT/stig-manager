@@ -1,114 +1,219 @@
-# STIG Manager Client - Components
+# Reusable Components
 
-Outlines common component types used in the current client, and how they might map into the new client.
+Component patterns for the new client. Candidates for implementation as we develop.
 
+**Legend:**
+- **Native** - PrimeVue handles this; just use `#body` template + helper function
+- **Wrapper** - Custom component wrapping PrimeVue Column
+- **Shared** - Sub-component used by multiple columns/features
 
-## Columns for Data Tables:
+---
 
-### Columns:
-- **AssetColumn**: Displays asset names.
-- **CountColumn**: Displays a simple count value. (ie. Asset count)
-- **DurationColumn**: Displays duration values in a human-readable format.
-- **PercentageColumn**: Displays percentage values.
+## Proposed Structure
 
-### complex columns (in cd experimental branch):
-- **AssetWithLabelsColumn**: Displays asset names along with their associated label on a sub-row.If truncated, adds a "+N" badge with a tooltip showing truncated labels.
-- **CountColumnWithTooltip**: Displays a count with a tooltip listing counted items. (ie. STIG IDs, Collections IDs, User Grants, group users, findings: assets)
-- **LabelsColumnWithTooltip**: Displays a list of labels associated with an item. (ie. Asset labels, ) If truncated, adds a "+N" badge with a tooltip showing all labels.
+```
+src/
+├── components/
+│   ├── common/          # Small reusable pieces
+│   │   ├── LabelsRow.vue        # Shared: label badges with overflow
+│   │   ├── SeverityBadge.vue    # Shared: Cat I/II/III styled badge
+│   │   ├── CORABadge.vue        # Shared: risk rating with color
+│   │   └── ...
+│   ├── columns/         # Reusable table columns
+│   │   ├── DurationColumn.vue
+│   │   ├── PercentageColumn.vue
+│   │   ├── AssetWithLabelsColumn.vue
+│   │   └── ...
+│   └── global/          # App-wide singletons (Banner, Overlay)
+├── shared/
+│   └── lib/             # Helper functions
+│       ├── formatters.js        # formatDuration, formatPercent
+│       └── severity.js          # getSeverityColor, getCoraSeverity
+```
 
+---
 
-### Possible additional column types:
-- **ListColumnInline**: Displays a list of items in a cell. (stig management:"earl  ier revisions")
-- **ListColumnNewline**: Displays a list of items in a cell. (ie. CCIs; service jobs: "tasks",schedule, last run, findings: stigs)
-- **SingleLabelColumn**: Displays a single label in a cell. Could just be label Column. (label management, metrics labels tab)
-- **iconColumn**: Displays an icon (with optional tooltip). (ie. asset type icon in asset table)
-- **DataWithBadgeColumn**: Displays benchmark name with badge showing classification, type (stig management:"benchmarks", effective grants (icon, not badge...))
-- **BadgeColumn**: Displays N items in badges. (stig diff:"changed properties", stig status,)
-- **ActionColumn**: Displays action buttons. (ie. history, attachments, edit, delete)
+## Column Components
 
-### "Status" Columns:
-- **ResponseCodeColumn**: Displays status with color coding. (service jobs: ie. 500 = red, 200 = green)
-- **resultColumn**: Displays results
-- **ResultOriginColumn**: Displays result origin icon (user/engine) with color coding, popover. (stig scan results: ie. manual = blue, automated = green)
-- **ReviewStatusColumn**: Displays review status icon
+### Native (PrimeVue `#body` template + helper)
 
+These don't need wrapper components—just inline templates with helper functions.
 
-### multi-line Columns:
-#### specific:
-- **AssetWithLabelsColumn**: Displays asset names along with their associated label on a sub-row. If truncated, adds a "+N" badge with a tooltip showing truncated labels.
-#### generic?:
-- **RowAndSubRow**: pattern for displaying additional information related to the main cell content.
-  ie.:
-  - **labelAndStig** - ACL rule table 
-  - **AssetAndStig** - ACL rule table 
-  - **usernameAndDisplayname** - grant management (username and display name)
-  - **UserWithEmailColumn**: Displays user names along with their email on a sub-row. (grantee)
+| Pattern | Template Example | Helper Needed |
+|---------|------------------|---------------|
+| CountColumn | `{{ data.count }}` | none |
+| CountWithTooltip | `<span v-tooltip="itemList">{{ count }}</span>` | `formatTooltipList()` |
+| IconColumn | `<i :class="getIcon(data)" v-tooltip="label" />` | `getIconClass()` |
+| ResponseCodeColumn | `<Tag :severity="getHttpSeverity(code)">{{ code }}</Tag>` | `getHttpSeverity()` |
+| ResultColumn | `<Tag :severity="getResultSeverity(result)">{{ result }}</Tag>` | `getResultSeverity()` |
+| ReviewStatusColumn | `<i :class="getStatusIcon(status)" />` | `getStatusIcon()` |
+| BadgeColumn | `<Tag v-for="item in items" ...>` | none |
+| DataWithBadgeColumn | `{{ name }} <Tag>{{ classification }}</Tag>` | none |
+| ListInline | `{{ items.join(', ') }}` | none |
+| ListNewline | `<div v-for="item in items">{{ item }}</div>` | none |
+| ActionColumn | `<Button icon="pi pi-pencil" @click="edit" />...` | none |
 
+### Wrapper Components (Custom Column components)
 
-### Column Header: 
-- with info icon and tooltip (collection review)
-- sorting
-- filtering
-- checkbox selection
+These warrant dedicated `.vue` files for reuse and consistency.
 
-### column with reactive Cells:
--  cell background (collection review stats (ie. O-red, NF-green, stats-neutral))
+| Column | Why Wrapper | Shared Sub-components |
+|--------|-------------|----------------------|
+| **DurationColumn** | Complex relative time logic ("5 d", "2 h", "now") | `formatDuration()` helper |
+| **PercentageColumn** | Custom thermometer visualization | none |
+| **SeverityCountColumn** | Count + severity-appropriate color styling | `SeverityBadge` |
+| **CORAColumn** | Risk badge with color + explanatory tooltip | `CORABadge` |
+| **AssetWithLabelsColumn** | Asset name + labels sub-row | `LabelsRow` |
+| **UserWithEmailColumn** | Username + email sub-row | none (or generic `SubRowColumn`) |
+| **LabelsColumn** | Label badges with "+N" overflow tooltip | `LabelsRow` |
+| **SingleLabelColumn** | Single styled label badge | `LabelBadge` |
+| **ResultOriginColumn** | Icon + color + popover (more than just icon) | none |
 
+### Multi-Row Pattern
 
+For columns with main content + sub-row, consider a generic pattern:
 
+```vue
+<!-- SubRowColumn.vue -->
+<Column :field="field" :header="header">
+  <template #body="{ data }">
+    <div class="main-row">{{ getMain(data) }}</div>
+    <div class="sub-row text-muted">{{ getSub(data) }}</div>
+  </template>
+</Column>
+```
 
-## Rows:
-- checkbox row
-- in-line editable row
+Usage examples:
+- Asset + Labels
+- User + Email
+- Username + Display Name
+- Label + STIG (ACL rules)
+- Asset + STIG (ACL rules)
 
-### Expandable:
-- **ExpandableReviewRow**:  Review columns plus review detail/Comment/statusUser/statusText in expanded content (review history, findings: individual findings, could also be used for "other assets?")
+---
 
-## Table Footer:
-- refresh
-- csv export
-- totals badges (saved/submitted/approved/O/NA/NF) with tooltips
-- totals badges w/icon and tooltips
-- displayed/total row count
+## Shared Sub-Components
 
-### Badges/icons content:
-- Severity Category - stig library, stig diff,
-- Severity Count - metrics,
-- CORA Risk Rating - metrics,
-- Classification - benchmark display, stig management (badges on benchmark names)
-- result badges
-- status icons
-- review origin icons
+Small pieces used inside columns AND in other contexts (dashboards, panels).
 
+| Component | Description | Used By |
+|-----------|-------------|---------|
+| **LabelsRow** | Label badges, "+N" overflow with tooltip | LabelsColumn, AssetWithLabelsColumn, dashboard panels |
+| **SeverityBadge** | Cat I/II/III with appropriate color | SeverityColumn, SeverityCountColumn, rule displays |
+| **CORABadge** | Risk rating (Very Low → Very High) with color | CORAColumn, dashboard Overview panel |
+| **LabelBadge** | Single styled label | SingleLabelColumn, various |
+| **ClassificationBadge** | Security classification styling | DataWithBadgeColumn (benchmarks) |
 
-## Assignment Interfaces:
+---
 
-user group membership:
-- table left (users/groups), table right (groups/users)
+## PrimeVue Native Features
 
-direct grants, stig assignments:
-- table left (collection), table right (collection)
-- table left (assets/stigs), table right (stigs/assets)
+Don't reinvent these—use PrimeVue's built-in capabilities.
 
-ACL rules:
-- tree on left, table on right
+| Feature | PrimeVue Approach |
+|---------|-------------------|
+| **Row expansion** | `v-model:expandedRows` + `#expansion` template |
+| **Cell editing** | `editMode="cell"` + `#editor` template |
+| **Tooltips** | `v-tooltip` directive (positioning, delays, custom styling) |
+| **Severity colors** | `<Tag severity="danger/warn/success/info">` |
+| **Row styling** | `:rowClass` or `:rowStyle` props |
+| **Cell background** | Dynamic classes in `#body` template |
+| **Sorting** | Native Column `sortable` prop |
+| **Filtering** | Native + custom `#filter` template |
+| **Checkbox selection** | Native `selectionMode="multiple"` |
+| **Header info icon** | Custom `#header` template with icon + tooltip |
 
+---
 
-## Panels:
+## Column Features
 
-### Rule/Check content panel
-- **RuleCheckPanel**: Manual Check/Fix panel
-- **RuleOtherInfoPanel**: Discussion, documentable, controls
-- **DetailedChanges**: Diffs panel in rule comparision view
+### Header Options (Native PrimeVue)
+- Sorting: `sortable` prop
+- Filtering: `#filter` template
+- Checkbox: Column with `selectionMode`
+- Info tooltip: `#header` template + `v-tooltip`
 
-### JSON Object Tree display:
-- **JsonObjectPanel**: Displays a JSON object in a formatted panel with syntax highlighting. (last claims, API responses, app info json)
+### Cell Options (via `#body` template)
+- Background color: dynamic `:class` binding
+- Reactive styling: computed classes based on data
 
-### Panels with header actions:
-- **Progress**: import ckl/scap
-- **Inventory**: export/manage
-- **findings**: details
+---
 
+## Row Components
 
+| Row Type | Implementation |
+|----------|---------------|
+| Checkbox row | Native: `selectionMode="multiple"` |
+| Editable row | Native: `editMode="row"` + `#editor` templates |
+| ExpandableReviewRow | Native: `#expansion` template with review detail content |
 
+---
 
+## Table Footer
+
+- Refresh button: `#footer` template
+- CSV export: `#footer` template + export logic
+- Row count: `#footer` template with `{{ data.length }}`
+- Totals badges: `#footer` template with Tag components
+
+---
+
+## Badges & Icons (Shared Components)
+
+| Component | Variants | Usage Context |
+|-----------|----------|---------------|
+| SeverityBadge | Cat I (high), Cat II (medium), Cat III (low) | Rules, findings, metrics |
+| SeverityCount | Count styled for severity level | Metrics columns |
+| CORABadge | Very Low, Low, Moderate, High, Very High | Dashboard, metrics |
+| ClassificationBadge | U, CUI, C, S, TS, etc. | Benchmarks |
+| ResultBadge | Pass, Fail, Other, etc. | Reviews |
+| StatusIcon | Saved, Submitted, Accepted, Rejected | Reviews |
+| OriginIcon | Manual, Automated | Reviews |
+
+---
+
+## Assignment Interfaces
+
+Dual-panel patterns for managing relationships.
+
+| Pattern | Left Panel | Right Panel | Usage |
+|---------|------------|-------------|-------|
+| Group membership | Users grid | Groups grid (or inverse) | User group management |
+| STIG assignment | Assets grid | STIGs grid | Collection settings |
+| Grants | Collection users | Available users | Collection grants |
+| ACL rules | Nav tree | Rules grid | Access control |
+
+---
+
+## Panels
+
+### Rule/Check Panels
+- **RuleCheckPanel** - Manual check/fix text
+- **RuleInfoPanel** - Discussion, documentable flag, CCIs/controls
+- **DetailedChangesPanel** - Diff view for rule comparison
+
+### Display Panels
+- **JsonPanel** - Formatted JSON with syntax highlighting
+
+### Action Panels
+- **ImportProgress** - CKL/SCAP import progress
+- **InventoryPanel** - Export/manage actions
+- **FindingsPanel** - Finding details
+
+---
+
+## Helper Functions (`src/shared/lib/`)
+
+```javascript
+// formatters.js
+formatDuration(date)      // → "5 d", "2 h", "now"
+formatPercent(value)      // → "< 1%", "50%", "> 99%"
+formatTooltipList(items)  // → "Item1, Item2, +3 more"
+
+// severity.js
+getSeverityColor(cat)     // Cat I/II/III → color
+getCoraSeverity(rating)   // Very Low → success, Very High → danger
+getHttpSeverity(code)     // 200 → success, 500 → danger
+getResultSeverity(result) // Pass → success, Fail → danger
+getStatusIcon(status)     // Saved → pi-save, etc.
+```
