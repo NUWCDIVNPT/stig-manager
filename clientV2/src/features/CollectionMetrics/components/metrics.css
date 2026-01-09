@@ -1,0 +1,79 @@
+/* Shared styles for Collection Metrics components */
+.metric-card {
+  background-color: #18181b;
+  color: #e4e4e7;
+  border-radius: 20px;
+  padding: 15px;
+  width: 100%;
+  max-width: 400px;
+  min-width: 320px;
+  border: 1px solid #2a2a2d;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.metric-card.large {
+  max-width: 450px;
+  min-width: 350px;
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.metric-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+}
+
+.metric-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.metric-action-link {
+  font-size: 12px;
+  color: #71717a;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.metric-action-link:hover {
+  color: #a1a1aa;
+}
+
+.metric-badge-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.metric-badge {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  border-radius: 8px;
+  min-width: 80px;
+}
+
+.metric-badge-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: black;
+}
+
+.metric-badge-value {
+  font-size: 18px;
+  color: black;
+  line-height: 1.1;
+  font-weight: 700;
+}
+

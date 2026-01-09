@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { useCollectionCora } from '../composables/useCollectionCora'
 
-// Helper factory to create metrics with specific findings/assessments
+// Helper factory to create metrics with specific findings/assessments AI DID THIS NOT
 function createMetrics({
   cat1Assigned = 0,
   cat1Assessed = 0,

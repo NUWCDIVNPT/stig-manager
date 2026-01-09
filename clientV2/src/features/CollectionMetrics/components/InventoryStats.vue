@@ -14,107 +14,51 @@ defineEmits(['export'])
 const { inventory } = toRefs(props)
 
 const data = computed(() => {
+  if (!inventory.value) {
+    return null
+  }
   return [
-    { label: 'Assets', value: inventory.value.assets || 0, color: 'var(--color-inventory)' },
-    { label: 'STIGs', value: inventory.value.stigs || 0, color: 'var(--color-inventory)' },
-    { label: 'Checklists', value: inventory.value.checklists || 0, color: 'var(--color-inventory)' },
+    { label: 'Assets', value: inventory.value.assets || 0 },
+    { label: 'STIGs', value: inventory.value.stigs || 0 },
+    { label: 'Checklists', value: inventory.value.checklists || 0 },
   ]
 })
 </script>
 
 <template>
-  <div v-if="data" class="stat-card">
-    <div class="header">
-      <h3 class="title">
+  <div v-if="data" class="metric-card">
+    <div class="metric-header">
+      <h3 class="metric-title">
         Inventory
       </h3>
-      <div class="actions">
-        <span class="action-link" @click="$emit('export')">Export...</span>
+      <div class="metric-actions">
+        <span class="metric-action-link" @click="$emit('export')">Export...</span>
       </div>
     </div>
-    <div class="badge-row">
+    <div class="metric-badge-row">
       <div
         v-for="(stat, index) in data"
         :key="index"
-        class="stat-badge"
-        :style="{ backgroundColor: stat.color }"
+        class="metric-badge"
+        :style="{ backgroundColor: 'var(--color-inventory)' }"
       >
-        <span class="badge-label">{{ stat.label }}</span>
-        <span class="badge-value">{{ stat.value }}</span>
+        <span class="metric-badge-label">{{ stat.label }}</span>
+        <span class="metric-badge-value">{{ stat.value }}</span>
+      </div>
+    </div>
+  </div>
+  <div v-else class="metric-card">
+    <div class="metric-header">
+      <h3 class="metric-title">
+        Inventory
+      </h3>
+      <div class="metric-actions">
+        <span class="metric-action-link" @click="$emit('export')">Export...</span>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.stat-card {
-  background-color: #18181b;
-  color: #e4e4e7;
-  border-radius: 20px;
-  padding: 15px;
-  width: 100%;
-  max-width: 400px;
-  min-width: 320px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-}
-
-.title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0;
-  color: #e4e4e7;
-  flex: 1;
-}
-
-.actions {
-  display: flex;
-  gap: 10px;
-}
-
-.action-link {
-  font-size: 12px;
-  color: #71717a;
-  cursor: pointer;
-  font-weight: 500;
-}
-.action-link:hover {
-  color: #a1a1aa;
-}
-
-.badge-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.stat-badge {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 4px;
-  border-radius: 8px;
-  min-width: 80px;
-}
-
-.badge-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.8);
-}
-
-.badge-value {
-  font-size: 18px;
-  color: rgba(0, 0, 0, 0.9);
-  line-height: 1.1;
-  font-weight: 700;
-}
+@import './metrics.css';
 </style>

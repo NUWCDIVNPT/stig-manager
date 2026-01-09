@@ -84,9 +84,9 @@ const chartOptions = {
 </script>
 
 <template>
-  <div v-if="stats" class="progress-card">
-    <div class="header">
-      <h2 class="title">
+  <div v-if="stats" class="metric-card large">
+    <div class="metric-header">
+      <h2 class="metric-title">
         Progress
       </h2>
       <span class="overall-pct">{{ stats.formatted.overall }}% Assessed</span>
@@ -194,36 +194,25 @@ const chartOptions = {
       </div>
     </div>
   </div>
+  <div v-else class="metric-card large">
+    <div class="metric-header">
+      <h2 class="metric-title">
+        Progress
+      </h2>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.progress-card {
-  background-color: #18181b;
-  color: #e4e4e7;
-  border-radius: 20px;
-  padding: 25px;
-  width: 100%;
-  max-width: 450px;
-  min-width: 350px;
-}
+@import './metrics.css';
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.metric-header {
   margin-bottom: 15px;
-}
-
-.title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0;
 }
 
 .overall-pct {
   font-size: 18px;
   font-weight: 600;
-  color: white;
 }
 
 .main-content {
@@ -234,10 +223,8 @@ const chartOptions = {
 }
 
 .chart-container {
-  width: 120px;
-  height: 120px;
-  flex-shrink: 0;
-  position: relative;
+  width: 150px;
+  height: 150px;
 }
 
 .chart {
@@ -256,7 +243,6 @@ const chartOptions = {
   display: flex;
   align-items: center;
   font-size: 14px;
-  position: relative;
   border-radius: 6px;
   padding: 3px 12px;
   background-color: rgba(255, 255, 255, 0.03);
@@ -312,13 +298,11 @@ const chartOptions = {
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  color: #d6d6dd;
 }
 
 .stat-value {
   font-size: 16px;
   font-weight: 600;
-  color: #d6d6dd;
 }
 
 .total-footer {
@@ -338,6 +322,5 @@ const chartOptions = {
 .total-value {
   font-size: 18px;
   font-weight: 600;
-  color: white;
 }
 </style>

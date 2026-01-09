@@ -62,7 +62,6 @@ const delimiter = ref('comma')
 const include = ref(true)
 const prettyPrint = ref(false)
 
-// Dynamic labels
 const assetsLabel = computed(() => {
   return groupBy.value === 'stig'
     ? 'Include list of Assets for each STIG'
@@ -75,7 +74,6 @@ const delimiterLabel = computed(() => {
     : 'STIGs delimited by:'
 })
 
-// Sync csvFields when groupBy changes
 watch(groupBy, (newVal) => {
   if (newVal === 'stig') {
     csvFields.value = [...STIG_FIELDS]
@@ -85,7 +83,6 @@ watch(groupBy, (newVal) => {
   }
 })
 
-// Update delimiter in selected fields when UI delimiter changes
 watch(delimiter, (newVal) => {
   const delimString = delimiterOptions.find(d => d.value === newVal)?.string || ','
   csvFields.value.forEach((field) => {
@@ -96,23 +93,10 @@ watch(delimiter, (newVal) => {
 })
 
 const commonPt = {
-  checkbox: {
-    box: ({ _props, context }) => ({
-      style: `
-        background-color: transparent; 
-        border-color: #71717a; 
-        ${context.checked ? 'background-color: #60a5fa; border-color: #60a5fa;' : ''}
-      `,
-    }),
-  },
-  radioButton: {
-    box: ({ _props, context }) => ({
-      style: `
-        background-color: transparent; 
-        border-color: #71717a; 
-        ${context.checked ? 'background-color: #60a5fa; border-color: #60a5fa;' : ''}
-      `,
-    }),
+  button: {
+    root: {
+      style: 'color: rgba(255, 255, 255, 0.87); border-color: #3f3f46; width: 100%;',
+    },
   },
   select: {
     root: {
@@ -122,10 +106,39 @@ const commonPt = {
       style: 'padding: 6px 12px; color: #e4e4e7;',
     },
   },
-  button: {
+  checkbox: {
+    box: ({ context }) => ({
+      style: `
+        background-color: transparent; 
+        border-color: #71717a; 
+        ${context.checked ? 'background-color: #60a5fa; border-color: #60a5fa;' : ''}
+      `,
+    }),
+  },
+  radioButton: {
+    box: ({ context }) => ({
+      style: `
+        background-color: transparent; 
+        border-color: #71717a; 
+        ${context.checked ? 'background-color: #60a5fa; border-color: #60a5fa;' : ''}
+      `,
+    }),
+  },
+  dialog: {
     root: {
-      style: 'color: rgba(255, 255, 255, 0.87); border-color: #3f3f46; width: 100%',
-      class: 'export-btn',
+      style: 'background-color: #18181b; border: 1px solid #3f3f46; border-radius: 6px; color: #e4e4e7; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);',
+    },
+    header: {
+      style: 'background-color: #18181b; color: #e4e4e7; border-top-left-radius: 6px; border-top-right-radius: 6px; padding: 1rem; border-bottom: 1px solid #27272a;',
+    },
+    content: {
+      style: 'background-color: #18181b; color: #e4e4e7; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; padding: 1.5rem;',
+    },
+    closeButton: {
+      style: 'color: #a1a1aa;',
+    },
+    title: {
+      style: 'font-size: 16px; font-weight: 600;',
     },
   },
 }
@@ -173,7 +186,7 @@ async function handleDownload() {
     header="Inventory export options"
     modal
     :style="{ width: '650px' }"
-    :draggable="false"
+    :draggable="true"
     :pt="dialogPt"
   >
     <div class="export-modal-content">
@@ -272,7 +285,6 @@ async function handleDownload() {
 
 .row-label {
   min-width: 80px;
-  color: #e4e4e7;
 }
 
 .radio-group {
@@ -284,7 +296,6 @@ async function handleDownload() {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #e4e4e7;
 }
 
 .field-radiobutton label {
@@ -321,7 +332,6 @@ async function handleDownload() {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #e4e4e7;
 }
 
 .field-checkbox label {
@@ -332,7 +342,6 @@ async function handleDownload() {
   display: flex;
   align-items: center;
   gap: 1rem;
-  color: #e4e4e7;
 }
 
 .delimiter-select {

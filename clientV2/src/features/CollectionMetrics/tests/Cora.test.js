@@ -22,13 +22,14 @@ describe('cora', () => {
     },
   }
 
-  it('renders nothing when coraData is not provided', () => {
-    const { container } = renderWithProviders(Cora, {
+  it('renders only title when coraData title is not provided', () => {
+    renderWithProviders(Cora, {
       props: {
         coraData: null,
       },
     })
-    expect(container).toBeEmptyDOMElement()
+    expect(document.querySelector('.metric-title')).toHaveTextContent('CORA')
+    expect(document.querySelector('.cora-content')).not.toBeInTheDocument()
   })
 
   it('renders correctly when coraData is provided', () => {
@@ -39,7 +40,7 @@ describe('cora', () => {
     })
 
     // Check title
-    expect(document.querySelector('.title')).toHaveTextContent('CORA')
+    expect(document.querySelector('.metric-title')).toHaveTextContent('CORA')
 
     // Check CAT counts
     const bodyText = document.body.textContent
@@ -50,10 +51,8 @@ describe('cora', () => {
     expect(bodyText).toContain('CAT 3')
     expect(bodyText).toContain('75')
 
-    // Check Risk Score
     expect(document.querySelector('.risk-score')).toHaveTextContent('99.7%')
 
-    // Check Risk Rating Label
     expect(document.querySelector('.risk-rating')).toHaveTextContent('VERY HIGH')
   })
 

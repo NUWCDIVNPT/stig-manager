@@ -171,6 +171,6 @@ export function durationToNow(date) {
     r[key] = Math.floor(d / s[key])
     d -= r[key] * s[key]
   })
-  
+
   return r.day > 0 ? `${r.day} d` : r.hour > 0 ? `${r.hour} h` : r.minute > 0 ? `${r.minute} m` : `now`
 }

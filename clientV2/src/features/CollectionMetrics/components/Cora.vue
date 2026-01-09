@@ -13,7 +13,7 @@ const props = defineProps({
 
 const { coraData } = toRefs(props)
 
-// Popover Logic
+// Popover stuff
 const op = ref()
 const toggle = (event) => {
   op.value.toggle(event)
@@ -38,13 +38,14 @@ function getRiskClass(riskRating) {
 </script>
 
 <template>
-  <div v-if="coraData" class="cora-card">
-    <div class="header">
+  <div class="cora-card metric-card large">
+    <div class="metric-header">
       <div class="title-container">
-        <h2 class="title">
+        <h2 class="metric-title">
           CORA
         </h2>
         <i
+          v-if="coraData"
           class="pi pi-question-circle help-icon"
           @click="toggle"
         />
@@ -54,7 +55,7 @@ function getRiskClass(riskRating) {
       </div>
     </div>
 
-    <div class="cora-content">
+    <div v-if="coraData" class="cora-content">
       <div class="breakdown-section">
         <h3 class="subsection-title">
           OPEN OR UNASSESSED
@@ -99,22 +100,13 @@ function getRiskClass(riskRating) {
 </template>
 
 <style scoped>
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-}
+@import './metrics.css';
 
-.title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0;
-  color: #e4e4e7;
+.metric-header {
+  margin-bottom: 5px
 }
 
 .help-icon {
-  font-size: 1rem;
   color: #a1a1aa;
   cursor: pointer;
 }
@@ -123,21 +115,7 @@ function getRiskClass(riskRating) {
 }
 
 .cora-card {
-  background-color: #18181b;
-  color: #e4e4e7;
-  border-radius: 20px;
-  padding: 15px;
-  width: 100%;
-  max-width: 450px;
-  min-width: 350px;
-  height: 200px;
-  display: flex;
-  flex-direction: column;
-}
-
-.sm-cora-container {
-  display: flex;
-  justify-content: space-evenly;
+  height: 200px; /* fix when we known what we want */
 }
 
 .cora-content {
@@ -211,7 +189,7 @@ function getRiskClass(riskRating) {
 }
 
 .cora-cat-count {
-  font-weight: 700;
+  font-weight: 600;
   font-size: 14px;
   color: white;
 }
@@ -228,7 +206,7 @@ function getRiskClass(riskRating) {
 
 .risk-label {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.9);
   margin-bottom: 4px;
@@ -244,13 +222,11 @@ function getRiskClass(riskRating) {
 
 .risk-rating {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   color: white;
   background-color: rgba(0, 0, 0, 0.2);
   padding: 2px 10px;
   border-radius: 20px;
 }
-
-/* Dynamic Colors for Risk Card - handled in style.css */
 </style>

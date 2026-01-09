@@ -20,7 +20,8 @@ async function fetchCollectionAssetSummary({ apiUrl = useEnv().apiUrl, token, co
     throw new Error(`Collection asset summary ${response.status} ${response.statusText}`)
   }
 
-  return response.json()
+  const text = await response.text()
+  return text ? JSON.parse(text) : null
 }
 
 const keepPreviousData = previous => previous
@@ -77,7 +78,8 @@ async function fetchCollectionStigSummary({ apiUrl = useEnv().apiUrl, token, col
     throw new Error(`Collection STIG summary ${response.status} ${response.statusText}`)
   }
 
-  return response.json()
+  const text = await response.text()
+  return text ? JSON.parse(text) : null
 }
 
 export function useCollectionStigSummaryQuery({ collectionId, token }, options = {}) {
@@ -132,7 +134,8 @@ async function fetchCollectionLabelSummary({ apiUrl = useEnv().apiUrl, token, co
     throw new Error(`Collection label summary ${response.status} ${response.statusText}`)
   }
 
-  return response.json()
+  const text = await response.text()
+  return text ? JSON.parse(text) : null
 }
 
 export function useCollectionLabelSummaryQuery({ collectionId, token }, options = {}) {
@@ -190,7 +193,8 @@ async function fetchCollectionChecklistAssets({ apiUrl = useEnv().apiUrl, token,
     throw new Error(`Collection checklist assets ${response.status} ${response.statusText}`)
   }
 
-  return response.json()
+  const text = await response.text()
+  return text ? JSON.parse(text) : null
 }
 
 export function useCollectionChecklistAssetsQuery({ collectionId, benchmarkId, token }, options = {}) {
@@ -246,7 +250,8 @@ async function fetchCollectionMetricsSummary({ apiUrl = useEnv().apiUrl, token, 
     throw new Error(`Collection metrics summary ${response.status} ${response.statusText}`)
   }
 
-  return response.json()
+  const text = await response.text()
+  return text ? JSON.parse(text) : null
 }
 
 export function useCollectionMetricsSummaryQuery({ collectionId, token }, options = {}) {

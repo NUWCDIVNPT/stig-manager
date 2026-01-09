@@ -17,8 +17,6 @@ function createMetrics({
   accepted = 0,
   rejected = 0,
 } = {}) {
-  // Structure based on useCollectionProgress usage:
-  // m.assessments, m.assessed, m.statuses.saved, m.results.other, etc.
   return {
     collectionId: '21',
     name: 'Collection X',

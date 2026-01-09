@@ -2,38 +2,37 @@ import { computed, unref } from 'vue'
 
 export function useCollectionStats(metrics) {
   const inventory = computed(() => {
-    const mMetrics = unref(metrics)
-    if (!mMetrics) {
+    const m = unref(metrics) //  unref so we can normalize metrics object
+    if (!m) {
       return null
     }
-    const m = mMetrics.metrics || mMetrics
-    const root = mMetrics
     return {
-      assets: root.assets || m.assets || 0,
-      stigs: root.stigs || m.stigs || 0,
-      checklists: root.checklists || m.checklists || 0,
+      assets: m.assets,
+      stigs: m.stigs,
+      checklists: m.checklists,
     }
   })
 
   const findings = computed(() => {
-    const mMetrics = unref(metrics)
-    if (!mMetrics) {
+    const m = unref(metrics)
+    if (!m) {
       return null
     }
-    const m = mMetrics.metrics || mMetrics
-    return m.findings || { high: 0, medium: 0, low: 0 }
+    // findings are nested in .metrics
+    return m.metrics?.findings || m.findings
   })
 
   const ages = computed(() => {
-    const mMetrics = unref(metrics)
-    if (!mMetrics) {
+    const m = unref(metrics)
+    if (!m) {
       return null
     }
-    const m = mMetrics.metrics || mMetrics
+    // timestamps are nested in .metrics
+    const target = m.metrics || m
     return {
-      minTs: m.minTs || 0,
-      maxTs: m.maxTs || 0,
-      maxTouchTs: m.maxTouchTs || 0,
+      minTs: target.minTs,
+      maxTs: target.maxTs,
+      maxTouchTs: target.maxTouchTs,
     }
   })
 

@@ -20,7 +20,8 @@ async function fetchCollectionMetricsSummary({ apiUrl = useEnv().apiUrl, token, 
     throw new Error(`Collection metrics summary ${response.status} ${response.statusText}`)
   }
 
-  return response.json()
+  const text = await response.text()
+  return text ? JSON.parse(text) : null
 }
 
 const keepPreviousData = previous => previous
@@ -38,24 +39,20 @@ export function useCollectionMetricsSummaryQuery({ collectionId, token }, option
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
     refetchOnMount: true, // refetch on mount when stale time is exceeded
-    retry: 2, // retry 2 times
+    retry: 0,
     ...options,
   })
 
   const metrics = computed(() => query.data?.value ?? null)
   const isLoading = computed(() => Boolean(query.isFetching?.value))
-  const errorMessage = computed(() => {
-    const err = query.error?.value
-    if (!err) {
-      return null
-    }
-    return err.message || 'Unable to load collection metrics.'
-  })
+  const err = query.error?.value
+  if (err) {
+    throw new Error(err.message)
+  }
 
   return {
     metrics,
     isLoading,
-    errorMessage,
     refetch: query.refetch,
   }
 }

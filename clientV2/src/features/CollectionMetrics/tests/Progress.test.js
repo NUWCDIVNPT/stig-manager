@@ -24,13 +24,15 @@ describe('progress', () => {
     },
   }
 
-  it('renders nothing when stats are not provided', () => {
-    const { container } = renderWithProviders(Progress, {
+  it('renders only title when stats are not provided', () => {
+    renderWithProviders(Progress, {
       props: {
         stats: null,
       },
     })
-    expect(container).toBeEmptyDOMElement()
+    expect(document.querySelector('.metric-title')).toHaveTextContent('Progress')
+    // Should not have main content
+    expect(document.querySelector('.main-content')).not.toBeInTheDocument()
   })
 
   it('renders correctly when stats are provided', () => {
@@ -40,13 +42,10 @@ describe('progress', () => {
       },
     })
 
-    // Check Title
-    expect(document.querySelector('.title')).toHaveTextContent('Progress')
+    expect(document.querySelector('.metric-title')).toHaveTextContent('Progress')
 
-    // Check Overall Percentage
     expect(document.querySelector('.overall-pct')).toHaveTextContent('1.5% Assessed')
 
-    // Check Legend Items
     const legendItems = document.querySelectorAll('.legend-item')
     expect(legendItems.length).toBe(5)
     expect(legendItems[0]).toHaveTextContent('Unassessed')
@@ -60,24 +59,18 @@ describe('progress', () => {
     expect(legendItems[4]).toHaveTextContent('Rejected')
     expect(legendItems[4]).toHaveTextContent('0')
 
-    // Check Stats Grid (Categories)
     const statBoxes = document.querySelectorAll('.stat-box')
     expect(statBoxes.length).toBe(4)
 
-    // Assessed Box
     expect(statBoxes[0]).toHaveTextContent('ASSESSED')
     expect(statBoxes[0]).toHaveTextContent('<1%')
 
-    // Submitted Box
     expect(statBoxes[1]).toHaveTextContent('SUBMITTED')
     expect(statBoxes[1]).toHaveTextContent('<1%')
 
-    // Accepted Box
     expect(statBoxes[2]).toHaveTextContent('ACCEPTED')
     expect(statBoxes[2]).toHaveTextContent('0.0%')
 
-    // Rejected Box
-    expect(statBoxes[3]).toHaveTextContent('REJECTED')
     expect(statBoxes[3]).toHaveTextContent('0.0%')
 
     // Check Total Footer

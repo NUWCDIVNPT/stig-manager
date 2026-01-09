@@ -1,8 +1,6 @@
-import { reactive } from 'vue'
-
 function setupOidcWorker() {
   const worker = new SharedWorker('/oidc-worker.js', { name: 'oidc-worker', type: 'module' })
-  const OW = reactive({
+  const OW = {
     async logout() {
       const response = await this.sendWorkerRequest({ request: 'logout' })
       if (response.success) {
@@ -29,7 +27,7 @@ function setupOidcWorker() {
       this.worker.port.postMessage({ requestId: 'contextActive' })
     },
     worker,
-  })
+  }
 
   OW.worker.port.start()
 
