@@ -20,10 +20,10 @@ describe('findingsStats', () => {
     })
 
     // Check Title
-    expect(document.querySelector('.title')).toHaveTextContent('Findings')
+    expect(document.querySelector('.metric-title')).toHaveTextContent('Findings')
 
     // Check Badges
-    const badges = document.querySelectorAll('.stat-badge')
+    const badges = document.querySelectorAll('.metric-badge')
     expect(badges.length).toBe(3)
 
     // CAT 3 Badge (Low)
@@ -43,16 +43,16 @@ describe('findingsStats', () => {
     const { rerender } = renderWithProviders(FindingsStats)
 
     // Default prop check
-    expect(document.querySelector('.title')).toHaveTextContent('Findings')
+    expect(document.querySelector('.metric-title')).toHaveTextContent('Findings')
 
-    let badges = document.querySelectorAll('.stat-badge')
+    let badges = document.querySelectorAll('.metric-badge')
     expect(badges[0]).toHaveTextContent('0')
     expect(badges[1]).toHaveTextContent('0')
     expect(badges[2]).toHaveTextContent('0')
 
     // Check with empty object
     rerender({ findings: {} })
-    badges = document.querySelectorAll('.stat-badge')
+    badges = document.querySelectorAll('.metric-badge')
     expect(badges[0]).toHaveTextContent('0')
     expect(badges[1]).toHaveTextContent('0')
     expect(badges[2]).toHaveTextContent('0')

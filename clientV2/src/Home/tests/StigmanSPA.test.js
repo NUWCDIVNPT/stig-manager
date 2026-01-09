@@ -1,6 +1,6 @@
 import { render } from '@testing-library/vue'
 import { describe, expect, it } from 'vitest'
-import StigmanSPA from '../StigmanSPA.vue'
+import StigmanSPA from '../Home.vue'
 
 // simple test: renders main layout
 describe('stigmanSPA', () => {

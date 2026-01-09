@@ -189,7 +189,5 @@ export async function handleInventoryExport({
   const timestamp = filenameComponentFromDate()
   const groupLabel = groupBy === 'stig' ? 'Stig' : 'Asset'
   const filename = filenameEscaped(`${collectionName}_InventoryBy${groupLabel}_${timestamp}.${fileExtension}`)
-  const { triggerError } = useGlobalError()
-  triggerError(error)
   saveAs(downloadData, filename)
 }

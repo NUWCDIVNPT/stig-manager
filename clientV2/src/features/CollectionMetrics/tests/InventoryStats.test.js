@@ -18,10 +18,10 @@ describe('inventoryStats', () => {
     })
 
     // Check Title
-    expect(document.querySelector('.title')).toHaveTextContent('Inventory')
+    expect(document.querySelector('.metric-title')).toHaveTextContent('Inventory')
 
     // Check Badges
-    const badges = document.querySelectorAll('.stat-badge')
+    const badges = document.querySelectorAll('.metric-badge')
     expect(badges.length).toBe(3)
 
     // Assets Badge
@@ -41,9 +41,9 @@ describe('inventoryStats', () => {
     // Testing with default prop (not providing inventory)
     const { rerender } = renderWithProviders(InventoryStats)
 
-    expect(document.querySelector('.title')).toHaveTextContent('Inventory')
+    expect(document.querySelector('.metric-title')).toHaveTextContent('Inventory')
 
-    const badges = document.querySelectorAll('.stat-badge')
+    const badges = document.querySelectorAll('.metric-badge')
     expect(badges[0]).toHaveTextContent('0')
     expect(badges[1]).toHaveTextContent('0')
     expect(badges[2]).toHaveTextContent('0')
@@ -51,7 +51,7 @@ describe('inventoryStats', () => {
     // Now test with empty object
     rerender({ inventory: {} })
     // Should fallback to || 0 in computed property
-    const badges2 = document.querySelectorAll('.stat-badge')
+    const badges2 = document.querySelectorAll('.metric-badge')
     expect(badges2[0]).toHaveTextContent('0')
     expect(badges2[1]).toHaveTextContent('0')
     expect(badges2[2]).toHaveTextContent('0')
@@ -65,7 +65,7 @@ describe('inventoryStats', () => {
     })
     const user = userEvent.setup()
 
-    const exportLink = document.querySelector('.action-link')
+    const exportLink = document.querySelector('.metric-action-link')
     expect(exportLink).toBeInTheDocument()
 
     await user.click(exportLink)

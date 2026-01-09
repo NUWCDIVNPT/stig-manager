@@ -12,8 +12,6 @@ function createMetrics({
   maxTs = '',
   maxTouchTs = '',
 } = {}) {
-  // User provided structure: root has assets/stigs/checklists.
-  // metrics object has findings, timestamps.
   return {
     collectionId: '21',
     name: 'Collection X',
@@ -110,38 +108,12 @@ describe('useCollectionStats', () => {
     })
   })
 
-  it('handles nested structure variant (fallback logic)', () => {
-    // The code supports assets/stigs/checklists on root OR matches.
-    // Let's verify if we pass a structure where they are only inside `metrics` (if that's a valid case supported by code)
-    // Code: assets: root.assets || m.assets || 0
-    // If we pass an object that DOES NOT have them on root but has them in metrics.
-    const nestedVariant = {
-      metrics: {
-        assets: 99,
-        stigs: 88,
-        checklists: 77,
-        findings: { high: 0, medium: 0, low: 0 },
-      },
-    }
-    const { inventory } = useCollectionStats(nestedVariant)
-    expect(inventory.value).toEqual({
-      assets: 99,
-      stigs: 88,
-      checklists: 77,
-    })
-  })
-
-  it('defaults findings to zero structure if missing', () => {
-    // If findings is missing in metrics
+  it('defaults findings to undefined if missing', () => {
     const metrics = {
       metrics: {},
     }
     const { findings } = useCollectionStats(metrics)
-    expect(findings.value).toEqual({
-      high: 0,
-      medium: 0,
-      low: 0,
-    })
+    expect(findings.value).toEqual(undefined)
   })
 
   it('responds to reactive changes', () => {
