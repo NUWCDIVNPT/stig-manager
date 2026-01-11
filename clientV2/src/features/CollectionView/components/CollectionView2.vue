@@ -55,6 +55,9 @@ const reviewAssetId = computed(() => route.params.assetId || null)
 const reviewBenchmarkId = computed(() => route.params.benchmarkId || null)
 const reviewRevisionStr = computed(() => route.params.revisionStr || null)
 
+// Template ref to access asset data from AssetReview component
+const assetReviewRef = ref(null)
+
 // Fetch STIGs for the asset being reviewed
 const { stigs: assetStigs } = useAssetStigsQuery({
   assetId: reviewAssetId,
@@ -149,11 +152,9 @@ const breadcrumbHome = {
   route: '/collections',
 }
 
-// Get asset name from assetStigs or use assetId as fallback
+// Get asset name from AssetReview component, fallback to assetId while loading
 const reviewAssetName = computed(() => {
-  // We could fetch the asset name from the asset query, but for now use assetId
-  // The asset name could be passed via query params or fetched separately
-  return `Asset ${reviewAssetId.value}`
+  return assetReviewRef.value?.asset?.name || `Asset ${reviewAssetId.value}`
 })
 
 const breadcrumbItems = computed(() => {
@@ -333,7 +334,7 @@ const tabPanelPt = {
 
     <!-- Review Mode: Show AssetReview -->
     <div v-if="isReviewMode" class="review-container">
-      <AssetReview :asset-id="reviewAssetId" :collection-labels="rawLabels" />
+      <AssetReview ref="assetReviewRef" :asset-id="reviewAssetId" :collection-labels="rawLabels" />
     </div>
 
     <!-- Normal Mode: Show Tabs -->

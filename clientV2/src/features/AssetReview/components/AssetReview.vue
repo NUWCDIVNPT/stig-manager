@@ -41,6 +41,9 @@ function getContrastColor(hexColor) {
   return yiq >= 128 ? '#1a1a1a' : '#ffffff'
 }
 
+// Expose asset for parent components (e.g., breadcrumb)
+defineExpose({ asset })
+
 // Resolve asset labelIds to full label objects with name and color
 const resolvedLabels = computed(() => {
   if (!asset.value?.labelIds?.length || !props.collectionLabels?.length) {
