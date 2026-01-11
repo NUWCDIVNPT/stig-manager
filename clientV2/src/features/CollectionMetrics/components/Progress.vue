@@ -1,6 +1,6 @@
 <script setup>
 import Chart from 'primevue/chart'
-import { computed, defineProps, toRefs } from 'vue'
+import { computed, defineProps } from 'vue'
 
 const props = defineProps({
   stats: {
@@ -9,8 +9,6 @@ const props = defineProps({
     default: null,
   },
 })
-
-const { stats } = toRefs(props)
 
 const colors = {
   unassessed: 'var(--metrics-status-chart-unassessed)',
@@ -34,15 +32,14 @@ const resolveColor = (colorVar) => {
 }
 
 const getPct = (val) => {
-  if (!stats.value || !stats.value.counts?.total) {
+  if (!props.stats || !props.stats.counts?.total) {
     return 0
   }
-  // The original logic used 7000 as a multiplier, preserving it for visual consistency
-  return (val / stats.value.counts.total) * 100
+  return (val / props.stats.counts.total) * 100
 }
 
 const chartData = computed(() => {
-  if (!stats.value) {
+  if (!props.stats) {
     return null
   }
 
@@ -51,11 +48,11 @@ const chartData = computed(() => {
     datasets: [
       {
         data: [
-          stats.value.counts.unassessed,
-          stats.value.counts.assessed,
-          stats.value.counts.submitted,
-          stats.value.counts.accepted,
-          stats.value.counts.rejected,
+          props.stats.counts.unassessed,
+          props.stats.counts.assessed,
+          props.stats.counts.submitted,
+          props.stats.counts.accepted,
+          props.stats.counts.rejected,
         ],
         backgroundColor: [
           resolveColor(colors.unassessed),
@@ -139,7 +136,7 @@ const chartOptions = {
           <div class="stat-label">
             ASSESSED
           </div>
-          <div class="stat-value" :style="{ color: colors.assessed }">
+          <div class="stat-value">
             {{ stats.formatted.assessed }}
           </div>
         </div>
@@ -153,7 +150,7 @@ const chartOptions = {
           <div class="stat-label">
             SUBMITTED
           </div>
-          <div class="stat-value" :style="{ color: colors.submitted }">
+          <div class="stat-value">
             {{ stats.formatted.submitted }}
           </div>
         </div>
@@ -167,7 +164,7 @@ const chartOptions = {
           <div class="stat-label">
             ACCEPTED
           </div>
-          <div class="stat-value" :style="{ color: colors.accepted }">
+          <div class="stat-value">
             {{ stats.formatted.accepted }}
           </div>
         </div>
@@ -181,7 +178,7 @@ const chartOptions = {
           <div class="stat-label">
             REJECTED
           </div>
-          <div class="stat-value" :style="{ color: colors.rejected }">
+          <div class="stat-value">
             {{ stats.formatted.rejected }}
           </div>
         </div>
@@ -206,7 +203,7 @@ const chartOptions = {
   border-radius: 20px;
   padding: 25px;
   width: 100%;
-  max-width: 450px; /* Adjust as needed */
+  max-width: 450px;
   min-width: 350px;
 }
 
@@ -218,13 +215,13 @@ const chartOptions = {
 }
 
 .title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   margin: 0;
 }
 
 .overall-pct {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: white;
 }
@@ -313,13 +310,15 @@ const chartOptions = {
 
 .stat-label {
   font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
-  color: #a1a1aa;
+  color: #d6d6dd;
 }
 
 .stat-value {
   font-size: 16px;
   font-weight: 600;
+  color: #d6d6dd;
 }
 
 .total-footer {

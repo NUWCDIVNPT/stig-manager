@@ -22,6 +22,7 @@
     "@primevue/themes": "^4.4.1",
     "@tanstack/vue-query": "^5.90.5",
     "chart.js": "^4.5.1",
+    "file-saver-es": "^2.0.5",
     "jsonwebtoken": "^9.0.2",
     "ms": "^2.1.3",
     "pinia": "^3.0.3",

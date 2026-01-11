@@ -4,7 +4,9 @@ import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
 import RadioButton from 'primevue/radiobutton'
 import Select from 'primevue/select'
-import { computed, defineEmits, defineProps, reactive } from 'vue'
+import { computed, defineProps, inject, ref, watch } from 'vue'
+import { useEnv } from '../../../shared/stores/useEnv.js'
+import { handleInventoryExport } from '../exportMetricsUtils.js'
 
 const props = defineProps({
   visible: {
@@ -16,6 +18,11 @@ const props = defineProps({
     required: false,
     default: null,
   },
+  collectionName: {
+    type: String,
+    required: false,
+    default: 'collection',
+  },
 })
 
 const emit = defineEmits(['update:visible'])
@@ -26,24 +33,109 @@ const visible = computed({
 })
 
 const delimiterOptions = [
-  { label: 'Comma', value: 'comma' },
-  { label: 'Comma and Space', value: 'comma_space' },
-  { label: 'Newline', value: 'newline' },
+  { label: 'Comma', value: 'comma', string: ',' },
+  { label: 'Comma and Space', value: 'comma_space', string: ', ' },
+  { label: 'Newline', value: 'newline', string: '\n' },
 ]
 
-const selected = reactive({
-  groupBy: 'stig',
-  format: 'csv',
-  csvFields: ['benchmark', 'title', 'revision', 'date', 'assets'],
-  delimiter: 'comma',
+const STIG_FIELDS = [
+  { apiProperty: 'benchmark', header: 'Benchmark' },
+  { apiProperty: 'title', header: 'Title' },
+  { apiProperty: 'revision', header: 'Revision' },
+  { apiProperty: 'date', header: 'Date' },
+  { apiProperty: 'assets', header: 'Assets', delimitedProperty: 'name', delimiter: ',' },
+]
+
+const ASSET_FIELDS = [
+  { apiProperty: 'name', header: 'Name' },
+  { apiProperty: 'fqdn', header: 'FQDN' },
+  { apiProperty: 'ip', header: 'IP' },
+  { apiProperty: 'mac', header: 'MAC' },
+  { apiProperty: 'description', header: 'Description' },
+  { apiProperty: 'stigs', header: 'STIGs', delimitedProperty: 'benchmarkId', delimiter: ', ' },
+]
+
+const groupBy = ref('stig')
+const format = ref('csv')
+const csvFields = ref([...STIG_FIELDS])
+const delimiter = ref('comma')
+const include = ref(true)
+const prettyPrint = ref(false)
+
+// Dynamic labels
+const assetsLabel = computed(() => {
+  return groupBy.value === 'stig'
+    ? 'Include list of Assets for each STIG'
+    : 'Include list of STIGs for each Asset'
 })
+
+const delimiterLabel = computed(() => {
+  return groupBy.value === 'stig'
+    ? 'Assets delimited by:'
+    : 'STIGs delimited by:'
+})
+
+// Sync csvFields when groupBy changes
+watch(groupBy, (newVal) => {
+  if (newVal === 'stig') {
+    csvFields.value = [...STIG_FIELDS]
+  }
+  else {
+    csvFields.value = [...ASSET_FIELDS]
+  }
+})
+
+// Update delimiter in selected fields when UI delimiter changes
+watch(delimiter, (newVal) => {
+  const delimString = delimiterOptions.find(d => d.value === newVal)?.string || ','
+  csvFields.value.forEach((field) => {
+    if (field.delimitedProperty) {
+      field.delimiter = delimString
+    }
+  })
+})
+
+const commonPt = {
+  checkbox: {
+    box: ({ _props, context }) => ({
+      style: `
+        background-color: transparent; 
+        border-color: #71717a; 
+        ${context.checked ? 'background-color: #60a5fa; border-color: #60a5fa;' : ''}
+      `,
+    }),
+  },
+  radioButton: {
+    box: ({ _props, context }) => ({
+      style: `
+        background-color: transparent; 
+        border-color: #71717a; 
+        ${context.checked ? 'background-color: #60a5fa; border-color: #60a5fa;' : ''}
+      `,
+    }),
+  },
+  select: {
+    root: {
+      style: 'background-color: #09090b !important; border-color: #3f3f46 !important; height: 36px; min-width: 180px;',
+    },
+    label: {
+      style: 'padding: 6px 12px; color: #e4e4e7;',
+    },
+  },
+  button: {
+    root: {
+      style: 'color: rgba(255, 255, 255, 0.87); border-color: #3f3f46; width: 100%',
+      class: 'export-btn',
+    },
+  },
+}
 
 const dialogPt = {
   root: {
     style: 'background-color: #18181b; border: 1px solid #3f3f46; border-radius: 6px; color: #e4e4e7; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);',
   },
   header: {
-    style: 'background-color: #18181b; color: #e4e4e7; border-top-left-radius: 6px; border-top-right-radius: 6px; padding: 1.25rem; border-bottom: 1px solid #27272a;',
+    style: 'background-color: #18181b; color: #e4e4e7; border-top-left-radius: 6px; border-top-right-radius: 6px; padding: 1rem; border-bottom: 1px solid #27272a;',
   },
   content: {
     style: 'background-color: #18181b; color: #e4e4e7; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; padding: 1.5rem;',
@@ -51,10 +143,26 @@ const dialogPt = {
   closeButton: {
     style: 'color: #a1a1aa;',
   },
+  title: {
+    style: 'font-size: 16px; font-weight: 600;',
+  },
 }
 
-function handleDownload() {
-  console.log(`Downloading metrics for collection ${props.collectionId}:`, selected)
+const oidcWorker = inject('worker')
+
+async function handleDownload() {
+  await handleInventoryExport({
+    groupBy: groupBy.value,
+    format: format.value,
+    csvFields: csvFields.value,
+    delimiter: delimiter.value,
+    include: include.value,
+    prettyPrint: prettyPrint.value,
+    collectionId: props.collectionId,
+    collectionName: props.collectionName,
+    apiUrl: useEnv().apiUrl,
+    authToken: oidcWorker.token,
+  })
   emit('update:visible', false)
 }
 </script>
@@ -64,7 +172,7 @@ function handleDownload() {
     v-model:visible="visible"
     header="Inventory export options"
     modal
-    :style="{ width: '550px' }"
+    :style="{ width: '650px' }"
     :draggable="false"
     :pt="dialogPt"
   >
@@ -73,11 +181,11 @@ function handleDownload() {
         <label class="row-label">Group by:</label>
         <div class="radio-group">
           <div class="field-radiobutton">
-            <RadioButton v-model="selected.groupBy" input-id="groupStig" name="groupBy" value="stig" />
+            <RadioButton v-model="groupBy" input-id="groupStig" value="stig" :pt="commonPt.radioButton" />
             <label for="groupStig">STIG</label>
           </div>
           <div class="field-radiobutton">
-            <RadioButton v-model="selected.groupBy" input-id="groupAsset" name="groupBy" value="asset" />
+            <RadioButton v-model="groupBy" input-id="groupAsset" value="asset" :pt="commonPt.radioButton" />
             <label for="groupAsset">Asset</label>
           </div>
         </div>
@@ -87,52 +195,52 @@ function handleDownload() {
         <label class="row-label">Format:</label>
         <div class="radio-group">
           <div class="field-radiobutton">
-            <RadioButton v-model="selected.format" input-id="formatCsv" name="format" value="csv" />
+            <RadioButton v-model="format" input-id="formatCsv" value="csv" :pt="commonPt.radioButton" />
             <label for="formatCsv">CSV</label>
           </div>
           <div class="field-radiobutton">
-            <RadioButton v-model="selected.format" input-id="formatJson" name="format" value="json" />
+            <RadioButton v-model="format" input-id="formatJson" value="json" :pt="commonPt.radioButton" />
             <label for="formatJson">JSON</label>
           </div>
         </div>
       </div>
 
-      <div v-if="selected.format === 'csv'" class="csv-fields-box">
+      <div v-if="format === 'csv'" class="csv-fields-box">
         <div class="box-title">
           CSV fields
         </div>
         <div class="checkbox-grid">
-          <div class="field-checkbox">
-            <Checkbox v-model="selected.csvFields" input-id="fieldBenchmark" name="csvFields" value="benchmark" />
-            <label for="fieldBenchmark">Benchmark</label>
-          </div>
-          <div class="field-checkbox">
-            <Checkbox v-model="selected.csvFields" input-id="fieldTitle" name="csvFields" value="title" />
-            <label for="fieldTitle">Title</label>
-          </div>
-          <div class="field-checkbox">
-            <Checkbox v-model="selected.csvFields" input-id="fieldRevision" name="csvFields" value="revision" />
-            <label for="fieldRevision">Revision</label>
-          </div>
-          <div class="field-checkbox">
-            <Checkbox v-model="selected.csvFields" input-id="fieldDate" name="csvFields" value="date" />
-            <label for="fieldDate">Date</label>
-          </div>
-          <div class="field-checkbox">
-            <Checkbox v-model="selected.csvFields" input-id="fieldAssets" name="csvFields" value="assets" />
-            <label for="fieldAssets">Assets</label>
+          <div v-for="field in (groupBy === 'stig' ? STIG_FIELDS : ASSET_FIELDS)" :key="field.apiProperty" class="field-checkbox">
+            <Checkbox v-model="csvFields" :input-id="`field${field.apiProperty}`" :value="field" :pt="commonPt.checkbox" />
+            <label :for="`field${field.apiProperty}`">{{ field.header }}</label>
           </div>
         </div>
 
         <div class="delimiter-row">
-          <label>Assets delimited by:</label>
+          <label>{{ delimiterLabel }}</label>
           <Select
-            v-model="selected.delimiter"
+            v-model="delimiter"
             :options="delimiterOptions"
             option-label="label"
             option-value="value"
-            class="delimiter-select"
+            :pt="commonPt.select"
           />
+        </div>
+      </div>
+
+      <div v-if="format === 'json'" class="json-options-box">
+        <div class="box-title">
+          JSON options
+        </div>
+        <div class="checkbox-stack">
+          <div class="field-checkbox">
+            <Checkbox v-model="include" input-id="include" binary :pt="commonPt.checkbox" />
+            <label for="include">{{ assetsLabel }}</label>
+          </div>
+          <div class="field-checkbox">
+            <Checkbox v-model="prettyPrint" input-id="prettyPrint" binary :pt="commonPt.checkbox" />
+            <label for="prettyPrint">Pretty print with line breaks and indentation</label>
+          </div>
         </div>
       </div>
 
@@ -140,7 +248,7 @@ function handleDownload() {
         <Button
           label="Export"
           icon="pi pi-download"
-          class="export-btn"
+          :pt="commonPt.button"
           @click="handleDownload"
         />
       </div>
@@ -234,9 +342,18 @@ function handleDownload() {
   min-width: 180px;
 }
 
-:deep(.p-select-label) {
-  padding: 6px 12px;
-  color: #e4e4e7;
+.json-options-box {
+  border: 1px solid #3f3f46;
+  border-radius: 6px;
+  padding: 1.5rem;
+  position: relative;
+  margin-top: 0.5rem;
+}
+
+.checkbox-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .actions {
@@ -245,36 +362,9 @@ function handleDownload() {
   margin-top: 0.5rem;
 }
 
-.export-btn {
-  background-color: #3f3f46;
-  border: 1px solid #52525b;
-  padding: 0.5rem 1.25rem;
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-
-.export-btn:hover {
-  background-color: #52525b;
-}
-
-/* PrimeVue Component Overrides for Dark Theme */
-:deep(.p-radiobutton .p-radiobutton-box) {
-  background-color: transparent;
-  border-color: #71717a;
-}
-
-:deep(.p-radiobutton .p-radiobutton-box.p-highlight) {
-  border-color: #60a5fa;
-  background-color: #60a5fa;
-}
-
-:deep(.p-checkbox .p-checkbox-box) {
-  background-color: transparent;
-  border-color: #71717a;
-}
-
-:deep(.p-checkbox .p-checkbox-box.p-highlight) {
-  border-color: #60a5fa;
-  background-color: #60a5fa;
+.export-btn:hover,
+.export-btn:active,
+.export-btn:focus-visible {
+  background-color: rgba(96, 165, 250, 0.1) !important;
 }
 </style>

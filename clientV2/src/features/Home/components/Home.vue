@@ -1,5 +1,6 @@
 <script setup>
 import { inject, onMounted, ref } from 'vue'
+import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 import { fetchAppManagers } from '../api/api'
 import CustomCards from './CustomCards.vue'
@@ -18,6 +19,8 @@ onMounted(async () => {
     }
     catch (error) {
       console.error('failed to fetch app managers', error)
+      const { triggerError } = useGlobalError()
+      triggerError(error)
     }
     finally {
       isLoadingManagers.value = false

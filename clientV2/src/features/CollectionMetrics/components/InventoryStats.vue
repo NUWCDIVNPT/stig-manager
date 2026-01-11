@@ -66,7 +66,7 @@ const data = computed(() => {
 }
 
 .title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   margin: 0;
   color: #e4e4e7;

@@ -2,9 +2,9 @@
 import { useQueryClient } from '@tanstack/vue-query'
 import { computed, defineModel, inject, ref } from 'vue'
 import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
+import { useCollectionsData } from '../../CollectionView/composeables/useCollectionsData.js'
 import { navTreeConfig } from '../composeables/navTreeConfig'
 import { useKeyboardNav } from '../composeables/useKeyboardNav'
-import { useNavTreeData } from '../composeables/useNavTreeData'
 import { useNavTreeNavigation } from '../composeables/useNavTreeNavigation'
 import { useNavTreeNodes } from '../composeables/useNavTreeNodes'
 import { useOutsideClick } from '../composeables/useOutsideClick'
@@ -23,7 +23,7 @@ const visible = defineModel('open', { type: Boolean, default: true })
 const peekMode = defineModel('peekMode', { type: Boolean, default: false })
 
 const navTreeStore = useNavTreeStore()
-const { collections, loading } = useNavTreeData() // fetch the data
+const { collections, loading } = useCollectionsData() // fetch the data
 useNavTreeNavigation()
 
 const canCreateCollection = computed(() => {

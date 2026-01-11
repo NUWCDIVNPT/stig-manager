@@ -1,14 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { inject, unref } from 'vue'
 import { collectionKeys } from '../../../shared/keys/collectionKeys.js'
-import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
+import { useSelectedCollectionStore } from '../../../shared/stores/selectedCollection.js'
 import { useTabCoordinatorStore } from '../../../shared/stores/tabCoordinatorStore.js'
 import { deleteCollection } from '../api/collectionApi'
 
 export function useDeleteCollectionMutation(collectionIdRef) {
   const oidcWorker = inject('worker', null)
   const queryClient = useQueryClient()
-  const navTreeStore = useNavTreeStore()
+  const selectedCollectionStore = useSelectedCollectionStore()
   const tabCoordinator = useTabCoordinatorStore()
 
   return useMutation({
@@ -27,7 +27,7 @@ export function useDeleteCollectionMutation(collectionIdRef) {
 
       // save current state for potential rollback
       const previousCollections = queryClient.getQueryData(collectionKeys.all)
-      const previousSelection = navTreeStore.selectedData
+      const previousSelection = selectedCollectionStore.selectedData
 
       // remove collection from cache
       queryClient.setQueryData(collectionKeys.all, (old) => {
@@ -38,7 +38,7 @@ export function useDeleteCollectionMutation(collectionIdRef) {
       })
 
       // clear selection
-      navTreeStore.select(null)
+      selectedCollectionStore.select(null)
 
       return { previousCollections, previousSelection, currentId }
     },
@@ -46,7 +46,7 @@ export function useDeleteCollectionMutation(collectionIdRef) {
     // restore selection if delete fails
     onError: (_err, _newTodo, context) => {
       if (context?.previousSelection) {
-        navTreeStore.select(context.previousSelection)
+        selectedCollectionStore.select(context.previousSelection)
       }
     },
 

@@ -1,9 +1,22 @@
 <script setup>
 import Button from 'primevue/button'
 import Select from 'primevue/select'
-import { defineEmits, reactive } from 'vue'
+import { inject, reactive } from 'vue'
+import { useEnv } from '../../../../src/shared/stores/useEnv.js'
+import { handleDownload as executeDownload } from '../exportMetricsUtils.js'
 
-const emit = defineEmits(['download'])
+const props = defineProps({
+  collectionId: {
+    type: String,
+    required: true,
+  },
+  collectionName: {
+    type: String,
+    default: 'collection',
+  },
+})
+
+const oidcWorker = inject('worker')
 
 const items = {
   aggregation: [
@@ -23,7 +36,6 @@ const items = {
   ],
 }
 
-// ref?
 const selected = reactive({
   aggregation: 'collection',
   style: 'summary',
@@ -35,6 +47,18 @@ const buttonPt = {
     style: 'color: rgba(255, 255, 255, 0.87); border-color: #3f3f46; width: 100%',
     class: 'download-button',
   },
+}
+
+async function handleDownload() {
+  await executeDownload({
+    format: selected.format,
+    style: selected.style,
+    aggregation: selected.aggregation,
+    collectionId: props.collectionId,
+    collectionName: props.collectionName,
+    apiUrl: useEnv().apiUrl,
+    authToken: oidcWorker.token,
+  })
 }
 </script>
 
@@ -78,7 +102,7 @@ const buttonPt = {
           label="Download"
           icon="pi pi-download"
           :pt="buttonPt"
-          @click="emit('download')"
+          @click="handleDownload"
         />
       </div>
     </div>

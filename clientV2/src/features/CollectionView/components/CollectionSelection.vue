@@ -1,17 +1,20 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { useNavTreeData } from '../../NavTree/composeables/useNavTreeData'
+import { useSelectedCollectionStore } from '../../../shared/stores/selectedCollection.js'
+import { useCollectionsData } from '../composeables/useCollectionsData.js'
 
 // const router = useRouter()
-const { collections, loading } = useNavTreeData()
+const { collections, loading } = useCollectionsData()
+const selectedCollectionStore = useSelectedCollectionStore()
 // const oidcWorker = inject('worker') // Unused for now
 
 const searchQuery = ref('')
-
+/*
 // const canCreateCollection = computed(() => {
 //   const roles = oidcWorker?.tokenParsed?.realm_access?.roles || []
 //   return roles.includes('create_collection')
 // })
+*/
 
 const filteredCollections = computed(() => {
   if (!searchQuery.value) {
@@ -20,6 +23,10 @@ const filteredCollections = computed(() => {
   const query = searchQuery.value.toLowerCase()
   return collections.value.filter(c => c.name.toLowerCase().includes(query))
 })
+
+function selectCollection(col) {
+  selectedCollectionStore.select(col)
+}
 
 /*
 function handleCreateCollection() {
@@ -65,6 +72,7 @@ function handleCreateCollection() {
         :key="col.collectionId"
         class="collection-card"
         :to="{ name: 'collection', params: { collectionId: col.collectionId } }"
+        @click="selectCollection(col)"
       >
         <div class="card-icon">
           <img src="/src/assets/collection-color.svg" alt="Collection Icon">

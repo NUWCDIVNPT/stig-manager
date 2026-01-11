@@ -120,3 +120,57 @@ export function calculateCora(metrics) {
     },
   }
 }
+
+export function filenameEscaped(value) {
+  /**
+   * Regexes match characters that need to be escaped in filenames.
+   * @type {RegExp}
+   */
+  const osReserved = /[/\\:*"?<>|]/g
+  const controlChars = /[\x00-\x1F]/g
+
+  /**
+   * Map of characters to their corresponding named HTML entities.
+   * @type {Object.<string, string>}
+   */
+  const osReserveReplace = {
+    '/': '&sol;',
+    '\\': '&bsol;',
+    ':': '&colon;',
+    '*': '&ast;',
+    '"': '&quot;',
+    '?': '&quest;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '|': '&vert;',
+  }
+
+  return value.toString()
+    .replace(osReserved, match => osReserveReplace[match])
+    .replace(controlChars, match => `&#x${match.charCodeAt(0).toString().padStart(2, '0')};`)
+    .substring(0, 255)
+}
+
+export function durationToNow(date) {
+  if (!date) { return '' }
+  if (!(date instanceof Date)) {
+    date = new Date(date)
+  }
+  let d = Math.abs(date - new Date()) / 1000 // delta
+  if (Number.isNaN(d)) { return '' } // Safety check
+
+  const r = {} // result
+  const s = { // structure
+    day: 86400,
+    hour: 3600,
+    minute: 60,
+    second: 1,
+  }
+
+  Object.keys(s).forEach((key) => {
+    r[key] = Math.floor(d / s[key])
+    d -= r[key] * s[key]
+  })
+  
+  return r.day > 0 ? `${r.day} d` : r.hour > 0 ? `${r.hour} h` : r.minute > 0 ? `${r.minute} m` : `now`
+}
