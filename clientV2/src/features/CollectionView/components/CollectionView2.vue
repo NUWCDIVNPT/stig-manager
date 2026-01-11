@@ -570,7 +570,7 @@ const tabPanelPt = {
 
 .stigs-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: 0.5rem;
   height: 100%;
   padding: 0.5rem;
@@ -597,7 +597,7 @@ const tabPanelPt = {
 
 .assets-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: 0.5rem;
   height: 100%;
   padding: 0.5rem;
