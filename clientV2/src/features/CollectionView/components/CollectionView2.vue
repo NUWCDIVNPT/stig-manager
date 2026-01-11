@@ -21,7 +21,7 @@ import {
 import AssetsView from './AssetsView.vue'
 import ChecklistTable from './ChecklistTable.vue'
 import LabelsView from './LabelsView.vue'
-import StigsView from './StigsView.vue'
+import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
 const props = defineProps({
   collectionId: {
@@ -367,12 +367,13 @@ const tabPanelPt = {
           <TabPanel value="stigs" :pt="tabPanelPt">
             <div class="stigs-grid">
               <div class="table-container">
-                <StigsView
-                  :collection-id="collectionId"
-                  :stigs="stigs"
+                <MetricsSummaryGrid
+                  :api-metrics-summary="stigs"
                   :is-loading="stigsLoading"
                   :error-message="stigsError"
-                  @select-stig="handleStigSelect"
+                  selectable
+                  data-key="benchmarkId"
+                  @row-select="(row) => handleStigSelect(row.benchmarkId)"
                 />
               </div>
               <div class="table-container">

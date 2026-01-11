@@ -79,7 +79,7 @@ const columns = computed(() => {
     case 'stig':
       return [
         { field: 'benchmarkId', header: 'Benchmark', component: Column },
-        { field: 'title', header: 'Title', component: Column },
+        // { field: 'title', header: 'Title', component: Column },
         { field: 'revision', header: 'Revision', component: Column },
         { field: 'assetCnt', header: 'Assets', component: Column },
         ...commonColumns,
