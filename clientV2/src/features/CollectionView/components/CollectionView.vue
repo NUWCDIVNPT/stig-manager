@@ -28,17 +28,17 @@ const collectionName = computed(() => selectedCollection.value?.label || selecte
 const hasCollection = computed(() => Boolean(selectedCollection.value))
 
 const { deleteCollection } = useDeleteCollection(collectionIdRef)
-const { assets: assetsSummary, isLoading, errorMessage } = useCollectionAssetSummary(collectionIdRef)
+const { assets: assetsSummary, isLoading, errorMessage } = useCollectionAssetSummary(props.collectionId)
 
 // Default active tab
-const activeTab = ref('assets')
+const activeTab = ref('metrics')
 
 const tabsPt = {
   root: {
     style: {
       display: 'flex',
       flexDirection: 'column',
-      height: '100%',
+      height: '80vh',
     },
   },
 }
@@ -91,8 +91,8 @@ const tabPanelPt = {
     <div class="tabs-container">
       <Tabs v-model:value="activeTab" :pt="tabsPt">
         <TabList>
-          <Tab value="assets">
-            Assets/Stigs
+          <Tab value="metrics">
+            Metrics
           </Tab>
           <Tab value="dashboard">
             Dashboard
@@ -108,7 +108,7 @@ const tabPanelPt = {
           </Tab>
         </TabList>
         <TabPanels :pt="tabPanelsPt">
-          <TabPanel value="assets" :pt="tabPanelPt">
+          <TabPanel value="metrics" :pt="tabPanelPt">
             <MetricsSummaryGrid
               :api-metrics-summary="assetsSummary"
               :is-loading="isLoading"

@@ -28,6 +28,7 @@ watch(() => props.apiMetricsSummary, () => {
 })
 
 const aggregationType = computed(() => {
+  console.log('Determining aggregation type for metrics summary')
   const m = props.apiMetricsSummary
   if (m.length === 0) { return null }
   if (m[0].assetId && m[0].benchmarkId) { return 'unagg' }
@@ -38,15 +39,16 @@ const aggregationType = computed(() => {
 })
 
 const columns = computed(() => {
+  console.log('Computing columns for aggregation type:', aggregationType.value)
   // Common columns
   const commonColumns = [
     { field: 'checks', header: 'Checks', component: Column },
     { field: 'oldest', header: 'Oldest', component: DurationColumn },
     { field: 'updated', header: 'Updated', component: DurationColumn },
     { field: 'assessedPct', header: 'Assessed', component: PercentageColumn },
-    { field: 'submitted', header: 'Submitted', component: PercentageColumn },
-    { field: 'accepted', header: 'Accepted', component: PercentageColumn },
-    { field: 'rejected', header: 'Rejected', component: PercentageColumn },
+    { field: 'submittedPct', header: 'Submitted', component: PercentageColumn },
+    { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn },
+    { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn },
     { field: 'cora', header: 'CORA', component: Column },
     { field: 'low', header: 'Low', component: Column },
     { field: 'medium', header: 'Medium', component: Column },
@@ -74,6 +76,7 @@ const columns = computed(() => {
 })
 
 const data = computed(() => {
+  console.log('Computing data for aggregation type:', aggregationType.value)
   return props.apiMetricsSummary.map((r) => {
     const commonData = {
       checks: r.metrics.assessments,
@@ -82,9 +85,9 @@ const data = computed(() => {
       newest: r.metrics.maxTs,
       updated: r.metrics.maxTouchTs,
       assessedPct: r.metrics.assessments ? r.metrics.assessed / r.metrics.assessments * 100 : 0,
-      submitted: r.metrics.statuses.submitted,
-      accepted: r.metrics.statuses.accepted,
-      rejected: r.metrics.statuses.rejected,
+      submittedPct:  r.metrics.assessments ? ((r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0,
+      acceptedPct: r.metrics.assessments ? (r.metrics.statuses.accepted / r.metrics.assessments) * 100 : 0,
+      rejectedPct: r.metrics.assessments ? (r.metrics.statuses.rejected / r.metrics.assessments) * 100 : 0,
       cora: calculateCoraRiskRating(r.metrics),
       low: r.metrics.findings.low,
       medium: r.metrics.findings.medium,
@@ -123,20 +126,21 @@ const data = computed(() => {
     :value="data"
     scrollable
     scroll-height="flex"
-    :virtual-scroller-options="{ itemSize: 45, delay: 0 }"
-    :pt="{
-      table: { style: 'min-width: 50rem; table-layout: fixed' },
-    }"
+    showGridlines
+    resizableColumns
+    columnResizeMode="expand"
+    :sortField="'assetName'"
+    :sortOrder="-1"
+    :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
   >
     <template v-for="col in columns" :key="col.field">
-      <component :is="col.component" v-bind="col" style="font-size: 12px; height: 45px; width: 100px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
+      <component :is="col.component" v-bind="col" sortable style="height: 27px; max-width: 200px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
     </template>
   </DataTable>
 </template>
 
 <style scoped>
 .agg-grid-row {
-  font-size: 12px;
   height: 45px;
   width: 100px;
   overflow: hidden;
