@@ -30,14 +30,26 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  showRowAction: {
+    type: Boolean,
+    default: false,
+  },
+  rowActionIcon: {
+    type: String,
+    default: 'pi pi-external-link',
+  },
 })
 
-const emit = defineEmits(['row-select'])
+const emit = defineEmits(['row-select', 'row-action'])
 
 const selectedRow = ref(null)
 
 function onRowSelect(event) {
   emit('row-select', event.data)
+}
+
+function onRowAction(rowData) {
+  emit('row-action', rowData)
 }
 
 watch(() => props.apiMetricsSummary, () => {
@@ -142,7 +154,9 @@ const data = computed(() => {
     v-model:selection="selectedRow"
     :value="data"
     :data-key="dataKey"
-    :selection-mode="selectable ? 'single' : null"    
+    :selection-mode="selectable ? 'single' : null"
+    class="metrics-summary-grid"
+    :class="{ 'has-row-action': showRowAction }"
     scrollable
     scroll-height="flex"
     showGridlines
@@ -151,9 +165,24 @@ const data = computed(() => {
     :sortField="'benchmarkId'"
     :sortOrder="1"
     :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
-
     @row-select="onRowSelect"
   >
+    <Column
+      v-if="showRowAction"
+      frozen
+      style="width: 2.5rem; min-width: 2.5rem; max-width: 2.5rem; padding: 0;"
+    >
+      <template #body="slotProps">
+        <button
+          type="button"
+          class="row-action-btn"
+          title="Open"
+          @click.stop="onRowAction(slotProps.data)"
+        >
+          <i :class="rowActionIcon" />
+        </button>
+      </template>
+    </Column>
     <template v-for="col in columns" :key="col.field">
       <component :is="col.component" v-bind="col" sortable style="height: 27px; max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
     </template>
@@ -167,5 +196,33 @@ const data = computed(() => {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.row-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.row-action-btn:hover {
+  color: #3b82f6;
+}
+
+.row-action-btn i {
+  font-size: 0.85rem;
+}
+
+/* Show button on row hover */
+:deep(.p-datatable-row-selected) .row-action-btn,
+:deep(.p-datatable-tbody > tr:hover) .row-action-btn {
+  opacity: 1;
 }
 </style>

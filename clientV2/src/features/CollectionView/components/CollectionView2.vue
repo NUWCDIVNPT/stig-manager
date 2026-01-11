@@ -15,11 +15,11 @@ import { useCollectionQuery } from '../queries/collectionQueries.js'
 import {
   useCollectionAssetStigsQuery,
   useCollectionAssetSummaryQuery,
+  useCollectionChecklistAssetsQuery,
   useCollectionLabelsQuery,
   useCollectionLabelSummaryQuery,
   useCollectionStigSummaryQuery,
 } from '../queries/metricsQueries.js'
-import ChecklistTable from './ChecklistTable.vue'
 import LabelsView from './LabelsView.vue'
 import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
@@ -126,18 +126,6 @@ const selectedRevisionStr = computed({
   },
 })
 
-// Navigate to asset review
-function handleReviewAsset(reviewData) {
-  router.push({
-    name: 'collection-asset-review',
-    params: {
-      collectionId: props.collectionId,
-      assetId: reviewData.assetId,
-      benchmarkId: reviewData.benchmarkId,
-    },
-  })
-}
-
 // Exit review mode - go back to dashboard
 function exitReviewMode() {
   router.push({
@@ -211,6 +199,29 @@ const { labels: rawLabels } = useCollectionLabelsQuery({
 const selectedBenchmarkId = ref(null)
 function handleStigSelect(benchmarkId) {
   selectedBenchmarkId.value = benchmarkId
+}
+
+// Query for assets of the selected STIG (for STIGs tab child panel)
+const {
+  checklistAssets,
+  isLoading: checklistAssetsLoading,
+  errorMessage: checklistAssetsError,
+} = useCollectionChecklistAssetsQuery({
+  collectionId: computed(() => props.collectionId),
+  benchmarkId: selectedBenchmarkId,
+  token,
+})
+
+// Handle row action from checklist assets grid to navigate to review
+function handleChecklistAssetAction(rowData) {
+  router.push({
+    name: 'collection-asset-review',
+    params: {
+      collectionId: props.collectionId,
+      assetId: rowData.assetId,
+      benchmarkId: selectedBenchmarkId.value,
+    },
+  })
 }
 
 const selectedAssetId = ref(null)
@@ -393,11 +404,33 @@ const tabPanelPt = {
                 />
               </div>
               <div class="table-container">
-                <ChecklistTable
-                  :collection-id="collectionId"
-                  :benchmark-id="selectedBenchmarkId"
-                  @review-asset="handleReviewAsset"
-                />
+                <div class="child-panel">
+                  <div class="child-panel__header">
+                    <h3>Checklists</h3>
+                    <span v-if="selectedBenchmarkId" class="stig-badge">{{ selectedBenchmarkId }}</span>
+                  </div>
+                  <div class="child-panel__body">
+                    <div v-if="!selectedBenchmarkId" class="empty-state">
+                      Select a STIG to view checklists.
+                    </div>
+                    <div v-else-if="checklistAssetsLoading" class="loading-state">
+                      Loading checklists...
+                    </div>
+                    <div v-else-if="checklistAssetsError" class="error-state">
+                      {{ checklistAssetsError }}
+                    </div>
+                    <div v-else-if="checklistAssets.length === 0" class="empty-state">
+                      No checklists found for this STIG.
+                    </div>
+                    <MetricsSummaryGrid
+                      v-else
+                      :api-metrics-summary="checklistAssets"
+                      show-row-action
+                      data-key="assetId"
+                      @row-action="handleChecklistAssetAction"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </TabPanel>
@@ -627,7 +660,8 @@ const tabPanelPt = {
   font-size: 1rem;
 }
 
-.asset-badge {
+.asset-badge,
+.stig-badge {
   font-size: 0.8rem;
   background-color: #3a3d40;
   padding: 0.2rem 0.5rem;
