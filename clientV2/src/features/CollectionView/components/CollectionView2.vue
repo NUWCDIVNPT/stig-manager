@@ -1,6 +1,5 @@
 <script setup>
 import Breadcrumb from 'primevue/breadcrumb'
-import Select from 'primevue/select'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
@@ -8,6 +7,7 @@ import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, inject, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import BreadcrumbSelect from '../../../components/common/BreadcrumbSelect.vue'
 import AssetReview from '../../AssetReview/components/AssetReview.vue'
 import { useAssetStigsQuery, useStigRevisionsQuery } from '../../AssetReview/queries/assetQueries.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
@@ -297,33 +297,21 @@ const tabPanelPt = {
           >
             {{ item.label }}
           </a>
-          <Select
+          <BreadcrumbSelect
             v-else-if="item.isStigDropdown"
             v-model="selectedStigBenchmarkId"
             :options="assetStigs"
             option-label="benchmarkId"
             option-value="benchmarkId"
-            class="breadcrumb-stig-select"
             placeholder="Select STIG"
-            :pt="{
-              root: { class: 'breadcrumb-select-root' },
-              label: { class: 'breadcrumb-select-label' },
-              dropdown: { class: 'breadcrumb-select-dropdown' },
-            }"
           />
-          <Select
+          <BreadcrumbSelect
             v-else-if="item.isRevisionDropdown"
             v-model="selectedRevisionStr"
             :options="stigRevisions"
             option-label="revisionStr"
             option-value="revisionStr"
-            class="breadcrumb-stig-select"
             placeholder="Select Revision"
-            :pt="{
-              root: { class: 'breadcrumb-select-root' },
-              label: { class: 'breadcrumb-select-label' },
-              dropdown: { class: 'breadcrumb-select-dropdown' },
-            }"
           />
           <span v-else class="breadcrumb-current">{{ item.label }}</span>
         </template>
@@ -451,47 +439,6 @@ const tabPanelPt = {
   color: #e4e4e7;
   font-size: 0.95rem;
   font-weight: 600;
-}
-
-/* Subtle breadcrumb-style dropdown */
-.breadcrumb-stig-select {
-  display: inline-flex;
-  align-items: center;
-}
-
-:deep(.breadcrumb-select-root) {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  padding: 0;
-  min-width: auto;
-  cursor: pointer;
-}
-
-:deep(.breadcrumb-select-root:hover) {
-  background: transparent;
-}
-
-:deep(.breadcrumb-select-label) {
-  padding: 0;
-  color: #e4e4e7;
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-:deep(.breadcrumb-select-label:hover) {
-  text-decoration: underline;
-}
-
-:deep(.breadcrumb-select-dropdown) {
-  color: #6b7280;
-  width: auto;
-  padding-left: 0.25rem;
-}
-
-:deep(.breadcrumb-select-dropdown .p-icon) {
-  width: 0.75rem;
-  height: 0.75rem;
 }
 
 .breadcrumb-separator {
