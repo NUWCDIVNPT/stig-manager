@@ -60,9 +60,9 @@ const columns = computed(() => {
     { field: 'oldest', header: 'Oldest', component: DurationColumn },
     { field: 'updated', header: 'Updated', component: DurationColumn },
     { field: 'assessedPct', header: 'Assessed', component: PercentageColumn },
-    { field: 'submitted', header: 'Submitted', component: PercentageColumn },
-    { field: 'accepted', header: 'Accepted', component: PercentageColumn },
-    { field: 'rejected', header: 'Rejected', component: PercentageColumn },
+    { field: 'submittedPct', header: 'Submitted', component: PercentageColumn },
+    { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn },
+    { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn },
     { field: 'cora', header: 'CORA', component: Column },
     { field: 'low', header: 'Low', component: Column },
     { field: 'medium', header: 'Medium', component: Column },
@@ -98,10 +98,10 @@ const data = computed(() => {
       newest: r.metrics.maxTs,
       updated: r.metrics.maxTouchTs,
       assessedPct: r.metrics.assessments ? r.metrics.assessed / r.metrics.assessments * 100 : 0,
-      submitted: r.metrics.statuses.submitted,
-      accepted: r.metrics.statuses.accepted,
-      rejected: r.metrics.statuses.rejected,
-      cora: calculateCoraRiskRating(r.metrics),
+      submittedPct:  r.metrics.assessments ? ((r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0,
+      acceptedPct: r.metrics.assessments ? (r.metrics.statuses.accepted / r.metrics.assessments) * 100 : 0,
+      rejectedPct: r.metrics.assessments ? (r.metrics.statuses.rejected / r.metrics.assessments) * 100 : 0,
+      cora: (calculateCoraRiskRating(r.metrics).weightedAvg * 100).toFixed(1),      coraFull: calculateCoraRiskRating(r.metrics),
       low: r.metrics.findings.low,
       medium: r.metrics.findings.medium,
       high: r.metrics.findings.high,
@@ -119,7 +119,8 @@ const data = computed(() => {
         return {
           benchmarkId: r.benchmarkId,
           title: r.title,
-          revision: {
+          revision: r.revisionStr,
+          revisionFull: {
             string: r.revisionStr,
             date: r.revisionDate,
             isPinned: r.revisionPinned,
@@ -139,24 +140,25 @@ const data = computed(() => {
     v-model:selection="selectedRow"
     :value="data"
     :data-key="dataKey"
-    :selection-mode="selectable ? 'single' : null"
+    :selection-mode="selectable ? 'single' : null"    
     scrollable
     scroll-height="flex"
-    :virtual-scroller-options="{ itemSize: 45, delay: 0 }"
-    :pt="{
-      table: { style: 'min-width: 50rem; table-layout: fixed' },
-    }"
+    showGridlines
+    resizableColumns
+    columnResizeMode="expand"
+    :sortField="'benchmarkId'"
+    :sortOrder="1"
+    :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
     @row-select="onRowSelect"
   >
     <template v-for="col in columns" :key="col.field">
-      <component :is="col.component" v-bind="col" style="font-size: 12px; height: 45px; width: 100px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
+      <component :is="col.component" v-bind="col" sortable style="height: 27px; max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
     </template>
   </DataTable>
 </template>
 
 <style scoped>
 .agg-grid-row {
-  font-size: 12px;
   height: 45px;
   width: 100px;
   overflow: hidden;
