@@ -187,7 +187,7 @@ const breadcrumbItems = computed(() => {
 })
 
 // Data queries for STIGs, Assets, Labels
-const { stigs } = useCollectionStigSummaryQuery({
+const { stigs, isLoading: stigsLoading, errorMessage: stigsError } = useCollectionStigSummaryQuery({
   collectionId: computed(() => props.collectionId),
   token,
 })
@@ -370,6 +370,8 @@ const tabPanelPt = {
                 <StigsView
                   :collection-id="collectionId"
                   :stigs="stigs"
+                  :is-loading="stigsLoading"
+                  :error-message="stigsError"
                   @select-stig="handleStigSelect"
                 />
               </div>

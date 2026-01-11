@@ -1,7 +1,7 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { calculateCoraRiskRating } from '../lib/libCora.js'
 import AssetColumn from './AssetColumn.vue'
 import DurationColumn from './DurationColumn.vue'
@@ -20,7 +20,23 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  selectable: {
+    type: Boolean,
+    default: false,
+  },
+  dataKey: {
+    type: String,
+    default: null,
+  },
 })
+
+const emit = defineEmits(['row-select'])
+
+const selectedRow = ref(null)
+
+function onRowSelect(event) {
+  emit('row-select', event.data)
+}
 
 watch(() => props.apiMetricsSummary, () => {
   console.log('apiMetricsSummary changed')
@@ -120,13 +136,17 @@ const data = computed(() => {
 
 <template>
   <DataTable
+    v-model:selection="selectedRow"
     :value="data"
+    :data-key="dataKey"
+    :selection-mode="selectable ? 'single' : null"
     scrollable
     scroll-height="flex"
     :virtual-scroller-options="{ itemSize: 45, delay: 0 }"
     :pt="{
       table: { style: 'min-width: 50rem; table-layout: fixed' },
     }"
+    @row-select="onRowSelect"
   >
     <template v-for="col in columns" :key="col.field">
       <component :is="col.component" v-bind="col" style="font-size: 12px; height: 45px; width: 100px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
