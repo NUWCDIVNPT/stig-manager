@@ -13,12 +13,12 @@ import { useAssetStigsQuery, useStigRevisionsQuery } from '../../AssetReview/que
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import { useCollectionQuery } from '../queries/collectionQueries.js'
 import {
+  useCollectionAssetStigsQuery,
   useCollectionAssetSummaryQuery,
   useCollectionLabelsQuery,
   useCollectionLabelSummaryQuery,
   useCollectionStigSummaryQuery,
 } from '../queries/metricsQueries.js'
-import AssetsView from './AssetsView.vue'
 import ChecklistTable from './ChecklistTable.vue'
 import LabelsView from './LabelsView.vue'
 import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
@@ -192,7 +192,7 @@ const { stigs, isLoading: stigsLoading, errorMessage: stigsError } = useCollecti
   token,
 })
 
-const { assets } = useCollectionAssetSummaryQuery({
+const { assets, isLoading: assetsLoading, errorMessage: assetsError } = useCollectionAssetSummaryQuery({
   collectionId: computed(() => props.collectionId),
   token,
 })
@@ -212,6 +212,22 @@ const selectedBenchmarkId = ref(null)
 function handleStigSelect(benchmarkId) {
   selectedBenchmarkId.value = benchmarkId
 }
+
+const selectedAssetId = ref(null)
+function handleAssetSelect(assetId) {
+  selectedAssetId.value = assetId
+}
+
+// Query for STIGs of the selected asset (for Assets tab child panel)
+const {
+  assetStigs: selectedAssetStigs,
+  isLoading: selectedAssetStigsLoading,
+  errorMessage: selectedAssetStigsError,
+} = useCollectionAssetStigsQuery({
+  collectionId: computed(() => props.collectionId),
+  assetId: selectedAssetId,
+  token,
+})
 
 // Map route name to tab value
 const routeToTab = {
@@ -386,8 +402,43 @@ const tabPanelPt = {
             </div>
           </TabPanel>
           <TabPanel value="assets" :pt="tabPanelPt">
-            <div class="view-container">
-              <AssetsView :collection-id="collectionId" :assets="assets" />
+            <div class="assets-grid">
+              <div class="table-container">
+                <MetricsSummaryGrid
+                  :api-metrics-summary="assets"
+                  :is-loading="assetsLoading"
+                  :error-message="assetsError"
+                  selectable
+                  data-key="assetId"
+                  @row-select="(row) => handleAssetSelect(row.assetId)"
+                />
+              </div>
+              <div class="table-container">
+                <div class="child-panel">
+                  <div class="child-panel__header">
+                    <h3>Asset STIGs</h3>
+                    <span v-if="selectedAssetId" class="asset-badge">Asset {{ selectedAssetId }}</span>
+                  </div>
+                  <div class="child-panel__body">
+                    <div v-if="!selectedAssetId" class="empty-state">
+                      Select an asset to view its STIGs.
+                    </div>
+                    <div v-else-if="selectedAssetStigsLoading" class="loading-state">
+                      Loading STIGs...
+                    </div>
+                    <div v-else-if="selectedAssetStigsError" class="error-state">
+                      {{ selectedAssetStigsError }}
+                    </div>
+                    <div v-else-if="selectedAssetStigs.length === 0" class="empty-state">
+                      No STIGs found for this asset.
+                    </div>
+                    <MetricsSummaryGrid
+                      v-else
+                      :api-metrics-summary="selectedAssetStigs"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </TabPanel>
           <TabPanel value="labels" :pt="tabPanelPt">
@@ -542,5 +593,65 @@ const tabPanelPt = {
   padding: 2rem;
   text-align: center;
   color: #a1a1aa;
+}
+
+.assets-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  height: 100%;
+  padding: 0.5rem;
+  overflow: hidden;
+}
+
+.child-panel {
+  background-color: #1f1f1f;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.child-panel__header {
+  padding: 0.75rem 1rem;
+  background-color: #262626;
+  border-bottom: 1px solid #3a3d40;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.child-panel__header h3 {
+  margin: 0;
+  color: #e4e4e7;
+  font-size: 1rem;
+}
+
+.asset-badge {
+  font-size: 0.8rem;
+  background-color: #3a3d40;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  color: #a6adba;
+}
+
+.child-panel__body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.empty-state,
+.loading-state,
+.error-state {
+  padding: 2rem;
+  text-align: center;
+  color: #a6adba;
+  font-style: italic;
+}
+
+.error-state {
+  color: #f16969;
 }
 </style>
