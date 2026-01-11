@@ -23,9 +23,50 @@ const routes = [
   },
   {
     path: '/collection/:collectionId',
-    name: 'collection',
     component: CollectionView,
     props: true,
+    children: [
+      {
+        path: '',
+        name: 'collection',
+        redirect: to => ({ name: 'collection-dashboard', params: { collectionId: to.params.collectionId } }),
+      },
+      {
+        path: 'dashboard',
+        name: 'collection-dashboard',
+        props: true,
+      },
+      {
+        path: 'stigs',
+        name: 'collection-stigs',
+        props: true,
+      },
+      {
+        path: 'assets',
+        name: 'collection-assets',
+        props: true,
+      },
+      {
+        path: 'labels',
+        name: 'collection-labels',
+        props: true,
+      },
+      {
+        path: 'users',
+        name: 'collection-users',
+        props: true,
+      },
+      {
+        path: 'settings',
+        name: 'collection-settings',
+        props: true,
+      },
+      {
+        path: 'asset/:assetId/stig/:benchmarkId/revision/:revisionStr?',
+        name: 'collection-asset-review',
+        props: true,
+      },
+    ],
   },
   {
     path: '/collections',
