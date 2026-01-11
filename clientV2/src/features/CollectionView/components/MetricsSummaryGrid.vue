@@ -6,6 +6,8 @@ import { calculateCoraRiskRating } from '../lib/libCora.js'
 import AssetColumn from './AssetColumn.vue'
 import DurationColumn from './DurationColumn.vue'
 import PercentageColumn from './PercentageColumn.vue'
+import CountColumnWithTooltip from './CountColumnWithTooltip.vue'
+import LabelsColumnWithTooltip from './LabelsColumnWithTooltip.vue'
 
 const props = defineProps({
   apiMetricsSummary: {
@@ -72,8 +74,8 @@ const columns = computed(() => {
     case 'asset':
       return [
         { field: 'assetName', header: 'Asset', component: AssetColumn },
-        { field: 'labels', header: 'Labels', component: Column },
-        { field: 'stigCnt', header: 'Stigs', component: Column },
+        { field: 'labels', header: 'Labels', component: LabelsColumnWithTooltip },
+        { field: 'stigs', header: 'Stigs', component: CountColumnWithTooltip },
         ...commonColumns,
       ]
     case 'stig':
@@ -145,10 +147,11 @@ const data = computed(() => {
     scroll-height="flex"
     showGridlines
     resizableColumns
-    columnResizeMode="expand"
+    columnResizeMode="fit"
     :sortField="'benchmarkId'"
     :sortOrder="1"
     :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
+
     @row-select="onRowSelect"
   >
     <template v-for="col in columns" :key="col.field">
