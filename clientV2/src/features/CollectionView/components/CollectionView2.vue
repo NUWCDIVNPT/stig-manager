@@ -516,7 +516,7 @@ const tabPanelPt = {
 .breadcrumb-link {
   color: #60a5fa;
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: var(--breadcrumb-font-size);
 }
 
 .breadcrumb-link:hover {
@@ -525,7 +525,7 @@ const tabPanelPt = {
 
 .breadcrumb-current {
   color: #e4e4e7;
-  font-size: 0.95rem;
+  font-size: var(--breadcrumb-font-size);
   font-weight: 600;
 }
 

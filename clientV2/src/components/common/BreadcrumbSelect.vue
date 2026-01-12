@@ -27,6 +27,7 @@ defineProps({
 defineEmits(['update:modelValue'])
 
 // Pass-through styles to override global PT inline styles
+// Note: fontSize is inherited from --breadcrumb-font-size CSS variable
 const selectPt = {
   root: {
     style: {
@@ -40,7 +41,6 @@ const selectPt = {
   label: {
     style: {
       padding: '0',
-      fontSize: '0.95rem',
       fontWeight: '600',
       color: '#e4e4e7',
       background: 'transparent',
@@ -59,6 +59,7 @@ const selectPt = {
     :pt="selectPt"
     :pt-options="{ mergeProps: false }"
     class="breadcrumb-select"
+    panel-class="breadcrumb-select-panel"
     @update:model-value="$emit('update:modelValue', $event)"
   />
 </template>
@@ -67,6 +68,11 @@ const selectPt = {
 .breadcrumb-select {
   display: inline-flex;
   align-items: center;
+}
+
+/* Inherit font-size from --breadcrumb-font-size CSS variable (defined in style.css :root) */
+:deep(.p-select-label) {
+  font-size: var(--breadcrumb-font-size);
 }
 
 :deep(.p-select-label:hover) {

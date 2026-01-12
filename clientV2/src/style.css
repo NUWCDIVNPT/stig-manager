@@ -37,6 +37,9 @@
   /* Collection Stats Colors */
   --color-inventory: #c4a484;
   --color-review-age: #d4d4d8;
+
+  /* Breadcrumb sizing */
+  --breadcrumb-font-size: 1.2rem;
 }
 
 *, *::before, *::after {
@@ -150,7 +153,7 @@ textarea:focus {
 
 
 
-/* 
+/*
 
 @media (prefers-color-scheme: light) {
   :root {
@@ -164,3 +167,8 @@ textarea:focus {
     background-color: #f9f9f9;
   }
 } */
+
+/* Breadcrumb select dropdown panel styling */
+.breadcrumb-select-panel .p-select-option {
+  font-size: var(--breadcrumb-font-size);
+}
