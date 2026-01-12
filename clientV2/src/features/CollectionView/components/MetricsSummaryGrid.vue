@@ -6,6 +6,7 @@ import { calculateCoraRiskRating } from '../lib/libCora.js'
 import AssetColumn from './AssetColumn.vue'
 import DurationColumn from './DurationColumn.vue'
 import PercentageColumn from './PercentageColumn.vue'
+import LabelsColumn from './LabelsColumn.vue'
 
 const props = defineProps({
   apiMetricsSummary: {
@@ -58,7 +59,7 @@ const columns = computed(() => {
     case 'asset':
       return [
         { field: 'assetName', header: 'Asset', component: AssetColumn },
-        { field: 'labels', header: 'Labels', component: Column },
+        { field: 'labels', header: 'Labels', component: LabelsColumn },
         { field: 'stigCnt', header: 'Stigs', component: Column },
         ...commonColumns,
       ]
