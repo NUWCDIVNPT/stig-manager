@@ -425,9 +425,9 @@ const tabPanelPt = {
                     <MetricsSummaryGrid
                       v-else
                       :api-metrics-summary="checklistAssets"
-                      show-row-action
+                      show-asset-action
                       data-key="assetId"
-                      @row-action="handleChecklistAssetAction"
+                      @asset-action="handleChecklistAssetAction"
                     />
                   </div>
                 </div>

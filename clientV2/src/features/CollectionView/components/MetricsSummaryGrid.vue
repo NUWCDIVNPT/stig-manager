@@ -1,7 +1,7 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref, watch } from 'vue'
+import { computed, provide, ref, watch } from 'vue'
 import { calculateCoraRiskRating } from '../lib/libCora.js'
 import AssetColumn from './AssetColumn.vue'
 import DurationColumn from './DurationColumn.vue'
@@ -38,9 +38,13 @@ const props = defineProps({
     type: String,
     default: 'pi pi-external-link',
   },
+  showAssetAction: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-const emit = defineEmits(['row-select', 'row-action'])
+const emit = defineEmits(['row-select', 'row-action', 'asset-action'])
 
 const selectedRow = ref(null)
 
@@ -51,6 +55,14 @@ function onRowSelect(event) {
 function onRowAction(rowData) {
   emit('row-action', rowData)
 }
+
+function onAssetAction(rowData) {
+  emit('asset-action', rowData)
+}
+
+// Provide asset action handler to child column components
+provide('assetActionEnabled', computed(() => props.showAssetAction))
+provide('onAssetAction', onAssetAction)
 
 watch(() => props.apiMetricsSummary, () => {
   console.log('apiMetricsSummary changed')
