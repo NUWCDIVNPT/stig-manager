@@ -6,7 +6,7 @@ import RadioButton from 'primevue/radiobutton'
 import Select from 'primevue/select'
 import { computed, defineProps, inject, ref, watch } from 'vue'
 import { useEnv } from '../../../shared/stores/useEnv.js'
-import { handleInventoryExport } from '../exportMetricsUtils.js'
+import { ASSET_FIELDS, handleInventoryExport, STIG_FIELDS } from '../exportMetricsUtils.js'
 
 const props = defineProps({
   visible: {
@@ -38,26 +38,10 @@ const delimiterOptions = [
   { label: 'Newline', value: 'newline', string: '\n' },
 ]
 
-const STIG_FIELDS = [
-  { apiProperty: 'benchmark', header: 'Benchmark' },
-  { apiProperty: 'title', header: 'Title' },
-  { apiProperty: 'revision', header: 'Revision' },
-  { apiProperty: 'date', header: 'Date' },
-  { apiProperty: 'assets', header: 'Assets', delimitedProperty: 'name', delimiter: ',' },
-]
+const groupBy = ref('asset')
 
-const ASSET_FIELDS = [
-  { apiProperty: 'name', header: 'Name' },
-  { apiProperty: 'fqdn', header: 'FQDN' },
-  { apiProperty: 'ip', header: 'IP' },
-  { apiProperty: 'mac', header: 'MAC' },
-  { apiProperty: 'description', header: 'Description' },
-  { apiProperty: 'stigs', header: 'STIGs', delimitedProperty: 'benchmarkId', delimiter: ', ' },
-]
-
-const groupBy = ref('stig')
 const format = ref('csv')
-const csvFields = ref([...STIG_FIELDS])
+const csvFields = ref([...ASSET_FIELDS])
 const delimiter = ref('comma')
 const include = ref(true)
 const prettyPrint = ref(false)
@@ -71,7 +55,11 @@ const assetsLabel = computed(() => {
 const delimiterLabel = computed(() => {
   return groupBy.value === 'stig'
     ? 'Assets delimited by:'
-    : 'STIGs delimited by:'
+    : 'STIGs delimited by (forced \n):'
+})
+
+const showNameWarning = computed(() => {
+  return groupBy.value === 'asset' && !csvFields.value.some(f => f.apiProperty === 'name')
 })
 
 watch(groupBy, (newVal) => {
@@ -81,15 +69,6 @@ watch(groupBy, (newVal) => {
   else {
     csvFields.value = [...ASSET_FIELDS]
   }
-})
-
-watch(delimiter, (newVal) => {
-  const delimString = delimiterOptions.find(d => d.value === newVal)?.string || ','
-  csvFields.value.forEach((field) => {
-    if (field.delimitedProperty) {
-      field.delimiter = delimString
-    }
-  })
 })
 
 const commonPt = {
@@ -194,12 +173,12 @@ async function handleDownload() {
         <label class="row-label">Group by:</label>
         <div class="radio-group">
           <div class="field-radiobutton">
-            <RadioButton v-model="groupBy" input-id="groupStig" value="stig" :pt="commonPt.radioButton" />
-            <label for="groupStig">STIG</label>
-          </div>
-          <div class="field-radiobutton">
             <RadioButton v-model="groupBy" input-id="groupAsset" value="asset" :pt="commonPt.radioButton" />
             <label for="groupAsset">Asset</label>
+          </div>
+          <div class="field-radiobutton">
+            <RadioButton v-model="groupBy" input-id="groupStig" value="stig" :pt="commonPt.radioButton" />
+            <label for="groupStig">STIG</label>
           </div>
         </div>
       </div>
@@ -229,7 +208,7 @@ async function handleDownload() {
           </div>
         </div>
 
-        <div class="delimiter-row">
+        <div v-if="groupBy === 'stig'" class="delimiter-row">
           <label>{{ delimiterLabel }}</label>
           <Select
             v-model="delimiter"
@@ -238,6 +217,11 @@ async function handleDownload() {
             option-value="value"
             :pt="commonPt.select"
           />
+        </div>
+
+        <div v-if="showNameWarning" class="warning-message">
+          <span class="warning-icon pi pi-exclamation-triangle" />
+          <span> Warning: If exported without 'Name', this file cannot be reimported back into STIG Manager.</span>
         </div>
       </div>
 
@@ -270,6 +254,11 @@ async function handleDownload() {
 </template>
 
 <style scoped>
+.warning-message {
+  color: #ff0000;
+  font-size: 0.8rem;
+}
+
 .export-modal-content {
   display: flex;
   flex-direction: column;

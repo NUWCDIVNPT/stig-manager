@@ -33,6 +33,7 @@
   --metrics-status-chart-unassessed: hsl(0 0% 18% / 1);
   --metrics-status-chart-unsaved: hsl(0deg 0% 18%);
   --metrics-status-chart-rejected: hsl(5, 89%, 32%);
+  
   /* CAT Rating Colors */
   --color-cat1: #c68c8c;
   --color-cat2: #d4b056;

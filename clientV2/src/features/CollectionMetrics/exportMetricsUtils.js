@@ -7,6 +7,31 @@ function filenameComponentFromDate() {
   const d = new Date()
   return d.toISOString().replace(/:|\d{2}\.\d{3}/g, '')
 }
+const delimiterOptions = [
+  { label: 'Comma', value: 'comma', string: ',' },
+  { label: 'Comma and Space', value: 'comma_space', string: ', ' },
+  { label: 'Newline', value: 'newline', string: '\n' },
+]
+
+export const STIG_FIELDS = [
+  { apiProperty: 'benchmark', header: 'Benchmark' },
+  { apiProperty: 'title', header: 'Title' },
+  { apiProperty: 'revision', header: 'Revision' },
+  { apiProperty: 'date', header: 'Date' },
+  { apiProperty: 'assets', header: 'Assets' },
+]
+
+export const ASSET_FIELDS = [
+  { apiProperty: 'name', header: 'Name' },
+  { apiProperty: 'description', header: 'Description' },
+  { apiProperty: 'ip', header: 'IP' },
+  { apiProperty: 'fqdn', header: 'FQDN' },
+  { apiProperty: 'mac', header: 'MAC' },
+  { apiProperty: 'noncomputing', header: 'Non-Computing' },
+  { apiProperty: 'stigs', header: 'STIGs' },
+  { apiProperty: 'labels', header: 'Labels' },
+  { apiProperty: 'metadata', header: 'Metadata' },
+]
 
 /**
  * Handles the download of export metrics.
@@ -68,6 +93,20 @@ export async function handleDownload({
   }
 }
 
+async function fetchLabels(apiUrl, collectionId, authToken) {
+  const url = `${apiUrl}/collections/${collectionId}/labels`
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  })
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}: ${response.statusText}`)
+  }
+  return response.json()
+}
+
 /**
  * Fetches API data as text for export.
  * @param {object} params
@@ -116,31 +155,69 @@ async function fetchApiDataAsText({ groupBy, includeProjection, apiUrl, collecti
  * Converts API data to CSV format.
  * @param {Array} apiData - The data to convert
  * @param {Array} csvFields - The fields definition
+ * @param {string} listDelimiter - The delimiter for list fields
  * @returns {string} The CSV string
  */
-export function apiToCsv(apiData, csvFields) {
-  // Function to apply double-quote escaping
-  const quotify = string => `"${string.replace(/"/g, '""')}"`
+export function apiToCsv(apiData, csvFields, listDelimiter = ',') {
+  // Function to apply CSV escaping
+  const escapeCsv = (value) => {
+    if (value == null) {
+      return ''
+    }
+    const str = String(value)
+    return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
+  }
   const csvData = []
   const header = []
   for (const field of csvFields) {
-    header.push(quotify(field.header))
+    header.push(escapeCsv(field.header))
   }
   csvData.push(header.join(','))
   // Rows
   for (const data of apiData) {
     const row = []
     for (const field of csvFields) {
-      if (field.delimiter) {
-        row.push(quotify(data[field.apiProperty].map(i => i[field.delimitedProperty]).join(field.delimiter)))
+      let val = data[field.apiProperty]
+
+      // Handle array or delimited property
+      console.log(val)
+      if (Array.isArray(val)) {
+        if()
+        row.push(escapeCsv(val.join(listDelimiter)))
       }
       else {
-        row.push(quotify(data[field.apiProperty] ?? ''))
+        row.push(escapeCsv(val ?? ''))
       }
     }
     csvData.push(row.join(','))
   }
   return csvData.join('\n')
+}
+
+function processAssetData(assets, labels, csvFields) {
+  return assets.map((asset) => {
+    const processedAsset = { ...asset }
+
+    // Map labels
+    if (asset.labelIds && labels) {
+      const labelNames = labels
+        .filter(l => asset.labelIds.includes(l.labelId))
+        .map(l => l.name)
+      processedAsset.labels = labelNames
+    }
+
+    // Format Non-Computing
+    if (csvFields.some(f => f.apiProperty === 'noncomputing')) {
+      processedAsset.noncomputing = asset.noncomputing ? 'TRUE' : 'FALSE'
+    }
+
+    // Format Metadata
+    if (csvFields.some(f => f.apiProperty === 'metadata')) {
+      processedAsset.metadata = asset.metadata ? JSON.stringify(asset.metadata) : ''
+    }
+
+    return processedAsset
+  })
 }
 
 /**
@@ -157,15 +234,16 @@ export function apiToCsv(apiData, csvFields) {
  * @param {string} params.authToken - Auth Token
  */
 export async function handleInventoryExport({
-  groupBy,
-  format,
+  groupBy, // "asset" or "stig"
+  format, // "csv" or "json"
   csvFields,
-  include,
+  include, // for json to include assets for each stig
   prettyPrint,
   collectionId,
   collectionName,
   apiUrl,
   authToken,
+  delimiter, // used for csv
 }) {
   let downloadData
   const fileExtension = format
@@ -173,16 +251,43 @@ export async function handleInventoryExport({
   if (format === 'csv') {
     const requestProjection = csvFields.some(item => item.apiProperty === 'stigs' || item.apiProperty === 'assets')
     const apiText = await fetchApiDataAsText({ groupBy, includeProjection: requestProjection, apiUrl, collectionId, authToken })
-    downloadData = new Blob([apiToCsv(JSON.parse(apiText), csvFields)])
+    let data = JSON.parse(apiText)
+
+    const paramDelimiter = delimiterOptions.find(d => d.value === delimiter)?.string || ','
+    const listDelimiter = groupBy === 'asset' ? '\n' : paramDelimiter
+
+    let exportFields = csvFields
+    if (groupBy === 'asset') {
+      const labels = await fetchLabels(apiUrl, collectionId, authToken)
+      data = processAssetData(data, labels, csvFields)
+
+      // Ensure all ASSET_FIELDS headers are present. Mask unselected fields.
+      exportFields = ASSET_FIELDS.map((col) => {
+        const isSelected = csvFields.some(f => f.apiProperty === col.apiProperty)
+        if (isSelected) {
+          return col
+        }
+        return { ...col, apiProperty: '___skipped___' } // Dummy prop to produce empty value
+      })
+    }
+
+    downloadData = new Blob([apiToCsv(data, exportFields, listDelimiter)])
   }
   else {
     // JSON
     const apiText = await fetchApiDataAsText({ groupBy, includeProjection: include, apiUrl, collectionId, authToken })
+    let data = JSON.parse(apiText)
+
+    if (groupBy === 'asset') {
+      const labels = await fetchLabels(apiUrl, collectionId, authToken)
+      data = processAssetData(data, labels, [])
+    }
+
     if (prettyPrint) {
-      downloadData = new Blob([JSON.stringify(JSON.parse(apiText), null, 2)])
+      downloadData = new Blob([JSON.stringify(data, null, 2)])
     }
     else {
-      downloadData = new Blob([apiText])
+      downloadData = new Blob([JSON.stringify(data)])
     }
   }
 
