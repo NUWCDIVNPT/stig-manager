@@ -27,6 +27,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible'])
 
+// get is when reading the value, set is when setting the value (emitting the event)
 const visible = computed({
   get: () => props.visible,
   set: value => emit('update:visible', value),

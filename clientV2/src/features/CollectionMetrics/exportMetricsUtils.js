@@ -7,6 +7,7 @@ function filenameComponentFromDate() {
   const d = new Date()
   return d.toISOString().replace(/:|\d{2}\.\d{3}/g, '')
 }
+
 const delimiterOptions = [
   { label: 'Comma', value: 'comma', string: ',' },
   { label: 'Comma and Space', value: 'comma_space', string: ', ' },
@@ -32,6 +33,229 @@ export const ASSET_FIELDS = [
   { apiProperty: 'labels', header: 'Labels' },
   { apiProperty: 'metadata', header: 'Metadata' },
 ]
+
+/**
+ * Escapes a value for CSV format.
+ * Null/undefined becomes empty string.
+ * Wraps in quotes if contains delimiter, quote, or newline.
+ */
+function escapeCsv(value) {
+  if (value == null) {
+    return ''
+  }
+  const str = String(value)
+  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
+}
+
+/**
+ * Generates a CSV string derived from data and column definitions.
+ * If data is missing a property defined in columns, outputs empty string (preserving header order).
+ * @param {Array} data - Array of objects to convert to CSV.
+ * @param {Array} columns - Array of column definitions with `header` and `apiProperty` properties.
+ * @param {string} [listDelimiter] - Delimiter for lists (e.g., Stigs, Labels).
+ * @returns {string} CSV string.
+ */
+export function generateCsv(data, columns, listDelimiter = ',') {
+  const csvRows = []
+
+  // make the header row
+  const headerRow = columns.map(c => escapeCsv(c.header)).join(',')
+  csvRows.push(headerRow)
+
+  // make the data rows
+  for (const item of data) {
+    const rowValues = columns.map((col) => {
+      let val = item[col.apiProperty]
+
+      // special handling for lists (Stigs, Labels) or objects that need delimiting
+      if (Array.isArray(val)) {
+        // if it's an array of objects (it should be this is being extra) and we need a specific property (like benchmarkId), extract it
+        if (val.length > 0 && typeof val[0] === 'object' && col.delimitedProperty) {
+          val = val.map(v => v[col.delimitedProperty]) // grab the property we need
+        }
+        // escape the list
+        return escapeCsv(val.join(listDelimiter))
+      }
+      // escape the value
+      return escapeCsv(val)
+    })
+    csvRows.push(rowValues.join(','))
+  }
+  return csvRows.join('\n')
+}
+
+async function fetchLabels(apiUrl, collectionId, authToken) {
+  const url = `${apiUrl}/collections/${collectionId}/labels`
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${authToken}` },
+  })
+  if (!response.ok) {
+    const txt = await response.text()
+    throw new Error(`Request failed with status ${response.status}: ${txt || response.statusText}`)
+  }
+  return response.json()
+}
+
+async function fetchApiDataAsText({ groupBy, includeProjection, apiUrl, collectionId, authToken }) {
+  const requests = {
+    asset: { url: `${apiUrl}/assets`, params: { collectionId } },
+    stig: { url: `${apiUrl}/collections/${collectionId}/stigs`, params: {} },
+  }
+
+  if (includeProjection) {
+    requests.asset.params.projection = 'stigs'
+    requests.stig.params.projection = 'assets'
+  }
+
+  const queryParams = new URLSearchParams(requests[groupBy].params)
+  const url = `${requests[groupBy].url}?${queryParams.toString()}`
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${authToken}` },
+  })
+  if (!response.ok) {
+    const txt = await response.text()
+    throw new Error(`Request failed with status ${response.status}: ${txt || response.statusText}`)
+  }
+  return response.text()
+}
+
+/**
+ * Maps Label IDs to asaset Names
+ */
+function mapAssetToLabel(assets, labels) {
+  return assets.map((asset) => {
+    const mapped = { ...asset }
+
+    if (asset.labelIds && labels) {
+      mapped.labels = labels
+        .filter(l => asset.labelIds.includes(l.labelId))
+        .map(l => l.name)
+    }
+    return mapped
+  })
+}
+
+/**
+ * - Converts booleans to "TRUE"/"FALSE"
+ * - Stringifies Metadata
+ * - Keeps Arrays as Arrays (generateCsv will join them)
+ */
+function formatAssetsForCsv(assets) {
+  return assets.map((asset) => {
+    const row = { ...asset }
+
+    // 1. Non-Computing
+    if (asset.noncomputing !== undefined) {
+      row.noncomputing = asset.noncomputing ? 'TRUE' : 'FALSE'
+    }
+
+    // 2. Metadata
+    if (asset.metadata) {
+      row.metadata = JSON.stringify(asset.metadata)
+    }
+
+    // 3. STIGs (benchmarkId extraction)
+    if (asset.stigs) {
+      row.stigs = asset.stigs.map(s => s.benchmarkId)
+    }
+
+    return row
+  })
+}
+
+// used to export metrics from inventory export modal
+export async function handleInventoryExport({
+  groupBy, // asset or stig
+  format, // csv or json
+  csvFields,
+  include, // include stigs/assets list in the export
+  prettyPrint,
+  collectionId,
+  collectionName,
+  apiUrl,
+  authToken,
+  delimiter, // csv delimiter
+}) {
+  const { triggerError } = useGlobalError()
+
+  try {
+    let downloadData
+
+    // deciding if we are doing csv or json if csv then we need to include stigs/assets in the projection
+    // some returns true if any element in the array satisfies the condition
+    const requestProjection = format === 'csv'
+      ? csvFields.some(item => item.apiProperty === 'stigs' || item.apiProperty === 'assets')
+      : include
+
+    // fetching data from api
+    const apiText = await fetchApiDataAsText({
+      groupBy,
+      includeProjection: requestProjection,
+      apiUrl,
+      collectionId,
+      authToken,
+    })
+
+    let data = JSON.parse(apiText)
+
+    // get labels and map them to assets
+    if (groupBy === 'asset') {
+      const labels = await fetchLabels(apiUrl, collectionId, authToken)
+      data = mapAssetToLabel(data, labels)
+    }
+
+    if (format === 'csv') {
+      let finalFields = csvFields
+      let finalDelimiter = ','
+
+      if (groupBy === 'asset') {
+        // force newline delim for lists
+        finalDelimiter = '\n'
+
+        // normalize some data
+        data = formatAssetsForCsv(data)
+
+        // force all headers to be present
+        finalFields = ASSET_FIELDS.map((masterCol) => {
+          // if the field is selected return its column definition
+          const isSelected = csvFields.some(f => f.apiProperty === masterCol.apiProperty)
+          if (isSelected) {
+            return masterCol
+          }
+          // if not selected return a column definition with same Header, but a Property key that won't exist on data note: ___skipped___ is not a valid property
+          return { header: masterCol.header, apiProperty: '___skipped___' }
+        })
+      }
+      else {
+        // user selected delim
+        const found = delimiterOptions.find(d => d.value === delimiter)
+        finalDelimiter = found ? found.string : ','
+        finalFields = csvFields
+      }
+
+      const csvContent = generateCsv(data, finalFields, finalDelimiter)
+      downloadData = new Blob([csvContent])
+    }
+    else {
+      // JSON
+      const content = prettyPrint
+        ? JSON.stringify(data, null, 2)
+        : JSON.stringify(data)
+      downloadData = new Blob([content])
+    }
+
+    const timestamp = filenameComponentFromDate()
+    const groupLabel = groupBy === 'stig' ? 'Stig' : 'Asset'
+    const filename = filenameEscaped(`${collectionName}_InventoryBy${groupLabel}_${timestamp}.${format}`)
+    saveAs(downloadData, filename)
+  }
+  catch (e) {
+    triggerError(e)
+  }
+}
 
 /**
  * Handles the download of export metrics.
@@ -91,208 +315,4 @@ export async function handleDownload({
     const { triggerError } = useGlobalError()
     triggerError(error)
   }
-}
-
-async function fetchLabels(apiUrl, collectionId, authToken) {
-  const url = `${apiUrl}/collections/${collectionId}/labels`
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
-  })
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}: ${response.statusText}`)
-  }
-  return response.json()
-}
-
-/**
- * Fetches API data as text for export.
- * @param {object} params
- * @param {string} params.groupBy - "asset" or "stig"
- * @param {boolean} params.includeProjection - Whether to include projection
- * @param {string} params.apiUrl - The API base URL
- * @param {string} params.collectionId - The collection ID
- * @param {string} params.authToken - The auth token
- * @returns {Promise<string>} The response text
- */
-async function fetchApiDataAsText({ groupBy, includeProjection, apiUrl, collectionId, authToken }) {
-  const requests = {
-    asset: {
-      url: `${apiUrl}/assets`,
-      params: { collectionId },
-    },
-    stig: {
-      url: `${apiUrl}/collections/${collectionId}/stigs`,
-      params: {},
-    },
-  }
-
-  if (includeProjection) {
-    requests.asset.params.projection = 'stigs'
-    requests.stig.params.projection = 'assets'
-  }
-
-  const queryParams = new URLSearchParams(requests[groupBy].params)
-  const url = `${requests[groupBy].url}?${queryParams.toString()}`
-
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}: ${response.statusText}`)
-  }
-
-  return response.text()
-}
-
-/**
- * Converts API data to CSV format.
- * @param {Array} apiData - The data to convert
- * @param {Array} csvFields - The fields definition
- * @param {string} listDelimiter - The delimiter for list fields
- * @returns {string} The CSV string
- */
-export function apiToCsv(apiData, csvFields, listDelimiter = ',') {
-  // Function to apply CSV escaping
-  const escapeCsv = (value) => {
-    if (value == null) {
-      return ''
-    }
-    const str = String(value)
-    return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
-  }
-  const csvData = []
-  const header = []
-  for (const field of csvFields) {
-    header.push(escapeCsv(field.header))
-  }
-  csvData.push(header.join(','))
-  // Rows
-  for (const data of apiData) {
-    const row = []
-    for (const field of csvFields) {
-      let val = data[field.apiProperty]
-
-      // Handle array or delimited property
-      console.log(val)
-      if (Array.isArray(val)) {
-        if()
-        row.push(escapeCsv(val.join(listDelimiter)))
-      }
-      else {
-        row.push(escapeCsv(val ?? ''))
-      }
-    }
-    csvData.push(row.join(','))
-  }
-  return csvData.join('\n')
-}
-
-function processAssetData(assets, labels, csvFields) {
-  return assets.map((asset) => {
-    const processedAsset = { ...asset }
-
-    // Map labels
-    if (asset.labelIds && labels) {
-      const labelNames = labels
-        .filter(l => asset.labelIds.includes(l.labelId))
-        .map(l => l.name)
-      processedAsset.labels = labelNames
-    }
-
-    // Format Non-Computing
-    if (csvFields.some(f => f.apiProperty === 'noncomputing')) {
-      processedAsset.noncomputing = asset.noncomputing ? 'TRUE' : 'FALSE'
-    }
-
-    // Format Metadata
-    if (csvFields.some(f => f.apiProperty === 'metadata')) {
-      processedAsset.metadata = asset.metadata ? JSON.stringify(asset.metadata) : ''
-    }
-
-    return processedAsset
-  })
-}
-
-/**
- * Handles the inventory export.
- * @param {object} params
- * @param {string} params.groupBy - "asset" or "stig"
- * @param {string} params.format - "csv" or "json"
- * @param {Array} params.csvFields - Fields for CSV
- * @param {boolean} params.include - Include projection (for JSON)
- * @param {boolean} params.prettyPrint - Pretty print JSON
- * @param {string} params.collectionId - Collection ID
- * @param {string} params.collectionName - Collection Name
- * @param {string} params.apiUrl - API URL
- * @param {string} params.authToken - Auth Token
- */
-export async function handleInventoryExport({
-  groupBy, // "asset" or "stig"
-  format, // "csv" or "json"
-  csvFields,
-  include, // for json to include assets for each stig
-  prettyPrint,
-  collectionId,
-  collectionName,
-  apiUrl,
-  authToken,
-  delimiter, // used for csv
-}) {
-  let downloadData
-  const fileExtension = format
-
-  if (format === 'csv') {
-    const requestProjection = csvFields.some(item => item.apiProperty === 'stigs' || item.apiProperty === 'assets')
-    const apiText = await fetchApiDataAsText({ groupBy, includeProjection: requestProjection, apiUrl, collectionId, authToken })
-    let data = JSON.parse(apiText)
-
-    const paramDelimiter = delimiterOptions.find(d => d.value === delimiter)?.string || ','
-    const listDelimiter = groupBy === 'asset' ? '\n' : paramDelimiter
-
-    let exportFields = csvFields
-    if (groupBy === 'asset') {
-      const labels = await fetchLabels(apiUrl, collectionId, authToken)
-      data = processAssetData(data, labels, csvFields)
-
-      // Ensure all ASSET_FIELDS headers are present. Mask unselected fields.
-      exportFields = ASSET_FIELDS.map((col) => {
-        const isSelected = csvFields.some(f => f.apiProperty === col.apiProperty)
-        if (isSelected) {
-          return col
-        }
-        return { ...col, apiProperty: '___skipped___' } // Dummy prop to produce empty value
-      })
-    }
-
-    downloadData = new Blob([apiToCsv(data, exportFields, listDelimiter)])
-  }
-  else {
-    // JSON
-    const apiText = await fetchApiDataAsText({ groupBy, includeProjection: include, apiUrl, collectionId, authToken })
-    let data = JSON.parse(apiText)
-
-    if (groupBy === 'asset') {
-      const labels = await fetchLabels(apiUrl, collectionId, authToken)
-      data = processAssetData(data, labels, [])
-    }
-
-    if (prettyPrint) {
-      downloadData = new Blob([JSON.stringify(data, null, 2)])
-    }
-    else {
-      downloadData = new Blob([JSON.stringify(data)])
-    }
-  }
-
-  const timestamp = filenameComponentFromDate()
-  const groupLabel = groupBy === 'stig' ? 'Stig' : 'Asset'
-  const filename = filenameEscaped(`${collectionName}_InventoryBy${groupLabel}_${timestamp}.${fileExtension}`)
-  saveAs(downloadData, filename)
 }

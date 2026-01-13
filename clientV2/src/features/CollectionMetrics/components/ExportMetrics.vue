@@ -3,7 +3,7 @@ import Button from 'primevue/button'
 import Select from 'primevue/select'
 import { inject, reactive } from 'vue'
 import { useEnv } from '../../../../src/shared/stores/useEnv.js'
-import { handleDownload as executeDownload } from '../exportMetricsUtils.js'
+import { handleDownload } from '../exportMetricsUtils.js'
 
 const props = defineProps({
   collectionId: {
@@ -49,8 +49,8 @@ const buttonPt = {
   },
 }
 
-async function handleDownload() {
-  await executeDownload({
+async function download() {
+  await handleDownload({
     format: selected.format,
     style: selected.style,
     aggregation: selected.aggregation,
@@ -102,7 +102,7 @@ async function handleDownload() {
           label="Download"
           icon="pi pi-download"
           :pt="buttonPt"
-          @click="handleDownload"
+          @click="download"
         />
       </div>
     </div>
