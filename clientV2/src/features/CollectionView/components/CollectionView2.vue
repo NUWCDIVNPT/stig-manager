@@ -11,6 +11,7 @@ import BreadcrumbSelect from '../../../components/common/BreadcrumbSelect.vue'
 import AssetReview from '../../AssetReview/components/AssetReview.vue'
 import { useAssetStigsQuery, useStigRevisionsQuery } from '../../AssetReview/queries/assetQueries.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
+import ExportMetrics from '../../CollectionMetrics/components/ExportMetrics.vue'
 import { useCollectionQuery } from '../queries/collectionQueries.js'
 import {
   useCollectionAssetStigsQuery,
@@ -416,6 +417,12 @@ function toggleDashboardSidebar() {
                 :collection-name="collectionName"
                 vertical
               />
+              <div class="sidebar-export">
+                <ExportMetrics
+                  :collection-id="collectionId"
+                  :collection-name="collectionName"
+                />
+              </div>
             </div>
           </aside>
 
@@ -536,6 +543,12 @@ function toggleDashboardSidebar() {
 </template>
 
 <style scoped>
+/* Component-level CSS variables */
+.tabs-container {
+  --dashboard-sidebar-width: 33rem;
+  --dashboard-sidebar-collapsed-width: 2.5rem;
+}
+
 .collection-view-2 {
   display: flex;
   flex-direction: column;
@@ -735,8 +748,8 @@ function toggleDashboardSidebar() {
 }
 
 .dashboard-sidebar {
-  width: 400px;
-  min-width: 400px;
+  width: var(--dashboard-sidebar-width);
+  min-width: var(--dashboard-sidebar-width);
   background-color: #1a1a1a;
   border-right: 1px solid #3a3d40;
   display: flex;
@@ -746,22 +759,22 @@ function toggleDashboardSidebar() {
 }
 
 .dashboard-sidebar--collapsed {
-  width: 32px;
-  min-width: 32px;
+  width: var(--dashboard-sidebar-collapsed-width);
+  min-width: var(--dashboard-sidebar-collapsed-width);
 }
 
 .sidebar-toggle {
   position: absolute;
-  top: 8px;
-  right: 4px;
-  width: 24px;
-  height: 24px;
+  top: 0.5rem;
+  right: 0.25rem;
+  width: 2rem;
+  height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #2a2a2a;
   border: 1px solid #3a3d40;
-  border-radius: 4px;
+  border-radius: 0.25rem;
   color: #a1a1aa;
   cursor: pointer;
   z-index: 10;
@@ -773,14 +786,25 @@ function toggleDashboardSidebar() {
   color: #e4e4e7;
 }
 
-.dashboard-sidebar--collapsed .sidebar-toggle {
-  right: 4px;
-}
-
 .sidebar-content {
   flex: 1;
   overflow-y: auto;
-  padding-top: 40px;
+  padding-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.sidebar-export {
+  flex-shrink: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Override ExportMetrics min-width in sidebar context */
+.sidebar-export :deep(.export-card) {
+  min-width: 0;
+  max-width: none;
 }
 
 .main-content-area {
@@ -806,15 +830,18 @@ function toggleDashboardSidebar() {
 
 :deep(.p-tablist .p-tab:first-child) {
   /* Dashboard tab - aligns with sidebar width */
-  width: 400px;
-  min-width: 400px;
+  width: var(--dashboard-sidebar-width);
+  min-width: var(--dashboard-sidebar-width);
   justify-content: center;
   transition: width 0.2s ease, min-width 0.2s ease;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .sidebar-collapsed :deep(.p-tablist .p-tab:first-child) {
-  width: 32px;
-  min-width: 32px;
+  width: var(--dashboard-sidebar-collapsed-width);
+  min-width: var(--dashboard-sidebar-collapsed-width);
+  font-size: 0;
 }
 
 .tab-after-sidebar {
