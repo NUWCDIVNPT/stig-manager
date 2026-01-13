@@ -1,4 +1,5 @@
 import { userEvent } from '@testing-library/user-event'
+import { screen } from '@testing-library/vue'
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import ExportMetrics from '../components/ExportMetrics.vue'
@@ -45,17 +46,14 @@ describe('exportMetrics', () => {
       },
     })
 
-    expect(document.querySelector('.metric-title')).toHaveTextContent('Export Metrics')
+    expect(screen.getByText('Export Metrics')).toBeInTheDocument()
 
-    // Check Labels for selects
-    expect(document.body).toHaveTextContent('Grouped by:')
-    expect(document.body).toHaveTextContent('Style:')
-    expect(document.body).toHaveTextContent('Format:')
+    expect(screen.getByText('Grouped by:')).toBeInTheDocument()
+    expect(screen.getByText('Style:')).toBeInTheDocument()
+    expect(screen.getByText('Format:')).toBeInTheDocument()
 
-    // Check Download Button existence
-    const downloadBtn = document.querySelector('.download-button')
+    const downloadBtn = screen.getByText('Download')
     expect(downloadBtn).toBeInTheDocument()
-    expect(downloadBtn).toHaveTextContent('Download')
   })
 
   it('calls handleDownload from composable when download button is clicked', async () => {
@@ -67,7 +65,7 @@ describe('exportMetrics', () => {
     })
     const user = userEvent.setup()
 
-    const downloadBtn = document.querySelector('.download-button')
+    const downloadBtn = screen.getByText('Download')
     expect(downloadBtn).toBeInTheDocument()
 
     await user.click(downloadBtn)

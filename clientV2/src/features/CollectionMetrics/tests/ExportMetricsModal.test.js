@@ -71,12 +71,10 @@ describe('exportMetricsModal', () => {
       },
     })
 
-    // Wait for render
     await waitFor(() => {
       expect(screen.getByText('Inventory export options')).toBeInTheDocument()
     })
 
-    // Click Export
     const exportBtn = screen.getByText('Export')
     await user.click(exportBtn)
 

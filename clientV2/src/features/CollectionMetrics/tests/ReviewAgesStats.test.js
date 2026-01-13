@@ -1,3 +1,4 @@
+import { screen } from '@testing-library/vue'
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import ReviewAgesStats from '../components/ReviewAgesStats.vue'
@@ -20,15 +21,15 @@ describe('reviewAgesStats', () => {
   }
 
   it('renders correctly when ages data is provided', () => {
-    renderWithProviders(ReviewAgesStats, {
+    const { container } = renderWithProviders(ReviewAgesStats, {
       props: {
         ages: mockReviewAgesData,
       },
     })
 
-    expect(document.querySelector('.metric-title')).toHaveTextContent('Review Ages')
+    expect(screen.getByText('Review Ages')).toBeInTheDocument()
 
-    const badges = document.querySelectorAll('.metric-badge')
+    const badges = container.querySelectorAll('.metric-badge')
     expect(badges.length).toBe(3)
 
     expect(badges[0]).toHaveTextContent('Oldest')
@@ -41,18 +42,18 @@ describe('reviewAgesStats', () => {
   })
 
   it('renders with default values when ages is provided as empty object or default', () => {
-    const { rerender } = renderWithProviders(ReviewAgesStats)
+    const { container, rerender } = renderWithProviders(ReviewAgesStats)
 
-    expect(document.querySelector('.metric-title')).toHaveTextContent('Review Ages')
+    expect(screen.getByText('Review Ages')).toBeInTheDocument()
 
     // Since our mock returns 'N/A' for null/undefined
-    let badges = document.querySelectorAll('.metric-badge')
+    let badges = container.querySelectorAll('.metric-badge')
     expect(badges[0]).toHaveTextContent('N/A')
     expect(badges[1]).toHaveTextContent('N/A')
     expect(badges[2]).toHaveTextContent('N/A')
 
     rerender({ ages: {} })
-    badges = document.querySelectorAll('.metric-badge')
+    badges = container.querySelectorAll('.metric-badge')
     expect(badges[0]).toHaveTextContent('N/A')
     expect(badges[1]).toHaveTextContent('N/A')
     expect(badges[2]).toHaveTextContent('N/A')
