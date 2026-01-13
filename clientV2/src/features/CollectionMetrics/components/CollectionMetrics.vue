@@ -24,6 +24,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  vertical: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const oidcWorker = inject('worker')
@@ -48,7 +52,7 @@ const showExportModal = ref(false)
     <div v-else-if="errorMessage">
       {{ errorMessage }}
     </div>
-    <div v-else class="metrics-container">
+    <div v-else class="metrics-container" :class="{ 'metrics-container--vertical': vertical }">
       <Progress :stats="progressStats" />
       <Cora :cora-data="coraData" />
       <div class="stats-column">
@@ -56,7 +60,7 @@ const showExportModal = ref(false)
         <FindingsStats :findings="findings" />
         <ReviewAgesStats :ages="ages" />
       </div>
-      <ExportMetrics :collection-id="props.collectionId" :collection-name="props.collectionName" />
+      <ExportMetrics v-if="!vertical" :collection-id="props.collectionId" :collection-name="props.collectionName" />
       <ExportMetricsModal v-model:visible="showExportModal" :collection-id="props.collectionId" :collection-name="props.collectionName" />
     </div>
   </div>
@@ -69,10 +73,24 @@ const showExportModal = ref(false)
   gap: 20px;
   padding: 20px;
 }
+
+.metrics-container--vertical {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 12px;
+  padding: 12px;
+  height: 100%;
+  overflow-y: auto;
+}
+
 .stats-column {
   display: flex;
   flex-direction: column;
   max-width: 400px;
   width: 100%;
+}
+
+.metrics-container--vertical .stats-column {
+  max-width: none;
 }
 </style>

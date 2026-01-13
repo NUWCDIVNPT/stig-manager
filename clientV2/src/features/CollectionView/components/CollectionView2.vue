@@ -304,6 +304,13 @@ const tabPanelPt = {
     },
   },
 }
+
+// Dashboard sidebar state (collapsed/expanded)
+const dashboardCollapsed = ref(false)
+
+function toggleDashboardSidebar() {
+  dashboardCollapsed.value = !dashboardCollapsed.value
+}
 </script>
 
 <template>
@@ -365,13 +372,13 @@ const tabPanelPt = {
     </div>
 
     <!-- Normal Mode: Show Tabs -->
-    <div v-else class="tabs-container">
+    <div v-else class="tabs-container" :class="{ 'sidebar-collapsed': dashboardCollapsed }">
       <Tabs v-model:value="activeTab" :pt="tabsPt">
         <TabList>
           <Tab value="dashboard">
             Dashboard
           </Tab>
-          <Tab value="stigs">
+          <Tab value="stigs" class="tab-after-sidebar">
             STIGs
           </Tab>
           <Tab value="assets">
@@ -387,111 +394,142 @@ const tabPanelPt = {
             Settings
           </Tab>
         </TabList>
-        <TabPanels :pt="tabPanelsPt">
-          <TabPanel value="dashboard" :pt="tabPanelPt">
-            <CollectionMetrics :collection-id="collectionId" />
-          </TabPanel>
-          <TabPanel value="stigs" :pt="tabPanelPt">
-            <div class="stigs-grid">
-              <div class="table-container">
-                <MetricsSummaryGrid
-                  :api-metrics-summary="stigs"
-                  :is-loading="stigsLoading"
-                  :error-message="stigsError"
-                  selectable
-                  data-key="benchmarkId"
-                  @row-select="(row) => handleStigSelect(row.benchmarkId)"
-                />
-              </div>
-              <div class="table-container">
-                <div class="child-panel">
-                  <div class="child-panel__header">
-                    <h3>Checklists</h3>
-                    <span v-if="selectedBenchmarkId" class="stig-badge">{{ selectedBenchmarkId }}</span>
-                  </div>
-                  <div class="child-panel__body">
-                    <div v-if="!selectedBenchmarkId" class="empty-state">
-                      Select a STIG to view checklists.
-                    </div>
-                    <div v-else-if="checklistAssetsLoading" class="loading-state">
-                      Loading checklists...
-                    </div>
-                    <div v-else-if="checklistAssetsError" class="error-state">
-                      {{ checklistAssetsError }}
-                    </div>
-                    <div v-else-if="checklistAssets.length === 0" class="empty-state">
-                      No checklists found for this STIG.
-                    </div>
+
+        <!-- Split layout: Dashboard sidebar + Tab content -->
+        <div class="tab-content-wrapper">
+          <!-- Dashboard Sidebar (always visible, collapsible) -->
+          <aside
+            class="dashboard-sidebar"
+            :class="{ 'dashboard-sidebar--collapsed': dashboardCollapsed }"
+          >
+            <button
+              type="button"
+              class="sidebar-toggle"
+              :title="dashboardCollapsed ? 'Expand Dashboard' : 'Collapse Dashboard'"
+              @click="toggleDashboardSidebar"
+            >
+              <i :class="dashboardCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'" />
+            </button>
+            <div v-show="!dashboardCollapsed" class="sidebar-content">
+              <CollectionMetrics
+                :collection-id="collectionId"
+                :collection-name="collectionName"
+                vertical
+              />
+            </div>
+          </aside>
+
+          <!-- Main Content Area -->
+          <div class="main-content-area">
+            <TabPanels :pt="tabPanelsPt">
+              <TabPanel value="dashboard" :pt="tabPanelPt">
+                <div class="dashboard-placeholder">
+                  <!-- Empty panel for now - future content will go here -->
+                </div>
+              </TabPanel>
+              <TabPanel value="stigs" :pt="tabPanelPt">
+                <div class="stigs-grid">
+                  <div class="table-container">
                     <MetricsSummaryGrid
-                      v-else
-                      :api-metrics-summary="checklistAssets"
-                      show-asset-action
+                      :api-metrics-summary="stigs"
+                      :is-loading="stigsLoading"
+                      :error-message="stigsError"
+                      selectable
+                      data-key="benchmarkId"
+                      @row-select="(row) => handleStigSelect(row.benchmarkId)"
+                    />
+                  </div>
+                  <div class="table-container">
+                    <div class="child-panel">
+                      <div class="child-panel__header">
+                        <h3>Checklists</h3>
+                        <span v-if="selectedBenchmarkId" class="stig-badge">{{ selectedBenchmarkId }}</span>
+                      </div>
+                      <div class="child-panel__body">
+                        <div v-if="!selectedBenchmarkId" class="empty-state">
+                          Select a STIG to view checklists.
+                        </div>
+                        <div v-else-if="checklistAssetsLoading" class="loading-state">
+                          Loading checklists...
+                        </div>
+                        <div v-else-if="checklistAssetsError" class="error-state">
+                          {{ checklistAssetsError }}
+                        </div>
+                        <div v-else-if="checklistAssets.length === 0" class="empty-state">
+                          No checklists found for this STIG.
+                        </div>
+                        <MetricsSummaryGrid
+                          v-else
+                          :api-metrics-summary="checklistAssets"
+                          show-asset-action
+                          data-key="assetId"
+                          @asset-action="handleChecklistAssetAction"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabPanel>
+              <TabPanel value="assets" :pt="tabPanelPt">
+                <div class="assets-grid">
+                  <div class="table-container">
+                    <MetricsSummaryGrid
+                      :api-metrics-summary="assets"
+                      :is-loading="assetsLoading"
+                      :error-message="assetsError"
+                      selectable
                       data-key="assetId"
-                      @asset-action="handleChecklistAssetAction"
+                      @row-select="(row) => handleAssetSelect(row.assetId)"
                     />
                   </div>
-                </div>
-              </div>
-            </div>
-          </TabPanel>
-          <TabPanel value="assets" :pt="tabPanelPt">
-            <div class="assets-grid">
-              <div class="table-container">
-                <MetricsSummaryGrid
-                  :api-metrics-summary="assets"
-                  :is-loading="assetsLoading"
-                  :error-message="assetsError"
-                  selectable
-                  data-key="assetId"
-                  @row-select="(row) => handleAssetSelect(row.assetId)"
-                />
-              </div>
-              <div class="table-container">
-                <div class="child-panel">
-                  <div class="child-panel__header">
-                    <h3>Asset STIGs</h3>
-                    <span v-if="selectedAssetId" class="asset-badge">Asset {{ selectedAssetId }}</span>
-                  </div>
-                  <div class="child-panel__body">
-                    <div v-if="!selectedAssetId" class="empty-state">
-                      Select an asset to view its STIGs.
+                  <div class="table-container">
+                    <div class="child-panel">
+                      <div class="child-panel__header">
+                        <h3>Asset STIGs</h3>
+                        <span v-if="selectedAssetId" class="asset-badge">Asset {{ selectedAssetId }}</span>
+                      </div>
+                      <div class="child-panel__body">
+                        <div v-if="!selectedAssetId" class="empty-state">
+                          Select an asset to view its STIGs.
+                        </div>
+                        <div v-else-if="selectedAssetStigsLoading" class="loading-state">
+                          Loading STIGs...
+                        </div>
+                        <div v-else-if="selectedAssetStigsError" class="error-state">
+                          {{ selectedAssetStigsError }}
+                        </div>
+                        <div v-else-if="selectedAssetStigs.length === 0" class="empty-state">
+                          No STIGs found for this asset.
+                        </div>
+                        <MetricsSummaryGrid
+                          v-else
+                          :api-metrics-summary="selectedAssetStigs"
+                        />
+                      </div>
                     </div>
-                    <div v-else-if="selectedAssetStigsLoading" class="loading-state">
-                      Loading STIGs...
-                    </div>
-                    <div v-else-if="selectedAssetStigsError" class="error-state">
-                      {{ selectedAssetStigsError }}
-                    </div>
-                    <div v-else-if="selectedAssetStigs.length === 0" class="empty-state">
-                      No STIGs found for this asset.
-                    </div>
-                    <MetricsSummaryGrid
-                      v-else
-                      :api-metrics-summary="selectedAssetStigs"
-                    />
                   </div>
                 </div>
-              </div>
-            </div>
-          </TabPanel>
-          <TabPanel value="labels" :pt="tabPanelPt">
-            <div class="view-container">
-              <LabelsView :collection-id="collectionId" :labels="labels" />
-            </div>
-          </TabPanel>
-          <TabPanel value="users" :pt="tabPanelPt">
-            <div class="placeholder-panel">
-              <h2>Users Panel</h2>
-              <p>User management content will go here.</p>
-            </div>
-          </TabPanel>
-          <TabPanel value="settings" :pt="tabPanelPt">
-            <div class="placeholder-panel">
-              <h2>Settings Panel</h2>
-              <p>Collection settings content will go here.</p>
-            </div>
-          </TabPanel>
-        </TabPanels>
+              </TabPanel>
+              <TabPanel value="labels" :pt="tabPanelPt">
+                <div class="view-container">
+                  <LabelsView :collection-id="collectionId" :labels="labels" />
+                </div>
+              </TabPanel>
+              <TabPanel value="users" :pt="tabPanelPt">
+                <div class="placeholder-panel">
+                  <h2>Users Panel</h2>
+                  <p>User management content will go here.</p>
+                </div>
+              </TabPanel>
+              <TabPanel value="settings" :pt="tabPanelPt">
+                <div class="placeholder-panel">
+                  <h2>Settings Panel</h2>
+                  <p>Collection settings content will go here.</p>
+                </div>
+              </TabPanel>
+            </TabPanels>
+          </div>
+        </div>
       </Tabs>
     </div>
   </div>
@@ -687,5 +725,100 @@ const tabPanelPt = {
 
 .error-state {
   color: #f16969;
+}
+
+/* Dashboard Sidebar Layout */
+.tab-content-wrapper {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.dashboard-sidebar {
+  width: 400px;
+  min-width: 400px;
+  background-color: #1a1a1a;
+  border-right: 1px solid #3a3d40;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: width 0.2s ease, min-width 0.2s ease;
+}
+
+.dashboard-sidebar--collapsed {
+  width: 32px;
+  min-width: 32px;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 8px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2a2a2a;
+  border: 1px solid #3a3d40;
+  border-radius: 4px;
+  color: #a1a1aa;
+  cursor: pointer;
+  z-index: 10;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.sidebar-toggle:hover {
+  background-color: #3a3d40;
+  color: #e4e4e7;
+}
+
+.dashboard-sidebar--collapsed .sidebar-toggle {
+  right: 4px;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-top: 40px;
+}
+
+.main-content-area {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Tab Alignment - Dashboard tab over sidebar, others over main content */
+:deep(.p-tablist) {
+  display: flex;
+}
+
+:deep(.p-tablist .p-tab:first-child) {
+  /* Dashboard tab - aligns with sidebar width */
+  width: 400px;
+  min-width: 400px;
+  justify-content: center;
+  transition: width 0.2s ease, min-width 0.2s ease;
+}
+
+.sidebar-collapsed :deep(.p-tablist .p-tab:first-child) {
+  width: 32px;
+  min-width: 32px;
+}
+
+.tab-after-sidebar {
+  /* Visual separator before tabs that align with main content */
+  border-left: 1px solid #3a3d40;
 }
 </style>
