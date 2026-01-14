@@ -28,6 +28,7 @@
   --metrics-status-chart-unassessed: hsl(0 0% 18% / 1);
   --metrics-status-chart-unsaved: hsl(0deg 0% 18%);
   --metrics-status-chart-rejected: hsl(5, 89%, 32%);
+  
   /* CAT Rating Colors */
   --color-cat1: #c68c8c;
   --color-cat2: #d4b056;
@@ -36,6 +37,9 @@
   /* Collection Stats Colors */
   --color-inventory: #c4a484;
   --color-review-age: #d4d4d8;
+
+  /* Breadcrumb sizing */
+  --breadcrumb-font-size: 1.2rem;
 }
 
 *, *::before, *::after {
@@ -53,55 +57,17 @@
   background: linear-gradient(135deg, #ca8a04 0%, #713f12 100%);
 }
 .sm-cora-risk-low {
-  background: linear-gradient(135deg, #15803d 0%, #14532d 100%);
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
 }
 .sm-cora-risk-very-low {
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%); 
+  background: linear-gradient(135deg, #15803d 0%, #14532d 100%); 
 }
 
 
-.btn {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-.btn-unstyled {
-  all: unset;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: inherit;
-}
-.btn-unstyled:focus,
-.btn-unstyled:active {
-  outline: none;
-  border: 0;
-  box-shadow: none;
-}
-.btn-unstyled::-moz-focus-inner {
-  border: 0;
-  padding: 0;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
 
 body {
   margin: 0;
-  font-family: inherit; /* use the root font (Open Sans) */
+  font-family: inherit; 
   height: 100vh;
   overflow: hidden;
 }
@@ -111,24 +77,6 @@ body {
   overflow: hidden;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto Highlight;
-}
 
 /* Global form field focus color (light blue) */
 .p-inputtext:focus,
@@ -232,3 +180,8 @@ textarea:focus {
     background-color: #f9f9f9;
   }
 } */
+
+/* Breadcrumb select dropdown panel styling */
+.breadcrumb-select-panel .p-select-option {
+  font-size: var(--breadcrumb-font-size);
+}

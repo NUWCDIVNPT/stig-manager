@@ -1,12 +1,14 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, watch } from 'vue'
+import { computed, provide, ref, watch } from 'vue'
 import { calculateCoraRiskRating } from '../lib/libCora.js'
 import AssetColumn from './AssetColumn.vue'
 import DurationColumn from './DurationColumn.vue'
 import PercentageColumn from './PercentageColumn.vue'
 import LabelsColumn from './LabelsColumn.vue'
+import CountColumnWithTooltip from './CountColumnWithTooltip.vue'
+import LabelsColumnWithTooltip from './LabelsColumnWithTooltip.vue'
 
 const props = defineProps({
   apiMetricsSummary: {
@@ -21,7 +23,51 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  selectable: {
+    type: Boolean,
+    default: false,
+  },
+  dataKey: {
+    type: String,
+    default: null,
+  },
+  showRowAction: {
+    type: Boolean,
+    default: false,
+  },
+  rowActionIcon: {
+    type: String,
+    default: 'pi pi-external-link',
+  },
+  showAssetAction: {
+    type: Boolean,
+    default: false,
+  },
+  selectedKey: {
+    type: [String, Number],
+    default: null,
+  },
 })
+
+const emit = defineEmits(['row-select', 'row-action', 'asset-action'])
+
+const selectedRow = ref(null)
+
+function onRowSelect(event) {
+  emit('row-select', event.data)
+}
+
+function onRowAction(rowData) {
+  emit('row-action', rowData)
+}
+
+function onAssetAction(rowData) {
+  emit('asset-action', rowData)
+}
+
+// Provide asset action handler to child column components
+provide('assetActionEnabled', computed(() => props.showAssetAction))
+provide('onAssetAction', onAssetAction)
 
 watch(() => props.apiMetricsSummary, () => {
   console.log('apiMetricsSummary changed')
@@ -61,12 +107,14 @@ const columns = computed(() => {
         { field: 'assetName', header: 'Asset', component: AssetColumn },
         { field: 'labels', header: 'Labels', component: LabelsColumn },
         { field: 'stigCnt', header: 'Stigs', component: Column },
+        { field: 'labels', header: 'Labels', component: LabelsColumnWithTooltip },
+        { field: 'stigs', header: 'STIGs', component: CountColumnWithTooltip, width: '50px' },
         ...commonColumns,
       ]
     case 'stig':
       return [
         { field: 'benchmarkId', header: 'Benchmark', component: Column },
-        { field: 'title', header: 'Title', component: Column },
+        // { field: 'title', header: 'Title', component: Column },
         { field: 'revision', header: 'Revision', component: Column },
         { field: 'assetCnt', header: 'Assets', component: Column },
         ...commonColumns,
@@ -90,6 +138,8 @@ const data = computed(() => {
       acceptedPct: r.metrics.assessments ? (r.metrics.statuses.accepted / r.metrics.assessments) * 100 : 0,
       rejectedPct: r.metrics.assessments ? (r.metrics.statuses.rejected / r.metrics.assessments) * 100 : 0,
       cora: calculateCoraRiskRating(r.metrics),
+      cora: (calculateCoraRiskRating(r.metrics).weightedAvg * 100).toFixed(1),
+      coraFull: calculateCoraRiskRating(r.metrics),
       low: r.metrics.findings.low,
       medium: r.metrics.findings.medium,
       high: r.metrics.findings.high,
@@ -100,14 +150,15 @@ const data = computed(() => {
           assetId: r.assetId,
           assetName: r.name,
           labels: r.labels,
-          stigCnt: r.benchmarkIds.length,
+          stigs: r.benchmarkIds,
           ...commonData,
         }
       case 'stig':
         return {
           benchmarkId: r.benchmarkId,
           title: r.title,
-          revision: {
+          revision: r.revisionStr,
+          revisionFull: {
             string: r.revisionStr,
             date: r.revisionDate,
             isPinned: r.revisionPinned,
@@ -120,22 +171,55 @@ const data = computed(() => {
     }
   })
 })
+
+// Sync selectedRow when selectedKey or data changes (for programmatic selection)
+watch([() => props.selectedKey, data], ([newKey, newData]) => {
+  if (newKey !== null && props.dataKey && newData.length > 0) {
+    const row = newData.find(r => r[props.dataKey] === newKey)
+    selectedRow.value = row || null
+  }
+  else if (newKey === null) {
+    selectedRow.value = null
+  }
+}, { immediate: true })
 </script>
 
 <template>
   <DataTable
+    v-model:selection="selectedRow"
     :value="data"
+    :data-key="dataKey"
+    :selection-mode="selectable ? 'single' : null"
+    class="metrics-summary-grid"
+    :class="{ 'has-row-action': showRowAction }"
     scrollable
     scroll-height="flex"
     showGridlines
     resizableColumns
-    columnResizeMode="expand"
-    :sortField="'assetName'"
-    :sortOrder="-1"
+    columnResizeMode="fit"
+    :sortField="'benchmarkId'"
+    :sortOrder="1"
     :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
+    @row-select="onRowSelect"
   >
+    <Column
+      v-if="showRowAction"
+      frozen
+      style="width: 2.5rem; min-width: 2.5rem; max-width: 2.5rem; padding: 0;"
+    >
+      <template #body="slotProps">
+        <button
+          type="button"
+          class="row-action-btn"
+          title="Open"
+          @click.stop="onRowAction(slotProps.data)"
+        >
+          <i :class="rowActionIcon" />
+        </button>
+      </template>
+    </Column>
     <template v-for="col in columns" :key="col.field">
-      <component :is="col.component" v-bind="col" sortable style="height: 27px; max-width: 200px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
+      <component :is="col.component" v-bind="col" sortable style="height: 27px; max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
     </template>
   </DataTable>
 </template>
@@ -147,5 +231,33 @@ const data = computed(() => {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.row-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.row-action-btn:hover {
+  color: #3b82f6;
+}
+
+.row-action-btn i {
+  font-size: 0.85rem;
+}
+
+/* Show button on row hover */
+:deep(.p-datatable-row-selected) .row-action-btn,
+:deep(.p-datatable-tbody > tr:hover) .row-action-btn {
+  opacity: 1;
 }
 </style>

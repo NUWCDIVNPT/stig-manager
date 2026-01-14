@@ -13,6 +13,9 @@ const props = defineProps({
 const { ages } = toRefs(props)
 
 const data = computed(() => {
+  if (!ages.value) {
+    return null
+  }
   return [
     { label: 'Oldest', value: formatAge(ages.value.minTs), color: 'var(--color-review-age)' },
     { label: 'Newest', value: formatAge(ages.value.maxTs), color: 'var(--color-review-age)' },
@@ -22,80 +25,33 @@ const data = computed(() => {
 </script>
 
 <template>
-  <div v-if="data" class="stat-card">
-    <div class="header">
-      <h3 class="title">
+  <div v-if="data" class="metric-card">
+    <div class="metric-header">
+      <h3 class="metric-title">
         Review Ages
       </h3>
     </div>
-    <div class="badge-row">
+    <div class="metric-badge-row">
       <div
         v-for="(stat, index) in data"
         :key="index"
-        class="stat-badge"
+        class="metric-badge"
         :style="{ backgroundColor: stat.color }"
       >
-        <span class="badge-label">{{ stat.label }}</span>
-        <span class="badge-value">{{ stat.value }}</span>
+        <span class="metric-badge-label dark-text">{{ stat.label }}</span>
+        <span class="metric-badge-value dark-text">{{ stat.value }}</span>
       </div>
+    </div>
+  </div>
+  <div v-else class="metric-card">
+    <div class="metric-header">
+      <h3 class="metric-title">
+        Review Ages
+      </h3>
     </div>
   </div>
 </template>
 
 <style scoped>
-.stat-card {
-  background-color: #18181b;
-  color: #e4e4e7;
-  border-radius: 20px;
-  padding: 15px;
-  width: 100%;
-  max-width: 400px;
-  min-width: 320px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-}
-
-.title {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 0;
-  color: #e4e4e7;
-  flex: 1;
-}
-
-.badge-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.stat-badge {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 4px;
-  border-radius: 8px;
-  min-width: 80px;
-}
-
-.badge-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.8);
-}
-
-.badge-value {
-  font-size: 18px;
-  color: rgba(0, 0, 0, 0.9);
-  line-height: 1.1;
-  font-weight: 700;
-}
+@import './metrics.css';
 </style>

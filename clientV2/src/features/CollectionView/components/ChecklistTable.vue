@@ -13,6 +13,8 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['review-asset'])
+
 const oidcWorker = inject('worker')
 const token = computed(() => oidcWorker.token)
 
@@ -21,6 +23,14 @@ const { checklistAssets, isLoading, errorMessage } = useCollectionChecklistAsset
   benchmarkId: computed(() => props.benchmarkId),
   token,
 })
+
+function handleReviewClick(asset) {
+  emit('review-asset', {
+    assetId: asset.assetId,
+    assetName: asset.name,
+    benchmarkId: props.benchmarkId,
+  })
+}
 </script>
 
 <template>
@@ -60,12 +70,13 @@ const { checklistAssets, isLoading, errorMessage } = useCollectionChecklistAsset
           <tbody>
             <tr v-for="asset in checklistAssets" :key="asset.assetId">
               <td>
-                <RouterLink
-                  :to="{ name: 'asset-review', params: { assetId: asset.assetId } }"
-                  class="asset-table__review-btn"
+                <button
+                  type="button"
+                  class="review-btn"
+                  @click="handleReviewClick(asset)"
                 >
                   Review
-                </RouterLink>
+                </button>
               </td>
               <td class="primary-cell">
                 {{ asset.name }}
@@ -184,4 +195,19 @@ const { checklistAssets, isLoading, errorMessage } = useCollectionChecklistAsset
 .chip--high { background-color: #ff7e67; }
 .chip--medium { background-color: #ffcb57; }
 .chip--low { background-color: #5cd18b; }
+
+.review-btn {
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.review-btn:hover {
+  background-color: #2563eb;
+}
 </style>

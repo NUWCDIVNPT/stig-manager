@@ -6,7 +6,7 @@ import RadioButton from 'primevue/radiobutton'
 import Select from 'primevue/select'
 import { computed, defineProps, inject, ref, watch } from 'vue'
 import { useEnv } from '../../../shared/stores/useEnv.js'
-import { handleInventoryExport } from '../exportMetricsUtils.js'
+import { ASSET_FIELDS, handleInventoryExport, STIG_FIELDS } from '../exportMetricsUtils.js'
 
 const props = defineProps({
   visible: {
@@ -27,6 +27,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible'])
 
+// get is when reading the value, set is when setting the value (emitting the event)
 const visible = computed({
   get: () => props.visible,
   set: value => emit('update:visible', value),
@@ -38,31 +39,14 @@ const delimiterOptions = [
   { label: 'Newline', value: 'newline', string: '\n' },
 ]
 
-const STIG_FIELDS = [
-  { apiProperty: 'benchmark', header: 'Benchmark' },
-  { apiProperty: 'title', header: 'Title' },
-  { apiProperty: 'revision', header: 'Revision' },
-  { apiProperty: 'date', header: 'Date' },
-  { apiProperty: 'assets', header: 'Assets', delimitedProperty: 'name', delimiter: ',' },
-]
+const groupBy = ref('asset')
 
-const ASSET_FIELDS = [
-  { apiProperty: 'name', header: 'Name' },
-  { apiProperty: 'fqdn', header: 'FQDN' },
-  { apiProperty: 'ip', header: 'IP' },
-  { apiProperty: 'mac', header: 'MAC' },
-  { apiProperty: 'description', header: 'Description' },
-  { apiProperty: 'stigs', header: 'STIGs', delimitedProperty: 'benchmarkId', delimiter: ', ' },
-]
-
-const groupBy = ref('stig')
 const format = ref('csv')
-const csvFields = ref([...STIG_FIELDS])
+const csvFields = ref([...ASSET_FIELDS])
 const delimiter = ref('comma')
 const include = ref(true)
 const prettyPrint = ref(false)
 
-// Dynamic labels
 const assetsLabel = computed(() => {
   return groupBy.value === 'stig'
     ? 'Include list of Assets for each STIG'
@@ -72,10 +56,13 @@ const assetsLabel = computed(() => {
 const delimiterLabel = computed(() => {
   return groupBy.value === 'stig'
     ? 'Assets delimited by:'
-    : 'STIGs delimited by:'
+    : 'STIGs delimited by (forced \n):'
 })
 
-// Sync csvFields when groupBy changes
+const showNameWarning = computed(() => {
+  return groupBy.value === 'asset' && !csvFields.value.some(f => f.apiProperty === 'name')
+})
+
 watch(groupBy, (newVal) => {
   if (newVal === 'stig') {
     csvFields.value = [...STIG_FIELDS]
@@ -85,34 +72,11 @@ watch(groupBy, (newVal) => {
   }
 })
 
-// Update delimiter in selected fields when UI delimiter changes
-watch(delimiter, (newVal) => {
-  const delimString = delimiterOptions.find(d => d.value === newVal)?.string || ','
-  csvFields.value.forEach((field) => {
-    if (field.delimitedProperty) {
-      field.delimiter = delimString
-    }
-  })
-})
-
 const commonPt = {
-  checkbox: {
-    box: ({ _props, context }) => ({
-      style: `
-        background-color: transparent; 
-        border-color: #71717a; 
-        ${context.checked ? 'background-color: #60a5fa; border-color: #60a5fa;' : ''}
-      `,
-    }),
-  },
-  radioButton: {
-    box: ({ _props, context }) => ({
-      style: `
-        background-color: transparent; 
-        border-color: #71717a; 
-        ${context.checked ? 'background-color: #60a5fa; border-color: #60a5fa;' : ''}
-      `,
-    }),
+  button: {
+    root: {
+      style: 'color: rgba(255, 255, 255, 0.87); border-color: #3f3f46; width: 100%;',
+    },
   },
   select: {
     root: {
@@ -122,10 +86,39 @@ const commonPt = {
       style: 'padding: 6px 12px; color: #e4e4e7;',
     },
   },
-  button: {
+  checkbox: {
+    box: ({ context }) => ({
+      style: `
+        background-color: transparent; 
+        border-color: #71717a; 
+        ${context.checked ? 'background-color: #60a5fa; border-color: #60a5fa;' : ''}
+      `,
+    }),
+  },
+  radioButton: {
+    box: ({ context }) => ({
+      style: `
+        background-color: transparent; 
+        border-color: #71717a; 
+        ${context.checked ? 'background-color: #60a5fa; border-color: #60a5fa;' : ''}
+      `,
+    }),
+  },
+  dialog: {
     root: {
-      style: 'color: rgba(255, 255, 255, 0.87); border-color: #3f3f46; width: 100%',
-      class: 'export-btn',
+      style: 'background-color: #18181b; border: 1px solid #3f3f46; border-radius: 6px; color: #e4e4e7; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);',
+    },
+    header: {
+      style: 'background-color: #18181b; color: #e4e4e7; border-top-left-radius: 6px; border-top-right-radius: 6px; padding: 1rem; border-bottom: 1px solid #27272a;',
+    },
+    content: {
+      style: 'background-color: #18181b; color: #e4e4e7; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; padding: 1.5rem;',
+    },
+    closeButton: {
+      style: 'color: #a1a1aa;',
+    },
+    title: {
+      style: 'font-size: 16px; font-weight: 600;',
     },
   },
 }
@@ -173,7 +166,7 @@ async function handleDownload() {
     header="Inventory export options"
     modal
     :style="{ width: '650px' }"
-    :draggable="false"
+    :draggable="true"
     :pt="dialogPt"
   >
     <div class="export-modal-content">
@@ -181,12 +174,12 @@ async function handleDownload() {
         <label class="row-label">Group by:</label>
         <div class="radio-group">
           <div class="field-radiobutton">
-            <RadioButton v-model="groupBy" input-id="groupStig" value="stig" :pt="commonPt.radioButton" />
-            <label for="groupStig">STIG</label>
-          </div>
-          <div class="field-radiobutton">
             <RadioButton v-model="groupBy" input-id="groupAsset" value="asset" :pt="commonPt.radioButton" />
             <label for="groupAsset">Asset</label>
+          </div>
+          <div class="field-radiobutton">
+            <RadioButton v-model="groupBy" input-id="groupStig" value="stig" :pt="commonPt.radioButton" />
+            <label for="groupStig">STIG</label>
           </div>
         </div>
       </div>
@@ -216,7 +209,7 @@ async function handleDownload() {
           </div>
         </div>
 
-        <div class="delimiter-row">
+        <div v-if="groupBy === 'stig'" class="delimiter-row">
           <label>{{ delimiterLabel }}</label>
           <Select
             v-model="delimiter"
@@ -225,6 +218,11 @@ async function handleDownload() {
             option-value="value"
             :pt="commonPt.select"
           />
+        </div>
+
+        <div v-if="showNameWarning" class="warning-message">
+          <span class="warning-icon pi pi-exclamation-triangle" />
+          <span> Warning: If exported without 'Name', this file cannot be reimported back into STIG Manager.</span>
         </div>
       </div>
 
@@ -257,6 +255,11 @@ async function handleDownload() {
 </template>
 
 <style scoped>
+.warning-message {
+  color: #ff0000;
+  font-size: 0.8rem;
+}
+
 .export-modal-content {
   display: flex;
   flex-direction: column;
@@ -272,7 +275,6 @@ async function handleDownload() {
 
 .row-label {
   min-width: 80px;
-  color: #e4e4e7;
 }
 
 .radio-group {
@@ -284,7 +286,6 @@ async function handleDownload() {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #e4e4e7;
 }
 
 .field-radiobutton label {
@@ -321,7 +322,6 @@ async function handleDownload() {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #e4e4e7;
 }
 
 .field-checkbox label {
@@ -332,7 +332,6 @@ async function handleDownload() {
   display: flex;
   align-items: center;
   gap: 1rem;
-  color: #e4e4e7;
 }
 
 .delimiter-select {
