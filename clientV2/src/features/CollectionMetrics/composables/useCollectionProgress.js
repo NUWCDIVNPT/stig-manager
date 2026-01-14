@@ -3,18 +3,19 @@ import { formatPercent } from '../../../shared/lib.js'
 
 export function useCollectionProgress(metrics) {
   const stats = computed(() => {
-    const m = unref(metrics)?.metrics
+    const m = unref(metrics)
     if (!m) {
       return null
     }
 
-    const assessments = m.assessments || 0
-    const assessed = m.assessed || 0
-    const saved = m.statuses?.saved || 0
-    const otherResults = m.results?.other || 0
-    const submitted = m.statuses?.submitted || 0
-    const accepted = m.statuses?.accepted || 0
-    const rejected = m.statuses?.rejected || 0
+    console.log(m)
+    const assessments = m.metrics.assessments
+    const assessed = m.metrics.assessed
+    const saved = m.metrics.statuses?.saved
+    const otherResults = m.metrics.results?.other
+    const submitted = m.metrics.statuses?.submitted
+    const accepted = m.metrics.statuses?.accepted
+    const rejected = m.metrics.statuses?.rejected
 
     // Calculate counts
     const counts = {
