@@ -42,6 +42,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  selectedKey: {
+    type: [String, Number],
+    default: null,
+  },
 })
 
 const emit = defineEmits(['row-select', 'row-action', 'asset-action'])
@@ -159,6 +163,17 @@ const data = computed(() => {
     }
   })
 })
+
+// Sync selectedRow when selectedKey or data changes (for programmatic selection)
+watch([() => props.selectedKey, data], ([newKey, newData]) => {
+  if (newKey !== null && props.dataKey && newData.length > 0) {
+    const row = newData.find(r => r[props.dataKey] === newKey)
+    selectedRow.value = row || null
+  }
+  else if (newKey === null) {
+    selectedRow.value = null
+  }
+}, { immediate: true })
 </script>
 
 <template>
