@@ -32,26 +32,27 @@ function renderPct (v) {
 
 <style>
 .sm-cell-thermometer-text {
-  font-size: 12px;
-  text-align: center;
-  margin-bottom: 2px;
+  float: left;
+  margin-left: 4px;
+  font-style: italic;
+  font-weight: 600
 }
 .sm-cell-thermometer-bg {
-  background-color: #e0e0e0;
-  height: 10px;
-  border-radius: 5px;
-  overflow: hidden;
+  background-color: #1e2021;
+  outline: solid 1px #4d4d4d;
+  border-radius: 3px;
+  outline-offset: 0px
+
 }
 .sm-cell-mercury-low {
-  background-color: #4caf50;
-  height: 100%;
+  background-color: #425722
 }
+
 .sm-cell-mercury-medium {
-  background-color: #ff9800;
-  height: 100%;
+  background-color: hsl(209deg 48% 26%)
 }
+
 .sm-cell-mercury-high {
-  background-color: #f44336;
-  height: 100%;
+  background-color: hsl(5deg 56% 21%)
 }
 </style>

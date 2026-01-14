@@ -202,13 +202,6 @@ function handleStigSelect(benchmarkId) {
   selectedBenchmarkId.value = benchmarkId
 }
 
-// Auto-select first STIG when data loads and no selection exists
-watch(stigs, (newStigs) => {
-  if (newStigs.length > 0 && selectedBenchmarkId.value === null) {
-    selectedBenchmarkId.value = newStigs[0].benchmarkId
-  }
-}, { immediate: true })
-
 // Query for assets of the selected STIG (for STIGs tab child panel)
 const {
   checklistAssets,
@@ -236,13 +229,6 @@ const selectedAssetId = ref(null)
 function handleAssetSelect(assetId) {
   selectedAssetId.value = assetId
 }
-
-// Auto-select first asset when data loads and no selection exists
-watch(assets, (newAssets) => {
-  if (newAssets.length > 0 && selectedAssetId.value === null) {
-    selectedAssetId.value = newAssets[0].assetId
-  }
-}, { immediate: true })
 
 // Query for STIGs of the selected asset (for Assets tab child panel)
 const {
@@ -455,7 +441,6 @@ function toggleDashboardSidebar() {
                       :api-metrics-summary="stigs"
                       :is-loading="stigsLoading"
                       :error-message="stigsError"
-                      :selected-key="selectedBenchmarkId"
                       selectable
                       data-key="benchmarkId"
                       @row-select="(row) => handleStigSelect(row.benchmarkId)"
@@ -499,7 +484,6 @@ function toggleDashboardSidebar() {
                       :api-metrics-summary="assets"
                       :is-loading="assetsLoading"
                       :error-message="assetsError"
-                      :selected-key="selectedAssetId"
                       selectable
                       data-key="assetId"
                       @row-select="(row) => handleAssetSelect(row.assetId)"

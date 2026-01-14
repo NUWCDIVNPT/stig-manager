@@ -1,14 +1,10 @@
 :root {
   font-family: 'Open Sans', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  font-size: 12px;
   color-scheme: dark !important;
   color: rgba(255, 255, 255, 0.87);
   background-color: #000000;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+
   
   /* Classification Marking Colors */
   --color-marking-unclassified: #007a33;
@@ -42,6 +38,9 @@
   /* Collection Stats Colors */
   --color-inventory: #c4a484;
   --color-review-age: #d4d4d8;
+
+  /* Breadcrumb sizing */
+  --breadcrumb-font-size: 1.2rem;
 }
 
 *, *::before, *::after {
@@ -80,7 +79,7 @@ body {
 }
 
 
-/* 
+/*
 
 @media (prefers-color-scheme: light) {
   :root {
@@ -94,3 +93,8 @@ body {
     background-color: #f9f9f9;
   }
 } */
+
+/* Breadcrumb select dropdown panel styling */
+.breadcrumb-select-panel .p-select-option {
+  font-size: var(--breadcrumb-font-size);
+}
