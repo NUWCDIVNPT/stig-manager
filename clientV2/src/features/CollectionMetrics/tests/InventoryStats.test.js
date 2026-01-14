@@ -1,4 +1,5 @@
 import { userEvent } from '@testing-library/user-event'
+import { screen } from '@testing-library/vue'
 import { describe, expect, it } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import InventoryStats from '../components/InventoryStats.vue'
@@ -11,17 +12,15 @@ describe('inventoryStats', () => {
   }
 
   it('renders correctly when inventory data is provided', () => {
-    renderWithProviders(InventoryStats, {
+    const { container } = renderWithProviders(InventoryStats, {
       props: {
         inventory: mockInventoryData,
       },
     })
 
-    // Check Title
-    expect(document.querySelector('.title')).toHaveTextContent('Inventory')
+    expect(screen.getByText('Inventory')).toBeInTheDocument()
 
-    // Check Badges
-    const badges = document.querySelectorAll('.stat-badge')
+    const badges = container.querySelectorAll('.metric-badge')
     expect(badges.length).toBe(3)
 
     // Assets Badge
@@ -38,12 +37,11 @@ describe('inventoryStats', () => {
   })
 
   it('renders with 0 values when inventory is provided as empty object or default', () => {
-    // Testing with default prop (not providing inventory)
-    const { rerender } = renderWithProviders(InventoryStats)
+    const { container, rerender } = renderWithProviders(InventoryStats)
 
-    expect(document.querySelector('.title')).toHaveTextContent('Inventory')
+    expect(screen.getByText('Inventory')).toBeInTheDocument()
 
-    const badges = document.querySelectorAll('.stat-badge')
+    const badges = container.querySelectorAll('.metric-badge')
     expect(badges[0]).toHaveTextContent('0')
     expect(badges[1]).toHaveTextContent('0')
     expect(badges[2]).toHaveTextContent('0')
@@ -51,21 +49,21 @@ describe('inventoryStats', () => {
     // Now test with empty object
     rerender({ inventory: {} })
     // Should fallback to || 0 in computed property
-    const badges2 = document.querySelectorAll('.stat-badge')
+    const badges2 = container.querySelectorAll('.metric-badge')
     expect(badges2[0]).toHaveTextContent('0')
     expect(badges2[1]).toHaveTextContent('0')
     expect(badges2[2]).toHaveTextContent('0')
   })
 
   it('emits export event when export link is clicked', async () => {
-    const { emitted } = renderWithProviders(InventoryStats, {
+    const { emitted, container } = renderWithProviders(InventoryStats, {
       props: {
         inventory: mockInventoryData,
       },
     })
     const user = userEvent.setup()
 
-    const exportLink = document.querySelector('.action-link')
+    const exportLink = container.querySelector('.metric-action-link')
     expect(exportLink).toBeInTheDocument()
 
     await user.click(exportLink)

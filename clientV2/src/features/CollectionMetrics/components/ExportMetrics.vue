@@ -3,7 +3,7 @@ import Button from 'primevue/button'
 import Select from 'primevue/select'
 import { inject, reactive } from 'vue'
 import { useEnv } from '../../../../src/shared/stores/useEnv.js'
-import { handleDownload as executeDownload } from '../exportMetricsUtils.js'
+import { handleDownload } from '../exportMetricsUtils.js'
 
 const props = defineProps({
   collectionId: {
@@ -44,13 +44,13 @@ const selected = reactive({
 
 const buttonPt = {
   root: {
-    style: 'color: rgba(255, 255, 255, 0.87); border-color: #3f3f46; width: 100%',
+    style: 'color: rgba(255, 255, 255, 0.87); border-color: #3f3f46; width: 100%; margin-top: 5px',
     class: 'download-button',
   },
 }
 
-async function handleDownload() {
-  await executeDownload({
+async function download() {
+  await handleDownload({
     format: selected.format,
     style: selected.style,
     aggregation: selected.aggregation,
@@ -63,9 +63,9 @@ async function handleDownload() {
 </script>
 
 <template>
-  <div class="export-card">
-    <div class="header">
-      <h2 class="title">
+  <div class="export-card metric-card">
+    <div class="metric-header">
+      <h2 class="metric-title">
         Export Metrics
       </h2>
     </div>
@@ -102,7 +102,7 @@ async function handleDownload() {
           label="Download"
           icon="pi pi-download"
           :pt="buttonPt"
-          @click="handleDownload"
+          @click="download"
         />
       </div>
     </div>
@@ -110,34 +110,19 @@ async function handleDownload() {
 </template>
 
 <style scoped>
+@import './metrics.css';
+
 .export-card {
-  background-color: #18181b;
-  color: #e4e4e7;
-  border-radius: 20px;
-  padding: 15px;
-  width: 100%;
-  max-width: 400px;
-  min-width: 300px;
-  display: flex;
-  flex-direction: column;
   height: fit-content;
 }
 
-.header {
+.metric-header {
   margin-bottom: 15px;
-}
-
-.title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0;
-  color: #e4e4e7;
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: 15px;
 }
 
 .form-grid {

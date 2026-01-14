@@ -1,5 +1,5 @@
 <script setup>
-import { computed, inject, ref } from 'vue'
+import { inject, ref } from 'vue'
 
 import { useCollectionCora } from '../composables/useCollectionCora.js'
 import { useCollectionProgress } from '../composables/useCollectionProgress.js'
@@ -32,15 +32,35 @@ const props = defineProps({
 
 const oidcWorker = inject('worker')
 
-const { metrics, isLoading, errorMessage } = useCollectionMetricsSummaryQuery({
+const { metrics, isLoading } = useCollectionMetricsSummaryQuery({
   collectionId: props.collectionId,
-  token: computed(() => oidcWorker?.token),
+  token: oidcWorker?.token,
 })
 
+/*
+// Native fetch alternative using useFetch
+// import { computed } from 'vue'
+// import { useFetch } from '../../../shared/composables/useFetch.js'
+// import { useEnv } from '../../../shared/stores/useEnv.js'
+
+// const { data: metrics, isLoading } = useFetch(
+//   computed(() => props.collectionId && oidcWorker?.token
+//     ? `${useEnv().apiUrl}/collections/${props.collectionId}/metrics/summary/collection`
+//     : null
+//   ),
+//   computed(() => ({
+//     headers: {
+//       Accept: 'application/json',
+//       Authorization: `Bearer ${oidcWorker?.token}`,
+//     },
+//   }))
+// )
+*/
+
+// hint metrics is reactive cuz it's from a query
 const { stats: progressStats } = useCollectionProgress(metrics)
 const { coraData } = useCollectionCora(metrics)
 const { inventory, findings, ages } = useCollectionStats(metrics)
-
 const showExportModal = ref(false)
 </script>
 
@@ -84,7 +104,6 @@ const showExportModal = ref(false)
 }
 
 .stats-column {
-  display: flex;
   flex-direction: column;
   max-width: 400px;
   width: 100%;

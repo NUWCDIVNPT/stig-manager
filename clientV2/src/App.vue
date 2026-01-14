@@ -3,8 +3,8 @@ import ReauthPrompt from './auth/ReauthPrompt.vue'
 import GlobalBanner from './components/global/GlobalBanner.vue'
 import GlobalErrorModal from './components/global/GlobalErrorModal.vue'
 import GlobalServiceOverlay from './components/global/GlobalServiceOverlay.vue'
+import HomePage from './Home/Home.vue'
 import { useGlobalStateStore } from './shared/stores/globalAuthStore.js'
-import HomePage from './SPAroot/StigmanSPA.vue'
 
 const globalState = useGlobalStateStore()
 </script>

@@ -4,23 +4,30 @@ import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import ExportMetricsModal from '../components/ExportMetricsModal.vue'
 
-// Mock useEnv
 vi.mock('../../../../src/shared/stores/useEnv.js', () => ({
   useEnv: () => ({
     apiUrl: 'http://test-api',
   }),
 }))
 
-// Mock the utility
 const { handleInventoryExportMock } = vi.hoisted(() => ({
   handleInventoryExportMock: vi.fn(),
 }))
 
-vi.mock('../exportMetricsUtils.js', () => ({
-  handleInventoryExport: handleInventoryExportMock,
-}))
+vi.mock('../exportMetricsUtils.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    handleInventoryExport: handleInventoryExportMock,
+  }
+})
 
-// Mock matchMedia for PrimeVue Select component
+/**
+ * AI explaination:
+ * Why it's needed: Your ExportMetrics.vue uses PrimeVue components (specifically Select or Dropdown), which internally use the browser API window.matchMedia to handle responsive behavior (like detecting mobile screens).
+ * The Problem: Vitest runs in JSDOM (a simulated browser environment). JSDOM intentionally does not implement window.matchMedia because it doesn't render pixels. If you run the test without this mock, the PrimeVue component will try to call window.matchMedia, fail, and crash your test.
+ * The Fix: We "polyfill" it manually by adding a fake matchMedia function to the global window object. It returns a dummy object with the properties PrimeVue expects (like matches, addEventListener, etc.) so the component can mount successfully without error.
+ */
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation(query => ({
@@ -64,12 +71,10 @@ describe('exportMetricsModal', () => {
       },
     })
 
-    // Wait for render
     await waitFor(() => {
       expect(screen.getByText('Inventory export options')).toBeInTheDocument()
     })
 
-    // Click Export
     const exportBtn = screen.getByText('Export')
     await user.click(exportBtn)
 
@@ -77,7 +82,7 @@ describe('exportMetricsModal', () => {
     expect(handleInventoryExportMock).toHaveBeenCalledWith(expect.objectContaining({
       collectionId: '123',
       collectionName: 'MyCollection',
-      groupBy: 'stig',
+      groupBy: 'asset',
       format: 'csv',
     }))
   })
@@ -95,9 +100,8 @@ describe('exportMetricsModal', () => {
       expect(screen.getByText('Inventory export options')).toBeInTheDocument()
     })
 
-    // Select JSON - click the label to be safe with PrimeVue radio buttons
-    const jsonLabel = screen.getByLabelText('JSON')
-    await user.click(jsonLabel)
+    const jsonRadio = screen.getByRole('radio', { name: 'JSON' })
+    await user.click(jsonRadio)
 
     await waitFor(() => {
       expect(screen.getByText('JSON options')).toBeInTheDocument()
@@ -106,6 +110,7 @@ describe('exportMetricsModal', () => {
   })
   it('updates CSV fields when "Group by" is changed', async () => {
     const user = userEvent.setup()
+
     renderWithProviders(ExportMetricsModal, {
       props: {
         visible: true,
@@ -117,22 +122,20 @@ describe('exportMetricsModal', () => {
       expect(screen.getByText('Inventory export options')).toBeInTheDocument()
     })
 
-    // Default is Group by STIG
-    expect(screen.getByLabelText('Benchmark')).toBeInTheDocument()
+    // Default is Group by Asset
+    expect(screen.getByLabelText('Name')).toBeInTheDocument()
 
-    // Change to Group by Asset
-    const assetLabel = screen.getByLabelText('Asset')
-    await user.click(assetLabel)
+    // Change to Group by STIG
+    const stigLabel = screen.getByRole('radio', { name: 'STIG' })
+    await user.click(stigLabel)
 
     await waitFor(() => {
-      // Asset specific fields should appear
-      expect(screen.getByLabelText('Name')).toBeInTheDocument()
-      expect(screen.getByLabelText('FQDN')).toBeInTheDocument()
-      expect(screen.getByLabelText('IP')).toBeInTheDocument()
+      // STIG specific fields should appear
+      expect(screen.getByLabelText('Benchmark')).toBeInTheDocument()
     })
 
-    // Benchmark should be gone
-    expect(screen.queryByLabelText('Benchmark')).not.toBeInTheDocument()
+    // Asset specific fields usage should be gone
+    expect(screen.queryByLabelText('IP')).not.toBeInTheDocument()
   })
 
   it('updates JSON options based on "Group by" selection', async () => {
@@ -149,21 +152,21 @@ describe('exportMetricsModal', () => {
     })
 
     // Select JSON
-    const jsonLabel = screen.getByLabelText('JSON')
+    const jsonLabel = screen.getByText('JSON')
     await user.click(jsonLabel)
 
-    // Check default Asset include label (since default Group by is STIG)
+    // Check default Asset include label (since default Group by is Asset)
     await waitFor(() => {
-      expect(screen.getByText('Include list of Assets for each STIG')).toBeInTheDocument()
+      expect(screen.getByText('Include list of STIGs for each Asset')).toBeInTheDocument()
     })
 
-    // Change to Group by Asset
-    const assetLabel = screen.getByLabelText('Asset')
-    await user.click(assetLabel)
+    // Change to Group by STIG
+    const stigLabel = screen.getByRole('radio', { name: 'STIG' })
+    await user.click(stigLabel)
 
     // Check updated label
     await waitFor(() => {
-      expect(screen.getByText('Include list of STIGs for each Asset')).toBeInTheDocument()
+      expect(screen.getByText('Include list of Assets for each STIG')).toBeInTheDocument()
     })
   })
 
@@ -209,7 +212,6 @@ describe('exportMetricsModal', () => {
       expect(screen.getByText('Inventory export options')).toBeInTheDocument()
     })
 
-    // Find the close button (PrimeVue dialog close button usually has aria-label="Close")
     const closeBtn = screen.getByLabelText('Close')
     await user.click(closeBtn)
 
