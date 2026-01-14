@@ -99,7 +99,7 @@ const columns = computed(() => {
       return [
         { field: 'assetName', header: 'Asset', component: AssetColumn },
         { field: 'labels', header: 'Labels', component: LabelsColumnWithTooltip },
-        { field: 'stigs', header: 'Stigs', component: CountColumnWithTooltip },
+        { field: 'stigs', header: 'STIGs', component: CountColumnWithTooltip, width: '50px' },
         ...commonColumns,
       ]
     case 'stig':
@@ -138,7 +138,7 @@ const data = computed(() => {
           assetId: r.assetId,
           assetName: r.name,
           labels: r.labels,
-          stigCnt: r.benchmarkIds.length,
+          stigs: r.benchmarkIds,
           ...commonData,
         }
       case 'stig':
