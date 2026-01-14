@@ -1,404 +1,387 @@
-import { useQuery } from '@tanstack/vue-query'
-import { computed, unref } from 'vue'
-import { collectionKeys } from '../../../shared/keys/collectionKeys.js'
-import { useEnv } from '../../../shared/stores/useEnv.js'
+import { ref, unref, watch } from 'vue'
+import {
+  fetchCollectionAssetStigs,
+  fetchCollectionAssetSummary,
+  fetchCollectionChecklistAssets,
+  fetchCollectionLabelSummary,
+  fetchCollectionLabels,
+  fetchCollectionMetricsSummary,
+  fetchCollectionStigSummary,
+} from '../api/metricsApi.js'
 
-async function fetchCollectionAssetSummary({ apiUrl = useEnv().apiUrl, token, collectionId }) {
-  if (!collectionId) {
-    throw new Error('A collectionId is required to fetch asset metrics.')
-  }
+/**
+ * Composable for fetching collection asset summary metrics
+ * @param {Object} params - { collectionId, token } - can be refs or raw values
+ * @returns {Object} { assets, isLoading, errorMessage, refetch }
+ */
+export function useCollectionAssetSummary({ collectionId, token }) {
+  const assets = ref([])
+  const isLoading = ref(false)
+  const errorMessage = ref(null)
 
-  const response = await fetch(`${apiUrl}/collections/${collectionId}/metrics/summary/asset`, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  async function fetchData() {
+    const id = unref(collectionId)
+    const tkn = unref(token)
 
-  if (!response.ok) {
-    throw new Error(`Collection asset summary ${response.status} ${response.statusText}`)
-  }
-
-  const text = await response.text()
-  return text ? JSON.parse(text) : null
-}
-
-const keepPreviousData = previous => previous
-
-export function useCollectionAssetSummaryQuery({ collectionId, token }, options = {}) {
-  const query = useQuery({
-    queryKey: computed(() => collectionKeys.assetSummary(unref(collectionId))),
-    enabled: computed(() => Boolean(unref(collectionId) && unref(token))),
-    placeholderData: keepPreviousData,
-    queryFn: () => {
-      return fetchCollectionAssetSummary({
-        collectionId: unref(collectionId),
-        token: unref(token),
-      })
-    },
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchOnMount: true, // refetch on mount when stale time is exceeded
-    retry: 2, // retry 2 times
-    ...options,
-  })
-
-  const assets = computed(() => query.data?.value ?? [])
-  const isLoading = computed(() => Boolean(query.isFetching?.value))
-  const errorMessage = computed(() => {
-    const err = query.error?.value
-    if (!err) {
-      return null
+    if (!id || !tkn) {
+      return
     }
-    return err.message || 'Unable to load collection assets.'
-  })
+
+    isLoading.value = true
+    errorMessage.value = null
+
+    try {
+      assets.value = await fetchCollectionAssetSummary({
+        collectionId: id,
+        token: tkn,
+      })
+    }
+    catch (err) {
+      errorMessage.value = err.message || 'Unable to load collection assets.'
+      console.error('Failed to fetch asset summary:', err)
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  // Auto-fetch when dependencies change
+  watch(
+    () => [unref(collectionId), unref(token)],
+    () => fetchData(),
+    { immediate: true },
+  )
 
   return {
     assets,
     isLoading,
     errorMessage,
-    refetch: query.refetch,
+    refetch: fetchData,
   }
 }
 
-async function fetchCollectionStigSummary({ apiUrl = useEnv().apiUrl, token, collectionId }) {
-  if (!collectionId) {
-    throw new Error('A collectionId is required to fetch STIG metrics.')
-  }
+/**
+ * Composable for fetching collection STIG summary metrics
+ * @param {Object} params - { collectionId, token } - can be refs or raw values
+ * @returns {Object} { stigs, isLoading, errorMessage, refetch }
+ */
+export function useCollectionStigSummary({ collectionId, token }) {
+  const stigs = ref([])
+  const isLoading = ref(false)
+  const errorMessage = ref(null)
 
-  const response = await fetch(`${apiUrl}/collections/${collectionId}/metrics/summary/stig`, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  async function fetchData() {
+    const id = unref(collectionId)
+    const tkn = unref(token)
 
-  if (!response.ok) {
-    throw new Error(`Collection STIG summary ${response.status} ${response.statusText}`)
-  }
-
-  const text = await response.text()
-  return text ? JSON.parse(text) : null
-}
-
-export function useCollectionStigSummaryQuery({ collectionId, token }, options = {}) {
-  const query = useQuery({
-    queryKey: computed(() => collectionKeys.summaryByStig(unref(collectionId))),
-    enabled: computed(() => Boolean(unref(collectionId) && unref(token))),
-    placeholderData: keepPreviousData,
-    queryFn: () => {
-      return fetchCollectionStigSummary({
-        collectionId: unref(collectionId),
-        token: unref(token),
-      })
-    },
-    staleTime: 2 * 60 * 1000,
-    refetchOnMount: true,
-    retry: 2,
-    ...options,
-  })
-
-  const stigs = computed(() => query.data?.value ?? [])
-  const isLoading = computed(() => Boolean(query.isFetching?.value))
-  const errorMessage = computed(() => {
-    const err = query.error?.value
-    if (!err) {
-      return null
+    if (!id || !tkn) {
+      return
     }
-    return err.message || 'Unable to load collection STIGs.'
-  })
+
+    isLoading.value = true
+    errorMessage.value = null
+
+    try {
+      stigs.value = await fetchCollectionStigSummary({
+        collectionId: id,
+        token: tkn,
+      })
+    }
+    catch (err) {
+      errorMessage.value = err.message || 'Unable to load collection STIGs.'
+      console.error('Failed to fetch STIG summary:', err)
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  watch(
+    () => [unref(collectionId), unref(token)],
+    () => fetchData(),
+    { immediate: true },
+  )
 
   return {
     stigs,
     isLoading,
     errorMessage,
-    refetch: query.refetch,
+    refetch: fetchData,
   }
 }
 
-async function fetchCollectionLabelSummary({ apiUrl = useEnv().apiUrl, token, collectionId }) {
-  if (!collectionId) {
-    throw new Error('A collectionId is required to fetch label metrics.')
-  }
+/**
+ * Composable for fetching collection label summary metrics
+ * @param {Object} params - { collectionId, token } - can be refs or raw values
+ * @returns {Object} { labels, isLoading, errorMessage, refetch }
+ */
+export function useCollectionLabelSummary({ collectionId, token }) {
+  const labels = ref([])
+  const isLoading = ref(false)
+  const errorMessage = ref(null)
 
-  const response = await fetch(`${apiUrl}/collections/${collectionId}/metrics/summary/label`, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  async function fetchData() {
+    const id = unref(collectionId)
+    const tkn = unref(token)
 
-  if (!response.ok) {
-    throw new Error(`Collection label summary ${response.status} ${response.statusText}`)
-  }
-
-  const text = await response.text()
-  return text ? JSON.parse(text) : null
-}
-
-export function useCollectionLabelSummaryQuery({ collectionId, token }, options = {}) {
-  const query = useQuery({
-    queryKey: computed(() => collectionKeys.summaryByLabel(unref(collectionId))),
-    enabled: computed(() => Boolean(unref(collectionId) && unref(token))),
-    placeholderData: keepPreviousData,
-    queryFn: () => {
-      return fetchCollectionLabelSummary({
-        collectionId: unref(collectionId),
-        token: unref(token),
-      })
-    },
-    staleTime: 2 * 60 * 1000,
-    refetchOnMount: true,
-    retry: 2,
-    ...options,
-  })
-
-  const labels = computed(() => query.data?.value ?? [])
-  const isLoading = computed(() => Boolean(query.isFetching?.value))
-  const errorMessage = computed(() => {
-    const err = query.error?.value
-    if (!err) {
-      return null
+    if (!id || !tkn) {
+      return
     }
-    return err.message || 'Unable to load collection labels.'
-  })
+
+    isLoading.value = true
+    errorMessage.value = null
+
+    try {
+      labels.value = await fetchCollectionLabelSummary({
+        collectionId: id,
+        token: tkn,
+      })
+    }
+    catch (err) {
+      errorMessage.value = err.message || 'Unable to load collection labels.'
+      console.error('Failed to fetch label summary:', err)
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  watch(
+    () => [unref(collectionId), unref(token)],
+    () => fetchData(),
+    { immediate: true },
+  )
 
   return {
     labels,
     isLoading,
     errorMessage,
-    refetch: query.refetch,
+    refetch: fetchData,
   }
 }
 
-async function fetchCollectionLabels({ apiUrl = useEnv().apiUrl, token, collectionId }) {
-  if (!collectionId) {
-    throw new Error('A collectionId is required to fetch collection labels.')
-  }
+/**
+ * Composable for fetching collection labels (raw data with colors)
+ * @param {Object} params - { collectionId, token } - can be refs or raw values
+ * @returns {Object} { labels, isLoading, errorMessage, refetch }
+ */
+export function useCollectionLabels({ collectionId, token }) {
+  const labels = ref([])
+  const isLoading = ref(false)
+  const errorMessage = ref(null)
 
-  const response = await fetch(`${apiUrl}/collections/${collectionId}/labels`, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  async function fetchData() {
+    const id = unref(collectionId)
+    const tkn = unref(token)
 
-  if (!response.ok) {
-    throw new Error(`Collection labels ${response.status} ${response.statusText}`)
-  }
-
-  return response.json()
-}
-
-export function useCollectionLabelsQuery({ collectionId, token }, options = {}) {
-  const query = useQuery({
-    queryKey: computed(() => [...collectionKeys.all, unref(collectionId), 'labels']),
-    enabled: computed(() => Boolean(unref(collectionId) && unref(token))),
-    placeholderData: keepPreviousData,
-    queryFn: () => {
-      return fetchCollectionLabels({
-        collectionId: unref(collectionId),
-        token: unref(token),
-      })
-    },
-    staleTime: 5 * 60 * 1000,
-    refetchOnMount: true,
-    retry: 2,
-    ...options,
-  })
-
-  const labels = computed(() => query.data?.value ?? [])
-  const isLoading = computed(() => Boolean(query.isFetching?.value))
-  const errorMessage = computed(() => {
-    const err = query.error?.value
-    if (!err) {
-      return null
+    if (!id || !tkn) {
+      return
     }
-    return err.message || 'Unable to load collection labels.'
-  })
+
+    isLoading.value = true
+    errorMessage.value = null
+
+    try {
+      labels.value = await fetchCollectionLabels({
+        collectionId: id,
+        token: tkn,
+      })
+    }
+    catch (err) {
+      errorMessage.value = err.message || 'Unable to load collection labels.'
+      console.error('Failed to fetch labels:', err)
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  watch(
+    () => [unref(collectionId), unref(token)],
+    () => fetchData(),
+    { immediate: true },
+  )
 
   return {
     labels,
     isLoading,
     errorMessage,
-    refetch: query.refetch,
+    refetch: fetchData,
   }
 }
 
-async function fetchCollectionChecklistAssets({ apiUrl = useEnv().apiUrl, token, collectionId, benchmarkId }) {
-  if (!collectionId) {
-    throw new Error('A collectionId is required to fetch checklist assets.')
-  }
-  if (!benchmarkId) {
-    return [] // Return empty if no benchmark selected
-  }
+/**
+ * Composable for fetching checklist assets for a specific benchmark
+ * @param {Object} params - { collectionId, benchmarkId, token } - can be refs or raw values
+ * @returns {Object} { checklistAssets, isLoading, errorMessage, refetch }
+ */
+export function useCollectionChecklistAssets({ collectionId, benchmarkId, token }) {
+  const checklistAssets = ref([])
+  const isLoading = ref(false)
+  const errorMessage = ref(null)
 
-  const response = await fetch(`${apiUrl}/collections/${collectionId}/metrics/summary/asset?benchmarkId=${benchmarkId}`, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  async function fetchData() {
+    const id = unref(collectionId)
+    const bid = unref(benchmarkId)
+    const tkn = unref(token)
 
-  if (!response.ok) {
-    throw new Error(`Collection checklist assets ${response.status} ${response.statusText}`)
-  }
-
-  const text = await response.text()
-  return text ? JSON.parse(text) : null
-}
-
-export function useCollectionChecklistAssetsQuery({ collectionId, benchmarkId, token }, options = {}) {
-  const query = useQuery({
-    queryKey: computed(() => [...collectionKeys.assetSummary(unref(collectionId)), 'checklist', unref(benchmarkId)]),
-    enabled: computed(() => Boolean(unref(collectionId) && unref(token) && unref(benchmarkId))),
-    placeholderData: keepPreviousData,
-    queryFn: () => {
-      return fetchCollectionChecklistAssets({
-        collectionId: unref(collectionId),
-        benchmarkId: unref(benchmarkId),
-        token: unref(token),
-      })
-    },
-    staleTime: 2 * 60 * 1000,
-    refetchOnMount: true,
-    retry: 2,
-    ...options,
-  })
-
-  const checklistAssets = computed(() => query.data?.value ?? [])
-  const isLoading = computed(() => Boolean(query.isFetching?.value))
-  const errorMessage = computed(() => {
-    const err = query.error?.value
-    if (!err) {
-      return null
+    if (!id || !tkn) {
+      return
     }
-    return err.message || 'Unable to load checklist assets.'
-  })
+
+    // If no benchmarkId, just clear the data
+    if (!bid) {
+      checklistAssets.value = []
+      return
+    }
+
+    isLoading.value = true
+    errorMessage.value = null
+
+    try {
+      checklistAssets.value = await fetchCollectionChecklistAssets({
+        collectionId: id,
+        benchmarkId: bid,
+        token: tkn,
+      })
+    }
+    catch (err) {
+      errorMessage.value = err.message || 'Unable to load checklist assets.'
+      console.error('Failed to fetch checklist assets:', err)
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  watch(
+    () => [unref(collectionId), unref(benchmarkId), unref(token)],
+    () => fetchData(),
+    { immediate: true },
+  )
 
   return {
     checklistAssets,
     isLoading,
     errorMessage,
-    refetch: query.refetch,
+    refetch: fetchData,
   }
 }
 
-async function fetchCollectionAssetStigs({ apiUrl = useEnv().apiUrl, token, collectionId, assetId }) {
-  if (!collectionId) {
-    throw new Error('A collectionId is required to fetch asset STIGs.')
-  }
-  if (!assetId) {
-    return [] // Return empty if no asset selected
-  }
+/**
+ * Composable for fetching STIGs for a specific asset
+ * @param {Object} params - { collectionId, assetId, token } - can be refs or raw values
+ * @returns {Object} { assetStigs, isLoading, errorMessage, refetch }
+ */
+export function useCollectionAssetStigs({ collectionId, assetId, token }) {
+  const assetStigs = ref([])
+  const isLoading = ref(false)
+  const errorMessage = ref(null)
 
-  const response = await fetch(`${apiUrl}/collections/${collectionId}/metrics/summary/stig?assetId=${assetId}`, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  async function fetchData() {
+    const id = unref(collectionId)
+    const aid = unref(assetId)
+    const tkn = unref(token)
 
-  if (!response.ok) {
-    throw new Error(`Collection asset STIGs ${response.status} ${response.statusText}`)
-  }
-
-  return response.json()
-}
-
-export function useCollectionAssetStigsQuery({ collectionId, assetId, token }, options = {}) {
-  const query = useQuery({
-    queryKey: computed(() => [...collectionKeys.summaryByStig(unref(collectionId)), 'asset', unref(assetId)]),
-    enabled: computed(() => Boolean(unref(collectionId) && unref(token) && unref(assetId))),
-    placeholderData: keepPreviousData,
-    queryFn: () => {
-      return fetchCollectionAssetStigs({
-        collectionId: unref(collectionId),
-        assetId: unref(assetId),
-        token: unref(token),
-      })
-    },
-    staleTime: 2 * 60 * 1000,
-    refetchOnMount: true,
-    retry: 2,
-    ...options,
-  })
-
-  const assetStigs = computed(() => query.data?.value ?? [])
-  const isLoading = computed(() => Boolean(query.isFetching?.value))
-  const errorMessage = computed(() => {
-    const err = query.error?.value
-    if (!err) {
-      return null
+    if (!id || !tkn) {
+      return
     }
-    return err.message || 'Unable to load asset STIGs.'
-  })
+
+    // If no assetId, just clear the data
+    if (!aid) {
+      assetStigs.value = []
+      return
+    }
+
+    isLoading.value = true
+    errorMessage.value = null
+
+    try {
+      assetStigs.value = await fetchCollectionAssetStigs({
+        collectionId: id,
+        assetId: aid,
+        token: tkn,
+      })
+    }
+    catch (err) {
+      errorMessage.value = err.message || 'Unable to load asset STIGs.'
+      console.error('Failed to fetch asset STIGs:', err)
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  watch(
+    () => [unref(collectionId), unref(assetId), unref(token)],
+    () => fetchData(),
+    { immediate: true },
+  )
 
   return {
     assetStigs,
     isLoading,
     errorMessage,
-    refetch: query.refetch,
+    refetch: fetchData,
   }
 }
 
-async function fetchCollectionMetricsSummary({ apiUrl = useEnv().apiUrl, token, collectionId }) {
-  if (!collectionId) {
-    throw new Error('A collectionId is required to fetch collection metrics.')
-  }
+/**
+ * Composable for fetching collection-level metrics summary
+ * @param {Object} params - { collectionId, token } - can be refs or raw values
+ * @returns {Object} { metrics, isLoading, errorMessage, refetch }
+ */
+export function useCollectionMetricsSummary({ collectionId, token }) {
+  const metrics = ref(null)
+  const isLoading = ref(false)
+  const errorMessage = ref(null)
 
-  const response = await fetch(`${apiUrl}/collections/${collectionId}/metrics/summary/collection`, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  async function fetchData() {
+    const id = unref(collectionId)
+    const tkn = unref(token)
 
-  if (!response.ok) {
-    throw new Error(`Collection metrics summary ${response.status} ${response.statusText}`)
-  }
-
-  const text = await response.text()
-  return text ? JSON.parse(text) : null
-}
-
-export function useCollectionMetricsSummaryQuery({ collectionId, token }, options = {}) {
-  const query = useQuery({
-    queryKey: computed(() => collectionKeys.summaryByCollection(unref(collectionId))),
-    enabled: computed(() => Boolean(unref(collectionId) && unref(token))),
-    placeholderData: keepPreviousData,
-    queryFn: () => {
-      return fetchCollectionMetricsSummary({
-        collectionId: unref(collectionId),
-        token: unref(token),
-      })
-    },
-    staleTime: 2 * 60 * 1000,
-    refetchOnMount: true,
-    retry: 2,
-    ...options,
-  })
-
-  const metrics = computed(() => query.data?.value ?? null)
-  const isLoading = computed(() => Boolean(query.isFetching?.value))
-  const errorMessage = computed(() => {
-    const err = query.error?.value
-    if (!err) {
-      return null
+    if (!id || !tkn) {
+      return
     }
-    return err.message || 'Unable to load collection metrics.'
-  })
+
+    isLoading.value = true
+    errorMessage.value = null
+
+    try {
+      metrics.value = await fetchCollectionMetricsSummary({
+        collectionId: id,
+        token: tkn,
+      })
+    }
+    catch (err) {
+      errorMessage.value = err.message || 'Unable to load collection metrics.'
+      console.error('Failed to fetch metrics summary:', err)
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  watch(
+    () => [unref(collectionId), unref(token)],
+    () => fetchData(),
+    { immediate: true },
+  )
 
   return {
     metrics,
     isLoading,
     errorMessage,
-    refetch: query.refetch,
+    refetch: fetchData,
   }
 }
+
+// Legacy aliases for backwards compatibility during migration
+// These match the old TanStack Query function names
+export const useCollectionAssetSummaryQuery = useCollectionAssetSummary
+export const useCollectionStigSummaryQuery = useCollectionStigSummary
+export const useCollectionLabelSummaryQuery = useCollectionLabelSummary
+export const useCollectionLabelsQuery = useCollectionLabels
+export const useCollectionChecklistAssetsQuery = useCollectionChecklistAssets
+export const useCollectionAssetStigsQuery = useCollectionAssetStigs
+export const useCollectionMetricsSummaryQuery = useCollectionMetricsSummary

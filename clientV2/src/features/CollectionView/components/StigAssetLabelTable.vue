@@ -4,12 +4,6 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { computed, inject } from 'vue'
-import {
-  useCollectionAssetSummaryQuery,
-  useCollectionLabelSummaryQuery,
-  useCollectionStigSummaryQuery,
-} from '../queries/metricsQueries.js'
 import AssetsView from './AssetsView.vue'
 import LabelsView from './LabelsView.vue'
 import StigsView from './StigsView.vue'
@@ -19,27 +13,21 @@ const props = defineProps({
     type: [String, Number],
     required: true,
   },
+  stigs: {
+    type: Array,
+    default: () => [],
+  },
+  assets: {
+    type: Array,
+    default: () => [],
+  },
+  labels: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['select-stig'])
-
-const oidcWorker = inject('worker')
-const token = computed(() => oidcWorker.token)
-
-const { stigs } = useCollectionStigSummaryQuery({
-  collectionId: computed(() => props.collectionId),
-  token,
-})
-
-const { assets } = useCollectionAssetSummaryQuery({
-  collectionId: computed(() => props.collectionId),
-  token,
-})
-
-const { labels } = useCollectionLabelSummaryQuery({
-  collectionId: computed(() => props.collectionId),
-  token,
-})
 </script>
 
 <template>

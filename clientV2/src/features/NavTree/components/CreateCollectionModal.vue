@@ -1,5 +1,4 @@
 <script setup>
-import { useQueryClient } from '@tanstack/vue-query'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -7,16 +6,12 @@ import Textarea from 'primevue/textarea'
 import { computed, inject, ref, watch } from 'vue'
 import CloseButton from '../../../components/common/CloseButton.vue'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
-import { collectionKeys } from '../../../shared/keys/collectionKeys.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 
 const emit = defineEmits(['created'])
 // this is a two way binded prop that controls the visibility of the modal
 const visible = defineModel('visible', { type: Boolean, default: false })
 const worker = inject('worker', null)
-
-// needed for invalidating the collection query on creation to refetch
-const queryClient = useQueryClient()
 
 const name = ref('')
 const description = ref('')
@@ -78,7 +73,7 @@ async function handleSubmit() {
     }
 
     const createdCollection = await response.json()
-    await queryClient.invalidateQueries({ queryKey: collectionKeys.all })
+    // Emit event - parent component (NavTree) will handle refetching
     emit('created', createdCollection)
     visible.value = false
   }

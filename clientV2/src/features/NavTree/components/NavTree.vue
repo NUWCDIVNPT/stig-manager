@@ -1,5 +1,4 @@
 <script setup>
-import { useQueryClient } from '@tanstack/vue-query'
 import { computed, defineModel, inject, ref } from 'vue'
 import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
 import { useCollectionsData } from '../../CollectionView/composeables/useCollectionsData.js'
@@ -15,7 +14,6 @@ import NavTreeFooter from './NavTreeFooter.vue'
 import NavTreeHeader from './NavTreeHeader.vue'
 import NavTreeTab from './NavTreeTab.vue'
 
-const queryClient = useQueryClient() // needed for logout
 const oidcWorker = inject('worker')
 
 // these are two way binded props
@@ -23,7 +21,7 @@ const visible = defineModel('open', { type: Boolean, default: true })
 const peekMode = defineModel('peekMode', { type: Boolean, default: false })
 
 const navTreeStore = useNavTreeStore()
-const { collections, loading } = useCollectionsData() // fetch the data
+const { collections, loading, refetch: refetchCollections } = useCollectionsData() // fetch the data
 useNavTreeNavigation()
 
 const canCreateCollection = computed(() => {
@@ -59,7 +57,6 @@ function open() {
 }
 
 function handleLogout() {
-  queryClient.clear()
   const logoutHandler = oidcWorker.logout.bind(oidcWorker)
   logoutHandler()
 }
@@ -77,8 +74,9 @@ function onNodeSelect(node) {
 }
 
 function handleCollectionCreated(collection) {
-  // close modal and select the new colletion in the navTREE
+  // close modal, refetch collections, and select the new collection in the navTree
   showCreateCollectionModal.value = false
+  refetchCollections()
   navTreeStore.select({
     key: String(collection.collectionId),
     label: collection.name,

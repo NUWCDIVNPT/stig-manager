@@ -1,4 +1,3 @@
-import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import { createApp, h, watch } from 'vue'
@@ -19,17 +18,6 @@ import './style.css'
 if (typeof document !== 'undefined') {
   document.documentElement.classList.add('app-dark')
 }
-
-// vue-query client setup with default options
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 30_000, // 30 seconds
-    },
-  },
-})
 
 try {
   // bootstrap enviornment
@@ -121,18 +109,6 @@ try {
       },
       pt: MyPrimeVuePT,
     })
-
-    app.use(VueQueryPlugin, {
-      queryClient,
-      devtools: {
-        enabled: true,
-        initialIsOpen: true,
-      },
-    })
-    // app.use(VueQueryDevtools, {
-    //   initialIsOpen: false,
-    //   position: 'top-left', // can change to 'top-left', etc.
-    // })
 
     app.use(router)
     app.provide('worker', authBootResult.oidcWorker)

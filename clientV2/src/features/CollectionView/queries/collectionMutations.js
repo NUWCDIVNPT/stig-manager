@@ -1,65 +1,55 @@
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { inject, unref } from 'vue'
-import { collectionKeys } from '../../../shared/keys/collectionKeys.js'
+import { inject, ref, unref } from 'vue'
 import { useSelectedCollectionStore } from '../../../shared/stores/selectedCollection.js'
 import { useTabCoordinatorStore } from '../../../shared/stores/tabCoordinatorStore.js'
-import { deleteCollection } from '../api/collectionApi'
+import { deleteCollection as deleteCollectionApi } from '../api/collectionApi'
 
-export function useDeleteCollectionMutation(collectionIdRef) {
+export function useDeleteCollectionMutation(collectionIdRef, { onSuccess } = {}) {
   const oidcWorker = inject('worker', null)
-  const queryClient = useQueryClient()
   const selectedCollectionStore = useSelectedCollectionStore()
   const tabCoordinator = useTabCoordinatorStore()
 
-  return useMutation({
-    mutationFn: () =>
-      deleteCollection({
-        collectionId: unref(collectionIdRef),
+  const isPending = ref(false)
+  const error = ref(null)
+
+  async function mutate() {
+    const currentId = unref(collectionIdRef)
+
+    if (!currentId || isPending.value) {
+      return
+    }
+
+    isPending.value = true
+    error.value = null
+
+    try {
+      await deleteCollectionApi({
+        collectionId: currentId,
         token: oidcWorker?.token,
-      }),
-
-    // update UI immediately before API responds
-    onMutate: async () => {
-      const currentId = unref(collectionIdRef)
-
-      // cancel ongoing fetches
-      await queryClient.cancelQueries({ queryKey: collectionKeys.all })
-
-      // save current state for potential rollback
-      const previousCollections = queryClient.getQueryData(collectionKeys.all)
-      const previousSelection = selectedCollectionStore.selectedData
-
-      // remove collection from cache
-      queryClient.setQueryData(collectionKeys.all, (old) => {
-        if (!Array.isArray(old)) {
-          return old
-        }
-        return old.filter(col => col.collectionId !== currentId)
       })
 
-      // clear selection
+      // Clear selection
       selectedCollectionStore.select(null)
 
-      return { previousCollections, previousSelection, currentId }
-    },
+      // Close tab
+      tabCoordinator.requestClose(String(currentId))
 
-    // restore selection if delete fails
-    onError: (_err, _newTodo, context) => {
-      if (context?.previousSelection) {
-        selectedCollectionStore.select(context.previousSelection)
+      // Call success callback if provided (e.g., to refetch collections)
+      if (onSuccess) {
+        onSuccess(currentId)
       }
-    },
+    }
+    catch (err) {
+      error.value = err
+      console.error('Failed to delete collection:', err)
+    }
+    finally {
+      isPending.value = false
+    }
+  }
 
-    // close tab after server confirms delete
-    onSuccess: (_data, _variables, context) => {
-      if (context?.currentId) {
-        tabCoordinator.requestClose(String(context.currentId))
-      }
-    },
-
-    // sync with server (handles concurrent deletes correctly) fetch data
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: collectionKeys.all })
-    },
-  })
+  return {
+    mutate,
+    isPending,
+    error,
+  }
 }

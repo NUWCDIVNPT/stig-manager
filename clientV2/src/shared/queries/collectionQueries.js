@@ -1,6 +1,4 @@
-import { useQuery } from '@tanstack/vue-query'
-import { computed, unref } from 'vue'
-import { collectionKeys } from '../keys/collectionKeys.js'
+import { ref, unref, watch } from 'vue'
 import { useEnv } from '../stores/useEnv.js'
 
 async function fetchCollections(token) {
@@ -13,25 +11,43 @@ async function fetchCollections(token) {
   return response.json()
 }
 
-export function useCollectionsQuery(token, options = {}) {
-  const collectionsQuery = useQuery({
-    queryKey: collectionKeys.all,
-    enabled: computed(() => Boolean(unref(token))),
-    queryFn: () => fetchCollections(unref(token)),
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchOnMount: true, // refetch on mount when stale time is exceeded
-    retry: 2, // retry 2 times
-    ...options,
-  })
+export function useCollectionsQuery(token) {
+  const collections = ref([])
+  const loading = ref(false)
+  const error = ref(null)
 
-  const collections = computed(() => collectionsQuery.data?.value || [])
-  const loading = computed(() => collectionsQuery.isFetching?.value)
-  const error = computed(() => collectionsQuery.error?.value)
+  async function fetchData() {
+    const tkn = unref(token)
+
+    if (!tkn) {
+      return
+    }
+
+    loading.value = true
+    error.value = null
+
+    try {
+      collections.value = await fetchCollections(tkn)
+    }
+    catch (err) {
+      error.value = err
+      console.error('Failed to fetch collections:', err)
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
+  watch(
+    () => unref(token),
+    () => fetchData(),
+    { immediate: true },
+  )
 
   return {
     collections,
     loading,
     error,
-    refetch: collectionsQuery.refetch, // used for when we need to force a refresh of data
+    refetch: fetchData,
   }
 }

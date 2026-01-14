@@ -1,8 +1,4 @@
-import { useQuery } from '@tanstack/vue-query'
-import { computed, unref } from 'vue'
-import { assetKeys } from '../../../shared/keys/assetKeys.js'
-import { stigKeys } from '../../../shared/keys/stigKeys.js'
-
+import { ref, unref, watch } from 'vue'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 
 async function fetchAsset({ apiUrl = useEnv().apiUrl, token, assetId }) {
@@ -25,29 +21,48 @@ async function fetchAsset({ apiUrl = useEnv().apiUrl, token, assetId }) {
   return response.json()
 }
 
-export function useAssetQuery({ assetId, token }, options = {}) {
-  const query = useQuery({
-    queryKey: computed(() => assetKeys.detail(unref(assetId))),
-    enabled: computed(() => Boolean(unref(assetId) && unref(token))),
-    queryFn: () => {
-      return fetchAsset({
-        assetId: unref(assetId),
-        token: unref(token),
-      })
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1,
-    ...options,
-  })
+export function useAssetQuery({ assetId, token }) {
+  const asset = ref(null)
+  const isLoading = ref(false)
+  const error = ref(null)
 
-  const asset = computed(() => query.data?.value || null)
-  const isLoading = computed(() => query.isFetching?.value)
-  const error = computed(() => query.error?.value)
+  async function fetchData() {
+    const id = unref(assetId)
+    const tkn = unref(token)
+
+    if (!id || !tkn) {
+      return
+    }
+
+    isLoading.value = true
+    error.value = null
+
+    try {
+      asset.value = await fetchAsset({
+        assetId: id,
+        token: tkn,
+      })
+    }
+    catch (err) {
+      error.value = err
+      console.error('Failed to fetch asset:', err)
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  watch(
+    () => [unref(assetId), unref(token)],
+    () => fetchData(),
+    { immediate: true },
+  )
 
   return {
     asset,
     isLoading,
     error,
+    refetch: fetchData,
   }
 }
 
@@ -71,29 +86,48 @@ async function fetchAssetStigs({ apiUrl = useEnv().apiUrl, token, assetId }) {
   return response.json()
 }
 
-export function useAssetStigsQuery({ assetId, token }, options = {}) {
-  const query = useQuery({
-    queryKey: computed(() => assetKeys.stigs(unref(assetId))),
-    enabled: computed(() => Boolean(unref(assetId) && unref(token))),
-    queryFn: () => {
-      return fetchAssetStigs({
-        assetId: unref(assetId),
-        token: unref(token),
-      })
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
-    ...options,
-  })
+export function useAssetStigsQuery({ assetId, token }) {
+  const stigs = ref([])
+  const isLoading = ref(false)
+  const error = ref(null)
 
-  const stigs = computed(() => query.data?.value || [])
-  const isLoading = computed(() => query.isFetching?.value)
-  const error = computed(() => query.error?.value)
+  async function fetchData() {
+    const id = unref(assetId)
+    const tkn = unref(token)
+
+    if (!id || !tkn) {
+      return
+    }
+
+    isLoading.value = true
+    error.value = null
+
+    try {
+      stigs.value = await fetchAssetStigs({
+        assetId: id,
+        token: tkn,
+      })
+    }
+    catch (err) {
+      error.value = err
+      console.error('Failed to fetch asset STIGs:', err)
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  watch(
+    () => [unref(assetId), unref(token)],
+    () => fetchData(),
+    { immediate: true },
+  )
 
   return {
     stigs,
     isLoading,
     error,
+    refetch: fetchData,
   }
 }
 
@@ -117,28 +151,47 @@ async function fetchStigRevisions({ apiUrl = useEnv().apiUrl, token, benchmarkId
   return response.json()
 }
 
-export function useStigRevisionsQuery({ benchmarkId, token }, options = {}) {
-  const query = useQuery({
-    queryKey: computed(() => stigKeys.revisions(unref(benchmarkId))),
-    enabled: computed(() => Boolean(unref(benchmarkId) && unref(token))),
-    queryFn: () => {
-      return fetchStigRevisions({
-        benchmarkId: unref(benchmarkId),
-        token: unref(token),
-      })
-    },
-    staleTime: 10 * 60 * 1000, // 10 minutes - revisions don't change often
-    retry: 1,
-    ...options,
-  })
+export function useStigRevisionsQuery({ benchmarkId, token }) {
+  const revisions = ref([])
+  const isLoading = ref(false)
+  const error = ref(null)
 
-  const revisions = computed(() => query.data?.value || [])
-  const isLoading = computed(() => query.isFetching?.value)
-  const error = computed(() => query.error?.value)
+  async function fetchData() {
+    const id = unref(benchmarkId)
+    const tkn = unref(token)
+
+    if (!id || !tkn) {
+      return
+    }
+
+    isLoading.value = true
+    error.value = null
+
+    try {
+      revisions.value = await fetchStigRevisions({
+        benchmarkId: id,
+        token: tkn,
+      })
+    }
+    catch (err) {
+      error.value = err
+      console.error('Failed to fetch STIG revisions:', err)
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  watch(
+    () => [unref(benchmarkId), unref(token)],
+    () => fetchData(),
+    { immediate: true },
+  )
 
   return {
     revisions,
     isLoading,
     error,
+    refetch: fetchData,
   }
 }

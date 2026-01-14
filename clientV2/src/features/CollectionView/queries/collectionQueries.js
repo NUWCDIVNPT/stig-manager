@@ -1,6 +1,4 @@
-import { useQuery } from '@tanstack/vue-query'
-import { computed, unref } from 'vue'
-import { collectionKeys } from '../../../shared/keys/collectionKeys.js'
+import { ref, unref, watch } from 'vue'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 
 async function fetchCollection({ apiUrl = useEnv().apiUrl, token, collectionId }) {
@@ -23,28 +21,47 @@ async function fetchCollection({ apiUrl = useEnv().apiUrl, token, collectionId }
   return response.json()
 }
 
-export function useCollectionQuery({ collectionId, token }, options = {}) {
-  const query = useQuery({
-    queryKey: computed(() => collectionKeys.detail(unref(collectionId))),
-    enabled: computed(() => Boolean(unref(collectionId) && unref(token))),
-    queryFn: () => {
-      return fetchCollection({
-        collectionId: unref(collectionId),
-        token: unref(token),
-      })
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1,
-    ...options,
-  })
+export function useCollectionQuery({ collectionId, token }) {
+  const collection = ref(null)
+  const isLoading = ref(false)
+  const error = ref(null)
 
-  const collection = computed(() => query.data?.value || null)
-  const isLoading = computed(() => query.isFetching?.value)
-  const error = computed(() => query.error?.value)
+  async function fetchData() {
+    const id = unref(collectionId)
+    const tkn = unref(token)
+
+    if (!id || !tkn) {
+      return
+    }
+
+    isLoading.value = true
+    error.value = null
+
+    try {
+      collection.value = await fetchCollection({
+        collectionId: id,
+        token: tkn,
+      })
+    }
+    catch (err) {
+      error.value = err
+      console.error('Failed to fetch collection:', err)
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  watch(
+    () => [unref(collectionId), unref(token)],
+    () => fetchData(),
+    { immediate: true },
+  )
 
   return {
     collection,
     isLoading,
     error,
+    refetch: fetchData,
   }
 }
