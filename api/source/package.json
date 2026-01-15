@@ -39,7 +39,7 @@
     "semver": "^7.6.3",
     "swagger-ui-express": "^4.1.6",
     "umzug": "^2.3.0",
-    "undici": "^6.22.0",
+    "undici": "^6.23.0",
     "uuid": "^9.0.1",
     "ws": "^8.18.3",
     "xlsx-template": "file:utils/xlsx-template-js-zip-upgrade"
