@@ -4,10 +4,10 @@ import DataTable from 'primevue/datatable'
 import { computed, provide, ref, watch } from 'vue'
 import { calculateCoraRiskRating } from '../lib/libCora.js'
 import AssetColumn from './AssetColumn.vue'
-import DurationColumn from './DurationColumn.vue'
-import PercentageColumn from './PercentageColumn.vue'
 import CountColumnWithTooltip from './CountColumnWithTooltip.vue'
+import DurationColumn from './DurationColumn.vue'
 import LabelsColumnWithTooltip from './LabelsColumnWithTooltip.vue'
+import PercentageColumn from './PercentageColumn.vue'
 
 const props = defineProps({
   apiMetricsSummary: {
@@ -128,10 +128,11 @@ const data = computed(() => {
       newest: r.metrics.maxTs,
       updated: r.metrics.maxTouchTs,
       assessedPct: r.metrics.assessments ? r.metrics.assessed / r.metrics.assessments * 100 : 0,
-      submittedPct:  r.metrics.assessments ? ((r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0,
+      submittedPct: r.metrics.assessments ? ((r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0,
       acceptedPct: r.metrics.assessments ? (r.metrics.statuses.accepted / r.metrics.assessments) * 100 : 0,
       rejectedPct: r.metrics.assessments ? (r.metrics.statuses.rejected / r.metrics.assessments) * 100 : 0,
-      cora: (calculateCoraRiskRating(r.metrics).weightedAvg * 100).toFixed(1),      coraFull: calculateCoraRiskRating(r.metrics),
+      cora: (calculateCoraRiskRating(r.metrics).weightedAvg * 100).toFixed(1),
+      coraFull: calculateCoraRiskRating(r.metrics),
       low: r.metrics.findings.low,
       medium: r.metrics.findings.medium,
       high: r.metrics.findings.high,
@@ -186,11 +187,11 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     :class="{ 'has-row-action': showRowAction }"
     scrollable
     scroll-height="flex"
-    showGridlines
-    resizableColumns
-    columnResizeMode="fit"
-    :sortField="'benchmarkId'"
-    :sortOrder="1"
+    show-gridlines
+    resizable-columns
+    column-resize-mode="fit"
+    sort-field="benchmarkId"
+    :sort-order="1"
     :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
     @row-select="onRowSelect"
   >
