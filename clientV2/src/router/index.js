@@ -14,6 +14,7 @@ const StigLibrary = () => import('../features/STIGLibrary/components/StigLibrary
 const CollectionSelection = () => import('../features/CollectionView/components/CollectionSelection.vue')
 const AppManagementSelection = () => import('../features/AppManagement/components/AppManagementSelection.vue')
 const StigLibrarySelection = () => import('../features/STIGLibrary/components/StigLibrarySelection.vue')
+const CollectionsAdmin = () => import('../features/AppManagement/Collections/components/Collections.vue')
 
 const routes = [
   {
@@ -92,7 +93,7 @@ const routes = [
   {
     path: '/admin/collections',
     name: 'admin-collections',
-    component: CollectionManage,
+    component: CollectionsAdmin,
     props: true,
   },
   {
