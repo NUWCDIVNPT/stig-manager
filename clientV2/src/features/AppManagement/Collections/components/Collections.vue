@@ -51,14 +51,14 @@ onMounted(() => {
 <template>
   <div class="collections-container">
     <Splitter class="collections-splitter">
-      <SplitterPanel :min-size="20" :size="80" class="splitter-panel">
+      <SplitterPanel :min-size="20" :size="75" class="splitter-panel">
         <CollectionList
           v-model:selection="selectedCollection"
           :collections="collections"
           :loading="loading"
         />
       </SplitterPanel>
-      <SplitterPanel :min-size="5" :size="20" class="splitter-panel">
+      <SplitterPanel :min-size="15" :size="25" class="splitter-panel">
         <CollectionDetails :collection="selectedCollection" @updated="() => fetchData(true)" />
       </SplitterPanel>
     </Splitter>

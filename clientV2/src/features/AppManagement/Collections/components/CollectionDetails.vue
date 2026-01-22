@@ -8,10 +8,10 @@ import Textarea from 'primevue/textarea'
 import Toolbar from 'primevue/toolbar'
 import { inject, ref, watch } from 'vue'
 import DeleteModal from '../../../../components/common/DeleteModal.vue'
+import RolePopover from '../../../../components/common/RolePopover.vue'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import EditGrantModal from './EditGrantModal.vue'
 import GrantsPickList from './GrantsPickList.vue'
-
-import RolePopover from './RolePopover.vue'
 
 const props = defineProps({
   collection: {
@@ -30,6 +30,9 @@ const worker = inject('worker')
 const addGrantVisible = ref(false)
 const availableGrantees = ref([])
 const selectedGrantees = ref([])
+
+const editGrantVisible = ref(false)
+const grantToEdit = ref(null)
 
 const fetchGrants = async (collectionId) => {
   try {
@@ -67,7 +70,38 @@ const exportGrantsCSV = () => {
 }
 
 const editGrant = (grant) => {
-  console.log('Edit grant:', grant)
+  grantToEdit.value = grant
+  editGrantVisible.value = true
+}
+
+const onUpdateGrant = async (updatedGrant) => {
+  try {
+    // We only need to send the roleId
+    const payload = {
+      roleId: updatedGrant.roleId,
+    }
+
+    const url = `http://localhost:64001/api/collections/${localCollection.value.collectionId}/grants/${updatedGrant.grantId}?elevate=true`
+    const response = await fetch(url, {
+      method: 'PUT', // Assuming PUT for update, check API if unsure, usually PUT for full resource update or PATCH for partial
+      headers: {
+        'Authorization': `Bearer ${worker.token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    await fetchGrants(localCollection.value.collectionId)
+    editGrantVisible.value = false
+  }
+  catch (error) {
+    const { triggerError } = useGlobalError()
+    triggerError(error)
+  }
 }
 
 const deleteGrantVisible = ref(false)
@@ -344,6 +378,11 @@ const updateCollection = async (field) => {
         @cancel="addGrantVisible = false"
       />
     </Dialog>
+    <EditGrantModal
+      v-model:visible="editGrantVisible"
+      :grant="grantToEdit"
+      @save="onUpdateGrant"
+    />
   </div>
 </template>
 

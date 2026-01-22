@@ -8,7 +8,7 @@ import Popover from 'primevue/popover'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import { computed, ref, watch } from 'vue'
-import RolePopover from './RolePopover.vue'
+import RolePopover from '../../../../components/common/RolePopover.vue'
 
 const props = defineProps({
   source: {
