@@ -48,8 +48,8 @@ const onCancel = () => {
       <span v-if="message">{{ message }}</span>
     </div>
     <template #footer>
-      <Button label="No" icon="pi pi-times" text @click="onCancel" />
-      <Button label="Yes" icon="pi pi-check" severity="danger" @click="onConfirm" />
+      <Button label="Cancel" icon="pi pi-times" text @click="onCancel" />
+      <Button label="Delete" icon="pi pi-check" severity="danger" @click="onConfirm" />
     </template>
   </Dialog>
 </template>
