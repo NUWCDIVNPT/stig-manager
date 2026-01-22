@@ -1,5 +1,6 @@
 <script setup>
-import { inject, onMounted, ref } from 'vue'
+import { computed, inject, onMounted, ref } from 'vue'
+import { VueDraggable } from 'vue-draggable-plus'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 import { fetchAppManagers } from '../api/api'
@@ -10,6 +11,17 @@ const worker = inject('worker', null)
 const appManagers = ref([])
 const isLoadingManagers = ref(false)
 const customCardsRef = ref(null)
+
+const cards = computed({
+  get: () => customCardsRef.value?.customCards || [],
+  set: (val) => {
+    if (customCardsRef.value) {
+      customCardsRef.value.customCards = val
+    }
+  },
+})
+
+const isReorderMode = computed(() => customCardsRef.value?.reorderMode || false)
 
 onMounted(async () => {
   if (env.displayAppManagers) {
@@ -27,6 +39,24 @@ onMounted(async () => {
     }
   }
 })
+
+function isTallCard(content) {
+  if (!content) {
+    return false
+  }
+
+  // content length > 600 chars
+  const textLength = content.replace(/<[^>]*>/g, '').length
+  const isLong = textLength > 600
+
+  // more than 10 breaks
+  const breakCount = (content.match(/<\/p>|<\/li>|<br>/g) || []).length
+  const hasManyBreaks = breakCount > 10
+
+  const hasImage = content.includes('<img')
+
+  return isLong || hasManyBreaks || hasImage
+}
 </script>
 
 <template>
@@ -40,7 +70,7 @@ onMounted(async () => {
           </h2>
           <div class="card-content">
             <div class="welcome-section">
-              <div class="welcome-logo-container">
+              <div>
                 <span class="navy-logo" />
               </div>
               <p class="card-text">
@@ -156,17 +186,12 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div v-if="env.displayAppManagers" class="home-card">
+        <div v-if="env.displayAppManagers && appManagers?.length" class="home-card">
           <h2 class="card-title">
             Application Managers
           </h2>
           <div class="card-content">
-            <div v-if="isLoadingManagers" class="loading-section">
-              <p class="card-text">
-                Loading managers...
-              </p>
-            </div>
-            <ul v-else-if="appManagers?.length" class="manager-list">
+            <ul class="manager-list">
               <li
                 v-for="manager in appManagers"
                 :key="manager.userId"
@@ -176,42 +201,63 @@ onMounted(async () => {
                 <span class="manager-detail">{{ manager.email || 'No Email Available' }}</span>
               </li>
             </ul>
-            <div v-else class="loading-section">
-              <p class="card-text">
-                No application managers found.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          v-for="card in customCardsRef?.customCards"
-          :key="card.id"
-          class="home-card custom-card"
-        >
-          <h2 class="card-title">
-            {{ card.title }}
-            <button
-              class="delete-btn"
-              title="Delete card"
-              @click="customCardsRef.deleteCard(card.id)"
-            >
-              ×
-            </button>
-          </h2>
-          <div class="card-content">
-            <div class="custom-card-section">
-              <p class="card-text" v-html="card.content" />
-            </div>
           </div>
         </div>
       </div>
+
+      <VueDraggable
+        v-if="customCardsRef"
+        v-model="cards"
+        class="custom-grid"
+        :disabled="!isReorderMode"
+        ghost-class="ghost-card"
+        drag-class="drag-card"
+        :animation="200"
+        :force-fallback="true"
+        :scroll-sensitivity="150"
+        :scroll-speed="20"
+      >
+        <div
+          v-for="card in cards"
+          :key="card.id"
+          class="home-card custom-card"
+          :class="{ 'full-width': isTallCard(card.content), 'reorder-mode': isReorderMode }"
+        >
+          <h2 class="card-title">
+            <span class="title-text">
+              <i v-if="isReorderMode" class="pi pi-bars handle" style="cursor: grab; margin-right: 0.5rem; color: rgba(255,255,255,0.5)" />
+              {{ card.title }}
+              <span v-if="card.date" class="card-date">{{ customCardsRef.formatDate(card.date) }}</span>
+            </span>
+            <div v-if="isReorderMode" class="card-actions">
+              <button
+                class="edit-btn"
+                title="Edit card"
+                @click="customCardsRef.openEditDialog(card)"
+              >
+                ✎
+              </button>
+              <button
+                class="delete-btn"
+                title="Delete card"
+                @click="customCardsRef.deleteCard(card.id)"
+              >
+                ×
+              </button>
+            </div>
+          </h2>
+          <div class="card-content">
+            <div class="custom-card-section">
+              <div class="card-text" v-html="card.content" />
+            </div>
+          </div>
+        </div>
+      </VueDraggable>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* Custom Scrollbar */
 :deep(*) {
   scrollbar-width: thin;
   scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
@@ -234,63 +280,16 @@ onMounted(async () => {
 :deep(*::-webkit-scrollbar-thumb:hover) {
   background-color: rgba(16, 185, 129, 0.5);
 }
-
-/* Header */
-.home-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stig-manager-logo {
-  width: 48px;
-  height: 48px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-image: url('/src/assets/shield-green-check.svg');
-  flex-shrink: 0;
-}
-
-.home-title {
-  font-size: 2rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  margin: 0;
-}
-
-.badges {
-  display: flex;
-  gap: 0.3rem;
-  align-items: center;
-  margin-left: auto;
-}
-
-.badge {
-  padding: 2px 7px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 5px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.badge:hover {
-  transform: translateY(-1px);
-}
-
-.badge-oss {
-  background-color: rgba(99, 110, 123, 0.9);
-}
-
-.badge-version {
-  background-color:var(--color-primary-green);
+.home-component {
+  overflow-y: auto;
+  padding: 1rem;
+  height: 100%;
 }
 
 .home-content {
   animation: fadeIn 0.8s ease-out;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 @keyframes fadeIn {
@@ -305,12 +304,21 @@ onMounted(async () => {
 }
 
 .home-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.custom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 .home-card {
+  break-inside: avoid;
+  margin-bottom: 0;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 0.5rem;
@@ -318,9 +326,10 @@ onMounted(async () => {
   transition: all 0.6s ease;
   display: flex;
   flex-direction: column;
-  flex: 1 1 calc(50% - 0.5rem);
-  min-width: 320px;
-  max-width: calc(50% - 0.5rem);
+}
+
+.full-width {
+  grid-column: 1 / -1;
 }
 
 .home-card:hover {
@@ -331,11 +340,26 @@ onMounted(async () => {
 }
 
 .card-title {
-  font-size: 1.125rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: var(--color-primary-highlight);
   margin: 0 0 1rem 0;
   letter-spacing: -0.01em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title-text {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.card-date {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 400;
 }
 
 .card-content {
@@ -350,10 +374,6 @@ onMounted(async () => {
   align-items: flex-start;
 }
 
-.welcome-logo-container {
-  flex-shrink: 0;
-}
-
 .navy-logo {
   display: block;
   width: 100px;
@@ -364,11 +384,17 @@ onMounted(async () => {
   background-image: url('/src/assets/navy.svg');
 }
 
-/* Typography */
 .card-text {
-  font-size: 14px;
+  font-size: 1.25rem;
   line-height: 1.7;
   margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.card-text :deep(img) {
+  max-width: 100%;
+  height: auto;
 }
 
 .card-text strong {
@@ -376,13 +402,12 @@ onMounted(async () => {
 }
 
 .section-subtitle {
-  font-size: 0.875rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #fff;
   margin: 0 0 0.5rem 0;
 }
 
-/* Links */
 .link {
   color: var(--color-primary-highlight);
   text-decoration: none;
@@ -414,13 +439,6 @@ onMounted(async () => {
   margin-top: 0.5rem;
 }
 
-.loading-section {
-  padding: 0.875rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 0.375rem;
-  border-left: 3px solid rgba(16, 185, 129, 0.4);
-}
-
 .manager-list {
   list-style: none;
   padding: 0;
@@ -448,27 +466,32 @@ onMounted(async () => {
 
 .manager-item strong {
   color: #fff;
-  font-size: 0.875rem;
+  font-size: 1.1rem;
   font-weight: 600;
 }
 
 .manager-detail {
-  font-size: 0.8125rem;
+  font-size: 1rem;
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Custom Cards */
 .custom-card .card-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.edit-btn,
 .delete-btn {
-  opacity: 0;
   font-size: 1.25rem;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 0.25rem;
   cursor: pointer;
   display: inline-flex;
@@ -478,15 +501,25 @@ onMounted(async () => {
   padding: 0;
   transition: all 0.15s ease;
   flex-shrink: 0;
-  margin-left: auto;
-}
-
-.custom-card:hover .delete-btn {
-  opacity: 1;
+  border: 1px solid transparent;
 }
 
 .delete-btn:hover {
-  background: rgba(175, 175, 175, 0.2);
+background: rgba(175, 175, 175, 0.2);
+border-color: rgba(175, 175, 175, 0.5);
+transform: scale(1.05);
+}
+
+.edit-btn {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+  font-size: 1rem;
+}
+
+.edit-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
   transform: scale(1.05);
 }
 
@@ -497,46 +530,26 @@ onMounted(async () => {
   border-left: 3px solid rgba(131, 131, 131, 0.4);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .home-component {
-    padding: 1rem 1rem 2rem;
-  }
+.reorder-mode {
+  cursor: grab;
+  border-style: dashed;
+}
 
-  .home-header {
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
+.reorder-mode:active {
+  cursor: grabbing;
+}
 
-  .home-title {
-    font-size: 1.5rem;
-  }
+.ghost-card {
+  opacity: 0.5;
+  background: rgba(59, 130, 246, 0.1);
+  border: 3px dashed rgba(59, 130, 246, 1);
+}
 
-  .stig-manager-logo {
-    width: 40px;
-    height: 40px;
-  }
-
-  .badges {
-    margin-left: 0;
-  }
-
-  .home-grid {
-    flex-direction: column;
-  }
-
-  .home-card {
-    flex: 1 1 100%;
-    min-width: 100%;
-  }
-
-  .welcome-section {
-    flex-direction: column;
-  }
-
-  .navy-logo {
-    width: 80px;
-    height: 40px;
-  }
+.drag-card {
+  opacity: 1;
+  background: #18181b;
+  transform: rotate(2deg);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  cursor: grabbing;
 }
 </style>

@@ -33,10 +33,10 @@ function handleShieldClick(rowData) {
           title="Open Asset Review"
           @click.stop="handleShieldClick(slotProps.data)"
         >
-          <img :src="shieldGreenCheck" width="14" height="14" alt="Review" />
+          <img :src="shieldGreenCheck" width="14" height="14" alt="Review">
         </button>
         <div v-else class="sm-static-width">
-          <img :src="shieldGreenCheck" width="14" height="14" alt="" />
+          <img :src="shieldGreenCheck" width="14" height="14" alt="">
         </div>
       </div>
     </template>
