@@ -190,7 +190,7 @@ try {
 // catch all for any errors
 catch (err) {
   const apiErrApp = createApp({
-    render: () => h('div', { style: 'padding:24px;font-family:system-ui,Arial,Helvetica,sans-serif' }, `Bootstrap failed.${err}`),
+    render: () => h('div', { style: 'padding:24px;' }, `Bootstrap failed.${err}`),
   })
   apiErrApp.mount('#app')
 }

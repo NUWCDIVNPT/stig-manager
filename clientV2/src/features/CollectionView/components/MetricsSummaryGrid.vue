@@ -7,8 +7,6 @@ import AssetColumn from './AssetColumn.vue'
 import DurationColumn from './DurationColumn.vue'
 import PercentageColumn from './PercentageColumn.vue'
 import LabelsColumn from './LabelsColumn.vue'
-import CountColumnWithTooltip from './CountColumnWithTooltip.vue'
-import LabelsColumnWithTooltip from './LabelsColumnWithTooltip.vue'
 
 const props = defineProps({
   apiMetricsSummary: {
@@ -18,6 +16,10 @@ const props = defineProps({
   isLoading: {
     type: Boolean,
     default: false,
+  },
+  parentAggType: {
+    type: String,
+    default: '',
   },
   errorMessage: {
     type: String,
@@ -78,11 +80,11 @@ const aggregationType = computed(() => {
   console.log('Determining aggregation type for metrics summary')
   const m = props.apiMetricsSummary
   if (m.length === 0) { return null }
-  if (m[0].assetId && m[0].benchmarkId) { return 'unagg' }
-  if (m[0].collectionId) { return 'collection' }
-  if (m[0].assetId) { return 'asset' }
-  if (m[0].labelId) { return 'label' }
-  if (m[0].benchmarkId) { return 'stig' }
+  if ('assetId' in m[0] && 'benchmarkId' in m[0]) { return 'unagg' }
+  if ('collectionId' in m[0]) { return 'collection' }
+  if ('assetId' in m[0]) { return 'asset' }
+  if ('labelId' in m[0]) { return 'label' }
+  if ('benchmarkId' in m[0]) { return 'stig' }
 })
 
 const columns = computed(() => {
@@ -91,6 +93,7 @@ const columns = computed(() => {
   const commonColumns = [
     { field: 'checks', header: 'Checks', component: Column },
     { field: 'oldest', header: 'Oldest', component: DurationColumn },
+    { field: 'newest', header: 'Newest', component: DurationColumn },
     { field: 'updated', header: 'Updated', component: DurationColumn },
     { field: 'assessedPct', header: 'Assessed', component: PercentageColumn },
     { field: 'submittedPct', header: 'Submitted', component: PercentageColumn },
@@ -107,16 +110,41 @@ const columns = computed(() => {
         { field: 'assetName', header: 'Asset', component: AssetColumn },
         { field: 'labels', header: 'Labels', component: LabelsColumn },
         { field: 'stigCnt', header: 'Stigs', component: Column },
-        { field: 'labels', header: 'Labels', component: LabelsColumnWithTooltip },
-        { field: 'stigs', header: 'STIGs', component: CountColumnWithTooltip, width: '50px' },
         ...commonColumns,
       ]
     case 'stig':
       return [
         { field: 'benchmarkId', header: 'Benchmark', component: Column },
         // { field: 'title', header: 'Title', component: Column },
-        { field: 'revision', header: 'Revision', component: Column },
+        { field: 'revisionStr', header: 'Revision', component: Column },
         { field: 'assetCnt', header: 'Assets', component: Column },
+        ...commonColumns,
+      ]
+    case 'label':
+      return [
+        { field: 'label', header: 'Label', component: LabelsColumn },
+        { field: 'assetCnt', header: 'Assets', component: Column },
+        ...commonColumns,
+      ]
+    case 'unagg':
+      if (props.parentAggType === 'asset') {
+        return [
+          { field: 'benchmarkId', header: 'Benchmark', component: Column },
+          { field: 'revisionStr', header: 'Revision', component: Column },
+          ...commonColumns,
+        ]
+      }
+      if (props.parentAggType === 'stig') {
+        return [
+          { field: 'assetName', header: 'Asset', component: AssetColumn },
+          { field: 'labels', header: 'Labels', component: LabelsColumn },
+          ...commonColumns,
+        ]
+      }
+      return [
+        { field: 'assetName', header: 'Asset', component: AssetColumn },
+        { field: 'benchmarkId', header: 'Benchmark', component: Column },
+        { field: 'labels', header: 'Labels', component: LabelsColumn },
         ...commonColumns,
       ]
     default:
@@ -137,7 +165,6 @@ const data = computed(() => {
       submittedPct:  r.metrics.assessments ? ((r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0,
       acceptedPct: r.metrics.assessments ? (r.metrics.statuses.accepted / r.metrics.assessments) * 100 : 0,
       rejectedPct: r.metrics.assessments ? (r.metrics.statuses.rejected / r.metrics.assessments) * 100 : 0,
-      cora: calculateCoraRiskRating(r.metrics),
       cora: (calculateCoraRiskRating(r.metrics).weightedAvg * 100).toFixed(1),
       coraFull: calculateCoraRiskRating(r.metrics),
       low: r.metrics.findings.low,
@@ -157,13 +184,40 @@ const data = computed(() => {
         return {
           benchmarkId: r.benchmarkId,
           title: r.title,
-          revision: r.revisionStr,
-          revisionFull: {
+          revisionStr: r.revisionStr,
+          revision: {
             string: r.revisionStr,
             date: r.revisionDate,
             isPinned: r.revisionPinned,
           },
           assetCnt: r.assets,
+          ...commonData,
+        }
+      case 'label':
+        return {
+          label: [{
+            labelId: r.labelId,
+            name: r.name,
+            color: r.color,
+            description: r.description,
+          }],
+          assetCnt: r.assets,
+          ...commonData,
+        }
+      case 'unagg':
+        return {
+          assetId: r.assetId,
+          assetName: r.name,
+          labels: r.labels,
+          benchmarkId: r.benchmarkId,
+          marking: r.marking,
+          revisionStr: r.revisionStr,
+          revision: {
+            string: r.revisionStr,
+            date: r.revisionDate,
+            isPinned: r.revisionPinned,
+          },
+          title: r.title,
           ...commonData,
         }
       default:

@@ -236,7 +236,7 @@ async function fetchCollectionChecklistAssets({ apiUrl = useEnv().apiUrl, token,
     return [] // Return empty if no benchmark selected
   }
 
-  const response = await fetch(`${apiUrl}/collections/${collectionId}/metrics/summary/asset?benchmarkId=${benchmarkId}`, {
+  const response = await fetch(`${apiUrl}/collections/${collectionId}/metrics/summary?benchmarkId=${benchmarkId}`, {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -296,7 +296,7 @@ async function fetchCollectionAssetStigs({ apiUrl = useEnv().apiUrl, token, coll
     return [] // Return empty if no asset selected
   }
 
-  const response = await fetch(`${apiUrl}/collections/${collectionId}/metrics/summary/stig?assetId=${assetId}`, {
+  const response = await fetch(`${apiUrl}/collections/${collectionId}/metrics/summary?assetId=${assetId}`, {
     method: 'GET',
     headers: {
       Accept: 'application/json',
