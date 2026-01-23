@@ -30,7 +30,7 @@ function durationToNow(date) {
     r[key] = Math.floor(d / s[key])
     d -= r[key] * s[key]
   })
-  let durationStr = r.day > 0 ? `${r.day} d` : r.hour > 0 ? `${r.hour} h` : r.minute > 0 ? `${r.minute} m` : `now`
+  const durationStr = r.day > 0 ? `${r.day} d` : r.hour > 0 ? `${r.hour} h` : r.minute > 0 ? `${r.minute} m` : `now`
   return durationStr
 }
 </script>

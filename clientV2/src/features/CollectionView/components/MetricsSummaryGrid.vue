@@ -162,7 +162,7 @@ const data = computed(() => {
       newest: r.metrics.maxTs,
       updated: r.metrics.maxTouchTs,
       assessedPct: r.metrics.assessments ? r.metrics.assessed / r.metrics.assessments * 100 : 0,
-      submittedPct:  r.metrics.assessments ? ((r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0,
+      submittedPct: r.metrics.assessments ? ((r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0,
       acceptedPct: r.metrics.assessments ? (r.metrics.statuses.accepted / r.metrics.assessments) * 100 : 0,
       rejectedPct: r.metrics.assessments ? (r.metrics.statuses.rejected / r.metrics.assessments) * 100 : 0,
       cora: (calculateCoraRiskRating(r.metrics).weightedAvg * 100).toFixed(1),
@@ -248,11 +248,11 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     :class="{ 'has-row-action': showRowAction }"
     scrollable
     scroll-height="flex"
-    showGridlines
-    resizableColumns
-    columnResizeMode="fit"
-    :sortField="'benchmarkId'"
-    :sortOrder="1"
+    show-gridlines
+    resizable-columns
+    column-resize-mode="fit"
+    sort-field="benchmarkId"
+    :sort-order="1"
     :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
     @row-select="onRowSelect"
   >
