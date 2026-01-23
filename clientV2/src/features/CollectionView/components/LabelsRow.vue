@@ -206,7 +206,7 @@ function hidePopover() {
 
 .label-tag {
   display: inline-block;
-  font-size: 0.65rem;
+  font-size: 0.9rem;
   font-weight: 600;
   padding: 1px 5px;
   border-radius: 6px;

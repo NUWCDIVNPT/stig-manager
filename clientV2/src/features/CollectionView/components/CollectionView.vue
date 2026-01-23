@@ -293,7 +293,7 @@ const tabsPt = {
     style: {
       display: 'flex',
       flexDirection: 'column',
-      height: '100%',
+      height: '80vh',
     },
   },
 }
@@ -449,7 +449,7 @@ function toggleDashboardSidebar() {
                 </div>
               </TabPanel>
               <TabPanel value="stigs" :pt="tabPanelPt">
-                <div class="stigs-grid">
+                <div class="metrics-grid">
                   <div class="table-container">
                     <MetricsSummaryGrid
                       :api-metrics-summary="stigs"
@@ -458,6 +458,7 @@ function toggleDashboardSidebar() {
                       :selected-key="selectedBenchmarkId"
                       selectable
                       data-key="benchmarkId"
+                      show-row-action
                       @row-select="(row) => handleStigSelect(row.benchmarkId)"
                     />
                   </div>
@@ -483,6 +484,7 @@ function toggleDashboardSidebar() {
                         <MetricsSummaryGrid
                           v-else
                           :api-metrics-summary="checklistAssets"
+                          parent-agg-type="stig"
                           show-asset-action
                           data-key="assetId"
                           @asset-action="handleChecklistAssetAction"
@@ -493,7 +495,7 @@ function toggleDashboardSidebar() {
                 </div>
               </TabPanel>
               <TabPanel value="assets" :pt="tabPanelPt">
-                <div class="assets-grid">
+                <div class="metrics-grid">
                   <div class="table-container">
                     <MetricsSummaryGrid
                       :api-metrics-summary="assets"
@@ -527,6 +529,7 @@ function toggleDashboardSidebar() {
                         <MetricsSummaryGrid
                           v-else
                           :api-metrics-summary="selectedAssetStigs"
+                          parent-agg-type="asset"
                         />
                       </div>
                     </div>
@@ -534,8 +537,14 @@ function toggleDashboardSidebar() {
                 </div>
               </TabPanel>
               <TabPanel value="labels" :pt="tabPanelPt">
-                <div class="view-container">
-                  <LabelsView :collection-id="collectionId" :labels="labels" />
+                <div class="metrics-grid">
+                  <div class="table-container">
+                    <MetricsSummaryGrid
+                      :api-metrics-summary="labels"
+                      selectable
+                      data-key="labelId"
+                    />
+                  </div>
                 </div>
               </TabPanel>
               <TabPanel value="users" :pt="tabPanelPt">
@@ -669,6 +678,15 @@ function toggleDashboardSidebar() {
 }
 
 .stigs-grid {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 0.5rem;
+  height: 100%;
+  padding: 0.5rem;
+  overflow: hidden;
+}
+
+.metrics-grid {
   display: grid;
   grid-template-rows: 1fr 1fr;
   gap: 0.5rem;

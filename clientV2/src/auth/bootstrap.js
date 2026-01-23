@@ -29,7 +29,7 @@ async function bootstrapAuth(pinia) {
     }
 
     const url = new URL(window.location.href)
-    const redirectUri = `${url.origin}${url.pathname}`
+    const redirectUri = `${url.origin}${url.pathname}${url.hash}`
     const response = await OW.sendWorkerRequest({
       request: 'initialize',
       redirectUri,
@@ -47,7 +47,11 @@ async function bootstrapAuth(pinia) {
       await handleRedirectAndParameters(redirectUri, paramStr)
     }
     else {
-      await handleNoParameters()
+      const noParamsResult = await handleNoParameters()
+      if (!noParamsResult) {
+        result.redirecting = true
+        return result
+      }
     }
     result.success = true
     return result
@@ -61,9 +65,9 @@ async function bootstrapAuth(pinia) {
 }
 
 function extractParamString(url) {
-  if (url.hash) {
-    return url.hash.substring(1)
-  }
+  // if (url.hash) {
+  //   return url.hash.substring(1)
+  // }
   if (url.search) {
     return url.search.substring(1)
   }
@@ -90,6 +94,7 @@ async function handleNoParameters() {
     sessionStorage.setItem('codeVerifier', response.codeVerifier)
     sessionStorage.setItem('oidcState', response.state)
     window.location.href = response.redirect
+    return false
   }
 }
 

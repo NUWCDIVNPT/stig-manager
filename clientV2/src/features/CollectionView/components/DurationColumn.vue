@@ -8,6 +8,9 @@ defineProps({
 })
 
 function durationToNow(date) {
+  if (!date) {
+    return '-'
+  }
   if (!(date instanceof Date)) {
     date = new Date(date)
   }

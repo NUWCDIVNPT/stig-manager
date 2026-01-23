@@ -1,10 +1,9 @@
 :root {
-  font-family: 'Open Sans', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 12px;
+  font-family: 'Open Sans';
+  font-size: 11px;
   color-scheme: dark !important;
   color: rgba(255, 255, 255, 0.87);
   background-color: #000000;
-
   
   /* Classification Marking Colors */
   --color-marking-unclassified: #007a33;
@@ -68,9 +67,11 @@
 
 body {
   margin: 0;
-  font-family: inherit; 
   height: 100vh;
   overflow: hidden;
+  font-family: 'Open Sans';
+  font-size: 11px;
+  font-weight: 400;
 }
 
 #app {
@@ -79,7 +80,95 @@ body {
 }
 
 
-/*
+/* Global form field focus color (light blue) */
+.p-inputtext:focus,
+.p-inputtextarea:focus,
+input[type="text"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: var(--color-primary-highlight-light) !important;
+}
+.p-inputtext:enabled:focus{
+  outline: none !important;
+  border-color: var(--color-primary-highlight-light) !important;
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300;
+  src: url('../fonts/open-sans-v15-latin-300.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 300;
+  src: url('../fonts/open-sans-v15-latin-300italic.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/open-sans-v15-latin-regular.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 400;
+  src: url('../fonts/open-sans-v15-latin-italic.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 600;
+  src: url('../fonts/open-sans-v15-latin-600.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 600;
+  src: url('../fonts/open-sans-v15-latin-600italic.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../fonts/open-sans-v15-latin-700.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 700;
+  src: url('../fonts/open-sans-v15-latin-700italic.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 800;
+  src: url('../fonts/open-sans-v15-latin-800.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 800;
+  src: url('../fonts/open-sans-v15-latin-800italic.woff2') format('woff2')
+}
+
+
+
+/* 
 
 @media (prefers-color-scheme: light) {
   :root {
