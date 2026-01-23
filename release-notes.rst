@@ -1,3 +1,10 @@
+1.6.1
+-------
+
+Changes:
+
+  - (Dependencies) Various security and maintenance updates
+
 1.6.0
 -------
 
