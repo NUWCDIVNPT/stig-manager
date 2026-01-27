@@ -24,7 +24,7 @@ src/
 │   │   ├── PercentageColumn.vue
 │   │   ├── AssetWithLabelsColumn.vue
 │   │   └── ...
-│   └── global/          # App-wide singletons (Banner, Overlay)
+│   └── global/          # App-wide singletons (Banner, Overlays, error messages)
 ├── shared/
 │   └── lib/             # Helper functions
 │       ├── formatters.js        # formatDuration, formatPercent
@@ -127,6 +127,16 @@ Don't reinvent these—use PrimeVue's built-in capabilities.
 
 ## Column Features
 
+Columns must be:
+- Sortable
+- Filterable (where applicable)
+- resizable (native PrimeVue)
+- hidable (native PrimeVue)
+- transportable across tables
+- agnostic to data source (use props for field names)
+- 
+
+
 ### Header Options (Native PrimeVue)
 - Sorting: `sortable` prop
 - Filtering: `#filter` template
@@ -217,3 +227,85 @@ getHttpSeverity(code) // 200 → success, 500 → danger
 getResultSeverity(result) // Pass → success, Fail → danger
 getStatusIcon(status) // Saved → pi-save, etc.
 ```
+
+---
+
+## Data Fetching Pattern (No Caching)
+
+Since metrics must be live (no stale data), use simple fetch composables instead of TanStack Query:
+
+### Basic Pattern
+
+```javascript
+// composables/useCollectionAssets.js
+import { ref, watch, onUnmounted } from 'vue'
+import { fetchCollectionAssets } from '../queries/collectionApi'
+
+export function useCollectionAssets(collectionId, token) {
+  const assets = ref([])
+  const isLoading = ref(false)
+  const error = ref(null)
+
+  async function fetch() {
+    isLoading.value = true
+    error.value = null
+    try {
+      const res = await fetchCollectionAssets(collectionId.value, token.value)
+      assets.value = res
+    } catch (e) {
+      error.value = e.message || 'Failed to load assets'
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // Auto-fetch when dependencies change
+  watch([collectionId, token], () => {
+    if (collectionId.value && token.value) fetch()
+  }, { immediate: true })
+
+  return { assets, isLoading, error, refetch: fetch }
+}
+```
+
+### With Polling (for live updates)
+
+```javascript
+export function useCollectionAssets(collectionId, token, options = {}) {
+  const { pollingInterval = 0 } = options // 0 = no polling
+  // ... same refs as above ...
+
+  let pollTimer = null
+
+  function startPolling() {
+    if (pollingInterval > 0 && !pollTimer) {
+      pollTimer = setInterval(fetch, pollingInterval)
+    }
+  }
+
+  function stopPolling() {
+    if (pollTimer) {
+      clearInterval(pollTimer)
+      pollTimer = null
+    }
+  }
+
+  // Cleanup on unmount
+  onUnmounted(() => stopPolling())
+
+  return {
+    assets, isLoading, error,
+    refetch: fetch,
+    startPolling, stopPolling
+  }
+}
+```
+
+### Key Principles
+
+- Wrap fetch in composable with `ref` for data, loading, error
+- Watch dependencies and auto-fetch on change
+- Return `refetch()` for manual refresh
+- For live updates: polling interval or SSE (if API supports)
+- Always cleanup intervals in `onUnmounted`
+- Keep token injection via thin wrapper composables

@@ -24,7 +24,7 @@ Components used across multiple features throughout the application.
 
 | Component | Description | PrimeVue Base |
 |-----------|-------------|---------------|
-| `MetricsDataTable` | Configurable data table with sorting, selection, inline progress bars, and badge columns. Core grid component for metrics displays. | DataTable |
+| `MetricsSummaryGrid` | Configurable data table with sorting, selection, inline progress bars, and badge columns. Core grid component for metrics displays. Schema-adaptive: detects aggregation type from data shape. | DataTable |
 | `ChecklistGrid` | Specialized grid for STIG checklists with CAT, Group, Rule Title, Result, Status columns. Used in both review workspaces. | DataTable |
 | `ProgressBarCell` | Inline progress bar for percentage columns (Assessed, Submitted, etc.) with color coding based on value. | ProgressBar |
 | `LabelChipGroup` | Renders multiple label chips/tags for an asset. Handles overflow gracefully. | Tag |
@@ -86,17 +86,17 @@ Components used across multiple features throughout the application.
 
 ---
 
-## Feature: Collection Dashboard
+## Feature: Collection View (Dashboard)
 
 ### Overview
 
-The Collection Dashboard displays overall status and metrics for a collection. Two-panel layout with Overview (left) and Checklist Navigation (right).
+The Collection View (Dashboard) displays overall status and metrics for a collection. Two-panel layout with Overview (left) and Checklist Navigation (right).
 
 ### Feature-Specific Components
 
 | Component | Description |
 |-----------|-------------|
-| `CollectionDashboard` | Main container, orchestrates two-panel layout |
+| `CollectionView` | Main container, orchestrates two-panel layout |
 | `CollectionHeader` | Title bar with collection name and LabelFilterDropdown |
 
 #### Overview Panel (Left Side)
@@ -124,7 +124,7 @@ The Collection Dashboard displays overall status and metrics for a collection. T
 ### Component Hierarchy
 
 ```
-CollectionDashboard
+CollectionView
 ├── CollectionHeader
 │   └── LabelFilterDropdown (shared)
 │
@@ -154,23 +154,23 @@ CollectionDashboard
 │
 └── ChecklistNavigation (TabView)
     ├── StigsTab
-    │   ├── MetricsDataTable (shared) [STIGs]
+    │   ├── MetricsSummaryGrid (shared) [STIGs]
     │   ├── GridFooterBar (shared)
-    │   ├── MetricsDataTable (shared) [Checklists]
+    │   ├── MetricsSummaryGrid (shared) [Checklists]
     │   └── GridFooterBar (shared)
     │
     ├── AssetsTab
-    │   ├── MetricsDataTable (shared) [Assets]
+    │   ├── MetricsSummaryGrid (shared) [Assets]
     │   ├── GridFooterBar (shared)
-    │   ├── MetricsDataTable (shared) [Checklists]
+    │   ├── MetricsSummaryGrid (shared) [Checklists]
     │   └── GridFooterBar (shared)
     │
     └── LabelsTab
-        ├── MetricsDataTable (shared) [Labels]
+        ├── MetricsSummaryGrid (shared) [Labels]
         ├── GridFooterBar (shared)
-        ├── MetricsDataTable (shared) [Assets]
+        ├── MetricsSummaryGrid (shared) [Assets]
         ├── GridFooterBar (shared)
-        ├── MetricsDataTable (shared) [Checklists]
+        ├── MetricsSummaryGrid (shared) [Checklists]
         └── GridFooterBar (shared)
 ```
 
@@ -474,38 +474,38 @@ MetaDashboard
 └── MetaNavigation (TabView)
     ├── MetaCollectionsTab
     │   └── ThreeLevelDrilldown (shared)
-    │       ├── MetricsDataTable (shared) [Collections]
+    │       ├── MetricsSummaryGrid (shared) [Collections]
     │       │   └── [ProgressBarCell, CoraBadge, CatBadge per row]
     │       ├── GridFooterBar (shared)
-    │       ├── MetricsDataTable (shared) [STIGs]
+    │       ├── MetricsSummaryGrid (shared) [STIGs]
     │       │   └── [ProgressBarCell, CoraBadge, CatBadge per row]
     │       ├── GridFooterBar (shared)
-    │       ├── MetricsDataTable (shared) [Checklists]
+    │       ├── MetricsSummaryGrid (shared) [Checklists]
     │       │   └── [LabelChipGroup, ProgressBarCell, CoraBadge, CatBadge per row]
     │       └── GridFooterBar (shared)
     │
     └── MetaStigsTab
         └── ThreeLevelDrilldown (shared)
-            ├── MetricsDataTable (shared) [STIGs - with Collections column]
+            ├── MetricsSummaryGrid (shared) [STIGs - with Collections column]
             │   └── [ProgressBarCell, CoraBadge, CatBadge per row]
             ├── GridFooterBar (shared)
-            ├── MetricsDataTable (shared) [Collections]
+            ├── MetricsSummaryGrid (shared) [Collections]
             │   └── [ProgressBarCell, CoraBadge, CatBadge per row]
             ├── GridFooterBar (shared)
-            ├── MetricsDataTable (shared) [Checklists]
+            ├── MetricsSummaryGrid (shared) [Checklists]
             │   └── [LabelChipGroup, ProgressBarCell, CoraBadge, CatBadge per row]
             └── GridFooterBar (shared)
 ```
 
-### Shared Components with Collection Dashboard
+### Shared Components with Collection View
 
-The Meta Dashboard heavily reuses Collection Dashboard components:
+The Meta Dashboard heavily reuses Collection View components:
 
 | Component | Reuse Notes |
 |-----------|-------------|
 | All Overview sections | Identical structure, different data source |
 | `ProgressDonutChart` | Same component |
-| `MetricsDataTable` | Same component, different column configs |
+| `MetricsSummaryGrid` | Same component, different column configs |
 | `GridFooterBar` | Same component |
 | All badge components | Same components |
 | `ExportOptionsPanel` | Same component |
@@ -525,7 +525,7 @@ The Meta Dashboard heavily reuses Collection Dashboard components:
 
 | Component | Dashboard | Meta Dashboard | Asset Review | Collection Review | Findings |
 |-----------|:---------:|:--------------:|:------------:|:-----------------:|:--------:|
-| `MetricsDataTable` | ✓ | ✓ | | | |
+| `MetricsSummaryGrid` | ✓ | ✓ | | | |
 | `ChecklistGrid` | | | ✓ | ✓ | |
 | `ProgressBarCell` | ✓ | ✓ | | | |
 | `LabelChipGroup` | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -566,7 +566,7 @@ Build reusable components first to enable parallel feature development:
 ### Phase 2: Collection Dashboard
 1. ProgressDonutChart, StatusLegendItem
 2. Overview sections (Progress, CORA, Inventory, Findings, Review Ages)
-3. MetricsDataTable
+3. MetricsSummaryGrid
 4. LabelFilterDropdown
 5. Tab navigation (STIGs, Assets, Labels)
 
@@ -619,10 +619,13 @@ Since it heavily reuses Collection Dashboard components, build after Phase 2:
 - Classification marking
 - Active collection context
 
-### Feature State (Composables with TanStack Query)
+### Feature State (Composables)
 - Collection Dashboard: Label filter, selected tab, master row selection
 - Asset Review: Selected rule, review form dirty state, current STIG revision
 - Collection Review: Selected rule, selected assets (for batch), review form state
+
+### Data Fetching (Simple Composables)
+Since metrics must be live (no stale data), use simple fetch composables rather than caching libraries. See `reusable-components.md` for the documented pattern.
 
 ### Cross-Component Communication
 - Label filter in Dashboard affects all tab grids

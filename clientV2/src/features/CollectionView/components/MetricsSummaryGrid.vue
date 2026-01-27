@@ -2,11 +2,11 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, provide, ref, watch } from 'vue'
+import AssetColumn from '../../../components/columns/AssetColumn.vue'
+import DurationColumn from '../../../components/columns/DurationColumn.vue'
+import LabelsColumn from '../../../components/columns/LabelsColumn.vue'
+import PercentageColumn from '../../../components/columns/PercentageColumn.vue'
 import { calculateCoraRiskRating } from '../lib/libCora.js'
-import AssetColumn from './AssetColumn.vue'
-import DurationColumn from './DurationColumn.vue'
-import PercentageColumn from './PercentageColumn.vue'
-import LabelsColumn from './LabelsColumn.vue'
 
 const props = defineProps({
   apiMetricsSummary: {
