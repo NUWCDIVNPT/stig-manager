@@ -1,7 +1,7 @@
 <script setup>
 import Column from 'primevue/column'
 import { inject } from 'vue'
-import shieldGreenCheck from '../../../assets/shield-green-check.svg'
+import shieldGreenCheck from '../../assets/shield-green-check.svg'
 
 defineProps({
   field: String,
