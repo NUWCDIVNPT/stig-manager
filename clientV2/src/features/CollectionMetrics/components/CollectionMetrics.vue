@@ -126,8 +126,6 @@ const showExportModal = ref(false)
   flex-wrap: nowrap;
   gap: 12px;
   padding: 12px;
-  height: 100%;
-  overflow-y: auto;
 }
 
 .stats-column {

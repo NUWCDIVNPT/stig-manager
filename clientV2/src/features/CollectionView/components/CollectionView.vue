@@ -245,8 +245,6 @@ async function loadAssets() {
   }
 }
 
-watch([() => props.collectionId, token], loadAssets, { immediate: true })
-
 const labels = ref([])
 async function loadLabels() {
   if (!props.collectionId) {
@@ -279,6 +277,7 @@ async function loadRawLabels() {
 watch([() => props.collectionId], () => {
   loadCollection()
   loadStigs()
+  loadAssets()
   loadLabels()
   loadRawLabels()
 }, { immediate: true })
@@ -417,7 +416,7 @@ const tabsPt = {
     style: {
       display: 'flex',
       flexDirection: 'column',
-      height: '80vh',
+      height: '100%',
     },
   },
 }
@@ -453,7 +452,7 @@ function toggleDashboardSidebar() {
 </script>
 
 <template>
-  <div class="collection-view-2">
+  <div class="collection-view">
     <header class="collection-header">
       <Breadcrumb :home="breadcrumbHome" :model="breadcrumbItems">
         <template #item="{ item, props: itemProps }">
@@ -583,7 +582,9 @@ function toggleDashboardSidebar() {
                       selectable
                       data-key="benchmarkId"
                       show-row-action
+                      show-refresh
                       @row-select="(row) => handleStigSelect(row.benchmarkId)"
+                      @refresh="loadStigs(); loadChecklistAssets()"
                     />
                   </div>
                   <div class="table-container">
@@ -596,22 +597,25 @@ function toggleDashboardSidebar() {
                         <div v-if="!selectedBenchmarkId" class="empty-state">
                           Select a STIG to view checklists.
                         </div>
-                        <div v-else-if="checklistAssetsLoading" class="loading-state">
+                        <div v-else-if="checklistAssetsLoading && checklistAssets.length === 0" class="loading-state">
                           Loading checklists...
                         </div>
                         <div v-else-if="checklistAssetsError" class="error-state">
                           {{ checklistAssetsError }}
                         </div>
-                        <div v-else-if="checklistAssets.length === 0" class="empty-state">
+                        <div v-else-if="!checklistAssetsLoading && checklistAssets.length === 0" class="empty-state">
                           No checklists found for this STIG.
                         </div>
                         <MetricsSummaryGrid
                           v-else
                           :api-metrics-summary="checklistAssets"
+                          :is-loading="checklistAssetsLoading"
                           parent-agg-type="stig"
                           show-asset-action
                           data-key="assetId"
+                          show-refresh
                           @asset-action="handleChecklistAssetAction"
+                          @refresh="loadChecklistAssets"
                         />
                       </div>
                     </div>
@@ -628,7 +632,9 @@ function toggleDashboardSidebar() {
                       :selected-key="selectedAssetId"
                       selectable
                       data-key="assetId"
+                      show-refresh
                       @row-select="(row) => handleAssetSelect(row.assetId)"
+                      @refresh="loadAssets(); loadSelectedAssetStigs()"
                     />
                   </div>
                   <div class="table-container">
@@ -641,19 +647,22 @@ function toggleDashboardSidebar() {
                         <div v-if="!selectedAssetId" class="empty-state">
                           Select an asset to view its STIGs.
                         </div>
-                        <div v-else-if="selectedAssetStigsLoading" class="loading-state">
+                        <div v-else-if="selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="loading-state">
                           Loading STIGs...
                         </div>
                         <div v-else-if="selectedAssetStigsError" class="error-state">
                           {{ selectedAssetStigsError }}
                         </div>
-                        <div v-else-if="selectedAssetStigs.length === 0" class="empty-state">
+                        <div v-else-if="!selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="empty-state">
                           No STIGs found for this asset.
                         </div>
                         <MetricsSummaryGrid
                           v-else
                           :api-metrics-summary="selectedAssetStigs"
+                          :is-loading="selectedAssetStigsLoading"
                           parent-agg-type="asset"
+                          show-refresh
+                          @refresh="loadSelectedAssetStigs"
                         />
                       </div>
                     </div>
@@ -667,6 +676,8 @@ function toggleDashboardSidebar() {
                       :api-metrics-summary="labels"
                       selectable
                       data-key="labelId"
+                      show-refresh
+                      @refresh="loadLabels"
                     />
                   </div>
                 </div>
@@ -698,7 +709,7 @@ function toggleDashboardSidebar() {
   --dashboard-sidebar-collapsed-width: 2.5rem;
 }
 
-.collection-view-2 {
+.collection-view {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -814,7 +825,7 @@ function toggleDashboardSidebar() {
   display: grid;
   grid-template-rows: 1fr 1fr;
   gap: 0.5rem;
-  height: 100%;
+  height: calc(100% - 1rem);
   padding: 0.5rem;
   overflow: hidden;
 }
@@ -951,12 +962,6 @@ function toggleDashboardSidebar() {
   display: flex;
   flex-direction: column;
   min-height: 0;
-}
-
-.sidebar-export {
-  flex-shrink: 1;
-  min-height: 0;
-  overflow: hidden;
 }
 
 /* Override ExportMetrics min-width in sidebar context */
