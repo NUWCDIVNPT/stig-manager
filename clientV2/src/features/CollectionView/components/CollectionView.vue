@@ -463,7 +463,7 @@ function toggleDashboardSidebar() {
                       show-row-action
                       show-refresh
                       @row-select="(row) => handleStigSelect(row.benchmarkId)"
-                      @refresh="refetchStigs"
+                      @refresh="refetchStigs(); refetchChecklistAssets()"
                     />
                   </div>
                   <div class="table-container">
@@ -476,13 +476,13 @@ function toggleDashboardSidebar() {
                         <div v-if="!selectedBenchmarkId" class="empty-state">
                           Select a STIG to view checklists.
                         </div>
-                        <div v-else-if="checklistAssetsLoading" class="loading-state">
+                        <div v-else-if="checklistAssetsLoading && checklistAssets.length === 0" class="loading-state">
                           Loading checklists...
                         </div>
                         <div v-else-if="checklistAssetsError" class="error-state">
                           {{ checklistAssetsError }}
                         </div>
-                        <div v-else-if="checklistAssets.length === 0" class="empty-state">
+                        <div v-else-if="!checklistAssetsLoading && checklistAssets.length === 0" class="empty-state">
                           No checklists found for this STIG.
                         </div>
                         <MetricsSummaryGrid
@@ -513,7 +513,7 @@ function toggleDashboardSidebar() {
                       data-key="assetId"
                       show-refresh
                       @row-select="(row) => handleAssetSelect(row.assetId)"
-                      @refresh="refetchAssets"
+                      @refresh="refetchAssets(); refetchSelectedAssetStigs()"
                     />
                   </div>
                   <div class="table-container">
@@ -526,13 +526,13 @@ function toggleDashboardSidebar() {
                         <div v-if="!selectedAssetId" class="empty-state">
                           Select an asset to view its STIGs.
                         </div>
-                        <div v-else-if="selectedAssetStigsLoading" class="loading-state">
+                        <div v-else-if="selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="loading-state">
                           Loading STIGs...
                         </div>
                         <div v-else-if="selectedAssetStigsError" class="error-state">
                           {{ selectedAssetStigsError }}
                         </div>
-                        <div v-else-if="selectedAssetStigs.length === 0" class="empty-state">
+                        <div v-else-if="!selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="empty-state">
                           No STIGs found for this asset.
                         </div>
                         <MetricsSummaryGrid
