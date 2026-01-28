@@ -1,11 +1,11 @@
 <script setup>
-import { inject, ref } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 
+import { fetchCollectionMetricsSummary } from '../api/metricsApi.js'
 import { useCollectionCora } from '../composables/useCollectionCora.js'
 import { useCollectionProgress } from '../composables/useCollectionProgress.js'
 
 import { useCollectionStats } from '../composables/useCollectionStats.js'
-import { useCollectionMetricsSummaryQuery } from '../queries/metricsQueries.js'
 import Cora from './Cora.vue'
 import ExportMetrics from './ExportMetrics.vue'
 import ExportMetricsModal from './ExportMetricsModal.vue'
@@ -32,10 +32,37 @@ const props = defineProps({
 
 const oidcWorker = inject('worker')
 
-const { metrics, isLoading } = useCollectionMetricsSummaryQuery({
-  collectionId: props.collectionId,
-  token: oidcWorker?.token,
-})
+const metrics = ref(null)
+const isLoading = ref(false)
+const errorMessage = ref(null)
+
+const token = computed(() => oidcWorker?.token)
+
+async function loadMetrics() {
+  if (!props.collectionId || !token.value) {
+    return
+  }
+
+  isLoading.value = true
+  errorMessage.value = null
+  try {
+    metrics.value = await fetchCollectionMetricsSummary({
+      collectionId: props.collectionId,
+      token: token.value,
+    })
+  }
+  catch (err) {
+    errorMessage.value = err.message || 'Error loading metrics'
+    console.error('Error loading metrics:', err)
+  }
+  finally {
+    isLoading.value = false
+  }
+}
+
+watch([() => props.collectionId, token], () => {
+  loadMetrics()
+}, { immediate: true })
 
 /*
 // Native fetch alternative using useFetch

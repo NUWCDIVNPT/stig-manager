@@ -8,19 +8,19 @@ import Tabs from 'primevue/tabs'
 import { computed, inject, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BreadcrumbSelect from '../../../components/common/BreadcrumbSelect.vue'
+import { fetchAssetStigs, fetchStigRevisions } from '../../AssetReview/api/assetReviewApi.js'
 import AssetReview from '../../AssetReview/components/AssetReview.vue'
-import { useAssetStigsQuery, useStigRevisionsQuery } from '../../AssetReview/queries/assetQueries.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import ExportMetrics from '../../CollectionMetrics/components/ExportMetrics.vue'
-import { useCollectionQuery } from '../queries/collectionQueries.js'
 import {
-  useCollectionAssetStigsQuery,
-  useCollectionAssetSummaryQuery,
-  useCollectionChecklistAssetsQuery,
-  useCollectionLabelsQuery,
-  useCollectionLabelSummaryQuery,
-  useCollectionStigSummaryQuery,
-} from '../queries/metricsQueries.js'
+  fetchCollection,
+  fetchCollectionAssetStigs,
+  fetchCollectionAssetSummary,
+  fetchCollectionChecklistAssets,
+  fetchCollectionLabels,
+  fetchCollectionLabelSummary,
+  fetchCollectionStigSummary,
+} from '../api/collectionApi.js'
 import LabelsView from './LabelsView.vue'
 import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
@@ -34,17 +34,23 @@ const props = defineProps({
 const route = useRoute()
 const router = useRouter()
 
-const collectionIdRef = computed(() => props.collectionId)
-
 // OIDC worker for API queries
 const oidcWorker = inject('worker')
 const token = computed(() => oidcWorker?.token)
 
 // Fetch collection details for name
-const { collection } = useCollectionQuery({
-  collectionId: collectionIdRef,
-  token,
-})
+const collection = ref(null)
+async function loadCollection() {
+  if (!props.collectionId) {
+    return
+  }
+  try {
+    collection.value = await fetchCollection({ collectionId: props.collectionId, token: token.value })
+  }
+  catch (e) {
+    console.error('Error loading collection:', e)
+  }
+}
 
 const collectionName = computed(() => collection.value?.name || 'Collection')
 
@@ -60,16 +66,35 @@ const reviewRevisionStr = computed(() => route.params.revisionStr || null)
 const assetReviewRef = ref(null)
 
 // Fetch STIGs for the asset being reviewed
-const { stigs: assetStigs } = useAssetStigsQuery({
-  assetId: reviewAssetId,
-  token,
-})
+const assetStigs = ref([])
+async function loadAssetStigsForReview() {
+  if (!reviewAssetId.value) {
+    return
+  }
+  try {
+    assetStigs.value = await fetchAssetStigs({ assetId: reviewAssetId.value, token: token.value })
+  }
+  catch (e) {
+    console.error('Error loading asset stigs:', e)
+  }
+}
 
 // Fetch available revisions for the selected benchmark
-const { revisions: stigRevisions } = useStigRevisionsQuery({
-  benchmarkId: reviewBenchmarkId,
-  token,
-})
+const stigRevisions = ref([])
+async function loadStigRevisions() {
+  if (!reviewBenchmarkId.value) {
+    return
+  }
+  try {
+    stigRevisions.value = await fetchStigRevisions({ benchmarkId: reviewBenchmarkId.value, token: token.value })
+  }
+  catch (e) {
+    console.error('Error loading stig revisions:', e)
+  }
+}
+
+watch([reviewAssetId, token], loadAssetStigsForReview, { immediate: true })
+watch([reviewBenchmarkId, token], loadStigRevisions, { immediate: true })
 
 // Watch for assetStigs to load and update route with revision if missing
 watch(assetStigs, (stigs) => {
@@ -176,26 +201,86 @@ const breadcrumbItems = computed(() => {
 })
 
 // Data queries for STIGs, Assets, Labels
-const { stigs, isLoading: stigsLoading, errorMessage: stigsError, refetch: refetchStigs } = useCollectionStigSummaryQuery({
-  collectionId: computed(() => props.collectionId),
-  token,
-})
+const stigs = ref([])
+const stigsLoading = ref(false)
+const stigsError = ref(null)
 
-const { assets, isLoading: assetsLoading, errorMessage: assetsError, refetch: refetchAssets } = useCollectionAssetSummaryQuery({
-  collectionId: computed(() => props.collectionId),
-  token,
-})
+async function loadStigs() {
+  if (!props.collectionId) {
+    return
+  }
+  stigsLoading.value = true
+  stigsError.value = null
+  try {
+    const result = await fetchCollectionStigSummary({ collectionId: props.collectionId, token: token.value })
+    stigs.value = result
+  }
+  catch (err) {
+    stigsError.value = err.message
+  }
+  finally {
+    stigsLoading.value = false
+  }
+}
 
-const { labels, refetch: refetchLabels } = useCollectionLabelSummaryQuery({
-  collectionId: computed(() => props.collectionId),
-  token,
-})
+const assets = ref([])
+const assetsLoading = ref(false)
+const assetsError = ref(null)
+
+async function loadAssets() {
+  if (!props.collectionId) {
+    return
+  }
+  assetsLoading.value = true
+  assetsError.value = null
+  try {
+    const result = await fetchCollectionAssetSummary({ collectionId: props.collectionId, token: token.value })
+    assets.value = result || []
+  }
+  catch (err) {
+    assetsError.value = err.message
+  }
+  finally {
+    assetsLoading.value = false
+  }
+}
+
+const labels = ref([])
+async function loadLabels() {
+  if (!props.collectionId) {
+    return
+  }
+  try {
+    const result = await fetchCollectionLabelSummary({ collectionId: props.collectionId, token: token.value })
+    labels.value = result
+  }
+  catch (e) {
+    console.error('Error loading labels:', e)
+  }
+}
 
 // Raw labels with color property for AssetReview
-const { labels: rawLabels } = useCollectionLabelsQuery({
-  collectionId: computed(() => props.collectionId),
-  token,
-})
+const rawLabels = ref([])
+async function loadRawLabels() {
+  if (!props.collectionId) {
+    return
+  }
+  try {
+    rawLabels.value = await fetchCollectionLabels({ collectionId: props.collectionId, token: token.value })
+  }
+  catch (e) {
+    console.error('Error loading raw labels:', e)
+  }
+}
+
+// Initial Data Load
+watch([() => props.collectionId], () => {
+  loadCollection()
+  loadStigs()
+  loadAssets()
+  loadLabels()
+  loadRawLabels()
+}, { immediate: true })
 
 const selectedBenchmarkId = ref(null)
 function handleStigSelect(benchmarkId) {
@@ -204,22 +289,40 @@ function handleStigSelect(benchmarkId) {
 
 // Auto-select first STIG when data loads and no selection exists
 watch(stigs, (newStigs) => {
-  if (newStigs.length > 0 && selectedBenchmarkId.value === null) {
+  if (newStigs?.length > 0 && selectedBenchmarkId.value === null) {
     selectedBenchmarkId.value = newStigs[0].benchmarkId
   }
 }, { immediate: true })
 
 // Query for assets of the selected STIG (for STIGs tab child panel)
-const {
-  checklistAssets,
-  isLoading: checklistAssetsLoading,
-  errorMessage: checklistAssetsError,
-  refetch: refetchChecklistAssets,
-} = useCollectionChecklistAssetsQuery({
-  collectionId: computed(() => props.collectionId),
-  benchmarkId: selectedBenchmarkId,
-  token,
-})
+const checklistAssets = ref([])
+const checklistAssetsLoading = ref(false)
+const checklistAssetsError = ref(null)
+
+async function loadChecklistAssets() {
+  if (!props.collectionId || !selectedBenchmarkId.value || !token.value) {
+    checklistAssets.value = []
+    return
+  }
+  checklistAssetsLoading.value = true
+  checklistAssetsError.value = null
+  try {
+    const result = await fetchCollectionChecklistAssets({
+      collectionId: props.collectionId,
+      benchmarkId: selectedBenchmarkId.value,
+      token: token.value,
+    })
+    checklistAssets.value = result
+  }
+  catch (err) {
+    checklistAssetsError.value = err.message
+  }
+  finally {
+    checklistAssetsLoading.value = false
+  }
+}
+
+watch([() => props.collectionId, selectedBenchmarkId], loadChecklistAssets, { immediate: true })
 
 // Handle row action from checklist assets grid to navigate to review
 function handleChecklistAssetAction(rowData) {
@@ -240,22 +343,40 @@ function handleAssetSelect(assetId) {
 
 // Auto-select first asset when data loads and no selection exists
 watch(assets, (newAssets) => {
-  if (newAssets.length > 0 && selectedAssetId.value === null) {
+  if (newAssets?.length > 0 && selectedAssetId.value === null) {
     selectedAssetId.value = newAssets[0].assetId
   }
 }, { immediate: true })
 
 // Query for STIGs of the selected asset (for Assets tab child panel)
-const {
-  assetStigs: selectedAssetStigs,
-  isLoading: selectedAssetStigsLoading,
-  errorMessage: selectedAssetStigsError,
-  refetch: refetchSelectedAssetStigs,
-} = useCollectionAssetStigsQuery({
-  collectionId: computed(() => props.collectionId),
-  assetId: selectedAssetId,
-  token,
-})
+const selectedAssetStigs = ref([])
+const selectedAssetStigsLoading = ref(false)
+const selectedAssetStigsError = ref(null)
+
+async function loadSelectedAssetStigs() {
+  if (!props.collectionId || !selectedAssetId.value || !token.value) {
+    selectedAssetStigs.value = []
+    return
+  }
+  selectedAssetStigsLoading.value = true
+  selectedAssetStigsError.value = null
+  try {
+    const result = await fetchCollectionAssetStigs({
+      collectionId: props.collectionId,
+      assetId: selectedAssetId.value,
+      token: token.value,
+    })
+    selectedAssetStigs.value = result
+  }
+  catch (err) {
+    selectedAssetStigsError.value = err.message
+  }
+  finally {
+    selectedAssetStigsLoading.value = false
+  }
+}
+
+watch([() => props.collectionId, selectedAssetId], loadSelectedAssetStigs, { immediate: true })
 
 // Map route name to tab value
 const routeToTab = {
@@ -463,7 +584,7 @@ function toggleDashboardSidebar() {
                       show-row-action
                       show-refresh
                       @row-select="(row) => handleStigSelect(row.benchmarkId)"
-                      @refresh="refetchStigs(); refetchChecklistAssets()"
+                      @refresh="loadStigs(); loadChecklistAssets()"
                     />
                   </div>
                   <div class="table-container">
@@ -494,7 +615,7 @@ function toggleDashboardSidebar() {
                           data-key="assetId"
                           show-refresh
                           @asset-action="handleChecklistAssetAction"
-                          @refresh="refetchChecklistAssets"
+                          @refresh="loadChecklistAssets"
                         />
                       </div>
                     </div>
@@ -513,7 +634,7 @@ function toggleDashboardSidebar() {
                       data-key="assetId"
                       show-refresh
                       @row-select="(row) => handleAssetSelect(row.assetId)"
-                      @refresh="refetchAssets(); refetchSelectedAssetStigs()"
+                      @refresh="loadAssets(); loadSelectedAssetStigs()"
                     />
                   </div>
                   <div class="table-container">
@@ -541,7 +662,7 @@ function toggleDashboardSidebar() {
                           :is-loading="selectedAssetStigsLoading"
                           parent-agg-type="asset"
                           show-refresh
-                          @refresh="refetchSelectedAssetStigs"
+                          @refresh="loadSelectedAssetStigs"
                         />
                       </div>
                     </div>
@@ -556,7 +677,7 @@ function toggleDashboardSidebar() {
                       selectable
                       data-key="labelId"
                       show-refresh
-                      @refresh="refetchLabels"
+                      @refresh="loadLabels"
                     />
                   </div>
                 </div>
