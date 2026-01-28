@@ -1,5 +1,4 @@
 <script setup>
-import { useQueryClient } from '@tanstack/vue-query'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -14,9 +13,6 @@ const emit = defineEmits(['created'])
 // this is a two way binded prop that controls the visibility of the modal
 const visible = defineModel('visible', { type: Boolean, default: false })
 const worker = inject('worker', null)
-
-// needed for invalidating the collection query on creation to refetch
-const queryClient = useQueryClient()
 
 const name = ref('')
 const description = ref('')
@@ -78,7 +74,6 @@ async function handleSubmit() {
     }
 
     const createdCollection = await response.json()
-    await queryClient.invalidateQueries({ queryKey: collectionKeys.all })
     emit('created', createdCollection)
     visible.value = false
   }

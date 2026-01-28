@@ -1,12 +1,38 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import { useSelectedCollectionStore } from '../../../shared/stores/selectedCollection.js'
-import { useCollectionsData } from '../composeables/useCollectionsData.js'
+import { fetchCollections } from '../api/collectionApi.js'
 
 // const router = useRouter()
-const { collections, loading } = useCollectionsData()
+const collections = ref([])
+const loading = ref(false)
+const errorMessage = ref(null)
+
 const selectedCollectionStore = useSelectedCollectionStore()
-// const oidcWorker = inject('worker') // Unused for now
+const oidcWorker = inject('worker')
+
+const token = computed(() => oidcWorker?.token)
+
+async function loadCollections() {
+  if (!token.value) {
+    return
+  }
+  loading.value = true
+  errorMessage.value = null
+  try {
+    const result = await fetchCollections(token.value)
+    collections.value = result || []
+  }
+  catch (err) {
+    errorMessage.value = err.message
+    console.error('Error loading collections:', err)
+  }
+  finally {
+    loading.value = false
+  }
+}
+
+watch(loadCollections, { immediate: true })
 
 const searchQuery = ref('')
 /*

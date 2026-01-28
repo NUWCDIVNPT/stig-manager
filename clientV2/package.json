@@ -16,7 +16,6 @@
   "dependencies": {
     "@primeuix/themes": "^1.2.3",
     "@primevue/themes": "^4.4.1",
-    "@tanstack/vue-query": "^5.90.5",
     "chart.js": "^4.5.1",
     "file-saver-es": "^2.0.5",
     "jsonwebtoken": "^9.0.2",
@@ -32,7 +31,6 @@
   "devDependencies": {
     "@antfu/eslint-config": "^6.1.0",
     "@eslint/js": "^9.38.0",
-    "@tanstack/vue-query-devtools": "^5.91.0",
     "@testing-library/jest-dom": "^6.7.0",
     "@testing-library/user-event": "^14.6.1",
     "@testing-library/vue": "^8.1.0",
