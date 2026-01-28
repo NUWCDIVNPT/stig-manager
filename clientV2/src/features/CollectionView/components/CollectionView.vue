@@ -5,9 +5,10 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { computed, inject, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BreadcrumbSelect from '../../../components/common/BreadcrumbSelect.vue'
+import { useAsyncData } from '../../../shared/composables/useAsyncData.js'
 import { fetchAssetStigs, fetchStigRevisions } from '../../AssetReview/api/assetReviewApi.js'
 import AssetReview from '../../AssetReview/components/AssetReview.vue'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
@@ -34,23 +35,10 @@ const props = defineProps({
 const route = useRoute()
 const router = useRouter()
 
-// OIDC worker for API queries
-const oidcWorker = inject('worker')
-const token = computed(() => oidcWorker?.token)
-
 // Fetch collection details for name
-const collection = ref(null)
-async function loadCollection() {
-  if (!props.collectionId) {
-    return
-  }
-  try {
-    collection.value = await fetchCollection({ collectionId: props.collectionId, token: token.value })
-  }
-  catch (e) {
-    console.error('Error loading collection:', e)
-  }
-}
+const { data: collection, execute: loadCollection } = useAsyncData(
+  () => fetchCollection(props.collectionId)
+)
 
 const collectionName = computed(() => collection.value?.name || 'Collection')
 
@@ -66,35 +54,19 @@ const reviewRevisionStr = computed(() => route.params.revisionStr || null)
 const assetReviewRef = ref(null)
 
 // Fetch STIGs for the asset being reviewed
-const assetStigs = ref([])
-async function loadAssetStigsForReview() {
-  if (!reviewAssetId.value) {
-    return
-  }
-  try {
-    assetStigs.value = await fetchAssetStigs({ assetId: reviewAssetId.value, token: token.value })
-  }
-  catch (e) {
-    console.error('Error loading asset stigs:', e)
-  }
-}
+const { data: assetStigs, execute: loadAssetStigsForReview } = useAsyncData(
+  () => fetchAssetStigs(reviewAssetId.value),
+  { defaultValue: [] },
+)
 
 // Fetch available revisions for the selected benchmark
-const stigRevisions = ref([])
-async function loadStigRevisions() {
-  if (!reviewBenchmarkId.value) {
-    return
-  }
-  try {
-    stigRevisions.value = await fetchStigRevisions({ benchmarkId: reviewBenchmarkId.value, token: token.value })
-  }
-  catch (e) {
-    console.error('Error loading stig revisions:', e)
-  }
-}
+const { data: stigRevisions, execute: loadStigRevisions } = useAsyncData(
+  () => fetchStigRevisions(reviewBenchmarkId.value),
+  { defaultValue: [] },
+)
 
-watch([reviewAssetId, token], loadAssetStigsForReview, { immediate: true })
-watch([reviewBenchmarkId, token], loadStigRevisions, { immediate: true })
+watch(reviewAssetId, loadAssetStigsForReview, { immediate: true })
+watch(reviewBenchmarkId, loadStigRevisions, { immediate: true })
 
 // Watch for assetStigs to load and update route with revision if missing
 watch(assetStigs, (stigs) => {
@@ -201,77 +173,26 @@ const breadcrumbItems = computed(() => {
 })
 
 // Data queries for STIGs, Assets, Labels
-const stigs = ref([])
-const stigsLoading = ref(false)
-const stigsError = ref(null)
+const { data: stigs, isLoading: stigsLoading, errorMessage: stigsError, execute: loadStigs } = useAsyncData(
+  () => fetchCollectionStigSummary(props.collectionId),
+  { defaultValue: [] },
+)
 
-async function loadStigs() {
-  if (!props.collectionId) {
-    return
-  }
-  stigsLoading.value = true
-  stigsError.value = null
-  try {
-    const result = await fetchCollectionStigSummary({ collectionId: props.collectionId, token: token.value })
-    stigs.value = result
-  }
-  catch (err) {
-    stigsError.value = err.message
-  }
-  finally {
-    stigsLoading.value = false
-  }
-}
+const { data: assets, isLoading: assetsLoading, errorMessage: assetsError, execute: loadAssets } = useAsyncData(
+  () => fetchCollectionAssetSummary(props.collectionId),
+  { defaultValue: [] },
+)
 
-const assets = ref([])
-const assetsLoading = ref(false)
-const assetsError = ref(null)
-
-async function loadAssets() {
-  if (!props.collectionId) {
-    return
-  }
-  assetsLoading.value = true
-  assetsError.value = null
-  try {
-    const result = await fetchCollectionAssetSummary({ collectionId: props.collectionId, token: token.value })
-    assets.value = result || []
-  }
-  catch (err) {
-    assetsError.value = err.message
-  }
-  finally {
-    assetsLoading.value = false
-  }
-}
-
-const labels = ref([])
-async function loadLabels() {
-  if (!props.collectionId) {
-    return
-  }
-  try {
-    const result = await fetchCollectionLabelSummary({ collectionId: props.collectionId, token: token.value })
-    labels.value = result
-  }
-  catch (e) {
-    console.error('Error loading labels:', e)
-  }
-}
+const { data: labels, execute: loadLabels } = useAsyncData(
+  () => fetchCollectionLabelSummary(props.collectionId),
+  { defaultValue: [] },
+)
 
 // Raw labels with color property for AssetReview
-const rawLabels = ref([])
-async function loadRawLabels() {
-  if (!props.collectionId) {
-    return
-  }
-  try {
-    rawLabels.value = await fetchCollectionLabels({ collectionId: props.collectionId, token: token.value })
-  }
-  catch (e) {
-    console.error('Error loading raw labels:', e)
-  }
-}
+const { data: rawLabels, execute: loadRawLabels } = useAsyncData(
+  () => fetchCollectionLabels(props.collectionId),
+  { defaultValue: [] },
+)
 
 // Initial Data Load
 watch([() => props.collectionId], () => {
@@ -295,32 +216,10 @@ watch(stigs, (newStigs) => {
 }, { immediate: true })
 
 // Query for assets of the selected STIG (for STIGs tab child panel)
-const checklistAssets = ref([])
-const checklistAssetsLoading = ref(false)
-const checklistAssetsError = ref(null)
-
-async function loadChecklistAssets() {
-  if (!props.collectionId || !selectedBenchmarkId.value || !token.value) {
-    checklistAssets.value = []
-    return
-  }
-  checklistAssetsLoading.value = true
-  checklistAssetsError.value = null
-  try {
-    const result = await fetchCollectionChecklistAssets({
-      collectionId: props.collectionId,
-      benchmarkId: selectedBenchmarkId.value,
-      token: token.value,
-    })
-    checklistAssets.value = result
-  }
-  catch (err) {
-    checklistAssetsError.value = err.message
-  }
-  finally {
-    checklistAssetsLoading.value = false
-  }
-}
+const { data: checklistAssets, isLoading: checklistAssetsLoading, errorMessage: checklistAssetsError, execute: loadChecklistAssets } = useAsyncData(
+  () => fetchCollectionChecklistAssets(props.collectionId, selectedBenchmarkId.value),
+  { defaultValue: [] },
+)
 
 watch([() => props.collectionId, selectedBenchmarkId], loadChecklistAssets, { immediate: true })
 
@@ -349,32 +248,10 @@ watch(assets, (newAssets) => {
 }, { immediate: true })
 
 // Query for STIGs of the selected asset (for Assets tab child panel)
-const selectedAssetStigs = ref([])
-const selectedAssetStigsLoading = ref(false)
-const selectedAssetStigsError = ref(null)
-
-async function loadSelectedAssetStigs() {
-  if (!props.collectionId || !selectedAssetId.value || !token.value) {
-    selectedAssetStigs.value = []
-    return
-  }
-  selectedAssetStigsLoading.value = true
-  selectedAssetStigsError.value = null
-  try {
-    const result = await fetchCollectionAssetStigs({
-      collectionId: props.collectionId,
-      assetId: selectedAssetId.value,
-      token: token.value,
-    })
-    selectedAssetStigs.value = result
-  }
-  catch (err) {
-    selectedAssetStigsError.value = err.message
-  }
-  finally {
-    selectedAssetStigsLoading.value = false
-  }
-}
+const { data: selectedAssetStigs, isLoading: selectedAssetStigsLoading, errorMessage: selectedAssetStigsError, execute: loadSelectedAssetStigs } = useAsyncData(
+  () => fetchCollectionAssetStigs(props.collectionId, selectedAssetId.value),
+  { defaultValue: [] },
+)
 
 watch([() => props.collectionId, selectedAssetId], loadSelectedAssetStigs, { immediate: true })
 

@@ -8,6 +8,7 @@ import { bootstrapStateWorker, useStateWorker } from './auth/useStateWorker.js'
 import ApiStateBootstrap from './components/global/ApiStateBootstrap.vue'
 import { BluePreset, MyPrimeVuePT } from './primevueTheme.js'
 import router from './router'
+import { setOidcWorker } from './shared/api/smFetch.js'
 import { useGlobalError } from './shared/composables/useGlobalError.js'
 import { useGlobalAppStore } from './shared/stores/globalAppStore.js'
 import { bootstrapEnv, useEnv } from './shared/stores/useEnv.js'
@@ -60,6 +61,9 @@ try {
 
   // helper to mount the real app (requires an auth boot result)
   const mountApp = async (authBootResult) => {
+    // Initialize smFetch with the OIDC worker before any API calls
+    setOidcWorker(authBootResult.oidcWorker)
+
     const app = createApp(App)
 
     // Global Error Handler
@@ -83,7 +87,7 @@ try {
       }
 
       const { fetchCurrentUser } = await import('./shared/api/userApi.js')
-      const userData = await fetchCurrentUser(authBootResult.oidcWorker.token, useEnv().apiUrl)
+      const userData = await fetchCurrentUser()
       globalAppState.setUser(userData)
     }
     catch (error) {

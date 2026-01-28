@@ -1,5 +1,5 @@
 <script setup>
-import { computed, inject, onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
@@ -7,7 +7,6 @@ import { fetchAppManagers } from '../api/api'
 import CustomCards from './CustomCards.vue'
 
 const env = useEnv()
-const worker = inject('worker', null)
 const appManagers = ref([])
 const isLoadingManagers = ref(false)
 const customCardsRef = ref(null)
@@ -27,7 +26,7 @@ onMounted(async () => {
   if (env.displayAppManagers) {
     isLoadingManagers.value = true
     try {
-      appManagers.value = await fetchAppManagers(worker, env.apiUrl)
+      appManagers.value = await fetchAppManagers()
     }
     catch (error) {
       console.error('failed to fetch app managers', error)

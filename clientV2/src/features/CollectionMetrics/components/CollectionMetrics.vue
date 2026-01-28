@@ -1,6 +1,7 @@
 <script setup>
-import { computed, inject, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 
+import { useAsyncData } from '../../../shared/composables/useAsyncData.js'
 import { fetchCollectionMetricsSummary } from '../api/metricsApi.js'
 import { useCollectionCora } from '../composables/useCollectionCora.js'
 import { useCollectionProgress } from '../composables/useCollectionProgress.js'
@@ -30,59 +31,11 @@ const props = defineProps({
   },
 })
 
-const oidcWorker = inject('worker')
+const { data: metrics, isLoading, errorMessage, execute: loadMetrics } = useAsyncData(
+  () => fetchCollectionMetricsSummary(props.collectionId),
+)
 
-const metrics = ref(null)
-const isLoading = ref(false)
-const errorMessage = ref(null)
-
-const token = computed(() => oidcWorker?.token)
-
-async function loadMetrics() {
-  if (!props.collectionId || !token.value) {
-    return
-  }
-
-  isLoading.value = true
-  errorMessage.value = null
-  try {
-    metrics.value = await fetchCollectionMetricsSummary({
-      collectionId: props.collectionId,
-      token: token.value,
-    })
-  }
-  catch (err) {
-    errorMessage.value = err.message || 'Error loading metrics'
-    console.error('Error loading metrics:', err)
-  }
-  finally {
-    isLoading.value = false
-  }
-}
-
-watch([() => props.collectionId, token], () => {
-  loadMetrics()
-}, { immediate: true })
-
-/*
-// Native fetch alternative using useFetch
-// import { computed } from 'vue'
-// import { useFetch } from '../../../shared/composables/useFetch.js'
-// import { useEnv } from '../../../shared/stores/useEnv.js'
-
-// const { data: metrics, isLoading } = useFetch(
-//   computed(() => props.collectionId && oidcWorker?.token
-//     ? `${useEnv().apiUrl}/collections/${props.collectionId}/metrics/summary/collection`
-//     : null
-//   ),
-//   computed(() => ({
-//     headers: {
-//       Accept: 'application/json',
-//       Authorization: `Bearer ${oidcWorker?.token}`,
-//     },
-//   }))
-// )
-*/
+watch(() => props.collectionId, loadMetrics, { immediate: true })
 
 // hint metrics is reactive cuz it's from a query
 const { stats: progressStats } = useCollectionProgress(metrics)

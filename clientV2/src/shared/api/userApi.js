@@ -1,25 +1,11 @@
+import { smFetch } from './smFetch.js'
+
 /**
  * Fetches the current user data from the API
- * @param {string} token - The access token for authorization
- * @param {string} apiUrl - The base API URL
  * @returns {Promise<object>} The user object with sorted collectionGrants
  */
-export async function fetchCurrentUser(token, apiUrl) {
-  const response = await fetch(
-    `${apiUrl}/user?projection=webPreferences`,
-    {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  )
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch user data: ${response.status} ${response.statusText}`)
-  }
-
-  const user = await response.json()
+export async function fetchCurrentUser() {
+  const user = await smFetch('/user?projection=webPreferences')
 
   // Sort collectionGrants by collection name (matching original SM.GetUserObject logic)
   if (user.collectionGrants && Array.isArray(user.collectionGrants)) {
