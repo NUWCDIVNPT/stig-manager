@@ -176,17 +176,17 @@ const breadcrumbItems = computed(() => {
 })
 
 // Data queries for STIGs, Assets, Labels
-const { stigs, isLoading: stigsLoading, errorMessage: stigsError } = useCollectionStigSummaryQuery({
+const { stigs, isLoading: stigsLoading, errorMessage: stigsError, refetch: refetchStigs } = useCollectionStigSummaryQuery({
   collectionId: computed(() => props.collectionId),
   token,
 })
 
-const { assets, isLoading: assetsLoading, errorMessage: assetsError } = useCollectionAssetSummaryQuery({
+const { assets, isLoading: assetsLoading, errorMessage: assetsError, refetch: refetchAssets } = useCollectionAssetSummaryQuery({
   collectionId: computed(() => props.collectionId),
   token,
 })
 
-const { labels } = useCollectionLabelSummaryQuery({
+const { labels, refetch: refetchLabels } = useCollectionLabelSummaryQuery({
   collectionId: computed(() => props.collectionId),
   token,
 })
@@ -214,6 +214,7 @@ const {
   checklistAssets,
   isLoading: checklistAssetsLoading,
   errorMessage: checklistAssetsError,
+  refetch: refetchChecklistAssets,
 } = useCollectionChecklistAssetsQuery({
   collectionId: computed(() => props.collectionId),
   benchmarkId: selectedBenchmarkId,
@@ -249,6 +250,7 @@ const {
   assetStigs: selectedAssetStigs,
   isLoading: selectedAssetStigsLoading,
   errorMessage: selectedAssetStigsError,
+  refetch: refetchSelectedAssetStigs,
 } = useCollectionAssetStigsQuery({
   collectionId: computed(() => props.collectionId),
   assetId: selectedAssetId,
@@ -293,7 +295,7 @@ const tabsPt = {
     style: {
       display: 'flex',
       flexDirection: 'column',
-      height: '80vh',
+      height: '100%',
     },
   },
 }
@@ -329,7 +331,7 @@ function toggleDashboardSidebar() {
 </script>
 
 <template>
-  <div class="collection-view-2">
+  <div class="collection-view">
     <header class="collection-header">
       <Breadcrumb :home="breadcrumbHome" :model="breadcrumbItems">
         <template #item="{ item, props: itemProps }">
@@ -459,7 +461,9 @@ function toggleDashboardSidebar() {
                       selectable
                       data-key="benchmarkId"
                       show-row-action
+                      show-refresh
                       @row-select="(row) => handleStigSelect(row.benchmarkId)"
+                      @refresh="refetchStigs"
                     />
                   </div>
                   <div class="table-container">
@@ -484,10 +488,13 @@ function toggleDashboardSidebar() {
                         <MetricsSummaryGrid
                           v-else
                           :api-metrics-summary="checklistAssets"
+                          :is-loading="checklistAssetsLoading"
                           parent-agg-type="stig"
                           show-asset-action
                           data-key="assetId"
+                          show-refresh
                           @asset-action="handleChecklistAssetAction"
+                          @refresh="refetchChecklistAssets"
                         />
                       </div>
                     </div>
@@ -504,7 +511,9 @@ function toggleDashboardSidebar() {
                       :selected-key="selectedAssetId"
                       selectable
                       data-key="assetId"
+                      show-refresh
                       @row-select="(row) => handleAssetSelect(row.assetId)"
+                      @refresh="refetchAssets"
                     />
                   </div>
                   <div class="table-container">
@@ -529,7 +538,10 @@ function toggleDashboardSidebar() {
                         <MetricsSummaryGrid
                           v-else
                           :api-metrics-summary="selectedAssetStigs"
+                          :is-loading="selectedAssetStigsLoading"
                           parent-agg-type="asset"
+                          show-refresh
+                          @refresh="refetchSelectedAssetStigs"
                         />
                       </div>
                     </div>
@@ -543,6 +555,8 @@ function toggleDashboardSidebar() {
                       :api-metrics-summary="labels"
                       selectable
                       data-key="labelId"
+                      show-refresh
+                      @refresh="refetchLabels"
                     />
                   </div>
                 </div>
@@ -574,7 +588,7 @@ function toggleDashboardSidebar() {
   --dashboard-sidebar-collapsed-width: 2.5rem;
 }
 
-.collection-view-2 {
+.collection-view {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -690,7 +704,7 @@ function toggleDashboardSidebar() {
   display: grid;
   grid-template-rows: 1fr 1fr;
   gap: 0.5rem;
-  height: 100%;
+  height: calc(100% - 1rem);
   padding: 0.5rem;
   overflow: hidden;
 }
@@ -827,12 +841,6 @@ function toggleDashboardSidebar() {
   display: flex;
   flex-direction: column;
   min-height: 0;
-}
-
-.sidebar-export {
-  flex-shrink: 1;
-  min-height: 0;
-  overflow: hidden;
 }
 
 /* Override ExportMetrics min-width in sidebar context */

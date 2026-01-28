@@ -6,6 +6,7 @@ import AssetColumn from '../../../components/columns/AssetColumn.vue'
 import DurationColumn from '../../../components/columns/DurationColumn.vue'
 import LabelsColumn from '../../../components/columns/LabelsColumn.vue'
 import PercentageColumn from '../../../components/columns/PercentageColumn.vue'
+import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { calculateCoraRiskRating } from '../lib/libCora.js'
 
 const props = defineProps({
@@ -49,11 +50,45 @@ const props = defineProps({
     type: [String, Number],
     default: null,
   },
+  // Footer configuration
+  showFooter: {
+    type: Boolean,
+    default: true,
+  },
+  showRefresh: {
+    type: Boolean,
+    default: true,
+  },
+  showExport: {
+    type: Boolean,
+    default: true,
+  },
 })
 
-const emit = defineEmits(['row-select', 'row-action', 'asset-action'])
+const emit = defineEmits(['row-select', 'row-action', 'asset-action', 'refresh'])
 
+const dataTableRef = ref(null)
 const selectedRow = ref(null)
+
+function exportToCsv() {
+  dataTableRef.value?.exportCSV()
+}
+
+function handleRefresh() {
+  emit('refresh')
+}
+
+// Expose for external access if needed
+defineExpose({
+  exportToCsv,
+})
+
+function formatExportCell({ data, field }) {
+  if (field === 'labels' || field === 'label') {
+    return Array.isArray(data) ? data.map(l => l.name).join(', ') : ''
+  }
+  return data
+}
 
 function onRowSelect(event) {
   emit('row-select', event.data)
@@ -240,6 +275,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
 
 <template>
   <DataTable
+    ref="dataTableRef"
     v-model:selection="selectedRow"
     :value="data"
     :data-key="dataKey"
@@ -254,6 +290,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     sort-field="benchmarkId"
     :sort-order="1"
     :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
+    :export-function="formatExportCell"
     @row-select="onRowSelect"
   >
     <Column
@@ -275,10 +312,28 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     <template v-for="col in columns" :key="col.field">
       <component :is="col.component" v-bind="col" sortable style="height: 27px; max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
     </template>
+    <template v-if="showFooter" #footer>
+      <StatusFooter
+        :item-count="data.length"
+        :selected-count="selectedRow ? 1 : 0"
+        :show-selection="selectable"
+        :show-refresh="showRefresh"
+        :show-export="showExport"
+        :refresh-loading="isLoading"
+        @refresh="handleRefresh"
+        @export="exportToCsv"
+      />
+    </template>
   </DataTable>
 </template>
 
 <style scoped>
+/* Remove default padding from DataTable footer so StatusFooter fills the space */
+:deep(.p-datatable-footer) {
+  padding: 0;
+  border: none;
+}
+
 .agg-grid-row {
   height: 45px;
   width: 100px;

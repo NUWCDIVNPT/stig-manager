@@ -73,6 +73,20 @@ See `reusable-components.md` for the documented pattern.
 
 ---
 
+## Questions
+
+### `height: 100%` vs `80vh` on Tabs root (CollectionView.vue `tabsPt`)
+There was a concern that `height: 100%` on the Tabs root passthrough would break PrimeVue's virtual scroller in MetricsSummaryGrid. The theory: in a deep flex/percentage chain (7 levels from grid track to DataTable), the browser might not resolve the height before the virtual scroller reads `clientHeight` during mount, causing it to get 0 and render no rows.
+
+**Finding:** PrimeVue's VirtualScroller source (`primevue/virtualscroller/VirtualScroller.vue`) uses three resilience mechanisms:
+1. **`ResizeObserver`** on its own DOM element — re-initializes when dimensions change
+2. **`updated()` retry** — if `isVisible()` fails at mount, retries on every Vue update cycle
+3. **Window resize/orientation listeners** as additional fallbacks
+
+This means even if the initial mount measurement is 0, the scroller self-corrects once layout resolves. `height: 100%` is safe; `80vh` is not needed as a workaround.
+
+---
+
 ## Session Notes
 
 ### 2025-01-25
