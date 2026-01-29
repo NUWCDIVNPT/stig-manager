@@ -105,18 +105,41 @@ const { data: stigs, isLoading: stigsLoading, errorMessage: stigsError, execute:
   = useAsyncData(() => fetchCollectionStigSummary(props.collectionId), { defaultValue: [] })
 ```
 
-**3. Simplify watches**
+**3. Simplify watches** *(not yet implemented)*
 
 Child watches currently duplicate `collectionId`:
 ```js
 watch([() => props.collectionId, selectedBenchmarkId], loadChecklistAssets, { immediate: true })
 ```
 
-Should only watch their selection ref:
+Could simplify to only watch the selection ref:
 ```js
 watch(selectedBenchmarkId, loadChecklistAssets)
 ```
-When `collectionId` changes, parent data reloads → selections reset → child watches fire from that.
+The idea: when `collectionId` changes → parent data reloads → selections reset → child watches fire from the cascade.
+
+**Edge case:** The auto-select watches only set the selection when it's currently `null`:
+```js
+watch(stigs, (newStigs) => {
+  if (newStigs?.length > 0 && selectedBenchmarkId.value === null) {
+    selectedBenchmarkId.value = newStigs[0].benchmarkId
+  }
+})
+```
+If `collectionId` changes but selections are NOT reset to `null`, and the new collection happens to have the same benchmarkId/assetId value as the old one, the selection ref won't change — so a child watch that only watches the selection ref won't fire, leaving stale child data from the previous collection.
+
+To safely remove `collectionId` from child watches, the parent watch must first reset selections:
+```js
+watch([() => props.collectionId], () => {
+  selectedBenchmarkId.value = null
+  selectedAssetId.value = null
+  loadCollection()
+  loadStigs()
+  loadAssets()
+  // ...
+})
+```
+This ensures the full cascade: collectionId changes → selections reset to null → parent data loads → auto-select fires (selection is null) → selection changes → child watch fires.
 
 ---
 
