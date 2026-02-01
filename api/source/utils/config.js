@@ -22,6 +22,7 @@ const config = {
     },
     client: {
         clientId: process.env.STIGMAN_CLIENT_ID || "stig-manager",
+        historyBase: process.env.STIGMAN_CLIENT_HISTORY_BASE || "",
         displayAppManagers: process.env.STIGMAN_CLIENT_DISPLAY_APPMANAGERS || "true",
         idleTimeoutUser: (() => {
             const val = parseInt(process.env.STIGMAN_CLIENT_USER_TIMEOUT)

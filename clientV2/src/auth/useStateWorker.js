@@ -41,7 +41,7 @@ async function initialize(apiBase = useEnv().apiUrl || '/api') {
   _initPromise = (async () => {
     try {
       // use Vite-served worker path
-      const worker = new SharedWorker('/state-worker.js', {
+      const worker = new SharedWorker('./state-worker.js', {
         name: 'app-state-worker',
         type: 'module',
       })
