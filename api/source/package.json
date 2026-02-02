@@ -22,7 +22,7 @@
     "csv-stringify": "^6.5.1",
     "express": "^4.21.2",
     "express-openapi-validator": "^5.5.3",
-    "fast-xml-parser": "^4.5.0",
+    "fast-xml-parser": "^5.3.4",
     "he": "^1.2.0",
     "js-yaml": "^4.1.0",
     "jsonpath-plus": "^10.3.0",
