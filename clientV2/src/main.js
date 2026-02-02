@@ -27,7 +27,7 @@ try {
   // Register Service Worker
   if ('serviceWorker' in navigator) {
     try {
-      await navigator.serviceWorker.register('/service-worker.js')
+      await navigator.serviceWorker.register('./service-worker.js')
       console.log('Service Worker registered successfully')
     }
     catch (err) {
@@ -116,6 +116,11 @@ try {
 
     app.use(router)
     app.provide('worker', authBootResult.oidcWorker)
+    await router.isReady()
+    // Debug: log current route after router is ready
+    console.log('window.location.pathname', window.location.pathname)
+    console.log('router base', router.options.history.base)
+    console.log('router.currentRoute.value', router.currentRoute.value)
     app.mount('#app')
   }
 

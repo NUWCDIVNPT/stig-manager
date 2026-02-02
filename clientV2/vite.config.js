@@ -21,6 +21,9 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
         },
       },
-    }
+    },
+    build: {
+      sourcemap: true,
+    },
   }
 })

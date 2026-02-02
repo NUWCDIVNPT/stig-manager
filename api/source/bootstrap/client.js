@@ -1,8 +1,10 @@
 const express = require('express')
-const path = require('path')
+const path = require('node:path')
 const writer = require('../utils/writer')
 const logger = require('../utils/logger')
 const config = require('../utils/config')
+const history = require('connect-history-api-fallback');
+const fs = require('node:fs')
 
 function serveClient(app) {
 
@@ -14,7 +16,8 @@ function serveClient(app) {
         serveClientEnv(app)
         serveClientV2Env(app)
         serveStaticFiles(app)
-        logger.writeDebug('serveClient', 'client', { message: 'succeeded setting up client' })
+        serveStaticV2Files(app)
+        logger.writeDebug('serveClient', 'client', { message: 'succeeded setting up clients' })
     }
     catch (err) {
         logger.writeError('serveClient', 'client', {message: err.message, stack: err.stack})
@@ -70,6 +73,7 @@ function getClientV2Env(){
         Env: {
             version: "${config.version}",
             apiBase: "../api",
+            historyBase: "${config.client.historyBase}",
             displayAppManagers: ${config.client.displayAppManagers},
             stateEvents: ${config.client.stateEvents},
             welcome: {
@@ -106,7 +110,6 @@ function getClientV2Env(){
     return envJS
 }
 
-
 function serveClientEnv(app){
     const envJS = getClientEnv()
     app.get('/js/Env.js', function (req, res) {
@@ -114,6 +117,7 @@ function serveClientEnv(app){
         writer.writeWithContentType(res, { payload: envJS, contentType: "application/javascript" })
     })
 }
+
 function serveClientV2Env(app){
     const envJS = getClientV2Env()
     app.get('/client-v2/Env.js', function (req, res) {
@@ -128,21 +132,44 @@ function serveStaticFiles(app){
     const expressStatic = express.static(staticPath)
 
     app.use('/', (req, res, next) => {
+        if (req.originalUrl.startsWith('/client-v2')){
+            next()
+            return
+        }
         req.component = 'static'
         expressStatic(req, res, next)
     })
+}
 
-    const clientV2Path = path.join(__dirname, "../", config.client.next_directory)
-    logger.writeInfo('serveStaticFiles', 'clientV2', {clientV2_static: clientV2Path})
-    const expressNextStatic = express.static(clientV2Path, {redirect: true})
+function serveStaticV2Files(app){
+    const staticPath = path.join(__dirname, "../",  config.client.next_directory)
+    const indexPath = path.join(staticPath, 'index.html')
+    logger.writeInfo('serveStaticV2Files', 'client', {clientV2_static: staticPath})
+    
+    let indexTemplate = null
+    
+    // Read index.html template once at startup
+    try {
+        indexTemplate = fs.readFileSync(indexPath, 'utf8')
+    } catch (err) {
+        logger.writeError('serveStaticV2Files', 'client', {message: 'Failed to read index.html', error: err.message})
+    }
+    
+    const expressStatic = express.static(staticPath)
 
+    // app.use(history())
+    
+    // Intercept index.html requests to inject base path
     app.use('/client-v2', (req, res, next) => {
         req.component = 'static'
-        if (req.originalUrl === '/client-v2'){
-            res.redirect('client-v2/')
-            return
+        
+        if (config.client.historyBase && (req.url === '/' || req.url === '/index.html' || !path.extname(req.url))) {
+            const injectedHtml = indexTemplate.replace('<head>', `<head>\n    <base href="${config.client.historyBase}">`)
+            res.setHeader('Content-Type', 'text/html')
+            res.send(injectedHtml)
+        } else {
+            expressStatic(req, res, next)
         }
-        expressNextStatic(req, res, next)
     })
 }
 

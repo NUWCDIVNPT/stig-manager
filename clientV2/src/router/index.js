@@ -146,7 +146,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: STIGMAN.Env.historyBase ? createWebHistory(STIGMAN.Env.historyBase) : createWebHashHistory(),
   routes,
 })
 
