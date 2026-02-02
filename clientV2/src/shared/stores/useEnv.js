@@ -21,12 +21,12 @@ export async function bootstrapEnv() {
 
   // fetch op/configuration and op/definition
   try {
-    // const [configRes, defRes] = await Promise.all([
-    //   fetch(`${API_URL}/op/configuration`),
-    //   fetch(`${API_URL}/op/definition`),
-    // ])
-    // stigmanEnv.apiConfig = configRes.ok ? await configRes.json() : null
-    // stigmanEnv.apiDefinition = defRes.ok ? await defRes.json() : null
+    const [configRes, defRes] = await Promise.all([
+      fetch(`${API_URL}/op/configuration`),
+      fetch(`${API_URL}/op/definition`),
+    ])
+    stigmanEnv.apiConfig = configRes.ok ? await configRes.json() : null
+    stigmanEnv.apiDefinition = defRes.ok ? await defRes.json() : null
   }
   catch (err) {
     console.error('failed to fetch op/configuration or op/definition', err)
