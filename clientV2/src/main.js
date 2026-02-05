@@ -27,7 +27,7 @@ try {
   // Register Service Worker
   if ('serviceWorker' in navigator) {
     try {
-      await navigator.serviceWorker.register('./service-worker.js')
+      await navigator.serviceWorker.register('workers/service-worker.js')
       console.log('Service Worker registered successfully')
     }
     catch (err) {
