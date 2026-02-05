@@ -1,4 +1,5 @@
 import { saveAs } from 'file-saver-es'
+import { apiCall } from '../../shared/api/apiClient.js'
 import { useGlobalError } from '../../shared/composables/useGlobalError.js'
 import { filenameEscaped } from '../../shared/lib.js'
 import { getDownloadUrl } from '../../shared/serviceWorker.js'
@@ -84,42 +85,25 @@ export function generateCsv(data, columns, listDelimiter = ',') {
   return csvRows.join('\n')
 }
 
-async function fetchLabels(apiUrl, collectionId, authToken) {
-  const url = `${apiUrl}/collections/${collectionId}/labels`
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${authToken}` },
-  })
-  if (!response.ok) {
-    const txt = await response.text()
-    throw new Error(`Request failed with status ${response.status}: ${txt || response.statusText}`)
-  }
-  return response.json()
+async function fetchLabels(_apiUrl, collectionId, _authToken) {
+  return await apiCall('getCollectionLabels', { collectionId })
 }
 
-async function fetchApiDataAsText({ groupBy, includeProjection, apiUrl, collectionId, authToken }) {
-  const requests = {
-    asset: { url: `${apiUrl}/assets`, params: { collectionId } },
-    stig: { url: `${apiUrl}/collections/${collectionId}/stigs`, params: {} },
+async function fetchApiData({ groupBy, includeProjection, collectionId }) {
+  if (groupBy === 'asset') {
+    const params = { collectionId }
+    if (includeProjection) {
+      params.projection = 'stigs'
+    }
+    return await apiCall('getAssets', params)
   }
-
-  if (includeProjection) {
-    requests.asset.params.projection = 'stigs'
-    requests.stig.params.projection = 'assets'
+  if (groupBy === 'stig') {
+    const params = { collectionId }
+    if (includeProjection) {
+      params.projection = 'assets'
+    }
+    return await apiCall('getStigsByCollection', params)
   }
-
-  const queryParams = new URLSearchParams(requests[groupBy].params)
-  const url = `${requests[groupBy].url}?${queryParams.toString()}`
-
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${authToken}` },
-  })
-  if (!response.ok) {
-    const txt = await response.text()
-    throw new Error(`Request failed with status ${response.status}: ${txt || response.statusText}`)
-  }
-  return response.text()
 }
 
 /**
@@ -191,15 +175,13 @@ export async function handleInventoryExport({
       : include
 
     // fetching data from api
-    const apiText = await fetchApiDataAsText({
+    let data = await fetchApiData({
       groupBy,
       includeProjection: requestProjection,
       apiUrl,
       collectionId,
       authToken,
     })
-
-    let data = JSON.parse(apiText)
 
     // get labels and map them to assets
     if (groupBy === 'asset') {
@@ -277,6 +259,7 @@ export async function handleDownload({
   apiUrl,
   authToken,
 }) {
+  const { triggerError } = useGlobalError()
   const queryParams = new URLSearchParams()
   queryParams.append('format', format)
 
@@ -312,7 +295,6 @@ export async function handleDownload({
     saveAs(blob, filename)
   }
   catch (error) {
-    const { triggerError } = useGlobalError()
     triggerError(error)
   }
 }

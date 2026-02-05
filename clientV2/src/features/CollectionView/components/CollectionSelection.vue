@@ -1,17 +1,14 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { useAsyncData } from '../../../shared/composables/useAsyncData.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useSelectedCollectionStore } from '../../../shared/stores/selectedCollection.js'
 import { fetchCollections } from '../api/collectionApi.js'
 
 const selectedCollectionStore = useSelectedCollectionStore()
 
-const { data: collections, isLoading: loading, errorMessage, execute: loadCollections } = useAsyncData(
+const { state: collections, isLoading: loading } = useAsyncState(
   () => fetchCollections(),
-  { defaultValue: [] },
 )
-
-loadCollections()
 
 const searchQuery = ref('')
 /*

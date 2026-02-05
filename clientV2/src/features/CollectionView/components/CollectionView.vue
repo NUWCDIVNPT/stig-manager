@@ -8,12 +8,12 @@ import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BreadcrumbSelect from '../../../components/common/BreadcrumbSelect.vue'
-import { useAsyncData } from '../../../shared/composables/useAsyncData.js'
-import { fetchAssetStigs, fetchStigRevisions } from '../../AssetReview/api/assetReviewApi.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import AssetReview from '../../AssetReview/components/AssetReview.vue'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import ExportMetrics from '../../CollectionMetrics/components/ExportMetrics.vue'
 import {
+  fetchAssetStigs,
   fetchCollection,
   fetchCollectionAssetStigs,
   fetchCollectionAssetSummary,
@@ -21,8 +21,8 @@ import {
   fetchCollectionLabels,
   fetchCollectionLabelSummary,
   fetchCollectionStigSummary,
+  fetchStigRevisions,
 } from '../api/collectionApi.js'
-import LabelsView from './LabelsView.vue'
 import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
 const props = defineProps({
@@ -36,8 +36,9 @@ const route = useRoute()
 const router = useRouter()
 
 // Fetch collection details for name
-const { data: collection, execute: loadCollection } = useAsyncData(
-  () => fetchCollection(props.collectionId)
+const { state: collection, execute: loadCollection } = useAsyncState(
+  () => fetchCollection(props.collectionId),
+  { immediate: false },
 )
 
 const collectionName = computed(() => collection.value?.name || 'Collection')
@@ -54,15 +55,15 @@ const reviewRevisionStr = computed(() => route.params.revisionStr || null)
 const assetReviewRef = ref(null)
 
 // Fetch STIGs for the asset being reviewed
-const { data: assetStigs, execute: loadAssetStigsForReview } = useAsyncData(
+const { state: assetStigs, execute: loadAssetStigsForReview } = useAsyncState(
   () => fetchAssetStigs(reviewAssetId.value),
-  { defaultValue: [] },
+  { initialState: [], immediate: false },
 )
 
 // Fetch available revisions for the selected benchmark
-const { data: stigRevisions, execute: loadStigRevisions } = useAsyncData(
+const { state: stigRevisions, execute: loadStigRevisions } = useAsyncState(
   () => fetchStigRevisions(reviewBenchmarkId.value),
-  { defaultValue: [] },
+  { initialState: [], immediate: false },
 )
 
 watch(reviewAssetId, loadAssetStigsForReview, { immediate: true })
@@ -173,25 +174,25 @@ const breadcrumbItems = computed(() => {
 })
 
 // Data queries for STIGs, Assets, Labels
-const { data: stigs, isLoading: stigsLoading, errorMessage: stigsError, execute: loadStigs } = useAsyncData(
+const { state: stigs, isLoading: stigsLoading, error: stigsError, execute: loadStigs } = useAsyncState(
   () => fetchCollectionStigSummary(props.collectionId),
-  { defaultValue: [] },
+  { initialState: [], immediate: false },
 )
 
-const { data: assets, isLoading: assetsLoading, errorMessage: assetsError, execute: loadAssets } = useAsyncData(
+const { state: assets, isLoading: assetsLoading, error: assetsError, execute: loadAssets } = useAsyncState(
   () => fetchCollectionAssetSummary(props.collectionId),
-  { defaultValue: [] },
+  { initialState: [], immediate: false },
 )
 
-const { data: labels, execute: loadLabels } = useAsyncData(
+const { state: labels, execute: loadLabels } = useAsyncState(
   () => fetchCollectionLabelSummary(props.collectionId),
-  { defaultValue: [] },
+  { initialState: [], immediate: false },
 )
 
 // Raw labels with color property for AssetReview
-const { data: rawLabels, execute: loadRawLabels } = useAsyncData(
+const { state: rawLabels, execute: loadRawLabels } = useAsyncState(
   () => fetchCollectionLabels(props.collectionId),
-  { defaultValue: [] },
+  { initialState: [], immediate: false },
 )
 
 // Initial Data Load
@@ -216,9 +217,9 @@ watch(stigs, (newStigs) => {
 }, { immediate: true })
 
 // Query for assets of the selected STIG (for STIGs tab child panel)
-const { data: checklistAssets, isLoading: checklistAssetsLoading, errorMessage: checklistAssetsError, execute: loadChecklistAssets } = useAsyncData(
+const { state: checklistAssets, isLoading: checklistAssetsLoading, error: checklistAssetsError, execute: loadChecklistAssets } = useAsyncState(
   () => fetchCollectionChecklistAssets(props.collectionId, selectedBenchmarkId.value),
-  { defaultValue: [] },
+  { initialState: [], immediate: false },
 )
 
 watch([() => props.collectionId, selectedBenchmarkId], loadChecklistAssets, { immediate: true })
@@ -248,9 +249,9 @@ watch(assets, (newAssets) => {
 }, { immediate: true })
 
 // Query for STIGs of the selected asset (for Assets tab child panel)
-const { data: selectedAssetStigs, isLoading: selectedAssetStigsLoading, errorMessage: selectedAssetStigsError, execute: loadSelectedAssetStigs } = useAsyncData(
+const { state: selectedAssetStigs, isLoading: selectedAssetStigsLoading, error: selectedAssetStigsError, execute: loadSelectedAssetStigs } = useAsyncState(
   () => fetchCollectionAssetStigs(props.collectionId, selectedAssetId.value),
-  { defaultValue: [] },
+  { initialState: [], immediate: false },
 )
 
 watch([() => props.collectionId, selectedAssetId], loadSelectedAssetStigs, { immediate: true })
@@ -454,7 +455,7 @@ function toggleDashboardSidebar() {
                     <MetricsSummaryGrid
                       :api-metrics-summary="stigs"
                       :is-loading="stigsLoading"
-                      :error-message="stigsError"
+                      :error-message="stigsError?.message || stigsError"
                       :selected-key="selectedBenchmarkId"
                       selectable
                       data-key="benchmarkId"
@@ -478,7 +479,7 @@ function toggleDashboardSidebar() {
                           Loading checklists...
                         </div>
                         <div v-else-if="checklistAssetsError" class="error-state">
-                          {{ checklistAssetsError }}
+                          {{ checklistAssetsError?.message || checklistAssetsError }}
                         </div>
                         <div v-else-if="!checklistAssetsLoading && checklistAssets.length === 0" class="empty-state">
                           No checklists found for this STIG.
@@ -505,7 +506,7 @@ function toggleDashboardSidebar() {
                     <MetricsSummaryGrid
                       :api-metrics-summary="assets"
                       :is-loading="assetsLoading"
-                      :error-message="assetsError"
+                      :error-message="assetsError?.message || assetsError"
                       :selected-key="selectedAssetId"
                       selectable
                       data-key="assetId"
@@ -528,7 +529,7 @@ function toggleDashboardSidebar() {
                           Loading STIGs...
                         </div>
                         <div v-else-if="selectedAssetStigsError" class="error-state">
-                          {{ selectedAssetStigsError }}
+                          {{ selectedAssetStigsError?.message || selectedAssetStigsError }}
                         </div>
                         <div v-else-if="!selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="empty-state">
                           No STIGs found for this asset.

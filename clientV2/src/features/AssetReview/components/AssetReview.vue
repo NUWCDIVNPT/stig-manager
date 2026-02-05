@@ -1,7 +1,7 @@
 <script setup>
 import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useAsyncData } from '../../../shared/composables/useAsyncData.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchAsset } from '../api/assetReviewApi.js'
 import ChecklistInfo from './ChecklistInfo.vue'
 import ReviewForm from './ReviewForm.vue'
@@ -23,8 +23,11 @@ const route = useRoute()
 // Use prop if provided, otherwise fall back to route param
 const assetId = computed(() => props.assetId || route.params.assetId)
 
-const { data: asset, isLoading, errorMessage: error, execute: loadAsset } = useAsyncData(
+const { state: asset, isLoading, errorMessage: error, execute: loadAsset } = useAsyncState(
   () => fetchAsset(assetId.value),
+  {
+    immediate: false,
+  },
 )
 
 watch(assetId, loadAsset, { immediate: true })

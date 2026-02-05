@@ -1,14 +1,21 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 import { fetchAppManagers } from '../api/api'
 import CustomCards from './CustomCards.vue'
 
 const env = useEnv()
-const appManagers = ref([])
-const isLoadingManagers = ref(false)
+
+const {
+  state: appManagers,
+  execute,
+} = useAsyncState(fetchAppManagers, {
+  immediate: false,
+  initialState: [],
+})
+
 const customCardsRef = ref(null)
 
 const cards = computed({
@@ -24,18 +31,7 @@ const isReorderMode = computed(() => customCardsRef.value?.reorderMode || false)
 
 onMounted(async () => {
   if (env.displayAppManagers) {
-    isLoadingManagers.value = true
-    try {
-      appManagers.value = await fetchAppManagers()
-    }
-    catch (error) {
-      console.error('failed to fetch app managers', error)
-      const { triggerError } = useGlobalError()
-      triggerError(error)
-    }
-    finally {
-      isLoadingManagers.value = false
-    }
+    await execute()
   }
 })
 

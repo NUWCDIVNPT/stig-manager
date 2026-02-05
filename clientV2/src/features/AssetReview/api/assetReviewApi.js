@@ -1,22 +1,22 @@
-import { smFetch } from '../../../shared/api/smFetch.js'
+import { apiCall } from '../../../shared/api/apiClient.js'
 
 export function fetchAsset(assetId) {
   if (!assetId) {
     throw new Error('An assetId is required to fetch asset details.')
   }
-  return smFetch(`/assets/${assetId}`)
+  return apiCall('getAsset', { assetId })
 }
 
 export function fetchAssetStigs(assetId) {
   if (!assetId) {
     throw new Error('An assetId is required to fetch asset STIGs.')
   }
-  return smFetch(`/assets/${assetId}/stigs`)
+  return apiCall('getStigsByAsset', { assetId })
 }
 
 export function fetchStigRevisions(benchmarkId) {
   if (!benchmarkId) {
     throw new Error('A benchmarkId is required to fetch STIG revisions.')
   }
-  return smFetch(`/stigs/${benchmarkId}/revisions`)
+  return apiCall('getRevisionsByBenchmarkId', { benchmarkId })
 }

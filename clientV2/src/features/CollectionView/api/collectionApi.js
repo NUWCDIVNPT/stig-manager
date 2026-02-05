@@ -1,49 +1,49 @@
-import { smFetch } from '../../../shared/api/smFetch.js'
+import { apiCall } from '../../../shared/api/apiClient.js'
 
 export function deleteCollection(collectionId) {
   if (!collectionId) {
     throw new Error('A collectionId is required to delete a collection.')
   }
-  return smFetch(`/collections/${collectionId}`, { method: 'DELETE' })
+  return apiCall('deleteCollection', { collectionId })
 }
 
 export function fetchCollection(collectionId) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch collection details.')
   }
-  return smFetch(`/collections/${collectionId}`)
+  return apiCall('getCollection', { collectionId })
 }
 
 export function fetchCollectionAssetSummary(collectionId) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch asset metrics.')
   }
-  return smFetch(`/collections/${collectionId}/metrics/summary/asset`)
+  return apiCall('getMetricsSummaryByCollectionAggAsset', { collectionId })
 }
 
 export function fetchCollections() {
-  return smFetch('/collections')
+  return apiCall('getCollections')
 }
 
 export function fetchCollectionStigSummary(collectionId) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch STIG metrics.')
   }
-  return smFetch(`/collections/${collectionId}/metrics/summary/stig`)
+  return apiCall('getMetricsSummaryByCollectionAggStig', { collectionId })
 }
 
 export function fetchCollectionLabelSummary(collectionId) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch label metrics.')
   }
-  return smFetch(`/collections/${collectionId}/metrics/summary/label`)
+  return apiCall('getMetricsSummaryByCollectionAggLabel', { collectionId })
 }
 
 export function fetchCollectionLabels(collectionId) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch collection labels.')
   }
-  return smFetch(`/collections/${collectionId}/labels`)
+  return apiCall('getCollectionLabels', { collectionId })
 }
 
 export function fetchCollectionChecklistAssets(collectionId, benchmarkId) {
@@ -53,7 +53,7 @@ export function fetchCollectionChecklistAssets(collectionId, benchmarkId) {
   if (!benchmarkId) {
     return []
   }
-  return smFetch(`/collections/${collectionId}/metrics/summary?benchmarkId=${benchmarkId}`)
+  return apiCall('getMetricsSummaryByCollection', { collectionId, benchmarkId })
 }
 
 export function fetchCollectionAssetStigs(collectionId, assetId) {
@@ -63,12 +63,25 @@ export function fetchCollectionAssetStigs(collectionId, assetId) {
   if (!assetId) {
     return []
   }
-  return smFetch(`/collections/${collectionId}/metrics/summary?assetId=${assetId}`)
+  return apiCall('getMetricsSummaryByCollection', { collectionId, assetId })
 }
 
 export function fetchCollectionMetricsSummary(collectionId) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch collection metrics.')
   }
-  return smFetch(`/collections/${collectionId}/metrics/summary/collection`)
+  return apiCall('getMetricsSummaryByCollectionAgg', { collectionId })
+}
+
+export function fetchStigRevisions(benchmarkId) {
+  if (!benchmarkId) {
+    throw new Error('A benchmarkId is required to fetch STIG revisions.')
+  }
+  return apiCall('getRevisionsByBenchmarkId', { benchmarkId })
+}
+export function fetchAssetStigs(assetId) {
+  if (!assetId) {
+    throw new Error('An assetId is required to fetch asset STIGs.')
+  }
+  return apiCall('getStigsByAsset', { assetId })
 }

@@ -8,7 +8,8 @@ import { bootstrapStateWorker, useStateWorker } from './auth/useStateWorker.js'
 import ApiStateBootstrap from './components/global/ApiStateBootstrap.vue'
 import { BluePreset, MyPrimeVuePT } from './primevueTheme.js'
 import router from './router'
-import { setOidcWorker } from './shared/api/smFetch.js'
+import { api, configureApiSpec, configureAuth } from './shared/api/apiClient.js'
+
 import { useGlobalError } from './shared/composables/useGlobalError.js'
 import { useGlobalAppStore } from './shared/stores/globalAppStore.js'
 import { bootstrapEnv, useEnv } from './shared/stores/useEnv.js'
@@ -61,8 +62,10 @@ try {
 
   // helper to mount the real app (requires an auth boot result)
   const mountApp = async (authBootResult) => {
-    // Initialize smFetch with the OIDC worker before any API calls
-    setOidcWorker(authBootResult.oidcWorker)
+    // Initialize apiClient with the OIDC worker token accessor
+    configureAuth({
+      getToken: () => authBootResult.oidcWorker.token,
+    })
 
     const app = createApp(App)
 
@@ -84,6 +87,14 @@ try {
       const loadingEl = document.getElementById('loading-text')
       if (loadingEl) {
         loadingEl.innerHTML += '<br/><br/>Fetching user data'
+      }
+
+      // Fetch and configure API Spec
+      const spec = await api.get('/op/definition')
+      configureApiSpec(spec)
+
+      if (loadingEl) {
+        loadingEl.innerHTML += '<br/>Fetching user data'
       }
 
       const { fetchCurrentUser } = await import('./shared/api/userApi.js')

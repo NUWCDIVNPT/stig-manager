@@ -1,7 +1,13 @@
 import { saveAs } from 'file-saver-es'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { apiCall } from '../../../shared/api/apiClient.js'
 import { getDownloadUrl } from '../../../shared/serviceWorker.js'
 import { generateCsv, handleDownload, handleInventoryExport } from '../exportMetricsUtils'
+
+// Mock dependencies
+vi.mock('../../../shared/api/apiClient.js', () => ({
+  apiCall: vi.fn(),
+}))
 
 // Mock dependencies
 vi.mock('file-saver-es', () => ({
@@ -101,16 +107,9 @@ describe('exportMetricsUtils', () => {
 
       const mockLabels = [{ labelId: 'l1', name: 'Label1' }]
 
-      globalThis.fetch
-        .mockResolvedValueOnce({ // Assets fetch
-          ok: true,
-          text: () => Promise.resolve(JSON.stringify(mockAssets)),
-          json: () => Promise.resolve(mockAssets),
-        })
-        .mockResolvedValueOnce({ // Labels fetch
-          ok: true,
-          json: () => Promise.resolve(mockLabels),
-        })
+      apiCall
+        .mockResolvedValueOnce(mockAssets) // getAssets
+        .mockResolvedValueOnce(mockLabels) // getCollectionLabels
 
       await handleInventoryExport({
         groupBy: 'asset',
@@ -129,6 +128,12 @@ describe('exportMetricsUtils', () => {
         delimiter: 'comma',
       })
 
+      expect(apiCall).toHaveBeenCalledTimes(2)
+      // First call for assets
+      expect(apiCall).toHaveBeenNthCalledWith(1, 'getAssets', { collectionId: 'col1', projection: 'stigs' })
+      // Second call for labels
+      expect(apiCall).toHaveBeenNthCalledWith(2, 'getCollectionLabels', { collectionId: 'col1' })
+
       expect(saveAs).toHaveBeenCalled()
       const blob = saveAs.mock.calls[0][0]
       const text = await blob.text()
@@ -145,16 +150,9 @@ describe('exportMetricsUtils', () => {
       const mockAssets = [{ name: 'Asset1' }]
       const mockLabels = []
 
-      globalThis.fetch
-        .mockResolvedValueOnce({
-          ok: true,
-          text: () => Promise.resolve(JSON.stringify(mockAssets)),
-          json: () => Promise.resolve(mockAssets),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: () => Promise.resolve(mockLabels),
-        })
+      apiCall
+        .mockResolvedValueOnce(mockAssets)
+        .mockResolvedValueOnce(mockLabels)
 
       await handleInventoryExport({
         groupBy: 'asset',
@@ -175,8 +173,8 @@ describe('exportMetricsUtils', () => {
       expect(text).toContain('Asset1,,,,,,,,')
     })
 
-    it('should catch errors and call triggerError', async () => {
-      globalThis.fetch.mockRejectedValue(new Error('Network error'))
+    it('should catch errors from fetchApiData and call triggerError', async () => {
+      apiCall.mockRejectedValueOnce(new Error('Fetch API Data Failed'))
 
       await handleInventoryExport({
         groupBy: 'asset',
@@ -189,7 +187,27 @@ describe('exportMetricsUtils', () => {
       })
 
       expect(triggerErrorMock).toHaveBeenCalledWith(expect.any(Error))
-      expect(triggerErrorMock.mock.calls[0][0].message).toBe('Network error')
+      expect(triggerErrorMock.mock.calls[0][0].message).toBe('Fetch API Data Failed')
+    })
+
+    it('should catch errors from fetchLabels and call triggerError', async () => {
+      // First call (fetchApiData/getAssets) succeeds
+      apiCall.mockResolvedValueOnce([{ name: 'Asset1' }])
+      // Second call (fetchLabels/getCollectionLabels) fails
+      apiCall.mockRejectedValueOnce(new Error('Fetch Labels Failed'))
+
+      await handleInventoryExport({
+        groupBy: 'asset',
+        format: 'csv',
+        csvFields: [],
+        collectionId: 'col1',
+        collectionName: 'TestCollection',
+        apiUrl: 'http://api',
+        authToken: 'token',
+      })
+
+      expect(triggerErrorMock).toHaveBeenCalledWith(expect.any(Error))
+      expect(triggerErrorMock.mock.calls[0][0].message).toBe('Fetch Labels Failed')
     })
   })
 

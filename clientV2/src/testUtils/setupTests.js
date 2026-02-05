@@ -1,6 +1,5 @@
 import { cleanup } from '@testing-library/vue'
-import { afterAll, afterEach, beforeAll } from 'vitest'
-import { server } from './testServer' // if using MSW
+import { afterEach } from 'vitest'
 import '@testing-library/jest-dom'
 
 // Mock ResizeObserver for PrimeVue components
@@ -18,9 +17,4 @@ globalThis.ResizeObserver = class ResizeObserver {
 
 afterEach(() => {
   cleanup()
-  server.resetHandlers() // idk how i feel abbout this
 })
-
-// MSW setup
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
-afterAll(() => server.close())

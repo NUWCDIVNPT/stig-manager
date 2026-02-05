@@ -1,11 +1,10 @@
-import { smFetch } from './smFetch.js'
-
+import { apiCall } from './apiClient.js'
 /**
  * Fetches the current user data from the API
  * @returns {Promise<object>} The user object with sorted collectionGrants
  */
 export async function fetchCurrentUser() {
-  const user = await smFetch('/user?projection=webPreferences')
+  const user = await apiCall('getUser', { projection: 'webPreferences' })
 
   // Sort collectionGrants by collection name (matching original SM.GetUserObject logic)
   if (user.collectionGrants && Array.isArray(user.collectionGrants)) {
