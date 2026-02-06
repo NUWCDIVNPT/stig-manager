@@ -1,14 +1,16 @@
 <script setup>
 import Button from 'primevue/button'
-import { computed } from 'vue'
 
-const props = defineProps({
-  // Left side controls
-  showRefresh: {
-    type: Boolean,
-    default: false,
+defineProps({
+  // Left side configuration (buttons, dividers)
+  // Array of objects: { type: 'button'|'divider', icon?: string, label?: string, action?: string, loading?: boolean, disabled?: boolean, title?: string }
+  leftItems: {
+    type: Array,
+    default: () => [],
   },
-  showExport: {
+
+  // Standard Actions
+  showRefresh: {
     type: Boolean,
     default: true,
   },
@@ -16,40 +18,26 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showExport: {
+    type: Boolean,
+    default: true,
+  },
 
-  // Info boxes configuration
-  // Array of objects: { icon?: string, value: string|number, label?: string, tooltip?: string }
-  infoBoxes: {
+  // Right side configuration (info boxes)
+  // Array of objects: { type: 'metric', value: string|number, label?: string, icon?: string, title?: string, variant?: 'default'|'highlight'|'selection' }
+  rightItems: {
     type: Array,
     default: () => [],
   },
-
-  // Item count configuration (shown as rightmost info box)
-  itemCount: {
-    type: Number,
-    required: true,
-  },
-  itemCountIcon: {
-    type: String,
-    default: 'pi pi-list',
-  },
-  itemCountLabel: {
-    type: String,
-    default: 'rows',
-  },
-
-  // Selection count (optional - shown when items are selected)
-  selectedCount: {
-    type: Number,
-    default: 0,
-  },
-  showSelection: {
-    type: Boolean,
-    default: false,
-  },
 })
 
-const emit = defineEmits(['refresh', 'export'])
+const emit = defineEmits(['action', 'refresh', 'export'])
+
+function handleAction(action) {
+  if (action) {
+    emit('action', action)
+  }
+}
 
 function handleRefresh() {
   emit('refresh')
@@ -58,35 +46,12 @@ function handleRefresh() {
 function handleExport() {
   emit('export')
 }
-
-const allInfoBoxes = computed(() => {
-  const boxes = [...props.infoBoxes]
-
-  // Add selection count if enabled and items are selected
-  if (props.showSelection && props.selectedCount > 0) {
-    boxes.push({
-      icon: 'pi pi-check-square',
-      value: props.selectedCount,
-      label: 'selected',
-      isSelection: true,
-    })
-  }
-
-  // Always add item count as the last box
-  boxes.push({
-    icon: props.itemCountIcon,
-    value: props.itemCount,
-    label: props.itemCountLabel,
-    isItemCount: true,
-  })
-
-  return boxes
-})
 </script>
 
 <template>
   <div class="sm-status-footer">
     <div class="sm-status-footer__left">
+      <!-- Standard Actions -->
       <Button
         v-if="showRefresh"
         icon="pi pi-refresh"
@@ -103,33 +68,56 @@ const allInfoBoxes = computed(() => {
         icon="pi pi-download"
         text
         rounded
-        class="sm-status-footer__button sm-status-footer__button--export"
+        class="sm-status-footer__button sm-status-footer__button--has-label"
         aria-label="Export to CSV"
         @click="handleExport"
       >
         <span class="sm-status-footer__button-label">CSV</span>
       </Button>
+
+      <!-- Configured Items -->
+      <template v-for="(item, index) in leftItems" :key="index">
+        <Button
+          v-if="item.type === 'button'"
+          :icon="item.icon"
+          :loading="item.loading"
+          :disabled="item.disabled"
+          text
+          rounded
+          class="sm-status-footer__button"
+          :class="{ 'sm-status-footer__button--has-label': item.label }"
+          :aria-label="item.title || item.label"
+          :title="item.title"
+          @click="handleAction(item.action)"
+        >
+          <span v-if="item.label" class="sm-status-footer__button-label">{{ item.label }}</span>
+        </Button>
+        <div v-else-if="item.type === 'divider'" class="sm-status-footer__divider" />
+      </template>
+
+      <!-- Custom content slot for left side -->
+      <slot name="left-custom" />
     </div>
 
     <div class="sm-status-footer__right">
+      <!-- Custom content slot for right side -->
+      <slot name="right-custom" />
+
       <div
-        v-for="box in allInfoBoxes"
-        :key="`${box.label}-${box.value}`"
+        v-for="(item, index) in rightItems"
+        :key="index"
         class="sm-status-footer__info-box"
-        :class="{
-          'sm-status-footer__info-box--item-count': box.isItemCount,
-          'sm-status-footer__info-box--selection': box.isSelection,
-        }"
-        :title="box.tooltip"
+        :class="[`sm-status-footer__info-box--${item.variant || 'default'}`]"
+        :title="item.title"
       >
         <i
-          v-if="box.icon"
+          v-if="item.icon"
           class="sm-status-footer__info-icon"
-          :class="[box.icon]"
+          :class="[item.icon]"
           aria-hidden="true"
         />
-        <span class="sm-status-footer__info-value">{{ box.value }}</span>
-        <span v-if="box.label" class="sm-status-footer__info-label">{{ box.label }}</span>
+        <span class="sm-status-footer__info-value">{{ item.value }}</span>
+        <span v-if="item.label" class="sm-status-footer__info-label">{{ item.label }}</span>
       </div>
     </div>
   </div>
@@ -160,12 +148,24 @@ const allInfoBoxes = computed(() => {
   gap: 0.75rem;
 }
 
+.sm-status-footer__divider {
+  width: 1px;
+  height: 1.25rem;
+  background-color: var(--color-border-subtle);
+  margin: 0 0.25rem;
+}
+
 /* Button styles */
 .sm-status-footer__button {
   height: 1.75rem;
   width: 1.75rem;
   padding: 0;
   color: var(--color-text-secondary);
+}
+
+.sm-status-footer__button--has-label {
+  width: auto;
+  padding: 0 0.5rem;
 }
 
 .sm-status-footer__button:hover {
@@ -184,12 +184,6 @@ const allInfoBoxes = computed(() => {
   margin-left: 0.25rem;
 }
 
-/* Export button with label */
-.sm-status-footer__button--export {
-  width: auto;
-  padding: 0 0.5rem;
-}
-
 /* Info box styles */
 .sm-status-footer__info-box {
   display: flex;
@@ -202,7 +196,7 @@ const allInfoBoxes = computed(() => {
   color: var(--color-text-primary);
 }
 
-.sm-status-footer__info-box--item-count {
+.sm-status-footer__info-box--highlight {
   background: color-mix(in srgb, var(--color-primary-highlight) 8%, transparent);
   border-color: color-mix(in srgb, var(--color-primary-highlight) 15%, transparent);
 }
@@ -212,12 +206,12 @@ const allInfoBoxes = computed(() => {
   border-color: color-mix(in srgb, var(--color-selection-green) 15%, transparent);
 }
 
-.sm-status-footer__info-icon {
-  color: var(--color-primary-highlight);
-}
-
 .sm-status-footer__info-box--selection .sm-status-footer__info-icon {
   color: var(--color-selection-green);
+}
+
+.sm-status-footer__info-icon {
+  color: var(--color-primary-highlight);
 }
 
 .sm-status-footer__info-value {

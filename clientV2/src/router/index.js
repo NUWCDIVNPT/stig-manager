@@ -71,13 +71,12 @@ const routes = [
         component: EmptyComponent,
         props: true,
       },
-      {
-        path: 'asset/:assetId/stig/:benchmarkId/revision/:revisionStr?',
-        name: 'collection-asset-review',
-        component: AssetReview,
-        props: true,
-      },
     ],
+  },
+  {
+    path: '/collection/:collectionId/asset/:assetId/stig/:benchmarkId/revision/:revisionStr?',
+    name: 'collection-asset-review',
+    component: AssetReview,
   },
   {
     path: '/collections',

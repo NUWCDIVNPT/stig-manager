@@ -55,14 +55,6 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-  showRefresh: {
-    type: Boolean,
-    default: true,
-  },
-  showExport: {
-    type: Boolean,
-    default: true,
-  },
 })
 
 const emit = defineEmits(['row-select', 'row-action', 'asset-action', 'refresh'])
@@ -114,12 +106,24 @@ watch(() => props.apiMetricsSummary, () => {
 const aggregationType = computed(() => {
   console.log('Determining aggregation type for metrics summary')
   const m = props.apiMetricsSummary
-  if (m.length === 0) { return null }
-  if ('assetId' in m[0] && 'benchmarkId' in m[0]) { return 'unagg' }
-  if ('collectionId' in m[0]) { return 'collection' }
-  if ('assetId' in m[0]) { return 'asset' }
-  if ('labelId' in m[0]) { return 'label' }
-  if ('benchmarkId' in m[0]) { return 'stig' }
+  if (m.length === 0) {
+    return null
+  }
+  if ('assetId' in m[0] && 'benchmarkId' in m[0]) {
+    return 'unagg'
+  }
+  if ('collectionId' in m[0]) {
+    return 'collection'
+  }
+  if ('assetId' in m[0]) {
+    return 'asset'
+  }
+  if ('labelId' in m[0]) {
+    return 'label'
+  }
+  if ('benchmarkId' in m[0]) {
+    return 'stig'
+  }
 })
 
 const columns = computed(() => {
@@ -271,6 +275,41 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     selectedRow.value = null
   }
 }, { immediate: true })
+
+const footerRightItems = computed(() => {
+  const items = []
+
+  const selectedCount = Array.isArray(selectedRow.value)
+    ? selectedRow.value.length
+    : (selectedRow.value ? 1 : 0)
+
+  if (props.selectable && selectedCount > 0) {
+    items.push({
+      type: 'metric',
+      icon: 'pi pi-check-square',
+      value: selectedCount,
+      label: 'selected',
+      variant: 'selection',
+      title: 'Selected rows',
+    })
+  }
+
+  // Total count
+  items.push({
+    type: 'metric',
+    icon: 'pi pi-list',
+    value: data.value.length,
+    label: 'rows',
+    variant: 'highlight',
+    title: 'Total rows',
+  })
+
+  return items
+})
+
+function handleFooterAction(action) {
+  console.log(action)
+}
 </script>
 
 <template>
@@ -314,14 +353,11 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     </template>
     <template v-if="showFooter" #footer>
       <StatusFooter
-        :item-count="data.length"
-        :selected-count="selectedRow ? 1 : 0"
-        :show-selection="selectable"
-        :show-refresh="showRefresh"
-        :show-export="showExport"
         :refresh-loading="isLoading"
+        :right-items="footerRightItems"
         @refresh="handleRefresh"
         @export="exportToCsv"
+        @action="handleFooterAction"
       />
     </template>
   </DataTable>

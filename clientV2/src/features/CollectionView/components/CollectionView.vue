@@ -7,23 +7,15 @@ import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import BreadcrumbSelect from '../../../components/common/BreadcrumbSelect.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import AssetReview from '../../AssetReview/components/AssetReview.vue'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import ExportMetrics from '../../CollectionMetrics/components/ExportMetrics.vue'
 import {
-  fetchAssetStigs,
   fetchCollection,
-  fetchCollectionAssetStigs,
-  fetchCollectionAssetSummary,
-  fetchCollectionChecklistAssets,
-  fetchCollectionLabels,
-  fetchCollectionLabelSummary,
-  fetchCollectionStigSummary,
-  fetchStigRevisions,
 } from '../api/collectionApi.js'
-import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
+import CollectionAssetsTab from './CollectionAssetsTab.vue'
+import CollectionLabelsTab from './CollectionLabelsTab.vue'
+import CollectionStigsTab from './CollectionStigsTab.vue'
 
 const props = defineProps({
   collectionId: {
@@ -43,218 +35,24 @@ const { state: collection, execute: loadCollection } = useAsyncState(
 
 const collectionName = computed(() => collection.value?.name || 'Collection')
 
-// Route-based review mode
-const isReviewMode = computed(() => route.name === 'collection-asset-review')
-
-// Review params from route
-const reviewAssetId = computed(() => route.params.assetId || null)
-const reviewBenchmarkId = computed(() => route.params.benchmarkId || null)
-const reviewRevisionStr = computed(() => route.params.revisionStr || null)
-
-// Template ref to access asset data from AssetReview component
-const assetReviewRef = ref(null)
-
-// Fetch STIGs for the asset being reviewed
-const { state: assetStigs, execute: loadAssetStigsForReview } = useAsyncState(
-  () => fetchAssetStigs(reviewAssetId.value),
-  { initialState: [], immediate: false },
-)
-
-// Fetch available revisions for the selected benchmark
-const { state: stigRevisions, execute: loadStigRevisions } = useAsyncState(
-  () => fetchStigRevisions(reviewBenchmarkId.value),
-  { initialState: [], immediate: false },
-)
-
-watch(reviewAssetId, loadAssetStigsForReview, { immediate: true })
-watch(reviewBenchmarkId, loadStigRevisions, { immediate: true })
-
-// Watch for assetStigs to load and update route with revision if missing
-watch(assetStigs, (stigs) => {
-  if (isReviewMode.value && !reviewRevisionStr.value && stigs.length > 0) {
-    const currentStig = stigs.find(s => s.benchmarkId === reviewBenchmarkId.value)
-    if (currentStig?.revisionStr) {
-      router.replace({
-        name: 'collection-asset-review',
-        params: {
-          collectionId: props.collectionId,
-          assetId: reviewAssetId.value,
-          benchmarkId: reviewBenchmarkId.value,
-          revisionStr: currentStig.revisionStr,
-        },
-      })
-    }
-  }
-})
-
-// Current STIG selection for dropdown - navigates on change
-const selectedStigBenchmarkId = computed({
-  get: () => reviewBenchmarkId.value,
-  set: (newBenchmarkId) => {
-    if (newBenchmarkId && isReviewMode.value) {
-      // Find the revision for this benchmark from the asset's STIGs
-      const stigData = assetStigs.value.find(s => s.benchmarkId === newBenchmarkId)
-      router.push({
-        name: 'collection-asset-review',
-        params: {
-          collectionId: props.collectionId,
-          assetId: reviewAssetId.value,
-          benchmarkId: newBenchmarkId,
-          revisionStr: stigData?.revisionStr || undefined,
-        },
-      })
-    }
-  },
-})
-
-// Current revision selection for dropdown - navigates on change
-const selectedRevisionStr = computed({
-  get: () => reviewRevisionStr.value,
-  set: (newRevisionStr) => {
-    if (newRevisionStr && isReviewMode.value) {
-      router.push({
-        name: 'collection-asset-review',
-        params: {
-          collectionId: props.collectionId,
-          assetId: reviewAssetId.value,
-          benchmarkId: reviewBenchmarkId.value,
-          revisionStr: newRevisionStr,
-        },
-      })
-    }
-  },
-})
-
-// Exit review mode - go back to dashboard
-function exitReviewMode() {
-  router.push({
-    name: 'collection-dashboard',
-    params: { collectionId: props.collectionId },
-  })
-}
-
 // Breadcrumb configuration
 const breadcrumbHome = {
   label: 'Collections',
   route: '/collections',
 }
 
-// Get asset name from AssetReview component, fallback to assetId while loading
-const reviewAssetName = computed(() => {
-  return assetReviewRef.value?.asset?.name || `Asset ${reviewAssetId.value}`
-})
-
 const breadcrumbItems = computed(() => {
-  const items = [
+  return [
     {
       label: collectionName.value,
-      command: exitReviewMode,
     },
   ]
-
-  if (isReviewMode.value) {
-    items.push({
-      label: reviewAssetName.value,
-    })
-    // STIG benchmark dropdown
-    items.push({
-      label: reviewBenchmarkId.value,
-      isStigDropdown: true,
-    })
-    // STIG revision dropdown
-    if (reviewRevisionStr.value) {
-      items.push({
-        label: reviewRevisionStr.value,
-        isRevisionDropdown: true,
-      })
-    }
-  }
-
-  return items
 })
-
-// Data queries for STIGs, Assets, Labels
-const { state: stigs, isLoading: stigsLoading, error: stigsError, execute: loadStigs } = useAsyncState(
-  () => fetchCollectionStigSummary(props.collectionId),
-  { initialState: [], immediate: false },
-)
-
-const { state: assets, isLoading: assetsLoading, error: assetsError, execute: loadAssets } = useAsyncState(
-  () => fetchCollectionAssetSummary(props.collectionId),
-  { initialState: [], immediate: false },
-)
-
-const { state: labels, execute: loadLabels } = useAsyncState(
-  () => fetchCollectionLabelSummary(props.collectionId),
-  { initialState: [], immediate: false },
-)
-
-// Raw labels with color property for AssetReview
-const { state: rawLabels, execute: loadRawLabels } = useAsyncState(
-  () => fetchCollectionLabels(props.collectionId),
-  { initialState: [], immediate: false },
-)
 
 // Initial Data Load
 watch([() => props.collectionId], () => {
   loadCollection()
-  loadStigs()
-  loadAssets()
-  loadLabels()
-  loadRawLabels()
 }, { immediate: true })
-
-const selectedBenchmarkId = ref(null)
-function handleStigSelect(benchmarkId) {
-  selectedBenchmarkId.value = benchmarkId
-}
-
-// Auto-select first STIG when data loads and no selection exists
-watch(stigs, (newStigs) => {
-  if (newStigs?.length > 0 && selectedBenchmarkId.value === null) {
-    selectedBenchmarkId.value = newStigs[0].benchmarkId
-  }
-}, { immediate: true })
-
-// Query for assets of the selected STIG (for STIGs tab child panel)
-const { state: checklistAssets, isLoading: checklistAssetsLoading, error: checklistAssetsError, execute: loadChecklistAssets } = useAsyncState(
-  () => fetchCollectionChecklistAssets(props.collectionId, selectedBenchmarkId.value),
-  { initialState: [], immediate: false },
-)
-
-watch([() => props.collectionId, selectedBenchmarkId], loadChecklistAssets, { immediate: true })
-
-// Handle row action from checklist assets grid to navigate to review
-function handleChecklistAssetAction(rowData) {
-  router.push({
-    name: 'collection-asset-review',
-    params: {
-      collectionId: props.collectionId,
-      assetId: rowData.assetId,
-      benchmarkId: selectedBenchmarkId.value,
-    },
-  })
-}
-
-const selectedAssetId = ref(null)
-function handleAssetSelect(assetId) {
-  selectedAssetId.value = assetId
-}
-
-// Auto-select first asset when data loads and no selection exists
-watch(assets, (newAssets) => {
-  if (newAssets?.length > 0 && selectedAssetId.value === null) {
-    selectedAssetId.value = newAssets[0].assetId
-  }
-}, { immediate: true })
-
-// Query for STIGs of the selected asset (for Assets tab child panel)
-const { state: selectedAssetStigs, isLoading: selectedAssetStigsLoading, error: selectedAssetStigsError, execute: loadSelectedAssetStigs } = useAsyncState(
-  () => fetchCollectionAssetStigs(props.collectionId, selectedAssetId.value),
-  { initialState: [], immediate: false },
-)
-
-watch([() => props.collectionId, selectedAssetId], loadSelectedAssetStigs, { immediate: true })
 
 // Map route name to tab value
 const routeToTab = {
@@ -339,56 +137,16 @@ function toggleDashboardSidebar() {
               {{ item.label }}
             </a>
           </router-link>
-          <a
-            v-else-if="item.command"
-            v-bind="itemProps.action"
-            class="breadcrumb-link"
-            href="#"
-            @click.prevent="item.command"
-          >
-            {{ item.label }}
-          </a>
-          <BreadcrumbSelect
-            v-else-if="item.isStigDropdown"
-            v-model="selectedStigBenchmarkId"
-            :options="assetStigs"
-            option-label="benchmarkId"
-            option-value="benchmarkId"
-            placeholder="Select STIG"
-          />
-          <BreadcrumbSelect
-            v-else-if="item.isRevisionDropdown"
-            v-model="selectedRevisionStr"
-            :options="stigRevisions"
-            option-label="revisionStr"
-            option-value="revisionStr"
-            placeholder="Select Revision"
-          />
           <span v-else class="breadcrumb-current">{{ item.label }}</span>
         </template>
         <template #separator>
           <span class="breadcrumb-separator">/</span>
         </template>
       </Breadcrumb>
-      <div class="header-actions">
-        <div v-if="isReviewMode" class="search-reviews">
-          <i class="pi pi-search search-reviews__icon" />
-          <input
-            type="text"
-            class="search-reviews__input"
-            placeholder="Search reviews..."
-          >
-        </div>
-      </div>
     </header>
 
-    <!-- Review Mode: Show AssetReview -->
-    <div v-if="isReviewMode" class="review-container">
-      <AssetReview ref="assetReviewRef" :asset-id="reviewAssetId" :collection-labels="rawLabels" />
-    </div>
-
     <!-- Normal Mode: Show Tabs -->
-    <div v-else class="tabs-container" :class="{ 'sidebar-collapsed': dashboardCollapsed }">
+    <div class="tabs-container" :class="{ 'sidebar-collapsed': dashboardCollapsed }">
       <Tabs v-model:value="activeTab" :pt="tabsPt">
         <TabList>
           <Tab value="dashboard">
@@ -450,115 +208,13 @@ function toggleDashboardSidebar() {
                 </div>
               </TabPanel>
               <TabPanel value="stigs" :pt="tabPanelPt">
-                <div class="metrics-grid">
-                  <div class="table-container">
-                    <MetricsSummaryGrid
-                      :api-metrics-summary="stigs"
-                      :is-loading="stigsLoading"
-                      :error-message="stigsError?.message || stigsError"
-                      :selected-key="selectedBenchmarkId"
-                      selectable
-                      data-key="benchmarkId"
-                      show-row-action
-                      show-refresh
-                      @row-select="(row) => handleStigSelect(row.benchmarkId)"
-                      @refresh="loadStigs(); loadChecklistAssets()"
-                    />
-                  </div>
-                  <div class="table-container">
-                    <div class="child-panel">
-                      <div class="child-panel__header">
-                        <h3>Checklists</h3>
-                        <span v-if="selectedBenchmarkId" class="stig-badge">{{ selectedBenchmarkId }}</span>
-                      </div>
-                      <div class="child-panel__body">
-                        <div v-if="!selectedBenchmarkId" class="empty-state">
-                          Select a STIG to view checklists.
-                        </div>
-                        <div v-else-if="checklistAssetsLoading && checklistAssets.length === 0" class="loading-state">
-                          Loading checklists...
-                        </div>
-                        <div v-else-if="checklistAssetsError" class="error-state">
-                          {{ checklistAssetsError?.message || checklistAssetsError }}
-                        </div>
-                        <div v-else-if="!checklistAssetsLoading && checklistAssets.length === 0" class="empty-state">
-                          No checklists found for this STIG.
-                        </div>
-                        <MetricsSummaryGrid
-                          v-else
-                          :api-metrics-summary="checklistAssets"
-                          :is-loading="checklistAssetsLoading"
-                          parent-agg-type="stig"
-                          show-asset-action
-                          data-key="assetId"
-                          show-refresh
-                          @asset-action="handleChecklistAssetAction"
-                          @refresh="loadChecklistAssets"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <CollectionStigsTab :collection-id="collectionId" />
               </TabPanel>
               <TabPanel value="assets" :pt="tabPanelPt">
-                <div class="metrics-grid">
-                  <div class="table-container">
-                    <MetricsSummaryGrid
-                      :api-metrics-summary="assets"
-                      :is-loading="assetsLoading"
-                      :error-message="assetsError?.message || assetsError"
-                      :selected-key="selectedAssetId"
-                      selectable
-                      data-key="assetId"
-                      show-refresh
-                      @row-select="(row) => handleAssetSelect(row.assetId)"
-                      @refresh="loadAssets(); loadSelectedAssetStigs()"
-                    />
-                  </div>
-                  <div class="table-container">
-                    <div class="child-panel">
-                      <div class="child-panel__header">
-                        <h3>Asset STIGs</h3>
-                        <span v-if="selectedAssetId" class="asset-badge">Asset {{ selectedAssetId }}</span>
-                      </div>
-                      <div class="child-panel__body">
-                        <div v-if="!selectedAssetId" class="empty-state">
-                          Select an asset to view its STIGs.
-                        </div>
-                        <div v-else-if="selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="loading-state">
-                          Loading STIGs...
-                        </div>
-                        <div v-else-if="selectedAssetStigsError" class="error-state">
-                          {{ selectedAssetStigsError?.message || selectedAssetStigsError }}
-                        </div>
-                        <div v-else-if="!selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="empty-state">
-                          No STIGs found for this asset.
-                        </div>
-                        <MetricsSummaryGrid
-                          v-else
-                          :api-metrics-summary="selectedAssetStigs"
-                          :is-loading="selectedAssetStigsLoading"
-                          parent-agg-type="asset"
-                          show-refresh
-                          @refresh="loadSelectedAssetStigs"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <CollectionAssetsTab :collection-id="collectionId" />
               </TabPanel>
               <TabPanel value="labels" :pt="tabPanelPt">
-                <div class="metrics-grid">
-                  <div class="table-container">
-                    <MetricsSummaryGrid
-                      :api-metrics-summary="labels"
-                      selectable
-                      data-key="labelId"
-                      show-refresh
-                      @refresh="loadLabels"
-                    />
-                  </div>
-                </div>
+                <CollectionLabelsTab :collection-id="collectionId" />
               </TabPanel>
               <TabPanel value="users" :pt="tabPanelPt">
                 <div class="placeholder-panel">
@@ -643,46 +299,6 @@ function toggleDashboardSidebar() {
   gap: 0.75rem;
 }
 
-.search-reviews {
-  display: flex;
-  align-items: center;
-  position: relative;
-}
-
-.search-reviews__icon {
-  position: absolute;
-  left: 0.6rem;
-  color: #6b7280;
-  font-size: 0.85rem;
-  pointer-events: none;
-}
-
-.search-reviews__input {
-  background-color: #2a2a2a;
-  border: 1px solid #3a3d40;
-  border-radius: 4px;
-  color: #e4e4e7;
-  font-size: 0.85rem;
-  padding: 0.4rem 0.6rem 0.4rem 2rem;
-  width: 180px;
-  outline: none;
-  transition: border-color 0.15s, background-color 0.15s;
-}
-
-.search-reviews__input::placeholder {
-  color: #6b7280;
-}
-
-.search-reviews__input:focus {
-  border-color: #60a5fa;
-  background-color: #1f1f1f;
-}
-
-.review-container {
-  flex: 1;
-  overflow: hidden;
-}
-
 .tabs-container {
   flex: 1;
   overflow: hidden;
@@ -690,101 +306,10 @@ function toggleDashboardSidebar() {
   flex-direction: column;
 }
 
-.stigs-grid {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: 0.5rem;
-  height: 100%;
-  padding: 0.5rem;
-  overflow: hidden;
-}
-
-.metrics-grid {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: 0.5rem;
-  height: calc(100% - 1rem);
-  padding: 0.5rem;
-  overflow: hidden;
-}
-
-.table-container {
-  overflow: hidden;
-  border: 1px solid #3a3d40;
-  border-radius: 4px;
-}
-
-.view-container {
-  height: 100%;
-  padding: 0.5rem;
-  overflow: hidden;
-}
-
 .placeholder-panel {
   padding: 2rem;
   text-align: center;
   color: #a1a1aa;
-}
-
-.assets-grid {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: 0.5rem;
-  height: 100%;
-  padding: 0.5rem;
-  overflow: hidden;
-}
-
-.child-panel {
-  background-color: #1f1f1f;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.child-panel__header {
-  padding: 0.75rem 1rem;
-  background-color: #262626;
-  border-bottom: 1px solid #3a3d40;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.child-panel__header h3 {
-  margin: 0;
-  color: #e4e4e7;
-  font-size: 1rem;
-}
-
-.asset-badge,
-.stig-badge {
-  font-size: 0.8rem;
-  background-color: #3a3d40;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  color: #a6adba;
-}
-
-.child-panel__body {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.empty-state,
-.loading-state,
-.error-state {
-  padding: 2rem;
-  text-align: center;
-  color: #a6adba;
-  font-style: italic;
-}
-
-.error-state {
-  color: #f16969;
 }
 
 /* Dashboard Sidebar Layout */
