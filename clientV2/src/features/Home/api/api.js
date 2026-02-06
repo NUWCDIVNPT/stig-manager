@@ -1,5 +1,5 @@
-import { smFetch } from '../../../shared/api/smFetch.js'
+import { apiCall } from '../../../shared/api/apiClient.js'
 
 export function fetchAppManagers() {
-  return smFetch('/users?privilege=admin&status=available')
+  return apiCall('getUsers', { privilege: 'admin', status: 'available' })
 }

@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 
 // Lazy load components
 const Home = () => import('../features/Home/components/Home.vue')
@@ -14,6 +14,9 @@ const StigLibrary = () => import('../features/STIGLibrary/components/StigLibrary
 const CollectionSelection = () => import('../features/CollectionView/components/CollectionSelection.vue')
 const AppManagementSelection = () => import('../features/AppManagement/components/AppManagementSelection.vue')
 const StigLibrarySelection = () => import('../features/STIGLibrary/components/StigLibrarySelection.vue')
+const AssetReview = () => import('../features/AssetReview/components/AssetReview.vue')
+
+const EmptyComponent = { template: '<div><router-view></router-view></div>' }
 
 const routes = [
   {
@@ -29,41 +32,49 @@ const routes = [
       {
         path: '',
         name: 'collection',
+        component: EmptyComponent,
         redirect: to => ({ name: 'collection-stigs', params: { collectionId: to.params.collectionId } }),
       },
       {
         path: 'dashboard',
         name: 'collection-dashboard',
+        component: EmptyComponent,
         props: true,
       },
       {
         path: 'stigs',
         name: 'collection-stigs',
+        component: EmptyComponent,
         props: true,
       },
       {
         path: 'assets',
         name: 'collection-assets',
+        component: EmptyComponent,
         props: true,
       },
       {
         path: 'labels',
         name: 'collection-labels',
+        component: EmptyComponent,
         props: true,
       },
       {
         path: 'users',
         name: 'collection-users',
+        component: EmptyComponent,
         props: true,
       },
       {
         path: 'settings',
         name: 'collection-settings',
+        component: EmptyComponent,
         props: true,
       },
       {
         path: 'asset/:assetId/stig/:benchmarkId/revision/:revisionStr?',
         name: 'collection-asset-review',
+        component: AssetReview,
         props: true,
       },
     ],

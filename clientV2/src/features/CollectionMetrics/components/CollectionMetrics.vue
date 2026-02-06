@@ -1,11 +1,10 @@
 <script setup>
 import { ref, watch } from 'vue'
 
-import { useAsyncData } from '../../../shared/composables/useAsyncData.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchCollectionMetricsSummary } from '../api/metricsApi.js'
 import { useCollectionCora } from '../composables/useCollectionCora.js'
 import { useCollectionProgress } from '../composables/useCollectionProgress.js'
-
 import { useCollectionStats } from '../composables/useCollectionStats.js'
 import Cora from './Cora.vue'
 import ExportMetrics from './ExportMetrics.vue'
@@ -31,7 +30,7 @@ const props = defineProps({
   },
 })
 
-const { data: metrics, isLoading, errorMessage, execute: loadMetrics } = useAsyncData(
+const { state: metrics, isLoading, error: errorMessage, execute: loadMetrics } = useAsyncState(
   () => fetchCollectionMetricsSummary(props.collectionId),
 )
 
