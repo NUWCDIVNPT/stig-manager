@@ -11,6 +11,7 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import ExportMetrics from '../../CollectionMetrics/components/ExportMetrics.vue'
 import {
+  fetchAssetStigs,
   fetchCollection,
 } from '../api/collectionApi.js'
 import CollectionAssetsTab from './CollectionAssetsTab.vue'

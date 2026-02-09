@@ -3,15 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <title>STIG Manager | Preview</title>
-    <link rel="icon" type="image/svg+xml" href="/src/assets/shield-green-check.svg" />
+    <link rel="stylesheet" type="text/css" href="init.css" />
+    <link rel="icon" type="image/svg+xml" href="shield-green-check.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Load runtime environment from API before the app; Vite dev proxies /js to API -->
     <script type="text/javascript" src="./Env.js"></script>
+    <script type="module" src="/src/init.js"></script>
   </head>
   <body>
+		<div id="loading-mask">
+			<div id="loading">
+				<div id="indicator" class="loading-indicator">
+					<img src="shield-green-check.svg" alt="Green shield with check" width="48px" height="48px" style="position: relative;bottom: -7px;left: 0px;">
+					<span id="loading-header">STIG Manager</span>
+					<div id="loading-text"></div>
+				</div>
+			</div>
+		</div>
     <div id="app">
-      <div id="loading-text" style="font-family: sans-serif; padding: 20px;"></div>
     </div>
-    <script type="module" src="/src/main.js"></script>
   </body>
 </html>
