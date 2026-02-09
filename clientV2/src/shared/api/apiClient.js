@@ -1,5 +1,4 @@
-import { OpenApiOps } from '@nuwcdivnpt/stig-manager-dev-modules'
-import { useEnv } from '../stores/useEnv.js'
+import { OpenApiOps } from './openApiOps.js'
 /*
  * See docs/architecture/fetching-asyncDataOperations-ErrorHandling.md
  */
@@ -71,7 +70,7 @@ async function doFetch(url, opts) {
 // to be edited
 function getBaseUrl() {
   try {
-    return useEnv().apiUrl
+    return STIGMAN.Env.apiBase
   }
   catch {
     return import.meta.env.VITE_API_BASE_URL ?? '/api'

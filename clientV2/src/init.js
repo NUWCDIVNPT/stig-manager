@@ -1,12 +1,10 @@
-// const loadingMask = document.getElementById('loading-mask')
-// if (loadingMask) {
-//   loadingMask.remove()
-// }
-// import('./main.js').catch((error) => {
-//   console.error('Failed to load main.js:', error)
-//     const statusEl = document.getElementById('loading-text')
-//     statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: Failed to load application: ${error.message || 'Unknown error'}</span>`
-// })
+console.log('import.meta.env:', import.meta.env)
+if (import.meta.env.VITE_API_ORIGIN) {
+  STIGMAN.Env.apiBase = `${import.meta.env.VITE_API_ORIGIN}/api`
+} else {
+  STIGMAN.Env.apiBase = new URL(`client-v2/${STIGMAN.Env.apiBase}`, window.location.origin).href
+}
+STIGMAN.Env.apiUrl = STIGMAN.Env.apiBase
 
 const statusEl = document.getElementById("loading-text")
 let OW // aka window.oidcWorker, created in setupOidcWorker()
@@ -21,7 +19,16 @@ if (!window.isSecureContext) {
     console.log('[init] STIGMAN.Env.stateEvents:', STIGMAN.Env.stateEvents)
     await setupStateWorker()
     await setupOidcWorker()
-    await bootstrap()
+    const authorized = await authorize()
+    if (authorized) {
+      await setupServiceWorker()
+      appendStatus('Fetching user profile')
+      const userObj = await getUserObject()
+      if (userObj) {
+        STIGMAN.curUser = userObj
+        loadApp()
+      }
+    }
   }
   catch (error) {
     console.error(`[init] Error during initialization:`, error)
@@ -29,8 +36,7 @@ if (!window.isSecureContext) {
   }
 }
 
-async function bootstrap() {
-
+async function authorize() {
   const url = new URL(window.location.href)
   const redirectUri = `${url.origin}${url.pathname}`
 
@@ -92,7 +98,7 @@ async function initializeOidcWorker(redirectUri) {
 }
 
 function extractParamString(url) {
-  if (url.hash) return url.hash.substring(1) // Remove the leading '#'
+  // if (url.hash) return url.hash.substring(1) // Remove the leading '#'
   if (url.search) return url.search.substring(1) // Remove the leading '?'
   return ''
 }
@@ -112,11 +118,12 @@ async function handleNoParameters() {
     OW.token = response.accessToken
     OW.tokenParsed = response.accessTokenPayload
     // appendStatus(`getAccessToken`)
-    loadApp()
+    return true
   } else if (response.redirect) {
     sessionStorage.setItem('codeVerifier', response.codeVerifier)
     sessionStorage.setItem('oidcState', response.state)
     window.location.href = response.redirect
+    return false
   }
 }
 
@@ -131,13 +138,13 @@ async function handleRedirectAndParameters(redirectUri, paramStr) {
       }
     }
     appendError(errorMessage)
-    return
+    return false
   }
   if (!params.state || params.state !== sessionStorage.getItem('oidcState')) {
     const reauthHref = window.location.origin + window.location.pathname
     console.log(`[init] State mismatch. Redirecting to ${reauthHref}.`)
     window.location.href = reauthHref
-    return
+    return false
   }
   const response = await OW.sendWorkerRequest({
     request: 'exchangeCodeForToken',
@@ -152,10 +159,11 @@ async function handleRedirectAndParameters(redirectUri, paramStr) {
     window.history.replaceState(window.history.state, '', redirectUri)
     sessionStorage.removeItem('codeVerifier')
     sessionStorage.removeItem('oidcState')
-    loadApp()
+    return true
   }
   else {
     appendError(response.error || 'Failed to exchange code for token')
+    return false
   }
 }
 
@@ -253,7 +261,7 @@ async function setupStateWorker() {
   }
   const SW = window.stateWorker
   SW.worker.port.start()
-  const response = await SW.sendWorkerRequest({ request: 'initialize', apiBase: new URL(STIGMAN.Env.apiBase, window.location.href).pathname })
+  const response = await SW.sendWorkerRequest({ request: 'initialize', apiBase: STIGMAN.Env.apiBase })
   if (response.error) {
     console.error(`[init] Error initializing state worker:`, response.error)
     throw new Error(response.error)
@@ -307,6 +315,27 @@ async function setupStateWorker() {
   }
 
   return true
+}
+
+async function setupServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register('workers/service-worker.js')
+      appendStatus('Service Worker registered successfully')
+    }
+    catch (err) {
+      appendError(`Service Worker registration failed: ${err}`)
+    }
+  }
+}
+
+async function getUserObject() {
+  const response = await fetch(`${STIGMAN.Env.apiBase}/user?projection=webPreferences`, {
+    headers: {
+      'Authorization': `Bearer ${window.oidcWorker.token}`
+    }
+  })
+  return await response.json()
 }
 
 function hideSpinner() {

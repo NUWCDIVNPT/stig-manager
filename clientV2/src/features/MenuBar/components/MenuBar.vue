@@ -126,7 +126,7 @@ const pt = {
         </router-link>
         <div class="badges">
           <span class="badge badge-oss">OSS</span>
-          <span class="badge badge-version">{{ env?.apiConfig.version }}</span>
+          <span class="badge badge-version">{{ env?.version }}</span>
         </div>
       </div>
     </template>
