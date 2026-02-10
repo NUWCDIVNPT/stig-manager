@@ -1,12 +1,14 @@
 <script setup>
 import { computed, ref } from 'vue'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useSelectedCollectionStore } from '../../../shared/stores/selectedCollection.js'
-import { useCollectionsData } from '../composeables/useCollectionsData.js'
+import { fetchCollections } from '../api/collectionApi.js'
 
-// const router = useRouter()
-const { collections, loading } = useCollectionsData()
 const selectedCollectionStore = useSelectedCollectionStore()
-// const oidcWorker = inject('worker') // Unused for now
+
+const { state: collections, isLoading: loading } = useAsyncState(
+  () => fetchCollections(),
+)
 
 const searchQuery = ref('')
 /*

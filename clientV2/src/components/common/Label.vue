@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed } from 'vue'
 
 const props = defineProps({
   value: {
@@ -12,16 +12,16 @@ const props = defineProps({
   },
 })
 const getTextColorFromBackground = (hexcolor) => {
-  const r = parseInt(hexcolor.substr(0,2),16);
-  const g = parseInt(hexcolor.substr(2,2),16);
-  const b = parseInt(hexcolor.substr(4,2),16);
-  const yiq = ((r*299)+(g*587)+(b*114))/1000;
-  return (yiq >= 128) ? '#080808' : '#f7f7f7';
+  const r = Number.parseInt(hexcolor.substr(0, 2), 16)
+  const g = Number.parseInt(hexcolor.substr(2, 2), 16)
+  const b = Number.parseInt(hexcolor.substr(4, 2), 16)
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000
+  return (yiq >= 128) ? '#080808' : '#f7f7f7'
 }
 
 const textColor = computed(() => {
-  return getTextColorFromBackground(props.color.replace('#',''));
-});
+  return getTextColorFromBackground(props.color.replace('#', ''))
+})
 </script>
 
 <template>

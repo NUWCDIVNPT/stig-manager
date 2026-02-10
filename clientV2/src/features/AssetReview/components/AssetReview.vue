@@ -1,7 +1,8 @@
 <script setup>
-import { computed, inject } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useAssetQuery } from '../queries/assetQueries.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { fetchAsset } from '../api/assetReviewApi.js'
 import ChecklistInfo from './ChecklistInfo.vue'
 import ReviewForm from './ReviewForm.vue'
 import ReviewResources from './ReviewResources.vue'
@@ -21,12 +22,15 @@ const props = defineProps({
 const route = useRoute()
 // Use prop if provided, otherwise fall back to route param
 const assetId = computed(() => props.assetId || route.params.assetId)
-const oidcWorker = inject('worker')
 
-const { asset, isLoading, error } = useAssetQuery({
-  assetId,
-  token: computed(() => oidcWorker?.token),
-})
+const { state: asset, isLoading, errorMessage: error, execute: loadAsset } = useAsyncState(
+  () => fetchAsset(assetId.value),
+  {
+    immediate: false,
+  },
+)
+
+watch(assetId, loadAsset, { immediate: true })
 
 // Calculate contrasting text color for a hex background
 function getContrastColor(hexColor) {
@@ -67,7 +71,7 @@ const resolvedLabels = computed(() => {
       Loading asset details...
     </div>
     <div v-else-if="error" class="asset-review__error">
-      {{ error.message || 'Error loading asset' }}
+      {{ error || 'Error loading asset' }}
     </div>
     <div v-else-if="asset" class="asset-review__content">
       <header class="asset-review__header">

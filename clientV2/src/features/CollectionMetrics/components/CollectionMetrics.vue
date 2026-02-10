@@ -1,11 +1,11 @@
 <script setup>
-import { inject, ref } from 'vue'
+import { ref, watch } from 'vue'
 
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { fetchCollectionMetricsSummary } from '../api/metricsApi.js'
 import { useCollectionCora } from '../composables/useCollectionCora.js'
 import { useCollectionProgress } from '../composables/useCollectionProgress.js'
-
 import { useCollectionStats } from '../composables/useCollectionStats.js'
-import { useCollectionMetricsSummaryQuery } from '../queries/metricsQueries.js'
 import Cora from './Cora.vue'
 import ExportMetrics from './ExportMetrics.vue'
 import ExportMetricsModal from './ExportMetricsModal.vue'
@@ -30,32 +30,11 @@ const props = defineProps({
   },
 })
 
-const oidcWorker = inject('worker')
+const { state: metrics, isLoading, error: errorMessage, execute: loadMetrics } = useAsyncState(
+  () => fetchCollectionMetricsSummary(props.collectionId),
+)
 
-const { metrics, isLoading } = useCollectionMetricsSummaryQuery({
-  collectionId: props.collectionId,
-  token: oidcWorker?.token,
-})
-
-/*
-// Native fetch alternative using useFetch
-// import { computed } from 'vue'
-// import { useFetch } from '../../../shared/composables/useFetch.js'
-// import { useEnv } from '../../../shared/stores/useEnv.js'
-
-// const { data: metrics, isLoading } = useFetch(
-//   computed(() => props.collectionId && oidcWorker?.token
-//     ? `${useEnv().apiUrl}/collections/${props.collectionId}/metrics/summary/collection`
-//     : null
-//   ),
-//   computed(() => ({
-//     headers: {
-//       Accept: 'application/json',
-//       Authorization: `Bearer ${oidcWorker?.token}`,
-//     },
-//   }))
-// )
-*/
+watch(() => props.collectionId, loadMetrics, { immediate: true })
 
 // hint metrics is reactive cuz it's from a query
 const { stats: progressStats } = useCollectionProgress(metrics)
@@ -99,8 +78,6 @@ const showExportModal = ref(false)
   flex-wrap: nowrap;
   gap: 12px;
   padding: 12px;
-  height: 100%;
-  overflow-y: auto;
 }
 
 .stats-column {

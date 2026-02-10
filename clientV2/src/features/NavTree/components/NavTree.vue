@@ -1,5 +1,4 @@
 <script setup>
-import { useQueryClient } from '@tanstack/vue-query'
 import { computed, defineModel, inject, ref } from 'vue'
 import { useNavTreeStore } from '../../../shared/stores/navTreeStore.js'
 import { useCollectionsData } from '../../CollectionView/composeables/useCollectionsData.js'
@@ -15,7 +14,6 @@ import NavTreeFooter from './NavTreeFooter.vue'
 import NavTreeHeader from './NavTreeHeader.vue'
 import NavTreeTab from './NavTreeTab.vue'
 
-const queryClient = useQueryClient() // needed for logout
 const oidcWorker = inject('worker')
 
 // these are two way binded props
@@ -59,7 +57,6 @@ function open() {
 }
 
 function handleLogout() {
-  queryClient.clear()
   const logoutHandler = oidcWorker.logout.bind(oidcWorker)
   logoutHandler()
 }

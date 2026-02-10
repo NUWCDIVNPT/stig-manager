@@ -5,23 +5,24 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { computed, inject, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BreadcrumbSelect from '../../../components/common/BreadcrumbSelect.vue'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import AssetReview from '../../AssetReview/components/AssetReview.vue'
-import { useAssetStigsQuery, useStigRevisionsQuery } from '../../AssetReview/queries/assetQueries.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import ExportMetrics from '../../CollectionMetrics/components/ExportMetrics.vue'
-import { useCollectionQuery } from '../queries/collectionQueries.js'
 import {
-  useCollectionAssetStigsQuery,
-  useCollectionAssetSummaryQuery,
-  useCollectionChecklistAssetsQuery,
-  useCollectionLabelsQuery,
-  useCollectionLabelSummaryQuery,
-  useCollectionStigSummaryQuery,
-} from '../queries/metricsQueries.js'
-import LabelsView from './LabelsView.vue'
+  fetchAssetStigs,
+  fetchCollection,
+  fetchCollectionAssetStigs,
+  fetchCollectionAssetSummary,
+  fetchCollectionChecklistAssets,
+  fetchCollectionLabels,
+  fetchCollectionLabelSummary,
+  fetchCollectionStigSummary,
+  fetchStigRevisions,
+} from '../api/collectionApi.js'
 import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
 const props = defineProps({
@@ -34,17 +35,11 @@ const props = defineProps({
 const route = useRoute()
 const router = useRouter()
 
-const collectionIdRef = computed(() => props.collectionId)
-
-// OIDC worker for API queries
-const oidcWorker = inject('worker')
-const token = computed(() => oidcWorker?.token)
-
 // Fetch collection details for name
-const { collection } = useCollectionQuery({
-  collectionId: collectionIdRef,
-  token,
-})
+const { state: collection, execute: loadCollection } = useAsyncState(
+  () => fetchCollection(props.collectionId),
+  { immediate: false },
+)
 
 const collectionName = computed(() => collection.value?.name || 'Collection')
 
@@ -60,16 +55,19 @@ const reviewRevisionStr = computed(() => route.params.revisionStr || null)
 const assetReviewRef = ref(null)
 
 // Fetch STIGs for the asset being reviewed
-const { stigs: assetStigs } = useAssetStigsQuery({
-  assetId: reviewAssetId,
-  token,
-})
+const { state: assetStigs, execute: loadAssetStigsForReview } = useAsyncState(
+  () => fetchAssetStigs(reviewAssetId.value),
+  { initialState: [], immediate: false },
+)
 
 // Fetch available revisions for the selected benchmark
-const { revisions: stigRevisions } = useStigRevisionsQuery({
-  benchmarkId: reviewBenchmarkId,
-  token,
-})
+const { state: stigRevisions, execute: loadStigRevisions } = useAsyncState(
+  () => fetchStigRevisions(reviewBenchmarkId.value),
+  { initialState: [], immediate: false },
+)
+
+watch(reviewAssetId, loadAssetStigsForReview, { immediate: true })
+watch(reviewBenchmarkId, loadStigRevisions, { immediate: true })
 
 // Watch for assetStigs to load and update route with revision if missing
 watch(assetStigs, (stigs) => {
@@ -176,26 +174,35 @@ const breadcrumbItems = computed(() => {
 })
 
 // Data queries for STIGs, Assets, Labels
-const { stigs, isLoading: stigsLoading, errorMessage: stigsError } = useCollectionStigSummaryQuery({
-  collectionId: computed(() => props.collectionId),
-  token,
-})
+const { state: stigs, isLoading: stigsLoading, error: stigsError, execute: loadStigs } = useAsyncState(
+  () => fetchCollectionStigSummary(props.collectionId),
+  { initialState: [], immediate: false },
+)
 
-const { assets, isLoading: assetsLoading, errorMessage: assetsError } = useCollectionAssetSummaryQuery({
-  collectionId: computed(() => props.collectionId),
-  token,
-})
+const { state: assets, isLoading: assetsLoading, error: assetsError, execute: loadAssets } = useAsyncState(
+  () => fetchCollectionAssetSummary(props.collectionId),
+  { initialState: [], immediate: false },
+)
 
-const { labels } = useCollectionLabelSummaryQuery({
-  collectionId: computed(() => props.collectionId),
-  token,
-})
+const { state: labels, execute: loadLabels } = useAsyncState(
+  () => fetchCollectionLabelSummary(props.collectionId),
+  { initialState: [], immediate: false },
+)
 
 // Raw labels with color property for AssetReview
-const { labels: rawLabels } = useCollectionLabelsQuery({
-  collectionId: computed(() => props.collectionId),
-  token,
-})
+const { state: rawLabels, execute: loadRawLabels } = useAsyncState(
+  () => fetchCollectionLabels(props.collectionId),
+  { initialState: [], immediate: false },
+)
+
+// Initial Data Load
+watch([() => props.collectionId], () => {
+  loadCollection()
+  loadStigs()
+  loadAssets()
+  loadLabels()
+  loadRawLabels()
+}, { immediate: true })
 
 const selectedBenchmarkId = ref(null)
 function handleStigSelect(benchmarkId) {
@@ -204,21 +211,18 @@ function handleStigSelect(benchmarkId) {
 
 // Auto-select first STIG when data loads and no selection exists
 watch(stigs, (newStigs) => {
-  if (newStigs.length > 0 && selectedBenchmarkId.value === null) {
+  if (newStigs?.length > 0 && selectedBenchmarkId.value === null) {
     selectedBenchmarkId.value = newStigs[0].benchmarkId
   }
 }, { immediate: true })
 
 // Query for assets of the selected STIG (for STIGs tab child panel)
-const {
-  checklistAssets,
-  isLoading: checklistAssetsLoading,
-  errorMessage: checklistAssetsError,
-} = useCollectionChecklistAssetsQuery({
-  collectionId: computed(() => props.collectionId),
-  benchmarkId: selectedBenchmarkId,
-  token,
-})
+const { state: checklistAssets, isLoading: checklistAssetsLoading, error: checklistAssetsError, execute: loadChecklistAssets } = useAsyncState(
+  () => fetchCollectionChecklistAssets(props.collectionId, selectedBenchmarkId.value),
+  { initialState: [], immediate: false },
+)
+
+watch([() => props.collectionId, selectedBenchmarkId], loadChecklistAssets, { immediate: true })
 
 // Handle row action from checklist assets grid to navigate to review
 function handleChecklistAssetAction(rowData) {
@@ -239,21 +243,18 @@ function handleAssetSelect(assetId) {
 
 // Auto-select first asset when data loads and no selection exists
 watch(assets, (newAssets) => {
-  if (newAssets.length > 0 && selectedAssetId.value === null) {
+  if (newAssets?.length > 0 && selectedAssetId.value === null) {
     selectedAssetId.value = newAssets[0].assetId
   }
 }, { immediate: true })
 
 // Query for STIGs of the selected asset (for Assets tab child panel)
-const {
-  assetStigs: selectedAssetStigs,
-  isLoading: selectedAssetStigsLoading,
-  errorMessage: selectedAssetStigsError,
-} = useCollectionAssetStigsQuery({
-  collectionId: computed(() => props.collectionId),
-  assetId: selectedAssetId,
-  token,
-})
+const { state: selectedAssetStigs, isLoading: selectedAssetStigsLoading, error: selectedAssetStigsError, execute: loadSelectedAssetStigs } = useAsyncState(
+  () => fetchCollectionAssetStigs(props.collectionId, selectedAssetId.value),
+  { initialState: [], immediate: false },
+)
+
+watch([() => props.collectionId, selectedAssetId], loadSelectedAssetStigs, { immediate: true })
 
 // Map route name to tab value
 const routeToTab = {
@@ -329,7 +330,7 @@ function toggleDashboardSidebar() {
 </script>
 
 <template>
-  <div class="collection-view-2">
+  <div class="collection-view">
     <header class="collection-header">
       <Breadcrumb :home="breadcrumbHome" :model="breadcrumbItems">
         <template #item="{ item, props: itemProps }">
@@ -449,16 +450,19 @@ function toggleDashboardSidebar() {
                 </div>
               </TabPanel>
               <TabPanel value="stigs" :pt="tabPanelPt">
-                <div class="stigs-grid">
+                <div class="metrics-grid">
                   <div class="table-container">
                     <MetricsSummaryGrid
                       :api-metrics-summary="stigs"
                       :is-loading="stigsLoading"
-                      :error-message="stigsError"
+                      :error-message="stigsError?.message || stigsError"
                       :selected-key="selectedBenchmarkId"
                       selectable
                       data-key="benchmarkId"
+                      show-row-action
+                      show-refresh
                       @row-select="(row) => handleStigSelect(row.benchmarkId)"
+                      @refresh="loadStigs(); loadChecklistAssets()"
                     />
                   </div>
                   <div class="table-container">
@@ -471,21 +475,25 @@ function toggleDashboardSidebar() {
                         <div v-if="!selectedBenchmarkId" class="empty-state">
                           Select a STIG to view checklists.
                         </div>
-                        <div v-else-if="checklistAssetsLoading" class="loading-state">
+                        <div v-else-if="checklistAssetsLoading && checklistAssets.length === 0" class="loading-state">
                           Loading checklists...
                         </div>
                         <div v-else-if="checklistAssetsError" class="error-state">
-                          {{ checklistAssetsError }}
+                          {{ checklistAssetsError?.message || checklistAssetsError }}
                         </div>
-                        <div v-else-if="checklistAssets.length === 0" class="empty-state">
+                        <div v-else-if="!checklistAssetsLoading && checklistAssets.length === 0" class="empty-state">
                           No checklists found for this STIG.
                         </div>
                         <MetricsSummaryGrid
                           v-else
                           :api-metrics-summary="checklistAssets"
+                          :is-loading="checklistAssetsLoading"
+                          parent-agg-type="stig"
                           show-asset-action
                           data-key="assetId"
+                          show-refresh
                           @asset-action="handleChecklistAssetAction"
+                          @refresh="loadChecklistAssets"
                         />
                       </div>
                     </div>
@@ -493,16 +501,18 @@ function toggleDashboardSidebar() {
                 </div>
               </TabPanel>
               <TabPanel value="assets" :pt="tabPanelPt">
-                <div class="assets-grid">
+                <div class="metrics-grid">
                   <div class="table-container">
                     <MetricsSummaryGrid
                       :api-metrics-summary="assets"
                       :is-loading="assetsLoading"
-                      :error-message="assetsError"
+                      :error-message="assetsError?.message || assetsError"
                       :selected-key="selectedAssetId"
                       selectable
                       data-key="assetId"
+                      show-refresh
                       @row-select="(row) => handleAssetSelect(row.assetId)"
+                      @refresh="loadAssets(); loadSelectedAssetStigs()"
                     />
                   </div>
                   <div class="table-container">
@@ -515,18 +525,22 @@ function toggleDashboardSidebar() {
                         <div v-if="!selectedAssetId" class="empty-state">
                           Select an asset to view its STIGs.
                         </div>
-                        <div v-else-if="selectedAssetStigsLoading" class="loading-state">
+                        <div v-else-if="selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="loading-state">
                           Loading STIGs...
                         </div>
                         <div v-else-if="selectedAssetStigsError" class="error-state">
-                          {{ selectedAssetStigsError }}
+                          {{ selectedAssetStigsError?.message || selectedAssetStigsError }}
                         </div>
-                        <div v-else-if="selectedAssetStigs.length === 0" class="empty-state">
+                        <div v-else-if="!selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="empty-state">
                           No STIGs found for this asset.
                         </div>
                         <MetricsSummaryGrid
                           v-else
                           :api-metrics-summary="selectedAssetStigs"
+                          :is-loading="selectedAssetStigsLoading"
+                          parent-agg-type="asset"
+                          show-refresh
+                          @refresh="loadSelectedAssetStigs"
                         />
                       </div>
                     </div>
@@ -534,8 +548,16 @@ function toggleDashboardSidebar() {
                 </div>
               </TabPanel>
               <TabPanel value="labels" :pt="tabPanelPt">
-                <div class="view-container">
-                  <LabelsView :collection-id="collectionId" :labels="labels" />
+                <div class="metrics-grid">
+                  <div class="table-container">
+                    <MetricsSummaryGrid
+                      :api-metrics-summary="labels"
+                      selectable
+                      data-key="labelId"
+                      show-refresh
+                      @refresh="loadLabels"
+                    />
+                  </div>
                 </div>
               </TabPanel>
               <TabPanel value="users" :pt="tabPanelPt">
@@ -565,7 +587,7 @@ function toggleDashboardSidebar() {
   --dashboard-sidebar-collapsed-width: 2.5rem;
 }
 
-.collection-view-2 {
+.collection-view {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -673,6 +695,15 @@ function toggleDashboardSidebar() {
   grid-template-rows: 1fr 1fr;
   gap: 0.5rem;
   height: 100%;
+  padding: 0.5rem;
+  overflow: hidden;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 0.5rem;
+  height: calc(100% - 1rem);
   padding: 0.5rem;
   overflow: hidden;
 }
@@ -809,12 +840,6 @@ function toggleDashboardSidebar() {
   display: flex;
   flex-direction: column;
   min-height: 0;
-}
-
-.sidebar-export {
-  flex-shrink: 1;
-  min-height: 0;
-  overflow: hidden;
 }
 
 /* Override ExportMetrics min-width in sidebar context */

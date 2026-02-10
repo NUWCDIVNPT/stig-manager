@@ -40,8 +40,5 @@ export async function bootstrapEnv() {
 }
 
 export function useEnv() {
-  if (!cachedEnv) {
-    throw new Error('useEnv called before bootstrapEnv')
-  }
-  return cachedEnv
+  return STIGMAN.Env
 }

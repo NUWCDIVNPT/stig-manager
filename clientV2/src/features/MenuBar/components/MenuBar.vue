@@ -1,12 +1,10 @@
 <script setup>
-import { useQueryClient } from '@tanstack/vue-query'
 import Menubar from 'primevue/menubar'
 import { computed, inject } from 'vue'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 
 defineEmits(['toggle-menu'])
 const oidcWorker = inject('worker')
-const queryClient = useQueryClient()
 const env = useEnv()
 
 const tokenTooltip = computed(() => {
@@ -19,8 +17,6 @@ const tokenTooltip = computed(() => {
 })
 
 function handleLogout() {
-  // clear all queries
-  queryClient.clear()
   const logoutHandler = oidcWorker.logout.bind(oidcWorker)
   logoutHandler()
 }
@@ -130,7 +126,7 @@ const pt = {
         </router-link>
         <div class="badges">
           <span class="badge badge-oss">OSS</span>
-          <span class="badge badge-version">{{ env?.apiConfig.version }}</span>
+          <span class="badge badge-version">{{ env?.version }}</span>
         </div>
       </div>
     </template>

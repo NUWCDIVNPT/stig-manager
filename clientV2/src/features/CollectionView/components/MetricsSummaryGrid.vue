@@ -2,12 +2,12 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, provide, ref, watch } from 'vue'
+import AssetColumn from '../../../components/columns/AssetColumn.vue'
+import DurationColumn from '../../../components/columns/DurationColumn.vue'
+import LabelsColumn from '../../../components/columns/LabelsColumn.vue'
+import PercentageColumn from '../../../components/columns/PercentageColumn.vue'
+import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { calculateCoraRiskRating } from '../lib/libCora.js'
-import AssetColumn from './AssetColumn.vue'
-import DurationColumn from './DurationColumn.vue'
-import PercentageColumn from './PercentageColumn.vue'
-import CountColumnWithTooltip from './CountColumnWithTooltip.vue'
-import LabelsColumnWithTooltip from './LabelsColumnWithTooltip.vue'
 
 const props = defineProps({
   apiMetricsSummary: {
@@ -17,6 +17,10 @@ const props = defineProps({
   isLoading: {
     type: Boolean,
     default: false,
+  },
+  parentAggType: {
+    type: String,
+    default: '',
   },
   errorMessage: {
     type: String,
@@ -46,11 +50,45 @@ const props = defineProps({
     type: [String, Number],
     default: null,
   },
+  // Footer configuration
+  showFooter: {
+    type: Boolean,
+    default: true,
+  },
+  showRefresh: {
+    type: Boolean,
+    default: true,
+  },
+  showExport: {
+    type: Boolean,
+    default: true,
+  },
 })
 
-const emit = defineEmits(['row-select', 'row-action', 'asset-action'])
+const emit = defineEmits(['row-select', 'row-action', 'asset-action', 'refresh'])
 
+const dataTableRef = ref(null)
 const selectedRow = ref(null)
+
+function exportToCsv() {
+  dataTableRef.value?.exportCSV()
+}
+
+function handleRefresh() {
+  emit('refresh')
+}
+
+// Expose for external access if needed
+defineExpose({
+  exportToCsv,
+})
+
+function formatExportCell({ data, field }) {
+  if (field === 'labels' || field === 'label') {
+    return Array.isArray(data) ? data.map(l => l.name).join(', ') : ''
+  }
+  return data
+}
 
 function onRowSelect(event) {
   emit('row-select', event.data)
@@ -74,20 +112,23 @@ watch(() => props.apiMetricsSummary, () => {
 })
 
 const aggregationType = computed(() => {
+  console.log('Determining aggregation type for metrics summary')
   const m = props.apiMetricsSummary
   if (m.length === 0) { return null }
-  if (m[0].assetId && m[0].benchmarkId) { return 'unagg' }
-  if (m[0].collectionId) { return 'collection' }
-  if (m[0].assetId) { return 'asset' }
-  if (m[0].labelId) { return 'label' }
-  if (m[0].benchmarkId) { return 'stig' }
+  if ('assetId' in m[0] && 'benchmarkId' in m[0]) { return 'unagg' }
+  if ('collectionId' in m[0]) { return 'collection' }
+  if ('assetId' in m[0]) { return 'asset' }
+  if ('labelId' in m[0]) { return 'label' }
+  if ('benchmarkId' in m[0]) { return 'stig' }
 })
 
 const columns = computed(() => {
+  console.log('Computing columns for aggregation type:', aggregationType.value)
   // Common columns
   const commonColumns = [
     { field: 'checks', header: 'Checks', component: Column },
     { field: 'oldest', header: 'Oldest', component: DurationColumn },
+    { field: 'newest', header: 'Newest', component: DurationColumn },
     { field: 'updated', header: 'Updated', component: DurationColumn },
     { field: 'assessedPct', header: 'Assessed', component: PercentageColumn },
     { field: 'submittedPct', header: 'Submitted', component: PercentageColumn },
@@ -102,16 +143,43 @@ const columns = computed(() => {
     case 'asset':
       return [
         { field: 'assetName', header: 'Asset', component: AssetColumn },
-        { field: 'labels', header: 'Labels', component: LabelsColumnWithTooltip },
-        { field: 'stigs', header: 'STIGs', component: CountColumnWithTooltip, width: '50px' },
+        { field: 'labels', header: 'Labels', component: LabelsColumn },
+        { field: 'stigCnt', header: 'Stigs', component: Column },
         ...commonColumns,
       ]
     case 'stig':
       return [
         { field: 'benchmarkId', header: 'Benchmark', component: Column },
         // { field: 'title', header: 'Title', component: Column },
-        { field: 'revision', header: 'Revision', component: Column },
+        { field: 'revisionStr', header: 'Revision', component: Column },
         { field: 'assetCnt', header: 'Assets', component: Column },
+        ...commonColumns,
+      ]
+    case 'label':
+      return [
+        { field: 'label', header: 'Label', component: LabelsColumn },
+        { field: 'assetCnt', header: 'Assets', component: Column },
+        ...commonColumns,
+      ]
+    case 'unagg':
+      if (props.parentAggType === 'asset') {
+        return [
+          { field: 'benchmarkId', header: 'Benchmark', component: Column },
+          { field: 'revisionStr', header: 'Revision', component: Column },
+          ...commonColumns,
+        ]
+      }
+      if (props.parentAggType === 'stig') {
+        return [
+          { field: 'assetName', header: 'Asset', component: AssetColumn },
+          { field: 'labels', header: 'Labels', component: LabelsColumn },
+          ...commonColumns,
+        ]
+      }
+      return [
+        { field: 'assetName', header: 'Asset', component: AssetColumn },
+        { field: 'benchmarkId', header: 'Benchmark', component: Column },
+        { field: 'labels', header: 'Labels', component: LabelsColumn },
         ...commonColumns,
       ]
     default:
@@ -120,6 +188,7 @@ const columns = computed(() => {
 })
 
 const data = computed(() => {
+  console.log('Computing data for aggregation type:', aggregationType.value)
   return props.apiMetricsSummary.map((r) => {
     const commonData = {
       checks: r.metrics.assessments,
@@ -128,10 +197,11 @@ const data = computed(() => {
       newest: r.metrics.maxTs,
       updated: r.metrics.maxTouchTs,
       assessedPct: r.metrics.assessments ? r.metrics.assessed / r.metrics.assessments * 100 : 0,
-      submittedPct:  r.metrics.assessments ? ((r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0,
+      submittedPct: r.metrics.assessments ? ((r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0,
       acceptedPct: r.metrics.assessments ? (r.metrics.statuses.accepted / r.metrics.assessments) * 100 : 0,
       rejectedPct: r.metrics.assessments ? (r.metrics.statuses.rejected / r.metrics.assessments) * 100 : 0,
-      cora: (calculateCoraRiskRating(r.metrics).weightedAvg * 100).toFixed(1),      coraFull: calculateCoraRiskRating(r.metrics),
+      cora: (calculateCoraRiskRating(r.metrics).weightedAvg * 100).toFixed(1),
+      coraFull: calculateCoraRiskRating(r.metrics),
       low: r.metrics.findings.low,
       medium: r.metrics.findings.medium,
       high: r.metrics.findings.high,
@@ -149,13 +219,40 @@ const data = computed(() => {
         return {
           benchmarkId: r.benchmarkId,
           title: r.title,
-          revision: r.revisionStr,
-          revisionFull: {
+          revisionStr: r.revisionStr,
+          revision: {
             string: r.revisionStr,
             date: r.revisionDate,
             isPinned: r.revisionPinned,
           },
           assetCnt: r.assets,
+          ...commonData,
+        }
+      case 'label':
+        return {
+          label: [{
+            labelId: r.labelId,
+            name: r.name,
+            color: r.color,
+            description: r.description,
+          }],
+          assetCnt: r.assets,
+          ...commonData,
+        }
+      case 'unagg':
+        return {
+          assetId: r.assetId,
+          assetName: r.name,
+          labels: r.labels,
+          benchmarkId: r.benchmarkId,
+          marking: r.marking,
+          revisionStr: r.revisionStr,
+          revision: {
+            string: r.revisionStr,
+            date: r.revisionDate,
+            isPinned: r.revisionPinned,
+          },
+          title: r.title,
           ...commonData,
         }
       default:
@@ -178,6 +275,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
 
 <template>
   <DataTable
+    ref="dataTableRef"
     v-model:selection="selectedRow"
     :value="data"
     :data-key="dataKey"
@@ -186,12 +284,13 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     :class="{ 'has-row-action': showRowAction }"
     scrollable
     scroll-height="flex"
-    showGridlines
-    resizableColumns
-    columnResizeMode="fit"
-    :sortField="'benchmarkId'"
-    :sortOrder="1"
+    show-gridlines
+    resizable-columns
+    column-resize-mode="fit"
+    sort-field="benchmarkId"
+    :sort-order="1"
     :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
+    :export-function="formatExportCell"
     @row-select="onRowSelect"
   >
     <Column
@@ -213,10 +312,28 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     <template v-for="col in columns" :key="col.field">
       <component :is="col.component" v-bind="col" sortable style="height: 27px; max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
     </template>
+    <template v-if="showFooter" #footer>
+      <StatusFooter
+        :item-count="data.length"
+        :selected-count="selectedRow ? 1 : 0"
+        :show-selection="selectable"
+        :show-refresh="showRefresh"
+        :show-export="showExport"
+        :refresh-loading="isLoading"
+        @refresh="handleRefresh"
+        @export="exportToCsv"
+      />
+    </template>
   </DataTable>
 </template>
 
 <style scoped>
+/* Remove default padding from DataTable footer so StatusFooter fills the space */
+:deep(.p-datatable-footer) {
+  padding: 0;
+  border: none;
+}
+
 .agg-grid-row {
   height: 45px;
   width: 100px;
