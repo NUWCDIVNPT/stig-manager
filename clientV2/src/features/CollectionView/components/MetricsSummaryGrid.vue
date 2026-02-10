@@ -66,8 +66,13 @@ function exportToCsv() {
   dataTableRef.value?.exportCSV()
 }
 
-function handleRefresh() {
-  emit('refresh')
+function handleFooterAction(actionKey) {
+  if (actionKey === 'refresh') {
+    emit('refresh')
+  }
+  else if (actionKey === 'export') {
+    exportToCsv()
+  }
 }
 
 // Expose for external access if needed
@@ -275,41 +280,6 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     selectedRow.value = null
   }
 }, { immediate: true })
-
-const footerRightItems = computed(() => {
-  const items = []
-
-  const selectedCount = Array.isArray(selectedRow.value)
-    ? selectedRow.value.length
-    : (selectedRow.value ? 1 : 0)
-
-  if (props.selectable && selectedCount > 0) {
-    items.push({
-      type: 'metric',
-      icon: 'pi pi-check-square',
-      value: selectedCount,
-      label: 'selected',
-      variant: 'selection',
-      title: 'Selected rows',
-    })
-  }
-
-  // Total count
-  items.push({
-    type: 'metric',
-    icon: 'pi pi-list',
-    value: data.value.length,
-    label: 'rows',
-    variant: 'highlight',
-    title: 'Total rows',
-  })
-
-  return items
-})
-
-function handleFooterAction(action) {
-  console.log(action)
-}
 </script>
 
 <template>
@@ -354,9 +324,9 @@ function handleFooterAction(action) {
     <template v-if="showFooter" #footer>
       <StatusFooter
         :refresh-loading="isLoading"
-        :right-items="footerRightItems"
-        @refresh="handleRefresh"
-        @export="exportToCsv"
+        :selected-items="selectedRow"
+        :total-count="data.length"
+        :show-selected="selectable && selectedRow?.length > 0"
         @action="handleFooterAction"
       />
     </template>

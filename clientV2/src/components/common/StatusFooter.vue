@@ -1,14 +1,8 @@
 <script setup>
 import Button from 'primevue/button'
+import { computed, useSlots } from 'vue'
 
-defineProps({
-  // Left side configuration (buttons, dividers)
-  // Array of objects: { type: 'button'|'divider', icon?: string, label?: string, action?: string, loading?: boolean, disabled?: boolean, title?: string }
-  leftItems: {
-    type: Array,
-    default: () => [],
-  },
-
+const props = defineProps({
   // Standard Actions
   showRefresh: {
     type: Boolean,
@@ -22,204 +16,243 @@ defineProps({
     type: Boolean,
     default: true,
   },
-
-  // Right side configuration (info boxes)
-  // Array of objects: { type: 'metric', value: string|number, label?: string, icon?: string, title?: string, variant?: 'default'|'highlight'|'selection' }
-  rightItems: {
+  // Standard Counts
+  selectedItems: {
+    type: [Array, Object],
+    default: () => [],
+  },
+  totalCount: {
+    type: Number,
+    default: 0,
+  },
+  showSelected: {
+    type: Boolean,
+    default: false,
+  },
+  /**
+   * Custom left actions.
+   * Structure: {
+   *   key: string, (required)
+   *   icon: string, (required)
+   *   label?: string,
+   *   title?: string,
+   *   disabled?: boolean,
+   *   loading?: boolean
+   * }
+   */
+  actions: {
     type: Array,
     default: () => [],
   },
+
+  /**
+   * Custom right metrics.
+   * Structure: {
+   *   key: string, (required)
+   *   value: string|number, (required)
+   *   label?: string,
+   *   icon?: string,
+   *   title?: string,
+   *   tone?: 'default' | 'primary' | 'success',
+   *   class?: string|object,
+   *   style?: string|object
+   * }
+   */
+  metrics: {
+    type: Array,
+    default: () => [],
+  },
+
 })
 
-const emit = defineEmits(['action', 'refresh', 'export'])
+const emit = defineEmits(['action'])
+const slots = useSlots()
 
-function handleAction(action) {
-  if (action) {
-    emit('action', action)
+const resolvedActions = computed(() => {
+  const base = [] // might not need this, not sure yet.
+
+  // Add standard refresh if enabled
+  if (props.showRefresh) {
+    base.push({
+      key: 'refresh',
+      icon: 'pi pi-refresh',
+      ariaLabel: 'Refresh data',
+      loading: props.refreshLoading,
+      disabled: props.refreshLoading,
+    })
   }
-}
 
-function handleRefresh() {
-  emit('refresh')
-}
+  // Add standard export if enabled
+  if (props.showExport) {
+    base.push({
+      key: 'export',
+      icon: 'pi pi-download',
+      label: 'CSV',
+      ariaLabel: 'Export to CSV',
+    })
+  }
 
-function handleExport() {
-  emit('export')
+  return [...base, ...props.actions]
+})
+
+const selectedCount = computed(() => {
+  if (Array.isArray(props.selectedItems)) {
+    return props.selectedItems.length
+  }
+  return props.selectedItems ? 1 : 0
+})
+
+function onActionClick(action) {
+  emit('action', action.key)
 }
 </script>
 
 <template>
-  <div class="sm-status-footer">
-    <div class="sm-status-footer__left">
-      <!-- Standard Actions -->
+  <div class="status-footer">
+    <div class="status-footer__left">
       <Button
-        v-if="showRefresh"
-        icon="pi pi-refresh"
+        v-for="action in resolvedActions"
+        :key="action.key"
+        :icon="action.icon"
+        :loading="action.loading"
+        :disabled="action.disabled"
         text
-        rounded
-        :loading="refreshLoading"
-        :disabled="refreshLoading"
-        class="sm-status-footer__button"
-        aria-label="Refresh data"
-        @click="handleRefresh"
-      />
-      <Button
-        v-if="showExport"
-        icon="pi pi-download"
-        text
-        rounded
-        class="sm-status-footer__button sm-status-footer__button--has-label"
-        aria-label="Export to CSV"
-        @click="handleExport"
+        class="status-footer__button"
+        :class="{ 'status-footer__button--has-label': action.label }"
+        :title="action.title"
+        @click="onActionClick(action)"
       >
-        <span class="sm-status-footer__button-label">CSV</span>
+        <span v-if="action.label" class="status-footer__button-label">{{ action.label }}</span>
       </Button>
 
-      <!-- Configured Items -->
-      <template v-for="(item, index) in leftItems" :key="index">
-        <Button
-          v-if="item.type === 'button'"
-          :icon="item.icon"
-          :loading="item.loading"
-          :disabled="item.disabled"
-          text
-          rounded
-          class="sm-status-footer__button"
-          :class="{ 'sm-status-footer__button--has-label': item.label }"
-          :aria-label="item.title || item.label"
-          :title="item.title"
-          @click="handleAction(item.action)"
-        >
-          <span v-if="item.label" class="sm-status-footer__button-label">{{ item.label }}</span>
-        </Button>
-        <div v-else-if="item.type === 'divider'" class="sm-status-footer__divider" />
+      <template v-if="slots['left-extra']">
+        <div class="status-footer__divider" />
+        <slot name="left-extra" />
       </template>
-
-      <!-- Custom content slot for left side -->
-      <slot name="left-custom" />
     </div>
 
-    <div class="sm-status-footer__right">
-      <!-- Custom content slot for right side -->
-      <slot name="right-custom" />
-
+    <div class="status-footer__right">
       <div
-        v-for="(item, index) in rightItems"
-        :key="index"
-        class="sm-status-footer__info-box"
-        :class="[`sm-status-footer__info-box--${item.variant || 'default'}`]"
-        :title="item.title"
+        v-for="metric in metrics"
+        :key="metric.key"
+        class="status-footer__info-box"
+        :class="[metric.class]"
+        :style="metric.style"
+        :title="metric.title"
       >
         <i
-          v-if="item.icon"
-          class="sm-status-footer__info-icon"
-          :class="[item.icon]"
+          v-if="metric.icon"
+          class="status-footer__info-icon"
+          :class="[metric.icon]"
           aria-hidden="true"
         />
-        <span class="sm-status-footer__info-value">{{ item.value }}</span>
-        <span v-if="item.label" class="sm-status-footer__info-label">{{ item.label }}</span>
+        <span class="status-footer__info-value">{{ metric.value }}</span>
+        <span v-if="metric.label" class="status-footer__info-label">{{ metric.label }}</span>
+      </div>
+
+      <div
+        v-if="showSelected"
+        class="status-footer__info-box status-footer__metric-selected"
+        title="Selected rows"
+      >
+        <i class="status-footer__info-icon pi pi-check-square" aria-hidden="true" />
+        <span class="status-footer__info-value">{{ selectedCount }}</span>
+        <span class="status-footer__info-label">selected</span>
+      </div>
+
+      <div
+        class="status-footer__info-box status-footer__metric-total"
+        title="Total rows"
+      >
+        <i class="status-footer__info-icon pi pi-list" aria-hidden="true" />
+        <span class="status-footer__info-value">{{ totalCount }}</span>
+        <span class="status-footer__info-label">rows</span>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.sm-status-footer {
+.status-footer {
+  --color-selection-green: rgb(34, 197, 94);
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.4rem 0.75rem;
-  margin: 0;
-  width: 100%;
-  min-height: 2.25rem;
+  padding: 0.3rem 0.4rem;
   background: var(--color-surface-subtle);
-  border-top: 1px solid var(--color-border-subtle);
 }
 
-.sm-status-footer__left {
+.status-footer__left {
   display: flex;
   align-items: center;
   gap: 0.25rem;
 }
 
-.sm-status-footer__right {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.sm-status-footer__divider {
+.status-footer__divider {
   width: 1px;
   height: 1.25rem;
   background-color: var(--color-border-subtle);
   margin: 0 0.25rem;
 }
 
-/* Button styles */
-.sm-status-footer__button {
-  height: 1.75rem;
+.status-footer__right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-footer__button {
+  height: 1.5rem;
   width: 1.75rem;
-  padding: 0;
   color: var(--color-text-secondary);
 }
 
-.sm-status-footer__button--has-label {
+.status-footer__button--has-label {
   width: auto;
   padding: 0 0.5rem;
 }
 
-.sm-status-footer__button:hover {
+.status-footer__button:hover {
   color: var(--color-primary-highlight);
   background: var(--color-button-hover-bg);
 }
 
-:deep(.sm-status-footer__button .p-button-label) {
+.status-footer__info-box {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-}
-
-.sm-status-footer__button-label {
-  font-weight: 600;
-  margin-left: 0.25rem;
-}
-
-/* Info box styles */
-.sm-status-footer__info-box {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.2rem 0.5rem;
+  padding: 0.1rem 0.25rem;
   background: var(--color-surface-subtle);
   border: 1px solid var(--color-border-subtle);
-  border-radius: 0.25rem;
+  border-radius: 0.125rem;
   color: var(--color-text-primary);
 }
 
-.sm-status-footer__info-box--highlight {
+.status-footer__metric-total {
   background: color-mix(in srgb, var(--color-primary-highlight) 8%, transparent);
-  border-color: color-mix(in srgb, var(--color-primary-highlight) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary-highlight) 8%, transparent);
 }
 
-.sm-status-footer__info-box--selection {
+.status-footer__metric-selected {
   background: color-mix(in srgb, var(--color-selection-green) 8%, transparent);
-  border-color: color-mix(in srgb, var(--color-selection-green) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-selection-green) 8%, transparent);
 }
 
-.sm-status-footer__info-box--selection .sm-status-footer__info-icon {
+.status-footer__metric-selected .status-footer__info-icon {
   color: var(--color-selection-green);
 }
 
-.sm-status-footer__info-icon {
+.status-footer__info-icon {
   color: var(--color-primary-highlight);
 }
 
-.sm-status-footer__info-value {
+.status-footer__info-value {
   font-weight: 600;
   color: var(--color-text-bright);
 }
 
-.sm-status-footer__info-label {
+.status-footer__info-label {
   color: var(--color-text-muted);
   text-transform: lowercase;
 }
