@@ -131,7 +131,7 @@ const createCardDialogPt = {
     style: 'color: #a1a1aa;',
   },
   title: {
-    style: 'font-size: 16px; font-weight: 600;',
+    style: 'font-size: 1.5rem; font-weight: 600;',
   },
 }
 
@@ -149,7 +149,7 @@ const deleteDialogPt = {
     style: 'color: #a1a1aa;',
   },
   title: {
-    style: 'font-size: 16px; font-weight: 600;',
+    style: 'font-size: 1.5rem; font-weight: 600;',
   },
 }
 

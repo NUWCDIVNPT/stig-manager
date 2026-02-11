@@ -1,6 +1,6 @@
 <script setup>
 import Popover from 'primevue/popover'
-import { defineProps, ref, toRefs } from 'vue'
+import { ref, toRefs } from 'vue'
 import CoraTooltip from './CoraTooltip.vue'
 
 const props = defineProps({
@@ -135,7 +135,7 @@ function getRiskClass(riskRating) {
 }
 
 .subsection-title {
-  font-size: 11px;
+  font-size: 1rem;
   text-transform: uppercase;
   color: #a1a1aa;
   margin: 0 0 4px 0;
@@ -185,12 +185,12 @@ function getRiskClass(riskRating) {
 
 .cora-cat-label {
   font-weight: 700;
-  font-size: 12px;
+  font-size: 1.1rem;
 }
 
 .cora-cat-count {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 1.25rem;
   color: white;
 }
 
@@ -205,7 +205,7 @@ function getRiskClass(riskRating) {
 }
 
 .risk-label {
-  font-size: 11px;
+  font-size: 1rem;
   font-weight: 600;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.9);
@@ -213,7 +213,7 @@ function getRiskClass(riskRating) {
 }
 
 .risk-score {
-  font-size: 28px;
+  font-size: 2.5rem;
   font-weight: 800;
   color: white;
   line-height: 1;
@@ -221,7 +221,7 @@ function getRiskClass(riskRating) {
 }
 
 .risk-rating {
-  font-size: 12px;
+  font-size: 1.1rem;
   font-weight: 600;
   text-transform: uppercase;
   color: white;

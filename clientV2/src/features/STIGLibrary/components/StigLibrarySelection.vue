@@ -1,5 +1,5 @@
 <script setup>
-import { useStigLibraryItems } from '../composeables/useStigLibraryItems.js'
+import { useStigLibraryItems } from '../composables/useStigLibraryItems.js'
 
 const { stigLibraryItems: STIG_LIBRARY_ITEMS } = useStigLibraryItems()
 

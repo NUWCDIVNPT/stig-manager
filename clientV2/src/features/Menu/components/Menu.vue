@@ -3,7 +3,7 @@ import Badge from 'primevue/badge'
 import Drawer from 'primevue/drawer'
 import PrimeMenu from 'primevue/menu'
 import { computed } from 'vue'
-import { useMenuNodes } from '../composeables/useMenuNodes.js'
+import { useMenuNodes } from '../composables/useMenuNodes.js'
 
 const open = defineModel('open', { type: Boolean, default: false })
 

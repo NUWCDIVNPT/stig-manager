@@ -97,7 +97,7 @@ const pt = {
     style: {
       right: '5px',
       left: 'auto',
-      fontSize: '14px',
+      fontSize: '1.25rem',
       minWidth: '180px',
       width: 'auto',
       zIndex: '1000',
@@ -223,7 +223,7 @@ const pt = {
 
 .badge {
   padding: 2px 3px;
-  font-size: 10px;
+  font-size: 0.9rem;
   font-weight: 600;
   border-radius: 5px;
   text-transform: uppercase;
@@ -273,12 +273,12 @@ const pt = {
 
 .profile-username {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 1.25rem;
   color: #e4e4e7;
 }
 
 .profile-name {
-  font-size: 12px;
+  font-size: 1.1rem;
   color: #a1a1aa;
 }
 </style>
