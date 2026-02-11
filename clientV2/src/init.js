@@ -39,6 +39,7 @@ if (!window.isSecureContext) {
 async function authorize() {
   const url = new URL(window.location.href)
   const redirectUri = `${url.origin}${url.pathname}`
+  const hash = url.hash
 
   appendStatus(`Authorizing`)
 
@@ -47,7 +48,7 @@ async function authorize() {
     return handleRedirectAndParameters(redirectUri, paramStr)
   }
   else {
-    return handleNoParameters(redirectUri)
+    return handleNoParameters(redirectUri, hash)
   }
 
 }
@@ -93,7 +94,7 @@ function processRedirectParams(paramStr) {
   return params
 }
 
-async function handleNoParameters(redirectUri) {
+async function handleNoParameters(redirectUri, hash) {
   const response = await OW.sendWorkerRequest({ request: 'getAccessToken', redirectUri })
   if (response.accessToken) {
     OW.token = response.accessToken
@@ -103,6 +104,7 @@ async function handleNoParameters(redirectUri) {
   else if (response.redirectOidc) {
     sessionStorage.setItem('codeVerifier', response.codeVerifier)
     sessionStorage.setItem('oidcState', response.state)
+    sessionStorage.setItem('hash', hash)
     window.location.href = response.redirectOidc
     return false
   }
@@ -137,9 +139,10 @@ async function handleRedirectAndParameters(redirectUri, paramStr) {
   if (response.success) {
     OW.token = response.accessToken
     OW.tokenParsed = response.accessTokenPayload
-    window.history.replaceState(window.history.state, '', redirectUri)
+    window.history.replaceState(window.history.state, '', redirectUri + sessionStorage.getItem('hash')) // restore original hash if it existed
     sessionStorage.removeItem('codeVerifier')
     sessionStorage.removeItem('oidcState')
+    sessionStorage.removeItem('hash')
     return true
   }
   else {
