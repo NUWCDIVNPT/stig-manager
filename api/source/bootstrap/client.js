@@ -163,7 +163,7 @@ function serveStaticV2Files(app){
     app.use('/client-v2', (req, res, next) => {
         req.component = 'static'
         
-        if (config.client.historyBase && (req.url === '/' || req.url === '/index.html' || !path.extname(req.url))) {
+        if (config.client.historyBase && (req.path === '/' || req.path === '/index.html' || !path.extname(req.path))) {
             const injectedHtml = indexTemplate.replace('<head>', `<head>\n    <base href="${config.client.historyBase}">`)
             res.setHeader('Content-Type', 'text/html')
             res.send(injectedHtml)
