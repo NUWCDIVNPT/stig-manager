@@ -1,5 +1,5 @@
 console.log('import.meta.env:', import.meta.env)
-if (import.meta.env.VITE_API_ORIGIN) {
+if (import.meta.env.DEV) {
   STIGMAN.Env.apiBase = `${import.meta.env.VITE_API_ORIGIN}/api`
 } else {
   STIGMAN.Env.apiBase = new URL(`client-v2/${STIGMAN.Env.apiBase}`, window.location.origin).href
@@ -208,7 +208,7 @@ async function setupOidcWorker() {
     channelName: null,
     token: null,
     tokenParsed: null,
-    worker: new SharedWorker("workers/oidc-worker.js", { name: 'stigman-oidc-worker', type: "module" })
+    worker: new SharedWorker(import.meta.env.BASE_URL + "workers/oidc-worker.js", { name: 'stigman-oidc-worker', type: "module" })
   }
 
   OW = STIGMAN.oidcWorker
@@ -241,7 +241,7 @@ async function setupStateWorker() {
   }
 
   STIGMAN.stateWorker = {
-    worker: new SharedWorker("workers/state-worker.js", { name: 'stigman-state-worker', type: "module" }),
+    worker: new SharedWorker(import.meta.env.BASE_URL + "workers/state-worker.js", { name: 'stigman-state-worker', type: "module" }),
     sendWorkerRequest: function (request) {
       const requestId = crypto.randomUUID()
       const port = this.worker.port
