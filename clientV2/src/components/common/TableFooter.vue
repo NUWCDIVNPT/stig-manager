@@ -16,7 +16,6 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-  // Standard Counts
   selectedItems: {
     type: [Array, Object],
     default: () => [],
@@ -32,7 +31,7 @@ const props = defineProps({
   /**
    * Custom left actions.
    * Structure: {
-   *   key: string, (required)
+   *   key: string, (required) used for the action event name
    *   icon: string, (required)
    *   label?: string,
    *   title?: string,
@@ -53,7 +52,6 @@ const props = defineProps({
    *   label?: string,
    *   icon?: string,
    *   title?: string,
-   *   tone?: 'default' | 'primary' | 'success',
    *   class?: string|object,
    *   style?: string|object
    * }
@@ -120,10 +118,9 @@ function onActionClick(action) {
         class="status-footer__button"
         :class="{ 'status-footer__button--has-label': action.label }"
         :title="action.title"
+        :label="action.label"
         @click="onActionClick(action)"
-      >
-        <span v-if="action.label" class="status-footer__button-label">{{ action.label }}</span>
-      </Button>
+      />
 
       <template v-if="slots['left-extra']">
         <div class="status-footer__divider" />

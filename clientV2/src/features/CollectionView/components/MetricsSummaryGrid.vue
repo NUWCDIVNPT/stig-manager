@@ -6,7 +6,7 @@ import AssetColumn from '../../../components/columns/AssetColumn.vue'
 import DurationColumn from '../../../components/columns/DurationColumn.vue'
 import LabelsColumn from '../../../components/columns/LabelsColumn.vue'
 import PercentageColumn from '../../../components/columns/PercentageColumn.vue'
-import StatusFooter from '../../../components/common/StatusFooter.vue'
+import TableFooter from '../../../components/common/TableFooter.vue'
 import { calculateCoraRiskRating } from '../lib/libCora.js'
 
 const props = defineProps({
@@ -322,7 +322,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
       <component :is="col.component" v-bind="col" sortable style="height: 27px; max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
     </template>
     <template v-if="showFooter" #footer>
-      <StatusFooter
+      <TableFooter
         :refresh-loading="isLoading"
         :selected-items="selectedRow"
         :total-count="data.length"
