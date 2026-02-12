@@ -6,7 +6,7 @@ import AssetColumn from '../../../components/columns/AssetColumn.vue'
 import DurationColumn from '../../../components/columns/DurationColumn.vue'
 import LabelsColumn from '../../../components/columns/LabelsColumn.vue'
 import PercentageColumn from '../../../components/columns/PercentageColumn.vue'
-import TableFooter from '../../../components/common/TableFooter.vue'
+import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { calculateCoraRiskRating } from '../lib/libCora.js'
 
 const props = defineProps({
