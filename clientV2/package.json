@@ -21,7 +21,7 @@
     "file-saver-es": "^2.0.5",
     "jsonwebtoken": "^9.0.2",
     "ms": "^2.1.3",
-    "pinia": "^3.0.3",
+
     "primeicons": "^7.0.0",
     "primevue": "^4.4.1",
     "quill": "^2.0.3",
