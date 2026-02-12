@@ -20,7 +20,7 @@ import CollectionStigsTab from './CollectionStigsTab.vue'
 
 const props = defineProps({
   collectionId: {
-    type: [String, Number],
+    type: [String],
     required: true,
   },
 })

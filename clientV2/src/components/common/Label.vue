@@ -39,7 +39,7 @@ const textColor = computed(() => {
 <style scoped>
 .sm-label-sprite {
   font-weight: 600;
-  font-size: 10px;
+  font-size: 0.9rem;
   line-height: 14px;
   top: 0;
   padding: 0 5px;

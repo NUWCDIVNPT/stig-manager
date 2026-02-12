@@ -1,18 +1,23 @@
-import { defineStore } from 'pinia'
+import { reactive } from 'vue'
 
-// global app state store
-// used for general app-wide state that is not auth-related (as this grows we should create more narrow scoped stores)
-export const useGlobalAppStore = defineStore('globalApp', {
-  state: () => ({
-    classification: null,
-    user: null,
-  }),
-  actions: {
+const state = reactive({
+  classification: null,
+  user: null,
+})
+
+export function useGlobalAppStore() {
+  return {
+    get classification() {
+      return state.classification
+    },
+    get user() {
+      return state.user
+    },
     setClassification(classification) {
-      this.classification = classification
+      state.classification = classification
     },
     setUser(user) {
-      this.user = user
+      state.user = user
     },
-  },
-})
+  }
+}

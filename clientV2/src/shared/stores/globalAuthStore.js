@@ -1,17 +1,19 @@
-import { defineStore } from 'pinia'
+import { reactive } from 'vue'
 
-// auth state global store
-// currently only used to store no token message? could be gotten rid of idk???
-export const useGlobalStateStore = defineStore('globalState', {
-  state: () => ({
-    noTokenMessage: null,
-  }),
-  actions: {
+const state = reactive({
+  noTokenMessage: null,
+})
+
+export function useGlobalStateStore() {
+  return {
+    get noTokenMessage() {
+      return state.noTokenMessage
+    },
     setNoTokenMessage(msg) {
-      this.noTokenMessage = msg
+      state.noTokenMessage = msg
     },
     clearNoTokenMessage() {
-      this.noTokenMessage = null
+      state.noTokenMessage = null
     },
-  },
-})
+  }
+}
