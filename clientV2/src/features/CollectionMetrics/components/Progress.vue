@@ -1,6 +1,6 @@
 <script setup>
 import Chart from 'primevue/chart'
-import { computed, defineProps } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   stats: {
@@ -211,7 +211,7 @@ const chartOptions = {
 }
 
 .overall-pct {
-  font-size: 18px;
+  font-size: 1.65rem;
   font-weight: 600;
 }
 
@@ -242,7 +242,7 @@ const chartOptions = {
 .legend-item {
   display: flex;
   align-items: center;
-  font-size: 14px;
+  font-size: 1.25rem;
   border-radius: 6px;
   padding: 3px 12px;
   background-color: rgba(255, 255, 255, 0.03);
@@ -295,13 +295,13 @@ const chartOptions = {
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 1.1rem;
   font-weight: 600;
   text-transform: uppercase;
 }
 
 .stat-value {
-  font-size: 16px;
+  font-size: 1.5rem;
   font-weight: 600;
 }
 
@@ -314,13 +314,13 @@ const chartOptions = {
 }
 
 .total-label {
-  font-size: 12px;
+  font-size: 1.1rem;
   color: #a1a1aa;
   margin-bottom: 0.25rem;
 }
 
 .total-value {
-  font-size: 18px;
+  font-size: 1.65rem;
   font-weight: 600;
 }
 </style>

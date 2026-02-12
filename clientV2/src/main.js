@@ -1,6 +1,5 @@
-import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
-import { createApp, h, watch } from 'vue'
+import { createApp, h } from 'vue'
 import App from './App.vue'
 import { setupStateHandler } from './auth/useStateWorker.js'
 import { setupOidcHandler } from './auth/useOidcWorker.js'
@@ -19,16 +18,12 @@ if (typeof document !== 'undefined') {
 }
 
 try {
-  // Create Pinia instance early so it can be used in bootstrap
-  const pinia = createPinia()
-
   // Initialize apiClient with the OIDC worker token accessor
   configureAuth({
     getToken: () => STIGMAN.oidcWorker.token,
   })
 
   const app = createApp(App)
-  app.use(pinia)
 
   // Global Error Handler
   const { triggerError } = useGlobalError()
@@ -38,7 +33,7 @@ try {
   }
 
   // set classification in global app state from env
-  const globalAppState = useGlobalAppStore(pinia)
+  const globalAppState = useGlobalAppStore()
   globalAppState.setClassification(STIGMAN.Env.classification || 'NONE')
   globalAppState.setUser(STIGMAN.curUser)
 
@@ -47,15 +42,15 @@ try {
   configureApiSpec(spec)
 
   app.use(PrimeVue, {
-  theme: {
-    preset: BluePreset,
-    options: {
+    theme: {
+      preset: BluePreset,
+      options: {
       // Use the presence of .app-dark on <html> to enable dark mode
-      darkModeSelector: '.app-dark',
+        darkModeSelector: '.app-dark',
+      },
     },
-  },
-  pt: MyPrimeVuePT,
-})
+    pt: MyPrimeVuePT,
+  })
 
   app.use(router)
   app.provide('worker', STIGMAN.oidcWorker)

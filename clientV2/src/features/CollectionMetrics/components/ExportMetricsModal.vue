@@ -4,7 +4,7 @@ import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
 import RadioButton from 'primevue/radiobutton'
 import Select from 'primevue/select'
-import { computed, defineProps, inject, ref, watch } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 import { ASSET_FIELDS, handleInventoryExport, STIG_FIELDS } from '../exportMetricsUtils.js'
 
@@ -118,7 +118,7 @@ const commonPt = {
       style: 'color: #a1a1aa;',
     },
     title: {
-      style: 'font-size: 16px; font-weight: 600;',
+      style: 'font-size: 1.5rem; font-weight: 600;',
     },
   },
 }
@@ -137,7 +137,7 @@ const dialogPt = {
     style: 'color: #a1a1aa;',
   },
   title: {
-    style: 'font-size: 16px; font-weight: 600;',
+    style: 'font-size: 1.5rem; font-weight: 600;',
   },
 }
 

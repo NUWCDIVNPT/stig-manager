@@ -25,7 +25,7 @@
 }
 
 .metric-title {
-  font-size: 16px;
+  font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
   flex: 1;
@@ -37,7 +37,7 @@
 }
 
 .metric-action-link {
-  font-size: 12px;
+  font-size: 1.1rem;
   color: #71717a;
   cursor: pointer;
   font-weight: 500;
@@ -65,13 +65,13 @@
 }
 
 .metric-badge-label {
-  font-size: 14px;
+  font-size: 1.25rem;
   font-weight: 600;
   color: black;
 }
 
 .metric-badge-value {
-  font-size: 18px;
+  font-size: 1.65rem;
   color: black;
   line-height: 1.1;
   font-weight: 700;

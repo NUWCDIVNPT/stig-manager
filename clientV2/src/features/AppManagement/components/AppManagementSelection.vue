@@ -1,5 +1,5 @@
 <script setup>
-import { useAppManagementItems } from '../composeables/useAppManagementItems.js'
+import { useAppManagementItems } from '../composables/useAppManagementItems.js'
 
 const { appManagementItems: APP_MANAGEMENT_ITEMS } = useAppManagementItems()
 

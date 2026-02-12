@@ -74,7 +74,7 @@ const { hasError, dbClass, oidcClass } = toRefs(props)
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 1.75rem;
 }
 .error-alert {
   background: #4a1f1f;
@@ -113,7 +113,7 @@ const { hasError, dbClass, oidcClass } = toRefs(props)
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 1.75rem;
   flex-shrink: 0;
 }
 .service-alert .alert-body {
@@ -135,13 +135,13 @@ const { hasError, dbClass, oidcClass } = toRefs(props)
   margin-bottom: 8px;
 }
 .status-item {
-  font-size: 14px;
+  font-size: 1.25rem;
 }
 .badge {
   padding: 3px 8px;
   border-radius: 6px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 1.2rem;
   margin-left: 6px;
 }
 .online {
