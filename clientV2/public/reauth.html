@@ -23,9 +23,9 @@
     </div>
     <script type="module">
       const statusEl = document.getElementById('loading-text')
-      const OW = new SharedWorker('oidc-worker.js', { name: 'oidc-worker', type: 'module' })
+      const OW = new SharedWorker('workers/oidc-worker.js', { name: 'stigman-oidc-worker', type: 'module' })
       OW.port.start()
-      const init = await sendWorkerRequest({ request: 'initialize' })
+      const init = await sendWorkerRequest({ request: 'getStatus' })
       await run()
 
       // Helper functions
@@ -60,7 +60,6 @@
         }
 
         function extractParamString(url) {
-          if (url.hash) return url.hash.substring(1) // Remove the leading '#'
           if (url.search) return url.search.substring(1) // Remove the leading '?'
           return ''
         }

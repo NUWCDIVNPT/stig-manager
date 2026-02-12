@@ -4,19 +4,20 @@ import GlobalBanner from './components/global/GlobalBanner.vue'
 import GlobalErrorModal from './components/global/GlobalErrorModal.vue'
 import GlobalServiceOverlay from './components/global/GlobalServiceOverlay.vue'
 import HomePage from './Home/Home.vue'
-import { useGlobalStateStore } from './shared/stores/globalAuthStore.js'
+import { useOidcWorker } from './auth/useOidcWorker.js'
 
-const globalState = useGlobalStateStore()
+const oidcWorker = useOidcWorker()
+console.log('oidcWorker state', oidcWorker)
 </script>
 
 <template>
   <GlobalBanner />
   <GlobalErrorModal />
   <ReauthPrompt
-    v-if="globalState.noTokenMessage"
-    :redirect="globalState.noTokenMessage?.redirect"
-    :code-verifier="globalState.noTokenMessage?.codeVerifier"
-    :state="globalState.noTokenMessage?.state"
+    v-if="oidcWorker.noTokenMessage.value"
+    :redirect-oidc="oidcWorker.noTokenMessage.value?.redirectOidc"
+    :code-verifier="oidcWorker.noTokenMessage.value?.codeVerifier"
+    :state="oidcWorker.noTokenMessage.value?.state"
   />
   <GlobalServiceOverlay />
   <HomePage />

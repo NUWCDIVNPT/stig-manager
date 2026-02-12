@@ -1,13 +1,10 @@
 <script setup>
-import { toRefs } from 'vue'
 
 const props = defineProps({
-  redirect: { type: String, required: true },
+  redirectOidc: { type: String, required: true },
   codeVerifier: { type: String, required: true },
   state: { type: String, required: true },
 })
-
-const { redirect, codeVerifier, state } = toRefs(props)
 
 function handleReauth() {
   const width = 600
@@ -15,9 +12,9 @@ function handleReauth() {
   const left = window.screenX + (window.outerWidth - width) / 2
   const top = window.screenY + (window.outerHeight - height) / 2
 
-  localStorage.setItem('reauth-codeVerifier', codeVerifier.value)
-  localStorage.setItem('reauth-oidcState', state.value)
-  window.open(redirect.value, '_blank', `popup,width=${width},height=${height},left=${left},top=${top}`)
+  localStorage.setItem('reauth-codeVerifier', props.codeVerifier)
+  localStorage.setItem('reauth-oidcState', props.state)
+  window.open(props.redirectOidc, '_blank', `popup,width=${width},height=${height},left=${left},top=${top}`)
 }
 </script>
 

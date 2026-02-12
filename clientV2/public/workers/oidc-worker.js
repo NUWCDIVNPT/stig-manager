@@ -16,6 +16,7 @@ const bc = new BroadcastChannel(channelName)
 let idleTimeoutId = null
 let idleTimeoutM = null
 let isIdle = false
+let reauthUri = null
 
 // Worker entry point
 onconnect = function (e) {
@@ -100,6 +101,7 @@ async function initialize(options) {
   if (!initialized) {
     initialized = true
     ENV = options.env || null
+    reauthUri = options.reauthUri || null
 
     try {
       oidcConfiguration = options.oidcConfiguration || await fetchOpenIdConfiguration()
@@ -121,7 +123,8 @@ async function getStatus() {
   return {
     initialized,
     env: ENV,
-    channelName
+    channelName,
+    reauthUri
   }
 }
 
@@ -262,11 +265,11 @@ async function getPkce() {
 
 async function broadcastNoToken() {
   console.log(logPrefix, 'Broadcasting no token')
-  let baseRedirectUri = redirectUri?.endsWith('index.html')
-    ? redirectUri.slice(0, -'index.html'.length)
-    : redirectUri
+  // let baseRedirectUri = redirectUri?.endsWith('index.html')
+  //   ? redirectUri.slice(0, -'index.html'.length)
+  //   : redirectUri
 
-  const auth = await createAuthorization(`${baseRedirectUri}reauth.html`)
+  const auth = await createAuthorization({redirectUri: reauthUri})
   bc.postMessage({ type: 'noToken', ...auth, isIdle })
 }
 

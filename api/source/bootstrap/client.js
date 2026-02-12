@@ -72,7 +72,7 @@ function getClientV2Env(){
     `const STIGMAN = {
         Env: {
             version: "${config.version}",
-            apiBase: "../api",
+            apiBase: "${config.client.apiBase}",
             historyBase: "${config.client.historyBase}",
             displayAppManagers: ${config.client.displayAppManagers},
             stateEvents: ${config.client.stateEvents},

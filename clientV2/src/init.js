@@ -2,7 +2,7 @@ console.log('import.meta.env:', import.meta.env)
 if (import.meta.env.DEV) {
   STIGMAN.Env.apiBase = `${import.meta.env.VITE_API_ORIGIN}/api`
 } else {
-  STIGMAN.Env.apiBase = new URL(`client-v2/${STIGMAN.Env.apiBase}`, window.location.origin).href
+  STIGMAN.Env.apiBase = new URL(STIGMAN.Env.apiBase, window.location.origin).href
 }
 STIGMAN.Env.apiUrl = STIGMAN.Env.apiBase
 
@@ -76,7 +76,15 @@ async function initializeOidcWorker() {
     return response
   }
   const oidcConfiguration = await getOidcMetadata()
-  return OW.sendWorkerRequest({ request: 'initialize', oidcConfiguration, env: STIGMAN.Env.oauth })
+  const reauthUri = STIGMAN.Env.historyBase ? 
+  `${window.location.origin}${STIGMAN.Env.historyBase}reauth.html` :
+  `${window.location.origin}${window.location.pathname}reauth.html`
+  return OW.sendWorkerRequest({ 
+    request: 'initialize', 
+    oidcConfiguration, 
+    env: STIGMAN.Env.oauth,
+    reauthUri
+   })
 }
 
 function extractParamString(url) {

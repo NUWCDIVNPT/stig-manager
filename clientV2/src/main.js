@@ -3,6 +3,7 @@ import PrimeVue from 'primevue/config'
 import { createApp, h, watch } from 'vue'
 import App from './App.vue'
 import { setupStateHandler } from './auth/useStateWorker.js'
+import { setupOidcHandler } from './auth/useOidcWorker.js'
 import { BluePreset, MyPrimeVuePT } from './primevueTheme.js'
 import router from './router'
 import { api, configureApiSpec, configureAuth } from './shared/api/apiClient.js'
@@ -63,6 +64,7 @@ try {
   console.log('router base', router.options.history.base)
   console.log('router.currentRoute.value', router.currentRoute.value)
   setupStateHandler() // set up state worker message handling
+  setupOidcHandler() // set up OIDC worker message handling
   app.mount('#app')
 }
 // catch all for any errors
