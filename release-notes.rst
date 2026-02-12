@@ -1,3 +1,12 @@
+1.6.2
+-------
+
+Changes:
+
+  - (API) Updated launcher templates
+  - (Docs) Updated build dependency
+  - (Dependencies) Various security and maintenance updates
+
 1.6.1
 -------
 
