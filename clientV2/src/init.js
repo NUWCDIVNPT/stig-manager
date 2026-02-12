@@ -4,7 +4,7 @@ if (import.meta.env.DEV) {
 } else if (STIGMAN.Env.pathPrefix) {
   STIGMAN.Env.apiBase = `${window.location.origin}${STIGMAN.Env.pathPrefix}api`
 } else {
-  STIGMAN.Env.apiBase = `../api` // change when nextgen client is served from root instead of /client-v2
+  STIGMAN.Env.apiBase = new URL(`../api`, window.location.href).toString() // change when nextgen client is served from root instead of /client-v2
 }
 STIGMAN.Env.apiUrl = STIGMAN.Env.apiBase
 
@@ -281,8 +281,8 @@ async function setupStateWorker() {
   const SW = STIGMAN.stateWorker
   SW.worker.port.start()
 
-  const apiBase = import.meta.env.DEV || STIGMAN.Env.pathPrefix? STIGMAN.Env.apiBase : `../${STIGMAN.Env.apiBase}` // ensure correct relative path in development vs production
-  const response = await SW.sendWorkerRequest({ request: 'initialize', apiBase })
+  // const apiBase = import.meta.env.DEV || STIGMAN.Env.pathPrefix? STIGMAN.Env.apiBase : `../${STIGMAN.Env.apiBase}` // ensure correct relative path in development vs production
+  const response = await SW.sendWorkerRequest({ request: 'initialize', apiBase: STIGMAN.Env.apiBase })
   if (response.error) {
     console.error(`[init] Error initializing state worker:`, response.error)
     throw new Error(response.error)
@@ -341,7 +341,7 @@ async function setupStateWorker() {
 async function setupServiceWorker() {
   if ('serviceWorker' in navigator) {
     try {
-      await navigator.serviceWorker.register('/workers/service-worker.js')
+      await navigator.serviceWorker.register('workers/service-worker.js')
       appendStatus('Service Worker registered successfully')
     }
     catch (err) {
