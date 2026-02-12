@@ -322,7 +322,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
       <component :is="col.component" v-bind="col" sortable style="height: 27px; max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
     </template>
     <template v-if="showFooter" #footer>
-      <TableFooter
+      <StatusFooter
         :refresh-loading="isLoading"
         :selected-items="selectedRow"
         :total-count="data.length"
