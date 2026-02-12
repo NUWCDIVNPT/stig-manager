@@ -1,8 +1,10 @@
 console.log('import.meta.env:', import.meta.env)
 if (import.meta.env.DEV) {
   STIGMAN.Env.apiBase = `${import.meta.env.VITE_API_ORIGIN}/api`
+} else if (STIGMAN.Env.pathPrefix) {
+  STIGMAN.Env.apiBase = `${window.location.origin}${STIGMAN.Env.pathPrefix}api`
 } else {
-  STIGMAN.Env.apiBase = new URL(STIGMAN.Env.apiBase, window.location.origin).href
+  STIGMAN.Env.apiBase = `../api` // change when nextgen client is served from root instead of /client-v2
 }
 STIGMAN.Env.apiUrl = STIGMAN.Env.apiBase
 
@@ -76,9 +78,15 @@ async function initializeOidcWorker() {
     return response
   }
   const oidcConfiguration = await getOidcMetadata()
-  const reauthUri = STIGMAN.Env.historyBase ? 
-  `${window.location.origin}${STIGMAN.Env.historyBase}reauth.html` :
-  `${window.location.origin}${window.location.pathname}reauth.html`
+  let reauthUri
+  if (import.meta.env.DEV) {
+    reauthUri = `${window.location.origin}/reauth.html`
+  } else {
+  // Change first condition when nextgen client is served from root instead of /client-v2
+    reauthUri = STIGMAN.Env.pathPrefix ? 
+    `${window.location.origin}${STIGMAN.Env.pathPrefix}client-v2/reauth.html` :
+    `${window.location.origin}${window.location.pathname}reauth.html`
+  }
   return OW.sendWorkerRequest({ 
     request: 'initialize', 
     oidcConfiguration, 
@@ -272,7 +280,9 @@ async function setupStateWorker() {
   }
   const SW = STIGMAN.stateWorker
   SW.worker.port.start()
-  const response = await SW.sendWorkerRequest({ request: 'initialize', apiBase: STIGMAN.Env.apiBase })
+
+  const apiBase = import.meta.env.DEV || STIGMAN.Env.pathPrefix? STIGMAN.Env.apiBase : `../${STIGMAN.Env.apiBase}` // ensure correct relative path in development vs production
+  const response = await SW.sendWorkerRequest({ request: 'initialize', apiBase })
   if (response.error) {
     console.error(`[init] Error initializing state worker:`, response.error)
     throw new Error(response.error)
@@ -331,7 +341,7 @@ async function setupStateWorker() {
 async function setupServiceWorker() {
   if ('serviceWorker' in navigator) {
     try {
-      await navigator.serviceWorker.register('workers/service-worker.js')
+      await navigator.serviceWorker.register('/workers/service-worker.js')
       appendStatus('Service Worker registered successfully')
     }
     catch (err) {
