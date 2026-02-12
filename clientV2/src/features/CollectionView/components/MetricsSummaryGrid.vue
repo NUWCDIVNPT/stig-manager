@@ -55,14 +55,6 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-  showRefresh: {
-    type: Boolean,
-    default: true,
-  },
-  showExport: {
-    type: Boolean,
-    default: true,
-  },
 })
 
 const emit = defineEmits(['row-select', 'row-action', 'asset-action', 'refresh'])
@@ -74,8 +66,13 @@ function exportToCsv() {
   dataTableRef.value?.exportCSV()
 }
 
-function handleRefresh() {
-  emit('refresh')
+function handleFooterAction(actionKey) {
+  if (actionKey === 'refresh') {
+    emit('refresh')
+  }
+  else if (actionKey === 'export') {
+    exportToCsv()
+  }
 }
 
 // Expose for external access if needed
@@ -114,12 +111,24 @@ watch(() => props.apiMetricsSummary, () => {
 const aggregationType = computed(() => {
   console.log('Determining aggregation type for metrics summary')
   const m = props.apiMetricsSummary
-  if (m.length === 0) { return null }
-  if ('assetId' in m[0] && 'benchmarkId' in m[0]) { return 'unagg' }
-  if ('collectionId' in m[0]) { return 'collection' }
-  if ('assetId' in m[0]) { return 'asset' }
-  if ('labelId' in m[0]) { return 'label' }
-  if ('benchmarkId' in m[0]) { return 'stig' }
+  if (m.length === 0) {
+    return null
+  }
+  if ('assetId' in m[0] && 'benchmarkId' in m[0]) {
+    return 'unagg'
+  }
+  if ('collectionId' in m[0]) {
+    return 'collection'
+  }
+  if ('assetId' in m[0]) {
+    return 'asset'
+  }
+  if ('labelId' in m[0]) {
+    return 'label'
+  }
+  if ('benchmarkId' in m[0]) {
+    return 'stig'
+  }
 })
 
 const columns = computed(() => {
@@ -314,14 +323,11 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     </template>
     <template v-if="showFooter" #footer>
       <StatusFooter
-        :item-count="data.length"
-        :selected-count="selectedRow ? 1 : 0"
-        :show-selection="selectable"
-        :show-refresh="showRefresh"
-        :show-export="showExport"
         :refresh-loading="isLoading"
-        @refresh="handleRefresh"
-        @export="exportToCsv"
+        :selected-items="selectedRow"
+        :total-count="data.length"
+        :show-selected="selectable && selectedRow?.length > 0"
+        @action="handleFooterAction"
       />
     </template>
   </DataTable>

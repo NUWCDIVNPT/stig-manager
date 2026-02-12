@@ -12,7 +12,7 @@ import { api, configureApiSpec, configureAuth } from './shared/api/apiClient.js'
 
 import { useGlobalError } from './shared/composables/useGlobalError.js'
 import { useGlobalAppStore } from './shared/stores/globalAppStore.js'
-import {  useEnv } from './shared/stores/useEnv.js'
+import { useEnv } from './shared/stores/useEnv.js'
 import 'primeicons/primeicons.css'
 import './style.css'
 
@@ -50,15 +50,15 @@ try {
   configureApiSpec(spec)
 
   app.use(PrimeVue, {
-  theme: {
-    preset: BluePreset,
-    options: {
+    theme: {
+      preset: BluePreset,
+      options: {
       // Use the presence of .app-dark on <html> to enable dark mode
-      darkModeSelector: '.app-dark',
+        darkModeSelector: '.app-dark',
+      },
     },
-  },
-  pt: MyPrimeVuePT,
-})
+    pt: MyPrimeVuePT,
+  })
 
   app.use(router)
   app.provide('worker', window.oidcWorker)
