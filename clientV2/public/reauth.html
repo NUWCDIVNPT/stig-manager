@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>STIG Manager Authenticate</title>
-    <link rel="stylesheet" type="text/css" href="css/init.css" />
+    <link rel="stylesheet" type="text/css" href="init.css" />
   </head>
 
   <body>
@@ -22,10 +22,17 @@
       </div>
     </div>
     <script type="module">
+      await new Promise((resolve) => {
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+          resolve()
+        } else {
+          window.addEventListener('DOMContentLoaded', resolve)
+        }
+      })
       const statusEl = document.getElementById('loading-text')
-      const OW = new SharedWorker('oidc-worker.js', { name: 'oidc-worker', type: 'module' })
+      const OW = new SharedWorker('workers/oidc-worker.js', { name: 'stigman-oidc-worker', type: 'module' })
       OW.port.start()
-      const init = await sendWorkerRequest({ request: 'initialize' })
+      const init = await sendWorkerRequest({ request: 'getStatus' })
       await run()
 
       // Helper functions
@@ -60,7 +67,6 @@
         }
 
         function extractParamString(url) {
-          if (url.hash) return url.hash.substring(1) // Remove the leading '#'
           if (url.search) return url.search.substring(1) // Remove the leading '?'
           return ''
         }

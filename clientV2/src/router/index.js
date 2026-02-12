@@ -155,8 +155,16 @@ const routes = [
   },
 ]
 
+let historyBase
+if (import.meta.env.DEV) {
+  historyBase = import.meta.env.VITE_HASH_ROUTES === '1' ? null : '/'
+} else {
+  // Change when nextgen client is served from root instead of /client-v2
+  historyBase = STIGMAN.Env.pathPrefix ? STIGMAN.Env.pathPrefix + 'client-v2/' : null
+}
+
 const router = createRouter({
-  history: STIGMAN.Env.historyBase ? createWebHistory(STIGMAN.Env.historyBase) : createWebHashHistory(),
+  history: historyBase ? createWebHistory(historyBase) : createWebHashHistory(),
   routes,
 })
 

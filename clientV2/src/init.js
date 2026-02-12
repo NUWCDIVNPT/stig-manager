@@ -1,13 +1,15 @@
 console.log('import.meta.env:', import.meta.env)
-if (import.meta.env.VITE_API_ORIGIN) {
+if (import.meta.env.DEV) {
   STIGMAN.Env.apiBase = `${import.meta.env.VITE_API_ORIGIN}/api`
+} else if (STIGMAN.Env.pathPrefix) {
+  STIGMAN.Env.apiBase = `${window.location.origin}${STIGMAN.Env.pathPrefix}api`
 } else {
-  STIGMAN.Env.apiBase = new URL(`client-v2/${STIGMAN.Env.apiBase}`, window.location.origin).href
+  STIGMAN.Env.apiBase = new URL(`../api`, window.location.href).toString() // change when nextgen client is served from root instead of /client-v2
 }
 STIGMAN.Env.apiUrl = STIGMAN.Env.apiBase
 
 const statusEl = document.getElementById("loading-text")
-let OW // aka window.oidcWorker, created in setupOidcWorker()
+let OW // aka STIGMAN.oidcWorker, created in setupOidcWorker()
 if (!window.isSecureContext) {
   appendStatus(`SECURE CONTEXT REQUIRED<br><br>
   The App is not executing in a <a href=https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts target="_blank">secure context</a> and cannot continue.
@@ -39,26 +41,8 @@ if (!window.isSecureContext) {
 async function authorize() {
   const url = new URL(window.location.href)
   const redirectUri = `${url.origin}${url.pathname}`
+  const hash = url.hash
 
-  const response = await initializeOidcWorker(redirectUri)
-  if (response.error) {
-    appendError(response.error)
-    return
-  }
-  OW.channelName = response.channelName
-  const bc = new BroadcastChannel(window.oidcWorker.channelName)
-  bc.onmessage = (event) => {
-    if (event.data.type === 'accessToken') {
-      console.log('{init] Received from worker:', event.type, event.data)
-      OW.token = event.data.accessToken
-      OW.tokenParsed = event.data.accessTokenPayload
-    }
-    else if (event.data.type === 'noToken') {
-      console.log('{init] Received from worker:', event.type, event.data)
-      OW.token = null
-      OW.tokenParsed = null
-    }
-  }
   appendStatus(`Authorizing`)
 
   const paramStr = extractParamString(url)
@@ -66,7 +50,7 @@ async function authorize() {
     return handleRedirectAndParameters(redirectUri, paramStr)
   }
   else {
-    return handleNoParameters()
+    return handleNoParameters(redirectUri, hash)
   }
 
 }
@@ -85,7 +69,7 @@ async function getOidcMetadata() {
   }
 }
 
-async function initializeOidcWorker(redirectUri) {
+async function initializeOidcWorker() {
   const response = await OW.sendWorkerRequest({ request: 'getStatus' })
   if (response.error) {
     throw new Error(`OIDC Worker getStatus error: ${response.error}`)
@@ -94,7 +78,21 @@ async function initializeOidcWorker(redirectUri) {
     return response
   }
   const oidcConfiguration = await getOidcMetadata()
-  return OW.sendWorkerRequest({ request: 'initialize', redirectUri, oidcConfiguration, env: STIGMAN.Env.oauth })
+  let reauthUri
+  if (import.meta.env.DEV) {
+    reauthUri = `${window.location.origin}/reauth.html`
+  } else {
+  // Change first condition when nextgen client is served from root instead of /client-v2
+    reauthUri = STIGMAN.Env.pathPrefix ? 
+    `${window.location.origin}${STIGMAN.Env.pathPrefix}client-v2/reauth.html` :
+    `${window.location.origin}${window.location.pathname}reauth.html`
+  }
+  return OW.sendWorkerRequest({ 
+    request: 'initialize', 
+    oidcConfiguration, 
+    env: STIGMAN.Env.oauth,
+    reauthUri
+   })
 }
 
 function extractParamString(url) {
@@ -112,17 +110,18 @@ function processRedirectParams(paramStr) {
   return params
 }
 
-async function handleNoParameters() {
-  const response = await OW.sendWorkerRequest({ request: 'getAccessToken' })
+async function handleNoParameters(redirectUri, hash) {
+  const response = await OW.sendWorkerRequest({ request: 'getAccessToken', redirectUri })
   if (response.accessToken) {
     OW.token = response.accessToken
     OW.tokenParsed = response.accessTokenPayload
-    // appendStatus(`getAccessToken`)
     return true
-  } else if (response.redirect) {
+  }
+  else if (response.redirectOidc) {
     sessionStorage.setItem('codeVerifier', response.codeVerifier)
     sessionStorage.setItem('oidcState', response.state)
-    window.location.href = response.redirect
+    sessionStorage.setItem('hash', hash)
+    window.location.href = response.redirectOidc
     return false
   }
 }
@@ -156,9 +155,10 @@ async function handleRedirectAndParameters(redirectUri, paramStr) {
   if (response.success) {
     OW.token = response.accessToken
     OW.tokenParsed = response.accessTokenPayload
-    window.history.replaceState(window.history.state, '', redirectUri)
+    window.history.replaceState(window.history.state, '', redirectUri + sessionStorage.getItem('hash')) // restore original hash if it existed
     sessionStorage.removeItem('codeVerifier')
     sessionStorage.removeItem('oidcState')
+    sessionStorage.removeItem('hash')
     return true
   }
   else {
@@ -198,7 +198,7 @@ async function loadApp() {
 }
 
 async function setupOidcWorker() {
-  window.oidcWorker = {
+  STIGMAN.oidcWorker = {
     logout: async function () {
       const response = await this.sendWorkerRequest({ request: 'logout' })
       if (response.success) {
@@ -227,11 +227,30 @@ async function setupOidcWorker() {
     channelName: null,
     token: null,
     tokenParsed: null,
-    worker: new SharedWorker("workers/oidc-worker.js", { name: 'stigman-oidc-worker', type: "module" })
+    worker: new SharedWorker(import.meta.env.BASE_URL + "workers/oidc-worker.js", { name: 'stigman-oidc-worker', type: "module" })
   }
 
-  OW = window.oidcWorker
+  OW = STIGMAN.oidcWorker
   OW.worker.port.start()
+  const response = await initializeOidcWorker()
+  if (response.error) {
+    appendError(response.error)
+    return
+  }
+  OW.channelName = response.channelName
+  const bc = new BroadcastChannel(STIGMAN.oidcWorker.channelName)
+  bc.onmessage = (event) => {
+    if (event.data.type === 'accessToken') {
+      console.log('{init] Received from worker:', event.type, event.data)
+      OW.token = event.data.accessToken
+      OW.tokenParsed = event.data.accessTokenPayload
+    }
+    else if (event.data.type === 'noToken') {
+      console.log('{init] Received from worker:', event.type, event.data)
+      OW.token = null
+      OW.tokenParsed = null
+    }
+  }
 }
 
 async function setupStateWorker() {
@@ -240,8 +259,8 @@ async function setupStateWorker() {
     return
   }
 
-  window.stateWorker = {
-    worker: new SharedWorker("workers/state-worker.js", { name: 'stigman-state-worker', type: "module" }),
+  STIGMAN.stateWorker = {
+    worker: new SharedWorker(import.meta.env.BASE_URL + "workers/state-worker.js", { name: 'stigman-state-worker', type: "module" }),
     sendWorkerRequest: function (request) {
       const requestId = crypto.randomUUID()
       const port = this.worker.port
@@ -259,8 +278,10 @@ async function setupStateWorker() {
     workerChannel: null,
     state: null
   }
-  const SW = window.stateWorker
+  const SW = STIGMAN.stateWorker
   SW.worker.port.start()
+
+  // const apiBase = import.meta.env.DEV || STIGMAN.Env.pathPrefix? STIGMAN.Env.apiBase : `../${STIGMAN.Env.apiBase}` // ensure correct relative path in development vs production
   const response = await SW.sendWorkerRequest({ request: 'initialize', apiBase: STIGMAN.Env.apiBase })
   if (response.error) {
     console.error(`[init] Error initializing state worker:`, response.error)
@@ -332,7 +353,7 @@ async function setupServiceWorker() {
 async function getUserObject() {
   const response = await fetch(`${STIGMAN.Env.apiBase}/user?projection=webPreferences`, {
     headers: {
-      'Authorization': `Bearer ${window.oidcWorker.token}`
+      'Authorization': `Bearer ${STIGMAN.oidcWorker.token}`
     }
   })
   return await response.json()
