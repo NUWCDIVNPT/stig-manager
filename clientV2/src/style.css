@@ -51,8 +51,6 @@
   --color-surface-subtle: rgba(255, 255, 255, 0.03);
   --color-border-subtle: rgba(255, 255, 255, 0.08);
 
-  /* Status Colors */
-  --color-selection-green: rgb(34, 197, 94);
 }
 
 *, *::before, *::after {

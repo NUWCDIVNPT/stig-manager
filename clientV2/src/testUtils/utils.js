@@ -10,6 +10,7 @@ export function renderWithProviders(
     },
     props = {},
     withPrimeVue = true,
+    ...options
   } = {},
 ) {
   const global = {
@@ -24,6 +25,6 @@ export function renderWithProviders(
     global.plugins.push([PrimeVue])
   }
 
-  const utils = render(component, { props, global })
+  const utils = render(component, { props, global, ...options })
   return { ...utils }
 }
