@@ -2,9 +2,9 @@ import { userEvent } from '@testing-library/user-event'
 import { screen } from '@testing-library/vue'
 import { describe, expect, it } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
-import TableFooter from '../TableFooter.vue'
+import StatusFooter from '../StatusFooter.vue'
 
-describe('tableFooter.vue', () => {
+describe('statusFooter.vue', () => {
   const defaultProps = {
     totalCount: 100,
     showSelected: true,
@@ -12,7 +12,7 @@ describe('tableFooter.vue', () => {
   }
 
   it('renders standard refresh button by default', () => {
-    const { container } = renderWithProviders(TableFooter, {
+    const { container } = renderWithProviders(StatusFooter, {
       props: defaultProps,
     })
 
@@ -21,7 +21,7 @@ describe('tableFooter.vue', () => {
   })
 
   it('renders standard export button by default', () => {
-    const { container } = renderWithProviders(TableFooter, {
+    const { container } = renderWithProviders(StatusFooter, {
       props: defaultProps,
     })
 
@@ -31,7 +31,7 @@ describe('tableFooter.vue', () => {
   })
 
   it('hides standard actions when props are false', () => {
-    const { container } = renderWithProviders(TableFooter, {
+    const { container } = renderWithProviders(StatusFooter, {
       props: {
         ...defaultProps,
         showRefresh: false,
@@ -49,7 +49,7 @@ describe('tableFooter.vue', () => {
       { key: 'custom2', icon: 'pi pi-cog', title: 'Settings' },
     ]
 
-    const { container } = renderWithProviders(TableFooter, {
+    const { container } = renderWithProviders(StatusFooter, {
       props: {
         ...defaultProps,
         showRefresh: false,
@@ -66,7 +66,7 @@ describe('tableFooter.vue', () => {
   })
 
   it('emits action event when clicked', async () => {
-    const { emitted, container } = renderWithProviders(TableFooter, {
+    const { emitted, container } = renderWithProviders(StatusFooter, {
       props: {
         ...defaultProps,
         showRefresh: true,
@@ -92,7 +92,7 @@ describe('tableFooter.vue', () => {
       },
     ]
 
-    const { container } = renderWithProviders(TableFooter, {
+    const { container } = renderWithProviders(StatusFooter, {
       props: {
         ...defaultProps,
         metrics,
@@ -106,7 +106,7 @@ describe('tableFooter.vue', () => {
   })
 
   it('calculates selected count correctly for array', () => {
-    renderWithProviders(TableFooter, {
+    renderWithProviders(StatusFooter, {
       props: {
         ...defaultProps,
         selectedItems: [1, 2, 3],
@@ -120,7 +120,7 @@ describe('tableFooter.vue', () => {
   })
 
   it('calculates selected count correctly for single object', () => {
-    renderWithProviders(TableFooter, {
+    renderWithProviders(StatusFooter, {
       props: {
         ...defaultProps,
         selectedItems: { id: 1 },
@@ -133,7 +133,7 @@ describe('tableFooter.vue', () => {
   })
 
   it('displays total count', () => {
-    renderWithProviders(TableFooter, {
+    renderWithProviders(StatusFooter, {
       props: {
         ...defaultProps,
         totalCount: 500,
@@ -145,7 +145,7 @@ describe('tableFooter.vue', () => {
   })
 
   it('renders left-extra slot content', () => {
-    const { container } = renderWithProviders(TableFooter, {
+    const { container } = renderWithProviders(StatusFooter, {
       props: defaultProps,
       slots: {
         'left-extra': '<div class="extra-content">Extra</div>',
