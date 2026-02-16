@@ -3,21 +3,22 @@ import { dereferenceSync } from '@trojs/openapi-dereference'
 class OpenApiOps {
   /**
    * A Class for working with an OAS definition by operationId.
-   * 
-   * @param {Object} options - the options for the instance.
+   *
+   * @param {object} options - the options for the instance.
    * @property {string} options.definition - the OAS definition as a JS Object.
    * @property {string} [options.apiBase] - the URL prefix for the URL generators, by default will be taken from the definition
    */
-  constructor({ apiBase, definition}) {
+  constructor({ apiBase, definition }) {
     this.definition = definition
     this.apiBase = apiBase || definition.servers?.[0]?.url
     /** @type {Map<string,{path, method, params}>} */
     this.operationMap = this.#buildOperationIdMap(this.definition)
   }
+
   /**
    * Creates and populates an operationMap from an OAS definition
-   * 
-   * @param {Object} definition parsed JSON of the OAS definition
+   *
+   * @param {object} definition parsed JSON of the OAS definition
    * @returns {Map<string,{path, method, params}>}
    */
   #buildOperationIdMap(definition) {
@@ -52,9 +53,9 @@ class OpenApiOps {
 
   /**
    * For a given operationId and parameters, generate the URL
-   * 
-   * @param {string} operationId 
-   * @param {Object} params
+   *
+   * @param {string} operationId
+   * @param {object} params
    * @returns {string}
    */
   getUrl(operationId, inParams = {}) {
@@ -65,7 +66,7 @@ class OpenApiOps {
     const op = this.operationMap.get(operationId)
 
     // throw if the operationId is not defined
-    if (!op) throw new Error('unknown operationId')
+    if (!op) { throw new Error('unknown operationId') }
 
     // remove params which are not defined for the operationId
     for (const param in params) {
@@ -76,7 +77,7 @@ class OpenApiOps {
     }
 
     // substitute the path params, deleting from params, throwing if one is missing
-    const path = op.path.replace(/{(\w+)}/g, (template, key) => {
+    const path = op.path.replace(/\{(\w+)\}/g, (template, key) => {
       if (params[key] === undefined) {
         throw new Error(`path requires parameter ${template}`)
       }
@@ -107,7 +108,7 @@ class OpenApiOps {
    *
    * @method getProjectedUrls
    * @param {string} operationId - The identifier for the operation to retrieve projections.
-   * @param {Object} inParams - The input parameters to be used for generating URLs.
+   * @param {object} inParams - The input parameters to be used for generating URLs.
    * @param {string} [inParams.projection] - The projection parameter (not allowed in this method).
    * @throws {Error} If the `projection` parameter is provided in `inParams`.
    * @throws {Error} If no projections are available for the given `operationId`.
@@ -115,12 +116,12 @@ class OpenApiOps {
    */
   getProjectedUrls(operationId, inParams) {
     // iteration: maybe handle this silently?
-    if (inParams.projection) throw new Error('projection parameter not allowed')
+    if (inParams.projection) { throw new Error('projection parameter not allowed') }
     // clone the params argument so we don't mutate it
     const params = { ...inParams }
     const projections = this.operationMap.get(operationId)?.params.projection?.schema?.items?.enum
     // iterate: maybe allow and just output a single url without projections?
-    if (!projections) throw new Error(`no projections for operationId ${operationId}`)
+    if (!projections) { throw new Error(`no projections for operationId ${operationId}`) }
 
     const urls = []
     // a url for each projection
@@ -138,7 +139,7 @@ class OpenApiOps {
    * Retrieves a list of operation IDs that match the provided criteria.
    *
    * @method getOperationIds
-   * @param {Object} [options={}] - The options for filtering operation IDs.
+   * @param {object} [options] - The options for filtering operation IDs.
    * @param {string} [options.path] - The path to match in the operation's value.
    * @param {string} [options.method] - The HTTP method to match in the operation's value.
    * @param {string|null} [options.param] - The name of a parameter to match. If `null`, matches operations with no parameters.
@@ -150,19 +151,13 @@ class OpenApiOps {
     const operationIds = []
     for (const [operationId, value] of this.operationMap) {
       const matches = [true] // Start with an initial match of `true`
-      
-      if (path)
-        matches.push(value.path.includes(path))
-      if (method)
-        matches.push(value.method === method)
-      if (param === null)
-        matches.push(Object.keys(value.params).length === 0)
-      if (param)
-        matches.push(param in value.params && (paramIn ? value.params[param]?.in === paramIn : true))
-      if (projection === null)
-        matches.push(!value.params.projection)
-      if (projection)
-        matches.push(value.params.projection?.schema?.items?.enum.includes(projection))
+
+      if (path) { matches.push(value.path.includes(path)) }
+      if (method) { matches.push(value.method === method) }
+      if (param === null) { matches.push(Object.keys(value.params).length === 0) }
+      if (param) { matches.push(param in value.params && (paramIn ? value.params[param]?.in === paramIn : true)) }
+      if (projection === null) { matches.push(!value.params.projection) }
+      if (projection) { matches.push(value.params.projection?.schema?.items?.enum.includes(projection)) }
 
       if (matches.every(v => v)) {
         operationIds.push(operationId)
