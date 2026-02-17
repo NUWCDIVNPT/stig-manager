@@ -61,7 +61,7 @@ const statusMeta = computed(() => {
 
 .status-badge {
   color: hsl(0deg 0% 80%);
-  font: 600  Open Sans, helvetica, sans-serif;
+  font-weight: 600;
   line-height: 1;
   position: relative;
   top: 0;

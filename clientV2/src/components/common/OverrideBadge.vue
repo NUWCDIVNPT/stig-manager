@@ -24,7 +24,7 @@ const showBadge = computed(() => props.count && props.count > 0)
 <style scoped>
 .override-badge {
   color: hsl(0deg 0% 80%);
-  font: 600 Open Sans, helvetica, sans-serif;
+  font-weight: 600;
   position: relative;
   top: 0px;
   background-color: #1e2021;
