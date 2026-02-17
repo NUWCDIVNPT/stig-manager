@@ -24,7 +24,7 @@ const showBadge = computed(() => props.count && props.count > 0)
 <style scoped>
 .manual-badge {
   color: hsl(0deg 0% 80%);
-  font: 600 10px Open Sans, helvetica, sans-serif;
+  font: 600 Open Sans, helvetica, sans-serif;
   position: relative;
   top: 0px;
   background-color: #1e2021;

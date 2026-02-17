@@ -72,7 +72,6 @@ const statusTooltip = computed(() => {
   border: 1px solid #414749;
   border-radius: 3px;
   padding: 0 4px;
-  font-size: 11px;
   line-height: 1;
   font-weight: 700;
   user-select: none;

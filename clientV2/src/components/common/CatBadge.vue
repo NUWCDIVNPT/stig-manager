@@ -48,7 +48,6 @@ const title = computed(() => `CAT ${props.category}`)
   align-items: center;
   justify-content: center;
   height: 20px;
-  font-size: 12px;
 }
 
 .cat-1 {
