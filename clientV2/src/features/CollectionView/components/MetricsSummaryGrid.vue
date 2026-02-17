@@ -3,6 +3,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, provide, ref, watch } from 'vue'
 import AssetColumn from '../../../components/columns/AssetColumn.vue'
+import CoraColumn from '../../../components/columns/CoraColumn.vue'
 import DurationColumn from '../../../components/columns/DurationColumn.vue'
 import LabelsColumn from '../../../components/columns/LabelsColumn.vue'
 import PercentageColumn from '../../../components/columns/PercentageColumn.vue'
@@ -144,7 +145,7 @@ const columns = computed(() => {
     { field: 'submittedPct', header: 'Submitted', component: PercentageColumn },
     { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn },
     { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn },
-    { field: 'cora', header: 'CORA', component: Column },
+    { field: 'cora', header: 'CORA', component: CoraColumn },
     { field: 'low', header: 'Low', component: Column },
     { field: 'medium', header: 'Medium', component: Column },
     { field: 'high', header: 'High', component: Column },

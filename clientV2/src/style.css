@@ -62,6 +62,11 @@
   --color-border-default: #3f3f46; 
   --color-border-light: #2a2a2d;
 
+  /* Result Status Colors */
+  --result-pass: hsl(120 84% 42% / 1);
+  --result-fail: hsl(19 100% 40% / 1);
+  --result-na: #767676;
+  --result-nr: #c0bab2;
 }
 
 *, *::before, *::after {
