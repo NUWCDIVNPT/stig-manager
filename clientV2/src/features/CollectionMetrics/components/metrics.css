@@ -1,13 +1,13 @@
 /* Shared styles for Collection Metrics components */
 .metric-card {
-  background-color: #18181b;
-  color: #e4e4e7;
+  background-color: var(--color-background-dark);
+  color: var(--color-text-primary);
   border-radius: 20px;
   padding: 15px;
   width: 100%;
   max-width: 400px;
   min-width: 320px;
-  border: 1px solid #2a2a2d;
+  border: 2px solid var(--color-border-light);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -38,13 +38,13 @@
 
 .metric-action-link {
   font-size: 1.1rem;
-  color: #71717a;
+  color: var(--color-text-dim);
   cursor: pointer;
   font-weight: 500;
 }
 
 .metric-action-link:hover {
-  color: #a1a1aa;
+  color: var(--color-text-dim);
 }
 
 .metric-badge-row {
@@ -67,12 +67,12 @@
 .metric-badge-label {
   font-size: 1.25rem;
   font-weight: 600;
-  color: black;
+  color: var(--color-text-dark);
 }
 
 .metric-badge-value {
   font-size: 1.65rem;
-  color: black;
+  color: var(--color-text-dark);
   line-height: 1.1;
   font-weight: 700;
 }

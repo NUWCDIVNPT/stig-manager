@@ -119,13 +119,13 @@ function cancelNewCard() {
 
 const createCardDialogPt = {
   root: {
-    style: 'background-color: #18181b; border: 1px solid #3f3f46; border-radius: 6px; color: #e4e4e7; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); width: 900px;',
+    style: 'background-color: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 6px; color: var(--color-text-primary); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); width: 900px;',
   },
   header: {
-    style: 'background-color: #18181b; color: #e4e4e7; border-top-left-radius: 6px; border-top-right-radius: 6px; border-bottom: 1px solid #27272a;',
+    style: 'background-color: var(--color-background-dark); color: var(--color-text-primary); border-top-left-radius: 6px; border-top-right-radius: 6px; border-bottom: 1px solid #27272a;',
   },
   content: {
-    style: 'background-color: #18181b; color: #e4e4e7; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; padding: 1.5rem;',
+    style: 'background-color: #18181b; color: var(--color-text-primary); border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; padding: 1.5rem;',
   },
   closeButton: {
     style: 'color: #a1a1aa;',
@@ -137,13 +137,13 @@ const createCardDialogPt = {
 
 const deleteDialogPt = {
   root: {
-    style: 'background-color: #18181b; border: 1px solid #3f3f46; border-radius: 6px; color: #e4e4e7; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); width: 400px;',
+    style: 'background-color: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 6px; color: var(--color-text-primary); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); width: 400px;',
   },
   header: {
-    style: 'background-color: #18181b; color: #e4e4e7; border-top-left-radius: 6px; border-top-right-radius: 6px; padding: 1rem; border-bottom: 1px solid #27272a;',
+    style: 'background-color: var(--color-background-dark); color: var(--color-text-primary); border-top-left-radius: 6px; border-top-right-radius: 6px; padding: 1rem; border-bottom: 1px solid #27272a;',
   },
   content: {
-    style: 'background-color: #18181b; color: #e4e4e7; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; padding: 1.5rem;',
+    style: 'background-color: #18181b; color: var(--color-text-primary); border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; padding: 1.5rem;',
   },
   closeButton: {
     style: 'color: #a1a1aa;',
@@ -406,7 +406,7 @@ defineExpose({
 .floating-btn {
   background: var(--color-primary-highlight);
   border: none;
-  color: #fff;
+  color: var(--color-text-primary);
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -431,7 +431,7 @@ defineExpose({
 }
 
 .reorder-btn {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-hover);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   width: 48px;
@@ -439,7 +439,7 @@ defineExpose({
 }
 
 .reorder-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-bg-hover-strong);
 }
 
 .reorder-btn.active {
@@ -490,7 +490,7 @@ defineExpose({
 .add-card-btn {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--color-text-primary);
   font-size: 3rem;
   font-weight: 300;
   cursor: pointer;

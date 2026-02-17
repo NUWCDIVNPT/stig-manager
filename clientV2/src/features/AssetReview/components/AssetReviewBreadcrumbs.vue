@@ -199,9 +199,9 @@ const breadcrumbItems = computed(() => {
 
 /* Breadcrumb Styles */
 .breadcrumb-link {
-  color: #60a5fa;
+  color: var(--color-primary-highlight);
   text-decoration: none;
-  font-size: var(--breadcrumb-font-size);
+  font-size: 1.2rem;
 }
 
 .breadcrumb-link:hover {
@@ -209,13 +209,13 @@ const breadcrumbItems = computed(() => {
 }
 
 .breadcrumb-current {
-  color: #e4e4e7;
-  font-size: var(--breadcrumb-font-size);
+  color: var(--color-text-primary);
+  font-size: 1.2rem;
   font-weight: 600;
 }
 
 .breadcrumb-separator {
-  color: #6b7280;
+  color: var(--color-text-dim);
   margin: 0 0.5rem;
 }
 

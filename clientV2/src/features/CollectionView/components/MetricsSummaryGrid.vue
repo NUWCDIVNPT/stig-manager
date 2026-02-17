@@ -129,6 +129,7 @@ const aggregationType = computed(() => {
   if ('benchmarkId' in m[0]) {
     return 'stig'
   }
+  return null
 })
 
 const columns = computed(() => {
@@ -356,14 +357,14 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
   height: 100%;
   background: transparent;
   border: none;
-  color: #6b7280;
+  color: var(--color-text-dim);
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.15s, color 0.15s;
 }
 
 .row-action-btn:hover {
-  color: #3b82f6;
+  color: var(--color-action-blue);
 }
 
 .row-action-btn i {

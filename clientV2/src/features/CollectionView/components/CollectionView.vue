@@ -11,7 +11,6 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import ExportMetrics from '../../CollectionMetrics/components/ExportMetrics.vue'
 import {
-  fetchAssetStigs,
   fetchCollection,
 } from '../api/collectionApi.js'
 import CollectionAssetsTab from './CollectionAssetsTab.vue'
@@ -255,14 +254,14 @@ function toggleDashboardSidebar() {
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 1rem;
-  background-color: #1f1f1f;
-  border-bottom: 1px solid #3a3d40;
+  background-color: var(--color-background-dark);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .breadcrumb-link {
-  color: #60a5fa;
+  color: var(--color-primary-highlight);
   text-decoration: none;
-  font-size: var(--breadcrumb-font-size);
+  font-size: 1.2rem;
 }
 
 .breadcrumb-link:hover {
@@ -270,13 +269,13 @@ function toggleDashboardSidebar() {
 }
 
 .breadcrumb-current {
-  color: #e4e4e7;
-  font-size: var(--breadcrumb-font-size);
+  color: var(--color-text-primary);
+  font-size: 1.2rem;
   font-weight: 600;
 }
 
 .breadcrumb-separator {
-  color: #6b7280;
+  color: var(--color-text-dim);
   margin: 0 0.5rem;
 }
 
@@ -310,7 +309,7 @@ function toggleDashboardSidebar() {
 .placeholder-panel {
   padding: 2rem;
   text-align: center;
-  color: #a1a1aa;
+  color: var(--color-text-dim);
 }
 
 /* Dashboard Sidebar Layout */
@@ -323,8 +322,8 @@ function toggleDashboardSidebar() {
 .dashboard-sidebar {
   width: var(--dashboard-sidebar-width);
   min-width: var(--dashboard-sidebar-width);
-  background-color: #1a1a1a;
-  border-right: 1px solid #3a3d40;
+  background-color: var(--color-background-dark);
+  border-right: 1px solid var(--color-border-default);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -345,18 +344,18 @@ function toggleDashboardSidebar() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #2a2a2a;
-  border: 1px solid #3a3d40;
+  background: var(--color-background-light);
+  border: 1px solid var(--color-border-default);
   border-radius: 0.25rem;
-  color: #a1a1aa;
+  color: var(--color-text-dim);
   cursor: pointer;
   z-index: 10;
   transition: background-color 0.15s, color 0.15s;
 }
 
 .sidebar-toggle:hover {
-  background-color: #3a3d40;
-  color: #e4e4e7;
+  background-color: var(--color-bg-hover-strong);
+  color: var(--color-text-primary);
 }
 
 .sidebar-content {
@@ -386,7 +385,7 @@ function toggleDashboardSidebar() {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
+  color: var(--color-text-dim);
   font-style: italic;
 }
 
@@ -413,6 +412,6 @@ function toggleDashboardSidebar() {
 
 .tab-after-sidebar {
   /* Visual separator before tabs that align with main content */
-  border-left: 1px solid #3a3d40;
+  border-left: 1px solid var(--color-border-default);
 }
 </style>

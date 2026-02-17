@@ -24,16 +24,16 @@ function copyError() {
 
 const dialogPt = {
   root: {
-    style: 'background-color: #18181b; border: 1px solid #3f3f46; border-radius: 6px; color: #e4e4e7; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);',
+    style: 'background-color: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 6px; color: var(--color-text-primary); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);',
   },
   header: {
-    style: 'background-color: #18181b; color: #e4e4e7; border-top-left-radius: 6px; border-top-right-radius: 6px; padding: 1rem; border-bottom: 1px solid #27272a;',
+    style: 'background-color: var(--color-background-dark); color: var(--color-text-primary); border-top-left-radius: 6px; border-top-right-radius: 6px; padding: 1rem; border-bottom: 1px solid var(--color-background-light);',
   },
   content: {
-    style: 'background-color: #18181b; color: #e4e4e7; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; padding: 1.5rem;',
+    style: 'background-color: var(--color-background-dark); color: var(--color-text-primary); border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; padding: 1.5rem;',
   },
   closeButton: {
-    style: 'color: #a1a1aa;',
+    style: 'color: var(--color-text-dim);',
   },
   title: {
     style: 'font-size: 1.5rem; font-weight: 600;',
@@ -42,7 +42,7 @@ const dialogPt = {
 
 const buttonPt = {
   root: {
-    style: 'color: rgba(255, 255, 255, 0.87); border-color: #3f3f46; width: 100%',
+    style: 'color: var(--color-text-primary); border-color: var(--color-border-default); width: 100%',
     class: 'action-btn',
   },
 }
@@ -93,25 +93,23 @@ const buttonPt = {
 
 .description {
   margin: 0;
-  color: #a1a1aa;
+  color: var(--color-text-dim);
 }
 
 .code-box {
-  border: 1px solid #3f3f46;
+  border: 1px solid var(--color-border-default);
   border-radius: 6px;
   padding: 1rem;
   position: relative;
   margin-top: 0.5rem;
-  background-color: #09090b;
+  background-color: var(--color-background-darkest);
 }
 
 .box-title {
   position: absolute;
-  top: -10px;
-  left: 1rem;
-  background-color: #18181b;
-  padding: 0 0.5rem;
-  color: #a1a1aa;
+  top: -12px;
+  background-color: var(--color-background-dark);
+  color: var(--color-text-dim);
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -125,7 +123,7 @@ pre {
   margin: 0;
   font-family: monospace;
   font-size: 0.85rem;
-  color: #e4e4e7;
+  color: var(--color-text-primary);
   white-space: pre-wrap;
   word-break: break-all;
 }
@@ -149,10 +147,10 @@ pre {
   background: #09090b;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: var(--color-border-default);
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: var(--color-border-light);
 }
 </style>

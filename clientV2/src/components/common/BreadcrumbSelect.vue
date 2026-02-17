@@ -27,7 +27,6 @@ defineProps({
 defineEmits(['update:modelValue'])
 
 // Pass-through styles to override global PT inline styles
-// Note: fontSize is inherited from --breadcrumb-font-size CSS variable
 const selectPt = {
   root: {
     style: {
@@ -42,7 +41,7 @@ const selectPt = {
     style: {
       padding: '0',
       fontWeight: '600',
-      color: '#e4e4e7',
+      color: 'var(--color-text-primary)',
       background: 'transparent',
     },
   },
@@ -70,9 +69,8 @@ const selectPt = {
   align-items: center;
 }
 
-/* Inherit font-size from --breadcrumb-font-size CSS variable (defined in style.css :root) */
 :deep(.p-select-label) {
-  font-size: var(--breadcrumb-font-size);
+  font-size: 1.2rem;
 }
 
 :deep(.p-select-label:hover) {
@@ -80,7 +78,7 @@ const selectPt = {
 }
 
 :deep(.p-select-dropdown) {
-  color: #6b7280;
+  color: var(--color-text-dim);
   width: auto;
   padding-left: 0.25rem;
 }

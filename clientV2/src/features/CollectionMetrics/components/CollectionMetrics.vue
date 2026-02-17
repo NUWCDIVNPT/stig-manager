@@ -1,6 +1,5 @@
 <script setup>
 import { ref, watch } from 'vue'
-
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchCollectionMetricsSummary } from '../api/metricsApi.js'
 import { useCollectionCora } from '../composables/useCollectionCora.js'
@@ -11,7 +10,6 @@ import ExportMetrics from './ExportMetrics.vue'
 import ExportMetricsModal from './ExportMetricsModal.vue'
 import FindingsStats from './FindingsStats.vue'
 import InventoryStats from './InventoryStats.vue'
-
 import Progress from './Progress.vue'
 import ReviewAgesStats from './ReviewAgesStats.vue'
 
