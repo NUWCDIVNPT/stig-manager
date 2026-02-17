@@ -184,7 +184,7 @@ defineExpose({ asset })
   flex: 0 0 auto;
   padding: 0.5rem 1rem;
   background-color: var(--color-background-dark);
-  border-bottom: 1px solid var(--color-border-input);
+  border-bottom: 1px solid var(--color-border-default);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;

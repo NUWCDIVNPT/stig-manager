@@ -221,7 +221,7 @@ function onActionClick(action) {
   gap: 0.25rem;
   padding: 0.1rem 0.25rem;
   background: var(--color-background-subtle);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-border-default);
   border-radius: 0.125rem;
   color: var(--color-text-primary);
 }

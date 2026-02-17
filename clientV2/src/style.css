@@ -25,6 +25,7 @@
   --color-button-hover-bg: rgba(255, 255, 255, 0.1);
   --color-bg-hover: rgba(255, 255, 255, 0.05);
   --color-bg-hover-strong: #3f3f46;
+  --color-bg-hover-light: #76767c;
 
   /* Metrics Status Chart Colors */
   --metrics-status-chart-assessed: hsl(204, 91%, 29%);

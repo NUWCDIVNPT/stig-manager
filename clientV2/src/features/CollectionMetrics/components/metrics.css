@@ -44,7 +44,7 @@
 }
 
 .metric-action-link:hover {
-  color: var(--color-text-dim);
+  color: var(--color-bg-hover-light);
 }
 
 .metric-badge-row {

@@ -39,7 +39,7 @@ onUnmounted(() => document.body.classList.remove('no-scroll'))
 .overlay {
   position: fixed;
   inset: 0;
-  background: var(--color-background-darkest);
+  background: rgba(17, 17, 17, 0.65);
   z-index: 9999;
   display: grid;
   place-items: center;

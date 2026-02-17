@@ -129,7 +129,7 @@ function handleChecklistAssetAction(rowData) {
 
 .table-container {
   overflow: hidden;
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-border-default);
   border-radius: 4px;
 }
 
@@ -144,7 +144,7 @@ function handleChecklistAssetAction(rowData) {
 .child-panel__header {
   padding: 0.75rem 1rem;
   background-color: var(--color-background-light);
-  border-bottom: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-default);
   display: flex;
   justify-content: space-between;
   align-items: center;
