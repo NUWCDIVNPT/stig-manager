@@ -92,6 +92,6 @@ function hidePopover() {
 }
 
 .item-list li:not(:last-child) {
-  border-bottom: 1px solid var(--p-surface-border);
+  border-bottom: 1px solid var(--color-border-default);
 }
 </style>

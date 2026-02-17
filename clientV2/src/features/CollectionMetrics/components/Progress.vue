@@ -16,7 +16,7 @@ const colors = {
   submitted: 'var(--metrics-status-chart-submitted)',
   accepted: 'var(--metrics-status-chart-accepted)',
   rejected: 'var(--metrics-status-chart-rejected)',
-  text: '#e4e4e7',
+  text: 'var(--color-text-primary)',
 }
 
 // Helper to resolve CSS variables for Chart.js (Canvas) which doesn't support var()
@@ -245,7 +245,7 @@ const chartOptions = {
   font-size: 1.25rem;
   border-radius: 6px;
   padding: 3px 12px;
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--color-background-subtle);
 }
 
 .indicator {
@@ -272,7 +272,7 @@ const chartOptions = {
 }
 
 .stat-box {
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--color-background-subtle);
   border-radius: 8px;
   position: relative;
   overflow: hidden;
@@ -306,8 +306,8 @@ const chartOptions = {
 }
 
 .total-footer {
-  background-color: #26262b;
-  border: 1px solid #3f3f46;
+  background-color: var(--color-background-light);
+  border: 1px solid var(--color-border-default);
   border-radius: 8px;
   padding: 8px;
   text-align: center;
@@ -315,7 +315,7 @@ const chartOptions = {
 
 .total-label {
   font-size: 1.1rem;
-  color: #a1a1aa;
+  color: var(--color-text-dim);
   margin-bottom: 0.25rem;
 }
 

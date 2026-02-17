@@ -122,19 +122,19 @@ function handleChecklistAssetAction(rowData) {
   display: grid;
   grid-template-rows: 1fr 1fr;
   gap: 0.5rem;
-  height: calc(100% - 1rem); /* adjusting for padding */
+  height: calc(100% - 1rem);
   padding: 0.5rem;
   overflow: hidden;
 }
 
 .table-container {
   overflow: hidden;
-  border: 1px solid var(--color-border-subtle, #3a3d40);
+  border: 1px solid var(--color-border-default);
   border-radius: 4px;
 }
 
 .child-panel {
-  background-color: var(--color-surface-subtle, #1f1f1f);
+  background-color: var(--color-background-subtle);
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -143,8 +143,8 @@ function handleChecklistAssetAction(rowData) {
 
 .child-panel__header {
   padding: 0.75rem 1rem;
-  background-color: var(--color-surface-base, #262626);
-  border-bottom: 1px solid var(--color-border-subtle, #3a3d40);
+  background-color: var(--color-background-light);
+  border-bottom: 1px solid var(--color-border-default);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -152,16 +152,16 @@ function handleChecklistAssetAction(rowData) {
 
 .child-panel__header h3 {
   margin: 0;
-  color: var(--color-text-primary, #e4e4e7);
+  color: var(--color-text-primary);
   font-size: 1rem;
 }
 
 .stig-badge {
   font-size: 0.8rem;
-  background-color: var(--color-surface-darkish, #3a3d40);
+  background-color: var(--color-background-dark);
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
-  color: var(--text-muted-color, #a6adba);
+  color: var(--color-text-dim);
 }
 
 .child-panel__body {
@@ -176,7 +176,7 @@ function handleChecklistAssetAction(rowData) {
 .error-state {
   padding: 2rem;
   text-align: center;
-  color: var(--text-muted-color, #a6adba);
+  color: var(--color-text-dim);
   font-style: italic;
 }
 

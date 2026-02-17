@@ -77,7 +77,7 @@ function handleShieldClick(rowData) {
 .shield-action:hover {
   opacity: 1;
   transform: scale(1.2);
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--color-button-hover-bg);
 }
 
 .shield-action img {

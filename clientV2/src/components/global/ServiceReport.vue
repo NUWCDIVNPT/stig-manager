@@ -59,7 +59,7 @@ const { hasError, dbClass, oidcClass } = toRefs(props)
   display: flex;
   gap: 16px;
   align-items: flex-start;
-  color: #fff;
+  color: var(--color-text-primary);
   padding: 14px 18px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
@@ -98,7 +98,7 @@ const { hasError, dbClass, oidcClass } = toRefs(props)
   gap: 16px;
   align-items: flex-start;
   background: #3b2a1f;
-  color: #fff;
+  color: var(--color-text-primary);
   padding: 14px 18px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);

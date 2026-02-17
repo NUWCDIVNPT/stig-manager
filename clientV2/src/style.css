@@ -15,11 +15,17 @@
   --color-marking-sci: #f7ea48;
   
   /* Brand Colors */
-  --color-primary-highlight: #60a5fa;
+  --color-primary: #6366f1; /* Indigo-500 */
+  --color-primary-hover: #4f46e5; /* Indigo-600 */
+  --color-primary-highlight: #60a5fa; /* Blue-400 */
   --color-primary-highlight-light: #93c5fd;
+  --color-action-blue: #3b82f6; /* Blue-500 */
   
-  /* UI Interaction Colors */
+  /* HOVER */
   --color-button-hover-bg: rgba(255, 255, 255, 0.1);
+  --color-bg-hover: rgba(255, 255, 255, 0.05);
+  --color-bg-hover-strong: #3f3f46;
+  --color-bg-hover-light: #76767c;
 
   /* Metrics Status Chart Colors */
   --metrics-status-chart-assessed: hsl(204, 91%, 29%);
@@ -39,17 +45,22 @@
   --color-review-age: #d4d4d8;
 
   /* Breadcrumb sizing */
-  --breadcrumb-font-size: 1.2rem;
 
   /* Text Colors */
   --color-text-primary: rgba(255, 255, 255, 0.87);
-  --color-text-secondary: rgba(255, 255, 255, 0.6);
-  --color-text-muted: rgba(255, 255, 255, 0.5);
+  --color-text-dim: #a1a1aa; 
   --color-text-bright: rgba(255, 255, 255, 0.95);
+  --color-text-dark: #18181b;
 
   /* Surface Colors */
-  --color-surface-subtle: rgba(255, 255, 255, 0.03);
-  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-background-darkest: #000000;
+  --color-background-dark: #18181b; 
+  --color-background-light: #27272a;  
+  --color-background-subtle: rgba(255, 255, 255, 0.05);
+
+  /* Border Colors */
+  --color-border-default: #3f3f46; 
+  --color-border-light: #2a2a2d;
 
 }
 
@@ -175,26 +186,4 @@ textarea:focus {
   font-style: italic;
   font-weight: 800;
   src: url('../fonts/open-sans-v15-latin-800italic.woff2') format('woff2')
-}
-
-
-
-/* 
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-} */
-
-/* Breadcrumb select dropdown panel styling */
-.breadcrumb-select-panel .p-select-option {
-  font-size: var(--breadcrumb-font-size);
 }

@@ -44,7 +44,7 @@ watch(() => props.collectionId, loadLabels, { immediate: true })
 .table-container {
   height: 100%;
   overflow: hidden;
-  border: 1px solid var(--color-border-subtle, #3a3d40);
+  border: 1px solid var(--color-border-default);
   border-radius: 4px;
 }
 </style>
