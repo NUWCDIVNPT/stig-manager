@@ -13,7 +13,7 @@ const lastShownDate = ref('')
 
 const Sources = [
   {
-    date: '2026-02-26',
+    date: '2026-02-28',
     header: 'Test',
     body: `
     <p>Test</p>
@@ -30,8 +30,6 @@ const newFeatures = computed(() => {
   }
   return Sources.filter(item => item.date > lastShownDate.value)
 })
-
-console.log('lastWhatsNew', globalAppStore.user?.webPreferences)
 
 function normalizeDate(dateStr) {
   if (!dateStr) {
@@ -86,14 +84,15 @@ onMounted(() => {
     v-model:visible="visible"
     modal
     header="What's New"
-    :style="{ width: '900px', height: '85vh', maxHeight: '90vh' }"
+    :style="{ width: '900px', maxHeight: '80vh' }"
+    :content-style="{ overflowY: 'auto' }"
     :closable="true"
   >
     <div class="feedback-panel-container">
       <div class="feedback-box-title">
         Have a Feature Request?
       </div>
-      <div style="font-size: 12px;">
+      <div style="font-size: 1.1rem;">
         New features in STIG Manager are primarily driven by user requests.
         Have an idea or feature request? We'd love to hear from you!
         Please submit your suggestions by opening an issue on our
@@ -129,7 +128,7 @@ onMounted(() => {
 <style scoped>
 .home-widget-text {
   padding: 10px 10px;
-  font-size: 12px;
+  font-size: 1.1rem;
   word-wrap: break-word;
 }
 
@@ -142,7 +141,7 @@ onMounted(() => {
 .home-widget-subtitle {
   padding-top: 3px;
   padding-bottom: 3px;
-  font-size: 14px;
+  font-size: 1rem;
   font-weight: bold;
   color: var(--color-primary-highlight);
 }
