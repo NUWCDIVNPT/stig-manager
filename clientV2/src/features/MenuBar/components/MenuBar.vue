@@ -11,6 +11,10 @@ const {
   breadcrumbItems,
   collectionOptions,
   navigateToCollection,
+  assetStigOptions,
+  stigRevisionOptions,
+  navigateToStig,
+  navigateToRevision,
 } = useAppBreadcrumb()
 
 const tokenTooltip = computed(() => {
@@ -155,15 +159,26 @@ const pt = {
               />
             </template>
 
-            <!-- Full dropdown segment (asset, stig, revision) -->
+            <!-- STIG dropdown picker -->
             <BreadcrumbSelect
-              v-else-if="item.isDropdown && item.dropdownType === 'collection'"
-              :model-value="$route.params.collectionId"
-              :options="collectionOptions"
-              option-label="name"
-              option-value="collectionId"
-              placeholder="Collection"
-              @update:model-value="onCollectionSelect"
+              v-else-if="item.isDropdown && item.dropdownType === 'stig'"
+              :model-value="$route.params.benchmarkId"
+              :options="assetStigOptions"
+              option-label="benchmarkId"
+              option-value="benchmarkId"
+              placeholder="STIG"
+              @update:model-value="navigateToStig"
+            />
+
+            <!-- Revision dropdown picker -->
+            <BreadcrumbSelect
+              v-else-if="item.isDropdown && item.dropdownType === 'revision'"
+              :model-value="$route.params.revisionStr"
+              :options="stigRevisionOptions"
+              option-label="revisionStr"
+              option-value="revisionStr"
+              placeholder="Revision"
+              @update:model-value="navigateToRevision"
             />
 
             <!-- Clickable link segment -->
@@ -175,7 +190,7 @@ const pt = {
               {{ item.label }}
             </router-link>
 
-            <!-- Static text segment (asset, stig, revision labels for now) -->
+            <!-- Static text segment -->
             <span v-else class="breadcrumb-current">{{ item.label }}</span>
 
             <span

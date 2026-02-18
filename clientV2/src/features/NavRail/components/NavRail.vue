@@ -59,6 +59,13 @@ const navItems = computed(() => {
       route: '/stig-library',
       matchFn: () => route.name === 'stig-library' || route.name === 'library',
     },
+    {
+      key: 'whats-new',
+      label: 'What\'s New',
+      icon: 'pi pi-megaphone',
+      route: '/whats-new',
+      matchFn: () => route.name === 'whats-new',
+    },
   ]
 
   if (isAdmin.value) {
