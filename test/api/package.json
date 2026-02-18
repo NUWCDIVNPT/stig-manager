@@ -15,7 +15,7 @@
     "chai": "^5.1.2",
     "chai-datetime": "^1.8.1",
     "deep-equal-in-any-order": "^2.0.6",
-    "fast-xml-parser": "^5.3.4",
+    "fast-xml-parser": "^5.3.6",
     "jszip": "^3.10.1",
     "mocha": "^11.0.1",
     "uuid": "^11.0.3",
