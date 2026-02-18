@@ -14,6 +14,7 @@ const StigLibrary = () => import('../features/STIGLibrary/components/StigLibrary
 const CollectionSelection = () => import('../features/CollectionView/components/CollectionSelection.vue')
 const AppManagementSelection = () => import('../features/AppManagement/components/AppManagementSelection.vue')
 const StigLibrarySelection = () => import('../features/STIGLibrary/components/StigLibrarySelection.vue')
+const WhatsNewView = () => import('../features/WhatsNew/components/WhatsNewView.vue')
 const AssetReview = () => import('../features/AssetReview/components/AssetReview.vue')
 
 const EmptyComponent = { template: '<div><router-view></router-view></div>' }
@@ -92,6 +93,11 @@ const routes = [
     path: '/stig-library',
     name: 'stig-library',
     component: StigLibrarySelection,
+  },
+  {
+    path: '/whats-new',
+    name: 'whats-new',
+    component: WhatsNewView,
   },
   {
     path: '/collection/:collectionId/manage',

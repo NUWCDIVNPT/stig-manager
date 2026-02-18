@@ -38,8 +38,17 @@ export function useMenuNodes() {
       routeName: 'stig-library',
     }
 
+    // 4. What's New
+    const whatsNewNode = {
+      key: 'WhatsNew',
+      label: 'What\'s New',
+      component: 'WhatsNewView',
+      icon: 'pi pi-sparkles',
+      routeName: 'whats-new',
+    }
+
     // Top level nodes
-    const topLevel = [homeNode, appManagementNode, collectionsNode, stigLibraryNode]
+    const topLevel = [homeNode, appManagementNode, collectionsNode, stigLibraryNode, whatsNewNode]
 
     return topLevel
   })
