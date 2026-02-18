@@ -1,11 +1,17 @@
 <script setup>
 import Menubar from 'primevue/menubar'
 import { computed, inject } from 'vue'
+import BreadcrumbSelect from '../../../components/common/BreadcrumbSelect.vue'
+import { useAppBreadcrumb } from '../../../shared/composables/useAppBreadcrumb.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 
-defineEmits(['toggle-menu'])
 const oidcWorker = inject('worker')
 const env = useEnv()
+const {
+  breadcrumbItems,
+  collectionOptions,
+  navigateToCollection,
+} = useAppBreadcrumb()
 
 const tokenTooltip = computed(() => {
   try {
@@ -19,6 +25,10 @@ const tokenTooltip = computed(() => {
 function handleLogout() {
   const logoutHandler = oidcWorker.logout.bind(oidcWorker)
   logoutHandler()
+}
+
+function onCollectionSelect(collectionId) {
+  navigateToCollection(collectionId)
 }
 
 const items = computed(() => {
@@ -72,7 +82,7 @@ const pt = {
   root: {
     style: {
       width: '100%',
-      height: '80px',
+      height: '56px',
       backgroundColor: '#000000',
       border: 'none',
       borderBottom: '2px solid #464545',
@@ -118,16 +128,62 @@ const pt = {
   <Menubar :model="items" :pt="pt">
     <template #start>
       <div class="left-section">
-        <button class="icon-btn" aria-label="Menu" @click="$emit('toggle-menu')">
-          <i class="pi pi-bars" />
-        </button>
         <router-link to="/" class="home-link">
-          <span class="logo-icon" /> Stig-Manager
+          <span class="logo-icon" /> STIG Manager
         </router-link>
         <div class="badges">
           <span class="badge badge-oss">OSS</span>
           <span class="badge badge-version">{{ env?.version }}</span>
         </div>
+
+        <!-- Global breadcrumb -->
+        <nav v-if="breadcrumbItems.length" class="breadcrumb" aria-label="Breadcrumb">
+          <span class="breadcrumb-separator">/</span>
+          <template v-for="(item, index) in breadcrumbItems" :key="index">
+            <!-- Link + adjacent collection picker -->
+            <template v-if="item.route && item.pickerType === 'collection'">
+              <router-link :to="item.route" class="breadcrumb-link">
+                {{ item.label }}
+              </router-link>
+              <BreadcrumbSelect
+                picker-only
+                :model-value="$route.params.collectionId"
+                :options="collectionOptions"
+                option-label="name"
+                option-value="collectionId"
+                @update:model-value="onCollectionSelect"
+              />
+            </template>
+
+            <!-- Full dropdown segment (asset, stig, revision) -->
+            <BreadcrumbSelect
+              v-else-if="item.isDropdown && item.dropdownType === 'collection'"
+              :model-value="$route.params.collectionId"
+              :options="collectionOptions"
+              option-label="name"
+              option-value="collectionId"
+              placeholder="Collection"
+              @update:model-value="onCollectionSelect"
+            />
+
+            <!-- Clickable link segment -->
+            <router-link
+              v-else-if="item.route"
+              :to="item.route"
+              class="breadcrumb-link"
+            >
+              {{ item.label }}
+            </router-link>
+
+            <!-- Static text segment (asset, stig, revision labels for now) -->
+            <span v-else class="breadcrumb-current">{{ item.label }}</span>
+
+            <span
+              v-if="index < breadcrumbItems.length - 1"
+              class="breadcrumb-separator"
+            >/</span>
+          </template>
+        </nav>
       </div>
     </template>
 
@@ -169,31 +225,6 @@ const pt = {
   display: flex;
   align-items: center;
   gap: 16px;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  color: var(--color-text-primary);
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  outline: none;
-}
-
-.icon-btn:focus,
-.icon-btn:active {
-  outline: none;
-}
-
-.icon-btn:hover {
-  opacity: 0.8;
-}
-
-.pi-bars {
-  font-size: 1.2rem;
 }
 
 .home-link {
@@ -240,7 +271,36 @@ const pt = {
 }
 
 .badge-version {
-  background-color: var(--color-primary-green, #10b981); /* Use fallback if var not available */
+  background-color: var(--color-primary-green, #10b981);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.breadcrumb-separator {
+  color: var(--color-text-dim, #a1a1aa);
+  margin: 0 0.4rem;
+  font-size: 1.1rem;
+}
+
+.breadcrumb-link {
+  color: var(--color-primary-highlight, #6366f1);
+  text-decoration: none;
+  font-size: 1.2rem;
+}
+
+.breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-current {
+  color: var(--color-text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
 /* Menu Item Styling */
