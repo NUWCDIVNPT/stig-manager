@@ -19,8 +19,8 @@ import { Sources } from '../../../components/global/whatsNewSources.js'
   height: 100%;
   overflow: hidden;
   padding: 2rem;
-  background-color: var(--p-surface-950, #18181b);
-  color: var(--p-surface-200, #e4e4e7);
+  background-color: var(--color-background-dark);
+  color: var(--color-text-primary);
   display: flex;
   flex-direction: column;
 }
@@ -34,7 +34,7 @@ h1 {
   font-size: 1.8rem;
   font-weight: 600;
   margin: 0;
-  color: var(--p-surface-0, #fff);
+  color: var(--color-text-primary);
 }
 
 .whats-new-content {
