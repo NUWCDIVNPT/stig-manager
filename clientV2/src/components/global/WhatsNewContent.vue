@@ -77,7 +77,7 @@ defineProps({
 .feature-body :deep(img) {
   max-width: 100%;
   height: auto;
-  border: 1px solid var(--p-surface-border, #3f3f46);
+  border: 1px solid var(--color-border-default);
   border-radius: 4px;
   margin-top: 0.5rem;
 }
@@ -101,6 +101,7 @@ defineProps({
 
 .feedback-box-title {
   font-weight: bold;
+  color: var(--color-primary-highlight);
   margin-bottom: 5px;
 }
 
