@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="en" class="app-dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STIG Manager — Navigation Architecture Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  font-size: 11px;
+
+  /* Surfaces */
+  --bg-base: #18181b;
+  --bg-surface: #27272a;
+  --bg-elevated: #2e2e32;
+  --bg-hover: rgba(255,255,255,0.05);
+  --bg-hover-strong: #3f3f46;
+  --bg-active: rgba(99,102,241,0.12);
+
+  /* Borders */
+  --border: #3f3f46;
+  --border-subtle: #333336;
+
+  /* Text */
+  --text-primary: rgba(255,255,255,0.87);
+  --text-secondary: #a1a1aa;
+  --text-dim: #71717a;
+  --text-inverse: #18181b;
+
+  /* Brand */
+  --accent: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-muted: rgba(99,102,241,0.15);
+  --action-blue: #3b82f6;
+  --action-blue-hover: #2563eb;
+
+  /* Status */
+  --green: #22c55e;
+  --green-muted: rgba(34,197,94,0.15);
+  --amber: #f59e0b;
+  --amber-muted: rgba(245,158,11,0.15);
+  --red: #ef4444;
+  --red-muted: rgba(239,68,68,0.15);
+  --blue: #3b82f6;
+  --blue-muted: rgba(59,130,246,0.15);
+
+  /* Metrics */
+  --metrics-assessed: hsl(204,91%,29%);
+  --metrics-submitted: hsl(41,66%,46%);
+  --metrics-accepted: hsl(146,93%,27%);
+  --metrics-rejected: hsl(5,89%,32%);
+  --metrics-unassessed: #3f3f46;
+
+  /* CAT */
+  --cat1: #c68c8c;
+  --cat2: #d4b056;
+  --cat3: #a3acd6;
+
+  /* Layout */
+  --menubar-h: 52px;
+  --rail-collapsed: 48px;
+  --rail-expanded: 200px;
+  --sidebar-w: 33rem;
+  --sidebar-collapsed-w: 2.5rem;
+  --banner-h: 22px;
+
+  /* Transitions */
+  --t-fast: 150ms ease;
+  --t-normal: 200ms ease;
+  --t-slow: 300ms cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Open Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+a { color: var(--action-blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════════════════════
+   APP GRID
+   ═══════════════════════════════════════════════════════════ */
+.app-grid {
+  display: grid;
+  grid-template-areas:
+    'banner  banner'
+    'header  header'
+    'rail    main';
+  grid-template-columns: var(--rail-collapsed) 1fr;
+  grid-template-rows: var(--banner-h) var(--menubar-h) 1fr;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  transition: grid-template-columns var(--t-slow);
+}
+
+.app-grid.rail-expanded {
+  grid-template-columns: var(--rail-expanded) 1fr;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CLASSIFICATION BANNER
+   ═══════════════════════════════════════════════════════════ */
+.banner {
+  grid-area: banner;
+  background: #007a33;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--banner-h);
+  user-select: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MENUBAR
+   ═══════════════════════════════════════════════════════════ */
+.menubar {
+  grid-area: header;
+  height: var(--menubar-h);
+  background: #000;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 12px;
+  z-index: 100;
+}
+
+.menubar__toggle {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  transition: background var(--t-fast), color var(--t-fast);
+  flex-shrink: 0;
+}
+.menubar__toggle:hover {
+  background: var(--bg-hover-strong);
+  color: var(--text-primary);
+}
+
+.menubar__logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 1.2rem;
+  letter-spacing: -0.01em;
+}
+
+.menubar__logo-icon {
+  width: 22px;
+  height: 22px;
+  position: relative;
+}
+
+.menubar__logo-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.menubar__separator {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 1.1rem;
+}
+
+.breadcrumb__sep {
+  color: var(--text-dim);
+  margin: 0 6px;
+  font-size: 1rem;
+  user-select: none;
+}
+
+.breadcrumb__item {
+  color: var(--action-blue);
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 2px 0;
+  transition: color var(--t-fast);
+}
+.breadcrumb__item:hover { color: #60a5fa; }
+
+.breadcrumb__item--current {
+  color: var(--text-primary);
+  font-weight: 600;
+  cursor: default;
+}
+
+.breadcrumb__dropdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background var(--t-fast);
+  position: relative;
+}
+.breadcrumb__dropdown:hover {
+  background: var(--bg-hover-strong);
+}
+.breadcrumb__dropdown svg {
+  width: 12px;
+  height: 12px;
+  opacity: 0.5;
+  transition: opacity var(--t-fast), transform var(--t-fast);
+}
+.breadcrumb__dropdown:hover svg {
+  opacity: 0.8;
+}
+.breadcrumb__dropdown.open svg {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+/* Breadcrumb dropdown panel */
+.breadcrumb__panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 220px;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 500;
+  padding: 4px;
+  display: none;
+}
+.breadcrumb__dropdown.open .breadcrumb__panel {
+  display: block;
+}
+.breadcrumb__panel-item {
+  display: flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
+.breadcrumb__panel-item:hover {
+  background: var(--bg-hover-strong);
+}
+.breadcrumb__panel-item.active {
+  background: var(--accent-muted);
+  color: var(--accent);
+  font-weight: 600;
+}
+.breadcrumb__panel-search {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 4px;
+}
+.breadcrumb__panel-search input {
+  width: 100%;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 5px 8px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 1.05rem;
+  outline: none;
+}
+.breadcrumb__panel-search input:focus {
+  border-color: var(--accent);
+}
+.breadcrumb__panel-search input::placeholder {
+  color: var(--text-dim);
+}
+
+/* Menubar right actions */
+.menubar__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.menubar__action-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.menubar__action-btn:hover {
+  background: var(--bg-hover-strong);
+  color: var(--text-primary);
+}
+
+.menubar__avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--bg-hover-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--t-fast);
+  border: 1px solid var(--border);
+}
+.menubar__avatar:hover {
+  background: var(--border);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NAV RAIL
+   ═══════════════════════════════════════════════════════════ */
+.rail {
+  grid-area: rail;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width var(--t-slow);
+  z-index: 50;
+}
+
+.rail__nav {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 6px;
+  gap: 2px;
+}
+
+.rail__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 7px;
+  height: 38px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  transition: background var(--t-fast), color var(--t-fast);
+  white-space: nowrap;
+  overflow: hidden;
+  position: relative;
+}
+.rail__item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.rail__item.active {
+  background: var(--accent-muted);
+  color: var(--accent);
+}
+.rail__item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+
+.rail__icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.rail__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.rail__label {
+  font-size: 1.05rem;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity var(--t-normal);
+  pointer-events: none;
+}
+.app-grid.rail-expanded .rail__label {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Tooltip for collapsed state */
+.rail__item[data-tooltip] {
+  position: relative;
+}
+.app-grid:not(.rail-expanded) .rail__item[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 1rem;
+  white-space: nowrap;
+  z-index: 200;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
+
+.rail__divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 6px 10px;
+}
+
+/* Recent Views section */
+.rail__section-header {
+  padding: 6px 10px 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0;
+  transition: opacity var(--t-normal);
+  white-space: nowrap;
+}
+.app-grid.rail-expanded .rail__section-header {
+  opacity: 1;
+}
+
+.rail__recents {
+  display: flex;
+  flex-direction: column;
+  padding: 0 6px;
+  gap: 1px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.rail__recent-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background var(--t-fast), color var(--t-fast);
+  opacity: 0;
+  transition: opacity var(--t-normal), background var(--t-fast), color var(--t-fast);
+}
+.app-grid.rail-expanded .rail__recent-item {
+  opacity: 1;
+}
+.rail__recent-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.rail__recent-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Collapsed recent views icon */
+.rail__recent-collapsed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  height: 38px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.rail__recent-collapsed:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.app-grid.rail-expanded .rail__recent-collapsed {
+  display: none;
+}
+.app-grid:not(.rail-expanded) .rail__section-header,
+.app-grid:not(.rail-expanded) .rail__recent-item {
+  display: none;
+}
+.app-grid.rail-expanded .rail__recent-collapsed {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN CONTENT
+   ═══════════════════════════════════════════════════════════ */
+.main {
+  grid-area: main;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-base);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COLLECTION VIEW
+   ═══════════════════════════════════════════════════════════ */
+.collection-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-surface);
+  padding: 0 0 0 0;
+  flex-shrink: 0;
+}
+
+.tab {
+  padding: 10px 18px;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+  white-space: nowrap;
+  position: relative;
+}
+.tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.tab.management {
+  margin-left: auto;
+}
+.tab.management + .tab.management {
+  margin-left: 0;
+}
+
+/* Content split: sidebar + grid */
+.content-split {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   METRICS SIDEBAR
+   ═══════════════════════════════════════════════════════════ */
+.metrics-sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--bg-base);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: width var(--t-slow), min-width var(--t-slow);
+  overflow: hidden;
+}
+
+.metrics-sidebar.collapsed {
+  width: var(--sidebar-collapsed-w);
+  min-width: var(--sidebar-collapsed-w);
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 8px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  cursor: pointer;
+  z-index: 10;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.sidebar-toggle:hover {
+  background: var(--bg-hover-strong);
+  color: var(--text-primary);
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.metrics-sidebar.collapsed .sidebar-content {
+  display: none;
+}
+
+/* Metric cards */
+.metric-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.metric-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.metric-card__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-card__badge {
+  font-size: 0.9rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* Progress donut */
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.donut-wrapper {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+}
+
+.donut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.donut-center__pct {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.donut-center__label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.progress-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1rem;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.legend-label {
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.legend-value {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* CORA */
+.cora-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cora-score {
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.cora-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cora-risk {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-self: flex-start;
+}
+
+.cora-cats {
+  display: flex;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.cora-cat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.cora-cat-label {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* Inventory / Findings */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+.findings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.finding-item {
+  text-align: center;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.finding-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.finding-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DATA GRID
+   ═══════════════════════════════════════════════════════════ */
+.grid-area {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.grid-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-base);
+}
+
+.grid-toolbar__search {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 5px 10px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  width: 200px;
+  outline: none;
+}
+.grid-toolbar__search:focus {
+  border-color: var(--accent);
+}
+.grid-toolbar__search::placeholder {
+  color: var(--text-dim);
+}
+
+.grid-toolbar__btn {
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.grid-toolbar__btn:hover {
+  background: var(--bg-hover-strong);
+  color: var(--text-primary);
+}
+
+.grid-toolbar__spacer { flex: 1; }
+
+.grid-toolbar__count {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Table */
+.data-table-wrap {
+  flex: 1;
+  overflow: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+  table-layout: fixed;
+}
+
+.data-table th {
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  white-space: nowrap;
+  user-select: none;
+}
+.data-table th.sortable { cursor: pointer; }
+.data-table th.sortable:hover { color: var(--text-primary); }
+
+.data-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table tr:hover td {
+  background: var(--bg-hover);
+}
+
+.data-table .col-stig { width: 30%; }
+.data-table .col-assets { width: 8%; text-align: center; }
+.data-table .col-assessed { width: 10%; text-align: right; }
+.data-table .col-submitted { width: 10%; text-align: right; }
+.data-table .col-accepted { width: 10%; text-align: right; }
+.data-table .col-rejected { width: 8%; text-align: right; }
+.data-table .col-cora { width: 8%; text-align: right; }
+.data-table .col-cat1 { width: 6%; text-align: center; }
+.data-table .col-cat2 { width: 6%; text-align: center; }
+.data-table .col-cat3 { width: 6%; text-align: center; }
+
+.data-table td.center { text-align: center; }
+.data-table td.right { text-align: right; }
+
+/* Progress mini-bar */
+.mini-bar {
+  display: inline-flex;
+  width: 48px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-hover-strong);
+  overflow: hidden;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+.mini-bar__fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+/* STIG link */
+.stig-link {
+  color: var(--action-blue);
+  cursor: pointer;
+}
+.stig-link:hover {
+  text-decoration: underline;
+}
+
+/* CAT badges */
+.cat-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* CORA percentage */
+.cora-pct {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Grid footer */
+.grid-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-surface);
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.grid-footer__actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITY
+   ═══════════════════════════════════════════════════════════ */
+.text-green { color: var(--green); }
+.text-amber { color: var(--amber); }
+.text-red { color: var(--red); }
+.text-blue { color: var(--blue); }
+.text-dim { color: var(--text-dim); }
+
+.bg-green-muted { background: var(--green-muted); color: var(--green); }
+.bg-amber-muted { background: var(--amber-muted); color: var(--amber); }
+.bg-red-muted { background: var(--red-muted); color: var(--red); }
+.bg-blue-muted { background: var(--blue-muted); color: var(--blue); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* ═══════════════════════════════════════════════════════════
+   SVG ICONS (inline)
+   ═══════════════════════════════════════════════════════════ */
+.icon { display: inline-flex; align-items: center; justify-content: center; }
+</style>
+</head>
+<body>
+
+<div class="app-grid" id="app">
+  <!-- Classification Banner -->
+  <div class="banner">UNCLASSIFIED</div>
+
+  <!-- MenuBar -->
+  <header class="menubar">
+    <button class="menubar__toggle" onclick="toggleRail()" title="Toggle navigation">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+
+    <a class="menubar__logo" href="#">
+      <span class="menubar__logo-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L3 7v6c0 5.25 3.75 10.15 9 11.25C17.25 23.15 21 18.25 21 13V7l-9-5z" fill="#22c55e" opacity="0.2" stroke="#22c55e" stroke-width="1.5"/>
+          <path d="M9 12l2 2 4-4" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      STIG Manager
+    </a>
+
+    <div class="menubar__separator"></div>
+
+    <!-- Global Breadcrumb -->
+    <nav class="breadcrumb">
+      <span class="breadcrumb__item" onclick="showView('home')">Home</span>
+      <span class="breadcrumb__sep">/</span>
+
+      <span class="breadcrumb__dropdown" id="collectionDropdown" onclick="toggleDropdown(event, 'collectionDropdown')">
+        <span style="color: var(--text-primary); font-weight: 600;">Collection Alpha</span>
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 4.5L6 7.5L9 4.5"/></svg>
+
+        <div class="breadcrumb__panel" onclick="event.stopPropagation()">
+          <div class="breadcrumb__panel-search">
+            <input type="text" placeholder="Filter collections..." />
+          </div>
+          <div class="breadcrumb__panel-item active">
+            <span>Collection Alpha</span>
+          </div>
+          <div class="breadcrumb__panel-item" onclick="switchCollection('Collection Beta')">
+            <span>Collection Beta</span>
+          </div>
+          <div class="breadcrumb__panel-item" onclick="switchCollection('DoD Enterprise Cloud')">
+            <span>DoD Enterprise Cloud</span>
+          </div>
+          <div class="breadcrumb__panel-item" onclick="switchCollection('NIPR Boundary')">
+            <span>NIPR Boundary</span>
+          </div>
+          <div class="breadcrumb__panel-item" onclick="switchCollection('SIPR Systems FY26')">
+            <span>SIPR Systems FY26</span>
+          </div>
+        </div>
+      </span>
+
+      <span class="breadcrumb__sep">/</span>
+      <span class="breadcrumb__item breadcrumb__item--current" id="breadcrumbLeaf">STIGs</span>
+    </nav>
+
+    <!-- Right actions -->
+    <div class="menubar__actions">
+      <button class="menubar__action-btn" title="Search (Ctrl+K)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <div class="menubar__avatar" title="stigadmin">SA</div>
+    </div>
+  </header>
+
+  <!-- Nav Rail -->
+  <aside class="rail">
+    <nav class="rail__nav">
+      <button class="rail__item" data-tooltip="Home" onclick="showView('home')">
+        <span class="rail__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </span>
+        <span class="rail__label">Home</span>
+      </button>
+
+      <button class="rail__item active" data-tooltip="Collections">
+        <span class="rail__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+        </span>
+        <span class="rail__label">Collections</span>
+      </button>
+
+      <button class="rail__item" data-tooltip="STIG Library">
+        <span class="rail__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        </span>
+        <span class="rail__label">Library</span>
+      </button>
+
+      <button class="rail__item" data-tooltip="Admin">
+        <span class="rail__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </span>
+        <span class="rail__label">Admin</span>
+      </button>
+    </nav>
+
+    <div class="rail__divider"></div>
+
+    <!-- Recent Views: collapsed icon -->
+    <div class="rail__recent-collapsed" data-tooltip="Recent Views">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
+
+    <!-- Recent Views: expanded list -->
+    <div class="rail__section-header">Recent Views</div>
+    <div class="rail__recents">
+      <div class="rail__recent-item">
+        <span class="rail__recent-dot" style="background: var(--accent)"></span>
+        <span>Collection Alpha</span>
+      </div>
+      <div class="rail__recent-item">
+        <span class="rail__recent-dot" style="background: var(--action-blue)"></span>
+        <span>web-server-01 / Apache 2.4</span>
+      </div>
+      <div class="rail__recent-item">
+        <span class="rail__recent-dot" style="background: var(--accent)"></span>
+        <span>Collection Beta</span>
+      </div>
+      <div class="rail__recent-item">
+        <span class="rail__recent-dot" style="background: var(--action-blue)"></span>
+        <span>db-prod-03 / Oracle 19c</span>
+      </div>
+      <div class="rail__recent-item">
+        <span class="rail__recent-dot" style="background: var(--green)"></span>
+        <span>STIG Library</span>
+      </div>
+      <div class="rail__recent-item">
+        <span class="rail__recent-dot" style="background: var(--accent)"></span>
+        <span>DoD Enterprise Cloud</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="collection-view">
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active" data-tab="stigs" onclick="switchTab(this)">STIGs</div>
+        <div class="tab" data-tab="assets" onclick="switchTab(this)">Assets</div>
+        <div class="tab" data-tab="labels" onclick="switchTab(this)">Labels</div>
+        <div class="tab" data-tab="findings" onclick="switchTab(this)">Findings</div>
+        <div class="tab management" data-tab="users" onclick="switchTab(this)">Users</div>
+        <div class="tab management" data-tab="settings" onclick="switchTab(this)">Settings</div>
+      </div>
+
+      <!-- Content: Sidebar + Grid -->
+      <div class="content-split">
+        <!-- Metrics Sidebar -->
+        <aside class="metrics-sidebar" id="metricsSidebar">
+          <button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle" title="Collapse sidebar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+
+          <div class="sidebar-content">
+            <!-- Progress -->
+            <div class="metric-card">
+              <div class="metric-card__header">
+                <span class="metric-card__title">Progress</span>
+              </div>
+              <div class="progress-container">
+                <div class="donut-wrapper">
+                  <canvas id="donutCanvas" width="100" height="100"></canvas>
+                  <div class="donut-center">
+                    <div class="donut-center__pct">72%</div>
+                    <div class="donut-center__label">assessed</div>
+                  </div>
+                </div>
+                <div class="progress-legend">
+                  <div class="legend-row">
+                    <span class="legend-dot" style="background: var(--metrics-assessed)"></span>
+                    <span class="legend-label">Assessed</span>
+                    <span class="legend-value">1,847</span>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-dot" style="background: var(--metrics-submitted)"></span>
+                    <span class="legend-label">Submitted</span>
+                    <span class="legend-value">412</span>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-dot" style="background: var(--metrics-accepted)"></span>
+                    <span class="legend-label">Accepted</span>
+                    <span class="legend-value">1,203</span>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-dot" style="background: var(--metrics-rejected)"></span>
+                    <span class="legend-label">Rejected</span>
+                    <span class="legend-value">18</span>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-dot" style="background: var(--metrics-unassessed)"></span>
+                    <span class="legend-label">Unassessed</span>
+                    <span class="legend-value">712</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CORA -->
+            <div class="metric-card">
+              <div class="metric-card__header">
+                <span class="metric-card__title">CORA</span>
+                <span class="metric-card__badge bg-amber-muted">Moderate</span>
+              </div>
+              <div class="cora-display">
+                <span class="cora-score text-amber">42.7</span>
+                <div class="cora-detail">
+                  <div class="cora-cats">
+                    <span class="cora-cat">
+                      <span class="cora-cat-label" style="color: var(--cat1)">I</span>
+                      <span>3</span>
+                    </span>
+                    <span class="cora-cat">
+                      <span class="cora-cat-label" style="color: var(--cat2)">II</span>
+                      <span>47</span>
+                    </span>
+                    <span class="cora-cat">
+                      <span class="cora-cat-label" style="color: var(--cat3)">III</span>
+                      <span>12</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Inventory -->
+            <div class="metric-card">
+              <div class="metric-card__header">
+                <span class="metric-card__title">Inventory</span>
+              </div>
+              <div class="stat-grid">
+                <div class="stat-item">
+                  <div class="stat-value">24</div>
+                  <div class="stat-label">Assets</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">18</div>
+                  <div class="stat-label">STIGs</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">107</div>
+                  <div class="stat-label">Checklists</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Findings -->
+            <div class="metric-card">
+              <div class="metric-card__header">
+                <span class="metric-card__title">Findings</span>
+              </div>
+              <div class="findings-grid">
+                <div class="finding-item" style="background: rgba(198,140,140,0.1)">
+                  <div class="finding-value" style="color: var(--cat1)">3</div>
+                  <div class="finding-label" style="color: var(--cat1)">CAT I</div>
+                </div>
+                <div class="finding-item" style="background: rgba(212,176,86,0.1)">
+                  <div class="finding-value" style="color: var(--cat2)">47</div>
+                  <div class="finding-label" style="color: var(--cat2)">CAT II</div>
+                </div>
+                <div class="finding-item" style="background: rgba(163,172,214,0.1)">
+                  <div class="finding-value" style="color: var(--cat3)">12</div>
+                  <div class="finding-label" style="color: var(--cat3)">CAT III</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ages -->
+            <div class="metric-card">
+              <div class="metric-card__header">
+                <span class="metric-card__title">Review Ages</span>
+              </div>
+              <div class="stat-grid">
+                <div class="stat-item">
+                  <div class="stat-value" style="font-size: 1.2rem;">187d</div>
+                  <div class="stat-label">Oldest</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value" style="font-size: 1.2rem;">2h</div>
+                  <div class="stat-label">Newest</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value" style="font-size: 1.2rem;">14m</div>
+                  <div class="stat-label">Updated</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Data Grid Area -->
+        <div class="grid-area">
+          <div class="grid-toolbar">
+            <input class="grid-toolbar__search" type="text" placeholder="Filter STIGs..." />
+            <button class="grid-toolbar__btn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align: -1px; margin-right: 4px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export CSV
+            </button>
+            <span class="grid-toolbar__spacer"></span>
+            <span class="grid-toolbar__count">18 STIGs</span>
+          </div>
+
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th class="col-stig sortable">Benchmark</th>
+                  <th class="col-assets sortable">Assets</th>
+                  <th class="col-assessed sortable">Assessed</th>
+                  <th class="col-submitted sortable">Submitted</th>
+                  <th class="col-accepted sortable">Accepted</th>
+                  <th class="col-rejected sortable">Rejected</th>
+                  <th class="col-cora sortable">CORA%</th>
+                  <th class="col-cat1 sortable">CAT I</th>
+                  <th class="col-cat2 sortable">CAT II</th>
+                  <th class="col-cat3 sortable">CAT III</th>
+                </tr>
+              </thead>
+              <tbody id="gridBody">
+              </tbody>
+            </table>
+          </div>
+
+          <div class="grid-footer">
+            <span>Showing 18 of 18 STIGs</span>
+            <div class="grid-footer__actions">
+              <span style="color: var(--text-dim); font-size: 0.9rem;">Fetched: 14:32:07</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// NAV RAIL TOGGLE
+// ═══════════════════════════════════════
+function toggleRail() {
+  document.getElementById('app').classList.toggle('rail-expanded');
+}
+
+// ═══════════════════════════════════════
+// METRICS SIDEBAR TOGGLE
+// ═══════════════════════════════════════
+function toggleSidebar() {
+  const sidebar = document.getElementById('metricsSidebar');
+  const btn = document.getElementById('sidebarToggle');
+  sidebar.classList.toggle('collapsed');
+  const collapsed = sidebar.classList.contains('collapsed');
+  btn.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+  btn.innerHTML = collapsed
+    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>'
+    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>';
+}
+
+// ═══════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════
+function switchTab(el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('breadcrumbLeaf').textContent = el.textContent;
+}
+
+// ═══════════════════════════════════════
+// BREADCRUMB DROPDOWNS
+// ═══════════════════════════════════════
+function toggleDropdown(e, id) {
+  e.stopPropagation();
+  const dd = document.getElementById(id);
+  const wasOpen = dd.classList.contains('open');
+
+  // Close all
+  document.querySelectorAll('.breadcrumb__dropdown').forEach(d => d.classList.remove('open'));
+
+  if (!wasOpen) {
+    dd.classList.add('open');
+  }
+}
+
+function switchCollection(name) {
+  document.querySelectorAll('.breadcrumb__dropdown').forEach(d => d.classList.remove('open'));
+  const dd = document.getElementById('collectionDropdown');
+  dd.querySelector('span').textContent = name;
+
+  // Update active state
+  dd.querySelectorAll('.breadcrumb__panel-item').forEach(item => {
+    item.classList.toggle('active', item.textContent.trim() === name);
+  });
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click', () => {
+  document.querySelectorAll('.breadcrumb__dropdown').forEach(d => d.classList.remove('open'));
+});
+
+// ═══════════════════════════════════════
+// DONUT CHART
+// ═══════════════════════════════════════
+function drawDonut() {
+  const canvas = document.getElementById('donutCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = 100 * dpr;
+  canvas.height = 100 * dpr;
+  ctx.scale(dpr, dpr);
+
+  const cx = 50, cy = 50, r = 40, lw = 10;
+  const data = [
+    { value: 1847, color: 'hsl(204,91%,29%)' },   // assessed
+    { value: 412,  color: 'hsl(41,66%,46%)' },     // submitted
+    { value: 1203, color: 'hsl(146,93%,27%)' },    // accepted
+    { value: 18,   color: 'hsl(5,89%,32%)' },      // rejected
+    { value: 712,  color: '#3f3f46' },              // unassessed
+  ];
+
+  const total = data.reduce((s, d) => s + d.value, 0);
+  let angle = -Math.PI / 2;
+
+  data.forEach(seg => {
+    const sweep = (seg.value / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, angle, angle + sweep);
+    ctx.strokeStyle = seg.color;
+    ctx.lineWidth = lw;
+    ctx.lineCap = 'butt';
+    ctx.stroke();
+    angle += sweep;
+  });
+}
+
+// ═══════════════════════════════════════
+// GRID DATA
+// ═══════════════════════════════════════
+const stigData = [
+  { name: 'Apache Server 2.4 UNIX STIG', assets: 8, assessed: 94, submitted: 42, accepted: 87, rejected: 1, cora: 12.3, cat1: 0, cat2: 5, cat3: 2 },
+  { name: 'Application Security and Development STIG', assets: 12, assessed: 68, submitted: 31, accepted: 52, rejected: 3, cora: 38.7, cat1: 1, cat2: 8, cat3: 1 },
+  { name: 'Canonical Ubuntu 22.04 STIG', assets: 6, assessed: 88, submitted: 55, accepted: 79, rejected: 0, cora: 18.2, cat1: 0, cat2: 3, cat3: 1 },
+  { name: 'Google Chrome STIG', assets: 24, assessed: 99, submitted: 88, accepted: 97, rejected: 0, cora: 2.1, cat1: 0, cat2: 1, cat3: 0 },
+  { name: 'Microsoft IIS 10.0 Server STIG', assets: 4, assessed: 72, submitted: 28, accepted: 45, rejected: 2, cora: 55.4, cat1: 1, cat2: 12, cat3: 3 },
+  { name: 'Microsoft SQL Server 2019 STIG', assets: 3, assessed: 81, submitted: 44, accepted: 71, rejected: 0, cora: 28.9, cat1: 0, cat2: 6, cat3: 2 },
+  { name: 'Microsoft Windows 11 STIG', assets: 18, assessed: 91, submitted: 67, accepted: 85, rejected: 1, cora: 15.6, cat1: 0, cat2: 4, cat3: 1 },
+  { name: 'Microsoft Windows Server 2022 STIG', assets: 12, assessed: 78, submitted: 39, accepted: 62, rejected: 4, cora: 41.2, cat1: 1, cat2: 9, cat3: 2 },
+  { name: 'Oracle Database 19c STIG', assets: 3, assessed: 65, submitted: 22, accepted: 41, rejected: 1, cora: 62.8, cat1: 2, cat2: 14, cat3: 4 },
+  { name: 'PostgreSQL 15 STIG', assets: 2, assessed: 74, submitted: 35, accepted: 58, rejected: 0, cora: 33.5, cat1: 0, cat2: 7, cat3: 1 },
+  { name: 'Red Hat Enterprise Linux 9 STIG', assets: 14, assessed: 86, submitted: 51, accepted: 78, rejected: 2, cora: 22.1, cat1: 0, cat2: 5, cat3: 1 },
+  { name: 'VMware vSphere 8.0 ESXi STIG', assets: 6, assessed: 59, submitted: 18, accepted: 34, rejected: 0, cora: 71.3, cat1: 1, cat2: 11, cat3: 3 },
+  { name: 'VMware vSphere 8.0 vCenter STIG', assets: 2, assessed: 63, submitted: 25, accepted: 39, rejected: 1, cora: 58.7, cat1: 1, cat2: 9, cat3: 2 },
+  { name: 'Cisco IOS XE Router STIG', assets: 8, assessed: 82, submitted: 44, accepted: 69, rejected: 0, cora: 25.4, cat1: 0, cat2: 6, cat3: 1 },
+  { name: 'Docker Enterprise STIG', assets: 4, assessed: 71, submitted: 30, accepted: 48, rejected: 2, cora: 44.1, cat1: 0, cat2: 8, cat3: 2 },
+  { name: 'Kubernetes STIG', assets: 6, assessed: 55, submitted: 15, accepted: 28, rejected: 3, cora: 78.2, cat1: 2, cat2: 16, cat3: 5 },
+  { name: 'Mozilla Firefox STIG', assets: 24, assessed: 97, submitted: 82, accepted: 94, rejected: 0, cora: 4.8, cat1: 0, cat2: 2, cat3: 0 },
+  { name: 'Network Infrastructure Policy STIG', assets: 8, assessed: 76, submitted: 38, accepted: 55, rejected: 1, cora: 36.9, cat1: 0, cat2: 7, cat3: 2 },
+];
+
+function renderGrid() {
+  const tbody = document.getElementById('gridBody');
+  tbody.innerHTML = stigData.map(row => {
+    const coraColor = row.cora < 20 ? 'var(--green)' :
+                      row.cora < 40 ? 'var(--blue)' :
+                      row.cora < 60 ? 'var(--amber)' : 'var(--red)';
+    const assessedColor = row.assessed > 85 ? 'var(--green)' :
+                          row.assessed > 60 ? 'var(--amber)' : 'var(--red)';
+
+    return `<tr>
+      <td class="col-stig"><span class="stig-link">${row.name}</span></td>
+      <td class="center">${row.assets}</td>
+      <td class="right">
+        <span class="mini-bar"><span class="mini-bar__fill" style="width:${row.assessed}%; background:${assessedColor}"></span></span>
+        ${row.assessed}%
+      </td>
+      <td class="right">${row.submitted}%</td>
+      <td class="right">${row.accepted}%</td>
+      <td class="right">${row.rejected > 0 ? '<span class="text-red">' + row.rejected + '</span>' : '0'}</td>
+      <td class="right"><span class="cora-pct" style="color:${coraColor}">${row.cora.toFixed(1)}</span></td>
+      <td class="center">${row.cat1 > 0 ? '<span class="cat-badge" style="background:rgba(198,140,140,0.2); color:var(--cat1)">' + row.cat1 + '</span>' : '<span class="text-dim">—</span>'}</td>
+      <td class="center">${row.cat2 > 0 ? '<span class="cat-badge" style="background:rgba(212,176,86,0.15); color:var(--cat2)">' + row.cat2 + '</span>' : '<span class="text-dim">—</span>'}</td>
+      <td class="center">${row.cat3 > 0 ? '<span class="cat-badge" style="background:rgba(163,172,214,0.15); color:var(--cat3)">' + row.cat3 + '</span>' : '<span class="text-dim">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+drawDonut();
+renderGrid();
+</script>
+</body>
+</html>
