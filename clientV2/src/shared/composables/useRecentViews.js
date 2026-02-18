@@ -25,14 +25,15 @@ function saveToStorage() {
 }
 
 export function useRecentViews() {
-  function addView({ url, label, type, icon }) {
-    if (!url || !label) return
+  function addView({ key, url, label, type, icon }) {
+    if (!key || !url || !label) return
 
-    // Remove existing entry with same URL
-    const filtered = recentViews.value.filter(v => v.url !== url)
+    // Remove existing entry with same key
+    const filtered = recentViews.value.filter(v => v.key !== key)
 
     // Add to front
     filtered.unshift({
+      key,
       url,
       label,
       type: type || 'other',

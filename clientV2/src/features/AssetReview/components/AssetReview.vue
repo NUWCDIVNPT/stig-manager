@@ -3,6 +3,7 @@ import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useNavCache } from '../../../shared/composables/useNavCache.js'
+import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
 import {
   fetchAsset,
   fetchCollectionLabels,
@@ -14,6 +15,7 @@ import RuleInfo from './RuleInfo.vue'
 
 const route = useRoute()
 const navCache = useNavCache()
+const { addView } = useRecentViews()
 
 const collectionId = computed(() => route.params.collectionId)
 const assetId = computed(() => route.params.assetId)
@@ -30,12 +32,23 @@ const { state: collectionLabels, execute: loadCollectionLabels } = useAsyncState
   { initialState: [], immediate: false },
 )
 
-// Update nav cache when asset loads
-watch(asset, (a) => {
-  if (a?.name) {
-    navCache.setAssetName(assetId.value, a.name)
-  }
-})
+// Update nav cache and recent views when asset loads or params change
+watch(
+  [asset, () => route.params.benchmarkId, () => route.params.revisionStr],
+  ([a]) => {
+    if (a?.name) {
+      navCache.setAssetName(assetId.value, a.name)
+    }
+    if (a?.name && route.params.benchmarkId) {
+      addView({
+        key: `review:${collectionId.value}:${assetId.value}:${route.params.benchmarkId}`,
+        url: route.fullPath,
+        label: `${a.name} / ${route.params.benchmarkId}`,
+        type: 'asset-review',
+      })
+    }
+  },
+)
 
 // Initial Data Load
 watch([assetId, collectionId], () => {
