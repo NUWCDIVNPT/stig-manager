@@ -1,5 +1,4 @@
 <script setup>
-
 const props = defineProps({
   redirectOidc: { type: String, required: true },
   codeVerifier: { type: String, required: true },
@@ -57,7 +56,7 @@ function handleReauth() {
   border: none;
   border-radius: 4px;
   background: #007ad9;
-  color: #fff;
+  color: var(--color-text-primary);
   cursor: pointer;
 }
 </style>

@@ -176,15 +176,15 @@ defineExpose({ asset })
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: #000000;
-  color: #e4e4e7;
+  background-color: var(--color-background-darkest);
+  color: var(--color-text-primary);
 }
 
 .asset-review__header {
   flex: 0 0 auto;
   padding: 0.5rem 1rem;
-  background-color: #1f1f1f;
-  border-bottom: 1px solid #3a3d40;
+  background-color: var(--color-background-dark);
+  border-bottom: 1px solid var(--color-border-default);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -227,7 +227,7 @@ defineExpose({ asset })
   display: inline-flex;
   align-items: center;
   padding: 0.15rem 0.5rem;
-  background-color: #3b82f6;
+  background-color: var(--color-action-blue);
   color: #fff;
   border-radius: 9999px;
   font-size: 0.7rem;
@@ -238,7 +238,7 @@ defineExpose({ asset })
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  color: #a6adba;
+  color: var(--color-text-dim);
   font-size: 0.8rem;
 }
 
@@ -273,17 +273,17 @@ defineExpose({ asset })
   align-items: center;
   gap: 0.35rem;
   padding: 0.4rem 0.75rem;
-  background-color: #2a2a2a;
-  border: 1px solid #3a3d40;
+  background-color: var(--color-background-light);
+  border: 1px solid var(--color-border-default);
   border-radius: 4px;
-  color: #e4e4e7;
+  color: var(--color-text-primary);
   font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .action-btn:hover {
-  background-color: #3a3d40;
+  background-color: var(--color-bg-hover-strong);
   border-color: #4a4d50;
 }
 
@@ -308,10 +308,10 @@ defineExpose({ asset })
 }
 
 .search-reviews__input {
-  background-color: #2a2a2a;
-  border: 1px solid #3a3d40;
+  background-color: var(--color-background-light);
+  border: 1px solid var(--color-border-default);
   border-radius: 4px;
-  color: #e4e4e7;
+  color: var(--color-text-primary);
   font-size: 0.85rem;
   padding: 0.4rem 0.6rem 0.4rem 2rem;
   width: 180px;
@@ -324,8 +324,8 @@ defineExpose({ asset })
 }
 
 .search-reviews__input:focus {
-  border-color: #60a5fa;
-  background-color: #1f1f1f;
+  border-color: var(--color-primary-highlight);
+  background-color: var(--color-background-dark);
 }
 
 /* Content Grid */
@@ -368,7 +368,7 @@ defineExpose({ asset })
 .asset-review__empty {
   padding: 2rem;
   text-align: center;
-  color: #a6adba;
+  color: var(--color-text-dim);
 }
 
 .asset-review__error {

@@ -37,7 +37,7 @@
 .cora-tooltip-content {
   font-size: 0.9rem;
   line-height: 1.4;
-  color: #e4e4e7;
+  color: var(--color-text-primary);
   max-width: 450px;
 }
 
@@ -52,7 +52,7 @@ ul.risk-list {
 }
 
 code {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--color-background-subtle);
   padding: 2px 4px;
   border-radius: 4px;
   font-family: monospace;
@@ -66,7 +66,7 @@ code {
 .tooltip-label {
   padding: 1px 6px;
   border-radius: 4px;
-  color: white;
+  color: var(--color-text-bright);
   margin-right: 4px;
   font-size: 0.9em;
   display: inline-block;

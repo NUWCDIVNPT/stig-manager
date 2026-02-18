@@ -89,7 +89,7 @@ const pt = {
 
   itemLink: {
     style: {
-      color: '#e4e4e7',
+      color: 'var(--color-text-primary)',
       gap: '2px',
     },
   },
@@ -174,7 +174,7 @@ const pt = {
 .icon-btn {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--color-text-primary);
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -199,7 +199,7 @@ const pt = {
 .home-link {
   display: flex;
   align-items: center;
-  color: #ffffff;
+  color: var(--color-text-primary);
   text-decoration: none;
   font-weight: 600;
   gap: 8px;
@@ -228,7 +228,7 @@ const pt = {
   border-radius: 5px;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .badge:hover {
@@ -268,17 +268,17 @@ const pt = {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #e4e4e7;
+  color: var(--color-text-primary);
 }
 
 .profile-username {
   font-weight: 600;
   font-size: 1.25rem;
-  color: #e4e4e7;
+  color: var(--color-text-primary);
 }
 
 .profile-name {
   font-size: 1.1rem;
-  color: #a1a1aa;
+  color: var(--color-text-dim);
 }
 </style>

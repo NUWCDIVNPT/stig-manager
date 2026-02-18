@@ -3,6 +3,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, provide, ref, watch } from 'vue'
 import AssetColumn from '../../../components/columns/AssetColumn.vue'
+import CoraColumn from '../../../components/columns/CoraColumn.vue'
 import DurationColumn from '../../../components/columns/DurationColumn.vue'
 import LabelsColumn from '../../../components/columns/LabelsColumn.vue'
 import PercentageColumn from '../../../components/columns/PercentageColumn.vue'
@@ -129,6 +130,7 @@ const aggregationType = computed(() => {
   if ('benchmarkId' in m[0]) {
     return 'stig'
   }
+  return null
 })
 
 const columns = computed(() => {
@@ -143,7 +145,7 @@ const columns = computed(() => {
     { field: 'submittedPct', header: 'Submitted', component: PercentageColumn },
     { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn },
     { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn },
-    { field: 'cora', header: 'CORA', component: Column },
+    { field: 'cora', header: 'CORA', component: CoraColumn },
     { field: 'low', header: 'Low', component: Column },
     { field: 'medium', header: 'Medium', component: Column },
     { field: 'high', header: 'High', component: Column },
@@ -356,14 +358,14 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
   height: 100%;
   background: transparent;
   border: none;
-  color: #6b7280;
+  color: var(--color-text-dim);
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.15s, color 0.15s;
 }
 
 .row-action-btn:hover {
-  color: #3b82f6;
+  color: var(--color-action-blue);
 }
 
 .row-action-btn i {

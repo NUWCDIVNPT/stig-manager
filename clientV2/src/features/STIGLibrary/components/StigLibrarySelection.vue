@@ -40,8 +40,8 @@ function getRoute(item) {
   padding: 2rem;
   height: 100%;
   overflow-y: auto;
-  background-color: #18181b;
-  color: #e4e4e7;
+  background-color: var(--color-background-dark);
+  color: var(--color-text-primary);
 }
 
 .header {
@@ -52,7 +52,7 @@ h1 {
   font-size: 1.8rem;
   font-weight: 600;
   margin: 0;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .grid {
@@ -62,8 +62,8 @@ h1 {
 }
 
 .card {
-  background: #27272a;
-  border: 1px solid #3f3f46;
+  background: var(--color-background-light);
+  border: 1px solid var(--color-border-default);
   border-radius: 8px;
   padding: 1.5rem;
   cursor: pointer;
@@ -76,7 +76,7 @@ h1 {
 }
 
 .card:hover {
-  background: #3f3f46;
+  background: var(--color-bg-hover-strong);
   border-color: #52525b;
   transform: translateY(-2px);
 }
@@ -84,7 +84,7 @@ h1 {
 .card-icon {
   width: 48px;
   height: 48px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-bg-hover);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -112,14 +112,14 @@ h1 {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .card-arrow {
-  color: #52525b;
+  color: var(--color-text-dim);
 }
 
 .card:hover .card-arrow {
-  color: #e4e4e7;
+  color: var(--color-text-primary);
 }
 </style>

@@ -98,6 +98,6 @@ const cls = new Classification(classification.value)
 }
 .sm-banner-sci {
   background-color: var(--color-marking-sci);
-  color: #000;
+  color: var(--color-text-dark);
 }
 </style>

@@ -172,12 +172,12 @@ function onActionClick(action) {
 <style scoped>
 .status-footer {
   --color-selection-green: rgb(34, 197, 94);
-
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.3rem 0.4rem;
-  background: var(--color-surface-subtle);
+  background: var(--color-background-subtle);
+  height: 35px;
 }
 
 .status-footer__left {
@@ -187,10 +187,10 @@ function onActionClick(action) {
 }
 
 .status-footer__divider {
-  width: 1px;
-  height: 1.25rem;
-  background-color: var(--color-border-subtle);
-  margin: 0 0.25rem;
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--color-border-default);
+  padding: 0 20px;
 }
 
 .status-footer__right {
@@ -202,7 +202,7 @@ function onActionClick(action) {
 .status-footer__button {
   height: 1.5rem;
   width: 1.75rem;
-  color: var(--color-text-secondary);
+  color: var(--color-text-dim);
 }
 
 .status-footer__button--has-label {
@@ -220,8 +220,8 @@ function onActionClick(action) {
   align-items: center;
   gap: 0.25rem;
   padding: 0.1rem 0.25rem;
-  background: var(--color-surface-subtle);
-  border: 1px solid var(--color-border-subtle);
+  background: var(--color-background-subtle);
+  border: 1px solid var(--color-border-default);
   border-radius: 0.125rem;
   color: var(--color-text-primary);
 }
@@ -250,7 +250,7 @@ function onActionClick(action) {
 }
 
 .status-footer__info-label {
-  color: var(--color-text-muted);
+  color: var(--color-text-dim);
   text-transform: lowercase;
 }
 </style>

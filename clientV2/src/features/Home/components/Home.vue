@@ -314,8 +314,8 @@ function isTallCard(content) {
 .home-card {
   break-inside: avoid;
   margin-bottom: 0;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--color-background-subtle);
+  border: 1px solid var(--color-border-default);
   border-radius: 0.5rem;
   padding: 1.25rem;
   transition: all 0.6s ease;
@@ -328,8 +328,6 @@ function isTallCard(content) {
 }
 
 .home-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.12);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
@@ -353,7 +351,7 @@ function isTallCard(content) {
 
 .card-date {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-dim);
   font-weight: 400;
 }
 
@@ -399,7 +397,7 @@ function isTallCard(content) {
 .section-subtitle {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-primary);
   margin: 0 0 0.5rem 0;
 }
 
@@ -422,7 +420,7 @@ function isTallCard(content) {
 .doc-section,
 .resource-section {
   padding: 0.875rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--color-background-subtle);
   border-radius: 0.375rem;
   border-left: 3px solid rgba(131, 131, 131, 0.4);
 }
@@ -445,29 +443,24 @@ function isTallCard(content) {
 
 .manager-item {
   padding: 0.875rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--color-background-subtle);
   border-radius: 0.375rem;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border-light);
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   transition: all 0.15s ease;
 }
 
-.manager-item:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
 .manager-item strong {
-  color: #fff;
+  color: var(--color-text-primary);
   font-size: 1.1rem;
   font-weight: 600;
 }
 
 .manager-detail {
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-dim);
 }
 
 .custom-card .card-title {
@@ -500,8 +493,8 @@ function isTallCard(content) {
 }
 
 .delete-btn:hover {
-background: rgba(175, 175, 175, 0.2);
-border-color: rgba(175, 175, 175, 0.5);
+background: var(--color-bg-hover-strong);
+border-color: var(--color-border-light);
 transform: scale(1.05);
 }
 
@@ -520,9 +513,9 @@ transform: scale(1.05);
 
 .custom-card-section {
   padding: 0.875rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--color-background-subtle);
   border-radius: 0.375rem;
-  border-left: 3px solid rgba(131, 131, 131, 0.4);
+  border-left: 3px solid var(--color-border-light);
 }
 
 .reorder-mode {
@@ -542,7 +535,7 @@ transform: scale(1.05);
 
 .drag-card {
   opacity: 1;
-  background: #18181b;
+  background: var(--color-background-dark);
   transform: rotate(2deg);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
   cursor: grabbing;

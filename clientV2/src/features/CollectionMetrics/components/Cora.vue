@@ -107,11 +107,11 @@ function getRiskClass(riskRating) {
 }
 
 .help-icon {
-  color: #a1a1aa;
+  color: var(--color-text-dim);
   cursor: pointer;
 }
 .help-icon:hover {
-  color: #e4e4e7;
+  color: var(--color-text-primary);
 }
 
 .cora-card {
@@ -137,7 +137,7 @@ function getRiskClass(riskRating) {
 .subsection-title {
   font-size: 1rem;
   text-transform: uppercase;
-  color: #a1a1aa;
+  color: var(--color-text-dim);
   margin: 0 0 4px 0;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -145,7 +145,7 @@ function getRiskClass(riskRating) {
 
 .cora-row {
   display: flex;
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--color-background-subtle);
   border-radius: 6px;
   overflow: hidden;
   height: 32px;
@@ -191,9 +191,8 @@ function getRiskClass(riskRating) {
 .cora-cat-count {
   font-weight: 600;
   font-size: 1.25rem;
-  color: white;
+  color: var(--color-text-bright);
 }
-
 .cora-risk-card {
   display: flex;
   flex-direction: column;
@@ -208,14 +207,14 @@ function getRiskClass(riskRating) {
   font-size: 1rem;
   font-weight: 600;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text-bright);
   margin-bottom: 4px;
 }
 
 .risk-score {
   font-size: 2.5rem;
   font-weight: 800;
-  color: white;
+  color: var(--color-text-bright);
   line-height: 1;
   margin-bottom: 4px;
 }
@@ -224,7 +223,7 @@ function getRiskClass(riskRating) {
   font-size: 1.1rem;
   font-weight: 600;
   text-transform: uppercase;
-  color: white;
+  color: var(--color-text-bright);
   background-color: rgba(0, 0, 0, 0.2);
   padding: 2px 10px;
   border-radius: 20px;
