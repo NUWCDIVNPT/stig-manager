@@ -16,6 +16,7 @@ const AppManagementSelection = () => import('../features/AppManagement/component
 const StigLibrarySelection = () => import('../features/STIGLibrary/components/StigLibrarySelection.vue')
 const WhatsNewView = () => import('../features/WhatsNew/components/WhatsNewView.vue')
 const AssetReview = () => import('../features/AssetReview/components/AssetReview.vue')
+const CollectionReview = () => import('../features/CollectionReview/components/CollectionReview.vue')
 
 const EmptyComponent = { template: '<div><router-view></router-view></div>' }
 
@@ -78,6 +79,11 @@ const routes = [
     path: '/collection/:collectionId/asset/:assetId/stig/:benchmarkId/revision/:revisionStr?',
     name: 'collection-asset-review',
     component: AssetReview,
+  },
+  {
+    path: '/collection/:collectionId/benchmark/:benchmarkId/revision/:revisionStr?',
+    name: 'collection-benchmark-review',
+    component: CollectionReview,
   },
   {
     path: '/collections',
@@ -164,9 +170,10 @@ const routes = [
 let historyBase
 if (import.meta.env.DEV) {
   historyBase = import.meta.env.VITE_HASH_ROUTES === '1' ? null : '/'
-} else {
+}
+else {
   // Change when nextgen client is served from root instead of /client-v2
-  historyBase = STIGMAN.Env.pathPrefix ? STIGMAN.Env.pathPrefix + 'client-v2/' : null
+  historyBase = STIGMAN.Env.pathPrefix ? `${STIGMAN.Env.pathPrefix}client-v2/` : null
 }
 
 const router = createRouter({

@@ -1,5 +1,8 @@
 <script setup>
+import Splitter from 'primevue/splitter'
+import SplitterPanel from 'primevue/splitterpanel'
 import { ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchCollectionAssetStigs, fetchCollectionAssetSummary } from '../api/collectionApi.js'
 import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
@@ -10,6 +13,8 @@ const props = defineProps({
     required: true,
   },
 })
+
+const router = useRouter()
 
 // Queries
 const { state: assets, isLoading: assetsLoading, error: assetsError, execute: loadAssets } = useAsyncState(
@@ -50,118 +55,78 @@ watch(selectedAssetId, (newVal) => {
 function handleAssetSelect(assetId) {
   selectedAssetId.value = assetId
 }
+
+function handleShieldClick(rowData) {
+  router.push({
+    name: 'collection-asset-review',
+    params: {
+      collectionId: props.collectionId,
+      assetId: selectedAssetId.value,
+      benchmarkId: rowData.benchmarkId,
+    },
+  })
+}
 </script>
 
 <template>
-  <div class="metrics-grid">
-    <div class="table-container">
-      <MetricsSummaryGrid
-        :api-metrics-summary="assets"
-        :is-loading="assetsLoading"
-        :error-message="assetsError?.message || assetsError"
-        :selected-key="selectedAssetId"
-        selectable
-        data-key="assetId"
-        @row-select="(row) => handleAssetSelect(row.assetId)"
-        @refresh="loadAssets(); loadSelectedAssetStigs()"
-      />
-    </div>
-    <div class="table-container">
-      <div class="child-panel">
-        <div class="child-panel__header">
-          <h3>Asset STIGs</h3>
-          <span v-if="selectedAssetId" class="asset-badge">Asset {{ selectedAssetId }}</span>
+  <div class="collection-tab-panel">
+    <Splitter
+      layout="vertical"
+      :pt="{
+        gutter: { style: 'background: var(--color-border-dark)' },
+        root: { style: 'border: none; background: transparent' },
+      }"
+      style="height: 100%"
+    >
+      <SplitterPanel :size="50" :min-size="15">
+        <div class="panel-content">
+          <div class="grid-container">
+            <MetricsSummaryGrid
+              :api-metrics-summary="assets"
+              :is-loading="assetsLoading"
+              :error-message="assetsError?.message || assetsError"
+              :selected-key="selectedAssetId"
+              selectable
+              data-key="assetId"
+              @row-select="(row) => handleAssetSelect(row.assetId)"
+              @refresh="loadAssets(); loadSelectedAssetStigs()"
+            />
+          </div>
         </div>
-        <div class="child-panel__body">
-          <div v-if="!selectedAssetId" class="empty-state">
-            Select an asset to view its STIGs.
+      </SplitterPanel>
+
+      <SplitterPanel :size="50" :min-size="15">
+        <div class="panel-content">
+          <div class="panel-header">
+            <h3>Checklists</h3>
+            <span v-if="selectedAssetId" class="badge">Asset {{ selectedAssetId }}</span>
           </div>
-          <div v-else-if="selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="loading-state">
-            Loading STIGs...
+          <div class="grid-container">
+            <div v-if="!selectedAssetId" class="empty-state">
+              Select an asset to view its checklists.
+            </div>
+            <div v-else-if="selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="loading-state">
+              Loading checklists...
+            </div>
+            <div v-else-if="selectedAssetStigsError" class="error-state">
+              {{ selectedAssetStigsError?.message || selectedAssetStigsError }}
+            </div>
+            <div v-else-if="!selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="empty-state">
+              No checklists found for this asset.
+            </div>
+            <MetricsSummaryGrid
+              v-else
+              :api-metrics-summary="selectedAssetStigs"
+              :is-loading="selectedAssetStigsLoading"
+              parent-agg-type="asset"
+              show-shield
+              @refresh="loadSelectedAssetStigs"
+              @shield-click="handleShieldClick"
+            />
           </div>
-          <div v-else-if="selectedAssetStigsError" class="error-state">
-            {{ selectedAssetStigsError?.message || selectedAssetStigsError }}
-          </div>
-          <div v-else-if="!selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="empty-state">
-            No STIGs found for this asset.
-          </div>
-          <MetricsSummaryGrid
-            v-else
-            :api-metrics-summary="selectedAssetStigs"
-            :is-loading="selectedAssetStigsLoading"
-            parent-agg-type="asset"
-            @refresh="loadSelectedAssetStigs"
-          />
         </div>
-      </div>
-    </div>
+      </SplitterPanel>
+    </Splitter>
   </div>
 </template>
 
-<style scoped>
-.metrics-grid {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: 0.5rem;
-  height: calc(100% - 1rem);
-  padding: 0.5rem;
-  overflow: hidden;
-}
-
-.table-container {
-  overflow: hidden;
-  border: 1px solid var(--color-border-default);
-  border-radius: 4px;
-}
-
-.child-panel {
-  background-color: var(--color-background-subtle);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.child-panel__header {
-  padding: 0.75rem 1rem;
-  background-color: var(--color-background-light);
-  border-bottom: 1px solid var(--color-border-default);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.child-panel__header h3 {
-  margin: 0;
-  color: var(--color-text-primary);
-  font-size: 1rem;
-}
-
-.asset-badge {
-  font-size: 0.8rem;
-  background-color: var(--color-background-subtle);
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  color: var(--color-text-dim);
-}
-
-.child-panel__body {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.empty-state,
-.loading-state,
-.error-state {
-  padding: 2rem;
-  text-align: center;
-  color: var(--color-text-dim);
-  font-style: italic;
-}
-
-.error-state {
-  color: #f16969;
-}
-</style>

@@ -1,8 +1,9 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, provide, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import AssetColumn from '../../../components/columns/AssetColumn.vue'
+import BenchmarkColumn from '../../../components/columns/BenchmarkColumn.vue'
 import CoraColumn from '../../../components/columns/CoraColumn.vue'
 import DurationColumn from '../../../components/columns/DurationColumn.vue'
 import LabelsColumn from '../../../components/columns/LabelsColumn.vue'
@@ -35,15 +36,7 @@ const props = defineProps({
     type: String,
     default: null,
   },
-  showRowAction: {
-    type: Boolean,
-    default: false,
-  },
-  rowActionIcon: {
-    type: String,
-    default: 'pi pi-external-link',
-  },
-  showAssetAction: {
+  showShield: {
     type: Boolean,
     default: false,
   },
@@ -58,7 +51,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['row-select', 'row-action', 'asset-action', 'refresh'])
+const emit = defineEmits(['row-select', 'shield-click', 'refresh'])
 
 const dataTableRef = ref(null)
 const selectedRow = ref(null)
@@ -92,17 +85,9 @@ function onRowSelect(event) {
   emit('row-select', event.data)
 }
 
-function onRowAction(rowData) {
-  emit('row-action', rowData)
+function onShieldClick(rowData) {
+  emit('shield-click', rowData)
 }
-
-function onAssetAction(rowData) {
-  emit('asset-action', rowData)
-}
-
-// Provide asset action handler to child column components
-provide('assetActionEnabled', computed(() => props.showAssetAction))
-provide('onAssetAction', onAssetAction)
 
 watch(() => props.apiMetricsSummary, () => {
   console.log('apiMetricsSummary changed')
@@ -153,14 +138,14 @@ const columns = computed(() => {
   switch (aggregationType.value) {
     case 'asset':
       return [
-        { field: 'assetName', header: 'Asset', component: AssetColumn },
+        { field: 'assetName', header: 'Asset', component: AssetColumn, showShield: props.showShield, onShieldClick },
         { field: 'labels', header: 'Labels', component: LabelsColumn },
         { field: 'stigCnt', header: 'Stigs', component: Column },
         ...commonColumns,
       ]
     case 'stig':
       return [
-        { field: 'benchmarkId', header: 'Benchmark', component: Column },
+        { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, showShield: props.showShield, onShieldClick },
         // { field: 'title', header: 'Title', component: Column },
         { field: 'revisionStr', header: 'Revision', component: Column },
         { field: 'assetCnt', header: 'Assets', component: Column },
@@ -175,21 +160,21 @@ const columns = computed(() => {
     case 'unagg':
       if (props.parentAggType === 'asset') {
         return [
-          { field: 'benchmarkId', header: 'Benchmark', component: Column },
+          { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, showShield: props.showShield, onShieldClick },
           { field: 'revisionStr', header: 'Revision', component: Column },
           ...commonColumns,
         ]
       }
       if (props.parentAggType === 'stig') {
         return [
-          { field: 'assetName', header: 'Asset', component: AssetColumn },
+          { field: 'assetName', header: 'Asset', component: AssetColumn, showShield: props.showShield, onShieldClick },
           { field: 'labels', header: 'Labels', component: LabelsColumn },
           ...commonColumns,
         ]
       }
       return [
-        { field: 'assetName', header: 'Asset', component: AssetColumn },
-        { field: 'benchmarkId', header: 'Benchmark', component: Column },
+        { field: 'assetName', header: 'Asset', component: AssetColumn, showShield: props.showShield, onShieldClick },
+        { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, showShield: props.showShield, onShieldClick },
         { field: 'labels', header: 'Labels', component: LabelsColumn },
         ...commonColumns,
       ]
@@ -241,6 +226,7 @@ const data = computed(() => {
         }
       case 'label':
         return {
+          labelId: r.labelId,
           label: [{
             labelId: r.labelId,
             name: r.name,
@@ -291,8 +277,6 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     :value="data"
     :data-key="dataKey"
     :selection-mode="selectable ? 'single' : null"
-    class="metrics-summary-grid"
-    :class="{ 'has-row-action': showRowAction }"
     scrollable
     scroll-height="flex"
     show-gridlines
@@ -304,22 +288,6 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     :export-function="formatExportCell"
     @row-select="onRowSelect"
   >
-    <Column
-      v-if="showRowAction"
-      frozen
-      style="width: 2.5rem; min-width: 2.5rem; max-width: 2.5rem; padding: 0;"
-    >
-      <template #body="slotProps">
-        <button
-          type="button"
-          class="row-action-btn"
-          title="Open"
-          @click.stop="onRowAction(slotProps.data)"
-        >
-          <i :class="rowActionIcon" />
-        </button>
-      </template>
-    </Column>
     <template v-for="col in columns" :key="col.field">
       <component :is="col.component" v-bind="col" sortable style="height: 27px; max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
     </template>
@@ -336,7 +304,6 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
 </template>
 
 <style scoped>
-/* Remove default padding from DataTable footer so StatusFooter fills the space */
 :deep(.p-datatable-footer) {
   padding: 0;
   border: none;
@@ -350,31 +317,4 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
   text-overflow: ellipsis;
 }
 
-.row-action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  border: none;
-  color: var(--color-text-dim);
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s;
-}
-
-.row-action-btn:hover {
-  color: var(--color-action-blue);
-}
-
-.row-action-btn i {
-  font-size: 0.85rem;
-}
-
-/* Show button on row hover */
-:deep(.p-datatable-row-selected) .row-action-btn,
-:deep(.p-datatable-tbody > tr:hover) .row-action-btn {
-  opacity: 1;
-}
 </style>
