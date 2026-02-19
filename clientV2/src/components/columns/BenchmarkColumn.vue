@@ -30,7 +30,7 @@ function handleShieldClick(rowData) {
     <template #body="slotProps">
       <div class="sm-grid-cell-with-toolbar">
         <div class="sm-info">
-          {{ slotProps.data.assetName }}
+          {{ slotProps.data.benchmarkId }}
         </div>
         <button
           v-if="showShield"
@@ -54,6 +54,9 @@ function handleShieldClick(rowData) {
 
 .sm-info {
   flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sm-static-width {

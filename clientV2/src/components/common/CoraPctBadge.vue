@@ -43,7 +43,7 @@ const formattedScore = computed(() => (props.weightedAvg * 100).toFixed(1))
   outline: #bbb solid 1px;
   outline-offset: -1px;
   width: 35px;
-  font-weight: 600;
+  font-weight: 400;
   color: #fff;
   text-shadow: 0 1px 2px rgba(0,0,0,0.5);
   margin: 0 auto;
