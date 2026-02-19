@@ -27,13 +27,13 @@ function handleShieldClick(rowData) {
     <template #body="slotProps">
       <div class="sm-grid-cell-with-toolbar">
         <div class="sm-info">
-          {{ slotProps.data.assetName }}
+          {{ slotProps.data.benchmarkId }}
         </div>
         <button
           v-if="showShield"
           type="button"
           class="shield-action"
-          title="Open Asset Review"
+          title="Open Benchmark Review"
           @click.stop="handleShieldClick(slotProps.data)"
         >
           <img :src="shieldGreenCheck" width="14" height="14" alt="Review">
@@ -51,6 +51,9 @@ function handleShieldClick(rowData) {
 
 .sm-info {
   flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .shield-action {

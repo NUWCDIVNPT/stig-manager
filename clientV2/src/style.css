@@ -62,6 +62,9 @@
   --color-border-default: #3f3f46; 
   --color-border-light: #2a2a2d;
 
+  /* Error Colors */
+  --color-text-error: #f16969;
+
   /* Result Status Colors */
   --result-pass: hsl(120 84% 42% / 1);
   --result-fail: hsl(19 100% 40% / 1);
@@ -121,6 +124,73 @@ textarea:focus {
 .p-inputtext:enabled:focus{
   outline: none !important;
   border-color: var(--color-primary-highlight-light) !important;
+}
+
+/* Collection tab panel styles (shared across Assets, STIGs, Labels tabs) */
+.collection-tab-panel {
+  height: calc(100% - 1rem);
+  padding: 0.5rem;
+  overflow: hidden;
+}
+
+.collection-tab-panel .panel-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--color-background-subtle);
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+}
+
+.collection-tab-panel .panel-header {
+  padding: 0.5rem 1rem;
+  background-color: var(--color-background-light);
+  border-bottom: 1px solid var(--color-border-default);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 30px;
+}
+
+.collection-tab-panel .panel-header h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.collection-tab-panel .grid-container {
+  flex: 1;
+  overflow: hidden;
+  background-color: var(--color-background-dark);
+  position: relative;
+}
+
+.collection-tab-panel .badge {
+  font-size: 0.75rem;
+  background-color: var(--color-background-dark);
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  color: var(--color-text-dim);
+  font-family: monospace;
+}
+
+.collection-tab-panel .empty-state,
+.collection-tab-panel .loading-state,
+.collection-tab-panel .error-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: var(--color-text-dim);
+  font-style: italic;
+  width: 100%;
+}
+
+.collection-tab-panel .error-state {
+  color: var(--color-text-error);
 }
 
 @font-face {
