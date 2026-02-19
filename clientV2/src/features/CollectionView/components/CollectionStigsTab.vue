@@ -80,7 +80,7 @@ function handleStigShieldClick(rowData) {
 </script>
 
 <template>
-  <div class="metrics-grid">
+  <div class="collection-tab-panel">
     <Splitter
       layout="vertical"
       :pt="{
@@ -144,69 +144,3 @@ function handleStigShieldClick(rowData) {
   </div>
 </template>
 
-<style scoped>
-.metrics-grid {
-  height: calc(100% - 1rem);
-  padding: 0.5rem;
-  overflow: hidden;
-}
-
-.panel-content {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background-color: var(--color-background-subtle);
-  border: 1px solid var(--color-border-default);
-  border-radius: 4px;
-}
-
-.panel-header {
-  padding: 0.5rem 1rem;
-  background-color: var(--color-background-light);
-  border-bottom: 1px solid var(--color-border-default);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  min-height: 30px;
-}
-
-.panel-header h3 {
-  margin: 0;
-  color: var(--color-text-primary);
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.grid-container {
-  flex: 1;
-  background-color: var(--color-background-dark);
-  overflow: hidden;
-  position: relative;
-}
-
-.badge {
-  font-size: 0.75rem;
-  background-color: var(--color-background-dark);
-  padding: 0.15rem 0.4rem;
-  border-radius: 3px;
-  color: var(--color-text-dim);
-  font-family: monospace;
-}
-
-.empty-state,
-.error-state {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: var(--color-text-dim);
-  font-style: italic;
-  width: 100%;
-}
-
-.error-state {
-  color: #f16969;
-}
-</style>

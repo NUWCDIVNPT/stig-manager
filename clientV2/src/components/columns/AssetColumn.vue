@@ -1,8 +1,5 @@
 <script setup>
 import Column from 'primevue/column'
-
-import { defineProps } from 'vue'
-
 import shieldGreenCheck from '../../assets/shield-green-check.svg'
 
 const props = defineProps({
@@ -54,13 +51,6 @@ function handleShieldClick(rowData) {
 
 .sm-info {
   flex: 1;
-}
-
-.sm-static-width {
-  width: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .shield-action {

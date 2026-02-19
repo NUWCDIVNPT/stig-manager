@@ -36,10 +36,6 @@ const props = defineProps({
     type: String,
     default: null,
   },
-  rowActionIcon: {
-    type: String,
-    default: 'pi pi-external-link',
-  },
   showShield: {
     type: Boolean,
     default: false,
@@ -55,7 +51,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['row-select', 'row-action', 'shield-click', 'refresh'])
+const emit = defineEmits(['row-select', 'shield-click', 'refresh'])
 
 const dataTableRef = ref(null)
 const selectedRow = ref(null)
@@ -87,10 +83,6 @@ function formatExportCell({ data, field }) {
 
 function onRowSelect(event) {
   emit('row-select', event.data)
-}
-
-function onRowAction(rowData) {
-  emit('row-action', rowData)
 }
 
 function onShieldClick(rowData) {
@@ -325,30 +317,4 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
   text-overflow: ellipsis;
 }
 
-.row-action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  border: none;
-  color: var(--color-text-dim);
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s;
-}
-
-.row-action-btn:hover {
-  color: var(--color-action-blue);
-}
-
-.row-action-btn i {
-  font-size: 0.85rem;
-}
-
-:deep(.p-datatable-row-selected) .row-action-btn,
-:deep(.p-datatable-tbody > tr:hover) .row-action-btn {
-  opacity: 1;
-}
 </style>
