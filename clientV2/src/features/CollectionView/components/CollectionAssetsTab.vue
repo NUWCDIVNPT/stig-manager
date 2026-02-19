@@ -167,6 +167,7 @@ function handleShieldClick(rowData) {
 .grid-container {
   flex: 1;
   overflow: hidden;
+  background-color: var(--color-background-dark);
   position: relative;
 }
 

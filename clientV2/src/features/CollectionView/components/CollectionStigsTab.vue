@@ -180,6 +180,7 @@ function handleStigShieldClick(rowData) {
 
 .grid-container {
   flex: 1;
+  background-color: var(--color-background-dark);
   overflow: hidden;
   position: relative;
 }

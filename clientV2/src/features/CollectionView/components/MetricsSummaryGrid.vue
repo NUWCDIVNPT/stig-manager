@@ -285,7 +285,6 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     :value="data"
     :data-key="dataKey"
     :selection-mode="selectable ? 'single' : null"
-    class="metrics-summary-grid"
     scrollable
     scroll-height="flex"
     show-gridlines

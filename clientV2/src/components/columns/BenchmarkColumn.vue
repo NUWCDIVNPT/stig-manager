@@ -36,7 +36,7 @@ function handleShieldClick(rowData) {
           v-if="showShield"
           type="button"
           class="shield-action"
-          title="Open Asset Review"
+          title="Open Benchmark Review"
           @click.stop="handleShieldClick(slotProps.data)"
         >
           <img :src="shieldGreenCheck" width="14" height="14" alt="Review">
