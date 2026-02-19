@@ -2,17 +2,20 @@
 import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useNavCache } from '../../../shared/composables/useNavCache.js'
+import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
 import {
   fetchAsset,
   fetchCollectionLabels,
 } from '../api/assetReviewApi.js'
-import AssetReviewBreadcrumbs from './AssetReviewBreadcrumbs.vue'
 import ChecklistInfo from './ChecklistInfo.vue'
 import ReviewForm from './ReviewForm.vue'
 import ReviewResources from './ReviewResources.vue'
 import RuleInfo from './RuleInfo.vue'
 
 const route = useRoute()
+const navCache = useNavCache()
+const { addView } = useRecentViews()
 
 const collectionId = computed(() => route.params.collectionId)
 const assetId = computed(() => route.params.assetId)
@@ -27,6 +30,24 @@ const { state: asset, isLoading, errorMessage: error, execute: loadAsset } = use
 const { state: collectionLabels, execute: loadCollectionLabels } = useAsyncState(
   () => fetchCollectionLabels(collectionId.value),
   { initialState: [], immediate: false },
+)
+
+// Update nav cache and recent views when asset loads or params change
+watch(
+  [asset, () => route.params.benchmarkId, () => route.params.revisionStr],
+  ([a]) => {
+    if (a?.name) {
+      navCache.setAssetName(assetId.value, a.name)
+    }
+    if (a?.name && route.params.benchmarkId) {
+      addView({
+        key: `review:${collectionId.value}:${assetId.value}:${route.params.benchmarkId}`,
+        url: route.fullPath,
+        label: `${a.name} / ${route.params.benchmarkId}`,
+        type: 'asset-review',
+      })
+    }
+  },
 )
 
 // Initial Data Load
@@ -74,8 +95,6 @@ defineExpose({ asset })
 <template>
   <div class="asset-review">
     <header class="asset-review__header">
-      <AssetReviewBreadcrumbs :asset="asset" />
-
       <div v-if="asset" class="asset-review__header-main">
         <div class="asset-review__header-info">
           <div class="asset-review__title-row">

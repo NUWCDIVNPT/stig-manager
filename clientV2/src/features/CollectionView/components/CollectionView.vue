@@ -1,5 +1,4 @@
 <script setup>
-import Breadcrumb from 'primevue/breadcrumb'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
@@ -8,6 +7,7 @@ import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useNavCache } from '../../../shared/composables/useNavCache.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import ExportMetrics from '../../CollectionMetrics/components/ExportMetrics.vue'
 import {
@@ -26,6 +26,7 @@ const props = defineProps({
 
 const route = useRoute()
 const router = useRouter()
+const navCache = useNavCache()
 
 // Fetch collection details for name
 const { state: collection, execute: loadCollection } = useAsyncState(
@@ -35,18 +36,11 @@ const { state: collection, execute: loadCollection } = useAsyncState(
 
 const collectionName = computed(() => collection.value?.name || 'Collection')
 
-// Breadcrumb configuration
-const breadcrumbHome = {
-  label: 'Collections',
-  route: '/collections',
-}
-
-const breadcrumbItems = computed(() => {
-  return [
-    {
-      label: collectionName.value,
-    },
-  ]
+// Update nav cache when collection loads
+watch(collection, (col) => {
+  if (col?.name) {
+    navCache.setCollectionName(props.collectionId, col.name)
+  }
 })
 
 // Initial Data Load
@@ -56,26 +50,26 @@ watch([() => props.collectionId], () => {
 
 // Map route name to tab value
 const routeToTab = {
-  'collection-dashboard': 'dashboard',
   'collection-stigs': 'stigs',
   'collection-assets': 'assets',
   'collection-labels': 'labels',
+  'collection-findings': 'findings',
   'collection-users': 'users',
   'collection-settings': 'settings',
 }
 
 const tabToRoute = {
-  dashboard: 'collection-dashboard',
   stigs: 'collection-stigs',
   assets: 'collection-assets',
   labels: 'collection-labels',
+  findings: 'collection-findings',
   users: 'collection-users',
   settings: 'collection-settings',
 }
 
 // Active tab based on route
 const activeTab = computed({
-  get: () => routeToTab[route.name] || 'dashboard',
+  get: () => routeToTab[route.name] || 'stigs',
   set: (newTab) => {
     const routeName = tabToRoute[newTab]
     if (routeName) {
@@ -129,196 +123,114 @@ function toggleDashboardSidebar() {
 
 <template>
   <div class="collection-view">
-    <header class="collection-header">
-      <Breadcrumb :home="breadcrumbHome" :model="breadcrumbItems">
-        <template #item="{ item, props: itemProps }">
-          <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
-            <a :href="href" v-bind="itemProps.action" class="breadcrumb-link" @click="navigate">
-              {{ item.label }}
-            </a>
-          </router-link>
-          <span v-else class="breadcrumb-current">{{ item.label }}</span>
-        </template>
-        <template #separator>
-          <span class="breadcrumb-separator">/</span>
-        </template>
-      </Breadcrumb>
-    </header>
-
-    <!-- Normal Mode: Show Tabs -->
-    <div class="tabs-container" :class="{ 'sidebar-collapsed': dashboardCollapsed }">
-      <Tabs v-model:value="activeTab" :pt="tabsPt">
-        <TabList>
-          <Tab value="dashboard">
-            Dashboard
-          </Tab>
-          <Tab value="stigs" class="tab-after-sidebar">
-            STIGs
-          </Tab>
-          <Tab value="assets">
-            Assets
-          </Tab>
-          <Tab value="labels">
-            Labels
-          </Tab>
-          <Tab value="users">
-            Users
-          </Tab>
-          <Tab value="settings">
-            Settings
-          </Tab>
-        </TabList>
-
-        <!-- Split layout: Dashboard sidebar + Tab content -->
-        <div class="tab-content-wrapper">
-          <!-- Dashboard Sidebar (always visible, collapsible) -->
-          <aside
-            class="dashboard-sidebar"
-            :class="{ 'dashboard-sidebar--collapsed': dashboardCollapsed }"
+    <div class="content-wrapper">
+      <!-- Dashboard Sidebar (always visible, collapsible) -->
+      <aside
+        class="dashboard-sidebar"
+        :class="{ 'dashboard-sidebar--collapsed': dashboardCollapsed }"
+      >
+        <div class="sidebar-header">
+          <span v-show="!dashboardCollapsed" class="sidebar-header-label">Dashboard</span>
+          <button
+            type="button"
+            class="sidebar-toggle"
+            :title="dashboardCollapsed ? 'Expand Dashboard' : 'Collapse Dashboard'"
+            @click="toggleDashboardSidebar"
           >
-            <button
-              type="button"
-              class="sidebar-toggle"
-              :title="dashboardCollapsed ? 'Expand Dashboard' : 'Collapse Dashboard'"
-              @click="toggleDashboardSidebar"
-            >
-              <i :class="dashboardCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'" />
-            </button>
-            <div v-show="!dashboardCollapsed" class="sidebar-content">
-              <CollectionMetrics
-                :collection-id="collectionId"
-                :collection-name="collectionName"
-                vertical
-              />
-              <div class="sidebar-export">
-                <ExportMetrics
-                  :collection-id="collectionId"
-                  :collection-name="collectionName"
-                />
-              </div>
-            </div>
-          </aside>
-
-          <!-- Main Content Area -->
-          <div class="main-content-area">
-            <TabPanels :pt="tabPanelsPt">
-              <TabPanel value="dashboard" :pt="tabPanelPt">
-                <div class="dashboard-placeholder">
-                  <!-- Empty panel for now - future content will go here -->
-                </div>
-              </TabPanel>
-              <TabPanel value="stigs" :pt="tabPanelPt">
-                <CollectionStigsTab :collection-id="collectionId" />
-              </TabPanel>
-              <TabPanel value="assets" :pt="tabPanelPt">
-                <CollectionAssetsTab :collection-id="collectionId" />
-              </TabPanel>
-              <TabPanel value="labels" :pt="tabPanelPt">
-                <CollectionLabelsTab :collection-id="collectionId" />
-              </TabPanel>
-              <TabPanel value="users" :pt="tabPanelPt">
-                <div class="placeholder-panel">
-                  <h2>Users Panel</h2>
-                  <p>User management content will go here.</p>
-                </div>
-              </TabPanel>
-              <TabPanel value="settings" :pt="tabPanelPt">
-                <div class="placeholder-panel">
-                  <h2>Settings Panel</h2>
-                  <p>Collection settings content will go here.</p>
-                </div>
-              </TabPanel>
-            </TabPanels>
+            <i :class="dashboardCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'" />
+          </button>
+        </div>
+        <div v-show="!dashboardCollapsed" class="sidebar-content">
+          <CollectionMetrics
+            :collection-id="collectionId"
+            :collection-name="collectionName"
+            vertical
+          />
+          <div class="sidebar-export">
+            <ExportMetrics
+              :collection-id="collectionId"
+              :collection-name="collectionName"
+            />
           </div>
         </div>
-      </Tabs>
+      </aside>
+
+      <!-- Right Panel: Tabs + Content -->
+      <div class="right-panel">
+        <Tabs v-model:value="activeTab" :pt="tabsPt">
+          <TabList>
+            <Tab value="stigs">
+              STIGs
+            </Tab>
+            <Tab value="assets">
+              Assets
+            </Tab>
+            <Tab value="labels">
+              Labels
+            </Tab>
+            <Tab value="findings">
+              Findings
+            </Tab>
+            <Tab value="users">
+              Users
+            </Tab>
+            <Tab value="settings">
+              Settings
+            </Tab>
+          </TabList>
+
+          <TabPanels :pt="tabPanelsPt">
+            <TabPanel value="stigs" :pt="tabPanelPt">
+              <CollectionStigsTab :collection-id="collectionId" />
+            </TabPanel>
+            <TabPanel value="assets" :pt="tabPanelPt">
+              <CollectionAssetsTab :collection-id="collectionId" />
+            </TabPanel>
+            <TabPanel value="labels" :pt="tabPanelPt">
+              <CollectionLabelsTab :collection-id="collectionId" />
+            </TabPanel>
+            <TabPanel value="findings" :pt="tabPanelPt">
+              <div class="placeholder-panel">
+                <h2>Findings Panel</h2>
+                <p>Findings content will go here.</p>
+              </div>
+            </TabPanel>
+            <TabPanel value="users" :pt="tabPanelPt">
+              <div class="placeholder-panel">
+                <h2>Users Panel</h2>
+                <p>User management content will go here.</p>
+              </div>
+            </TabPanel>
+            <TabPanel value="settings" :pt="tabPanelPt">
+              <div class="placeholder-panel">
+                <h2>Settings Panel</h2>
+                <p>Collection settings content will go here.</p>
+              </div>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 /* Component-level CSS variables */
-.tabs-container {
+.collection-view {
   --dashboard-sidebar-width: 33rem;
   --dashboard-sidebar-collapsed-width: 2.5rem;
-}
-
-.collection-view {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.collection-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 1rem;
-  background-color: var(--color-background-dark);
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.breadcrumb-link {
-  color: var(--color-primary-highlight);
-  text-decoration: none;
-  font-size: 1.2rem;
-}
-
-.breadcrumb-link:hover {
-  text-decoration: underline;
-}
-
-.breadcrumb-current {
-  color: var(--color-text-primary);
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.breadcrumb-separator {
-  color: var(--color-text-dim);
-  margin: 0 0.5rem;
-}
-
-:deep(.p-breadcrumb) {
-  background: transparent;
-  border: none;
-  padding: 0;
-}
-
-:deep(.p-breadcrumb-list) {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  margin: 0;
-  padding: 0;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.tabs-container {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.placeholder-panel {
-  padding: 2rem;
-  text-align: center;
-  color: var(--color-text-dim);
-}
-
-/* Dashboard Sidebar Layout */
-.tab-content-wrapper {
+.content-wrapper {
   display: flex;
   flex: 1;
   overflow: hidden;
 }
 
+/* Dashboard Sidebar */
 .dashboard-sidebar {
   width: var(--dashboard-sidebar-width);
   min-width: var(--dashboard-sidebar-width);
@@ -326,7 +238,6 @@ function toggleDashboardSidebar() {
   border-right: 1px solid var(--color-border-default);
   display: flex;
   flex-direction: column;
-  position: relative;
   transition: width 0.2s ease, min-width 0.2s ease;
 }
 
@@ -335,33 +246,48 @@ function toggleDashboardSidebar() {
   min-width: var(--dashboard-sidebar-collapsed-width);
 }
 
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.5rem;
+  height: 2.5rem;
+  min-height: 2.5rem;
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.sidebar-header-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  padding-left: 0.5rem;
+}
+
 .sidebar-toggle {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.25rem;
-  width: 2rem;
-  height: 2rem;
+  width: 1.75rem;
+  height: 1.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-background-light);
-  border: 1px solid var(--color-border-default);
+  background: none;
+  border: 1px solid transparent;
   border-radius: 0.25rem;
   color: var(--color-text-dim);
   cursor: pointer;
-  z-index: 10;
-  transition: background-color 0.15s, color 0.15s;
+  flex-shrink: 0;
 }
 
 .sidebar-toggle:hover {
   background-color: var(--color-bg-hover-strong);
   color: var(--color-text-primary);
+  border-color: var(--color-border-default);
 }
 
 .sidebar-content {
   flex: 1;
   overflow-y: auto;
-  padding-top: 3rem;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -373,45 +299,17 @@ function toggleDashboardSidebar() {
   max-width: none;
 }
 
-.main-content-area {
+/* Right Panel */
+.right-panel {
   flex: 1;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.dashboard-placeholder {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.placeholder-panel {
+  padding: 2rem;
+  text-align: center;
   color: var(--color-text-dim);
-  font-style: italic;
-}
-
-/* Tab Alignment - Dashboard tab over sidebar, others over main content */
-:deep(.p-tablist) {
-  display: flex;
-}
-
-:deep(.p-tablist .p-tab:first-child) {
-  /* Dashboard tab - aligns with sidebar width */
-  width: var(--dashboard-sidebar-width);
-  min-width: var(--dashboard-sidebar-width);
-  justify-content: center;
-  transition: width 0.2s ease, min-width 0.2s ease;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.sidebar-collapsed :deep(.p-tablist .p-tab:first-child) {
-  width: var(--dashboard-sidebar-collapsed-width);
-  min-width: var(--dashboard-sidebar-collapsed-width);
-  font-size: 0;
-}
-
-.tab-after-sidebar {
-  /* Visual separator before tabs that align with main content */
-  border-left: 1px solid var(--color-border-default);
 }
 </style>

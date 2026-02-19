@@ -38,12 +38,6 @@ const routes = [
         redirect: to => ({ name: 'collection-stigs', params: { collectionId: to.params.collectionId } }),
       },
       {
-        path: 'dashboard',
-        name: 'collection-dashboard',
-        component: EmptyComponent,
-        props: true,
-      },
-      {
         path: 'stigs',
         name: 'collection-stigs',
         component: EmptyComponent,
@@ -64,6 +58,12 @@ const routes = [
       {
         path: 'users',
         name: 'collection-users',
+        component: EmptyComponent,
+        props: true,
+      },
+      {
+        path: 'findings',
+        name: 'collection-findings',
         component: EmptyComponent,
         props: true,
       },
@@ -164,6 +164,11 @@ const routes = [
   {
     path: '/support',
     name: 'support',
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    redirect: '/',
   },
 ]
 
