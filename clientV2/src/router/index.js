@@ -200,7 +200,6 @@ const router = createRouter({
   routes,
 })
 
-// Navigation guard
 router.beforeEach((to) => {
   const { isAdmin, hasCollectionAccess, getCollectionRoleId } = useCurrentUser()
 
