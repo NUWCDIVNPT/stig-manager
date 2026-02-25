@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { useCurrentUser } from '../shared/composables/useCurrentUser.js'
+import { navigationGuard } from './navigationGuards.js'
 
 // Lazy load components
 const Home = () => import('../features/Home/components/Home.vue')
@@ -200,28 +200,6 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to) => {
-  const { isAdmin, hasCollectionAccess, getCollectionRoleId } = useCurrentUser()
-
-  // admin routes
-  if (to.meta.requiresAdmin && !isAdmin.value) {
-    return { name: 'home' }
-  }
-
-  // collection-specific routes require a collection grant
-  if (to.meta.requiresCollectionGrant) {
-    const collectionId = to.params.collectionId
-    if (!hasCollectionAccess(collectionId)) {
-      return { name: 'not-found' }
-    }
-    // role-level gate (e.g. manage requires roleId >= 3) for manage routes
-    if (to.meta.minRoleId) {
-      const roleId = getCollectionRoleId(collectionId)
-      if (roleId < to.meta.minRoleId) {
-        return { name: 'collection', params: { collectionId } }
-      }
-    }
-  }
-})
+router.beforeEach(navigationGuard)
 
 export default router

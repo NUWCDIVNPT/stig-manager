@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { useCurrentUser } from '../shared/composables/useCurrentUser.js'
+import { navigationGuard } from './navigationGuards.js'
 
 const mockIsAdmin = { value: false }
 const mockHasCollectionAccess = vi.fn(() => false)
@@ -27,6 +27,12 @@ function createTestRouter() {
         meta: { requiresCollectionGrant: true },
         children: [
           {
+            path: '',
+            name: 'collection',
+            component: Stub,
+            redirect: to => ({ name: 'collection-stigs', params: { collectionId: to.params.collectionId } }),
+          },
+          {
             path: 'stigs',
             name: 'collection-stigs',
             component: Stub,
@@ -50,26 +56,7 @@ function createTestRouter() {
     ],
   })
 
-  router.beforeEach((to) => {
-    const { isAdmin, hasCollectionAccess, getCollectionRoleId } = useCurrentUser()
-
-    if (to.meta.requiresAdmin && !isAdmin.value) {
-      return { name: 'home' }
-    }
-
-    if (to.meta.requiresCollectionGrant) {
-      const collectionId = to.params.collectionId
-      if (!hasCollectionAccess(collectionId)) {
-        return { name: 'not-found' }
-      }
-      if (to.meta.minRoleId) {
-        const roleId = getCollectionRoleId(collectionId)
-        if (roleId < to.meta.minRoleId) {
-          return { name: 'collection-stigs', params: { collectionId } }
-        }
-      }
-    }
-  })
+  router.beforeEach(navigationGuard)
 
   return router
 }
@@ -100,12 +87,12 @@ describe('navigation guards', () => {
   })
 
   describe('collection routes', () => {
-    it('redirects to not-found when user has no grant', async () => {
+    it('redirects to collections when user has no grant', async () => {
       const router = createTestRouter()
       mockHasCollectionAccess.mockReturnValue(false)
       await router.push('/collection/123/stigs')
       await router.isReady()
-      expect(router.currentRoute.value.name).toBe('not-found')
+      expect(router.currentRoute.value.name).toBe('collections')
     })
 
     it('allows access when user has a grant', async () => {
