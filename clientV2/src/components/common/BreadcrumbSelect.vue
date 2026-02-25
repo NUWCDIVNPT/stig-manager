@@ -100,17 +100,17 @@ const selectPt = computed(() => ({
 }
 
 .breadcrumb-select--picker-only :deep(.p-select-dropdown) {
-  color: var(--color-text-primary, rgba(255, 255, 255, 0.87));
-  background-color: var(--color-surface-hover, #27272a);
-  border: 1px solid var(--color-border, #3f3f46);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-hover);
+  border: 1px solid var(--color-border-default);
   border-radius: 0.25rem;
   padding: 0.15rem 0.3rem;
   transition: background-color 0.15s, border-color 0.15s;
 }
 
 .breadcrumb-select--picker-only:hover :deep(.p-select-dropdown) {
-  background-color: var(--color-bg-hover-strong, #3f3f46);
-  border-color: var(--color-text-dim, #a1a1aa);
+  background-color: var(--color-bg-hover-strong);
+  border-color: var(--color-text-dim);
 }
 
 .breadcrumb-select--picker-only :deep(.p-select-dropdown .p-icon) {

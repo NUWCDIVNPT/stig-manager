@@ -207,8 +207,8 @@ function toggleRecentViewsPopover(event) {
   display: flex;
   flex-direction: column;
   width: 48px;
-  background-color: var(--color-surface-dark, #18181b);
-  border-right: 1px solid var(--color-border, #3f3f46);
+  background-color: var(--color-background-dark);
+  border-right: 1px solid var(--color-border-default);
   overflow: hidden;
   transition: width 0.2s ease;
 }
@@ -225,15 +225,15 @@ function toggleRecentViewsPopover(event) {
   height: 36px;
   background: none;
   border: none;
-  border-bottom: 1px solid var(--color-border, #3f3f46);
-  color: var(--color-text-dim, #a1a1aa);
+  border-bottom: 1px solid var(--color-border-default);
+  color: var(--color-text-dim);
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .nav-rail-toggle:hover {
-  color: var(--color-text-primary, rgba(255, 255, 255, 0.87));
-  background-color: var(--color-surface-hover, #27272a);
+  color: var(--color-text-primary);
+  background-color: var(--color-button-hover-bg);
 }
 
 .nav-rail-items {
@@ -250,7 +250,7 @@ function toggleRecentViewsPopover(event) {
   height: 40px;
   padding: 0 12px;
   border-radius: 6px;
-  color: var(--color-text-dim, #a1a1aa);
+  color: var(--color-text-dim);
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
@@ -263,13 +263,13 @@ function toggleRecentViewsPopover(event) {
 }
 
 .nav-rail-item:hover {
-  background-color: var(--color-surface-hover, #27272a);
-  color: var(--color-text-primary, rgba(255, 255, 255, 0.87));
+  background-color: var(--color-button-hover-bg);
+  color: var(--color-text-primary);
 }
 
 .nav-rail-item--active {
-  background-color: var(--color-primary-highlight, rgba(99, 102, 241, 0.16));
-  color: var(--color-primary, #6366f1);
+  background-color: var(--color-bg-hover-strong);
+  color: var(--color-text-primary);
 }
 
 .nav-rail-item--icon-only {
@@ -314,7 +314,7 @@ function toggleRecentViewsPopover(event) {
 .nav-rail-separator {
   height: 1px;
   margin: 4px 8px;
-  background-color: var(--color-border, #3f3f46);
+  background-color: var(--color-border-default);
   flex-shrink: 0;
 }
 
@@ -323,7 +323,7 @@ function toggleRecentViewsPopover(event) {
   padding: 8px 12px 4px;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--color-text-dim, #a1a1aa);
+  color: var(--color-text-dim);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   white-space: nowrap;
@@ -343,7 +343,7 @@ function toggleRecentViewsPopover(event) {
   gap: 8px;
   padding: 6px 8px;
   border-radius: 4px;
-  color: var(--color-text-dim, #a1a1aa);
+  color: var(--color-text-dim);
   text-decoration: none;
   font-size: 1rem;
   white-space: nowrap;
@@ -351,8 +351,8 @@ function toggleRecentViewsPopover(event) {
 }
 
 .nav-rail-recent-item:hover {
-  background-color: var(--color-surface-hover, #27272a);
-  color: var(--color-text-primary, rgba(255, 255, 255, 0.87));
+  background-color: var(--color-button-hover-bg);
+  color: var(--color-text-primary);
 }
 
 .nav-rail-recent-icon {
@@ -376,7 +376,7 @@ function toggleRecentViewsPopover(event) {
 .nav-rail-recent-empty {
   padding: 8px 12px;
   font-size: 0.95rem;
-  color: var(--color-text-dim, #a1a1aa);
+  color: var(--color-text-dim);
   font-style: italic;
 }
 
@@ -390,8 +390,8 @@ function toggleRecentViewsPopover(event) {
   padding: 8px 12px;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--color-text-primary, rgba(255, 255, 255, 0.87));
-  border-bottom: 1px solid var(--color-border, #3f3f46);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .recent-views-popover-list {
@@ -406,7 +406,7 @@ function toggleRecentViewsPopover(event) {
   gap: 8px;
   padding: 6px 8px;
   border-radius: 4px;
-  color: var(--color-text-dim, #a1a1aa);
+  color: var(--color-text-dim);
   text-decoration: none;
   font-size: 1rem;
   white-space: nowrap;
@@ -414,7 +414,7 @@ function toggleRecentViewsPopover(event) {
 }
 
 .recent-views-popover-item:hover {
-  background-color: var(--color-surface-hover, #27272a);
-  color: var(--color-text-primary, rgba(255, 255, 255, 0.87));
+  background-color: var(--color-button-hover-bg);
+  color: var(--color-text-primary);
 }
 </style>

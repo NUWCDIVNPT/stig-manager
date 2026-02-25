@@ -87,9 +87,9 @@ const pt = {
     style: {
       width: '100%',
       height: '56px',
-      backgroundColor: '#000000',
+      backgroundColor: 'var(--color-background-darkest)',
       border: 'none',
-      borderBottom: '2px solid #464545',
+      borderBottom: '2px solid var(--color-border-default)',
       borderRadius: '0',
       padding: '0 16px',
       minWidth: '200px',
@@ -115,7 +115,7 @@ const pt = {
       minWidth: '180px',
       width: 'auto',
       zIndex: '1000',
-      border: '1px solid #3a3d40',
+      border: '1px solid var(--color-border-default)',
       borderRadius: '6px',
       padding: '4px 0',
     },
@@ -282,11 +282,11 @@ const pt = {
 }
 
 .badge-oss {
-  background-color: rgba(99, 110, 123, 0.9);
+  background-color: var(--color-bg-hover-strong);
 }
 
 .badge-version {
-  background-color: var(--color-primary-green, #10b981);
+  background-color: var(--color-primary-green);
 }
 
 /* Breadcrumb */
@@ -297,13 +297,13 @@ const pt = {
 }
 
 .breadcrumb-separator {
-  color: var(--color-text-dim, #a1a1aa);
+  color: var(--color-text-dim);
   margin: 0 0.4rem;
   font-size: 1.1rem;
 }
 
 .breadcrumb-link {
-  color: var(--color-primary-highlight, #6366f1);
+  color: var(--color-primary-highlight);
   text-decoration: none;
   font-size: 1.2rem;
 }
@@ -331,14 +331,14 @@ const pt = {
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid #3a3d40;
+  border-bottom: 1px solid var(--color-border-default);
   cursor: default;
 }
 
 .profile-avatar {
   width: 32px;
   height: 32px;
-  background-color: #3a3d40;
+  background-color: var(--color-bg-hover-strong);
   border-radius: 50%;
   display: flex;
   align-items: center;
