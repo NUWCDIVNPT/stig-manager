@@ -1,8 +1,8 @@
 <script setup>
 import { computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { useNavCache } from '../../../shared/composables/useNavCache.js'
+import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
 import {
   fetchAsset,
@@ -14,8 +14,8 @@ import ReviewResources from './ReviewResources.vue'
 import RuleInfo from './RuleInfo.vue'
 
 const route = useRoute()
-const navCache = useNavCache()
-const { addView } = useRecentViews()
+const router = useRouter()
+const { addView, removeView } = useRecentViews()
 
 const collectionId = computed(() => route.params.collectionId)
 const assetId = computed(() => route.params.assetId)
@@ -23,7 +23,21 @@ const assetId = computed(() => route.params.assetId)
 // Fetch Asset Details
 const { state: asset, isLoading, errorMessage: error, execute: loadAsset } = useAsyncState(
   () => fetchAsset(assetId.value),
-  { immediate: false },
+  {
+    immediate: false,
+    onError: (err) => {
+      const isPrivilegeError = err.body?.error === 'User has insufficient privilege to complete this request.'
+      if (isPrivilegeError) {
+        removeView(key => key.includes(`:${collectionId.value}:${assetId.value}`))
+        router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+      }
+      else {
+        // useAsyncState handles the default triggerError if we don't return early
+        const { triggerError } = useGlobalError()
+        triggerError(err)
+      }
+    },
+  },
 )
 
 // Fetch Collection Labels (for coloring)
@@ -32,13 +46,10 @@ const { state: collectionLabels, execute: loadCollectionLabels } = useAsyncState
   { initialState: [], immediate: false },
 )
 
-// Update nav cache and recent views when asset loads or params change
+// Update recent views when asset loads or params change
 watch(
   [asset, () => route.params.benchmarkId, () => route.params.revisionStr],
   ([a]) => {
-    if (a?.name) {
-      navCache.setAssetName(assetId.value, a.name)
-    }
     if (a?.name && route.params.benchmarkId) {
       addView({
         key: `review:${collectionId.value}:${assetId.value}:${route.params.benchmarkId}`,
@@ -52,6 +63,7 @@ watch(
 
 // Initial Data Load
 watch([assetId, collectionId], () => {
+  asset.value = null
   if (assetId.value) {
     loadAsset()
   }

@@ -26,7 +26,9 @@ function saveToStorage() {
 
 export function useRecentViews() {
   function addView({ key, url, label, type, icon }) {
-    if (!key || !url || !label) return
+    if (!key || !url || !label) {
+      return
+    }
 
     // Remove existing entry with same key
     const filtered = recentViews.value.filter(v => v.key !== key)
@@ -51,9 +53,20 @@ export function useRecentViews() {
     saveToStorage()
   }
 
+  function removeView(keyMatcher) {
+    if (typeof keyMatcher === 'function') {
+      recentViews.value = recentViews.value.filter(v => !keyMatcher(v.key))
+    }
+    else {
+      recentViews.value = recentViews.value.filter(v => v.key !== keyMatcher)
+    }
+    saveToStorage()
+  }
+
   return {
     recentViews,
     addView,
+    removeView,
     clearViews,
   }
 }

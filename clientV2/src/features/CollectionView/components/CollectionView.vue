@@ -1,4 +1,6 @@
 <script setup>
+import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
@@ -7,10 +9,12 @@ import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { useNavCache } from '../../../shared/composables/useNavCache.js'
+import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import ExportMetrics from '../../CollectionMetrics/components/ExportMetrics.vue'
 import {
+  deleteCollection,
   fetchCollection,
 } from '../api/collectionApi.js'
 import CollectionAssetsTab from './CollectionAssetsTab.vue'
@@ -26,25 +30,56 @@ const props = defineProps({
 
 const route = useRoute()
 const router = useRouter()
-const navCache = useNavCache()
+const { removeView } = useRecentViews()
+const { triggerError } = useGlobalError()
+const { addView } = useRecentViews()
 
 // Fetch collection details for name
 const { state: collection, execute: loadCollection } = useAsyncState(
   () => fetchCollection(props.collectionId),
-  { immediate: false },
+  {
+    immediate: false,
+    onError: (err) => {
+      if (err.body?.error === 'User has insufficient privilege to complete this request.') {
+        removeView(key => key.includes(`:${props.collectionId}`))
+        router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+      }
+      else {
+        triggerError(err)
+      }
+    },
+  },
 )
 
 const collectionName = computed(() => collection.value?.name || 'Collection')
 
-// Update nav cache when collection loads
-watch(collection, (col) => {
-  if (col?.name) {
-    navCache.setCollectionName(props.collectionId, col.name)
+// Track Recent Views on data load and route change
+watch([collection, () => route.name], ([col, routeName]) => {
+  if (col?.name && routeName?.startsWith('collection')) {
+    let label = col.name
+    let key = `collection:${props.collectionId}`
+
+    if (routeName === 'collection-findings') {
+      label = `${col.name} / Findings`
+      key = `collection-findings:${props.collectionId}`
+    }
+    else if (['collection-settings', 'collection-users'].includes(routeName)) {
+      label = `${col.name} / Manage`
+      key = `collection-manage:${props.collectionId}`
+    }
+
+    addView({
+      key,
+      url: route.fullPath,
+      label,
+      type: 'collection',
+    })
   }
-})
+}, { immediate: true })
 
 // Initial Data Load
 watch([() => props.collectionId], () => {
+  collection.value = null
   loadCollection()
 }, { immediate: true })
 
@@ -116,13 +151,37 @@ const tabPanelPt = {
 // Dashboard sidebar state (collapsed/expanded)
 const dashboardCollapsed = ref(false)
 
+const showDeleteDialog = ref(false)
+const isDeleting = ref(false)
+
 function toggleDashboardSidebar() {
   dashboardCollapsed.value = !dashboardCollapsed.value
+}
+
+function promptDeleteCollection() {
+  showDeleteDialog.value = true
+}
+
+async function confirmDeleteCollection() {
+  isDeleting.value = true
+  try {
+    await deleteCollection(props.collectionId)
+    showDeleteDialog.value = false
+    router.push({ name: 'collections' })
+  }
+  catch (error) {
+    console.error('Failed to delete collection', error)
+    // You could replace this with a proper toast notification loop later
+    window.alert('Failed to delete collection. Please try again.')
+  }
+  finally {
+    isDeleting.value = false
+  }
 }
 </script>
 
 <template>
-  <div class="collection-view">
+  <div v-if="collection" class="collection-view">
     <div class="content-wrapper">
       <!-- Dashboard Sidebar (always visible, collapsible) -->
       <aside
@@ -140,7 +199,7 @@ function toggleDashboardSidebar() {
             <i :class="dashboardCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'" />
           </button>
         </div>
-        <div v-show="!dashboardCollapsed" class="sidebar-content">
+        <div v-show="!dashboardCollapsed" v-if="collection" class="sidebar-content">
           <CollectionMetrics
             :collection-id="collectionId"
             :collection-name="collectionName"
@@ -156,7 +215,7 @@ function toggleDashboardSidebar() {
       </aside>
 
       <!-- Right Panel: Tabs + Content -->
-      <div class="right-panel">
+      <div v-if="collection" class="right-panel">
         <Tabs v-model:value="activeTab" :pt="tabsPt">
           <TabList>
             <Tab value="stigs">
@@ -177,6 +236,18 @@ function toggleDashboardSidebar() {
             <Tab value="settings">
               Settings
             </Tab>
+
+            <div class="delete-collection-wrapper">
+              <button
+                type="button"
+                class="action-btn delete-btn"
+                title="Delete Collection"
+                @click="promptDeleteCollection"
+              >
+                <i class="pi pi-trash" />
+                <span>Delete Collection</span>
+              </button>
+            </div>
           </TabList>
 
           <TabPanels :pt="tabPanelsPt">
@@ -211,6 +282,39 @@ function toggleDashboardSidebar() {
         </Tabs>
       </div>
     </div>
+
+    <!-- Delete Confirmation Dialog -->
+    <Dialog
+      v-model:visible="showDeleteDialog"
+      modal
+      header="Delete Collection"
+      :style="{ width: '400px' }"
+      :closable="!isDeleting"
+    >
+      <p class="m-0 mb-4">
+        Are you sure you want to delete the collection <strong>{{ collectionName }}</strong>? This action cannot be undone.
+      </p>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button
+            label="Cancel"
+            icon="pi pi-times"
+            text
+            severity="secondary"
+            :disabled="isDeleting"
+            @click="showDeleteDialog = false"
+          />
+          <Button
+            label="Delete"
+            icon="pi pi-trash"
+            severity="danger"
+            :loading="isDeleting"
+            @click="confirmDeleteCollection"
+          />
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -239,6 +343,31 @@ function toggleDashboardSidebar() {
   display: flex;
   flex-direction: column;
   transition: width 0.2s ease, min-width 0.2s ease;
+}
+
+.delete-collection-wrapper {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  padding-right: 1rem;
+}
+
+.delete-btn {
+  background-color: transparent;
+  border: 1px solid #f16969;
+  color: #f16969;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.delete-btn:hover {
+  background-color: rgba(241, 105, 105, 0.1);
 }
 
 .dashboard-sidebar--collapsed {

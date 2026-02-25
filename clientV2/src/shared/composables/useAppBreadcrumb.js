@@ -1,12 +1,12 @@
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
+  fetchAsset,
   fetchAssetStigs,
   fetchStigRevisions,
 } from '../../features/AssetReview/api/assetReviewApi.js'
 import { useGlobalAppStore } from '../stores/globalAppStore.js'
 import { useAsyncState } from './useAsyncState.js'
-import { useNavCache } from './useNavCache.js'
 
 /**
  * Global breadcrumb composable. Watches the current route and builds
@@ -21,12 +21,11 @@ import { useNavCache } from './useNavCache.js'
 export function useAppBreadcrumb() {
   const route = useRoute()
   const router = useRouter()
-  const navCache = useNavCache()
   const { user } = useGlobalAppStore()
 
   // Collections list for the collection dropdown (from user grants)
   const collectionOptions = computed(() => {
-    if (!user?.collectionGrants) return []
+    if (!user?.collectionGrants) { return [] }
     return user.collectionGrants
       .map(g => ({
         collectionId: String(g.collection.collectionId),
@@ -45,6 +44,11 @@ export function useAppBreadcrumb() {
     { initialState: [], immediate: false, onError: null },
   )
 
+  const { state: asset, execute: loadAsset } = useAsyncState(
+    () => fetchAsset(assetId.value),
+    { initialState: null, immediate: false, onError: null },
+  )
+
   const { state: stigRevisionOptions, execute: loadStigRevisions } = useAsyncState(
     () => fetchStigRevisions(benchmarkId.value),
     { initialState: [], immediate: false, onError: null },
@@ -52,12 +56,15 @@ export function useAppBreadcrumb() {
 
   // Load STIGs when asset changes
   watch(assetId, (id) => {
-    if (id) loadAssetStigs()
+    if (id) {
+      loadAssetStigs()
+      loadAsset()
+    }
   }, { immediate: true })
 
   // Load revisions when benchmark changes
   watch(benchmarkId, (id) => {
-    if (id) loadStigRevisions()
+    if (id) { loadStigRevisions() }
   }, { immediate: true })
 
   // Auto-fill revision if missing from URL
@@ -116,9 +123,18 @@ export function useAppBreadcrumb() {
         route: { name: 'collections' },
       })
 
+      // Collection name helper
+      const getCollectionName = (id) => {
+        if (user?.collectionGrants) {
+          const grant = user.collectionGrants.find(g => String(g.collection.collectionId) === String(id))
+          if (grant) { return grant.collection.name }
+        }
+        return `Collection ${id}`
+      }
+
       // Collection name: clickable link + adjacent picker
       items.push({
-        label: navCache.getCollectionName(collectionId) || `Collection ${collectionId}`,
+        label: getCollectionName(collectionId),
         route: { name: 'collection', params: { collectionId } },
         pickerType: 'collection',
       })
@@ -137,7 +153,7 @@ export function useAppBreadcrumb() {
       if (name === 'collection-asset-review') {
         // Asset name (static text)
         items.push({
-          label: navCache.getAssetName(params.assetId) || `Asset ${params.assetId}`,
+          label: asset.value?.name || `Asset ${params.assetId}`,
         })
 
         // STIG segment (dropdown picker)
@@ -218,7 +234,7 @@ export function useAppBreadcrumb() {
 
   // Navigation helper for STIG dropdown (asset review)
   function navigateToStig(newBenchmarkId) {
-    if (!newBenchmarkId) return
+    if (!newBenchmarkId) { return }
     const stigData = assetStigOptions.value.find(s => s.benchmarkId === newBenchmarkId)
     router.push({
       name: 'collection-asset-review',
@@ -233,7 +249,7 @@ export function useAppBreadcrumb() {
 
   // Navigation helper for revision dropdown (asset review)
   function navigateToRevision(newRevisionStr) {
-    if (!newRevisionStr) return
+    if (!newRevisionStr) { return }
     router.push({
       name: 'collection-asset-review',
       params: {

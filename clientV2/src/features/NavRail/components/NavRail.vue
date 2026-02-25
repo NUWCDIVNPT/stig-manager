@@ -2,14 +2,14 @@
 import Popover from 'primevue/popover'
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
+import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 
 const STORAGE_KEY = 'stigman:navRailExpanded'
 
 const route = useRoute()
 const { user } = useGlobalAppStore()
-const { recentViews } = useRecentViews()
+const { recentViews, clearViews } = useRecentViews()
 
 const expanded = ref(loadExpandedState())
 const recentViewsPopover = ref(null)
@@ -144,8 +144,18 @@ function toggleRecentViewsPopover(event) {
 
     <!-- Recent Views -->
     <template v-if="expanded">
-      <div class="nav-rail-section-label">
-        Recent Views
+      <div class="nav-rail-section-header">
+        <div class="nav-rail-section-label">
+          Recent Views
+        </div>
+        <button
+          v-if="recentViews.length > 0"
+          class="nav-rail-clear-btn"
+          title="Clear Recent Views"
+          @click="clearViews"
+        >
+          <i class="pi pi-trash" />
+        </button>
       </div>
       <div class="nav-rail-recent">
         <router-link
@@ -176,7 +186,15 @@ function toggleRecentViewsPopover(event) {
       </button>
       <Popover ref="recentViewsPopover" class="recent-views-popover">
         <div class="recent-views-popover-header">
-          Recent Views
+          <span>Recent Views</span>
+          <button
+            v-if="recentViews.length > 0"
+            class="nav-rail-clear-btn"
+            title="Clear Recent Views"
+            @click="clearViews"
+          >
+            <i class="pi pi-trash" />
+          </button>
         </div>
         <div class="recent-views-popover-list">
           <router-link
@@ -318,9 +336,16 @@ function toggleRecentViewsPopover(event) {
   flex-shrink: 0;
 }
 
+/* Section header for expanded state */
+.nav-rail-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 4px;
+}
+
 /* Section label for expanded state */
 .nav-rail-section-label {
-  padding: 8px 12px 4px;
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-text-dim, #a1a1aa);
@@ -328,6 +353,25 @@ function toggleRecentViewsPopover(event) {
   letter-spacing: 0.05em;
   white-space: nowrap;
   overflow: hidden;
+}
+
+.nav-rail-clear-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-dim, #a1a1aa);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.nav-rail-clear-btn:hover {
+  background-color: var(--color-surface-hover, #27272a);
+  color: var(--color-text-primary, rgba(255, 255, 255, 0.87));
 }
 
 /* Recent views list in expanded state */
@@ -387,6 +431,9 @@ function toggleRecentViewsPopover(event) {
 }
 
 .recent-views-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 8px 12px;
   font-size: 1rem;
   font-weight: 600;
