@@ -392,12 +392,12 @@ const updateCollection = async (field) => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-left: 1px solid var(--common-border);
+  border-left: 1px solid var(--color-border-default);
 }
 
 .details-header {
   padding: 1rem;
-  border-bottom: 1px solid var(--common-border);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .details-title {
@@ -462,7 +462,7 @@ const updateCollection = async (field) => {
 }
 
 .grants-table-wrapper {
-  border: 1px solid var(--common-border);
+  border: 1px solid var(--color-border-default);
   border-radius: 6px;
   overflow: hidden;
   flex: 1 1 auto;
@@ -475,7 +475,7 @@ const updateCollection = async (field) => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: var(--common-secondary-background);
+  background-color: var(--color-background-subtle);
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
   font-size: 0.85rem;
@@ -484,7 +484,7 @@ const updateCollection = async (field) => {
 
 .grants-toolbar {
   padding: 0.5rem;
-  border-bottom: 1px solid var(--common-border);
+  border-bottom: 1px solid var(--color-border-default);
   background: transparent;
   border-radius: 0;
   border-left: none;

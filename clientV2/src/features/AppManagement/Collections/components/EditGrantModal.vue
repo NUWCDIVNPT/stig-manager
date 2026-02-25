@@ -297,7 +297,7 @@ const onCancel = () => {
   min-height: 0;
   padding: 0.5rem;
   border-radius: 4px;
-  border: 1px solid var(--common-border);
+  border: 1px solid var(--color-border-default);
 }
 
 .section-header {
@@ -400,7 +400,7 @@ const onCancel = () => {
 
 .modified-section {
   flex: 0 0 auto;
-  border: 1px solid var(--common-border);
+  border: 1px solid var(--color-border-default);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -413,7 +413,7 @@ const onCancel = () => {
 
 .modified-content {
   padding: 1rem;
-  background-color: var(--common-secondary-background);
+  background-color: var(--color-background-subtle);
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -432,7 +432,7 @@ const onCancel = () => {
 
 .grantee-box {
   flex: 1;
-  border: 1px solid var(--common-border);
+  border: 1px solid var(--color-border-default);
   border-radius: 4px;
   padding: 0.5rem;
   background-color: #252525;

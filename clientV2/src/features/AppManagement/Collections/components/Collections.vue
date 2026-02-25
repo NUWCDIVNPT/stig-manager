@@ -76,7 +76,7 @@ onMounted(() => {
 
 .collections-splitter {
   flex-grow: 1;
-  border: 0.5px solid var(--common-border);
+  border: 0.5px solid var(--color-border-default);
   border-radius: 6px;
   overflow: hidden;
 }

@@ -5,8 +5,6 @@
   color: rgba(255, 255, 255, 0.87);
   background-color: #000000;
 
-  --common-border: rgba(255, 255, 255, 0.1);
-  --common-secondary-background:  rgba(255, 255, 255, 0.1);
   --role-restricted: #64748bcb;
   --role-full: #e2ca43d5;
   --role-manage: #4b7bc9da;
