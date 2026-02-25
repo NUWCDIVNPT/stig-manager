@@ -1,6 +1,6 @@
 <script setup>
 import Chart from 'primevue/chart'
-import { computed, defineProps } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   stats: {
@@ -16,7 +16,7 @@ const colors = {
   submitted: 'var(--metrics-status-chart-submitted)',
   accepted: 'var(--metrics-status-chart-accepted)',
   rejected: 'var(--metrics-status-chart-rejected)',
-  text: '#e4e4e7',
+  text: 'var(--color-text-primary)',
 }
 
 // Helper to resolve CSS variables for Chart.js (Canvas) which doesn't support var()
@@ -211,7 +211,7 @@ const chartOptions = {
 }
 
 .overall-pct {
-  font-size: 18px;
+  font-size: 1.65rem;
   font-weight: 600;
 }
 
@@ -242,10 +242,10 @@ const chartOptions = {
 .legend-item {
   display: flex;
   align-items: center;
-  font-size: 14px;
+  font-size: 1.25rem;
   border-radius: 6px;
   padding: 3px 12px;
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--color-background-subtle);
 }
 
 .indicator {
@@ -272,7 +272,7 @@ const chartOptions = {
 }
 
 .stat-box {
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--color-background-subtle);
   border-radius: 8px;
   position: relative;
   overflow: hidden;
@@ -295,32 +295,32 @@ const chartOptions = {
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 1.1rem;
   font-weight: 600;
   text-transform: uppercase;
 }
 
 .stat-value {
-  font-size: 16px;
+  font-size: 1.5rem;
   font-weight: 600;
 }
 
 .total-footer {
-  background-color: #26262b;
-  border: 1px solid #3f3f46;
+  background-color: var(--color-background-light);
+  border: 1px solid var(--color-border-default);
   border-radius: 8px;
   padding: 8px;
   text-align: center;
 }
 
 .total-label {
-  font-size: 12px;
-  color: #a1a1aa;
+  font-size: 1.1rem;
+  color: var(--color-text-dim);
   margin-bottom: 0.25rem;
 }
 
 .total-value {
-  font-size: 18px;
+  font-size: 1.65rem;
   font-weight: 600;
 }
 </style>

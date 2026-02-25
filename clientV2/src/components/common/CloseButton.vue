@@ -27,8 +27,8 @@ function handleClick() {
   border: none;
   outline: none;
   background: transparent;
-  color: #fff;
-  font-size: 24px;
+  color: var(--color-text-primary);
+  font-size: 2.2rem;
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -39,11 +39,11 @@ function handleClick() {
 }
 
 .close-btn:hover {
-  color: #b0b0b0;
+  color: var(--color-text-dim);
 }
 
 .close-btn:active {
-  color: #ffffff;
+  color: var(--color-text-bright);
 }
 
 .close-btn:focus {

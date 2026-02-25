@@ -103,8 +103,9 @@ function handleCreateCollection() {
   padding: 2rem;
   height: 100%;
   overflow-y: auto;
-  background-color: #18181b;
-  color: #e4e4e7;
+  overflow-y: auto;
+  background-color: var(--color-background-dark);
+  color: var(--color-text-primary);
 }
 
 .header {
@@ -118,7 +119,7 @@ h1 {
   font-size: 1.8rem;
   font-weight: 600;
   margin: 0;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .actions {
@@ -135,13 +136,13 @@ h1 {
   left: 10px;
   top: 50%;
   transform: translateY(-50%);
-  color: #71717a;
+  color: var(--color-text-dim);
 }
 
 .search-input {
-  background: #27272a; /* zinc-800 */
-  border: 1px solid #3f3f46; /* zinc-700 */
-  color: #fff;
+  background: var(--color-background-light);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-primary);
   padding: 0.5rem 1rem 0.5rem 2.2rem;
   border-radius: 6px;
   outline: none;
@@ -150,12 +151,12 @@ h1 {
 }
 
 .search-input:focus {
-  border-color: #6366f1; /* indigo-500 */
+  border-color: var(--color-primary);
 }
 
 .btn-primary {
-  background: #6366f1;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-text-primary);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -168,7 +169,7 @@ h1 {
 }
 
 .btn-primary:hover {
-  background: #4f46e5;
+  background: var(--color-primary-hover);
 }
 
 .collections-grid {
@@ -178,8 +179,8 @@ h1 {
 }
 
 .collection-card {
-  background: #27272a;
-  border: 1px solid #3f3f46;
+  background: var(--color-background-light);
+  border: 1px solid var(--color-border-default);
   border-radius: 8px;
   padding: 1.5rem;
   cursor: pointer;
@@ -192,15 +193,15 @@ h1 {
 }
 
 .collection-card:hover {
-  background: #3f3f46;
-  border-color: #52525b;
+  background: var(--color-bg-hover-strong);
+  border-color: var(--color-border-light);
   transform: translateY(-2px);
 }
 
 .card-icon {
   width: 48px;
   height: 48px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-bg-hover);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -222,7 +223,7 @@ h1 {
   margin: 0 0 0.25rem 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -231,15 +232,15 @@ h1 {
 .meta {
   margin: 0;
   font-size: 0.85rem;
-  color: #a1a1aa;
+  color: var(--color-text-dim);
 }
 
 .card-arrow {
-  color: #52525b;
+  color: var(--color-text-dim);
 }
 
 .collection-card:hover .card-arrow {
-  color: #e4e4e7;
+  color: var(--color-text-primary);
 }
 
 .loading-state {
@@ -248,7 +249,7 @@ h1 {
   align-items: center;
   justify-content: center;
   height: 300px;
-  color: #a1a1aa;
+  color: var(--color-text-dim);
   gap: 1rem;
 }
 
@@ -256,9 +257,9 @@ h1 {
   grid-column: 1 / -1;
   text-align: center;
   padding: 3rem;
-  color: #71717a;
-  background: rgba(255, 255, 255, 0.02);
+  color: var(--color-text-dim);
+  background: var(--color-background-subtle);
   border-radius: 8px;
-  border: 1px dashed #3f3f46;
+  border: 1px dashed var(--color-border-default);
 }
 </style>

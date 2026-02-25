@@ -12,9 +12,9 @@
 .checklist-info {
   height: 100%;
   padding: 1rem;
-  background-color: #1f1f1f;
-  border: 1px solid #3a3d40;
+  background-color: var(--color-background-subtle);
+  border: 1px solid var(--color-border-light);
   border-radius: 4px;
-  color: #a6adba;
+  color: var(--color-text-dim);
 }
 </style>

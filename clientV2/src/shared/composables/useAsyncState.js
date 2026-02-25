@@ -33,31 +33,65 @@ export function useAsyncState(promiseFactory, options = {}) {
   const isLoading = ref(false)
   const error = ref(null)
 
+  let generation = 0
+  let abortController = null
+
   /**
    *
    * @param  {...any} args - Arguments to pass to the promise factory
    * @returns {Promise<any>} - The result of the promise factory
    */
   const execute = async (...args) => {
+    // 1. Increment generation
+    const currentGen = ++generation
+
+    // 2. Abort previous request if it exists
+    if (abortController) {
+      abortController.abort()
+    }
+    abortController = new AbortController()
+
     isLoading.value = true
     error.value = null
 
     try {
-      const result = await promiseFactory(...args)
+      // Pass signal to factory if it accepts arguments.
+      // NOTE: Most existing API functions currently ignore this third argument.
+      // Updating them to use it for bandwidth optimization is TBD (To Be Determined Later).
+      const result = await promiseFactory(...args, { signal: abortController.signal })
+
+      // 3. Check for race condition
+      if (currentGen !== generation) {
+        // A newer request has started, so ignore this result
+        return null
+      }
+
       state.value = result
       return result
     }
     catch (e) {
+      // 3. Check for race condition
+      if (currentGen !== generation) {
+        return null
+      }
+
+      // Don't report abort errors
+      if (e.name === 'AbortError') {
+        return null
+      }
+
       error.value = e
       if (onError) {
         onError(e)
       }
-      // We explicitly do NOT re-throw by default to avoid unhandled promise rejections in templates
-      // Check 'error.value' if you need to know if it failed
       return null
     }
     finally {
-      isLoading.value = false
+      // Only clear loading if we are still the latest generation
+      if (currentGen === generation) {
+        isLoading.value = false
+        abortController = null
+      }
     }
   }
 

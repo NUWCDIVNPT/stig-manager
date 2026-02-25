@@ -1,14 +1,16 @@
-import { defineStore } from 'pinia'
+import { reactive } from 'vue'
 
-// nav tree store
-// handles navigation tree selection state
-export const useSelectedCollectionStore = defineStore('selectedCollection', {
-  state: () => ({
-    selectedData: null,
-  }),
-  actions: {
-    select(node) {
-      this.selectedData = node
-    },
-  },
+const state = reactive({
+  selectedData: null,
 })
+
+export function useSelectedCollectionStore() {
+  return {
+    get selectedData() {
+      return state.selectedData
+    },
+    select(node) {
+      state.selectedData = node
+    },
+  }
+}

@@ -15,7 +15,9 @@ const CollectionSelection = () => import('../features/CollectionView/components/
 const AppManagementSelection = () => import('../features/AppManagement/components/AppManagementSelection.vue')
 const StigLibrarySelection = () => import('../features/STIGLibrary/components/StigLibrarySelection.vue')
 const CollectionsAdmin = () => import('../features/AppManagement/Collections/components/Collections.vue')
+const WhatsNewView = () => import('../features/WhatsNew/components/WhatsNewView.vue')
 const AssetReview = () => import('../features/AssetReview/components/AssetReview.vue')
+const CollectionReview = () => import('../features/CollectionReview/components/CollectionReview.vue')
 
 const EmptyComponent = { template: '<div><router-view></router-view></div>' }
 
@@ -72,13 +74,17 @@ const routes = [
         component: EmptyComponent,
         props: true,
       },
-      {
-        path: 'asset/:assetId/stig/:benchmarkId/revision/:revisionStr?',
-        name: 'collection-asset-review',
-        component: AssetReview,
-        props: true,
-      },
     ],
+  },
+  {
+    path: '/collection/:collectionId/asset/:assetId/stig/:benchmarkId/revision/:revisionStr?',
+    name: 'collection-asset-review',
+    component: AssetReview,
+  },
+  {
+    path: '/collection/:collectionId/benchmark/:benchmarkId/revision/:revisionStr?',
+    name: 'collection-benchmark-review',
+    component: CollectionReview,
   },
   {
     path: '/collections',
@@ -94,6 +100,11 @@ const routes = [
     path: '/stig-library',
     name: 'stig-library',
     component: StigLibrarySelection,
+  },
+  {
+    path: '/whats-new',
+    name: 'whats-new',
+    component: WhatsNewView,
   },
   {
     path: '/collection/:collectionId/manage',
@@ -157,8 +168,17 @@ const routes = [
   },
 ]
 
+let historyBase
+if (import.meta.env.DEV) {
+  historyBase = import.meta.env.VITE_HASH_ROUTES === '1' ? null : '/'
+}
+else {
+  // Change when nextgen client is served from root instead of /client-v2
+  historyBase = STIGMAN.Env.pathPrefix ? `${STIGMAN.Env.pathPrefix}client-v2/` : null
+}
+
 const router = createRouter({
-  history: STIGMAN.Env.historyBase ? createWebHistory(STIGMAN.Env.historyBase) : createWebHashHistory(),
+  history: historyBase ? createWebHistory(historyBase) : createWebHashHistory(),
   routes,
 })
 

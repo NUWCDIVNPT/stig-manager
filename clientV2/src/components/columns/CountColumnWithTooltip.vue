@@ -77,7 +77,7 @@ function hidePopover() {
 .popover-content {
   max-height: 300px;
   overflow-y: auto;
-  font-size: 12px;
+  font-size: 1.1rem;
 }
 
 .item-list {
@@ -92,6 +92,6 @@ function hidePopover() {
 }
 
 .item-list li:not(:last-child) {
-  border-bottom: 1px solid var(--p-common-border);
+  border-bottom: 1px solid var(--color-border-default);
 }
 </style>

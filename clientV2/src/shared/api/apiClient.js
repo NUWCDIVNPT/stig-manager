@@ -155,13 +155,13 @@ export async function apiCall(operationId, params = {}, body = undefined, opts =
   }
 
   // to be edited
-  const base = getBaseUrl()
-  if (base.startsWith('http')) {
-    apiSpecObj.apiBase = base
-  }
-  else {
-    apiSpecObj.apiBase = new URL(base, window.location.origin).toString()
-  }
+  apiSpecObj.apiBase = getBaseUrl()
+  // if (base.startsWith('http')) {
+  //   apiSpecObj.apiBase = base
+  // }
+  // else {
+  //   apiSpecObj.apiBase = new URL(base, window.location.origin).toString()
+  // }
 
   const url = apiSpecObj.getUrl(operationId, params)
   const method = apiSpecObj.operationMap.get(operationId)?.method.toUpperCase()

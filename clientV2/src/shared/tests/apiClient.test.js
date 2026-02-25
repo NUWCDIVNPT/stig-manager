@@ -5,10 +5,12 @@ import { api, apiCall, ApiError, apiFetch, configureApiSpec, configureAuth } fro
 const fetchMock = vi.fn()
 globalThis.fetch = fetchMock
 
-// Mock useEnv
-vi.mock('../stores/useEnv.js', () => ({
-  useEnv: vi.fn(() => ({ apiUrl: '/api' })),
-}))
+// Mock STIGMAN global
+globalThis.STIGMAN = {
+  Env: {
+    apiBase: 'http://localhost/api',
+  },
+}
 
 describe('apiClient', () => {
   beforeEach(() => {
@@ -26,7 +28,7 @@ describe('apiClient', () => {
     const result = await api.get('/test')
 
     expect(result).toEqual({ data: 'test' })
-    expect(fetchMock).toHaveBeenCalledWith('/api/test', expect.objectContaining({
+    expect(fetchMock).toHaveBeenCalledWith('http://localhost/api/test', expect.objectContaining({
       method: 'GET',
       headers: expect.any(Headers),
     }))
@@ -58,7 +60,7 @@ describe('apiClient', () => {
     const payload = { name: 'Item' }
     await api.post('/items', payload)
 
-    expect(fetchMock).toHaveBeenCalledWith('/api/items', expect.objectContaining({
+    expect(fetchMock).toHaveBeenCalledWith('http://localhost/api/items', expect.objectContaining({
       method: 'POST',
       body: JSON.stringify(payload),
     }))
@@ -76,7 +78,7 @@ describe('apiClient', () => {
     const data = { direct: true }
     await apiFetch('/direct', { method: 'PUT', json: data })
 
-    expect(fetchMock).toHaveBeenCalledWith('/api/direct', expect.objectContaining({
+    expect(fetchMock).toHaveBeenCalledWith('http://localhost/api/direct', expect.objectContaining({
       method: 'PUT',
       body: JSON.stringify(data),
     }))
@@ -89,7 +91,7 @@ describe('apiClient', () => {
     fetchMock.mockResolvedValueOnce({
       ok: false,
       status: 404,
-      url: '/api/missing',
+      url: 'http://localhost/api/missing',
       text: async () => JSON.stringify({ message: 'Not Found' }),
     })
 
@@ -115,7 +117,7 @@ describe('apiClient', () => {
 
     await apiFetch('/upload', { method: 'POST', rawBody: formData })
 
-    expect(fetchMock).toHaveBeenCalledWith('/api/upload', expect.objectContaining({
+    expect(fetchMock).toHaveBeenCalledWith('http://localhost/api/upload', expect.objectContaining({
       body: formData,
     }))
 
@@ -137,7 +139,7 @@ describe('apiClient', () => {
   describe('apiCall', () => {
     const mockDefinition = {
       openapi: '3.0.0',
-      servers: [{ url: '/api' }],
+      servers: [{ url: 'http://localhost/api' }],
       paths: {
         '/user': {
           get: {
@@ -179,7 +181,7 @@ describe('apiClient', () => {
       const result = await apiCall('getUserById', { userId: '123' })
 
       expect(result).toEqual({ id: 123, name: 'Alice' })
-      expect(fetchMock).toHaveBeenCalledWith('http://localhost:3000/api/users/123', expect.objectContaining({
+      expect(fetchMock).toHaveBeenCalledWith('http://localhost/api/users/123', expect.objectContaining({
         method: 'GET',
       }))
     })
@@ -193,7 +195,7 @@ describe('apiClient', () => {
       const body = { filters: [] }
       await apiCall('searchItems', { q: 'term' }, body)
 
-      expect(fetchMock).toHaveBeenCalledWith('http://localhost:3000/api/search?q=term', expect.objectContaining({
+      expect(fetchMock).toHaveBeenCalledWith('http://localhost/api/search?q=term', expect.objectContaining({
         method: 'POST',
         headers: expect.any(Headers),
         body: JSON.stringify(body),

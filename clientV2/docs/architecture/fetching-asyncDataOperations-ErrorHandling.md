@@ -164,3 +164,26 @@ If `apiClient` is called directly without `useAsyncState`, errors will throw and
 *   Errors become reactive state.
 *   Pass `onError: null` to opt-out of global errors.
 *   Pass a function to `onError` to override/customize handling.
+
+## Race Condition Handling & AbortController
+
+`useAsyncState` includes built-in protection against race conditions and unnecessary network requests.
+
+### Generation Counter
+It tracks a `generation` counter for each execution. If you call `execute()` multiple times rapidly (e.g., user typing in a search box), only the results from the **latest** call will update the state. Stale results from earlier calls that finish later are discarded.
+
+### AbortController
+It automatically manages an `AbortController`.
+1.  When `execute()` is called, it aborts any pending request from the previous execution.
+2.  It creates a new `AbortController`.
+3.  It passes the `signal` to your promise factory as a second argument: `promiseFactory(arg1, { signal })`.
+
+**To check for cancellation in your API calls:**
+Ensure your API client or fetch wrapper forwards this `signal` to the underlying `fetch` call.
+
+```javascript
+// Example in apiClient
+async function getData(params, { signal } = {}) {
+  return await fetch('/api/data', { signal })
+}
+```

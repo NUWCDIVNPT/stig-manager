@@ -22,6 +22,9 @@ const config = {
     },
     client: {
         clientId: process.env.STIGMAN_CLIENT_ID || "stig-manager",
+        pathPrefix: process.env.STIGMAN_CLIENT_PATH_PREFIX
+            ? process.env.STIGMAN_CLIENT_PATH_PREFIX.replace(/\/+$/, "") + "/"
+            : "",
         historyBase: process.env.STIGMAN_CLIENT_HISTORY_BASE || "",
         displayAppManagers: process.env.STIGMAN_CLIENT_DISPLAY_APPMANAGERS || "true",
         idleTimeoutUser: (() => {

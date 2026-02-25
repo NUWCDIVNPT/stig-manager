@@ -14,11 +14,11 @@ export function fetchCollection(collectionId) {
   return apiCall('getCollection', { collectionId })
 }
 
-export function fetchCollectionAssetSummary(collectionId) {
+export function fetchCollectionAssetSummary(collectionId, options = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch asset metrics.')
   }
-  return apiCall('getMetricsSummaryByCollectionAggAsset', { collectionId })
+  return apiCall('getMetricsSummaryByCollectionAggAsset', { collectionId, ...options })
 }
 
 export function fetchCollections() {

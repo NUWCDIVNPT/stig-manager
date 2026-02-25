@@ -426,14 +426,14 @@ The remaining legitimate uses of `inject('worker')` are:
 
 **Audit finding:** Hash mode (`createWebHashHistory`) is intentional. The deployment model serves the client from a sub-path of the Express API without URL rewriting. The OIDC flow uses `url.search` for callback params, keeping it cleanly separated from the hash-based route. No change needed.
 
-#### D10. Navigation guards: none exist `DECIDE`
+#### D10. Navigation guards: none exist `DECIDED`
 
 **Audit finding:** There are zero route guards — no `beforeEach`, no per-route `beforeEnter`, no `meta` fields. Auth is handled by the pre-mount bootstrap (app doesn't mount until auth succeeds), but there is no **authorization** checking:
 - Any authenticated user can navigate to `/#/admin/users` — they'll get API 403s but the admin UI shell renders.
 - No catch-all route for 404 — navigating to `/#/nonexistent` shows a blank page.
 - No guard for collection access — navigating to a collection the user can't access renders the shell then shows errors.
 
-**Recommendation:** Add a minimal `beforeEach` guard for admin routes (check user roles). Add a catch-all 404 route. Collection access can be handled by the component (redirect on 403 response) rather than a guard.
+**Decision:** Add route `meta` fields and a global `beforeEach` guard. Admin routes require `privileges.admin`. Collection routes require a collection grant (all users, including admins). Asset-level ACL access is handled at the component level via API responses. A `useCurrentUser()` composable replaces direct token parsing for privilege checks. 403 responses trigger user data re-fetch to handle mid-session grant changes. See [routing-and-authorization.md](routing-and-authorization.md) for the full approach.
 
 #### D11. selectedCollection store is vestigial `REMOVE`
 
@@ -566,3 +566,4 @@ Additionally, `postContextActiveMessage()` on the OW object (oidcWorker.js main 
 - [COMPONENT_PLAN.md](COMPONENT_PLAN.md) — Component hierarchy and reuse matrix
 - [reusable-components.md](reusable-components.md) — Column patterns, data fetching, PrimeVue usage
 - [dev-notes.md](dev-notes.md) — Architecture analysis, refactor plans, resolved questions
+- [routing-and-authorization.md](routing-and-authorization.md) — Route guards, privilege checks, collection/asset access control

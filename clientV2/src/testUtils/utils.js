@@ -1,5 +1,4 @@
 import { render } from '@testing-library/vue'
-import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 
 export function renderWithProviders(
@@ -11,11 +10,11 @@ export function renderWithProviders(
     },
     props = {},
     withPrimeVue = true,
+    ...options
   } = {},
 ) {
   const global = {
     plugins: [
-      createPinia(),
     ],
     provide: {
       worker,
@@ -26,6 +25,6 @@ export function renderWithProviders(
     global.plugins.push([PrimeVue])
   }
 
-  const utils = render(component, { props, global })
+  const utils = render(component, { props, global, ...options })
   return { ...utils }
 }

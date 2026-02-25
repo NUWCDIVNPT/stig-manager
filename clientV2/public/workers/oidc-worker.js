@@ -11,12 +11,12 @@ let initialized = false
 let authorizations = {}
 let accessTimeoutId = null
 let refreshTimeoutId = null
-let redirectUri = null
 const channelName = crypto.randomUUID()
 const bc = new BroadcastChannel(channelName)
 let idleTimeoutId = null
 let idleTimeoutM = null
 let isIdle = false
+let reauthUri = null
 
 // Worker entry point
 onconnect = function (e) {
@@ -34,15 +34,36 @@ const messageHandlers = {
   logout
 }
 
-function getAccessToken() {
+function getAccessToken(authorizationOptions) {
   if (!tokens.accessToken) {
     console.log(logPrefix, 'getAccessToken, redirecting to authorization')
-    return createAuthorization()
+    return createAuthorization(authorizationOptions)
   }
   return {
     accessToken: tokens.accessToken,
     accessTokenPayload: decodeToken(tokens.accessToken)
   }
+}
+
+async function createAuthorization(options) {
+  if (authorizations[options.redirectUri]) return authorizations[options.redirectUri]
+  const pkce = await getPkce()
+  const state = options.state || crypto.randomUUID()
+  const params = new URLSearchParams()
+  params.append('client_id', ENV.clientId)
+  params.append('redirect_uri', options.redirectUri)
+  params.append('state', state)
+  params.append('response_mode', ENV.responseMode)
+  params.append('response_type', 'code')
+  params.append('scope', getScopeStr())
+  params.append('nonce', crypto.randomUUID())
+  params.append('code_challenge', pkce.codeChallenge)
+  params.append('code_challenge_method', 'S256')
+
+  const authEndpoint = oidcConfiguration.authorization_endpoint
+  const redirectOidc = `${authEndpoint}?${params.toString()}`
+  authorizations[options.redirectUri] = { redirectOidc, codeVerifier: pkce.codeVerifier, state }
+  return authorizations[options.redirectUri]
 }
 
 async function exchangeCodeForToken({ code, codeVerifier, clientId = ENV.clientId, redirectUri }) {
@@ -79,8 +100,8 @@ async function exchangeCodeForToken({ code, codeVerifier, clientId = ENV.clientI
 async function initialize(options) {
   if (!initialized) {
     initialized = true
-    redirectUri = options.redirectUri
     ENV = options.env || null
+    reauthUri = options.reauthUri || null
 
     try {
       oidcConfiguration = options.oidcConfiguration || await fetchOpenIdConfiguration()
@@ -101,9 +122,9 @@ async function initialize(options) {
 async function getStatus() {
   return {
     initialized,
-    redirectUri,
     env: ENV,
-    channelName
+    channelName,
+    reauthUri
   }
 }
 
@@ -235,26 +256,6 @@ async function fetchOpenIdConfiguration() {
   return oidcConfiguration
 }
 
-async function createAuthorization(_redirectUri = redirectUri) {
-  if (authorizations[_redirectUri]) return authorizations[_redirectUri]
-  const pkce = await getPkce()
-  const state = crypto.randomUUID()
-  const params = new URLSearchParams()
-  params.append('client_id', ENV.clientId)
-  params.append('redirect_uri', _redirectUri)
-  params.append('state', state)
-  params.append('response_mode', ENV.responseMode)
-  params.append('response_type', 'code')
-  params.append('scope', getScopeStr())
-  params.append('nonce', crypto.randomUUID())
-  params.append('code_challenge', pkce.codeChallenge)
-  params.append('code_challenge_method', 'S256')
-
-  const authEndpoint = oidcConfiguration.authorization_endpoint
-  const redirect = `${authEndpoint}?${params.toString()}`
-  authorizations[_redirectUri] = { redirect, codeVerifier: pkce.codeVerifier, state }
-  return authorizations[_redirectUri]
-}
 
 async function getPkce() {
   const codeVerifier = generateRandomString()
@@ -264,11 +265,11 @@ async function getPkce() {
 
 async function broadcastNoToken() {
   console.log(logPrefix, 'Broadcasting no token')
-  let baseRedirectUri = redirectUri?.endsWith('index.html')
-    ? redirectUri.slice(0, -'index.html'.length)
-    : redirectUri
+  // let baseRedirectUri = redirectUri?.endsWith('index.html')
+  //   ? redirectUri.slice(0, -'index.html'.length)
+  //   : redirectUri
 
-  const auth = await createAuthorization(`${baseRedirectUri}reauth.html`)
+  const auth = await createAuthorization({redirectUri: reauthUri})
   bc.postMessage({ type: 'noToken', ...auth, isIdle })
 }
 

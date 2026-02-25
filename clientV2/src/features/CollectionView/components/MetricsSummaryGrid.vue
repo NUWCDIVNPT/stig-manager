@@ -1,8 +1,10 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, provide, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import AssetColumn from '../../../components/columns/AssetColumn.vue'
+import BenchmarkColumn from '../../../components/columns/BenchmarkColumn.vue'
+import CoraColumn from '../../../components/columns/CoraColumn.vue'
 import DurationColumn from '../../../components/columns/DurationColumn.vue'
 import LabelsColumn from '../../../components/columns/LabelsColumn.vue'
 import PercentageColumn from '../../../components/columns/PercentageColumn.vue'
@@ -34,15 +36,7 @@ const props = defineProps({
     type: String,
     default: null,
   },
-  showRowAction: {
-    type: Boolean,
-    default: false,
-  },
-  rowActionIcon: {
-    type: String,
-    default: 'pi pi-external-link',
-  },
-  showAssetAction: {
+  showShield: {
     type: Boolean,
     default: false,
   },
@@ -55,17 +49,9 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-  showRefresh: {
-    type: Boolean,
-    default: true,
-  },
-  showExport: {
-    type: Boolean,
-    default: true,
-  },
 })
 
-const emit = defineEmits(['row-select', 'row-action', 'asset-action', 'refresh'])
+const emit = defineEmits(['row-select', 'shield-click', 'refresh'])
 
 const dataTableRef = ref(null)
 const selectedRow = ref(null)
@@ -74,8 +60,13 @@ function exportToCsv() {
   dataTableRef.value?.exportCSV()
 }
 
-function handleRefresh() {
-  emit('refresh')
+function handleFooterAction(actionKey) {
+  if (actionKey === 'refresh') {
+    emit('refresh')
+  }
+  else if (actionKey === 'export') {
+    exportToCsv()
+  }
 }
 
 // Expose for external access if needed
@@ -94,17 +85,9 @@ function onRowSelect(event) {
   emit('row-select', event.data)
 }
 
-function onRowAction(rowData) {
-  emit('row-action', rowData)
+function onShieldClick(rowData) {
+  emit('shield-click', rowData)
 }
-
-function onAssetAction(rowData) {
-  emit('asset-action', rowData)
-}
-
-// Provide asset action handler to child column components
-provide('assetActionEnabled', computed(() => props.showAssetAction))
-provide('onAssetAction', onAssetAction)
 
 watch(() => props.apiMetricsSummary, () => {
   console.log('apiMetricsSummary changed')
@@ -114,12 +97,25 @@ watch(() => props.apiMetricsSummary, () => {
 const aggregationType = computed(() => {
   console.log('Determining aggregation type for metrics summary')
   const m = props.apiMetricsSummary
-  if (m.length === 0) { return null }
-  if ('assetId' in m[0] && 'benchmarkId' in m[0]) { return 'unagg' }
-  if ('collectionId' in m[0]) { return 'collection' }
-  if ('assetId' in m[0]) { return 'asset' }
-  if ('labelId' in m[0]) { return 'label' }
-  if ('benchmarkId' in m[0]) { return 'stig' }
+  if (m.length === 0) {
+    return null
+  }
+  if ('assetId' in m[0] && 'benchmarkId' in m[0]) {
+    return 'unagg'
+  }
+  if ('collectionId' in m[0]) {
+    return 'collection'
+  }
+  if ('assetId' in m[0]) {
+    return 'asset'
+  }
+  if ('labelId' in m[0]) {
+    return 'label'
+  }
+  if ('benchmarkId' in m[0]) {
+    return 'stig'
+  }
+  return null
 })
 
 const columns = computed(() => {
@@ -134,7 +130,7 @@ const columns = computed(() => {
     { field: 'submittedPct', header: 'Submitted', component: PercentageColumn },
     { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn },
     { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn },
-    { field: 'cora', header: 'CORA', component: Column },
+    { field: 'cora', header: 'CORA', component: CoraColumn },
     { field: 'low', header: 'Low', component: Column },
     { field: 'medium', header: 'Medium', component: Column },
     { field: 'high', header: 'High', component: Column },
@@ -142,14 +138,14 @@ const columns = computed(() => {
   switch (aggregationType.value) {
     case 'asset':
       return [
-        { field: 'assetName', header: 'Asset', component: AssetColumn },
+        { field: 'assetName', header: 'Asset', component: AssetColumn, showShield: props.showShield, onShieldClick },
         { field: 'labels', header: 'Labels', component: LabelsColumn },
         { field: 'stigCnt', header: 'Stigs', component: Column },
         ...commonColumns,
       ]
     case 'stig':
       return [
-        { field: 'benchmarkId', header: 'Benchmark', component: Column },
+        { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, showShield: props.showShield, onShieldClick },
         // { field: 'title', header: 'Title', component: Column },
         { field: 'revisionStr', header: 'Revision', component: Column },
         { field: 'assetCnt', header: 'Assets', component: Column },
@@ -164,21 +160,21 @@ const columns = computed(() => {
     case 'unagg':
       if (props.parentAggType === 'asset') {
         return [
-          { field: 'benchmarkId', header: 'Benchmark', component: Column },
+          { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, showShield: props.showShield, onShieldClick },
           { field: 'revisionStr', header: 'Revision', component: Column },
           ...commonColumns,
         ]
       }
       if (props.parentAggType === 'stig') {
         return [
-          { field: 'assetName', header: 'Asset', component: AssetColumn },
+          { field: 'assetName', header: 'Asset', component: AssetColumn, showShield: props.showShield, onShieldClick },
           { field: 'labels', header: 'Labels', component: LabelsColumn },
           ...commonColumns,
         ]
       }
       return [
-        { field: 'assetName', header: 'Asset', component: AssetColumn },
-        { field: 'benchmarkId', header: 'Benchmark', component: Column },
+        { field: 'assetName', header: 'Asset', component: AssetColumn, showShield: props.showShield, onShieldClick },
+        { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, showShield: props.showShield, onShieldClick },
         { field: 'labels', header: 'Labels', component: LabelsColumn },
         ...commonColumns,
       ]
@@ -230,6 +226,7 @@ const data = computed(() => {
         }
       case 'label':
         return {
+          labelId: r.labelId,
           label: [{
             labelId: r.labelId,
             name: r.name,
@@ -280,8 +277,6 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     :value="data"
     :data-key="dataKey"
     :selection-mode="selectable ? 'single' : null"
-    class="metrics-summary-grid"
-    :class="{ 'has-row-action': showRowAction }"
     scrollable
     scroll-height="flex"
     show-gridlines
@@ -293,42 +288,22 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     :export-function="formatExportCell"
     @row-select="onRowSelect"
   >
-    <Column
-      v-if="showRowAction"
-      frozen
-      style="width: 2.5rem; min-width: 2.5rem; max-width: 2.5rem; padding: 0;"
-    >
-      <template #body="slotProps">
-        <button
-          type="button"
-          class="row-action-btn"
-          title="Open"
-          @click.stop="onRowAction(slotProps.data)"
-        >
-          <i :class="rowActionIcon" />
-        </button>
-      </template>
-    </Column>
     <template v-for="col in columns" :key="col.field">
       <component :is="col.component" v-bind="col" sortable style="height: 27px; max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
     </template>
     <template v-if="showFooter" #footer>
       <StatusFooter
-        :item-count="data.length"
-        :selected-count="selectedRow ? 1 : 0"
-        :show-selection="selectable"
-        :show-refresh="showRefresh"
-        :show-export="showExport"
         :refresh-loading="isLoading"
-        @refresh="handleRefresh"
-        @export="exportToCsv"
+        :selected-items="selectedRow"
+        :total-count="data.length"
+        :show-selected="selectable && selectedRow?.length > 0"
+        @action="handleFooterAction"
       />
     </template>
   </DataTable>
 </template>
 
 <style scoped>
-/* Remove default padding from DataTable footer so StatusFooter fills the space */
 :deep(.p-datatable-footer) {
   padding: 0;
   border: none;
@@ -342,31 +317,4 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
   text-overflow: ellipsis;
 }
 
-.row-action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  border: none;
-  color: #6b7280;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s;
-}
-
-.row-action-btn:hover {
-  color: #3b82f6;
-}
-
-.row-action-btn i {
-  font-size: 0.85rem;
-}
-
-/* Show button on row hover */
-:deep(.p-datatable-row-selected) .row-action-btn,
-:deep(.p-datatable-tbody > tr:hover) .row-action-btn {
-  opacity: 1;
-}
 </style>

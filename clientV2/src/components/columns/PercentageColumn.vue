@@ -37,8 +37,8 @@ function renderPct(v) {
   font-weight: 600
 }
 .sm-cell-thermometer-bg {
-  background-color: #1e2021;
-  outline: solid 1px #4d4d4d;
+  background-color: var(--color-background-light);
+  outline: solid 1px var(--color-border-default);
   border-radius: 3px;
   outline-offset: 0px
 

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, defineProps, toRefs } from 'vue'
+import { computed, toRefs } from 'vue'
 import { formatAge } from '../../../shared/lib.js'
 
 const props = defineProps({

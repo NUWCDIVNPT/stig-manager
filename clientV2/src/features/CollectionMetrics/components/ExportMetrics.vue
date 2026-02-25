@@ -44,7 +44,7 @@ const selected = reactive({
 
 const buttonPt = {
   root: {
-    style: 'color: rgba(255, 255, 255, 0.87); border-color: #3f3f46; width: 100%; margin-top: 5px',
+    style: 'color: var(--color-text-primary); border-color: var(--color-border-default); width: 100%; margin-top: 5px',
     class: 'download-button',
   },
 }
@@ -133,7 +133,7 @@ async function download() {
 }
 
 label {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-dim);
   font-size: 0.9rem;
   font-weight: 500;
 }

@@ -1,20 +1,23 @@
 <script setup>
 import Column from 'primevue/column'
-import { inject } from 'vue'
 import shieldGreenCheck from '../../assets/shield-green-check.svg'
 
-defineProps({
+const props = defineProps({
   field: String,
   header: String,
+  showShield: {
+    type: Boolean,
+    default: false,
+  },
+  onShieldClick: {
+    type: Function,
+    default: null,
+  },
 })
 
-// Inject action handler from MetricsSummaryGrid
-const assetActionEnabled = inject('assetActionEnabled', false)
-const onAssetAction = inject('onAssetAction', null)
-
 function handleShieldClick(rowData) {
-  if (assetActionEnabled.value && onAssetAction) {
-    onAssetAction(rowData)
+  if (props.showShield && props.onShieldClick) {
+    props.onShieldClick(rowData)
   }
 }
 </script>
@@ -27,7 +30,7 @@ function handleShieldClick(rowData) {
           {{ slotProps.data.assetName }}
         </div>
         <button
-          v-if="assetActionEnabled"
+          v-if="showShield"
           type="button"
           class="shield-action"
           title="Open Asset Review"
@@ -35,9 +38,6 @@ function handleShieldClick(rowData) {
         >
           <img :src="shieldGreenCheck" width="14" height="14" alt="Review">
         </button>
-        <div v-else class="sm-static-width">
-          <img :src="shieldGreenCheck" width="14" height="14" alt="">
-        </div>
       </div>
     </template>
   </Column>
@@ -51,13 +51,6 @@ function handleShieldClick(rowData) {
 
 .sm-info {
   flex: 1;
-}
-
-.sm-static-width {
-  width: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .shield-action {
@@ -77,7 +70,7 @@ function handleShieldClick(rowData) {
 .shield-action:hover {
   opacity: 1;
   transform: scale(1.2);
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--color-button-hover-bg);
 }
 
 .shield-action img {

@@ -2,37 +2,44 @@
 import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { fetchAsset } from '../api/assetReviewApi.js'
+import {
+  fetchAsset,
+  fetchCollectionLabels,
+} from '../api/assetReviewApi.js'
+import AssetReviewBreadcrumbs from './AssetReviewBreadcrumbs.vue'
 import ChecklistInfo from './ChecklistInfo.vue'
 import ReviewForm from './ReviewForm.vue'
 import ReviewResources from './ReviewResources.vue'
 import RuleInfo from './RuleInfo.vue'
 
-const props = defineProps({
-  assetId: {
-    type: [String, Number],
-    default: null,
-  },
-  collectionLabels: {
-    type: Array,
-    default: () => [],
-  },
-})
-
 const route = useRoute()
-// Use prop if provided, otherwise fall back to route param
-const assetId = computed(() => props.assetId || route.params.assetId)
 
+const collectionId = computed(() => route.params.collectionId)
+const assetId = computed(() => route.params.assetId)
+
+// Fetch Asset Details
 const { state: asset, isLoading, errorMessage: error, execute: loadAsset } = useAsyncState(
   () => fetchAsset(assetId.value),
-  {
-    immediate: false,
-  },
+  { immediate: false },
 )
 
-watch(assetId, loadAsset, { immediate: true })
+// Fetch Collection Labels (for coloring)
+const { state: collectionLabels, execute: loadCollectionLabels } = useAsyncState(
+  () => fetchCollectionLabels(collectionId.value),
+  { initialState: [], immediate: false },
+)
 
-// Calculate contrasting text color for a hex background
+// Initial Data Load
+watch([assetId, collectionId], () => {
+  if (assetId.value) {
+    loadAsset()
+  }
+  if (collectionId.value) {
+    loadCollectionLabels()
+  }
+}, { immediate: true })
+
+// Label Resolution Logic
 function getContrastColor(hexColor) {
   if (!hexColor) {
     return '#ffffff'
@@ -45,15 +52,11 @@ function getContrastColor(hexColor) {
   return yiq >= 128 ? '#1a1a1a' : '#ffffff'
 }
 
-// Expose asset for parent components (e.g., breadcrumb)
-defineExpose({ asset })
-
-// Resolve asset labelIds to full label objects with name and color
 const resolvedLabels = computed(() => {
-  if (!asset.value?.labelIds?.length || !props.collectionLabels?.length) {
+  if (!asset.value?.labelIds?.length || !collectionLabels.value?.length) {
     return []
   }
-  const labelMap = new Map(props.collectionLabels.map(l => [l.labelId, l]))
+  const labelMap = new Map(collectionLabels.value.map(l => [l.labelId, l]))
   return asset.value.labelIds
     .map(id => labelMap.get(id))
     .filter(Boolean)
@@ -63,10 +66,78 @@ const resolvedLabels = computed(() => {
       textColor: getContrastColor(label.color),
     }))
 })
+
+// Expose asset
+defineExpose({ asset })
 </script>
 
 <template>
   <div class="asset-review">
+    <header class="asset-review__header">
+      <AssetReviewBreadcrumbs :asset="asset" />
+
+      <div v-if="asset" class="asset-review__header-main">
+        <div class="asset-review__header-info">
+          <div class="asset-review__title-row">
+            <h1 class="asset-review__title">
+              {{ asset.name }}
+            </h1>
+            <div v-if="resolvedLabels.length" class="asset-review__labels">
+              <span
+                v-for="label in resolvedLabels"
+                :key="label.labelId"
+                class="asset-label"
+                :style="{ backgroundColor: label.bgColor, color: label.textColor }"
+              >
+                {{ label.name }}
+              </span>
+            </div>
+          </div>
+          <div class="asset-review__meta">
+            <span class="asset-review__meta-item">
+              <i class="pi pi-hashtag" />
+              {{ asset.assetId }}
+            </span>
+            <span v-if="asset.ip" class="asset-review__meta-item">
+              <i class="pi pi-globe" />
+              {{ asset.ip }}
+            </span>
+            <span v-if="asset.fqdn" class="asset-review__meta-item">
+              <i class="pi pi-server" />
+              {{ asset.fqdn }}
+            </span>
+            <span v-if="asset.mac" class="asset-review__meta-item">
+              <i class="pi pi-wifi" />
+              {{ asset.mac }}
+            </span>
+            <span v-if="asset.description" class="asset-review__meta-item asset-review__description">
+              <i class="pi pi-info-circle" />
+              {{ asset.description }}
+            </span>
+          </div>
+        </div>
+        <div class="asset-review__header-actions">
+          <!-- Search reviews input from CollectionView could be moved here if needed -->
+          <div class="search-reviews">
+            <i class="pi pi-search search-reviews__icon" />
+            <input
+              type="text"
+              class="search-reviews__input"
+              placeholder="Search reviews..."
+            >
+          </div>
+          <button type="button" class="action-btn" title="Import checklist">
+            <i class="pi pi-upload" />
+            <span>Import</span>
+          </button>
+          <button type="button" class="action-btn" title="Export checklist">
+            <i class="pi pi-download" />
+            <span>Export</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
     <div v-if="isLoading" class="asset-review__loading">
       Loading asset details...
     </div>
@@ -74,60 +145,6 @@ const resolvedLabels = computed(() => {
       {{ error || 'Error loading asset' }}
     </div>
     <div v-else-if="asset" class="asset-review__content">
-      <header class="asset-review__header">
-        <div class="asset-review__header-main">
-          <div class="asset-review__header-info">
-            <div class="asset-review__title-row">
-              <h1 class="asset-review__title">
-                {{ asset.name }}
-              </h1>
-              <div v-if="resolvedLabels.length" class="asset-review__labels">
-                <span
-                  v-for="label in resolvedLabels"
-                  :key="label.labelId"
-                  class="asset-label"
-                  :style="{ backgroundColor: label.bgColor, color: label.textColor }"
-                >
-                  {{ label.name }}
-                </span>
-              </div>
-            </div>
-            <div class="asset-review__meta">
-              <span class="asset-review__meta-item">
-                <i class="pi pi-hashtag" />
-                {{ asset.assetId }}
-              </span>
-              <span v-if="asset.ip" class="asset-review__meta-item">
-                <i class="pi pi-globe" />
-                {{ asset.ip }}
-              </span>
-              <span v-if="asset.fqdn" class="asset-review__meta-item">
-                <i class="pi pi-server" />
-                {{ asset.fqdn }}
-              </span>
-              <span v-if="asset.mac" class="asset-review__meta-item">
-                <i class="pi pi-wifi" />
-                {{ asset.mac }}
-              </span>
-              <span v-if="asset.description" class="asset-review__meta-item asset-review__description">
-                <i class="pi pi-info-circle" />
-                {{ asset.description }}
-              </span>
-            </div>
-          </div>
-          <div class="asset-review__header-actions">
-            <button type="button" class="action-btn" title="Import checklist">
-              <i class="pi pi-upload" />
-              <span>Import</span>
-            </button>
-            <button type="button" class="action-btn" title="Export checklist">
-              <i class="pi pi-download" />
-              <span>Export</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
       <div class="asset-review__grid">
         <section class="grid-column">
           <ChecklistInfo />
@@ -159,23 +176,21 @@ const resolvedLabels = computed(() => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: #000000;
-  color: #e4e4e7;
-}
-
-.asset-review__content {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+  background-color: var(--color-background-darkest);
+  color: var(--color-text-primary);
 }
 
 .asset-review__header {
   flex: 0 0 auto;
-  padding: 0.75rem 1rem;
-  background-color: #1f1f1f;
-  border-bottom: 1px solid #3a3d40;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-background-dark);
+  border-bottom: 1px solid var(--color-border-default);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
+/* Header Info Styles */
 .asset-review__header-main {
   display: flex;
   justify-content: space-between;
@@ -212,7 +227,7 @@ const resolvedLabels = computed(() => {
   display: inline-flex;
   align-items: center;
   padding: 0.15rem 0.5rem;
-  background-color: #3b82f6;
+  background-color: var(--color-action-blue);
   color: #fff;
   border-radius: 9999px;
   font-size: 0.7rem;
@@ -223,7 +238,7 @@ const resolvedLabels = computed(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  color: #a6adba;
+  color: var(--color-text-dim);
   font-size: 0.8rem;
 }
 
@@ -249,29 +264,76 @@ const resolvedLabels = computed(() => {
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
+  align-items: center;
 }
 
+/* Action Buttons */
 .action-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   padding: 0.4rem 0.75rem;
-  background-color: #2a2a2a;
-  border: 1px solid #3a3d40;
+  background-color: var(--color-background-light);
+  border: 1px solid var(--color-border-default);
   border-radius: 4px;
-  color: #e4e4e7;
+  color: var(--color-text-primary);
   font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .action-btn:hover {
-  background-color: #3a3d40;
+  background-color: var(--color-bg-hover-strong);
   border-color: #4a4d50;
 }
 
 .action-btn i {
   font-size: 0.85rem;
+}
+
+/* Search Box */
+.search-reviews {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-right: 0.5rem;
+}
+
+.search-reviews__icon {
+  position: absolute;
+  left: 0.6rem;
+  color: #6b7280;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.search-reviews__input {
+  background-color: var(--color-background-light);
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+  color: var(--color-text-primary);
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem 0.4rem 2rem;
+  width: 180px;
+  outline: none;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.search-reviews__input::placeholder {
+  color: #6b7280;
+}
+
+.search-reviews__input:focus {
+  border-color: var(--color-primary-highlight);
+  background-color: var(--color-background-dark);
+}
+
+/* Content Grid */
+.asset-review__content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .asset-review__grid {
@@ -306,7 +368,7 @@ const resolvedLabels = computed(() => {
 .asset-review__empty {
   padding: 2rem;
   text-align: center;
-  color: #a6adba;
+  color: var(--color-text-dim);
 }
 
 .asset-review__error {
