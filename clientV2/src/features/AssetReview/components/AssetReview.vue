@@ -259,7 +259,7 @@ defineExpose({ asset })
   align-items: center;
   padding: 0.15rem 0.5rem;
   background-color: var(--color-action-blue);
-  color: #fff;
+  color: var(--color-text-bright);
   border-radius: 9999px;
   font-size: 0.7rem;
   font-weight: 600;
@@ -315,7 +315,7 @@ defineExpose({ asset })
 
 .action-btn:hover {
   background-color: var(--color-bg-hover-strong);
-  border-color: #4a4d50;
+  border-color: var(--color-border-default);
 }
 
 .action-btn i {
@@ -333,7 +333,7 @@ defineExpose({ asset })
 .search-reviews__icon {
   position: absolute;
   left: 0.6rem;
-  color: #6b7280;
+  color: var(--color-text-dim);
   font-size: 0.85rem;
   pointer-events: none;
 }
@@ -351,7 +351,7 @@ defineExpose({ asset })
 }
 
 .search-reviews__input::placeholder {
-  color: #6b7280;
+  color: var(--color-text-dim);
 }
 
 .search-reviews__input:focus {
@@ -403,6 +403,6 @@ defineExpose({ asset })
 }
 
 .asset-review__error {
-  color: #f16969;
+  color: var(--color-text-error);
 }
 </style>
