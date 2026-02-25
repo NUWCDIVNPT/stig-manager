@@ -206,7 +206,7 @@ function toggleRecentViewsPopover(event) {
   grid-area: rail;
   display: flex;
   flex-direction: column;
-  width: 48px;
+  width: 4.35rem;
   background-color: var(--color-background-dark);
   border-right: 1px solid var(--color-border-default);
   overflow: hidden;
@@ -214,7 +214,7 @@ function toggleRecentViewsPopover(event) {
 }
 
 .nav-rail--expanded {
-  width: 200px;
+  width: 18rem;
 }
 
 .nav-rail-toggle {
@@ -222,7 +222,7 @@ function toggleRecentViewsPopover(event) {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 36px;
+  height: 3.25rem;
   background: none;
   border: none;
   border-bottom: 1px solid var(--color-border-default);
@@ -239,17 +239,17 @@ function toggleRecentViewsPopover(event) {
 .nav-rail-items {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 4px;
+  gap: 0.2rem;
+  padding: 0.35rem;
 }
 
 .nav-rail-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  height: 40px;
-  padding: 0 12px;
-  border-radius: 6px;
+  gap: 0.9rem;
+  height: 3.6rem;
+  padding: 0 1.1rem;
+  border-radius: 0.55rem;
   color: var(--color-text-dim);
   text-decoration: none;
   cursor: pointer;
@@ -279,8 +279,8 @@ function toggleRecentViewsPopover(event) {
 
 .nav-rail-item-icon {
   flex-shrink: 0;
-  width: 18px;
-  height: 18px;
+  width: 1.6rem;
+  height: 1.6rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -313,14 +313,14 @@ function toggleRecentViewsPopover(event) {
 
 .nav-rail-separator {
   height: 1px;
-  margin: 4px 8px;
+  margin: 0.35rem 0.75rem;
   background-color: var(--color-border-default);
   flex-shrink: 0;
 }
 
 /* Section label for expanded state */
 .nav-rail-section-label {
-  padding: 8px 12px 4px;
+  padding: 0.75rem 1.1rem 0.35rem;
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-text-dim);
@@ -334,15 +334,15 @@ function toggleRecentViewsPopover(event) {
 .nav-rail-recent {
   flex: 1;
   overflow-y: auto;
-  padding: 0 4px;
+  padding: 0 0.35rem;
 }
 
 .nav-rail-recent-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  border-radius: 4px;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.35rem;
   color: var(--color-text-dim);
   text-decoration: none;
   font-size: 1rem;
@@ -357,8 +357,8 @@ function toggleRecentViewsPopover(event) {
 
 .nav-rail-recent-icon {
   flex-shrink: 0;
-  width: 14px;
-  height: 14px;
+  width: 1.25rem;
+  height: 1.25rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -374,7 +374,7 @@ function toggleRecentViewsPopover(event) {
 }
 
 .nav-rail-recent-empty {
-  padding: 8px 12px;
+  padding: 0.75rem 1.1rem;
   font-size: 0.95rem;
   color: var(--color-text-dim);
   font-style: italic;
@@ -382,12 +382,12 @@ function toggleRecentViewsPopover(event) {
 
 /* Popover styles for collapsed state */
 :deep(.recent-views-popover) {
-  min-width: 220px;
-  max-width: 300px;
+  min-width: 20rem;
+  max-width: 27rem;
 }
 
 .recent-views-popover-header {
-  padding: 8px 12px;
+  padding: 0.75rem 1.1rem;
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-primary);
@@ -395,17 +395,17 @@ function toggleRecentViewsPopover(event) {
 }
 
 .recent-views-popover-list {
-  max-height: 300px;
+  max-height: 27rem;
   overflow-y: auto;
-  padding: 4px;
+  padding: 0.35rem;
 }
 
 .recent-views-popover-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  border-radius: 4px;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.35rem;
   color: var(--color-text-dim);
   text-decoration: none;
   font-size: 1rem;

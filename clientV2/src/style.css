@@ -20,7 +20,9 @@
   --color-primary-highlight: #60a5fa; /* Blue-400 */
   --color-primary-highlight-light: #93c5fd;
   --color-action-blue: #3b82f6; /* Blue-500 */
-  --color-primary-green: #44ab5e; /* Green-500 */
+  --color-shield-green: #44ab5e; /* Green-500 */
+  --color-shield-green-dark: #4f7769; /* Green-700 */
+  --color-oss-blue: #273f6f; /* Green-700 */
   
   /* HOVER */
   --color-button-hover-bg: rgba(255, 255, 255, 0.1);
