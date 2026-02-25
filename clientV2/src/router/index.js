@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
+import { navigationGuard } from './navigationGuards.js'
 
 // Lazy load components
 const Home = () => import('../features/Home/components/Home.vue')
@@ -17,6 +18,7 @@ const StigLibrarySelection = () => import('../features/STIGLibrary/components/St
 const WhatsNewView = () => import('../features/WhatsNew/components/WhatsNewView.vue')
 const AssetReview = () => import('../features/AssetReview/components/AssetReview.vue')
 const CollectionReview = () => import('../features/CollectionReview/components/CollectionReview.vue')
+const NotFound = () => import('../features/NotFound/components/NotFound.vue')
 
 const EmptyComponent = { template: '<div><router-view></router-view></div>' }
 
@@ -30,6 +32,7 @@ const routes = [
     path: '/collection/:collectionId',
     component: CollectionView,
     props: true,
+    meta: { requiresCollectionGrant: true },
     children: [
       {
         path: '',
@@ -79,11 +82,13 @@ const routes = [
     path: '/collection/:collectionId/asset/:assetId/stig/:benchmarkId/revision/:revisionStr?',
     name: 'collection-asset-review',
     component: AssetReview,
+    meta: { requiresCollectionGrant: true },
   },
   {
     path: '/collection/:collectionId/benchmark/:benchmarkId/revision/:revisionStr?',
     name: 'collection-benchmark-review',
     component: CollectionReview,
+    meta: { requiresCollectionGrant: true },
   },
   {
     path: '/collections',
@@ -94,6 +99,7 @@ const routes = [
     path: '/app-management',
     name: 'app-management',
     component: AppManagementSelection,
+    meta: { requiresAdmin: true },
   },
   {
     path: '/stig-library',
@@ -110,42 +116,50 @@ const routes = [
     name: 'collection-manage',
     component: CollectionManage,
     props: true,
+    meta: { requiresCollectionGrant: true, minRoleId: 3 },
   },
   {
     path: '/admin/collections',
     name: 'admin-collections',
     component: CollectionManage,
     props: true,
+    meta: { requiresAdmin: true },
   },
   {
     path: '/admin/users',
     name: 'admin-users',
     component: UserManage,
+    meta: { requiresAdmin: true },
   },
   {
     path: '/admin/user-groups',
     name: 'admin-user-groups',
     component: UserGroupManage,
+    meta: { requiresAdmin: true },
   },
   {
     path: '/admin/stigs',
     name: 'admin-stigs',
     component: StigManage,
+    meta: { requiresAdmin: true },
   },
   {
     path: '/admin/service-jobs',
     name: 'admin-service-jobs',
     component: ServiceJobs,
+    meta: { requiresAdmin: true },
   },
   {
     path: '/admin/app-info',
     name: 'admin-app-info',
     component: AppInfo,
+    meta: { requiresAdmin: true },
   },
   {
     path: '/admin/transfer',
     name: 'admin-transfer',
     component: ExportImportManage,
+    meta: { requiresAdmin: true },
   },
   {
     path: '/assets/:assetId',
@@ -165,6 +179,11 @@ const routes = [
     path: '/support',
     name: 'support',
   },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: NotFound,
+  },
 ]
 
 let historyBase
@@ -180,5 +199,7 @@ const router = createRouter({
   history: historyBase ? createWebHistory(historyBase) : createWebHashHistory(),
   routes,
 })
+
+router.beforeEach(navigationGuard)
 
 export default router

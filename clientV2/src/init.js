@@ -1,21 +1,24 @@
 console.log('import.meta.env:', import.meta.env)
 if (import.meta.env.DEV) {
   STIGMAN.Env.apiBase = `${import.meta.env.VITE_API_ORIGIN}/api`
-} else if (STIGMAN.Env.pathPrefix) {
+}
+else if (STIGMAN.Env.pathPrefix) {
   STIGMAN.Env.apiBase = `${window.location.origin}${STIGMAN.Env.pathPrefix}api`
-} else {
+}
+else {
   STIGMAN.Env.apiBase = new URL(`../api`, window.location.href).toString() // change when nextgen client is served from root instead of /client-v2
 }
 STIGMAN.Env.apiUrl = STIGMAN.Env.apiBase
 
-const statusEl = document.getElementById("loading-text")
+const statusEl = document.getElementById('loading-text')
 let OW // aka STIGMAN.oidcWorker, created in setupOidcWorker()
 if (!window.isSecureContext) {
   appendStatus(`SECURE CONTEXT REQUIRED<br><br>
   The App is not executing in a <a href=https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts target="_blank">secure context</a> and cannot continue.
   <br><br>To be considered secure, resources that are not local must be served over https:// URLs and the security 
   properties of the network channel used to deliver the resource must not be considered deprecated.`)
-} else {
+}
+else {
   try {
     console.log('[init] STIGMAN.Env:', STIGMAN.Env)
     console.log('[init] STIGMAN.Env.stateEvents:', STIGMAN.Env.stateEvents)
@@ -52,7 +55,6 @@ async function authorize() {
   else {
     return handleNoParameters(redirectUri, hash)
   }
-
 }
 
 async function getOidcMetadata() {
@@ -63,7 +65,8 @@ async function getOidcMetadata() {
   }
   try {
     return await response.json()
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`[init] Error fetching OIDC metadata:`, error)
     throw new Error(`failed to parse: ${url}`)
   }
@@ -81,23 +84,24 @@ async function initializeOidcWorker() {
   let reauthUri
   if (import.meta.env.DEV) {
     reauthUri = `${window.location.origin}/reauth.html`
-  } else {
-  // Change first condition when nextgen client is served from root instead of /client-v2
-    reauthUri = STIGMAN.Env.pathPrefix ? 
-    `${window.location.origin}${STIGMAN.Env.pathPrefix}client-v2/reauth.html` :
-    `${window.location.origin}${window.location.pathname}reauth.html`
   }
-  return OW.sendWorkerRequest({ 
-    request: 'initialize', 
-    oidcConfiguration, 
+  else {
+  // Change first condition when nextgen client is served from root instead of /client-v2
+    reauthUri = STIGMAN.Env.pathPrefix
+      ? `${window.location.origin}${STIGMAN.Env.pathPrefix}client-v2/reauth.html`
+      : `${window.location.origin}${window.location.pathname}reauth.html`
+  }
+  return OW.sendWorkerRequest({
+    request: 'initialize',
+    oidcConfiguration,
     env: STIGMAN.Env.oauth,
-    reauthUri
-   })
+    reauthUri,
+  })
 }
 
 function extractParamString(url) {
   // if (url.hash) return url.hash.substring(1) // Remove the leading '#'
-  if (url.search) return url.search.substring(1) // Remove the leading '?'
+  if (url.search) { return url.search.substring(1) } // Remove the leading '?'
   return ''
 }
 
@@ -150,7 +154,7 @@ async function handleRedirectAndParameters(redirectUri, paramStr) {
     code: params.code,
     codeVerifier: sessionStorage.getItem('codeVerifier'),
     clientId: STIGMAN.Env.oauth.clientId,
-    redirectUri
+    redirectUri,
   })
   if (response.success) {
     OW.token = response.accessToken
@@ -199,7 +203,7 @@ async function loadApp() {
 
 async function setupOidcWorker() {
   STIGMAN.oidcWorker = {
-    logout: async function () {
+    async logout() {
       const response = await this.sendWorkerRequest({ request: 'logout' })
       if (response.success) {
         this.token = null
@@ -207,7 +211,7 @@ async function setupOidcWorker() {
         window.location.href = response.redirect
       }
     },
-    sendWorkerRequest: function (request) {
+    sendWorkerRequest(request) {
       const requestId = crypto.randomUUID()
       const port = this.worker.port
       port.postMessage({ ...request, requestId })
@@ -221,13 +225,13 @@ async function setupOidcWorker() {
         port.addEventListener('message', handler)
       })
     },
-    postContextActiveMessage: function () {
+    postContextActiveMessage() {
       this.worker.port.postMessage({ requestId: 'contextActive' })
     },
     channelName: null,
     token: null,
     tokenParsed: null,
-    worker: new SharedWorker(import.meta.env.BASE_URL + "workers/oidc-worker.js", { name: 'stigman-oidc-worker', type: "module" })
+    worker: new SharedWorker(`${import.meta.env.BASE_URL}workers/oidc-worker.js`, { name: 'stigman-oidc-worker', type: 'module' }),
   }
 
   OW = STIGMAN.oidcWorker
@@ -260,8 +264,8 @@ async function setupStateWorker() {
   }
 
   STIGMAN.stateWorker = {
-    worker: new SharedWorker(import.meta.env.BASE_URL + "workers/state-worker.js", { name: 'stigman-state-worker', type: "module" }),
-    sendWorkerRequest: function (request) {
+    worker: new SharedWorker(`${import.meta.env.BASE_URL}workers/state-worker.js`, { name: 'stigman-state-worker', type: 'module' }),
+    sendWorkerRequest(request) {
       const requestId = crypto.randomUUID()
       const port = this.worker.port
       port.postMessage({ ...request, requestId })
@@ -276,7 +280,7 @@ async function setupStateWorker() {
       })
     },
     workerChannel: null,
-    state: null
+    state: null,
   }
   const SW = STIGMAN.stateWorker
   SW.worker.port.start()
@@ -295,7 +299,8 @@ async function setupStateWorker() {
     console.log(`[init] [${SW.workerChannel.name}] Received message:`, event.data)
     try {
       SW.state = JSON.parse(event.data.data)
-    } catch (error) {
+    }
+    catch (error) {
       console.error(`[init] [${SW.workerChannel.name}] Error parsing state:`, error)
       SW.state = null
     }
@@ -303,7 +308,7 @@ async function setupStateWorker() {
 
   // Wait for currentState == 'available'
   function needsWait(state) {
-    if (!state) return true
+    if (!state) { return true }
     const online = '<span style="color:green">ONLINE</span>'
     const offline = '<span style="color:#ff5757">OFFLINE</span>'
     if (state.currentState !== 'available') {
@@ -319,10 +324,11 @@ async function setupStateWorker() {
   if (needsWait(SW.state)) {
     await new Promise((resolve) => {
       function checkReady(event) {
-        let stateObj;
+        let stateObj
         try {
           stateObj = JSON.parse(event.data.data)
-        } catch {
+        }
+        catch {
           return
         }
         if (!needsWait(stateObj)) {
@@ -353,15 +359,28 @@ async function setupServiceWorker() {
 async function getUserObject() {
   const response = await fetch(`${STIGMAN.Env.apiBase}/user?projection=webPreferences`, {
     headers: {
-      'Authorization': `Bearer ${STIGMAN.oidcWorker.token}`
-    }
+      Authorization: `Bearer ${STIGMAN.oidcWorker.token}`,
+    },
   })
-  return await response.json()
+  const user = await response.json()
+  user.collectionGrants.sort((a, b) => {
+    const nameA = a.collection.name
+    const nameB = b.collection.name
+    if (nameA < nameB) {
+      return -1
+    }
+    if (nameA > nameB) {
+      return 1
+    }
+    return 0
+  })
+
+  return user
 }
 
 function hideSpinner() {
-  const loadingEl = document.getElementById("indicator")
+  const loadingEl = document.getElementById('indicator')
   if (loadingEl) {
-    loadingEl.style.background = "none"
+    loadingEl.style.background = 'none'
   }
 }
