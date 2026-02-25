@@ -1,8 +1,8 @@
 import { useCurrentUser } from '../shared/composables/useCurrentUser.js'
 
-export function navigationGuard(to) {
-  const { isAdmin, hasCollectionAccess, getCollectionRoleId } = useCurrentUser()
+const { isAdmin, hasCollectionAccess, getCollectionRoleId } = useCurrentUser()
 
+export function navigationGuard(to) {
   // admin routes
   if (to.meta.requiresAdmin && !isAdmin.value) {
     return { name: 'home' }
