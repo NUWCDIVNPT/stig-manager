@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { navigationGuard } from './navigationGuards.js'
 
 const mockIsAdmin = { value: false }
 const mockHasCollectionAccess = vi.fn(() => false)
@@ -13,6 +12,8 @@ vi.mock('../shared/composables/useCurrentUser.js', () => ({
     getCollectionRoleId: mockGetCollectionRoleId,
   }),
 }))
+
+const { navigationGuard } = await import('./navigationGuards.js')
 
 const Stub = { template: '<div>stub</div>' }
 
