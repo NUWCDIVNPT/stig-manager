@@ -1,4 +1,5 @@
 import { useRouter } from 'vue-router'
+import { ADMIN_ROUTE_LABELS } from '../Constants.js'
 import { useRecentViews } from './useRecentViews.js'
 
 export function useRouteTracking() {
@@ -10,16 +11,7 @@ export function useRouteTracking() {
 
     // Admin routes → one entry per admin section
     if (name?.startsWith('admin')) {
-      const adminLabels = {
-        'admin-collections': 'Admin / Collections',
-        'admin-users': 'Admin / Users',
-        'admin-user-groups': 'Admin / User Groups',
-        'admin-stigs': 'Admin / STIGs',
-        'admin-service-jobs': 'Admin / Service Jobs',
-        'admin-app-info': 'Admin / App Info',
-        'admin-transfer': 'Admin / Export & Import',
-      }
-      const label = adminLabels[name] || 'Admin'
+      const label = ADMIN_ROUTE_LABELS[name] ? `Admin / ${ADMIN_ROUTE_LABELS[name]}` : 'Admin'
       addView({
         key: name,
         url: fullPath,

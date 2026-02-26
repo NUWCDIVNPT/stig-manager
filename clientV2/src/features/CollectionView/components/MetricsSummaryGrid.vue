@@ -316,5 +316,4 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 </style>

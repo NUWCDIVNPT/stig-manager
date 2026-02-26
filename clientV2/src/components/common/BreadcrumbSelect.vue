@@ -63,7 +63,7 @@ const selectPt = computed(() => ({
     :placeholder="placeholder"
     :pt="selectPt"
     :pt-options="{ mergeProps: false }"
-    :class="['breadcrumb-select', { 'breadcrumb-select--picker-only': pickerOnly }]"
+    class="breadcrumb-select" :class="[{ 'breadcrumb-select--picker-only': pickerOnly }]"
     panel-class="breadcrumb-select-panel"
     @update:model-value="$emit('update:modelValue', $event)"
   />

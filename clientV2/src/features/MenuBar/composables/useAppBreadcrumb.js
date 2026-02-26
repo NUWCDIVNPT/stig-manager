@@ -28,32 +28,29 @@ export function useAppBreadcrumb() {
     if (!user?.collectionGrants) {
       return []
     }
-    return user.collectionGrants
-      .map(g => ({
-        collectionId: String(g.collection.collectionId),
-        name: g.collection.name,
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name))
+    return user.collectionGrants.map(g => ({
+      collectionId: String(g.collection.collectionId),
+      name: g.collection.name,
+    }))
   })
 
   // --- Asset Review: STIG and Revision data for breadcrumb pickers ---
   const assetId = computed(() => route.params.assetId)
   const benchmarkId = computed(() => route.params.benchmarkId)
-  const revisionStr = computed(() => route.params.revisionStr)
 
   const { state: assetStigOptions, execute: loadAssetStigs } = useAsyncState(
     () => fetchAssetStigs(assetId.value),
-    { initialState: [], immediate: false, onError: null },
+    { initialState: [], immediate: false },
   )
 
   const { state: asset, execute: loadAsset } = useAsyncState(
     () => fetchAsset(assetId.value),
-    { initialState: null, immediate: false, onError: null },
+    { initialState: null, immediate: false },
   )
 
   const { state: stigRevisionOptions, execute: loadStigRevisions } = useAsyncState(
     () => fetchStigRevisions(benchmarkId.value),
-    { initialState: [], immediate: false, onError: null },
+    { initialState: [], immediate: false },
   )
 
   // Load STIGs when asset changes
@@ -71,147 +68,29 @@ export function useAppBreadcrumb() {
     }
   }, { immediate: true })
 
-  // Auto-fill revision if missing from URL
-  watch(assetStigOptions, (stigs) => {
-    if (!revisionStr.value && stigs.length > 0 && benchmarkId.value) {
-      const currentStig = stigs.find(s => s.benchmarkId === benchmarkId.value)
-      if (currentStig?.revisionStr) {
-        router.replace({
-          name: 'collection-asset-review',
-          params: {
-            collectionId: route.params.collectionId,
-            assetId: assetId.value,
-            benchmarkId: benchmarkId.value,
-            revisionStr: currentStig.revisionStr,
-          },
-        })
-      }
-    }
-  })
-
-  // Route-name to static breadcrumb label mappings
-  const tabLabels = {
-    'collection-stigs': 'STIGs',
-    'collection-assets': 'Assets',
-    'collection-labels': 'Labels',
-    'collection-findings': 'Findings',
-    'collection-users': 'Users',
-    'collection-settings': 'Settings',
+  // Helper function to resolve dynamic collection names from grants
+  const getCollectionName = (id) => {
+    const grant = user?.collectionGrants?.find(g => String(g.collection.collectionId) === String(id))
+    return grant?.collection.name || `Collection ${id}`
   }
 
-  const adminLabels = {
-    'admin-collections': 'Collections',
-    'admin-users': 'Users',
-    'admin-user-groups': 'User Groups',
-    'admin-stigs': 'STIGs',
-    'admin-service-jobs': 'Service Jobs',
-    'admin-app-info': 'App Info',
-    'admin-transfer': 'Transfer',
-  }
-
-  // Build the breadcrumb items from the current route
+  // Build the breadcrumb items from the active route's meta definition
   const breadcrumbItems = computed(() => {
-    const items = []
-    const name = route.name
-    const params = route.params
+    // Collect all breadcrumbs from the matched routes (handles nested child routes)
+    const matchedBreadcrumbs = route.matched.flatMap(m => m.meta?.breadcrumbs || [])
 
-    // Home is always the root (rendered separately as breadcrumbHome)
+    if (matchedBreadcrumbs.length === 0) { return [] }
 
-    // --- Collection routes (requires a collectionId param) ---
-    if (name?.startsWith('collection') && params.collectionId) {
-      const collectionId = params.collectionId
+    return matchedBreadcrumbs.map((step) => {
+      const label = typeof step.label === 'function' ? step.label(route, getCollectionName, asset) : step.label
+      const routeLocation = typeof step.route === 'function' ? step.route(route) : step.route
 
-      // "Collections" link (parent of all collections)
-      items.push({
-        label: 'Collections',
-        route: { name: 'collections' },
-      })
-
-      // Collection name helper
-      const getCollectionName = (id) => {
-        if (user?.collectionGrants) {
-          const grant = user.collectionGrants.find(g => String(g.collection.collectionId) === String(id))
-          if (grant) {
-            return grant.collection.name
-          }
-        }
-        return `Collection ${id}`
+      return {
+        ...step,
+        label,
+        route: routeLocation,
       }
-
-      // Collection name: clickable link + adjacent picker
-      items.push({
-        label: getCollectionName(collectionId),
-        route: { name: 'collection', params: { collectionId } },
-        pickerType: 'collection',
-      })
-
-      // Collection sub-tab (STIGs, Assets, etc.)
-      if (tabLabels[name]) {
-        items.push({ label: tabLabels[name] })
-      }
-
-      // Collection manage
-      if (name === 'collection-manage') {
-        items.push({ label: 'Manage' })
-      }
-
-      // Asset Review
-      if (name === 'collection-asset-review') {
-        // Asset name (static text)
-        items.push({
-          label: asset.value?.name || `Asset ${params.assetId}`,
-        })
-
-        // STIG segment (dropdown picker)
-        items.push({
-          label: params.benchmarkId || 'STIG',
-          isDropdown: true,
-          dropdownType: 'stig',
-        })
-
-        // Revision segment (dropdown picker, if present)
-        if (params.revisionStr) {
-          items.push({
-            label: params.revisionStr,
-            isDropdown: true,
-            dropdownType: 'revision',
-          })
-        }
-      }
-    }
-
-    // --- Collections list ---
-    if (name === 'collections') {
-      items.push({ label: 'Collections' })
-    }
-
-    // --- Admin routes ---
-    if (name?.startsWith('admin')) {
-      items.push({
-        label: 'Admin',
-        route: { name: 'app-management' },
-      })
-      if (adminLabels[name]) {
-        items.push({ label: adminLabels[name] })
-      }
-    }
-
-    // --- App Management ---
-    if (name === 'app-management') {
-      items.push({ label: 'Admin' })
-    }
-
-    // --- STIG Library ---
-    if (name === 'stig-library' || name === 'library') {
-      items.push({ label: 'STIG Library' })
-    }
-
-    // --- What's New ---
-    if (name === 'whats-new') {
-      items.push({ label: 'What\'s New' })
-    }
-
-    return items
+    })
   })
 
   // Navigation helper for collection dropdown
@@ -219,7 +98,7 @@ export function useAppBreadcrumb() {
     const currentRouteName = route.name
 
     // Try to navigate to the equivalent sub-route in the new collection
-    if (tabLabels[currentRouteName]) {
+    if (TAB_LABELS[currentRouteName]) {
       router.push({
         name: currentRouteName,
         params: { collectionId },

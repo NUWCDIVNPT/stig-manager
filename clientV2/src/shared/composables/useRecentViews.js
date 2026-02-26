@@ -20,7 +20,7 @@ function saveToStorage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recentViews.value))
   }
   catch {
-    // localStorage full or unavailable
+    // ?
   }
 }
 
