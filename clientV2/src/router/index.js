@@ -34,6 +34,7 @@ const routes = [
     props: true,
     meta: {
       requiresCollectionGrant: true,
+      collectionView: true,
       breadcrumbs: [
         { label: 'Collections', route: { name: 'collections' } },
         {

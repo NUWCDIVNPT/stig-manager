@@ -143,8 +143,22 @@ const pt = {
         <nav v-if="breadcrumbItems.length" class="breadcrumb" aria-label="Breadcrumb">
           <span class="breadcrumb-separator">/</span>
           <template v-for="(item, index) in breadcrumbItems" :key="index">
+            <!-- Link + adjacent collection picker -->
+            <template v-if="item.route && item.pickerType === 'collection'">
+              <router-link :to="item.route" class="breadcrumb-link">
+                {{ item.label }}
+              </router-link>
+              <BreadcrumbSelect
+                picker-only
+                :model-value="$route.params.collectionId"
+                :options="collectionOptions"
+                option-label="name"
+                option-value="collectionId"
+                @update:model-value="onCollectionSelect"
+              />
+            </template>
             <!-- Collection dropdown picker -->
-            <BreadcrumbSelect
+            <!-- <BreadcrumbSelect
               v-if="item.pickerType === 'collection'"
               is-link
               :model-value="$route.params.collectionId"
@@ -153,7 +167,7 @@ const pt = {
               option-value="collectionId"
               placeholder="Collection"
               @update:model-value="onCollectionSelect"
-            />
+            /> -->
 
             <!-- STIG dropdown picker -->
             <BreadcrumbSelect

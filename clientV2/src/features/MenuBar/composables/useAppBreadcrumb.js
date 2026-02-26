@@ -110,17 +110,16 @@ export function useAppBreadcrumb() {
 
   // Navigation helper for collection dropdown
   function navigateToCollection(collectionId) {
-    const currentRouteName = route.name
-
-    // If the active route has breadcrumbs (meaning it's a valid top-level collection tab), stay on it
-    if (route.meta?.breadcrumbs) {
+    // If we're on a CollectionView child route (flagged in router meta), preserve the tab
+    const isCollectionViewChild = route.matched.some(r => r.meta.collectionView)
+    if (isCollectionViewChild) {
       router.push({
-        name: currentRouteName,
+        name: route.name,
         params: { collectionId },
       })
     }
     else {
-      // Otherwise fallback to the root collection view
+      // Asset-review and other routes: reset to the base collection view
       router.push({
         name: 'collection',
         params: { collectionId },
