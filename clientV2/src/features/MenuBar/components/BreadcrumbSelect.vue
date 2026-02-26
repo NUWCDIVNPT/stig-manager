@@ -35,27 +35,56 @@ const props = defineProps({
 
 defineEmits(['update:modelValue'])
 
+const isValidSelection = computed(() => {
+  if (props.modelValue == null) { return true }
+  if (props.options?.length === 0) { return true } // Assume valid while options are still loading
+  return props.options.some(opt => String(opt[props.optionValue]) === String(props.modelValue))
+})
+
+const displayLabel = computed(() => {
+  if (props.modelValue == null) { return props.placeholder }
+
+  if (props.options?.length === 0) {
+    return props.modelValue // Display raw value plain while loading
+  }
+
+  const match = props.options.find(opt => String(opt[props.optionValue]) === String(props.modelValue))
+  if (match) {
+    return match[props.optionLabel]
+  }
+
+  return `Unknown (${props.modelValue})`
+})
+
 // Pass-through styles to override global PT inline styles
-const selectPt = computed(() => ({
-  root: {
-    style: {
-      backgroundColor: 'transparent',
-      borderColor: 'transparent',
-      border: 'none',
-      width: 'auto',
-      boxShadow: 'none',
+const selectPt = computed(() => {
+  const textColor = !isValidSelection.value
+    ? 'var(--color-danger)'
+    : props.isLink
+      ? 'var(--color-primary-highlight)'
+      : 'var(--color-text-primary)'
+
+  return {
+    root: {
+      style: {
+        backgroundColor: 'transparent',
+        borderColor: 'transparent',
+        border: 'none',
+        width: 'auto',
+        boxShadow: 'none',
+      },
     },
-  },
-  label: {
-    style: {
-      padding: '0',
-      fontSize: '1.2rem',
-      color: props.isLink ? 'var(--color-primary-highlight)' : 'var(--color-text-primary)',
-      background: 'transparent',
-      ...(props.pickerOnly ? { display: 'none' } : {}),
+    label: {
+      style: {
+        padding: '0',
+        fontSize: '1.2rem',
+        color: textColor,
+        background: 'transparent',
+        ...(props.pickerOnly ? { display: 'none' } : {}),
+      },
     },
-  },
-}))
+  }
+})
 </script>
 
 <template>
@@ -71,7 +100,17 @@ const selectPt = computed(() => ({
     panel-class="breadcrumb-select-panel"
     filter
     @update:model-value="$emit('update:modelValue', $event)"
-  />
+  >
+    <template #value>
+      <div v-if="modelValue != null" class="breadcrumb-select-value" :class="{ 'is-invalid': !isValidSelection }">
+        <i v-if="!isValidSelection" class="pi pi-exclamation-triangle" style="margin-right: 0.35rem;" />
+        <span>{{ displayLabel }}</span>
+      </div>
+      <span v-else>
+        {{ placeholder }}
+      </span>
+    </template>
+  </Select>
 </template>
 
 <style scoped>
@@ -121,5 +160,15 @@ const selectPt = computed(() => ({
 .breadcrumb-select--picker-only :deep(.p-select-dropdown .p-icon) {
   width: 0.65rem;
   height: 0.65rem;
+}
+
+.breadcrumb-select-value {
+  display: flex;
+  align-items: center;
+}
+
+.is-invalid {
+  color: var(--color-danger);
+  font-weight: 600;
 }
 </style>
