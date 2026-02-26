@@ -1,12 +1,12 @@
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 import {
   fetchAsset,
   fetchAssetStigs,
   fetchStigRevisions,
-} from '../../features/AssetReview/api/assetReviewApi.js'
-import { useGlobalAppStore } from '../stores/globalAppStore.js'
-import { useAsyncState } from './useAsyncState.js'
+} from '../api/menuBarApi.js'
 
 /**
  * Global breadcrumb composable. Watches the current route and builds
@@ -25,7 +25,9 @@ export function useAppBreadcrumb() {
 
   // Collections list for the collection dropdown (from user grants)
   const collectionOptions = computed(() => {
-    if (!user?.collectionGrants) { return [] }
+    if (!user?.collectionGrants) {
+      return []
+    }
     return user.collectionGrants
       .map(g => ({
         collectionId: String(g.collection.collectionId),
@@ -64,7 +66,9 @@ export function useAppBreadcrumb() {
 
   // Load revisions when benchmark changes
   watch(benchmarkId, (id) => {
-    if (id) { loadStigRevisions() }
+    if (id) {
+      loadStigRevisions()
+    }
   }, { immediate: true })
 
   // Auto-fill revision if missing from URL
@@ -127,7 +131,9 @@ export function useAppBreadcrumb() {
       const getCollectionName = (id) => {
         if (user?.collectionGrants) {
           const grant = user.collectionGrants.find(g => String(g.collection.collectionId) === String(id))
-          if (grant) { return grant.collection.name }
+          if (grant) {
+            return grant.collection.name
+          }
         }
         return `Collection ${id}`
       }
@@ -208,11 +214,6 @@ export function useAppBreadcrumb() {
     return items
   })
 
-  const breadcrumbHome = {
-    label: 'Home',
-    route: '/',
-  }
-
   // Navigation helper for collection dropdown
   function navigateToCollection(collectionId) {
     const currentRouteName = route.name
@@ -234,7 +235,9 @@ export function useAppBreadcrumb() {
 
   // Navigation helper for STIG dropdown (asset review)
   function navigateToStig(newBenchmarkId) {
-    if (!newBenchmarkId) { return }
+    if (!newBenchmarkId) {
+      return
+    }
     const stigData = assetStigOptions.value.find(s => s.benchmarkId === newBenchmarkId)
     router.push({
       name: 'collection-asset-review',
@@ -249,7 +252,9 @@ export function useAppBreadcrumb() {
 
   // Navigation helper for revision dropdown (asset review)
   function navigateToRevision(newRevisionStr) {
-    if (!newRevisionStr) { return }
+    if (!newRevisionStr) {
+      return
+    }
     router.push({
       name: 'collection-asset-review',
       params: {
@@ -263,7 +268,6 @@ export function useAppBreadcrumb() {
 
   return {
     breadcrumbItems,
-    breadcrumbHome,
     collectionOptions,
     navigateToCollection,
     assetStigOptions,

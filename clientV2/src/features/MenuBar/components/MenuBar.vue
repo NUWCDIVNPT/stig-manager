@@ -2,8 +2,8 @@
 import Menubar from 'primevue/menubar'
 import { computed, inject } from 'vue'
 import BreadcrumbSelect from '../../../components/common/BreadcrumbSelect.vue'
-import { useAppBreadcrumb } from '../../../shared/composables/useAppBreadcrumb.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
+import { useAppBreadcrumb } from '../composables/useAppBreadcrumb.js'
 
 const oidcWorker = inject('worker')
 const env = useEnv()
