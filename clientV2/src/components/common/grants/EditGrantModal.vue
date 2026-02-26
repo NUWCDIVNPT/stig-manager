@@ -6,7 +6,8 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import Select from 'primevue/select'
-import { computed, inject, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { roleOptions } from './roleOptions.js'
 
 const props = defineProps({
   visible: {
@@ -17,19 +18,23 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  users: {
+    type: Array,
+    default: () => [],
+  },
+  groups: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['update:visible', 'save', 'cancel'])
-
-const worker = inject('worker')
 
 const localVisible = computed({
   get: () => props.visible,
   set: value => emit('update:visible', value),
 })
 
-const users = ref([])
-const groups = ref([])
 const selectedGranteeInList = ref(null)
 
 const searchText = ref('')
@@ -43,35 +48,8 @@ const selectedFilter = ref(filterOptions[0])
 const collapsedGroups = ref({})
 
 const selectedRoleId = ref(1)
-const roleOptions = [
-  { label: 'Restricted', value: 1 },
-  { label: 'Full', value: 2 },
-  { label: 'Manage', value: 3 },
-  { label: 'Owner', value: 4 },
-]
 
 const itemLabel = 'displayName'
-
-const fetchData = async () => {
-  try {
-    const [usersRes, groupsRes] = await Promise.all([
-      fetch('http://localhost:64001/api/users?status=available', { headers: { Authorization: `Bearer ${worker.token}` } }),
-      fetch('http://localhost:64001/api/user-groups', { headers: { Authorization: `Bearer ${worker.token}` } }),
-    ])
-
-    if (usersRes.ok) {
-      const rawUsers = await usersRes.json()
-      users.value = rawUsers.map(u => ({ ...u, type: 'user', displayName: u.username })) // Standardize
-    }
-    if (groupsRes.ok) {
-      const rawGroups = await groupsRes.json()
-      groups.value = rawGroups.map(g => ({ ...g, type: 'group', displayName: g.name })) // Standardize
-    }
-  }
-  catch (error) {
-    console.error('Failed to fetch grantees', error)
-  }
-}
 
 watch(() => props.grant, (newVal) => {
   if (newVal) {
@@ -80,13 +58,9 @@ watch(() => props.grant, (newVal) => {
   }
 }, { immediate: true })
 
-onMounted(() => {
-  fetchData()
-})
-
 const displaySource = computed(() => {
-  let filteredUsers = users.value
-  let filteredGroups = groups.value
+  let filteredUsers = props.users
+  let filteredGroups = props.groups
 
   if (searchText.value) {
     const lower = searchText.value.toLowerCase()
@@ -303,7 +277,7 @@ const onCancel = () => {
 .section-header {
   font-weight: bold;
   margin-bottom: 0.5rem;
-  color: #ddd;
+  color: var(--color-text-primary);
 }
 
 .filter-row {
@@ -360,7 +334,7 @@ const onCancel = () => {
   padding: 0.25rem ;
   gap: 0.25rem;
   font-weight: bold;
-  color: #aaa;
+  color: var(--color-text-dim);
 }
 
 .option-item {
@@ -375,7 +349,7 @@ const onCancel = () => {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 1px solid #666;
+  border: 1px solid var(--color-border-default);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -408,7 +382,7 @@ const onCancel = () => {
 .modified-header {
   padding: 0.5rem;
   font-weight: bold;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .modified-content {
@@ -427,7 +401,7 @@ const onCancel = () => {
 
 .field-row label {
   width: 70px;
-  color: #ccc;
+  color: var(--color-text-dim);
 }
 
 .grantee-box {
@@ -435,7 +409,7 @@ const onCancel = () => {
   border: 1px solid var(--color-border-default);
   border-radius: 4px;
   padding: 0.5rem;
-  background-color: #252525;
+  background-color: var(--color-background-dark);
 }
 
 .grantee-details {
@@ -446,7 +420,7 @@ const onCancel = () => {
 
 .grantee-details i {
   font-size: 1.5rem;
-  color: #aaa;
+  color: var(--color-text-dim);
 }
 
 .grantee-text {
@@ -460,7 +434,7 @@ const onCancel = () => {
 
 .grantee-sub {
   font-size: 0.8rem;
-  color: #888;
+  color: var(--color-text-dim);
 }
 
 .role-select {

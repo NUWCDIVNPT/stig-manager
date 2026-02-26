@@ -8,7 +8,8 @@ import Popover from 'primevue/popover'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import { computed, ref, watch } from 'vue'
-import RolePopover from '../../../../components/common/RolePopover.vue'
+import RolePopover from '../RolePopover.vue'
+import { roleOptions } from './roleOptions.js'
 
 const props = defineProps({
   source: {
@@ -33,12 +34,6 @@ const popoverRef = ref()
 const collapsedGroupsSource = ref({})
 const searchText = ref('')
 
-const roleOptions = [
-  { label: 'Restricted', value: 1 },
-  { label: 'Full', value: 2 },
-  { label: 'Manage', value: 3 },
-  { label: 'Owner', value: 4 },
-]
 // label to use for items in the listbox
 const itemLabel = 'displayName'
 
@@ -198,7 +193,7 @@ const onCancel = () => {
 </script>
 
 <template>
-  <div style="width: 100%; height: 100%; display: flex; flex-direction: column;">
+  <div class="grants-picklist-root">
     <div class="picklist-container">
       <div class="list-column">
         <h4 class="list-header">
@@ -316,6 +311,13 @@ const onCancel = () => {
 </template>
 
 <style scoped>
+.grants-picklist-root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .picklist-container {
   display: flex;
   flex-direction: row;

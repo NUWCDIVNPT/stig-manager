@@ -51,7 +51,7 @@ const exportCSV = () => {
   <div class="collection-list-container">
     <Toolbar class="collection-list-toolbar">
       <template #start>
-        <Button label="New Collection" icon="pi pi-plus" class="mr-2" size="small" @click="$emit('create')" />
+        <Button label="New Collection" icon="pi pi-plus" size="small" @click="$emit('create')" />
         <Button
           label="Delete Collection"
           icon="pi pi-trash"
@@ -123,6 +123,7 @@ const exportCSV = () => {
 .collection-list-toolbar {
   padding: 0.5rem;
   border: none;
+  gap: 0.5rem;
 }
 
 .flex-grow-table {
@@ -145,12 +146,4 @@ const exportCSV = () => {
   color: var(--text-color-secondary);
 }
 
-.mr-2 {
-    margin-right: 0.5rem;
-}
-
-/* Dark mode overrides if needed, usually css vars handle it */
-:global(.dark) .collection-list-container {
-    background-color: var(--surface-900);
-}
 </style>

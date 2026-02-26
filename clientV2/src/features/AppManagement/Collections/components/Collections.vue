@@ -1,51 +1,28 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { inject, onMounted, ref } from 'vue'
-import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import { ref } from 'vue'
+import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+import { fetchCollectionsAdmin } from '../api/collectionsAdminApi.js'
 import CollectionDetails from './CollectionDetails.vue'
 import CollectionList from './CollectionList.vue'
 
-const collections = ref([])
 const selectedCollection = ref(null)
-const loading = ref(false)
-const worker = inject('worker')
 
-const fetchData = async (background = false) => {
-  if (!background) {
-    loading.value = true
-  }
-  try {
-    const response = await fetch('http://localhost:64001/api/collections?elevate=true&projection=owners&projection=statistics', {
-      headers: { Authorization: `Bearer ${worker.token}` },
-    })
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-    const data = await response.json()
-    collections.value = data
+const { state: collections, isLoading, execute: loadCollections } = useAsyncState(
+  () => fetchCollectionsAdmin(),
+  { initialState: [] },
+)
 
-    if (selectedCollection.value) {
-      const updatedSelection = data.find(c => c.collectionId === selectedCollection.value.collectionId)
-      if (updatedSelection) {
-        selectedCollection.value = updatedSelection
-      }
-    }
-  }
-  catch (error) {
-    const { triggerError } = useGlobalError()
-    triggerError(error)
-  }
-  finally {
-    if (!background) {
-      loading.value = false
+const onUpdated = async () => {
+  const result = await loadCollections()
+  if (selectedCollection.value && result) {
+    const updatedSelection = result.find(c => c.collectionId === selectedCollection.value.collectionId)
+    if (updatedSelection) {
+      selectedCollection.value = updatedSelection
     }
   }
 }
-
-onMounted(() => {
-  fetchData()
-})
 </script>
 
 <template>
@@ -55,11 +32,11 @@ onMounted(() => {
         <CollectionList
           v-model:selection="selectedCollection"
           :collections="collections"
-          :loading="loading"
+          :loading="isLoading"
         />
       </SplitterPanel>
       <SplitterPanel :min-size="15" :size="25" class="splitter-panel">
-        <CollectionDetails :collection="selectedCollection" @updated="() => fetchData(true)" />
+        <CollectionDetails :collection="selectedCollection" @updated="onUpdated" />
       </SplitterPanel>
     </Splitter>
   </div>
