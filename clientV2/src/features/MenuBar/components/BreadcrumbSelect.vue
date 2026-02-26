@@ -27,6 +27,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isLink: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 defineEmits(['update:modelValue'])
@@ -45,8 +49,8 @@ const selectPt = computed(() => ({
   label: {
     style: {
       padding: '0',
-      fontWeight: '600',
-      color: 'var(--color-text-primary)',
+      fontSize: '1.2rem',
+      color: props.isLink ? 'var(--color-primary-highlight)' : 'var(--color-text-primary)',
       background: 'transparent',
       ...(props.pickerOnly ? { display: 'none' } : {}),
     },
@@ -65,6 +69,7 @@ const selectPt = computed(() => ({
     :pt-options="{ mergeProps: false }"
     class="breadcrumb-select" :class="[{ 'breadcrumb-select--picker-only': pickerOnly }]"
     panel-class="breadcrumb-select-panel"
+    filter
     @update:model-value="$emit('update:modelValue', $event)"
   />
 </template>

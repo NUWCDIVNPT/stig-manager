@@ -1,9 +1,9 @@
 <script setup>
 import Menubar from 'primevue/menubar'
 import { computed, inject } from 'vue'
-import BreadcrumbSelect from '../../../components/common/BreadcrumbSelect.vue'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 import { useAppBreadcrumb } from '../composables/useAppBreadcrumb.js'
+import BreadcrumbSelect from './BreadcrumbSelect.vue'
 
 const oidcWorker = inject('worker')
 const env = useEnv()
@@ -143,20 +143,17 @@ const pt = {
         <nav v-if="breadcrumbItems.length" class="breadcrumb" aria-label="Breadcrumb">
           <span class="breadcrumb-separator">/</span>
           <template v-for="(item, index) in breadcrumbItems" :key="index">
-            <!-- Link + adjacent collection picker -->
-            <template v-if="item.route && item.pickerType === 'collection'">
-              <router-link :to="item.route" class="breadcrumb-link">
-                {{ item.label }}
-              </router-link>
-              <BreadcrumbSelect
-                picker-only
-                :model-value="$route.params.collectionId"
-                :options="collectionOptions"
-                option-label="name"
-                option-value="collectionId"
-                @update:model-value="onCollectionSelect"
-              />
-            </template>
+            <!-- Collection dropdown picker -->
+            <BreadcrumbSelect
+              v-if="item.pickerType === 'collection'"
+              is-link
+              :model-value="$route.params.collectionId"
+              :options="collectionOptions"
+              option-label="name"
+              option-value="collectionId"
+              placeholder="Collection"
+              @update:model-value="onCollectionSelect"
+            />
 
             <!-- STIG dropdown picker -->
             <BreadcrumbSelect

@@ -9,14 +9,29 @@ import {
 } from '../api/menuBarApi.js'
 
 /**
- * Global breadcrumb composable. Watches the current route and builds
+ * Global breadcrumb composable. Watches the active route and builds
  * a breadcrumb model array suitable for rendering in the MenuBar.
  *
- * Each item: { label, route?, isDropdown?, dropdownType?, pickerType? }
- * - Plain items are clickable links (if route is set) or static text
- * - Dropdown items (isDropdown: true) are rendered as BreadcrumbSelect
- * - Link+picker items (route + pickerType) render as a clickable link
- *   with an adjacent dropdown chevron for switching siblings
+ * This system is metadata-driven: breadcrumbs are defined directly on
+ * Vue Router definitions in the `meta.breadcrumbs` array.
+ *
+ * Route Definition Usage (in router/index.js):
+ * meta: {
+ *   breadcrumbs: [
+ *     { label: 'Collections', route: { name: 'collections' } },
+ *     // Dynamic labels can be functions that receive (route, getCollectionName, asset)
+ *     {
+ *       label: (route, getCollectionName) => getCollectionName(route.params.collectionId),
+ *       route: (route) => ({ name: 'collection', params: { collectionId: route.params.collectionId } }),
+ *       pickerType: 'collection' // Renders an adjacent dropdown chevron for switching siblings
+ *     },
+ *     // isDropdown renders a BreadcrumbSelect component
+ *     { label: (route) => route.params.benchmarkId || 'STIG', isDropdown: true, dropdownType: 'stig' }
+ *   ]
+ * }
+ *
+ * Each resolved item object structure:
+ * { label: string, route?: object|string, isDropdown?: boolean, dropdownType?: string, pickerType?: string }
  */
 export function useAppBreadcrumb() {
   const route = useRoute()
@@ -97,14 +112,15 @@ export function useAppBreadcrumb() {
   function navigateToCollection(collectionId) {
     const currentRouteName = route.name
 
-    // Try to navigate to the equivalent sub-route in the new collection
-    if (TAB_LABELS[currentRouteName]) {
+    // If the active route has breadcrumbs (meaning it's a valid top-level collection tab), stay on it
+    if (route.meta?.breadcrumbs) {
       router.push({
         name: currentRouteName,
         params: { collectionId },
       })
     }
     else {
+      // Otherwise fallback to the root collection view
       router.push({
         name: 'collection',
         params: { collectionId },
