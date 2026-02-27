@@ -29,8 +29,6 @@ Running analysis and feedback from code review sessions.
 
 ## Issues to Address
 
-
-
 ## Data Fetching Strategy
 
 TanStack Query removed — we didn't need caching and it added complexity. May revisit later if we find appropriate uses (deduplication, optimistic updates, etc.). Current approach: manual `async function` + `ref()` + `watch()`.
@@ -77,7 +75,7 @@ With `smFetch`: removed entirely — components don't touch tokens.
 **2. `useAsyncData` composable** (`shared/composables/useAsyncData.js`)
 
 Generic composable returning refs for `{ data, isLoading, errorMessage, execute }`.
-Takes any async function, executes it, and returns reactive refs for data, isLoading, errorMessage, plus execute() to call it again. 
+Takes any async function, executes it, and returns reactive refs for data, isLoading, errorMessage, plus execute() to call it again.
 
 Current pattern (~15 lines per query, 5x in CollectionView alone):
 ```js
@@ -86,14 +84,16 @@ const stigsLoading = ref(false)
 const stigsError = ref(null)
 
 async function loadStigs() {
-  if (!props.collectionId) return
+  if (!props.collectionId) { return }
   stigsLoading.value = true
   stigsError.value = null
   try {
     stigs.value = await fetchCollectionStigSummary({ collectionId: props.collectionId, token: token.value })
-  } catch (err) {
+  }
+  catch (err) {
     stigsError.value = err.message
-  } finally {
+  }
+  finally {
     stigsLoading.value = false
   }
 }

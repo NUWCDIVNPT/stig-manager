@@ -7,7 +7,7 @@ Use the `<script setup>` syntax for concise and performant components.
 
 ```vue
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   title: String
@@ -49,8 +49,8 @@ We use PrimeVue `pt` props to style the internals of complex components (like Di
 ```javascript
 // Example PT object for a Dialog
 const dialogPt = {
-    root: { style: 'background-color: #18181b; border: 1px solid #3f3f46;' },
-    header: { style: 'background-color: #18181b;' }
+  root: { style: 'background-color: #18181b; border: 1px solid #3f3f46;' },
+  header: { style: 'background-color: #18181b;' }
 }
 ```
 
@@ -74,7 +74,7 @@ const emit = defineEmits(['update:visible'])
 
 const isVisible = computed({
   get: () => props.visible,
-  set: (val) => emit('update:visible', val)
+  set: val => emit('update:visible', val)
 })
 ```
 

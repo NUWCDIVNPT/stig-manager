@@ -134,8 +134,7 @@ Columns must be:
 - hidable (native PrimeVue)
 - transportable across tables
 - agnostic to data source (use props for field names)
-- 
-
+-
 
 ### Header Options (Native PrimeVue)
 - Sorting: `sortable` prop
@@ -238,7 +237,7 @@ Since metrics must be live (no stale data), use simple fetch composables instead
 
 ```javascript
 // composables/useCollectionAssets.js
-import { ref, watch, onUnmounted } from 'vue'
+import { onUnmounted, ref, watch } from 'vue'
 import { fetchCollectionAssets } from '../queries/collectionApi'
 
 export function useCollectionAssets(collectionId, token) {
@@ -252,16 +251,18 @@ export function useCollectionAssets(collectionId, token) {
     try {
       const res = await fetchCollectionAssets(collectionId.value, token.value)
       assets.value = res
-    } catch (e) {
+    }
+    catch (e) {
       error.value = e.message || 'Failed to load assets'
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }
 
   // Auto-fetch when dependencies change
   watch([collectionId, token], () => {
-    if (collectionId.value && token.value) fetch()
+    if (collectionId.value && token.value) { fetch() }
   }, { immediate: true })
 
   return { assets, isLoading, error, refetch: fetch }
@@ -294,9 +295,12 @@ export function useCollectionAssets(collectionId, token, options = {}) {
   onUnmounted(() => stopPolling())
 
   return {
-    assets, isLoading, error,
+    assets,
+    isLoading,
+    error,
     refetch: fetch,
-    startPolling, stopPolling
+    startPolling,
+    stopPolling
   }
 }
 ```
