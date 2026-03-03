@@ -1,0 +1,11 @@
+{
+  "type": "module",
+  "scripts": {
+    "test": "mocha --reporter mochawesome --timeout 10000 --showFailed --exit './mocha/**/*.test.js'"
+  },
+  "dependencies": {
+    "chai": "^5.2.0",
+    "mocha": "^11.0.1",
+    "mochawesome": "^7.1.3"
+  }
+}

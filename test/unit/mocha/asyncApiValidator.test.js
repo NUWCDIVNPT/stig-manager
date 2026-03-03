@@ -5,10 +5,10 @@ import fs from 'node:fs'
 import os from 'node:os'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const specPath = path.resolve(__dirname, '../../../../api/source/specification/log-socket.yaml')
+const specPath = path.resolve(__dirname, '../../../api/source/specification/log-socket.yaml')
 
 // CJS module imported into ESM — default import gets module.exports
-import asyncApiValidator from '../../../../api/source/utils/asyncApiValidator.js'
+import asyncApiValidator from '../../../api/source/utils/asyncApiValidator.js'
 
 // Minimal valid spec template for structural tests.
 // Returns a JSON string (valid YAML since YAML is a superset of JSON).
