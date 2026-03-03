@@ -5,6 +5,7 @@ import { computed, ref, watch } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
+import StatusFooter from '../../../components/common/StatusFooter.vue'
 
 const props = defineProps({
   checklistData: {
@@ -25,7 +26,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['select-rule'])
+const emit = defineEmits(['select-rule', 'refresh'])
 
 const selectedRow = ref(null)
 
@@ -91,9 +92,6 @@ const stats = computed(() => {
 
   const results = { pass: 0, fail: 0, notapplicable: 0, other: 0 }
   const statuses = { saved: 0, submitted: 0, accepted: 0, rejected: 0 }
-  let engine = 0
-  let manual = 0
-  let override = 0
 
   for (const item of data) {
     if (item.result === 'pass') {
@@ -112,21 +110,9 @@ const stats = computed(() => {
     if (item.status) {
       statuses[item.status] = (statuses[item.status] || 0) + 1
     }
-
-    if (item.resultEngine) {
-      if (item.resultEngine.overrides?.length) {
-        override++
-      }
-      else {
-        engine++
-      }
-    }
-    else if (item.result) {
-      manual++
-    }
   }
 
-  return { results, statuses, engine, manual, override, total: data.length }
+  return { results, statuses, total: data.length }
 })
 
 // Sync selectedRow when selectedRuleId prop changes externally
@@ -152,6 +138,12 @@ watch(() => props.checklistData, (data) => {
 function onRowSelect(event) {
   emit('select-rule', event.data.ruleId)
 }
+
+function handleFooterAction(actionKey) {
+  if (actionKey === 'refresh') {
+    emit('refresh')
+  }
+}
 </script>
 
 <template>
@@ -174,43 +166,45 @@ function onRowSelect(event) {
       selection-mode="single"
       scrollable
       scroll-height="flex"
-      :virtual-scroller-options="{ itemSize: 30, delay: 0 }"
-      size="small"
       class="checklist-table"
       @row-select="onRowSelect"
     >
-      <Column header="CAT" field="severity" :style="{ width: '50px', textAlign: 'center' }">
+      <Column header="CAT" field="severity" :style="{ width: '44px', textAlign: 'center' }">
         <template #body="{ data }">
           <CatBadge v-if="data.severity" :category="severityMap[data.severity] || 2" />
         </template>
       </Column>
 
-      <Column header="Group" field="groupId" :style="{ width: '90px' }">
+      <Column header="Group" field="groupId" :style="{ width: '80px' }">
         <template #body="{ data }">
-          <span class="cell-text">{{ data.groupId }}</span>
+          <span class="cell-text--mono">{{ data.groupId }}</span>
         </template>
       </Column>
 
-      <Column header="Rule Title" field="ruleTitle" :style="{ minWidth: '120px' }">
-        <template #body="{ data }">
-          <span class="cell-text cell-text--truncated" :title="data.ruleTitle">{{ data.ruleTitle }}</span>
-        </template>
-      </Column>
+      <Column header="Rule Title" field="ruleTitle" />
 
-      <Column header="Result" field="result" :style="{ width: '48px', textAlign: 'center' }">
-        <template #body="{ data }">
-          <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
+      <Column field="result" :style="{ width: '56px', textAlign: 'center' }">
+        <template #header>
+          <span>Result</span>
         </template>
-      </Column>
-
-      <Column header="" field="resultEngine" :style="{ width: '28px', textAlign: 'center' }">
         <template #body="{ data }">
-          <span v-if="getEngineDisplay(data) === 'engine'" class="engine-icon" title="Result engine">
-            <img src="../../../assets/bot2.svg" alt="Engine" class="engine-icon__img">
-          </span>
-          <span v-else-if="getEngineDisplay(data) === 'override'" class="engine-icon" title="Overridden result">
-            <img src="../../../assets/override2.svg" alt="Override" class="engine-icon__img">
-          </span>
+          <div class="result-cell">
+            <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
+            <img
+              v-if="getEngineDisplay(data) === 'engine'"
+              src="../../../assets/bot2.svg"
+              alt="Engine"
+              class="engine-icon"
+              title="Result engine"
+            >
+            <img
+              v-else-if="getEngineDisplay(data) === 'override'"
+              src="../../../assets/override2.svg"
+              alt="Override"
+              class="engine-icon"
+              title="Overridden result"
+            >
+          </div>
         </template>
       </Column>
 
@@ -220,26 +214,36 @@ function onRowSelect(event) {
         </template>
       </Column>
 
-      <Column header="Age" field="touchTs" :style="{ width: '52px', textAlign: 'center' }">
+      <Column field="touchTs" :style="{ width: '40px', textAlign: 'center' }">
+        <template #header>
+          <i class="pi pi-clock" title="Last action" />
+        </template>
         <template #body="{ data }">
-          <span class="cell-text cell-text--dim" :title="data.touchTs">{{ durationToNow(data.touchTs) }}</span>
+          <span class="cell-text--dim" :title="data.touchTs">{{ durationToNow(data.touchTs) }}</span>
         </template>
       </Column>
-    </DataTable>
 
-    <div v-if="stats" class="checklist-info__footer">
-      <span class="footer-stat">{{ stats.total }} rules</span>
-      <span class="footer-divider">|</span>
-      <ResultBadge status="NF" :count="stats.results.pass" />
-      <ResultBadge status="O" :count="stats.results.fail" />
-      <ResultBadge status="NA" :count="stats.results.notapplicable" />
-      <ResultBadge status="NR" :count="stats.results.other" />
-      <span class="footer-divider">|</span>
-      <StatusBadge status="saved" :count="stats.statuses.saved" />
-      <StatusBadge status="submitted" :count="stats.statuses.submitted" />
-      <StatusBadge status="accepted" :count="stats.statuses.accepted" />
-      <StatusBadge status="rejected" :count="stats.statuses.rejected" />
-    </div>
+      <template v-if="stats" #footer>
+        <StatusFooter
+          :refresh-loading="isLoading"
+          :total-count="stats.total"
+          :show-export="false"
+          @action="handleFooterAction"
+        >
+          <template #left-extra>
+            <ResultBadge status="NF" :count="stats.results.pass" />
+            <ResultBadge status="O" :count="stats.results.fail" />
+            <ResultBadge status="NA" :count="stats.results.notapplicable" />
+            <ResultBadge status="NR" :count="stats.results.other" />
+            <span class="footer-divider">|</span>
+            <StatusBadge status="saved" :count="stats.statuses.saved" />
+            <StatusBadge status="submitted" :count="stats.statuses.submitted" />
+            <StatusBadge status="accepted" :count="stats.statuses.accepted" />
+            <StatusBadge status="rejected" :count="stats.statuses.rejected" />
+          </template>
+        </StatusFooter>
+      </template>
+    </DataTable>
   </div>
 </template>
 
@@ -258,7 +262,7 @@ function onRowSelect(event) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.4rem 0.6rem;
+  padding: 0.35rem 0.5rem;
   background-color: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
@@ -266,12 +270,11 @@ function onRowSelect(event) {
 
 .checklist-info__title {
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: var(--color-text-primary);
 }
 
 .checklist-info__access-badge {
-  font-size: 0.7rem;
   font-weight: 600;
   padding: 0.1rem 0.4rem;
   border-radius: 3px;
@@ -296,60 +299,44 @@ function onRowSelect(event) {
   height: 100%;
 }
 
-:deep(.p-datatable-row-selected) {
-  background-color: var(--color-primary-highlight) !important;
+/* Let rows grow to fit content — no fixed row height */
+:deep(.p-datatable-tbody > tr > td) {
+  vertical-align: top;
+  padding: 0.25rem 0.5rem;
 }
 
-:deep(.p-datatable-row-selected td) {
-  color: var(--color-text-bright);
+:deep(.p-datatable-thead > tr > th) {
+  padding: 0.3rem 0.5rem;
 }
 
-.cell-text {
-  font-size: 0.8rem;
+:deep(.p-datatable-footer) {
+  padding: 0;
+  border: none;
 }
 
-.cell-text--truncated {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.cell-text--mono {
+  font-family: monospace;
+  color: var(--color-text-dim);
 }
 
 .cell-text--dim {
   color: var(--color-text-dim);
-  font-size: 0.75rem;
+}
+
+.result-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .engine-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.engine-icon__img {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   opacity: 0.7;
-}
-
-.checklist-info__footer {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.3rem 0.6rem;
-  background-color: var(--color-background-dark);
-  border-top: 1px solid var(--color-border-light);
   flex-shrink: 0;
-  flex-wrap: wrap;
-}
-
-.footer-stat {
-  font-size: 0.75rem;
-  color: var(--color-text-dim);
 }
 
 .footer-divider {
   color: var(--color-border-light);
-  font-size: 0.75rem;
 }
 </style>

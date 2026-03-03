@@ -21,6 +21,15 @@ const severityMap = { high: 1, medium: 2, low: 3 }
 
 <template>
   <div class="rule-info">
+    <div class="rule-info__panel-header">
+      <span v-if="selectedChecklistItem" class="rule-info__panel-title">
+        Rule for Group {{ selectedChecklistItem.groupId }}
+      </span>
+      <span v-else class="rule-info__panel-title">
+        Rule Content
+      </span>
+    </div>
+
     <div v-if="isLoading" class="rule-info__loading">
       <i class="pi pi-spinner pi-spin" />
       Loading rule content...
@@ -35,15 +44,16 @@ const severityMap = { high: 1, medium: 2, low: 3 }
       <div class="rule-info__header">
         <div class="rule-info__header-row">
           <span class="rule-info__rule-id">{{ ruleContent.ruleId }}</span>
-          <CatBadge
-            v-if="ruleContent.severity"
-            :category="severityMap[ruleContent.severity] || 2"
-          />
-          <span v-if="ruleContent.version" class="rule-info__version">{{ ruleContent.version }}</span>
+          <div v-if="ruleContent.severity" class="rule-info__cat-badge">
+            <CatBadge :category="severityMap[ruleContent.severity] || 2" />
+          </div>
         </div>
-        <h3 class="rule-info__title">
+        <div v-if="ruleContent.version" class="rule-info__version">
+          {{ ruleContent.version }}
+        </div>
+        <div class="rule-info__title">
           {{ ruleContent.title }}
-        </h3>
+        </div>
       </div>
 
       <!-- Check Content -->
@@ -51,7 +61,9 @@ const severityMap = { high: 1, medium: 2, low: 3 }
         <h4 class="rule-info__section-title">
           Manual Check
         </h4>
-        <pre class="rule-info__pre">{{ ruleContent.check.content }}</pre>
+        <div class="rule-info__text">
+          {{ ruleContent.check.content }}
+        </div>
       </section>
 
       <!-- Fix Text -->
@@ -59,7 +71,9 @@ const severityMap = { high: 1, medium: 2, low: 3 }
         <h4 class="rule-info__section-title">
           Fix
         </h4>
-        <pre class="rule-info__pre">{{ ruleContent.fix.text }}</pre>
+        <div class="rule-info__text">
+          {{ ruleContent.fix.text }}
+        </div>
       </section>
 
       <!-- Other Data -->
@@ -70,41 +84,40 @@ const severityMap = { high: 1, medium: 2, low: 3 }
 
         <div v-if="ruleContent.detail?.vulnDiscussion" class="rule-info__field">
           <span class="rule-info__field-label">Vulnerability Discussion</span>
-          <pre class="rule-info__pre">{{ ruleContent.detail.vulnDiscussion }}</pre>
+          <div class="rule-info__text">
+            {{ ruleContent.detail.vulnDiscussion }}
+          </div>
         </div>
 
-        <div v-if="ruleContent.detail?.documentable !== undefined" class="rule-info__field">
-          <span class="rule-info__field-label">Documentable</span>
-          <span class="rule-info__field-value">{{ ruleContent.detail.documentable ? 'Yes' : 'No' }}</span>
+        <div v-if="ruleContent.detail?.documentable !== undefined" class="rule-info__field rule-info__field--inline">
+          <span class="rule-info__field-label">Documentable:</span>
+          <span>{{ ruleContent.detail.documentable ? 'true' : 'false' }}</span>
         </div>
 
-        <div v-if="ruleContent.detail?.responsibility" class="rule-info__field">
-          <span class="rule-info__field-label">Responsibility</span>
-          <span class="rule-info__field-value">{{ ruleContent.detail.responsibility }}</span>
+        <div v-if="ruleContent.detail?.responsibility" class="rule-info__field rule-info__field--inline">
+          <span class="rule-info__field-label">Responsibility:</span>
+          <span>{{ ruleContent.detail.responsibility }}</span>
         </div>
 
         <!-- Controls Table (CCIs) -->
-        <div class="rule-info__field">
-          <span class="rule-info__field-label">Controls</span>
-          <div v-if="ruleContent.ccis?.length" class="rule-info__controls">
-            <table class="controls-table">
-              <thead>
-                <tr>
-                  <th>CCI</th>
-                  <th>AP Acronym</th>
-                  <th>Control</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="cci in ruleContent.ccis" :key="cci.cci">
-                  <td>{{ cci.cci }}</td>
-                  <td>{{ cci.apAcronym || '-' }}</td>
-                  <td>{{ cci.control || '-' }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <span v-else class="rule-info__field-value">No mapped controls</span>
+        <div v-if="ruleContent.ccis?.length" class="rule-info__field">
+          <span class="rule-info__field-label">Controls:</span>
+          <table class="controls-table">
+            <thead>
+              <tr>
+                <th>CCI</th>
+                <th>AP Acronym</th>
+                <th>Control</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="cci in ruleContent.ccis" :key="cci.cci">
+                <td>{{ cci.cci }}</td>
+                <td>{{ cci.apAcronym || '-' }}</td>
+                <td>{{ cci.control || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
     </div>
@@ -122,6 +135,21 @@ const severityMap = { high: 1, medium: 2, low: 3 }
   overflow: hidden;
 }
 
+.rule-info__panel-header {
+  display: flex;
+  align-items: center;
+  padding: 0.35rem 0.5rem;
+  background-color: var(--color-background-dark);
+  border-bottom: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+}
+
+.rule-info__panel-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-text-primary);
+}
+
 .rule-info__content {
   flex: 1;
   overflow-y: auto;
@@ -136,11 +164,10 @@ const severityMap = { high: 1, medium: 2, low: 3 }
   gap: 0.5rem;
   height: 100%;
   color: var(--color-text-dim);
-  font-size: 0.85rem;
 }
 
 .rule-info__header {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--color-border-light);
 }
@@ -149,26 +176,26 @@ const severityMap = { high: 1, medium: 2, low: 3 }
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.25rem;
 }
 
 .rule-info__rule-id {
-  font-family: monospace;
-  font-size: 0.8rem;
-  color: var(--color-text-dim);
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.rule-info__cat-badge {
+  margin-left: auto;
 }
 
 .rule-info__version {
-  font-size: 0.75rem;
   color: var(--color-text-dim);
-  background-color: var(--color-background-dark);
-  padding: 0.1rem 0.4rem;
-  border-radius: 3px;
+  margin-bottom: 0.35rem;
 }
 
 .rule-info__title {
-  margin: 0;
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--color-text-primary);
   line-height: 1.4;
@@ -180,21 +207,12 @@ const severityMap = { high: 1, medium: 2, low: 3 }
 
 .rule-info__section-title {
   margin: 0 0 0.4rem 0;
-  font-size: 0.85rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: var(--color-text-secondary, var(--color-text-primary));
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  color: var(--color-primary-highlight);
 }
 
-.rule-info__pre {
-  margin: 0;
-  padding: 0.5rem;
-  background-color: var(--color-background-dark);
-  border: 1px solid var(--color-border-light);
-  border-radius: 3px;
-  font-family: monospace;
-  font-size: 0.8rem;
+.rule-info__text {
   color: var(--color-text-primary);
   white-space: pre-wrap;
   word-break: break-word;
@@ -205,23 +223,26 @@ const severityMap = { high: 1, medium: 2, low: 3 }
   margin-bottom: 0.6rem;
 }
 
-.rule-info__field-label {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--color-text-dim);
-  margin-bottom: 0.2rem;
+.rule-info__field--inline {
+  display: flex;
+  gap: 0.35rem;
+  align-items: baseline;
 }
 
-.rule-info__field-value {
-  font-size: 0.8rem;
-  color: var(--color-text-primary);
+.rule-info__field-label {
+  font-weight: 600;
+  color: var(--color-text-dim);
+}
+
+.rule-info__field:not(.rule-info__field--inline) .rule-info__field-label {
+  display: block;
+  margin-bottom: 0.2rem;
 }
 
 .controls-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8rem;
+  margin-top: 0.25rem;
 }
 
 .controls-table th,
@@ -235,8 +256,6 @@ const severityMap = { high: 1, medium: 2, low: 3 }
   background-color: var(--color-background-dark);
   font-weight: 600;
   color: var(--color-text-dim);
-  font-size: 0.75rem;
-  text-transform: uppercase;
 }
 
 .controls-table td {

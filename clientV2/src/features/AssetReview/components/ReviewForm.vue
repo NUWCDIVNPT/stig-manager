@@ -309,7 +309,7 @@ function onButtonClick(actionType) {
 
 .review-form__title {
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: var(--color-text-primary);
 }
 
@@ -321,7 +321,6 @@ function onButtonClick(actionType) {
   gap: 0.5rem;
   height: 100%;
   color: var(--color-text-dim);
-  font-size: 0.85rem;
 }
 
 .review-form__content {
@@ -341,7 +340,6 @@ function onButtonClick(actionType) {
 }
 
 .review-form__legend {
-  font-size: 0.8rem;
   font-weight: 600;
   color: var(--color-text-dim);
   padding: 0 0.3rem;
@@ -355,7 +353,6 @@ function onButtonClick(actionType) {
 
 .review-form__label {
   display: block;
-  font-size: 0.8rem;
   font-weight: 600;
   color: var(--color-text-primary);
   margin-bottom: 0.2rem;
@@ -376,7 +373,6 @@ function onButtonClick(actionType) {
 }
 
 .review-form__engine-badge {
-  font-size: 0.7rem;
   color: var(--color-text-dim);
   background-color: var(--color-background-dark);
   padding: 0.2rem 0.4rem;
@@ -387,7 +383,6 @@ function onButtonClick(actionType) {
 
 .review-form__textarea {
   width: 100%;
-  font-size: 0.8rem;
 }
 
 .review-form__attribution {
@@ -395,7 +390,6 @@ function onButtonClick(actionType) {
   gap: 0.5rem;
   align-items: baseline;
   margin-bottom: 0.3rem;
-  font-size: 0.8rem;
 }
 
 .review-form__attribution-label {
@@ -425,6 +419,5 @@ function onButtonClick(actionType) {
 
 .review-form__actions .p-button {
   flex: 1;
-  font-size: 0.8rem;
 }
 </style>

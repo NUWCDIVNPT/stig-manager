@@ -408,9 +408,9 @@ defineExpose({ asset })
 .asset-review__grid {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 1rem;
-  padding: 1rem;
+  grid-template-columns: minmax(340px, 1.2fr) 1fr minmax(300px, 0.9fr);
+  gap: 0.35rem;
+  padding: 0.35rem;
   overflow: hidden;
 }
 
@@ -423,7 +423,7 @@ defineExpose({ asset })
 .split-column {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.35rem;
 }
 
 .split-row {
