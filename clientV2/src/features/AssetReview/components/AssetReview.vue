@@ -8,6 +8,7 @@ import {
   fetchAsset,
   fetchCollectionLabels,
 } from '../api/assetReviewApi.js'
+import { useReviewWorkspace } from '../composables/useReviewWorkspace.js'
 import ChecklistInfo from './ChecklistInfo.vue'
 import ReviewForm from './ReviewForm.vue'
 import ReviewResources from './ReviewResources.vue'
@@ -19,9 +20,11 @@ const { addView, removeView } = useRecentViews()
 
 const collectionId = computed(() => route.params.collectionId)
 const assetId = computed(() => route.params.assetId)
+const benchmarkId = computed(() => route.params.benchmarkId)
+const revisionStr = computed(() => route.params.revisionStr)
 
 // Fetch Asset Details
-const { state: asset, isLoading, errorMessage: error, execute: loadAsset } = useAsyncState(
+const { state: asset, isLoading, error, execute: loadAsset } = useAsyncState(
   () => fetchAsset(assetId.value),
   {
     immediate: false,
@@ -32,7 +35,6 @@ const { state: asset, isLoading, errorMessage: error, execute: loadAsset } = use
         router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
       }
       else {
-        // useAsyncState handles the default triggerError if we don't return early
         const { triggerError } = useGlobalError()
         triggerError(err)
       }
@@ -45,6 +47,9 @@ const { state: collectionLabels, execute: loadCollectionLabels } = useAsyncState
   () => fetchCollectionLabels(collectionId.value),
   { initialState: [], immediate: false },
 )
+
+// Review workspace composable
+const workspace = useReviewWorkspace({ collectionId, assetId, benchmarkId, revisionStr })
 
 // Update recent views when asset loads or params change
 watch(
@@ -69,6 +74,7 @@ watch([assetId, collectionId], () => {
   }
   if (collectionId.value) {
     loadCollectionLabels()
+    workspace.loadWorkspace()
   }
 }, { immediate: true })
 
@@ -99,6 +105,18 @@ const resolvedLabels = computed(() => {
       textColor: getContrastColor(label.color),
     }))
 })
+
+function onSelectRule(ruleId) {
+  workspace.selectRule(ruleId)
+}
+
+function onSaveReview(actionType) {
+  workspace.saveReview(actionType)
+}
+
+function onUpdateFormValues(newValues) {
+  workspace.formValues.value = newValues
+}
 
 // Expose asset
 defineExpose({ asset })
@@ -148,7 +166,6 @@ defineExpose({ asset })
           </div>
         </div>
         <div class="asset-review__header-actions">
-          <!-- Search reviews input from CollectionView could be moved here if needed -->
           <div class="search-reviews">
             <i class="pi pi-search search-reviews__icon" />
             <input
@@ -178,19 +195,44 @@ defineExpose({ asset })
     <div v-else-if="asset" class="asset-review__content">
       <div class="asset-review__grid">
         <section class="grid-column">
-          <ChecklistInfo />
+          <ChecklistInfo
+            :checklist-data="workspace.checklistData.value"
+            :is-loading="workspace.isChecklistLoading.value"
+            :selected-rule-id="workspace.selectedRuleId.value"
+            :access-mode="workspace.accessMode.value"
+            @select-rule="onSelectRule"
+          />
         </section>
 
         <section class="grid-column">
-          <RuleInfo />
+          <RuleInfo
+            :rule-content="workspace.ruleContent.value"
+            :is-loading="workspace.isRuleLoading.value"
+            :selected-checklist-item="workspace.selectedChecklistItem.value"
+          />
         </section>
 
         <section class="grid-column split-column">
           <div class="split-row">
-            <ReviewResources />
+            <ReviewResources
+              :current-review="workspace.currentReview.value"
+            />
           </div>
           <div class="split-row">
-            <ReviewForm />
+            <ReviewForm
+              :form-values="workspace.formValues.value"
+              :is-dirty="workspace.isDirty.value"
+              :is-submittable="workspace.isSubmittable.value"
+              :can-accept="workspace.canAccept.value"
+              :access-mode="workspace.accessMode.value"
+              :field-settings="workspace.fieldSettings.value"
+              :current-review="workspace.currentReview.value"
+              :is-review-loading="workspace.isReviewLoading.value"
+              :is-saving="workspace.isSaving.value"
+              :selected-rule-id="workspace.selectedRuleId.value"
+              @save-review="onSaveReview"
+              @update:form-values="onUpdateFormValues"
+            />
           </div>
         </section>
       </div>
@@ -221,7 +263,6 @@ defineExpose({ asset })
   gap: 0.5rem;
 }
 
-/* Header Info Styles */
 .asset-review__header-main {
   display: flex;
   justify-content: space-between;
@@ -298,7 +339,6 @@ defineExpose({ asset })
   align-items: center;
 }
 
-/* Action Buttons */
 .action-btn {
   display: inline-flex;
   align-items: center;
@@ -322,7 +362,6 @@ defineExpose({ asset })
   font-size: 0.85rem;
 }
 
-/* Search Box */
 .search-reviews {
   display: flex;
   align-items: center;
@@ -359,7 +398,6 @@ defineExpose({ asset })
   background-color: var(--color-background-dark);
 }
 
-/* Content Grid */
 .asset-review__content {
   flex: 1;
   overflow: hidden;

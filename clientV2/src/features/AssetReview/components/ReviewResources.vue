@@ -1,20 +1,62 @@
 <script setup>
+defineProps({
+  currentReview: {
+    type: Object,
+    default: null,
+  },
+})
 </script>
 
 <template>
   <div class="review-resources">
-    <h2>Review Resources</h2>
-    <p>Placeholder for resources.</p>
+    <div class="review-resources__header">
+      <span class="review-resources__title">Review Resources</span>
+    </div>
+    <div class="review-resources__content">
+      <p class="review-resources__placeholder">
+        History, Other Assets, Attachments, and Status Text tabs will be implemented in a future phase.
+      </p>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .review-resources {
   height: 100%;
-  padding: 1rem;
-  background-color: #1f1f1f;
-  border: 1px solid #3a3d40;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-background-subtle);
+  border: 1px solid var(--color-border-light);
   border-radius: 4px;
-  color: #a6adba;
+  overflow: hidden;
+}
+
+.review-resources__header {
+  display: flex;
+  align-items: center;
+  padding: 0.4rem 0.6rem;
+  background-color: var(--color-background-dark);
+  border-bottom: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+}
+
+.review-resources__title {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-text-primary);
+}
+
+.review-resources__content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.review-resources__placeholder {
+  color: var(--color-text-dim);
+  font-size: 0.85rem;
+  text-align: center;
 }
 </style>
