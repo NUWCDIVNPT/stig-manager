@@ -200,6 +200,7 @@ defineExpose({ asset })
             :is-loading="workspace.isChecklistLoading.value"
             :selected-rule-id="workspace.selectedRuleId.value"
             :access-mode="workspace.accessMode.value"
+            :revision-info="workspace.revisionInfo.value"
             @select-rule="onSelectRule"
           />
         </section>
@@ -216,6 +217,8 @@ defineExpose({ asset })
           <div class="split-row">
             <ReviewResources
               :current-review="workspace.currentReview.value"
+              :review-history="workspace.reviewHistory.value"
+              :selected-rule-id="workspace.selectedRuleId.value"
             />
           </div>
           <div class="split-row">
@@ -255,12 +258,12 @@ defineExpose({ asset })
 
 .asset-review__header {
   flex: 0 0 auto;
-  padding: 0.5rem 1rem;
+  padding: 0.35rem 0.75rem;
   background-color: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-default);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .asset-review__header-main {
@@ -280,7 +283,7 @@ defineExpose({ asset })
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .asset-review__title {

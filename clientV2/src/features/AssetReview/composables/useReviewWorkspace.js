@@ -6,6 +6,7 @@ import {
   fetchCollection,
   fetchReview,
   fetchRuleContent,
+  fetchStigRevisions,
   patchReview,
   putReview,
 } from '../api/assetReviewApi.js'
@@ -45,6 +46,43 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
   const canAccept = computed(() =>
     statusSettings.value.canAccept && roleId.value >= statusSettings.value.minAcceptGrant,
   )
+
+  // --- STIG revision info (for checklist header) ---
+  const { state: stigRevisions, execute: loadStigRevisions } = useAsyncState(
+    () => fetchStigRevisions(benchmarkId.value),
+    { immediate: false, initialState: [], onError: null },
+  )
+
+  const revisionInfo = computed(() => {
+    const rs = revisionStr.value
+    if (!rs) {
+      return null
+    }
+
+    // Parse "V2R3" format
+    const match = rs.match(/^V(\d+)R(\d+)$/)
+    if (!match) {
+      return { display: rs }
+    }
+
+    const version = match[1]
+    const release = match[2]
+
+    // Find matching revision from fetched data to get the date
+    const rev = stigRevisions.value?.find(r => r.revisionStr === rs)
+    const benchmarkDate = rev?.benchmarkDate
+      ? new Date(rev.benchmarkDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+      : null
+
+    return {
+      display: benchmarkDate
+        ? `Version ${version} Release ${release} (${benchmarkDate})`
+        : `Version ${version} Release ${release}`,
+      version,
+      release,
+      benchmarkDate,
+    }
+  })
 
   // --- Checklist data ---
   const accessMode = ref('r')
@@ -155,6 +193,35 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     }
 
     return true
+  })
+
+  // --- Review history (for ReviewResources History tab) ---
+  const reviewHistory = computed(() => {
+    const review = currentReview.value
+    if (!review) {
+      return []
+    }
+
+    const history = [...(review.history || [])]
+
+    // Append current state as the most recent entry (mirrors old client behavior)
+    history.push({
+      ruleId: review.ruleId,
+      result: review.result,
+      detail: review.detail,
+      comment: review.comment,
+      resultEngine: review.resultEngine,
+      status: review.status,
+      ts: review.ts,
+      touchTs: review.touchTs,
+      userId: review.userId,
+      username: review.username,
+    })
+
+    // Sort descending by touchTs (newest first)
+    history.sort((a, b) => new Date(b.touchTs) - new Date(a.touchTs))
+
+    return history
   })
 
   // --- Load review data into form ---
@@ -272,6 +339,9 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
   // --- Initial loading ---
   function loadWorkspace() {
     loadCollection()
+    if (benchmarkId.value) {
+      loadStigRevisions()
+    }
     if (benchmarkId.value && revisionStr.value) {
       loadChecklist()
     }
@@ -296,6 +366,9 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     canAccept,
     roleId,
 
+    // Revision info
+    revisionInfo,
+
     // Checklist
     checklistData,
     isChecklistLoading,
@@ -314,6 +387,7 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     // Review
     currentReview,
     isReviewLoading,
+    reviewHistory,
     formValues,
     savedValues,
     isDirty,

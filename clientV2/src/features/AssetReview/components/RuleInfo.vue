@@ -153,7 +153,7 @@ const severityMap = { high: 1, medium: 2, low: 3 }
 .rule-info__content {
   flex: 1;
   overflow-y: auto;
-  padding: 0.75rem;
+  padding: 0.5rem;
 }
 
 .rule-info__loading,
@@ -167,8 +167,8 @@ const severityMap = { high: 1, medium: 2, low: 3 }
 }
 
 .rule-info__header {
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--color-border-light);
 }
 
@@ -180,8 +180,8 @@ const severityMap = { high: 1, medium: 2, low: 3 }
 }
 
 .rule-info__rule-id {
-  font-size: 2.2rem;
-  font-weight: 600;
+  font-size: 1.3rem;
+  font-weight: 700;
   color: var(--color-text-primary);
 }
 
@@ -195,28 +195,31 @@ const severityMap = { high: 1, medium: 2, low: 3 }
 }
 
 .rule-info__title {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-primary);
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
 .rule-info__section {
-  margin-bottom: 1rem;
+  margin-bottom: 0.6rem;
 }
 
 .rule-info__section-title {
   margin: 0 0 0.4rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-primary-highlight);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #5c98d6;
+  padding: 0.3rem 0.5rem;
+  background-color: hsl(210deg 6% 16%);
+  border-radius: 3px;
 }
 
 .rule-info__text {
   color: var(--color-text-primary);
   white-space: pre-wrap;
   word-break: break-word;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .rule-info__field {

@@ -205,7 +205,7 @@ function onButtonClick(actionType) {
             :model-value="formValues.detail"
             :disabled="!detailEnabled"
             :maxlength="32767"
-            rows="3"
+            rows="2"
             auto-resize
             class="review-form__textarea"
             @update:model-value="updateDetail"
@@ -221,7 +221,7 @@ function onButtonClick(actionType) {
             :model-value="formValues.comment"
             :disabled="!commentEnabled"
             :maxlength="32767"
-            rows="3"
+            rows="2"
             auto-resize
             class="review-form__textarea"
             @update:model-value="updateComment"
@@ -301,7 +301,7 @@ function onButtonClick(actionType) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.4rem 0.6rem;
+  padding: 0.25rem 0.5rem;
   background-color: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
@@ -309,7 +309,7 @@ function onButtonClick(actionType) {
 
 .review-form__title {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: var(--color-text-primary);
 }
 
@@ -326,21 +326,22 @@ function onButtonClick(actionType) {
 .review-form__content {
   flex: 1;
   overflow-y: auto;
-  padding: 0.6rem;
+  padding: 0.4rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.4rem;
 }
 
 .review-form__fieldset {
   border: 1px solid var(--color-border-light);
   border-radius: 4px;
-  padding: 0.5rem;
+  padding: 0.35rem;
   margin: 0;
 }
 
 .review-form__legend {
   font-weight: 600;
+  font-size: 0.8rem;
   color: var(--color-text-dim);
   padding: 0 0.3rem;
   text-transform: uppercase;
@@ -348,14 +349,14 @@ function onButtonClick(actionType) {
 }
 
 .review-form__field {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .review-form__label {
   display: block;
   font-weight: 600;
   color: var(--color-text-primary);
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.15rem;
 }
 
 .review-form__required {
