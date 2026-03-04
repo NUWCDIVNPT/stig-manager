@@ -2173,6 +2173,7 @@ paths:
       operationId: getTaskOutputByCollection
       parameters:
         - $ref: '#/components/parameters/RunSequenceQuery'
+        - $ref: '#/components/parameters/OutputRunLimitQuery'
       responses:
         '200':
           description: Task output
@@ -10503,6 +10504,15 @@ components:
       schema:
         type: integer
         minimum: 0
+    OutputRunLimitQuery:
+      name: runs
+      in: query
+      description: Limit output to the N most recent job runs. Defaults to 5.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 5
     StartDateQuery:
       name: startDate
       in: query

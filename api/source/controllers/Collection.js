@@ -1322,7 +1322,8 @@ module.exports.getTaskOutputByCollection = async function (req, res, next) {
     const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
     const taskId = CollectionService.resolveTaskName(req.params.taskName)
     const afterSeq = req.query['after-seq']
-    const result = await CollectionService.getTaskOutput(collectionId, taskId, { afterSeq })
+    const runs = req.query.runs
+    const result = await CollectionService.getTaskOutput(collectionId, taskId, { afterSeq, runs })
     res.json(result)
   }
   catch (err) {

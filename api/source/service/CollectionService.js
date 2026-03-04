@@ -2870,7 +2870,7 @@ exports.deleteTaskConfig = async function (collectionId, taskId) {
   return result.affectedRows > 0
 }
 
-exports.getTaskOutput = async function (collectionId, taskId, {afterSeq} = {}) {
+exports.getTaskOutput = async function (collectionId, taskId, {afterSeq, runs = 5} = {}) {
   const sql = `SELECT
       tout.seq,
       tout.ts,
@@ -2881,12 +2881,20 @@ exports.getTaskOutput = async function (collectionId, taskId, {afterSeq} = {}) {
     FROM
       task_output tout
       LEFT JOIN task t ON tout.taskId = t.taskId
+      INNER JOIN (
+        SELECT runId
+        FROM task_output
+        WHERE collectionId = ? AND taskId = ?
+        GROUP BY runId
+        ORDER BY MAX(seq) DESC
+        LIMIT ?
+      ) recent ON tout.runId = recent.runId
     WHERE
       tout.collectionId = ?
       AND tout.taskId = ?
       ${afterSeq ? 'AND tout.seq > ?' : ''}
     ORDER BY tout.seq DESC`
-  const binds = [collectionId, taskId]
+  const binds = [collectionId, taskId, runs, collectionId, taskId]
   if (afterSeq) binds.push(afterSeq)
   const [rows] = await dbUtils.pool.query(sql, binds)
   return rows
