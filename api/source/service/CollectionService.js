@@ -2837,3 +2837,57 @@ exports.queryReviewAcl = async function ({grantId, collectionId, userId, userGro
   const [rows] = await dbUtils.pool.query(sql)
   return rows?.[0]
 }
+
+const TASK_NAME_MAP = {
+  'review-aging': 5
+}
+
+exports.resolveTaskName = function (taskName) {
+  const taskId = TASK_NAME_MAP[taskName]
+  if (!taskId) {
+    throw new SmError.UnprocessableError(`Unknown task name: ${taskName}`)
+  }
+  return taskId
+}
+
+exports.getTaskConfig = async function (collectionId, taskId) {
+  const sql = 'SELECT config FROM task_collection_config WHERE collectionId = ? AND taskId = ?'
+  const [rows] = await dbUtils.pool.query(sql, [collectionId, taskId])
+  return rows.length ? rows[0].config : null
+}
+
+exports.putTaskConfig = async function (collectionId, taskId, config) {
+  const sql = `INSERT INTO task_collection_config (collectionId, taskId, config)
+    VALUES (?, ?, ?)
+    ON DUPLICATE KEY UPDATE config = VALUES(config)`
+  await dbUtils.pool.query(sql, [collectionId, taskId, JSON.stringify(config)])
+  return config
+}
+
+exports.deleteTaskConfig = async function (collectionId, taskId) {
+  const sql = 'DELETE FROM task_collection_config WHERE collectionId = ? AND taskId = ?'
+  const [result] = await dbUtils.pool.query(sql, [collectionId, taskId])
+  return result.affectedRows > 0
+}
+
+exports.getTaskOutput = async function (collectionId, taskId, {afterSeq} = {}) {
+  const sql = `SELECT
+      tout.seq,
+      tout.ts,
+      tout.taskId,
+      t.name as task,
+      tout.type,
+      tout.message
+    FROM
+      task_output tout
+      LEFT JOIN task t ON tout.taskId = t.taskId
+    WHERE
+      tout.collectionId = ?
+      AND tout.taskId = ?
+      ${afterSeq ? 'AND tout.seq > ?' : ''}
+    ORDER BY tout.seq DESC`
+  const binds = [collectionId, taskId]
+  if (afterSeq) binds.push(afterSeq)
+  const [rows] = await dbUtils.pool.query(sql, binds)
+  return rows
+}

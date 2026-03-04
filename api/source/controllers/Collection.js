@@ -1276,3 +1276,56 @@ module.exports.putAclRulesByCollectionGrant = async function (req, res, next) {
     next(err)
   }
 }
+
+module.exports.getTaskConfigByCollection = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
+    const taskId = CollectionService.resolveTaskName(req.params.taskName)
+    const taskConfig = await CollectionService.getTaskConfig(collectionId, taskId)
+    if (taskConfig) {
+      res.json(taskConfig)
+    } else {
+      res.status(204).end()
+    }
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.putTaskConfigByCollection = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
+    const taskId = CollectionService.resolveTaskName(req.params.taskName)
+    const result = await CollectionService.putTaskConfig(collectionId, taskId, req.body)
+    res.json(result)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.deleteTaskConfigByCollection = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
+    const taskId = CollectionService.resolveTaskName(req.params.taskName)
+    await CollectionService.deleteTaskConfig(collectionId, taskId)
+    res.status(204).end()
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getTaskOutputByCollection = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
+    const taskId = CollectionService.resolveTaskName(req.params.taskName)
+    const afterSeq = req.query['after-seq']
+    const result = await CollectionService.getTaskOutput(collectionId, taskId, { afterSeq })
+    res.json(result)
+  }
+  catch (err) {
+    next(err)
+  }
+}

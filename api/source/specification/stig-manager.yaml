@@ -2091,6 +2091,106 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection'
+  '/collections/{collectionId}/tasks/{taskName}/config':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/TaskNamePath'
+    get:
+      tags:
+        - Collection
+      summary: Return the task configuration for this Collection
+      operationId: getTaskConfigByCollection
+      responses:
+        '200':
+          description: Task configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskCollectionConfig'
+        '204':
+          description: No configuration exists
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    put:
+      tags:
+        - Collection
+      summary: Set the task configuration for this Collection
+      operationId: putTaskConfigByCollection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCollectionConfig'
+      responses:
+        '200':
+          description: Task configuration updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskCollectionConfig'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+    delete:
+      tags:
+        - Collection
+      summary: Delete the task configuration for this Collection
+      operationId: deleteTaskConfigByCollection
+      responses:
+        '204':
+          description: Configuration deleted
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+  '/collections/{collectionId}/tasks/{taskName}/output':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/TaskNamePath'
+    get:
+      tags:
+        - Collection
+      summary: Return the task output for this Collection
+      operationId: getTaskOutputByCollection
+      parameters:
+        - $ref: '#/components/parameters/RunSequenceQuery'
+      responses:
+        '200':
+          description: Task output
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskCollectionOutput'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
   '/collections/{collectionId}/metadata':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -7685,6 +7785,94 @@ components:
         ts:
           $ref: '#/components/schemas/StringDateTime'
       required: [message, type, task, ts]
+    TaskCollectionConfig:
+      type: array
+      items:
+        $ref: '#/components/schemas/ReviewAgingRule'
+    ReviewAgingRule:
+      type: object
+      additionalProperties: false
+      required:
+        - triggerField
+        - triggerBasis
+        - triggerInterval
+        - triggerAction
+        - enabled
+      properties:
+        triggerField:
+          type: string
+          enum:
+            - ts
+            - statusTs
+            - touchTs
+        triggerBasis:
+          type: string
+          description: '"now" or an ISO 8601 timestamp'
+        triggerInterval:
+          type: integer
+          minimum: 0
+          description: Age threshold in seconds
+        triggerAction:
+          type: string
+          enum:
+            - delete
+            - update
+        updateField:
+          type: string
+          enum:
+            - status
+            - result
+        updateValue:
+          type: string
+          enum:
+            - '-'
+            - '+'
+            - saved
+            - submitted
+            - approved
+            - notReviewed
+            - informational
+        updateFilter:
+          $ref: '#/components/schemas/ReviewAgingFilter'
+        updateUserId:
+          type: integer
+          minimum: 0
+          description: userId for the change, or 0 for system
+        enabled:
+          type: boolean
+    ReviewAgingFilter:
+      type: object
+      additionalProperties: false
+      properties:
+        assetIds:
+          type: array
+          items:
+            type: integer
+        labelIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelId'
+        benchmarkIds:
+          type: array
+          items:
+            type: string
+    TaskCollectionOutput:
+      additionalProperties: false
+      type: object
+      properties:
+        seq:
+          type: integer
+        ts:
+          $ref: '#/components/schemas/StringDateTime'
+        type:
+          type: string
+        message:
+          type: string
+        task:
+          $ref: '#/components/schemas/String45'
+        taskId:
+          $ref: '#/components/schemas/JobTaskId'
+      required: [message, type, ts]
     JobRunState:
       type: string
       nullable: true
@@ -9868,6 +10056,15 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/CollectionId'
+    TaskNamePath:
+      name: taskName
+      in: path
+      description: A path parameter that identifies a Task by name
+      required: true
+      schema:
+        type: string
+        enum:
+          - review-aging
     CollectionIdQuery:
       name: collectionId
       required: true

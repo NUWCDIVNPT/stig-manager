@@ -283,7 +283,8 @@ exports.getOutputByRun = async (runId, {filters}) => {
       task_output tout
       left join task t ON tout.taskId = t.taskId
     WHERE
-      runId = UUID_TO_BIN(?, 1))`
+      runId = UUID_TO_BIN(?, 1)
+      AND tout.collectionId IS NULL)`
   ]
   const columns = [
     'Output.seq',

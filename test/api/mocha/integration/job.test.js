@@ -538,6 +538,445 @@ describe('Task tests', function () {
   })
 })
 
+describe('Collection Task Config endpoints', function () {
+  const collectionId = '21'
+  const taskName = 'review-aging'
+
+  before(async function () {
+    await utils.loadAppData()
+  })
+
+  afterEach(async function () {
+    await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'DELETE', user.token)
+  })
+
+  it('GET should return 204 when no config exists', async function () {
+    const res = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'GET', user.token)
+    expect(res.status).to.eql(204)
+  })
+
+  it('PUT should create a config and GET should return it', async function () {
+    const configBody = [{
+      triggerField: 'touchTs',
+      triggerBasis: 'now',
+      triggerInterval: 86400,
+      triggerAction: 'update',
+      updateField: 'status',
+      updateValue: 'saved',
+      updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
+      updateUserId: 0,
+      enabled: true
+    }]
+    const putRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'PUT', user.token, configBody)
+    expect(putRes.status).to.eql(200)
+    expect(putRes.body).to.be.an('array').with.length(1)
+    expect(putRes.body[0]).to.have.property('triggerField', 'touchTs')
+
+    const getRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'GET', user.token)
+    expect(getRes.status).to.eql(200)
+    expect(getRes.body).to.be.an('array').with.length(1)
+    expect(getRes.body[0]).to.have.property('triggerAction', 'update')
+  })
+
+  it('PUT should upsert an existing config', async function () {
+    const configBody1 = [{
+      triggerField: 'ts',
+      triggerBasis: 'now',
+      triggerInterval: 100,
+      triggerAction: 'update',
+      updateField: 'status',
+      updateValue: 'saved',
+      updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
+      updateUserId: 0,
+      enabled: true
+    }]
+    await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'PUT', user.token, configBody1)
+
+    const configBody2 = [{
+      triggerField: 'statusTs',
+      triggerBasis: 'now',
+      triggerInterval: 200,
+      triggerAction: 'delete',
+      updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
+      updateUserId: 0,
+      enabled: false
+    }]
+    const putRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'PUT', user.token, configBody2)
+    expect(putRes.status).to.eql(200)
+    expect(putRes.body[0]).to.have.property('triggerField', 'statusTs')
+    expect(putRes.body[0]).to.have.property('triggerInterval', 200)
+  })
+
+  it('DELETE should remove the config', async function () {
+    const configBody = [{
+      triggerField: 'touchTs',
+      triggerBasis: 'now',
+      triggerInterval: 86400,
+      triggerAction: 'update',
+      updateField: 'status',
+      updateValue: 'saved',
+      updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
+      updateUserId: 0,
+      enabled: true
+    }]
+    await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'PUT', user.token, configBody)
+
+    const delRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'DELETE', user.token)
+    expect(delRes.status).to.eql(204)
+
+    const getRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'GET', user.token)
+    expect(getRes.status).to.eql(204)
+  })
+})
+
+describe('Task - ReviewAging', function () {
+  const collectionId = '21'
+  const taskName = 'review-aging'
+
+  beforeEach(async function () {
+    await utils.loadAppData()
+  })
+
+  afterEach(async function () {
+    await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'DELETE', user.token)
+    await deleteTestJobs()
+  })
+
+  it('should reset status to saved for all reviews when triggerInterval=0', async function () {
+    this.timeout(120_000)
+
+    // Check reviews with submitted status exist
+    const beforeRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/reviews?status=submitted`,
+      'GET', user.token)
+    expect(beforeRes.body.length).to.be.greaterThan(0)
+
+    // Configure aging: set all reviews to saved (interval=0 matches everything)
+    const agingConfig = [{
+      triggerField: 'touchTs',
+      triggerBasis: 'now',
+      triggerInterval: 0,
+      triggerAction: 'update',
+      updateField: 'status',
+      updateValue: 'saved',
+      updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
+      updateUserId: 0,
+      enabled: true
+    }]
+    await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'PUT', user.token, agingConfig)
+
+    // Run the task
+    const runId = await runImmediateTask("ReviewAging")
+    const state = await waitForRunFinish(runId, 60)
+    expect(state).to.eql('completed')
+
+    // Verify submitted reviews are now saved
+    const afterRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/reviews?status=submitted`,
+      'GET', user.token)
+    expect(afterRes.body.length).to.eql(0)
+  })
+
+  it('should delete reviews matching assetId filter', async function () {
+    this.timeout(120_000)
+
+    // Get reviews for asset 42
+    const beforeRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/reviews/42`,
+      'GET', user.token)
+    expect(beforeRes.body.length).to.be.greaterThan(0)
+
+    // Configure aging: delete reviews for asset 42
+    const agingConfig = [{
+      triggerField: 'touchTs',
+      triggerBasis: 'now',
+      triggerInterval: 0,
+      triggerAction: 'delete',
+      updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
+      updateUserId: 0,
+      enabled: true
+    }]
+    await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'PUT', user.token, agingConfig)
+
+    const runId = await runImmediateTask("ReviewAging")
+    const state = await waitForRunFinish(runId, 60)
+    expect(state).to.eql('completed')
+
+    // Verify reviews for asset 42 are deleted
+    const afterRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/reviews/42`,
+      'GET', user.token)
+    expect(afterRes.body.length).to.eql(0)
+  })
+
+  it('should skip disabled rules', async function () {
+    this.timeout(120_000)
+
+    const beforeRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/reviews`,
+      'GET', user.token)
+    const totalBefore = beforeRes.body.length
+
+    // Configure aging with disabled rule
+    const agingConfig = [{
+      triggerField: 'touchTs',
+      triggerBasis: 'now',
+      triggerInterval: 0,
+      triggerAction: 'delete',
+      updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
+      updateUserId: 0,
+      enabled: false
+    }]
+    await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'PUT', user.token, agingConfig)
+
+    const runId = await runImmediateTask("ReviewAging")
+    const state = await waitForRunFinish(runId, 60)
+    expect(state).to.eql('completed')
+
+    // Verify no reviews were deleted
+    const afterRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/reviews`,
+      'GET', user.token)
+    expect(afterRes.body.length).to.eql(totalBefore)
+  })
+
+  it('should apply label filter correctly', async function () {
+    this.timeout(120_000)
+
+    // lvl1Label is assigned to asset 42 only
+    const lvl1Label = '5130dc84-9a68-11ec-b1bc-0242ac110002'
+
+    // Get total reviews for asset 42 (labeled asset)
+    const labeledBeforeRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/reviews/42`,
+      'GET', user.token)
+    expect(labeledBeforeRes.body.length).to.be.greaterThan(0)
+
+    // Get total reviews for asset 29 (unlabeled for this label)
+    const unlabeledBeforeRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/reviews/29`,
+      'GET', user.token)
+    const unlabeledBefore = unlabeledBeforeRes.body.length
+
+    // Configure aging: delete reviews only for assets with lvl1Label
+    const agingConfig = [{
+      triggerField: 'touchTs',
+      triggerBasis: 'now',
+      triggerInterval: 0,
+      triggerAction: 'delete',
+      updateFilter: { assetIds: [], labelIds: [lvl1Label], benchmarkIds: [] },
+      updateUserId: 0,
+      enabled: true
+    }]
+    await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'PUT', user.token, agingConfig)
+
+    const runId = await runImmediateTask("ReviewAging")
+    const state = await waitForRunFinish(runId, 60)
+    expect(state).to.eql('completed')
+
+    // Verify reviews for labeled asset 42 are deleted
+    const labeledAfterRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/reviews/42`,
+      'GET', user.token)
+    expect(labeledAfterRes.body.length).to.eql(0)
+
+    // Verify reviews for unlabeled asset 29 are NOT deleted
+    const unlabeledAfterRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/reviews/29`,
+      'GET', user.token)
+    expect(unlabeledAfterRes.body.length).to.eql(unlabeledBefore)
+  })
+
+  it('should apply benchmark filter correctly', async function () {
+    this.timeout(120_000)
+
+    // Get total reviews before
+    const beforeRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/reviews`,
+      'GET', user.token)
+    const totalBefore = beforeRes.body.length
+
+    // Configure aging: update status to saved for reviews on VPN_SRG_TEST benchmark assets
+    const agingConfig = [{
+      triggerField: 'touchTs',
+      triggerBasis: 'now',
+      triggerInterval: 0,
+      triggerAction: 'update',
+      updateField: 'status',
+      updateValue: 'saved',
+      updateFilter: { assetIds: [], labelIds: [], benchmarkIds: ['VPN_SRG_TEST'] },
+      updateUserId: 0,
+      enabled: true
+    }]
+    await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'PUT', user.token, agingConfig)
+
+    const runId = await runImmediateTask("ReviewAging")
+    const state = await waitForRunFinish(runId, 60)
+    expect(state).to.eql('completed')
+
+    // Verify total review count unchanged (updates, not deletes)
+    const afterRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/reviews`,
+      'GET', user.token)
+    expect(afterRes.body.length).to.eql(totalBefore)
+  })
+
+  it('should create review history records after aging update', async function () {
+    this.timeout(120_000)
+
+    // Configure aging: update status to saved for asset 42
+    const agingConfig = [{
+      triggerField: 'touchTs',
+      triggerBasis: 'now',
+      triggerInterval: 0,
+      triggerAction: 'update',
+      updateField: 'status',
+      updateValue: 'saved',
+      updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
+      updateUserId: 0,
+      enabled: true
+    }]
+    await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'PUT', user.token, agingConfig)
+
+    const runId = await runImmediateTask("ReviewAging")
+    const state = await waitForRunFinish(runId, 60)
+    expect(state).to.eql('completed')
+
+    // Get reviews for asset 42 with history projection
+    const reviewsRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/reviews/42?projection=history`,
+      'GET', user.token)
+    expect(reviewsRes.status).to.eql(200)
+    // Each review should have history entries from the aging operation
+    for (const review of reviewsRes.body) {
+      expect(review.history).to.be.an('array')
+      expect(review.history.length).to.be.greaterThan(0)
+    }
+  })
+
+  it('should show collection output only in collection endpoint, not in job output', async function () {
+    this.timeout(120_000)
+
+    // Configure aging with a simple rule
+    const agingConfig = [{
+      triggerField: 'touchTs',
+      triggerBasis: 'now',
+      triggerInterval: 0,
+      triggerAction: 'update',
+      updateField: 'status',
+      updateValue: 'saved',
+      updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
+      updateUserId: 0,
+      enabled: true
+    }]
+    await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'PUT', user.token, agingConfig)
+
+    const runId = await runImmediateTask("ReviewAging")
+    const state = await waitForRunFinish(runId, 60)
+    expect(state).to.eql('completed')
+
+    // App Manager view: should only have generic messages
+    const jobOutputRes = await utils.executeRequest(
+      `${config.baseUrl}/jobs/runs/${runId}/output?elevate=true`,
+      'GET', user.token)
+    expect(jobOutputRes.status).to.eql(200)
+    for (const entry of jobOutputRes.body) {
+      // Generic output should not contain collection-specific details
+      expect(entry).to.not.have.property('collectionId')
+    }
+
+    // Collection Owner view: should have collection-specific output
+    const collOutputRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/output`,
+      'GET', user.token)
+    expect(collOutputRes.status).to.eql(200)
+    expect(collOutputRes.body).to.be.an('array')
+    expect(collOutputRes.body.length).to.be.greaterThan(0)
+    // Verify output contains collection-specific messages
+    const hasRuleMessage = collOutputRes.body.some(entry => entry.message.includes('rule '))
+    expect(hasRuleMessage).to.be.true
+  })
+
+  it('should complete cleanly when no collections have config', async function () {
+    this.timeout(120_000)
+
+    // Make sure no config exists
+    await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'DELETE', user.token)
+
+    const runId = await runImmediateTask("ReviewAging")
+    const state = await waitForRunFinish(runId, 60)
+    expect(state).to.eql('completed')
+  })
+
+  it('should set result to notReviewed for matching reviews', async function () {
+    this.timeout(120_000)
+
+    // Configure aging: set result to notReviewed for asset 42
+    const agingConfig = [{
+      triggerField: 'touchTs',
+      triggerBasis: 'now',
+      triggerInterval: 0,
+      triggerAction: 'update',
+      updateField: 'result',
+      updateValue: 'notReviewed',
+      updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
+      updateUserId: 0,
+      enabled: true
+    }]
+    await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+      'PUT', user.token, agingConfig)
+
+    const runId = await runImmediateTask("ReviewAging")
+    const state = await waitForRunFinish(runId, 60)
+    expect(state).to.eql('completed')
+
+    // Verify reviews for asset 42 all have result = notchecked (notReviewed)
+    const reviewsRes = await utils.executeRequest(
+      `${config.baseUrl}/collections/${collectionId}/reviews/42`,
+      'GET', user.token)
+    for (const review of reviewsRes.body) {
+      expect(review.result).to.eql('notchecked')
+    }
+  })
+})
+
 async function runImmediateJob(jobId) {
   const runRes = await utils.executeRequest(`${config.baseUrl}/jobs/${jobId}/runs?elevate=true`, 'POST', user.token)
   expect(runRes.status).to.eql(200)
