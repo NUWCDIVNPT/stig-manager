@@ -2874,7 +2874,7 @@ exports.getTaskOutput = async function (collectionId, taskId, {afterSeq, runs = 
   const sql = `SELECT
       tout.seq,
       tout.ts,
-      tout.taskId,
+      CAST(tout.taskId as char) as taskId,
       t.name as task,
       tout.type,
       tout.message
