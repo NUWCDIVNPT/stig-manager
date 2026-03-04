@@ -174,6 +174,39 @@ describe('ReviewAging', function () {
       expect(afterRes.body.length).to.eql(totalBefore)
     })
 
+    it('should reset status to saved for all reviews when triggerInterval=0', async function () {
+      this.timeout(120_000)
+
+      const beforeRes = await utils.executeRequest(
+        `${config.baseUrl}/collections/${collectionId}/reviews?status=submitted`,
+        'GET', user.token)
+      expect(beforeRes.body.length).to.be.greaterThan(0)
+
+      const agingConfig = [{
+        triggerField: 'touchTs',
+        triggerBasis: 'now',
+        triggerInterval: 0,
+        triggerAction: 'update',
+        updateField: 'status',
+        updateValue: 'saved',
+        updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
+        updateUserId: 0,
+        enabled: true
+      }]
+      await utils.executeRequest(
+        `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+        'PUT', user.token, agingConfig)
+
+      const runId = await runImmediateTask("ReviewAging")
+      const state = await waitForRunFinish(runId, 60)
+      expect(state).to.eql('completed')
+
+      const afterRes = await utils.executeRequest(
+        `${config.baseUrl}/collections/${collectionId}/reviews?status=submitted`,
+        'GET', user.token)
+      expect(afterRes.body.length).to.eql(0)
+    })
+
     it('should apply benchmark filter correctly', async function () {
       this.timeout(120_000)
 
@@ -318,38 +351,6 @@ describe('ReviewAging', function () {
       }
     })
 
-    it('should reset status to saved for all reviews when triggerInterval=0', async function () {
-      this.timeout(120_000)
-
-      const beforeRes = await utils.executeRequest(
-        `${config.baseUrl}/collections/${collectionId}/reviews?status=submitted`,
-        'GET', user.token)
-      expect(beforeRes.body.length).to.be.greaterThan(0)
-
-      const agingConfig = [{
-        triggerField: 'touchTs',
-        triggerBasis: 'now',
-        triggerInterval: 0,
-        triggerAction: 'update',
-        updateField: 'status',
-        updateValue: 'saved',
-        updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
-        updateUserId: 0,
-        enabled: true
-      }]
-      await utils.executeRequest(
-        `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
-        'PUT', user.token, agingConfig)
-
-      const runId = await runImmediateTask("ReviewAging")
-      const state = await waitForRunFinish(runId, 60)
-      expect(state).to.eql('completed')
-
-      const afterRes = await utils.executeRequest(
-        `${config.baseUrl}/collections/${collectionId}/reviews?status=submitted`,
-        'GET', user.token)
-      expect(afterRes.body.length).to.eql(0)
-    })
   })
 
   describe('Task Execution - Delete with assetId filter', function () {
