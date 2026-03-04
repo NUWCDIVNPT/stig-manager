@@ -1297,6 +1297,12 @@ module.exports.putTaskConfigByCollection = async function (req, res, next) {
   try {
     const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
     const taskId = CollectionService.resolveTaskName(req.params.taskName)
+    // Inject the authenticated user's userId into each rule so the stored
+    // procedure attributes review changes to the user who configured the rule
+    const updateUserId = parseInt(req.userObject.userId)
+    for (const rule of req.body) {
+      rule.updateUserId = updateUserId
+    }
     const result = await CollectionService.putTaskConfig(collectionId, taskId, req.body)
     res.json(result)
   }

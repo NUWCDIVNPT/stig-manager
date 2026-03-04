@@ -7838,7 +7838,8 @@ components:
         updateUserId:
           type: integer
           minimum: 0
-          description: userId for the change, or 0 for system
+          readOnly: true
+          description: Server-populated userId of the user who configured this rule
         enabled:
           type: boolean
     ReviewAgingFilter:

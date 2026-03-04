@@ -40,7 +40,7 @@ describe('ReviewAging', function () {
         updateField: 'status',
         updateValue: 'saved',
         updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
-        updateUserId: 0,
+
         enabled: true
       }]
       const putRes = await utils.executeRequest(
@@ -67,7 +67,7 @@ describe('ReviewAging', function () {
         updateField: 'status',
         updateValue: 'saved',
         updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
-        updateUserId: 0,
+
         enabled: true
       }]
       await utils.executeRequest(
@@ -80,7 +80,7 @@ describe('ReviewAging', function () {
         triggerInterval: 200,
         triggerAction: 'delete',
         updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
-        updateUserId: 0,
+
         enabled: false
       }]
       const putRes = await utils.executeRequest(
@@ -100,7 +100,7 @@ describe('ReviewAging', function () {
         updateField: 'status',
         updateValue: 'saved',
         updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
-        updateUserId: 0,
+
         enabled: true
       }]
       await utils.executeRequest(
@@ -157,7 +157,7 @@ describe('ReviewAging', function () {
         triggerInterval: 0,
         triggerAction: 'delete',
         updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
-        updateUserId: 0,
+
         enabled: false
       }]
       await utils.executeRequest(
@@ -190,7 +190,7 @@ describe('ReviewAging', function () {
         updateField: 'status',
         updateValue: 'saved',
         updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
-        updateUserId: 0,
+
         enabled: true
       }]
       await utils.executeRequest(
@@ -223,7 +223,7 @@ describe('ReviewAging', function () {
         updateField: 'status',
         updateValue: 'saved',
         updateFilter: { assetIds: [], labelIds: [], benchmarkIds: ['VPN_SRG_TEST'] },
-        updateUserId: 0,
+
         enabled: true
       }]
       await utils.executeRequest(
@@ -251,7 +251,7 @@ describe('ReviewAging', function () {
         updateField: 'status',
         updateValue: 'saved',
         updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
-        updateUserId: 0,
+
         enabled: true
       }]
       await utils.executeRequest(
@@ -290,7 +290,7 @@ describe('ReviewAging', function () {
         updateField: 'status',
         updateValue: 'saved',
         updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
-        updateUserId: 0,
+
         enabled: true
       }]
       await utils.executeRequest(
@@ -332,7 +332,7 @@ describe('ReviewAging', function () {
         updateField: 'result',
         updateValue: 'notReviewed',
         updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
-        updateUserId: 0,
+
         enabled: true
       }]
       await utils.executeRequest(
@@ -379,7 +379,7 @@ describe('ReviewAging', function () {
         triggerInterval: 0,
         triggerAction: 'delete',
         updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
-        updateUserId: 0,
+
         enabled: true
       }]
       await utils.executeRequest(
@@ -431,7 +431,7 @@ describe('ReviewAging', function () {
         triggerInterval: 0,
         triggerAction: 'delete',
         updateFilter: { assetIds: [], labelIds: [lvl1Label], benchmarkIds: [] },
-        updateUserId: 0,
+
         enabled: true
       }]
       await utils.executeRequest(
@@ -470,7 +470,7 @@ describe('ReviewAging', function () {
         updateField: 'status',
         updateValue: 'saved',
         updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
-        updateUserId: 0,
+
         enabled: true
       }]
       await utils.executeRequest(
@@ -555,7 +555,7 @@ describe('ReviewAging', function () {
         updateField: 'status',
         updateValue: 'saved',
         updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
-        updateUserId: 0,
+
         enabled: true
       }]
       const res = await utils.executeRequest(

@@ -1269,6 +1269,7 @@ CREATE PROCEDURE `review_aging`()
       DECLARE v_updateValue VARCHAR(45);
       DECLARE v_updateFilter JSON;
       DECLARE v_updateUserId INT;
+      DECLARE v_updateUsername VARCHAR(255);
       DECLARE v_enabled VARCHAR(10);
       DECLARE v_numReviewIds INT;
       DECLARE v_incrementValue INT DEFAULT 10000;
@@ -1325,6 +1326,7 @@ CREATE PROCEDURE `review_aging`()
             SET v_updateValue = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateValue'));
             SET v_updateFilter = JSON_EXTRACT(v_rule, '$.updateFilter');
             SET v_updateUserId = JSON_EXTRACT(v_rule, '$.updateUserId');
+            SELECT username INTO v_updateUsername FROM user_data WHERE userId = v_updateUserId;
 
             -- Guard against invalid triggerField
             IF v_triggerField NOT IN ('ts', 'statusTs', 'touchTs') THEN
@@ -1450,7 +1452,8 @@ CREATE PROCEDURE `review_aging`()
                       UPDATE review r
                       SET r.statusId = GREATEST(0, r.statusId - 1),
                           r.statusTs = NOW(),
-                          r.statusUserId = IF(v_updateUserId = 0, NULL, v_updateUserId)
+                          r.statusUserId = v_updateUserId,
+                          r.statusText = CONCAT('Review Aging rule configured by ', COALESCE(v_updateUsername, 'unknown'))
                       WHERE r.reviewId IN (
                         SELECT reviewId FROM t_aging_reviewIds
                         WHERE seq >= v_curMinId AND seq < v_curMaxId
@@ -1459,7 +1462,8 @@ CREATE PROCEDURE `review_aging`()
                       UPDATE review r
                       SET r.statusId = LEAST(3, r.statusId + 1),
                           r.statusTs = NOW(),
-                          r.statusUserId = IF(v_updateUserId = 0, NULL, v_updateUserId)
+                          r.statusUserId = v_updateUserId,
+                          r.statusText = CONCAT('Review Aging rule configured by ', COALESCE(v_updateUsername, 'unknown'))
                       WHERE r.reviewId IN (
                         SELECT reviewId FROM t_aging_reviewIds
                         WHERE seq >= v_curMinId AND seq < v_curMaxId
@@ -1468,7 +1472,8 @@ CREATE PROCEDURE `review_aging`()
                       UPDATE review r
                       SET r.statusId = v_newStatusId,
                           r.statusTs = NOW(),
-                          r.statusUserId = IF(v_updateUserId = 0, NULL, v_updateUserId)
+                          r.statusUserId = v_updateUserId,
+                          r.statusText = CONCAT('Review Aging rule configured by ', COALESCE(v_updateUsername, 'unknown'))
                       WHERE r.reviewId IN (
                         SELECT reviewId FROM t_aging_reviewIds
                         WHERE seq >= v_curMinId AND seq < v_curMaxId
@@ -1496,7 +1501,11 @@ CREATE PROCEDURE `review_aging`()
                       UPDATE review r
                       SET r.resultId = GREATEST(1, r.resultId - 1),
                           r.ts = NOW(),
-                          r.userId = IF(v_updateUserId = 0, NULL, v_updateUserId)
+                          r.userId = v_updateUserId,
+                          r.statusId = 0,
+                          r.statusTs = NOW(),
+                          r.statusUserId = v_updateUserId,
+                          r.statusText = CONCAT('Review Aging rule configured by ', COALESCE(v_updateUsername, 'unknown'))
                       WHERE r.reviewId IN (
                         SELECT reviewId FROM t_aging_reviewIds
                         WHERE seq >= v_curMinId AND seq < v_curMaxId
@@ -1505,7 +1514,11 @@ CREATE PROCEDURE `review_aging`()
                       UPDATE review r
                       SET r.resultId = LEAST(9, r.resultId + 1),
                           r.ts = NOW(),
-                          r.userId = IF(v_updateUserId = 0, NULL, v_updateUserId)
+                          r.userId = v_updateUserId,
+                          r.statusId = 0,
+                          r.statusTs = NOW(),
+                          r.statusUserId = v_updateUserId,
+                          r.statusText = CONCAT('Review Aging rule configured by ', COALESCE(v_updateUsername, 'unknown'))
                       WHERE r.reviewId IN (
                         SELECT reviewId FROM t_aging_reviewIds
                         WHERE seq >= v_curMinId AND seq < v_curMaxId
@@ -1514,7 +1527,11 @@ CREATE PROCEDURE `review_aging`()
                       UPDATE review r
                       SET r.resultId = v_newResultId,
                           r.ts = NOW(),
-                          r.userId = IF(v_updateUserId = 0, NULL, v_updateUserId)
+                          r.userId = v_updateUserId,
+                          r.statusId = 0,
+                          r.statusTs = NOW(),
+                          r.statusUserId = v_updateUserId,
+                          r.statusText = CONCAT('Review Aging rule configured by ', COALESCE(v_updateUsername, 'unknown'))
                       WHERE r.reviewId IN (
                         SELECT reviewId FROM t_aging_reviewIds
                         WHERE seq >= v_curMinId AND seq < v_curMaxId
