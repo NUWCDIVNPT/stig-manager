@@ -453,6 +453,131 @@ describe('ReviewAging', function () {
       expect(unlabeledAfterRes.body.length).to.eql(unlabeledBefore)
     })
   })
+
+  describe('Collection Task Output endpoint', function () {
+    let outputEntries
+
+    before(async function () {
+      this.timeout(120_000)
+      await utils.loadAppData()
+
+      // Create a config and run the task to produce output
+      const agingConfig = [{
+        triggerField: 'touchTs',
+        triggerBasis: 'now',
+        triggerInterval: 0,
+        triggerAction: 'update',
+        updateField: 'status',
+        updateValue: 'saved',
+        updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
+        updateUserId: 0,
+        enabled: true
+      }]
+      await utils.executeRequest(
+        `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+        'PUT', user.token, agingConfig)
+
+      const runId = await runImmediateTask("ReviewAging")
+      const state = await waitForRunFinish(runId, 60)
+      expect(state).to.eql('completed')
+
+      // Fetch output for use in tests
+      const res = await utils.executeRequest(
+        `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/output`,
+        'GET', user.token)
+      expect(res.status).to.eql(200)
+      outputEntries = res.body
+    })
+
+    after(async function () {
+      await utils.executeRequest(
+        `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+        'DELETE', user.token)
+      await deleteTestJobs()
+    })
+
+    it('should return output array with expected properties', function () {
+      expect(outputEntries).to.be.an('array')
+      expect(outputEntries.length).to.be.greaterThan(0)
+      for (const entry of outputEntries) {
+        expect(entry).to.have.property('seq').that.is.a('number')
+        expect(entry).to.have.property('ts').that.is.a('string')
+        expect(entry).to.have.property('type').that.is.a('string')
+        expect(entry).to.have.property('message').that.is.a('string')
+        expect(entry).to.have.property('task', 'ReviewAging')
+        expect(entry).to.have.property('taskId', 5)
+      }
+    })
+
+    it('should filter output with after-seq parameter', async function () {
+      expect(outputEntries.length).to.be.greaterThan(1)
+
+      // Output is ordered by seq DESC, so last entry has lowest seq
+      const midSeq = outputEntries[outputEntries.length - 1].seq
+
+      const res = await utils.executeRequest(
+        `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/output?after-seq=${midSeq}`,
+        'GET', user.token)
+      expect(res.status).to.eql(200)
+      expect(res.body).to.be.an('array')
+      expect(res.body.length).to.be.lessThan(outputEntries.length)
+      for (const entry of res.body) {
+        expect(entry.seq).to.be.greaterThan(midSeq)
+      }
+    })
+
+    it('should return empty array when no output exists for collection', async function () {
+      // Collection 83 has no task output
+      const res = await utils.executeRequest(
+        `${config.baseUrl}/collections/83/tasks/${taskName}/output`,
+        'GET', user.token)
+      expect(res.status).to.eql(200)
+      expect(res.body).to.be.an('array').with.length(0)
+    })
+  })
+
+  describe('Access Control', function () {
+    const lvl2Token = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJGSjg2R2NGM2pUYk5MT2NvNE52WmtVQ0lVbWZZQ3FvcXRPUWVNZmJoTmxFIn0.eyJleHAiOjE4NjQ3MDkwNzQsImlhdCI6MTY3MDU2ODI3NSwiYXV0aF90aW1lIjoxNjcwNTY4Mjc0LCJqdGkiOiIwM2Y0OWVmYy1jYzcxLTQ3MTItOWFjNy0xNGY5YzZiNDc1ZGEiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXV0aC9yZWFsbXMvc3RpZ21hbiIsImF1ZCI6WyJyZWFsbS1tYW5hZ2VtZW50IiwiYWNjb3VudCJdLCJzdWIiOiJjMTM3ZDYzNy1mMDU2LTRjNzItOWJlZi1lYzJhZjdjMWFiYzciLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzdGlnLW1hbmFnZXIiLCJub25jZSI6IjQ5MzY5ZTdmLWEyZGYtNDkxYS04YjQ0LWEwNDJjYWYyMzhlYyIsInNlc3Npb25fc3RhdGUiOiJjNmUyZTgyNi0xMzMzLTRmMDctOTc4OC03OTQxMGM5ZjJkMDYiLCJhY3IiOiIwIiwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtc3RpZ21hbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7InJlYWxtLW1hbmFnZW1lbnQiOnsicm9sZXMiOlsidmlldy11c2VycyIsInF1ZXJ5LWdyb3VwcyIsInF1ZXJ5LXVzZXJzIl19LCJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBzdGlnLW1hbmFnZXI6Y29sbGVjdGlvbiBzdGlnLW1hbmFnZXI6c3RpZzpyZWFkIHN0aWctbWFuYWdlcjp1c2VyOnJlYWQgc3RpZy1tYW5hZ2VyOmNvbGxlY3Rpb246cmVhZCIsInNpZCI6ImM2ZTJlODI2LTEzMzMtNGYwNy05Nzg4LTc5NDEwYzlmMmQwNiIsIm5hbWUiOiJsdmwyIiwicHJlZmVycmVkX3VzZXJuYW1lIjoibHZsMiIsImdpdmVuX25hbWUiOiJsdmwyIn0.F1i8VVLNkVsaW9i83vbVyB9eFiSxX_9ZpR6K7Zs0r7pKOCMJnSOHeKIHrlMO4hW8DrbmSRrkrrXExwNtw6zUsuH8_1uxx-SVUkaQyHEMfbx1_TstkTOFcjxIWqtlVvwPIt-DlTpQ_IFuby8wDAIxUvNwogn2OoybzAy1CDMcpIA"
+
+    it('GET config should return 403 for user with Full role', async function () {
+      const res = await utils.executeRequest(
+        `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+        'GET', lvl2Token)
+      expect(res.status).to.eql(403)
+    })
+
+    it('PUT config should return 403 for user with Full role', async function () {
+      const configBody = [{
+        triggerField: 'touchTs',
+        triggerBasis: 'now',
+        triggerInterval: 86400,
+        triggerAction: 'update',
+        updateField: 'status',
+        updateValue: 'saved',
+        updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
+        updateUserId: 0,
+        enabled: true
+      }]
+      const res = await utils.executeRequest(
+        `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+        'PUT', lvl2Token, configBody)
+      expect(res.status).to.eql(403)
+    })
+
+    it('DELETE config should return 403 for user with Full role', async function () {
+      const res = await utils.executeRequest(
+        `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/config`,
+        'DELETE', lvl2Token)
+      expect(res.status).to.eql(403)
+    })
+
+    it('GET output should return 403 for user with Full role', async function () {
+      const res = await utils.executeRequest(
+        `${config.baseUrl}/collections/${collectionId}/tasks/${taskName}/output`,
+        'GET', lvl2Token)
+      expect(res.status).to.eql(403)
+    })
+  })
 })
 
 async function runImmediateTask(taskname) {
