@@ -23,8 +23,6 @@ const upMigration = [
   // Stored procedure to write collection-scoped task output
   `DROP PROCEDURE IF EXISTS task_output_collection`,
   `CREATE PROCEDURE task_output_collection(
-    IN in_runId BINARY(16),
-    IN in_taskId INT,
     IN in_type VARCHAR(45),
     IN in_message VARCHAR(255),
     IN in_collectionId INT
@@ -32,7 +30,7 @@ const upMigration = [
     BEGIN
       IF in_message IS NULL THEN SET in_message = ''; END IF;
       INSERT INTO task_output (runId, taskId, type, message, collectionId)
-        VALUES (in_runId, in_taskId, in_type, in_message, in_collectionId);
+        VALUES (@runId, @taskId, in_type, in_message, in_collectionId);
     END`,
 
   // Stored procedure to apply review aging rules per collection.
@@ -91,9 +89,6 @@ const upMigration = [
       -- Resolved integer IDs for named status/result values
       DECLARE v_newStatusId INT;
       DECLARE v_newResultId INT;
-      -- Job runtime context (populated by get_runtime from the t_runtime temp table)
-      DECLARE v_runId BINARY(16);
-      DECLARE v_taskId INT;
 
       -- Cursor: select all enabled collections that have a ReviewAging config (taskId=5)
       DECLARE cur_collections CURSOR FOR
@@ -110,13 +105,12 @@ const upMigration = [
         DECLARE err_code INT;
         DECLARE err_msg TEXT;
         GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
-        CALL task_output(v_runId, v_taskId, 'error', CONCAT('code: ', err_code, ' message: ', err_msg));
+        CALL task_output('error', CONCAT('code: ', err_code, ' message: ', err_msg));
         RESIGNAL;
       END;
 
-      -- Retrieve the runId and taskId set by run_job() in the t_runtime temp table
-      CALL get_runtime(v_runId, v_taskId);
-      CALL task_output(v_runId, v_taskId, 'info', 'task started');
+      -- Runtime context is available via session variables @runId and @taskId (set by run_job)
+      CALL task_output('info', 'task started');
 
       -- === OUTER LOOP: iterate over each collection with a config ===
       OPEN cur_collections;
@@ -127,7 +121,7 @@ const upMigration = [
         END IF;
 
         SET v_collectionCount = v_collectionCount + 1;
-        CALL task_output_collection(v_runId, v_taskId, 'info', CONCAT('processing collection ', v_collectionId), v_collectionId);
+        CALL task_output_collection('info', CONCAT('processing collection ', v_collectionId), v_collectionId);
 
         -- v_config is a JSON array of rule objects; iterate by index
         SET v_ruleCount = JSON_LENGTH(v_config);
@@ -153,14 +147,14 @@ const upMigration = [
 
             -- Validate triggerField to prevent SQL injection (it's used in dynamic SQL below)
             IF v_triggerField NOT IN ('ts', 'statusTs', 'touchTs') THEN
-              CALL task_output_collection(v_runId, v_taskId, 'error',
+              CALL task_output_collection('error',
                 CONCAT('rule ', v_ruleIdx, ': invalid triggerField: ', v_triggerField),
                 v_collectionId);
               SET v_ruleIdx = v_ruleIdx + 1;
               ITERATE rule_loop;
             END IF;
 
-            CALL task_output_collection(v_runId, v_taskId, 'info',
+            CALL task_output_collection('info',
               CONCAT('rule ', v_ruleIdx, ': ', v_triggerAction, ' reviews where ',
                      v_triggerField, ' older than ', v_triggerInterval, 's from ',
                      IF(v_triggerBasis = 'now', 'now', v_triggerBasis)),
@@ -231,7 +225,7 @@ const upMigration = [
 
             -- Get the count of matched reviews (seq is auto-increment so MAX = count)
             SELECT MAX(seq) INTO v_numReviewIds FROM t_aging_reviewIds;
-            CALL task_output_collection(v_runId, v_taskId, 'info',
+            CALL task_output_collection('info',
               CONCAT('rule ', v_ruleIdx, ': found ', IFNULL(v_numReviewIds, 0), ' matching reviews'),
               v_collectionId);
 
@@ -264,7 +258,7 @@ const upMigration = [
                   SET v_curMaxId = v_curMaxId + v_incrementValue;
                 UNTIL ROW_COUNT() = 0 END REPEAT;
 
-                CALL task_output_collection(v_runId, v_taskId, 'info',
+                CALL task_output_collection('info',
                   CONCAT('rule ', v_ruleIdx, ': deleted ', v_numReviewIds, ' reviews'),
                   v_collectionId);
 
@@ -319,7 +313,7 @@ const upMigration = [
                     SET v_curMaxId = v_curMaxId + v_incrementValue;
                   UNTIL ROW_COUNT() = 0 END REPEAT;
 
-                  CALL task_output_collection(v_runId, v_taskId, 'info',
+                  CALL task_output_collection('info',
                     CONCAT('rule ', v_ruleIdx, ': updated status to ', v_updateValue, ' for ', v_numReviewIds, ' reviews'),
                     v_collectionId);
 
@@ -372,7 +366,7 @@ const upMigration = [
                     SET v_curMaxId = v_curMaxId + v_incrementValue;
                   UNTIL ROW_COUNT() = 0 END REPEAT;
 
-                  CALL task_output_collection(v_runId, v_taskId, 'info',
+                  CALL task_output_collection('info',
                     CONCAT('rule ', v_ruleIdx, ': updated result to ', v_updateValue, ' for ', v_numReviewIds, ' reviews'),
                     v_collectionId);
                 END IF; -- updateField
@@ -385,14 +379,14 @@ const upMigration = [
           SET v_ruleIdx = v_ruleIdx + 1;
         END WHILE rule_loop;
 
-        CALL task_output_collection(v_runId, v_taskId, 'info',
+        CALL task_output_collection('info',
           CONCAT('finished collection ', v_collectionId),
           v_collectionId);
       END LOOP;
       CLOSE cur_collections;
 
-      CALL task_output(v_runId, v_taskId, 'info', CONCAT('processed ', v_collectionCount, ' collections'));
-      CALL task_output(v_runId, v_taskId, 'info', 'task finished');
+      CALL task_output('info', CONCAT('processed ', v_collectionCount, ' collections'));
+      CALL task_output('info', 'task finished');
     END`,
 ]
 
