@@ -1391,7 +1391,7 @@ CREATE PROCEDURE `review_aging`()
                 'WHERE sa.benchmarkId IN (',
                 'SELECT jt.benchmarkId FROM JSON_TABLE(',
                 QUOTE(CAST(JSON_EXTRACT(v_updateFilter, '$.benchmarkIds') AS CHAR)),
-                ', ''$[*]'' COLUMNS(benchmarkId VARCHAR(255) PATH ''$'')) jt))');
+                ', ''$[*]'' COLUMNS(benchmarkId VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs PATH ''$'')) jt))');
             END IF;
 
             PREPARE stmt_aging FROM @aging_sql;
