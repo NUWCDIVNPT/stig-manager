@@ -7775,6 +7775,8 @@ components:
       additionalProperties: false
       type: object
       properties:
+        seq:
+          type: integer
         type:
           type: string
         message:
