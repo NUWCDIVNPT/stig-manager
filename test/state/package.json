@@ -3,6 +3,10 @@
   "scripts": {
     "test": "mocha --reporter mochawesome --showFailed --exit './mocha/**/*.test.js'"
   },
+  "overrides": {
+    "serialize-javascript": "^7.0.4",
+    "diff": "^8.0.3"
+  },    
   "dependencies": {
     "chai": "^5.2.0",
     "chai-datetime": "^1.8.1",
