@@ -11,7 +11,7 @@ const Serialize = require(`../utils/serializers`)
 const Security = require('../utils/roles')
 const SmError = require('../utils/error')
 const Archiver = require('archiver')
-const {XMLBuilder} = require("fast-xml-builder")
+const {XMLBuilder} = require("fast-xml-parser")
 const {escapeForXml} = require('../utils/escape')
 const dbUtils = require('../service/utils')
 

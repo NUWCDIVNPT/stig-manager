@@ -8,7 +8,7 @@ const CollectionService = require(`../service/CollectionService`)
 const Collection = require('./Collection')
 const Security = require('../utils/roles')
 const dbUtils = require(`../service/utils`)
-const {XMLBuilder} = require("fast-xml-builder")
+const {XMLBuilder} = require("fast-xml-parser")
 const SmError = require('../utils/error')
 const {escapeForXml} = require('../utils/escape')
 
