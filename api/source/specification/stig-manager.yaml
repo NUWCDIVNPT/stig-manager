@@ -7782,12 +7782,12 @@ components:
         message:
           type: string
         task:
-          $ref: "#/components/schemas/String45"
+          $ref: '#/components/schemas/String45Nullable'
         taskId:
-          $ref: "#/components/schemas/JobTaskId"
+          $ref: '#/components/schemas/StringIntIdNullable'
         ts:
           $ref: '#/components/schemas/StringDateTime'
-      required: [message, type, task, ts]
+      required: [message, type, ts]
     TaskCollectionConfig:
       type: array
       items:
