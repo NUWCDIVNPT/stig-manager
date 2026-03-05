@@ -505,7 +505,7 @@ describe('ReviewAging', function () {
         expect(entry).to.have.property('type').that.is.a('string')
         expect(entry).to.have.property('message').that.is.a('string')
         expect(entry).to.have.property('task', 'ReviewAging')
-        expect(entry).to.have.property('taskId', 5)
+        expect(entry).to.have.property('taskId', '5')
       }
     })
 
