@@ -46,7 +46,7 @@ const upMigration = [
   //   triggerInterval - age threshold in seconds
   //   triggerAction - what to do with matching reviews: 'delete' or 'update'
   //   updateField   - (for 'update' action) which field to change: 'status' or 'result'
-  //   updateValue   - (for 'update' action) target value: a named value, '-' (decrement), or '+' (increment)
+  //   updateValue   - (for 'update' action) target value: status→(saved, submitted, approved), result→(notReviewed, informational)
   //   updateFilter  - optional scope restriction: { assetIds: [], labelIds: [], benchmarkIds: [] }
   //   updateUserId  - userId to attribute the change to (0 = system/NULL)
   //   enabled       - whether this rule is active
@@ -96,7 +96,7 @@ const upMigration = [
         SELECT tcc.collectionId, tcc.config
         FROM task_collection_config tcc
         INNER JOIN collection c ON tcc.collectionId = c.collectionId
-        WHERE tcc.taskId = 5
+        WHERE tcc.taskId = @taskId
         AND c.state = 'enabled';
       DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = TRUE;
 
@@ -280,30 +280,7 @@ const upMigration = [
                   SET v_curMinId = 1;
                   SET v_curMaxId = v_curMinId + v_incrementValue;
                   REPEAT
-                    IF v_updateValue = '-' THEN
-                      -- Relative shift: decrement status by one level (floor at 0/saved)
-                      UPDATE review r
-                      SET r.statusId = GREATEST(0, r.statusId - 1),
-                          r.statusTs = NOW(),
-                          r.statusUserId = v_updateUserId,
-                          r.statusText = CONCAT('Review Aging rule configured by ', COALESCE(v_updateUsername, 'unknown'))
-                      WHERE r.reviewId IN (
-                        SELECT reviewId FROM t_aging_reviewIds
-                        WHERE seq >= v_curMinId AND seq < v_curMaxId
-                      );
-                    ELSEIF v_updateValue = '+' THEN
-                      -- Relative shift: increment status by one level (ceiling at 3/accepted)
-                      UPDATE review r
-                      SET r.statusId = LEAST(3, r.statusId + 1),
-                          r.statusTs = NOW(),
-                          r.statusUserId = v_updateUserId,
-                          r.statusText = CONCAT('Review Aging rule configured by ', COALESCE(v_updateUsername, 'unknown'))
-                      WHERE r.reviewId IN (
-                        SELECT reviewId FROM t_aging_reviewIds
-                        WHERE seq >= v_curMinId AND seq < v_curMaxId
-                      );
-                    ELSEIF v_newStatusId IS NOT NULL THEN
-                      -- Absolute value: set status to the specific named value
+                    IF v_newStatusId IS NOT NULL THEN
                       UPDATE review r
                       SET r.statusId = v_newStatusId,
                           r.statusTs = NOW(),
@@ -336,36 +313,7 @@ const upMigration = [
                   SET v_curMinId = 1;
                   SET v_curMaxId = v_curMinId + v_incrementValue;
                   REPEAT
-                    IF v_updateValue = '-' THEN
-                      -- Relative shift: decrement result by one level (floor at 1/notchecked)
-                      UPDATE review r
-                      SET r.resultId = GREATEST(1, r.resultId - 1),
-                          r.ts = NOW(),
-                          r.userId = v_updateUserId,
-                          r.statusId = 0,
-                          r.statusTs = NOW(),
-                          r.statusUserId = v_updateUserId,
-                          r.statusText = CONCAT('Review Aging rule configured by ', COALESCE(v_updateUsername, 'unknown'))
-                      WHERE r.reviewId IN (
-                        SELECT reviewId FROM t_aging_reviewIds
-                        WHERE seq >= v_curMinId AND seq < v_curMaxId
-                      );
-                    ELSEIF v_updateValue = '+' THEN
-                      -- Relative shift: increment result by one level (ceiling at 9/fixed)
-                      UPDATE review r
-                      SET r.resultId = LEAST(9, r.resultId + 1),
-                          r.ts = NOW(),
-                          r.userId = v_updateUserId,
-                          r.statusId = 0,
-                          r.statusTs = NOW(),
-                          r.statusUserId = v_updateUserId,
-                          r.statusText = CONCAT('Review Aging rule configured by ', COALESCE(v_updateUsername, 'unknown'))
-                      WHERE r.reviewId IN (
-                        SELECT reviewId FROM t_aging_reviewIds
-                        WHERE seq >= v_curMinId AND seq < v_curMaxId
-                      );
-                    ELSEIF v_newResultId IS NOT NULL THEN
-                      -- Absolute value: set result to the specific named value
+                    IF v_newResultId IS NOT NULL THEN
                       UPDATE review r
                       SET r.resultId = v_newResultId,
                           r.ts = NOW(),

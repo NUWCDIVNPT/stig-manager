@@ -1284,7 +1284,7 @@ CREATE PROCEDURE `review_aging`()
         SELECT tcc.collectionId, tcc.config
         FROM task_collection_config tcc
         INNER JOIN collection c ON tcc.collectionId = c.collectionId
-        WHERE tcc.taskId = 5
+        WHERE tcc.taskId = @taskId
         AND c.state = 'enabled';
       DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = TRUE;
 
@@ -1448,27 +1448,7 @@ CREATE PROCEDURE `review_aging`()
                   SET v_curMinId = 1;
                   SET v_curMaxId = v_curMinId + v_incrementValue;
                   REPEAT
-                    IF v_updateValue = '-' THEN
-                      UPDATE review r
-                      SET r.statusId = GREATEST(0, r.statusId - 1),
-                          r.statusTs = NOW(),
-                          r.statusUserId = v_updateUserId,
-                          r.statusText = CONCAT('Review Aging rule configured by ', COALESCE(v_updateUsername, 'unknown'))
-                      WHERE r.reviewId IN (
-                        SELECT reviewId FROM t_aging_reviewIds
-                        WHERE seq >= v_curMinId AND seq < v_curMaxId
-                      );
-                    ELSEIF v_updateValue = '+' THEN
-                      UPDATE review r
-                      SET r.statusId = LEAST(3, r.statusId + 1),
-                          r.statusTs = NOW(),
-                          r.statusUserId = v_updateUserId,
-                          r.statusText = CONCAT('Review Aging rule configured by ', COALESCE(v_updateUsername, 'unknown'))
-                      WHERE r.reviewId IN (
-                        SELECT reviewId FROM t_aging_reviewIds
-                        WHERE seq >= v_curMinId AND seq < v_curMaxId
-                      );
-                    ELSEIF v_newStatusId IS NOT NULL THEN
+                    IF v_newStatusId IS NOT NULL THEN
                       UPDATE review r
                       SET r.statusId = v_newStatusId,
                           r.statusTs = NOW(),
@@ -1497,33 +1477,7 @@ CREATE PROCEDURE `review_aging`()
                   SET v_curMinId = 1;
                   SET v_curMaxId = v_curMinId + v_incrementValue;
                   REPEAT
-                    IF v_updateValue = '-' THEN
-                      UPDATE review r
-                      SET r.resultId = GREATEST(1, r.resultId - 1),
-                          r.ts = NOW(),
-                          r.userId = v_updateUserId,
-                          r.statusId = 0,
-                          r.statusTs = NOW(),
-                          r.statusUserId = v_updateUserId,
-                          r.statusText = CONCAT('Review Aging rule configured by ', COALESCE(v_updateUsername, 'unknown'))
-                      WHERE r.reviewId IN (
-                        SELECT reviewId FROM t_aging_reviewIds
-                        WHERE seq >= v_curMinId AND seq < v_curMaxId
-                      );
-                    ELSEIF v_updateValue = '+' THEN
-                      UPDATE review r
-                      SET r.resultId = LEAST(9, r.resultId + 1),
-                          r.ts = NOW(),
-                          r.userId = v_updateUserId,
-                          r.statusId = 0,
-                          r.statusTs = NOW(),
-                          r.statusUserId = v_updateUserId,
-                          r.statusText = CONCAT('Review Aging rule configured by ', COALESCE(v_updateUsername, 'unknown'))
-                      WHERE r.reviewId IN (
-                        SELECT reviewId FROM t_aging_reviewIds
-                        WHERE seq >= v_curMinId AND seq < v_curMaxId
-                      );
-                    ELSEIF v_newResultId IS NOT NULL THEN
+                    IF v_newResultId IS NOT NULL THEN
                       UPDATE review r
                       SET r.resultId = v_newResultId,
                           r.ts = NOW(),

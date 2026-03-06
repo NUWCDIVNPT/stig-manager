@@ -250,7 +250,7 @@ describe('ReviewAging', function () {
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
-        updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
+        updateFilter: { assetIds: ['42'], labelIds: [], benchmarkIds: [] },
 
         enabled: true
       }]
@@ -289,7 +289,7 @@ describe('ReviewAging', function () {
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
-        updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
+        updateFilter: { assetIds: ['42'], labelIds: [], benchmarkIds: [] },
 
         enabled: true
       }]
@@ -331,7 +331,7 @@ describe('ReviewAging', function () {
         triggerAction: 'update',
         updateField: 'result',
         updateValue: 'notReviewed',
-        updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
+        updateFilter: { assetIds: ['42'], labelIds: [], benchmarkIds: [] },
 
         enabled: true
       }]
@@ -378,7 +378,7 @@ describe('ReviewAging', function () {
         triggerBasis: 'now',
         triggerInterval: 0,
         triggerAction: 'delete',
-        updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
+        updateFilter: { assetIds: ['42'], labelIds: [], benchmarkIds: [] },
 
         enabled: true
       }]
@@ -469,7 +469,7 @@ describe('ReviewAging', function () {
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
-        updateFilter: { assetIds: [42], labelIds: [], benchmarkIds: [] },
+        updateFilter: { assetIds: ['42'], labelIds: [], benchmarkIds: [] },
 
         enabled: true
       }]

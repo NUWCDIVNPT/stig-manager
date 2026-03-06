@@ -7827,9 +7827,8 @@ components:
             - result
         updateValue:
           type: string
+          description: 'When updateField is status: saved, submitted, approved. When updateField is result: notReviewed, informational.'
           enum:
-            - '-'
-            - '+'
             - saved
             - submitted
             - approved
@@ -7851,7 +7850,7 @@ components:
         assetIds:
           type: array
           items:
-            type: integer
+            $ref: '#/components/schemas/AssetId'
         labelIds:
           type: array
           items:
@@ -7859,7 +7858,7 @@ components:
         benchmarkIds:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/BenchmarkId'
     TaskCollectionOutput:
       additionalProperties: false
       type: object
