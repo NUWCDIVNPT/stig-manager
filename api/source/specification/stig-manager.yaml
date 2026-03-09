@@ -2264,6 +2264,121 @@ paths:
         - oauth:
             - 'stig-manager:collection'
 
+  '/collections/{collectionId}/tasks/{taskId}/config':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/TaskIdPath'
+    get:
+      tags:
+        - Collection
+      summary: Return the task config for a collection
+      operationId: getCollectionTaskConfig
+      responses:
+        '200':
+          description: Task config response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewAgingConfig'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    put:
+      tags:
+        - Collection
+      summary: Set the task config for a collection
+      operationId: putCollectionTaskConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewAgingConfig'
+      responses:
+        '200':
+          description: Task config response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewAgingConfig'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+    delete:
+      tags:
+        - Collection
+      summary: Delete the task config for a collection
+      operationId: deleteCollectionTaskConfig
+      responses:
+        '204':
+          description: No Content
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+
+  '/collections/{collectionId}/tasks/{taskId}/output':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/TaskIdPath'
+    get:
+      tags:
+        - Collection
+      summary: Return task output for a collection
+      operationId: getCollectionTaskOutput
+      parameters:
+        - name: start
+          in: query
+          description: ISO8601 lower bound for output timestamp (inclusive)
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          description: ISO8601 upper bound for output timestamp (inclusive)
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Task output array response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskOutputItem'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+
   '/collections/{collectionId}/metrics/detail':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -7717,6 +7832,83 @@ components:
       minItems: 1
       items:
         $ref: '#/components/schemas/JobTaskId'
+    ReviewAgingTriggerBasisNow:
+      type: string
+      enum: [now]
+    ReviewAgingTriggerBasisDatetime:
+      type: string
+      format: date-time
+    ReviewAgingConfig:
+      type: array
+      items:
+        type: object
+        additionalProperties: false
+        required:
+          - triggerField
+          - triggerBasis
+          - triggerInterval
+          - triggerAction
+          - enabled
+        properties:
+          triggerField:
+            type: string
+            enum: [ts, statusTs, touchTs]
+          triggerBasis:
+            oneOf:
+              - $ref: '#/components/schemas/ReviewAgingTriggerBasisNow'
+              - $ref: '#/components/schemas/ReviewAgingTriggerBasisDatetime'
+          triggerInterval:
+            type: integer
+            description: Interval in seconds
+          triggerAction:
+            type: string
+            enum: [delete, update]
+          updateField:
+            type: string
+            enum: [status, result]
+          updateValue:
+            type: string
+            description: Status or result value depending on updateField
+          updateFilter:
+            type: object
+            additionalProperties: false
+            properties:
+              assetIds:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AssetId'
+              labelIds:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LabelId'
+              benchmarkIds:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BenchmarkId'
+          updateUserId:
+            type: integer
+            description: userId or 0 for system (stored as NULL)
+          enabled:
+            type: boolean
+    TaskOutputItem:
+      type: object
+      properties:
+        seq:
+          type: integer
+        ts:
+          type: string
+          format: date-time
+        taskId:
+          type: string
+        task:
+          type: string
+        type:
+          type: string
+        message:
+          type: string
+        collectionId:
+          type: integer
+          nullable: true
     JobUpdate:
       type: object
       additionalProperties: false
@@ -10040,6 +10232,13 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/JobRunId'
+    TaskIdPath:
+      name: taskId
+      in: path
+      description: A path parameter that identifies a Task
+      required: true
+      schema:
+        type: integer
     JsonPathQuery:
       name: jsonpath
       in: query
@@ -10437,6 +10636,12 @@ components:
   responses:
     Forbidden:
       description: The requesting User does not have access rights to the content
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: The requested resource was not found
       content:
         application/json:
           schema:
