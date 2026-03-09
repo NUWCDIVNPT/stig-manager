@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.41, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.44, for Linux (x86_64)
 --
 -- Host: 127.0.0.1    Database: stigman
 -- ------------------------------------------------------
--- Server version	8.0.41
+-- Server version	8.0.44
 
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
@@ -680,6 +680,23 @@ CREATE TABLE `task` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
+-- Table structure for table `task_collection_config`
+--
+
+DROP TABLE IF EXISTS `task_collection_config`;
+CREATE TABLE `task_collection_config` (
+  `tcId` int NOT NULL AUTO_INCREMENT,
+  `taskId` int NOT NULL,
+  `collectionId` int NOT NULL,
+  `config` json NOT NULL,
+  PRIMARY KEY (`tcId`),
+  UNIQUE KEY `idx_tcc_task_collection` (`taskId`,`collectionId`),
+  KEY `fk_tcc_collectionId` (`collectionId`),
+  CONSTRAINT `fk_tcc_collectionId` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE,
+  CONSTRAINT `fk_tcc_taskId` FOREIGN KEY (`taskId`) REFERENCES `task` (`taskId`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
 -- Table structure for table `task_output`
 --
 
@@ -691,11 +708,14 @@ CREATE TABLE `task_output` (
   `taskId` int DEFAULT NULL,
   `type` varchar(45) NOT NULL,
   `message` varchar(255) NOT NULL,
+  `collectionId` int DEFAULT NULL,
   PRIMARY KEY (`seq`),
   KEY `fk_task_output_runId` (`runId`),
   KEY `fk_task_output_taskId` (`taskId`),
+  KEY `fk_to_collectionId` (`collectionId`),
   CONSTRAINT `fk_task_output_runId` FOREIGN KEY (`runId`) REFERENCES `job_run` (`runId`) ON DELETE CASCADE,
-  CONSTRAINT `fk_task_output_taskId` FOREIGN KEY (`taskId`) REFERENCES `task` (`taskId`) ON DELETE CASCADE
+  CONSTRAINT `fk_task_output_taskId` FOREIGN KEY (`taskId`) REFERENCES `task` (`taskId`) ON DELETE CASCADE,
+  CONSTRAINT `fk_to_collectionId` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -816,7 +836,7 @@ DELIMITER $
 /*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ $
 /*!50003 SET @saved_time_zone      = @@time_zone */ $
 /*!50003 SET time_zone             = 'SYSTEM' */ $
-/*!50106 CREATE*/ /*!50117 */ /*!50106 EVENT `job-1-stigman` ON SCHEDULE EVERY 1 DAY STARTS '2025-10-01 00:00:00' ON COMPLETION NOT PRESERVE DISABLE DO CALL run_job(1, NULL) */ $
+/*!50106 CREATE*/ /*!50117 */ /*!50106 EVENT `job-1-stigman` ON SCHEDULE EVERY 1 DAY STARTS '2025-10-01 05:00:00' ON COMPLETION NOT PRESERVE DISABLE DO CALL run_job(1, NULL) */ $
 /*!50003 SET time_zone             = @saved_time_zone */ $
 /*!50003 SET sql_mode              = @saved_sql_mode */ $
 /*!50003 SET collation_connection  = @saved_col_connection */ $
@@ -834,8 +854,6 @@ DELIMITER ;
 DELIMITER $
 CREATE PROCEDURE `analyze_tables`(IN in_tables JSON)
 BEGIN
-          DECLARE v_runId BINARY(16) DEFAULT NULL;
-          DECLARE v_taskId INT DEFAULT NULL;
           DECLARE v_itemCount INT;
           DECLARE v_currentCount INT;
           DECLARE v_table VARCHAR(255);
@@ -849,25 +867,25 @@ BEGIN
               IF err_msg = NULL THEN 
           SET err_msg = '';
               END IF;
-            CALL task_output(v_runId, v_taskId, 'error',concat('code: ', err_code, ' message: ', err_msg));
+            CALL task_output('error',concat('code: ', err_code, ' message: ', err_msg));
             RESIGNAL;
           END;
           
-          CALL get_runtime(v_runId, v_taskId);
-        CALL task_output (v_runId, v_taskId, 'info', 'task started');
+          -- Runtime context is available via user variables (null if running outside a job)
+        CALL task_output('info', 'task started');
 
         select JSON_LENGTH(in_tables) INTO v_itemCount;
         SET v_currentCount = 0;
         WHILE v_currentCount < v_itemCount DO
           SET v_table = json_unquote(json_extract(in_tables, concat('$[', v_currentCount, ']')));
-          CALL task_output (v_runId, v_taskId, 'info', concat('analyze table: ', v_table));
+          CALL task_output('info', concat('analyze table: ', v_table));
           SET @sql = CONCAT('ANALYZE TABLE ', v_table);
           PREPARE stmt_analyze_tables FROM @sql;
           EXECUTE stmt_analyze_tables;
           DEALLOCATE PREPARE stmt_analyze_tables;
           SET v_currentCount = v_currentCount + 1;
         END WHILE;
-        CALL task_output (v_runId, v_taskId, 'info', 'task finished');
+        CALL task_output('info', 'task finished');
 
     END $
 DELIMITER ;
@@ -888,47 +906,44 @@ BEGIN
     DECLARE v_numAssetIds INT;
     DECLARE v_numReviewIds INT;
     DECLARE v_numHistoryIds INT;
-    DECLARE v_runId BINARY(16);
-    DECLARE v_taskId INT;
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
       DECLARE err_code INT;
       DECLARE err_msg TEXT;
       GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
-      CALL task_output(v_runId, v_taskId, 'error', concat('code: ', err_code, ' message: ', err_msg));
+      CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
       RESIGNAL;
     END;
 
-    -- Set v_runId from t_runtime if table exists, else generate a new UUID
-    CALL get_runtime(v_runId, v_taskId);
-    CALL task_output (v_runId, v_taskId, 'info','task started');
+    -- Runtime context is available via user variables (null if running outside a job)
+    CALL task_output('info','task started');
 
     drop temporary table if exists t_collectionIds;
     create temporary table t_collectionIds (seq INT AUTO_INCREMENT PRIMARY KEY)
       select collectionId from collection where isEnabled is null;
     select max(seq) into v_numCollectionIds from t_collectionIds;
-    CALL task_output (v_runId, v_taskId, 'info', concat('found ', ifnull(v_numCollectionIds, 0), ' collections to delete'));
+    CALL task_output('info', concat('found ', ifnull(v_numCollectionIds, 0), ' collections to delete'));
 
     drop temporary table if exists t_assetIds;
     create temporary table t_assetIds (seq INT AUTO_INCREMENT PRIMARY KEY)
       select assetId from asset where isEnabled is null or collectionId in (select collectionId from t_collectionIds);
     select max(seq) into v_numAssetIds from t_assetIds;
-    CALL task_output (v_runId, v_taskId, 'info', concat('found ', ifnull(v_numAssetIds, 0), ' assets to delete'));
+    CALL task_output('info', concat('found ', ifnull(v_numAssetIds, 0), ' assets to delete'));
 
     drop temporary table if exists t_reviewIds;
     create temporary table t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY)
       select reviewId from review where assetId in (select assetId from t_assetIds);
     select max(seq) into v_numReviewIds from t_reviewIds;
-    CALL task_output (v_runId, v_taskId, 'info', concat('found ', ifnull(v_numReviewIds, 0), ' reviews to delete'));
+    CALL task_output('info', concat('found ', ifnull(v_numReviewIds, 0), ' reviews to delete'));
 
     drop temporary table if exists t_historyIds;
     create temporary table t_historyIds (seq INT AUTO_INCREMENT PRIMARY KEY)
       select historyId from review_history where reviewId in (select reviewId from t_reviewIds);
     select max(seq) into v_numHistoryIds from t_historyIds;
-    CALL task_output (v_runId, v_taskId, 'info', concat('found ', ifnull(v_numHistoryIds, 0), ' history records to delete'));
+    CALL task_output('info', concat('found ', ifnull(v_numHistoryIds, 0), ' history records to delete'));
 
     IF v_numHistoryIds > 0 THEN
-    CALL task_output (v_runId, v_taskId, 'info', concat('deleting ', v_numHistoryIds, ' history records'));
+    CALL task_output('info', concat('deleting ', v_numHistoryIds, ' history records'));
     REPEAT
       delete from review_history where historyId IN (
           select historyId from t_historyIds where seq >= v_curMinId and seq < v_curMaxId
@@ -942,7 +957,7 @@ BEGIN
     SET v_curMinId = 1;
     SET v_curMaxId = v_curMinId + v_incrementValue;
     IF v_numReviewIds > 0 THEN
-      CALL task_output (v_runId, v_taskId, 'info', concat('deleting ', v_numReviewIds, ' reviews'));
+      CALL task_output('info', concat('deleting ', v_numReviewIds, ' reviews'));
       REPEAT
         delete from review where reviewId IN (
             select reviewId from t_reviewIds where seq >= v_curMinId and seq < v_curMaxId
@@ -956,7 +971,7 @@ BEGIN
     SET v_curMinId = 1;
     SET v_curMaxId = v_curMinId + v_incrementValue;
     IF v_numAssetIds > 0 THEN
-      CALL task_output (v_runId, v_taskId, 'info', concat('deleting ', v_numAssetIds, ' assets'));
+      CALL task_output('info', concat('deleting ', v_numAssetIds, ' assets'));
       REPEAT
         delete from asset where assetId IN (
             select assetId from t_assetIds where seq >= v_curMinId and seq < v_curMaxId
@@ -970,7 +985,7 @@ BEGIN
     SET v_curMinId = 1;
     SET v_curMaxId = v_curMinId + v_incrementValue;
     IF v_numCollectionIds > 0 THEN
-      CALL task_output (v_runId, v_taskId, 'info', concat('deleting ', v_numCollectionIds, ' collections'));
+      CALL task_output('info', concat('deleting ', v_numCollectionIds, ' collections'));
       REPEAT
         delete from collection where collectionId IN (
             select collectionId from t_collectionIds where seq >= v_curMinId and seq < v_curMaxId
@@ -981,7 +996,69 @@ BEGIN
     END IF;
     drop temporary table if exists t_collectionIds;
 
-    CALL task_output (v_runId, v_taskId, 'info', 'task finished');
+    CALL task_output('info', 'task finished');
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `delete_review_batch` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `delete_review_batch`()
+BEGIN
+      DECLARE v_numReviewIds INT;
+      DECLARE v_numHistoryIds INT;
+      DECLARE v_incrementValue INT DEFAULT 10000;
+      DECLARE v_curMinId BIGINT DEFAULT 1;
+      DECLARE v_curMaxId BIGINT DEFAULT v_incrementValue + 1;
+
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION
+      BEGIN
+        DECLARE err_code INT;
+        DECLARE err_msg TEXT;
+        GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
+        RESIGNAL;
+      END;
+
+      SELECT MAX(seq) INTO v_numReviewIds FROM t_reviewIds;
+      CALL task_output('info', concat('found ', IFNULL(v_numReviewIds, 0), ' reviews to delete'));
+
+      IF IFNULL(v_numReviewIds, 0) > 0 THEN
+        DROP TEMPORARY TABLE IF EXISTS t_historyIds;
+        CREATE TEMPORARY TABLE t_historyIds (seq INT AUTO_INCREMENT PRIMARY KEY)
+          SELECT historyId FROM review_history WHERE reviewId IN (SELECT reviewId FROM t_reviewIds);
+        SELECT MAX(seq) INTO v_numHistoryIds FROM t_historyIds;
+        CALL task_output('info', concat('found ', IFNULL(v_numHistoryIds, 0), ' history records to delete'));
+
+        IF IFNULL(v_numHistoryIds, 0) > 0 THEN
+          CALL task_output('info', concat('deleting ', v_numHistoryIds, ' history records'));
+          SET v_curMinId = 1;
+          SET v_curMaxId = v_curMinId + v_incrementValue;
+          REPEAT
+            DELETE FROM review_history WHERE historyId IN (
+              SELECT historyId FROM t_historyIds WHERE seq >= v_curMinId AND seq < v_curMaxId
+            );
+            SET v_curMinId = v_curMinId + v_incrementValue;
+            SET v_curMaxId = v_curMaxId + v_incrementValue;
+          UNTIL ROW_COUNT() = 0 END REPEAT;
+        END IF;
+        DROP TEMPORARY TABLE IF EXISTS t_historyIds;
+
+        CALL task_output('info', concat('deleting ', v_numReviewIds, ' reviews'));
+        SET v_curMinId = 1;
+        SET v_curMaxId = v_curMinId + v_incrementValue;
+        REPEAT
+          DELETE FROM review WHERE reviewId IN (
+            SELECT reviewId FROM t_reviewIds WHERE seq >= v_curMinId AND seq < v_curMaxId
+          );
+          SET v_curMinId = v_curMinId + v_incrementValue;
+          SET v_curMaxId = v_curMaxId + v_incrementValue;
+        UNTIL ROW_COUNT() = 0 END REPEAT;
+      END IF;
     END $
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -994,8 +1071,6 @@ DELIMITER ;
 DELIMITER $
 CREATE PROCEDURE `delete_unmapped`(IN in_context VARCHAR(255))
 BEGIN
-      DECLARE v_runId BINARY(16);
-      DECLARE v_taskId INT;
       DECLARE v_numReviewIds INT;
       DECLARE v_numHistoryIds INT;
       DECLARE v_incrementValue INT DEFAULT 10000;
@@ -1008,13 +1083,12 @@ BEGIN
         DECLARE err_msg TEXT;
         GET STACKED DIAGNOSTICS CONDITION 1
           err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
-        CALL task_output(v_runId, v_taskId, 'error',concat('code: ', err_code, ' message: ', err_msg));
+        CALL task_output('error',concat('code: ', err_code, ' message: ', err_msg));
         RESIGNAL;
       END;
 
-      -- Set v_runId from t_runtime if table exists, else generate a new UUID
-      CALL get_runtime(v_runId, v_taskId);
-      CALL task_output (v_runId, v_taskId, 'info', 'task started');
+      -- Runtime context is available via user variables (null if running outside a job)
+      CALL task_output('info', 'task started');
 
       drop temporary table if exists t_reviewIds;
       create temporary table t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY, reviewId INT);
@@ -1040,16 +1114,16 @@ BEGIN
       END IF;
 
       select max(seq) into v_numReviewIds from t_reviewIds;
-      CALL task_output (v_runId, v_taskId, 'info', concat('found ', ifnull(v_numReviewIds, 0), ' reviews to delete'));
+      CALL task_output('info', concat('found ', ifnull(v_numReviewIds, 0), ' reviews to delete'));
 
       IF v_numReviewIds > 0 THEN
         drop temporary table if exists t_historyIds;
         create temporary table t_historyIds (seq INT AUTO_INCREMENT PRIMARY KEY)
           select historyId from review_history where reviewId in (select reviewId from t_reviewIds);
         select max(seq) into v_numHistoryIds from t_historyIds;
-        CALL task_output (v_runId, v_taskId, 'info', concat('found ', ifnull(v_numHistoryIds, 0), ' history records to delete'));
+        CALL task_output('info', concat('found ', ifnull(v_numHistoryIds, 0), ' history records to delete'));
         IF v_numHistoryIds > 0 THEN
-          CALL task_output (v_runId, v_taskId, 'info', concat('deleting ', v_numHistoryIds, ' history records'));
+          CALL task_output('info', concat('deleting ', v_numHistoryIds, ' history records'));
           SET v_curMinId = 1;
           SET v_curMaxId = v_curMinId + v_incrementValue;
           REPEAT
@@ -1060,7 +1134,7 @@ BEGIN
             SET v_curMaxId = v_curMaxId + v_incrementValue;
           UNTIL ROW_COUNT() = 0 END REPEAT;
         END IF;
-        CALL task_output (v_runId, v_taskId, 'info', concat('deleting ', v_numReviewIds, ' reviews'));
+        CALL task_output('info', concat('deleting ', v_numReviewIds, ' reviews'));
         SET v_curMinId = 1;
         SET v_curMaxId = v_curMinId + v_incrementValue;
         REPEAT
@@ -1071,7 +1145,7 @@ BEGIN
           SET v_curMaxId = v_curMaxId + v_incrementValue;
         UNTIL ROW_COUNT() = 0 END REPEAT;
       END IF;
-      CALL task_output (v_runId, v_taskId, 'info', 'task finished');
+      CALL task_output('info', 'task finished');
     END $
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1100,6 +1174,165 @@ BEGIN
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `review_aging` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `review_aging`()
+BEGIN
+      DECLARE v_collectionId INT;
+      DECLARE v_config JSON;
+      DECLARE v_numRules INT;
+      DECLARE v_ruleIdx INT;
+      DECLARE v_rule JSON;
+      DECLARE v_triggerField VARCHAR(20);
+      DECLARE v_triggerBasis VARCHAR(40);
+      DECLARE v_triggerInterval INT;
+      DECLARE v_triggerAction VARCHAR(20);
+      DECLARE v_updateField VARCHAR(20);
+      DECLARE v_updateValue VARCHAR(20);
+      DECLARE v_updateFilter JSON;
+      DECLARE v_updateUserId INT;
+      DECLARE v_cutoff DATETIME;
+      DECLARE v_numReviews INT;
+      DECLARE v_done INT DEFAULT FALSE;
+
+      DECLARE cur CURSOR FOR
+        SELECT collectionId, config FROM task_collection_config WHERE taskId = @taskId;
+      DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = TRUE;
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION
+      BEGIN
+        DECLARE err_code INT;
+        DECLARE err_msg TEXT;
+        GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
+        RESIGNAL;
+      END;
+
+      CALL task_output('info', 'task started');
+
+      OPEN cur;
+      collection_loop: LOOP
+        FETCH cur INTO v_collectionId, v_config;
+        IF v_done THEN LEAVE collection_loop; END IF;
+
+        CALL task_output_collection('info', concat('processing collectionId ', v_collectionId), v_collectionId);
+
+        SET v_numRules = JSON_LENGTH(v_config);
+        SET v_ruleIdx = 0;
+
+        rule_loop: WHILE v_ruleIdx < v_numRules DO
+          SET v_rule        = JSON_EXTRACT(v_config, CONCAT('$[', v_ruleIdx, ']'));
+
+          IF JSON_VALUE(v_rule, '$.enabled') != 'true' THEN
+            SET v_ruleIdx = v_ruleIdx + 1;
+            ITERATE rule_loop;
+          END IF;
+
+          SET v_triggerField    = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerField'));
+          SET v_triggerBasis    = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerBasis'));
+          SET v_triggerInterval = JSON_VALUE(v_rule, '$.triggerInterval');
+          SET v_triggerAction   = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerAction'));
+          SET v_updateField     = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateField'));
+          SET v_updateValue     = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateValue'));
+          SET v_updateFilter    = JSON_EXTRACT(v_rule, '$.updateFilter');
+          SET v_updateUserId    = JSON_VALUE(v_rule, '$.updateUserId');
+
+          -- Compute cutoff datetime
+          -- CAST() does not accept ISO8601 T/Z separators; strip them with REPLACE before casting
+          IF v_triggerBasis = 'now' THEN
+            SET v_cutoff = DATE_SUB(NOW(), INTERVAL v_triggerInterval SECOND);
+          ELSE
+            SET v_cutoff = DATE_SUB(
+              CAST(REPLACE(REPLACE(v_triggerBasis, 'T', ' '), 'Z', '') AS DATETIME),
+              INTERVAL v_triggerInterval SECOND
+            );
+          END IF;
+
+          -- Identify affected reviews into t_reviewIds
+          DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
+          CREATE TEMPORARY TABLE t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY, reviewId INT);
+
+          -- Dynamic SQL needed to interpolate triggerField column name
+          SET @v_sql = CONCAT(
+            'INSERT INTO t_reviewIds (reviewId) ',
+            'SELECT r.reviewId FROM review r ',
+            'JOIN enabled_asset a ON r.assetId = a.assetId ',
+            'WHERE a.collectionId = ', v_collectionId,
+            ' AND r.', v_triggerField, ' < ''', DATE_FORMAT(v_cutoff, '%Y-%m-%d %H:%i:%s'), ''''
+          );
+
+          -- Optional assetIds filter
+          IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.assetIds')) > 0 THEN
+            SET @v_sql = CONCAT(@v_sql,
+              ' AND r.assetId IN (SELECT j.value FROM JSON_TABLE(''',
+              JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.assetIds')),
+              ''', ''$[*]'' COLUMNS (value INT PATH ''$'')) j)');
+          END IF;
+
+          -- Optional labelIds filter (UUID lookup via collection_label_asset_map)
+          IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.labelIds')) > 0 THEN
+            SET @v_sql = CONCAT(@v_sql,
+              ' AND r.assetId IN (',
+              '  SELECT clam.assetId FROM collection_label_asset_map clam',
+              '  JOIN collection_label cl ON clam.clId = cl.clId',
+              '  WHERE BIN_TO_UUID(cl.uuid,1) IN (',
+              '    SELECT j.value FROM JSON_TABLE(''',
+              JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.labelIds')),
+              ''', ''$[*]'' COLUMNS (value VARCHAR(36) PATH ''$'')) j',
+              '  )',
+              ')');
+          END IF;
+
+          -- Optional benchmarkIds filter (via stig_asset_map)
+          IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.benchmarkIds')) > 0 THEN
+            SET @v_sql = CONCAT(@v_sql,
+              ' AND r.assetId IN (',
+              '  SELECT sam.assetId FROM stig_asset_map sam',
+              '  WHERE sam.benchmarkId IN (',
+              '    SELECT j.value FROM JSON_TABLE(''',
+              JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.benchmarkIds')),
+              ''', ''$[*]'' COLUMNS (value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs PATH ''$'')) j',
+              '  )',
+              ')');
+          END IF;
+
+          PREPARE stmt_aging FROM @v_sql;
+          EXECUTE stmt_aging;
+          DEALLOCATE PREPARE stmt_aging;
+
+          SELECT MAX(seq) INTO v_numReviews FROM t_reviewIds;
+          CALL task_output_collection('info',
+            CONCAT('rule ', v_ruleIdx, ': found ', IFNULL(v_numReviews, 0), ' reviews to ', v_triggerAction),
+            v_collectionId);
+
+          IF IFNULL(v_numReviews, 0) > 0 THEN
+            IF v_triggerAction = 'delete' THEN
+              CALL delete_review_batch();
+            ELSEIF v_triggerAction = 'update' THEN
+              IF v_updateField = 'status' THEN
+                CALL update_review_status_batch(v_updateValue, v_updateUserId);
+              ELSEIF v_updateField = 'result' THEN
+                CALL update_review_result_batch(v_updateValue, v_updateUserId);
+              END IF;
+            END IF;
+          END IF;
+
+          DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
+          SET v_ruleIdx = v_ruleIdx + 1;
+        END WHILE rule_loop;
+
+        CALL task_output_collection('info', CONCAT('finished collectionId ', v_collectionId), v_collectionId);
+      END LOOP collection_loop;
+      CLOSE cur;
+
+      CALL task_output('info', 'task finished');
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `run_job` */;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
@@ -1111,9 +1344,7 @@ CREATE PROCEDURE `run_job`(
     IN in_runIdStr VARCHAR(36)
   )
 main:BEGIN
-        DECLARE v_ourId INT DEFAULT NULL;
         DECLARE v_done INT DEFAULT FALSE;
-        DECLARE v_runId BINARY(16);
         DECLARE v_jrId INT;
         DECLARE v_numTasks INT;
         DECLARE v_currentTaskId INT;
@@ -1138,31 +1369,30 @@ main:BEGIN
           DECLARE err_code INT;
           DECLARE err_msg TEXT;
           GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
-          CALL task_output(v_runId, v_ourId, 'error', concat('code: ', err_code, ' message: ', err_msg));
-          UPDATE job_run SET state = 'failed' WHERE runId = v_runId;
+          CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
+          UPDATE job_run SET state = 'failed' WHERE runId = @runId;
         END;
 
-        -- === Pre-task-loop logic ===
+        -- setup runtime context (null if running outside a job)
         IF in_runIdStr IS NOT NULL AND in_runIdStr REGEXP '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN
-          SET v_runId = UUID_TO_BIN(in_runIdStr, 1);
+          SET @runId = UUID_TO_BIN(in_runIdStr, 1);
         ELSE
-          SET v_runId = UUID_TO_BIN(UUID(), 1);
+          SET @runId = UUID_TO_BIN(UUID(), 1);
         END IF;
-
-        CREATE TEMPORARY TABLE IF NOT EXISTS t_runtime (runId BINARY(16) NOT NULL, taskId INT NULL) SELECT v_runId AS runId, NULL AS taskId;
-        INSERT INTO job_run(jobId, runId, state) VALUES (in_jobId, v_runId, 'running');
-        CALL task_output (v_runId, v_ourId, 'info', concat('run started for jobId ', in_jobId));
+        SET @taskId = NULL;
+        INSERT INTO job_run(jobId, runId, state) VALUES (in_jobId, @runId, 'running');
+        CALL task_output('info', concat('run started for jobId ', in_jobId));
 
         -- Get the number of tasks for the job
         SELECT COUNT(*) INTO v_numTasks FROM job_task_map WHERE jobId = in_jobId;
 
         IF v_numTasks = 0 THEN
-          CALL task_output (v_runId, v_ourId, 'error', 'no tasks to run');
-          UPDATE job_run SET state = 'failed' WHERE runId = v_runId AND state = 'running';
+          CALL task_output('error', 'no tasks to run');
+          UPDATE job_run SET state = 'failed' WHERE runId = @runId AND state = 'running';
           LEAVE main; -- No tasks to run, exit the procedure
         END IF;
 
-
+        
         OPEN cur;
         read_loop: LOOP
           FETCH cur INTO v_currentTaskId, v_currentTaskName, v_currentCommand;
@@ -1173,16 +1403,18 @@ main:BEGIN
 
           SET @sql = CONCAT('CALL ', v_currentCommand);
           PREPARE stmt_run_job FROM @sql;
-          CALL task_output (v_runId, v_ourId, 'info', concat('Starting task ', v_currentTaskName, ' (', v_currentTaskNum, '/', v_numTasks, ')'));
-          UPDATE t_runtime SET taskId = v_currentTaskId WHERE runId = runId;
+          CALL task_output('info', concat('Beginning task ', v_currentTaskName, ' (', v_currentTaskNum, '/', v_numTasks, ')'));
+          SET @taskId = v_currentTaskId;
           EXECUTE stmt_run_job;
           DEALLOCATE PREPARE stmt_run_job;
+          SET @taskId = NULL;
+          CALL task_output('info', concat('Ended task ', v_currentTaskName, ' (', v_currentTaskNum, '/', v_numTasks, ')'));
         END LOOP;
         CLOSE cur;
 
         -- === Post-task-loop logic ===
-        UPDATE job_run SET state = 'completed' WHERE runId = v_runId AND state = 'running';
-        CALL task_output (v_runId, v_ourId, 'info', concat('run completed for jobId ', in_jobId));
+        UPDATE job_run SET state = 'completed' WHERE runId = @runId AND state = 'running';
+        CALL task_output('info', concat('run completed for jobId ', in_jobId));
 
     END $
 DELIMITER ;
@@ -1195,14 +1427,135 @@ DELIMITER ;
 /*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER $
 CREATE PROCEDURE `task_output`(
-    IN in_runId BINARY(16),
-    IN in_taskId INT,
     IN in_type VARCHAR(45),
     IN in_message VARCHAR(255)
   )
 BEGIN
       IF in_message IS NULL THEN SET in_message = ''; END IF;
-      insert into task_output (runId, taskId, type, message) values (in_runId, in_taskId, in_type, in_message);
+      insert into task_output (runId, taskId, type, message) values (@runId, @taskId, in_type, in_message);
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `task_output_collection` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `task_output_collection`(
+    IN in_type VARCHAR(45),
+    IN in_message VARCHAR(255),
+    IN in_collectionId INT
+  )
+BEGIN
+      IF in_message IS NULL THEN SET in_message = ''; END IF;
+      INSERT INTO task_output (runId, taskId, collectionId, type, message)
+      VALUES (@runId, @taskId, in_collectionId, in_type, in_message);
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_review_result_batch` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `update_review_result_batch`(
+    IN in_result VARCHAR(20),
+    IN in_userId INT
+  )
+BEGIN
+      DECLARE v_resultId INT;
+      DECLARE v_userId INT;
+      DECLARE v_numReviewIds INT;
+      DECLARE v_incrementValue INT DEFAULT 10000;
+      DECLARE v_curMinId BIGINT DEFAULT 1;
+      DECLARE v_curMaxId BIGINT DEFAULT v_incrementValue + 1;
+
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION
+      BEGIN
+        DECLARE err_code INT;
+        DECLARE err_msg TEXT;
+        GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
+        RESIGNAL;
+      END;
+
+      -- Map result string to resultId: notReviewed -> notchecked=1, informational=8
+      -- The API value "notReviewed" is not in the result table; map it to "notchecked" (resultId=1)
+      SET in_result = IF(in_result = 'notReviewed', 'notchecked', in_result);
+      SELECT resultId INTO v_resultId FROM result WHERE api = in_result LIMIT 1;
+
+      -- Map userId=0 to NULL (system)
+      SET v_userId = IF(in_userId = 0, NULL, in_userId);
+
+      SELECT MAX(seq) INTO v_numReviewIds FROM t_reviewIds;
+      CALL task_output('info', concat('updating ', IFNULL(v_numReviewIds, 0), ' reviews: result -> ', in_result));
+
+      IF IFNULL(v_numReviewIds, 0) > 0 THEN
+        REPEAT
+          UPDATE review
+            SET resultId = v_resultId, ts = NOW(), userId = v_userId
+          WHERE reviewId IN (
+            SELECT reviewId FROM t_reviewIds WHERE seq >= v_curMinId AND seq < v_curMaxId
+          );
+          SET v_curMinId = v_curMinId + v_incrementValue;
+          SET v_curMaxId = v_curMaxId + v_incrementValue;
+        UNTIL ROW_COUNT() = 0 END REPEAT;
+      END IF;
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_review_status_batch` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `update_review_status_batch`(
+    IN in_status VARCHAR(20),
+    IN in_userId INT
+  )
+BEGIN
+      DECLARE v_statusId INT;
+      DECLARE v_userId INT;
+      DECLARE v_numReviewIds INT;
+      DECLARE v_incrementValue INT DEFAULT 10000;
+      DECLARE v_curMinId BIGINT DEFAULT 1;
+      DECLARE v_curMaxId BIGINT DEFAULT v_incrementValue + 1;
+
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION
+      BEGIN
+        DECLARE err_code INT;
+        DECLARE err_msg TEXT;
+        GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
+        RESIGNAL;
+      END;
+
+      -- Map status string to statusId: saved=0, submitted=1, rejected=2, accepted=3
+      SELECT statusId INTO v_statusId FROM status WHERE api = in_status LIMIT 1;
+
+      -- Map userId=0 to NULL (system)
+      SET v_userId = IF(in_userId = 0, NULL, in_userId);
+
+      SELECT MAX(seq) INTO v_numReviewIds FROM t_reviewIds;
+      CALL task_output('info', concat('updating ', IFNULL(v_numReviewIds, 0), ' reviews: status -> ', in_status));
+
+      IF IFNULL(v_numReviewIds, 0) > 0 THEN
+        REPEAT
+          UPDATE review
+            SET statusId = v_statusId, statusTs = NOW(), statusUserId = v_userId
+          WHERE reviewId IN (
+            SELECT reviewId FROM t_reviewIds WHERE seq >= v_curMinId AND seq < v_curMaxId
+          );
+          SET v_curMinId = v_curMinId + v_incrementValue;
+          SET v_curMaxId = v_curMaxId + v_incrementValue;
+        UNTIL ROW_COUNT() = 0 END REPEAT;
+      END IF;
     END $
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1270,4 +1623,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-04 20:55:14
+-- Dump completed on 2026-03-09 16:43:26
