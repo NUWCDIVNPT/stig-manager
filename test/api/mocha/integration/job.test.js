@@ -537,7 +537,7 @@ describe('Task tests', function () {
     })
   })
 
-  describe.only('Task - ReviewAging', function () {
+  describe('Task - ReviewAging', function () {
     const collectionId = '21'
     const taskId = 5
     const configUrl = `${config.baseUrl}/collections/${collectionId}/tasks/${taskId}/config`
