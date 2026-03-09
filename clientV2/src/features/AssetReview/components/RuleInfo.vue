@@ -220,6 +220,10 @@ const severityMap = { high: 1, medium: 2, low: 3 }
   white-space: pre-wrap;
   word-break: break-word;
   line-height: 1.4;
+  padding: 0.5rem;
+  background-color: var(--color-background-dark);
+  border: 1px solid var(--color-border-light);
+  border-radius: 3px;
 }
 
 .rule-info__field {

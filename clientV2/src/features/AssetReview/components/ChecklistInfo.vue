@@ -253,6 +253,7 @@ function handleFooterAction(actionKey) {
       selection-mode="single"
       scrollable
       scroll-height="flex"
+      striped-rows
       class="checklist-table"
       @row-select="onRowSelect"
     >

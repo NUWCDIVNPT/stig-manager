@@ -187,6 +187,7 @@ const tabPt = {
             data-key="touchTs"
             scrollable
             scroll-height="flex"
+            striped-rows
             class="history-table"
           >
             <Column expander :style="{ width: '28px' }" />

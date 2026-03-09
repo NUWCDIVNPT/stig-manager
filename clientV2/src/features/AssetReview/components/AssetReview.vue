@@ -1,4 +1,6 @@
 <script setup>
+import Splitter from 'primevue/splitter'
+import SplitterPanel from 'primevue/splitterpanel'
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
@@ -193,8 +195,14 @@ defineExpose({ asset })
       {{ error || 'Error loading asset' }}
     </div>
     <div v-else-if="asset" class="asset-review__content">
-      <div class="asset-review__grid">
-        <section class="grid-column">
+      <Splitter
+        :pt="{
+          gutter: { style: 'background: var(--color-border-dark)' },
+          root: { style: 'border: none; background: transparent' },
+        }"
+        style="height: 100%"
+      >
+        <SplitterPanel :size="35" :min-size="15">
           <ChecklistInfo
             :checklist-data="workspace.checklistData.value"
             :is-loading="workspace.isChecklistLoading.value"
@@ -203,42 +211,51 @@ defineExpose({ asset })
             :revision-info="workspace.revisionInfo.value"
             @select-rule="onSelectRule"
           />
-        </section>
+        </SplitterPanel>
 
-        <section class="grid-column">
+        <SplitterPanel :size="35" :min-size="15">
           <RuleInfo
             :rule-content="workspace.ruleContent.value"
             :is-loading="workspace.isRuleLoading.value"
             :selected-checklist-item="workspace.selectedChecklistItem.value"
           />
-        </section>
+        </SplitterPanel>
 
-        <section class="grid-column split-column">
-          <div class="split-row">
-            <ReviewResources
-              :current-review="workspace.currentReview.value"
-              :review-history="workspace.reviewHistory.value"
-              :selected-rule-id="workspace.selectedRuleId.value"
-            />
-          </div>
-          <div class="split-row">
-            <ReviewForm
-              :form-values="workspace.formValues.value"
-              :is-dirty="workspace.isDirty.value"
-              :is-submittable="workspace.isSubmittable.value"
-              :can-accept="workspace.canAccept.value"
-              :access-mode="workspace.accessMode.value"
-              :field-settings="workspace.fieldSettings.value"
-              :current-review="workspace.currentReview.value"
-              :is-review-loading="workspace.isReviewLoading.value"
-              :is-saving="workspace.isSaving.value"
-              :selected-rule-id="workspace.selectedRuleId.value"
-              @save-review="onSaveReview"
-              @update:form-values="onUpdateFormValues"
-            />
-          </div>
-        </section>
-      </div>
+        <SplitterPanel :size="30" :min-size="15">
+          <Splitter
+            layout="vertical"
+            :pt="{
+              gutter: { style: 'background: var(--color-border-dark)' },
+              root: { style: 'border: none; background: transparent' },
+            }"
+            style="height: 100%"
+          >
+            <SplitterPanel :size="50" :min-size="15">
+              <ReviewResources
+                :current-review="workspace.currentReview.value"
+                :review-history="workspace.reviewHistory.value"
+                :selected-rule-id="workspace.selectedRuleId.value"
+              />
+            </SplitterPanel>
+            <SplitterPanel :size="50" :min-size="15">
+              <ReviewForm
+                :form-values="workspace.formValues.value"
+                :is-dirty="workspace.isDirty.value"
+                :is-submittable="workspace.isSubmittable.value"
+                :can-accept="workspace.canAccept.value"
+                :access-mode="workspace.accessMode.value"
+                :field-settings="workspace.fieldSettings.value"
+                :current-review="workspace.currentReview.value"
+                :is-review-loading="workspace.isReviewLoading.value"
+                :is-saving="workspace.isSaving.value"
+                :selected-rule-id="workspace.selectedRuleId.value"
+                @save-review="onSaveReview"
+                @update:form-values="onUpdateFormValues"
+              />
+            </SplitterPanel>
+          </Splitter>
+        </SplitterPanel>
+      </Splitter>
     </div>
     <div v-else class="asset-review__empty">
       Asset not found.
@@ -403,35 +420,6 @@ defineExpose({ asset })
 
 .asset-review__content {
   flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.asset-review__grid {
-  flex: 1;
-  display: grid;
-  grid-template-columns: minmax(340px, 1.2fr) 1fr minmax(300px, 0.9fr);
-  gap: 0.35rem;
-  padding: 0.35rem;
-  overflow: hidden;
-}
-
-.grid-column {
-  min-width: 0;
-  height: 100%;
-  overflow: hidden;
-}
-
-.split-column {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.split-row {
-  flex: 1;
-  min-height: 0;
   overflow: hidden;
 }
 
