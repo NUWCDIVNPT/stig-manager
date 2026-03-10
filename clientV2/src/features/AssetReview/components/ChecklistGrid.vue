@@ -203,6 +203,21 @@ function isCellEditable(rowData, field) {
   return false
 }
 
+// Returns true when the row is editable but has no result yet
+function needsResultFirst(rowData, field) {
+  if (props.accessMode !== 'rw') {
+    return false
+  }
+  const statusLabel = rowData.status?.label ?? rowData.status ?? ''
+  if (statusLabel !== '' && statusLabel !== 'saved' && statusLabel !== 'rejected') {
+    return false
+  }
+  if (field !== 'detail' && field !== 'comment') {
+    return false
+  }
+  return !rowData.result
+}
+
 // Cell editing events
 function onCellEditComplete(event) {
   const { data, newValue, field, value } = event
@@ -491,7 +506,12 @@ function handleFooterAction(actionKey) {
             auto-resize
             :maxlength="32767"
           />
-          <span v-else class="cell-text--clamped" :title="data.detail">{{ data.detail }}</span>
+          <span
+            v-else
+            class="cell-text--clamped"
+            :title="data.detail"
+            @click="needsResultFirst(data, 'detail') && openResultPopover($event, data)"
+          >{{ data.detail }}</span>
         </template>
       </Column>
 
@@ -512,7 +532,12 @@ function handleFooterAction(actionKey) {
             auto-resize
             :maxlength="32767"
           />
-          <span v-else class="cell-text--clamped" :title="data.comment">{{ data.comment }}</span>
+          <span
+            v-else
+            class="cell-text--clamped"
+            :title="data.comment"
+            @click="needsResultFirst(data, 'comment') && openResultPopover($event, data)"
+          >{{ data.comment }}</span>
         </template>
       </Column>
 
