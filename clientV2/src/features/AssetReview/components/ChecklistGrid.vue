@@ -462,7 +462,7 @@ function handleFooterAction(actionKey) {
             option-value="value"
             placeholder="Select result..."
             autofocus
-            fluid
+            class="result-select-compact"
           />
           <div v-else class="cell-result">
             <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
@@ -685,6 +685,16 @@ function handleFooterAction(actionKey) {
 /* Remove padding when cell is in edit mode */
 :deep(.p-datatable-tbody > tr > td.p-cell-editing) {
   padding: 0;
+}
+
+/* Compact Select in result column editor to minimize row expansion */
+.result-select-compact :deep(.p-select-label) {
+  padding: 0.15rem 0.25rem;
+  font-size: 0.8rem;
+}
+
+.result-select-compact :deep(.p-select-dropdown) {
+  width: 1.25rem;
 }
 
 .cell-text--mono {
