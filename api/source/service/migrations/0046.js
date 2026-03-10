@@ -313,14 +313,6 @@ const upMigration = [
         CALL task_output('info', 'task finished');
 
     END`,
-
-  `DROP EVENT IF EXISTS \`job-1-stigman\``,
-  `CREATE EVENT IF NOT EXISTS \`job-1-stigman\`
-    ON SCHEDULE EVERY 1 DAY
-    STARTS '2025-10-01 05:00:00'
-    DISABLE
-    DO
-      CALL run_job(1, NULL)`,
 ]
 
 const downMigration = []
