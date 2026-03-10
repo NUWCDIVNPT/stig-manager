@@ -5,6 +5,7 @@ import {
   fetchChecklist,
   fetchCollection,
   fetchReview,
+  fetchReviewsByAsset,
   fetchRuleContent,
   fetchStigRevisions,
   patchReview,
@@ -104,6 +105,32 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     },
     { immediate: false, initialState: [] },
   )
+
+  // --- All reviews (for grid mode) ---
+  const {
+    state: allReviews,
+    execute: loadAllReviews,
+  } = useAsyncState(
+    () => fetchReviewsByAsset(collectionId.value, assetId.value, benchmarkId.value),
+    { immediate: false, initialState: [], onError: null },
+  )
+
+  // Merged grid data: checklist items + review detail/comment
+  const gridData = computed(() => {
+    if (!checklistData.value?.length) {
+      return []
+    }
+    const reviewMap = new Map(allReviews.value.map(r => [r.ruleId, r]))
+    return checklistData.value.map((item) => {
+      const review = reviewMap.get(item.ruleId)
+      return {
+        ...item,
+        detail: review?.detail ?? '',
+        comment: review?.comment ?? '',
+        username: review?.username ?? item.username ?? '',
+      }
+    })
+  })
 
   // --- Selected rule ---
   const selectedRuleId = ref(null)
@@ -336,6 +363,115 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     return executeSave(actionType)
   }
 
+  // --- Cell edit save (for grid mode) ---
+  async function saveCellEdit(ruleId, field, newValue) {
+    const row = gridData.value.find(r => r.ruleId === ruleId)
+    if (!row) {
+      return null
+    }
+
+    const body = {
+      result: field === 'result' ? newValue : row.result,
+      detail: field === 'detail' ? newValue : (row.detail ?? ''),
+      comment: field === 'comment' ? newValue : (row.comment ?? ''),
+      resultEngine: field === 'result' ? null : row.resultEngine,
+      status: 'saved',
+    }
+
+    const result = await putReview(collectionId.value, assetId.value, ruleId, body)
+
+    // Update allReviews in place
+    const reviewIdx = allReviews.value.findIndex(r => r.ruleId === ruleId)
+    if (reviewIdx !== -1) {
+      allReviews.value = [
+        ...allReviews.value.slice(0, reviewIdx),
+        result,
+        ...allReviews.value.slice(reviewIdx + 1),
+      ]
+    }
+    else {
+      allReviews.value = [...allReviews.value, result]
+    }
+
+    // Update checklist row
+    if (checklistData.value?.length) {
+      const idx = checklistData.value.findIndex(item => item.ruleId === ruleId)
+      if (idx !== -1) {
+        const updated = { ...checklistData.value[idx] }
+        updated.result = result.result
+        updated.status = result.status?.label ?? result.status
+        updated.touchTs = result.touchTs
+        updated.resultEngine = result.resultEngine
+        checklistData.value = [
+          ...checklistData.value.slice(0, idx),
+          updated,
+          ...checklistData.value.slice(idx + 1),
+        ]
+      }
+    }
+
+    // Update current review if this is the selected rule
+    if (ruleId === selectedRuleId.value) {
+      currentReview.value = result
+      loadReviewIntoForm(result)
+    }
+
+    return result
+  }
+
+  // --- Status action (for grid mode toolbar) ---
+  async function saveStatusAction(ruleId, actionType) {
+    let status
+    switch (actionType) {
+      case 'accept':
+        status = 'accepted'
+        break
+      case 'submit':
+        status = 'submitted'
+        break
+      case 'unsubmit':
+        status = 'saved'
+        break
+      default:
+        return null
+    }
+
+    const result = await patchReview(collectionId.value, assetId.value, ruleId, { status })
+
+    // Update allReviews
+    const reviewIdx = allReviews.value.findIndex(r => r.ruleId === ruleId)
+    if (reviewIdx !== -1) {
+      allReviews.value = [
+        ...allReviews.value.slice(0, reviewIdx),
+        result,
+        ...allReviews.value.slice(reviewIdx + 1),
+      ]
+    }
+
+    // Update checklist row
+    if (checklistData.value?.length) {
+      const idx = checklistData.value.findIndex(item => item.ruleId === ruleId)
+      if (idx !== -1) {
+        const updated = { ...checklistData.value[idx] }
+        updated.status = result.status?.label ?? result.status
+        updated.touchTs = result.touchTs
+        checklistData.value = [
+          ...checklistData.value.slice(0, idx),
+          updated,
+          ...checklistData.value.slice(idx + 1),
+        ]
+      }
+    }
+
+    // Update current review if selected
+    if (ruleId === selectedRuleId.value) {
+      currentReview.value = result
+      loadReviewIntoForm(result)
+    }
+
+    return result
+  }
+
   // --- Initial loading ---
   function loadWorkspace() {
     loadCollection()
@@ -344,6 +480,7 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     }
     if (benchmarkId.value && revisionStr.value) {
       loadChecklist()
+      loadAllReviews()
     }
   }
 
@@ -397,6 +534,11 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     // Save
     isSaving,
     saveReview,
+
+    // Grid mode
+    gridData,
+    saveCellEdit,
+    saveStatusAction,
 
     // Initialization
     loadWorkspace,

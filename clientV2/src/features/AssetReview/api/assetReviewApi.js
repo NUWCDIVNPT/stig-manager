@@ -78,6 +78,10 @@ export function patchReview(collectionId, assetId, ruleId, body) {
   )
 }
 
+export function fetchReviewsByAsset(collectionId, assetId, benchmarkId) {
+  return apiCall('getReviewsByAsset', { collectionId, assetId, benchmarkId })
+}
+
 export function fetchOtherReviews(collectionId, ruleId) {
   return apiCall('getReviewsByCollection', {
     collectionId,
