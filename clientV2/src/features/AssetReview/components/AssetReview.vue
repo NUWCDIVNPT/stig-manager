@@ -129,8 +129,8 @@ function onUpdateFormValues(newValues) {
 }
 
 // Grid mode event handlers
-function onCellEdit({ ruleId, field, newValue }) {
-  workspace.saveCellEdit(ruleId, field, newValue)
+function onRowSave({ ruleId, result, detail, comment, status }) {
+  workspace.saveFullReview(ruleId, { result, detail, comment, status })
 }
 
 function onStatusAction({ ruleId, actionType }) {
@@ -321,7 +321,7 @@ defineExpose({ asset })
             :can-accept="workspace.canAccept.value"
             :is-saving="workspace.isSaving.value"
             @select-rule="onSelectRule"
-            @cell-edit="onCellEdit"
+            @row-save="onRowSave"
             @status-action="onStatusAction"
             @refresh="onGridRefresh"
           />

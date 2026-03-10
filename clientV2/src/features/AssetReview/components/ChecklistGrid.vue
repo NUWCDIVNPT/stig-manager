@@ -3,17 +3,15 @@ import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Menu from 'primevue/menu'
-import Popover from 'primevue/popover'
-import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import EngineBadge from '../../../components/common/EngineBadge.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
+import ReviewEditPopover from '../../../components/common/ReviewEditPopover.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
-import { getReviewButtonStates } from '../lib/reviewButtonStates.js'
 
 const props = defineProps({
   gridData: {
@@ -53,24 +51,37 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['select-rule', 'cell-edit', 'status-action', 'refresh'])
+const emit = defineEmits(['select-rule', 'row-save', 'status-action', 'refresh'])
 
 const selectedRow = ref(null)
 const checklistMenu = ref()
-const resultPopover = ref()
+const reviewEditPopover = ref()
 const editingRow = ref(null)
+const editingPopoverWidth = ref(null)
 
-function openResultPopover(event, rowData) {
-  editingRow.value = rowData
-  resultPopover.value.toggle(event)
+function isRowEditable(rowData) {
+  if (props.accessMode !== 'rw') {
+    return false
+  }
+  const statusLabel = rowData.status?.label ?? rowData.status ?? ''
+  return statusLabel === '' || statusLabel === 'saved' || statusLabel === 'rejected'
 }
 
-function selectResult(newValue) {
-  if (editingRow.value && newValue !== editingRow.value.result) {
-    emit('cell-edit', { ruleId: editingRow.value.ruleId, field: 'result', newValue })
-  }
-  resultPopover.value.hide()
-  editingRow.value = null
+function openRowEditor(event, rowData) {
+  editingRow.value = rowData
+  // Anchor to the Result cell in this row for consistent positioning
+  const row = event.target.closest('tr')
+  const resultCell = row?.querySelector('[data-result-cell]')
+  const anchorEl = resultCell || event.currentTarget
+  reviewEditPopover.value.toggle({ currentTarget: anchorEl, target: anchorEl })
+}
+
+function onPopoverSave(payload) {
+  emit('row-save', payload)
+}
+
+function onPopoverStatusAction(payload) {
+  emit('status-action', payload)
 }
 
 // --- Display mode (Group/Rule toggle) ---
@@ -125,14 +136,6 @@ const resultDisplayMap = {
   fixed: 'NF',
 }
 
-const resultOptions = [
-  { value: 'pass', label: 'Not a Finding' },
-  { value: 'fail', label: 'Open' },
-  { value: 'notapplicable', label: 'Not Applicable' },
-  { value: 'informational', label: 'Informational' },
-  { value: 'notchecked', label: 'Not Reviewed' },
-]
-
 function getResultDisplay(result) {
   if (!result) {
     return null
@@ -168,111 +171,6 @@ function durationToNow(date) {
     return `${minutes} m`
   }
   return 'now'
-}
-
-// Cell editability logic
-function isCellEditable(rowData, field) {
-  if (props.accessMode !== 'rw') {
-    return false
-  }
-
-  const statusLabel = rowData.status?.label ?? rowData.status ?? ''
-  const editable = statusLabel === '' || statusLabel === 'saved' || statusLabel === 'rejected'
-  if (!editable) {
-    return false
-  }
-
-  if (field === 'result') {
-    return true
-  }
-
-  if (field === 'detail' || field === 'comment') {
-    if (!rowData.result) {
-      return false
-    }
-    const fieldSetting = props.fieldSettings[field]
-    if (fieldSetting?.enabled === 'always') {
-      return true
-    }
-    if (fieldSetting?.enabled === 'findings') {
-      return rowData.result === 'fail'
-    }
-    return false
-  }
-
-  return false
-}
-
-// Returns true when the row is editable but has no result yet
-function needsResultFirst(rowData, field) {
-  if (props.accessMode !== 'rw') {
-    return false
-  }
-  const statusLabel = rowData.status?.label ?? rowData.status ?? ''
-  if (statusLabel !== '' && statusLabel !== 'saved' && statusLabel !== 'rejected') {
-    return false
-  }
-  if (field !== 'detail' && field !== 'comment') {
-    return false
-  }
-  return !rowData.result
-}
-
-// Cell editing events
-function onCellEditComplete(event) {
-  const { data, newValue, field, value } = event
-  if (newValue === value) {
-    return
-  }
-  emit('cell-edit', { ruleId: data.ruleId, field, newValue })
-}
-
-// Status action buttons for selected row
-const selectedRowStatus = computed(() => {
-  if (!selectedRow.value) {
-    return ''
-  }
-  return selectedRow.value.status?.label ?? selectedRow.value.status ?? ''
-})
-
-const selectedRowSubmittable = computed(() => {
-  if (!selectedRow.value) {
-    return false
-  }
-  const result = selectedRow.value.result
-  if (!result || (result !== 'pass' && result !== 'fail' && result !== 'notapplicable')) {
-    return false
-  }
-  const fs = props.fieldSettings
-  if (fs.detail?.required === 'always' && !selectedRow.value.detail?.trim()) {
-    return false
-  }
-  if (fs.detail?.required === 'findings' && result === 'fail' && !selectedRow.value.detail?.trim()) {
-    return false
-  }
-  if (fs.comment?.required === 'always' && !selectedRow.value.comment?.trim()) {
-    return false
-  }
-  if (fs.comment?.required === 'findings' && result === 'fail' && !selectedRow.value.comment?.trim()) {
-    return false
-  }
-  return true
-})
-
-const buttonStates = computed(() => {
-  return getReviewButtonStates({
-    accessMode: props.accessMode,
-    statusLabel: selectedRowStatus.value,
-    isDirty: false,
-    isSubmittable: selectedRowSubmittable.value,
-    canAccept: props.canAccept,
-  })
-})
-
-function onStatusAction(actionType) {
-  if (selectedRow.value && actionType) {
-    emit('status-action', { ruleId: selectedRow.value.ruleId, actionType })
-  }
 }
 
 // Tally stats
@@ -384,25 +282,6 @@ function handleFooterAction(actionKey) {
         <span class="checklist-grid__title">{{ headerTitle }}</span>
       </div>
       <div class="checklist-grid__header-right">
-        <Button
-          v-if="buttonStates.btn1.visible"
-          :label="buttonStates.btn1.text"
-          :disabled="!buttonStates.btn1.enabled || isSaving"
-          :title="buttonStates.btn1.tooltip"
-          size="small"
-          severity="secondary"
-          outlined
-          @click="onStatusAction(buttonStates.btn1.actionType)"
-        />
-        <Button
-          v-if="buttonStates.btn2.visible"
-          :label="buttonStates.btn2.text"
-          :disabled="!buttonStates.btn2.enabled || isSaving"
-          :title="buttonStates.btn2.tooltip"
-          size="small"
-          :severity="buttonStates.btn2.actionType === 'accept' ? 'warn' : 'primary'"
-          @click="onStatusAction(buttonStates.btn2.actionType)"
-        />
         <span
           class="checklist-grid__access-badge"
           :class="accessMode === 'rw' ? 'access-rw' : 'access-r'"
@@ -418,13 +297,11 @@ function handleFooterAction(actionKey) {
       :loading="isLoading"
       data-key="ruleId"
       selection-mode="single"
-      edit-mode="cell"
       scrollable
       scroll-height="flex"
       striped-rows
       class="checklist-grid__table"
       @row-select="onRowSelect"
-      @cell-edit-complete="onCellEditComplete"
     >
       <Column header="CAT" field="severity" :style="{ width: '44px', textAlign: 'center' }">
         <template #body="{ data }">
@@ -479,65 +356,35 @@ function handleFooterAction(actionKey) {
       <Column header="Result" field="result" :style="{ width: '40px', textAlign: 'center' }">
         <template #body="{ data }">
           <div
-            class="cell-result"
-            :class="{ 'cell-result--editable': isCellEditable(data, 'result') }"
-            @click.stop="isCellEditable(data, 'result') && openResultPopover($event, data)"
+            data-result-cell
+            class="cell-result cell-result--clickable"
+            @click.stop="openRowEditor($event, data)"
           >
             <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
-            <span v-else-if="isCellEditable(data, 'result')" class="cell-result__empty">—</span>
+            <span v-else-if="isRowEditable(data)" class="cell-result__empty">—</span>
           </div>
         </template>
       </Column>
 
       <Column header="Detail" field="detail" :style="{ width: '200px' }">
         <template #body="{ data }">
-          <div class="cell-text-field">
+          <div
+            class="cell-text-field cell-text-field--clickable"
+            @click.stop="openRowEditor($event, data)"
+          >
             <span class="cell-text--clamped" :title="data.detail">{{ data.detail }}</span>
-            <i v-if="isCellEditable(data, 'detail')" class="pi pi-pencil cell-edit-indicator" />
           </div>
-        </template>
-        <template #editor="{ data, field }">
-          <Textarea
-            v-if="isCellEditable(data, field)"
-            v-model="data[field]"
-            autofocus
-            fluid
-            rows="3"
-            auto-resize
-            :maxlength="32767"
-          />
-          <span
-            v-else
-            class="cell-text--clamped"
-            :title="data.detail"
-            @click="needsResultFirst(data, 'detail') && openResultPopover($event, data)"
-          >{{ data.detail }}</span>
         </template>
       </Column>
 
       <Column header="Comment" field="comment" :style="{ width: '200px' }">
         <template #body="{ data }">
-          <div class="cell-text-field">
+          <div
+            class="cell-text-field cell-text-field--clickable"
+            @click.stop="openRowEditor($event, data)"
+          >
             <span class="cell-text--clamped" :title="data.comment">{{ data.comment }}</span>
-            <i v-if="isCellEditable(data, 'comment')" class="pi pi-pencil cell-edit-indicator" />
           </div>
-        </template>
-        <template #editor="{ data, field }">
-          <Textarea
-            v-if="isCellEditable(data, field)"
-            v-model="data[field]"
-            autofocus
-            fluid
-            rows="3"
-            auto-resize
-            :maxlength="32767"
-          />
-          <span
-            v-else
-            class="cell-text--clamped"
-            :title="data.comment"
-            @click="needsResultFirst(data, 'comment') && openResultPopover($event, data)"
-          >{{ data.comment }}</span>
         </template>
       </Column>
 
@@ -608,20 +455,17 @@ function handleFooterAction(actionKey) {
       </template>
     </DataTable>
 
-    <Popover ref="resultPopover" append-to="body">
-      <ul class="result-popover-list">
-        <li
-          v-for="opt in resultOptions"
-          :key="opt.value"
-          class="result-popover-item"
-          :class="{ 'result-popover-item--active': editingRow?.result === opt.value }"
-          @click="selectResult(opt.value)"
-        >
-          <ResultBadge :status="getResultDisplay(opt.value)" />
-          <span>{{ opt.label }}</span>
-        </li>
-      </ul>
-    </Popover>
+    <ReviewEditPopover
+      ref="reviewEditPopover"
+      :row-data="editingRow"
+      :field-settings="fieldSettings"
+      :access-mode="accessMode"
+      :can-accept="canAccept"
+      :is-saving="isSaving"
+      @save="onPopoverSave"
+      @status-action="onPopoverStatusAction"
+      @close="editingRow = null"
+    />
   </div>
 </template>
 
@@ -726,18 +570,12 @@ function handleFooterAction(actionKey) {
   border: none;
 }
 
-/* Remove padding when cell is in edit mode */
-:deep(.p-datatable-tbody > tr > td.p-cell-editing) {
-  padding: 0;
-}
-
-/* Result popover */
-.cell-result--editable {
+.cell-result--clickable {
   cursor: pointer;
   border-radius: 3px;
 }
 
-.cell-result--editable:hover {
+.cell-result--clickable:hover {
   background-color: var(--p-highlight-background);
 }
 
@@ -745,30 +583,6 @@ function handleFooterAction(actionKey) {
   color: var(--color-text-dim);
   font-size: 1rem;
   opacity: 0.9;
-}
-
-.result-popover-list {
-  list-style: none;
-  margin: 0;
-  padding: 0.25rem 0;
-}
-
-.result-popover-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.75rem;
-  cursor: pointer;
-  border-radius: 3px;
-  white-space: nowrap;
-}
-
-.result-popover-item:hover {
-  background-color: var(--p-highlight-background);
-}
-
-.result-popover-item--active {
-  background-color: var(--p-highlight-background);
 }
 
 .cell-text--mono {
@@ -805,12 +619,13 @@ function handleFooterAction(actionKey) {
   min-width: 0;
 }
 
-.cell-edit-indicator {
-  font-size: 1rem;
-  color: var(--color-text-dim);
-  opacity: 0.9;
-  flex-shrink: 0;
-  margin-top: 0.15rem;
+.cell-text-field--clickable {
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.cell-text-field--clickable:hover {
+  background-color: var(--p-highlight-background);
 }
 
 .engine-header-icon {

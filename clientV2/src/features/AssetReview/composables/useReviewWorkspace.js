@@ -371,19 +371,17 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     return executeSave(actionType)
   }
 
-  // --- Cell edit save (for grid mode) ---
-  async function saveCellEdit(ruleId, field, newValue) {
+  // --- Full review save (for grid popover) ---
+  async function saveFullReview(ruleId, { result: newResult, detail, comment, status }) {
     const row = gridData.value.find(r => r.ruleId === ruleId)
-    if (!row) {
-      return null
-    }
+    const resultChanged = row ? newResult !== row.result : true
 
     const body = {
-      result: field === 'result' ? newValue : row.result,
-      detail: field === 'detail' ? newValue : (row.detail ?? ''),
-      comment: field === 'comment' ? newValue : (row.comment ?? ''),
-      resultEngine: field === 'result' ? null : row.resultEngine,
-      status: 'saved',
+      result: newResult,
+      detail: detail ?? '',
+      comment: comment ?? '',
+      resultEngine: resultChanged ? null : (row?.resultEngine ?? null),
+      status: status || 'saved',
     }
 
     const result = await putReview(collectionId.value, assetId.value, ruleId, body)
@@ -546,7 +544,7 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
 
     // Grid mode
     gridData,
-    saveCellEdit,
+    saveFullReview,
     saveStatusAction,
 
     // Initialization
