@@ -1,3 +1,17 @@
+1.6.3
+-------
+
+Changes:
+
+  - (API) fix: resolve discrepancies in fresh install stored procedures vs migration for Service Jobs feature
+  - (API) refactor: replace asyncapi-validator with lightweight AsyncApiValidator class to reduce dependency bloat and improve performance
+  - (Docs) Updated build dependency
+  - (Client: Dependencies) Update to latest stig-manager-client-modules (1.6.3)
+  - (API/Client: Dependencies) Various security and maintenance updates
+
+Note: This release includes a database migration to resolve discrepancies in the database stored procedures for the Service Jobs feature that could occur on fresh installs. 
+
+
 1.6.2
 -------
 
