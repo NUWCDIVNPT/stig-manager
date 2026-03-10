@@ -137,6 +137,11 @@ function onStatusAction({ ruleId, actionType }) {
   workspace.saveStatusAction(ruleId, actionType)
 }
 
+function onGridRefresh() {
+  workspace.loadChecklist()
+  workspace.loadAllReviews()
+}
+
 // Expose asset
 defineExpose({ asset })
 </script>
@@ -318,6 +323,7 @@ defineExpose({ asset })
             @select-rule="onSelectRule"
             @cell-edit="onCellEdit"
             @status-action="onStatusAction"
+            @refresh="onGridRefresh"
           />
         </SplitterPanel>
         <SplitterPanel :size="40" :min-size="20">

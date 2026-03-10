@@ -406,7 +406,7 @@ function handleFooterAction(actionKey) {
         v-if="showGroupId"
         header="Group"
         field="groupId"
-        :style="{ width: '80px' }"
+        :style="{ width: '50px' }"
       >
         <template #body="{ data }">
           <span class="cell-text--mono">{{ data.groupId }}</span>
@@ -428,7 +428,7 @@ function handleFooterAction(actionKey) {
         v-if="showRuleTitle"
         header="Rule Title"
         field="ruleTitle"
-        :style="{ width: '180px' }"
+        :style="{ width: '225px' }"
       >
         <template #body="{ data }">
           <span class="cell-text--clamped" :title="data.ruleTitle">{{ data.ruleTitle }}</span>
@@ -446,7 +446,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Result" field="result" :style="{ width: '130px' }">
+      <Column header="Result" field="result" :style="{ width: '40px' }">
         <template #body="{ data }">
           <div class="cell-result">
             <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
@@ -550,7 +550,7 @@ function handleFooterAction(actionKey) {
           <i class="pi pi-clock" title="Last action" />
         </template>
         <template #body="{ data }">
-          <span class="cell-text--dim" :title="data.touchTs">{{ durationToNow(data.touchTs) }}</span>
+          <span :title="data.touchTs">{{ durationToNow(data.touchTs) }}</span>
         </template>
       </Column>
 
@@ -689,11 +689,7 @@ function handleFooterAction(actionKey) {
 
 .cell-text--mono {
   font-family: monospace;
-  color: var(--color-text-dim);
-}
-
-.cell-text--dim {
-  color: var(--color-text-dim);
+  color: var(--color-text-primary);
 }
 
 .cell-text--clamped {
@@ -701,7 +697,7 @@ function handleFooterAction(actionKey) {
   -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  color: var(--color-text-dim);
+  color: var(--color-text-primary);
   word-break: break-word;
   line-height: 1.3;
 }
@@ -725,9 +721,9 @@ function handleFooterAction(actionKey) {
 }
 
 .cell-edit-indicator {
-  font-size: 0.6rem;
+  font-size: 0.8rem;
   color: var(--color-text-dim);
-  opacity: 0.5;
+  opacity: 0.9;
   flex-shrink: 0;
   margin-top: 0.15rem;
 }
@@ -735,7 +731,6 @@ function handleFooterAction(actionKey) {
 .engine-header-icon {
   width: 12px;
   height: 12px;
-  opacity: 0.7;
 }
 
 .engine-icon {

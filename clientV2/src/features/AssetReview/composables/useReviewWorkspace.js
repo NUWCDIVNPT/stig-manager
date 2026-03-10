@@ -120,7 +120,15 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     if (!checklistData.value?.length) {
       return []
     }
-    const reviewMap = new Map(allReviews.value.map(r => [r.ruleId, r]))
+    const reviewMap = new Map()
+    for (const r of allReviews.value) {
+      reviewMap.set(r.ruleId, r)
+      if (r.ruleIds) {
+        for (const id of r.ruleIds) {
+          reviewMap.set(id, r)
+        }
+      }
+    }
     return checklistData.value.map((item) => {
       const review = reviewMap.get(item.ruleId)
       return {
@@ -492,6 +500,7 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     loadReviewIntoForm(null)
     if (benchmarkId.value && revisionStr.value) {
       loadChecklist()
+      loadAllReviews()
     }
   })
 
@@ -543,5 +552,6 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     // Initialization
     loadWorkspace,
     loadChecklist,
+    loadAllReviews,
   }
 }
