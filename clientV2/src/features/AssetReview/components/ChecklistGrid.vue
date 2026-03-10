@@ -3,7 +3,7 @@ import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Menu from 'primevue/menu'
-import Select from 'primevue/select'
+import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
@@ -57,6 +57,21 @@ const emit = defineEmits(['select-rule', 'cell-edit', 'status-action', 'refresh'
 
 const selectedRow = ref(null)
 const checklistMenu = ref()
+const resultPopover = ref()
+const editingRow = ref(null)
+
+function openResultPopover(event, rowData) {
+  editingRow.value = rowData
+  resultPopover.value.toggle(event)
+}
+
+function selectResult(newValue) {
+  if (editingRow.value && newValue !== editingRow.value.result) {
+    emit('cell-edit', { ruleId: editingRow.value.ruleId, field: 'result', newValue })
+  }
+  resultPopover.value.hide()
+  editingRow.value = null
+}
 
 // --- Display mode (Group/Rule toggle) ---
 const displayMode = ref('groupRule')
@@ -344,7 +359,7 @@ function handleFooterAction(actionKey) {
         >
           <i class="pi pi-list" />
           <span>Checklist</span>
-          <i class="pi pi-chevron-down" style="font-size: 0.6rem; margin-left: 0.15rem" />
+          <i class="pi pi-chevron-down" style="font-size: .8rem; margin-left: 0.15rem" />
         </Button>
         <Menu
           ref="checklistMenu"
@@ -446,26 +461,15 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Result" field="result" :style="{ width: '40px' }">
+      <Column header="Result" field="result" :style="{ width: '40px', textAlign: 'center' }">
         <template #body="{ data }">
-          <div class="cell-result">
+          <div
+            class="cell-result"
+            :class="{ 'cell-result--editable': isCellEditable(data, 'result') }"
+            @click.stop="isCellEditable(data, 'result') && openResultPopover($event, data)"
+          >
             <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
-            <i v-if="isCellEditable(data, 'result')" class="pi pi-chevron-down cell-edit-indicator" />
-          </div>
-        </template>
-        <template #editor="{ data, field }">
-          <Select
-            v-if="isCellEditable(data, field)"
-            v-model="data[field]"
-            :options="resultOptions"
-            option-label="label"
-            option-value="value"
-            placeholder="Select result..."
-            autofocus
-            class="result-select-compact"
-          />
-          <div v-else class="cell-result">
-            <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
+            <span v-else-if="isCellEditable(data, 'result')" class="cell-result__empty">—</span>
           </div>
         </template>
       </Column>
@@ -539,7 +543,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Status" field="status" :style="{ width: '44px', textAlign: 'center' }">
+      <Column header="Status" field="status" :style="{ width: '40px', textAlign: 'center' }">
         <template #body="{ data }">
           <StatusBadge v-if="data.status" :status="data.status?.label ?? data.status" />
         </template>
@@ -578,6 +582,21 @@ function handleFooterAction(actionKey) {
         </StatusFooter>
       </template>
     </DataTable>
+
+    <Popover ref="resultPopover" append-to="body">
+      <ul class="result-popover-list">
+        <li
+          v-for="opt in resultOptions"
+          :key="opt.value"
+          class="result-popover-item"
+          :class="{ 'result-popover-item--active': editingRow?.result === opt.value }"
+          @click="selectResult(opt.value)"
+        >
+          <ResultBadge :status="getResultDisplay(opt.value)" />
+          <span>{{ opt.label }}</span>
+        </li>
+      </ul>
+    </Popover>
   </div>
 </template>
 
@@ -623,18 +642,18 @@ function handleFooterAction(actionKey) {
   align-items: center;
   gap: 0.25rem;
   padding: 0.15rem 0.4rem;
-  font-size: 0.8rem;
+  font-size: 1.2rem;
   color: var(--color-text-primary);
   flex-shrink: 0;
 }
 
 .checklist-grid__menu-btn i:first-child {
-  font-size: 0.75rem;
+  font-size: 1rem;
 }
 
 .checklist-grid__title {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   color: var(--color-text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -643,7 +662,7 @@ function handleFooterAction(actionKey) {
 
 .checklist-grid__access-badge {
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 1rem;
   padding: 0.1rem 0.4rem;
   border-radius: 3px;
   flex-shrink: 0;
@@ -687,17 +706,48 @@ function handleFooterAction(actionKey) {
   padding: 0;
 }
 
-/* Compact Select in result column editor to minimize row expansion */
-.result-select-compact :deep(.p-select-label) {
-  padding: 0.15rem 0.25rem;
-  font-size: 0.8rem;
+/* Result popover */
+.cell-result--editable {
+  cursor: pointer;
+  border-radius: 3px;
 }
 
-.result-select-compact :deep(.p-select-dropdown) {
-  width: 1.25rem;
+.cell-result--editable:hover {
+  background-color: var(--p-highlight-background);
+}
+
+.cell-result__empty {
+  color: var(--color-text-dim);
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.result-popover-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.result-popover-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.result-popover-item:hover {
+  background-color: var(--p-highlight-background);
+}
+
+.result-popover-item--active {
+  background-color: var(--p-highlight-background);
 }
 
 .cell-text--mono {
+  font-size: 1.2rem;
   font-family: monospace;
   color: var(--color-text-primary);
 }
@@ -731,7 +781,7 @@ function handleFooterAction(actionKey) {
 }
 
 .cell-edit-indicator {
-  font-size: 0.8rem;
+  font-size: 1rem;
   color: var(--color-text-dim);
   opacity: 0.9;
   flex-shrink: 0;
@@ -739,13 +789,13 @@ function handleFooterAction(actionKey) {
 }
 
 .engine-header-icon {
-  width: 12px;
-  height: 12px;
+  width: 1rem;
+  height: 1rem;
 }
 
 .engine-icon {
-  width: 12px;
-  height: 12px;
+  width: 1rem;
+  height: 1rem;
   opacity: 0.7;
   flex-shrink: 0;
 }
