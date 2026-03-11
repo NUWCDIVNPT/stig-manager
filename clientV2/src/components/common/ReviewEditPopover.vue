@@ -346,24 +346,33 @@ defineExpose({ toggle, hide })
       </div>
 
       <div class="review-edit-popover__attributions">
-        <span class="review-edit-popover__attr">
-          <span class="review-edit-popover__attr-label">Evaluated</span>
-          {{ formatDate(rowData.ts) }}
-          <span v-if="rowData.username" class="review-edit-popover__attr-user">
-            by {{ rowData.username }}
+        <div class="review-edit-popover__attr-section">
+          <span class="review-edit-popover__attr-label">Evaluated: </span>
+          <span v-if="rowData.ts" class="review-edit-popover__attr-pill">
+            <i class="pi pi-clock" />
+            {{ formatDate(rowData.ts) }}
           </span>
-        </span>
-        <span class="review-edit-popover__attr">
-          <span class="review-edit-popover__attr-label">Status</span>
-          <template v-if="rowData.status">
-            <StatusBadge :status="statusLabel" />
-            {{ formatDate(rowData.status?.ts) }}
-            <span v-if="rowData.status?.user?.username" class="review-edit-popover__attr-user">
-              by {{ rowData.status.user.username }}
+          <span v-if="rowData.username" class="review-edit-popover__attr-pill">
+            <i class="pi pi-user" />
+            {{ rowData.username }}
+          </span>
+          <span v-if="!rowData.ts && !rowData.username" class="review-edit-popover__attr-pill review-edit-popover__attr-pill--empty">--</span>
+        </div>
+        <div class="review-edit-popover__attr-section">
+          <span class="review-edit-popover__attr-label">Statused: </span>
+          <template v-if="rowData.status && statusLabel">
+            <span v-if="rowData.status?.ts" class="review-edit-popover__attr-pill">
+              <i class="pi pi-clock" />
+              {{ formatDate(rowData.status.ts) }}
             </span>
+            <span v-if="rowData.status?.user?.username" class="review-edit-popover__attr-pill">
+              <i class="pi pi-user" />
+              {{ rowData.status.user.username }}
+            </span>
+            <StatusBadge :status="statusLabel" />
           </template>
-          <template v-else>--</template>
-        </span>
+          <span v-else class="review-edit-popover__attr-pill review-edit-popover__attr-pill--empty">--</span>
+        </div>
       </div>
     </div>
   </Popover>
@@ -451,6 +460,8 @@ defineExpose({ toggle, hide })
 
 .review-edit-popover__result-item--active {
   background-color: var(--p-highlight-background);
+  border: 1px solid var(--p-highlight-focus-background, var(--p-primary-color));
+  font-weight: 600;
 }
 
 .review-edit-popover__result-item--disabled {
@@ -500,30 +511,51 @@ defineExpose({ toggle, hide })
 
 .review-edit-popover__actions .p-button {
   white-space: nowrap;
-  font-size: 0.8rem;
+  font-size: 1rem;
 }
 
 .review-edit-popover__attributions {
   display: flex;
-  gap: 1.5rem;
-  font-size: 1rem;
-  color: var(--color-text-primary);
+  gap: 2rem;
+  flex-wrap: wrap;
   border-top: 1px solid var(--color-border-light);
-  padding-top: 0.35rem;
+  padding-top: 0.4rem;
 }
 
-.review-edit-popover__attr {
+.review-edit-popover__attr-section {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.4rem;
+  flex-wrap: wrap;
 }
 
 .review-edit-popover__attr-label {
   font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  opacity: 0.8;
+  white-space: nowrap;
 }
 
-.review-edit-popover__attr-user {
+.review-edit-popover__attr-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 1rem;
   color: var(--color-text-primary);
+  border: 1px solid var(--color-border-light);
+  border-radius: 4px;
+  background-color: var(--color-background-dark);
+  white-space: nowrap;
+}
+
+.review-edit-popover__attr-pill .pi {
+  font-size: 1rem;
   opacity: 0.9;
+}
+
+.review-edit-popover__attr-pill--empty {
+  opacity: 0.4;
 }
 </style>
