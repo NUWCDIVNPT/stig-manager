@@ -1,8 +1,9 @@
 <script setup>
 import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { getReviewButtonStates } from '../../features/AssetReview/lib/reviewButtonStates.js'
 import ResultBadge from './ResultBadge.vue'
 import StatusBadge from './StatusBadge.vue'
@@ -31,11 +32,18 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  width: {
+    type: Number,
+    default: null,
+  },
 })
 
 const emit = defineEmits(['save', 'status-action', 'close'])
 
 const popover = ref()
+const lastAnchorEvent = ref(null)
+const showDiscardDialog = ref(false)
+const closing = ref(false)
 
 const resultOptions = [
   { value: 'pass', label: 'Not a Finding', display: 'NF' },
@@ -185,6 +193,7 @@ function onButtonClick(actionType) {
   // Status-only actions (PATCH)
   if (actionType === 'submit' || actionType === 'unsubmit' || actionType === 'accept') {
     emit('status-action', { ruleId: props.rowData.ruleId, actionType })
+    closing.value = true
     popover.value.hide()
     return
   }
@@ -202,15 +211,45 @@ function onButtonClick(actionType) {
     comment: formComment.value,
     status,
   })
+  closing.value = true
   popover.value.hide()
+}
+
+// Dirty close handling
+function onPopoverHide() {
+  if (closing.value) {
+    closing.value = false
+    emit('close')
+    return
+  }
+  if (isDirty.value) {
+    showDiscardDialog.value = true
+    nextTick(() => {
+      popover.value.show(lastAnchorEvent.value)
+    })
+    return
+  }
+  emit('close')
+}
+
+function onDiscardConfirm() {
+  showDiscardDialog.value = false
+  closing.value = true
+  popover.value.hide()
+}
+
+function onDiscardCancel() {
+  showDiscardDialog.value = false
 }
 
 // Expose toggle for parent to open/close
 function toggle(event) {
+  lastAnchorEvent.value = event
   popover.value.toggle(event)
 }
 
 function hide() {
+  closing.value = true
   popover.value.hide()
 }
 
@@ -218,8 +257,8 @@ defineExpose({ toggle, hide })
 </script>
 
 <template>
-  <Popover ref="popover" append-to="body" @hide="$emit('close')">
-    <div v-if="rowData" class="review-edit-popover">
+  <Popover ref="popover" append-to="body" @hide="onPopoverHide">
+    <div v-if="rowData" class="review-edit-popover" :style="width ? { width: `${width}px` } : {}">
       <div class="review-edit-popover__main">
         <div class="review-edit-popover__result">
           <label class="review-edit-popover__label">Result</label>
@@ -252,8 +291,6 @@ defineExpose({ toggle, hide })
             v-model="formDetail"
             :disabled="!detailEnabled"
             :maxlength="32767"
-            rows="3"
-            auto-resize
             fluid
             class="review-edit-popover__textarea"
           />
@@ -268,8 +305,6 @@ defineExpose({ toggle, hide })
             v-model="formComment"
             :disabled="!commentEnabled"
             :maxlength="32767"
-            rows="3"
-            auto-resize
             fluid
             class="review-edit-popover__textarea"
           />
@@ -320,6 +355,21 @@ defineExpose({ toggle, hide })
       </div>
     </div>
   </Popover>
+
+  <Dialog
+    v-model:visible="showDiscardDialog"
+    header="Unsaved Changes"
+    :modal="true"
+    :closable="false"
+    :style="{ width: '20rem' }"
+    append-to="body"
+  >
+    <p>You have unsaved changes. Discard them?</p>
+    <template #footer>
+      <Button label="Cancel" severity="secondary" text @click="onDiscardCancel" />
+      <Button label="Discard" severity="danger" @click="onDiscardConfirm" />
+    </template>
+  </Dialog>
 </template>
 
 <style scoped>
@@ -327,19 +377,19 @@ defineExpose({ toggle, hide })
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  min-width: 700px;
+  min-width: 400px;
 }
 
 .review-edit-popover__main {
   display: flex;
   gap: 0.5rem;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 .review-edit-popover__label {
   display: block;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 1rem;
   color: var(--color-text-dim);
   margin-bottom: 0.2rem;
   text-transform: uppercase;
@@ -368,7 +418,7 @@ defineExpose({ toggle, hide })
   cursor: pointer;
   border-radius: 3px;
   white-space: nowrap;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
 }
 
 .review-edit-popover__result-item:hover:not(.review-edit-popover__result-item--disabled) {
@@ -387,7 +437,7 @@ defineExpose({ toggle, hide })
 .review-edit-popover__engine {
   display: block;
   color: var(--color-text-dim);
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   margin-top: 0.2rem;
   background-color: var(--color-background-dark);
   padding: 0.15rem 0.3rem;
@@ -400,11 +450,19 @@ defineExpose({ toggle, hide })
 .review-edit-popover__comment {
   flex: 1;
   min-width: 120px;
+  display: flex;
+  flex-direction: column;
+}
+
+.review-edit-popover__textarea {
+  flex: 1;
+  display: flex;
 }
 
 .review-edit-popover__textarea :deep(textarea) {
-  max-height: 15rem;
+  flex: 1;
   overflow-y: auto;
+  resize: none;
 }
 
 .review-edit-popover__actions {
@@ -424,7 +482,7 @@ defineExpose({ toggle, hide })
 .review-edit-popover__attributions {
   display: flex;
   gap: 1.5rem;
-  font-size: 0.75rem;
+  font-size: 1rem;
   color: var(--color-text-dim);
   border-top: 1px solid var(--color-border-light);
   padding-top: 0.35rem;
@@ -442,6 +500,6 @@ defineExpose({ toggle, hide })
 
 .review-edit-popover__attr-user {
   color: var(--color-text-dim);
-  opacity: 0.8;
+  opacity: 0.9;
 }
 </style>

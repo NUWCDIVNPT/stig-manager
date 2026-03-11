@@ -59,20 +59,23 @@ const reviewEditPopover = ref()
 const editingRow = ref(null)
 const editingPopoverWidth = ref(null)
 
-function isRowEditable(rowData) {
-  if (props.accessMode !== 'rw') {
-    return false
-  }
-  const statusLabel = rowData.status?.label ?? rowData.status ?? ''
-  return statusLabel === '' || statusLabel === 'saved' || statusLabel === 'rejected'
-}
-
 function openRowEditor(event, rowData) {
   editingRow.value = rowData
-  // Anchor to the Result cell in this row for consistent positioning
   const row = event.target.closest('tr')
   const resultCell = row?.querySelector('[data-result-cell]')
   const anchorEl = resultCell || event.currentTarget
+
+  // Calculate width: from result cell's left edge to grid container's right edge
+  const gridEl = event.target.closest('.checklist-grid')
+  if (gridEl && resultCell) {
+    const gridRect = gridEl.getBoundingClientRect()
+    const cellRect = resultCell.getBoundingClientRect()
+    editingPopoverWidth.value = gridRect.right - cellRect.left
+  }
+  else {
+    editingPopoverWidth.value = null
+  }
+
   reviewEditPopover.value.toggle({ currentTarget: anchorEl, target: anchorEl })
 }
 
@@ -361,7 +364,7 @@ function handleFooterAction(actionKey) {
             @click.stop="openRowEditor($event, data)"
           >
             <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
-            <span v-else-if="isRowEditable(data)" class="cell-result__empty">—</span>
+            <span v-else class="cell-result__empty">—</span>
           </div>
         </template>
       </Column>
@@ -372,7 +375,8 @@ function handleFooterAction(actionKey) {
             class="cell-text-field cell-text-field--clickable"
             @click.stop="openRowEditor($event, data)"
           >
-            <span class="cell-text--clamped" :title="data.detail">{{ data.detail }}</span>
+            <span v-if="data.detail" class="cell-text--clamped" :title="data.detail">{{ data.detail }}</span>
+            <span v-else class="cell-text--placeholder">Add review...</span>
           </div>
         </template>
       </Column>
@@ -458,6 +462,7 @@ function handleFooterAction(actionKey) {
     <ReviewEditPopover
       ref="reviewEditPopover"
       :row-data="editingRow"
+      :width="editingPopoverWidth"
       :field-settings="fieldSettings"
       :access-mode="accessMode"
       :can-accept="canAccept"
@@ -573,6 +578,7 @@ function handleFooterAction(actionKey) {
 .cell-result--clickable {
   cursor: pointer;
   border-radius: 3px;
+  height: 100%;
 }
 
 .cell-result--clickable:hover {
@@ -622,6 +628,13 @@ function handleFooterAction(actionKey) {
 .cell-text-field--clickable {
   cursor: pointer;
   border-radius: 3px;
+  height: 100%;
+}
+
+.cell-text--placeholder {
+  color: var(--color-text-dim);
+  font-style: italic;
+  opacity: 0.5;
 }
 
 .cell-text-field--clickable:hover {

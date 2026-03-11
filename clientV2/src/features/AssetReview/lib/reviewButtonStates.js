@@ -16,7 +16,7 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
 
   if (accessMode !== 'rw') {
     return {
-      btn1: { text: 'Save without submitting', enabled: false, visible: false, actionType: '', tooltip: '' },
+      btn1: { text: 'Save', enabled: false, visible: false, actionType: '', tooltip: '' },
       btn2: { text: 'Read only', enabled: false, visible: true, actionType: '', tooltip: '' },
     }
   }
@@ -58,7 +58,7 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
     if (isDirty) {
       const btn2Text = status === 'rejected' ? 'Save and Resubmit' : 'Save and Submit'
       return {
-        btn1: { text: 'Save without submitting', enabled: true, visible: true, actionType: 'save', tooltip: '' },
+        btn1: { text: 'Save', enabled: true, visible: true, actionType: 'save', tooltip: '' },
         btn2: { text: btn2Text, enabled: true, visible: true, actionType: 'save and submit', tooltip: '' },
       }
     }
@@ -66,12 +66,12 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
       // Clean + editable + submittable
       if (status === 'rejected') {
         return {
-          btn1: { text: 'Save without submitting', enabled: false, visible: true, actionType: '', tooltip: 'This button is disabled because the review has not been modified.' },
+          btn1: { text: 'Save', enabled: false, visible: true, actionType: '', tooltip: 'This button is disabled because the review has not been modified.' },
           btn2: { text: 'Save and Resubmit', enabled: false, visible: true, actionType: '', tooltip: 'This button is disabled because the review has not been modified.' },
         }
       }
       return {
-        btn1: { text: 'Save without submitting', enabled: false, visible: true, actionType: '', tooltip: 'This button is disabled because the review has not been modified.' },
+        btn1: { text: 'Save', enabled: false, visible: true, actionType: '', tooltip: 'This button is disabled because the review has not been modified.' },
         btn2: { text: 'Submit', enabled: true, visible: true, actionType: 'submit', tooltip: '' },
       }
     }
@@ -80,7 +80,7 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
     // Not submittable
     if (isDirty) {
       return {
-        btn1: { text: 'Save without submitting', enabled: true, visible: true, actionType: 'save and unsubmit', tooltip: '' },
+        btn1: { text: 'Save', enabled: true, visible: true, actionType: 'save and unsubmit', tooltip: '' },
         btn2: { text: 'Save and Submit', enabled: false, visible: true, actionType: '', tooltip: 'This button is disabled because the review is not complete and cannot be submitted.' },
       }
     }
@@ -93,7 +93,7 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
         }
       }
       return {
-        btn1: { text: 'Save without submitting', enabled: false, visible: true, actionType: '', tooltip: 'This button is disabled because the review has not been modified.' },
+        btn1: { text: 'Save', enabled: false, visible: true, actionType: '', tooltip: 'This button is disabled because the review has not been modified.' },
         btn2: { text: 'Save and Submit', enabled: false, visible: true, actionType: '', tooltip: 'This button is disabled because the review is not complete and cannot be submitted.' },
       }
     }
