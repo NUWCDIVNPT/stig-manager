@@ -7885,9 +7885,6 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/BenchmarkId'
-          updateUserId:
-            type: integer
-            description: userId or 0 for system (stored as NULL)
           enabled:
             type: boolean
     TaskOutputItem:

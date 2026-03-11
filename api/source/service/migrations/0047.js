@@ -5,7 +5,16 @@ const upMigration = [
   `INSERT INTO task (taskId, name, description, command) VALUES
     (5, 'ReviewAging', 'Age reviews based on per-collection rules', 'review_aging()')`,
 
-  // New table to hold per-collection config for tasks
+  // Introduce nullable taskId FK in user_data for task-specific attribution
+  `ALTER TABLE user_data
+  ADD COLUMN taskId INT NULL DEFAULT NULL,
+  ADD CONSTRAINT fk_ud_taskId FOREIGN KEY (taskId) REFERENCES task(taskId) ON DELETE SET NULL`,
+
+  // Seed user_data entry for ReviewAging task
+  `INSERT INTO user_data (username, taskId, status)
+  VALUES ('_task_ReviewAging', 5, 'unavailable')`,
+  
+    // New table to hold per-collection config for tasks
   `CREATE TABLE task_collection_config (
     tcId INT NOT NULL AUTO_INCREMENT,
     taskId INT NOT NULL,
@@ -96,12 +105,10 @@ const upMigration = [
   // Update review status in batches from t_reviewIds temp table
   `DROP PROCEDURE IF EXISTS update_review_status_batch`,
   `CREATE PROCEDURE update_review_status_batch(
-    IN in_status VARCHAR(20),
-    IN in_userId INT
+    IN in_status VARCHAR(20)
   )
     BEGIN
       DECLARE v_statusId INT;
-      DECLARE v_userId INT;
       DECLARE v_numReviewIds INT;
       DECLARE v_incrementValue INT DEFAULT 10000;
       DECLARE v_curMinId BIGINT DEFAULT 1;
@@ -119,16 +126,13 @@ const upMigration = [
       -- Map status string to statusId: saved=0, submitted=1, rejected=2, accepted=3
       SELECT statusId INTO v_statusId FROM status WHERE api = in_status LIMIT 1;
 
-      -- Map userId=0 to NULL (system)
-      SET v_userId = IF(in_userId = 0, NULL, in_userId);
-
       SELECT MAX(seq) INTO v_numReviewIds FROM t_reviewIds;
       CALL task_output('info', concat('updating ', IFNULL(v_numReviewIds, 0), ' reviews: status -> ', in_status));
 
       IF IFNULL(v_numReviewIds, 0) > 0 THEN
         REPEAT
           UPDATE review
-            SET statusId = v_statusId, statusTs = NOW(), statusUserId = v_userId
+            SET statusId = v_statusId, statusTs = NOW(), statusUserId = @taskUserId
           WHERE reviewId IN (
             SELECT reviewId FROM t_reviewIds WHERE seq >= v_curMinId AND seq < v_curMaxId
           );
@@ -141,12 +145,10 @@ const upMigration = [
   // Update review result in batches from t_reviewIds temp table
   `DROP PROCEDURE IF EXISTS update_review_result_batch`,
   `CREATE PROCEDURE update_review_result_batch(
-    IN in_result VARCHAR(20),
-    IN in_userId INT
+    IN in_result VARCHAR(20)
   )
     BEGIN
       DECLARE v_resultId INT;
-      DECLARE v_userId INT;
       DECLARE v_numReviewIds INT;
       DECLARE v_incrementValue INT DEFAULT 10000;
       DECLARE v_curMinId BIGINT DEFAULT 1;
@@ -166,16 +168,15 @@ const upMigration = [
       SET in_result = IF(in_result = 'notReviewed', 'notchecked', in_result);
       SELECT resultId INTO v_resultId FROM result WHERE api = in_result LIMIT 1;
 
-      -- Map userId=0 to NULL (system)
-      SET v_userId = IF(in_userId = 0, NULL, in_userId);
-
       SELECT MAX(seq) INTO v_numReviewIds FROM t_reviewIds;
       CALL task_output('info', concat('updating ', IFNULL(v_numReviewIds, 0), ' reviews: result -> ', in_result));
 
       IF IFNULL(v_numReviewIds, 0) > 0 THEN
         REPEAT
           UPDATE review
-            SET resultId = v_resultId, ts = NOW(), userId = v_userId
+            SET resultId = v_resultId, ts = NOW(), userId = @taskUserId, 
+            statusId = 0, statusTs = NOW(), statusUserId = @taskUserId,
+            statusText = 'Review change triggered status update'
           WHERE reviewId IN (
             SELECT reviewId FROM t_reviewIds WHERE seq >= v_curMinId AND seq < v_curMaxId
           );
@@ -219,6 +220,8 @@ const upMigration = [
       END;
 
       CALL task_output('info', 'task started');
+      
+      SELECT userId INTO @taskUserId FROM user_data WHERE taskId = @taskId;
 
       OPEN cur;
       collection_loop: LOOP
@@ -320,9 +323,9 @@ const upMigration = [
               CALL delete_review_batch();
             ELSEIF v_triggerAction = 'update' THEN
               IF v_updateField = 'status' THEN
-                CALL update_review_status_batch(v_updateValue, v_updateUserId);
+                CALL update_review_status_batch(v_updateValue);
               ELSEIF v_updateField = 'result' THEN
-                CALL update_review_result_batch(v_updateValue, v_updateUserId);
+                CALL update_review_result_batch(v_updateValue);
               END IF;
             END IF;
           END IF;
