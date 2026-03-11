@@ -37,6 +37,39 @@
 # export STIGMAN_API_PORT=
 
 #==============================================================================
+# STIGMAN_API_TLS_CERT_FILE
+#
+#  | No default. | A absolute path to the file that contains the PEM encoded
+#  Server certificate used for TLS. Additionally requires setting
+#  "STIGMAN_API_TLS_KEY_FILE" to enable TLS.
+#
+#  Affects: API
+#==============================================================================
+# export STIGMAN_API_TLS_CERT_FILE=
+
+#==============================================================================
+# STIGMAN_API_TLS_KEY_FILE
+#
+#  | No default. | A absolute path to the file that contains the PEM encoded
+#  Server private key used for TLS. Additionally requires setting
+#  "STIGMAN_API_TLS_CERT_FILE" to enable TLS.
+#
+#  Affects: API
+#==============================================================================
+# export STIGMAN_API_TLS_KEY_FILE=
+
+#==============================================================================
+# STIGMAN_API_TLS_KEY_PASSPHRASE
+#
+#  | No default. | If necessary, the passphrase that decrypts the PEM encoded
+#  Server private key used for TLS. Additionally requires setting
+#  "STIGMAN_API_TLS_CERT_FILE" to enable TLS.
+#
+#  Affects: API
+#==============================================================================
+# export STIGMAN_API_TLS_KEY_PASSPHRASE=
+
+#==============================================================================
 # STIGMAN_CLASSIFICATION
 #
 #  | Default: "U" | Sets the classification banner, if any. Available values:
@@ -139,8 +172,8 @@
 #
 #  | Default: "popup" | How to prompt for re-authentication when user
 #  credentials expire. Available values: "popup", "iframe", "tab", or "reload".
-#  See `detailed description. <../installation-and-
-#  setup/authentication.html#stigman-client-reauth-action>`_
+#  See :ref:`stigman_client_reauth_action` in the Authentication document for
+#  details.
 #
 #  Affects: Client
 #==============================================================================
@@ -235,7 +268,7 @@
 #
 #  | No default. | Text that will be displayed in the Home tab Welcome widget.
 #
-#  Affects: Client Appearance     
+#  Affects: Client Appearance
 #==============================================================================
 # export STIGMAN_CLIENT_WELCOME_MESSAGE =
 
@@ -281,7 +314,7 @@
 #
 #  | Default: "3306" | The database TCP port relative to the API server
 #
-#  Affects: API          
+#  Affects: API
 #==============================================================================
 # export STIGMAN_DB_PORT=
 
@@ -290,42 +323,42 @@
 #
 #  | Default: "stigman" | The schema where the STIG Manager object are found
 #
-#  Affects: API          
+#  Affects: API
 #==============================================================================
 # export STIGMAN_DB_SCHEMA=
 
 #==============================================================================
 # STIGMAN_DB_TLS_CA_FILE
 #
-#  | No default. | A file/path relative to the API /tls directory that contains
-#  the PEM encoded CA certificate used to sign the database TLS certificate.
-#  Setting this variable enables TLS connections to the database.
+#  | No default. | An absolute path or a path relative to the API /tls directory
+#  that contains the PEM encoded CA certificate used to sign the database TLS
+#  certificate. Setting this variable enables TLS connections to the database.
 #
-#  Affects: API          
+#  Affects: API
 #==============================================================================
 # export STIGMAN_DB_TLS_CA_FILE=
 
 #==============================================================================
 # STIGMAN_DB_TLS_CERT_FILE
 #
-#  | No default. | A file/path relative to the API /tls directory that contains
-#  the PEM encoded Client certificate used when authenticating the database
-#  client. Additionally requires setting values for "STIGMAN_DB_TLS_CA_FILE" and
-#  "STIGMAN_DB_TLS_KEY_FILE".
+#  | No default. | An absolute path or a path relative to the API /tls directory
+#  that contains the PEM encoded Client certificate used when authenticating the
+#  database client. Additionally requires setting values for
+#  "STIGMAN_DB_TLS_CA_FILE" and "STIGMAN_DB_TLS_KEY_FILE".
 #
-#  Affects: API          
+#  Affects: API
 #==============================================================================
 # export STIGMAN_DB_TLS_CERT_FILE=
 
 #==============================================================================
 # STIGMAN_DB_TLS_KEY_FILE
 #
-#  | No default. | A file/path relative to the API /tls directory that contains
-#  the PEM encoded Client private key used when authenticating the database
-#  client. Additionally requires setting values for "STIGMAN_DB_TLS_CA_FILE" and
-#  "STIGMAN_DB_TLS_CERT_FILE".
+#  | No default. | An absolute path or a path relative to the API /tls directory
+#  that contains the PEM encoded Client private key used when authenticating the
+#  database client. Additionally requires setting values for
+#  "STIGMAN_DB_TLS_CA_FILE" and "STIGMAN_DB_TLS_CERT_FILE".
 #
-#  Affects: API          
+#  Affects: API
 #==============================================================================
 # export STIGMAN_DB_TLS_KEY_FILE=
 
@@ -334,7 +367,7 @@
 #
 #  | Default: "stigman" | The user account used to login to the database
 #
-#  Affects: API    
+#  Affects: API
 #==============================================================================
 # export STIGMAN_DB_USER=
 
@@ -392,7 +425,7 @@
 #  GitHub repository, the docs are located at `../../docs/_build/html` relative
 #  to the API directory.
 #
-#  Affects: API, documentation
+#  Affects: API, Documentation
 #==============================================================================
 # export STIGMAN_DOCS_DIRECTORY=
 
@@ -403,7 +436,7 @@
 #  If you choose to serve the Client from the API container but not the
 #  Documentation, the links do the Docs on the home page will not work.
 #
-#  Affects: Documentation                
+#  Affects: Documentation
 #==============================================================================
 # export STIGMAN_DOCS_DISABLED=
 
@@ -470,7 +503,8 @@
 #  | Default: "jti" | The access token claim whose value is the OIDC provider's
 #  Assertion ID. Updates to this value trigger the API to update a User's
 #  "lastClaims" property. The claim MUST NOT be nested and MUST be a valid
-#  ECMAScript identifier.
+#  ECMAScript identifier. See :ref:`jwt_requirements` for token value format
+#  requirements.
 #
 #  Affects: API
 #==============================================================================
@@ -480,7 +514,8 @@
 # STIGMAN_JWT_AUD_VALUE
 #
 #  | No default. | If present, a string which must be included in the access
-#  token "aud" claim for requests to endpoints requiring authorization.
+#  token "aud" claim for requests to endpoints requiring authorization. See
+#  :ref:`jwt_requirements` for token value format requirements.
 #
 #  Affects: API
 #==============================================================================
@@ -491,7 +526,7 @@
 #
 #  | Default: "email" | The access token claim whose value is the user's email
 #  address. The claim MUST NOT be nested and MUST be a valid ECMAScript
-#  identifier.
+#  identifier. See :ref:`jwt_requirements` for token value format requirements.
 #
 #  Affects: API, Client
 #==============================================================================
@@ -502,6 +537,7 @@
 #
 #  | Default: "name" | The access token claim whose value is the user's full
 #  name. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.
+#  See :ref:`jwt_requirements` for token value format requirements.
 #
 #  Affects: API, Client
 #==============================================================================
@@ -511,8 +547,9 @@
 # STIGMAN_JWT_PRIVILEGES_CLAIM
 #
 #  | Default: "realm_access.roles" | The access token claim whose value is the
-#  user’s privileges. The claim MAY be nested but SHOULD avoid invalid
-#  ECMAScript identifiers.
+#  user's privileges. The claim MAY be nested but SHOULD avoid invalid
+#  ECMAScript identifiers. See :ref:`jwt_requirements` for token value format
+#  requirements.
 #
 #  Affects: API, Client
 #==============================================================================
@@ -523,7 +560,8 @@
 #
 #  | Default: "scope" | The access token claim whose value is the user's scopes.
 #  Some OIDC Providers (Okta, Azure AD) use the claim "scp" to enumerate scopes.
-#  The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.
+#  The claim MUST NOT be nested and MUST be a valid ECMAScript identifier. See
+#  :ref:`jwt_requirements` for token value format requirements.
 #
 #  Affects: API, Client
 #==============================================================================
@@ -532,9 +570,9 @@
 #==============================================================================
 # STIGMAN_JWT_SERVICENAME_CLAIM
 #
-#  | Default: "clientId" | The access token claim whose value is the user's
-#  client. The claim MUST NOT be nested and MUST be a valid ECMAScript
-#  identifier.
+#  | Default: "clientId" | The access token claim whose value is the service
+#  account's client. The claim MUST NOT be nested and MUST be a valid ECMAScript
+#  identifier. See :ref:`jwt_requirements` for token value format requirements.
 #
 #  Affects: API, Client
 #==============================================================================
@@ -545,7 +583,7 @@
 #
 #  | Default: "preferred_username" | The access token claim whose value is the
 #  user's username. The claim MUST NOT be nested and MUST be a valid ECMAScript
-#  identifier.
+#  identifier. See :ref:`jwt_requirements` for token value format requirements.
 #
 #  Affects: API, Client
 #==============================================================================
@@ -568,7 +606,7 @@
 #  OIDC provider issuing signed JWTs for the API.  The string "/.well-
 #  known/openid-configuration" will be appended when fetching metadata.
 #
-#  Affects: API, Client     
+#  Affects: API, Client
 #==============================================================================
 # export STIGMAN_OIDC_PROVIDER=
 
@@ -589,7 +627,7 @@
 #  "/.well-known/openid-configuration" will be appended by the SwaggerUI when
 #  fetching metadata.
 #
-#  Affects: API  
+#  Affects: API
 #==============================================================================
 # export STIGMAN_SWAGGER_OIDC_PROVIDER=
 
