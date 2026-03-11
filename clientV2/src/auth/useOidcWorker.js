@@ -7,14 +7,15 @@ export function setupOidcHandler() {
   bc.addEventListener('message', async (event) => {
     if (event.data?.type === 'noToken') {
       noTokenMessage.value = event.data
-    } else if (event.data?.type === 'accessToken') {
-        noTokenMessage.value = null
+    }
+    else if (event.data?.type === 'accessToken') {
+      noTokenMessage.value = null
     }
   })
 }
 
 export function useOidcWorker() {
   return {
-    noTokenMessage
+    noTokenMessage,
   }
 }
