@@ -44,7 +44,6 @@ const popover = ref()
 const lastAnchorEvent = ref(null)
 const showDiscardDialog = ref(false)
 const closing = ref(false)
-const reopening = ref(false)
 
 const resultOptions = [
   { value: 'pass', label: 'Not a Finding', display: 'NF' },
@@ -118,6 +117,8 @@ function isFieldRequired(fieldSetting) {
   }
   return false
 }
+
+const showResultEmphasis = computed(() => editable.value && !formResult.value)
 
 const detailEnabled = computed(() => isFieldEnabled(props.fieldSettings.detail))
 const commentEnabled = computed(() => isFieldEnabled(props.fieldSettings.comment))
@@ -223,10 +224,6 @@ function onPopoverHide() {
     emit('close')
     return
   }
-  if (reopening.value) {
-    reopening.value = false
-    return
-  }
   if (isDirty.value) {
     showDiscardDialog.value = true
     return
@@ -244,7 +241,6 @@ function onDiscardCancel() {
   // Delay re-show to allow dialog modal overlay to fully close,
   // otherwise its cleanup events trigger another popover hide
   setTimeout(() => {
-    reopening.value = true
     popover.value.show(lastAnchorEvent.value)
   }, 100)
 }
@@ -264,10 +260,19 @@ defineExpose({ toggle, hide })
 </script>
 
 <template>
-  <Popover ref="popover" append-to="body" @hide="onPopoverHide">
+  <Popover
+    ref="popover"
+    append-to="body"
+    :pt="{
+      root: {
+        style: 'border: 1px solid var(--color-shield-green-dark); box-shadow: 0 0 10px 1px hsla(150, 30%, 40%, 0.3);',
+      },
+    }"
+    @hide="onPopoverHide"
+  >
     <div v-if="rowData" class="review-edit-popover" :style="width ? { width: `${width}px` } : {}">
       <div class="review-edit-popover__main">
-        <div class="review-edit-popover__result">
+        <div class="review-edit-popover__result" :class="{ 'review-edit-popover__result--emphasis': showResultEmphasis }">
           <label class="review-edit-popover__label">Result</label>
           <ul class="review-edit-popover__result-list">
             <li
@@ -409,6 +414,18 @@ defineExpose({ toggle, hide })
 
 .review-edit-popover__result {
   flex: 0 0 auto;
+}
+
+.review-edit-popover__result--emphasis {
+  border: 1px solid var(--p-primary-color);
+  border-radius: 4px;
+  padding: 0.25rem;
+  animation: result-pulse 1.5s ease-in-out 2;
+}
+
+@keyframes result-pulse {
+  0%, 100% { border-color: var(--p-primary-color); }
+  50% { border-color: transparent; }
 }
 
 .review-edit-popover__result-list {
