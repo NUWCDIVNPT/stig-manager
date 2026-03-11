@@ -1,6 +1,5 @@
 <script setup>
 import Button from 'primevue/button'
-import Dialog from 'primevue/dialog'
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
@@ -42,8 +41,8 @@ const emit = defineEmits(['save', 'status-action', 'close'])
 
 const popover = ref()
 const lastAnchorEvent = ref(null)
-const showDiscardDialog = ref(false)
 const closing = ref(false)
+const isButtonsHighlighted = ref(false)
 
 const resultOptions = [
   { value: 'pass', label: 'Not a Finding', display: 'NF' },
@@ -225,24 +224,26 @@ function onPopoverHide() {
     return
   }
   if (isDirty.value) {
-    showDiscardDialog.value = true
+    // Re-show popover and pulse buttons instead of modal
+    setTimeout(() => {
+      popover.value.show(lastAnchorEvent.value)
+      triggerButtonPulse()
+    }, 100)
     return
   }
   emit('close')
 }
 
-function onDiscardConfirm() {
-  showDiscardDialog.value = false
-  emit('close')
+function triggerButtonPulse() {
+  isButtonsHighlighted.value = true
+  setTimeout(() => {
+    isButtonsHighlighted.value = false
+  }, 1200)
 }
 
-function onDiscardCancel() {
-  showDiscardDialog.value = false
-  // Delay re-show to allow dialog modal overlay to fully close,
-  // otherwise its cleanup events trigger another popover hide
-  setTimeout(() => {
-    popover.value.show(lastAnchorEvent.value)
-  }, 100)
+function discardChanges() {
+  closing.value = true
+  popover.value.hide()
 }
 
 // Expose toggle for parent to open/close
@@ -322,7 +323,7 @@ defineExpose({ toggle, hide })
           />
         </div>
 
-        <div class="review-edit-popover__actions">
+        <div class="review-edit-popover__actions" :class="{ 'review-edit-popover__actions--highlighted': isButtonsHighlighted }">
           <Button
             v-if="buttonStates.btn1.visible"
             :label="buttonStates.btn1.text"
@@ -342,6 +343,9 @@ defineExpose({ toggle, hide })
             :severity="buttonStates.btn2.actionType === 'accept' ? 'warn' : 'primary'"
             @click="onButtonClick(buttonStates.btn2.actionType)"
           />
+          <button v-if="isDirty" class="review-edit-popover__discard-link" @click="discardChanges">
+            discard changes
+          </button>
         </div>
       </div>
 
@@ -376,21 +380,6 @@ defineExpose({ toggle, hide })
       </div>
     </div>
   </Popover>
-
-  <Dialog
-    v-model:visible="showDiscardDialog"
-    header="Unsaved Changes"
-    :modal="true"
-    :closable="false"
-    :style="{ width: '20rem' }"
-    append-to="body"
-  >
-    <p>You have unsaved changes. Discard them?</p>
-    <template #footer>
-      <Button label="Cancel" severity="secondary" text @click="onDiscardCancel" />
-      <Button label="Discard" severity="danger" @click="onDiscardConfirm" />
-    </template>
-  </Dialog>
 </template>
 
 <style scoped>
@@ -512,6 +501,33 @@ defineExpose({ toggle, hide })
 .review-edit-popover__actions .p-button {
   white-space: nowrap;
   font-size: 1rem;
+}
+
+.review-edit-popover__actions--highlighted {
+  animation: actions-pulse 0.6s ease-in-out 2;
+}
+
+@keyframes actions-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0px transparent); }
+  50% { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--p-primary-color) 70%, transparent)); }
+}
+
+.review-edit-popover__discard-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.72rem;
+  color: var(--color-text-primary);
+  opacity: 0.4;
+  text-align: right;
+  white-space: nowrap;
+  transition: opacity 0.15s ease;
+}
+
+.review-edit-popover__discard-link:hover {
+  opacity: 0.85;
+  text-decoration: underline;
 }
 
 .review-edit-popover__attributions {
