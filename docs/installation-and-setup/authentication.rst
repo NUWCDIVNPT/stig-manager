@@ -12,6 +12,8 @@ STIG Manager OSS has been tested to work with Keycloak, Okta, and AzureAD as OID
   If you are using the demonstration Keycloak container from the Project's Docker Hub page, you may not need to change any settings or variables described in this section. 
 
 
+.. _jwt_requirements:
+
 JSON Web Token (JWT) Requirements
 ----------------------------------
 
@@ -23,6 +25,18 @@ The JWT produced by the Identity Provider should provide the claims specified be
     * User Privileges - ``STIGMAN_JWT_PRIVILEGES_CLAIM`` - **default:** ``realm_access.roles``
     * Scope - ``STIGMAN_JWT_SCOPE_CLAIM`` **default:** ``scope``. Some OIDC Providers (Okta, Azure Entra ID) use the claim ``scp`` to enumerate scopes.
     * Assertion ID - ``STIGMAN_JWT_ASSERTION_CLAIM`` **default** ``jti``. Some OIDC Providers (ADFS, Azure Entra ID?) use the claim ``uti`` instead of ``jti`` to protect against replay attacks.
+    * Service Name - ``STIGMAN_JWT_SERVICENAME_CLAIM`` - **default:** ``clientId``. Used for service account clients.
+    * Audience - ``STIGMAN_JWT_AUD_VALUE`` - (optional) **no default**. If specified, the ``aud`` claim must include this value.
+
+.. important::
+   **Claim Value Formats**
+
+   The token values found at each claim location must use the following formats:
+
+   * **Username**, **Name**, **Email**, **Assertion ID**, **Service Name**: String
+   * **Scope**: A space-separated string per OAuth 2.0 RFC 6749 (e.g., ``"openid stig-manager:collection stig-manager:stig:read"``)
+   * **Privileges**: An array of strings (e.g., ``["admin", "create_collection"]``) or ``null``. 
+   * **Audience**: String or array of strings. If ``STIGMAN_JWT_AUD_VALUE`` is set, it must be present in the ``aud`` claim value.
 
 .. note::
   STIG Manager will use the value specified in the ``STIGMAN_JWT_USERNAME_CLAIM`` environment variable as the Claim that should hold a users unique username. This value defaults to the Keycloak default, which is ``preferred_username``

@@ -1,0 +1,36 @@
+name: Unit tests
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "api/source/**"
+      - "test/unit/**"
+      - ".github/workflows/unit-tests.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "api/source/**"
+      - "test/unit/**"
+      - ".github/workflows/unit-tests.yml"
+
+jobs:
+  unit-tests:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Install API dependencies
+        run: npm ci
+        working-directory: ./api/source/
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: ./test/unit/
+      - name: Run unit tests
+        working-directory: ./test/unit/
+        run: npm test

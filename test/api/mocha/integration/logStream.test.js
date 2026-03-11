@@ -113,7 +113,7 @@ describe('LogStream authorization', async function () {
     await new Promise(r => setTimeout(r, 500));
     expect(socket.messages).to.have.lengthOf(2);
     expect(socket.messages[1]).to.have.property('type', 'error');
-    expect(socket.messages[1].data).to.have.property('message').to.match(/^Message validation failed/);
+    expect(socket.messages[1].data).to.match(/^Message validation failed/);
     socket.ws.close();
   });
 

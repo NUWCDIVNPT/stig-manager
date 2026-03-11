@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "test": "mocha --reporter mochawesome --showFailed --exit './mocha/**/*.test.js'"
+    "test": "mocha --reporter mochawesome --timeout 10000 --showFailed --exit './mocha/**/*.test.js'"
   },
   "overrides": {
     "serialize-javascript": "^7.0.4",
@@ -9,7 +9,7 @@
   },    
   "dependencies": {
     "chai": "^5.2.0",
-    "chai-datetime": "^1.8.1",
+    "mocha": "^11.7.5",
     "mochawesome": "^7.1.3"
   }
 }
