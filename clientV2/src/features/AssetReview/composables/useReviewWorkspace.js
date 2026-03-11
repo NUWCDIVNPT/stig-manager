@@ -136,6 +136,8 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
         detail: review?.detail ?? '',
         comment: review?.comment ?? '',
         username: review?.username ?? item.username ?? '',
+        status: review?.status ?? item.status,
+        ts: review?.ts ?? item.ts,
       }
     })
   })

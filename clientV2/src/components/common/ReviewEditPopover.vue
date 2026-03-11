@@ -3,7 +3,7 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { getReviewButtonStates } from '../../features/AssetReview/lib/reviewButtonStates.js'
 import ResultBadge from './ResultBadge.vue'
 import StatusBadge from './StatusBadge.vue'
@@ -44,6 +44,7 @@ const popover = ref()
 const lastAnchorEvent = ref(null)
 const showDiscardDialog = ref(false)
 const closing = ref(false)
+const reopening = ref(false)
 
 const resultOptions = [
   { value: 'pass', label: 'Not a Finding', display: 'NF' },
@@ -222,11 +223,12 @@ function onPopoverHide() {
     emit('close')
     return
   }
+  if (reopening.value) {
+    reopening.value = false
+    return
+  }
   if (isDirty.value) {
     showDiscardDialog.value = true
-    nextTick(() => {
-      popover.value.show(lastAnchorEvent.value)
-    })
     return
   }
   emit('close')
@@ -234,12 +236,17 @@ function onPopoverHide() {
 
 function onDiscardConfirm() {
   showDiscardDialog.value = false
-  closing.value = true
-  popover.value.hide()
+  emit('close')
 }
 
 function onDiscardCancel() {
   showDiscardDialog.value = false
+  // Delay re-show to allow dialog modal overlay to fully close,
+  // otherwise its cleanup events trigger another popover hide
+  setTimeout(() => {
+    reopening.value = true
+    popover.value.show(lastAnchorEvent.value)
+  }, 100)
 }
 
 // Expose toggle for parent to open/close
@@ -390,7 +397,7 @@ defineExpose({ toggle, hide })
   display: block;
   font-weight: 600;
   font-size: 1rem;
-  color: var(--color-text-dim);
+  color: var(--color-text-primary);
   margin-bottom: 0.2rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -436,7 +443,7 @@ defineExpose({ toggle, hide })
 
 .review-edit-popover__engine {
   display: block;
-  color: var(--color-text-dim);
+  color: var(--color-text-primary);
   font-size: 0.9rem;
   margin-top: 0.2rem;
   background-color: var(--color-background-dark);
@@ -483,7 +490,7 @@ defineExpose({ toggle, hide })
   display: flex;
   gap: 1.5rem;
   font-size: 1rem;
-  color: var(--color-text-dim);
+  color: var(--color-text-primary);
   border-top: 1px solid var(--color-border-light);
   padding-top: 0.35rem;
 }
@@ -499,7 +506,7 @@ defineExpose({ toggle, hide })
 }
 
 .review-edit-popover__attr-user {
-  color: var(--color-text-dim);
+  color: var(--color-text-primary);
   opacity: 0.9;
 }
 </style>
