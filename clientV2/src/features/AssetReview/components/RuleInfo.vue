@@ -1,5 +1,6 @@
 <script setup>
 import CatBadge from '../../../components/common/CatBadge.vue'
+import { severityMap } from '../lib/checklistUtils.js'
 
 defineProps({
   ruleContent: {
@@ -15,8 +16,6 @@ defineProps({
     default: null,
   },
 })
-
-const severityMap = { high: 1, medium: 2, low: 3 }
 </script>
 
 <template>
@@ -180,7 +179,7 @@ const severityMap = { high: 1, medium: 2, low: 3 }
 }
 
 .rule-info__rule-id {
-  font-size: 1.3rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--color-text-primary);
 }
@@ -191,11 +190,11 @@ const severityMap = { high: 1, medium: 2, low: 3 }
 
 .rule-info__version {
   color: var(--color-text-dim);
-  margin-bottom: 0.35rem;
+  margin-bottom: 1rem;
 }
 
 .rule-info__title {
-  font-size: 1rem;
+  font-size: 1.6rem;
   font-weight: 600;
   color: var(--color-text-primary);
   line-height: 1.35;
@@ -207,11 +206,11 @@ const severityMap = { high: 1, medium: 2, low: 3 }
 
 .rule-info__section-title {
   margin: 0 0 0.4rem 0;
-  font-size: 1rem;
+  font-size: 1.4rem;
   font-weight: 700;
-  color: #5c98d6;
+  color: var(--color-action-blue);
   padding: 0.3rem 0.5rem;
-  background-color: hsl(210deg 6% 16%);
+  background-color: var(--color-background-dark);
   border-radius: 3px;
 }
 
@@ -237,6 +236,7 @@ const severityMap = { high: 1, medium: 2, low: 3 }
 }
 
 .rule-info__field-label {
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--color-text-dim);
 }

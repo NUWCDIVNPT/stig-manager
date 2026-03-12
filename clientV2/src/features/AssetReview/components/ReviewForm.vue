@@ -4,7 +4,8 @@ import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { computed } from 'vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
-import { getReviewButtonStates } from '../lib/reviewButtonStates.js'
+import { getReviewButtonStates } from '../../../shared/lib/reviewButtonStates.js'
+import { formatReviewDate, getEngineDisplayText, isFieldEnabled, isFieldRequired, resultOptions } from '../../../shared/lib/reviewFormUtils.js'
 
 const props = defineProps({
   formValues: {
@@ -54,14 +55,6 @@ const props = defineProps({
 
 const emit = defineEmits(['save-review', 'update:formValues'])
 
-const resultOptions = [
-  { value: 'pass', label: 'Not a Finding' },
-  { value: 'fail', label: 'Open' },
-  { value: 'notapplicable', label: 'Not Applicable' },
-  { value: 'informational', label: 'Informational' },
-  { value: 'notchecked', label: 'Not Reviewed' },
-]
-
 // Editability
 const statusLabel = computed(() => props.currentReview?.status?.label ?? '')
 const editable = computed(() => {
@@ -69,39 +62,11 @@ const editable = computed(() => {
   return props.accessMode === 'rw' && (s === '' || s === 'saved' || s === 'rejected')
 })
 
-// Field enable states
-function isFieldEnabled(fieldSetting) {
-  if (!editable.value) {
-    return false
-  }
-  if (!props.formValues.result) {
-    return false
-  }
-  if (fieldSetting?.enabled === 'always') {
-    return true
-  }
-  if (fieldSetting?.enabled === 'findings') {
-    return props.formValues.result === 'fail'
-  }
-  return false
-}
-
-const detailEnabled = computed(() => isFieldEnabled(props.fieldSettings.detail))
-const commentEnabled = computed(() => isFieldEnabled(props.fieldSettings.comment))
-
-// Field requirement indicators
-function isFieldRequired(fieldSetting) {
-  if (fieldSetting?.required === 'always') {
-    return true
-  }
-  if (fieldSetting?.required === 'findings' && props.formValues.result === 'fail') {
-    return true
-  }
-  return false
-}
-
-const detailRequired = computed(() => isFieldRequired(props.fieldSettings.detail))
-const commentRequired = computed(() => isFieldRequired(props.fieldSettings.comment))
+// Field enable/require states
+const detailEnabled = computed(() => isFieldEnabled(props.fieldSettings.detail, props.formValues.result, editable.value))
+const commentEnabled = computed(() => isFieldEnabled(props.fieldSettings.comment, props.formValues.result, editable.value))
+const detailRequired = computed(() => isFieldRequired(props.fieldSettings.detail, props.formValues.result))
+const commentRequired = computed(() => isFieldRequired(props.fieldSettings.comment, props.formValues.result))
 
 // Button states
 const buttonStates = computed(() => {
@@ -115,24 +80,7 @@ const buttonStates = computed(() => {
 })
 
 // Engine display
-const engineDisplay = computed(() => {
-  const re = props.formValues.resultEngine
-  if (!re) {
-    return 'Manual'
-  }
-  if (re.overrides?.length) {
-    return `${re.product || 'Engine'} (Override)`
-  }
-  return re.product || 'Engine'
-})
-
-// Attribution formatting
-function formatDate(dateStr) {
-  if (!dateStr) {
-    return '--'
-  }
-  return new Date(dateStr).toLocaleString()
-}
+const engineDisplay = computed(() => getEngineDisplayText(props.formValues.resultEngine))
 
 // Form value updates
 function updateResult(value) {
@@ -238,7 +186,7 @@ function onButtonClick(actionType) {
         <div class="review-form__attribution">
           <span class="review-form__attribution-label">Evaluated</span>
           <span class="review-form__attribution-value">
-            {{ formatDate(currentReview?.ts) }}
+            {{ formatReviewDate(currentReview?.ts) }}
             <span v-if="currentReview?.username" class="review-form__attribution-user">
               by {{ currentReview.username }}
             </span>
@@ -250,7 +198,7 @@ function onButtonClick(actionType) {
           <span class="review-form__attribution-value">
             <template v-if="currentReview?.status?.ts">
               <StatusBadge v-if="statusLabel" :status="statusLabel" />
-              {{ formatDate(currentReview.status.ts) }}
+              {{ formatReviewDate(currentReview.status.ts) }}
               <span v-if="currentReview.status.user?.username" class="review-form__attribution-user">
                 by {{ currentReview.status.user.username }}
               </span>

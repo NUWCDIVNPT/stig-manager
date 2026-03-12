@@ -13,6 +13,8 @@ import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
+import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../lib/checklistUtils.js'
 
 const props = defineProps({
   currentReview: {
@@ -32,88 +34,8 @@ const props = defineProps({
 const activeTab = ref('history')
 const expandedRows = ref([])
 
-// Maps for display
-const resultDisplayMap = {
-  pass: 'NF',
-  fail: 'O',
-  notapplicable: 'NA',
-  notchecked: 'NR',
-  informational: 'I',
-  unknown: 'NR',
-  error: 'NR',
-  notselected: 'NR',
-  fixed: 'NF',
-}
-
-function getResultDisplay(result) {
-  if (!result) {
-    return null
-  }
-  return resultDisplayMap[result] || 'NR'
-}
-
-function getEngineDisplay(item) {
-  if (!item?.resultEngine) {
-    return null
-  }
-  if (item.resultEngine.overrides?.length) {
-    return 'override'
-  }
-  return 'engine'
-}
-
-function formatTimestamp(ts) {
-  if (!ts) {
-    return '--'
-  }
-  return new Date(ts).toLocaleString()
-}
-
 // History stats (computed from props.reviewHistory)
-const historyStats = computed(() => {
-  const history = props.reviewHistory
-  if (!history?.length) {
-    return null
-  }
-
-  const results = { pass: 0, fail: 0, notapplicable: 0, other: 0 }
-  const engine = { manual: 0, engine: 0, override: 0 }
-  const statuses = { saved: 0, submitted: 0, accepted: 0, rejected: 0 }
-
-  for (const item of history) {
-    if (item.result === 'pass') {
-      results.pass++
-    }
-    else if (item.result === 'fail') {
-      results.fail++
-    }
-    else if (item.result === 'notapplicable') {
-      results.notapplicable++
-    }
-    else {
-      results.other++
-    }
-
-    if (item.result) {
-      if (!item.resultEngine) {
-        engine.manual++
-      }
-      else if (item.resultEngine.overrides?.length) {
-        engine.override++
-      }
-      else {
-        engine.engine++
-      }
-    }
-
-    const statusLabel = item.status?.label || item.status
-    if (statusLabel && statuses[statusLabel] !== undefined) {
-      statuses[statusLabel]++
-    }
-  }
-
-  return { results, engine, statuses, total: history.length }
-})
+const historyStats = computed(() => calculateChecklistStats(props.reviewHistory))
 
 // PrimeVue passthrough objects (following CollectionView pattern)
 const tabsPt = {
@@ -194,7 +116,7 @@ const tabPt = {
 
             <Column header="Timestamp" field="touchTs" sortable :style="{ width: '140px' }">
               <template #body="{ data }">
-                <span class="cell-text--dim">{{ formatTimestamp(data.touchTs) }}</span>
+                <span class="cell-text--dim">{{ formatReviewDate(data.touchTs) }}</span>
               </template>
             </Column>
 

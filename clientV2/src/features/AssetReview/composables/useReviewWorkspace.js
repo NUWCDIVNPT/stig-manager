@@ -262,6 +262,35 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     return history
   })
 
+  // --- Array update helpers ---
+  function updateChecklistRow(ruleId, updates) {
+    if (!checklistData.value?.length) {
+      return
+    }
+    const idx = checklistData.value.findIndex(item => item.ruleId === ruleId)
+    if (idx !== -1) {
+      checklistData.value = [
+        ...checklistData.value.slice(0, idx),
+        { ...checklistData.value[idx], ...updates },
+        ...checklistData.value.slice(idx + 1),
+      ]
+    }
+  }
+
+  function upsertReview(ruleId, review) {
+    const idx = allReviews.value.findIndex(r => r.ruleId === ruleId)
+    if (idx !== -1) {
+      allReviews.value = [
+        ...allReviews.value.slice(0, idx),
+        review,
+        ...allReviews.value.slice(idx + 1),
+      ]
+    }
+    else {
+      allReviews.value = [...allReviews.value, review]
+    }
+  }
+
   // --- Load review data into form ---
   function loadReviewIntoForm(review) {
     const vals = {
@@ -345,21 +374,12 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
       }
 
       // Update checklist row in-place
-      if (checklistData.value?.length) {
-        const idx = checklistData.value.findIndex(item => item.ruleId === ruleId)
-        if (idx !== -1) {
-          const updated = { ...checklistData.value[idx] }
-          updated.result = result.result
-          updated.status = result.status?.label ?? result.status
-          updated.touchTs = result.touchTs
-          updated.resultEngine = result.resultEngine
-          checklistData.value = [
-            ...checklistData.value.slice(0, idx),
-            updated,
-            ...checklistData.value.slice(idx + 1),
-          ]
-        }
-      }
+      updateChecklistRow(ruleId, {
+        result: result.result,
+        status: result.status?.label ?? result.status,
+        touchTs: result.touchTs,
+        resultEngine: result.resultEngine,
+      })
 
       // Update current review and reset form
       currentReview.value = result
@@ -389,35 +409,13 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
 
     const result = await putReview(collectionId.value, assetId.value, ruleId, body)
 
-    // Update allReviews in place
-    const reviewIdx = allReviews.value.findIndex(r => r.ruleId === ruleId)
-    if (reviewIdx !== -1) {
-      allReviews.value = [
-        ...allReviews.value.slice(0, reviewIdx),
-        result,
-        ...allReviews.value.slice(reviewIdx + 1),
-      ]
-    }
-    else {
-      allReviews.value = [...allReviews.value, result]
-    }
-
-    // Update checklist row
-    if (checklistData.value?.length) {
-      const idx = checklistData.value.findIndex(item => item.ruleId === ruleId)
-      if (idx !== -1) {
-        const updated = { ...checklistData.value[idx] }
-        updated.result = result.result
-        updated.status = result.status?.label ?? result.status
-        updated.touchTs = result.touchTs
-        updated.resultEngine = result.resultEngine
-        checklistData.value = [
-          ...checklistData.value.slice(0, idx),
-          updated,
-          ...checklistData.value.slice(idx + 1),
-        ]
-      }
-    }
+    upsertReview(ruleId, result)
+    updateChecklistRow(ruleId, {
+      result: result.result,
+      status: result.status?.label ?? result.status,
+      touchTs: result.touchTs,
+      resultEngine: result.resultEngine,
+    })
 
     // Update current review if this is the selected rule
     if (ruleId === selectedRuleId.value) {
@@ -447,30 +445,11 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
 
     const result = await patchReview(collectionId.value, assetId.value, ruleId, { status })
 
-    // Update allReviews
-    const reviewIdx = allReviews.value.findIndex(r => r.ruleId === ruleId)
-    if (reviewIdx !== -1) {
-      allReviews.value = [
-        ...allReviews.value.slice(0, reviewIdx),
-        result,
-        ...allReviews.value.slice(reviewIdx + 1),
-      ]
-    }
-
-    // Update checklist row
-    if (checklistData.value?.length) {
-      const idx = checklistData.value.findIndex(item => item.ruleId === ruleId)
-      if (idx !== -1) {
-        const updated = { ...checklistData.value[idx] }
-        updated.status = result.status?.label ?? result.status
-        updated.touchTs = result.touchTs
-        checklistData.value = [
-          ...checklistData.value.slice(0, idx),
-          updated,
-          ...checklistData.value.slice(idx + 1),
-        ]
-      }
-    }
+    upsertReview(ruleId, result)
+    updateChecklistRow(ruleId, {
+      status: result.status?.label ?? result.status,
+      touchTs: result.touchTs,
+    })
 
     // Update current review if selected
     if (ruleId === selectedRuleId.value) {

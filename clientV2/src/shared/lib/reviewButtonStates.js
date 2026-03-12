@@ -56,7 +56,7 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
   // Editable states (saved, rejected, or empty)
   if (isSubmittable) {
     if (isDirty) {
-      const btn2Text = status === 'rejected' ? 'Save and Resubmit' : 'Save and Submit'
+      const btn2Text = status === 'rejected' ? 'Resubmit' : 'Submit'
       return {
         btn1: { text: 'Save', enabled: true, visible: true, actionType: 'save', tooltip: '' },
         btn2: { text: btn2Text, enabled: true, visible: true, actionType: 'save and submit', tooltip: '' },
@@ -67,7 +67,7 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
       if (status === 'rejected') {
         return {
           btn1: { text: 'Save', enabled: false, visible: true, actionType: '', tooltip: 'This button is disabled because the review has not been modified.' },
-          btn2: { text: 'Save and Resubmit', enabled: false, visible: true, actionType: '', tooltip: 'This button is disabled because the review has not been modified.' },
+          btn2: { text: 'Resubmit', enabled: false, visible: true, actionType: '', tooltip: 'This button is disabled because the review has not been modified.' },
         }
       }
       return {

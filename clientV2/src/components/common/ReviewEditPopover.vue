@@ -3,7 +3,8 @@ import Button from 'primevue/button'
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
-import { getReviewButtonStates } from '../../features/AssetReview/lib/reviewButtonStates.js'
+import { getReviewButtonStates } from '../../shared/lib/reviewButtonStates.js'
+import { formatReviewDate, getEngineDisplayText, isFieldEnabled, isFieldRequired, resultOptions } from '../../shared/lib/reviewFormUtils.js'
 import ResultBadge from './ResultBadge.vue'
 import StatusBadge from './StatusBadge.vue'
 
@@ -44,14 +45,6 @@ const lastAnchorEvent = ref(null)
 const closing = ref(false)
 const isButtonsHighlighted = ref(false)
 
-const resultOptions = [
-  { value: 'pass', label: 'Not a Finding', display: 'NF' },
-  { value: 'fail', label: 'Open', display: 'O' },
-  { value: 'notapplicable', label: 'Not Applicable', display: 'NA' },
-  { value: 'informational', label: 'Informational', display: 'I' },
-  { value: 'notchecked', label: 'Not Reviewed', display: 'NR' },
-]
-
 // Local form state
 const formResult = ref('')
 const formDetail = ref('')
@@ -90,39 +83,13 @@ const isDirty = computed(() => {
     || formComment.value !== (props.rowData.comment ?? '')
 })
 
-// Field enable/require logic
-function isFieldEnabled(fieldSetting) {
-  if (!editable.value) {
-    return false
-  }
-  if (!formResult.value) {
-    return false
-  }
-  if (fieldSetting?.enabled === 'always') {
-    return true
-  }
-  if (fieldSetting?.enabled === 'findings') {
-    return formResult.value === 'fail'
-  }
-  return false
-}
-
-function isFieldRequired(fieldSetting) {
-  if (fieldSetting?.required === 'always') {
-    return true
-  }
-  if (fieldSetting?.required === 'findings' && formResult.value === 'fail') {
-    return true
-  }
-  return false
-}
-
 const showResultEmphasis = computed(() => editable.value && !formResult.value)
 
-const detailEnabled = computed(() => isFieldEnabled(props.fieldSettings.detail))
-const commentEnabled = computed(() => isFieldEnabled(props.fieldSettings.comment))
-const detailRequired = computed(() => isFieldRequired(props.fieldSettings.detail))
-const commentRequired = computed(() => isFieldRequired(props.fieldSettings.comment))
+// Field enable/require states
+const detailEnabled = computed(() => isFieldEnabled(props.fieldSettings.detail, formResult.value, editable.value))
+const commentEnabled = computed(() => isFieldEnabled(props.fieldSettings.comment, formResult.value, editable.value))
+const detailRequired = computed(() => isFieldRequired(props.fieldSettings.detail, formResult.value))
+const commentRequired = computed(() => isFieldRequired(props.fieldSettings.comment, formResult.value))
 
 // Submittability
 const isSubmittable = computed(() => {
@@ -158,24 +125,7 @@ const buttonStates = computed(() => {
 })
 
 // Engine display
-const engineDisplay = computed(() => {
-  const re = props.rowData?.resultEngine
-  if (!re) {
-    return 'Manual'
-  }
-  if (re.overrides?.length) {
-    return `${re.product || 'Engine'} (Override)`
-  }
-  return re.product || 'Engine'
-})
-
-// Attribution formatting
-function formatDate(dateStr) {
-  if (!dateStr) {
-    return '--'
-  }
-  return new Date(dateStr).toLocaleString()
-}
+const engineDisplay = computed(() => getEngineDisplayText(props.rowData?.resultEngine))
 
 // Result selection
 function selectResult(value) {
@@ -242,8 +192,11 @@ function triggerButtonPulse() {
 }
 
 function discardChanges() {
-  closing.value = true
-  popover.value.hide()
+  if (props.rowData) {
+    formResult.value = props.rowData.result ?? ''
+    formDetail.value = props.rowData.detail ?? ''
+    formComment.value = props.rowData.comment ?? ''
+  }
 }
 
 // Expose toggle for parent to open/close
@@ -343,8 +296,13 @@ defineExpose({ toggle, hide })
             :severity="buttonStates.btn2.actionType === 'accept' ? 'warn' : 'primary'"
             @click="onButtonClick(buttonStates.btn2.actionType)"
           />
-          <button v-if="isDirty" class="review-edit-popover__discard-link" @click="discardChanges">
-            discard changes
+          <button
+            class="review-edit-popover__discard-link"
+            :class="{ 'review-edit-popover__discard-link--hidden': !isDirty }"
+            @click="discardChanges"
+          >
+            <span>discard</span>
+            <span>changes</span>
           </button>
         </div>
       </div>
@@ -354,7 +312,7 @@ defineExpose({ toggle, hide })
           <span class="review-edit-popover__attr-label">Evaluated: </span>
           <span v-if="rowData.ts" class="review-edit-popover__attr-pill">
             <i class="pi pi-clock" />
-            {{ formatDate(rowData.ts) }}
+            {{ formatReviewDate(rowData.ts) }}
           </span>
           <span v-if="rowData.username" class="review-edit-popover__attr-pill">
             <i class="pi pi-user" />
@@ -367,7 +325,7 @@ defineExpose({ toggle, hide })
           <template v-if="rowData.status && statusLabel">
             <span v-if="rowData.status?.ts" class="review-edit-popover__attr-pill">
               <i class="pi pi-clock" />
-              {{ formatDate(rowData.status.ts) }}
+              {{ formatReviewDate(rowData.status.ts) }}
             </span>
             <span v-if="rowData.status?.user?.username" class="review-edit-popover__attr-pill">
               <i class="pi pi-user" />
@@ -517,17 +475,22 @@ defineExpose({ toggle, hide })
   border: none;
   padding: 0;
   cursor: pointer;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--color-text-primary);
-  opacity: 0.4;
-  text-align: right;
-  white-space: nowrap;
+  opacity: 0.7;
+  text-align: center;
+  line-height: 1.2;
   transition: opacity 0.15s ease;
+  margin-top: auto;
 }
 
 .review-edit-popover__discard-link:hover {
   opacity: 0.85;
   text-decoration: underline;
+}
+
+.review-edit-popover__discard-link--hidden {
+  visibility: hidden;
 }
 
 .review-edit-popover__attributions {

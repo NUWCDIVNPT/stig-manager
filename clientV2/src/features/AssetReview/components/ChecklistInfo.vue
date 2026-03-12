@@ -11,6 +11,9 @@ import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { durationToNow } from '../../../shared/lib.js'
+import { useChecklistDisplayMode } from '../composables/useChecklistDisplayMode.js'
+import { calculateChecklistStats, getEngineDisplay, getResultDisplay, severityMap } from '../lib/checklistUtils.js'
 
 const props = defineProps({
   checklistData: {
@@ -41,139 +44,20 @@ const selectedRow = ref(null)
 const checklistMenu = ref()
 
 // --- Display mode (Group/Rule toggle) ---
-const displayMode = ref('groupRule')
-
-const displayModeItems = ref([
-  {
-    label: 'Group/Rule display',
-    items: [
-      {
-        label: 'Group ID and Rule title',
-        icon: () => displayMode.value === 'groupRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
-        command: () => { displayMode.value = 'groupRule' },
-      },
-      {
-        label: 'Group ID and Group title',
-        icon: () => displayMode.value === 'groupGroup' ? 'pi pi-circle-fill' : 'pi pi-circle',
-        command: () => { displayMode.value = 'groupGroup' },
-      },
-      {
-        label: 'Rule ID and Rule title',
-        icon: () => displayMode.value === 'ruleRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
-        command: () => { displayMode.value = 'ruleRule' },
-      },
-    ],
-  },
-])
+const {
+  displayModeItems,
+  showGroupId,
+  showRuleId,
+  showRuleTitle,
+  showGroupTitle,
+} = useChecklistDisplayMode()
 
 function toggleChecklistMenu(event) {
   checklistMenu.value.toggle(event)
 }
 
-// Column visibility based on display mode
-const showGroupId = computed(() => displayMode.value !== 'ruleRule')
-const showRuleId = computed(() => displayMode.value === 'ruleRule')
-const showRuleTitle = computed(() => displayMode.value !== 'groupGroup')
-const showGroupTitle = computed(() => displayMode.value === 'groupGroup')
-
-// Map severity to CatBadge category number
-const severityMap = { high: 1, medium: 2, low: 3 }
-
-// Map API result values to ResultBadge display codes
-const resultDisplayMap = {
-  pass: 'NF',
-  fail: 'O',
-  notapplicable: 'NA',
-  notchecked: 'NR',
-  informational: 'I',
-  unknown: 'NR',
-  error: 'NR',
-  notselected: 'NR',
-  fixed: 'NF',
-}
-
-function getResultDisplay(result) {
-  if (!result) {
-    return null
-  }
-  return resultDisplayMap[result] || 'NR'
-}
-
-function getEngineDisplay(item) {
-  if (!item.resultEngine) {
-    return null
-  }
-  if (item.resultEngine.overrides?.length) {
-    return 'override'
-  }
-  return 'engine'
-}
-
-function durationToNow(date) {
-  if (!date) {
-    return '-'
-  }
-  const d = Math.abs(new Date(date) - new Date()) / 1000
-  const days = Math.floor(d / 86400)
-  if (days > 0) {
-    return `${days} d`
-  }
-  const hours = Math.floor(d / 3600)
-  if (hours > 0) {
-    return `${hours} h`
-  }
-  const minutes = Math.floor(d / 60)
-  if (minutes > 0) {
-    return `${minutes} m`
-  }
-  return 'now'
-}
-
-// Tally stats (results + engine + statuses)
-const stats = computed(() => {
-  const data = props.checklistData
-  if (!data?.length) {
-    return null
-  }
-
-  const results = { pass: 0, fail: 0, notapplicable: 0, other: 0 }
-  const engine = { manual: 0, engine: 0, override: 0 }
-  const statuses = { saved: 0, submitted: 0, accepted: 0, rejected: 0 }
-
-  for (const item of data) {
-    if (item.result === 'pass') {
-      results.pass++
-    }
-    else if (item.result === 'fail') {
-      results.fail++
-    }
-    else if (item.result === 'notapplicable') {
-      results.notapplicable++
-    }
-    else {
-      results.other++
-    }
-
-    // Engine counts (only for items that have a result)
-    if (item.result) {
-      if (!item.resultEngine) {
-        engine.manual++
-      }
-      else if (item.resultEngine.overrides?.length) {
-        engine.override++
-      }
-      else {
-        engine.engine++
-      }
-    }
-
-    if (item.status) {
-      statuses[item.status] = (statuses[item.status] || 0) + 1
-    }
-  }
-
-  return { results, engine, statuses, total: data.length }
-})
+// Tally stats
+const stats = computed(() => calculateChecklistStats(props.checklistData))
 
 // Header display text
 const headerTitle = computed(() => {
