@@ -1,0 +1,27 @@
+name: API spec validation
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "api/source/specification/**"
+      - ".github/workflows/api-spec-validation.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "api/source/specification/**"
+      - ".github/workflows/api-spec-validation.yml"
+
+jobs:
+  validate_asyncapi:
+    name: Validate AsyncAPI specs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Validate log-socket.yaml
+        run: npx --yes @asyncapi/cli@2 validate api/source/specification/log-socket.yaml

@@ -32,7 +32,7 @@
 "STIGMAN_CLIENT_OIDC_PROVIDER","| **Default** Value of ``STIGMAN_OIDC_PROVIDER``
 | Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended by the client when fetching metadata.","Client "
 "STIGMAN_CLIENT_REAUTH_ACTION","| **Default** ``popup``
-| How to prompt for re-authentication when user credentials expire. Available values: ``popup``, ``iframe``, ``tab``, or ``reload``. See `detailed description. <../installation-and-setup/authentication.html#stigman-client-reauth-action>`_","Client"
+| How to prompt for re-authentication when user credentials expire. Available values: ``popup``, ``iframe``, ``tab``, or ``reload``. See :ref:`stigman_client_reauth_action` in the Authentication document for details.","Client"
 "STIGMAN_CLIENT_RESPONSE_MODE","| **Default** ``fragment``
 | The response_mode the web client should specify when requesting an authorization code from the OIDC provider. Available values: ``fragment``, ``query`` ","Client"
 "STIGMAN_CLIENT_SCOPE_PREFIX","| **No default**
@@ -92,21 +92,21 @@
 "STIGMAN_JWKS_CACHE_MAX_AGE","| **Default** ``10``
 | The time in minutes after which the API's cache of JWT signing keys is deemed stale and the API becomes unavailable. Cache refreshes are scheduled at intervals of half this value and also occur when an unknown signing key is presented. Scheduled refresh failures are retried every 10 seconds.","API"
 "STIGMAN_JWT_ASSERTION_CLAIM","| **Default** ``jti``
-| The access token claim whose value is the OIDC provider's Assertion ID. Updates to this value trigger the API to update a User's ``lastClaims`` property. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API"
+| The access token claim whose value is the OIDC provider's Assertion ID. Updates to this value trigger the API to update a User's ``lastClaims`` property. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier. See :ref:`jwt_requirements` for token value format requirements.","API"
 "STIGMAN_JWT_AUD_VALUE","| **No default**
-| If present, a string which must be included in the access token ``aud`` claim for requests to endpoints requiring authorization.","API"
+| If present, a string which must be included in the access token ``aud`` claim for requests to endpoints requiring authorization. See :ref:`jwt_requirements` for token value format requirements.","API"
 "STIGMAN_JWT_EMAIL_CLAIM","| **Default** ``email``
-| The access token claim whose value is the user's email address. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API, Client"
+| The access token claim whose value is the user's email address. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier. See :ref:`jwt_requirements` for token value format requirements.","API, Client"
 "STIGMAN_JWT_NAME_CLAIM","| **Default** ``name``
-| The access token claim whose value is the user's full name. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API, Client"
+| The access token claim whose value is the user's full name. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier. See :ref:`jwt_requirements` for token value format requirements.","API, Client"
 "STIGMAN_JWT_PRIVILEGES_CLAIM","| **Default** ``realm_access.roles``
-| The access token claim whose value is the user’s privileges. The claim MAY be nested but SHOULD avoid invalid ECMAScript identifiers. ","API, Client"
+| The access token claim whose value is the user's privileges. The claim MAY be nested but SHOULD avoid invalid ECMAScript identifiers. See :ref:`jwt_requirements` for token value format requirements.","API, Client"
 "STIGMAN_JWT_SCOPE_CLAIM","| **Default** ``scope``
-| The access token claim whose value is the user's scopes. Some OIDC Providers (Okta, Azure AD) use the claim ``scp`` to enumerate scopes. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API, Client"
+| The access token claim whose value is the user's scopes. Some OIDC Providers (Okta, Azure AD) use the claim ``scp`` to enumerate scopes. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier. See :ref:`jwt_requirements` for token value format requirements.","API, Client"
 "STIGMAN_JWT_SERVICENAME_CLAIM","| **Default** ``clientId``
-| The access token claim whose value is the user's client. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API, Client"
+| The access token claim whose value is the service account's client. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier. See :ref:`jwt_requirements` for token value format requirements.","API, Client"
 "STIGMAN_JWT_USERNAME_CLAIM","| **Default** ``preferred_username``
-| The access token claim whose value is the user's username. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier.","API, Client"
+| The access token claim whose value is the user's username. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier. See :ref:`jwt_requirements` for token value format requirements.","API, Client"
 "STIGMAN_OIDC_CA_CERTS","| **No default**
 | The full path to a file with one or more PEM-encoded CA certificates for validating TLS connections to the OIDC Provider.","API"
 "STIGMAN_OIDC_PROVIDER","| **Default** ``http://localhost:8080/auth/realms/stigman``
