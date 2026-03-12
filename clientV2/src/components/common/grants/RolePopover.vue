@@ -29,7 +29,7 @@ const toggle = (event) => {
         <li><b class="role-text-owner">Owner:</b> Everything in the "Manage" level. Can also delete the Collection and create new Owner Grants. Responsible for accepting and rejecting reviews from evaluators.</li>
       </ul>
       <br>
-      * By default, Users with a Restricted grant to a Collection can't access any STIG on any Asset. They can be assigned specific STIGs on specific Assets using the "Edit Restriced Access..." button in the Grants panel toolbar.
+      * By default, Users with a Restricted grant to a Collection can't access any STIG on any Asset. They can be assigned specific STIGs on specific Assets using the "Edit Restricted Access..." button in the Grants panel toolbar.
     </div>
   </Popover>
 </template>

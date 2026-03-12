@@ -90,14 +90,6 @@ const updateCollection = async (field) => {
   flex: 0 0 auto;
 }
 
-.section-title {
-  font-size: 0.99rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding-left: 0.25rem;
-}
-
 .form-grid {
   display: grid;
   gap: 1rem;

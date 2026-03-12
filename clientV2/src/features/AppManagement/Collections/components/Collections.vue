@@ -14,7 +14,7 @@ const { state: collections, isLoading, execute: loadCollections } = useAsyncStat
   { initialState: [] },
 )
 
-const onUpdated = async () => {
+const refreshAndReselect = async () => {
   const result = await loadCollections()
   if (selectedCollection.value && result) {
     const updatedSelection = result.find(c => c.collectionId === selectedCollection.value.collectionId)
@@ -36,7 +36,7 @@ const onUpdated = async () => {
         />
       </SplitterPanel>
       <SplitterPanel :min-size="15" :size="25" class="splitter-panel">
-        <CollectionDetails :collection="selectedCollection" @updated="onUpdated" />
+        <CollectionDetails :collection="selectedCollection" @updated="refreshAndReselect" @grants-updated="refreshAndReselect" />
       </SplitterPanel>
     </Splitter>
   </div>

@@ -44,7 +44,7 @@ const onCancel = () => {
     :style="{ width: '450px' }"
   >
     <div class="confirmation-content">
-      <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem; color: var(--red-500);" />
+      <i class="pi pi-exclamation-triangle warning-icon" />
       <span v-if="message">{{ message }}</span>
     </div>
     <template #footer>
@@ -61,7 +61,9 @@ const onCancel = () => {
   justify-content: center;
 }
 
-.mr-3 {
+.warning-icon {
+  font-size: 2rem;
+  color: var(--color-text-error);
   margin-right: 1rem;
 }
 </style>

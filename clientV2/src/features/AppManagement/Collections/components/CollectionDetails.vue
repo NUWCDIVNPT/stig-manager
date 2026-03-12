@@ -9,7 +9,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['updated'])
+const emit = defineEmits(['updated', 'grants-updated'])
 </script>
 
 <template>
@@ -29,7 +29,7 @@ const emit = defineEmits(['updated'])
       <GrantsPanel
         :collection-id="collection.collectionId"
         :elevate="true"
-        @updated="emit('updated')"
+        @updated="emit('grants-updated')"
       />
     </div>
   </div>

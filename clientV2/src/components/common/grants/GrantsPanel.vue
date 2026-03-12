@@ -6,12 +6,12 @@ import Dialog from 'primevue/dialog'
 import Toolbar from 'primevue/toolbar'
 import { ref, watch } from 'vue'
 import DeleteModal from '../DeleteModal.vue'
-import RolePopover from '../RolePopover.vue'
+import RolePopover from './RolePopover.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { fetchGrantsByCollection, createGrants, updateGrant, deleteGrant } from '../../../shared/api/grantsApi.js'
 import { fetchUsers, fetchUserGroups } from '../../../shared/api/userApi.js'
-import { roleOptions } from './roleOptions.js'
+import { roleMap } from './roleOptions.js'
 import EditGrantModal from './EditGrantModal.vue'
 import GrantsPickList from './GrantsPickList.vue'
 
@@ -46,6 +46,27 @@ const exportGrantsCSV = () => {
   grantsDt.value.exportCSV()
 }
 
+// Cached users/groups — fetched once, invalidated after mutations
+const cachedUsers = ref([])
+const cachedGroups = ref([])
+const granteesCached = ref(false)
+
+const ensureGranteesLoaded = async () => {
+  if (!granteesCached.value) {
+    const [users, groups] = await Promise.all([
+      fetchUsers({ status: 'available' }),
+      fetchUserGroups(),
+    ])
+    cachedUsers.value = users.map(u => ({ ...u, type: 'user', displayName: u.username }))
+    cachedGroups.value = groups.map(g => ({ ...g, type: 'group', displayName: g.name }))
+    granteesCached.value = true
+  }
+}
+
+const invalidateGranteesCache = () => {
+  granteesCached.value = false
+}
+
 // Add grants flow
 const addGrantVisible = ref(false)
 const availableGrantees = ref([])
@@ -53,17 +74,14 @@ const selectedGrantees = ref([])
 
 const openAddGrants = async () => {
   try {
-    const [users, groups] = await Promise.all([
-      fetchUsers({ status: 'available' }),
-      fetchUserGroups(),
-    ])
+    await ensureGranteesLoaded()
 
     const existingUserIds = grants.value.filter(g => g.user).map(g => g.user.userId)
     const existingGroupIds = grants.value.filter(g => g.userGroup).map(g => g.userGroup.userGroupId)
 
     availableGrantees.value = [
-      ...users.filter(u => !existingUserIds.includes(u.userId)).map(u => ({ ...u, type: 'user', displayName: u.username })),
-      ...groups.filter(g => !existingGroupIds.includes(g.userGroupId)).map(g => ({ ...g, type: 'group', displayName: g.name })),
+      ...cachedUsers.value.filter(u => !existingUserIds.includes(u.userId)),
+      ...cachedGroups.value.filter(g => !existingGroupIds.includes(g.userGroupId)),
     ]
     selectedGrantees.value = []
     addGrantVisible.value = true
@@ -89,6 +107,7 @@ const onSaveGrants = async ({ target }) => {
     })
 
     await createGrants(props.collectionId, payload, { elevate: props.elevate })
+    invalidateGranteesCache()
     await loadGrants()
     addGrantVisible.value = false
     emit('updated')
@@ -107,12 +126,9 @@ const editGroups = ref([])
 const openEditGrant = async (grant) => {
   grantToEdit.value = grant
   try {
-    const [users, groups] = await Promise.all([
-      fetchUsers({ status: 'available' }),
-      fetchUserGroups(),
-    ])
-    editUsers.value = users.map(u => ({ ...u, type: 'user', displayName: u.username }))
-    editGroups.value = groups.map(g => ({ ...g, type: 'group', displayName: g.name }))
+    await ensureGranteesLoaded()
+    editUsers.value = cachedUsers.value
+    editGroups.value = cachedGroups.value
     editGrantVisible.value = true
   }
   catch (error) {
@@ -122,12 +138,17 @@ const openEditGrant = async (grant) => {
 
 const onUpdateGrant = async (updatedGrant) => {
   try {
+    const body = { roleId: updatedGrant.roleId }
+    if (updatedGrant.userId) body.userId = updatedGrant.userId
+    else if (updatedGrant.userGroupId) body.userGroupId = updatedGrant.userGroupId
+
     await updateGrant(
       props.collectionId,
       updatedGrant.grantId,
-      { roleId: updatedGrant.roleId },
+      body,
       { elevate: props.elevate },
     )
+    invalidateGranteesCache()
     await loadGrants()
     editGrantVisible.value = false
     emit('updated')
@@ -157,6 +178,7 @@ const confirmDeleteGrant = async () => {
       grantToDelete.value.grantId,
       { elevate: props.elevate },
     )
+    invalidateGranteesCache()
     await loadGrants()
     emit('updated')
   }
@@ -165,9 +187,7 @@ const confirmDeleteGrant = async () => {
   }
 }
 
-const getRoleLabel = (roleId) => {
-  return roleOptions.find(r => r.value === roleId)?.label || 'Unknown'
-}
+const getRoleLabel = (roleId) => roleMap[roleId] || 'Unknown'
 </script>
 
 <template>
@@ -295,14 +315,6 @@ const getRoleLabel = (roleId) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.section-title {
-  font-size: 0.99rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding-left: 0.25rem;
 }
 
 .grants-table-wrapper {

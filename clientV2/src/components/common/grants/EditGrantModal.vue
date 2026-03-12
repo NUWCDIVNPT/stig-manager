@@ -6,8 +6,9 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import Select from 'primevue/select'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, toRef, watch } from 'vue'
 import { roleOptions } from './roleOptions.js'
+import { useGranteeFilter } from './useGranteeFilter.js'
 
 const props = defineProps({
   visible: {
@@ -36,20 +37,17 @@ const localVisible = computed({
 })
 
 const selectedGranteeInList = ref(null)
-
-const searchText = ref('')
-const filterOptions = [
-  { label: 'All', value: 0 },
-  { label: '30 Days', value: 30 },
-  { label: '60 Days', value: 60 },
-  { label: '90 Days', value: 90 },
-]
-const selectedFilter = ref(filterOptions[0])
-const collapsedGroups = ref({})
-
 const selectedRoleId = ref(1)
 
-const itemLabel = 'displayName'
+const {
+  searchText,
+  selectedFilter,
+  filterOptions,
+  itemLabel,
+  displaySource,
+  toggleGroup,
+  collapsedGroups,
+} = useGranteeFilter(toRef(props, 'users'), toRef(props, 'groups'))
 
 watch(() => props.grant, (newVal) => {
   if (newVal) {
@@ -57,45 +55,6 @@ watch(() => props.grant, (newVal) => {
     selectedGranteeInList.value = null
   }
 }, { immediate: true })
-
-const displaySource = computed(() => {
-  let filteredUsers = props.users
-  let filteredGroups = props.groups
-
-  if (searchText.value) {
-    const lower = searchText.value.toLowerCase()
-    filteredUsers = filteredUsers.filter(u => u[itemLabel].toLowerCase().includes(lower))
-    filteredGroups = filteredGroups.filter(g => g[itemLabel].toLowerCase().includes(lower))
-  }
-
-  if (selectedFilter.value.value > 0) {
-    const cutoffDate = new Date()
-    cutoffDate.setDate(cutoffDate.getDate() - selectedFilter.value.value)
-    filteredUsers = filteredUsers.filter((u) => {
-      if (!u.lastAccess) {
-        return false
-      }
-      return new Date(u.lastAccess) >= cutoffDate
-    })
-  }
-
-  return [
-    {
-      label: 'User Groups',
-      value: 'group',
-      items: collapsedGroups.value.group ? [{ collapsed: true, [itemLabel]: '' }] : filteredGroups,
-    },
-    {
-      label: 'Users',
-      value: 'user',
-      items: collapsedGroups.value.user ? [{ collapsed: true, [itemLabel]: '' }] : filteredUsers,
-    },
-  ]
-})
-
-const toggleGroup = (groupValue) => {
-  collapsedGroups.value[groupValue] = !collapsedGroups.value[groupValue]
-}
 
 const currentGrantee = computed(() => {
   if (selectedGranteeInList.value) {
@@ -249,8 +208,8 @@ const onCancel = () => {
     </div>
 
     <template #footer>
-      <Button label="Cancel" class="p-button-secondary" @click="onCancel" />
-      <Button label="Save" class="p-button-secondary" @click="onSave" />
+      <Button label="Cancel" text @click="onCancel" />
+      <Button label="Save" @click="onSave" />
     </template>
   </Dialog>
 </template>

@@ -4,3 +4,5 @@ export const roleOptions = [
   { label: 'Manage', value: 3 },
   { label: 'Owner', value: 4 },
 ]
+
+export const roleMap = Object.fromEntries(roleOptions.map(r => [r.value, r.label]))

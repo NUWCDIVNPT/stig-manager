@@ -7,9 +7,10 @@ import Listbox from 'primevue/listbox'
 import Popover from 'primevue/popover'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
-import { computed, ref, watch } from 'vue'
-import RolePopover from '../RolePopover.vue'
-import { roleOptions } from './roleOptions.js'
+import { computed, ref } from 'vue'
+import RolePopover from './RolePopover.vue'
+import { roleOptions, roleMap } from './roleOptions.js'
+import { useGranteeFilter } from './useGranteeFilter.js'
 
 const props = defineProps({
   source: {
@@ -22,95 +23,27 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:source', 'update:target', 'save', 'cancel'])
+const emit = defineEmits(['save', 'cancel'])
 
-const localSource = ref([])
-const localTarget = ref([])
+// Component is v-if guarded by parent, so direct initialization is safe
+const localSource = ref([...props.source])
+const localTarget = ref([...props.target])
 const selectionSource = ref([])
 const selectionTarget = ref([])
 const popoverRef = ref()
 
-// object looks like: { group: true, user: false } keeps track of which groups/users are collapsed
-const collapsedGroupsSource = ref({})
-const searchText = ref('')
+const sourceUsers = computed(() => localSource.value.filter(i => i.type === 'user'))
+const sourceGroups = computed(() => localSource.value.filter(i => i.type === 'group'))
 
-// label to use for items in the listbox
-const itemLabel = 'displayName'
-
-const filterOptions = ref([
-  { label: 'All', value: 0 },
-  { label: '30 Days', value: 30 },
-  { label: '60 Days', value: 60 },
-  { label: '90 Days', value: 90 },
-])
-const selectedFilter = ref(filterOptions.value[0])
-
-// Initialize and watch for changes
-watch(() => props.source, (newVal) => {
-  localSource.value = [...newVal]
-}, { immediate: true })
-
-watch(() => props.target, (newVal) => {
-  localTarget.value = [...newVal]
-}, { immediate: true })
-
-// Reset state on mount (component is v-if'ed by parent)
-selectionSource.value = []
-selectionTarget.value = []
-collapsedGroupsSource.value = {}
-selectedFilter.value = filterOptions.value[0]
-searchText.value = ''
-
-// creates an array of objects that are used to display the source listbox
-// it separates users and groups and adds a collapsed property to each
-const displaySource = computed(() => {
-  let users = localSource.value.filter(i => i.type === 'user')
-  let groups = localSource.value.filter(i => i.type === 'group')
-
-  // Search Text Filtering
-  if (searchText.value) {
-    const lower = searchText.value.toLowerCase()
-    users = users.filter(u => u[itemLabel].toLowerCase().includes(lower))
-    groups = groups.filter(g => g[itemLabel].toLowerCase().includes(lower))
-  }
-
-  // Filter by last access
-  if (selectedFilter.value.value > 0) {
-    // get current date and subtract the number of days
-    const cutoffDate = new Date()
-    cutoffDate.setDate(cutoffDate.getDate() - selectedFilter.value.value)
-
-    // filter users by last access
-    users = users.filter((u) => {
-      // if no last access, skip
-      if (!u.lastAccess) {
-        return false
-      }
-      // if last access is greater than or equal to cutoff date, keep
-      return new Date(u.lastAccess) >= cutoffDate
-    })
-  }
-
-  return [
-    {
-      label: 'User Groups',
-      value: 'group',
-      // if we are collapsed, add a dummy item to the list to disable it or return the groups
-      items: collapsedGroupsSource.value.group ? [{ collapsed: true, [itemLabel]: '' }] : groups,
-    },
-    {
-      label: 'Users',
-      value: 'user',
-      // if we are collapsed, add a dummy item to the list to disable it or return the users
-      items: collapsedGroupsSource.value.user ? [{ collapsed: true, [itemLabel]: '' }] : users,
-    },
-  ]
-})
-
-// toggle the collapsed state of a group/user
-const toggleGroupSource = (groupValue) => {
-  collapsedGroupsSource.value[groupValue] = !collapsedGroupsSource.value[groupValue]
-}
+const {
+  searchText,
+  selectedFilter,
+  filterOptions,
+  itemLabel,
+  displaySource,
+  toggleGroup: toggleGroupSource,
+  collapsedGroups: collapsedGroupsSource,
+} = useGranteeFilter(sourceUsers, sourceGroups)
 
 const onSelectRole = (option) => {
   if (selectionSource.value.length > 0) {
@@ -245,17 +178,8 @@ const onCancel = () => {
       </div>
 
       <div class="list-column">
-        <!-- Spacer to align list heights with left column its hidden and not visible but it takes up space -->
-        <div class="filter-container" style="visibility: hidden; pointer-events: none;">
-          <IconField class="search-field">
-            <InputIcon class="pi pi-search" />
-            <InputText placeholder="Search" fluid />
-          </IconField>
-          <div class="filter-group">
-            <label class="filter-label">User Last Active:</label>
-            <Select :options="filterOptions" option-label="label" size="small" />
-          </div>
-        </div>
+        <!-- Spacer to align list heights with left column filter area -->
+        <div class="filter-spacer" />
         <h4 class="list-header" style="display: flex; align-items: center; gap: 0.5rem;">
           New Grants
           <RolePopover />
@@ -277,7 +201,7 @@ const onCancel = () => {
               </div>
               <Tag
                 v-if="slotProps.option.roleId"
-                :value="roleOptions.find(o => o.value === slotProps.option.roleId)?.label || slotProps.option.roleId"
+                :value="roleMap[slotProps.option.roleId] || slotProps.option.roleId"
                 :class="`role-tag-${slotProps.option.roleId}`"
               />
             </div>
@@ -353,6 +277,11 @@ const onCancel = () => {
   align-items: flex-end;
 }
 
+.filter-spacer {
+  height: 3.5rem;
+  flex: 0 0 auto;
+}
+
 .filter-group {
   display: flex;
   flex-direction: column;
@@ -379,11 +308,6 @@ const onCancel = () => {
 
 .option-item i {
   font-size: 1.3rem;
-}
-
-.option-metadata {
-  margin-left: 0.5rem;
-  font-size: 0.875rem;
 }
 
 .search-field {
@@ -421,10 +345,6 @@ const onCancel = () => {
   overflow: auto;
 }
 
-:deep(.hidden-item) {
-  display: none !important;
-}
-
 .target-option-item {
   display: flex;
   justify-content: space-between;
@@ -444,18 +364,18 @@ const onCancel = () => {
 
 .role-tag-1 {
   background: var(--role-restricted);
-  color: #fff;
+  color: var(--color-text-bright);
 }
 .role-tag-2 {
   background: var(--role-full);
-  color: #fff;
+  color: var(--color-text-bright);
 }
 .role-tag-3 {
   background: var(--role-manage);
-  color: #fff;
+  color: var(--color-text-bright);
 }
 .role-tag-4 {
   background: var(--role-owner);
-  color: #fff;
+  color: var(--color-text-bright);
 }
 </style>
