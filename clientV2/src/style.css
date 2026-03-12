@@ -4,6 +4,11 @@
   color-scheme: dark !important;
   color: rgba(255, 255, 255, 0.87);
   background-color: #000000;
+
+  --role-restricted: #64748bcb;
+  --role-full: #e2ca43d5;
+  --role-manage: #4b7bc9da;
+  --role-owner: #087c21da;
   
   /* Classification Marking Colors */
   --color-marking-unclassified: #007a33;
@@ -264,4 +269,13 @@ textarea:focus {
   font-style: italic;
   font-weight: 800;
   src: url('../fonts/open-sans-v15-latin-800italic.woff2') format('woff2')
+}
+
+/* Shared section title for panel headers */
+.section-title {
+  font-size: 0.99rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-left: 0.25rem;
 }
