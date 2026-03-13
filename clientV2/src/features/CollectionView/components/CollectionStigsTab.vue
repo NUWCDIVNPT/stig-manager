@@ -3,9 +3,9 @@ import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchCollectionChecklistAssets, fetchCollectionStigSummary } from '../api/collectionApi.js'
-import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
 const props = defineProps({
   collectionId: {

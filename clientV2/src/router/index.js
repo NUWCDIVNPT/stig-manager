@@ -4,6 +4,7 @@ import { navigationGuard } from './navigationGuards.js'
 // Lazy load components
 const Home = () => import('../features/Home/components/Home.vue')
 const CollectionView = () => import('../features/CollectionView/components/CollectionView.vue')
+const MetaCollectionView = () => import('../features/MetaCollectionView/components/MetaCollectionView.vue')
 const CollectionManage = () => import('../features/CollectionManage/components/CollectionManage.vue')
 const UserManage = () => import('../features/UserManage/components/UserManage.vue')
 const UserGroupManage = () => import('../features/UserGroupManage/components/UserGroupManage.vue')
@@ -12,7 +13,6 @@ const ServiceJobs = () => import('../features/ServiceJobs/components/ServiceJobs
 const AppInfo = () => import('../features/AppInfo/components/AppInfo.vue')
 const ExportImportManage = () => import('../features/ExportImportManage/components/ExportImportManage.vue')
 const StigLibrary = () => import('../features/STIGLibrary/components/StigLibrary.vue')
-const CollectionSelection = () => import('../features/CollectionView/components/CollectionSelection.vue')
 const AppManagementSelection = () => import('../features/AppManagement/components/AppManagementSelection.vue')
 const StigLibrarySelection = () => import('../features/STIGLibrary/components/StigLibrarySelection.vue')
 const WhatsNewView = () => import('../features/WhatsNew/components/WhatsNewView.vue')
@@ -123,7 +123,7 @@ const routes = [
   {
     path: '/collections',
     name: 'collections',
-    component: CollectionSelection,
+    component: MetaCollectionView,
     meta: { breadcrumbs: [{ label: 'Collections' }] },
   },
   {

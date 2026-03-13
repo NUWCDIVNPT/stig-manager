@@ -3,9 +3,9 @@ import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchCollectionAssetStigs, fetchCollectionAssetSummary, fetchCollectionLabelSummary } from '../api/collectionApi.js'
-import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
 const props = defineProps({
   collectionId: {
@@ -77,6 +77,7 @@ function handleAssetStigAction(rowData) {
       collectionId: props.collectionId,
       assetId: selectedAssetId.value,
       benchmarkId: rowData.benchmarkId,
+      revisionStr: rowData.revisionStr,
     },
   })
 }
