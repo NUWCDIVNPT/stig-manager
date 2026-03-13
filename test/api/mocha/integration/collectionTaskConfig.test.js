@@ -41,7 +41,6 @@ const sampleConfig = [
     updateField: 'status',
     updateValue: 'saved',
     updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
-    updateUserId: 0,
     enabled: true
   }
 ]
@@ -95,7 +94,6 @@ describe('Collection Task Config - /collections/{collectionId}/tasks/{taskId}/co
       expect(res.body[0]).to.have.property('triggerAction', 'update')
       expect(res.body[0]).to.have.property('updateField', 'status')
       expect(res.body[0]).to.have.property('updateValue', 'saved')
-      expect(res.body[0]).to.have.property('updateUserId', 0)
       expect(res.body[0]).to.have.property('enabled', true)
     })
 
@@ -108,7 +106,6 @@ describe('Collection Task Config - /collections/{collectionId}/tasks/{taskId}/co
           triggerInterval: 3600,
           triggerAction: 'delete',
           updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
-          updateUserId: 0,
           enabled: false
         }
       ]

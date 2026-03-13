@@ -1023,6 +1023,7 @@ BEGIN
         DECLARE err_code INT;
         DECLARE err_msg TEXT;
         GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
         CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
         RESIGNAL;
       END;
@@ -1153,6 +1154,75 @@ BEGIN
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `prune_and_insert_history` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `prune_and_insert_history`(IN in_maxReviews INT)
+BEGIN
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION
+      BEGIN
+        DECLARE err_code INT;
+        DECLARE err_msg TEXT;
+        GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
+        CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
+        RESIGNAL;
+      END;
+
+      -- Step 1: prune existing history to cap-1, making room for the incoming snapshot
+      WITH historyRecs AS (
+        SELECT
+          rh.historyId,
+          ROW_NUMBER() OVER (PARTITION BY r.reviewId ORDER BY rh.historyId DESC) AS rowNum
+        FROM review_history rh
+        LEFT JOIN review r USING (reviewId)
+        WHERE r.reviewId IN (SELECT reviewId FROM t_reviewIds)
+      )
+      DELETE review_history
+      FROM review_history
+      LEFT JOIN historyRecs ON review_history.historyId = historyRecs.historyId
+      WHERE historyRecs.rowNum > in_maxReviews - 1;
+
+      -- Step 2: insert snapshot of current review state before the update
+      INSERT INTO review_history (
+        reviewId,
+        ruleId,
+        resultId,
+        detail,
+        comment,
+        autoResult,
+        ts,
+        userId,
+        statusText,
+        statusUserId,
+        statusTs,
+        statusId,
+        touchTs,
+        resultEngine
+      ) SELECT
+          reviewId,
+          ruleId,
+          resultId,
+          LEFT(detail, 32767),
+          LEFT(comment, 32767),
+          autoResult,
+          ts,
+          userId,
+          statusText,
+          statusUserId,
+          statusTs,
+          statusId,
+          touchTs,
+          CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END
+        FROM review
+        WHERE reviewId IN (SELECT reviewId FROM t_reviewIds);
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `review_aging` */;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
@@ -1173,19 +1243,22 @@ BEGIN
       DECLARE v_updateField VARCHAR(20);
       DECLARE v_updateValue VARCHAR(20);
       DECLARE v_updateFilter JSON;
-      DECLARE v_updateUserId INT;
       DECLARE v_cutoff DATETIME;
       DECLARE v_numReviews INT;
+      DECLARE v_maxReviews INT;
       DECLARE v_done INT DEFAULT FALSE;
 
       DECLARE cur CURSOR FOR
-        SELECT collectionId, config FROM task_collection_config WHERE taskId = @taskId;
+        SELECT tcc.collectionId, tcc.config FROM task_collection_config tcc
+        INNER JOIN enabled_collection ec USING (collectionId)
+        WHERE tcc.taskId = @taskId;
       DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = TRUE;
       DECLARE EXIT HANDLER FOR SQLEXCEPTION
       BEGIN
         DECLARE err_code INT;
         DECLARE err_msg TEXT;
         GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
         CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
         RESIGNAL;
       END;
@@ -1201,109 +1274,129 @@ BEGIN
 
         CALL task_output_collection('info', concat('processing collectionId ', v_collectionId), v_collectionId);
 
-        SET v_numRules = JSON_LENGTH(v_config);
-        SET v_ruleIdx = 0;
+        BEGIN  -- collection-scoped block: error here rolls back and continues the loop
+          DECLARE EXIT HANDLER FOR SQLEXCEPTION
+          BEGIN
+            DECLARE err_code INT;
+            DECLARE err_msg TEXT;
+            GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+            ROLLBACK;
+            CALL task_output_collection('error', concat('code: ', err_code, ' message: ', err_msg), v_collectionId);
+            CALL task_output('error', concat('error processing collectionId ', v_collectionId, ': code: ', err_code, ' message: ', err_msg));
+          END;
 
-        rule_loop: WHILE v_ruleIdx < v_numRules DO
-          SET v_rule        = JSON_EXTRACT(v_config, CONCAT('$[', v_ruleIdx, ']'));
+          START TRANSACTION;
 
-          IF JSON_VALUE(v_rule, '$.enabled') != 'true' THEN
-            SET v_ruleIdx = v_ruleIdx + 1;
-            ITERATE rule_loop;
-          END IF;
+          SET v_numRules = JSON_LENGTH(v_config);
+          SET v_ruleIdx = 0;
 
-          SET v_triggerField    = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerField'));
-          SET v_triggerBasis    = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerBasis'));
-          SET v_triggerInterval = JSON_VALUE(v_rule, '$.triggerInterval');
-          SET v_triggerAction   = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerAction'));
-          SET v_updateField     = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateField'));
-          SET v_updateValue     = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateValue'));
-          SET v_updateFilter    = JSON_EXTRACT(v_rule, '$.updateFilter');
-          SET v_updateUserId    = JSON_VALUE(v_rule, '$.updateUserId');
+          rule_loop: WHILE v_ruleIdx < v_numRules DO
+            SET v_rule        = JSON_EXTRACT(v_config, CONCAT('$[', v_ruleIdx, ']'));
 
-          -- Compute cutoff datetime
-          -- CAST() does not accept ISO8601 T/Z separators; strip them with REPLACE before casting
-          IF v_triggerBasis = 'now' THEN
-            SET v_cutoff = DATE_SUB(NOW(), INTERVAL v_triggerInterval SECOND);
-          ELSE
-            SET v_cutoff = DATE_SUB(
-              CAST(REPLACE(REPLACE(v_triggerBasis, 'T', ' '), 'Z', '') AS DATETIME),
-              INTERVAL v_triggerInterval SECOND
+            IF JSON_VALUE(v_rule, '$.enabled') != 'true' THEN
+              SET v_ruleIdx = v_ruleIdx + 1;
+              ITERATE rule_loop;
+            END IF;
+
+            SET v_triggerField    = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerField'));
+            SET v_triggerBasis    = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerBasis'));
+            SET v_triggerInterval = JSON_VALUE(v_rule, '$.triggerInterval');
+            SET v_triggerAction   = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerAction'));
+            SET v_updateField     = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateField'));
+            SET v_updateValue     = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateValue'));
+            SET v_updateFilter    = JSON_EXTRACT(v_rule, '$.updateFilter');
+
+            -- Compute cutoff datetime
+            -- CAST() does not accept ISO8601 T/Z separators; strip them with REPLACE before casting
+            IF v_triggerBasis = 'now' THEN
+              SET v_cutoff = DATE_SUB(NOW(), INTERVAL v_triggerInterval SECOND);
+            ELSE
+              SET v_cutoff = DATE_SUB(
+                CAST(REPLACE(REPLACE(v_triggerBasis, 'T', ' '), 'Z', '') AS DATETIME),
+                INTERVAL v_triggerInterval SECOND
+              );
+            END IF;
+
+            -- Identify affected reviews into t_reviewIds
+            DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
+            CREATE TEMPORARY TABLE t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY, reviewId INT);
+
+            -- Dynamic SQL needed to interpolate triggerField column name
+            SET @v_sql = CONCAT(
+              'INSERT INTO t_reviewIds (reviewId) ',
+              'SELECT r.reviewId FROM review r ',
+              'JOIN enabled_asset a ON r.assetId = a.assetId ',
+              'WHERE a.collectionId = ', v_collectionId,
+              ' AND r.', v_triggerField, ' < ''', DATE_FORMAT(v_cutoff, '%Y-%m-%d %H:%i:%s'), ''''
             );
-          END IF;
 
-          -- Identify affected reviews into t_reviewIds
-          DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
-          CREATE TEMPORARY TABLE t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY, reviewId INT);
+            -- Optional assetIds filter
+            IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.assetIds')) > 0 THEN
+              SET @v_sql = CONCAT(@v_sql,
+                ' AND r.assetId IN (SELECT j.value FROM JSON_TABLE(''',
+                JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.assetIds')),
+                ''', ''$[*]'' COLUMNS (value INT PATH ''$'')) j)');
+            END IF;
 
-          -- Dynamic SQL needed to interpolate triggerField column name
-          SET @v_sql = CONCAT(
-            'INSERT INTO t_reviewIds (reviewId) ',
-            'SELECT r.reviewId FROM review r ',
-            'JOIN enabled_asset a ON r.assetId = a.assetId ',
-            'WHERE a.collectionId = ', v_collectionId,
-            ' AND r.', v_triggerField, ' < ''', DATE_FORMAT(v_cutoff, '%Y-%m-%d %H:%i:%s'), ''''
-          );
+            -- Optional labelIds filter (UUID lookup via collection_label_asset_map)
+            IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.labelIds')) > 0 THEN
+              SET @v_sql = CONCAT(@v_sql,
+                ' AND r.assetId IN (',
+                '  SELECT clam.assetId FROM collection_label_asset_map clam',
+                '  JOIN collection_label cl ON clam.clId = cl.clId',
+                '  WHERE BIN_TO_UUID(cl.uuid,1) IN (',
+                '    SELECT j.value FROM JSON_TABLE(''',
+                JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.labelIds')),
+                ''', ''$[*]'' COLUMNS (value VARCHAR(36) PATH ''$'')) j',
+                '  )',
+                ')');
+            END IF;
 
-          -- Optional assetIds filter
-          IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.assetIds')) > 0 THEN
-            SET @v_sql = CONCAT(@v_sql,
-              ' AND r.assetId IN (SELECT j.value FROM JSON_TABLE(''',
-              JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.assetIds')),
-              ''', ''$[*]'' COLUMNS (value INT PATH ''$'')) j)');
-          END IF;
+            -- Optional benchmarkIds filter (via stig_asset_map)
+            IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.benchmarkIds')) > 0 THEN
+              SET @v_sql = CONCAT(@v_sql,
+                ' AND r.assetId IN (',
+                '  SELECT sam.assetId FROM stig_asset_map sam',
+                '  WHERE sam.benchmarkId IN (',
+                '    SELECT j.value FROM JSON_TABLE(''',
+                JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.benchmarkIds')),
+                ''', ''$[*]'' COLUMNS (value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs PATH ''$'')) j',
+                '  )',
+                ')');
+            END IF;
 
-          -- Optional labelIds filter (UUID lookup via collection_label_asset_map)
-          IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.labelIds')) > 0 THEN
-            SET @v_sql = CONCAT(@v_sql,
-              ' AND r.assetId IN (',
-              '  SELECT clam.assetId FROM collection_label_asset_map clam',
-              '  JOIN collection_label cl ON clam.clId = cl.clId',
-              '  WHERE BIN_TO_UUID(cl.uuid,1) IN (',
-              '    SELECT j.value FROM JSON_TABLE(''',
-              JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.labelIds')),
-              ''', ''$[*]'' COLUMNS (value VARCHAR(36) PATH ''$'')) j',
-              '  )',
-              ')');
-          END IF;
+            PREPARE stmt_aging FROM @v_sql;
+            EXECUTE stmt_aging;
+            DEALLOCATE PREPARE stmt_aging;
 
-          -- Optional benchmarkIds filter (via stig_asset_map)
-          IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.benchmarkIds')) > 0 THEN
-            SET @v_sql = CONCAT(@v_sql,
-              ' AND r.assetId IN (',
-              '  SELECT sam.assetId FROM stig_asset_map sam',
-              '  WHERE sam.benchmarkId IN (',
-              '    SELECT j.value FROM JSON_TABLE(''',
-              JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.benchmarkIds')),
-              ''', ''$[*]'' COLUMNS (value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs PATH ''$'')) j',
-              '  )',
-              ')');
-          END IF;
+            SELECT MAX(seq) INTO v_numReviews FROM t_reviewIds;
+            CALL task_output_collection('info',
+              CONCAT('rule ', v_ruleIdx, ': found ', IFNULL(v_numReviews, 0), ' reviews to ', v_triggerAction),
+              v_collectionId);
 
-          PREPARE stmt_aging FROM @v_sql;
-          EXECUTE stmt_aging;
-          DEALLOCATE PREPARE stmt_aging;
-
-          SELECT MAX(seq) INTO v_numReviews FROM t_reviewIds;
-          CALL task_output_collection('info',
-            CONCAT('rule ', v_ruleIdx, ': found ', IFNULL(v_numReviews, 0), ' reviews to ', v_triggerAction),
-            v_collectionId);
-
-          IF IFNULL(v_numReviews, 0) > 0 THEN
-            IF v_triggerAction = 'delete' THEN
-              CALL delete_review_batch();
-            ELSEIF v_triggerAction = 'update' THEN
-              IF v_updateField = 'status' THEN
-                CALL update_review_status_batch(v_updateValue);
-              ELSEIF v_updateField = 'result' THEN
-                CALL update_review_result_batch(v_updateValue);
+            IF IFNULL(v_numReviews, 0) > 0 THEN
+              IF v_triggerAction = 'delete' THEN
+                CALL delete_review_batch();
+              ELSEIF v_triggerAction = 'update' THEN
+                SELECT CAST(c.settings->>"$.history.maxReviews" AS UNSIGNED)
+                  INTO v_maxReviews
+                FROM enabled_collection c WHERE c.collectionId = v_collectionId;
+                CALL prune_and_insert_history(v_maxReviews);
+                IF v_updateField = 'status' THEN
+                  CALL update_review_status_batch(v_updateValue);
+                ELSEIF v_updateField = 'result' THEN
+                  CALL update_review_result_batch(v_updateValue);
+                END IF;
+                CALL update_stats_asset_stig(JSON_OBJECT('reviewIds', (SELECT JSON_ARRAYAGG(reviewId) FROM t_reviewIds)));
               END IF;
             END IF;
-          END IF;
 
-          DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
-          SET v_ruleIdx = v_ruleIdx + 1;
-        END WHILE rule_loop;
+            DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
+            SET v_ruleIdx = v_ruleIdx + 1;
+          END WHILE rule_loop;
+
+          COMMIT;
+        END;  -- collection-scoped block
 
         CALL task_output_collection('info', CONCAT('finished collectionId ', v_collectionId), v_collectionId);
       END LOOP collection_loop;
@@ -1458,6 +1551,7 @@ BEGIN
         DECLARE err_code INT;
         DECLARE err_msg TEXT;
         GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
         CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
         RESIGNAL;
       END;
@@ -1508,6 +1602,7 @@ BEGIN
         DECLARE err_code INT;
         DECLARE err_msg TEXT;
         GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
         CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
         RESIGNAL;
       END;
@@ -1529,6 +1624,211 @@ BEGIN
           SET v_curMaxId = v_curMaxId + v_incrementValue;
         UNTIL ROW_COUNT() = 0 END REPEAT;
       END IF;
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_stats_asset_stig` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `update_stats_asset_stig`(IN p_filter JSON)
+BEGIN
+      DECLARE v_where    TEXT DEFAULT 'WHERE sa.assetId IS NOT NULL AND sa.benchmarkId IS NOT NULL';
+      DECLARE v_json_arr JSON;
+      DECLARE v_sql      TEXT;
+
+      -- rules: array of ruleIds -> filter by benchmarkId
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.rules') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.rules');
+        SET v_where = CONCAT(v_where,
+          ' AND sa.benchmarkId IN (',
+            'SELECT DISTINCT benchmarkId FROM rev_group_rule_map ',
+            'LEFT JOIN revision USING (revId) ',
+            'WHERE ruleId IN (',
+              'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value VARCHAR(255) PATH ''$'')) jt',
+            ')',
+          ')');
+      END IF;
+
+      -- collectionId: scalar
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.collectionId') THEN
+        SET v_where = CONCAT(v_where,
+          ' AND a.collectionId = ', JSON_VALUE(p_filter, '$.collectionId'));
+      END IF;
+
+      -- collectionIds: array
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.collectionIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.collectionIds');
+        SET v_where = CONCAT(v_where,
+          ' AND a.collectionId IN (',
+            'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value INT PATH ''$'')) jt',
+          ')');
+      END IF;
+
+      -- assetId: scalar
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.assetId') THEN
+        SET v_where = CONCAT(v_where,
+          ' AND a.assetId = ', JSON_VALUE(p_filter, '$.assetId'));
+      END IF;
+
+      -- assetIds: array
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.assetIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.assetIds');
+        SET v_where = CONCAT(v_where,
+          ' AND a.assetId IN (',
+            'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value INT PATH ''$'')) jt',
+          ')');
+      END IF;
+
+      -- assetBenchmarkIds: array of benchmarkIds -> filter by assetId
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.assetBenchmarkIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.assetBenchmarkIds');
+        SET v_where = CONCAT(v_where,
+          ' AND a.assetId IN (',
+            'SELECT assetId FROM stig_asset_map WHERE benchmarkId IN (',
+              'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value VARCHAR(255) PATH ''$'')) jt',
+            ')',
+          ')');
+      END IF;
+
+      -- benchmarkId: scalar
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.benchmarkId') THEN
+        SET v_where = CONCAT(v_where,
+          ' AND sa.benchmarkId = ', QUOTE(JSON_UNQUOTE(JSON_EXTRACT(p_filter, '$.benchmarkId'))));
+      END IF;
+
+      -- benchmarkIds: array
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.benchmarkIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.benchmarkIds');
+        SET v_where = CONCAT(v_where,
+          ' AND sa.benchmarkId IN (',
+            'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value VARCHAR(255) PATH ''$'')) jt',
+          ')');
+      END IF;
+
+      -- saIds: array
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.saIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.saIds');
+        SET v_where = CONCAT(v_where,
+          ' AND sa.saId IN (',
+            'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value INT PATH ''$'')) jt',
+          ')');
+      END IF;
+
+      -- reviewIds: array of reviewIds -> filter by saId
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.reviewIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.reviewIds');
+        SET v_where = CONCAT(v_where,
+          ' AND sa.saId IN (',
+            'SELECT DISTINCT sa2.saId FROM review r2 ',
+            'INNER JOIN rule_version_check_digest rvsd ON (rvsd.version = r2.version AND rvsd.checkDigest = r2.checkDigest) ',
+            'INNER JOIN rev_group_rule_map rgr2 ON rgr2.ruleId = rvsd.ruleId ',
+            'INNER JOIN revision rev2 ON rev2.revId = rgr2.revId ',
+            'INNER JOIN stig_asset_map sa2 ON (sa2.assetId = r2.assetId AND sa2.benchmarkId = rev2.benchmarkId) ',
+            'WHERE r2.reviewId IN (',
+              'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value INT PATH ''$'')) jt',
+            ')',
+          ')');
+      END IF;
+
+      SET v_sql = CONCAT('
+      WITH source AS (
+        SELECT
+          sa.assetId,
+          sa.benchmarkId,
+          MIN(review.ts)      AS minTs,
+          MAX(review.ts)      AS maxTs,
+          MAX(review.touchTs) AS maxTouchTs,
+          SUM(CASE WHEN review.statusId = 0 THEN 1 ELSE 0 END) AS saved,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.statusId = 0 THEN 1 ELSE 0 END) AS savedResultEngine,
+          SUM(CASE WHEN review.statusId = 1 THEN 1 ELSE 0 END) AS submitted,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.statusId = 1 THEN 1 ELSE 0 END) AS submittedResultEngine,
+          SUM(CASE WHEN review.statusId = 2 THEN 1 ELSE 0 END) AS rejected,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.statusId = 2 THEN 1 ELSE 0 END) AS rejectedResultEngine,
+          SUM(CASE WHEN review.statusId = 3 THEN 1 ELSE 0 END) AS accepted,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.statusId = 3 THEN 1 ELSE 0 END) AS acceptedResultEngine,
+          SUM(CASE WHEN review.resultId = 4 AND rgr.severity = ''high''   THEN 1 ELSE 0 END) AS highCount,
+          SUM(CASE WHEN review.resultId = 4 AND rgr.severity = ''medium'' THEN 1 ELSE 0 END) AS mediumCount,
+          SUM(CASE WHEN review.resultId = 4 AND rgr.severity = ''low''    THEN 1 ELSE 0 END) AS lowCount,
+          SUM(CASE WHEN review.resultId IN (2,3,4) AND rgr.severity = ''high''   THEN 1 ELSE 0 END) AS assessedHighCount,
+          SUM(CASE WHEN review.resultId IN (2,3,4) AND rgr.severity = ''medium'' THEN 1 ELSE 0 END) AS assessedMediumCount,
+          SUM(CASE WHEN review.resultId IN (2,3,4) AND rgr.severity = ''low''    THEN 1 ELSE 0 END) AS assessedLowCount,
+          SUM(CASE WHEN review.resultId = 1 THEN 1 ELSE 0 END) AS notchecked,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 1 THEN 1 ELSE 0 END) AS notcheckedResultEngine,
+          SUM(CASE WHEN review.resultId = 2 THEN 1 ELSE 0 END) AS notapplicable,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 2 THEN 1 ELSE 0 END) AS notapplicableResultEngine,
+          SUM(CASE WHEN review.resultId = 3 THEN 1 ELSE 0 END) AS pass,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 3 THEN 1 ELSE 0 END) AS passResultEngine,
+          SUM(CASE WHEN review.resultId = 4 THEN 1 ELSE 0 END) AS fail,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 4 THEN 1 ELSE 0 END) AS failResultEngine,
+          SUM(CASE WHEN review.resultId = 5 THEN 1 ELSE 0 END) AS unknown,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 5 THEN 1 ELSE 0 END) AS unknownResultEngine,
+          SUM(CASE WHEN review.resultId = 6 THEN 1 ELSE 0 END) AS error,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 6 THEN 1 ELSE 0 END) AS errorResultEngine,
+          SUM(CASE WHEN review.resultId = 7 THEN 1 ELSE 0 END) AS notselected,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 7 THEN 1 ELSE 0 END) AS notselectedResultEngine,
+          SUM(CASE WHEN review.resultId = 8 THEN 1 ELSE 0 END) AS informational,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 8 THEN 1 ELSE 0 END) AS informationalResultEngine,
+          SUM(CASE WHEN review.resultId = 9 THEN 1 ELSE 0 END) AS fixed,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 9 THEN 1 ELSE 0 END) AS fixedResultEngine
+        FROM
+          enabled_asset a
+          INNER JOIN enabled_collection ec ON a.collectionId = ec.collectionId
+          LEFT JOIN stig_asset_map sa USING (assetId)
+          LEFT JOIN default_rev dr ON (sa.benchmarkId = dr.benchmarkId AND a.collectionId = dr.collectionId)
+          LEFT JOIN rev_group_rule_map rgr ON dr.revId = rgr.revId
+          LEFT JOIN rule_version_check_digest rvcd ON rgr.ruleId = rvcd.ruleId
+          LEFT JOIN review ON (rvcd.version = review.version AND rvcd.checkDigest = review.checkDigest AND review.assetId = sa.assetId)
+        ', v_where, '
+        GROUP BY sa.assetId, sa.benchmarkId
+      )
+      UPDATE stig_asset_map sam
+        INNER JOIN source ON sam.assetId = source.assetId AND source.benchmarkId = sam.benchmarkId
+        SET
+          sam.minTs                     = source.minTs,
+          sam.maxTs                     = source.maxTs,
+          sam.maxTouchTs                = source.maxTouchTs,
+          sam.saved                     = source.saved,
+          sam.savedResultEngine         = source.savedResultEngine,
+          sam.submitted                 = source.submitted,
+          sam.submittedResultEngine     = source.submittedResultEngine,
+          sam.rejected                  = source.rejected,
+          sam.rejectedResultEngine      = source.rejectedResultEngine,
+          sam.accepted                  = source.accepted,
+          sam.acceptedResultEngine      = source.acceptedResultEngine,
+          sam.highCount                 = source.highCount,
+          sam.mediumCount               = source.mediumCount,
+          sam.lowCount                  = source.lowCount,
+          sam.assessedHighCount         = source.assessedHighCount,
+          sam.assessedMediumCount       = source.assessedMediumCount,
+          sam.assessedLowCount          = source.assessedLowCount,
+          sam.notchecked                = source.notchecked,
+          sam.notcheckedResultEngine    = source.notcheckedResultEngine,
+          sam.notapplicable             = source.notapplicable,
+          sam.notapplicableResultEngine = source.notapplicableResultEngine,
+          sam.pass                      = source.pass,
+          sam.passResultEngine          = source.passResultEngine,
+          sam.fail                      = source.fail,
+          sam.failResultEngine          = source.failResultEngine,
+          sam.unknown                   = source.unknown,
+          sam.unknownResultEngine       = source.unknownResultEngine,
+          sam.error                     = source.error,
+          sam.errorResultEngine         = source.errorResultEngine,
+          sam.notselected               = source.notselected,
+          sam.notselectedResultEngine   = source.notselectedResultEngine,
+          sam.informational             = source.informational,
+          sam.informationalResultEngine = source.informationalResultEngine,
+          sam.fixed                     = source.fixed,
+          sam.fixedResultEngine         = source.fixedResultEngine
+      ');
+
+      SET @stmt = v_sql;
+      PREPARE stmt FROM @stmt;
+      EXECUTE stmt;
+      DEALLOCATE PREPARE stmt;
     END $
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1596,4 +1896,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-11 17:22:56
+-- Dump completed on 2026-03-13 18:17:48

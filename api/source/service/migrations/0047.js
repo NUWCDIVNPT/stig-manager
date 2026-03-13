@@ -61,6 +61,7 @@ const upMigration = [
         DECLARE err_code INT;
         DECLARE err_msg TEXT;
         GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
         CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
         RESIGNAL;
       END;
@@ -119,6 +120,7 @@ const upMigration = [
         DECLARE err_code INT;
         DECLARE err_msg TEXT;
         GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
         CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
         RESIGNAL;
       END;
@@ -159,6 +161,7 @@ const upMigration = [
         DECLARE err_code INT;
         DECLARE err_msg TEXT;
         GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
         CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
         RESIGNAL;
       END;
@@ -184,6 +187,71 @@ const upMigration = [
           SET v_curMaxId = v_curMaxId + v_incrementValue;
         UNTIL ROW_COUNT() = 0 END REPEAT;
       END IF;
+    END`,
+
+  // Snapshot and prune history for reviews in t_reviewIds before they are updated.
+  // Prunes first (to cap-1), then inserts the new snapshot, so the new record counts toward the cap.
+  // Caller must create: t_reviewIds (seq INT AUTO_INCREMENT PK, reviewId INT)
+  `DROP PROCEDURE IF EXISTS prune_and_insert_history`,
+  `CREATE PROCEDURE prune_and_insert_history(IN in_maxReviews INT)
+    BEGIN
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION
+      BEGIN
+        DECLARE err_code INT;
+        DECLARE err_msg TEXT;
+        GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
+        CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
+        RESIGNAL;
+      END;
+
+      -- Step 1: prune existing history to cap-1, making room for the incoming snapshot
+      WITH historyRecs AS (
+        SELECT
+          rh.historyId,
+          ROW_NUMBER() OVER (PARTITION BY r.reviewId ORDER BY rh.historyId DESC) AS rowNum
+        FROM review_history rh
+        LEFT JOIN review r USING (reviewId)
+        WHERE r.reviewId IN (SELECT reviewId FROM t_reviewIds)
+      )
+      DELETE review_history
+      FROM review_history
+      LEFT JOIN historyRecs ON review_history.historyId = historyRecs.historyId
+      WHERE historyRecs.rowNum > in_maxReviews - 1;
+
+      -- Step 2: insert snapshot of current review state before the update
+      INSERT INTO review_history (
+        reviewId,
+        ruleId,
+        resultId,
+        detail,
+        comment,
+        autoResult,
+        ts,
+        userId,
+        statusText,
+        statusUserId,
+        statusTs,
+        statusId,
+        touchTs,
+        resultEngine
+      ) SELECT
+          reviewId,
+          ruleId,
+          resultId,
+          LEFT(detail, 32767),
+          LEFT(comment, 32767),
+          autoResult,
+          ts,
+          userId,
+          statusText,
+          statusUserId,
+          statusTs,
+          statusId,
+          touchTs,
+          CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END
+        FROM review
+        WHERE reviewId IN (SELECT reviewId FROM t_reviewIds);
     END`,
 
   // Stored procedure equivalent of the JS updateStatsAssetStig function.
@@ -404,19 +472,22 @@ const upMigration = [
       DECLARE v_updateField VARCHAR(20);
       DECLARE v_updateValue VARCHAR(20);
       DECLARE v_updateFilter JSON;
-      DECLARE v_updateUserId INT;
       DECLARE v_cutoff DATETIME;
       DECLARE v_numReviews INT;
+      DECLARE v_maxReviews INT;
       DECLARE v_done INT DEFAULT FALSE;
 
       DECLARE cur CURSOR FOR
-        SELECT collectionId, config FROM task_collection_config WHERE taskId = @taskId;
+        SELECT tcc.collectionId, tcc.config FROM task_collection_config tcc
+        INNER JOIN enabled_collection ec USING (collectionId)
+        WHERE tcc.taskId = @taskId;
       DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = TRUE;
       DECLARE EXIT HANDLER FOR SQLEXCEPTION
       BEGIN
         DECLARE err_code INT;
         DECLARE err_msg TEXT;
         GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
         CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
         RESIGNAL;
       END;
@@ -432,110 +503,129 @@ const upMigration = [
 
         CALL task_output_collection('info', concat('processing collectionId ', v_collectionId), v_collectionId);
 
-        SET v_numRules = JSON_LENGTH(v_config);
-        SET v_ruleIdx = 0;
+        BEGIN  -- collection-scoped block: error here rolls back and continues the loop
+          DECLARE EXIT HANDLER FOR SQLEXCEPTION
+          BEGIN
+            DECLARE err_code INT;
+            DECLARE err_msg TEXT;
+            GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+            ROLLBACK;
+            CALL task_output_collection('error', concat('code: ', err_code, ' message: ', err_msg), v_collectionId);
+            CALL task_output('error', concat('error processing collectionId ', v_collectionId, ': code: ', err_code, ' message: ', err_msg));
+          END;
 
-        rule_loop: WHILE v_ruleIdx < v_numRules DO
-          SET v_rule        = JSON_EXTRACT(v_config, CONCAT('$[', v_ruleIdx, ']'));
+          START TRANSACTION;
 
-          IF JSON_VALUE(v_rule, '$.enabled') != 'true' THEN
-            SET v_ruleIdx = v_ruleIdx + 1;
-            ITERATE rule_loop;
-          END IF;
+          SET v_numRules = JSON_LENGTH(v_config);
+          SET v_ruleIdx = 0;
 
-          SET v_triggerField    = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerField'));
-          SET v_triggerBasis    = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerBasis'));
-          SET v_triggerInterval = JSON_VALUE(v_rule, '$.triggerInterval');
-          SET v_triggerAction   = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerAction'));
-          SET v_updateField     = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateField'));
-          SET v_updateValue     = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateValue'));
-          SET v_updateFilter    = JSON_EXTRACT(v_rule, '$.updateFilter');
-          SET v_updateUserId    = JSON_VALUE(v_rule, '$.updateUserId');
+          rule_loop: WHILE v_ruleIdx < v_numRules DO
+            SET v_rule        = JSON_EXTRACT(v_config, CONCAT('$[', v_ruleIdx, ']'));
 
-          -- Compute cutoff datetime
-          -- CAST() does not accept ISO8601 T/Z separators; strip them with REPLACE before casting
-          IF v_triggerBasis = 'now' THEN
-            SET v_cutoff = DATE_SUB(NOW(), INTERVAL v_triggerInterval SECOND);
-          ELSE
-            SET v_cutoff = DATE_SUB(
-              CAST(REPLACE(REPLACE(v_triggerBasis, 'T', ' '), 'Z', '') AS DATETIME),
-              INTERVAL v_triggerInterval SECOND
-            );
-          END IF;
-
-          -- Identify affected reviews into t_reviewIds
-          DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
-          CREATE TEMPORARY TABLE t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY, reviewId INT);
-
-          -- Dynamic SQL needed to interpolate triggerField column name
-          SET @v_sql = CONCAT(
-            'INSERT INTO t_reviewIds (reviewId) ',
-            'SELECT r.reviewId FROM review r ',
-            'JOIN enabled_asset a ON r.assetId = a.assetId ',
-            'WHERE a.collectionId = ', v_collectionId,
-            ' AND r.', v_triggerField, ' < ''', DATE_FORMAT(v_cutoff, '%Y-%m-%d %H:%i:%s'), ''''
-          );
-
-          -- Optional assetIds filter
-          IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.assetIds')) > 0 THEN
-            SET @v_sql = CONCAT(@v_sql,
-              ' AND r.assetId IN (SELECT j.value FROM JSON_TABLE(''',
-              JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.assetIds')),
-              ''', ''$[*]'' COLUMNS (value INT PATH ''$'')) j)');
-          END IF;
-
-          -- Optional labelIds filter (UUID lookup via collection_label_asset_map)
-          IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.labelIds')) > 0 THEN
-            SET @v_sql = CONCAT(@v_sql,
-              ' AND r.assetId IN (',
-              '  SELECT clam.assetId FROM collection_label_asset_map clam',
-              '  JOIN collection_label cl ON clam.clId = cl.clId',
-              '  WHERE BIN_TO_UUID(cl.uuid,1) IN (',
-              '    SELECT j.value FROM JSON_TABLE(''',
-              JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.labelIds')),
-              ''', ''$[*]'' COLUMNS (value VARCHAR(36) PATH ''$'')) j',
-              '  )',
-              ')');
-          END IF;
-
-          -- Optional benchmarkIds filter (via stig_asset_map)
-          IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.benchmarkIds')) > 0 THEN
-            SET @v_sql = CONCAT(@v_sql,
-              ' AND r.assetId IN (',
-              '  SELECT sam.assetId FROM stig_asset_map sam',
-              '  WHERE sam.benchmarkId IN (',
-              '    SELECT j.value FROM JSON_TABLE(''',
-              JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.benchmarkIds')),
-              ''', ''$[*]'' COLUMNS (value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs PATH ''$'')) j',
-              '  )',
-              ')');
-          END IF;
-
-          PREPARE stmt_aging FROM @v_sql;
-          EXECUTE stmt_aging;
-          DEALLOCATE PREPARE stmt_aging;
-
-          SELECT MAX(seq) INTO v_numReviews FROM t_reviewIds;
-          CALL task_output_collection('info',
-            CONCAT('rule ', v_ruleIdx, ': found ', IFNULL(v_numReviews, 0), ' reviews to ', v_triggerAction),
-            v_collectionId);
-
-          IF IFNULL(v_numReviews, 0) > 0 THEN
-            IF v_triggerAction = 'delete' THEN
-              CALL delete_review_batch();
-            ELSEIF v_triggerAction = 'update' THEN
-              IF v_updateField = 'status' THEN
-                CALL update_review_status_batch(v_updateValue);
-              ELSEIF v_updateField = 'result' THEN
-                CALL update_review_result_batch(v_updateValue);
-              END IF;
-              CALL update_stats_asset_stig(JSON_OBJECT('reviewIds', (SELECT JSON_ARRAYAGG(reviewId) FROM t_reviewIds)));
+            IF JSON_VALUE(v_rule, '$.enabled') != 'true' THEN
+              SET v_ruleIdx = v_ruleIdx + 1;
+              ITERATE rule_loop;
             END IF;
-          END IF;
 
-          DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
-          SET v_ruleIdx = v_ruleIdx + 1;
-        END WHILE rule_loop;
+            SET v_triggerField    = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerField'));
+            SET v_triggerBasis    = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerBasis'));
+            SET v_triggerInterval = JSON_VALUE(v_rule, '$.triggerInterval');
+            SET v_triggerAction   = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerAction'));
+            SET v_updateField     = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateField'));
+            SET v_updateValue     = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateValue'));
+            SET v_updateFilter    = JSON_EXTRACT(v_rule, '$.updateFilter');
+
+            -- Compute cutoff datetime
+            -- CAST() does not accept ISO8601 T/Z separators; strip them with REPLACE before casting
+            IF v_triggerBasis = 'now' THEN
+              SET v_cutoff = DATE_SUB(NOW(), INTERVAL v_triggerInterval SECOND);
+            ELSE
+              SET v_cutoff = DATE_SUB(
+                CAST(REPLACE(REPLACE(v_triggerBasis, 'T', ' '), 'Z', '') AS DATETIME),
+                INTERVAL v_triggerInterval SECOND
+              );
+            END IF;
+
+            -- Identify affected reviews into t_reviewIds
+            DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
+            CREATE TEMPORARY TABLE t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY, reviewId INT);
+
+            -- Dynamic SQL needed to interpolate triggerField column name
+            SET @v_sql = CONCAT(
+              'INSERT INTO t_reviewIds (reviewId) ',
+              'SELECT r.reviewId FROM review r ',
+              'JOIN enabled_asset a ON r.assetId = a.assetId ',
+              'WHERE a.collectionId = ', v_collectionId,
+              ' AND r.', v_triggerField, ' < ''', DATE_FORMAT(v_cutoff, '%Y-%m-%d %H:%i:%s'), ''''
+            );
+
+            -- Optional assetIds filter
+            IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.assetIds')) > 0 THEN
+              SET @v_sql = CONCAT(@v_sql,
+                ' AND r.assetId IN (SELECT j.value FROM JSON_TABLE(''',
+                JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.assetIds')),
+                ''', ''$[*]'' COLUMNS (value INT PATH ''$'')) j)');
+            END IF;
+
+            -- Optional labelIds filter (UUID lookup via collection_label_asset_map)
+            IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.labelIds')) > 0 THEN
+              SET @v_sql = CONCAT(@v_sql,
+                ' AND r.assetId IN (',
+                '  SELECT clam.assetId FROM collection_label_asset_map clam',
+                '  JOIN collection_label cl ON clam.clId = cl.clId',
+                '  WHERE BIN_TO_UUID(cl.uuid,1) IN (',
+                '    SELECT j.value FROM JSON_TABLE(''',
+                JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.labelIds')),
+                ''', ''$[*]'' COLUMNS (value VARCHAR(36) PATH ''$'')) j',
+                '  )',
+                ')');
+            END IF;
+
+            -- Optional benchmarkIds filter (via stig_asset_map)
+            IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.benchmarkIds')) > 0 THEN
+              SET @v_sql = CONCAT(@v_sql,
+                ' AND r.assetId IN (',
+                '  SELECT sam.assetId FROM stig_asset_map sam',
+                '  WHERE sam.benchmarkId IN (',
+                '    SELECT j.value FROM JSON_TABLE(''',
+                JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.benchmarkIds')),
+                ''', ''$[*]'' COLUMNS (value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs PATH ''$'')) j',
+                '  )',
+                ')');
+            END IF;
+
+            PREPARE stmt_aging FROM @v_sql;
+            EXECUTE stmt_aging;
+            DEALLOCATE PREPARE stmt_aging;
+
+            SELECT MAX(seq) INTO v_numReviews FROM t_reviewIds;
+            CALL task_output_collection('info',
+              CONCAT('rule ', v_ruleIdx, ': found ', IFNULL(v_numReviews, 0), ' reviews to ', v_triggerAction),
+              v_collectionId);
+
+            IF IFNULL(v_numReviews, 0) > 0 THEN
+              IF v_triggerAction = 'delete' THEN
+                CALL delete_review_batch();
+              ELSEIF v_triggerAction = 'update' THEN
+                SELECT CAST(c.settings->>"$.history.maxReviews" AS UNSIGNED)
+                  INTO v_maxReviews
+                FROM enabled_collection c WHERE c.collectionId = v_collectionId;
+                CALL prune_and_insert_history(v_maxReviews);
+                IF v_updateField = 'status' THEN
+                  CALL update_review_status_batch(v_updateValue);
+                ELSEIF v_updateField = 'result' THEN
+                  CALL update_review_result_batch(v_updateValue);
+                END IF;
+                CALL update_stats_asset_stig(JSON_OBJECT('reviewIds', (SELECT JSON_ARRAYAGG(reviewId) FROM t_reviewIds)));
+              END IF;
+            END IF;
+
+            DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
+            SET v_ruleIdx = v_ruleIdx + 1;
+          END WHILE rule_loop;
+
+          COMMIT;
+        END;  -- collection-scoped block
 
         CALL task_output_collection('info', CONCAT('finished collectionId ', v_collectionId), v_collectionId);
       END LOOP collection_loop;
@@ -547,6 +637,7 @@ const upMigration = [
 
 const downMigration = [
   `DROP PROCEDURE IF EXISTS update_stats_asset_stig`,
+  `DROP PROCEDURE IF EXISTS prune_and_insert_history`,
   `DROP PROCEDURE IF EXISTS review_aging`,
   `DROP PROCEDURE IF EXISTS update_review_result_batch`,
   `DROP PROCEDURE IF EXISTS update_review_status_batch`,
