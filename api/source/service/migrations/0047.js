@@ -186,6 +186,208 @@ const upMigration = [
       END IF;
     END`,
 
+  // Stored procedure equivalent of the JS updateStatsAssetStig function.
+  // Accepts a JSON filter object with optional keys: collectionId, collectionIds,
+  // assetId, assetIds, assetBenchmarkIds, benchmarkId, benchmarkIds, rules, saIds.
+  // NULL or omitted keys are ignored; NULL p_filter updates all rows.
+  `DROP PROCEDURE IF EXISTS update_stats_asset_stig`,
+  `CREATE PROCEDURE update_stats_asset_stig(IN p_filter JSON)
+    BEGIN
+      DECLARE v_where    TEXT DEFAULT 'WHERE sa.assetId IS NOT NULL AND sa.benchmarkId IS NOT NULL';
+      DECLARE v_json_arr JSON;
+      DECLARE v_sql      TEXT;
+
+      -- rules: array of ruleIds -> filter by benchmarkId
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.rules') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.rules');
+        SET v_where = CONCAT(v_where,
+          ' AND sa.benchmarkId IN (',
+            'SELECT DISTINCT benchmarkId FROM rev_group_rule_map ',
+            'LEFT JOIN revision USING (revId) ',
+            'WHERE ruleId IN (',
+              'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value VARCHAR(255) PATH ''$'')) jt',
+            ')',
+          ')');
+      END IF;
+
+      -- collectionId: scalar
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.collectionId') THEN
+        SET v_where = CONCAT(v_where,
+          ' AND a.collectionId = ', JSON_VALUE(p_filter, '$.collectionId'));
+      END IF;
+
+      -- collectionIds: array
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.collectionIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.collectionIds');
+        SET v_where = CONCAT(v_where,
+          ' AND a.collectionId IN (',
+            'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value INT PATH ''$'')) jt',
+          ')');
+      END IF;
+
+      -- assetId: scalar
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.assetId') THEN
+        SET v_where = CONCAT(v_where,
+          ' AND a.assetId = ', JSON_VALUE(p_filter, '$.assetId'));
+      END IF;
+
+      -- assetIds: array
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.assetIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.assetIds');
+        SET v_where = CONCAT(v_where,
+          ' AND a.assetId IN (',
+            'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value INT PATH ''$'')) jt',
+          ')');
+      END IF;
+
+      -- assetBenchmarkIds: array of benchmarkIds -> filter by assetId
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.assetBenchmarkIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.assetBenchmarkIds');
+        SET v_where = CONCAT(v_where,
+          ' AND a.assetId IN (',
+            'SELECT assetId FROM stig_asset_map WHERE benchmarkId IN (',
+              'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value VARCHAR(255) PATH ''$'')) jt',
+            ')',
+          ')');
+      END IF;
+
+      -- benchmarkId: scalar
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.benchmarkId') THEN
+        SET v_where = CONCAT(v_where,
+          ' AND sa.benchmarkId = ', QUOTE(JSON_UNQUOTE(JSON_EXTRACT(p_filter, '$.benchmarkId'))));
+      END IF;
+
+      -- benchmarkIds: array
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.benchmarkIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.benchmarkIds');
+        SET v_where = CONCAT(v_where,
+          ' AND sa.benchmarkId IN (',
+            'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value VARCHAR(255) PATH ''$'')) jt',
+          ')');
+      END IF;
+
+      -- saIds: array
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.saIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.saIds');
+        SET v_where = CONCAT(v_where,
+          ' AND sa.saId IN (',
+            'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value INT PATH ''$'')) jt',
+          ')');
+      END IF;
+
+      -- reviewIds: array of reviewIds -> filter by saId
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.reviewIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.reviewIds');
+        SET v_where = CONCAT(v_where,
+          ' AND sa.saId IN (',
+            'SELECT DISTINCT sa2.saId FROM review r2 ',
+            'INNER JOIN rule_version_check_digest rvsd ON (rvsd.version = r2.version AND rvsd.checkDigest = r2.checkDigest) ',
+            'INNER JOIN rev_group_rule_map rgr2 ON rgr2.ruleId = rvsd.ruleId ',
+            'INNER JOIN revision rev2 ON rev2.revId = rgr2.revId ',
+            'INNER JOIN stig_asset_map sa2 ON (sa2.assetId = r2.assetId AND sa2.benchmarkId = rev2.benchmarkId) ',
+            'WHERE r2.reviewId IN (',
+              'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value INT PATH ''$'')) jt',
+            ')',
+          ')');
+      END IF;
+
+      SET v_sql = CONCAT('
+      WITH source AS (
+        SELECT
+          sa.assetId,
+          sa.benchmarkId,
+          MIN(review.ts)      AS minTs,
+          MAX(review.ts)      AS maxTs,
+          MAX(review.touchTs) AS maxTouchTs,
+          SUM(CASE WHEN review.statusId = 0 THEN 1 ELSE 0 END) AS saved,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.statusId = 0 THEN 1 ELSE 0 END) AS savedResultEngine,
+          SUM(CASE WHEN review.statusId = 1 THEN 1 ELSE 0 END) AS submitted,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.statusId = 1 THEN 1 ELSE 0 END) AS submittedResultEngine,
+          SUM(CASE WHEN review.statusId = 2 THEN 1 ELSE 0 END) AS rejected,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.statusId = 2 THEN 1 ELSE 0 END) AS rejectedResultEngine,
+          SUM(CASE WHEN review.statusId = 3 THEN 1 ELSE 0 END) AS accepted,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.statusId = 3 THEN 1 ELSE 0 END) AS acceptedResultEngine,
+          SUM(CASE WHEN review.resultId = 4 AND rgr.severity = ''high''   THEN 1 ELSE 0 END) AS highCount,
+          SUM(CASE WHEN review.resultId = 4 AND rgr.severity = ''medium'' THEN 1 ELSE 0 END) AS mediumCount,
+          SUM(CASE WHEN review.resultId = 4 AND rgr.severity = ''low''    THEN 1 ELSE 0 END) AS lowCount,
+          SUM(CASE WHEN review.resultId IN (2,3,4) AND rgr.severity = ''high''   THEN 1 ELSE 0 END) AS assessedHighCount,
+          SUM(CASE WHEN review.resultId IN (2,3,4) AND rgr.severity = ''medium'' THEN 1 ELSE 0 END) AS assessedMediumCount,
+          SUM(CASE WHEN review.resultId IN (2,3,4) AND rgr.severity = ''low''    THEN 1 ELSE 0 END) AS assessedLowCount,
+          SUM(CASE WHEN review.resultId = 1 THEN 1 ELSE 0 END) AS notchecked,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 1 THEN 1 ELSE 0 END) AS notcheckedResultEngine,
+          SUM(CASE WHEN review.resultId = 2 THEN 1 ELSE 0 END) AS notapplicable,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 2 THEN 1 ELSE 0 END) AS notapplicableResultEngine,
+          SUM(CASE WHEN review.resultId = 3 THEN 1 ELSE 0 END) AS pass,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 3 THEN 1 ELSE 0 END) AS passResultEngine,
+          SUM(CASE WHEN review.resultId = 4 THEN 1 ELSE 0 END) AS fail,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 4 THEN 1 ELSE 0 END) AS failResultEngine,
+          SUM(CASE WHEN review.resultId = 5 THEN 1 ELSE 0 END) AS unknown,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 5 THEN 1 ELSE 0 END) AS unknownResultEngine,
+          SUM(CASE WHEN review.resultId = 6 THEN 1 ELSE 0 END) AS error,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 6 THEN 1 ELSE 0 END) AS errorResultEngine,
+          SUM(CASE WHEN review.resultId = 7 THEN 1 ELSE 0 END) AS notselected,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 7 THEN 1 ELSE 0 END) AS notselectedResultEngine,
+          SUM(CASE WHEN review.resultId = 8 THEN 1 ELSE 0 END) AS informational,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 8 THEN 1 ELSE 0 END) AS informationalResultEngine,
+          SUM(CASE WHEN review.resultId = 9 THEN 1 ELSE 0 END) AS fixed,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 9 THEN 1 ELSE 0 END) AS fixedResultEngine
+        FROM
+          enabled_asset a
+          INNER JOIN enabled_collection ec ON a.collectionId = ec.collectionId
+          LEFT JOIN stig_asset_map sa USING (assetId)
+          LEFT JOIN default_rev dr ON (sa.benchmarkId = dr.benchmarkId AND a.collectionId = dr.collectionId)
+          LEFT JOIN rev_group_rule_map rgr ON dr.revId = rgr.revId
+          LEFT JOIN rule_version_check_digest rvcd ON rgr.ruleId = rvcd.ruleId
+          LEFT JOIN review ON (rvcd.version = review.version AND rvcd.checkDigest = review.checkDigest AND review.assetId = sa.assetId)
+        ', v_where, '
+        GROUP BY sa.assetId, sa.benchmarkId
+      )
+      UPDATE stig_asset_map sam
+        INNER JOIN source ON sam.assetId = source.assetId AND source.benchmarkId = sam.benchmarkId
+        SET
+          sam.minTs                     = source.minTs,
+          sam.maxTs                     = source.maxTs,
+          sam.maxTouchTs                = source.maxTouchTs,
+          sam.saved                     = source.saved,
+          sam.savedResultEngine         = source.savedResultEngine,
+          sam.submitted                 = source.submitted,
+          sam.submittedResultEngine     = source.submittedResultEngine,
+          sam.rejected                  = source.rejected,
+          sam.rejectedResultEngine      = source.rejectedResultEngine,
+          sam.accepted                  = source.accepted,
+          sam.acceptedResultEngine      = source.acceptedResultEngine,
+          sam.highCount                 = source.highCount,
+          sam.mediumCount               = source.mediumCount,
+          sam.lowCount                  = source.lowCount,
+          sam.assessedHighCount         = source.assessedHighCount,
+          sam.assessedMediumCount       = source.assessedMediumCount,
+          sam.assessedLowCount          = source.assessedLowCount,
+          sam.notchecked                = source.notchecked,
+          sam.notcheckedResultEngine    = source.notcheckedResultEngine,
+          sam.notapplicable             = source.notapplicable,
+          sam.notapplicableResultEngine = source.notapplicableResultEngine,
+          sam.pass                      = source.pass,
+          sam.passResultEngine          = source.passResultEngine,
+          sam.fail                      = source.fail,
+          sam.failResultEngine          = source.failResultEngine,
+          sam.unknown                   = source.unknown,
+          sam.unknownResultEngine       = source.unknownResultEngine,
+          sam.error                     = source.error,
+          sam.errorResultEngine         = source.errorResultEngine,
+          sam.notselected               = source.notselected,
+          sam.notselectedResultEngine   = source.notselectedResultEngine,
+          sam.informational             = source.informational,
+          sam.informationalResultEngine = source.informationalResultEngine,
+          sam.fixed                     = source.fixed,
+          sam.fixedResultEngine         = source.fixedResultEngine
+      ');
+
+      SET @stmt = v_sql;
+      PREPARE stmt FROM @stmt;
+      EXECUTE stmt;
+      DEALLOCATE PREPARE stmt;
+    END`,
+
   // Main ReviewAging stored procedure
   `DROP PROCEDURE IF EXISTS review_aging`,
   `CREATE PROCEDURE review_aging()
@@ -327,6 +529,7 @@ const upMigration = [
               ELSEIF v_updateField = 'result' THEN
                 CALL update_review_result_batch(v_updateValue);
               END IF;
+              CALL update_stats_asset_stig(JSON_OBJECT('reviewIds', (SELECT JSON_ARRAYAGG(reviewId) FROM t_reviewIds)));
             END IF;
           END IF;
 
@@ -343,6 +546,7 @@ const upMigration = [
 ]
 
 const downMigration = [
+  `DROP PROCEDURE IF EXISTS update_stats_asset_stig`,
   `DROP PROCEDURE IF EXISTS review_aging`,
   `DROP PROCEDURE IF EXISTS update_review_result_batch`,
   `DROP PROCEDURE IF EXISTS update_review_status_batch`,
