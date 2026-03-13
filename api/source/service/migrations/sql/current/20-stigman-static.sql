@@ -38,7 +38,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `_migrations` WRITE;
 /*!40000 ALTER TABLE `_migrations` DISABLE KEYS */;
-INSERT INTO `_migrations` VALUES ('2023-03-09 16:11:04',NULL,'0000.js'),('2023-03-09 16:11:04',NULL,'0001.js'),('2023-03-09 16:11:04',NULL,'0002.js'),('2023-03-09 16:11:04',NULL,'0003.js'),('2023-03-09 16:11:04',NULL,'0004.js'),('2023-03-09 16:11:04',NULL,'0005.js'),('2023-03-09 16:11:04',NULL,'0006.js'),('2023-03-09 16:11:05',NULL,'0007.js'),('2023-03-09 16:11:06',NULL,'0008.js'),('2023-03-09 16:11:06',NULL,'0009.js'),('2023-03-09 16:11:06',NULL,'0010.js'),('2023-03-09 16:11:07',NULL,'0011.js'),('2023-03-09 16:11:07',NULL,'0012.js'),('2023-03-09 16:11:07',NULL,'0013.js'),('2023-03-09 16:11:07',NULL,'0014.js'),('2023-03-09 16:11:07',NULL,'0015.js'),('2023-03-09 16:11:08',NULL,'0016.js'),('2023-03-09 16:11:08',NULL,'0017.js'),('2023-03-09 16:11:08',NULL,'0018.js'),('2023-03-09 16:11:09',NULL,'0019.js'),('2023-03-09 16:11:10',NULL,'0020.js'),('2023-04-11 14:14:58',NULL,'0021.js'),('2023-04-26 13:06:02',NULL,'0022.js'),('2023-07-18 14:50:40',NULL,'0023.js'),('2023-09-05 14:19:13',NULL,'0024.js'),('2023-09-05 14:19:14',NULL,'0025.js'),('2023-09-05 14:19:14',NULL,'0026.js'),('2023-09-05 14:19:14',NULL,'0027.js'),('2024-03-26 12:40:20',NULL,'0028.js'),('2024-05-14 21:39:38',NULL,'0029.js'),('2024-05-14 21:40:06',NULL,'0031.js'),('2024-07-24 14:40:24',NULL,'0032.js'),('2025-02-05 17:47:29',NULL,'0033.js'),('2025-02-05 17:47:29',NULL,'0034.js'),('2025-02-05 17:48:18',NULL,'0035.js'),('2025-02-05 17:48:18',NULL,'0036.js'),('2025-05-13 22:25:35',NULL,'0037.js'),('2025-05-13 22:25:45',NULL,'0038.js'),('2025-05-13 22:25:45',NULL,'0039.js'),('2025-05-13 22:25:45',NULL,'0040.js'),('2025-10-04 20:54:44',NULL,'0041.js'),('2025-10-04 20:54:44',NULL,'0042.js'),('2025-10-04 20:54:44',NULL,'0043.js'),('2025-10-04 20:54:45',NULL,'0044.js'),('2025-10-04 20:54:45',NULL,'0045.js'),('2026-03-09 22:40:20',NULL,'0046.js');
+INSERT INTO `_migrations` VALUES ('2023-03-09 16:11:04',NULL,'0000.js'),('2023-03-09 16:11:04',NULL,'0001.js'),('2023-03-09 16:11:04',NULL,'0002.js'),('2023-03-09 16:11:04',NULL,'0003.js'),('2023-03-09 16:11:04',NULL,'0004.js'),('2023-03-09 16:11:04',NULL,'0005.js'),('2023-03-09 16:11:04',NULL,'0006.js'),('2023-03-09 16:11:05',NULL,'0007.js'),('2023-03-09 16:11:06',NULL,'0008.js'),('2023-03-09 16:11:06',NULL,'0009.js'),('2023-03-09 16:11:06',NULL,'0010.js'),('2023-03-09 16:11:07',NULL,'0011.js'),('2023-03-09 16:11:07',NULL,'0012.js'),('2023-03-09 16:11:07',NULL,'0013.js'),('2023-03-09 16:11:07',NULL,'0014.js'),('2023-03-09 16:11:07',NULL,'0015.js'),('2023-03-09 16:11:08',NULL,'0016.js'),('2023-03-09 16:11:08',NULL,'0017.js'),('2023-03-09 16:11:08',NULL,'0018.js'),('2023-03-09 16:11:09',NULL,'0019.js'),('2023-03-09 16:11:10',NULL,'0020.js'),('2023-04-11 14:14:58',NULL,'0021.js'),('2023-04-26 13:06:02',NULL,'0022.js'),('2023-07-18 14:50:40',NULL,'0023.js'),('2023-09-05 14:19:13',NULL,'0024.js'),('2023-09-05 14:19:14',NULL,'0025.js'),('2023-09-05 14:19:14',NULL,'0026.js'),('2023-09-05 14:19:14',NULL,'0027.js'),('2024-03-26 12:40:20',NULL,'0028.js'),('2024-05-14 21:39:38',NULL,'0029.js'),('2024-05-14 21:40:06',NULL,'0031.js'),('2024-07-24 14:40:24',NULL,'0032.js'),('2025-02-05 17:47:29',NULL,'0033.js'),('2025-02-05 17:47:29',NULL,'0034.js'),('2025-02-05 17:48:18',NULL,'0035.js'),('2025-02-05 17:48:18',NULL,'0036.js'),('2025-05-13 22:25:35',NULL,'0037.js'),('2025-05-13 22:25:45',NULL,'0038.js'),('2025-05-13 22:25:45',NULL,'0039.js'),('2025-05-13 22:25:45',NULL,'0040.js'),('2026-01-18 23:23:23',NULL,'0041.js'),('2026-01-18 23:23:23',NULL,'0042.js'),('2026-01-18 23:23:23',NULL,'0043.js'),('2026-01-18 23:23:24',NULL,'0044.js'),('2026-01-18 23:23:24',NULL,'0045.js'),('2026-03-13 18:17:36',NULL,'0046.js'),('2026-03-13 18:17:36',NULL,'0047.js');
 /*!40000 ALTER TABLE `_migrations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -48,7 +48,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `task` WRITE;
 /*!40000 ALTER TABLE `task` DISABLE KEYS */;
-INSERT INTO `task` VALUES (1,'WipeDeletedObjects','Wipe deleted collections and assets and their associated reviews','delete_disabled()'),(2,'DeleteUnmappedReviews','Delete reviews that no longer match any rule in the system','delete_unmapped(\"system\")'),(3,'DeleteUnmappedAssetReviews','Delete reviews that no longer match an asset\'s assigned rules','delete_unmapped(\"asset\")'),(4,'AnalyzeReviewTables','Analyze database tables for performance','analyze_tables(JSON_ARRAY(\"reviews\", \"review_history\"))');
+INSERT INTO `task` VALUES (1,'WipeDeletedObjects','Wipe deleted collections and assets and their associated reviews','delete_disabled()'),(2,'DeleteUnmappedReviews','Delete reviews that no longer match any rule in the system','delete_unmapped(\"system\")'),(3,'DeleteUnmappedAssetReviews','Delete reviews that no longer match an asset\'s assigned rules','delete_unmapped(\"asset\")'),(4,'AnalyzeReviewTables','Analyze database tables for performance','analyze_tables(JSON_ARRAY(\"reviews\", \"review_history\"))'),(5,'ReviewAging','Age reviews based on per-collection rules','review_aging()');
 /*!40000 ALTER TABLE `task` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -58,7 +58,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `job` WRITE;
 /*!40000 ALTER TABLE `job` DISABLE KEYS */;
-INSERT INTO `job` VALUES (1,'Cleanup Database','Wipe deleted collections and assets and their associated reviews',NULL,NULL,'2025-10-04 20:54:45.057',NULL),(2,'Delete Unmapped Reviews','Delete reviews that no longer match any rule in the system',NULL,NULL,'2025-10-04 20:54:45.057',NULL),(3,'Delete Unmapped Asset Reviews','Delete reviews that no longer match an asset\'s assigned rules',NULL,NULL,'2025-10-04 20:54:45.057',NULL);
+INSERT INTO `job` VALUES (1,'Cleanup Database','Wipe deleted collections and assets and their associated reviews',NULL,NULL,'2026-01-18 23:23:24.327',NULL),(2,'Delete Unmapped Reviews','Delete reviews that no longer match any rule in the system',NULL,NULL,'2026-01-18 23:23:24.327',NULL),(3,'Delete Unmapped Asset Reviews','Delete reviews that no longer match an asset\'s assigned rules',NULL,NULL,'2026-01-18 23:23:24.327',NULL);
 /*!40000 ALTER TABLE `job` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -68,7 +68,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `job_task_map` WRITE;
 /*!40000 ALTER TABLE `job_task_map` DISABLE KEYS */;
-INSERT INTO `job_task_map` VALUES (1,1,1,'2025-10-04 20:54:45.079','2025-10-04 20:54:45.079'),(2,1,4,'2025-10-04 20:54:45.079','2025-10-04 20:54:45.079'),(3,2,2,'2025-10-04 20:54:45.079','2025-10-04 20:54:45.079'),(4,2,4,'2025-10-04 20:54:45.079','2025-10-04 20:54:45.079'),(5,3,3,'2025-10-04 20:54:45.079','2025-10-04 20:54:45.079'),(6,3,4,'2025-10-04 20:54:45.079','2025-10-04 20:54:45.079');
+INSERT INTO `job_task_map` VALUES (1,1,1,'2026-01-18 23:23:24.342','2026-01-18 23:23:24.342'),(2,1,4,'2026-01-18 23:23:24.342','2026-01-18 23:23:24.342'),(3,2,2,'2026-01-18 23:23:24.342','2026-01-18 23:23:24.342'),(4,2,4,'2026-01-18 23:23:24.342','2026-01-18 23:23:24.342'),(5,3,3,'2026-01-18 23:23:24.342','2026-01-18 23:23:24.342'),(6,3,4,'2026-01-18 23:23:24.342','2026-01-18 23:23:24.342');
 /*!40000 ALTER TABLE `job_task_map` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -79,6 +79,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-09 22:40:40
+-- Dump completed on 2026-03-13 18:17:48
 ALTER TABLE job AUTO_INCREMENT=100;
 ALTER TABLE job_task_map AUTO_INCREMENT=1000;
+INSERT INTO user_data (username, taskId, status) VALUES ('_task_ReviewAging', 5, 'unavailable');

@@ -2837,3 +2837,58 @@ exports.queryReviewAcl = async function ({grantId, collectionId, userId, userGro
   const [rows] = await dbUtils.pool.query(sql)
   return rows?.[0]
 }
+
+exports.getCollectionTaskConfig = async function (collectionId, taskId) {
+  const sql = `SELECT config FROM task_collection_config WHERE collectionId = ? AND taskId = ?`
+  const [rows] = await dbUtils.pool.query(sql, [collectionId, taskId])
+  return rows[0]?.config
+}
+
+exports.putCollectionTaskConfig = async function (collectionId, taskId, config) {
+  const sql = `
+    INSERT INTO task_collection_config (taskId, collectionId, config)
+    VALUES (?, ?, ?)
+    ON DUPLICATE KEY UPDATE config = VALUES(config)`
+  await dbUtils.pool.query(sql, [taskId, collectionId, JSON.stringify(config)])
+  return config
+}
+
+exports.deleteCollectionTaskConfig = async function (collectionId, taskId) {
+  const [result] = await dbUtils.pool.query(
+    `DELETE FROM task_collection_config WHERE collectionId = ? AND taskId = ?`,
+    [collectionId, taskId]
+  )
+  return result.affectedRows > 0
+}
+
+exports.getCollectionTaskOutput = async function (collectionId, taskId, { start, end } = {}) {
+  const columns = [
+    'tout.seq',
+    'tout.ts',
+    'CAST(tout.taskId AS CHAR) AS taskId',
+    't.name AS task',
+    'tout.type',
+    'tout.message',
+    'tout.collectionId'
+  ]
+  const joins = new Set([
+    'task_output tout',
+    'LEFT JOIN task t ON tout.taskId = t.taskId'
+  ])
+  const predicates = {
+    statements: ['tout.collectionId = ?', 'tout.taskId = ?'],
+    binds: [collectionId, taskId]
+  }
+  if (start) {
+    predicates.statements.push('tout.ts >= ?')
+    predicates.binds.push(start)
+  }
+  if (end) {
+    predicates.statements.push('tout.ts <= ?')
+    predicates.binds.push(end)
+  }
+  const orderBy = ['tout.seq ASC']
+  const sql = dbUtils.makeQueryString({ columns, joins, predicates, orderBy, format: true })
+  const [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  return rows
+}
