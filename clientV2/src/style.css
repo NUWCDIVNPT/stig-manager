@@ -196,6 +196,12 @@ textarea:focus {
   color: var(--color-text-error);
 }
 
+.p-datatable-mask {
+  background: rgb(24 24 27 / 0.08) !important;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
 @font-face {
   font-family: 'Open Sans';
   font-style: normal;

@@ -99,6 +99,7 @@ function handleAssetStigAction(rowData) {
           <div class="grid-container">
             <MetricsSummaryGrid
               :api-metrics-summary="labels"
+              agg-type="label"
               :is-loading="labelsLoading"
               selectable
               data-key="labelId"
@@ -116,16 +117,15 @@ function handleAssetStigAction(rowData) {
             <h3>Assets</h3>
           </div>
           <div class="grid-container">
-            <div v-if="!isLabelSelected" class="empty-state">
-              Select a label to view associated assets.
-            </div>
-            <div v-else-if="assetsError" class="error-state">
+            <div v-if="assetsError" class="error-state">
               {{ assetsError?.message || assetsError }}
             </div>
             <MetricsSummaryGrid
               v-else
               :api-metrics-summary="assets"
+              agg-type="asset"
               :is-loading="assetsLoading"
+              :empty-message="isLabelSelected ? 'No assets found for this label. Try refresh.' : 'Select a label to view associated assets.'"
               selectable
               data-key="assetId"
               :selected-key="selectedAssetId"
@@ -143,19 +143,15 @@ function handleAssetStigAction(rowData) {
             <span v-if="selectedAssetId" class="badge">Asset ID: {{ selectedAssetId }}</span>
           </div>
           <div class="grid-container">
-            <div v-if="!selectedAssetId" class="empty-state">
-              Select an asset to view its checklists.
-            </div>
-            <div v-else-if="assetStigsError" class="error-state">
+            <div v-if="assetStigsError" class="error-state">
               {{ assetStigsError?.message || assetStigsError }}
-            </div>
-            <div v-else-if="!assetStigsLoading && assetStigs.length === 0" class="empty-state">
-              No checklists associated with this asset.
             </div>
             <MetricsSummaryGrid
               v-else
               :api-metrics-summary="assetStigs"
+              agg-type="unagg"
               :is-loading="assetStigsLoading"
+              :empty-message="selectedAssetId ? 'No checklists associated with this asset. Try refresh.' : 'Select an asset to view its checklists.'"
               parent-agg-type="asset"
               show-shield
               @shield-click="handleAssetStigAction"

@@ -107,6 +107,7 @@ function handleAssetStigAction(rowData) {
           <div class="grid-container">
             <MetricsSummaryGrid
               :api-metrics-summary="stigs"
+              agg-type="stig"
               :is-loading="stigsLoading"
               selectable
               data-key="benchmarkId"
@@ -124,18 +125,15 @@ function handleAssetStigAction(rowData) {
             <h3>Collections</h3>
           </div>
           <div class="grid-container">
-            <div v-if="!selectedStig" class="empty-state">
-              Select a STIG to view associated collections.
+            <div v-if="collectionsError" class="error-state">
+              {{ collectionsError?.message || collectionsError }}
             </div>
-            <div v-else-if="!collectionsLoading && collections.length === 0" class="empty-state">
-              No collections found for the selected STIG.
-            </div>
-
             <MetricsSummaryGrid
               v-else
               :api-metrics-summary="collections"
+              agg-type="collection"
               :is-loading="collectionsLoading"
-              :error-message="collectionsError?.message || collectionsError"
+              :empty-message="selectedStig ? 'No collections found for the selected STIG. Try refresh.' : 'Select a STIG to view associated collections.'"
               selectable
               data-key="collectionId"
               show-shield
@@ -155,17 +153,15 @@ function handleAssetStigAction(rowData) {
             <span v-if="selectedCollectionId" class="badge">Collection: {{ selectedCollectionId }}</span>
           </div>
           <div class="grid-container">
-            <div v-if="!selectedCollectionId" class="empty-state">
-              Select a collection to view its assets for this STIG.
-            </div>
-            <div v-else-if="!assetsLoading && assets.length === 0" class="empty-state">
-              No assets associated with this STIG in the selected collection.
+            <div v-if="assetsError" class="error-state">
+              {{ assetsError?.message || assetsError }}
             </div>
             <MetricsSummaryGrid
               v-else
               :api-metrics-summary="assets"
+              agg-type="unagg"
               :is-loading="assetsLoading"
-              :error-message="assetsError?.message || assetsError"
+              :empty-message="selectedCollectionId ? 'No assets associated with this STIG in the selected collection. Try refresh.' : 'Select a collection to view its assets for this STIG.'"
               parent-agg-type="stig"
               show-shield
               @shield-click="handleAssetStigAction"

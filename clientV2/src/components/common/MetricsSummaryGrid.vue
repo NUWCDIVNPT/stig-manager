@@ -22,9 +22,18 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  emptyMessage: {
+    type: String,
+    default: 'No data here yet. Try refresh.',
+  },
   parentAggType: {
     type: String,
     default: '',
+  },
+  aggType: {
+    type: String,
+    default: '',
+    validator: value => ['', 'collection', 'asset', 'stig', 'label', 'unagg'].includes(value),
   },
   errorMessage: {
     type: String,
@@ -105,6 +114,10 @@ watch(() => props.apiMetricsSummary, () => {
 })
 
 const aggregationType = computed(() => {
+  if (props.aggType) {
+    return props.aggType
+  }
+
   const m = props.apiMetricsSummary
   console.log('apiMetricsSummary', m)
   if (!Array.isArray(m) || m.length === 0 || !m[0]) {
@@ -307,6 +320,10 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     :value="data"
     :data-key="dataKey"
     :selection-mode="selectable ? 'single' : null"
+    :loading="isLoading"
+    :pt="{
+      emptyMessageCell: { class: 'agg-grid-empty-cell' },
+    }"
     scrollable
     scroll-height="flex"
     show-gridlines
@@ -320,6 +337,11 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
   >
     <template v-for="col in columns" :key="col.field">
       <component :is="col.component" v-bind="col" sortable style="height: 27px; max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
+    </template>
+    <template #empty>
+      <div class="agg-grid-empty-state">
+        {{ emptyMessage }}
+      </div>
     </template>
     <template v-if="showFooter" #footer>
       <StatusFooter
@@ -349,6 +371,16 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.agg-grid-empty-state {
+  padding: 0.75rem 0;
+  text-align: center;
+  color: var(--color-text-dim);
+}
+
+:deep(.agg-grid-empty-cell) {
+  border-bottom: none;
 }
 
 :deep(tr:hover .collection-icon-action) {

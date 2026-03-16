@@ -95,6 +95,7 @@ function handleStigShieldClick(rowData) {
           <div class="grid-container">
             <MetricsSummaryGrid
               :api-metrics-summary="stigs"
+              agg-type="stig"
               :is-loading="stigsLoading"
               :error-message="stigsError?.message || stigsError"
               :selected-key="selectedBenchmarkId"
@@ -116,22 +117,15 @@ function handleStigShieldClick(rowData) {
             <span v-if="selectedBenchmarkId" class="badge">{{ selectedBenchmarkId }}</span>
           </div>
           <div class="grid-container">
-            <div v-if="!selectedBenchmarkId" class="empty-state">
-              Select a STIG to view checklists.
-            </div>
-            <div v-else-if="checklistAssetsLoading && checklistAssets.length === 0" class="loading-state">
-              Loading checklists...
-            </div>
-            <div v-else-if="checklistAssetsError" class="error-state">
+            <div v-if="checklistAssetsError" class="error-state">
               {{ checklistAssetsError?.message || checklistAssetsError }}
-            </div>
-            <div v-else-if="!checklistAssetsLoading && checklistAssets.length === 0" class="empty-state">
-              No checklists found for this STIG.
             </div>
             <MetricsSummaryGrid
               v-else
               :api-metrics-summary="checklistAssets"
+              agg-type="unagg"
               :is-loading="checklistAssetsLoading"
+              :empty-message="selectedBenchmarkId ? 'No checklists found for this STIG. Try refresh.' : 'Select a STIG to view checklists.'"
               parent-agg-type="stig"
               show-shield
               data-key="assetId"
