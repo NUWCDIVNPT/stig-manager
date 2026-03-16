@@ -4,6 +4,11 @@
   color-scheme: dark !important;
   color: rgba(255, 255, 255, 0.87);
   background-color: #000000;
+
+  --role-restricted: #64748bcb;
+  --role-full: #e2ca43d5;
+  --role-manage: #4b7bc9da;
+  --role-owner: #087c21da;
   
   /* Classification Marking Colors */
   --color-marking-unclassified: #007a33;
