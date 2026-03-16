@@ -1,10 +1,28 @@
 import { apiCall } from '../../../shared/api/apiClient.js'
+import { fetchCurrentUser } from '../../../shared/api/userApi.js'
+import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
+import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 
-export function deleteCollection(collectionId) {
+export async function deleteCollection(collectionId) {
   if (!collectionId) {
     throw new Error('A collectionId is required to delete a collection.')
   }
-  return apiCall('deleteCollection', { collectionId })
+  const result = await apiCall('deleteCollection', { collectionId })
+  const { removeView } = useRecentViews()
+  const { setUser } = useGlobalAppStore()
+
+  removeView(key => key.includes(`:${collectionId}`))
+
+  // Ensure collection grants are clean by refetching user directly from API
+  try {
+    const updatedUser = await fetchCurrentUser()
+    setUser(updatedUser)
+  }
+  catch (error) {
+    console.error('Failed to refetch user grants after collection deletion', error)
+  }
+
+  return result
 }
 
 export function fetchCollection(collectionId) {

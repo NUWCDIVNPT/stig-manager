@@ -23,14 +23,16 @@ const { state, isLoading, error, execute } = useAsyncState(
     const data = ref(null)
 
     async function load() {
-        loading.value = true
-        try {
-            data.value = await api.get()
-        } catch (e) {
-            err.value = e
-        } finally {
-            loading.value = false
-        }
+      loading.value = true
+      try {
+        data.value = await api.get()
+      }
+      catch (e) {
+        err.value = e
+      }
+      finally {
+        loading.value = false
+      }
     }
     ```
     This boilerplate is error-prone and verbose.
@@ -41,12 +43,12 @@ If a component has complex computed logic (e.g., filtering, mapping, statistics)
 **Example: `useCollectionStats.js`**
 ```javascript
 export function useCollectionStats(metrics) {
-    const inventory = computed(() => {
-        // complex transformation logic
-        return metrics.value?.inventory || []
-    })
+  const inventory = computed(() => {
+    // complex transformation logic
+    return metrics.value?.inventory || []
+  })
 
-    return { inventory }
+  return { inventory }
 }
 ```
 

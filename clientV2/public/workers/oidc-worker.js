@@ -3,12 +3,12 @@ const logPrefix = '[OIDCWorker]:'
 // Private state
 const tokens = {
   accessToken: null,
-  refreshToken: null
+  refreshToken: null,
 }
 let ENV = null
 let oidcConfiguration = null
 let initialized = false
-let authorizations = {}
+const authorizations = {}
 let accessTimeoutId = null
 let refreshTimeoutId = null
 const channelName = crypto.randomUUID()
@@ -31,7 +31,7 @@ const messageHandlers = {
   exchangeCodeForToken,
   initialize,
   getStatus,
-  logout
+  logout,
 }
 
 function getAccessToken(authorizationOptions) {
@@ -41,12 +41,12 @@ function getAccessToken(authorizationOptions) {
   }
   return {
     accessToken: tokens.accessToken,
-    accessTokenPayload: decodeToken(tokens.accessToken)
+    accessTokenPayload: decodeToken(tokens.accessToken),
   }
 }
 
 async function createAuthorization(options) {
-  if (authorizations[options.redirectUri]) return authorizations[options.redirectUri]
+  if (authorizations[options.redirectUri]) { return authorizations[options.redirectUri] }
   const pkce = await getPkce()
   const state = options.state || crypto.randomUUID()
   const params = new URLSearchParams()
@@ -89,11 +89,11 @@ async function exchangeCodeForToken({ code, codeVerifier, clientId = ENV.clientI
     return {
       success: true,
       accessToken: tokens.accessToken,
-      accessTokenPayload: decodeToken(tokens.accessToken)
+      accessTokenPayload: decodeToken(tokens.accessToken),
     }
   }
   catch (e) {
-    return { success: false, error: e.message}
+    return { success: false, error: e.message }
   }
 }
 
@@ -124,14 +124,14 @@ async function getStatus() {
     initialized,
     env: ENV,
     channelName,
-    reauthUri
+    reauthUri,
   }
 }
 
 function logout() {
   return {
     success: true,
-    redirect: oidcConfiguration.end_session_endpoint
+    redirect: oidcConfiguration.end_session_endpoint,
   }
 }
 
@@ -139,19 +139,22 @@ async function onMessage(e) {
   const port = e.target
   const { requestId, request, ...options } = e.data
   if (requestId === 'contextActive' && tokens.accessToken && idleTimeoutM) {
-      console.log(logPrefix, 'Received contextActive message, setting idle handler')
-      isIdle = false
-      setIdleHandler()
-  } else {
+    console.log(logPrefix, 'Received contextActive message, setting idle handler')
+    isIdle = false
+    setIdleHandler()
+  }
+  else {
     const handler = messageHandlers[request]
     if (handler) {
       try {
         const response = await handler(options)
         port.postMessage({ requestId, response })
-      } catch (error) {
+      }
+      catch (error) {
         port.postMessage({ requestId, error: error.message })
       }
-    } else {
+    }
+    else {
       port.postMessage({ requestId, error: 'Unknown request' })
     }
   }
@@ -159,7 +162,7 @@ async function onMessage(e) {
 
 // Support functions
 function dec2hex(dec) {
-  return ('0' + dec.toString(16)).substr(-2)
+  return (`0${dec.toString(16)}`).substr(-2)
 }
 
 function generateRandomString() {
@@ -204,43 +207,46 @@ function decodeToken(str) {
     str = decodeURIComponent(escape(atob(str)))
     str = JSON.parse(str)
     return str
-  } catch {
+  }
+  catch {
     return false
   }
 }
 
 function validateOidcConfiguration() {
   const result = {
-    success: true
+    success: true,
   }
   if (!oidcConfiguration.authorization_endpoint) {
     result.success = false
     result.error = 'Missing authorization endpoint in OIDC configuration'
-  } else if (!oidcConfiguration.token_endpoint) {
+  }
+  else if (!oidcConfiguration.token_endpoint) {
     result.success = false
     result.error = 'Missing token endpoint in OIDC configuration'
-  } else if (ENV.strictPkce && !oidcConfiguration.code_challenge_methods_supported?.includes('S256')) {
+  }
+  else if (ENV.strictPkce && !oidcConfiguration.code_challenge_methods_supported?.includes('S256')) {
     result.success = false
     result.error = 'OP does not advertise PKCE and STIGMAN_CLIENT_STRICT_PKCE=true'
   }
-  return result 
+  return result
 }
 
 function getScopeStr() {
   const scopePrefix = ENV.scopePrefix
-  let scopes = [
+  const scopes = [
     `openid`,
     `${scopePrefix}stig-manager:stig`,
     `${scopePrefix}stig-manager:stig:read`,
     `${scopePrefix}stig-manager:collection`,
     `${scopePrefix}stig-manager:user`,
     `${scopePrefix}stig-manager:user:read`,
-    `${scopePrefix}stig-manager:op`
+    `${scopePrefix}stig-manager:op`,
   ]
   if (ENV.extraScopes) {
-    scopes.push(...ENV.extraScopes.split(" "))
+    scopes.push(...ENV.extraScopes.split(' '))
   }
-  return scopes.join(" ")
+  return scopes.join(' ')
 }
 
 async function fetchOpenIdConfiguration() {
@@ -256,7 +262,6 @@ async function fetchOpenIdConfiguration() {
   return oidcConfiguration
 }
 
-
 async function getPkce() {
   const codeVerifier = generateRandomString()
   const codeChallenge = await challengeFromVerifier(codeVerifier)
@@ -269,15 +274,15 @@ async function broadcastNoToken() {
   //   ? redirectUri.slice(0, -'index.html'.length)
   //   : redirectUri
 
-  const auth = await createAuthorization({redirectUri: reauthUri})
+  const auth = await createAuthorization({ redirectUri: reauthUri })
   bc.postMessage({ type: 'noToken', ...auth, isIdle })
 }
 
 function broadcastToken() {
-    bc.postMessage({
+  bc.postMessage({
     type: 'accessToken',
     accessToken: tokens.accessToken,
-    accessTokenPayload: decodeToken(tokens.accessToken)
+    accessTokenPayload: decodeToken(tokens.accessToken),
   })
 }
 
@@ -342,7 +347,7 @@ function getTokenTimes(token, timeoutBufferS = 10) {
     timeoutDate,
     timeoutDateISO,
     timeoutInS,
-    timeoutInMs
+    timeoutInMs,
   }
 }
 
@@ -359,7 +364,6 @@ function setTokensAccessOnly(tokensResponse) {
   if (idleTimeoutM && !idleTimeoutId) {
     setIdleHandler()
   }
-
 }
 
 function setTokensWithRefresh(tokensResponse) {
@@ -369,7 +373,8 @@ function setTokensWithRefresh(tokensResponse) {
   if (accessTimes?.timeoutInS <= 0) {
     broadcastNoToken()
     return
-  } else {
+  }
+  else {
     tokens.accessToken = tokensResponse.access_token
     broadcastToken()
   }
@@ -377,7 +382,8 @@ function setTokensWithRefresh(tokensResponse) {
     tokens.refreshToken = tokensResponse.refresh_token
     console.log(logPrefix, 'Refresh token expires: ', refreshTimes.expiresDateISO, ' timeout: ', refreshTimes.timeoutDateISO)
     setRefreshTokenTimer(refreshTimes.timeoutInMs)
-  } else {
+  }
+  else {
     console.log(logPrefix, 'Refresh expiration unknown or zero, Access token expires: ', accessTimes.expiresDateISO, ' timeout: ', accessTimes.timeoutDateISO)
     tokens.refreshToken = tokensResponse.refresh_token ?? null
     setAccessTokenTimer(accessTimes.timeoutInMs)
@@ -386,7 +392,8 @@ function setTokensWithRefresh(tokensResponse) {
   if (accessTimes.expiresInS < refreshTimes?.expiresInS) {
     console.log(logPrefix, 'Access token expires: ', accessTimes.expiresDateISO, ' timeout: ', accessTimes.timeoutDateISO)
     setAccessTokenTimer(accessTimes.timeoutInMs)
-  } else {
+  }
+  else {
     console.log(logPrefix, 'Access token expires: ', accessTimes.expiresDateISO, ' timeout disabled')
   }
   if (idleTimeoutM && !idleTimeoutId) {
@@ -409,26 +416,28 @@ function validateTokensResponse(tokensResponse) {
 
 function validateScope(scopeValue, isAdmin = false) {
   // Depending on OIDC provider, scopeValue can be a space-separated string (the standard) or an array of scopes. If a string, split it on spaces into an array.
-  const scopes = typeof scopeValue === 'string' ? scopeValue.split(' ')
-	    : Array.isArray(scopeValue) ? scopeValue
-	    : []
-  const hasScope = (s) => scopes.includes(s)
+  const scopes = typeof scopeValue === 'string'
+    ? scopeValue.split(' ')
+    : Array.isArray(scopeValue)
+      ? scopeValue
+      : []
+  const hasScope = s => scopes.includes(s)
 
   // Required scopes for each privilege
   const requiredAdminScopes = [
     'stig-manager:stig',
     'stig-manager:user',
     'stig-manager:op',
-    'stig-manager:collection'
+    'stig-manager:collection',
   ]
   const requiredUserScopes = [
     'stig-manager:stig:read',
     'stig-manager:user:read',
-    'stig-manager:collection'
+    'stig-manager:collection',
   ]
 
   // Top-level scope grants all
-  if (hasScope('stig-manager')) return true
+  if (hasScope('stig-manager')) { return true }
 
   const required = isAdmin ? requiredAdminScopes : requiredUserScopes
   for (const s of required) {
@@ -446,7 +455,7 @@ function validateClaims(payload) {
   if (!payload[ENV.claims.username]) {
     throw new Error(`Missing username claim (${ENV.claims.username}) in access token payload`)
   }
-  
+
   const privilegeChain = ENV.claims.privileges.split('.').map(p => p.replace(/(^")|("$)/g, ''))
   const privileges = privilegeChain.reduce((obj, key) => obj?.[key], payload)
   if (!privileges) {
@@ -456,7 +465,8 @@ function validateClaims(payload) {
   // move idle handling out of here eventually
   if (privileges.includes('admin')) {
     idleTimeoutM = ENV.idleTimeoutAdmin
-  } else {
+  }
+  else {
     idleTimeoutM = ENV.idleTimeoutUser
   }
 
@@ -470,14 +480,15 @@ function validateAudience(payload) {
     if (Array.isArray(payload.aud)) {
       if (!payload.aud.includes(ENV.audienceValue)) {
         throw new Error(`Invalid audience in access token payload: ${payload.aud.join(', ')}, expected: ${ENV.audienceValue}`)
-      } 
+      }
     }
     else if (typeof payload.aud === 'string') {
       if (payload.aud !== ENV.audienceValue) {
         throw new Error(`Invalid audience in access token payload: ${payload.aud}, expected: ${ENV.audienceValue}`)
       }
-    } else {
-      throw new Error(`Invalid audience type in access token payload: ${typeof payload.aud}, expected string or array`)
+    }
+    else {
+      throw new TypeError(`Invalid audience type in access token payload: ${typeof payload.aud}, expected string or array`)
     }
   }
   return true
@@ -498,7 +509,7 @@ function setTokens(tokensResponse) {
 function clearAccessToken(sendBroadcast = false) {
   tokens.accessToken = null
   clearAccessTokenTimer()
-  if (sendBroadcast) broadcastNoToken()
+  if (sendBroadcast) { broadcastNoToken() }
 }
 
 function clearTokens(sendBroadcast = false) {
@@ -506,7 +517,7 @@ function clearTokens(sendBroadcast = false) {
   tokens.refreshToken = null
   clearAccessTokenTimer()
   clearRefreshTokenTimer()
-  if (sendBroadcast) broadcastNoToken()
+  if (sendBroadcast) { broadcastNoToken() }
 }
 
 async function fetchTokens(params) {
@@ -517,7 +528,7 @@ async function fetchTokens(params) {
   const response = await fetch(oidcConfiguration.token_endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: params
+    body: params,
   })
   if (isIdle) {
     console.log(logPrefix, 'Contexts are idle, will not get tokens response')
@@ -552,7 +563,7 @@ async function refreshAccessToken() {
   }
   catch (e) {
     clearTokens(true) // broadcast no token
-    return { success: false, error: e.message}
+    return { success: false, error: e.message }
   }
 }
 
@@ -570,4 +581,3 @@ function setIdleHandler() {
     console.log(logPrefix, 'Idle handler installed, timeout set for', idleTimeoutDate)
   }
 }
-

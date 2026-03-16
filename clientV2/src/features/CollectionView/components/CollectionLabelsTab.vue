@@ -166,4 +166,3 @@ function handleAssetStigAction(rowData) {
     </Splitter>
   </div>
 </template>
-

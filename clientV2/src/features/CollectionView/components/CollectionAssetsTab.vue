@@ -63,6 +63,7 @@ function handleShieldClick(rowData) {
       collectionId: props.collectionId,
       assetId: selectedAssetId.value,
       benchmarkId: rowData.benchmarkId,
+      revisionStr: rowData.revisionStr,
     },
   })
 }
@@ -129,4 +130,3 @@ function handleShieldClick(rowData) {
     </Splitter>
   </div>
 </template>
-

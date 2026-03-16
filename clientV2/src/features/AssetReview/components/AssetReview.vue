@@ -1,18 +1,21 @@
 <script setup>
 import { computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
 import {
   fetchAsset,
   fetchCollectionLabels,
 } from '../api/assetReviewApi.js'
-import AssetReviewBreadcrumbs from './AssetReviewBreadcrumbs.vue'
 import ChecklistInfo from './ChecklistInfo.vue'
 import ReviewForm from './ReviewForm.vue'
 import ReviewResources from './ReviewResources.vue'
 import RuleInfo from './RuleInfo.vue'
 
 const route = useRoute()
+const router = useRouter()
+const { addView, removeView } = useRecentViews()
 
 const collectionId = computed(() => route.params.collectionId)
 const assetId = computed(() => route.params.assetId)
@@ -20,7 +23,21 @@ const assetId = computed(() => route.params.assetId)
 // Fetch Asset Details
 const { state: asset, isLoading, errorMessage: error, execute: loadAsset } = useAsyncState(
   () => fetchAsset(assetId.value),
-  { immediate: false },
+  {
+    immediate: false,
+    onError: (err) => {
+      const isPrivilegeError = err.body?.error === 'User has insufficient privilege to complete this request.'
+      if (isPrivilegeError) {
+        removeView(key => key.includes(`:${collectionId.value}:${assetId.value}`))
+        router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+      }
+      else {
+        // useAsyncState handles the default triggerError if we don't return early
+        const { triggerError } = useGlobalError()
+        triggerError(err)
+      }
+    },
+  },
 )
 
 // Fetch Collection Labels (for coloring)
@@ -29,8 +46,24 @@ const { state: collectionLabels, execute: loadCollectionLabels } = useAsyncState
   { initialState: [], immediate: false },
 )
 
+// Update recent views when asset loads or params change
+watch(
+  [asset, () => route.params.benchmarkId, () => route.params.revisionStr],
+  ([a]) => {
+    if (a?.name && route.params.benchmarkId) {
+      addView({
+        key: `review:${collectionId.value}:${assetId.value}:${route.params.benchmarkId}`,
+        url: route.fullPath,
+        label: `${a.name} / ${route.params.benchmarkId}`,
+        type: 'asset-review',
+      })
+    }
+  },
+)
+
 // Initial Data Load
 watch([assetId, collectionId], () => {
+  asset.value = null
   if (assetId.value) {
     loadAsset()
   }
@@ -74,8 +107,6 @@ defineExpose({ asset })
 <template>
   <div class="asset-review">
     <header class="asset-review__header">
-      <AssetReviewBreadcrumbs :asset="asset" />
-
       <div v-if="asset" class="asset-review__header-main">
         <div class="asset-review__header-info">
           <div class="asset-review__title-row">
@@ -228,7 +259,7 @@ defineExpose({ asset })
   align-items: center;
   padding: 0.15rem 0.5rem;
   background-color: var(--color-action-blue);
-  color: #fff;
+  color: var(--color-text-bright);
   border-radius: 9999px;
   font-size: 0.7rem;
   font-weight: 600;
@@ -284,7 +315,7 @@ defineExpose({ asset })
 
 .action-btn:hover {
   background-color: var(--color-bg-hover-strong);
-  border-color: #4a4d50;
+  border-color: var(--color-border-default);
 }
 
 .action-btn i {
@@ -302,7 +333,7 @@ defineExpose({ asset })
 .search-reviews__icon {
   position: absolute;
   left: 0.6rem;
-  color: #6b7280;
+  color: var(--color-text-dim);
   font-size: 0.85rem;
   pointer-events: none;
 }
@@ -320,7 +351,7 @@ defineExpose({ asset })
 }
 
 .search-reviews__input::placeholder {
-  color: #6b7280;
+  color: var(--color-text-dim);
 }
 
 .search-reviews__input:focus {
@@ -372,6 +403,6 @@ defineExpose({ asset })
 }
 
 .asset-review__error {
-  color: #f16969;
+  color: var(--color-text-error);
 }
 </style>

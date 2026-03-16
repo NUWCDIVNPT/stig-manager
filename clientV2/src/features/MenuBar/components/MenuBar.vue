@@ -2,10 +2,20 @@
 import Menubar from 'primevue/menubar'
 import { computed, inject } from 'vue'
 import { useEnv } from '../../../shared/stores/useEnv.js'
+import { useAppBreadcrumb } from '../composables/useAppBreadcrumb.js'
+import BreadcrumbSelect from './BreadcrumbSelect.vue'
 
-defineEmits(['toggle-menu'])
 const oidcWorker = inject('worker')
 const env = useEnv()
+const {
+  breadcrumbItems,
+  collectionOptions,
+  navigateToCollection,
+  assetStigOptions,
+  stigRevisionOptions,
+  navigateToStig,
+  navigateToRevision,
+} = useAppBreadcrumb()
 
 const tokenTooltip = computed(() => {
   try {
@@ -17,8 +27,11 @@ const tokenTooltip = computed(() => {
 })
 
 function handleLogout() {
-  const logoutHandler = oidcWorker.logout.bind(oidcWorker)
-  logoutHandler()
+  oidcWorker.logout()
+}
+
+function onCollectionSelect(collectionId) {
+  navigateToCollection(collectionId)
 }
 
 const items = computed(() => {
@@ -72,13 +85,13 @@ const pt = {
   root: {
     style: {
       width: '100%',
-      height: '80px',
-      backgroundColor: '#000000',
+      height: '5rem',
+      backgroundColor: 'var(--color-background-darkest)',
       border: 'none',
-      borderBottom: '2px solid #464545',
+      borderBottom: '2px solid var(--color-border-default)',
       borderRadius: '0',
-      padding: '0 16px',
-      minWidth: '200px',
+      padding: '0 1.5rem',
+      minWidth: '18rem',
     },
   },
   rootList: {
@@ -90,25 +103,25 @@ const pt = {
   itemLink: {
     style: {
       color: 'var(--color-text-primary)',
-      gap: '2px',
+      gap: '0.2rem',
     },
   },
   submenu: {
     style: {
-      right: '5px',
+      right: '0.45rem',
       left: 'auto',
       fontSize: '1.25rem',
-      minWidth: '180px',
+      minWidth: '16.5rem',
       width: 'auto',
       zIndex: '1000',
-      border: '1px solid #3a3d40',
-      borderRadius: '6px',
-      padding: '4px 0',
+      border: '1px solid var(--color-border-default)',
+      borderRadius: '0.55rem',
+      padding: '0.35rem 0',
     },
   },
   submenuItemContent: {
     style: {
-      padding: '2px 0',
+      padding: '0.2rem 0',
     },
   },
 }
@@ -118,16 +131,84 @@ const pt = {
   <Menubar :model="items" :pt="pt">
     <template #start>
       <div class="left-section">
-        <button class="icon-btn" aria-label="Menu" @click="$emit('toggle-menu')">
-          <i class="pi pi-bars" />
-        </button>
         <router-link to="/" class="home-link">
-          <span class="logo-icon" /> Stig-Manager
+          <span class="logo-icon" /> STIG Manager
         </router-link>
         <div class="badges">
           <span class="badge badge-oss">OSS</span>
           <span class="badge badge-version">{{ env?.version }}</span>
         </div>
+
+        <!-- Global breadcrumb -->
+        <nav v-if="breadcrumbItems.length" class="breadcrumb" aria-label="Breadcrumb">
+          <span class="breadcrumb-separator">/</span>
+          <template v-for="(item, index) in breadcrumbItems" :key="index">
+            <!-- Link + adjacent collection picker -->
+            <template v-if="item.route && item.pickerType === 'collection'">
+              <router-link :to="item.route" class="breadcrumb-link">
+                {{ item.label }}
+              </router-link>
+              <BreadcrumbSelect
+                picker-only
+                :model-value="$route.params.collectionId"
+                :options="collectionOptions"
+                option-label="name"
+                option-value="collectionId"
+                @update:model-value="onCollectionSelect"
+              />
+            </template>
+            <!-- Collection dropdown picker -->
+            <!-- <BreadcrumbSelect
+              v-if="item.pickerType === 'collection'"
+              is-link
+              :model-value="$route.params.collectionId"
+              :options="collectionOptions"
+              option-label="name"
+              option-value="collectionId"
+              placeholder="Collection"
+              @update:model-value="onCollectionSelect"
+            /> -->
+
+            <!-- STIG dropdown picker -->
+            <BreadcrumbSelect
+              v-else-if="item.isDropdown && item.dropdownType === 'stig'"
+              :model-value="$route.params.benchmarkId"
+              :options="assetStigOptions"
+              option-label="benchmarkId"
+              option-value="benchmarkId"
+              placeholder="STIG"
+              @update:model-value="navigateToStig"
+            />
+
+            <!-- Revision dropdown picker -->
+            <BreadcrumbSelect
+              v-else-if="item.isDropdown && item.dropdownType === 'revision'"
+              :model-value="$route.params.revisionStr"
+              :options="stigRevisionOptions"
+              option-label="revisionStr"
+              option-value="revisionStr"
+              placeholder="Revision"
+              @update:model-value="navigateToRevision"
+            />
+
+            <!-- Clickable link segment -->
+            <router-link
+              v-else-if="item.route"
+              :to="item.route"
+              class="breadcrumb-link"
+            >
+              {{ item.label }}
+            </router-link>
+
+            <!-- Static text segment -->
+            <span v-else class="breadcrumb-current">{{ item.label }}</span>
+
+            <span
+              v-if="index < breadcrumbItems.length - 1"
+              class="breadcrumb-separator"
+            >/</span>
+          </template>
+        </nav>
       </div>
     </template>
 
@@ -168,32 +249,7 @@ const pt = {
 .left-section {
   display: flex;
   align-items: center;
-  gap: 16px;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  color: var(--color-text-primary);
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  outline: none;
-}
-
-.icon-btn:focus,
-.icon-btn:active {
-  outline: none;
-}
-
-.icon-btn:hover {
-  opacity: 0.8;
-}
-
-.pi-bars {
-  font-size: 1.2rem;
+  gap: 1.5rem;
 }
 
 .home-link {
@@ -201,14 +257,15 @@ const pt = {
   align-items: center;
   color: var(--color-text-primary);
   text-decoration: none;
+  font-size: 1.25rem;
   font-weight: 600;
-  gap: 8px;
+  gap: 0.75rem;
 }
 
 .logo-icon {
   display: block;
-  width: 25px;
-  height: 25px;
+  width: 2.5rem;
+  height: 2.5rem;
   background-image: url('/src/assets/shield-green-check.svg');
   background-size: contain;
   background-repeat: no-repeat;
@@ -222,10 +279,10 @@ const pt = {
 }
 
 .badge {
-  padding: 2px 3px;
+  padding: 0.2rem 0.25rem;
   font-size: 0.9rem;
   font-weight: 600;
-  border-radius: 5px;
+  border-radius: 0.45rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--color-text-primary);
@@ -236,34 +293,63 @@ const pt = {
 }
 
 .badge-oss {
-  background-color: rgba(99, 110, 123, 0.9);
+  background-color: var(--color-oss-blue);
 }
 
 .badge-version {
-  background-color: var(--color-primary-green, #10b981); /* Use fallback if var not available */
+  background-color: var(--color-shield-green-dark);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.breadcrumb-separator {
+  color: var(--color-text-dim);
+  margin: 0 0.4rem;
+  font-size: 1.1rem;
+}
+
+.breadcrumb-link {
+  color: var(--color-primary-highlight);
+  text-decoration: none;
+  font-size: 1.2rem;
+}
+
+.breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-current {
+  color: var(--color-text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
 /* Menu Item Styling */
 .menu-item-link {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 15px;
+  gap: 0.75rem;
+  padding: 0.55rem 1.35rem;
 }
 
 .menu-profile-header {
-  padding: 8px 16px;
+  padding: 0.75rem 1.5rem;
   display: flex;
   align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid #3a3d40;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--color-border-default);
   cursor: default;
 }
 
 .profile-avatar {
-  width: 32px;
-  height: 32px;
-  background-color: #3a3d40;
+  width: 3rem;
+  height: 3rem;
+  background-color: var(--color-bg-hover-strong);
   border-radius: 50%;
   display: flex;
   align-items: center;

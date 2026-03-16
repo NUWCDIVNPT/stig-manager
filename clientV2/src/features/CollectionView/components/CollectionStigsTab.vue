@@ -63,6 +63,7 @@ function handleChecklistAssetAction(rowData) {
       collectionId: props.collectionId,
       assetId: rowData.assetId,
       benchmarkId: selectedBenchmarkId.value,
+      revisionStr: rowData.revisionStr,
     },
   })
 }
@@ -143,4 +144,3 @@ function handleStigShieldClick(rowData) {
     </Splitter>
   </div>
 </template>
-
