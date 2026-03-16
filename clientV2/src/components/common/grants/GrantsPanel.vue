@@ -317,6 +317,14 @@ const getRoleLabel = (roleId) => roleMap[roleId] || 'Unknown'
   justify-content: space-between;
 }
 
+.section-title {
+  font-size: 0.99rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-left: 0.25rem;
+}
+
 .grants-table-wrapper {
   border: 1px solid var(--color-border-default);
   border-radius: 6px;
