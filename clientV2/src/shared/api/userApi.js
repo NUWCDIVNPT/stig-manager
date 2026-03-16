@@ -23,3 +23,13 @@ export async function fetchCurrentUser() {
 
   return user
 }
+
+export function fetchUsers({ status } = {}) {
+  const params = {}
+  if (status) params.status = status
+  return apiCall('getUsers', params)
+}
+
+export function fetchUserGroups() {
+  return apiCall('getUserGroups')
+}
