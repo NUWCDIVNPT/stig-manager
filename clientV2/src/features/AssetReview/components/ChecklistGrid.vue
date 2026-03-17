@@ -157,12 +157,8 @@ watch(() => props.gridData, (data) => {
 })
 
 function onRowClick(event) {
-  // Prevent the click from reaching PrimeVue Popover's document-level
-  // outside-click handler, which would dismiss the popover
-  event.originalEvent.stopPropagation()
-
   const isSameRow = editingRow.value?.ruleId === event.data.ruleId
-  if (!isSameRow && reviewEditPopover.value?.isDirty?.value) {
+  if (!isSameRow && reviewEditPopover.value?.isDirty) {
     reviewEditPopover.value.triggerButtonPulse()
     return
   }

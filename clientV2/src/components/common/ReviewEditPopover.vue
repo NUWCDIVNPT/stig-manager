@@ -222,6 +222,7 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
   <Popover
     ref="popover"
     append-to="body"
+    :dismissable="false"
     :pt="{
       root: {
         style: 'border: 1px solid var(--color-shield-green-dark); box-shadow: 0 0 10px 1px hsla(150, 30%, 40%, 0.3);',
