@@ -1,3 +1,10 @@
+1.6.4
+-------
+
+Changes:
+
+  - (Dependencies) Security update of package undici
+
 1.6.3
 -------
 
