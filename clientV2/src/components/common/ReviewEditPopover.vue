@@ -205,12 +205,17 @@ function toggle(event) {
   popover.value.toggle(event)
 }
 
+function show(event) {
+  lastAnchorEvent.value = event
+  popover.value.show(event)
+}
+
 function hide() {
   closing.value = true
   popover.value.hide()
 }
 
-defineExpose({ toggle, hide })
+defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
 </script>
 
 <template>

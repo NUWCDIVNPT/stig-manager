@@ -3,7 +3,7 @@ import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Menu from 'primevue/menu'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import EngineBadge from '../../../components/common/EngineBadge.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
@@ -61,8 +61,11 @@ const checklistMenu = ref()
 const reviewEditPopover = ref()
 const editingRow = ref(null)
 const editingPopoverWidth = ref(null)
+const switchingRows = ref(false)
 
 function openRowEditor(event, rowData) {
+  const isSameRow = editingRow.value?.ruleId === rowData.ruleId
+
   editingRow.value = rowData
   const row = event.target.closest('tr')
   const resultCell = row?.querySelector('[data-result-cell]')
@@ -79,7 +82,26 @@ function openRowEditor(event, rowData) {
     editingPopoverWidth.value = null
   }
 
-  reviewEditPopover.value.toggle({ currentTarget: anchorEl, target: anchorEl })
+  const anchorEvent = { currentTarget: anchorEl, target: anchorEl }
+
+  if (isSameRow) {
+    reviewEditPopover.value.toggle(anchorEvent)
+  }
+  else {
+    // Hide then reopen at new row position
+    switchingRows.value = true
+    reviewEditPopover.value.hide()
+    nextTick(() => {
+      switchingRows.value = false
+      reviewEditPopover.value.show(anchorEvent)
+    })
+  }
+}
+
+function onPopoverClose() {
+  if (!switchingRows.value) {
+    editingRow.value = null
+  }
 }
 
 function onPopoverSave(payload) {
@@ -134,8 +156,18 @@ watch(() => props.gridData, (data) => {
   }
 })
 
-function onRowSelect(event) {
+function onRowClick(event) {
+  // Prevent the click from reaching PrimeVue Popover's document-level
+  // outside-click handler, which would dismiss the popover
+  event.originalEvent.stopPropagation()
+
+  const isSameRow = editingRow.value?.ruleId === event.data.ruleId
+  if (!isSameRow && reviewEditPopover.value?.isDirty?.value) {
+    reviewEditPopover.value.triggerButtonPulse()
+    return
+  }
   emit('select-rule', event.data.ruleId)
+  openRowEditor(event.originalEvent, event.data)
 }
 
 function handleFooterAction(actionKey) {
@@ -188,7 +220,7 @@ function handleFooterAction(actionKey) {
       scroll-height="flex"
       striped-rows
       class="checklist-grid__table"
-      @row-select="onRowSelect"
+      @row-click="onRowClick"
     >
       <Column header="CAT" field="severity" :style="{ width: '44px', textAlign: 'center' }">
         <template #body="{ data }">
@@ -244,8 +276,7 @@ function handleFooterAction(actionKey) {
         <template #body="{ data }">
           <div
             data-result-cell
-            class="cell-result cell-result--clickable"
-            @click.stop="openRowEditor($event, data)"
+            class="cell-result"
           >
             <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
             <span v-else class="cell-result__empty">—</span>
@@ -256,8 +287,7 @@ function handleFooterAction(actionKey) {
       <Column header="Detail" field="detail" :style="{ width: '200px' }">
         <template #body="{ data }">
           <div
-            class="cell-text-field cell-text-field--clickable"
-            @click.stop="openRowEditor($event, data)"
+            class="cell-text-field"
           >
             <span v-if="data.detail" class="cell-text--clamped" :title="data.detail">{{ data.detail }}</span>
             <span v-else class="cell-text--placeholder">Add review...</span>
@@ -268,8 +298,7 @@ function handleFooterAction(actionKey) {
       <Column header="Comment" field="comment" :style="{ width: '200px' }">
         <template #body="{ data }">
           <div
-            class="cell-text-field cell-text-field--clickable"
-            @click.stop="openRowEditor($event, data)"
+            class="cell-text-field"
           >
             <span class="cell-text--clamped" :title="data.comment">{{ data.comment }}</span>
           </div>
@@ -353,7 +382,7 @@ function handleFooterAction(actionKey) {
       :is-saving="isSaving"
       @save="onPopoverSave"
       @status-action="onPopoverStatusAction"
-      @close="editingRow = null"
+      @close="onPopoverClose"
     />
   </div>
 </template>
@@ -445,6 +474,10 @@ function handleFooterAction(actionKey) {
   height: 100%;
 }
 
+:deep(.p-datatable-tbody > tr) {
+  cursor: pointer;
+}
+
 :deep(.p-datatable-tbody > tr > td) {
   vertical-align: top;
   padding: 0.15rem 0.35rem;
@@ -457,16 +490,6 @@ function handleFooterAction(actionKey) {
 :deep(.p-datatable-footer) {
   padding: 0;
   border: none;
-}
-
-.cell-result--clickable {
-  cursor: pointer;
-  border-radius: 3px;
-  height: 100%;
-}
-
-.cell-result--clickable:hover {
-  background-color: var(--p-highlight-background);
 }
 
 .cell-result__empty {
@@ -509,20 +532,10 @@ function handleFooterAction(actionKey) {
   min-width: 0;
 }
 
-.cell-text-field--clickable {
-  cursor: pointer;
-  border-radius: 3px;
-  height: 100%;
-}
-
 .cell-text--placeholder {
   color: var(--color-text-dim);
   font-style: italic;
   opacity: 0.5;
-}
-
-.cell-text-field--clickable:hover {
-  background-color: var(--p-highlight-background);
 }
 
 .engine-header-icon {
