@@ -4,7 +4,7 @@ const component = 'logSocket'
 const auth = require('./auth')
 const uuid = require('uuid')
 const SmError = require('./error')
-const AsyncApiValidator = require('asyncapi-validator')
+const asyncApiValidator = require('./asyncApiValidator')
 
 const socketPath = '/socket/log-socket'
 
@@ -240,7 +240,7 @@ class LogSession {
   }
 
   sendError = (error) => {
-    this.send({ type: 'error', data: { message: error } }); 
+    this.send({ type: 'error', data: error });
   }
 
   sendLog = (logObj) => {
@@ -263,7 +263,7 @@ class LogSession {
 }
 
 async function setupLogSocket (server, schemaPath) {
-  const validator = await AsyncApiValidator.fromSource(schemaPath, {msgIdentifier: 'name'})
+  const validator = asyncApiValidator.fromSource(schemaPath)
   const wss = new WebSocket.Server({ server, path: socketPath })
   wss.on('connection', (ws) => onConnection(ws, validator))
 }

@@ -1,3 +1,63 @@
+1.6.3
+-------
+
+Changes:
+
+  - (API) fix: resolve discrepancies in fresh install stored procedures vs migration for Service Jobs feature
+  - (API) refactor: replace asyncapi-validator with lightweight AsyncApiValidator class to reduce dependency bloat and improve performance
+  - (Docs) Updated build dependency
+  - (Client: Dependencies) Update to latest stig-manager-client-modules (1.6.3)
+  - (API/Client: Dependencies) Various security and maintenance updates
+
+Note: This release includes a database migration to resolve discrepancies in the database stored procedures for the Service Jobs feature that could occur on fresh installs. 
+
+
+1.6.2
+-------
+
+Changes:
+
+  - (API) Updated launcher templates
+  - (Docs) Updated build dependency
+  - (Dependencies) Various security and maintenance updates
+
+1.6.1
+-------
+
+Changes:
+
+  - (Dependencies) Various security and maintenance updates
+
+1.6.0
+-------
+
+Changes:
+
+  - (Docs) Update license/contributors for 2025
+  - (Docs) Describe token value format requirements
+  - (Dependencies) chore: Update API dependencies
+
+1.5.17
+-------
+
+Changes:
+  - (Dependencies) Various security and maintenance updates
+
+1.5.16
+-------
+
+Changes:
+  - (API) feature: Native TLS server support with new environment variables `STIGMAN_API_TLS_CERT_FILE` and `STIGMAN_API_TLS_KEY_FILE`
+  - (API) feature: Custom CA certificate support for OIDC provider TLS validation via `STIGMAN_OIDC_CA_CERTS` environment variable
+  - (API) enhancement: Database TLS certificate paths now support absolute paths while maintaining backward compatibility with relative paths
+  - (API) feature: Complete label objects (labelId, name, color) included in API responses alongside existing labelIds arrays
+  - (API) feature: revisionDate added to STIG metrics summary responses
+  - (API) fix: Missing control field in ccis projection responses
+  - (Docs) Updated README.md and screenshots
+  - (Dependencies) Various security and maintenance updates
+
+Note: This release introduces native TLS server support for the API. TLS is enabled by setting both `STIGMAN_API_TLS_CERT_FILE` and `STIGMAN_API_TLS_KEY_FILE` environment variables. If the private key is encrypted, provide the passphrase via `STIGMAN_API_TLS_KEY_PASSPHRASE`. Additionally, deployments using custom or internal certificate authorities for their OIDC provider can now specify a CA certificate file via `STIGMAN_OIDC_CA_CERTS`. Database TLS certificate environment variables (`STIGMAN_DB_TLS_CA_FILE`, `STIGMAN_DB_TLS_CERT_FILE`, `STIGMAN_DB_TLS_KEY_FILE`) now support absolute paths; existing deployments using relative paths continue to work without modification.
+
 1.5.15
 -------
 

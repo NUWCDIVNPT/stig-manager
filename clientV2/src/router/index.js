@@ -15,6 +15,7 @@ const StigLibrary = () => import('../features/STIGLibrary/components/StigLibrary
 const CollectionSelection = () => import('../features/CollectionView/components/CollectionSelection.vue')
 const AppManagementSelection = () => import('../features/AppManagement/components/AppManagementSelection.vue')
 const StigLibrarySelection = () => import('../features/STIGLibrary/components/StigLibrarySelection.vue')
+const CollectionsAdmin = () => import('../features/AppManagement/Collections/components/Collections.vue')
 const WhatsNewView = () => import('../features/WhatsNew/components/WhatsNewView.vue')
 const AssetReview = () => import('../features/AssetReview/components/AssetReview.vue')
 const CollectionReview = () => import('../features/CollectionReview/components/CollectionReview.vue')
@@ -164,44 +165,44 @@ const routes = [
     },
   },
   {
-    path: '/admin/collections',
+    path: '/app-management/collections',
     name: 'admin-collections',
-    component: CollectionManage,
+    component: CollectionsAdmin,
     props: true,
     meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Collections' }] },
   },
   {
-    path: '/admin/users',
+    path: '/app-management/users',
     name: 'admin-users',
     component: UserManage,
     meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Users' }] },
   },
   {
-    path: '/admin/user-groups',
+    path: '/app-management/user-groups',
     name: 'admin-user-groups',
     component: UserGroupManage,
     meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'User Groups' }] },
   },
   {
-    path: '/admin/stigs',
+    path: '/app-management/stigs',
     name: 'admin-stigs',
     component: StigManage,
     meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'STIGs' }] },
   },
   {
-    path: '/admin/service-jobs',
+    path: '/app-management/service-jobs',
     name: 'admin-service-jobs',
     component: ServiceJobs,
     meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Service Jobs' }] },
   },
   {
-    path: '/admin/app-info',
+    path: '/app-management/app-info',
     name: 'admin-app-info',
     component: AppInfo,
     meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'App Info' }] },
   },
   {
-    path: '/admin/transfer',
+    path: '/app-management/transfer',
     name: 'admin-transfer',
     component: ExportImportManage,
     meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Export & Import' }] },

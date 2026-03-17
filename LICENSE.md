@@ -8,9 +8,9 @@
 ## MIT License
 
 ```
-Copyright (c) 2020-2025 U.S. Federal Government (in countries where recognized)
-Copyright (c) 2020-2025 Science Applications International Corporation
-Copyright (c) 2020-2025 Rite-Solutions, Inc. 
+Copyright (c) 2020-2026 U.S. Federal Government (in countries where recognized)
+Copyright (c) 2020-2026 Science Applications International Corporation
+Copyright (c) 2020-2026 Rite-Solutions, An Arcfield Company
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
