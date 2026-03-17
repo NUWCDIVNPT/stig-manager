@@ -28,9 +28,8 @@ const lvl1 = {
 }
 
 const collectionId = reference.testCollection.collectionId
-const taskId = 5
-const baseConfigUrl = `${config.baseUrl}/collections/${collectionId}/tasks/${taskId}/config`
-const baseOutputUrl = `${config.baseUrl}/collections/${collectionId}/tasks/${taskId}/output`
+const baseConfigUrl = `${config.baseUrl}/collections/${collectionId}/tasks/review-aging/config`
+const baseOutputUrl = `${config.baseUrl}/collections/${collectionId}/tasks/review-aging/output`
 
 const sampleConfig = [
   {
@@ -45,7 +44,7 @@ const sampleConfig = [
   }
 ]
 
-describe('Collection Task Config - /collections/{collectionId}/tasks/{taskId}/config', function () {
+describe('Collection Task Config - /collections/{collectionId}/tasks/review-aging/config', function () {
 
   beforeEach(async function () {
     await utils.loadAppData()
@@ -56,7 +55,7 @@ describe('Collection Task Config - /collections/{collectionId}/tasks/{taskId}/co
     await utils.executeRequest(baseConfigUrl, 'DELETE', admin.token)
   })
 
-  describe('GET getCollectionTaskConfig', function () {
+  describe('GET getCollectionTaskConfigReviewAging', function () {
     it('should return 404 when no config exists', async function () {
       const res = await utils.executeRequest(baseConfigUrl, 'GET', admin.token)
       expect(res.status).to.eql(404)
@@ -83,7 +82,7 @@ describe('Collection Task Config - /collections/{collectionId}/tasks/{taskId}/co
     })
   })
 
-  describe('PUT putCollectionTaskConfig', function () {
+  describe('PUT putCollectionTaskConfigReviewAging', function () {
     it('should set config and return it', async function () {
       const res = await utils.executeRequest(baseConfigUrl, 'PUT', admin.token, sampleConfig)
       expect(res.status).to.eql(200)
@@ -137,7 +136,7 @@ describe('Collection Task Config - /collections/{collectionId}/tasks/{taskId}/co
     })
   })
 
-  describe('DELETE deleteCollectionTaskConfig', function () {
+  describe('DELETE deleteCollectionTaskConfigReviewAging', function () {
     it('should delete config and subsequent GET returns 404', async function () {
       await utils.executeRequest(baseConfigUrl, 'PUT', admin.token, sampleConfig)
       const delRes = await utils.executeRequest(baseConfigUrl, 'DELETE', admin.token)
@@ -160,7 +159,7 @@ describe('Collection Task Config - /collections/{collectionId}/tasks/{taskId}/co
   })
 })
 
-describe('Collection Task Output - /collections/{collectionId}/tasks/{taskId}/output', function () {
+describe('Collection Task Output - /collections/{collectionId}/tasks/{taskName}/output', function () {
 
   before(async function () {
     await utils.loadAppData()

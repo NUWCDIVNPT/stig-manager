@@ -537,11 +537,10 @@ describe('Task tests', function () {
     })
   })
 
-  describe('Task - ReviewAging', function () {
+  describe.only('Task - ReviewAging', function () {
     const collectionId = '21'
-    const taskId = 5
-    const configUrl = `${config.baseUrl}/collections/${collectionId}/tasks/${taskId}/config`
-    const outputUrl = `${config.baseUrl}/collections/${collectionId}/tasks/${taskId}/output`
+    const configUrl = `${config.baseUrl}/collections/${collectionId}/tasks/review-aging/config`
+    const outputUrl = `${config.baseUrl}/collections/${collectionId}/tasks/review-aging/output`
 
     // Helper: set ReviewAging config and run the task, then return runId
     async function runAgingWithConfig(agingConfig) {

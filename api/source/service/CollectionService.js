@@ -2838,30 +2838,39 @@ exports.queryReviewAcl = async function ({grantId, collectionId, userId, userGro
   return rows?.[0]
 }
 
-exports.getCollectionTaskConfig = async function (collectionId, taskId) {
-  const sql = `SELECT config FROM task_collection_config WHERE collectionId = ? AND taskId = ?`
-  const [rows] = await dbUtils.pool.query(sql, [collectionId, taskId])
+function kebabToPascal (kebabName) {
+  return kebabName.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join('')
+}
+
+exports.getCollectionTaskConfig = async function (collectionId, taskName) {
+  const sql = `
+    SELECT tcc.config FROM task_collection_config tcc
+    JOIN task t ON tcc.taskId = t.taskId
+    WHERE tcc.collectionId = ? AND t.name = ?`
+  const [rows] = await dbUtils.pool.query(sql, [collectionId, kebabToPascal(taskName)])
   return rows[0]?.config
 }
 
-exports.putCollectionTaskConfig = async function (collectionId, taskId, config) {
+exports.putCollectionTaskConfig = async function (collectionId, taskName, config) {
   const sql = `
     INSERT INTO task_collection_config (taskId, collectionId, config)
-    VALUES (?, ?, ?)
+    VALUES ((SELECT taskId FROM task WHERE name = ?), ?, ?)
     ON DUPLICATE KEY UPDATE config = VALUES(config)`
-  await dbUtils.pool.query(sql, [taskId, collectionId, JSON.stringify(config)])
+  await dbUtils.pool.query(sql, [kebabToPascal(taskName), collectionId, JSON.stringify(config)])
   return config
 }
 
-exports.deleteCollectionTaskConfig = async function (collectionId, taskId) {
+exports.deleteCollectionTaskConfig = async function (collectionId, taskName) {
   const [result] = await dbUtils.pool.query(
-    `DELETE FROM task_collection_config WHERE collectionId = ? AND taskId = ?`,
-    [collectionId, taskId]
+    `DELETE tcc FROM task_collection_config tcc
+    JOIN task t ON tcc.taskId = t.taskId
+    WHERE tcc.collectionId = ? AND t.name = ?`,
+    [collectionId, kebabToPascal(taskName)]
   )
   return result.affectedRows > 0
 }
 
-exports.getCollectionTaskOutput = async function (collectionId, taskId, { start, end } = {}) {
+exports.getCollectionTaskOutput = async function (collectionId, taskName, { start, end } = {}) {
   const columns = [
     'tout.seq',
     'tout.ts',
@@ -2876,8 +2885,8 @@ exports.getCollectionTaskOutput = async function (collectionId, taskId, { start,
     'LEFT JOIN task t ON tout.taskId = t.taskId'
   ])
   const predicates = {
-    statements: ['tout.collectionId = ?', 'tout.taskId = ?'],
-    binds: [collectionId, taskId]
+    statements: ['tout.collectionId = ?', 't.name = ?'],
+    binds: [collectionId, kebabToPascal(taskName)]
   }
   if (start) {
     predicates.statements.push('tout.ts >= ?')
