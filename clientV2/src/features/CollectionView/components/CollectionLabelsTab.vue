@@ -3,19 +3,32 @@ import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionAssetStigs, fetchCollectionAssetSummary, fetchCollectionLabelSummary } from '../api/collectionApi.js'
-import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
 const props = defineProps({
   collectionId: {
     type: [String],
     required: true,
   },
+  selectedLabelIds: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const { state: labels, isLoading: labelsLoading, execute: loadLabels } = useAsyncState(
-  () => fetchCollectionLabelSummary(props.collectionId),
+  () => fetchCollectionLabelSummary(
+    props.collectionId,
+    buildLabelFilterParams(props.selectedLabelIds),
+  ).then((res) => {
+    if (props.selectedLabelIds.length > 0) {
+      return res.filter(label => props.selectedLabelIds.includes(label.labelId))
+    }
+    return res
+  }),
   { initialState: [], immediate: false },
 )
 
@@ -42,12 +55,12 @@ const { state: assetStigs, isLoading: assetStigsLoading, error: assetStigsError,
 )
 
 // first load
-watch(() => props.collectionId, () => {
+watch([() => props.collectionId, () => props.selectedLabelIds], () => {
   loadLabels()
   selectedLabelId.value = null
   isLabelSelected.value = false
   selectedAssetId.value = null
-}, { immediate: true })
+}, { immediate: true, deep: true })
 
 // when an asset is picked
 watch(selectedAssetId, (newVal) => {
@@ -77,6 +90,7 @@ function handleAssetStigAction(rowData) {
       collectionId: props.collectionId,
       assetId: selectedAssetId.value,
       benchmarkId: rowData.benchmarkId,
+      revisionStr: rowData.revisionStr,
     },
   })
 }
@@ -98,6 +112,7 @@ function handleAssetStigAction(rowData) {
           <div class="grid-container">
             <MetricsSummaryGrid
               :api-metrics-summary="labels"
+              agg-type="label"
               :is-loading="labelsLoading"
               selectable
               data-key="labelId"
@@ -115,16 +130,15 @@ function handleAssetStigAction(rowData) {
             <h3>Assets</h3>
           </div>
           <div class="grid-container">
-            <div v-if="!isLabelSelected" class="empty-state">
-              Select a label to view associated assets.
-            </div>
-            <div v-else-if="assetsError" class="error-state">
+            <div v-if="assetsError" class="error-state">
               {{ assetsError?.message || assetsError }}
             </div>
             <MetricsSummaryGrid
               v-else
               :api-metrics-summary="assets"
+              agg-type="asset"
               :is-loading="assetsLoading"
+              :empty-message="isLabelSelected ? 'No assets found for this label. Try refresh.' : 'Select a label to view associated assets.'"
               selectable
               data-key="assetId"
               :selected-key="selectedAssetId"
@@ -142,19 +156,15 @@ function handleAssetStigAction(rowData) {
             <span v-if="selectedAssetId" class="badge">Asset ID: {{ selectedAssetId }}</span>
           </div>
           <div class="grid-container">
-            <div v-if="!selectedAssetId" class="empty-state">
-              Select an asset to view its checklists.
-            </div>
-            <div v-else-if="assetStigsError" class="error-state">
+            <div v-if="assetStigsError" class="error-state">
               {{ assetStigsError?.message || assetStigsError }}
-            </div>
-            <div v-else-if="!assetStigsLoading && assetStigs.length === 0" class="empty-state">
-              No checklists associated with this asset.
             </div>
             <MetricsSummaryGrid
               v-else
               :api-metrics-summary="assetStigs"
+              agg-type="unagg"
               :is-loading="assetStigsLoading"
+              :empty-message="selectedAssetId ? 'No checklists associated with this asset. Try refresh.' : 'Select an asset to view its checklists.'"
               parent-agg-type="asset"
               show-shield
               @shield-click="handleAssetStigAction"
