@@ -121,6 +121,8 @@ const {
   showGroupTitle,
 } = useChecklistDisplayMode()
 
+const defaultSortField = computed(() => showGroupId.value ? 'groupId' : 'ruleId')
+
 function toggleChecklistMenu(event) {
   checklistMenu.value.toggle(event)
 }
@@ -225,10 +227,12 @@ function handleFooterAction(actionKey) {
       scrollable
       scroll-height="flex"
       striped-rows
+      :sort-field="defaultSortField"
+      :sort-order="1"
       class="checklist-grid__table"
       @row-click="onRowClick"
     >
-      <Column header="CAT" field="severity" :style="{ minWidth: '4.5rem', maxWidth: '4.5rem' }">
+      <Column header="CAT" field="severity" sortable :style="{ minWidth: '4.5rem', maxWidth: '4.5rem' }">
         <template #body="{ data }">
           <CatBadge v-if="data.severity" :category="severityMap[data.severity] || 2" />
         </template>
@@ -238,6 +242,7 @@ function handleFooterAction(actionKey) {
         v-if="showGroupId"
         header="Group"
         field="groupId"
+        sortable
         :style="{ minWidth: '8rem' }"
       >
         <template #body="{ data }">
@@ -249,6 +254,7 @@ function handleFooterAction(actionKey) {
         v-if="showRuleId"
         header="Rule Id"
         field="ruleId"
+        sortable
         :style="{ minWidth: '16rem' }"
       >
         <template #body="{ data }">
@@ -260,6 +266,7 @@ function handleFooterAction(actionKey) {
         v-if="showRuleTitle"
         header="Rule Title"
         field="ruleTitle"
+        sortable
         :style="{ minWidth: '35rem' }"
       >
         <template #body="{ data }">
@@ -271,6 +278,7 @@ function handleFooterAction(actionKey) {
         v-if="showGroupTitle"
         header="Group Title"
         field="groupTitle"
+        sortable
         :style="{ minWidth: '20rem' }"
       >
         <template #body="{ data }">
@@ -278,7 +286,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Result" field="result" :style="{ minWidth: '4.5rem', maxWidth: '4.5rem' }">
+      <Column header="Result" field="result" sortable :style="{ minWidth: '5rem', maxWidth: '5rem' }">
         <template #body="{ data }">
           <div
             data-result-cell
@@ -290,7 +298,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Detail" field="detail" :style="{ minWidth: '30rem' }">
+      <Column header="Detail" field="detail" sortable :style="{ minWidth: '30rem' }">
         <template #body="{ data }">
           <div
             class="cell-text-field"
@@ -301,7 +309,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Comment" field="comment" :style="{ minWidth: '20rem' }">
+      <Column header="Comment" field="comment" sortable :style="{ minWidth: '20rem' }">
         <template #body="{ data }">
           <div
             class="cell-text-field"
@@ -311,7 +319,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column field="resultEngine" :style="{ minWidth: '2.5rem', maxWidth: '2.5rem' }">
+      <Column field="resultEngine" sortable sort-field="resultEngine.product" :style="{ minWidth: '3rem', maxWidth: '3rem' }">
         <template #header>
           <img
             src="../../../assets/bot2.svg"
@@ -338,13 +346,13 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Status" field="status" :style="{ minWidth: '4rem', maxWidth: '4rem' }">
+      <Column header="Status" field="status" sortable sort-field="status.label" :style="{ minWidth: '5rem', maxWidth: '5rem' }">
         <template #body="{ data }">
           <StatusBadge v-if="data.status" :status="data.status?.label ?? data.status" />
         </template>
       </Column>
 
-      <Column field="touchTs" :style="{ minWidth: '4.5rem', maxWidth: '4.5rem' }">
+      <Column field="touchTs" sortable :style="{ minWidth: '4.5rem', maxWidth: '4.5rem' }">
         <template #header>
           <i class="pi pi-clock" title="Last action" />
         </template>
@@ -544,8 +552,8 @@ function handleFooterAction(actionKey) {
 }
 
 .engine-header-icon {
-  width: 1rem;
-  height: 1rem;
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
 .engine-icon {
