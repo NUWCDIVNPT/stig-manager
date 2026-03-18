@@ -7837,52 +7837,149 @@ components:
     ReviewAgingConfig:
       type: array
       items:
-        type: object
-        additionalProperties: false
-        required:
-          - triggerField
-          - triggerBasis
-          - triggerInterval
-          - triggerAction
-          - enabled
-        properties:
-          triggerField:
-            type: string
-            enum: [ts, statusTs, touchTs]
-          triggerBasis:
-            oneOf:
-              - $ref: '#/components/schemas/ReviewAgingTriggerBasisNow'
-              - $ref: '#/components/schemas/ReviewAgingTriggerBasisDatetime'
-          triggerInterval:
-            type: integer
-            description: Interval in seconds
-          triggerAction:
-            type: string
-            enum: [delete, update]
-          updateField:
-            type: string
-            enum: [status, result]
-          updateValue:
-            type: string
-            description: Status or result value depending on updateField
-          updateFilter:
-            type: object
-            additionalProperties: false
-            properties:
-              assetIds:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AssetId'
-              labelIds:
-                type: array
-                items:
-                  $ref: '#/components/schemas/LabelId'
-              benchmarkIds:
-                type: array
-                items:
-                  $ref: '#/components/schemas/BenchmarkId'
-          enabled:
-            type: boolean
+        oneOf:
+          - $ref: '#/components/schemas/ReviewAgingRuleDelete'
+          - $ref: '#/components/schemas/ReviewAgingRuleUpdateStatus'
+          - $ref: '#/components/schemas/ReviewAgingRuleUpdateResult'
+    ReviewAgingRuleDelete:
+      type: object
+      additionalProperties: false
+      required:
+        - triggerField
+        - triggerBasis
+        - triggerInterval
+        - triggerAction
+        - enabled
+      properties:
+        triggerField:
+          type: string
+          enum: [ts, statusTs, touchTs]
+        triggerBasis:
+          oneOf:
+            - $ref: '#/components/schemas/ReviewAgingTriggerBasisNow'
+            - $ref: '#/components/schemas/ReviewAgingTriggerBasisDatetime'
+        triggerInterval:
+          type: integer
+          description: Interval in seconds
+        triggerAction:
+          type: string
+          enum: [delete]
+        updateFilter:
+          type: object
+          additionalProperties: false
+          properties:
+            assetIds:
+              type: array
+              items:
+                $ref: '#/components/schemas/AssetId'
+            labelIds:
+              type: array
+              items:
+                $ref: '#/components/schemas/LabelId'
+            benchmarkIds:
+              type: array
+              items:
+                $ref: '#/components/schemas/BenchmarkId'
+        enabled:
+          type: boolean
+    ReviewAgingRuleUpdateStatus:
+      type: object
+      additionalProperties: false
+      required:
+        - triggerField
+        - triggerBasis
+        - triggerInterval
+        - triggerAction
+        - updateField
+        - updateValue
+        - enabled
+      properties:
+        triggerField:
+          type: string
+          enum: [ts, statusTs, touchTs]
+        triggerBasis:
+          oneOf:
+            - $ref: '#/components/schemas/ReviewAgingTriggerBasisNow'
+            - $ref: '#/components/schemas/ReviewAgingTriggerBasisDatetime'
+        triggerInterval:
+          type: integer
+          description: Interval in seconds
+        triggerAction:
+          type: string
+          enum: [update]
+        updateField:
+          type: string
+          enum: [status]
+        updateValue:
+          type: string
+          enum: [saved, submitted]
+        updateFilter:
+          type: object
+          additionalProperties: false
+          properties:
+            assetIds:
+              type: array
+              items:
+                $ref: '#/components/schemas/AssetId'
+            labelIds:
+              type: array
+              items:
+                $ref: '#/components/schemas/LabelId'
+            benchmarkIds:
+              type: array
+              items:
+                $ref: '#/components/schemas/BenchmarkId'
+        enabled:
+          type: boolean
+    ReviewAgingRuleUpdateResult:
+      type: object
+      additionalProperties: false
+      required:
+        - triggerField
+        - triggerBasis
+        - triggerInterval
+        - triggerAction
+        - updateField
+        - updateValue
+        - enabled
+      properties:
+        triggerField:
+          type: string
+          enum: [ts, statusTs, touchTs]
+        triggerBasis:
+          oneOf:
+            - $ref: '#/components/schemas/ReviewAgingTriggerBasisNow'
+            - $ref: '#/components/schemas/ReviewAgingTriggerBasisDatetime'
+        triggerInterval:
+          type: integer
+          description: Interval in seconds
+        triggerAction:
+          type: string
+          enum: [update]
+        updateField:
+          type: string
+          enum: [result]
+        updateValue:
+          type: string
+          enum: [notchecked, informational]
+        updateFilter:
+          type: object
+          additionalProperties: false
+          properties:
+            assetIds:
+              type: array
+              items:
+                $ref: '#/components/schemas/AssetId'
+            labelIds:
+              type: array
+              items:
+                $ref: '#/components/schemas/LabelId'
+            benchmarkIds:
+              type: array
+              items:
+                $ref: '#/components/schemas/BenchmarkId'
+        enabled:
+          type: boolean
     TaskOutputItem:
       type: object
       properties:
