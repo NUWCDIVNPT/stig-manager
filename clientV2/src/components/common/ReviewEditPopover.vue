@@ -1,5 +1,4 @@
 <script setup>
-import Button from 'primevue/button'
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
 import Tooltip from 'primevue/tooltip'
@@ -8,6 +7,7 @@ import { getReviewButtonStates } from '../../shared/lib/reviewButtonStates.js'
 import { formatReviewDate, isFieldEnabled, isFieldRequired, resultOptions } from '../../shared/lib/reviewFormUtils.js'
 import ResultBadge from './ResultBadge.vue'
 import StatusBadge from './StatusBadge.vue'
+import StatusButton from './StatusButton.vue'
 
 const props = defineProps({
   rowData: {
@@ -127,6 +127,24 @@ const buttonStates = computed(() => {
     canAccept: props.canAccept,
   })
 })
+
+// Check if a button's action matches the current review status
+function isActionActive(actionType) {
+  const s = statusLabel.value
+  if (!s || s === '' || s === 'rejected') {
+    return false
+  }
+  if (s === 'saved' && (actionType === 'save' || actionType === 'save and unsubmit')) {
+    return true
+  }
+  if (s === 'submitted' && (actionType === 'submit' || actionType === 'save and submit')) {
+    return true
+  }
+  if (s === 'accepted' && actionType === 'accept') {
+    return true
+  }
+  return false
+}
 
 // Engine tooltip HTML
 const engineTooltipHtml = computed(() => {
@@ -335,23 +353,22 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
 
         <div class="review-edit-popover__actions" :class="{ 'review-edit-popover__actions--highlighted': isButtonsHighlighted }">
           <label class="review-edit-popover__label">Status</label>
-          <Button
+          <StatusButton
             v-if="buttonStates.btn1.visible"
             :label="buttonStates.btn1.text"
+            :action="buttonStates.btn1.actionType"
             :disabled="!buttonStates.btn1.enabled || isSaving"
+            :active="isActionActive(buttonStates.btn1.actionType)"
             :title="buttonStates.btn1.tooltip"
-            size="small"
-            severity="secondary"
-            outlined
             @click="onButtonClick(buttonStates.btn1.actionType)"
           />
-          <Button
+          <StatusButton
             v-if="buttonStates.btn2.visible"
             :label="buttonStates.btn2.text"
+            :action="buttonStates.btn2.actionType"
             :disabled="!buttonStates.btn2.enabled || isSaving"
+            :active="isActionActive(buttonStates.btn2.actionType)"
             :title="buttonStates.btn2.tooltip"
-            size="small"
-            :severity="buttonStates.btn2.actionType === 'accept' ? 'warn' : 'primary'"
             @click="onButtonClick(buttonStates.btn2.actionType)"
           />
           <button
@@ -540,11 +557,6 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
   gap: 0.35rem;
   flex: 0 0 auto;
   justify-content: flex-start;
-}
-
-.review-edit-popover__actions .p-button {
-  white-space: nowrap;
-  font-size: 1rem;
 }
 
 .review-edit-popover__actions--highlighted {
