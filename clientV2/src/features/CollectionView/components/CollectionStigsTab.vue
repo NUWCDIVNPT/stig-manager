@@ -5,6 +5,7 @@ import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionChecklistAssets, fetchCollectionStigSummary } from '../api/collectionApi.js'
 
 const props = defineProps({
@@ -12,28 +13,48 @@ const props = defineProps({
     type: [String, Number],
     required: true,
   },
+  selectedLabelIds: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const router = useRouter()
 
 // Queries
+const fetchStigs = () => {
+  return fetchCollectionStigSummary(
+    props.collectionId,
+    buildLabelFilterParams(props.selectedLabelIds),
+  )
+}
+
 const { state: stigs, isLoading: stigsLoading, error: stigsError, execute: loadStigs } = useAsyncState(
-  () => fetchCollectionStigSummary(props.collectionId),
+  fetchStigs,
   { initialState: [], immediate: false },
 )
 
 const selectedBenchmarkId = ref(null)
 
 const { state: checklistAssets, isLoading: checklistAssetsLoading, error: checklistAssetsError, execute: loadChecklistAssets } = useAsyncState(
-  () => fetchCollectionChecklistAssets(props.collectionId, selectedBenchmarkId.value),
+  () => {
+    if (!selectedBenchmarkId.value) {
+      return []
+    }
+    return fetchCollectionChecklistAssets(
+      props.collectionId,
+      selectedBenchmarkId.value,
+      buildLabelFilterParams(props.selectedLabelIds),
+    )
+  },
   { initialState: [], immediate: false },
 )
 
 // Initial Load
-watch(() => props.collectionId, () => {
+watch([() => props.collectionId, () => props.selectedLabelIds], () => {
   loadStigs()
   selectedBenchmarkId.value = null
-}, { immediate: true })
+}, { immediate: true, deep: true })
 
 // Auto-select first STIG
 watch(stigs, (newStigs) => {

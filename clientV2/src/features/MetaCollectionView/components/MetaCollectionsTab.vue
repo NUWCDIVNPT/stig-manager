@@ -7,12 +7,31 @@ import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vu
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchCollectionChecklistAssets, fetchCollectionStigSummary, fetchMetaMetricsSummaryByCollection } from '../api/metaApi.js'
 
+const props = defineProps({
+  selectedCollectionIds: {
+    type: Array,
+    default: () => [],
+  },
+})
+
 const router = useRouter()
 
+const fetchCollections = () => {
+  return fetchMetaMetricsSummaryByCollection(
+    props.selectedCollectionIds.length > 0
+      ? { collectionId: props.selectedCollectionIds }
+      : {},
+  )
+}
+
 const { state: collections, isLoading: collectionsLoading, execute: loadCollections } = useAsyncState(
-  () => fetchMetaMetricsSummaryByCollection(),
+  fetchCollections,
   { initialState: [], immediate: true },
 )
+
+watch(() => props.selectedCollectionIds, () => {
+  loadCollections()
+}, { deep: true })
 
 const selectedCollectionId = ref(null)
 

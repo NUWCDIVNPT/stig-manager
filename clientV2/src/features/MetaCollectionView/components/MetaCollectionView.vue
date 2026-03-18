@@ -4,16 +4,47 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import MetaCollectionMetrics from '../../CollectionMetrics/components/MetaCollectionMetrics.vue'
+import MetaExportMetrics from '../../CollectionMetrics/components/MetaExportMetrics.vue'
+import MetricsFilter from '../../CollectionMetrics/components/MetricsFilter.vue'
 import MetaCollectionsTab from './MetaCollectionsTab.vue'
 import MetaStigsTab from './MetaStigsTab.vue'
 
+const STORAGE_KEY = 'metaCollectionIds'
+
 const activeTab = ref('collections')
 const dashboardCollapsed = ref(false)
+const selectedCollectionIds = ref(loadSelectedCollectionIds())
+
+watch(selectedCollectionIds, (newIds) => {
+  persistSelectedCollectionIds(newIds)
+}, { deep: true })
 
 function toggleDashboardSidebar() {
   dashboardCollapsed.value = !dashboardCollapsed.value
+}
+
+function loadSelectedCollectionIds() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (!stored) {
+      return []
+    }
+    return JSON.parse(stored)
+  }
+  catch {
+    return []
+  }
+}
+
+function persistSelectedCollectionIds(ids) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(ids))
+  }
+  catch {
+    // localStorage unavailable
+  }
 }
 
 const tabsPt = {
@@ -68,7 +99,8 @@ const tabPanelPt = {
           </button>
         </div>
         <div v-show="!dashboardCollapsed" class="sidebar-content">
-          <MetaCollectionMetrics vertical />
+          <MetaCollectionMetrics vertical :selected-collection-ids="selectedCollectionIds" />
+          <MetaExportMetrics :selected-collection-ids="selectedCollectionIds" />
         </div>
       </aside>
       <div class="right-panel">
@@ -80,14 +112,19 @@ const tabPanelPt = {
             <Tab value="stigs">
               STIGs
             </Tab>
+
+            <div class="tab-filter-container">
+              <span class="filter-label">FILTER:</span>
+              <MetricsFilter v-model="selectedCollectionIds" type="collection" />
+            </div>
           </TabList>
 
           <TabPanels :pt="tabPanelsPt">
             <TabPanel value="collections" :pt="tabPanelPt">
-              <MetaCollectionsTab />
+              <MetaCollectionsTab :selected-collection-ids="selectedCollectionIds" />
             </TabPanel>
             <TabPanel value="stigs" :pt="tabPanelPt">
-              <MetaStigsTab />
+              <MetaStigsTab :selected-collection-ids="selectedCollectionIds" />
             </TabPanel>
           </TabPanels>
         </Tabs>
@@ -180,5 +217,20 @@ const tabPanelPt = {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.tab-filter-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+  padding-right: 1rem;
+}
+
+.filter-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--color-text-dim);
 }
 </style>

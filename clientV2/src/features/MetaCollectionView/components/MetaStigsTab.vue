@@ -7,12 +7,31 @@ import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vu
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchCollectionChecklistAssets, fetchMetaMetricsSummaryByCollection, fetchMetaMetricsSummaryByStig } from '../api/metaApi.js'
 
+const props = defineProps({
+  selectedCollectionIds: {
+    type: Array,
+    default: () => [],
+  },
+})
+
 const router = useRouter()
 
+const fetchStigs = () => {
+  return fetchMetaMetricsSummaryByStig(
+    props.selectedCollectionIds.length > 0
+      ? { collectionId: props.selectedCollectionIds }
+      : {},
+  )
+}
+
 const { state: stigs, isLoading: stigsLoading, execute: loadStigs } = useAsyncState(
-  () => fetchMetaMetricsSummaryByStig(),
+  fetchStigs,
   { initialState: [], immediate: true },
 )
+
+watch(() => props.selectedCollectionIds, () => {
+  loadStigs()
+}, { deep: true })
 
 const selectedStig = ref(null)
 
@@ -23,7 +42,10 @@ const { state: collections, isLoading: collectionsLoading, error: collectionsErr
     }
     const [, version, release] = /V(\d+)R(\d+(?:\.\d+)?)/.exec(selectedStig.value.revisionStr)
     const revisionId = `${selectedStig.value.benchmarkId}-${version}-${release}`
-    return fetchMetaMetricsSummaryByCollection({ revisionId })
+    return fetchMetaMetricsSummaryByCollection({
+      revisionId,
+      ...(props.selectedCollectionIds.length > 0 ? { collectionId: props.selectedCollectionIds } : {}),
+    })
   },
   { initialState: [], immediate: false },
 )

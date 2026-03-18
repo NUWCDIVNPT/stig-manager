@@ -207,6 +207,10 @@ textarea:focus {
   -webkit-backdrop-filter: blur(2px);
 }
 
+.p-datatable-tbody > tr:hover > .agg-grid-empty-cell {
+  background: var(--color-background-dark) !important;
+}
+
 @font-face {
   font-family: 'Open Sans';
   font-style: normal;

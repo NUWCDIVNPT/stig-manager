@@ -12,8 +12,8 @@ export function fetchMetaMetricsSummaryByCollection(params = {}) {
   return apiCall('getMetricsSummaryByMetaAggCollection', params)
 }
 
-export function fetchMetaMetricsSummary() {
-  return apiCall('getMetricsSummaryByMeta')
+export function fetchMetaMetricsSummary(params = {}) {
+  return apiCall('getMetricsSummaryByMeta', params)
 }
 
 export function fetchCollectionStigSummary(collectionId) {
@@ -23,12 +23,12 @@ export function fetchCollectionStigSummary(collectionId) {
   return apiCall('getMetricsSummaryByCollectionAggStig', { collectionId })
 }
 
-export function fetchCollectionChecklistAssets(collectionId, benchmarkId) {
+export function fetchCollectionChecklistAssets(collectionId, benchmarkId, params = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch checklist assets.')
   }
   if (!benchmarkId) {
     return []
   }
-  return apiCall('getMetricsSummaryByCollection', { collectionId, benchmarkId })
+  return apiCall('getMetricsSummaryByCollection', { collectionId, benchmarkId, ...params })
 }

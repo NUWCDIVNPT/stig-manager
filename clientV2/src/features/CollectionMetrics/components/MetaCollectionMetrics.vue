@@ -1,4 +1,5 @@
 <script setup>
+import { watch } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchMetaMetricsSummary } from '../../MetaCollectionView/api/metaApi.js'
 import { useCollectionCora } from '../composables/useCollectionCora.js'
@@ -10,17 +11,33 @@ import InventoryStats from './InventoryStats.vue'
 import Progress from './Progress.vue'
 import ReviewAgesStats from './ReviewAgesStats.vue'
 
-defineProps({
+const props = defineProps({
   vertical: {
     type: Boolean,
     default: false,
   },
+  selectedCollectionIds: {
+    type: Array,
+    default: () => [],
+  },
 })
 
-const { state: metrics, isLoading, error: errorMessage } = useAsyncState(
-  () => fetchMetaMetricsSummary(),
+const fetchMetrics = () => {
+  return fetchMetaMetricsSummary(
+    props.selectedCollectionIds.length > 0
+      ? { collectionId: props.selectedCollectionIds }
+      : {},
+  )
+}
+
+const { state: metrics, isLoading, error: errorMessage, execute } = useAsyncState(
+  fetchMetrics,
   { initialState: null, immediate: true },
 )
+
+watch(() => props.selectedCollectionIds, () => {
+  execute()
+}, { deep: true })
 
 const { stats: progressStats } = useCollectionProgress(metrics)
 const { coraData } = useCollectionCora(metrics)
@@ -39,8 +56,8 @@ const { inventory, findings, ages } = useCollectionStats(metrics)
       <Progress :stats="progressStats" />
       <Cora :cora-data="coraData" />
       <div class="stats-column">
-        <InventoryStats :inventory="inventory" />
-        <FindingsStats :findings="findings" />
+        <InventoryStats :inventory="inventory" :show-export-action="false" />
+        <FindingsStats :findings="findings" :show-details-action="false" />
         <ReviewAgesStats :ages="ages" />
       </div>
     </div>

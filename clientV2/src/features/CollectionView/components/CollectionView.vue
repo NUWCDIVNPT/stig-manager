@@ -11,8 +11,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
+import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
-import ExportMetrics from '../../CollectionMetrics/components/ExportMetrics.vue'
+import MetricsFilter from '../../CollectionMetrics/components/MetricsFilter.vue'
 import {
   deleteCollection,
   fetchCollection,
@@ -150,33 +151,10 @@ const tabPanelPt = {
 
 // Dashboard sidebar state (collapsed/expanded)
 const dashboardCollapsed = ref(false)
-
-const showDeleteDialog = ref(false)
-const isDeleting = ref(false)
+const selectedLabelIds = ref([])
 
 function toggleDashboardSidebar() {
   dashboardCollapsed.value = !dashboardCollapsed.value
-}
-
-function promptDeleteCollection() {
-  showDeleteDialog.value = true
-}
-
-async function confirmDeleteCollection() {
-  isDeleting.value = true
-  try {
-    await deleteCollection(props.collectionId)
-    showDeleteDialog.value = false
-    router.push({ name: 'collections' })
-  }
-  catch (error) {
-    console.error('Failed to delete collection', error)
-    // You could replace this with a proper toast notification loop later
-    window.alert('Failed to delete collection. Please try again.')
-  }
-  finally {
-    isDeleting.value = false
-  }
 }
 </script>
 
@@ -203,10 +181,11 @@ async function confirmDeleteCollection() {
           <CollectionMetrics
             :collection-id="collectionId"
             :collection-name="collectionName"
+            :selected-label-ids="selectedLabelIds"
             vertical
           />
           <div class="sidebar-export">
-            <ExportMetrics
+            <CollectionExportMetrics
               :collection-id="collectionId"
               :collection-name="collectionName"
             />
@@ -237,28 +216,21 @@ async function confirmDeleteCollection() {
               Settings
             </Tab>
 
-            <div class="delete-collection-wrapper">
-              <button
-                type="button"
-                class="action-btn delete-btn"
-                title="Delete Collection"
-                @click="promptDeleteCollection"
-              >
-                <i class="pi pi-trash" />
-                <span>Delete Collection</span>
-              </button>
+            <div class="tab-filter-container">
+              <span class="filter-label">FILTER:</span>
+              <MetricsFilter v-model="selectedLabelIds" type="label" :collection-id="collectionId" />
             </div>
           </TabList>
 
           <TabPanels :pt="tabPanelsPt">
             <TabPanel value="stigs" :pt="tabPanelPt">
-              <CollectionStigsTab :collection-id="collectionId" />
+              <CollectionStigsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
             </TabPanel>
             <TabPanel value="assets" :pt="tabPanelPt">
-              <CollectionAssetsTab :collection-id="collectionId" />
+              <CollectionAssetsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
             </TabPanel>
             <TabPanel value="labels" :pt="tabPanelPt">
-              <CollectionLabelsTab :collection-id="collectionId" />
+              <CollectionLabelsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
             </TabPanel>
             <TabPanel value="findings" :pt="tabPanelPt">
               <div class="placeholder-panel">
@@ -282,39 +254,6 @@ async function confirmDeleteCollection() {
         </Tabs>
       </div>
     </div>
-
-    <!-- Delete Confirmation Dialog -->
-    <Dialog
-      v-model:visible="showDeleteDialog"
-      modal
-      header="Delete Collection"
-      :style="{ width: '400px' }"
-      :closable="!isDeleting"
-    >
-      <p class="m-0 mb-4">
-        Are you sure you want to delete the collection <strong>{{ collectionName }}</strong>? This action cannot be undone.
-      </p>
-
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <Button
-            label="Cancel"
-            icon="pi pi-times"
-            text
-            severity="secondary"
-            :disabled="isDeleting"
-            @click="showDeleteDialog = false"
-          />
-          <Button
-            label="Delete"
-            icon="pi pi-trash"
-            severity="danger"
-            :loading="isDeleting"
-            @click="confirmDeleteCollection"
-          />
-        </div>
-      </template>
-    </Dialog>
   </div>
 </template>
 
@@ -439,6 +378,21 @@ async function confirmDeleteCollection() {
 .placeholder-panel {
   padding: 2rem;
   text-align: center;
+  color: var(--color-text-dim);
+}
+
+.tab-filter-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+  padding-right: 1rem;
+}
+
+.filter-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   color: var(--color-text-dim);
 }
 </style>

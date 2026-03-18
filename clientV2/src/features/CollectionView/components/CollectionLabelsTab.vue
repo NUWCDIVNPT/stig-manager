@@ -5,6 +5,7 @@ import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionAssetStigs, fetchCollectionAssetSummary, fetchCollectionLabelSummary } from '../api/collectionApi.js'
 
 const props = defineProps({
@@ -12,10 +13,22 @@ const props = defineProps({
     type: [String],
     required: true,
   },
+  selectedLabelIds: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const { state: labels, isLoading: labelsLoading, execute: loadLabels } = useAsyncState(
-  () => fetchCollectionLabelSummary(props.collectionId),
+  () => fetchCollectionLabelSummary(
+    props.collectionId,
+    buildLabelFilterParams(props.selectedLabelIds),
+  ).then((res) => {
+    if (props.selectedLabelIds.length > 0) {
+      return res.filter(label => props.selectedLabelIds.includes(label.labelId))
+    }
+    return res
+  }),
   { initialState: [], immediate: false },
 )
 
@@ -42,12 +55,12 @@ const { state: assetStigs, isLoading: assetStigsLoading, error: assetStigsError,
 )
 
 // first load
-watch(() => props.collectionId, () => {
+watch([() => props.collectionId, () => props.selectedLabelIds], () => {
   loadLabels()
   selectedLabelId.value = null
   isLabelSelected.value = false
   selectedAssetId.value = null
-}, { immediate: true })
+}, { immediate: true, deep: true })
 
 // when an asset is picked
 watch(selectedAssetId, (newVal) => {
