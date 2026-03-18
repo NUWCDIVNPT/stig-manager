@@ -2,14 +2,16 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
-import AssetColumn from '../../../components/columns/AssetColumn.vue'
-import BenchmarkColumn from '../../../components/columns/BenchmarkColumn.vue'
-import CoraColumn from '../../../components/columns/CoraColumn.vue'
-import DurationColumn from '../../../components/columns/DurationColumn.vue'
-import LabelsColumn from '../../../components/columns/LabelsColumn.vue'
-import PercentageColumn from '../../../components/columns/PercentageColumn.vue'
-import StatusFooter from '../../../components/common/StatusFooter.vue'
-import { calculateCoraRiskRating } from '../lib/libCora.js'
+import { calculateCoraRiskRating } from '../../shared/libCora.js'
+import AssetColumn from '../columns/AssetColumn.vue'
+import BenchmarkColumn from '../columns/BenchmarkColumn.vue'
+import CatColumn from '../columns/CatColumn.vue'
+import CollectionColumn from '../columns/CollectionColumn.vue'
+import CoraColumn from '../columns/CoraColumn.vue'
+import DurationColumn from '../columns/DurationColumn.vue'
+import LabelsColumn from '../columns/LabelsColumn.vue'
+import PercentageColumn from '../columns/PercentageColumn.vue'
+import StatusFooter from '../common/StatusFooter.vue'
 
 const props = defineProps({
   apiMetricsSummary: {
@@ -20,9 +22,18 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  emptyMessage: {
+    type: String,
+    default: 'No data here yet. Try refresh.',
+  },
   parentAggType: {
     type: String,
     default: '',
+  },
+  aggType: {
+    type: String,
+    default: '',
+    validator: value => ['', 'collection', 'asset', 'stig', 'label', 'unagg'].includes(value),
   },
   errorMessage: {
     type: String,
@@ -40,6 +51,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showCollectionIcon: {
+    type: Boolean,
+    default: false,
+  },
   selectedKey: {
     type: [String, Number],
     default: null,
@@ -51,7 +66,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['row-select', 'shield-click', 'refresh'])
+const emit = defineEmits(['row-select', 'shield-click', 'collection-icon-click', 'refresh'])
 
 const dataTableRef = ref(null)
 const selectedRow = ref(null)
@@ -89,15 +104,23 @@ function onShieldClick(rowData) {
   emit('shield-click', rowData)
 }
 
+function onCollectionIconClick(rowData) {
+  emit('collection-icon-click', rowData)
+}
+
 watch(() => props.apiMetricsSummary, () => {
   console.log('apiMetricsSummary changed')
   console.log(props.apiMetricsSummary)
 })
 
 const aggregationType = computed(() => {
-  console.log('Determining aggregation type for metrics summary')
+  if (props.aggType) {
+    return props.aggType
+  }
+
   const m = props.apiMetricsSummary
-  if (m.length === 0) {
+  console.log('apiMetricsSummary', m)
+  if (!Array.isArray(m) || m.length === 0 || !m[0]) {
     return null
   }
   if ('assetId' in m[0] && 'benchmarkId' in m[0]) {
@@ -131,11 +154,19 @@ const columns = computed(() => {
     { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn },
     { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn },
     { field: 'cora', header: 'CORA', component: CoraColumn },
-    { field: 'low', header: 'Low', component: Column },
-    { field: 'medium', header: 'Medium', component: Column },
-    { field: 'high', header: 'High', component: Column },
+    { field: 'cat3', header: 'CAT 3', component: CatColumn, category: 3 },
+    { field: 'cat2', header: 'CAT 2', component: CatColumn, category: 2 },
+    { field: 'cat1', header: 'CAT 1', component: CatColumn, category: 1 },
   ]
   switch (aggregationType.value) {
+    case 'collection':
+      return [
+        { field: 'collectionName', header: 'Collection', component: CollectionColumn, showShield: props.showShield, onShieldClick, showCollectionIcon: props.showCollectionIcon, onCollectionIconClick },
+        { field: 'assetCnt', header: 'Assets', component: Column },
+        { field: 'stigCnt', header: 'STIGs', component: Column },
+        { field: 'checklistCnt', header: 'Checklists', component: Column },
+        ...commonColumns,
+      ]
     case 'asset':
       return [
         { field: 'assetName', header: 'Asset', component: AssetColumn, showShield: props.showShield, onShieldClick },
@@ -185,6 +216,9 @@ const columns = computed(() => {
 
 const data = computed(() => {
   console.log('Computing data for aggregation type:', aggregationType.value)
+  if (!Array.isArray(props.apiMetricsSummary)) {
+    return []
+  }
   return props.apiMetricsSummary.map((r) => {
     const commonData = {
       checks: r.metrics.assessments,
@@ -198,11 +232,20 @@ const data = computed(() => {
       rejectedPct: r.metrics.assessments ? (r.metrics.statuses.rejected / r.metrics.assessments) * 100 : 0,
       cora: (calculateCoraRiskRating(r.metrics).weightedAvg * 100).toFixed(1),
       coraFull: calculateCoraRiskRating(r.metrics),
-      low: r.metrics.findings.low,
-      medium: r.metrics.findings.medium,
-      high: r.metrics.findings.high,
+      cat3: r.metrics.findings.low,
+      cat2: r.metrics.findings.medium,
+      cat1: r.metrics.findings.high,
     }
     switch (aggregationType.value) {
+      case 'collection':
+        return {
+          collectionId: r.collectionId,
+          collectionName: r.name,
+          assetCnt: r.assets,
+          stigCnt: r.stigs,
+          checklistCnt: r.checklists,
+          ...commonData,
+        }
       case 'asset':
         return {
           assetId: r.assetId,
@@ -277,6 +320,10 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     :value="data"
     :data-key="dataKey"
     :selection-mode="selectable ? 'single' : null"
+    :loading="isLoading"
+    :pt="{
+      emptyMessageCell: { class: 'agg-grid-empty-cell' },
+    }"
     scrollable
     scroll-height="flex"
     show-gridlines
@@ -290,6 +337,11 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
   >
     <template v-for="col in columns" :key="col.field">
       <component :is="col.component" v-bind="col" sortable style="height: 27px; max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
+    </template>
+    <template #empty>
+      <div class="agg-grid-empty-state">
+        {{ emptyMessage }}
+      </div>
     </template>
     <template v-if="showFooter" #footer>
       <StatusFooter
@@ -309,11 +361,29 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
   border: none;
 }
 
+:deep(.p-datatable-column-header-content) {
+  justify-content: center;
+}
+
 .agg-grid-row {
   height: 45px;
   width: 100px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.agg-grid-empty-state {
+  padding: 0.75rem 0;
+  text-align: center;
+  color: var(--color-text-dim);
+}
+
+:deep(.agg-grid-empty-cell) {
+  border-bottom: none;
+}
+
+:deep(tr:hover .collection-icon-action) {
+  visibility: visible;
 }
 </style>

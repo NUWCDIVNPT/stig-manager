@@ -298,3 +298,55 @@ export async function handleDownload({
     triggerError(error)
   }
 }
+
+export async function handleMetaDownload({
+  format,
+  style,
+  aggregation,
+  baseParams = {},
+  apiUrl,
+  authToken,
+}) {
+  const { triggerError } = useGlobalError()
+
+  const queryEntries = Object.entries(baseParams).flatMap(([key, value]) => {
+    if (Array.isArray(value)) {
+      return value.map(item => [key, item])
+    }
+    return [[key, value]]
+  })
+  queryEntries.push(['format', format])
+
+  const queryParams = new URLSearchParams(queryEntries)
+  const aggPath = aggregation === 'unagg' ? '' : `/${aggregation}`
+  const url = `${apiUrl}/collections/meta/metrics/${style}${aggPath}?${queryParams.toString()}`
+  const filename = filenameEscaped(`Meta-${aggregation}-${style}_${filenameComponentFromDate()}.${format}`)
+
+  const fetchInit = {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+      Accept: format === 'csv' ? 'text/csv' : 'application/json',
+    },
+    attachment: filename,
+  }
+
+  try {
+    const href = await getDownloadUrl({ url, ...fetchInit })
+    if (href) {
+      window.location = href
+      return
+    }
+
+    const response = await fetch(url, fetchInit)
+    if (!response.ok) {
+      const body = await response.text()
+      throw new Error(`Request failed with status ${response.status}\n${body}`)
+    }
+    const blob = await response.blob()
+    saveAs(blob, filename)
+  }
+  catch (error) {
+    triggerError(error)
+  }
+}

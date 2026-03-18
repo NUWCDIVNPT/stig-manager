@@ -1,8 +1,8 @@
 import { apiCall } from '../../../shared/api/apiClient.js'
 
-export function fetchCollectionMetricsSummary(collectionId) {
+export function fetchCollectionMetricsSummary(collectionId, params = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch collection metrics.')
   }
-  return apiCall('getMetricsSummaryByCollectionAgg', { collectionId })
+  return apiCall('getMetricsSummaryByCollectionAgg', { collectionId, ...params })
 }

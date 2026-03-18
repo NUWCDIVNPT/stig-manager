@@ -3,37 +3,58 @@ import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionChecklistAssets, fetchCollectionStigSummary } from '../api/collectionApi.js'
-import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
 const props = defineProps({
   collectionId: {
     type: [String, Number],
     required: true,
   },
+  selectedLabelIds: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const router = useRouter()
 
 // Queries
+const fetchStigs = () => {
+  return fetchCollectionStigSummary(
+    props.collectionId,
+    buildLabelFilterParams(props.selectedLabelIds),
+  )
+}
+
 const { state: stigs, isLoading: stigsLoading, error: stigsError, execute: loadStigs } = useAsyncState(
-  () => fetchCollectionStigSummary(props.collectionId),
+  fetchStigs,
   { initialState: [], immediate: false },
 )
 
 const selectedBenchmarkId = ref(null)
 
 const { state: checklistAssets, isLoading: checklistAssetsLoading, error: checklistAssetsError, execute: loadChecklistAssets } = useAsyncState(
-  () => fetchCollectionChecklistAssets(props.collectionId, selectedBenchmarkId.value),
+  () => {
+    if (!selectedBenchmarkId.value) {
+      return []
+    }
+    return fetchCollectionChecklistAssets(
+      props.collectionId,
+      selectedBenchmarkId.value,
+      buildLabelFilterParams(props.selectedLabelIds),
+    )
+  },
   { initialState: [], immediate: false },
 )
 
 // Initial Load
-watch(() => props.collectionId, () => {
+watch([() => props.collectionId, () => props.selectedLabelIds], () => {
   loadStigs()
   selectedBenchmarkId.value = null
-}, { immediate: true })
+}, { immediate: true, deep: true })
 
 // Auto-select first STIG
 watch(stigs, (newStigs) => {
@@ -95,6 +116,7 @@ function handleStigShieldClick(rowData) {
           <div class="grid-container">
             <MetricsSummaryGrid
               :api-metrics-summary="stigs"
+              agg-type="stig"
               :is-loading="stigsLoading"
               :error-message="stigsError?.message || stigsError"
               :selected-key="selectedBenchmarkId"
@@ -116,22 +138,15 @@ function handleStigShieldClick(rowData) {
             <span v-if="selectedBenchmarkId" class="badge">{{ selectedBenchmarkId }}</span>
           </div>
           <div class="grid-container">
-            <div v-if="!selectedBenchmarkId" class="empty-state">
-              Select a STIG to view checklists.
-            </div>
-            <div v-else-if="checklistAssetsLoading && checklistAssets.length === 0" class="loading-state">
-              Loading checklists...
-            </div>
-            <div v-else-if="checklistAssetsError" class="error-state">
+            <div v-if="checklistAssetsError" class="error-state">
               {{ checklistAssetsError?.message || checklistAssetsError }}
-            </div>
-            <div v-else-if="!checklistAssetsLoading && checklistAssets.length === 0" class="empty-state">
-              No checklists found for this STIG.
             </div>
             <MetricsSummaryGrid
               v-else
               :api-metrics-summary="checklistAssets"
+              agg-type="unagg"
               :is-loading="checklistAssetsLoading"
+              :empty-message="selectedBenchmarkId ? 'No checklists found for this STIG. Try refresh.' : 'Select a STIG to view checklists.'"
               parent-agg-type="stig"
               show-shield
               data-key="assetId"

@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
 import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
+import NavRailCollectionsItem from './NavRailCollectionsItem.vue'
 
 const STORAGE_KEY = 'stigman:navRailExpanded'
 
@@ -13,6 +14,10 @@ const { recentViews, clearViews } = useRecentViews()
 
 const expanded = ref(loadExpandedState())
 const recentViewsPopover = ref(null)
+
+const recentViewsPopoverPt = {
+  root: { style: 'min-width: 20rem; max-width: 27rem' },
+}
 
 function loadExpandedState() {
   try {
@@ -82,10 +87,6 @@ const navItems = computed(() => {
   return items
 })
 
-function isActive(item) {
-  return item.matchFn()
-}
-
 function typeIcon(type) {
   switch (type) {
     case 'collection': return 'nav-icon-collection'
@@ -106,7 +107,6 @@ function toggleRecentViewsPopover(event) {
     class="nav-rail"
     :class="{ 'nav-rail--expanded': expanded }"
   >
-    <!-- Toggle button -->
     <button
       class="nav-rail-toggle"
       :aria-label="expanded ? 'Collapse navigation' : 'Expand navigation'"
@@ -115,34 +115,40 @@ function toggleRecentViewsPopover(event) {
       <i :class="expanded ? 'pi pi-angle-left' : 'pi pi-angle-right'" />
     </button>
 
-    <!-- Primary nav items -->
     <div class="nav-rail-items">
-      <router-link
-        v-for="item in navItems"
-        :key="item.key"
-        :to="item.route"
-        class="nav-rail-item"
-        :class="{ 'nav-rail-item--active': isActive(item) }"
-        :title="expanded ? undefined : item.label"
-      >
-        <span
-          v-if="item.icon"
-          class="nav-rail-item-icon"
-          :class="item.icon"
+      <template v-for="item in navItems" :key="item.key">
+        <NavRailCollectionsItem
+          v-if="item.key === 'collections'"
+          :expanded="expanded"
+          :active="item.matchFn()"
+          :label="item.label"
+          :icon-class="item.iconClass"
         />
-        <span
-          v-else-if="item.iconClass"
-          class="nav-rail-item-icon nav-icon"
-          :class="item.iconClass"
-        />
-        <span v-if="expanded" class="nav-rail-item-label">{{ item.label }}</span>
-      </router-link>
+
+        <router-link
+          v-else
+          :to="item.route"
+          class="nav-rail-item"
+          :class="{ 'nav-rail-item--active': item.matchFn() }"
+          :title="expanded ? undefined : item.label"
+        >
+          <span
+            v-if="item.icon"
+            class="nav-rail-item-icon"
+            :class="item.icon"
+          />
+          <span
+            v-else-if="item.iconClass"
+            class="nav-rail-item-icon nav-icon"
+            :class="item.iconClass"
+          />
+          <span v-if="expanded" class="nav-rail-item-label">{{ item.label }}</span>
+        </router-link>
+      </template>
     </div>
 
-    <!-- Separator -->
     <div class="nav-rail-separator" />
 
-    <!-- Recent Views -->
     <template v-if="expanded">
       <div class="nav-rail-section-header">
         <div class="nav-rail-section-label">
@@ -184,7 +190,7 @@ function toggleRecentViewsPopover(event) {
       >
         <span class="nav-rail-item-icon pi pi-clock" />
       </button>
-      <Popover ref="recentViewsPopover" class="recent-views-popover">
+      <Popover ref="recentViewsPopover" :pt="recentViewsPopoverPt">
         <div class="recent-views-popover-header">
           <span>Recent Views</span>
           <button
@@ -310,7 +316,6 @@ function toggleRecentViewsPopover(event) {
   font-weight: 500;
 }
 
-/* Custom SVG icons */
 .nav-icon {
   background-position: center;
   background-repeat: no-repeat;
@@ -336,7 +341,6 @@ function toggleRecentViewsPopover(event) {
   flex-shrink: 0;
 }
 
-/* Section header for expanded state */
 .nav-rail-section-header {
   display: flex;
   align-items: center;
@@ -344,7 +348,6 @@ function toggleRecentViewsPopover(event) {
   padding: 8px 12px 4px;
 }
 
-/* Section label for expanded state */
 .nav-rail-section-label {
   padding: 0.75rem 1.1rem 0.35rem;
   font-size: 0.95rem;
@@ -359,7 +362,7 @@ function toggleRecentViewsPopover(event) {
 .nav-rail-clear-btn {
   background: none;
   border: none;
-  color: var(--color-text-dim, #a1a1aa);
+  color: var(--color-text-dim);
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
@@ -371,15 +374,42 @@ function toggleRecentViewsPopover(event) {
 }
 
 .nav-rail-clear-btn:hover {
-  background-color: var(--color-surface-hover, #27272a);
-  color: var(--color-text-primary, rgba(255, 255, 255, 0.87));
+  background-color: var(--color-bg-hover-strong);
+  color: var(--color-text-primary);
 }
 
-/* Recent views list in expanded state */
 .nav-rail-recent {
   flex: 1;
   overflow-y: auto;
   padding: 0 0.35rem;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-default) transparent;
+}
+
+.nav-rail-recent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.nav-rail-recent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nav-rail-recent::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.nav-rail-recent::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-default);
+  border-radius: 999px;
+  border: none;
+  min-height: 28px;
+}
+
+.nav-rail-recent::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-hover);
 }
 
 .nav-rail-recent-item {
@@ -425,11 +455,6 @@ function toggleRecentViewsPopover(event) {
   font-style: italic;
 }
 
-/* Popover styles for collapsed state */
-:deep(.recent-views-popover) {
-  min-width: 20rem;
-  max-width: 27rem;
-}
 
 .recent-views-popover-header {
   padding: 0.75rem 1.1rem;
@@ -443,6 +468,34 @@ function toggleRecentViewsPopover(event) {
   max-height: 27rem;
   overflow-y: auto;
   padding: 0.35rem;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-default) transparent;
+}
+
+.recent-views-popover-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.recent-views-popover-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.recent-views-popover-list::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.recent-views-popover-list::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-default);
+  border-radius: 999px;
+  border: none;
+  min-height: 28px;
+}
+
+.recent-views-popover-list::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-hover);
 }
 
 .recent-views-popover-item {

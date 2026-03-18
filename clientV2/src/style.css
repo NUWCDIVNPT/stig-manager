@@ -201,6 +201,16 @@ textarea:focus {
   color: var(--color-text-error);
 }
 
+.p-datatable-mask {
+  background: rgb(24 24 27 / 0.08) !important;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.p-datatable-tbody > tr:hover > .agg-grid-empty-cell {
+  background: var(--color-background-dark) !important;
+}
+
 @font-face {
   font-family: 'Open Sans';
   font-style: normal;

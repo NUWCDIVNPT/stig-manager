@@ -7,6 +7,10 @@ const props = defineProps({
     required: false,
     default: () => ({ high: 0, medium: 0, low: 0 }),
   },
+  showDetailsAction: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const { findings } = toRefs(props)
@@ -29,7 +33,7 @@ const data = computed(() => {
       <h3 class="metric-title">
         Findings
       </h3>
-      <div class="metric-actions">
+      <div v-if="showDetailsAction" class="metric-actions">
         <span class="metric-action-link" @click="console.log('Details clicked')">Details</span>
       </div>
     </div>
@@ -50,7 +54,7 @@ const data = computed(() => {
       <h3 class="metric-title">
         Findings
       </h3>
-      <div class="metric-actions">
+      <div v-if="showDetailsAction" class="metric-actions">
         <span class="metric-action-link" @click="console.log('Details clicked')">Details</span>
       </div>
     </div>
