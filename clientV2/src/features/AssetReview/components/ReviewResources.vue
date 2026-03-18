@@ -25,10 +25,6 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  selectedRuleId: {
-    type: String,
-    default: null,
-  },
 })
 
 const activeTab = ref('history')

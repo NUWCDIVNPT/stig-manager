@@ -1,6 +1,7 @@
 import { computed, ref, watch } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { defaultFieldSettings } from '../../../shared/lib/reviewFormUtils.js'
 import {
   fetchChecklist,
   fetchCollection,
@@ -31,10 +32,7 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     { immediate: false },
   )
 
-  const fieldSettings = computed(() => collection.value?.settings?.fields ?? {
-    detail: { enabled: 'always', required: 'always' },
-    comment: { enabled: 'always', required: 'findings' },
-  })
+  const fieldSettings = computed(() => collection.value?.settings?.fields ?? defaultFieldSettings)
 
   const statusSettings = computed(() => collection.value?.settings?.status ?? {
     canAccept: false,
@@ -91,7 +89,6 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
   const {
     state: checklistData,
     isLoading: isChecklistLoading,
-    error: checklistError,
     execute: loadChecklist,
   } = useAsyncState(
     async () => {
@@ -133,11 +130,13 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
       const review = reviewMap.get(item.ruleId)
       return {
         ...item,
+        result: review?.result ?? item.result,
         detail: review?.detail ?? '',
         comment: review?.comment ?? '',
         username: review?.username ?? item.username ?? '',
         status: review?.status ?? item.status,
         ts: review?.ts ?? item.ts,
+        touchTs: review?.touchTs ?? item.touchTs,
         resultEngine: review?.resultEngine ?? item.resultEngine ?? null,
       }
     })
@@ -209,21 +208,6 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     return history
   })
 
-  // --- Array update helpers ---
-  function updateChecklistRow(ruleId, updates) {
-    if (!checklistData.value?.length) {
-      return
-    }
-    const idx = checklistData.value.findIndex(item => item.ruleId === ruleId)
-    if (idx !== -1) {
-      checklistData.value = [
-        ...checklistData.value.slice(0, idx),
-        { ...checklistData.value[idx], ...updates },
-        ...checklistData.value.slice(idx + 1),
-      ]
-    }
-  }
-
   function upsertReview(ruleId, review) {
     const idx = allReviews.value.findIndex(r => r.ruleId === ruleId)
     if (idx !== -1) {
@@ -239,7 +223,7 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
   }
 
   // --- Handle rule selection ---
-  async function selectRule(ruleId) {
+  function selectRule(ruleId) {
     if (ruleId === selectedRuleId.value) {
       return
     }
@@ -276,12 +260,6 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
       const result = await putReview(collectionId.value, assetId.value, ruleId, body)
 
       upsertReview(ruleId, result)
-      updateChecklistRow(ruleId, {
-        result: result.result,
-        status: result.status?.label ?? result.status,
-        touchTs: result.touchTs,
-        resultEngine: result.resultEngine,
-      })
 
       if (ruleId === selectedRuleId.value) {
         currentReview.value = result
@@ -316,10 +294,6 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
       const result = await patchReview(collectionId.value, assetId.value, ruleId, { status })
 
       upsertReview(ruleId, result)
-      updateChecklistRow(ruleId, {
-        status: result.status?.label ?? result.status,
-        touchTs: result.touchTs,
-      })
 
       if (ruleId === selectedRuleId.value) {
         currentReview.value = result
@@ -369,7 +343,6 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     // Checklist
     checklistData,
     isChecklistLoading,
-    checklistError,
     accessMode,
 
     // Selected rule

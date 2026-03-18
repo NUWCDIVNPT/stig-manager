@@ -229,7 +229,6 @@ defineExpose({ asset })
             :selected-checklist-item="workspace.selectedChecklistItem.value"
             :current-review="workspace.currentReview.value"
             :review-history="workspace.reviewHistory.value"
-            :selected-rule-id="workspace.selectedRuleId.value"
           />
         </SplitterPanel>
       </Splitter>

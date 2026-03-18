@@ -1,3 +1,8 @@
+export const defaultFieldSettings = {
+  detail: { enabled: 'always', required: 'always' },
+  comment: { enabled: 'always', required: 'findings' },
+}
+
 export const resultOptions = [
   { value: 'pass', label: 'Not a Finding', display: 'NF' },
   { value: 'fail', label: 'Open', display: 'O' },

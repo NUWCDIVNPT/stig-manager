@@ -2,9 +2,9 @@
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
 import Tooltip from 'primevue/tooltip'
-import { computed, ref, watch } from 'vue'
-import { getReviewButtonStates } from '../../shared/lib/reviewButtonStates.js'
-import { formatReviewDate, isFieldEnabled, isFieldRequired, resultOptions } from '../../shared/lib/reviewFormUtils.js'
+import { ref, toRef } from 'vue'
+import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
+import { defaultFieldSettings, formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
 import ResultBadge from './ResultBadge.vue'
 import StatusBadge from './StatusBadge.vue'
 import StatusButton from './StatusButton.vue'
@@ -16,10 +16,7 @@ const props = defineProps({
   },
   fieldSettings: {
     type: Object,
-    default: () => ({
-      detail: { enabled: 'always', required: 'always' },
-      comment: { enabled: 'always', required: 'findings' },
-    }),
+    default: () => defaultFieldSettings,
   },
   accessMode: {
     type: String,
@@ -49,148 +46,30 @@ const lastAnchorEvent = ref(null)
 const closing = ref(false)
 const isButtonsHighlighted = ref(false)
 
-// Local form state
-const formResult = ref('')
-const formDetail = ref('')
-const formComment = ref('')
-
-// Sync local state when rowData changes (popover opens with new row)
-watch(() => props.rowData, (row) => {
-  if (row) {
-    formResult.value = row.result ?? ''
-    formDetail.value = row.detail ?? ''
-    formComment.value = row.comment ?? ''
-  }
+// Form state and business logic from composable
+const {
+  formResult,
+  formDetail,
+  formComment,
+  statusLabel,
+  isDirty,
+  showResultEmphasis,
+  detailEnabled,
+  commentEnabled,
+  detailRequired,
+  commentRequired,
+  buttonStates,
+  isActionActive,
+  engineTooltipHtml,
+  overrideTooltipHtml,
+  selectResult,
+  discardChanges,
+} = useReviewEditForm({
+  rowData: toRef(props, 'rowData'),
+  fieldSettings: toRef(props, 'fieldSettings'),
+  accessMode: toRef(props, 'accessMode'),
+  canAccept: toRef(props, 'canAccept'),
 })
-
-// Editability
-const statusLabel = computed(() => {
-  const s = props.rowData?.status
-  if (!s) {
-    return ''
-  }
-  return s?.label ?? s ?? ''
-})
-
-const editable = computed(() => {
-  const s = statusLabel.value
-  return props.accessMode === 'rw' && (s === '' || s === 'saved' || s === 'rejected')
-})
-
-// Dirty tracking
-const isDirty = computed(() => {
-  if (!props.rowData) {
-    return false
-  }
-  return formResult.value !== (props.rowData.result ?? '')
-    || formDetail.value !== (props.rowData.detail ?? '')
-    || formComment.value !== (props.rowData.comment ?? '')
-})
-
-const showResultEmphasis = computed(() => editable.value && !formResult.value)
-
-// Field enable/require states
-const detailEnabled = computed(() => isFieldEnabled(props.fieldSettings.detail, formResult.value, editable.value))
-const commentEnabled = computed(() => isFieldEnabled(props.fieldSettings.comment, formResult.value, editable.value))
-const detailRequired = computed(() => isFieldRequired(props.fieldSettings.detail, formResult.value))
-const commentRequired = computed(() => isFieldRequired(props.fieldSettings.comment, formResult.value))
-
-// Submittability
-const isSubmittable = computed(() => {
-  const result = formResult.value
-  if (!result || (result !== 'pass' && result !== 'fail' && result !== 'notapplicable')) {
-    return false
-  }
-  const fs = props.fieldSettings
-  if (fs.detail?.required === 'always' && !formDetail.value?.trim()) {
-    return false
-  }
-  if (fs.detail?.required === 'findings' && result === 'fail' && !formDetail.value?.trim()) {
-    return false
-  }
-  if (fs.comment?.required === 'always' && !formComment.value?.trim()) {
-    return false
-  }
-  if (fs.comment?.required === 'findings' && result === 'fail' && !formComment.value?.trim()) {
-    return false
-  }
-  return true
-})
-
-// Button states
-const buttonStates = computed(() => {
-  return getReviewButtonStates({
-    accessMode: props.accessMode,
-    statusLabel: statusLabel.value,
-    isDirty: isDirty.value,
-    isSubmittable: isSubmittable.value,
-    canAccept: props.canAccept,
-  })
-})
-
-// Check if a button's action matches the current review status
-function isActionActive(actionType) {
-  const s = statusLabel.value
-  if (!s || s === '' || s === 'rejected') {
-    return false
-  }
-  if (s === 'saved' && (actionType === 'save' || actionType === 'save and unsubmit')) {
-    return true
-  }
-  if (s === 'submitted' && (actionType === 'submit' || actionType === 'save and submit')) {
-    return true
-  }
-  if (s === 'accepted' && actionType === 'accept') {
-    return true
-  }
-  return false
-}
-
-// Engine tooltip HTML
-const engineTooltipHtml = computed(() => {
-  const re = props.rowData?.resultEngine
-  if (!re) {
-    return ''
-  }
-  const lines = []
-  if (re.version) {
-    lines.push(`<b>Version</b><br>${re.version}`)
-  }
-  if (re.time) {
-    lines.push(`<b>Time</b><br>${formatReviewDate(re.time)}`)
-  }
-  if (re.checkContent?.location) {
-    lines.push(`<b>Check content</b><br>${re.checkContent.location}`)
-  }
-  return lines.join('<br>')
-})
-
-// Override tooltip HTML
-const overrideTooltipHtml = computed(() => {
-  const overrides = props.rowData?.resultEngine?.overrides
-  if (!overrides?.length) {
-    return ''
-  }
-  return overrides.map((o) => {
-    const lines = []
-    if (o.authority) {
-      lines.push(`<b>Authority</b><br>${o.authority}`)
-    }
-    if (o.remark) {
-      lines.push(`<b>Remark</b><br>${o.remark}`)
-    }
-    lines.push(`<b>Old result</b>: ${o.oldResult || '\u2014'} \u2192 <b>New result</b>: ${o.newResult || '\u2014'}`)
-    return lines.join('<br>')
-  }).join('<hr style="margin: 0.3rem 0; opacity: 0.3">')
-})
-
-// Result selection
-function selectResult(value) {
-  if (!editable.value) {
-    return
-  }
-  formResult.value = value
-}
 
 // Button action handler
 function onButtonClick(actionType) {
@@ -252,14 +131,6 @@ function triggerButtonPulse() {
   setTimeout(() => {
     isButtonsHighlighted.value = false
   }, 1200)
-}
-
-function discardChanges() {
-  if (props.rowData) {
-    formResult.value = props.rowData.result ?? ''
-    formDetail.value = props.rowData.detail ?? ''
-    formComment.value = props.rowData.comment ?? ''
-  }
 }
 
 function dismiss() {

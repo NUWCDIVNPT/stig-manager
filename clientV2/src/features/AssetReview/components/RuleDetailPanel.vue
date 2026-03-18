@@ -25,10 +25,6 @@ defineProps({
     type: Array,
     default: () => [],
   },
-  selectedRuleId: {
-    type: String,
-    default: null,
-  },
 })
 </script>
 
@@ -52,7 +48,6 @@ defineProps({
       <ReviewResources
         :current-review="currentReview"
         :review-history="reviewHistory"
-        :selected-rule-id="selectedRuleId"
       />
     </SplitterPanel>
   </Splitter>

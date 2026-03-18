@@ -13,6 +13,7 @@ import ReviewEditPopover from '../../../components/common/ReviewEditPopover.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
+import { defaultFieldSettings } from '../../../shared/lib/reviewFormUtils.js'
 import { useChecklistDisplayMode } from '../composables/useChecklistDisplayMode.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay, severityMap } from '../lib/checklistUtils.js'
 
@@ -39,10 +40,7 @@ const props = defineProps({
   },
   fieldSettings: {
     type: Object,
-    default: () => ({
-      detail: { enabled: 'always', required: 'always' },
-      comment: { enabled: 'always', required: 'findings' },
-    }),
+    default: () => defaultFieldSettings,
   },
   canAccept: {
     type: Boolean,
@@ -150,17 +148,16 @@ watch(() => props.selectedRuleId, (ruleId) => {
   }
 })
 
-// Auto-select first row when data loads
+// Sync local refs when gridData updates (auto-select first row, keep editingRow fresh)
 watch(() => props.gridData, (data) => {
-  if (data?.length && !props.selectedRuleId) {
+  if (!data?.length) {
+    return
+  }
+  if (!props.selectedRuleId) {
     selectedRow.value = data[0]
     emit('select-rule', data[0].ruleId)
   }
-})
-
-// Keep editingRow in sync when gridData updates (e.g., after API save/status change)
-watch(() => props.gridData, (data) => {
-  if (editingRow.value && data?.length) {
+  if (editingRow.value) {
     const updated = data.find(r => r.ruleId === editingRow.value.ruleId)
     if (updated) {
       editingRow.value = updated
