@@ -48,7 +48,7 @@ const actionIcon = computed(() => {
     :disabled="disabled"
     @click="$emit('click')"
   >
-    <img :src="actionIcon" class="status-button__icon" :class="{ 'status-button__icon--submit': actionIcon === submitIcon }">
+    <img :src="actionIcon" class="status-button__icon">
     <span>{{ label }}</span>
   </button>
 </template>
@@ -87,9 +87,5 @@ const actionIcon = computed(() => {
   width: 14px;
   height: 14px;
   object-fit: contain;
-}
-
-.status-button__icon--submit {
-  filter: invert(54%) sepia(44%) saturate(589%) hue-rotate(58deg) brightness(92%) contrast(86%);
 }
 </style>

@@ -82,7 +82,4 @@ const statusMeta = computed(() => {
   object-fit: contain;
 }
 
-.status-submitted .status-icon {
-  filter: invert(54%) sepia(44%) saturate(589%) hue-rotate(58deg) brightness(92%) contrast(86%);
-}
 </style>
