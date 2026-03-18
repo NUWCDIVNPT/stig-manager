@@ -50,6 +50,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  searchFilter: {
+    type: String,
+    default: '',
+  },
 })
 
 const emit = defineEmits(['select-rule', 'row-save', 'status-action', 'refresh'])
@@ -121,12 +125,34 @@ const {
 
 const defaultSortField = computed(() => showGroupId.value ? 'groupId' : 'ruleId')
 
+// Filtered data based on search term
+const filteredData = computed(() => {
+  const term = props.searchFilter?.toLowerCase().trim()
+  if (!term) {
+    return props.gridData
+  }
+  return props.gridData.filter(row =>
+    [
+      row.ruleId,
+      row.groupId,
+      row.ruleTitle,
+      row.groupTitle,
+      row.detail,
+      row.comment,
+      row.username,
+      row.status?.user?.username,
+    ].some(field => field?.toLowerCase().includes(term)),
+  )
+})
+
+const isFiltered = computed(() => filteredData.value.length !== props.gridData.length)
+
 function toggleChecklistMenu(event) {
   checklistMenu.value.toggle(event)
 }
 
 // Tally stats
-const stats = computed(() => calculateChecklistStats(props.gridData))
+const stats = computed(() => calculateChecklistStats(filteredData.value))
 
 // Header display text
 const headerTitle = computed(() => {
@@ -154,8 +180,11 @@ watch(() => props.gridData, (data) => {
     return
   }
   if (!props.selectedRuleId) {
-    selectedRow.value = data[0]
-    emit('select-rule', data[0].ruleId)
+    const firstVisible = filteredData.value[0]
+    if (firstVisible) {
+      selectedRow.value = firstVisible
+      emit('select-rule', firstVisible.ruleId)
+    }
   }
   if (editingRow.value) {
     const updated = data.find(r => r.ruleId === editingRow.value.ruleId)
@@ -217,7 +246,7 @@ function handleFooterAction(actionKey) {
 
     <DataTable
       v-model:selection="selectedRow"
-      :value="gridData"
+      :value="filteredData"
       :loading="isLoading"
       data-key="ruleId"
       selection-mode="single"
@@ -361,7 +390,8 @@ function handleFooterAction(actionKey) {
       <template v-if="stats" #footer>
         <StatusFooter
           :refresh-loading="isLoading"
-          :total-count="stats.total"
+          :total-count="gridData.length"
+          :filtered-count="isFiltered ? filteredData.length : null"
           @action="handleFooterAction"
         >
           <template #left-extra>

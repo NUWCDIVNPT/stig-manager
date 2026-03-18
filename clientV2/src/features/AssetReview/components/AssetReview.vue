@@ -1,7 +1,7 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
@@ -124,6 +124,15 @@ function onGridRefresh() {
   workspace.loadAllReviews()
 }
 
+// Search filter
+const searchFilter = ref('')
+const searchInput = ref(null)
+
+function clearSearch() {
+  searchFilter.value = ''
+  searchInput.value?.focus()
+}
+
 // Expose asset
 defineExpose({ asset })
 </script>
@@ -175,10 +184,17 @@ defineExpose({ asset })
           <div class="search-reviews">
             <i class="pi pi-search search-reviews__icon" />
             <input
+              ref="searchInput"
+              v-model="searchFilter"
               type="text"
               class="search-reviews__input"
               placeholder="Search reviews..."
             >
+            <i
+              v-if="searchFilter"
+              class="pi pi-times search-reviews__clear"
+              @click="clearSearch"
+            />
           </div>
           <button type="button" class="action-btn" title="Import checklist">
             <i class="pi pi-upload" />
@@ -216,6 +232,7 @@ defineExpose({ asset })
             :field-settings="workspace.fieldSettings.value"
             :can-accept="workspace.canAccept.value"
             :is-saving="workspace.isSaving.value"
+            :search-filter="searchFilter"
             @select-rule="onSelectRule"
             @row-save="onRowSave"
             @status-action="onStatusAction"
@@ -392,6 +409,22 @@ defineExpose({ asset })
 .search-reviews__input:focus {
   border-color: var(--color-primary-highlight);
   background-color: var(--color-background-dark);
+}
+
+.search-reviews__clear {
+  position: absolute;
+  right: 0.5rem;
+  color: var(--color-text-dim);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.search-reviews__clear:hover {
+  color: var(--color-text-primary);
+}
+
+.search-reviews__input:not(:placeholder-shown) {
+  padding-right: 1.75rem;
 }
 
 .asset-review__content {
