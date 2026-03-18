@@ -43,7 +43,7 @@ const title = computed(() => `CAT ${props.category}`)
   width: 35px;
   font-weight: 600;
   color: #111;
-  margin: 0 auto;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;

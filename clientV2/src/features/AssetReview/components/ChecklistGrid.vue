@@ -228,7 +228,7 @@ function handleFooterAction(actionKey) {
       class="checklist-grid__table"
       @row-click="onRowClick"
     >
-      <Column header="CAT" field="severity" :style="{ width: '44px', textAlign: 'center' }">
+      <Column header="CAT" field="severity" :style="{ minWidth: '4.5rem', maxWidth: '4.5rem' }">
         <template #body="{ data }">
           <CatBadge v-if="data.severity" :category="severityMap[data.severity] || 2" />
         </template>
@@ -238,7 +238,7 @@ function handleFooterAction(actionKey) {
         v-if="showGroupId"
         header="Group"
         field="groupId"
-        :style="{ width: '50px' }"
+        :style="{ minWidth: '8rem' }"
       >
         <template #body="{ data }">
           <span class="cell-text--mono">{{ data.groupId }}</span>
@@ -249,7 +249,7 @@ function handleFooterAction(actionKey) {
         v-if="showRuleId"
         header="Rule Id"
         field="ruleId"
-        :style="{ width: '100px' }"
+        :style="{ minWidth: '16rem' }"
       >
         <template #body="{ data }">
           <span class="cell-text--mono">{{ data.ruleId }}</span>
@@ -260,7 +260,7 @@ function handleFooterAction(actionKey) {
         v-if="showRuleTitle"
         header="Rule Title"
         field="ruleTitle"
-        :style="{ width: '225px' }"
+        :style="{ minWidth: '35rem' }"
       >
         <template #body="{ data }">
           <span class="cell-text--clamped" :title="data.ruleTitle">{{ data.ruleTitle }}</span>
@@ -271,14 +271,14 @@ function handleFooterAction(actionKey) {
         v-if="showGroupTitle"
         header="Group Title"
         field="groupTitle"
-        :style="{ width: '180px' }"
+        :style="{ minWidth: '20rem' }"
       >
         <template #body="{ data }">
           <span class="cell-text--clamped" :title="data.groupTitle">{{ data.groupTitle }}</span>
         </template>
       </Column>
 
-      <Column header="Result" field="result" :style="{ width: '40px', textAlign: 'center' }">
+      <Column header="Result" field="result" :style="{ minWidth: '4.5rem', maxWidth: '4.5rem' }">
         <template #body="{ data }">
           <div
             data-result-cell
@@ -290,7 +290,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Detail" field="detail" :style="{ width: '200px' }">
+      <Column header="Detail" field="detail" :style="{ minWidth: '30rem' }">
         <template #body="{ data }">
           <div
             class="cell-text-field"
@@ -301,7 +301,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Comment" field="comment" :style="{ width: '200px' }">
+      <Column header="Comment" field="comment" :style="{ minWidth: '20rem' }">
         <template #body="{ data }">
           <div
             class="cell-text-field"
@@ -311,7 +311,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column field="resultEngine" :style="{ width: '24px', textAlign: 'center' }">
+      <Column field="resultEngine" :style="{ minWidth: '2.5rem', maxWidth: '2.5rem' }">
         <template #header>
           <img
             src="../../../assets/bot2.svg"
@@ -338,13 +338,13 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Status" field="status" :style="{ width: '40px', textAlign: 'center' }">
+      <Column header="Status" field="status" :style="{ minWidth: '4rem', maxWidth: '4rem' }">
         <template #body="{ data }">
           <StatusBadge v-if="data.status" :status="data.status?.label ?? data.status" />
         </template>
       </Column>
 
-      <Column field="touchTs" :style="{ width: '40px', textAlign: 'center' }">
+      <Column field="touchTs" :style="{ minWidth: '4.5rem', maxWidth: '4.5rem' }">
         <template #header>
           <i class="pi pi-clock" title="Last action" />
         </template>
@@ -523,7 +523,6 @@ function handleFooterAction(actionKey) {
 .cell-result {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.25rem;
 }
 
