@@ -52,6 +52,7 @@ const {
   formDetail,
   formComment,
   statusLabel,
+  editable,
   isDirty,
   showResultEmphasis,
   detailEnabled,
