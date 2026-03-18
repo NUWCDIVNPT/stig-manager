@@ -141,8 +141,14 @@ function onButtonClick(actionType) {
     return
   }
 
-  // Status-only actions (PATCH)
-  if (actionType === 'submit' || actionType === 'unsubmit' || actionType === 'accept') {
+  // Unsubmit: emit but keep popover open for further editing
+  if (actionType === 'unsubmit') {
+    emit('status-action', { ruleId: props.rowData.ruleId, actionType })
+    return
+  }
+
+  // Other status-only actions (PATCH) — dismiss after
+  if (actionType === 'submit' || actionType === 'accept') {
     emit('status-action', { ruleId: props.rowData.ruleId, actionType })
     closing.value = true
     popover.value.hide()
@@ -249,9 +255,6 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
               <span>{{ opt.label }}</span>
             </li>
           </ul>
-          <span class="review-edit-popover__engine" :title="engineDisplay">
-            {{ engineDisplay }}
-          </span>
         </div>
 
         <div class="review-edit-popover__detail">
@@ -283,6 +286,7 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
         </div>
 
         <div class="review-edit-popover__actions" :class="{ 'review-edit-popover__actions--highlighted': isButtonsHighlighted }">
+          <label class="review-edit-popover__label">Status</label>
           <Button
             v-if="buttonStates.btn1.visible"
             :label="buttonStates.btn1.text"
@@ -307,13 +311,15 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
             :class="{ 'review-edit-popover__discard-link--hidden': !isDirty }"
             @click="discardChanges"
           >
-            <span>discard</span>
-            <span>changes</span>
+            discard changes
           </button>
         </div>
       </div>
 
       <div class="review-edit-popover__attributions">
+        <span class="review-edit-popover__attr-pill" :title="engineDisplay">
+          {{ engineDisplay || 'Manual' }}
+        </span>
         <div class="review-edit-popover__attr-section">
           <span class="review-edit-popover__attr-label">Evaluated: </span>
           <span v-if="rowData.ts" class="review-edit-popover__attr-pill">
@@ -358,6 +364,7 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
   display: flex;
   gap: 0.5rem;
   align-items: stretch;
+  min-height: 16rem;
 }
 
 .review-edit-popover__label {
@@ -422,16 +429,9 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
   opacity: 0.6;
 }
 
-.review-edit-popover__engine {
-  display: block;
-  color: var(--color-text-primary);
-  font-size: 0.9rem;
-  margin-top: 0.2rem;
-  background-color: var(--color-background-dark);
-  padding: 0.15rem 0.3rem;
-  border-radius: 3px;
-  border: 1px solid var(--color-border-light);
-  text-align: center;
+.review-edit-popover__result-item :deep(.status-badge) {
+  min-width: 1.8rem;
+  justify-content: center;
 }
 
 .review-edit-popover__detail,
@@ -444,13 +444,8 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
 
 .review-edit-popover__textarea {
   flex: 1;
-  display: flex;
-}
-
-.review-edit-popover__textarea :deep(textarea) {
-  flex: 1;
   overflow-y: auto;
-  resize: none;
+  resize: none !important;
 }
 
 .review-edit-popover__actions {
@@ -459,7 +454,6 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
   gap: 0.35rem;
   flex: 0 0 auto;
   justify-content: flex-start;
-  padding-top: 1.2rem;
 }
 
 .review-edit-popover__actions .p-button {
@@ -481,11 +475,11 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
   border: none;
   padding: 0;
   cursor: pointer;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: var(--color-text-primary);
   opacity: 0.7;
   text-align: center;
-  line-height: 1.2;
+  white-space: nowrap;
   transition: opacity 0.15s ease;
   margin-top: auto;
 }

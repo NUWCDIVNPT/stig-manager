@@ -156,6 +156,16 @@ watch(() => props.gridData, (data) => {
   }
 })
 
+// Keep editingRow in sync when gridData updates (e.g., after API save/status change)
+watch(() => props.gridData, (data) => {
+  if (editingRow.value && data?.length) {
+    const updated = data.find(r => r.ruleId === editingRow.value.ruleId)
+    if (updated) {
+      editingRow.value = updated
+    }
+  }
+})
+
 function onRowClick(event) {
   const isSameRow = editingRow.value?.ruleId === event.data.ruleId
   if (!isSameRow && reviewEditPopover.value?.isDirty) {
@@ -540,8 +550,8 @@ function handleFooterAction(actionKey) {
 }
 
 .engine-icon {
-  width: 1rem;
-  height: 1rem;
+  width: 1.4rem;
+  height: 1.4rem;
   opacity: 0.7;
   flex-shrink: 0;
 }
