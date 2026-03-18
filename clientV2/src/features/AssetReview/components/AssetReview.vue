@@ -412,7 +412,7 @@ defineExpose({ asset })
   flex-wrap: wrap;
   gap: 1rem;
   color: var(--color-text-dim);
-  font-size: 0.8rem;
+  font-size: 1rem;
 }
 
 .asset-review__meta-item {

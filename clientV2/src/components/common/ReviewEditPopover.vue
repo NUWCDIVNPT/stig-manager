@@ -638,6 +638,14 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
   cursor: default;
 }
 
+:global(.p-popover:before) {
+  border-bottom-color: var(--color-shield-green-dark) !important;
+}
+
+:global(.p-popover.p-popover-flipped:before) {
+  border-top-color: var(--color-shield-green-dark) !important;
+}
+
 :global(.p-popover-leave-active) {
   transition: opacity .05s linear;
 }
