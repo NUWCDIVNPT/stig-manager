@@ -434,7 +434,6 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
   cursor: pointer;
   color: var(--color-text-primary);
   opacity: 0.5;
-  font-size: 0.7rem;
   padding: 0.2rem;
   line-height: 1;
 }
@@ -625,6 +624,14 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
   border: 1px solid hsl(30, 40%, 35%);
   border-radius: 4px;
   cursor: default;
+}
+
+:global(.p-popover-leave-active) {
+  transition: opacity .05s linear;
+}
+
+:global(.p-popover-enter-active) {
+  transition: transform 0.05s cubic-bezier(0, 0, 0.2, 1), opacity 0.1s cubic-bezier(0, 0, 0.2, 1);
 }
 
 :global(.p-tooltip) {
