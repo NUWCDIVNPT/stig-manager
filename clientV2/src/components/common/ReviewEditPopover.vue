@@ -2,9 +2,10 @@
 import Button from 'primevue/button'
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
+import Tooltip from 'primevue/tooltip'
 import { computed, ref, watch } from 'vue'
 import { getReviewButtonStates } from '../../shared/lib/reviewButtonStates.js'
-import { formatReviewDate, getEngineDisplayText, isFieldEnabled, isFieldRequired, resultOptions } from '../../shared/lib/reviewFormUtils.js'
+import { formatReviewDate, isFieldEnabled, isFieldRequired, resultOptions } from '../../shared/lib/reviewFormUtils.js'
 import ResultBadge from './ResultBadge.vue'
 import StatusBadge from './StatusBadge.vue'
 
@@ -39,6 +40,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['save', 'status-action', 'close'])
+
+// Register PrimeVue Tooltip directive for v-tooltip usage
+const vTooltip = Tooltip
 
 const popover = ref()
 const lastAnchorEvent = ref(null)
@@ -124,8 +128,43 @@ const buttonStates = computed(() => {
   })
 })
 
-// Engine display
-const engineDisplay = computed(() => getEngineDisplayText(props.rowData?.resultEngine))
+// Engine tooltip HTML
+const engineTooltipHtml = computed(() => {
+  const re = props.rowData?.resultEngine
+  if (!re) {
+    return ''
+  }
+  const lines = []
+  if (re.version) {
+    lines.push(`<b>Version</b><br>${re.version}`)
+  }
+  if (re.time) {
+    lines.push(`<b>Time</b><br>${formatReviewDate(re.time)}`)
+  }
+  if (re.checkContent?.location) {
+    lines.push(`<b>Check content</b><br>${re.checkContent.location}`)
+  }
+  return lines.join('<br>')
+})
+
+// Override tooltip HTML
+const overrideTooltipHtml = computed(() => {
+  const overrides = props.rowData?.resultEngine?.overrides
+  if (!overrides?.length) {
+    return ''
+  }
+  return overrides.map((o) => {
+    const lines = []
+    if (o.authority) {
+      lines.push(`<b>Authority</b><br>${o.authority}`)
+    }
+    if (o.remark) {
+      lines.push(`<b>Remark</b><br>${o.remark}`)
+    }
+    lines.push(`<b>Old result</b>: ${o.oldResult || '\u2014'} \u2192 <b>New result</b>: ${o.newResult || '\u2014'}`)
+    return lines.join('<br>')
+  }).join('<hr style="margin: 0.3rem 0; opacity: 0.3">')
+})
 
 // Result selection
 function selectResult(value) {
@@ -205,6 +244,12 @@ function discardChanges() {
   }
 }
 
+function dismiss() {
+  discardChanges()
+  closing.value = true
+  popover.value.hide()
+}
+
 // Expose toggle for parent to open/close
 function toggle(event) {
   lastAnchorEvent.value = event
@@ -237,6 +282,9 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
     @hide="onPopoverHide"
   >
     <div v-if="rowData" class="review-edit-popover" :style="width ? { width: `${width}px` } : {}">
+      <button class="review-edit-popover__close" title="Close" @click="dismiss">
+        <i class="pi pi-times" />
+      </button>
       <div class="review-edit-popover__main">
         <div class="review-edit-popover__result" :class="{ 'review-edit-popover__result--emphasis': showResultEmphasis }">
           <label class="review-edit-popover__label">Result</label>
@@ -317,9 +365,25 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
       </div>
 
       <div class="review-edit-popover__attributions">
-        <span class="review-edit-popover__attr-pill" :title="engineDisplay">
-          {{ engineDisplay || 'Manual' }}
-        </span>
+        <div class="review-edit-popover__engine-badges">
+          <span
+            v-if="rowData.resultEngine"
+            v-tooltip="{ value: engineTooltipHtml, escape: false, autoHide: false, hideDelay: 300, pt: { root: { style: { maxWidth: '40rem' } } } }"
+            class="review-edit-popover__engine-badge"
+          >
+            {{ rowData.resultEngine.product || 'Engine' }}
+          </span>
+          <span v-else class="review-edit-popover__engine-badge review-edit-popover__engine-badge--manual">
+            Manual
+          </span>
+          <span
+            v-if="rowData.resultEngine?.overrides?.length"
+            v-tooltip="{ value: overrideTooltipHtml, escape: false, autoHide: false, hideDelay: 300, pt: { root: { style: { maxWidth: '40rem' } } } }"
+            class="review-edit-popover__override-badge"
+          >
+            Override
+          </span>
+        </div>
         <div class="review-edit-popover__attr-section">
           <span class="review-edit-popover__attr-label">Evaluated: </span>
           <span v-if="rowData.ts" class="review-edit-popover__attr-pill">
@@ -358,6 +422,29 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
   flex-direction: column;
   gap: 0.4rem;
   min-width: 400px;
+  position: relative;
+}
+
+.review-edit-popover__close {
+  position: absolute;
+  top: -.8rem;
+  right: -.8rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  opacity: 0.5;
+  font-size: 0.7rem;
+  padding: 0.2rem;
+  line-height: 1;
+}
+
+.review-edit-popover__close .pi {
+  font-size: 0.7rem;
+}
+
+.review-edit-popover__close:hover {
+  opacity: 0.9;
 }
 
 .review-edit-popover__main {
@@ -411,7 +498,7 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
   cursor: pointer;
   border-radius: 3px;
   white-space: nowrap;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 .review-edit-popover__result-item:hover:not(.review-edit-popover__result-item--disabled) {
@@ -475,7 +562,7 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
   border: none;
   padding: 0;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: var(--color-text-primary);
   opacity: 0.7;
   text-align: center;
@@ -495,10 +582,53 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
 
 .review-edit-popover__attributions {
   display: flex;
-  gap: 2rem;
+  gap: 3rem;
   flex-wrap: wrap;
   border-top: 1px solid var(--color-border-light);
   padding-top: 0.4rem;
+}
+
+.review-edit-popover__engine-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.review-edit-popover__engine-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: hsl(210, 80%, 80%);
+  background-color: hsl(210, 50%, 25%);
+  border: 1px solid hsl(210, 40%, 35%);
+  border-radius: 4px;
+  cursor: default;
+}
+
+.review-edit-popover__engine-badge--manual {
+  color: var(--color-text-primary);
+  background-color: var(--color-background-dark);
+  border-color: var(--color-border-light);
+  opacity: 0.7;
+}
+
+.review-edit-popover__override-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: hsl(30, 90%, 75%);
+  background-color: hsl(30, 50%, 22%);
+  border: 1px solid hsl(30, 40%, 35%);
+  border-radius: 4px;
+  cursor: default;
+}
+
+:global(.p-tooltip) {
+  max-width: 40rem;
 }
 
 .review-edit-popover__attr-section {
@@ -510,7 +640,7 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
 
 .review-edit-popover__attr-label {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: var(--color-text-primary);
   opacity: 0.8;
   white-space: nowrap;
