@@ -38,13 +38,3 @@ export function formatReviewDate(dateStr) {
   }
   return new Date(dateStr).toLocaleString()
 }
-
-export function getEngineDisplayText(resultEngine) {
-  if (!resultEngine) {
-    return 'Manual'
-  }
-  if (resultEngine.overrides?.length) {
-    return `${resultEngine.product || 'Engine'} (Override)`
-  }
-  return resultEngine.product || 'Engine'
-}

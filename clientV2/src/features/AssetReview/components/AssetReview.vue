@@ -1,7 +1,7 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { computed, ref, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
@@ -12,11 +12,7 @@ import {
 } from '../api/assetReviewApi.js'
 import { useReviewWorkspace } from '../composables/useReviewWorkspace.js'
 import ChecklistGrid from './ChecklistGrid.vue'
-import ChecklistInfo from './ChecklistInfo.vue'
-import ReviewForm from './ReviewForm.vue'
-import ReviewResources from './ReviewResources.vue'
 import RuleDetailPanel from './RuleDetailPanel.vue'
-import RuleInfo from './RuleInfo.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -110,22 +106,8 @@ const resolvedLabels = computed(() => {
     }))
 })
 
-// View mode toggle (panels = Version A, grid = Version B)
-const viewMode = ref(localStorage.getItem('assetReview.viewMode') || 'panels')
-watch(viewMode, (val) => {
-  localStorage.setItem('assetReview.viewMode', val)
-})
-
 function onSelectRule(ruleId) {
   workspace.selectRule(ruleId)
-}
-
-function onSaveReview(actionType) {
-  workspace.saveReview(actionType)
-}
-
-function onUpdateFormValues(newValues) {
-  workspace.formValues.value = newValues
 }
 
 // Grid mode event handlers
@@ -206,26 +188,6 @@ defineExpose({ asset })
             <i class="pi pi-download" />
             <span>Export</span>
           </button>
-          <div class="view-toggle">
-            <button
-              type="button"
-              class="view-toggle__btn"
-              :class="{ active: viewMode === 'panels' }"
-              title="Panel view"
-              @click="viewMode = 'panels'"
-            >
-              <i class="pi pi-columns" />
-            </button>
-            <button
-              type="button"
-              class="view-toggle__btn"
-              :class="{ active: viewMode === 'grid' }"
-              title="Grid view"
-              @click="viewMode = 'grid'"
-            >
-              <i class="pi pi-table" />
-            </button>
-          </div>
         </div>
       </div>
     </header>
@@ -237,73 +199,7 @@ defineExpose({ asset })
       {{ error || 'Error loading asset' }}
     </div>
     <div v-else-if="asset" class="asset-review__content">
-      <!-- Version A: 3-panel layout (checklist | rule | review+resources) -->
       <Splitter
-        v-if="viewMode === 'panels'"
-        :pt="{
-          gutter: { style: 'background: var(--color-border-dark)' },
-          root: { style: 'border: none; background: transparent' },
-        }"
-        style="height: 100%"
-      >
-        <SplitterPanel :size="35" :min-size="15">
-          <ChecklistInfo
-            :checklist-data="workspace.checklistData.value"
-            :is-loading="workspace.isChecklistLoading.value"
-            :selected-rule-id="workspace.selectedRuleId.value"
-            :access-mode="workspace.accessMode.value"
-            :revision-info="workspace.revisionInfo.value"
-            @select-rule="onSelectRule"
-          />
-        </SplitterPanel>
-
-        <SplitterPanel :size="35" :min-size="15">
-          <RuleInfo
-            :rule-content="workspace.ruleContent.value"
-            :is-loading="workspace.isRuleLoading.value"
-            :selected-checklist-item="workspace.selectedChecklistItem.value"
-          />
-        </SplitterPanel>
-
-        <SplitterPanel :size="30" :min-size="15">
-          <Splitter
-            layout="vertical"
-            :pt="{
-              gutter: { style: 'background: var(--color-border-dark)' },
-              root: { style: 'border: none; background: transparent' },
-            }"
-            style="height: 100%"
-          >
-            <SplitterPanel :size="50" :min-size="15">
-              <ReviewResources
-                :current-review="workspace.currentReview.value"
-                :review-history="workspace.reviewHistory.value"
-                :selected-rule-id="workspace.selectedRuleId.value"
-              />
-            </SplitterPanel>
-            <SplitterPanel :size="50" :min-size="15">
-              <ReviewForm
-                :form-values="workspace.formValues.value"
-                :is-dirty="workspace.isDirty.value"
-                :is-submittable="workspace.isSubmittable.value"
-                :can-accept="workspace.canAccept.value"
-                :access-mode="workspace.accessMode.value"
-                :field-settings="workspace.fieldSettings.value"
-                :current-review="workspace.currentReview.value"
-                :is-review-loading="workspace.isReviewLoading.value"
-                :is-saving="workspace.isSaving.value"
-                :selected-rule-id="workspace.selectedRuleId.value"
-                @save-review="onSaveReview"
-                @update:form-values="onUpdateFormValues"
-              />
-            </SplitterPanel>
-          </Splitter>
-        </SplitterPanel>
-      </Splitter>
-
-      <!-- Version B: 2-panel grid layout (editable checklist | rule+resources) -->
-      <Splitter
-        v-else
         :pt="{
           gutter: { style: 'background: var(--color-border-dark)' },
           root: { style: 'border: none; background: transparent' },
@@ -497,42 +393,6 @@ defineExpose({ asset })
 .search-reviews__input:focus {
   border-color: var(--color-primary-highlight);
   background-color: var(--color-background-dark);
-}
-
-.view-toggle {
-  display: flex;
-  border: 1px solid var(--color-border-default);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.view-toggle__btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.35rem 0.5rem;
-  background-color: var(--color-background-light);
-  border: none;
-  color: var(--color-text-dim);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.view-toggle__btn:not(:last-child) {
-  border-right: 1px solid var(--color-border-default);
-}
-
-.view-toggle__btn:hover {
-  background-color: var(--color-bg-hover-strong);
-}
-
-.view-toggle__btn.active {
-  background-color: var(--color-action-blue);
-  color: var(--color-text-bright);
-}
-
-.view-toggle__btn i {
-  font-size: 0.85rem;
 }
 
 .asset-review__content {
