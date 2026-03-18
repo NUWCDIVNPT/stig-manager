@@ -267,7 +267,7 @@ function handleFooterAction(actionKey) {
         header="Rule Title"
         field="ruleTitle"
         sortable
-        :style="{ minWidth: '35rem' }"
+        :style="{ minWidth: '25rem' }"
       >
         <template #body="{ data }">
           <span class="cell-text--clamped" :title="data.ruleTitle">{{ data.ruleTitle }}</span>
@@ -298,7 +298,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Detail" field="detail" sortable :style="{ minWidth: '30rem' }">
+      <Column header="Detail" field="detail" sortable :style="{ minWidth: '25rem' }">
         <template #body="{ data }">
           <div
             class="cell-text-field"
@@ -309,7 +309,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Comment" field="comment" sortable :style="{ minWidth: '20rem' }">
+      <Column header="Comment" field="comment" sortable :style="{ minWidth: '25rem' }">
         <template #body="{ data }">
           <div
             class="cell-text-field"
