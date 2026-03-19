@@ -1,4 +1,6 @@
 <script setup>
+import Splitter from 'primevue/splitter'
+import SplitterPanel from 'primevue/splitterpanel'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
@@ -14,7 +16,8 @@ import MetaStigsTab from './MetaStigsTab.vue'
 const STORAGE_KEY = 'metaCollectionIds'
 
 const activeTab = ref('collections')
-const dashboardCollapsed = ref(false)
+const DASHBOARD_STORAGE_KEY = 'stigman:metaDashboardCollapsed'
+const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === 'true')
 const selectedCollectionIds = ref(loadSelectedCollectionIds())
 
 watch(selectedCollectionIds, (newIds) => {
@@ -23,6 +26,12 @@ watch(selectedCollectionIds, (newIds) => {
 
 function toggleDashboardSidebar() {
   dashboardCollapsed.value = !dashboardCollapsed.value
+  try {
+    localStorage.setItem(DASHBOARD_STORAGE_KEY, String(dashboardCollapsed.value))
+  }
+  catch {
+    // localStorage unavailable
+  }
 }
 
 function loadSelectedCollectionIds() {
@@ -82,126 +91,136 @@ const tabPanelPt = {
 
 <template>
   <div class="meta-collection-view">
-    <div class="content-wrapper">
-      <aside
-        class="dashboard-sidebar"
-        :class="{ 'dashboard-sidebar--collapsed': dashboardCollapsed }"
+    <Splitter
+      :pt="{
+        gutter: { style: 'background: var(--color-border-dark)' },
+        root: { style: 'border: none; background: transparent; height: 100%; overflow: hidden;' },
+      }"
+    >
+      <!-- Dashboard Sidebar -->
+      <SplitterPanel
+        :size="28"
+        :min-size="4"
+        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed }, style: 'min-width: 330px; max-width: 600px;' } }"
       >
-        <div class="sidebar-header">
-          <span v-show="!dashboardCollapsed" class="sidebar-header-label">Dashboard</span>
+        <aside class="dashboard-sidebar">
           <button
-            type="button"
             class="sidebar-toggle"
-            :title="dashboardCollapsed ? 'Expand Dashboard' : 'Collapse Dashboard'"
+            :aria-label="dashboardCollapsed ? 'Expand Dashboard' : 'Collapse Dashboard'"
             @click="toggleDashboardSidebar"
           >
             <i :class="dashboardCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'" />
           </button>
-        </div>
-        <div v-show="!dashboardCollapsed" class="sidebar-content">
-          <MetaCollectionMetrics vertical :selected-collection-ids="selectedCollectionIds" />
-          <MetaExportMetrics :selected-collection-ids="selectedCollectionIds" />
-        </div>
-      </aside>
-      <div class="right-panel">
-        <Tabs v-model:value="activeTab" :pt="tabsPt">
-          <TabList>
-            <Tab value="collections">
-              Collections
-            </Tab>
-            <Tab value="stigs">
-              STIGs
-            </Tab>
+          <div v-if="dashboardCollapsed" class="sidebar-dots">
+            <span class="dot dot--unassessed" title="Unassessed" />
+            <span class="dot dot--assessed" title="Assessed" />
+            <span class="dot dot--submitted" title="Submitted" />
+            <span class="dot dot--accepted" title="Accepted" />
+            <span class="dot dot--rejected" title="Rejected" />
+          </div>
+          <div v-show="!dashboardCollapsed" class="sidebar-content">
+            <MetaCollectionMetrics vertical :selected-collection-ids="selectedCollectionIds" />
+            <MetaExportMetrics :selected-collection-ids="selectedCollectionIds" />
+          </div>
+        </aside>
+      </SplitterPanel>
 
-            <div class="tab-filter-container">
-              <span class="filter-label">FILTER:</span>
-              <MetricsFilter v-model="selectedCollectionIds" type="collection" />
-            </div>
-          </TabList>
+      <!-- Right Panel: Tabs + Content -->
+      <SplitterPanel :size="72">
+        <div class="right-panel">
+          <Tabs v-model:value="activeTab" :pt="tabsPt">
+            <TabList>
+              <Tab value="collections">
+                Collections
+              </Tab>
+              <Tab value="stigs">
+                STIGs
+              </Tab>
 
-          <TabPanels :pt="tabPanelsPt">
-            <TabPanel value="collections" :pt="tabPanelPt">
-              <MetaCollectionsTab :selected-collection-ids="selectedCollectionIds" />
-            </TabPanel>
-            <TabPanel value="stigs" :pt="tabPanelPt">
-              <MetaStigsTab :selected-collection-ids="selectedCollectionIds" />
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
-      </div>
-    </div>
+              <div class="tab-filter-container">
+                <span class="filter-label">FILTER:</span>
+                <MetricsFilter v-model="selectedCollectionIds" type="collection" />
+              </div>
+            </TabList>
+
+            <TabPanels :pt="tabPanelsPt">
+              <TabPanel value="collections" :pt="tabPanelPt">
+                <MetaCollectionsTab :selected-collection-ids="selectedCollectionIds" />
+              </TabPanel>
+              <TabPanel value="stigs" :pt="tabPanelPt">
+                <MetaStigsTab :selected-collection-ids="selectedCollectionIds" />
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </div>
+      </SplitterPanel>
+    </Splitter>
   </div>
 </template>
 
 <style scoped>
 .meta-collection-view {
-  --dashboard-sidebar-width: 33rem;
-  --dashboard-sidebar-collapsed-width: 2.5rem;
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.content-wrapper {
-  display: flex;
-  flex: 1;
+:deep(.sidebar-panel--collapsed) {
+  flex: none !important;
+  width: 3.25rem !important;
+  min-width: unset !important;
+  max-width: unset !important;
   overflow: hidden;
 }
 
 /* Dashboard Sidebar */
 .dashboard-sidebar {
-  width: var(--dashboard-sidebar-width);
-  min-width: var(--dashboard-sidebar-width);
+  height: 100%;
   background-color: var(--color-background-dark);
-  border-right: 1px solid var(--color-border-default);
   display: flex;
   flex-direction: column;
-  transition: width 0.2s ease, min-width 0.2s ease;
-}
-
-.dashboard-sidebar--collapsed {
-  width: var(--dashboard-sidebar-collapsed-width);
-  min-width: var(--dashboard-sidebar-collapsed-width);
-}
-
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 0.5rem;
-  height: 2.5rem;
-  min-height: 2.5rem;
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.sidebar-header-label {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  white-space: nowrap;
   overflow: hidden;
-  padding-left: 0.5rem;
 }
 
 .sidebar-toggle {
-  width: 1.75rem;
-  height: 1.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 3.25rem;
   background: none;
-  border: 1px solid transparent;
-  border-radius: 0.25rem;
+  border: none;
+  border-bottom: 1px solid var(--color-border-default);
   color: var(--color-text-dim);
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .sidebar-toggle:hover {
-  background-color: var(--color-bg-hover-strong);
   color: var(--color-text-primary);
-  border-color: var(--color-border-default);
+  background-color: var(--color-button-hover-bg);
 }
+
+.sidebar-dots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 0;
+}
+
+.dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot--unassessed { background-color: hsl(220, 18%, 42%); }
+.dot--assessed { background-color: hsl(204, 91%, 45%); }
+.dot--submitted { background-color: hsl(195, 80%, 52%); }
+.dot--accepted { background-color: hsl(210, 75%, 62%); }
+.dot--rejected { background-color: hsl(232, 58%, 52%); }
 
 .sidebar-content {
   flex: 1;
@@ -213,7 +232,7 @@ const tabPanelPt = {
 
 /* Right Panel */
 .right-panel {
-  flex: 1;
+  height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;

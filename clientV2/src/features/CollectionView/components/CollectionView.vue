@@ -1,6 +1,6 @@
 <script setup>
-import Button from 'primevue/button'
-import Dialog from 'primevue/dialog'
+import Splitter from 'primevue/splitter'
+import SplitterPanel from 'primevue/splitterpanel'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
@@ -14,10 +14,7 @@ import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import MetricsFilter from '../../CollectionMetrics/components/MetricsFilter.vue'
-import {
-  deleteCollection,
-  fetchCollection,
-} from '../api/collectionApi.js'
+import { fetchCollection } from '../api/collectionApi.js'
 import CollectionAssetsTab from './CollectionAssetsTab.vue'
 import CollectionLabelsTab from './CollectionLabelsTab.vue'
 import CollectionStigsTab from './CollectionStigsTab.vue'
@@ -150,208 +147,196 @@ const tabPanelPt = {
 }
 
 // Dashboard sidebar state (collapsed/expanded)
-const dashboardCollapsed = ref(false)
+const DASHBOARD_STORAGE_KEY = 'stigman:collectionDashboardCollapsed'
+const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === 'true')
 const selectedLabelIds = ref([])
 
 function toggleDashboardSidebar() {
   dashboardCollapsed.value = !dashboardCollapsed.value
+  try {
+    localStorage.setItem(DASHBOARD_STORAGE_KEY, String(dashboardCollapsed.value))
+  }
+  catch {
+    // localStorage unavailable
+  }
 }
 </script>
 
 <template>
   <div v-if="collection" class="collection-view">
-    <div class="content-wrapper">
-      <!-- Dashboard Sidebar (always visible, collapsible) -->
-      <aside
-        class="dashboard-sidebar"
-        :class="{ 'dashboard-sidebar--collapsed': dashboardCollapsed }"
+    <Splitter
+      :pt="{
+        gutter: { style: 'background: var(--color-border-dark)' },
+        root: { style: 'border: none; background: transparent; height: 100%; overflow: hidden;' },
+      }"
+    >
+      <!-- Dashboard Sidebar -->
+      <SplitterPanel
+        :size="28"
+        :min-size="4"
+        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed }, style: 'min-width: 330px; max-width: 600px;' } }"
       >
-        <div class="sidebar-header">
-          <span v-show="!dashboardCollapsed" class="sidebar-header-label">Dashboard</span>
+        <aside class="dashboard-sidebar">
           <button
-            type="button"
             class="sidebar-toggle"
-            :title="dashboardCollapsed ? 'Expand Dashboard' : 'Collapse Dashboard'"
+            :aria-label="dashboardCollapsed ? 'Expand Dashboard' : 'Collapse Dashboard'"
             @click="toggleDashboardSidebar"
           >
             <i :class="dashboardCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'" />
           </button>
-        </div>
-        <div v-show="!dashboardCollapsed" v-if="collection" class="sidebar-content">
-          <CollectionMetrics
-            :collection-id="collectionId"
-            :collection-name="collectionName"
-            :selected-label-ids="selectedLabelIds"
-            vertical
-          />
-          <div class="sidebar-export">
-            <CollectionExportMetrics
+          <div v-if="dashboardCollapsed" class="sidebar-dots">
+            <span class="dot dot--unassessed" title="Unassessed" />
+            <span class="dot dot--assessed" title="Assessed" />
+            <span class="dot dot--submitted" title="Submitted" />
+            <span class="dot dot--accepted" title="Accepted" />
+            <span class="dot dot--rejected" title="Rejected" />
+          </div>
+          <div v-show="!dashboardCollapsed" class="sidebar-content">
+            <CollectionMetrics
               :collection-id="collectionId"
               :collection-name="collectionName"
+              :selected-label-ids="selectedLabelIds"
+              vertical
             />
+            <div class="sidebar-export">
+              <CollectionExportMetrics
+                :collection-id="collectionId"
+                :collection-name="collectionName"
+              />
+            </div>
           </div>
-        </div>
-      </aside>
+        </aside>
+      </SplitterPanel>
 
       <!-- Right Panel: Tabs + Content -->
-      <div v-if="collection" class="right-panel">
-        <Tabs v-model:value="activeTab" :pt="tabsPt">
-          <TabList>
-            <Tab value="stigs">
-              STIGs
-            </Tab>
-            <Tab value="assets">
-              Assets
-            </Tab>
-            <Tab value="labels">
-              Labels
-            </Tab>
-            <Tab value="findings">
-              Findings
-            </Tab>
-            <Tab value="users">
-              Users
-            </Tab>
-            <Tab value="settings">
-              Settings
-            </Tab>
+      <SplitterPanel :size="72">
+        <div class="right-panel">
+          <Tabs v-model:value="activeTab" :pt="tabsPt">
+            <TabList>
+              <Tab value="stigs">
+                STIGs
+              </Tab>
+              <Tab value="assets">
+                Assets
+              </Tab>
+              <Tab value="labels">
+                Labels
+              </Tab>
+              <Tab value="findings">
+                Findings
+              </Tab>
+              <Tab value="users">
+                Users
+              </Tab>
+              <Tab value="settings">
+                Settings
+              </Tab>
 
-            <div class="tab-filter-container">
-              <span class="filter-label">FILTER:</span>
-              <MetricsFilter v-model="selectedLabelIds" type="label" :collection-id="collectionId" />
-            </div>
-          </TabList>
+              <div class="tab-filter-container">
+                <span class="filter-label">FILTER:</span>
+                <MetricsFilter v-model="selectedLabelIds" type="label" :collection-id="collectionId" />
+              </div>
+            </TabList>
 
-          <TabPanels :pt="tabPanelsPt">
-            <TabPanel value="stigs" :pt="tabPanelPt">
-              <CollectionStigsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
-            </TabPanel>
-            <TabPanel value="assets" :pt="tabPanelPt">
-              <CollectionAssetsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
-            </TabPanel>
-            <TabPanel value="labels" :pt="tabPanelPt">
-              <CollectionLabelsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
-            </TabPanel>
-            <TabPanel value="findings" :pt="tabPanelPt">
-              <div class="placeholder-panel">
-                <h2>Findings Panel</h2>
-                <p>Findings content will go here.</p>
-              </div>
-            </TabPanel>
-            <TabPanel value="users" :pt="tabPanelPt">
-              <div class="placeholder-panel">
-                <h2>Users Panel</h2>
-                <p>User management content will go here.</p>
-              </div>
-            </TabPanel>
-            <TabPanel value="settings" :pt="tabPanelPt">
-              <div class="placeholder-panel">
-                <h2>Settings Panel</h2>
-                <p>Collection settings content will go here.</p>
-              </div>
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
-      </div>
-    </div>
+            <TabPanels :pt="tabPanelsPt">
+              <TabPanel value="stigs" :pt="tabPanelPt">
+                <CollectionStigsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
+              </TabPanel>
+              <TabPanel value="assets" :pt="tabPanelPt">
+                <CollectionAssetsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
+              </TabPanel>
+              <TabPanel value="labels" :pt="tabPanelPt">
+                <CollectionLabelsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
+              </TabPanel>
+              <TabPanel value="findings" :pt="tabPanelPt">
+                <div class="placeholder-panel">
+                  <h2>Findings Panel</h2>
+                  <p>Findings content will go here.</p>
+                </div>
+              </TabPanel>
+              <TabPanel value="users" :pt="tabPanelPt">
+                <div class="placeholder-panel">
+                  <h2>Users Panel</h2>
+                  <p>User management content will go here.</p>
+                </div>
+              </TabPanel>
+              <TabPanel value="settings" :pt="tabPanelPt">
+                <div class="placeholder-panel">
+                  <h2>Settings Panel</h2>
+                  <p>Collection settings content will go here.</p>
+                </div>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </div>
+      </SplitterPanel>
+    </Splitter>
   </div>
 </template>
 
 <style scoped>
-/* Component-level CSS variables */
 .collection-view {
-  --dashboard-sidebar-width: 33rem;
-  --dashboard-sidebar-collapsed-width: 2.5rem;
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.content-wrapper {
-  display: flex;
-  flex: 1;
+:deep(.sidebar-panel--collapsed) {
+  flex: none !important;
+  width: 3.25rem !important;
+  min-width: unset !important;
+  max-width: unset !important;
   overflow: hidden;
 }
 
 /* Dashboard Sidebar */
 .dashboard-sidebar {
-  width: var(--dashboard-sidebar-width);
-  min-width: var(--dashboard-sidebar-width);
+  height: 100%;
   background-color: var(--color-background-dark);
-  border-right: 1px solid var(--color-border-default);
   display: flex;
   flex-direction: column;
-  transition: width 0.2s ease, min-width 0.2s ease;
-}
-
-.delete-collection-wrapper {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  padding-right: 1rem;
-}
-
-.delete-btn {
-  background-color: transparent;
-  border: 1px solid #f16969;
-  color: #f16969;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.delete-btn:hover {
-  background-color: rgba(241, 105, 105, 0.1);
-}
-
-.dashboard-sidebar--collapsed {
-  width: var(--dashboard-sidebar-collapsed-width);
-  min-width: var(--dashboard-sidebar-collapsed-width);
-}
-
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 0.5rem;
-  height: 2.5rem;
-  min-height: 2.5rem;
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.sidebar-header-label {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  white-space: nowrap;
   overflow: hidden;
-  padding-left: 0.5rem;
 }
 
 .sidebar-toggle {
-  width: 1.75rem;
-  height: 1.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 3.25rem;
   background: none;
-  border: 1px solid transparent;
-  border-radius: 0.25rem;
+  border: none;
+  border-bottom: 1px solid var(--color-border-default);
   color: var(--color-text-dim);
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .sidebar-toggle:hover {
-  background-color: var(--color-bg-hover-strong);
   color: var(--color-text-primary);
-  border-color: var(--color-border-default);
+  background-color: var(--color-button-hover-bg);
 }
+
+.sidebar-dots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 0;
+}
+
+.dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot--unassessed { background-color: hsl(220, 18%, 42%); }
+.dot--assessed { background-color: hsl(204, 91%, 45%); }
+.dot--submitted { background-color: hsl(195, 80%, 52%); }
+.dot--accepted { background-color: hsl(210, 75%, 62%); }
+.dot--rejected { background-color: hsl(232, 58%, 52%); }
 
 .sidebar-content {
   flex: 1;
@@ -361,15 +346,13 @@ function toggleDashboardSidebar() {
   min-height: 0;
 }
 
-/* Override ExportMetrics min-width in sidebar context */
-.sidebar-export :deep(.export-card) {
-  min-width: 0;
-  max-width: none;
+.sidebar-export {
+  padding: 0 12px 12px;
 }
 
 /* Right Panel */
 .right-panel {
-  flex: 1;
+  height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;

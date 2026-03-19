@@ -207,24 +207,25 @@ const chartOptions = {
 @import './metrics.css';
 
 .metric-header {
-  margin-bottom: 15px;
+  margin-bottom: 8px;
 }
 
 .overall-pct {
-  font-size: 1.65rem;
+  font-size: 1.15rem;
   font-weight: 600;
 }
 
 .main-content {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
   margin-bottom: 10px;
 }
 
 .chart-container {
-  width: 150px;
-  height: 150px;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
 }
 
 .chart {
@@ -236,23 +237,23 @@ const chartOptions = {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  font-size: 1.25rem;
-  border-radius: 6px;
-  padding: 3px 12px;
+  font-size: 0.95rem;
+  border-radius: 5px;
+  padding: 3px 10px;
   background-color: var(--color-background-subtle);
 }
 
 .indicator {
   width: 4px;
-  height: 16px;
+  height: 14px;
   border-radius: 2px;
-  margin-right: 10px;
+  margin-right: 9px;
 }
 
 .label {
@@ -267,13 +268,13 @@ const chartOptions = {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   text-align: center;
 }
 
 .stat-box {
   background-color: var(--color-background-subtle);
-  border-radius: 8px;
+  border-radius: 6px;
   position: relative;
   overflow: hidden;
 }
@@ -291,36 +292,36 @@ const chartOptions = {
 .stat-content {
   position: relative;
   z-index: 1;
-  padding: 12px;
+  padding: 8px 6px;
 }
 
 .stat-label {
-  font-size: 1.1rem;
+  font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
 }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   font-weight: 600;
 }
 
 .total-footer {
   background-color: var(--color-background-light);
   border: 1px solid var(--color-border-default);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 8px;
   text-align: center;
 }
 
 .total-label {
-  font-size: 1.1rem;
+  font-size: 0.85rem;
   color: var(--color-text-dim);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.15rem;
 }
 
 .total-value {
-  font-size: 1.65rem;
+  font-size: 1.35rem;
   font-weight: 600;
 }
 </style>
