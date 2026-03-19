@@ -1,6 +1,4 @@
 <script setup>
-import Button from 'primevue/button'
-import Dialog from 'primevue/dialog'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
@@ -14,10 +12,7 @@ import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import MetricsFilter from '../../CollectionMetrics/components/MetricsFilter.vue'
-import {
-  deleteCollection,
-  fetchCollection,
-} from '../api/collectionApi.js'
+import { fetchCollection } from '../api/collectionApi.js'
 import CollectionAssetsTab from './CollectionAssetsTab.vue'
 import CollectionLabelsTab from './CollectionLabelsTab.vue'
 import CollectionStigsTab from './CollectionStigsTab.vue'
@@ -282,31 +277,6 @@ function toggleDashboardSidebar() {
   display: flex;
   flex-direction: column;
   transition: width 0.2s ease, min-width 0.2s ease;
-}
-
-.delete-collection-wrapper {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  padding-right: 1rem;
-}
-
-.delete-btn {
-  background-color: transparent;
-  border: 1px solid #f16969;
-  color: #f16969;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.delete-btn:hover {
-  background-color: rgba(241, 105, 105, 0.1);
 }
 
 .dashboard-sidebar--collapsed {
