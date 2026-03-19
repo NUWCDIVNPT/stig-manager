@@ -4,6 +4,7 @@ import SplitterPanel from 'primevue/splitterpanel'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useDebouncedRef } from '../../../shared/composables/useDebouncedRef.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
 import {
@@ -121,7 +122,7 @@ function onGridRefresh() {
 }
 
 // Search filter
-const searchFilter = ref('')
+const searchFilter = useDebouncedRef('', 250)
 const searchInput = ref(null)
 
 function clearSearch() {
@@ -218,7 +219,7 @@ defineExpose({ asset })
         }"
         style="height: 100%"
       >
-        <SplitterPanel :size="60" :min-size="30">
+        <SplitterPanel :size="65" :min-size="30">
           <ChecklistGrid
             :grid-data="workspace.gridData.value"
             :is-loading="workspace.isChecklistLoading.value"
@@ -235,7 +236,7 @@ defineExpose({ asset })
             @refresh="onGridRefresh"
           />
         </SplitterPanel>
-        <SplitterPanel :size="40" :min-size="20">
+        <SplitterPanel :size="35" :min-size="20">
           <RuleDetailPanel
             :rule-content="workspace.ruleContent.value"
             :is-rule-loading="workspace.isRuleLoading.value"
