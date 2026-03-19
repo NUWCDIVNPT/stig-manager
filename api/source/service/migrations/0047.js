@@ -86,7 +86,7 @@ const upMigration = [
             );
             SET v_curMinId = v_curMinId + v_incrementValue;
             SET v_curMaxId = v_curMaxId + v_incrementValue;
-          UNTIL ROW_COUNT() = 0 END REPEAT;
+          UNTIL v_curMinId > v_numHistoryIds END REPEAT;
         END IF;
         DROP TEMPORARY TABLE IF EXISTS t_historyIds;
 
@@ -99,7 +99,7 @@ const upMigration = [
           );
           SET v_curMinId = v_curMinId + v_incrementValue;
           SET v_curMaxId = v_curMaxId + v_incrementValue;
-        UNTIL ROW_COUNT() = 0 END REPEAT;
+        UNTIL v_curMinId > v_numReviewIds END REPEAT;
       END IF;
     END`,
 
@@ -140,7 +140,7 @@ const upMigration = [
           );
           SET v_curMinId = v_curMinId + v_incrementValue;
           SET v_curMaxId = v_curMaxId + v_incrementValue;
-        UNTIL ROW_COUNT() = 0 END REPEAT;
+        UNTIL v_curMinId > v_numReviewIds END REPEAT;
       END IF;
     END`,
 
@@ -185,7 +185,7 @@ const upMigration = [
           );
           SET v_curMinId = v_curMinId + v_incrementValue;
           SET v_curMaxId = v_curMaxId + v_incrementValue;
-        UNTIL ROW_COUNT() = 0 END REPEAT;
+        UNTIL v_curMinId > v_numReviewIds END REPEAT;
       END IF;
     END`,
 
@@ -211,7 +211,7 @@ const upMigration = [
           rh.historyId,
           ROW_NUMBER() OVER (PARTITION BY r.reviewId ORDER BY rh.historyId DESC) AS rowNum
         FROM review_history rh
-        LEFT JOIN review r USING (reviewId)
+        INNER JOIN review r USING (reviewId)
         WHERE r.reviewId IN (SELECT reviewId FROM t_reviewIds)
       )
       DELETE review_history
@@ -535,6 +535,19 @@ const upMigration = [
             SET v_updateValue     = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateValue'));
             SET v_updateFilter    = JSON_EXTRACT(v_rule, '$.updateFilter');
 
+            -- Validate extracted values
+            IF v_triggerField NOT IN ('ts', 'statusTs', 'touchTs') THEN
+              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid triggerField value';
+            END IF;
+
+            IF v_triggerAction NOT IN ('delete', 'update') THEN
+              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid triggerAction value';
+            END IF;
+
+            IF v_triggerAction = 'update' AND v_updateField NOT IN ('status', 'result') THEN
+              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid updateField value';
+            END IF;
+
             -- Compute cutoff datetime
             -- CAST() does not accept ISO8601 T/Z separators; strip them with REPLACE before casting
             IF v_triggerBasis = 'now' THEN
@@ -605,7 +618,22 @@ const upMigration = [
 
             IF IFNULL(v_numReviews, 0) > 0 THEN
               IF v_triggerAction = 'delete' THEN
+                -- Capture affected saIds before deleting (reviews will not exist after)
+                SET @v_deleteSaIds = (
+                  SELECT JSON_ARRAYAGG(saId) FROM (
+                    SELECT DISTINCT sa.saId
+                    FROM t_reviewIds tri
+                    INNER JOIN review r ON tri.reviewId = r.reviewId
+                    INNER JOIN rule_version_check_digest rvcd ON (rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)
+                    INNER JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId
+                    INNER JOIN revision rev ON rev.revId = rgr.revId
+                    INNER JOIN stig_asset_map sa ON (sa.assetId = r.assetId AND sa.benchmarkId = rev.benchmarkId)
+                  ) AS distinct_saIds
+                );
                 CALL delete_review_batch();
+                IF @v_deleteSaIds IS NOT NULL THEN
+                  CALL update_stats_asset_stig(JSON_OBJECT('saIds', CAST(@v_deleteSaIds AS JSON)));
+                END IF;
               ELSEIF v_triggerAction = 'update' THEN
                 SELECT CAST(c.settings->>"$.history.maxReviews" AS UNSIGNED)
                   INTO v_maxReviews
@@ -646,6 +674,9 @@ const downMigration = [
   `ALTER TABLE task_output DROP FOREIGN KEY fk_to_collectionId`,
   `ALTER TABLE task_output DROP COLUMN collectionId`,
   `DROP TABLE IF EXISTS task_collection_config`,
+  `DELETE FROM user_data WHERE username = '_task_ReviewAging'`,
+  `ALTER TABLE user_data DROP FOREIGN KEY fk_ud_taskId`,
+  `ALTER TABLE user_data DROP COLUMN taskId`,
   `DELETE FROM task WHERE taskId = 5`,
 ]
 
