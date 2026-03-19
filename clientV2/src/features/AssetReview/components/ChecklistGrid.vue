@@ -14,6 +14,7 @@ import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
 import { defaultFieldSettings } from '../../../shared/lib/reviewFormUtils.js'
+import { fieldMatches, getMatchedFields, highlightText } from '../../../shared/lib/searchUtils.js'
 import { useChecklistDisplayMode } from '../composables/useChecklistDisplayMode.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay, severityMap } from '../lib/checklistUtils.js'
 
@@ -125,23 +126,32 @@ const {
 
 const defaultSortField = computed(() => showGroupId.value ? 'groupId' : 'ruleId')
 
+// Search term (normalized)
+const searchTerm = computed(() => props.searchFilter?.toLowerCase().trim() || '')
+
+// Field definitions for search matching
+const searchFieldDefs = [
+  { key: 'ruleId', label: 'rule id' },
+  { key: 'groupId', label: 'group' },
+  { key: 'ruleTitle', label: 'rule title' },
+  { key: 'groupTitle', label: 'group title' },
+  { key: 'detail', label: 'detail' },
+  { key: 'comment', label: 'comment' },
+  { key: 'username', label: 'eval user' },
+  { getter: row => row.status?.user?.username, label: 'status user' },
+]
+
 // Filtered data based on search term
 const filteredData = computed(() => {
-  const term = props.searchFilter?.toLowerCase().trim()
+  const term = searchTerm.value
   if (!term) {
     return props.gridData
   }
   return props.gridData.filter(row =>
-    [
-      row.ruleId,
-      row.groupId,
-      row.ruleTitle,
-      row.groupTitle,
-      row.detail,
-      row.comment,
-      row.username,
-      row.status?.user?.username,
-    ].some(field => field?.toLowerCase().includes(term)),
+    searchFieldDefs.some((f) => {
+      const value = f.getter ? f.getter(row) : row[f.key]
+      return value?.toLowerCase().includes(term)
+    }),
   )
 })
 
@@ -272,7 +282,10 @@ function handleFooterAction(actionKey) {
         :style="{ minWidth: '8rem' }"
       >
         <template #body="{ data }">
-          <span class="cell-text--mono">{{ data.groupId }}</span>
+          <span class="cell-text--mono" :class="{ 'cell--match': searchTerm && fieldMatches(data.groupId, searchTerm) }">
+            <span v-if="searchTerm" v-html="highlightText(data.groupId, searchTerm)" />
+            <template v-else>{{ data.groupId }}</template>
+          </span>
         </template>
       </Column>
 
@@ -284,7 +297,10 @@ function handleFooterAction(actionKey) {
         :style="{ minWidth: '16rem' }"
       >
         <template #body="{ data }">
-          <span class="cell-text--mono">{{ data.ruleId }}</span>
+          <span class="cell-text--mono" :class="{ 'cell--match': searchTerm && fieldMatches(data.ruleId, searchTerm) }">
+            <span v-if="searchTerm" v-html="highlightText(data.ruleId, searchTerm)" />
+            <template v-else>{{ data.ruleId }}</template>
+          </span>
         </template>
       </Column>
 
@@ -296,7 +312,10 @@ function handleFooterAction(actionKey) {
         :style="{ minWidth: '25rem' }"
       >
         <template #body="{ data }">
-          <span class="cell-text--clamped" :title="data.ruleTitle">{{ data.ruleTitle }}</span>
+          <span class="cell-text--clamped" :class="{ 'cell--match': searchTerm && fieldMatches(data.ruleTitle, searchTerm) }" :title="data.ruleTitle">
+            <span v-if="searchTerm" v-html="highlightText(data.ruleTitle, searchTerm)" />
+            <template v-else>{{ data.ruleTitle }}</template>
+          </span>
         </template>
       </Column>
 
@@ -308,7 +327,10 @@ function handleFooterAction(actionKey) {
         :style="{ minWidth: '20rem' }"
       >
         <template #body="{ data }">
-          <span class="cell-text--clamped" :title="data.groupTitle">{{ data.groupTitle }}</span>
+          <span class="cell-text--clamped" :class="{ 'cell--match': searchTerm && fieldMatches(data.groupTitle, searchTerm) }" :title="data.groupTitle">
+            <span v-if="searchTerm" v-html="highlightText(data.groupTitle, searchTerm)" />
+            <template v-else>{{ data.groupTitle }}</template>
+          </span>
         </template>
       </Column>
 
@@ -329,7 +351,10 @@ function handleFooterAction(actionKey) {
           <div
             class="cell-text-field"
           >
-            <span v-if="data.detail" class="cell-text--clamped" :title="data.detail">{{ data.detail }}</span>
+            <span v-if="data.detail" class="cell-text--clamped" :class="{ 'cell--match': searchTerm && fieldMatches(data.detail, searchTerm) }" :title="data.detail">
+              <span v-if="searchTerm" v-html="highlightText(data.detail, searchTerm)" />
+              <template v-else>{{ data.detail }}</template>
+            </span>
             <span v-else class="cell-text--placeholder">Add review...</span>
           </div>
         </template>
@@ -340,7 +365,10 @@ function handleFooterAction(actionKey) {
           <div
             class="cell-text-field"
           >
-            <span class="cell-text--clamped" :title="data.comment">{{ data.comment }}</span>
+            <span class="cell-text--clamped" :class="{ 'cell--match': searchTerm && fieldMatches(data.comment, searchTerm) }" :title="data.comment">
+              <span v-if="searchTerm" v-html="highlightText(data.comment, searchTerm)" />
+              <template v-else>{{ data.comment }}</template>
+            </span>
           </div>
         </template>
       </Column>
@@ -384,6 +412,19 @@ function handleFooterAction(actionKey) {
         </template>
         <template #body="{ data }">
           <span :title="data.touchTs">{{ durationToNow(data.touchTs) }}</span>
+        </template>
+      </Column>
+
+      <Column
+        v-if="searchTerm"
+        header="Match"
+        :style="{ minWidth: '8rem', maxWidth: '14rem' }"
+      >
+        <template #body="{ data }">
+          <span class="cell-match-fields">
+            <i class="pi pi-search cell-match-fields__icon" />
+            {{ getMatchedFields(data, searchFieldDefs, searchTerm).join(', ') }}
+          </span>
         </template>
       </Column>
 
@@ -588,6 +629,33 @@ function handleFooterAction(actionKey) {
   height: 1.4rem;
   opacity: 0.7;
   flex-shrink: 0;
+}
+
+.cell-match-fields {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--color-primary-highlight, #60a5fa);
+  font-style: italic;
+}
+
+.cell-match-fields__icon {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.cell--match {
+  background-color: color-mix(in srgb, var(--color-warning-yellow, #f59e0b) 8%, transparent);
+  border-radius: 2px;
+}
+
+:deep(.search-highlight) {
+  background-color: color-mix(in srgb, var(--color-warning-yellow, #f59e0b) 40%, transparent);
+  color: inherit;
+  border-radius: 1px;
+  padding: 0 1px;
 }
 
 .footer-divider {
