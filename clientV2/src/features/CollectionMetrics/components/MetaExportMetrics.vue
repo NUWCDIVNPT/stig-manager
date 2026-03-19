@@ -3,7 +3,7 @@ import Button from 'primevue/button'
 import Select from 'primevue/select'
 import { computed, inject, reactive, watch } from 'vue'
 import { useEnv } from '../../../shared/stores/useEnv.js'
-import { handleMetaDownload } from '../exportMetricsUtils.js'
+import { handleMetricDownload } from '../exportMetricsUtils.js'
 
 const props = defineProps({
   selectedCollectionIds: {
@@ -56,11 +56,12 @@ const buttonPt = {
 }
 
 async function download() {
-  await handleMetaDownload({
+  await handleMetricDownload({
     format: selected.format,
     style: selected.style,
     aggregation: selected.aggregation,
     baseParams: baseParams.value,
+    isMeta: true,
     apiUrl: useEnv().apiUrl,
     authToken: oidcWorker.token,
   })

@@ -245,82 +245,50 @@ export async function handleInventoryExport({
  * @param {string} params.format - "json" or "csv"
  * @param {string} params.style - "summary" or "detail"
  * @param {string} params.aggregation - "collection", "asset", "label", "stig", "ungrouped"
- * @param {string} params.collectionId - The ID of the collection
- * @param {string} params.collectionName - The name of the collection
+ * @param {string} [params.collectionId] - The ID of the collection (for collection metrics)
+ * @param {string} [params.collectionName] - The name of the collection (for collection metrics)
+ * @param {object} [params.baseParams] - Query parameters for meta metrics
+ * @param {boolean} [params.isMeta] - Whether this is a meta export
  * @param {string} params.apiUrl - The API URL base
  * @param {string} params.authToken - The token for authorization
  */
-export async function handleDownload({
+export async function handleMetricDownload({
   format,
   style,
   aggregation,
   collectionId,
   collectionName,
-  apiUrl,
-  authToken,
-}) {
-  const { triggerError } = useGlobalError()
-  const queryParams = new URLSearchParams()
-  queryParams.append('format', format)
-
-  const aggPath = aggregation === 'ungrouped' ? '' : `/${aggregation}`
-  const url = `${apiUrl}/collections/${collectionId}/metrics/${style}${aggPath}?${queryParams.toString()}`
-
-  const filename = filenameEscaped(`${collectionName}-${aggregation}-${style}_${filenameComponentFromDate()}.${format}`)
-
-  const fetchInit = {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-      Accept: format === 'csv' ? 'text/csv' : 'application/json',
-    },
-    attachment: filename,
-  }
-
-  try {
-    // Try service worker download first
-    const href = await getDownloadUrl({ url, ...fetchInit })
-    if (href) {
-      window.location = href
-      return
-    }
-
-    // Fallback to direct fetch
-    const response = await fetch(url, fetchInit)
-    if (!response.ok) {
-      const body = await response.text()
-      throw new Error(`Request failed with status ${response.status}\n${body}`)
-    }
-    const blob = await response.blob()
-    saveAs(blob, filename)
-  }
-  catch (error) {
-    triggerError(error)
-  }
-}
-
-export async function handleMetaDownload({
-  format,
-  style,
-  aggregation,
   baseParams = {},
+  isMeta = false,
   apiUrl,
   authToken,
 }) {
   const { triggerError } = useGlobalError()
+  let url
+  let filename
 
-  const queryEntries = Object.entries(baseParams).flatMap(([key, value]) => {
-    if (Array.isArray(value)) {
-      return value.map(item => [key, item])
-    }
-    return [[key, value]]
-  })
-  queryEntries.push(['format', format])
+  if (isMeta) {
+    const queryEntries = Object.entries(baseParams).flatMap(([key, value]) => {
+      if (Array.isArray(value)) {
+        return value.map(item => [key, item])
+      }
+      return [[key, value]]
+    })
+    queryEntries.push(['format', format])
 
-  const queryParams = new URLSearchParams(queryEntries)
-  const aggPath = aggregation === 'unagg' ? '' : `/${aggregation}`
-  const url = `${apiUrl}/collections/meta/metrics/${style}${aggPath}?${queryParams.toString()}`
-  const filename = filenameEscaped(`Meta-${aggregation}-${style}_${filenameComponentFromDate()}.${format}`)
+    const queryParams = new URLSearchParams(queryEntries)
+    const aggPath = aggregation === 'unagg' ? '' : `/${aggregation}`
+    url = `${apiUrl}/collections/meta/metrics/${style}${aggPath}?${queryParams.toString()}`
+    filename = filenameEscaped(`Meta-${aggregation}-${style}_${filenameComponentFromDate()}.${format}`)
+  }
+  else {
+    const queryParams = new URLSearchParams()
+    queryParams.append('format', format)
+
+    const aggPath = aggregation === 'ungrouped' ? '' : `/${aggregation}`
+    url = `${apiUrl}/collections/${collectionId}/metrics/${style}${aggPath}?${queryParams.toString()}`
+    filename = filenameEscaped(`${collectionName}-${aggregation}-${style}_${filenameComponentFromDate()}.${format}`)
+  }
 
   const fetchInit = {
     method: 'GET',

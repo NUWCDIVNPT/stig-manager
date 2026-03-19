@@ -6,7 +6,7 @@ import { useRoute } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchCollections } from '../../CollectionView/api/collectionApi.js'
 
-const props = defineProps({
+defineProps({
   expanded: {
     type: Boolean,
     required: true,
@@ -88,7 +88,7 @@ function toggleCollectionsPopover(event) {
       />
     </button>
 
-    <div v-show="expanded && collectionsExpanded" class="nav-rail-collections-list">
+    <div v-show="expanded && collectionsExpanded" class="nav-rail-collections-list nav-scroller">
       <div class="collections-group dashboard-group">
         <div class="collection-list-item">
           <router-link
@@ -138,7 +138,7 @@ function toggleCollectionsPopover(event) {
           />
         </span>
       </div>
-      <div class="collections-popover-list">
+      <div class="collections-popover-list nav-scroller">
         <div class="collections-group dashboard-group">
           <div class="collection-list-item">
             <router-link
@@ -180,6 +180,8 @@ function toggleCollectionsPopover(event) {
 </template>
 
 <style scoped>
+@import './style.css';
+
 .nav-rail-collection-container {
   display: flex;
   flex-direction: column;
@@ -252,34 +254,6 @@ function toggleCollectionsPopover(event) {
   padding-right: 0.25rem;
   max-height: 26rem;
   overflow-y: auto;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border-default) transparent;
-}
-
-.nav-rail-collections-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.nav-rail-collections-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.nav-rail-collections-list::-webkit-scrollbar-button {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
-.nav-rail-collections-list::-webkit-scrollbar-thumb {
-  background-color: var(--color-border-default);
-  border-radius: 999px;
-  border: none;
-  min-height: 28px;
-}
-
-.nav-rail-collections-list::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-border-hover);
 }
 
 .collections-group {
@@ -353,7 +327,6 @@ function toggleCollectionsPopover(event) {
   color: var(--color-text-dim);
   text-align: center;
 }
-
 
 .collections-popover-header {
   padding: 0.75rem 1.1rem;
