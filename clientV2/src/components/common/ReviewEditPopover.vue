@@ -2,7 +2,7 @@
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
 import Tooltip from 'primevue/tooltip'
-import { ref, toRef } from 'vue'
+import { onBeforeUnmount, ref, toRef } from 'vue'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
 import { defaultFieldSettings, formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
 import ResultBadge from './ResultBadge.vue'
@@ -111,13 +111,14 @@ function onButtonClick(actionType) {
 
 // Dirty close handling
 function onPopoverHide() {
+  unbindOutsideHandler()
   if (closing.value) {
     closing.value = false
     emit('close')
     return
   }
+  // Toggle or programmatic hide without closing flag — check dirty
   if (isDirty.value) {
-    // Re-show popover and pulse buttons instead of modal
     setTimeout(() => {
       popover.value.show(lastAnchorEvent.value)
       triggerButtonPulse()
@@ -156,6 +157,37 @@ function hide() {
   popover.value.hide()
 }
 
+// Outside-click detection (replaces PrimeVue's dismissable which can't handle dirty checks)
+let outsideHandler = null
+
+function bindOutsideHandler() {
+  unbindOutsideHandler()
+  // Delay to avoid catching the click that opened the popover
+  setTimeout(() => {
+    outsideHandler = (event) => {
+      if (event.target.closest('.p-popover')) {
+        return
+      }
+      if (isDirty.value) {
+        triggerButtonPulse()
+        return
+      }
+      closing.value = true
+      popover.value.hide()
+    }
+    document.addEventListener('pointerdown', outsideHandler)
+  }, 0)
+}
+
+function unbindOutsideHandler() {
+  if (outsideHandler) {
+    document.removeEventListener('pointerdown', outsideHandler)
+    outsideHandler = null
+  }
+}
+
+onBeforeUnmount(unbindOutsideHandler)
+
 defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
 </script>
 
@@ -169,6 +201,7 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
         style: 'border: 1px solid var(--color-shield-green-dark); box-shadow: 0 0 10px 1px hsla(150, 30%, 40%, 0.3);',
       },
     }"
+    @show="bindOutsideHandler"
     @hide="onPopoverHide"
   >
     <div v-if="rowData" class="review-edit-popover" :style="width ? { width: `${width}px` } : {}">
@@ -433,6 +466,15 @@ defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
 
 .review-edit-popover__actions--highlighted {
   animation: actions-pulse 0.6s ease-in-out 2;
+}
+
+.review-edit-popover__actions--highlighted .review-edit-popover__discard-link {
+  animation: discard-pulse 0.6s ease-in-out 2;
+}
+
+@keyframes discard-pulse {
+  0%, 100% { color: var(--color-text-primary); opacity: 0.7; }
+  50% { color: var(--result-fail, #e74c3c); opacity: 1; }
 }
 
 @keyframes actions-pulse {
