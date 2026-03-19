@@ -88,7 +88,7 @@ function toggleCollectionsPopover(event) {
       />
     </button>
 
-    <div v-show="expanded && collectionsExpanded" class="nav-rail-collections-list">
+    <div v-show="expanded && collectionsExpanded" class="nav-rail-collections-list sm-scrollbar-thin">
       <div class="collections-group dashboard-group">
         <div class="collection-list-item">
           <router-link
@@ -252,34 +252,6 @@ function toggleCollectionsPopover(event) {
   padding-right: 0.25rem;
   max-height: 26rem;
   overflow-y: auto;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border-default) transparent;
-}
-
-.nav-rail-collections-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.nav-rail-collections-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.nav-rail-collections-list::-webkit-scrollbar-button {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
-.nav-rail-collections-list::-webkit-scrollbar-thumb {
-  background-color: var(--color-border-default);
-  border-radius: 999px;
-  border: none;
-  min-height: 28px;
-}
-
-.nav-rail-collections-list::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-border-hover);
 }
 
 .collections-group {

@@ -163,7 +163,7 @@ function toggleRecentViewsPopover(event) {
           <i class="pi pi-trash" />
         </button>
       </div>
-      <div class="nav-rail-recent">
+      <div class="nav-rail-recent sm-scrollbar-thin">
         <router-link
           v-for="view in recentViews"
           :key="view.url"
@@ -202,7 +202,7 @@ function toggleRecentViewsPopover(event) {
             <i class="pi pi-trash" />
           </button>
         </div>
-        <div class="recent-views-popover-list">
+        <div class="recent-views-popover-list sm-scrollbar-thin">
           <router-link
             v-for="view in recentViews"
             :key="view.url"
@@ -382,34 +382,6 @@ function toggleRecentViewsPopover(event) {
   flex: 1;
   overflow-y: auto;
   padding: 0 0.35rem;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border-default) transparent;
-}
-
-.nav-rail-recent::-webkit-scrollbar {
-  width: 6px;
-}
-
-.nav-rail-recent::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.nav-rail-recent::-webkit-scrollbar-button {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
-.nav-rail-recent::-webkit-scrollbar-thumb {
-  background-color: var(--color-border-default);
-  border-radius: 999px;
-  border: none;
-  min-height: 28px;
-}
-
-.nav-rail-recent::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-border-hover);
 }
 
 .nav-rail-recent-item {
@@ -468,34 +440,6 @@ function toggleRecentViewsPopover(event) {
   max-height: 27rem;
   overflow-y: auto;
   padding: 0.35rem;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border-default) transparent;
-}
-
-.recent-views-popover-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.recent-views-popover-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.recent-views-popover-list::-webkit-scrollbar-button {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
-.recent-views-popover-list::-webkit-scrollbar-thumb {
-  background-color: var(--color-border-default);
-  border-radius: 999px;
-  border: none;
-  min-height: 28px;
-}
-
-.recent-views-popover-list::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-border-hover);
 }
 
 .recent-views-popover-item {

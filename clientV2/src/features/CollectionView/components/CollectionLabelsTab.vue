@@ -23,12 +23,7 @@ const { state: labels, isLoading: labelsLoading, execute: loadLabels } = useAsyn
   () => fetchCollectionLabelSummary(
     props.collectionId,
     buildLabelFilterParams(props.selectedLabelIds),
-  ).then((res) => {
-    if (props.selectedLabelIds.length > 0) {
-      return res.filter(label => props.selectedLabelIds.includes(label.labelId))
-    }
-    return res
-  }),
+  ),
   { initialState: [], immediate: false },
 )
 

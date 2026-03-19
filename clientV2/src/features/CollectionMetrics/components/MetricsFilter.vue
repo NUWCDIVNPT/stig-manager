@@ -30,6 +30,7 @@ const fetchOptions = () => {
   if (props.type === 'label' && props.collectionId) {
     return fetchCollectionLabels(props.collectionId)
   }
+  return []
 }
 
 const { state: options, isLoading, execute } = useAsyncState(

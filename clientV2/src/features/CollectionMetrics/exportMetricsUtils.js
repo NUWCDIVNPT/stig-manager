@@ -239,6 +239,33 @@ export async function handleInventoryExport({
   }
 }
 
+async function fetchAndSave({ url, filename, format, authToken }) {
+  const fetchInit = {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+      Accept: format === 'csv' ? 'text/csv' : 'application/json',
+    },
+    attachment: filename,
+  }
+
+  // Try service worker download first
+  const href = await getDownloadUrl({ url, ...fetchInit })
+  if (href) {
+    window.location = href
+    return
+  }
+
+  // Fallback to direct fetch
+  const response = await fetch(url, fetchInit)
+  if (!response.ok) {
+    const body = await response.text()
+    throw new Error(`Request failed with status ${response.status}\n${body}`)
+  }
+  const blob = await response.blob()
+  saveAs(blob, filename)
+}
+
 /**
  * Handles the download of export metrics.
  * @param {object} params
@@ -260,39 +287,14 @@ export async function handleDownload({
   authToken,
 }) {
   const { triggerError } = useGlobalError()
-  const queryParams = new URLSearchParams()
-  queryParams.append('format', format)
 
+  const queryParams = new URLSearchParams({ format })
   const aggPath = aggregation === 'ungrouped' ? '' : `/${aggregation}`
   const url = `${apiUrl}/collections/${collectionId}/metrics/${style}${aggPath}?${queryParams.toString()}`
-
   const filename = filenameEscaped(`${collectionName}-${aggregation}-${style}_${filenameComponentFromDate()}.${format}`)
 
-  const fetchInit = {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-      Accept: format === 'csv' ? 'text/csv' : 'application/json',
-    },
-    attachment: filename,
-  }
-
   try {
-    // Try service worker download first
-    const href = await getDownloadUrl({ url, ...fetchInit })
-    if (href) {
-      window.location = href
-      return
-    }
-
-    // Fallback to direct fetch
-    const response = await fetch(url, fetchInit)
-    if (!response.ok) {
-      const body = await response.text()
-      throw new Error(`Request failed with status ${response.status}\n${body}`)
-    }
-    const blob = await response.blob()
-    saveAs(blob, filename)
+    await fetchAndSave({ url, filename, format, authToken })
   }
   catch (error) {
     triggerError(error)
@@ -322,29 +324,8 @@ export async function handleMetaDownload({
   const url = `${apiUrl}/collections/meta/metrics/${style}${aggPath}?${queryParams.toString()}`
   const filename = filenameEscaped(`Meta-${aggregation}-${style}_${filenameComponentFromDate()}.${format}`)
 
-  const fetchInit = {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-      Accept: format === 'csv' ? 'text/csv' : 'application/json',
-    },
-    attachment: filename,
-  }
-
   try {
-    const href = await getDownloadUrl({ url, ...fetchInit })
-    if (href) {
-      window.location = href
-      return
-    }
-
-    const response = await fetch(url, fetchInit)
-    if (!response.ok) {
-      const body = await response.text()
-      throw new Error(`Request failed with status ${response.status}\n${body}`)
-    }
-    const blob = await response.blob()
-    saveAs(blob, filename)
+    await fetchAndSave({ url, filename, format, authToken })
   }
   catch (error) {
     triggerError(error)

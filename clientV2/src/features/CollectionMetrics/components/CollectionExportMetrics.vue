@@ -2,6 +2,7 @@
 import Button from 'primevue/button'
 import Select from 'primevue/select'
 import { inject, reactive, watch } from 'vue'
+import { readStoredValue, storeValue } from '../../../shared/lib/localStorage.js'
 import { useEnv } from '../../../../src/shared/stores/useEnv.js'
 import { handleDownload } from '../exportMetricsUtils.js'
 
@@ -66,23 +67,6 @@ async function download() {
   })
 }
 
-function readStoredValue(key, fallback) {
-  try {
-    return localStorage.getItem(key) || fallback
-  }
-  catch {
-    return fallback
-  }
-}
-
-function storeValue(key, value) {
-  try {
-    localStorage.setItem(key, value)
-  }
-  catch {
-    // localStorage unavailable
-  }
-}
 </script>
 
 <template>
