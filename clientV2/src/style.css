@@ -67,8 +67,9 @@
   --color-background-subtle: rgba(255, 255, 255, 0.05);
 
   /* Border Colors */
-  --color-border-default: #3f3f46; 
+  --color-border-default: #3f3f46;
   --color-border-light: #2a2a2d;
+  --color-border-hover: #52525b;
 
   /* Error Colors */
   --color-text-error: #f16969;

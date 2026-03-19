@@ -3,6 +3,7 @@ import Popover from 'primevue/popover'
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
+import { readStoredValue, storeValue } from '../../../shared/lib/localStorage.js'
 import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 import NavRailCollectionsItem from './NavRailCollectionsItem.vue'
 
@@ -12,30 +13,16 @@ const route = useRoute()
 const { user } = useGlobalAppStore()
 const { recentViews, clearViews } = useRecentViews()
 
-const expanded = ref(loadExpandedState())
+const expanded = ref(readStoredValue(STORAGE_KEY, 'false') === 'true')
 const recentViewsPopover = ref(null)
 
 const recentViewsPopoverPt = {
   root: { style: 'min-width: 20rem; max-width: 27rem' },
 }
 
-function loadExpandedState() {
-  try {
-    return localStorage.getItem(STORAGE_KEY) === 'true'
-  }
-  catch {
-    return false
-  }
-}
-
 function toggleExpanded() {
   expanded.value = !expanded.value
-  try {
-    localStorage.setItem(STORAGE_KEY, String(expanded.value))
-  }
-  catch {
-    // localStorage unavailable
-  }
+  storeValue(STORAGE_KEY, String(expanded.value))
 }
 
 const isAdmin = computed(() => user?.privileges?.admin)

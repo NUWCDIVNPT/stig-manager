@@ -1,6 +1,6 @@
 export function readStoredValue(key, fallback) {
   try {
-    return localStorage.getItem(key) || fallback
+    return localStorage.getItem(key) ?? fallback
   }
   catch {
     return fallback

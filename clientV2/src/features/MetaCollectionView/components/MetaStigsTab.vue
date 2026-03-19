@@ -15,6 +15,7 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const revisionStrRe = /V(\d+)R(\d+(?:\.\d+)?)/
 
 const fetchStigs = () => {
   return fetchMetaMetricsSummaryByStig(
@@ -40,7 +41,7 @@ const { state: collections, isLoading: collectionsLoading, error: collectionsErr
     if (!selectedStig.value) {
       return []
     }
-    const match = /V(\d+)R(\d+(?:\.\d+)?)/.exec(selectedStig.value.revisionStr)
+    const match = revisionStrRe.exec(selectedStig.value.revisionStr)
     if (!match) {
       return []
     }
