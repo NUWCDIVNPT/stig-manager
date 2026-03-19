@@ -239,13 +239,9 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
     loadReview()
   }
 
-  // --- Save state ---
-  const isSaving = ref(false)
-
   // --- Full review save (for grid popover) ---
-  async function saveFullReview(ruleId, { result: newResult, detail, comment, status }) {
-    isSaving.value = true
-    try {
+  const { isLoading: isSavingReview, execute: executeSaveReview } = useAsyncState(
+    async (ruleId, { result: newResult, detail, comment, status }) => {
       const row = gridData.value.find(r => r.ruleId === ruleId)
       const resultChanged = row ? newResult !== row.result : true
 
@@ -266,16 +262,17 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
       }
 
       return result
-    }
-    finally {
-      isSaving.value = false
-    }
+    },
+    { immediate: false },
+  )
+
+  function saveFullReview(ruleId, data) {
+    executeSaveReview(ruleId, data)
   }
 
   // --- Status action (for grid mode) ---
-  async function saveStatusAction(ruleId, actionType) {
-    isSaving.value = true
-    try {
+  const { isLoading: isSavingStatus, execute: executeSaveStatus } = useAsyncState(
+    async (ruleId, actionType) => {
       let status
       switch (actionType) {
         case 'accept':
@@ -300,11 +297,15 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
       }
 
       return result
-    }
-    finally {
-      isSaving.value = false
-    }
+    },
+    { immediate: false },
+  )
+
+  function saveStatusAction(ruleId, actionType) {
+    executeSaveStatus(ruleId, actionType)
   }
+
+  const isSaving = computed(() => isSavingReview.value || isSavingStatus.value)
 
   // --- Initial loading ---
   function loadWorkspace() {

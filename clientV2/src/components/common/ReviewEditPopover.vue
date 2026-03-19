@@ -119,10 +119,10 @@ function onPopoverHide() {
   }
   // Toggle or programmatic hide without closing flag — check dirty
   if (isDirty.value) {
-    setTimeout(() => {
-      popover.value.show(lastAnchorEvent.value)
-      triggerButtonPulse()
-    }, 100)
+    nextTick(() => {
+      popover.value?.show(lastAnchorEvent.value)
+    })
+    triggerButtonPulse()
     return
   }
   emit('close')
@@ -207,7 +207,12 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
     :dismissable="false"
     :pt="{
       root: {
+        class: 'review-popover',
         style: 'border: 1px solid var(--color-shield-green-dark); box-shadow: 0 0 10px 1px hsla(150, 30%, 40%, 0.3);',
+      },
+      transition: {
+        enterActiveClass: 'review-popover-enter',
+        leaveActiveClass: 'review-popover-leave',
       },
     }"
     @show="bindOutsideHandler"
@@ -516,7 +521,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
 
 .review-edit-popover__attributions {
   display: flex;
-  gap: 3rem;
+  gap: 2rem;
   flex-wrap: wrap;
   border-top: 1px solid var(--color-border-light);
   padding-top: 0.4rem;
@@ -534,9 +539,9 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
   padding: 0.15rem 0.5rem;
   font-size: 1rem;
   font-weight: 600;
-  color: hsl(210, 80%, 80%);
-  background-color: hsl(210, 50%, 25%);
-  border: 1px solid hsl(210, 40%, 35%);
+  color: var(--color-engine-text);
+  background-color: var(--color-engine-bg);
+  border: 1px solid var(--color-engine-border);
   border-radius: 4px;
   cursor: default;
 }
@@ -554,31 +559,27 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
   padding: 0.15rem 0.5rem;
   font-size: 1rem;
   font-weight: 600;
-  color: hsl(30, 90%, 75%);
-  background-color: hsl(30, 50%, 22%);
-  border: 1px solid hsl(30, 40%, 35%);
+  color: var(--color-override-text);
+  background-color: var(--color-override-bg);
+  border: 1px solid var(--color-override-border);
   border-radius: 4px;
   cursor: default;
 }
 
-:global(.p-popover:before) {
-  border-bottom-color: var(--color-shield-green-dark) !important;
+:global(.review-popover::before) {
+  border-bottom-color: var(--color-shield-green-dark);
 }
 
-:global(.p-popover.p-popover-flipped:before) {
-  border-top-color: var(--color-shield-green-dark) !important;
+:global(.review-popover.p-popover-flipped::before) {
+  border-top-color: var(--color-shield-green-dark);
 }
 
-:global(.p-popover-leave-active) {
-  transition: opacity .05s linear;
+:global(.review-popover-leave) {
+  transition: opacity 0.05s linear;
 }
 
-:global(.p-popover-enter-active) {
+:global(.review-popover-enter) {
   transition: transform 0.05s cubic-bezier(0, 0, 0.2, 1), opacity 0.1s cubic-bezier(0, 0, 0.2, 1);
-}
-
-:global(.p-tooltip) {
-  max-width: 40rem;
 }
 
 .review-edit-popover__attr-section {

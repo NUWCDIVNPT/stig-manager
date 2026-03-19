@@ -78,6 +78,20 @@
   --result-fail: hsl(19 100% 40% / 1);
   --result-na: #767676;
   --result-nr: #c0bab2;
+
+  /* Access Mode Badge Colors */
+  --color-access-rw-bg: hsl(120deg 40% 25%);
+  --color-access-rw-text: hsl(120deg 60% 75%);
+  --color-access-r-bg: hsl(0deg 40% 25%);
+  --color-access-r-text: hsl(0deg 60% 75%);
+
+  /* Engine/Override Attribution Badge Colors */
+  --color-engine-text: hsl(210, 80%, 80%);
+  --color-engine-bg: hsl(210, 50%, 25%);
+  --color-engine-border: hsl(210, 40%, 35%);
+  --color-override-text: hsl(30, 90%, 75%);
+  --color-override-bg: hsl(30, 50%, 22%);
+  --color-override-border: hsl(30, 40%, 35%);
 }
 
 *, *::before, *::after {

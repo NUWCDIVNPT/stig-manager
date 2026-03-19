@@ -112,14 +112,19 @@ function onPopoverStatusAction(payload) {
   emit('status-action', payload)
 }
 
+const scrollLocked = computed(() => !!editingRow.value && !!reviewEditPopover.value?.isDirty)
+
+function onGridWheel(event) {
+  if (scrollLocked.value) {
+    event.preventDefault()
+  }
+}
+
 function onGridScroll() {
   if (!editingRow.value) {
     return
   }
-  if (reviewEditPopover.value?.isDirty) {
-    reviewEditPopover.value.triggerButtonPulse()
-    return
-  }
+  // When dirty, scroll is blocked via overflow:hidden + wheel handler, so this only fires when clean
   reviewEditPopover.value?.hide()
 }
 
@@ -244,10 +249,17 @@ function handleFooterAction(actionKey) {
     emit('refresh')
   }
 }
+
+const dataTablePt = {
+  tableContainer: { style: { height: '100%' } },
+  table: { style: { tableLayout: 'fixed' } },
+  bodyRow: { style: { cursor: 'pointer', height: 'var(--item-size)', overflow: 'hidden' } },
+  footer: { style: { padding: '0', border: 'none' } },
+}
 </script>
 
 <template>
-  <div class="checklist-grid" :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }" @scroll.capture="onGridScroll">
+  <div class="checklist-grid" :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }" @scroll.capture="onGridScroll" @wheel.capture="onGridWheel">
     <div class="checklist-grid__header">
       <div class="checklist-grid__header-left">
         <Button
@@ -308,6 +320,7 @@ function handleFooterAction(actionKey) {
       :sort-field="defaultSortField"
       :sort-order="1"
       class="checklist-grid__table"
+      :pt="dataTablePt"
       @row-click="onRowClick"
       @pointerdown.stop
     >
@@ -608,32 +621,18 @@ function handleFooterAction(actionKey) {
 }
 
 .access-rw {
-  background-color: hsl(120deg 40% 25%);
-  color: hsl(120deg 60% 75%);
+  background-color: var(--color-access-rw-bg);
+  color: var(--color-access-rw-text);
 }
 
 .access-r {
-  background-color: hsl(0deg 40% 25%);
-  color: hsl(0deg 60% 75%);
+  background-color: var(--color-access-r-bg);
+  color: var(--color-access-r-text);
 }
 
 .checklist-grid__table {
   flex: 1;
   min-height: 0;
-}
-
-:deep(.p-datatable-table-container) {
-  height: 100%;
-}
-
-:deep(.p-datatable-table) {
-  table-layout: fixed;
-}
-
-:deep(.p-datatable-tbody > tr) {
-  cursor: pointer;
-  height: var(--item-size);
-  overflow: hidden;
 }
 
 :deep(.p-datatable-tbody > tr > td) {
@@ -644,11 +643,6 @@ function handleFooterAction(actionKey) {
 
 :deep(.p-datatable-thead > tr > th) {
   padding: 0.2rem 0.35rem;
-}
-
-:deep(.p-datatable-footer) {
-  padding: 0;
-  border: none;
 }
 
 .cell-result__empty {

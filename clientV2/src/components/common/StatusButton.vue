@@ -60,21 +60,21 @@ const actionIcon = computed(() => {
   padding: 0.3rem 0.6rem;
   font-size: 1rem;
   font-weight: 600;
-  color: hsl(0deg 0% 80%);
-  background-color: hsl(0 0% 14% / 1);
-  border: 1px solid hsl(0 0% 25% / 1);
+  color: var(--color-text-primary);
+  background-color: var(--color-background-dark);
+  border: 1px solid var(--color-border-default);
   border-radius: 3px;
   cursor: pointer;
   white-space: nowrap;
 }
 
 .status-button:hover:not(:disabled) {
-  background-color: hsl(0 0% 20%);
+  background-color: var(--color-background-light);
 }
 
 .status-button--active {
-  border-color: var(--color-shield-green-dark, hsl(150, 30%, 40%));
-  background-color: hsl(150, 20%, 18%);
+  border-color: var(--color-shield-green-dark);
+  background-color: var(--color-background-dark);
 }
 
 .status-button--disabled {

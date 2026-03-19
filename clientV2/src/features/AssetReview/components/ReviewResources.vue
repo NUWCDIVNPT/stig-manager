@@ -76,6 +76,11 @@ const tabPt = {
     },
   },
 }
+
+const historyTablePt = {
+  tableContainer: { style: { height: '100%' } },
+  footer: { style: { padding: '0', border: 'none' } },
+}
 </script>
 
 <template>
@@ -110,6 +115,7 @@ const tabPt = {
             scroll-height="flex"
             striped-rows
             class="history-table"
+            :pt="historyTablePt"
           >
             <Column expander :style="{ width: '28px' }" />
 
@@ -274,10 +280,6 @@ const tabPt = {
   min-height: 0;
 }
 
-:deep(.p-datatable-table-container) {
-  height: 100%;
-}
-
 :deep(.p-datatable-tbody > tr > td) {
   padding: 0.15rem 0.35rem;
   vertical-align: top;
@@ -285,11 +287,6 @@ const tabPt = {
 
 :deep(.p-datatable-thead > tr > th) {
   padding: 0.2rem 0.35rem;
-}
-
-:deep(.p-datatable-footer) {
-  padding: 0;
-  border: none;
 }
 
 .cell-text--mono {
