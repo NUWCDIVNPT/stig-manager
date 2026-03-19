@@ -141,18 +141,28 @@ const searchFieldDefs = [
   { getter: row => row.status?.user?.username, label: 'status user' },
 ]
 
-// Filtered data based on search term
-const filteredData = computed(() => {
+// Filtered data + cached match info (avoids redundant per-row search work)
+const matchedFieldsMap = computed(() => {
   const term = searchTerm.value
   if (!term) {
+    return null
+  }
+  const map = new Map()
+  for (const row of props.gridData) {
+    const matched = getMatchedFields(row, searchFieldDefs, term)
+    if (matched.length) {
+      map.set(row.ruleId, matched)
+    }
+  }
+  return map
+})
+
+const filteredData = computed(() => {
+  const map = matchedFieldsMap.value
+  if (!map) {
     return props.gridData
   }
-  return props.gridData.filter(row =>
-    searchFieldDefs.some((f) => {
-      const value = f.getter ? f.getter(row) : row[f.key]
-      return value?.toLowerCase().includes(term)
-    }),
-  )
+  return props.gridData.filter(row => map.has(row.ruleId))
 })
 
 const isFiltered = computed(() => filteredData.value.length !== props.gridData.length)
@@ -426,7 +436,7 @@ function handleFooterAction(actionKey) {
         <template #body="{ data }">
           <span class="cell-match-fields">
             <i class="pi pi-search cell-match-fields__icon" />
-            {{ getMatchedFields(data, searchFieldDefs, searchTerm).join(', ') }}
+            {{ matchedFieldsMap?.get(data.ruleId)?.join(', ') }}
           </span>
         </template>
       </Column>

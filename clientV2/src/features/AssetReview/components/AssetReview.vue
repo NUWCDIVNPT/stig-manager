@@ -106,10 +106,6 @@ const resolvedLabels = computed(() => {
     }))
 })
 
-function onSelectRule(ruleId) {
-  workspace.selectRule(ruleId)
-}
-
 // Grid mode event handlers
 function onRowSave({ ruleId, result, detail, comment, status }) {
   workspace.saveFullReview(ruleId, { result, detail, comment, status })
@@ -233,7 +229,7 @@ defineExpose({ asset })
             :can-accept="workspace.canAccept.value"
             :is-saving="workspace.isSaving.value"
             :search-filter="searchFilter"
-            @select-rule="onSelectRule"
+            @select-rule="workspace.selectRule"
             @row-save="onRowSave"
             @status-action="onStatusAction"
             @refresh="onGridRefresh"

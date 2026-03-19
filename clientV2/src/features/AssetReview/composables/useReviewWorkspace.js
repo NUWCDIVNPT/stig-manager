@@ -202,8 +202,8 @@ export function useReviewWorkspace({ collectionId, assetId, benchmarkId, revisio
       username: review.username,
     })
 
-    // Sort descending by touchTs (newest first)
-    history.sort((a, b) => new Date(b.touchTs) - new Date(a.touchTs))
+    // Sort descending by touchTs (newest first) — ISO strings sort lexicographically
+    history.sort((a, b) => (b.touchTs || '').localeCompare(a.touchTs || ''))
 
     return history
   })
