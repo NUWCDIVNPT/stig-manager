@@ -188,55 +188,6 @@ function toggleCollectionsPopover(event) {
   width: 100%;
 }
 
-.nav-rail-item {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  height: 3.6rem;
-  padding: 0 1.1rem;
-  border-radius: 0.55rem;
-  color: var(--color-text-dim);
-  text-decoration: none;
-  cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  background: none;
-  border: none;
-  width: 100%;
-  font-size: inherit;
-  font-family: inherit;
-}
-
-.nav-rail-item:hover {
-  background-color: var(--color-button-hover-bg);
-  color: var(--color-text-primary);
-}
-
-.nav-rail-item--active {
-  background-color: var(--color-bg-hover-strong);
-  color: var(--color-text-primary);
-}
-
-.nav-rail-item--icon-only {
-  justify-content: center;
-  padding: 0;
-}
-
-.nav-rail-item-icon {
-  flex-shrink: 0;
-  width: 1.6rem;
-  height: 1.6rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-}
-
-.nav-rail-item-label {
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-
 .nav-rail-item-chevron {
   margin-left: auto;
   font-size: 0.8rem;
@@ -344,15 +295,5 @@ function toggleCollectionsPopover(event) {
   max-height: 25rem;
   overflow-y: auto;
   padding: 0.75rem 0.6rem;
-}
-
-.nav-icon {
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-}
-
-.nav-icon-collection {
-  background-image: url('/src/assets/collection-color.svg');
 }
 </style>

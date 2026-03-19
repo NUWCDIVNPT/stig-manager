@@ -1,6 +1,6 @@
 import { apiCall } from '../../../shared/api/apiClient.js'
 import { fetchCurrentUser } from '../../../shared/api/userApi.js'
-import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
+import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 
 export async function deleteCollection(collectionId) {
