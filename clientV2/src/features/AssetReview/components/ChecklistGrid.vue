@@ -3,7 +3,9 @@ import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Menu from 'primevue/menu'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import lineHeightDown from '../../../assets/line-height-down.svg'
+import lineHeightUp from '../../../assets/line-height-up.svg'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import EngineBadge from '../../../components/common/EngineBadge.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
@@ -64,10 +66,10 @@ const checklistMenu = ref()
 const reviewEditPopover = ref()
 const editingRow = ref(null)
 const editingPopoverWidth = ref(null)
-const switchingRows = ref(false)
 
 function openRowEditor(event, rowData) {
   const isSameRow = editingRow.value?.ruleId === rowData.ruleId
+  const wasOpen = !!editingRow.value
 
   editingRow.value = rowData
   const row = event.target.closest('tr')
@@ -90,21 +92,16 @@ function openRowEditor(event, rowData) {
   if (isSameRow) {
     reviewEditPopover.value.toggle(anchorEvent)
   }
+  else if (wasOpen) {
+    reviewEditPopover.value.reposition(anchorEvent)
+  }
   else {
-    // Hide then reopen at new row position
-    switchingRows.value = true
-    reviewEditPopover.value.hide()
-    nextTick(() => {
-      switchingRows.value = false
-      reviewEditPopover.value.show(anchorEvent)
-    })
+    reviewEditPopover.value.show(anchorEvent)
   }
 }
 
 function onPopoverClose() {
-  if (!switchingRows.value) {
-    editingRow.value = null
-  }
+  editingRow.value = null
 }
 
 function onPopoverSave(payload) {
@@ -115,6 +112,17 @@ function onPopoverStatusAction(payload) {
   emit('status-action', payload)
 }
 
+function onGridScroll() {
+  if (!editingRow.value) {
+    return
+  }
+  if (reviewEditPopover.value?.isDirty) {
+    reviewEditPopover.value.triggerButtonPulse()
+    return
+  }
+  reviewEditPopover.value?.hide()
+}
+
 // --- Display mode (Group/Rule toggle) ---
 const {
   displayModeItems,
@@ -122,6 +130,10 @@ const {
   showRuleId,
   showRuleTitle,
   showGroupTitle,
+  lineClamp,
+  itemSize,
+  increaseRowHeight,
+  decreaseRowHeight,
 } = useChecklistDisplayMode()
 
 const defaultSortField = computed(() => showGroupId.value ? 'groupId' : 'ruleId')
@@ -235,7 +247,7 @@ function handleFooterAction(actionKey) {
 </script>
 
 <template>
-  <div class="checklist-grid">
+  <div class="checklist-grid" :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }" @scroll.capture="onGridScroll">
     <div class="checklist-grid__header">
       <div class="checklist-grid__header-left">
         <Button
@@ -258,6 +270,22 @@ function handleFooterAction(actionKey) {
         <span class="checklist-grid__title">{{ headerTitle }}</span>
       </div>
       <div class="checklist-grid__header-right">
+        <button
+          class="checklist-grid__icon-btn"
+          title="Decrease row height"
+          :disabled="lineClamp <= 1"
+          @click="decreaseRowHeight"
+        >
+          <img :src="lineHeightDown" alt="Decrease row height">
+        </button>
+        <button
+          class="checklist-grid__icon-btn"
+          title="Increase row height"
+          :disabled="lineClamp >= 10"
+          @click="increaseRowHeight"
+        >
+          <img :src="lineHeightUp" alt="Increase row height">
+        </button>
         <span
           class="checklist-grid__access-badge"
           :class="accessMode === 'rw' ? 'access-rw' : 'access-r'"
@@ -275,13 +303,15 @@ function handleFooterAction(actionKey) {
       selection-mode="single"
       scrollable
       scroll-height="flex"
+      :virtual-scroller-options="{ itemSize }"
       striped-rows
       :sort-field="defaultSortField"
       :sort-order="1"
       class="checklist-grid__table"
       @row-click="onRowClick"
+      @pointerdown.stop
     >
-      <Column header="CAT" field="severity" sortable :style="{ minWidth: '4.5rem', maxWidth: '4.5rem' }">
+      <Column header="CAT" field="severity" sortable :style="{ width: '4rem' }">
         <template #body="{ data }">
           <CatBadge v-if="data.severity" :category="severityMap[data.severity] || 2" />
         </template>
@@ -292,7 +322,7 @@ function handleFooterAction(actionKey) {
         header="Group"
         field="groupId"
         sortable
-        :style="{ minWidth: '8rem' }"
+        :style="{ width: '6rem' }"
       >
         <template #body="{ data }">
           <span class="cell-text--mono" :class="{ 'cell--match': searchTerm && fieldMatches(data.groupId, searchTerm) }">
@@ -307,7 +337,7 @@ function handleFooterAction(actionKey) {
         header="Rule Id"
         field="ruleId"
         sortable
-        :style="{ minWidth: '16rem' }"
+        :style="{ width: '15rem' }"
       >
         <template #body="{ data }">
           <span class="cell-text--mono" :class="{ 'cell--match': searchTerm && fieldMatches(data.ruleId, searchTerm) }">
@@ -322,7 +352,7 @@ function handleFooterAction(actionKey) {
         header="Rule Title"
         field="ruleTitle"
         sortable
-        :style="{ minWidth: '25rem' }"
+        :style="{ width: '25%' }"
       >
         <template #body="{ data }">
           <span class="cell-text--clamped" :class="{ 'cell--match': searchTerm && fieldMatches(data.ruleTitle, searchTerm) }" :title="data.ruleTitle">
@@ -337,7 +367,7 @@ function handleFooterAction(actionKey) {
         header="Group Title"
         field="groupTitle"
         sortable
-        :style="{ minWidth: '20rem' }"
+        :style="{ width: '25%' }"
       >
         <template #body="{ data }">
           <span class="cell-text--clamped" :class="{ 'cell--match': searchTerm && fieldMatches(data.groupTitle, searchTerm) }" :title="data.groupTitle">
@@ -347,7 +377,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Result" field="result" sortable :style="{ minWidth: '5rem', maxWidth: '5rem' }">
+      <Column header="Result" field="result" sortable :style="{ width: '4rem' }">
         <template #body="{ data }">
           <div
             data-result-cell
@@ -359,7 +389,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Detail" field="detail" sortable :style="{ minWidth: '25rem' }">
+      <Column header="Detail" field="detail" sortable :style="{ width: '25%' }">
         <template #body="{ data }">
           <div
             class="cell-text-field"
@@ -373,7 +403,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Comment" field="comment" sortable :style="{ minWidth: '25rem' }">
+      <Column header="Comment" field="comment" sortable :style="{ width: '25%' }">
         <template #body="{ data }">
           <div
             class="cell-text-field"
@@ -386,7 +416,7 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column field="resultEngine" sortable sort-field="resultEngine.product" :style="{ minWidth: '3rem', maxWidth: '3rem' }">
+      <Column field="resultEngine" sortable sort-field="resultEngine.product" :style="{ width: '2.5rem' }">
         <template #header>
           <img
             src="../../../assets/bot2.svg"
@@ -413,13 +443,13 @@ function handleFooterAction(actionKey) {
         </template>
       </Column>
 
-      <Column header="Status" field="status" sortable sort-field="status.label" :style="{ minWidth: '5rem', maxWidth: '5rem' }">
+      <Column header="Status" field="status" sortable sort-field="status.label" :style="{ width: '4rem' }">
         <template #body="{ data }">
           <StatusBadge v-if="data.status" :status="data.status?.label ?? data.status" />
         </template>
       </Column>
 
-      <Column field="touchTs" sortable :style="{ minWidth: '4.5rem', maxWidth: '4.5rem' }">
+      <Column field="touchTs" sortable :style="{ width: '4rem' }">
         <template #header>
           <i class="pi pi-clock" title="Last action" />
         </template>
@@ -431,7 +461,7 @@ function handleFooterAction(actionKey) {
       <Column
         v-if="searchTerm"
         header="Match"
-        :style="{ minWidth: '8rem', maxWidth: '14rem' }"
+        :style="{ width: '7.5rem' }"
       >
         <template #body="{ data }">
           <span class="cell-match-fields">
@@ -542,6 +572,33 @@ function handleFooterAction(actionKey) {
   text-overflow: ellipsis;
 }
 
+.checklist-grid__icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  padding: 0.15rem;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.checklist-grid__icon-btn:hover:not(:disabled) {
+  opacity: 1;
+  border-color: var(--color-border-light);
+}
+
+.checklist-grid__icon-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.checklist-grid__icon-btn img {
+  width: 16px;
+  height: 16px;
+}
+
 .checklist-grid__access-badge {
   font-weight: 600;
   font-size: 1rem;
@@ -569,13 +626,20 @@ function handleFooterAction(actionKey) {
   height: 100%;
 }
 
+:deep(.p-datatable-table) {
+  table-layout: fixed;
+}
+
 :deep(.p-datatable-tbody > tr) {
   cursor: pointer;
+  height: var(--item-size);
+  overflow: hidden;
 }
 
 :deep(.p-datatable-tbody > tr > td) {
   vertical-align: top;
   padding: 0.15rem 0.35rem;
+  overflow: hidden;
 }
 
 :deep(.p-datatable-thead > tr > th) {
@@ -601,7 +665,7 @@ function handleFooterAction(actionKey) {
 
 .cell-text--clamped {
   display: -webkit-box;
-  -webkit-line-clamp: 5;
+  -webkit-line-clamp: var(--line-clamp, 3);
   -webkit-box-orient: vertical;
   overflow: hidden;
   color: var(--color-text-primary);

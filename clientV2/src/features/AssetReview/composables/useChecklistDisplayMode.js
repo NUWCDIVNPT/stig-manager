@@ -31,6 +31,22 @@ export function useChecklistDisplayMode() {
   const showRuleTitle = computed(() => displayMode.value !== 'groupGroup')
   const showGroupTitle = computed(() => displayMode.value === 'groupGroup')
 
+  // Row height control (line-clamp 1-10, default 3)
+  const lineClamp = ref(3)
+  const itemSize = computed(() => (15 * lineClamp.value) + 6)
+
+  function increaseRowHeight() {
+    if (lineClamp.value < 10) {
+      lineClamp.value++
+    }
+  }
+
+  function decreaseRowHeight() {
+    if (lineClamp.value > 1) {
+      lineClamp.value--
+    }
+  }
+
   return {
     displayMode,
     displayModeItems,
@@ -38,5 +54,9 @@ export function useChecklistDisplayMode() {
     showRuleId,
     showRuleTitle,
     showGroupTitle,
+    lineClamp,
+    itemSize,
+    increaseRowHeight,
+    decreaseRowHeight,
   }
 }

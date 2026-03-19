@@ -2,7 +2,7 @@
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
 import Tooltip from 'primevue/tooltip'
-import { onBeforeUnmount, ref, toRef } from 'vue'
+import { nextTick, onBeforeUnmount, ref, toRef } from 'vue'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
 import { defaultFieldSettings, formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
 import ResultBadge from './ResultBadge.vue'
@@ -157,6 +157,15 @@ function hide() {
   popover.value.hide()
 }
 
+// Reposition to a new anchor without hide/show cycle
+function reposition(event) {
+  lastAnchorEvent.value = event
+  const pv = popover.value
+  pv.target = event.currentTarget
+  pv.eventTarget = event.currentTarget
+  nextTick(() => pv.alignOverlay())
+}
+
 // Outside-click detection (replaces PrimeVue's dismissable which can't handle dirty checks)
 let outsideHandler = null
 
@@ -188,7 +197,7 @@ function unbindOutsideHandler() {
 
 onBeforeUnmount(unbindOutsideHandler)
 
-defineExpose({ toggle, show, hide, isDirty, triggerButtonPulse })
+defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
 </script>
 
 <template>
