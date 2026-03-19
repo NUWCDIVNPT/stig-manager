@@ -150,9 +150,16 @@ const tabPanelPt = {
 const DASHBOARD_STORAGE_KEY = 'stigman:collectionDashboardCollapsed'
 const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === 'true')
 const selectedLabelIds = ref([])
+const isAnimating = ref(false)
 
 function toggleDashboardSidebar() {
+  isAnimating.value = true
   dashboardCollapsed.value = !dashboardCollapsed.value
+
+  setTimeout(() => {
+    isAnimating.value = false
+  }, 300)
+
   try {
     localStorage.setItem(DASHBOARD_STORAGE_KEY, String(dashboardCollapsed.value))
   }
@@ -174,7 +181,7 @@ function toggleDashboardSidebar() {
       <SplitterPanel
         :size="28"
         :min-size="4"
-        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed }, style: 'min-width: 330px; max-width: 600px;' } }"
+        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating }, style: 'min-width: 330px; max-width: 600px;' } }"
       >
         <aside class="dashboard-sidebar">
           <button
@@ -281,11 +288,16 @@ function toggleDashboardSidebar() {
   height: 100%;
 }
 
+:deep(.sidebar-panel--animating) {
+  transition: flex-basis 0.3s ease, width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease !important;
+}
+
 :deep(.sidebar-panel--collapsed) {
   flex: none !important;
+  flex-basis: 3.25rem !important;
   width: 3.25rem !important;
-  min-width: unset !important;
-  max-width: unset !important;
+  min-width: 3.25rem !important;
+  max-width: 3.25rem !important;
   overflow: hidden;
 }
 
@@ -307,6 +319,7 @@ function toggleDashboardSidebar() {
   background: none;
   border: none;
   border-bottom: 1px solid var(--color-border-default);
+  border-radius: 0;
   color: var(--color-text-dim);
   cursor: pointer;
   flex-shrink: 0;
