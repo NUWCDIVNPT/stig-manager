@@ -208,7 +208,6 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
     :pt="{
       root: {
         class: 'review-popover',
-        style: 'border: 1px solid var(--color-shield-green-dark); box-shadow: 0 0 10px 1px hsla(150, 30%, 40%, 0.3);',
       },
       transition: {
         enterActiveClass: 'review-popover-enter',
@@ -224,7 +223,10 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
       </button>
       <div class="review-edit-popover__main">
         <div class="review-edit-popover__result" :class="{ 'review-edit-popover__result--emphasis': showResultEmphasis }">
-          <label class="review-edit-popover__label">Result</label>
+          <label class="review-edit-popover__label">
+            Result
+            <span class="review-edit-popover__required">*</span>
+          </label>
           <ul class="review-edit-popover__result-list">
             <li
               v-for="opt in resultOptions"
@@ -273,22 +275,30 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
         <div class="review-edit-popover__actions" :class="{ 'review-edit-popover__actions--highlighted': isButtonsHighlighted }">
           <label class="review-edit-popover__label">Status</label>
           <StatusButton
-            v-if="buttonStates.btn1.visible"
-            :label="buttonStates.btn1.text"
-            :action="buttonStates.btn1.actionType"
-            :disabled="!buttonStates.btn1.enabled || isSaving"
-            :active="isActionActive(buttonStates.btn1.actionType)"
-            :title="buttonStates.btn1.tooltip"
-            @click="onButtonClick(buttonStates.btn1.actionType)"
+            :label="buttonStates.save.text"
+            :action="buttonStates.save.actionType"
+            :disabled="!buttonStates.save.enabled || isSaving"
+            :active="isActionActive(buttonStates.save.actionType)"
+            :title="buttonStates.save.tooltip"
+            class="review-edit-popover__btn-fixed"
+            @click="onButtonClick(buttonStates.save.actionType)"
           />
           <StatusButton
-            v-if="buttonStates.btn2.visible"
-            :label="buttonStates.btn2.text"
-            :action="buttonStates.btn2.actionType"
-            :disabled="!buttonStates.btn2.enabled || isSaving"
-            :active="isActionActive(buttonStates.btn2.actionType)"
-            :title="buttonStates.btn2.tooltip"
-            @click="onButtonClick(buttonStates.btn2.actionType)"
+            :label="buttonStates.submit.text"
+            :action="buttonStates.submit.actionType"
+            :disabled="!buttonStates.submit.enabled || isSaving"
+            :active="isActionActive(buttonStates.submit.actionType)"
+            :title="buttonStates.submit.tooltip"
+            @click="onButtonClick(buttonStates.submit.actionType)"
+          />
+          <StatusButton
+            v-if="buttonStates.accept.visible"
+            :label="buttonStates.accept.text"
+            :action="buttonStates.accept.actionType"
+            :disabled="!buttonStates.accept.enabled || isSaving"
+            :active="isActionActive(buttonStates.accept.actionType)"
+            :title="buttonStates.accept.tooltip"
+            @click="onButtonClick(buttonStates.accept.actionType)"
           />
           <button
             class="review-edit-popover__discard-link"
@@ -357,7 +367,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  min-width: 400px;
+  min-width: 500px;
   position: relative;
 }
 
@@ -478,6 +488,11 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
   justify-content: flex-start;
 }
 
+/* Prevent resize when label switches between "Save" and "Unsubmit" */
+.review-edit-popover__btn-fixed {
+  min-width: 7rem;
+}
+
 .review-edit-popover__actions--highlighted {
   animation: actions-pulse 0.6s ease-in-out 2;
 }
@@ -521,7 +536,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
 
 .review-edit-popover__attributions {
   display: flex;
-  gap: 2rem;
+  gap: 3rem;
   flex-wrap: wrap;
   border-top: 1px solid var(--color-border-light);
   padding-top: 0.4rem;
@@ -566,8 +581,34 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
   cursor: default;
 }
 
+/* Arrow size and popover gap overrides.
+   The arrow is two overlapping CSS-border triangles: ::before (outer/border)
+   and ::after (inner/fill). margin-block-start is the gap between the anchor
+   row and the popover body — it must match the arrow's border-width so the
+   arrow spans the full gap. The ::after border-width is slightly smaller to
+   reveal the ::before border color as an outline. The flipped variants apply
+   when the popover opens above the anchor instead of below. */
+:global(.review-popover) {
+  border: 1px solid var(--color-shield-green-dark);
+  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--color-shield-green-dark) 30%, transparent);
+  margin-left: -5rem;
+  margin-block-start: 2rem; /* gap below anchor row */
+}
+
+:global(.review-popover.p-popover-flipped) {
+  margin-block-start: -2rem; /* gap above anchor row (flipped) */
+  margin-block-end: 2rem;
+}
+
 :global(.review-popover::before) {
+  border-width: 2rem; /* outer arrow size — matches gap */
+  margin-left: -2rem; /* center the outer arrow */
   border-bottom-color: var(--color-shield-green-dark);
+}
+
+:global(.review-popover::after) {
+  border-width: 1.875rem; /* inner arrow — slightly smaller for border effect */
+  margin-left: -1.875rem; /* center the inner arrow */
 }
 
 :global(.review-popover.p-popover-flipped::before) {

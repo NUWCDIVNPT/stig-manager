@@ -26,11 +26,11 @@ const props = defineProps({
 defineEmits(['click'])
 
 const actionIcon = computed(() => {
-  const a = props.action
-  if (a === 'accept') {
+  const label = props.label.toLowerCase()
+  if (label === 'accept') {
     return starIcon
   }
-  if (a === 'submit' || a === 'save and submit') {
+  if (label === 'submit') {
     return submitIcon
   }
   return saveIcon

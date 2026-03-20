@@ -14,149 +14,122 @@ function states(overrides = {}) {
 
 describe('getReviewButtonStates', () => {
   describe('read-only mode', () => {
-    it('should return both buttons disabled/hidden', () => {
-      const { btn1, btn2 } = getReviewButtonStates(states({ accessMode: 'r' }))
-      expect(btn1.visible).toBe(false)
-      expect(btn1.enabled).toBe(false)
-      expect(btn2.text).toBe('Read only')
-      expect(btn2.enabled).toBe(false)
+    it('should return all buttons disabled', () => {
+      const { save, submit, accept } = getReviewButtonStates(states({ accessMode: 'r' }))
+      expect(save.enabled).toBe(false)
+      expect(submit.enabled).toBe(false)
+      expect(accept.enabled).toBe(false)
+    })
+
+    it('should show accept only when canAccept', () => {
+      const without = getReviewButtonStates(states({ accessMode: 'r', canAccept: false }))
+      expect(without.accept.visible).toBe(false)
+      const with_ = getReviewButtonStates(states({ accessMode: 'r', canAccept: true }))
+      expect(with_.accept.visible).toBe(true)
     })
   })
 
-  describe('editable + dirty + submittable', () => {
-    it('should show Save and Submit both enabled', () => {
-      const { btn1, btn2 } = getReviewButtonStates(states({
-        isDirty: true,
-        isSubmittable: true,
-      }))
-      expect(btn1.text).toBe('Save')
-      expect(btn1.enabled).toBe(true)
-      expect(btn1.actionType).toBe('save')
-      expect(btn2.text).toBe('Submit')
-      expect(btn2.enabled).toBe(true)
-      expect(btn2.actionType).toBe('save and submit')
+  describe('save button', () => {
+    it('should show Save enabled when dirty and editable', () => {
+      const { save } = getReviewButtonStates(states({ isDirty: true }))
+      expect(save.text).toBe('Save')
+      expect(save.enabled).toBe(true)
+      expect(save.actionType).toBe('save')
+    })
+
+    it('should show Save disabled when clean', () => {
+      const { save } = getReviewButtonStates(states({ isDirty: false }))
+      expect(save.text).toBe('Save')
+      expect(save.enabled).toBe(false)
+      expect(save.tooltip).toBeTruthy()
+    })
+
+    it('should show Unsubmit when submitted', () => {
+      const { save } = getReviewButtonStates(states({ statusLabel: 'submitted' }))
+      expect(save.text).toBe('Unsubmit')
+      expect(save.enabled).toBe(true)
+      expect(save.actionType).toBe('unsubmit')
+    })
+
+    it('should show Unsubmit when accepted', () => {
+      const { save } = getReviewButtonStates(states({ statusLabel: 'accepted' }))
+      expect(save.text).toBe('Unsubmit')
+      expect(save.enabled).toBe(true)
+      expect(save.actionType).toBe('unsubmit')
     })
   })
 
-  describe('editable + dirty + not submittable', () => {
-    it('should show Save enabled, Save and Submit disabled', () => {
-      const { btn1, btn2 } = getReviewButtonStates(states({
-        isDirty: true,
-        isSubmittable: false,
-      }))
-      expect(btn1.text).toBe('Save')
-      expect(btn1.enabled).toBe(true)
-      expect(btn1.actionType).toBe('save and unsubmit')
-      expect(btn2.text).toBe('Save and Submit')
-      expect(btn2.enabled).toBe(false)
+  describe('submit button', () => {
+    it('should always be visible', () => {
+      const cases = ['', 'saved', 'submitted', 'accepted', 'rejected']
+      for (const statusLabel of cases) {
+        const { submit } = getReviewButtonStates(states({ statusLabel }))
+        expect(submit.visible).toBe(true)
+        expect(submit.text).toBe('Submit')
+      }
+    })
+
+    it('should be enabled when dirty + submittable', () => {
+      const { submit } = getReviewButtonStates(states({ isDirty: true, isSubmittable: true }))
+      expect(submit.enabled).toBe(true)
+      expect(submit.actionType).toBe('save and submit')
+    })
+
+    it('should be enabled when clean + submittable + saved', () => {
+      const { submit } = getReviewButtonStates(states({ statusLabel: 'saved', isSubmittable: true }))
+      expect(submit.enabled).toBe(true)
+      expect(submit.actionType).toBe('submit')
+    })
+
+    it('should be disabled when already submitted', () => {
+      const { submit } = getReviewButtonStates(states({ statusLabel: 'submitted', isSubmittable: true }))
+      expect(submit.enabled).toBe(false)
+      expect(submit.tooltip).toContain('already been submitted')
+    })
+
+    it('should be disabled when already accepted', () => {
+      const { submit } = getReviewButtonStates(states({ statusLabel: 'accepted', isSubmittable: true }))
+      expect(submit.enabled).toBe(false)
+      expect(submit.tooltip).toContain('already been accepted')
+    })
+
+    it('should be disabled when not submittable', () => {
+      const { submit } = getReviewButtonStates(states({ isDirty: true, isSubmittable: false }))
+      expect(submit.enabled).toBe(false)
+      expect(submit.tooltip).toContain('not complete')
+    })
+
+    it('should be disabled when clean + rejected + submittable', () => {
+      const { submit } = getReviewButtonStates(states({ statusLabel: 'rejected', isSubmittable: true }))
+      expect(submit.enabled).toBe(false)
+      expect(submit.tooltip).toContain('not been modified')
     })
   })
 
-  describe('editable + clean + submittable + saved', () => {
-    it('should show Save disabled, Submit enabled', () => {
-      const { btn1, btn2 } = getReviewButtonStates(states({
-        statusLabel: 'saved',
-        isSubmittable: true,
-      }))
-      expect(btn1.text).toBe('Save')
-      expect(btn1.enabled).toBe(false)
-      expect(btn2.text).toBe('Submit')
-      expect(btn2.enabled).toBe(true)
-      expect(btn2.actionType).toBe('submit')
+  describe('accept button', () => {
+    it('should be visible only when canAccept', () => {
+      const without = getReviewButtonStates(states({ canAccept: false, statusLabel: 'submitted' }))
+      expect(without.accept.visible).toBe(false)
+      const with_ = getReviewButtonStates(states({ canAccept: true, statusLabel: 'submitted' }))
+      expect(with_.accept.visible).toBe(true)
     })
-  })
 
-  describe('editable + clean + submittable + rejected', () => {
-    it('should show Save and Resubmit both disabled', () => {
-      const { btn1, btn2 } = getReviewButtonStates(states({
-        statusLabel: 'rejected',
-        isSubmittable: true,
-      }))
-      expect(btn1.text).toBe('Save')
-      expect(btn1.enabled).toBe(false)
-      expect(btn2.text).toBe('Resubmit')
-      expect(btn2.enabled).toBe(false)
+    it('should be enabled when submitted', () => {
+      const { accept } = getReviewButtonStates(states({ canAccept: true, statusLabel: 'submitted' }))
+      expect(accept.enabled).toBe(true)
+      expect(accept.actionType).toBe('accept')
     })
-  })
 
-  describe('editable + clean + not submittable', () => {
-    it('should show both buttons disabled', () => {
-      const { btn1, btn2 } = getReviewButtonStates(states({
-        statusLabel: 'saved',
-        isSubmittable: false,
-      }))
-      expect(btn1.enabled).toBe(false)
-      expect(btn2.enabled).toBe(false)
+    it('should be disabled when already accepted', () => {
+      const { accept } = getReviewButtonStates(states({ canAccept: true, statusLabel: 'accepted' }))
+      expect(accept.enabled).toBe(false)
+      expect(accept.tooltip).toContain('already been accepted')
     })
-  })
 
-  describe('submitted + submittable + canAccept', () => {
-    it('should show Unsubmit and Accept both enabled', () => {
-      const { btn1, btn2 } = getReviewButtonStates(states({
-        statusLabel: 'submitted',
-        isSubmittable: true,
-        canAccept: true,
-      }))
-      expect(btn1.text).toBe('Unsubmit')
-      expect(btn1.enabled).toBe(true)
-      expect(btn1.actionType).toBe('unsubmit')
-      expect(btn2.text).toBe('Accept')
-      expect(btn2.enabled).toBe(true)
-      expect(btn2.actionType).toBe('accept')
-    })
-  })
-
-  describe('submitted + submittable + !canAccept', () => {
-    it('should show Unsubmit enabled, Submit disabled', () => {
-      const { btn1, btn2 } = getReviewButtonStates(states({
-        statusLabel: 'submitted',
-        isSubmittable: true,
-        canAccept: false,
-      }))
-      expect(btn1.text).toBe('Unsubmit')
-      expect(btn1.enabled).toBe(true)
-      expect(btn2.text).toBe('Submit')
-      expect(btn2.enabled).toBe(false)
-    })
-  })
-
-  describe('accepted + submittable', () => {
-    it('should show Unsubmit enabled, Accept disabled', () => {
-      const { btn1, btn2 } = getReviewButtonStates(states({
-        statusLabel: 'accepted',
-        isSubmittable: true,
-      }))
-      expect(btn1.text).toBe('Unsubmit')
-      expect(btn1.enabled).toBe(true)
-      expect(btn2.text).toBe('Accept')
-      expect(btn2.enabled).toBe(false)
-    })
-  })
-
-  describe('submitted + not submittable', () => {
-    it('should show Unsubmit enabled, Save and Submit disabled', () => {
-      const { btn1, btn2 } = getReviewButtonStates(states({
-        statusLabel: 'submitted',
-        isSubmittable: false,
-      }))
-      expect(btn1.text).toBe('Unsubmit')
-      expect(btn1.enabled).toBe(true)
-      expect(btn2.text).toBe('Save and Submit')
-      expect(btn2.enabled).toBe(false)
-    })
-  })
-
-  describe('rejected + dirty + submittable', () => {
-    it('should show Save and Resubmit both enabled', () => {
-      const { btn1, btn2 } = getReviewButtonStates(states({
-        statusLabel: 'rejected',
-        isDirty: true,
-        isSubmittable: true,
-      }))
-      expect(btn1.text).toBe('Save')
-      expect(btn1.enabled).toBe(true)
-      expect(btn2.text).toBe('Resubmit')
-      expect(btn2.enabled).toBe(true)
+    it('should be disabled when not yet submitted', () => {
+      const { accept } = getReviewButtonStates(states({ canAccept: true, statusLabel: 'saved' }))
+      expect(accept.enabled).toBe(false)
+      expect(accept.tooltip).toContain('must be submitted')
     })
   })
 })

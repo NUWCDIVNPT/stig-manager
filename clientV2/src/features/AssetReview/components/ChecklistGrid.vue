@@ -81,7 +81,8 @@ function openRowEditor(event, rowData) {
   if (gridEl && resultCell) {
     const gridRect = gridEl.getBoundingClientRect()
     const cellRect = resultCell.getBoundingClientRect()
-    editingPopoverWidth.value = gridRect.right - cellRect.left
+    const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize)
+    editingPopoverWidth.value = gridRect.right - cellRect.left + (3 * rem)
   }
   else {
     editingPopoverWidth.value = null

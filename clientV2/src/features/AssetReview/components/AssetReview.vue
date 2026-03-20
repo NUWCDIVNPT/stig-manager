@@ -141,7 +141,7 @@ defineExpose({ asset })
         <div class="asset-review__header-info">
           <div class="asset-review__title-row">
             <h1 class="asset-review__title">
-              {{ asset.name }}
+              Asset: {{ asset.name }}
             </h1>
             <div v-if="resolvedLabels.length" class="asset-review__labels">
               <span
@@ -157,7 +157,7 @@ defineExpose({ asset })
           <div class="asset-review__meta">
             <span class="asset-review__meta-item">
               <i class="pi pi-hashtag" />
-              {{ asset.assetId }}
+              ID:{{ asset.assetId }}
             </span>
             <span v-if="asset.ip" class="asset-review__meta-item">
               <i class="pi pi-globe" />
@@ -294,7 +294,7 @@ defineExpose({ asset })
 }
 
 .asset-review__title {
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   margin: 0;
   font-weight: 600;
 }
@@ -312,7 +312,7 @@ defineExpose({ asset })
   background-color: var(--color-action-blue);
   color: var(--color-text-bright);
   border-radius: 9999px;
-  font-size: 0.7rem;
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
