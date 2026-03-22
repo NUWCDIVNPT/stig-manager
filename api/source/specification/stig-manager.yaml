@@ -7860,6 +7860,8 @@ components:
         - triggerAction
         - enabled
       properties:
+        title:
+          $ref: '#/components/schemas/String45Nullable'
         triggerField:
           type: string
           enum: [ts, statusTs, touchTs]
@@ -7903,6 +7905,8 @@ components:
         - updateValue
         - enabled
       properties:
+        title:
+          $ref: '#/components/schemas/String45Nullable'
         triggerField:
           type: string
           enum: [ts, statusTs, touchTs]
@@ -7952,6 +7956,8 @@ components:
         - updateValue
         - enabled
       properties:
+        title:
+          $ref: '#/components/schemas/String45Nullable'
         triggerField:
           type: string
           enum: [ts, statusTs, touchTs]
