@@ -309,9 +309,10 @@ exports.getOutputByRun = async (runId, {filters}) => {
   return (rows)
 }
 
-exports.getAllTasks = async () => {
-  const sql = `SELECT CAST(taskId AS CHAR(36)) AS taskId, name, description, command FROM task ORDER BY name`
-  let [rows] = await dbUtils.pool.query(sql)
+exports.getAllTasks = async ({ hasCollectionConfig } = {}) => {
+  const predicates = hasCollectionConfig ? 'WHERE collectionConfig IS NOT NULL' : ''
+  const sql = `SELECT CAST(taskId AS CHAR(36)) AS taskId, name, description, command, collectionConfig FROM task ${predicates} ORDER BY name`
+  const [rows] = await dbUtils.pool.query(sql)
   return rows
 }
 

@@ -161,7 +161,8 @@ exports.getOutputByRun = async (req, res, next) => {
 
 exports.getAllTasks = async (req, res, next) => {
   try {
-    const tasks = await JobService.getAllTasks()
+    const { hasCollectionConfig } = req.query
+    const tasks = await JobService.getAllTasks({ hasCollectionConfig })
     res.json(tasks)
   } catch (error) {
     next(error)

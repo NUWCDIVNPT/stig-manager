@@ -30,6 +30,20 @@ describe('GET - getAllTasks - /jobs/tasks', function () {
     expect(res.status).to.eql(200)
     expect(res.body).to.be.an('array')
     expect(res.body.length).to.be.greaterThan(0)
+    for (const task of res.body) {
+      expect(task).to.have.property('collectionConfig')
+    }
+  })
+
+  it('should filter to tasks with collectionConfig when hasCollectionConfig=true', async function () {
+    const res = await utils.executeRequest(`${config.baseUrl}/jobs/tasks?elevate=true&hasCollectionConfig=true`, 'GET', user.token)
+    expect(res.status).to.eql(200)
+    expect(res.body).to.be.an('array')
+    expect(res.body.length).to.be.greaterThan(0)
+    for (const task of res.body) {
+      expect(task.collectionConfig).to.not.be.null
+    }
+    expect(res.body.some(t => t.name === 'ReviewAging')).to.be.true
   })
 })
 
@@ -569,6 +583,7 @@ describe('Task tests', function () {
       const agingTask = res.body.find(t => t.name === 'ReviewAging')
       expect(agingTask).to.exist
       expect(agingTask).to.have.property('taskId', '5')
+      expect(agingTask).to.have.property('collectionConfig', '#/components/schemas/ReviewAgingConfig')
     })
 
     it('should complete with no effect when enabled:false', async function () {
@@ -759,7 +774,7 @@ describe('Task tests', function () {
         triggerInterval: 0,
         triggerAction: 'update',
         updateField: 'result',
-        updateValue: 'notReviewed',
+        updateValue: 'notchecked',
         updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
         enabled: true
       }])

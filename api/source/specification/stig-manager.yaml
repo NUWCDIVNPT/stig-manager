@@ -3593,6 +3593,11 @@ paths:
       operationId: getAllTasks
       parameters:
         - $ref: '#/components/parameters/ElevateQuery'
+        - name: hasCollectionConfig
+          in: query
+          description: Filter to tasks that support per-collection configuration
+          schema:
+            type: boolean
       responses:
         '200':
           description: List of tasks
@@ -7815,6 +7820,10 @@ components:
           $ref: "#/components/schemas/String255Nullable"
         command:
           $ref: '#/components/schemas/String255'
+        collectionConfig:
+          type: string
+          nullable: true
+          description: OpenAPI $ref path to the per-collection config schema, null if not supported
       required: [taskId, name]
     JobTaskId:
       $ref: '#/components/schemas/StringIntId'

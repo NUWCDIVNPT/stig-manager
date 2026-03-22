@@ -675,6 +675,7 @@ CREATE TABLE `task` (
   `name` varchar(45) NOT NULL,
   `description` varchar(255) DEFAULT NULL,
   `command` varchar(255) NOT NULL,
+  `collectionConfig` varchar(255) DEFAULT NULL COMMENT 'OpenAPI $ref path to the per-collection config schema, if supported',
   PRIMARY KEY (`taskId`),
   UNIQUE KEY `idx_task_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -1048,7 +1049,7 @@ BEGIN
             );
             SET v_curMinId = v_curMinId + v_incrementValue;
             SET v_curMaxId = v_curMaxId + v_incrementValue;
-          UNTIL ROW_COUNT() = 0 END REPEAT;
+          UNTIL v_curMinId > v_numHistoryIds END REPEAT;
         END IF;
         DROP TEMPORARY TABLE IF EXISTS t_historyIds;
 
@@ -1061,7 +1062,7 @@ BEGIN
           );
           SET v_curMinId = v_curMinId + v_incrementValue;
           SET v_curMaxId = v_curMaxId + v_incrementValue;
-        UNTIL ROW_COUNT() = 0 END REPEAT;
+        UNTIL v_curMinId > v_numReviewIds END REPEAT;
       END IF;
     END $
 DELIMITER ;
@@ -1178,7 +1179,7 @@ BEGIN
           rh.historyId,
           ROW_NUMBER() OVER (PARTITION BY r.reviewId ORDER BY rh.historyId DESC) AS rowNum
         FROM review_history rh
-        LEFT JOIN review r USING (reviewId)
+        INNER JOIN review r USING (reviewId)
         WHERE r.reviewId IN (SELECT reviewId FROM t_reviewIds)
       )
       DELETE review_history
@@ -1306,6 +1307,19 @@ BEGIN
             SET v_updateValue     = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateValue'));
             SET v_updateFilter    = JSON_EXTRACT(v_rule, '$.updateFilter');
 
+            -- Validate extracted values
+            IF v_triggerField NOT IN ('ts', 'statusTs', 'touchTs') THEN
+              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid triggerField value';
+            END IF;
+
+            IF v_triggerAction NOT IN ('delete', 'update') THEN
+              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid triggerAction value';
+            END IF;
+
+            IF v_triggerAction = 'update' AND v_updateField NOT IN ('status', 'result') THEN
+              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid updateField value';
+            END IF;
+
             -- Compute cutoff datetime
             -- CAST() does not accept ISO8601 T/Z separators; strip them with REPLACE before casting
             IF v_triggerBasis = 'now' THEN
@@ -1376,7 +1390,22 @@ BEGIN
 
             IF IFNULL(v_numReviews, 0) > 0 THEN
               IF v_triggerAction = 'delete' THEN
+                -- Capture affected saIds before deleting (reviews will not exist after)
+                SET @v_deleteSaIds = (
+                  SELECT JSON_ARRAYAGG(saId) FROM (
+                    SELECT DISTINCT sa.saId
+                    FROM t_reviewIds tri
+                    INNER JOIN review r ON tri.reviewId = r.reviewId
+                    INNER JOIN rule_version_check_digest rvcd ON (rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)
+                    INNER JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId
+                    INNER JOIN revision rev ON rev.revId = rgr.revId
+                    INNER JOIN stig_asset_map sa ON (sa.assetId = r.assetId AND sa.benchmarkId = rev.benchmarkId)
+                  ) AS distinct_saIds
+                );
                 CALL delete_review_batch();
+                IF @v_deleteSaIds IS NOT NULL THEN
+                  CALL update_stats_asset_stig(JSON_OBJECT('saIds', CAST(@v_deleteSaIds AS JSON)));
+                END IF;
               ELSEIF v_triggerAction = 'update' THEN
                 SELECT CAST(c.settings->>"$.history.maxReviews" AS UNSIGNED)
                   INTO v_maxReviews
@@ -1575,7 +1604,7 @@ BEGIN
           );
           SET v_curMinId = v_curMinId + v_incrementValue;
           SET v_curMaxId = v_curMaxId + v_incrementValue;
-        UNTIL ROW_COUNT() = 0 END REPEAT;
+        UNTIL v_curMinId > v_numReviewIds END REPEAT;
       END IF;
     END $
 DELIMITER ;
@@ -1622,7 +1651,7 @@ BEGIN
           );
           SET v_curMinId = v_curMinId + v_incrementValue;
           SET v_curMaxId = v_curMaxId + v_incrementValue;
-        UNTIL ROW_COUNT() = 0 END REPEAT;
+        UNTIL v_curMinId > v_numReviewIds END REPEAT;
       END IF;
     END $
 DELIMITER ;
@@ -1896,4 +1925,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-13 18:17:48
+-- Dump completed on 2026-03-22 20:33:21

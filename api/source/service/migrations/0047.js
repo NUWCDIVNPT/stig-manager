@@ -1,9 +1,14 @@
 const MigrationHandler = require('./lib/MigrationHandler')
 
 const upMigration = [
+  // Add collectionConfig column to task table
+  `ALTER TABLE task
+  ADD COLUMN collectionConfig VARCHAR(255) NULL DEFAULT NULL
+    COMMENT 'OpenAPI $ref path to the per-collection config schema, if supported'`,
+
   // Insert new ReviewAging task
-  `INSERT INTO task (taskId, name, description, command) VALUES
-    (5, 'ReviewAging', 'Age reviews based on per-collection rules', 'review_aging()')`,
+  `INSERT INTO task (taskId, name, description, command, collectionConfig) VALUES
+    (5, 'ReviewAging', 'Age reviews based on per-collection rules', 'review_aging()', '#/components/schemas/ReviewAgingConfig')`,
 
   // Introduce nullable taskId FK in user_data for task-specific attribution
   `ALTER TABLE user_data
