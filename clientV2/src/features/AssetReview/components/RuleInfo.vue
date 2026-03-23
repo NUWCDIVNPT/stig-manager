@@ -55,52 +55,47 @@ defineProps({
         </div>
       </div>
 
-      <!-- Check Content -->
-      <section v-if="ruleContent.check?.content" class="rule-info__section">
-        <h4 class="rule-info__section-title">
-          Manual Check
-        </h4>
-        <div class="rule-info__text">
-          {{ ruleContent.check.content }}
+      <!-- Check Content + Fix (one card) -->
+      <div v-if="ruleContent.check?.content || ruleContent.fix?.text" class="rule-info__card">
+        <div v-if="ruleContent.check?.content" class="rule-info__card-section">
+          <h4 class="rule-info__section-title">
+            Manual Check
+          </h4>
+          <pre class="rule-info__pre">{{ ruleContent.check.content }}</pre>
         </div>
-      </section>
 
-      <!-- Fix Text -->
-      <section v-if="ruleContent.fix?.text" class="rule-info__section">
-        <h4 class="rule-info__section-title">
-          Fix
-        </h4>
-        <div class="rule-info__text">
-          {{ ruleContent.fix.text }}
+        <div v-if="ruleContent.fix?.text" class="rule-info__card-section">
+          <h4 class="rule-info__section-title">
+            Fix
+          </h4>
+          <pre class="rule-info__pre">{{ ruleContent.fix.text }}</pre>
         </div>
-      </section>
+      </div>
 
-      <!-- Other Data -->
-      <section class="rule-info__section">
+      <!-- Other Data (separate card) -->
+      <div class="rule-info__card">
         <h4 class="rule-info__section-title">
           Other Data
         </h4>
 
-        <div v-if="ruleContent.detail?.vulnDiscussion" class="rule-info__field">
-          <span class="rule-info__field-label">Vulnerability Discussion</span>
-          <div class="rule-info__text">
-            {{ ruleContent.detail.vulnDiscussion }}
-          </div>
+        <div v-if="ruleContent.detail?.vulnDiscussion" class="rule-info__card-section">
+          <span class="rule-info__sub-label">Vulnerability Discussion</span>
+          <pre class="rule-info__pre">{{ ruleContent.detail.vulnDiscussion }}</pre>
         </div>
 
-        <div v-if="ruleContent.detail?.documentable !== undefined" class="rule-info__field rule-info__field--inline">
-          <span class="rule-info__field-label">Documentable:</span>
+        <div v-if="ruleContent.detail?.documentable !== undefined" class="rule-info__field-inline">
+          <span class="rule-info__sub-label">Documentable:</span>
           <span>{{ ruleContent.detail.documentable ? 'true' : 'false' }}</span>
         </div>
 
-        <div v-if="ruleContent.detail?.responsibility" class="rule-info__field rule-info__field--inline">
-          <span class="rule-info__field-label">Responsibility:</span>
+        <div v-if="ruleContent.detail?.responsibility" class="rule-info__field-inline">
+          <span class="rule-info__sub-label">Responsibility:</span>
           <span>{{ ruleContent.detail.responsibility }}</span>
         </div>
 
         <!-- Controls Table (CCIs) -->
-        <div v-if="ruleContent.ccis?.length" class="rule-info__field">
-          <span class="rule-info__field-label">Controls:</span>
+        <div v-if="ruleContent.ccis?.length" class="rule-info__card-section">
+          <span class="rule-info__sub-label">Controls:</span>
           <table class="controls-table">
             <thead>
               <tr>
@@ -118,7 +113,7 @@ defineProps({
             </tbody>
           </table>
         </div>
-      </section>
+      </div>
     </div>
   </div>
 </template>
@@ -152,7 +147,7 @@ defineProps({
 .rule-info__content {
   flex: 1;
   overflow-y: auto;
-  padding: 0.5rem;
+  padding: 1rem;
 }
 
 .rule-info__loading,
@@ -198,58 +193,63 @@ defineProps({
   font-weight: 600;
   color: var(--color-text-primary);
   line-height: 1.35;
+  padding-left: 1rem;
 }
 
-.rule-info__section {
-  margin-bottom: 0.6rem;
+.rule-info__card {
+  background-color: var(--color-background-dark);
+  border-radius: 6px;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.rule-info__card-section {
+  margin-bottom: 1.5rem;
+}
+
+.rule-info__card-section:last-child {
+  margin-bottom: 0;
 }
 
 .rule-info__section-title {
-  margin: 0 0 0.4rem 0;
-  font-size: 1.4rem;
+  margin: 0 0 0.35rem 0;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--color-action-blue);
-  padding: 0.3rem 0.5rem;
-  background-color: var(--color-background-dark);
-  border-radius: 3px;
 }
 
-.rule-info__text {
+.rule-info__sub-label {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  display: block;
+  margin-bottom: 0.5rem;
+  padding-left: 0.5rem;
+}
+
+.rule-info__pre {
   color: var(--color-text-primary);
   white-space: pre-wrap;
   word-break: break-word;
   line-height: 1.4;
-  padding: 0.5rem;
-  background-color: var(--color-background-dark);
-  border: 1px solid var(--color-border-light);
-  border-radius: 3px;
+  font-family: inherit;
+  font-size: inherit;
+  margin: 0;
+  padding: 0 1.25rem;
 }
 
-.rule-info__field {
-  margin-bottom: 0.6rem;
-}
-
-.rule-info__field--inline {
+.rule-info__field-inline {
   display: flex;
   gap: 0.35rem;
   align-items: baseline;
-}
-
-.rule-info__field-label {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-text-dim);
-}
-
-.rule-info__field:not(.rule-info__field--inline) .rule-info__field-label {
-  display: block;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.3rem;
+  padding: 0;
 }
 
 .controls-table {
-  width: 100%;
+  width: calc(100% - 1.25rem);
   border-collapse: collapse;
   margin-top: 0.25rem;
+  margin-left: 1.25rem;
 }
 
 .controls-table th,
