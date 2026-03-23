@@ -1,6 +1,6 @@
 import { apiCall } from '../../../shared/api/apiClient.js'
 import { fetchCurrentUser } from '../../../shared/api/userApi.js'
-import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
+import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 
 export { fetchAssetStigs } from '../../../shared/api/assetsApi.js'
@@ -40,28 +40,28 @@ export function fetchCollections() {
   return apiCall('getCollections')
 }
 
-export function fetchCollectionStigSummary(collectionId) {
+export function fetchCollectionStigSummary(collectionId, params = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch STIG metrics.')
   }
-  return apiCall('getMetricsSummaryByCollectionAggStig', { collectionId })
+  return apiCall('getMetricsSummaryByCollectionAggStig', { collectionId, ...params })
 }
 
-export function fetchCollectionLabelSummary(collectionId) {
+export function fetchCollectionLabelSummary(collectionId, params = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch label metrics.')
   }
-  return apiCall('getMetricsSummaryByCollectionAggLabel', { collectionId })
+  return apiCall('getMetricsSummaryByCollectionAggLabel', { collectionId, ...params })
 }
 
-export function fetchCollectionChecklistAssets(collectionId, benchmarkId) {
+export function fetchCollectionChecklistAssets(collectionId, benchmarkId, params = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch checklist assets.')
   }
   if (!benchmarkId) {
     return []
   }
-  return apiCall('getMetricsSummaryByCollection', { collectionId, benchmarkId })
+  return apiCall('getMetricsSummaryByCollection', { collectionId, benchmarkId, ...params })
 }
 
 export function fetchCollectionAssetStigs(collectionId, assetId) {

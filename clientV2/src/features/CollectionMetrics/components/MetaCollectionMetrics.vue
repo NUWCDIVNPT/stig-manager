@@ -1,57 +1,47 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { watch } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
-import { fetchCollectionMetricsSummary } from '../api/metricsApi.js'
+import { fetchMetaMetricsSummary } from '../../MetaCollectionView/api/metaApi.js'
 import { useCollectionCora } from '../composables/useCollectionCora.js'
 import { useCollectionProgress } from '../composables/useCollectionProgress.js'
 import { useCollectionStats } from '../composables/useCollectionStats.js'
-import CollectionExportMetrics from './CollectionExportMetrics.vue'
 import Cora from './Cora.vue'
-import ExportMetricsModal from './ExportMetricsModal.vue'
 import FindingsStats from './FindingsStats.vue'
 import InventoryStats from './InventoryStats.vue'
 import Progress from './Progress.vue'
 import ReviewAgesStats from './ReviewAgesStats.vue'
 
 const props = defineProps({
-  collectionId: {
-    type: String,
-    required: true,
-  },
-  collectionName: {
-    type: String,
-    required: true,
-  },
   vertical: {
     type: Boolean,
     default: false,
   },
-  selectedLabelIds: {
+  selectedCollectionIds: {
     type: Array,
     default: () => [],
   },
 })
 
 const fetchMetrics = () => {
-  return fetchCollectionMetricsSummary(
-    props.collectionId,
-    buildLabelFilterParams(props.selectedLabelIds),
+  return fetchMetaMetricsSummary(
+    props.selectedCollectionIds.length > 0
+      ? { collectionId: props.selectedCollectionIds }
+      : {},
   )
 }
 
-const { state: metrics, isLoading, error: errorMessage, execute: loadMetrics } = useAsyncState(
+const { state: metrics, isLoading, error: errorMessage, execute } = useAsyncState(
   fetchMetrics,
-  { immediate: false },
+  { initialState: null, immediate: true },
 )
 
-watch([() => props.collectionId, () => props.selectedLabelIds], loadMetrics, { immediate: true, deep: true })
+watch(() => props.selectedCollectionIds, () => {
+  execute()
+}, { deep: true })
 
-// hint metrics is reactive cuz it's from a query
 const { stats: progressStats } = useCollectionProgress(metrics)
 const { coraData } = useCollectionCora(metrics)
 const { inventory, findings, ages } = useCollectionStats(metrics)
-const showExportModal = ref(false)
 </script>
 
 <template>
@@ -66,12 +56,10 @@ const showExportModal = ref(false)
       <Progress :stats="progressStats" />
       <Cora :cora-data="coraData" />
       <div class="stats-column">
-        <InventoryStats :inventory="inventory" @export="showExportModal = true" />
-        <FindingsStats :findings="findings" />
+        <InventoryStats :inventory="inventory" :show-export-action="false" />
+        <FindingsStats :findings="findings" :show-details-action="false" />
         <ReviewAgesStats :ages="ages" />
       </div>
-      <CollectionExportMetrics v-if="!vertical" :collection-id="props.collectionId" :collection-name="props.collectionName" />
-      <ExportMetricsModal v-model:visible="showExportModal" :collection-id="props.collectionId" :collection-name="props.collectionName" />
     </div>
   </div>
 </template>

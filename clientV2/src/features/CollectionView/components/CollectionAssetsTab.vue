@@ -3,22 +3,34 @@ import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionAssetStigs, fetchCollectionAssetSummary } from '../api/collectionApi.js'
-import MetricsSummaryGrid from './MetricsSummaryGrid.vue'
 
 const props = defineProps({
   collectionId: {
     type: [String, Number],
     required: true,
   },
+  selectedLabelIds: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const router = useRouter()
 
 // Queries
+const fetchAssets = () => {
+  return fetchCollectionAssetSummary(
+    props.collectionId,
+    buildLabelFilterParams(props.selectedLabelIds),
+  )
+}
+
 const { state: assets, isLoading: assetsLoading, error: assetsError, execute: loadAssets } = useAsyncState(
-  () => fetchCollectionAssetSummary(props.collectionId),
+  fetchAssets,
   { initialState: [], immediate: false },
 )
 
@@ -30,10 +42,10 @@ const { state: selectedAssetStigs, isLoading: selectedAssetStigsLoading, error: 
 )
 
 // Initial Load
-watch(() => props.collectionId, () => {
+watch([() => props.collectionId, () => props.selectedLabelIds], () => {
   loadAssets()
   selectedAssetId.value = null
-}, { immediate: true })
+}, { immediate: true, deep: true })
 
 // Auto-select first asset
 watch(assets, (newAssets) => {
@@ -84,6 +96,7 @@ function handleShieldClick(rowData) {
           <div class="grid-container">
             <MetricsSummaryGrid
               :api-metrics-summary="assets"
+              agg-type="asset"
               :is-loading="assetsLoading"
               :error-message="assetsError?.message || assetsError"
               :selected-key="selectedAssetId"
@@ -103,22 +116,15 @@ function handleShieldClick(rowData) {
             <span v-if="selectedAssetId" class="badge">Asset {{ selectedAssetId }}</span>
           </div>
           <div class="grid-container">
-            <div v-if="!selectedAssetId" class="empty-state">
-              Select an asset to view its checklists.
-            </div>
-            <div v-else-if="selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="loading-state">
-              Loading checklists...
-            </div>
-            <div v-else-if="selectedAssetStigsError" class="error-state">
+            <div v-if="selectedAssetStigsError" class="error-state">
               {{ selectedAssetStigsError?.message || selectedAssetStigsError }}
-            </div>
-            <div v-else-if="!selectedAssetStigsLoading && selectedAssetStigs.length === 0" class="empty-state">
-              No checklists found for this asset.
             </div>
             <MetricsSummaryGrid
               v-else
               :api-metrics-summary="selectedAssetStigs"
+              agg-type="unagg"
               :is-loading="selectedAssetStigsLoading"
+              :empty-message="selectedAssetId ? 'No checklists found for this asset. Try refresh.' : 'Select an asset to view its checklists.'"
               parent-agg-type="asset"
               show-shield
               @refresh="loadSelectedAssetStigs"

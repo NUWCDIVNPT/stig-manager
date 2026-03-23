@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useDebouncedRef } from '../../../shared/composables/useDebouncedRef.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
-import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
+import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import {
   fetchAsset,
   fetchCollectionLabels,
