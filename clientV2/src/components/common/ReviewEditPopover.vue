@@ -218,7 +218,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
     @hide="onPopoverHide"
   >
     <div v-if="rowData" class="review-edit-popover" :style="width ? { width: `${width}px` } : {}">
-      <button class="review-edit-popover__close" title="Close" @click="dismiss">
+      <button class="review-edit-popover__close" :title="isDirty ? 'Close (discards unsaved changes)' : 'Close'" @click="dismiss">
         <i class="pi pi-times" />
       </button>
       <div class="review-edit-popover__main">

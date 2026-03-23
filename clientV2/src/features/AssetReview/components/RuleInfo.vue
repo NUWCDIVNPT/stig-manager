@@ -43,8 +43,8 @@ defineProps({
       <div class="rule-info__header">
         <div class="rule-info__header-row">
           <span class="rule-info__rule-id">{{ ruleContent.ruleId }}</span>
-          <div v-if="ruleContent.severity" class="rule-info__cat-badge">
-            <CatBadge :category="severityMap[ruleContent.severity] || 2" />
+          <div class="rule-info__cat-badge">
+            <CatBadge :category="severityMap[ruleContent.severity]" variant="label" />
           </div>
         </div>
         <div v-if="ruleContent.version" class="rule-info__version">

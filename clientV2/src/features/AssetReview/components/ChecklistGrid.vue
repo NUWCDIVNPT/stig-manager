@@ -327,7 +327,7 @@ const dataTablePt = {
     >
       <Column header="CAT" field="severity" sortable :style="{ width: '4rem' }">
         <template #body="{ data }">
-          <CatBadge v-if="data.severity" :category="severityMap[data.severity] || 2" />
+          <CatBadge :category="severityMap[data.severity]" variant="label" />
         </template>
       </Column>
 
