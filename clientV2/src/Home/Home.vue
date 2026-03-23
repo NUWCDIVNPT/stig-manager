@@ -24,10 +24,11 @@ useRouteTracking()
     }"
   >
     <MenuBar style="grid-area: header" />
-    <NavRail />
-    <main class="main">
-      <router-view />
-    </main>
+    <NavRail class="home-content">
+      <main class="main">
+        <router-view />
+      </main>
+    </NavRail>
   </div>
 </template>
 
@@ -35,18 +36,23 @@ useRouteTracking()
 .appGrid {
   display: grid;
   grid-template-areas:
-    'header header'
-    'rail main';
+    'header'
+    'content';
   grid-template-rows: auto 1fr;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr;
   width: 100vw;
   height: 100vh;
   overflow-y: hidden;
   overflow-x: auto;
   min-width: 300px;
 }
+
+.home-content {
+  grid-area: content;
+}
+
 .main {
-  grid-area: main;
+  height: 100%;
   overflow: hidden;
   position: relative;
 }

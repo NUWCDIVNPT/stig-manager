@@ -1,5 +1,7 @@
 <script setup>
 import Popover from 'primevue/popover'
+import Splitter from 'primevue/splitter'
+import SplitterPanel from 'primevue/splitterpanel'
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
@@ -14,6 +16,7 @@ const { user } = useGlobalAppStore()
 const { recentViews, clearViews } = useRecentViews()
 
 const expanded = ref(readStoredValue(STORAGE_KEY, 'false') === 'true')
+const isAnimating = ref(false)
 const recentViewsPopover = ref(null)
 
 const recentViewsPopoverPt = {
@@ -21,8 +24,13 @@ const recentViewsPopoverPt = {
 }
 
 function toggleExpanded() {
+  isAnimating.value = true
   expanded.value = !expanded.value
   storeValue(STORAGE_KEY, String(expanded.value))
+
+  setTimeout(() => {
+    isAnimating.value = false
+  }, 200)
 }
 
 const isAdmin = computed(() => user?.privileges?.admin)
@@ -90,142 +98,180 @@ function toggleRecentViewsPopover(event) {
 </script>
 
 <template>
-  <nav
-    class="nav-rail"
-    :class="{ 'nav-rail--expanded': expanded }"
+  <Splitter
+    class="nav-rail-splitter"
+    :pt="{
+      gutter: { style: 'background: var(--color-background-darkest)' },
+      root: { style: 'border: none; border-radius: 0; background: transparent; height: 100%; overflow: hidden;' },
+
+    }"
   >
-    <button
-      class="nav-rail-toggle"
-      :aria-label="expanded ? 'Collapse navigation' : 'Expand navigation'"
-      @click="toggleExpanded"
+    <SplitterPanel
+      :size="15"
+      :min-size="4"
+      :pt="{ root: { class: { 'nav-panel--collapsed': !expanded, 'nav-panel--animating': isAnimating }, style: 'min-width: 12rem; max-width: 35rem;' } }"
     >
-      <i :class="expanded ? 'pi pi-angle-left' : 'pi pi-angle-right'" />
-    </button>
-
-    <div class="nav-rail-items">
-      <template v-for="item in navItems" :key="item.key">
-        <NavRailCollectionsItem
-          v-if="item.key === 'collections'"
-          :expanded="expanded"
-          :active="item.matchFn()"
-          :label="item.label"
-          :icon-class="item.iconClass"
-        />
-
-        <router-link
-          v-else
-          :to="item.route"
-          class="nav-rail-item"
-          :class="{ 'nav-rail-item--active': item.matchFn() }"
-          :title="expanded ? undefined : item.label"
-        >
-          <span
-            v-if="item.icon"
-            class="nav-rail-item-icon"
-            :class="item.icon"
-          />
-          <span
-            v-else-if="item.iconClass"
-            class="nav-rail-item-icon nav-icon"
-            :class="item.iconClass"
-          />
-          <span v-if="expanded" class="nav-rail-item-label">{{ item.label }}</span>
-        </router-link>
-      </template>
-    </div>
-
-    <div class="nav-rail-separator" />
-
-    <template v-if="expanded">
-      <div class="nav-rail-section-header">
-        <div class="nav-rail-section-label">
-          Recent Views
-        </div>
+      <nav class="nav-rail">
         <button
-          v-if="recentViews.length > 0"
-          class="nav-rail-clear-btn"
-          title="Clear Recent Views"
-          @click="clearViews"
+          class="nav-rail-toggle"
+          :aria-label="expanded ? 'Collapse navigation' : 'Expand navigation'"
+          @click="toggleExpanded"
         >
-          <i class="pi pi-trash" />
+          <i :class="expanded ? 'pi pi-angle-left' : 'pi pi-angle-right'" />
         </button>
-      </div>
-      <div class="nav-rail-recent">
-        <router-link
-          v-for="view in recentViews"
-          :key="view.url"
-          :to="view.url"
-          class="nav-rail-recent-item"
-          :title="view.label"
-        >
-          <span
-            class="nav-rail-recent-icon"
-            :class="view.icon || typeIcon(view.type)"
-          />
-          <span class="nav-rail-recent-label">{{ view.label }}</span>
-        </router-link>
-        <div v-if="recentViews.length === 0" class="nav-rail-recent-empty">
-          No recent views
-        </div>
-      </div>
-    </template>
-    <template v-else>
-      <button
-        class="nav-rail-item nav-rail-item--icon-only"
-        title="Recent Views"
-        @click="toggleRecentViewsPopover"
-      >
-        <span class="nav-rail-item-icon pi pi-clock" />
-      </button>
-      <Popover ref="recentViewsPopover" :pt="recentViewsPopoverPt">
-        <div class="recent-views-popover-header">
-          <span>Recent Views</span>
-          <button
-            v-if="recentViews.length > 0"
-            class="nav-rail-clear-btn"
-            title="Clear Recent Views"
-            @click="clearViews"
-          >
-            <i class="pi pi-trash" />
-          </button>
-        </div>
-        <div class="recent-views-popover-list">
-          <router-link
-            v-for="view in recentViews"
-            :key="view.url"
-            :to="view.url"
-            class="recent-views-popover-item"
-            @click="recentViewsPopover.hide()"
-          >
-            <span
-              class="nav-rail-recent-icon"
-              :class="view.icon || typeIcon(view.type)"
+
+        <div class="nav-rail-items">
+          <template v-for="item in navItems" :key="item.key">
+            <NavRailCollectionsItem
+              v-if="item.key === 'collections'"
+              :expanded="expanded"
+              :active="item.matchFn()"
+              :label="item.label"
+              :icon-class="item.iconClass"
             />
-            <span>{{ view.label }}</span>
-          </router-link>
-          <div v-if="recentViews.length === 0" class="nav-rail-recent-empty">
-            No recent views
-          </div>
+
+            <router-link
+              v-else
+              :to="item.route"
+              class="nav-rail-item"
+              :class="{ 'nav-rail-item--active': item.matchFn() }"
+              :title="expanded ? undefined : item.label"
+            >
+              <span
+                v-if="item.icon"
+                class="nav-rail-item-icon"
+                :class="item.icon"
+              />
+              <span
+                v-else-if="item.iconClass"
+                class="nav-rail-item-icon nav-icon"
+                :class="item.iconClass"
+              />
+              <span v-if="expanded" class="nav-rail-item-label">{{ item.label }}</span>
+            </router-link>
+          </template>
         </div>
-      </Popover>
-    </template>
-  </nav>
+
+        <div class="nav-rail-separator" />
+
+        <template v-if="expanded">
+          <div class="nav-rail-section-header">
+            <div class="nav-rail-section-label">
+              Recent Views
+            </div>
+            <button
+              v-if="recentViews.length > 0"
+              class="nav-rail-clear-btn"
+              title="Clear Recent Views"
+              @click="clearViews"
+            >
+              <i class="pi pi-trash" />
+            </button>
+          </div>
+          <div class="nav-rail-recent">
+            <router-link
+              v-for="view in recentViews"
+              :key="view.url"
+              :to="view.url"
+              class="nav-rail-recent-item"
+              :title="view.label"
+            >
+              <span
+                class="nav-rail-recent-icon"
+                :class="view.icon || typeIcon(view.type)"
+              />
+              <span class="nav-rail-recent-label">{{ view.label }}</span>
+            </router-link>
+            <div v-if="recentViews.length === 0" class="nav-rail-recent-empty">
+              No recent views
+            </div>
+          </div>
+        </template>
+        <template v-else>
+          <button
+            class="nav-rail-item nav-rail-item--icon-only"
+            title="Recent Views"
+            @click="toggleRecentViewsPopover"
+          >
+            <span class="nav-rail-item-icon pi pi-clock" />
+          </button>
+          <Popover ref="recentViewsPopover" :pt="recentViewsPopoverPt">
+            <div class="recent-views-popover-header">
+              <span>Recent Views</span>
+              <button
+                v-if="recentViews.length > 0"
+                class="nav-rail-clear-btn"
+                title="Clear Recent Views"
+                @click="clearViews"
+              >
+                <i class="pi pi-trash" />
+              </button>
+            </div>
+            <div class="recent-views-popover-list">
+              <router-link
+                v-for="view in recentViews"
+                :key="view.url"
+                :to="view.url"
+                class="recent-views-popover-item"
+                @click="recentViewsPopover.hide()"
+              >
+                <span
+                  class="nav-rail-recent-icon"
+                  :class="view.icon || typeIcon(view.type)"
+                />
+                <span>{{ view.label }}</span>
+              </router-link>
+              <div v-if="recentViews.length === 0" class="nav-rail-recent-empty">
+                No recent views
+              </div>
+            </div>
+          </Popover>
+        </template>
+      </nav>
+    </SplitterPanel>
+    <SplitterPanel :size="85">
+      <slot />
+    </SplitterPanel>
+  </Splitter>
 </template>
 
 <style scoped>
 .nav-rail {
-  grid-area: rail;
   display: flex;
   flex-direction: column;
-  width: 4.35rem;
+  width: 100%;
+  height: 100%;
   background-color: var(--color-background-dark);
-  border-right: 1px solid var(--color-border-default);
-  overflow: hidden;
-  transition: width 0.2s ease;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-default) transparent;
 }
 
-.nav-rail--expanded {
-  width: 18rem;
+.nav-rail::-webkit-scrollbar {
+  width: 6px;
+}
+
+.nav-rail::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nav-rail::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.nav-rail::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-default);
+  border-radius: 999px;
+  border: none;
+  min-height: 28px;
+}
+
+.nav-rail::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-hover);
 }
 
 .nav-rail-toggle {
@@ -324,7 +370,7 @@ function toggleRecentViewsPopover(event) {
 .nav-rail-separator {
   height: 1px;
   margin: 0.35rem 0.75rem;
-  background-color: var(--color-border-default);
+  background-color: var(--color-background-dark);
   flex-shrink: 0;
 }
 
@@ -366,37 +412,8 @@ function toggleRecentViewsPopover(event) {
 }
 
 .nav-rail-recent {
-  flex: 1;
-  overflow-y: auto;
   padding: 0 0.35rem;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border-default) transparent;
-}
-
-.nav-rail-recent::-webkit-scrollbar {
-  width: 6px;
-}
-
-.nav-rail-recent::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.nav-rail-recent::-webkit-scrollbar-button {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
-.nav-rail-recent::-webkit-scrollbar-thumb {
-  background-color: var(--color-border-default);
-  border-radius: 999px;
-  border: none;
-  min-height: 28px;
-}
-
-.nav-rail-recent::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-border-hover);
+  padding-bottom: 0.5rem;
 }
 
 .nav-rail-recent-item {
@@ -442,7 +459,6 @@ function toggleRecentViewsPopover(event) {
   font-style: italic;
 }
 
-
 .recent-views-popover-header {
   padding: 0.75rem 1.1rem;
   font-size: 1rem;
@@ -457,7 +473,7 @@ function toggleRecentViewsPopover(event) {
   padding: 0.35rem;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border-default) transparent;
+  scrollbar-color: var(--color-background-dark) transparent;
 }
 
 .recent-views-popover-list::-webkit-scrollbar {
@@ -475,7 +491,7 @@ function toggleRecentViewsPopover(event) {
 }
 
 .recent-views-popover-list::-webkit-scrollbar-thumb {
-  background-color: var(--color-border-default);
+  background-color: var(--color-background-dark);
   border-radius: 999px;
   border: none;
   min-height: 28px;
@@ -501,5 +517,23 @@ function toggleRecentViewsPopover(event) {
 .recent-views-popover-item:hover {
   background-color: var(--color-button-hover-bg);
   color: var(--color-text-primary);
+}
+
+:deep(.nav-panel--animating) {
+  transition: flex-basis 0.2s ease, width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease !important;
+}
+
+:deep(.nav-panel--collapsed) {
+  flex: none !important;
+  flex-basis: 4.35rem !important;
+  width: 4.35rem !important;
+  min-width: 4.35rem !important;
+  max-width: 4.35rem !important;
+  overflow: hidden;
+}
+
+.nav-rail-splitter {
+  width: 100%;
+  height: 100%;
 }
 </style>

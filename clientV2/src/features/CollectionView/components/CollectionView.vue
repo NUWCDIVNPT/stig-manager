@@ -174,7 +174,7 @@ function toggleDashboardSidebar() {
     <Splitter
       :pt="{
         gutter: { style: 'background: var(--color-border-dark)' },
-        root: { style: 'border: none; background: transparent; height: 100%; overflow: hidden;' },
+        root: { style: 'border: none; border-radius: 0; background: transparent; height: 100%; overflow: hidden;' },
       }"
     >
       <!-- Dashboard Sidebar -->
@@ -334,8 +334,8 @@ function toggleDashboardSidebar() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
-  padding: 1rem 0;
+  gap: 1rem;
+  padding: 1.5rem 0;
 }
 
 .dot {

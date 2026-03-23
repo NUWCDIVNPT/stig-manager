@@ -258,6 +258,7 @@ const chartOptions = {
 
 .label {
   flex: 1;
+  font-size: 1.1rem;
 }
 
 .count {

@@ -101,7 +101,7 @@ const tabPanelPt = {
     <Splitter
       :pt="{
         gutter: { style: 'background: var(--color-border-dark)' },
-        root: { style: 'border: none; background: transparent; height: 100%; overflow: hidden;' },
+        root: { style: 'border: none; border-radius: 0; background: transparent; height: 100%; overflow: hidden;' },
       }"
     >
       <!-- Dashboard Sidebar -->
@@ -127,7 +127,9 @@ const tabPanelPt = {
           </div>
           <div v-show="!dashboardCollapsed" class="sidebar-content">
             <MetaCollectionMetrics vertical :selected-collection-ids="selectedCollectionIds" />
-            <MetaExportMetrics :selected-collection-ids="selectedCollectionIds" />
+            <div class="sidebar-export">
+              <MetaExportMetrics :selected-collection-ids="selectedCollectionIds" />
+            </div>
           </div>
         </aside>
       </SplitterPanel>
@@ -214,12 +216,12 @@ const tabPanelPt = {
   background-color: var(--color-button-hover-bg);
 }
 
-.sidebar-dots {
+.sidebar-icons {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
-  padding: 1rem 0;
+  gap: 1rem;
+  padding: 1.5rem 0;
 }
 
 .dot {
@@ -241,6 +243,10 @@ const tabPanelPt = {
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+.sidebar-export {
+  padding: 0 12px 12px;
 }
 
 /* Right Panel */
