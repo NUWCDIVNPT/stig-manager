@@ -157,12 +157,12 @@ function hide() {
   popover.value.hide()
 }
 
-// Reposition to a new anchor without hide/show cycle
 function reposition(event) {
   lastAnchorEvent.value = event
   const pv = popover.value
   pv.target = event.currentTarget
   pv.eventTarget = event.currentTarget
+  pv.container.classList.remove('p-popover-flipped')
   nextTick(() => pv.alignOverlay())
 }
 
