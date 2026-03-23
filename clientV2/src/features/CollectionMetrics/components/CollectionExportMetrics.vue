@@ -1,9 +1,10 @@
 <script setup>
 import Button from 'primevue/button'
 import Select from 'primevue/select'
-import { inject, reactive } from 'vue'
+import { inject, reactive, watch } from 'vue'
+import { readStoredValue, storeValue } from '../../../shared/lib/localStorage.js'
 import { useEnv } from '../../../../src/shared/stores/useEnv.js'
-import { handleDownload } from '../exportMetricsUtils.js'
+import { handleMetricDownload } from '../exportMetricsUtils.js'
 
 const props = defineProps({
   collectionId: {
@@ -17,6 +18,7 @@ const props = defineProps({
 })
 
 const oidcWorker = inject('worker')
+const STORAGE_BASE = 'collectionExport'
 
 const items = {
   aggregation: [
@@ -37,10 +39,14 @@ const items = {
 }
 
 const selected = reactive({
-  aggregation: 'collection',
-  style: 'summary',
-  format: 'json',
+  aggregation: readStoredValue(`${STORAGE_BASE}Agg`, 'collection'),
+  style: readStoredValue(`${STORAGE_BASE}Style`, 'summary'),
+  format: readStoredValue(`${STORAGE_BASE}Format`, 'json'),
 })
+
+watch(() => selected.aggregation, value => storeValue(`${STORAGE_BASE}Agg`, value))
+watch(() => selected.style, value => storeValue(`${STORAGE_BASE}Style`, value))
+watch(() => selected.format, value => storeValue(`${STORAGE_BASE}Format`, value))
 
 const buttonPt = {
   root: {
@@ -50,7 +56,7 @@ const buttonPt = {
 }
 
 async function download() {
-  await handleDownload({
+  await handleMetricDownload({
     format: selected.format,
     style: selected.style,
     aggregation: selected.aggregation,
@@ -60,6 +66,7 @@ async function download() {
     authToken: oidcWorker.token,
   })
 }
+
 </script>
 
 <template>

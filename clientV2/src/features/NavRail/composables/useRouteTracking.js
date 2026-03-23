@@ -1,3 +1,4 @@
+import { onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRecentViews } from './useRecentViews.js'
 
@@ -15,7 +16,7 @@ export function useRouteTracking() {
   const router = useRouter()
   const { addView } = useRecentViews()
 
-  router.afterEach((to) => {
+  const unregister = router.afterEach((to) => {
     const { name, fullPath } = to
 
     // Admin routes → one entry per admin section
@@ -38,6 +39,13 @@ export function useRouteTracking() {
         label: 'STIG Library',
         type: 'library',
       })
+    }
+  })
+
+  // Ensures we perfectly clean up the route watcher if component unmounts
+  onUnmounted(() => {
+    if (unregister) {
+      unregister()
     }
   })
 }

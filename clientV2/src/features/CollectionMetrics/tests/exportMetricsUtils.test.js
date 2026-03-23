@@ -2,7 +2,7 @@ import { saveAs } from 'file-saver-es'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiCall } from '../../../shared/api/apiClient.js'
 import { getDownloadUrl } from '../../../shared/serviceWorker.js'
-import { generateCsv, handleDownload, handleInventoryExport } from '../exportMetricsUtils'
+import { generateCsv, handleInventoryExport, handleMetricDownload } from '../exportMetricsUtils'
 
 // Mock dependencies
 vi.mock('../../../shared/api/apiClient.js', () => ({
@@ -211,7 +211,7 @@ describe('exportMetricsUtils', () => {
     })
   })
 
-  describe('handleDownload', () => {
+  describe('handleMetricDownload', () => {
     const params = {
       format: 'csv',
       style: 'summary',
@@ -234,7 +234,7 @@ describe('exportMetricsUtils', () => {
         value: 'http://initial',
       })
 
-      await handleDownload(params)
+      await handleMetricDownload(params)
 
       expect(getDownloadUrl).toHaveBeenCalled()
       expect(window.location).toBe('http://download-url')
@@ -254,7 +254,7 @@ describe('exportMetricsUtils', () => {
         blob: () => Promise.resolve(new Blob(['content'])),
       })
 
-      await handleDownload(params)
+      await handleMetricDownload(params)
 
       expect(getDownloadUrl).toHaveBeenCalled()
       expect(globalThis.fetch).toHaveBeenCalled()
@@ -265,10 +265,35 @@ describe('exportMetricsUtils', () => {
       getDownloadUrl.mockResolvedValue(null)
       globalThis.fetch.mockRejectedValue(new Error('Fetch failed'))
 
-      await handleDownload(params)
+      await handleMetricDownload(params)
 
       expect(triggerErrorMock).toHaveBeenCalledWith(expect.any(Error))
       expect(triggerErrorMock.mock.calls[0][0].message).toBe('Fetch failed')
+    })
+
+    it('should generate correct meta URL when isMeta is true', async () => {
+      getDownloadUrl.mockResolvedValue(null)
+      globalThis.fetch.mockResolvedValue({
+        ok: true,
+        blob: () => Promise.resolve(new Blob(['content'])),
+      })
+
+      const metaParams = {
+        format: 'csv',
+        style: 'detail',
+        aggregation: 'unagg',
+        baseParams: { collectionId: ['col1', 'col2'] },
+        isMeta: true,
+        apiUrl: 'http://api',
+        authToken: 'token',
+      }
+
+      await handleMetricDownload(metaParams)
+
+      expect(getDownloadUrl).toHaveBeenCalled()
+      const urlCallArgs = getDownloadUrl.mock.calls[0][0]
+      expect(urlCallArgs.url).toContain('http://api/collections/meta/metrics/detail?collectionId=col1&collectionId=col2&format=csv')
+      expect(globalThis.fetch).toHaveBeenCalled()
     })
   })
 })
