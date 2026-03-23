@@ -9,10 +9,6 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  action: {
-    type: String,
-    default: '',
-  },
   disabled: {
     type: Boolean,
     default: false,
@@ -33,7 +29,10 @@ const actionIcon = computed(() => {
   if (label === 'submit') {
     return submitIcon
   }
-  return saveIcon
+  if (label === 'save') {
+    return saveIcon
+  }
+  return null
 })
 </script>
 
@@ -47,7 +46,7 @@ const actionIcon = computed(() => {
     :disabled="disabled"
     @click="$emit('click')"
   >
-    <img :src="actionIcon" class="status-button__icon">
+    <img v-if="actionIcon" :src="actionIcon" class="status-button__icon">
     <span>{{ label }}</span>
   </button>
 </template>

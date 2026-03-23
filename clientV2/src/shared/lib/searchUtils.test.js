@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { escapeHtml, fieldMatches, getMatchedFields, highlightText } from './searchUtils.js'
+import { fieldMatches, getMatchedFields, highlightText } from './searchUtils.js'
+import { escapeHtml } from './htmlUtils.js'
 
 describe('escapeHtml', () => {
   it('should escape &, <, >, "', () => {

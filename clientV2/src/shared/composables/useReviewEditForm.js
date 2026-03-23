@@ -1,4 +1,5 @@
 import { computed, ref, watch } from 'vue'
+import { escapeHtml } from '../lib/htmlUtils.js'
 import { getReviewButtonStates } from '../lib/reviewButtonStates.js'
 import { formatReviewDate, isFieldEnabled, isFieldRequired } from '../lib/reviewFormUtils.js'
 
@@ -110,13 +111,13 @@ export function useReviewEditForm({ rowData, fieldSettings, accessMode, canAccep
     }
     const lines = []
     if (re.version) {
-      lines.push(`<b>Version</b><br>${re.version}`)
+      lines.push(`<b>Version</b><br>${escapeHtml(re.version)}`)
     }
     if (re.time) {
-      lines.push(`<b>Time</b><br>${formatReviewDate(re.time)}`)
+      lines.push(`<b>Time</b><br>${escapeHtml(formatReviewDate(re.time))}`)
     }
     if (re.checkContent?.location) {
-      lines.push(`<b>Check content</b><br>${re.checkContent.location}`)
+      lines.push(`<b>Check content</b><br>${escapeHtml(re.checkContent.location)}`)
     }
     return lines.join('<br>')
   })
@@ -129,12 +130,12 @@ export function useReviewEditForm({ rowData, fieldSettings, accessMode, canAccep
     return overrides.map((o) => {
       const lines = []
       if (o.authority) {
-        lines.push(`<b>Authority</b><br>${o.authority}`)
+        lines.push(`<b>Authority</b><br>${escapeHtml(o.authority)}`)
       }
       if (o.remark) {
-        lines.push(`<b>Remark</b><br>${o.remark}`)
+        lines.push(`<b>Remark</b><br>${escapeHtml(o.remark)}`)
       }
-      lines.push(`<b>Old result</b>: ${o.oldResult || '\u2014'} \u2192 <b>New result</b>: ${o.newResult || '\u2014'}`)
+      lines.push(`<b>Old result</b>: ${escapeHtml(o.oldResult || '\u2014')} \u2192 <b>New result</b>: ${escapeHtml(o.newResult || '\u2014')}`)
       return lines.join('<br>')
     }).join('<hr style="margin: 0.3rem 0; opacity: 0.3">')
   })

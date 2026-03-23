@@ -2,16 +2,7 @@
  * Reusable search/filter utilities for text highlighting and field matching.
  */
 
-/**
- * Escape HTML entities to prevent XSS when using v-html.
- */
-export function escapeHtml(str) {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
+import { escapeHtml } from './htmlUtils.js'
 
 /**
  * Return HTML string with matched substrings wrapped in <mark class="search-highlight">.
