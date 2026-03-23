@@ -29,7 +29,6 @@ export function useRecentViews() {
     if (!key || !url || !label) {
       return
     }
-
     // Remove existing entry with same key
     const filtered = recentViews.value.filter(v => v.key !== key)
 
@@ -70,3 +69,4 @@ export function useRecentViews() {
     clearViews,
   }
 }
+// recientViews object: { key: string, url: string, label: string, type: string, icon: string, timestamp: number }

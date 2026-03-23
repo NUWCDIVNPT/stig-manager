@@ -2,9 +2,9 @@
 import Button from 'primevue/button'
 import Select from 'primevue/select'
 import { inject, reactive, watch } from 'vue'
-import { readStoredValue, storeValue } from '../../../shared/lib/localStorage.js'
 import { useEnv } from '../../../../src/shared/stores/useEnv.js'
-import { handleDownload } from '../exportMetricsUtils.js'
+import { readStoredValue, storeValue } from '../../../shared/lib/localStorage.js'
+import { handleMetricDownload } from '../exportMetricsUtils.js'
 
 const props = defineProps({
   collectionId: {
@@ -56,17 +56,17 @@ const buttonPt = {
 }
 
 async function download() {
-  await handleDownload({
+  await handleMetricDownload({
     format: selected.format,
     style: selected.style,
     aggregation: selected.aggregation,
     collectionId: props.collectionId,
+    isMeta: false,
     collectionName: props.collectionName,
     apiUrl: useEnv().apiUrl,
     authToken: oidcWorker.token,
   })
 }
-
 </script>
 
 <template>

@@ -42,6 +42,7 @@ const fetchMetrics = () => {
 
 const { state: metrics, isLoading, error: errorMessage, execute: loadMetrics } = useAsyncState(
   fetchMetrics,
+  { immediate: false },
 )
 
 watch([() => props.collectionId, () => props.selectedLabelIds], loadMetrics, { immediate: true, deep: true })

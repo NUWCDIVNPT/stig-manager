@@ -10,10 +10,10 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
-import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import MetricsFilter from '../../CollectionMetrics/components/MetricsFilter.vue'
+import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchCollection } from '../api/collectionApi.js'
 import CollectionAssetsTab from './CollectionAssetsTab.vue'
 import CollectionLabelsTab from './CollectionLabelsTab.vue'
@@ -276,7 +276,7 @@ function toggleDashboardSidebar() {
             </TabPanels>
           </Tabs>
         </div>
-      </SplitterPanel>
+      </splitterpanel>
     </Splitter>
   </div>
 </template>

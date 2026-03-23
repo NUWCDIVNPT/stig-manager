@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import MenuBar from '../features/MenuBar/components/MenuBar.vue'
 import NavRail from '../features/NavRail/components/NavRail.vue'
-import { useRouteTracking } from '../shared/composables/useRouteTracking.js'
 import { useGlobalAppStore } from '../shared/stores/globalAppStore.js'
 
 const globalAppState = useGlobalAppStore()
@@ -12,8 +11,6 @@ const bannerHeight = computed(() => {
   const cls = globalAppState.classification
   return cls && cls !== 'NONE' ? '20px' : '0px'
 })
-
-useRouteTracking()
 </script>
 
 <template>

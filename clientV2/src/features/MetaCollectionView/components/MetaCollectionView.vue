@@ -169,6 +169,8 @@ const tabPanelPt = {
 
 <style scoped>
 .meta-collection-view {
+  --dashboard-sidebar-width: 33rem;
+  --dashboard-sidebar-collapsed-width: 2.5rem;
   display: flex;
   flex-direction: column;
   height: 100%;
