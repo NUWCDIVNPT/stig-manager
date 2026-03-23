@@ -219,7 +219,7 @@ defineExpose({ asset })
         }"
         style="height: 100%"
       >
-        <SplitterPanel :size="65" :min-size="30">
+        <SplitterPanel :size="70" :min-size="40">
           <ChecklistGrid
             :grid-data="workspace.gridData.value"
             :is-loading="workspace.isChecklistLoading.value"
@@ -236,7 +236,7 @@ defineExpose({ asset })
             @refresh="onGridRefresh"
           />
         </SplitterPanel>
-        <SplitterPanel :size="35" :min-size="20">
+        <SplitterPanel :size="30" :min-size="20">
           <RuleDetailPanel
             :rule-content="workspace.ruleContent.value"
             :is-rule-loading="workspace.isRuleLoading.value"

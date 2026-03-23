@@ -325,7 +325,7 @@ const dataTablePt = {
       @row-click="onRowClick"
       @pointerdown.stop
     >
-      <Column header="CAT" field="severity" sortable :style="{ width: '4rem' }">
+      <Column header="CAT" field="severity" sortable :style="{ width: '5rem' }">
         <template #body="{ data }">
           <CatBadge :category="severityMap[data.severity]" variant="label" />
         </template>
@@ -336,7 +336,7 @@ const dataTablePt = {
         header="Group"
         field="groupId"
         sortable
-        :style="{ width: '6rem' }"
+        :style="{ width: '7rem' }"
       >
         <template #body="{ data }">
           <span class="cell-text--mono" :class="{ 'cell--match': searchTerm && fieldMatches(data.groupId, searchTerm) }">
@@ -391,7 +391,7 @@ const dataTablePt = {
         </template>
       </Column>
 
-      <Column header="Result" field="result" sortable :style="{ width: '4rem' }">
+      <Column header="Result" field="result" sortable :style="{ width: '5rem' }">
         <template #body="{ data }">
           <div
             data-result-cell
@@ -430,7 +430,7 @@ const dataTablePt = {
         </template>
       </Column>
 
-      <Column field="resultEngine" sortable sort-field="resultEngine.product" :style="{ width: '2.5rem' }">
+      <Column field="resultEngine" sortable sort-field="resultEngine.product" :style="{ width: '3rem' }">
         <template #header>
           <img
             src="../../../assets/bot2.svg"
@@ -457,7 +457,7 @@ const dataTablePt = {
         </template>
       </Column>
 
-      <Column header="Status" field="status" sortable sort-field="status.label" :style="{ width: '4rem' }">
+      <Column header="Status" field="status" sortable sort-field="status.label" :style="{ width: '5rem' }">
         <template #body="{ data }">
           <StatusBadge v-if="data.status" :status="data.status?.label ?? data.status" />
         </template>
