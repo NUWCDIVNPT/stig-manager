@@ -3,6 +3,10 @@ import { fetchCurrentUser } from '../../../shared/api/userApi.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 
+export { fetchAssetStigs } from '../../../shared/api/assetsApi.js'
+export { fetchCollection, fetchCollectionLabels } from '../../../shared/api/collectionsApi.js'
+export { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
+
 export async function deleteCollection(collectionId) {
   if (!collectionId) {
     throw new Error('A collectionId is required to delete a collection.')
@@ -23,13 +27,6 @@ export async function deleteCollection(collectionId) {
   }
 
   return result
-}
-
-export function fetchCollection(collectionId) {
-  if (!collectionId) {
-    throw new Error('A collectionId is required to fetch collection details.')
-  }
-  return apiCall('getCollection', { collectionId })
 }
 
 export function fetchCollectionAssetSummary(collectionId, options = {}) {
@@ -57,13 +54,6 @@ export function fetchCollectionLabelSummary(collectionId, params = {}) {
   return apiCall('getMetricsSummaryByCollectionAggLabel', { collectionId, ...params })
 }
 
-export function fetchCollectionLabels(collectionId) {
-  if (!collectionId) {
-    throw new Error('A collectionId is required to fetch collection labels.')
-  }
-  return apiCall('getCollectionLabels', { collectionId })
-}
-
 export function fetchCollectionChecklistAssets(collectionId, benchmarkId, params = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch checklist assets.')
@@ -89,17 +79,4 @@ export function fetchCollectionMetricsSummary(collectionId) {
     throw new Error('A collectionId is required to fetch collection metrics.')
   }
   return apiCall('getMetricsSummaryByCollectionAgg', { collectionId })
-}
-
-export function fetchStigRevisions(benchmarkId) {
-  if (!benchmarkId) {
-    throw new Error('A benchmarkId is required to fetch STIG revisions.')
-  }
-  return apiCall('getRevisionsByBenchmarkId', { benchmarkId })
-}
-export function fetchAssetStigs(assetId) {
-  if (!assetId) {
-    throw new Error('An assetId is required to fetch asset STIGs.')
-  }
-  return apiCall('getStigsByAsset', { assetId })
 }

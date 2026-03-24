@@ -24,6 +24,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  filteredCount: {
+    type: Number,
+    default: null,
+  },
   showSelected: {
     type: Boolean,
     default: false,
@@ -159,11 +163,17 @@ function onActionClick(action) {
 
       <div
         class="status-footer__info-box status-footer__metric-total"
-        title="Total rows"
+        :title="filteredCount !== null ? `Showing ${filteredCount} of ${totalCount} rows` : 'Total rows'"
       >
         <i class="status-footer__info-icon pi pi-list" aria-hidden="true" />
-        <span class="status-footer__info-value">{{ totalCount }}</span>
-        <span class="status-footer__info-label">rows</span>
+        <template v-if="filteredCount !== null">
+          <span class="status-footer__info-value">{{ filteredCount }}</span>
+          <span class="status-footer__info-label">of {{ totalCount }} rows</span>
+        </template>
+        <template v-else>
+          <span class="status-footer__info-value">{{ totalCount }}</span>
+          <span class="status-footer__info-label">rows</span>
+        </template>
       </div>
     </div>
   </div>
