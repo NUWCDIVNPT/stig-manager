@@ -7,6 +7,10 @@ const props = defineProps({
     required: false,
     default: () => ({ assets: 0, stigs: 0, checklists: 0 }),
   },
+  showExportAction: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 defineEmits(['export'])
@@ -31,7 +35,7 @@ const data = computed(() => {
       <h3 class="metric-title">
         Inventory
       </h3>
-      <div class="metric-actions">
+      <div v-if="showExportAction" class="metric-actions">
         <span class="metric-action-link" @click="$emit('export')">Export...</span>
       </div>
     </div>
@@ -52,7 +56,7 @@ const data = computed(() => {
       <h3 class="metric-title">
         Inventory
       </h3>
-      <div class="metric-actions">
+      <div v-if="showExportAction" class="metric-actions">
         <span class="metric-action-link" @click="$emit('export')">Export...</span>
       </div>
     </div>

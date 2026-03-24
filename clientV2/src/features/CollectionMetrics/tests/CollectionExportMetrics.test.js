@@ -2,7 +2,7 @@ import { userEvent } from '@testing-library/user-event'
 import { screen } from '@testing-library/vue'
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
-import ExportMetrics from '../components/ExportMetrics.vue'
+import CollectionExportMetrics from '../components/CollectionExportMetrics.vue'
 
 vi.mock('../../../../src/shared/stores/useEnv.js', () => ({
   useEnv: () => ({
@@ -11,13 +11,13 @@ vi.mock('../../../../src/shared/stores/useEnv.js', () => ({
 }))
 
 // we are hoisting this so that later we can mock it?
-const { handleDownloadMock } = vi.hoisted(() => ({
-  handleDownloadMock: vi.fn(),
+const { handleMetricDownloadMock } = vi.hoisted(() => ({
+  handleMetricDownloadMock: vi.fn(),
 }))
 
 vi.mock('../exportMetricsUtils.js', () => ({
   // mock the handleDownload function
-  handleDownload: handleDownloadMock,
+  handleMetricDownload: handleMetricDownloadMock,
 }))
 /**
  * AI explaination:
@@ -37,9 +37,9 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-describe('exportMetrics', () => {
+describe('collectionExportMetrics', () => {
   it('renders correctly', () => {
-    renderWithProviders(ExportMetrics, {
+    renderWithProviders(CollectionExportMetrics, {
       props: {
         collectionId: '123',
         collectionName: 'MyCollection',
@@ -57,7 +57,7 @@ describe('exportMetrics', () => {
   })
 
   it('calls handleDownload from composable when download button is clicked', async () => {
-    renderWithProviders(ExportMetrics, {
+    renderWithProviders(CollectionExportMetrics, {
       props: {
         collectionId: '123',
         collectionName: 'MyCollection',
@@ -70,8 +70,8 @@ describe('exportMetrics', () => {
 
     await user.click(downloadBtn)
 
-    expect(handleDownloadMock).toHaveBeenCalledTimes(1)
-    expect(handleDownloadMock).toHaveBeenCalledWith(expect.objectContaining({
+    expect(handleMetricDownloadMock).toHaveBeenCalledTimes(1)
+    expect(handleMetricDownloadMock).toHaveBeenCalledWith(expect.objectContaining({
       collectionId: '123',
       collectionName: 'MyCollection',
     }))

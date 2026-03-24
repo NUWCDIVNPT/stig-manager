@@ -1,0 +1,89 @@
+<script setup>
+import { computed } from 'vue'
+import saveIcon from '../../assets/save-icon-60.svg'
+import starIcon from '../../assets/star.svg'
+import submitIcon from '../../assets/submit.svg'
+
+const props = defineProps({
+  label: {
+    type: String,
+    required: true,
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
+  active: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+defineEmits(['click'])
+
+const actionIcon = computed(() => {
+  const label = props.label.toLowerCase()
+  if (label === 'accept') {
+    return starIcon
+  }
+  if (label === 'submit') {
+    return submitIcon
+  }
+  if (label === 'save' || label === 'unsubmit') {
+    return saveIcon
+  }
+  return null
+})
+</script>
+
+<template>
+  <button
+    class="status-button"
+    :class="{
+      'status-button--disabled': disabled,
+      'status-button--active': active,
+    }"
+    :disabled="disabled"
+    @click="$emit('click')"
+  >
+    <img v-if="actionIcon" :src="actionIcon" class="status-button__icon">
+    <span>{{ label }}</span>
+  </button>
+</template>
+
+<style scoped>
+.status-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  background-color: var(--color-background-dark);
+  border: 1px solid var(--color-border-default);
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.status-button:hover:not(:disabled) {
+  background-color: var(--color-background-light);
+}
+
+.status-button--active {
+  border-color: var(--color-shield-green-dark);
+  background-color: var(--color-background-dark);
+}
+
+.status-button--disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.status-button__icon {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+}
+</style>

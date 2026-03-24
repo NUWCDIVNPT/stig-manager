@@ -1,17 +1,19 @@
 <script setup>
-import { computed, watch } from 'vue'
+import Splitter from 'primevue/splitter'
+import SplitterPanel from 'primevue/splitterpanel'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useDebouncedRef } from '../../../shared/composables/useDebouncedRef.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
-import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
+import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import {
   fetchAsset,
   fetchCollectionLabels,
 } from '../api/assetReviewApi.js'
-import ChecklistInfo from './ChecklistInfo.vue'
-import ReviewForm from './ReviewForm.vue'
-import ReviewResources from './ReviewResources.vue'
-import RuleInfo from './RuleInfo.vue'
+import { useReviewWorkspace } from '../composables/useReviewWorkspace.js'
+import ChecklistGrid from './ChecklistGrid.vue'
+import RuleDetailPanel from './RuleDetailPanel.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,9 +21,11 @@ const { addView, removeView } = useRecentViews()
 
 const collectionId = computed(() => route.params.collectionId)
 const assetId = computed(() => route.params.assetId)
+const benchmarkId = computed(() => route.params.benchmarkId)
+const revisionStr = computed(() => route.params.revisionStr)
 
 // Fetch Asset Details
-const { state: asset, isLoading, errorMessage: error, execute: loadAsset } = useAsyncState(
+const { state: asset, isLoading, error, execute: loadAsset } = useAsyncState(
   () => fetchAsset(assetId.value),
   {
     immediate: false,
@@ -32,7 +36,6 @@ const { state: asset, isLoading, errorMessage: error, execute: loadAsset } = use
         router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
       }
       else {
-        // useAsyncState handles the default triggerError if we don't return early
         const { triggerError } = useGlobalError()
         triggerError(err)
       }
@@ -45,6 +48,9 @@ const { state: collectionLabels, execute: loadCollectionLabels } = useAsyncState
   () => fetchCollectionLabels(collectionId.value),
   { initialState: [], immediate: false },
 )
+
+// Review workspace composable
+const workspace = useReviewWorkspace({ collectionId, assetId, benchmarkId, revisionStr })
 
 // Update recent views when asset loads or params change
 watch(
@@ -69,6 +75,7 @@ watch([assetId, collectionId], () => {
   }
   if (collectionId.value) {
     loadCollectionLabels()
+    workspace.loadWorkspace()
   }
 }, { immediate: true })
 
@@ -100,6 +107,29 @@ const resolvedLabels = computed(() => {
     }))
 })
 
+// Grid mode event handlers
+function onRowSave({ ruleId, result, detail, comment, status }) {
+  workspace.saveFullReview(ruleId, { result, detail, comment, status })
+}
+
+function onStatusAction({ ruleId, actionType }) {
+  workspace.saveStatusAction(ruleId, actionType)
+}
+
+function onGridRefresh() {
+  workspace.loadChecklist()
+  workspace.loadAllReviews()
+}
+
+// Search filter
+const searchFilter = useDebouncedRef('', 250)
+const searchInput = ref(null)
+
+function clearSearch() {
+  searchFilter.immediate('')
+  searchInput.value?.focus()
+}
+
 // Expose asset
 defineExpose({ asset })
 </script>
@@ -111,7 +141,7 @@ defineExpose({ asset })
         <div class="asset-review__header-info">
           <div class="asset-review__title-row">
             <h1 class="asset-review__title">
-              {{ asset.name }}
+              Asset: {{ asset.name }}
             </h1>
             <div v-if="resolvedLabels.length" class="asset-review__labels">
               <span
@@ -127,7 +157,7 @@ defineExpose({ asset })
           <div class="asset-review__meta">
             <span class="asset-review__meta-item">
               <i class="pi pi-hashtag" />
-              {{ asset.assetId }}
+              ID:{{ asset.assetId }}
             </span>
             <span v-if="asset.ip" class="asset-review__meta-item">
               <i class="pi pi-globe" />
@@ -148,14 +178,20 @@ defineExpose({ asset })
           </div>
         </div>
         <div class="asset-review__header-actions">
-          <!-- Search reviews input from CollectionView could be moved here if needed -->
           <div class="search-reviews">
             <i class="pi pi-search search-reviews__icon" />
             <input
+              ref="searchInput"
+              v-model="searchFilter"
               type="text"
               class="search-reviews__input"
               placeholder="Search reviews..."
             >
+            <i
+              v-if="searchFilter"
+              class="pi pi-times search-reviews__clear"
+              @click="clearSearch"
+            />
           </div>
           <button type="button" class="action-btn" title="Import checklist">
             <i class="pi pi-upload" />
@@ -176,24 +212,40 @@ defineExpose({ asset })
       {{ error || 'Error loading asset' }}
     </div>
     <div v-else-if="asset" class="asset-review__content">
-      <div class="asset-review__grid">
-        <section class="grid-column">
-          <ChecklistInfo />
-        </section>
-
-        <section class="grid-column">
-          <RuleInfo />
-        </section>
-
-        <section class="grid-column split-column">
-          <div class="split-row">
-            <ReviewResources />
-          </div>
-          <div class="split-row">
-            <ReviewForm />
-          </div>
-        </section>
-      </div>
+      <Splitter
+        :pt="{
+          gutter: { style: 'background: var(--color-border-dark)' },
+          root: { style: 'border: none; background: transparent' },
+        }"
+        style="height: 100%"
+      >
+        <SplitterPanel :size="70" :min-size="40">
+          <ChecklistGrid
+            :grid-data="workspace.gridData.value"
+            :is-loading="workspace.isChecklistLoading.value"
+            :selected-rule-id="workspace.selectedRuleId.value"
+            :access-mode="workspace.accessMode.value"
+            :revision-info="workspace.revisionInfo.value"
+            :field-settings="workspace.fieldSettings.value"
+            :can-accept="workspace.canAccept.value"
+            :is-saving="workspace.isSaving.value"
+            :search-filter="searchFilter"
+            @select-rule="workspace.selectRule"
+            @row-save="onRowSave"
+            @status-action="onStatusAction"
+            @refresh="onGridRefresh"
+          />
+        </SplitterPanel>
+        <SplitterPanel :size="30" :min-size="20">
+          <RuleDetailPanel
+            :rule-content="workspace.ruleContent.value"
+            :is-rule-loading="workspace.isRuleLoading.value"
+            :selected-checklist-item="workspace.selectedChecklistItem.value"
+            :current-review="workspace.currentReview.value"
+            :review-history="workspace.reviewHistory.value"
+          />
+        </SplitterPanel>
+      </Splitter>
     </div>
     <div v-else class="asset-review__empty">
       Asset not found.
@@ -213,15 +265,14 @@ defineExpose({ asset })
 
 .asset-review__header {
   flex: 0 0 auto;
-  padding: 0.5rem 1rem;
+  padding: 0.35rem 0.75rem;
   background-color: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-default);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
-/* Header Info Styles */
 .asset-review__header-main {
   display: flex;
   justify-content: space-between;
@@ -239,11 +290,11 @@ defineExpose({ asset })
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .asset-review__title {
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   margin: 0;
   font-weight: 600;
 }
@@ -261,7 +312,7 @@ defineExpose({ asset })
   background-color: var(--color-action-blue);
   color: var(--color-text-bright);
   border-radius: 9999px;
-  font-size: 0.7rem;
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
@@ -270,7 +321,7 @@ defineExpose({ asset })
   flex-wrap: wrap;
   gap: 1rem;
   color: var(--color-text-dim);
-  font-size: 0.8rem;
+  font-size: 1rem;
 }
 
 .asset-review__meta-item {
@@ -298,7 +349,6 @@ defineExpose({ asset })
   align-items: center;
 }
 
-/* Action Buttons */
 .action-btn {
   display: inline-flex;
   align-items: center;
@@ -322,7 +372,6 @@ defineExpose({ asset })
   font-size: 0.85rem;
 }
 
-/* Search Box */
 .search-reviews {
   display: flex;
   align-items: center;
@@ -359,38 +408,24 @@ defineExpose({ asset })
   background-color: var(--color-background-dark);
 }
 
-/* Content Grid */
+.search-reviews__clear {
+  position: absolute;
+  right: 0.5rem;
+  color: var(--color-text-dim);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.search-reviews__clear:hover {
+  color: var(--color-text-primary);
+}
+
+.search-reviews__input:not(:placeholder-shown) {
+  padding-right: 1.75rem;
+}
+
 .asset-review__content {
   flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.asset-review__grid {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 1rem;
-  padding: 1rem;
-  overflow: hidden;
-}
-
-.grid-column {
-  min-width: 0;
-  height: 100%;
-  overflow: hidden;
-}
-
-.split-column {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.split-row {
-  flex: 1;
-  min-height: 0;
   overflow: hidden;
 }
 

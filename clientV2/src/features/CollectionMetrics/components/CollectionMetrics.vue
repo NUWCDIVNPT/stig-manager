@@ -1,12 +1,13 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionMetricsSummary } from '../api/metricsApi.js'
 import { useCollectionCora } from '../composables/useCollectionCora.js'
 import { useCollectionProgress } from '../composables/useCollectionProgress.js'
 import { useCollectionStats } from '../composables/useCollectionStats.js'
+import CollectionExportMetrics from './CollectionExportMetrics.vue'
 import Cora from './Cora.vue'
-import ExportMetrics from './ExportMetrics.vue'
 import ExportMetricsModal from './ExportMetricsModal.vue'
 import FindingsStats from './FindingsStats.vue'
 import InventoryStats from './InventoryStats.vue'
@@ -26,13 +27,25 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  selectedLabelIds: {
+    type: Array,
+    default: () => [],
+  },
 })
 
+const fetchMetrics = () => {
+  return fetchCollectionMetricsSummary(
+    props.collectionId,
+    buildLabelFilterParams(props.selectedLabelIds),
+  )
+}
+
 const { state: metrics, isLoading, error: errorMessage, execute: loadMetrics } = useAsyncState(
-  () => fetchCollectionMetricsSummary(props.collectionId),
+  fetchMetrics,
+  { immediate: false },
 )
 
-watch(() => props.collectionId, loadMetrics, { immediate: true })
+watch([() => props.collectionId, () => props.selectedLabelIds], loadMetrics, { immediate: true, deep: true })
 
 // hint metrics is reactive cuz it's from a query
 const { stats: progressStats } = useCollectionProgress(metrics)
@@ -57,7 +70,7 @@ const showExportModal = ref(false)
         <FindingsStats :findings="findings" />
         <ReviewAgesStats :ages="ages" />
       </div>
-      <ExportMetrics v-if="!vertical" :collection-id="props.collectionId" :collection-name="props.collectionName" />
+      <CollectionExportMetrics v-if="!vertical" :collection-id="props.collectionId" :collection-name="props.collectionName" />
       <ExportMetricsModal v-model:visible="showExportModal" :collection-id="props.collectionId" :collection-name="props.collectionName" />
     </div>
   </div>
