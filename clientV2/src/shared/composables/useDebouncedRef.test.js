@@ -59,6 +59,33 @@ describe('useDebouncedRef', () => {
     expect(callback).toHaveBeenCalledWith('third', 'initial', expect.anything())
   })
 
+  it('should update immediately when immediate() is called', async () => {
+    const ref = useDebouncedRef('initial', 300)
+    const callback = vi.fn()
+    watch(ref, callback)
+
+    ref.immediate('updated')
+    await nextTick()
+
+    expect(ref.value).toBe('updated')
+    expect(callback).toHaveBeenCalledWith('updated', 'initial', expect.anything())
+  })
+
+  it('should cancel pending debounce when immediate() is called', async () => {
+    const ref = useDebouncedRef('initial', 300)
+    const callback = vi.fn()
+    watch(ref, callback)
+
+    ref.value = 'debounced'
+    ref.immediate('instant')
+    vi.advanceTimersByTime(300)
+    await nextTick()
+
+    expect(ref.value).toBe('instant')
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(callback).toHaveBeenCalledWith('instant', 'initial', expect.anything())
+  })
+
   it('should use default delay of 200ms', async () => {
     const ref = useDebouncedRef('initial')
     const callback = vi.fn()

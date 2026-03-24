@@ -276,7 +276,6 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
           <label class="review-edit-popover__label">Status</label>
           <StatusButton
             :label="buttonStates.save.text"
-            :action="buttonStates.save.actionType"
             :disabled="!buttonStates.save.enabled || isSaving"
             :active="isActionActive(buttonStates.save.actionType)"
             :title="buttonStates.save.tooltip"
@@ -285,7 +284,6 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
           />
           <StatusButton
             :label="buttonStates.submit.text"
-            :action="buttonStates.submit.actionType"
             :disabled="!buttonStates.submit.enabled || isSaving"
             :active="isActionActive(buttonStates.submit.actionType)"
             :title="buttonStates.submit.tooltip"
@@ -294,7 +292,6 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
           <StatusButton
             v-if="buttonStates.accept.visible"
             :label="buttonStates.accept.text"
-            :action="buttonStates.accept.actionType"
             :disabled="!buttonStates.accept.enabled || isSaving"
             :active="isActionActive(buttonStates.accept.actionType)"
             :title="buttonStates.accept.tooltip"

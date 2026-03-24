@@ -126,7 +126,7 @@ const searchFilter = useDebouncedRef('', 250)
 const searchInput = ref(null)
 
 function clearSearch() {
-  searchFilter.value = ''
+  searchFilter.immediate('')
   searchInput.value?.focus()
 }
 

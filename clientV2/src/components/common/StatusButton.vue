@@ -29,7 +29,7 @@ const actionIcon = computed(() => {
   if (label === 'submit') {
     return submitIcon
   }
-  if (label === 'save') {
+  if (label === 'save' || label === 'unsubmit') {
     return saveIcon
   }
   return null

@@ -2,7 +2,9 @@ import { customRef } from 'vue'
 
 export function useDebouncedRef(value, delay = 200) {
   let timeout
-  return customRef((track, trigger) => {
+  let triggerFn
+  const ref = customRef((track, trigger) => {
+    triggerFn = trigger
     return {
       get() {
         track()
@@ -17,4 +19,10 @@ export function useDebouncedRef(value, delay = 200) {
       },
     }
   })
+  ref.immediate = (newValue) => {
+    clearTimeout(timeout)
+    value = newValue
+    triggerFn()
+  }
+  return ref
 }
