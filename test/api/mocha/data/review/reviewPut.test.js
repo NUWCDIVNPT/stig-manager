@@ -120,7 +120,7 @@ describe('PUT - Review', () => {
 
                     let cklData
 
-                    const parser = new XMLParser()
+                    const parser = new XMLParser({ processEntities: { enabled: true, maxTotalExpansions: 200000 } })
                     cklData = parser.parse(review)
           
                     let cklIStigs = cklData.CHECKLIST.STIGS.iSTIG
