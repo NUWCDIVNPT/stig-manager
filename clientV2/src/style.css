@@ -244,6 +244,17 @@ textarea:focus {
   background: var(--color-background-dark) !important;
 }
 
+
+/* PrimeVue Splitter global hover style */
+.p-splitter .p-splitter-gutter {
+  transition: background-color 0.2s ease !important;
+  border-radius: 4px !important;
+}
+.p-splitter .p-splitter-gutter:hover {
+  background-color: var(--color-bg-hover-light) !important;
+}
+
+
 @font-face {
   font-family: 'Open Sans';
   font-style: normal;

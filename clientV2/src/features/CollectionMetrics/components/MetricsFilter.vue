@@ -130,16 +130,27 @@ function syncDraftFromModel() {
 }
 
 function toDraftValues(values = []) {
+  if (!values) {
+    return []
+  }
   return values.map(value => value === null ? NO_LABEL_SENTINEL : value)
 }
 
 function toModelValues(values = []) {
+  if (!values) {
+    return []
+  }
   return values.map(value => value === NO_LABEL_SENTINEL ? null : value)
 }
 
 function applyFilters() {
   emit('update:modelValue', toModelValues(draftValues.value))
   multiSelectRef.value?.hide?.()
+}
+
+function clearFilters() {
+  draftValues.value = []
+  emit('update:modelValue', [])
 }
 
 function normalizeColor(color) {
@@ -182,8 +193,13 @@ function formatLabelName(name) {
       :max-selected-labels="3"
       :loading="isLoading"
       :pt="multiSelectPt"
+      :show-clear="true"
       @show="syncDraftFromModel"
     >
+      <template #clearicon>
+        <i class="pi pi-times sm-clear-icon" title="Clear filters" @click.stop.prevent="clearFilters" />
+      </template>
+
       <template #value>
         <div class="trigger-left" :title="appliedOptions.length > 0 ? fullSelectedListText : ''">
           <i class="pi" :class="appliedOptions.length > 0 ? 'pi-filter-fill' : 'pi-filter'" />
@@ -227,14 +243,28 @@ function formatLabelName(name) {
 }
 
 .metrics-multiselect.is-active {
-  border-color: var(--color-primary);
+  background-color: var(--color-bg-hover-strong) !important;
+}
+
+.sm-clear-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 2rem;
+  padding: 0.3rem;
+  cursor: pointer;
+  color: var(--color-text-dim);
+}
+
+.sm-clear-icon:hover {
+  color: var(--color-text-bright);
 }
 
 .trigger-left {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  width: 100%;
+  flex: 1;
   overflow: hidden;
 }
 

@@ -49,41 +49,43 @@ function toggleExpanded() {
           <i :class="expanded ? 'pi pi-angle-left' : 'pi pi-angle-right'" />
         </button>
 
-        <div class="nav-rail-items">
-          <template v-for="item in navItems" :key="item.key">
-            <NavRailCollectionsItem
-              v-if="item.key === 'collections'"
-              :expanded="expanded"
-              :active="item.matchFn()"
-              :label="item.label"
-              :icon-class="item.iconClass"
-            />
+        <div class="nav-scroll-area">
+          <div class="nav-rail-items">
+            <template v-for="item in navItems" :key="item.key">
+              <NavRailCollectionsItem
+                v-if="item.key === 'collections'"
+                :expanded="expanded"
+                :active="item.matchFn()"
+                :label="item.label"
+                :icon-class="item.iconClass"
+              />
 
-            <router-link
-              v-else
-              :to="item.route"
-              class="nav-rail-item"
-              :class="{ 'nav-rail-item--active': item.matchFn() }"
-              :title="expanded ? undefined : item.label"
-            >
-              <span
-                v-if="item.icon"
-                class="nav-rail-item-icon"
-                :class="item.icon"
-              />
-              <span
-                v-else-if="item.iconClass"
-                class="nav-rail-item-icon nav-icon"
-                :class="item.iconClass"
-              />
-              <span v-if="expanded" class="nav-rail-item-label">{{ item.label }}</span>
-            </router-link>
-          </template>
+              <router-link
+                v-else
+                :to="item.route"
+                class="nav-rail-item"
+                :class="{ 'nav-rail-item--active': item.matchFn() }"
+                :title="expanded ? undefined : item.label"
+              >
+                <span
+                  v-if="item.icon"
+                  class="nav-rail-item-icon"
+                  :class="item.icon"
+                />
+                <span
+                  v-else-if="item.iconClass"
+                  class="nav-rail-item-icon nav-icon"
+                  :class="item.iconClass"
+                />
+                <span v-if="expanded" class="nav-rail-item-label">{{ item.label }}</span>
+              </router-link>
+            </template>
+          </div>
+
+          <div class="nav-rail-separator" />
+
+          <NavRailRecentViews :expanded="expanded" />
         </div>
-
-        <div class="nav-rail-separator" />
-
-        <NavRailRecentViews :expanded="expanded" />
       </nav>
     </SplitterPanel>
     <SplitterPanel :size="93">
@@ -101,6 +103,11 @@ function toggleExpanded() {
   width: 100%;
   height: 100%;
   background-color: var(--color-background-dark);
+  overflow: hidden;
+}
+
+.nav-scroll-area {
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: stable;
@@ -108,28 +115,28 @@ function toggleExpanded() {
   scrollbar-color: var(--color-border-default) transparent;
 }
 
-.nav-rail::-webkit-scrollbar {
+.nav-scroll-area::-webkit-scrollbar {
   width: 6px;
 }
 
-.nav-rail::-webkit-scrollbar-track {
+.nav-scroll-area::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.nav-rail::-webkit-scrollbar-button {
+.nav-scroll-area::-webkit-scrollbar-button {
   display: none;
   width: 0;
   height: 0;
 }
 
-.nav-rail::-webkit-scrollbar-thumb {
+.nav-scroll-area::-webkit-scrollbar-thumb {
   background-color: var(--color-border-default);
   border-radius: 999px;
   border: none;
   min-height: 28px;
 }
 
-.nav-rail::-webkit-scrollbar-thumb:hover {
+.nav-scroll-area::-webkit-scrollbar-thumb:hover {
   background-color: var(--color-border-hover);
 }
 
