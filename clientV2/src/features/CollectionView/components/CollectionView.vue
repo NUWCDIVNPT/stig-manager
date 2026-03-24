@@ -179,7 +179,7 @@ function toggleDashboardSidebar() {
     >
       <!-- Dashboard Sidebar -->
       <SplitterPanel
-        :size="28"
+        :size="14"
         :min-size="4"
         :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating }, style: 'min-width: 330px; max-width: 600px;' } }"
       >
@@ -216,7 +216,7 @@ function toggleDashboardSidebar() {
       </SplitterPanel>
 
       <!-- Right Panel: Tabs + Content -->
-      <SplitterPanel :size="72">
+      <SplitterPanel :size="86">
         <div class="right-panel">
           <Tabs v-model:value="activeTab" :pt="tabsPt">
             <TabList>
@@ -276,7 +276,7 @@ function toggleDashboardSidebar() {
             </TabPanels>
           </Tabs>
         </div>
-      </splitterpanel>
+      </SplitterPanel>
     </Splitter>
   </div>
 </template>

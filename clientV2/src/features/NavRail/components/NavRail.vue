@@ -36,7 +36,7 @@ function toggleExpanded() {
     }"
   >
     <SplitterPanel
-      :size="15"
+      :size="7"
       :min-size="4"
       :pt="{ root: { class: { 'nav-panel--collapsed': !expanded, 'nav-panel--animating': isAnimating }, style: 'min-width: 12rem; max-width: 35rem;' } }"
     >
@@ -86,7 +86,7 @@ function toggleExpanded() {
         <NavRailRecentViews :expanded="expanded" />
       </nav>
     </SplitterPanel>
-    <SplitterPanel :size="85">
+    <SplitterPanel :size="93">
       <slot />
     </SplitterPanel>
   </Splitter>
