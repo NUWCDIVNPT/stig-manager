@@ -488,7 +488,7 @@ describe(`GET - Asset`, function () {
 
           let cklData
 
-          const parser = new XMLParser()
+          const parser = new XMLParser({ processEntities: { enabled: true, maxTotalExpansions: 200000 } })
           cklData = parser.parse(bodyText)
 
           let cklHostName = cklData.CHECKLIST.ASSET.HOST_NAME
@@ -597,7 +597,7 @@ describe(`GET - Asset`, function () {
 
           let cklData
 
-          const parser = new XMLParser()
+          const parser = new XMLParser({ processEntities: { enabled: true, maxTotalExpansions: 200000 } })
           cklData = parser.parse(bodyText)
 
           let cklHostName = cklData.CHECKLIST.ASSET.HOST_NAME
@@ -657,7 +657,7 @@ describe(`GET - Asset`, function () {
 
           const bodyText = await res.text()
     
-          const parser = new XMLParser()
+          const parser = new XMLParser({ processEntities: { enabled: true, maxTotalExpansions: 200000 } })
           cklData = parser.parse(bodyText)
     
           let cklHostName = cklData.CHECKLIST.ASSET.HOST_NAME
@@ -741,7 +741,7 @@ describe(`GET - Asset`, function () {
 
           const bodyText = await res.text()
     
-          const parser = new XMLParser()
+          const parser = new XMLParser({ processEntities: { enabled: true, maxTotalExpansions: 200000 } })
           cklData = parser.parse(bodyText)
     
 

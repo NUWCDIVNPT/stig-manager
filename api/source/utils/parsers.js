@@ -13,6 +13,7 @@ module.exports.benchmarkFromXccdf = function (xccdfData) {
       parseTagValue: false,
       parseAttributeValue: false,
       trimValues: true,
+      processEntities: { enabled: true, maxTotalExpansions: 200000 },
       isArray: (name, jpath, isLeafNode, isAttribute) => !isAttribute,
       alwaysCreateTextNode: true,
       tagValueProcessor: (name, value) => he.decode(value)
