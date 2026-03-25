@@ -14,10 +14,10 @@ import ResultBadge from '../../../components/common/ResultBadge.vue'
 import ReviewEditPopover from '../../../components/common/ReviewEditPopover.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { useChecklistDisplayMode } from '../../../shared/composables/useChecklistDisplayMode.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { defaultFieldSettings } from '../../../shared/lib/reviewFormUtils.js'
 import { fieldMatches, getMatchedFields, highlightText } from '../../../shared/lib/searchUtils.js'
-import { useChecklistDisplayMode } from '../composables/useChecklistDisplayMode.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay, severityMap } from '../lib/checklistUtils.js'
 
 const props = defineProps({
@@ -351,7 +351,7 @@ const dataTablePt = {
         header="Rule Id"
         field="ruleId"
         sortable
-        :style="{ width: '15rem' }"
+        :style="{ width: '16rem' }"
       >
         <template #body="{ data }">
           <span class="cell-text--mono" :class="{ 'cell--match': searchTerm && fieldMatches(data.ruleId, searchTerm) }">

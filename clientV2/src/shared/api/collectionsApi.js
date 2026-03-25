@@ -14,12 +14,23 @@ export function fetchCollectionLabels(collectionId) {
   return apiCall('getCollectionLabels', { collectionId })
 }
 
+export function fetchCollectionStigs(collectionId) {
+  if (!collectionId) {
+    throw new Error('A collectionId is required to fetch collection STIGs.')
+  }
+  return apiCall('getStigsByCollection', { collectionId })
+}
+
 export function updateCollection(collectionId, body, { elevate, projection } = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to update a collection.')
   }
   const params = { collectionId }
-  if (elevate) params.elevate = elevate
-  if (projection) params.projection = projection
+  if (elevate) {
+    params.elevate = elevate
+  }
+  if (projection) {
+    params.projection = projection
+  }
   return apiCall('updateCollection', params, body)
 }

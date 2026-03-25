@@ -12,8 +12,10 @@ const {
   collectionOptions,
   navigateToCollection,
   assetStigOptions,
+  collectionStigOptions,
   stigRevisionOptions,
   navigateToStig,
+  navigateToCollectionStig,
   navigateToRevision,
 } = useAppBreadcrumb()
 
@@ -169,7 +171,7 @@ const pt = {
               @update:model-value="onCollectionSelect"
             /> -->
 
-            <!-- STIG dropdown picker -->
+            <!-- STIG dropdown picker (asset review) -->
             <BreadcrumbSelect
               v-else-if="item.isDropdown && item.dropdownType === 'stig'"
               :model-value="$route.params.benchmarkId"
@@ -178,6 +180,17 @@ const pt = {
               option-value="benchmarkId"
               placeholder="STIG"
               @update:model-value="navigateToStig"
+            />
+
+            <!-- STIG dropdown picker (collection review) -->
+            <BreadcrumbSelect
+              v-else-if="item.isDropdown && item.dropdownType === 'collectionStig'"
+              :model-value="$route.params.benchmarkId"
+              :options="collectionStigOptions"
+              option-label="benchmarkId"
+              option-value="benchmarkId"
+              placeholder="STIG"
+              @update:model-value="navigateToCollectionStig"
             />
 
             <!-- Revision dropdown picker -->

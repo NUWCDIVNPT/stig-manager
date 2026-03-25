@@ -5,6 +5,7 @@ import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 import {
   fetchAsset,
   fetchAssetStigs,
+  fetchCollectionStigs,
   fetchStigRevisions,
 } from '../api/menuBarApi.js'
 
@@ -49,10 +50,13 @@ export function useAppBreadcrumb() {
     }))
   })
 
-  // --- Asset Review: STIG and Revision data for breadcrumb pickers ---
+  // --- Shared route params ---
   const assetId = computed(() => route.params.assetId)
+  const collectionId = computed(() => route.params.collectionId)
   const benchmarkId = computed(() => route.params.benchmarkId)
+  const isCollectionReview = computed(() => route.name === 'collection-benchmark-review')
 
+  // --- Asset Review: STIG data for breadcrumb pickers ---
   const { state: assetStigOptions, execute: loadAssetStigs } = useAsyncState(
     () => fetchAssetStigs(assetId.value),
     { initialState: [], immediate: false },
@@ -63,12 +67,19 @@ export function useAppBreadcrumb() {
     { initialState: null, immediate: false },
   )
 
+  // --- Collection Review: STIG data for breadcrumb pickers ---
+  const { state: collectionStigOptions, execute: loadCollectionStigs } = useAsyncState(
+    () => fetchCollectionStigs(collectionId.value),
+    { initialState: [], immediate: false },
+  )
+
+  // --- Shared: Revision data for breadcrumb pickers ---
   const { state: stigRevisionOptions, execute: loadStigRevisions } = useAsyncState(
     () => fetchStigRevisions(benchmarkId.value),
     { initialState: [], immediate: false },
   )
 
-  // Load STIGs when asset changes
+  // Load STIGs when asset changes (asset review)
   watch(assetId, (id) => {
     if (id) {
       loadAssetStigs()
@@ -76,7 +87,14 @@ export function useAppBreadcrumb() {
     }
   }, { immediate: true })
 
-  // Load revisions when benchmark changes
+  // Load collection STIGs when collectionId changes (collection review)
+  watch([collectionId, isCollectionReview], ([id, isCR]) => {
+    if (id && isCR) {
+      loadCollectionStigs()
+    }
+  }, { immediate: true })
+
+  // Load revisions when benchmark changes (both routes)
   watch(benchmarkId, (id) => {
     if (id) {
       loadStigRevisions()
@@ -94,7 +112,9 @@ export function useAppBreadcrumb() {
     // Collect all breadcrumbs from the matched routes (handles nested child routes)
     const matchedBreadcrumbs = route.matched.flatMap(m => m.meta?.breadcrumbs || [])
 
-    if (matchedBreadcrumbs.length === 0) { return [] }
+    if (matchedBreadcrumbs.length === 0) {
+      return []
+    }
 
     return matchedBreadcrumbs.map((step) => {
       const label = typeof step.label === 'function' ? step.label(route, getCollectionName, asset) : step.label
@@ -144,18 +164,45 @@ export function useAppBreadcrumb() {
     })
   }
 
-  // Navigation helper for revision dropdown (asset review)
+  // Navigation helper for revision dropdown (both asset and collection review)
   function navigateToRevision(newRevisionStr) {
     if (!newRevisionStr) {
       return
     }
+    if (isCollectionReview.value) {
+      router.push({
+        name: 'collection-benchmark-review',
+        params: {
+          collectionId: route.params.collectionId,
+          benchmarkId: benchmarkId.value,
+          revisionStr: newRevisionStr,
+        },
+      })
+    }
+    else {
+      router.push({
+        name: 'collection-asset-review',
+        params: {
+          collectionId: route.params.collectionId,
+          assetId: assetId.value,
+          benchmarkId: benchmarkId.value,
+          revisionStr: newRevisionStr,
+        },
+      })
+    }
+  }
+
+  // Navigation helper for collection STIG dropdown (collection review)
+  function navigateToCollectionStig(newBenchmarkId) {
+    if (!newBenchmarkId) {
+      return
+    }
     router.push({
-      name: 'collection-asset-review',
+      name: 'collection-benchmark-review',
       params: {
         collectionId: route.params.collectionId,
-        assetId: assetId.value,
-        benchmarkId: benchmarkId.value,
-        revisionStr: newRevisionStr,
+        benchmarkId: newBenchmarkId,
+        revisionStr: 'latest',
       },
     })
   }
@@ -165,8 +212,10 @@ export function useAppBreadcrumb() {
     collectionOptions,
     navigateToCollection,
     assetStigOptions,
+    collectionStigOptions,
     stigRevisionOptions,
     navigateToStig,
+    navigateToCollectionStig,
     navigateToRevision,
   }
 }
