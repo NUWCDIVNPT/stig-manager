@@ -3,7 +3,6 @@ import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Menu from 'primevue/menu'
-import MultiSelect from 'primevue/multiselect'
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { computed, ref, watch } from 'vue'
@@ -40,7 +39,7 @@ const {
   decreaseRowHeight,
 } = useChecklistDisplayMode()
 
-// --- Column toggle (MultiSelect) ---
+// --- Column visibility toggle ---
 // Toggleable stat/timestamp columns. CAT + Group/Rule ID/Title are mandatory.
 const toggleableColumns = [
   { field: 'counts.results.fail', header: 'O' },
@@ -53,24 +52,73 @@ const toggleableColumns = [
   { field: 'oldest', header: 'Oldest' },
   { field: 'newest', header: 'Newest' },
 ]
-const selectedColumns = ref(
-  toggleableColumns.filter(c => !['oldest', 'newest'].includes(c.field)),
-)
-
-function onColumnToggle(value) {
-  const selectedFields = new Set(value.map(v => v.field))
-  selectedColumns.value = toggleableColumns.filter(col => selectedFields.has(col.field))
-}
+const visibleColumnFields = ref(new Set(
+  toggleableColumns
+    .filter(c => !['oldest', 'newest'].includes(c.field))
+    .map(c => c.field),
+))
 
 function isColumnVisible(field) {
-  return selectedColumns.value.some(c => c.field === field)
+  return visibleColumnFields.value.has(field)
 }
+
+function toggleColumn(field) {
+  const s = new Set(visibleColumnFields.value)
+  if (s.has(field)) {
+    s.delete(field)
+  }
+  else {
+    s.add(field)
+  }
+  visibleColumnFields.value = s
+}
+
+// --- Controlled sorting ---
+const sortField = ref('groupId')
+const sortOrder = ref(1)
 
 // --- Checklist menu ---
 const checklistMenu = ref()
 
 function toggleChecklistMenu(event) {
   checklistMenu.value.toggle(event)
+}
+
+// --- Column header menu ---
+const headerMenu = ref()
+const activeHeaderField = ref(null)
+
+const headerMenuItems = computed(() => [
+  {
+    label: 'Sort Ascending',
+    icon: 'pi pi-sort-amount-up',
+    command: () => {
+      sortField.value = activeHeaderField.value
+      sortOrder.value = 1
+    },
+  },
+  {
+    label: 'Sort Descending',
+    icon: 'pi pi-sort-amount-down',
+    command: () => {
+      sortField.value = activeHeaderField.value
+      sortOrder.value = -1
+    },
+  },
+  { separator: true },
+  {
+    label: 'Columns',
+    items: toggleableColumns.map(col => ({
+      label: col.header,
+      icon: () => isColumnVisible(col.field) ? 'pi pi-check-square' : 'pi pi-stop',
+      command: () => toggleColumn(col.field),
+    })),
+  },
+])
+
+function openHeaderMenu(event, field) {
+  activeHeaderField.value = field
+  headerMenu.value.toggle(event)
 }
 
 // --- Checklist data ---
@@ -221,15 +269,6 @@ function countDisplay(val) {
                     <span class="checklist-grid__title">{{ benchmarkId }} {{ revisionStr }}</span>
                   </div>
                   <div class="checklist-grid__header-right">
-                    <MultiSelect
-                      :model-value="selectedColumns"
-                      :options="toggleableColumns"
-                      option-label="header"
-                      placeholder="Columns"
-                      display="chip"
-                      class="checklist-grid__column-select"
-                      @update:model-value="onColumnToggle"
-                    />
                     <button
                       class="checklist-grid__icon-btn"
                       title="Decrease row height"
@@ -259,13 +298,19 @@ function countDisplay(val) {
                   scroll-height="flex"
                   :virtual-scroller-options="{ itemSize }"
                   striped-rows
-                  sort-field="groupId"
-                  :sort-order="1"
+                  :sort-field="sortField"
+                  :sort-order="sortOrder"
                   class="checklist-grid__table"
                   :pt="dataTablePt"
                   @row-click="onRowClick"
                 >
-                  <Column header="CAT" field="severity" sortable :style="{ width: '5rem' }">
+                  <Column field="severity" :style="{ width: '5rem' }">
+                    <template #header>
+                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'severity')">
+                        CAT
+                        <i v-if="sortField === 'severity'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
+                      </span>
+                    </template>
                     <template #body="{ data }">
                       <CatBadge :category="severityMap[data.severity]" variant="label" />
                     </template>
@@ -273,11 +318,15 @@ function countDisplay(val) {
 
                   <Column
                     v-if="showGroupId"
-                    header="Group"
                     field="groupId"
-                    sortable
                     :style="{ width: '7rem' }"
                   >
+                    <template #header>
+                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'groupId')">
+                        Group
+                        <i v-if="sortField === 'groupId'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
+                      </span>
+                    </template>
                     <template #body="{ data }">
                       <span class="cell-text--mono">{{ data.groupId }}</span>
                     </template>
@@ -285,11 +334,15 @@ function countDisplay(val) {
 
                   <Column
                     v-if="showRuleId"
-                    header="Rule Id"
                     field="ruleId"
-                    sortable
                     :style="{ width: '16rem' }"
                   >
+                    <template #header>
+                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'ruleId')">
+                        Rule Id
+                        <i v-if="sortField === 'ruleId'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
+                      </span>
+                    </template>
                     <template #body="{ data }">
                       <span class="cell-text--mono">{{ data.ruleId }}</span>
                     </template>
@@ -297,10 +350,14 @@ function countDisplay(val) {
 
                   <Column
                     v-if="showRuleTitle"
-                    header="Rule Title"
                     field="ruleTitle"
-                    sortable
                   >
+                    <template #header>
+                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'ruleTitle')">
+                        Rule Title
+                        <i v-if="sortField === 'ruleTitle'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
+                      </span>
+                    </template>
                     <template #body="{ data }">
                       <span class="cell-text--clamped" :title="data.ruleTitle">{{ data.ruleTitle }}</span>
                     </template>
@@ -308,10 +365,14 @@ function countDisplay(val) {
 
                   <Column
                     v-if="showGroupTitle"
-                    header="Group Title"
                     field="groupTitle"
-                    sortable
                   >
+                    <template #header>
+                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'groupTitle')">
+                        Group Title
+                        <i v-if="sortField === 'groupTitle'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
+                      </span>
+                    </template>
                     <template #body="{ data }">
                       <span class="cell-text--clamped" :title="data.groupTitle">{{ data.groupTitle }}</span>
                     </template>
@@ -320,11 +381,13 @@ function countDisplay(val) {
                   <Column
                     v-if="isColumnVisible('counts.results.fail')"
                     field="counts.results.fail"
-                    sortable
                     :style="{ width: '3.5rem', textAlign: 'center' }"
                   >
                     <template #header>
-                      <span class="col-header col-header--open" title="Open">O</span>
+                      <span class="col-header-trigger col-header--open" @click.stop="openHeaderMenu($event, 'counts.results.fail')">
+                        O
+                        <i v-if="sortField === 'counts.results.fail'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
+                      </span>
                     </template>
                     <template #body="{ data }">
                       <span
@@ -337,11 +400,13 @@ function countDisplay(val) {
                   <Column
                     v-if="isColumnVisible('counts.results.pass')"
                     field="counts.results.pass"
-                    sortable
                     :style="{ width: '3.5rem', textAlign: 'center' }"
                   >
                     <template #header>
-                      <span class="col-header col-header--nf" title="Not a Finding">NF</span>
+                      <span class="col-header-trigger col-header--nf" @click.stop="openHeaderMenu($event, 'counts.results.pass')">
+                        NF
+                        <i v-if="sortField === 'counts.results.pass'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
+                      </span>
                     </template>
                     <template #body="{ data }">
                       <span class="count-cell">{{ countDisplay(data.counts?.results?.pass) }}</span>
@@ -351,11 +416,13 @@ function countDisplay(val) {
                   <Column
                     v-if="isColumnVisible('counts.results.notapplicable')"
                     field="counts.results.notapplicable"
-                    sortable
                     :style="{ width: '3.5rem', textAlign: 'center' }"
                   >
                     <template #header>
-                      <span class="col-header" title="Not Applicable">NA</span>
+                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'counts.results.notapplicable')">
+                        NA
+                        <i v-if="sortField === 'counts.results.notapplicable'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
+                      </span>
                     </template>
                     <template #body="{ data }">
                       <span class="count-cell">{{ countDisplay(data.counts?.results?.notapplicable) }}</span>
@@ -365,11 +432,13 @@ function countDisplay(val) {
                   <Column
                     v-if="isColumnVisible('counts.results.other')"
                     field="counts.results.other"
-                    sortable
                     :style="{ width: '3.5rem', textAlign: 'center' }"
                   >
                     <template #header>
-                      <span class="col-header col-header--nr" title="Not Reviewed / Other">NR+</span>
+                      <span class="col-header-trigger col-header--nr" @click.stop="openHeaderMenu($event, 'counts.results.other')">
+                        NR+
+                        <i v-if="sortField === 'counts.results.other'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
+                      </span>
                     </template>
                     <template #body="{ data }">
                       <span
@@ -382,11 +451,13 @@ function countDisplay(val) {
                   <Column
                     v-if="isColumnVisible('counts.statuses.submitted')"
                     field="counts.statuses.submitted"
-                    sortable
                     :style="{ width: '3rem', textAlign: 'center' }"
                   >
                     <template #header>
-                      <i class="pi pi-check col-header-icon col-header-icon--submitted" title="Submitted" />
+                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'counts.statuses.submitted')">
+                        <i class="pi pi-check col-header-icon--submitted" title="Submitted" />
+                        <i v-if="sortField === 'counts.statuses.submitted'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
+                      </span>
                     </template>
                     <template #body="{ data }">
                       <span class="count-cell count-cell--dim">{{ countDisplay(data.counts?.statuses?.submitted) }}</span>
@@ -396,11 +467,13 @@ function countDisplay(val) {
                   <Column
                     v-if="isColumnVisible('counts.statuses.rejected')"
                     field="counts.statuses.rejected"
-                    sortable
                     :style="{ width: '3rem', textAlign: 'center' }"
                   >
                     <template #header>
-                      <i class="pi pi-times-circle col-header-icon col-header-icon--rejected" title="Rejected" />
+                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'counts.statuses.rejected')">
+                        <i class="pi pi-times-circle col-header-icon--rejected" title="Rejected" />
+                        <i v-if="sortField === 'counts.statuses.rejected'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
+                      </span>
                     </template>
                     <template #body="{ data }">
                       <span class="count-cell count-cell--dim">{{ countDisplay(data.counts?.statuses?.rejected) }}</span>
@@ -410,11 +483,13 @@ function countDisplay(val) {
                   <Column
                     v-if="isColumnVisible('counts.statuses.accepted')"
                     field="counts.statuses.accepted"
-                    sortable
                     :style="{ width: '3rem', textAlign: 'center' }"
                   >
                     <template #header>
-                      <i class="pi pi-star col-header-icon col-header-icon--accepted" title="Accepted" />
+                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'counts.statuses.accepted')">
+                        <i class="pi pi-star col-header-icon--accepted" title="Accepted" />
+                        <i v-if="sortField === 'counts.statuses.accepted'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
+                      </span>
                     </template>
                     <template #body="{ data }">
                       <span class="count-cell count-cell--dim">{{ countDisplay(data.counts?.statuses?.accepted) }}</span>
@@ -424,11 +499,13 @@ function countDisplay(val) {
                   <Column
                     v-if="isColumnVisible('oldest')"
                     field="timestamps.touchTs.min"
-                    sortable
                     :style="{ width: '5rem' }"
                   >
                     <template #header>
-                      <span title="Oldest review activity">Oldest</span>
+                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'timestamps.touchTs.min')">
+                        Oldest
+                        <i v-if="sortField === 'timestamps.touchTs.min'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
+                      </span>
                     </template>
                     <template #body="{ data }">
                       <span :title="data.timestamps?.touchTs?.min">{{ durationToNow(data.timestamps?.touchTs?.min) }}</span>
@@ -438,11 +515,13 @@ function countDisplay(val) {
                   <Column
                     v-if="isColumnVisible('newest')"
                     field="timestamps.touchTs.max"
-                    sortable
                     :style="{ width: '5rem' }"
                   >
                     <template #header>
-                      <span title="Newest review activity">Newest</span>
+                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'timestamps.touchTs.max')">
+                        Newest
+                        <i v-if="sortField === 'timestamps.touchTs.max'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
+                      </span>
                     </template>
                     <template #body="{ data }">
                       <span :title="data.timestamps?.touchTs?.max">{{ durationToNow(data.timestamps?.touchTs?.max) }}</span>
@@ -468,6 +547,12 @@ function countDisplay(val) {
                     </StatusFooter>
                   </template>
                 </DataTable>
+
+                <Menu
+                  ref="headerMenu"
+                  :model="headerMenuItems"
+                  :popup="true"
+                />
               </div>
             </SplitterPanel>
 
@@ -656,11 +741,6 @@ function countDisplay(val) {
   height: 16px;
 }
 
-.checklist-grid__column-select {
-  max-width: 14rem;
-  font-size: 1rem;
-}
-
 .checklist-grid__table {
   flex: 1;
   min-height: 0;
@@ -714,7 +794,28 @@ function countDisplay(val) {
   color: var(--color-text-dim);
 }
 
-/* Column headers */
+/* Column header trigger */
+.col-header-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+  font-weight: 600;
+  user-select: none;
+  width: 100%;
+}
+
+.col-header-trigger:hover {
+  color: var(--color-primary-highlight);
+}
+
+.col-header-trigger .pi-sort-amount-up,
+.col-header-trigger .pi-sort-amount-down {
+  font-size: 0.85rem;
+  color: var(--color-primary-highlight);
+}
+
+/* Column header colors */
 .col-header {
   font-weight: 600;
 }
