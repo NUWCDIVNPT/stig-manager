@@ -3,6 +3,7 @@ import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Menu from 'primevue/menu'
+import MultiSelect from 'primevue/multiselect'
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { computed, ref, watch } from 'vue'
@@ -39,30 +40,34 @@ const {
   decreaseRowHeight,
 } = useChecklistDisplayMode()
 
-// --- Timestamp column visibility ---
-const showOldest = ref(false)
-const showNewest = ref(false)
+// --- Column toggle (MultiSelect) ---
+// Toggleable stat/timestamp columns. CAT + Group/Rule ID/Title are mandatory.
+const toggleableColumns = [
+  { field: 'counts.results.fail', header: 'O' },
+  { field: 'counts.results.pass', header: 'NF' },
+  { field: 'counts.results.notapplicable', header: 'NA' },
+  { field: 'counts.results.other', header: 'NR+' },
+  { field: 'counts.statuses.submitted', header: 'Submitted' },
+  { field: 'counts.statuses.rejected', header: 'Rejected' },
+  { field: 'counts.statuses.accepted', header: 'Accepted' },
+  { field: 'oldest', header: 'Oldest' },
+  { field: 'newest', header: 'Newest' },
+]
+const selectedColumns = ref(
+  toggleableColumns.filter(c => !['oldest', 'newest'].includes(c.field)),
+)
 
-// --- Checklist menu items ---
+function onColumnToggle(value) {
+  const selectedFields = new Set(value.map(v => v.field))
+  selectedColumns.value = toggleableColumns.filter(col => selectedFields.has(col.field))
+}
+
+function isColumnVisible(field) {
+  return selectedColumns.value.some(c => c.field === field)
+}
+
+// --- Checklist menu ---
 const checklistMenu = ref()
-const checklistMenuItems = computed(() => [
-  ...displayModeItems.value,
-  {
-    label: 'Columns',
-    items: [
-      {
-        label: 'Oldest',
-        icon: () => showOldest.value ? 'pi pi-check-square' : 'pi pi-stop',
-        command: () => { showOldest.value = !showOldest.value },
-      },
-      {
-        label: 'Newest',
-        icon: () => showNewest.value ? 'pi pi-check-square' : 'pi pi-stop',
-        command: () => { showNewest.value = !showNewest.value },
-      },
-    ],
-  },
-])
 
 function toggleChecklistMenu(event) {
   checklistMenu.value.toggle(event)
@@ -210,12 +215,21 @@ function countDisplay(val) {
                     </Button>
                     <Menu
                       ref="checklistMenu"
-                      :model="checklistMenuItems"
+                      :model="displayModeItems"
                       :popup="true"
                     />
                     <span class="checklist-grid__title">{{ benchmarkId }} {{ revisionStr }}</span>
                   </div>
                   <div class="checklist-grid__header-right">
+                    <MultiSelect
+                      :model-value="selectedColumns"
+                      :options="toggleableColumns"
+                      option-label="header"
+                      placeholder="Columns"
+                      display="chip"
+                      class="checklist-grid__column-select"
+                      @update:model-value="onColumnToggle"
+                    />
                     <button
                       class="checklist-grid__icon-btn"
                       title="Decrease row height"
@@ -304,6 +318,7 @@ function countDisplay(val) {
                   </Column>
 
                   <Column
+                    v-if="isColumnVisible('counts.results.fail')"
                     field="counts.results.fail"
                     sortable
                     :style="{ width: '3.5rem', textAlign: 'center' }"
@@ -320,6 +335,7 @@ function countDisplay(val) {
                   </Column>
 
                   <Column
+                    v-if="isColumnVisible('counts.results.pass')"
                     field="counts.results.pass"
                     sortable
                     :style="{ width: '3.5rem', textAlign: 'center' }"
@@ -333,6 +349,7 @@ function countDisplay(val) {
                   </Column>
 
                   <Column
+                    v-if="isColumnVisible('counts.results.notapplicable')"
                     field="counts.results.notapplicable"
                     sortable
                     :style="{ width: '3.5rem', textAlign: 'center' }"
@@ -346,6 +363,7 @@ function countDisplay(val) {
                   </Column>
 
                   <Column
+                    v-if="isColumnVisible('counts.results.other')"
                     field="counts.results.other"
                     sortable
                     :style="{ width: '3.5rem', textAlign: 'center' }"
@@ -362,6 +380,7 @@ function countDisplay(val) {
                   </Column>
 
                   <Column
+                    v-if="isColumnVisible('counts.statuses.submitted')"
                     field="counts.statuses.submitted"
                     sortable
                     :style="{ width: '3rem', textAlign: 'center' }"
@@ -375,6 +394,7 @@ function countDisplay(val) {
                   </Column>
 
                   <Column
+                    v-if="isColumnVisible('counts.statuses.rejected')"
                     field="counts.statuses.rejected"
                     sortable
                     :style="{ width: '3rem', textAlign: 'center' }"
@@ -388,6 +408,7 @@ function countDisplay(val) {
                   </Column>
 
                   <Column
+                    v-if="isColumnVisible('counts.statuses.accepted')"
                     field="counts.statuses.accepted"
                     sortable
                     :style="{ width: '3rem', textAlign: 'center' }"
@@ -400,9 +421,8 @@ function countDisplay(val) {
                     </template>
                   </Column>
 
-                  <!-- Toggleable timestamp columns -->
                   <Column
-                    v-if="showOldest"
+                    v-if="isColumnVisible('oldest')"
                     field="timestamps.touchTs.min"
                     sortable
                     :style="{ width: '5rem' }"
@@ -416,7 +436,7 @@ function countDisplay(val) {
                   </Column>
 
                   <Column
-                    v-if="showNewest"
+                    v-if="isColumnVisible('newest')"
                     field="timestamps.touchTs.max"
                     sortable
                     :style="{ width: '5rem' }"
@@ -634,6 +654,11 @@ function countDisplay(val) {
 .checklist-grid__icon-btn img {
   width: 16px;
   height: 16px;
+}
+
+.checklist-grid__column-select {
+  max-width: 14rem;
+  font-size: 1rem;
 }
 
 .checklist-grid__table {
