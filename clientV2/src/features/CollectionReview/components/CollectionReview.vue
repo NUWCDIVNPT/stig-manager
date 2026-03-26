@@ -3,6 +3,7 @@ import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Menu from 'primevue/menu'
+import Popover from 'primevue/popover'
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { computed, ref, watch } from 'vue'
@@ -42,13 +43,13 @@ const {
 // --- Column visibility toggle ---
 // Toggleable stat/timestamp columns. CAT + Group/Rule ID/Title are mandatory.
 const toggleableColumns = [
-  { field: 'counts.results.fail', header: 'O' },
-  { field: 'counts.results.pass', header: 'NF' },
+  { field: 'counts.results.fail', header: 'O', labelClass: 'col-header--open' },
+  { field: 'counts.results.pass', header: 'NF', labelClass: 'col-header--nf' },
   { field: 'counts.results.notapplicable', header: 'NA' },
-  { field: 'counts.results.other', header: 'NR+' },
-  { field: 'counts.statuses.submitted', header: 'Submitted' },
-  { field: 'counts.statuses.rejected', header: 'Rejected' },
-  { field: 'counts.statuses.accepted', header: 'Accepted' },
+  { field: 'counts.results.other', header: 'NR+', labelClass: 'col-header--nr' },
+  { field: 'counts.statuses.submitted', header: 'Submitted', icon: 'pi pi-check', labelClass: 'col-header-icon--submitted' },
+  { field: 'counts.statuses.rejected', header: 'Rejected', icon: 'pi pi-times-circle', labelClass: 'col-header-icon--rejected' },
+  { field: 'counts.statuses.accepted', header: 'Accepted', icon: 'pi pi-star', labelClass: 'col-header-icon--accepted' },
   { field: 'oldest', header: 'Oldest' },
   { field: 'newest', header: 'Newest' },
 ]
@@ -77,6 +78,13 @@ function toggleColumn(field) {
 const sortField = ref('groupId')
 const sortOrder = ref(1)
 
+// --- Column toggle popover ---
+const columnTogglePopover = ref()
+
+function toggleColumnPopover(event) {
+  columnTogglePopover.value.toggle(event)
+}
+
 // --- Checklist menu ---
 const checklistMenu = ref()
 
@@ -104,15 +112,6 @@ const headerMenuItems = computed(() => [
       sortField.value = activeHeaderField.value
       sortOrder.value = -1
     },
-  },
-  { separator: true },
-  {
-    label: 'Columns',
-    items: toggleableColumns.map(col => ({
-      label: col.header,
-      icon: () => isColumnVisible(col.field) ? 'pi pi-check-square' : 'pi pi-stop',
-      command: () => toggleColumn(col.field),
-    })),
   },
 ])
 
@@ -285,6 +284,35 @@ function countDisplay(val) {
                     >
                       <img :src="lineHeightUp" alt="Increase row height">
                     </button>
+                    <button
+                      class="checklist-grid__icon-btn"
+                      title="Toggle columns"
+                      @click="toggleColumnPopover"
+                    >
+                      <i class="pi pi-th-large" />
+                    </button>
+                    <Popover ref="columnTogglePopover">
+                      <div class="column-toggle-header">
+                        Columns
+                      </div>
+                      <div class="column-toggle-list">
+                        <div
+                          v-for="col in toggleableColumns"
+                          :key="col.field"
+                          class="column-toggle-item"
+                          @click="toggleColumn(col.field)"
+                        >
+                          <i
+                            class="pi"
+                            :class="isColumnVisible(col.field) ? 'pi-check-square column-toggle-item__check--active' : 'pi-stop'"
+                          />
+                          <span :class="col.labelClass">
+                            <i v-if="col.icon" :class="col.icon" />
+                            {{ col.header }}
+                          </span>
+                        </div>
+                      </div>
+                    </Popover>
                   </div>
                 </div>
 
@@ -792,6 +820,44 @@ function countDisplay(val) {
 
 .count-cell--dim {
   color: var(--color-text-dim);
+}
+
+/* Column toggle popover */
+.column-toggle-header {
+  font-weight: 600;
+  padding: 0.35rem 0.6rem;
+  border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: 0.25rem;
+  color: var(--color-text-primary);
+}
+
+.column-toggle-list {
+  display: flex;
+  flex-direction: column;
+  min-width: 10rem;
+}
+
+.column-toggle-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 3px;
+  transition: background-color 0.15s;
+}
+
+.column-toggle-item:hover {
+  background-color: var(--color-bg-hover-strong);
+}
+
+.column-toggle-item i {
+  color: var(--color-text-dim);
+}
+
+.column-toggle-item__check--active {
+  color: var(--color-primary-highlight) !important;
 }
 
 /* Column header trigger */
