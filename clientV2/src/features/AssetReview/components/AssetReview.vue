@@ -1,58 +1,166 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { computed, ref, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useDebouncedRef } from '../../../shared/composables/useDebouncedRef.js'
-import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { defaultFieldSettings } from '../../../shared/lib/reviewFormUtils.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import {
   fetchAsset,
+  fetchCollection,
   fetchCollectionLabels,
+  fetchStigRevisions,
 } from '../api/assetReviewApi.js'
-import { useReviewWorkspace } from '../composables/useReviewWorkspace.js'
+import { useChecklistData } from '../composables/useChecklistData.js'
+import { useReviewActions } from '../composables/useReviewActions.js'
+import { useRuleDetail } from '../composables/useRuleDetail.js'
+import { useResolvedLabels } from '../lib/labels.js'
+import AssetReviewHeader from './AssetReviewHeader.vue'
 import ChecklistGrid from './ChecklistGrid.vue'
 import RuleDetailPanel from './RuleDetailPanel.vue'
 
 const route = useRoute()
 const router = useRouter()
 const { addView, removeView } = useRecentViews()
+const { getCollectionRoleId } = useCurrentUser()
 
 const collectionId = computed(() => route.params.collectionId)
 const assetId = computed(() => route.params.assetId)
 const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
 
-// Fetch Asset Details
+// Fatal route-level error handler.
+// Only used for fetchAsset and fetchCollection — the two resources that define
+// whether this page is accessible at all. Any error on these → redirect.
+function handleRouteError(err) {
+  const status = getHttpStatus(err)
+  const isPrivilegeError = err.body?.error === 'User has insufficient privilege to complete this request.'
+  if (status === 404 || status === 403 || status === 400 || isPrivilegeError) {
+    removeView(key => key.includes(`:${collectionId.value}:${assetId.value}`))
+    router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+  }
+  else {
+    // Unexpected error on a critical resource → also treat as inaccessible
+    removeView(key => key.includes(`:${collectionId.value}:${assetId.value}`))
+    router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+  }
+}
+
 const { state: asset, isLoading, error, execute: loadAsset } = useAsyncState(
   () => fetchAsset(assetId.value),
-  {
-    immediate: false,
-    onError: (err) => {
-      const isPrivilegeError = err.body?.error === 'User has insufficient privilege to complete this request.'
-      if (isPrivilegeError) {
-        removeView(key => key.includes(`:${collectionId.value}:${assetId.value}`))
-        router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
-      }
-      else {
-        const { triggerError } = useGlobalError()
-        triggerError(err)
-      }
-    },
-  },
+  { immediate: false, onError: handleRouteError },
 )
-
-// Fetch Collection Labels (for coloring)
 const { state: collectionLabels, execute: loadCollectionLabels } = useAsyncState(
   () => fetchCollectionLabels(collectionId.value),
   { initialState: [], immediate: false },
 )
 
-// Review workspace composable
-const workspace = useReviewWorkspace({ collectionId, assetId, benchmarkId, revisionStr })
+const resolvedLabels = useResolvedLabels(asset, collectionLabels)
 
-// Update recent views when asset loads or params change
+const { state: collection, execute: loadCollection } = useAsyncState(
+  () => fetchCollection(collectionId.value),
+  { immediate: false, onError: handleRouteError },
+)
+
+watch(assetId, () => {
+  if (assetId.value) {
+    loadAsset()
+  }
+}, { immediate: true })
+
+watch(collectionId, () => {
+  if (collectionId.value) {
+    loadCollectionLabels()
+    loadCollection()
+  }
+}, { immediate: true })
+
+const fieldSettings = computed(() => collection.value?.settings?.fields ?? defaultFieldSettings)
+const statusSettings = computed(() => collection.value?.settings?.status ?? {
+  canAccept: false,
+  minAcceptGrant: 4,
+  resetCriteria: 'result',
+})
+
+const roleId = computed(() => getCollectionRoleId(collectionId.value))
+const canAccept = computed(() =>
+  statusSettings.value.canAccept && roleId.value >= statusSettings.value.minAcceptGrant,
+)
+
+const { state: stigRevisions, execute: loadStigRevisions } = useAsyncState(
+  () => fetchStigRevisions(benchmarkId.value),
+  { immediate: false, initialState: [] },
+)
+
+const revisionInfo = computed(() => {
+  const rs = revisionStr.value
+  if (!rs) {
+    return null
+  }
+  const match = rs.match(/^V(\d+)R(\d+)$/)
+  if (!match) {
+    return { display: rs }
+  }
+  const version = match[1]
+  const release = match[2]
+  const rev = stigRevisions.value?.find(r => r.revisionStr === rs)
+  const benchmarkDate = rev?.benchmarkDate
+    ? new Date(rev.benchmarkDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+    : null
+  return {
+    display: benchmarkDate ? `Version ${version} Release ${release} (${benchmarkDate})` : `Version ${version} Release ${release}`,
+    version,
+    release,
+    benchmarkDate,
+  }
+})
+
+const {
+  accessMode,
+  checklistData,
+  isChecklistLoading,
+  checklistError,
+  gridData,
+  loadChecklist,
+  loadAllReviews,
+  upsertReview,
+} = useChecklistData({ collectionId, assetId, benchmarkId, revisionStr })
+
+const {
+  selectedRuleId,
+  selectedChecklistItem,
+  ruleContent,
+  isRuleLoading,
+  ruleContentError,
+  currentReview,
+  reviewHistory,
+  selectRule,
+  clearSelectedRule,
+} = useRuleDetail({ collectionId, assetId, benchmarkId, revisionStr, checklistData })
+
+const {
+  isSaving,
+  saveError,
+  clearSaveError,
+  saveFullReview,
+  saveStatusAction,
+} = useReviewActions({ collectionId, assetId }, { gridData, upsertReview, selectedRuleId, currentReview })
+
+watch([benchmarkId, revisionStr, asset], () => {
+  clearSelectedRule()
+  if (benchmarkId.value && revisionStr.value && asset.value) {
+    if (!stigRevisions.value?.length) {
+      loadStigRevisions()
+    }
+    loadChecklist()
+    loadAllReviews()
+  }
+}, { immediate: true })
+
 watch(
   [asset, () => route.params.benchmarkId, () => route.params.revisionStr],
   ([a]) => {
@@ -67,143 +175,38 @@ watch(
   },
 )
 
-// Initial Data Load
-watch([assetId, collectionId], () => {
-  asset.value = null
-  if (assetId.value) {
-    loadAsset()
+// If the checklist fetch fails (e.g. bad benchmarkId/revisionStr), remove the
+// recent view entry so the nav rail doesn't pin a broken route.
+watch(checklistError, (err) => {
+  if (err) {
+    removeView(key => key.includes(`:${collectionId.value}:${assetId.value}`))
   }
-  if (collectionId.value) {
-    loadCollectionLabels()
-    workspace.loadWorkspace()
-  }
-}, { immediate: true })
-
-// Label Resolution Logic
-function getContrastColor(hexColor) {
-  if (!hexColor) {
-    return '#ffffff'
-  }
-  const hex = hexColor.replace('#', '')
-  const r = Number.parseInt(hex.substr(0, 2), 16)
-  const g = Number.parseInt(hex.substr(2, 2), 16)
-  const b = Number.parseInt(hex.substr(4, 2), 16)
-  const yiq = (r * 299 + g * 587 + b * 114) / 1000
-  return yiq >= 128 ? '#1a1a1a' : '#ffffff'
-}
-
-const resolvedLabels = computed(() => {
-  if (!asset.value?.labelIds?.length || !collectionLabels.value?.length) {
-    return []
-  }
-  const labelMap = new Map(collectionLabels.value.map(l => [l.labelId, l]))
-  return asset.value.labelIds
-    .map(id => labelMap.get(id))
-    .filter(Boolean)
-    .map(label => ({
-      ...label,
-      bgColor: label.color ? `#${label.color}` : '#3b82f6',
-      textColor: getContrastColor(label.color),
-    }))
 })
 
-// Grid mode event handlers
 function onRowSave({ ruleId, result, detail, comment, status }) {
-  workspace.saveFullReview(ruleId, { result, detail, comment, status })
+  saveFullReview(ruleId, { result, detail, comment, status })
 }
 
 function onStatusAction({ ruleId, actionType }) {
-  workspace.saveStatusAction(ruleId, actionType)
+  saveStatusAction(ruleId, actionType)
 }
 
 function onGridRefresh() {
-  workspace.loadChecklist()
-  workspace.loadAllReviews()
+  loadChecklist()
+  loadAllReviews()
 }
 
-// Search filter
-const searchFilter = useDebouncedRef('', 250)
-const searchInput = ref(null)
-
-function clearSearch() {
-  searchFilter.immediate('')
-  searchInput.value?.focus()
-}
-
-// Expose asset
-defineExpose({ asset })
+const searchFilter = useDebouncedRef('', 220)
 </script>
 
 <template>
   <div class="asset-review">
-    <header class="asset-review__header">
-      <div v-if="asset" class="asset-review__header-main">
-        <div class="asset-review__header-info">
-          <div class="asset-review__title-row">
-            <h1 class="asset-review__title">
-              Asset: {{ asset.name }}
-            </h1>
-            <div v-if="resolvedLabels.length" class="asset-review__labels">
-              <span
-                v-for="label in resolvedLabels"
-                :key="label.labelId"
-                class="asset-label"
-                :style="{ backgroundColor: label.bgColor, color: label.textColor }"
-              >
-                {{ label.name }}
-              </span>
-            </div>
-          </div>
-          <div class="asset-review__meta">
-            <span class="asset-review__meta-item">
-              <i class="pi pi-hashtag" />
-              ID:{{ asset.assetId }}
-            </span>
-            <span v-if="asset.ip" class="asset-review__meta-item">
-              <i class="pi pi-globe" />
-              {{ asset.ip }}
-            </span>
-            <span v-if="asset.fqdn" class="asset-review__meta-item">
-              <i class="pi pi-server" />
-              {{ asset.fqdn }}
-            </span>
-            <span v-if="asset.mac" class="asset-review__meta-item">
-              <i class="pi pi-wifi" />
-              {{ asset.mac }}
-            </span>
-            <span v-if="asset.description" class="asset-review__meta-item asset-review__description">
-              <i class="pi pi-info-circle" />
-              {{ asset.description }}
-            </span>
-          </div>
-        </div>
-        <div class="asset-review__header-actions">
-          <div class="search-reviews">
-            <i class="pi pi-search search-reviews__icon" />
-            <input
-              ref="searchInput"
-              v-model="searchFilter"
-              type="text"
-              class="search-reviews__input"
-              placeholder="Search reviews..."
-            >
-            <i
-              v-if="searchFilter"
-              class="pi pi-times search-reviews__clear"
-              @click="clearSearch"
-            />
-          </div>
-          <button type="button" class="action-btn" title="Import checklist">
-            <i class="pi pi-upload" />
-            <span>Import</span>
-          </button>
-          <button type="button" class="action-btn" title="Export checklist">
-            <i class="pi pi-download" />
-            <span>Export</span>
-          </button>
-        </div>
-      </div>
-    </header>
+    <AssetReviewHeader
+      v-if="asset"
+      v-model:search-filter="searchFilter"
+      :asset="asset"
+      :resolved-labels="resolvedLabels"
+    />
 
     <div v-if="isLoading" class="asset-review__loading">
       Loading asset details...
@@ -212,7 +215,16 @@ defineExpose({ asset })
       {{ error || 'Error loading asset' }}
     </div>
     <div v-else-if="asset" class="asset-review__content">
+      <div v-if="checklistError" class="asset-review__checklist-error">
+        <i class="pi pi-exclamation-triangle" />
+        <span>Could not load checklist: {{ checklistError.message || 'Unknown error' }}</span>
+        <button class="asset-review__retry-btn" @click="loadChecklist">
+          Retry
+        </button>
+      </div>
+
       <Splitter
+        v-else
         :pt="{
           gutter: { style: 'background: var(--color-border-dark)' },
           root: { style: 'border: none; background: transparent' },
@@ -221,28 +233,32 @@ defineExpose({ asset })
       >
         <SplitterPanel :size="70" :min-size="40">
           <ChecklistGrid
-            :grid-data="workspace.gridData.value"
-            :is-loading="workspace.isChecklistLoading.value"
-            :selected-rule-id="workspace.selectedRuleId.value"
-            :access-mode="workspace.accessMode.value"
-            :revision-info="workspace.revisionInfo.value"
-            :field-settings="workspace.fieldSettings.value"
-            :can-accept="workspace.canAccept.value"
-            :is-saving="workspace.isSaving.value"
+            :grid-data="gridData"
+            :is-loading="isChecklistLoading"
+            :selected-rule-id="selectedRuleId"
+            :access-mode="accessMode"
+            :revision-info="revisionInfo"
+            :field-settings="fieldSettings"
+            :can-accept="canAccept"
+            :is-saving="isSaving"
+            :save-error="saveError"
             :search-filter="searchFilter"
-            @select-rule="workspace.selectRule"
+            @select-rule="selectRule"
             @row-save="onRowSave"
             @status-action="onStatusAction"
             @refresh="onGridRefresh"
+            @clear-save-error="clearSaveError"
           />
         </SplitterPanel>
         <SplitterPanel :size="30" :min-size="20">
           <RuleDetailPanel
-            :rule-content="workspace.ruleContent.value"
-            :is-rule-loading="workspace.isRuleLoading.value"
-            :selected-checklist-item="workspace.selectedChecklistItem.value"
-            :current-review="workspace.currentReview.value"
-            :review-history="workspace.reviewHistory.value"
+            :rule-content="ruleContent"
+            :is-rule-loading="isRuleLoading"
+            :rule-content-error="ruleContentError"
+            :selected-checklist-item="selectedChecklistItem"
+            :current-review="currentReview"
+            :review-history="reviewHistory"
+            @retry-rule-content="selectRule(selectedRuleId)"
           />
         </SplitterPanel>
       </Splitter>
@@ -263,170 +279,11 @@ defineExpose({ asset })
   color: var(--color-text-primary);
 }
 
-.asset-review__header {
-  flex: 0 0 auto;
-  padding: 0.35rem 0.75rem;
-  background-color: var(--color-background-dark);
-  border-bottom: 1px solid var(--color-border-default);
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.asset-review__header-main {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.asset-review__header-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.asset-review__title-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.35rem;
-}
-
-.asset-review__title {
-  font-size: 1.5rem;
-  margin: 0;
-  font-weight: 600;
-}
-
-.asset-review__labels {
-  display: flex;
-  gap: 0.35rem;
-  flex-wrap: wrap;
-}
-
-.asset-label {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.15rem 0.5rem;
-  background-color: var(--color-action-blue);
-  color: var(--color-text-bright);
-  border-radius: 9999px;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.asset-review__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  color: var(--color-text-dim);
-  font-size: 1rem;
-}
-
-.asset-review__meta-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.asset-review__meta-item i {
-  font-size: 0.75rem;
-  opacity: 0.7;
-}
-
-.asset-review__description {
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.asset-review__header-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-shrink: 0;
-  align-items: center;
-}
-
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.75rem;
-  background-color: var(--color-background-light);
-  border: 1px solid var(--color-border-default);
-  border-radius: 4px;
-  color: var(--color-text-primary);
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.action-btn:hover {
-  background-color: var(--color-bg-hover-strong);
-  border-color: var(--color-border-default);
-}
-
-.action-btn i {
-  font-size: 0.85rem;
-}
-
-.search-reviews {
-  display: flex;
-  align-items: center;
-  position: relative;
-  margin-right: 0.5rem;
-}
-
-.search-reviews__icon {
-  position: absolute;
-  left: 0.6rem;
-  color: var(--color-text-dim);
-  font-size: 0.85rem;
-  pointer-events: none;
-}
-
-.search-reviews__input {
-  background-color: var(--color-background-light);
-  border: 1px solid var(--color-border-default);
-  border-radius: 4px;
-  color: var(--color-text-primary);
-  font-size: 0.85rem;
-  padding: 0.4rem 0.6rem 0.4rem 2rem;
-  width: 180px;
-  outline: none;
-  transition: border-color 0.15s, background-color 0.15s;
-}
-
-.search-reviews__input::placeholder {
-  color: var(--color-text-dim);
-}
-
-.search-reviews__input:focus {
-  border-color: var(--color-primary-highlight);
-  background-color: var(--color-background-dark);
-}
-
-.search-reviews__clear {
-  position: absolute;
-  right: 0.5rem;
-  color: var(--color-text-dim);
-  font-size: 0.75rem;
-  cursor: pointer;
-}
-
-.search-reviews__clear:hover {
-  color: var(--color-text-primary);
-}
-
-.search-reviews__input:not(:placeholder-shown) {
-  padding-right: 1.75rem;
-}
-
 .asset-review__content {
   flex: 1;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .asset-review__loading,
@@ -439,5 +296,40 @@ defineExpose({ asset })
 
 .asset-review__error {
   color: var(--color-text-error);
+}
+
+.asset-review__checklist-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: color-mix(in srgb, var(--color-text-error, #e74c3c) 12%, var(--color-background-dark));
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-error, #e74c3c) 40%, transparent);
+  color: var(--color-text-error, #e74c3c);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.asset-review__checklist-error .pi {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.asset-review__retry-btn {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--color-text-error, #e74c3c);
+  color: var(--color-text-error, #e74c3c);
+  border-radius: 4px;
+  padding: 0.15rem 0.6rem;
+  cursor: pointer;
+  font-size: 1rem;
+  flex-shrink: 0;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+
+.asset-review__retry-btn:hover {
+  opacity: 1;
 }
 </style>

@@ -1,4 +1,5 @@
 <script setup>
+import { FilterMatchMode } from '@primevue/core/api'
 import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
@@ -53,13 +54,17 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  saveError: {
+    type: String,
+    default: null,
+  },
   searchFilter: {
     type: String,
     default: '',
   },
 })
 
-const emit = defineEmits(['select-rule', 'row-save', 'status-action', 'refresh'])
+const emit = defineEmits(['select-rule', 'row-save', 'status-action', 'refresh', 'clear-save-error'])
 
 const selectedRow = ref(null)
 const checklistMenu = ref()
@@ -144,10 +149,33 @@ const {
 
 const defaultSortField = computed(() => showGroupId.value ? 'groupId' : 'ruleId')
 
-// Search term (normalized)
-const searchTerm = computed(() => props.searchFilter?.toLowerCase().trim() || '')
+// PrimeVue Filters State
+const filters = ref({
+  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+})
 
-// Field definitions for search matching
+const dsFilterFields = ['ruleId', 'groupId', 'ruleTitle', 'groupTitle', 'detail', 'comment', 'username', 'status.user.username']
+
+watch(() => props.searchFilter, (val) => {
+  filters.value.global.value = val
+})
+
+const isFiltered = computed(() => !!filters.value.global.value)
+
+// Data Table filtering event tracking
+const currentFilteredData = ref([])
+
+function onFilter(event) {
+  currentFilteredData.value = event.filteredValue
+}
+
+watch(() => props.gridData, (val) => {
+  if (!isFiltered.value) {
+    currentFilteredData.value = val
+  }
+}, { immediate: true })
+
+// Match field labels for the UI highlight
 const searchFieldDefs = [
   { key: 'ruleId', label: 'rule id' },
   { key: 'groupId', label: 'group' },
@@ -159,14 +187,13 @@ const searchFieldDefs = [
   { getter: row => row.status?.user?.username, label: 'status user' },
 ]
 
-// Filtered data + cached match info (avoids redundant per-row search work)
 const matchedFieldsMap = computed(() => {
-  const term = searchTerm.value
+  const term = props.searchFilter?.toLowerCase().trim()
   if (!term) {
     return null
   }
   const map = new Map()
-  for (const row of props.gridData) {
+  for (const row of currentFilteredData.value) {
     const matched = getMatchedFields(row, searchFieldDefs, term)
     if (matched.length) {
       map.set(row.ruleId, matched)
@@ -175,22 +202,22 @@ const matchedFieldsMap = computed(() => {
   return map
 })
 
-const filteredData = computed(() => {
-  const map = matchedFieldsMap.value
-  if (!map) {
-    return props.gridData
-  }
-  return props.gridData.filter(row => map.has(row.ruleId))
-})
-
-const isFiltered = computed(() => filteredData.value.length !== props.gridData.length)
-
 function toggleChecklistMenu(event) {
   checklistMenu.value.toggle(event)
 }
 
 // Tally stats
-const stats = computed(() => calculateChecklistStats(filteredData.value))
+const stats = computed(() => {
+  const result = calculateChecklistStats(isFiltered.value ? currentFilteredData.value : props.gridData)
+  if (!result) {
+    return {
+      results: { pass: 0, fail: 0, notapplicable: 0, other: 0 },
+      engine: { manual: 0, engine: 0, override: 0 },
+      statuses: { saved: 0, submitted: 0, accepted: 0, rejected: 0 },
+    }
+  }
+  return result
+})
 
 // Header display text
 const headerTitle = computed(() => {
@@ -218,7 +245,8 @@ watch(() => props.gridData, (data) => {
     return
   }
   if (!props.selectedRuleId) {
-    const firstVisible = filteredData.value[0]
+    const targetData = isFiltered.value ? currentFilteredData.value : data
+    const firstVisible = targetData[0]
     if (firstVisible) {
       selectedRow.value = firstVisible
       emit('select-rule', firstVisible.ruleId)
@@ -310,22 +338,26 @@ const dataTablePt = {
 
     <DataTable
       v-model:selection="selectedRow"
-      :value="filteredData"
+      v-model:filters="filters"
+      :global-filter-fields="dsFilterFields"
+      :value="gridData"
       :loading="isLoading"
       data-key="ruleId"
       selection-mode="single"
       scrollable
       scroll-height="flex"
       :virtual-scroller-options="{ itemSize }"
+      resizable-columns
       striped-rows
       :sort-field="defaultSortField"
       :sort-order="1"
       class="checklist-grid__table"
       :pt="dataTablePt"
       @row-click="onRowClick"
+      @filter="onFilter"
       @pointerdown.stop
     >
-      <Column header="CAT" field="severity" sortable :style="{ width: '5rem' }">
+      <Column header="CAT" field="severity" sortable :style="{ width: '5rem' } ">
         <template #body="{ data }">
           <CatBadge :category="severityMap[data.severity]" variant="label" />
         </template>
@@ -339,8 +371,8 @@ const dataTablePt = {
         :style="{ width: '7rem' }"
       >
         <template #body="{ data }">
-          <span class="cell-text--mono" :class="{ 'cell--match': searchTerm && fieldMatches(data.groupId, searchTerm) }">
-            <span v-if="searchTerm" v-html="highlightText(data.groupId, searchTerm)" />
+          <span class="cell-text--mono" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupId, searchFilter) }">
+            <span v-if="searchFilter" v-html="highlightText(data.groupId, searchFilter)" />
             <template v-else>{{ data.groupId }}</template>
           </span>
         </template>
@@ -354,8 +386,8 @@ const dataTablePt = {
         :style="{ width: '15rem' }"
       >
         <template #body="{ data }">
-          <span class="cell-text--mono" :class="{ 'cell--match': searchTerm && fieldMatches(data.ruleId, searchTerm) }">
-            <span v-if="searchTerm" v-html="highlightText(data.ruleId, searchTerm)" />
+          <span class="cell-text--mono" :class="{ 'cell--match': searchFilter && fieldMatches(data.ruleId, searchFilter) }">
+            <span v-if="searchFilter" v-html="highlightText(data.ruleId, searchFilter)" />
             <template v-else>{{ data.ruleId }}</template>
           </span>
         </template>
@@ -369,8 +401,8 @@ const dataTablePt = {
         :style="{ width: '25%' }"
       >
         <template #body="{ data }">
-          <span class="cell-text--clamped" :class="{ 'cell--match': searchTerm && fieldMatches(data.ruleTitle, searchTerm) }" :title="data.ruleTitle">
-            <span v-if="searchTerm" v-html="highlightText(data.ruleTitle, searchTerm)" />
+          <span class="cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.ruleTitle, searchFilter) }" :title="data.ruleTitle">
+            <span v-if="searchFilter" v-html="highlightText(data.ruleTitle, searchFilter)" />
             <template v-else>{{ data.ruleTitle }}</template>
           </span>
         </template>
@@ -384,8 +416,8 @@ const dataTablePt = {
         :style="{ width: '25%' }"
       >
         <template #body="{ data }">
-          <span class="cell-text--clamped" :class="{ 'cell--match': searchTerm && fieldMatches(data.groupTitle, searchTerm) }" :title="data.groupTitle">
-            <span v-if="searchTerm" v-html="highlightText(data.groupTitle, searchTerm)" />
+          <span class="cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupTitle, searchFilter) }" :title="data.groupTitle">
+            <span v-if="searchFilter" v-html="highlightText(data.groupTitle, searchFilter)" />
             <template v-else>{{ data.groupTitle }}</template>
           </span>
         </template>
@@ -408,8 +440,8 @@ const dataTablePt = {
           <div
             class="cell-text-field"
           >
-            <span v-if="data.detail" class="cell-text--clamped" :class="{ 'cell--match': searchTerm && fieldMatches(data.detail, searchTerm) }" :title="data.detail">
-              <span v-if="searchTerm" v-html="highlightText(data.detail, searchTerm)" />
+            <span v-if="data.detail" class="cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.detail, searchFilter) }" :title="data.detail">
+              <span v-if="searchFilter" v-html="highlightText(data.detail, searchFilter)" />
               <template v-else>{{ data.detail }}</template>
             </span>
             <span v-else class="cell-text--placeholder">Add review...</span>
@@ -422,8 +454,8 @@ const dataTablePt = {
           <div
             class="cell-text-field"
           >
-            <span class="cell-text--clamped" :class="{ 'cell--match': searchTerm && fieldMatches(data.comment, searchTerm) }" :title="data.comment">
-              <span v-if="searchTerm" v-html="highlightText(data.comment, searchTerm)" />
+            <span class="cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.comment, searchFilter) }" :title="data.comment">
+              <span v-if="searchFilter" v-html="highlightText(data.comment, searchFilter)" />
               <template v-else>{{ data.comment }}</template>
             </span>
           </div>
@@ -473,7 +505,7 @@ const dataTablePt = {
       </Column>
 
       <Column
-        v-if="searchTerm"
+        v-if="searchFilter"
         header="Match"
         :style="{ width: '7.5rem' }"
       >
@@ -485,11 +517,11 @@ const dataTablePt = {
         </template>
       </Column>
 
-      <template v-if="stats" #footer>
+      <template #footer>
         <StatusFooter
           :refresh-loading="isLoading"
           :total-count="gridData.length"
-          :filtered-count="isFiltered ? filteredData.length : null"
+          :filtered-count="isFiltered ? currentFilteredData.length : null"
           @action="handleFooterAction"
         >
           <template #left-extra>
@@ -519,9 +551,11 @@ const dataTablePt = {
       :access-mode="accessMode"
       :can-accept="canAccept"
       :is-saving="isSaving"
+      :save-error="saveError"
       @save="onPopoverSave"
       @status-action="onPopoverStatusAction"
       @close="onPopoverClose"
+      @clear-save-error="emit('clear-save-error')"
     />
   </div>
 </template>
@@ -644,6 +678,15 @@ const dataTablePt = {
 
 :deep(.p-datatable-thead > tr > th) {
   padding: 0.2rem 0.35rem;
+  border-right: 1px solid var(--color-border-light);
+}
+
+:deep(.p-datatable-thead > tr > th:last-child) {
+  border-right: none;
+}
+
+:deep(.p-datatable-column-header-content) {
+  justify-content: center;
 }
 
 .cell-result__empty {

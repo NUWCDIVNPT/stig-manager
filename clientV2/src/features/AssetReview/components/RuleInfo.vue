@@ -11,11 +11,17 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  ruleContentError: {
+    type: Object,
+    default: null,
+  },
   selectedChecklistItem: {
     type: Object,
     default: null,
   },
 })
+
+const emit = defineEmits(['retry'])
 </script>
 
 <template>
@@ -32,6 +38,14 @@ defineProps({
     <div v-if="isLoading" class="rule-info__loading">
       <i class="pi pi-spinner pi-spin" />
       Loading rule content...
+    </div>
+
+    <div v-else-if="ruleContentError" class="rule-info__fetch-error">
+      <i class="pi pi-exclamation-triangle" />
+      <span>Could not load rule content.</span>
+      <button class="rule-info__retry-btn" @click="emit('retry')">
+        Retry
+      </button>
     </div>
 
     <div v-else-if="!selectedChecklistItem" class="rule-info__empty">
@@ -151,13 +165,41 @@ defineProps({
 }
 
 .rule-info__loading,
-.rule-info__empty {
+.rule-info__empty,
+.rule-info__fetch-error {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   height: 100%;
   color: var(--color-text-dim);
+}
+
+.rule-info__fetch-error {
+  color: var(--color-text-error, #e74c3c);
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rule-info__fetch-error .pi {
+  font-size: 1.5rem;
+  opacity: 0.8;
+}
+
+.rule-info__retry-btn {
+  background: none;
+  border: 1px solid var(--color-text-error, #e74c3c);
+  color: var(--color-text-error, #e74c3c);
+  border-radius: 4px;
+  padding: 0.2rem 0.8rem;
+  cursor: pointer;
+  font-size: 1rem;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+
+.rule-info__retry-btn:hover {
+  opacity: 1;
 }
 
 .rule-info__header {

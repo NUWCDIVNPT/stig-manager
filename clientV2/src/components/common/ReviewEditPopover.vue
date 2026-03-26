@@ -30,13 +30,17 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  saveError: {
+    type: String,
+    default: null,
+  },
   width: {
     type: Number,
     default: null,
   },
 })
 
-const emit = defineEmits(['save', 'status-action', 'close'])
+const emit = defineEmits(['save', 'status-action', 'close', 'clear-save-error'])
 
 // Register PrimeVue Tooltip directive for v-tooltip usage
 const vTooltip = Tooltip
@@ -307,6 +311,15 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
         </div>
       </div>
 
+      <!-- Inline save error (Tier: Action Error) -->
+      <div v-if="saveError" class="review-edit-popover__save-error">
+        <i class="pi pi-exclamation-circle" />
+        <span>{{ saveError }}</span>
+        <button class="review-edit-popover__save-error-dismiss" @click="emit('clear-save-error')">
+          <i class="pi pi-times" />
+        </button>
+      </div>
+
       <div class="review-edit-popover__attributions">
         <div class="review-edit-popover__engine-badges">
           <span
@@ -529,6 +542,42 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
 
 .review-edit-popover__discard-link--hidden {
   visibility: hidden;
+}
+
+/* Inline save error banner (Tier: Action Error) */
+.review-edit-popover__save-error {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  background-color: color-mix(in srgb, var(--color-text-error, #e74c3c) 12%, var(--color-background-dark));
+  border: 1px solid color-mix(in srgb, var(--color-text-error, #e74c3c) 40%, transparent);
+  border-radius: 4px;
+  color: var(--color-text-error, #e74c3c);
+  font-size: 0.95rem;
+}
+
+.review-edit-popover__save-error .pi-exclamation-circle {
+  flex-shrink: 0;
+}
+
+.review-edit-popover__save-error span {
+  flex: 1;
+}
+
+.review-edit-popover__save-error-dismiss {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-error, #e74c3c);
+  opacity: 0.7;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.review-edit-popover__save-error-dismiss:hover {
+  opacity: 1;
 }
 
 .review-edit-popover__attributions {

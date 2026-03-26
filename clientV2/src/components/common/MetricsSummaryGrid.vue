@@ -326,7 +326,6 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     }"
     scrollable
     scroll-height="flex"
-    show-gridlines
     resizable-columns
     column-resize-mode="fit"
     sort-field="benchmarkId"
@@ -363,6 +362,14 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
 
 :deep(.p-datatable-column-header-content) {
   justify-content: center;
+}
+
+:deep(.p-datatable-thead > tr > th) {
+  border-right: 1px solid var(--color-border-light);
+}
+
+:deep(.p-datatable-thead > tr > th:last-child) {
+  border-right: none;
 }
 
 .agg-grid-row {

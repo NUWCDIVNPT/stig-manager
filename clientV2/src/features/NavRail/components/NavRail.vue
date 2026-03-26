@@ -145,7 +145,7 @@ function toggleExpanded() {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 3.25rem;
+  height: 4.3rem;
   background: none;
   border: none;
   border-bottom: 1px solid var(--color-border-default);

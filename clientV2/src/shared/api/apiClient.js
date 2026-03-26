@@ -26,6 +26,16 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Extracts the HTTP status code from an error, regardless of its shape.
+ * Works with ApiError (err.status) and any other error that carries a status.
+ * @param {unknown} err
+ * @returns {number|null} HTTP status code, or null if not available
+ */
+export function getHttpStatus(err) {
+  return err?.status ?? null
+}
+
 function safeJson(text) {
   try {
     return JSON.parse(text)
