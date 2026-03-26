@@ -14,10 +14,13 @@ import {
   fetchReviewsByRule,
   fetchRuleContent,
   patchReview,
+  postReviewBatch,
   putReview,
 } from '../api/collectionReviewApi.js'
 import CollectionAssetReviewsGrid from './CollectionAssetReviewsGrid.vue'
 import CollectionChecklistGrid from './CollectionChecklistGrid.vue'
+import CollectionReviewBatchEditDialog from './CollectionReviewBatchEditDialog.vue'
+import CollectionReviewRejectDialog from './CollectionReviewRejectDialog.vue'
 
 const route = useRoute()
 const { getCollectionRoleId } = useCurrentUser()
@@ -184,7 +187,70 @@ const { isLoading: isSavingStatus, execute: executeStatusAction } = useAsyncStat
   { immediate: false },
 )
 
-const isSaving = computed(() => isSavingReview.value || isSavingStatus.value)
+const { isLoading: isBatchSaving, execute: executeBatch } = useAsyncState(
+  async (body) => {
+    await postReviewBatch(collectionId.value, body)
+    loadReviews()
+    loadChecklist()
+  },
+  { immediate: false },
+)
+
+const isSaving = computed(() => isSavingReview.value || isSavingStatus.value || isBatchSaving.value)
+
+// --- Batch dialog state ---
+const rejectDialogVisible = ref(false)
+const rejectDialogAssetIds = ref([])
+const batchEditDialogVisible = ref(false)
+const batchEditDialogRows = ref([])
+
+// --- Batch event handlers ---
+function onBatchStatus({ action, assetIds }) {
+  const body = {
+    source: { review: { status: action } },
+    assets: { assetIds },
+    rules: { ruleIds: [selectedRuleId.value] },
+  }
+  executeBatch(body)
+}
+
+function onBatchReject({ assetIds }) {
+  rejectDialogAssetIds.value = assetIds
+  rejectDialogVisible.value = true
+}
+
+function onRejectConfirm(feedbackText) {
+  const body = {
+    source: { review: { status: { label: 'rejected', text: feedbackText } } },
+    assets: { assetIds: rejectDialogAssetIds.value },
+    rules: { ruleIds: [selectedRuleId.value] },
+  }
+  executeBatch(body)
+}
+
+function onBatchEdit({ rows }) {
+  batchEditDialogRows.value = rows
+  batchEditDialogVisible.value = true
+}
+
+function onBatchEditConfirm(payload) {
+  const review = {}
+  if (payload.result) {
+    review.result = payload.result
+  }
+  if (payload.detail) {
+    review.detail = payload.detail
+  }
+  if (payload.comment) {
+    review.comment = payload.comment
+  }
+  const body = {
+    source: { review },
+    assets: { assetIds: batchEditDialogRows.value.map(r => r.assetId) },
+    rules: { ruleIds: [selectedRuleId.value] },
+  }
+  executeBatch(body)
+}
 
 // --- Event handlers for asset reviews grid ---
 function onAssetReviewSave({ assetId, ruleId, result, detail, comment, status }) {
@@ -272,6 +338,9 @@ const headerTitle = computed(() => `${benchmarkId.value} ${revisionStr.value}`)
                 :is-saving="isSaving"
                 @row-save="onAssetReviewSave"
                 @status-action="onAssetStatusAction"
+                @batch-status="onBatchStatus"
+                @batch-reject="onBatchReject"
+                @batch-edit="onBatchEdit"
                 @refresh="refreshAssetReviews"
               />
             </SplitterPanel>
@@ -288,6 +357,19 @@ const headerTitle = computed(() => `${benchmarkId.value} ${revisionStr.value}`)
         </SplitterPanel>
       </Splitter>
     </div>
+
+    <!-- Batch dialogs -->
+    <CollectionReviewRejectDialog
+      v-model:visible="rejectDialogVisible"
+      :count="rejectDialogAssetIds.length"
+      @confirm="onRejectConfirm"
+    />
+    <CollectionReviewBatchEditDialog
+      v-model:visible="batchEditDialogVisible"
+      :selected-rows="batchEditDialogRows"
+      :field-settings="fieldSettings"
+      @confirm="onBatchEditConfirm"
+    />
   </div>
 </template>
 

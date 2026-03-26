@@ -14,7 +14,7 @@ import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useChecklistDisplayMode } from '../../../shared/composables/useChecklistDisplayMode.js'
 import { durationToNow } from '../../../shared/lib.js'
-import { defaultFieldSettings } from '../../../shared/lib/reviewFormUtils.js'
+import { defaultFieldSettings, isFieldRequired } from '../../../shared/lib/reviewFormUtils.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../../AssetReview/lib/checklistUtils.js'
 
 const props = defineProps({
@@ -44,7 +44,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['row-save', 'status-action', 'refresh'])
+const emit = defineEmits(['row-save', 'status-action', 'batch-status', 'batch-reject', 'batch-edit', 'refresh'])
 
 // --- Row height controls (from shared composable) ---
 const {
@@ -59,6 +59,79 @@ const selectedRows = ref([])
 
 function isRowSelectable(event) {
   return event.data.access === 'rw'
+}
+
+// --- Review completeness check (for button state machine) ---
+const completableResults = new Set(['pass', 'fail', 'notapplicable'])
+
+function isReviewComplete(row) {
+  const result = row.result
+  if (!result || !completableResults.has(result)) {
+    return false
+  }
+  const fs = props.fieldSettings
+  if (isFieldRequired(fs.detail, result) && !row.detail) {
+    return false
+  }
+  if (isFieldRequired(fs.comment, result) && !row.comment) {
+    return false
+  }
+  return true
+}
+
+// --- Toolbar button state machine ---
+const toolbarButtonStates = computed(() => {
+  const rows = selectedRows.value
+  if (!rows.length) {
+    return { accept: false, reject: false, submit: false, unsubmit: false, batchEdit: false }
+  }
+
+  const counts = { unsaved: 0, saved: 0, savedComplete: 0, submitted: 0, rejected: 0, accepted: 0 }
+  for (const row of rows) {
+    const status = row.status?.label ?? row.status ?? ''
+    if (!status) {
+      counts.unsaved++
+      continue
+    }
+    if (status === 'saved') {
+      isReviewComplete(row) ? counts.savedComplete++ : counts.saved++
+    }
+    else {
+      counts[status]++
+    }
+  }
+
+  const total = rows.length
+  return {
+    accept: !!(counts.submitted || counts.rejected) && !counts.unsaved && !counts.saved && !counts.savedComplete && counts.accepted !== total,
+    reject: counts.submitted > 0 && !counts.unsaved && !counts.saved && !counts.savedComplete && !counts.accepted && !counts.rejected,
+    submit: !!(counts.savedComplete || counts.submitted || counts.accepted || counts.rejected) && !counts.unsaved && !counts.saved && counts.submitted !== total,
+    unsubmit: !!(counts.submitted || counts.accepted || counts.rejected) && !counts.unsaved && !counts.saved,
+    batchEdit: total >= 2,
+  }
+})
+
+const selectedAssetIds = computed(() => selectedRows.value.map(r => r.assetId))
+
+// --- Toolbar action handlers ---
+function onToolbarAccept() {
+  emit('batch-status', { action: 'accepted', assetIds: selectedAssetIds.value })
+}
+
+function onToolbarReject() {
+  emit('batch-reject', { assetIds: selectedAssetIds.value })
+}
+
+function onToolbarSubmit() {
+  emit('batch-status', { action: 'submitted', assetIds: selectedAssetIds.value })
+}
+
+function onToolbarUnsubmit() {
+  emit('batch-status', { action: 'saved', assetIds: selectedAssetIds.value })
+}
+
+function onToolbarBatchEdit() {
+  emit('batch-edit', { assetIds: selectedAssetIds.value, rows: selectedRows.value })
 }
 
 // --- Controlled sorting ---
@@ -221,25 +294,57 @@ const dataTablePt = {
 
     <!-- Toolbar -->
     <div class="asset-reviews-grid__toolbar">
-      <button type="button" class="ar-action-btn" disabled title="Accept">
-        <i class="pi pi-star" />
-        <span>Accept</span>
-      </button>
-      <button type="button" class="ar-action-btn" disabled title="Reject">
-        <i class="pi pi-ban" />
-        <span>Reject</span>
-      </button>
-      <span class="ar-toolbar__divider" />
-      <button type="button" class="ar-action-btn" disabled title="Submit">
+      <template v-if="canAccept">
+        <button
+          type="button"
+          class="ar-action-btn"
+          :disabled="!toolbarButtonStates.accept"
+          title="Accept"
+          @click="onToolbarAccept"
+        >
+          <i class="pi pi-star" />
+          <span>Accept</span>
+        </button>
+        <button
+          type="button"
+          class="ar-action-btn"
+          :disabled="!toolbarButtonStates.reject"
+          title="Reject"
+          @click="onToolbarReject"
+        >
+          <i class="pi pi-ban" />
+          <span>Reject</span>
+        </button>
+        <span class="ar-toolbar__divider" />
+      </template>
+      <button
+        type="button"
+        class="ar-action-btn"
+        :disabled="!toolbarButtonStates.submit"
+        title="Submit"
+        @click="onToolbarSubmit"
+      >
         <i class="pi pi-check" />
         <span>Submit</span>
       </button>
-      <button type="button" class="ar-action-btn" disabled title="Unsubmit">
+      <button
+        type="button"
+        class="ar-action-btn"
+        :disabled="!toolbarButtonStates.unsubmit"
+        title="Unsubmit"
+        @click="onToolbarUnsubmit"
+      >
         <i class="pi pi-replay" />
         <span>Unsubmit</span>
       </button>
       <span class="ar-toolbar__divider" />
-      <button type="button" class="ar-action-btn" disabled title="Batch edit">
+      <button
+        type="button"
+        class="ar-action-btn"
+        :disabled="!toolbarButtonStates.batchEdit"
+        title="Batch edit"
+        @click="onToolbarBatchEdit"
+      >
         <i class="pi pi-pencil" />
         <span>Batch edit</span>
       </button>
@@ -269,11 +374,7 @@ const dataTablePt = {
       @row-click="onRowClick"
     >
       <!-- Checkbox column -->
-      <Column selection-mode="multiple" :style="{ width: '3rem' }">
-        <template #body="{ data }">
-          <i v-if="data.access !== 'rw'" class="pi pi-lock ar-lock-icon" title="Read-only access" />
-        </template>
-      </Column>
+      <Column selection-mode="multiple" :style="{ width: '3rem' }" />
 
       <!-- Asset name column -->
       <Column header="Asset" field="assetName" sortable :style="{ width: '12rem' }">
@@ -603,13 +704,6 @@ const dataTablePt = {
   height: 1.4rem;
   opacity: 0.7;
   flex-shrink: 0;
-}
-
-/* --- Lock icon for read-only rows --- */
-.ar-lock-icon {
-  color: var(--color-text-dim);
-  font-size: 0.9rem;
-  opacity: 0.6;
 }
 
 /* --- Footer divider --- */

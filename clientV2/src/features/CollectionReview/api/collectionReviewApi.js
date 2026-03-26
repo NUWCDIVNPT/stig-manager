@@ -29,6 +29,13 @@ export function fetchReviewsByRule(collectionId, ruleId) {
   })
 }
 
+export function postReviewBatch(collectionId, body) {
+  if (!collectionId) {
+    throw new Error('collectionId is required to post review batch.')
+  }
+  return apiCall('postReviewBatch', { collectionId }, body)
+}
+
 export function fetchRuleContent(benchmarkId, revisionStr, ruleId) {
   if (!benchmarkId || !revisionStr || !ruleId) {
     throw new Error('benchmarkId, revisionStr, and ruleId are required to fetch rule content.')
