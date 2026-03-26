@@ -12,14 +12,11 @@ import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import {
   fetchAsset,
   fetchCollection,
-  fetchCollectionLabels,
   fetchStigRevisions,
 } from '../api/assetReviewApi.js'
 import { useChecklistData } from '../composables/useChecklistData.js'
 import { useReviewActions } from '../composables/useReviewActions.js'
 import { useRuleDetail } from '../composables/useRuleDetail.js'
-import { useResolvedLabels } from '../lib/labels.js'
-import AssetReviewHeader from './AssetReviewHeader.vue'
 import ChecklistGrid from './ChecklistGrid.vue'
 import RuleDetailPanel from './RuleDetailPanel.vue'
 
@@ -54,12 +51,6 @@ const { state: asset, isLoading, error, execute: loadAsset } = useAsyncState(
   () => fetchAsset(assetId.value),
   { immediate: false, onError: handleRouteError },
 )
-const { state: collectionLabels, execute: loadCollectionLabels } = useAsyncState(
-  () => fetchCollectionLabels(collectionId.value),
-  { initialState: [], immediate: false },
-)
-
-const resolvedLabels = useResolvedLabels(asset, collectionLabels)
 
 const { state: collection, execute: loadCollection } = useAsyncState(
   () => fetchCollection(collectionId.value),
@@ -74,7 +65,6 @@ watch(assetId, () => {
 
 watch(collectionId, () => {
   if (collectionId.value) {
-    loadCollectionLabels()
     loadCollection()
   }
 }, { immediate: true })
@@ -201,13 +191,6 @@ const searchFilter = useDebouncedRef('', 220)
 
 <template>
   <div class="asset-review">
-    <AssetReviewHeader
-      v-if="asset"
-      v-model:search-filter="searchFilter"
-      :asset="asset"
-      :resolved-labels="resolvedLabels"
-    />
-
     <div v-if="isLoading" class="asset-review__loading">
       Loading asset details...
     </div>
@@ -231,7 +214,7 @@ const searchFilter = useDebouncedRef('', 220)
         }"
         style="height: 100%"
       >
-        <SplitterPanel :size="70" :min-size="40">
+        <SplitterPanel :size="75" :min-size="40">
           <ChecklistGrid
             :grid-data="gridData"
             :is-loading="isChecklistLoading"
@@ -243,6 +226,7 @@ const searchFilter = useDebouncedRef('', 220)
             :is-saving="isSaving"
             :save-error="saveError"
             :search-filter="searchFilter"
+            @update:search-filter="searchFilter = $event"
             @select-rule="selectRule"
             @row-save="onRowSave"
             @status-action="onStatusAction"
@@ -250,7 +234,7 @@ const searchFilter = useDebouncedRef('', 220)
             @clear-save-error="clearSaveError"
           />
         </SplitterPanel>
-        <SplitterPanel :size="30" :min-size="20">
+        <SplitterPanel :size="25" :min-size="20">
           <RuleDetailPanel
             :rule-content="ruleContent"
             :is-rule-loading="isRuleLoading"

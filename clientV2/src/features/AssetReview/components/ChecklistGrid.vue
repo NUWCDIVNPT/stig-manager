@@ -64,10 +64,11 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['select-rule', 'row-save', 'status-action', 'refresh', 'clear-save-error'])
+const emit = defineEmits(['update:searchFilter', 'select-rule', 'row-save', 'status-action', 'refresh', 'clear-save-error'])
 
 const selectedRow = ref(null)
 const checklistMenu = ref()
+const actionsMenu = ref()
 const reviewEditPopover = ref()
 const editingRow = ref(null)
 const editingPopoverWidth = ref(null)
@@ -206,6 +207,10 @@ function toggleChecklistMenu(event) {
   checklistMenu.value.toggle(event)
 }
 
+function toggleActionsMenu(event) {
+  actionsMenu.value.toggle(event)
+}
+
 // Tally stats
 const stats = computed(() => {
   const result = calculateChecklistStats(isFiltered.value ? currentFilteredData.value : props.gridData)
@@ -226,6 +231,25 @@ const headerTitle = computed(() => {
   }
   return 'Checklist'
 })
+
+const actionMenuItems = computed(() => [
+  {
+    label: 'Export to file',
+    icon: 'pi pi-download',
+    items: [
+      { label: 'CKL', icon: 'pi pi-file' },
+      { label: 'CSV', icon: 'pi pi-table' },
+    ],
+  },
+  {
+    label: 'Import Results...',
+    icon: 'pi pi-upload',
+  },
+  {
+    label: 'Revisions',
+    icon: 'pi pi-history',
+  },
+])
 
 // Sync selectedRow when selectedRuleId prop changes
 watch(() => props.selectedRuleId, (ruleId) => {
@@ -279,6 +303,49 @@ function handleFooterAction(actionKey) {
   }
 }
 
+function getColumnPt(alignment = 'left') {
+  const isCenter = alignment === 'center'
+
+  return {
+    headerCell: {
+      style: {
+        height: '27px',
+        padding: '0 0.5rem',
+        borderRight: '1px solid var(--color-border-light)',
+      },
+      class: isCenter ? 'column-header-center' : 'column-header-left',
+    },
+    columnHeaderContent: {
+      style: {
+        justifyContent: isCenter ? 'center' : 'flex-start',
+        textAlign: isCenter ? 'center' : 'left',
+      },
+    },
+    bodyCell: {
+      style: {
+        verticalAlign: 'top',
+        padding: '0.15rem 0.35rem',
+        overflow: 'hidden',
+        textAlign: isCenter ? 'center' : 'left',
+      },
+      class: isCenter ? 'column-body-center' : 'column-body-left',
+    },
+    bodyCellContent: {
+      style: {
+        display: 'flex',
+        justifyContent: isCenter ? 'center' : 'flex-start',
+        alignItems: 'flex-start',
+        width: '100%',
+      },
+    },
+  }
+}
+
+const columnPt = {
+  center: getColumnPt('center'),
+  left: getColumnPt('left'),
+}
+
 const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
   table: { style: { tableLayout: 'fixed' } },
@@ -290,49 +357,98 @@ const dataTablePt = {
 <template>
   <div class="checklist-grid" :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }" @scroll.capture="onGridScroll" @wheel.capture="onGridWheel">
     <div class="checklist-grid__header">
-      <div class="checklist-grid__header-left">
-        <Button
-          type="button"
-          size="small"
-          text
-          class="checklist-grid__menu-btn"
-          title="Checklist options"
-          @click="toggleChecklistMenu"
-        >
-          <i class="pi pi-list" />
-          <span>Checklist</span>
-          <i class="pi pi-chevron-down" style="font-size: .8rem; margin-left: 0.15rem" />
-        </Button>
+      <div class="checklist-grid__header-top">
+        <div class="checklist-grid__header-copy">
+          <span class="checklist-grid__eyebrow">Checklist Review</span>
+          <div class="checklist-grid__title-row">
+            <span class="checklist-grid__title">{{ headerTitle }}</span>
+          </div>
+        </div>
+        <div class="checklist-grid__header-summary">
+          <span
+            class="checklist-grid__access-badge"
+            :class="accessMode === 'rw' ? 'access-rw' : 'access-r'"
+          >
+            <i :class="accessMode === 'rw' ? 'pi pi-pencil' : 'pi pi-lock'" />
+            {{ accessMode === 'rw' ? 'Writable' : 'Read only' }}
+          </span>
+          <Button
+            type="button"
+            size="small"
+            text
+            class="checklist-grid__menu-btn checklist-grid__menu-btn--actions"
+            title="Checklist actions"
+            @click="toggleActionsMenu"
+          >
+            <i class="pi pi-folder-open" />
+            <span>Actions</span>
+            <i class="pi pi-chevron-down checklist-grid__menu-caret" />
+          </Button>
+        </div>
+      </div>
+      <div class="checklist-grid__header-bottom">
         <Menu
           ref="checklistMenu"
           :model="displayModeItems"
           :popup="true"
         />
-        <span class="checklist-grid__title">{{ headerTitle }}</span>
-      </div>
-      <div class="checklist-grid__header-right">
-        <button
-          class="checklist-grid__icon-btn"
-          title="Decrease row height"
-          :disabled="lineClamp <= 1"
-          @click="decreaseRowHeight"
-        >
-          <img :src="lineHeightDown" alt="Decrease row height">
-        </button>
-        <button
-          class="checklist-grid__icon-btn"
-          title="Increase row height"
-          :disabled="lineClamp >= 10"
-          @click="increaseRowHeight"
-        >
-          <img :src="lineHeightUp" alt="Increase row height">
-        </button>
-        <span
-          class="checklist-grid__access-badge"
-          :class="accessMode === 'rw' ? 'access-rw' : 'access-r'"
-        >
-          {{ accessMode === 'rw' ? 'Writeable' : 'Read only' }}
-        </span>
+        <div class="checklist-grid__header-search">
+          <i class="pi pi-search checklist-grid__search-icon" />
+          <input
+            :value="searchFilter"
+            type="text"
+            class="checklist-grid__search-input"
+            placeholder="Search reviews..."
+            @input="emit('update:searchFilter', $event.target.value)"
+          >
+          <button
+            v-if="searchFilter"
+            type="button"
+            class="checklist-grid__search-clear"
+            aria-label="Clear review search"
+            @click="emit('update:searchFilter', '')"
+          >
+            <i class="pi pi-times" />
+          </button>
+        </div>
+        <div class="checklist-grid__header-controls">
+          <Button
+            type="button"
+            size="small"
+            text
+            class="checklist-grid__menu-btn"
+            title="Checklist options"
+            @click="toggleChecklistMenu"
+          >
+            <i class="pi pi-list" />
+            <span>Display</span>
+            <i class="pi pi-chevron-down checklist-grid__menu-caret" />
+          </Button>
+          <div class="checklist-grid__density-controls">
+            <span class="checklist-grid__density-label">Density</span>
+            <button
+              class="checklist-grid__icon-btn"
+              title="Decrease row height"
+              :disabled="lineClamp <= 1"
+              @click="decreaseRowHeight"
+            >
+              <img :src="lineHeightDown" alt="Decrease row height">
+            </button>
+            <button
+              class="checklist-grid__icon-btn"
+              title="Increase row height"
+              :disabled="lineClamp >= 10"
+              @click="increaseRowHeight"
+            >
+              <img :src="lineHeightUp" alt="Increase row height">
+            </button>
+          </div>
+        </div>
+        <Menu
+          ref="actionsMenu"
+          :model="actionMenuItems"
+          :popup="true"
+        />
       </div>
     </div>
 
@@ -357,9 +473,17 @@ const dataTablePt = {
       @filter="onFilter"
       @pointerdown.stop
     >
-      <Column header="CAT" field="severity" sortable :style="{ width: '5rem' } ">
+      <Column
+        header="CAT"
+        field="severity"
+        sortable
+        :style="{ width: '5rem' }"
+        :pt="columnPt.center"
+      >
         <template #body="{ data }">
-          <CatBadge :category="severityMap[data.severity]" variant="label" />
+          <div class="cell-center">
+            <CatBadge :category="severityMap[data.severity]" variant="label" />
+          </div>
         </template>
       </Column>
 
@@ -369,9 +493,10 @@ const dataTablePt = {
         field="groupId"
         sortable
         :style="{ width: '7rem' }"
+        :pt="columnPt.left"
       >
         <template #body="{ data }">
-          <span class="cell-text--mono" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupId, searchFilter) }">
+          <span class="cell-text" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupId, searchFilter) }">
             <span v-if="searchFilter" v-html="highlightText(data.groupId, searchFilter)" />
             <template v-else>{{ data.groupId }}</template>
           </span>
@@ -384,9 +509,10 @@ const dataTablePt = {
         field="ruleId"
         sortable
         :style="{ width: '15rem' }"
+        :pt="columnPt.left"
       >
         <template #body="{ data }">
-          <span class="cell-text--mono" :class="{ 'cell--match': searchFilter && fieldMatches(data.ruleId, searchFilter) }">
+          <span class="cell-text" :class="{ 'cell--match': searchFilter && fieldMatches(data.ruleId, searchFilter) }">
             <span v-if="searchFilter" v-html="highlightText(data.ruleId, searchFilter)" />
             <template v-else>{{ data.ruleId }}</template>
           </span>
@@ -399,9 +525,10 @@ const dataTablePt = {
         field="ruleTitle"
         sortable
         :style="{ width: '25%' }"
+        :pt="columnPt.left"
       >
         <template #body="{ data }">
-          <span class="cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.ruleTitle, searchFilter) }" :title="data.ruleTitle">
+          <span class="cell-text cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.ruleTitle, searchFilter) }" :title="data.ruleTitle">
             <span v-if="searchFilter" v-html="highlightText(data.ruleTitle, searchFilter)" />
             <template v-else>{{ data.ruleTitle }}</template>
           </span>
@@ -414,16 +541,23 @@ const dataTablePt = {
         field="groupTitle"
         sortable
         :style="{ width: '25%' }"
+        :pt="columnPt.left"
       >
         <template #body="{ data }">
-          <span class="cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupTitle, searchFilter) }" :title="data.groupTitle">
+          <span class="cell-text cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupTitle, searchFilter) }" :title="data.groupTitle">
             <span v-if="searchFilter" v-html="highlightText(data.groupTitle, searchFilter)" />
             <template v-else>{{ data.groupTitle }}</template>
           </span>
         </template>
       </Column>
 
-      <Column header="Result" field="result" sortable :style="{ width: '5rem' }">
+      <Column
+        header="Result"
+        field="result"
+        sortable
+        :style="{ width: '5rem' }"
+        :pt="columnPt.center"
+      >
         <template #body="{ data }">
           <div
             data-result-cell
@@ -435,26 +569,38 @@ const dataTablePt = {
         </template>
       </Column>
 
-      <Column header="Detail" field="detail" sortable :style="{ width: '25%' }">
+      <Column
+        header="Detail"
+        field="detail"
+        sortable
+        :style="{ width: '25%' }"
+        :pt="columnPt.left"
+      >
         <template #body="{ data }">
           <div
             class="cell-text-field"
           >
-            <span v-if="data.detail" class="cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.detail, searchFilter) }" :title="data.detail">
+            <span v-if="data.detail" class="cell-text cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.detail, searchFilter) }" :title="data.detail">
               <span v-if="searchFilter" v-html="highlightText(data.detail, searchFilter)" />
               <template v-else>{{ data.detail }}</template>
             </span>
-            <span v-else class="cell-text--placeholder">Add review...</span>
+            <span v-else class="cell-text cell-text--placeholder">Add review...</span>
           </div>
         </template>
       </Column>
 
-      <Column header="Comment" field="comment" sortable :style="{ width: '25%' }">
+      <Column
+        header="Comment"
+        field="comment"
+        sortable
+        :style="{ width: '25%' }"
+        :pt="columnPt.left"
+      >
         <template #body="{ data }">
           <div
             class="cell-text-field"
           >
-            <span class="cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.comment, searchFilter) }" :title="data.comment">
+            <span class="cell-text cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.comment, searchFilter) }" :title="data.comment">
               <span v-if="searchFilter" v-html="highlightText(data.comment, searchFilter)" />
               <template v-else>{{ data.comment }}</template>
             </span>
@@ -462,7 +608,13 @@ const dataTablePt = {
         </template>
       </Column>
 
-      <Column field="resultEngine" sortable sort-field="resultEngine.product" :style="{ width: '3rem' }">
+      <Column
+        field="resultEngine"
+        sortable
+        sort-field="resultEngine.product"
+        :style="{ width: '3rem' }"
+        :pt="columnPt.center"
+      >
         <template #header>
           <img
             src="../../../assets/bot2.svg"
@@ -489,13 +641,25 @@ const dataTablePt = {
         </template>
       </Column>
 
-      <Column header="Status" field="status" sortable sort-field="status.label" :style="{ width: '5rem' }">
+      <Column
+        header="Status"
+        field="status"
+        sortable
+        sort-field="status.label"
+        :style="{ width: '5rem' }"
+        :pt="columnPt.center"
+      >
         <template #body="{ data }">
           <StatusBadge v-if="data.status" :status="data.status?.label ?? data.status" />
         </template>
       </Column>
 
-      <Column field="touchTs" sortable :style="{ width: '4rem' }">
+      <Column
+        field="touchTs"
+        sortable
+        :style="{ width: '4rem' }"
+        :pt="columnPt.center"
+      >
         <template #header>
           <i class="pi pi-clock" title="Last action" />
         </template>
@@ -508,9 +672,10 @@ const dataTablePt = {
         v-if="searchFilter"
         header="Match"
         :style="{ width: '7.5rem' }"
+        :pt="columnPt.left"
       >
         <template #body="{ data }">
-          <span class="cell-match-fields">
+          <span class="cell-text cell-match-fields">
             <i class="pi pi-search cell-match-fields__icon" />
             {{ matchedFieldsMap?.get(data.ruleId)?.join(', ') }}
           </span>
@@ -572,62 +737,189 @@ const dataTablePt = {
 }
 
 .checklist-grid__header {
+  --checklist-header-height: 5.35rem;
+  --checklist-control-height: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0.7rem 0.9rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-background-light) 38%, transparent), transparent 75%),
+    var(--color-background-dark);
+  border-bottom: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+  gap: 0.75rem;
+  min-height: var(--checklist-header-height);
+}
+
+.checklist-grid__header-top,
+.checklist-grid__header-bottom {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.25rem 0.5rem;
-  background-color: var(--color-background-dark);
-  border-bottom: 1px solid var(--color-border-light);
-  flex-shrink: 0;
-  gap: 0.5rem;
+  width: 100%;
+  gap: 0.75rem;
 }
 
-.checklist-grid__header-left {
+.checklist-grid__header-summary,
+.checklist-grid__header-controls {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.checklist-grid__header-search {
+  position: relative;
+  flex: 1 1 24rem;
   min-width: 0;
-  overflow: hidden;
+  max-width: 42rem;
+  height: var(--checklist-control-height);
 }
 
-.checklist-grid__header-right {
+.checklist-grid__header-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  min-width: 0;
+  justify-content: flex-start;
+}
+
+.checklist-grid__eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  line-height: 1;
+}
+
+.checklist-grid__title-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
+  gap: 0.55rem;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .checklist-grid__menu-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.15rem 0.4rem;
-  font-size: 1.2rem;
+  gap: 0.35rem;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.86rem;
+  font-weight: 600;
   color: var(--color-text-primary);
   flex-shrink: 0;
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 85%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-background-light) 55%, transparent);
+  height: var(--checklist-control-height);
+}
+
+.checklist-grid__menu-btn--actions {
+  min-width: 7rem;
 }
 
 .checklist-grid__menu-btn i:first-child {
-  font-size: 1rem;
+  font-size: 0.84rem;
+}
+
+.checklist-grid__menu-caret {
+  font-size: 0.72rem;
+  margin-left: 0.1rem;
 }
 
 .checklist-grid__title {
   font-weight: 600;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   color: var(--color-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.checklist-grid__search-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.75rem;
+  transform: translateY(-50%);
+  color: var(--color-text-dim);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.checklist-grid__search-input {
+  width: 100%;
+  height: 100%;
+  padding: 0.32rem 2rem 0.32rem 2.35rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-background-light) 75%, transparent);
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.checklist-grid__search-input:focus {
+  border-color: var(--color-primary-highlight);
+  background-color: var(--color-background-darkest);
+}
+
+.checklist-grid__search-input::placeholder {
+  color: var(--color-text-dim);
+}
+
+.checklist-grid__search-clear {
+  position: absolute;
+  top: 50%;
+  right: 0.45rem;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-dim);
+  cursor: pointer;
+}
+
+.checklist-grid__search-clear:hover {
+  color: var(--color-text-primary);
+}
+
+.checklist-grid__density-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.25rem 0.2rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 85%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-background-light) 45%, transparent);
+  height: var(--checklist-control-height);
+}
+
+.checklist-grid__density-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-dim);
+  margin-right: 0.1rem;
 }
 
 .checklist-grid__icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: none;
+  background: transparent;
   border: 1px solid transparent;
-  border-radius: 3px;
-  padding: 0.15rem;
+  border-radius: 999px;
+  width: 1.65rem;
+  height: 1.65rem;
+  padding: 0;
   cursor: pointer;
   opacity: 0.8;
 }
@@ -635,6 +927,7 @@ const dataTablePt = {
 .checklist-grid__icon-btn:hover:not(:disabled) {
   opacity: 1;
   border-color: var(--color-border-light);
+  background: color-mix(in srgb, var(--color-background-light) 80%, transparent);
 }
 
 .checklist-grid__icon-btn:disabled {
@@ -643,16 +936,24 @@ const dataTablePt = {
 }
 
 .checklist-grid__icon-btn img {
-  width: 16px;
-  height: 16px;
+  width: 13px;
+  height: 13px;
 }
 
 .checklist-grid__access-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-weight: 600;
-  font-size: 1rem;
-  padding: 0.1rem 0.4rem;
-  border-radius: 3px;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
   flex-shrink: 0;
+  height: var(--checklist-control-height);
+}
+
+.checklist-grid__access-badge i {
+  font-size: 0.8rem;
 }
 
 .access-rw {
@@ -670,23 +971,24 @@ const dataTablePt = {
   min-height: 0;
 }
 
-:deep(.p-datatable-tbody > tr > td) {
-  vertical-align: top;
-  padding: 0.15rem 0.35rem;
-  overflow: hidden;
-}
-
-:deep(.p-datatable-thead > tr > th) {
-  padding: 0.2rem 0.35rem;
-  border-right: 1px solid var(--color-border-light);
-}
-
 :deep(.p-datatable-thead > tr > th:last-child) {
   border-right: none;
 }
 
-:deep(.p-datatable-column-header-content) {
+:deep(td.column-body-center) {
+  text-align: center;
+}
+
+:deep(td.column-body-left) {
+  text-align: left;
+}
+
+:deep(td.column-body-center .cell-result) {
   justify-content: center;
+}
+
+:deep(td.column-body-center .engine-icon) {
+  margin: 0 auto;
 }
 
 .cell-result__empty {
@@ -695,9 +997,9 @@ const dataTablePt = {
   opacity: 0.9;
 }
 
-.cell-text--mono {
-  font-size: 1.2rem;
-  font-family: monospace;
+.cell-text {
+  font-size: 1.3rem;
+  line-height: 1.3;
   color: var(--color-text-primary);
 }
 
@@ -706,15 +1008,23 @@ const dataTablePt = {
   -webkit-line-clamp: var(--line-clamp, 3);
   -webkit-box-orient: vertical;
   overflow: hidden;
-  color: var(--color-text-primary);
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
   word-break: break-word;
-  line-height: 1.3;
 }
 
 .cell-result {
   display: flex;
   align-items: center;
   gap: 0.25rem;
+}
+
+.cell-center {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .cell-text-field {
@@ -750,13 +1060,12 @@ const dataTablePt = {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.85rem;
   color: var(--color-primary-highlight, #60a5fa);
   font-style: italic;
 }
 
 .cell-match-fields__icon {
-  font-size: 0.75rem;
+  font-size: 1.1rem;
   opacity: 0.8;
   flex-shrink: 0;
 }
@@ -775,5 +1084,33 @@ const dataTablePt = {
 
 .footer-divider {
   color: var(--color-border-light);
+}
+
+@media (max-width: 900px) {
+  .checklist-grid__header {
+    min-height: unset;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .checklist-grid__header-top,
+  .checklist-grid__header-bottom {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .checklist-grid__header {
+    padding: 0.55rem 0.6rem;
+  }
+
+  .checklist-grid__header-search {
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .checklist-grid__header-summary,
+  .checklist-grid__header-controls {
+    flex-wrap: wrap;
+  }
 }
 </style>
