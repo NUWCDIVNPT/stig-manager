@@ -43,15 +43,15 @@ const {
 // --- Column visibility toggle ---
 // Toggleable stat/timestamp columns. CAT + Group/Rule ID/Title are mandatory.
 const toggleableColumns = [
-  { field: 'counts.results.fail', header: 'O', labelClass: 'col-header--open' },
-  { field: 'counts.results.pass', header: 'NF', labelClass: 'col-header--nf' },
-  { field: 'counts.results.notapplicable', header: 'NA' },
-  { field: 'counts.results.other', header: 'NR+', labelClass: 'col-header--nr' },
-  { field: 'counts.statuses.submitted', header: 'Submitted', icon: 'pi pi-check', labelClass: 'col-header-icon--submitted' },
-  { field: 'counts.statuses.rejected', header: 'Rejected', icon: 'pi pi-times-circle', labelClass: 'col-header-icon--rejected' },
-  { field: 'counts.statuses.accepted', header: 'Accepted', icon: 'pi pi-star', labelClass: 'col-header-icon--accepted' },
-  { field: 'oldest', header: 'Oldest' },
-  { field: 'newest', header: 'Newest' },
+  { field: 'counts.results.fail', header: 'O', title: 'Open', labelClass: 'col-header--open' },
+  { field: 'counts.results.pass', header: 'NF', title: 'Not a Finding', labelClass: 'col-header--nf' },
+  { field: 'counts.results.notapplicable', header: 'NA', title: 'Not Applicable' },
+  { field: 'counts.results.other', header: 'NR+', title: 'Not Reviewed / Other', labelClass: 'col-header--nr' },
+  { field: 'counts.statuses.submitted', header: 'Submitted', title: 'Submitted', icon: 'pi pi-check', labelClass: 'col-header-icon--submitted' },
+  { field: 'counts.statuses.rejected', header: 'Rejected', title: 'Rejected', icon: 'pi pi-times-circle', labelClass: 'col-header-icon--rejected' },
+  { field: 'counts.statuses.accepted', header: 'Accepted', title: 'Accepted', icon: 'pi pi-star', labelClass: 'col-header-icon--accepted' },
+  { field: 'oldest', header: 'Oldest', title: 'Oldest review activity' },
+  { field: 'newest', header: 'Newest', title: 'Newest review activity' },
 ]
 const visibleColumnFields = ref(new Set(
   toggleableColumns
@@ -300,6 +300,7 @@ function countDisplay(val) {
                           v-for="col in toggleableColumns"
                           :key="col.field"
                           class="column-toggle-item"
+                          :title="col.title"
                           @click="toggleColumn(col.field)"
                         >
                           <i
@@ -412,7 +413,7 @@ function countDisplay(val) {
                     :style="{ width: '3.5rem', textAlign: 'center' }"
                   >
                     <template #header>
-                      <span class="col-header-trigger col-header--open" @click.stop="openHeaderMenu($event, 'counts.results.fail')">
+                      <span class="col-header-trigger col-header--open" title="Open" @click.stop="openHeaderMenu($event, 'counts.results.fail')">
                         O
                         <i v-if="sortField === 'counts.results.fail'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
                       </span>
@@ -431,7 +432,7 @@ function countDisplay(val) {
                     :style="{ width: '3.5rem', textAlign: 'center' }"
                   >
                     <template #header>
-                      <span class="col-header-trigger col-header--nf" @click.stop="openHeaderMenu($event, 'counts.results.pass')">
+                      <span class="col-header-trigger col-header--nf" title="Not a Finding" @click.stop="openHeaderMenu($event, 'counts.results.pass')">
                         NF
                         <i v-if="sortField === 'counts.results.pass'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
                       </span>
@@ -447,7 +448,7 @@ function countDisplay(val) {
                     :style="{ width: '3.5rem', textAlign: 'center' }"
                   >
                     <template #header>
-                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'counts.results.notapplicable')">
+                      <span class="col-header-trigger" title="Not Applicable" @click.stop="openHeaderMenu($event, 'counts.results.notapplicable')">
                         NA
                         <i v-if="sortField === 'counts.results.notapplicable'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
                       </span>
@@ -463,7 +464,7 @@ function countDisplay(val) {
                     :style="{ width: '3.5rem', textAlign: 'center' }"
                   >
                     <template #header>
-                      <span class="col-header-trigger col-header--nr" @click.stop="openHeaderMenu($event, 'counts.results.other')">
+                      <span class="col-header-trigger col-header--nr" title="Not Reviewed / Other" @click.stop="openHeaderMenu($event, 'counts.results.other')">
                         NR+
                         <i v-if="sortField === 'counts.results.other'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
                       </span>
@@ -482,8 +483,8 @@ function countDisplay(val) {
                     :style="{ width: '3rem', textAlign: 'center' }"
                   >
                     <template #header>
-                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'counts.statuses.submitted')">
-                        <i class="pi pi-check col-header-icon--submitted" title="Submitted" />
+                      <span class="col-header-trigger" title="Submitted" @click.stop="openHeaderMenu($event, 'counts.statuses.submitted')">
+                        <i class="pi pi-check col-header-icon--submitted" />
                         <i v-if="sortField === 'counts.statuses.submitted'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
                       </span>
                     </template>
@@ -498,8 +499,8 @@ function countDisplay(val) {
                     :style="{ width: '3rem', textAlign: 'center' }"
                   >
                     <template #header>
-                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'counts.statuses.rejected')">
-                        <i class="pi pi-times-circle col-header-icon--rejected" title="Rejected" />
+                      <span class="col-header-trigger" title="Rejected" @click.stop="openHeaderMenu($event, 'counts.statuses.rejected')">
+                        <i class="pi pi-times-circle col-header-icon--rejected" />
                         <i v-if="sortField === 'counts.statuses.rejected'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
                       </span>
                     </template>
@@ -514,8 +515,8 @@ function countDisplay(val) {
                     :style="{ width: '3rem', textAlign: 'center' }"
                   >
                     <template #header>
-                      <span class="col-header-trigger" @click.stop="openHeaderMenu($event, 'counts.statuses.accepted')">
-                        <i class="pi pi-star col-header-icon--accepted" title="Accepted" />
+                      <span class="col-header-trigger" title="Accepted" @click.stop="openHeaderMenu($event, 'counts.statuses.accepted')">
+                        <i class="pi pi-star col-header-icon--accepted" />
                         <i v-if="sortField === 'counts.statuses.accepted'" class="pi" :class="sortOrder === 1 ? 'pi-sort-amount-up' : 'pi-sort-amount-down'" />
                       </span>
                     </template>
