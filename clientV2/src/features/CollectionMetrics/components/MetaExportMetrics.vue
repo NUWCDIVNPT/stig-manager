@@ -67,7 +67,6 @@ async function download() {
     authToken: oidcWorker.token,
   })
 }
-
 </script>
 
 <template>
