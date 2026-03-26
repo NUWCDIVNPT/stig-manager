@@ -1,6 +1,7 @@
 import { apiCall } from '../../../shared/api/apiClient.js'
 
-export { fetchCollectionStigs } from '../../../shared/api/collectionsApi.js'
+export { fetchCollection, fetchCollectionStigs } from '../../../shared/api/collectionsApi.js'
+export { patchReview, putReview } from '../../AssetReview/api/assetReviewApi.js'
 export { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 
 export function fetchCollectionChecklist(collectionId, benchmarkId, revisionStr) {
@@ -8,6 +9,24 @@ export function fetchCollectionChecklist(collectionId, benchmarkId, revisionStr)
     throw new Error('collectionId, benchmarkId, and revisionStr are required to fetch collection checklist.')
   }
   return apiCall('getChecklistByCollectionStig', { collectionId, benchmarkId, revisionStr })
+}
+
+export function fetchAssetsByBenchmark(collectionId, benchmarkId) {
+  if (!collectionId || !benchmarkId) {
+    throw new Error('collectionId and benchmarkId are required to fetch assets by benchmark.')
+  }
+  return apiCall('getAssetsByStig', { collectionId, benchmarkId })
+}
+
+export function fetchReviewsByRule(collectionId, ruleId) {
+  if (!collectionId || !ruleId) {
+    throw new Error('collectionId and ruleId are required to fetch reviews by rule.')
+  }
+  return apiCall('getReviewsByCollection', {
+    collectionId,
+    rules: 'all',
+    ruleId,
+  })
 }
 
 export function fetchRuleContent(benchmarkId, revisionStr, ruleId) {
