@@ -161,8 +161,9 @@ exports.getOutputByRun = async (req, res, next) => {
 
 exports.getAllTasks = async (req, res, next) => {
   try {
-    const { hasCollectionConfig } = req.query
-    const tasks = await JobService.getAllTasks({ hasCollectionConfig })
+    const { hasCollectionConfig, elevate } = req.query
+    // if elevate is falsy, only return tasks with collectionConfig 
+    const tasks = await JobService.getAllTasks({ hasCollectionConfig: elevate && hasCollectionConfig })
     res.json(tasks)
   } catch (error) {
     next(error)

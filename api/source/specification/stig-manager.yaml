@@ -3616,8 +3616,6 @@ paths:
       security:
         - oauth:
             - stig-manager:op:read
-      x-elevation-required: true
-
   /op/appdata:
     get:
       tags:
@@ -7824,6 +7822,10 @@ components:
           type: string
           nullable: true
           description: OpenAPI $ref path to the per-collection config schema, null if not supported
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobEvent'
       required: [taskId, name]
     JobTaskId:
       $ref: '#/components/schemas/StringIntId'
