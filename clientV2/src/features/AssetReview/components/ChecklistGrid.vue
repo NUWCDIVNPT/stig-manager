@@ -1,12 +1,12 @@
 <script setup>
 import { FilterMatchMode } from '@primevue/core/api'
-import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import Menu from 'primevue/menu'
+import TieredMenu from 'primevue/tieredmenu'
 import { computed, ref, watch } from 'vue'
 import lineHeightDown from '../../../assets/line-height-down.svg'
 import lineHeightUp from '../../../assets/line-height-up.svg'
+import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import EngineBadge from '../../../components/common/EngineBadge.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
@@ -66,9 +66,15 @@ const props = defineProps({
 
 const emit = defineEmits(['update:searchFilter', 'select-rule', 'row-save', 'status-action', 'refresh', 'clear-save-error'])
 
+// print datagrid when data loads
+watch(() => props.gridData, (data) => {
+  if (data?.length) {
+    console.log('Grid Data Loaded:', data)
+  }
+}, { immediate: true })
+
 const selectedRow = ref(null)
 const checklistMenu = ref()
-const actionsMenu = ref()
 const reviewEditPopover = ref()
 const editingRow = ref(null)
 const editingPopoverWidth = ref(null)
@@ -137,7 +143,7 @@ function onGridScroll() {
 
 // --- Display mode (Group/Rule toggle) ---
 const {
-  displayModeItems,
+  displayMode,
   showGroupId,
   showRuleId,
   showRuleTitle,
@@ -148,6 +154,62 @@ const {
   decreaseRowHeight,
 } = useChecklistDisplayMode()
 
+const displayModeMenuItems = computed(() => [
+  {
+    label: 'Group ID and Rule title',
+    icon: displayMode.value === 'groupRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
+    command: () => { displayMode.value = 'groupRule' },
+  },
+  {
+    label: 'Group ID and Group title',
+    icon: displayMode.value === 'groupGroup' ? 'pi pi-circle-fill' : 'pi pi-circle',
+    command: () => { displayMode.value = 'groupGroup' },
+  },
+  {
+    label: 'Rule ID and Rule title',
+    icon: displayMode.value === 'ruleRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
+    command: () => { displayMode.value = 'ruleRule' },
+  },
+])
+
+const checklistMenuPT = {
+  root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,0.6); padding: 0.4rem 0; min-width: 16.5rem; font-family: inherit;' },
+  itemContent: { style: 'border-radius: 2px; margin: 0 0.25rem;' },
+  itemLink: { style: 'padding: 0.6rem 0.9rem; color: var(--color-text-primary); font-size: 1.05rem; font-weight: 400; gap: 0.65rem; text-decoration: none; transition: background 0.12s;' },
+  itemIcon: { style: 'font-size: 1rem; color: var(--color-text-dim);' },
+  itemLabel: { style: 'font-size: 1.2rem;' },
+  submenuIcon: { style: 'font-size: 0.8rem; color: var(--color-text-dim); margin-left: auto;' },
+  submenu: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,0.6); padding: 0.4rem 0; min-width: 14rem;' },
+  separator: { style: 'border: none; border-top: 1px solid var(--color-border-light); margin: 0.35rem 0;' },
+}
+
+const checklistMenuItems = computed(() => [
+  {
+    label: 'Group/Rule display',
+    items: displayModeMenuItems.value,
+  },
+  {
+    label: 'Export to file',
+    icon: 'pi pi-download',
+    items: [
+      { label: 'CKL - STIG Viewer v2' },
+      { label: 'CKLB - STIG Viewer v3' },
+      { label: 'XCCDF' },
+      { separator: true },
+      { label: 'Attachments Archive' },
+    ],
+  },
+  {
+    label: 'Import Results...',
+    icon: 'pi pi-upload',
+    items: [
+      { label: 'CKL' },
+      { label: 'CKLB' },
+      { label: 'XCCDF' },
+    ],
+  },
+])
+
 const defaultSortField = computed(() => showGroupId.value ? 'groupId' : 'ruleId')
 
 // PrimeVue Filters State
@@ -155,7 +217,19 @@ const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
 })
 
-const dsFilterFields = ['ruleId', 'groupId', 'ruleTitle', 'groupTitle', 'detail', 'comment', 'username', 'status.user.username']
+const dsFilterFields = [
+  'ruleId',
+  'groupId',
+  'ruleTitle',
+  'groupTitle',
+  'detail',
+  'comment',
+  'username',
+  'status.user.username',
+  'resultEngine.product',
+  'resultEngine.type',
+  'resultEngine.version',
+]
 
 watch(() => props.searchFilter, (val) => {
   filters.value.global.value = val
@@ -186,6 +260,10 @@ const searchFieldDefs = [
   { key: 'comment', label: 'comment' },
   { key: 'username', label: 'eval user' },
   { getter: row => row.status?.user?.username, label: 'status user' },
+  { getter: row => getEngineDisplay(row), label: 'engine' },
+  { getter: row => row.resultEngine?.product, label: 'engine product' },
+  { getter: row => row.resultEngine?.type, label: 'engine type' },
+  { getter: row => row.resultEngine?.version, label: 'engine version' },
 ]
 
 const matchedFieldsMap = computed(() => {
@@ -205,10 +283,6 @@ const matchedFieldsMap = computed(() => {
 
 function toggleChecklistMenu(event) {
   checklistMenu.value.toggle(event)
-}
-
-function toggleActionsMenu(event) {
-  actionsMenu.value.toggle(event)
 }
 
 // Tally stats
@@ -231,25 +305,6 @@ const headerTitle = computed(() => {
   }
   return 'Checklist'
 })
-
-const actionMenuItems = computed(() => [
-  {
-    label: 'Export to file',
-    icon: 'pi pi-download',
-    items: [
-      { label: 'CKL', icon: 'pi pi-file' },
-      { label: 'CSV', icon: 'pi pi-table' },
-    ],
-  },
-  {
-    label: 'Import Results...',
-    icon: 'pi pi-upload',
-  },
-  {
-    label: 'Revisions',
-    icon: 'pi pi-history',
-  },
-])
 
 // Sync selectedRow when selectedRuleId prop changes
 watch(() => props.selectedRuleId, (ruleId) => {
@@ -355,131 +410,74 @@ const dataTablePt = {
 </script>
 
 <template>
-  <div class="checklist-grid" :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }" @scroll.capture="onGridScroll" @wheel.capture="onGridWheel">
+  <div
+    class="checklist-grid" :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
+    @scroll.capture="onGridScroll" @wheel.capture="onGridWheel"
+  >
     <div class="checklist-grid__header">
       <div class="checklist-grid__header-top">
-        <div class="checklist-grid__header-copy">
-          <span class="checklist-grid__eyebrow">Checklist Review</span>
-          <div class="checklist-grid__title-row">
-            <span class="checklist-grid__title">{{ headerTitle }}</span>
-          </div>
+        <div class="checklist-grid__title-row">
+          <span class="checklist-grid__title">{{ headerTitle }}</span>
         </div>
         <div class="checklist-grid__header-summary">
-          <span
-            class="checklist-grid__access-badge"
-            :class="accessMode === 'rw' ? 'access-rw' : 'access-r'"
-          >
+          <span class="checklist-grid__access-badge" :class="accessMode === 'rw' ? 'access-rw' : 'access-r'">
             <i :class="accessMode === 'rw' ? 'pi pi-pencil' : 'pi pi-lock'" />
             {{ accessMode === 'rw' ? 'Writable' : 'Read only' }}
           </span>
-          <Button
-            type="button"
-            size="small"
-            text
-            class="checklist-grid__menu-btn checklist-grid__menu-btn--actions"
-            title="Checklist actions"
-            @click="toggleActionsMenu"
-          >
-            <i class="pi pi-folder-open" />
-            <span>Actions</span>
-            <i class="pi pi-chevron-down checklist-grid__menu-caret" />
-          </Button>
         </div>
       </div>
       <div class="checklist-grid__header-bottom">
-        <Menu
-          ref="checklistMenu"
-          :model="displayModeItems"
-          :popup="true"
-        />
+        <TieredMenu ref="checklistMenu" :model="checklistMenuItems" :popup="true" :pt="checklistMenuPT" />
         <div class="checklist-grid__header-search">
           <i class="pi pi-search checklist-grid__search-icon" />
           <input
-            :value="searchFilter"
-            type="text"
-            class="checklist-grid__search-input"
-            placeholder="Search reviews..."
+            :value="searchFilter" type="text" class="checklist-grid__search-input" placeholder="Search reviews..."
             @input="emit('update:searchFilter', $event.target.value)"
           >
           <button
-            v-if="searchFilter"
-            type="button"
-            class="checklist-grid__search-clear"
-            aria-label="Clear review search"
-            @click="emit('update:searchFilter', '')"
+            v-if="searchFilter" type="button" class="checklist-grid__search-clear"
+            aria-label="Clear review search" @click="emit('update:searchFilter', '')"
           >
             <i class="pi pi-times" />
           </button>
         </div>
         <div class="checklist-grid__header-controls">
-          <Button
-            type="button"
-            size="small"
-            text
-            class="checklist-grid__menu-btn"
-            title="Checklist options"
+          <button
+            type="button" class="checklist-grid__menu-btn checklist-grid__menu-btn--checklist"
+            aria-haspopup="true" aria-controls="checklist_menu"
             @click="toggleChecklistMenu"
           >
-            <i class="pi pi-list" />
-            <span>Display</span>
+            <img :src="shieldGreenCheck" alt="" class="checklist-grid__menu-shield">
+            <span>Checklist</span>
             <i class="pi pi-chevron-down checklist-grid__menu-caret" />
-          </Button>
+          </button>
           <div class="checklist-grid__density-controls">
             <span class="checklist-grid__density-label">Density</span>
             <button
-              class="checklist-grid__icon-btn"
-              title="Decrease row height"
-              :disabled="lineClamp <= 1"
+              class="checklist-grid__icon-btn" title="Decrease row height" :disabled="lineClamp <= 1"
               @click="decreaseRowHeight"
             >
               <img :src="lineHeightDown" alt="Decrease row height">
             </button>
             <button
-              class="checklist-grid__icon-btn"
-              title="Increase row height"
-              :disabled="lineClamp >= 10"
+              class="checklist-grid__icon-btn" title="Increase row height" :disabled="lineClamp >= 10"
               @click="increaseRowHeight"
             >
               <img :src="lineHeightUp" alt="Increase row height">
             </button>
           </div>
         </div>
-        <Menu
-          ref="actionsMenu"
-          :model="actionMenuItems"
-          :popup="true"
-        />
       </div>
     </div>
 
     <DataTable
-      v-model:selection="selectedRow"
-      v-model:filters="filters"
-      :global-filter-fields="dsFilterFields"
-      :value="gridData"
-      :loading="isLoading"
-      data-key="ruleId"
-      selection-mode="single"
-      scrollable
-      scroll-height="flex"
-      :virtual-scroller-options="{ itemSize }"
-      resizable-columns
-      striped-rows
-      :sort-field="defaultSortField"
-      :sort-order="1"
-      class="checklist-grid__table"
-      :pt="dataTablePt"
-      @row-click="onRowClick"
-      @filter="onFilter"
+      v-model:selection="selectedRow" v-model:filters="filters" :global-filter-fields="dsFilterFields"
+      :value="gridData" :loading="isLoading" data-key="ruleId" selection-mode="single" scrollable scroll-height="flex"
+      :virtual-scroller-options="{ itemSize }" resizable-columns striped-rows :sort-field="defaultSortField"
+      :sort-order="1" class="checklist-grid__table" :pt="dataTablePt" @row-click="onRowClick" @filter="onFilter"
       @pointerdown.stop
     >
-      <Column
-        header="CAT"
-        field="severity"
-        sortable
-        :style="{ width: '5rem' }"
-        :pt="columnPt.center"
-      >
+      <Column header="CAT" field="severity" sortable :style="{ width: '5rem' }" :pt="columnPt.center">
         <template #body="{ data }">
           <div class="cell-center">
             <CatBadge :category="severityMap[data.severity]" variant="label" />
@@ -487,14 +485,7 @@ const dataTablePt = {
         </template>
       </Column>
 
-      <Column
-        v-if="showGroupId"
-        header="Group"
-        field="groupId"
-        sortable
-        :style="{ width: '7rem' }"
-        :pt="columnPt.left"
-      >
+      <Column v-if="showGroupId" header="Group" field="groupId" sortable :style="{ width: '7rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span class="cell-text" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupId, searchFilter) }">
             <span v-if="searchFilter" v-html="highlightText(data.groupId, searchFilter)" />
@@ -504,11 +495,7 @@ const dataTablePt = {
       </Column>
 
       <Column
-        v-if="showRuleId"
-        header="Rule Id"
-        field="ruleId"
-        sortable
-        :style="{ width: '15rem' }"
+        v-if="showRuleId" header="Rule Id" field="ruleId" sortable :style="{ width: '15rem' }"
         :pt="columnPt.left"
       >
         <template #body="{ data }">
@@ -520,67 +507,55 @@ const dataTablePt = {
       </Column>
 
       <Column
-        v-if="showRuleTitle"
-        header="Rule Title"
-        field="ruleTitle"
-        sortable
-        :style="{ width: '25%' }"
+        v-if="showRuleTitle" header="Rule Title" field="ruleTitle" sortable :style="{ width: '25%' }"
         :pt="columnPt.left"
       >
         <template #body="{ data }">
-          <span class="cell-text cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.ruleTitle, searchFilter) }" :title="data.ruleTitle">
-            <span v-if="searchFilter" v-html="highlightText(data.ruleTitle, searchFilter)" />
-            <template v-else>{{ data.ruleTitle }}</template>
-          </span>
+          <div class="cell-text-field">
+            <span
+              class="cell-text cell-text--clamped"
+              :class="{ 'cell--match': searchFilter && fieldMatches(data.ruleTitle, searchFilter) }"
+              :title="data.ruleTitle"
+            >
+              <span v-if="searchFilter" v-html="highlightText(data.ruleTitle, searchFilter)" />
+              <template v-else>{{ data.ruleTitle }}</template>
+            </span>
+          </div>
         </template>
       </Column>
 
       <Column
-        v-if="showGroupTitle"
-        header="Group Title"
-        field="groupTitle"
-        sortable
-        :style="{ width: '25%' }"
+        v-if="showGroupTitle" header="Group Title" field="groupTitle" sortable :style="{ width: '25%' }"
         :pt="columnPt.left"
       >
         <template #body="{ data }">
-          <span class="cell-text cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupTitle, searchFilter) }" :title="data.groupTitle">
+          <span
+            class="cell-text cell-text--clamped"
+            :class="{ 'cell--match': searchFilter && fieldMatches(data.groupTitle, searchFilter) }"
+            :title="data.groupTitle"
+          >
             <span v-if="searchFilter" v-html="highlightText(data.groupTitle, searchFilter)" />
             <template v-else>{{ data.groupTitle }}</template>
           </span>
         </template>
       </Column>
 
-      <Column
-        header="Result"
-        field="result"
-        sortable
-        :style="{ width: '5rem' }"
-        :pt="columnPt.center"
-      >
+      <Column header="Result" field="result" sortable :style="{ width: '5rem' }" :pt="columnPt.center">
         <template #body="{ data }">
-          <div
-            data-result-cell
-            class="cell-result"
-          >
+          <div data-result-cell class="cell-result">
             <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
             <span v-else class="cell-result__empty">—</span>
           </div>
         </template>
       </Column>
 
-      <Column
-        header="Detail"
-        field="detail"
-        sortable
-        :style="{ width: '25%' }"
-        :pt="columnPt.left"
-      >
+      <Column header="Detail" field="detail" sortable :style="{ width: '25%' }" :pt="columnPt.left">
         <template #body="{ data }">
-          <div
-            class="cell-text-field"
-          >
-            <span v-if="data.detail" class="cell-text cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.detail, searchFilter) }" :title="data.detail">
+          <div class="cell-text-field">
+            <span
+              v-if="data.detail" class="cell-text cell-text--clamped"
+              :class="{ 'cell--match': searchFilter && fieldMatches(data.detail, searchFilter) }" :title="data.detail"
+            >
               <span v-if="searchFilter" v-html="highlightText(data.detail, searchFilter)" />
               <template v-else>{{ data.detail }}</template>
             </span>
@@ -589,18 +564,14 @@ const dataTablePt = {
         </template>
       </Column>
 
-      <Column
-        header="Comment"
-        field="comment"
-        sortable
-        :style="{ width: '25%' }"
-        :pt="columnPt.left"
-      >
+      <Column header="Comment" field="comment" sortable :style="{ width: '25%' }" :pt="columnPt.left">
         <template #body="{ data }">
-          <div
-            class="cell-text-field"
-          >
-            <span class="cell-text cell-text--clamped" :class="{ 'cell--match': searchFilter && fieldMatches(data.comment, searchFilter) }" :title="data.comment">
+          <div class="cell-text-field">
+            <span
+              class="cell-text cell-text--clamped"
+              :class="{ 'cell--match': searchFilter && fieldMatches(data.comment, searchFilter) }"
+              :title="data.comment"
+            >
               <span v-if="searchFilter" v-html="highlightText(data.comment, searchFilter)" />
               <template v-else>{{ data.comment }}</template>
             </span>
@@ -609,44 +580,26 @@ const dataTablePt = {
       </Column>
 
       <Column
-        field="resultEngine"
-        sortable
-        sort-field="resultEngine.product"
-        :style="{ width: '3rem' }"
+        field="resultEngine" sortable sort-field="resultEngine.product" :style="{ width: '3rem' }"
         :pt="columnPt.center"
       >
         <template #header>
-          <img
-            src="../../../assets/bot2.svg"
-            alt="Engine"
-            class="engine-header-icon"
-            title="Result engine"
-          >
+          <img src="../../../assets/bot2.svg" alt="Engine" class="engine-header-icon" title="Result engine">
         </template>
         <template #body="{ data }">
           <img
-            v-if="getEngineDisplay(data) === 'engine'"
-            src="../../../assets/bot2.svg"
-            alt="Engine"
-            class="engine-icon"
-            title="Result engine"
+            v-if="getEngineDisplay(data) === 'engine'" src="../../../assets/bot2.svg" alt="Engine"
+            class="engine-icon" title="Result engine"
           >
           <img
-            v-else-if="getEngineDisplay(data) === 'override'"
-            src="../../../assets/override2.svg"
-            alt="Override"
-            class="engine-icon"
-            title="Overridden result"
+            v-else-if="getEngineDisplay(data) === 'override'" src="../../../assets/override2.svg" alt="Override"
+            class="engine-icon" title="Overridden result"
           >
         </template>
       </Column>
 
       <Column
-        header="Status"
-        field="status"
-        sortable
-        sort-field="status.label"
-        :style="{ width: '5rem' }"
+        header="Status" field="status" sortable sort-field="status.label" :style="{ width: '5rem' }"
         :pt="columnPt.center"
       >
         <template #body="{ data }">
@@ -654,12 +607,7 @@ const dataTablePt = {
         </template>
       </Column>
 
-      <Column
-        field="touchTs"
-        sortable
-        :style="{ width: '4rem' }"
-        :pt="columnPt.center"
-      >
+      <Column field="touchTs" sortable :style="{ width: '4rem' }" :pt="columnPt.center">
         <template #header>
           <i class="pi pi-clock" title="Last action" />
         </template>
@@ -668,12 +616,7 @@ const dataTablePt = {
         </template>
       </Column>
 
-      <Column
-        v-if="searchFilter"
-        header="Match"
-        :style="{ width: '7.5rem' }"
-        :pt="columnPt.left"
-      >
+      <Column v-if="searchFilter" header="Match" :style="{ width: '7.5rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span class="cell-text cell-match-fields">
             <i class="pi pi-search cell-match-fields__icon" />
@@ -684,10 +627,8 @@ const dataTablePt = {
 
       <template #footer>
         <StatusFooter
-          :refresh-loading="isLoading"
-          :total-count="gridData.length"
-          :filtered-count="isFiltered ? currentFilteredData.length : null"
-          @action="handleFooterAction"
+          :refresh-loading="isLoading" :total-count="gridData.length"
+          :filtered-count="isFiltered ? currentFilteredData.length : null" @action="handleFooterAction"
         >
           <template #left-extra>
             <ResultBadge status="O" :count="stats.results.fail" />
@@ -709,17 +650,9 @@ const dataTablePt = {
     </DataTable>
 
     <ReviewEditPopover
-      ref="reviewEditPopover"
-      :row-data="editingRow"
-      :width="editingPopoverWidth"
-      :field-settings="fieldSettings"
-      :access-mode="accessMode"
-      :can-accept="canAccept"
-      :is-saving="isSaving"
-      :save-error="saveError"
-      @save="onPopoverSave"
-      @status-action="onPopoverStatusAction"
-      @close="onPopoverClose"
+      ref="reviewEditPopover" :row-data="editingRow" :width="editingPopoverWidth"
+      :field-settings="fieldSettings" :access-mode="accessMode" :can-accept="canAccept" :is-saving="isSaving"
+      :save-error="saveError" @save="onPopoverSave" @status-action="onPopoverStatusAction" @close="onPopoverClose"
       @clear-save-error="emit('clear-save-error')"
     />
   </div>
@@ -737,8 +670,8 @@ const dataTablePt = {
 }
 
 .checklist-grid__header {
-  --checklist-header-height: 5.35rem;
-  --checklist-control-height: 2rem;
+  --checklist-header-height: 5.75rem;
+  --checklist-control-height: 2.5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -746,7 +679,7 @@ const dataTablePt = {
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--color-background-light) 38%, transparent), transparent 75%),
     var(--color-background-dark);
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
   gap: 0.75rem;
   min-height: var(--checklist-header-height);
@@ -777,23 +710,6 @@ const dataTablePt = {
   height: var(--checklist-control-height);
 }
 
-.checklist-grid__header-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 0.22rem;
-  min-width: 0;
-  justify-content: flex-start;
-}
-
-.checklist-grid__eyebrow {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-text-dim);
-  line-height: 1;
-}
-
 .checklist-grid__title-row {
   display: flex;
   align-items: center;
@@ -805,28 +721,38 @@ const dataTablePt = {
 .checklist-grid__menu-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.8rem;
-  font-size: 0.86rem;
+  gap: 0.5rem;
+  padding: 0.45rem 1.15rem;
+  font-size: 1.02rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--color-text-bright);
   flex-shrink: 0;
-  border: 1px solid color-mix(in srgb, var(--color-border-default) 85%, transparent);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-background-light) 55%, transparent);
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-background-light) 45%, transparent);
   height: var(--checklist-control-height);
 }
 
-.checklist-grid__menu-btn--actions {
-  min-width: 7rem;
+.checklist-grid__menu-btn:hover {
+  background: color-mix(in srgb, var(--color-background-light) 85%, transparent);
+}
+
+.checklist-grid__menu-btn--checklist {
+  min-width: 9rem;
 }
 
 .checklist-grid__menu-btn i:first-child {
   font-size: 0.84rem;
 }
 
+.checklist-grid__menu-shield {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
 .checklist-grid__menu-caret {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   margin-left: 0.1rem;
 }
 
@@ -855,10 +781,10 @@ const dataTablePt = {
   height: 100%;
   padding: 0.32rem 2rem 0.32rem 2.35rem;
   border: 1px solid var(--color-border-default);
-  border-radius: 999px;
+  border-radius: 4px;
   background: color-mix(in srgb, var(--color-background-light) 75%, transparent);
   color: var(--color-text-primary);
-  font-size: 0.95rem;
+  font-size: 1.2rem;
   outline: none;
 }
 
@@ -895,39 +821,40 @@ const dataTablePt = {
 .checklist-grid__density-controls {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.2rem 0.25rem 0.2rem 0.55rem;
+  gap: 0.35rem;
+  padding: 0.2rem 0.3rem 0.2rem 0.65rem;
   border: 1px solid color-mix(in srgb, var(--color-border-default) 85%, transparent);
-  border-radius: 999px;
+  border-radius: 5px;
   background: color-mix(in srgb, var(--color-background-light) 45%, transparent);
   height: var(--checklist-control-height);
 }
 
 .checklist-grid__density-label {
-  font-size: 0.82rem;
+  font-size: 0.98rem;
   font-weight: 600;
-  color: var(--color-text-dim);
-  margin-right: 0.1rem;
+  color: var(--color-text-bright);
+  margin-right: 0.2rem;
 }
 
 .checklist-grid__icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  width: 1.65rem;
-  height: 1.65rem;
+  background: color-mix(in srgb, var(--color-background-light) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border-light) 40%, transparent);
+  border-radius: 5px;
+  margin: 0 0.1rem;
+  width: 2.1rem;
+  height: 2.1rem;
   padding: 0;
   cursor: pointer;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .checklist-grid__icon-btn:hover:not(:disabled) {
   opacity: 1;
-  border-color: var(--color-border-light);
-  background: color-mix(in srgb, var(--color-background-light) 80%, transparent);
+  border-color: var(--color-border-default);
+  background: color-mix(in srgb, var(--color-background-light) 75%, transparent);
 }
 
 .checklist-grid__icon-btn:disabled {
@@ -936,8 +863,8 @@ const dataTablePt = {
 }
 
 .checklist-grid__icon-btn img {
-  width: 13px;
-  height: 13px;
+  width: 17px;
+  height: 17px;
 }
 
 .checklist-grid__access-badge {
@@ -1031,6 +958,11 @@ const dataTablePt = {
   display: flex;
   align-items: flex-start;
   gap: 0.25rem;
+}
+
+.cell-text-field .cell-text {
+  font-size: 1.1rem;
+  line-height: 1.3;
 }
 
 .cell-text-field .cell-text--clamped {
