@@ -1,3 +1,10 @@
+1.6.6
+-------
+
+Changes:
+
+  - (Dependencies) Update npm and pip dependencies
+
 1.6.5
 -------
 
