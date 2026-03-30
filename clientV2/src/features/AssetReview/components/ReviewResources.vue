@@ -85,9 +85,6 @@ const historyTablePt = {
 
 <template>
   <div class="review-resources">
-    <div class="review-resources__header">
-      <span class="review-resources__title">Review Resources</span>
-    </div>
     <Tabs v-model:value="activeTab" :pt="tabsPt">
       <TabList>
         <Tab value="history" :pt="tabPt">
@@ -254,25 +251,8 @@ const historyTablePt = {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: var(--color-background-subtle);
-  border: 1px solid var(--color-border-light);
-  border-radius: 4px;
+  background-color: transparent;
   overflow: hidden;
-}
-
-.review-resources__header {
-  display: flex;
-  align-items: center;
-  padding: 0.35rem 0.5rem;
-  background-color: var(--color-background-dark);
-  border-bottom: 1px solid var(--color-border-light);
-  flex-shrink: 0;
-}
-
-.review-resources__title {
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--color-text-primary);
 }
 
 .history-table {
@@ -281,12 +261,14 @@ const historyTablePt = {
 }
 
 :deep(.p-datatable-tbody > tr > td) {
-  padding: 0.15rem 0.35rem;
+  padding: 0.1rem 0.25rem;
   vertical-align: top;
+  font-size: 0.85rem;
 }
 
 :deep(.p-datatable-thead > tr > th) {
-  padding: 0.2rem 0.35rem;
+  padding: 0.15rem 0.25rem;
+  font-size: 0.85rem;
 }
 
 .cell-text--mono {
@@ -348,6 +330,7 @@ const historyTablePt = {
   word-break: break-word;
   line-height: 1.4;
   margin: 0;
+  font-size: 0.9rem;
 }
 
 .status-text__empty {

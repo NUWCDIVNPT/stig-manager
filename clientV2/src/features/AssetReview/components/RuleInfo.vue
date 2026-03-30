@@ -146,22 +146,52 @@ const emit = defineEmits(['retry'])
 .rule-info__panel-header {
   display: flex;
   align-items: center;
-  padding: 0.35rem 0.5rem;
-  background-color: var(--color-background-dark);
-  border-bottom: 1px solid var(--color-border-light);
+  padding: 0.7rem 0.9rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-background-light) 38%, transparent), transparent 75%),
+    var(--color-background-dark);
+  border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
+  height: 7.2rem;
 }
 
 .rule-info__panel-title {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.15rem;
   color: var(--color-text-primary);
 }
 
 .rule-info__content {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
+  padding: 1.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-default) transparent;
+}
+
+.rule-info__content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.rule-info__content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rule-info__content::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.rule-info__content::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-default);
+  border-radius: 999px;
+  border: none;
+  min-height: 28px;
+}
+
+.rule-info__content::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-hover);
 }
 
 .rule-info__loading,
@@ -203,8 +233,8 @@ const emit = defineEmits(['retry'])
 }
 
 .rule-info__header {
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
   border-bottom: 1px solid var(--color-border-light);
 }
 
@@ -212,7 +242,7 @@ const emit = defineEmits(['retry'])
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
 }
 
 .rule-info__rule-id {
@@ -231,18 +261,19 @@ const emit = defineEmits(['retry'])
 }
 
 .rule-info__title {
-  font-size: 1.6rem;
+  font-size: 1.45rem;
   font-weight: 600;
   color: var(--color-text-primary);
-  line-height: 1.35;
-  padding-left: 1rem;
+  line-height: 1.4;
+  padding-left: 0.5rem;
 }
 
 .rule-info__card {
   background-color: var(--color-background-dark);
+  border: 1px solid var(--color-border-light);
   border-radius: 6px;
-  padding: 0.75rem 1.25rem;
-  margin-bottom: 0.5rem;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .rule-info__card-section {

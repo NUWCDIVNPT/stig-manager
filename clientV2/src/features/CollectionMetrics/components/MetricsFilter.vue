@@ -2,6 +2,7 @@
 import MultiSelect from 'primevue/multiselect'
 import { computed, ref, watch } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { getContrastColor, normalizeColor } from '../../../shared/lib/colorUtils.js'
 import { fetchCollectionLabels } from '../../CollectionView/api/collectionApi.js'
 import { fetchMetaCollections } from '../../MetaCollectionView/api/metaApi.js'
 
@@ -153,25 +154,6 @@ function clearFilters() {
   emit('update:modelValue', [])
 }
 
-function normalizeColor(color) {
-  if (!color) {
-    return '#000000'
-  }
-  return color.startsWith('#') ? color : `#${color}`
-}
-
-function getContrastColor(hexColor) {
-  if (!hexColor) {
-    return '#ffffff'
-  }
-  const hex = hexColor.replace('#', '')
-  const r = Number.parseInt(hex.substr(0, 2), 16)
-  const g = Number.parseInt(hex.substr(2, 2), 16)
-  const b = Number.parseInt(hex.substr(4, 2), 16)
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  return luminance > 0.5 ? '#000000' : '#ffffff'
-}
-
 function formatLabelName(name) {
   return name || 'no label'
 }
@@ -212,7 +194,7 @@ function formatLabelName(name) {
           v-if="type === 'label'"
           class="label-chip"
           :class="{ 'is-empty-label': !slotProps.option.name }"
-          :style="{ backgroundColor: normalizeColor(slotProps.option.color), color: getContrastColor(slotProps.option.color) }"
+          :style="{ backgroundColor: normalizeColor(slotProps.option.color, '#000000'), color: getContrastColor(slotProps.option.color, '#000000', '#ffffff') }"
         >
           {{ formatLabelName(slotProps.option.name) }}
         </span>

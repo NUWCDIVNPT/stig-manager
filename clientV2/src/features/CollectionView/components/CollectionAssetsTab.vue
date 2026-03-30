@@ -124,7 +124,7 @@ function handleShieldClick(rowData) {
               :api-metrics-summary="selectedAssetStigs"
               agg-type="unagg"
               :is-loading="selectedAssetStigsLoading"
-              :empty-message="selectedAssetId ? 'No checklists found for this asset. Try refresh.' : 'Select an asset to view its checklists.'"
+              :empty-message="selectedAssetId ? 'No checklists found for this asset.' : 'Select an asset to view its checklists.'"
               parent-agg-type="asset"
               show-shield
               @refresh="loadSelectedAssetStigs"

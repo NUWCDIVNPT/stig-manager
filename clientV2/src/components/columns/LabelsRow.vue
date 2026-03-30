@@ -1,6 +1,7 @@
 <script setup>
 import Popover from 'primevue/popover'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { getContrastColor, normalizeColor } from '../../shared/lib/colorUtils.js'
 
 const props = defineProps({
   labels: {
@@ -53,26 +54,7 @@ onBeforeUnmount(() => {
   }
 })
 
-// Normalize color to include # prefix
-function normalizeColor(color) {
-  if (!color) {
-    return '#cccccc'
-  }
-  return color.startsWith('#') ? color : `#${color}`
-}
 
-// Helper function to determine text color based on background
-function getContrastColor(hexColor) {
-  if (!hexColor) {
-    return '#000000'
-  }
-  const hex = hexColor.replace('#', '')
-  const r = Number.parseInt(hex.substr(0, 2), 16)
-  const g = Number.parseInt(hex.substr(2, 2), 16)
-  const b = Number.parseInt(hex.substr(4, 2), 16)
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  return luminance > 0.5 ? '#000000' : 'var(--color-text-primary)'
-}
 
 // Estimate the width of a label based on its text
 function estimateLabelWidth(text) {
@@ -163,7 +145,7 @@ function hidePopover() {
     <span
       v-for="label in visibleLabelsData.visible"
       :key="label.labelId"
-      :style="{ backgroundColor: normalizeColor(label.color), color: getContrastColor(label.color) }"
+      :style="{ backgroundColor: normalizeColor(label.color, '#cccccc'), color: getContrastColor(label.color, '#000000', 'var(--color-text-primary)') }"
       class="label-tag"
     >
       {{ label.name }}
@@ -186,7 +168,7 @@ function hidePopover() {
         <span
           v-for="label in visibleLabelsData.overflow"
           :key="label.labelId"
-          :style="{ backgroundColor: normalizeColor(label.color), color: getContrastColor(label.color) }"
+          :style="{ backgroundColor: normalizeColor(label.color, '#cccccc'), color: getContrastColor(label.color, '#000000', 'var(--color-text-primary)') }"
           class="label-tag"
         >
           {{ label.name }}

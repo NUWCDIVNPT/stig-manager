@@ -18,7 +18,7 @@ import { useChecklistData } from '../composables/useChecklistData.js'
 import { useReviewActions } from '../composables/useReviewActions.js'
 import { useRuleDetail } from '../composables/useRuleDetail.js'
 import ChecklistGrid from './ChecklistGrid.vue'
-import RuleDetailPanel from './RuleDetailPanel.vue'
+import RuleInfo from './RuleInfo.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -221,11 +221,14 @@ const searchFilter = useDebouncedRef('', 220)
             :selected-rule-id="selectedRuleId"
             :access-mode="accessMode"
             :revision-info="revisionInfo"
+            :asset="asset"
             :field-settings="fieldSettings"
             :can-accept="canAccept"
             :is-saving="isSaving"
             :save-error="saveError"
             :search-filter="searchFilter"
+            :current-review="currentReview"
+            :review-history="reviewHistory"
             @update:search-filter="searchFilter = $event"
             @select-rule="selectRule"
             @row-save="onRowSave"
@@ -235,14 +238,12 @@ const searchFilter = useDebouncedRef('', 220)
           />
         </SplitterPanel>
         <SplitterPanel :size="25" :min-size="20">
-          <RuleDetailPanel
+          <RuleInfo
             :rule-content="ruleContent"
-            :is-rule-loading="isRuleLoading"
+            :is-loading="isRuleLoading"
             :rule-content-error="ruleContentError"
             :selected-checklist-item="selectedChecklistItem"
-            :current-review="currentReview"
-            :review-history="reviewHistory"
-            @retry-rule-content="selectRule(selectedRuleId)"
+            @retry="selectRule(selectedRuleId)"
           />
         </SplitterPanel>
       </Splitter>

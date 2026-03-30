@@ -20,13 +20,16 @@ export function getResultDisplay(result) {
 }
 
 export function getEngineDisplay(item) {
-  if (!item?.resultEngine) {
-    return null
+  if (item?.resultEngine) {
+    if (item.resultEngine.overrides?.length) {
+      return 'override'
+    }
+    return 'engine'
   }
-  if (item.resultEngine.overrides?.length) {
-    return 'override'
+  if (item?.result) {
+    return 'manual'
   }
-  return 'engine'
+  return null
 }
 
 export function calculateChecklistStats(data) {

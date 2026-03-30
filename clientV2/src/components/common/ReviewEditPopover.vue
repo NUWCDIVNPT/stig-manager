@@ -3,6 +3,7 @@ import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
 import Tooltip from 'primevue/tooltip'
 import { nextTick, onBeforeUnmount, ref, toRef } from 'vue'
+import ReviewResources from '../../features/AssetReview/components/ReviewResources.vue'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
 import { defaultFieldSettings, formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
 import ResultBadge from './ResultBadge.vue'
@@ -34,6 +35,14 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  currentReview: {
+    type: Object,
+    default: null,
+  },
+  reviewHistory: {
+    type: Array,
+    default: () => [],
+  },
   width: {
     type: Number,
     default: null,
@@ -49,6 +58,7 @@ const popover = ref()
 const lastAnchorEvent = ref(null)
 const closing = ref(false)
 const isButtonsHighlighted = ref(false)
+const showResources = ref(false)
 
 // Form state and business logic from composable
 const {
@@ -159,6 +169,7 @@ function show(event) {
 function hide() {
   closing.value = true
   popover.value.hide()
+  showResources.value = false
 }
 
 function reposition(event) {
@@ -367,6 +378,19 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
           </template>
           <span v-else class="review-edit-popover__attr-pill review-edit-popover__attr-pill--empty">--</span>
         </div>
+      </div>
+
+      <!-- Collapsible Review Resources -->
+      <div class="review-edit-popover__resources-toggle" @click="showResources = !showResources">
+        <span>Review Resources</span>
+        <i class="pi" :class="showResources ? 'pi-chevron-up' : 'pi-chevron-down'" />
+      </div>
+
+      <div v-if="showResources" class="review-edit-popover__resources-container">
+        <ReviewResources
+          :current-review="currentReview"
+          :review-history="reviewHistory"
+        />
       </div>
     </div>
   </Popover>
@@ -704,5 +728,38 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
 
 .review-edit-popover__attr-pill--empty {
   opacity: 0.4;
+}
+
+.review-edit-popover__resources-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.8rem;
+  margin: 0.5rem -0.8rem -0.8rem -0.8rem;
+  background-color: color-mix(in srgb, var(--color-background-light) 20%, transparent);
+  border-top: 1px solid var(--color-border-light);
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  transition: background-color 0.15s ease;
+  user-select: none;
+}
+
+.review-edit-popover__resources-toggle:hover {
+  background-color: color-mix(in srgb, var(--color-background-light) 40%, transparent);
+}
+
+.review-edit-popover__resources-toggle .pi {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.review-edit-popover__resources-container {
+  margin: 0 -0.8rem -0.8rem -0.8rem;
+  border-top: 1px solid var(--color-border-light);
+  height: 350px; /* Fixed height for the expanded section */
+  display: flex;
+  flex-direction: column;
 }
 </style>
