@@ -10,6 +10,20 @@ const upMigration = [
   `INSERT INTO task (taskId, name, description, command, collectionConfig) VALUES
     (5, 'ReviewAging', 'Age reviews based on per-collection rules', 'review_aging()', '#/components/schemas/ReviewAgingConfig')`,
 
+  // System job for ReviewAging
+  `INSERT INTO job (jobId, name, description, createdBy) VALUES
+    (4, 'Update Aged Reviews', 'Update reviews based on per-collection aging rules', null)`,
+  `INSERT INTO job_task_map (jobId, taskId) VALUES (4, 5)`,
+
+  // Disabled daily event for ReviewAgingJob
+  `DROP EVENT IF EXISTS \`job-4-stigman\``,
+  `CREATE EVENT IF NOT EXISTS \`job-4-stigman\`
+    ON SCHEDULE EVERY 1 DAY
+    STARTS '2026-03-29 05:00:00'
+    DISABLE
+    DO
+      CALL run_job(4, NULL)`,
+
   // Introduce nullable taskId FK in user_data for task-specific attribution
   `ALTER TABLE user_data
   ADD COLUMN taskId INT NULL DEFAULT NULL,
@@ -669,6 +683,8 @@ const upMigration = [
 ]
 
 const downMigration = [
+  `DROP EVENT IF EXISTS \`job-4-stigman\``,
+  `DELETE FROM job WHERE jobId = 4`,
   `DROP PROCEDURE IF EXISTS update_stats_asset_stig`,
   `DROP PROCEDURE IF EXISTS prune_and_insert_history`,
   `DROP PROCEDURE IF EXISTS review_aging`,

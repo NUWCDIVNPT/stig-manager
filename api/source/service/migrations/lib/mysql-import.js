@@ -368,7 +368,7 @@ class queryParser{
 		}
 
 		this.checkQuote(char);
-		this.checkEndOfQuery();
+		if (!this.seekingDelimiter) this.checkEndOfQuery();
 	}
 	
 	// Check if the current char has been escaped

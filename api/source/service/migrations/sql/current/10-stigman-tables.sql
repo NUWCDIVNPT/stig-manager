@@ -844,6 +844,18 @@ DELIMITER $
 /*!50003 SET time_zone             = @saved_time_zone */ $
 /*!50003 SET sql_mode              = @saved_sql_mode */ $
 /*!50003 SET collation_connection  = @saved_col_connection */ $
+/*!50106 DROP EVENT IF EXISTS `job-4-stigman` */$
+DELIMITER $
+/*!50003 SET @saved_col_connection = @@collation_connection */ $
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ $
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ $
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ $
+/*!50003 SET @saved_time_zone      = @@time_zone */ $
+/*!50003 SET time_zone             = 'SYSTEM' */ $
+/*!50106 CREATE*/ /*!50117 */ /*!50106 EVENT `job-4-stigman` ON SCHEDULE EVERY 1 DAY STARTS '2026-03-29 05:00:00' ON COMPLETION NOT PRESERVE DISABLE DO CALL run_job(4, NULL) */ $
+/*!50003 SET time_zone             = @saved_time_zone */ $
+/*!50003 SET sql_mode              = @saved_sql_mode */ $
+/*!50003 SET collation_connection  = @saved_col_connection */ $
 DELIMITER ;
 /*!50106 SET TIME_ZONE= @save_time_zone */ ;
 
@@ -1925,4 +1937,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-22 20:33:21
+-- Dump completed on 2026-03-29 22:33:17
