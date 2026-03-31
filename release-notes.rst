@@ -1,3 +1,17 @@
+1.6.6
+-------
+
+Changes:
+
+  - (Dependencies) Update npm and pip dependencies
+
+1.6.5
+-------
+
+Changes:
+
+  - (Dependencies) Update fast-xml-parser to 5.5.8 with processEntities configuration for STIG checklist compatibility
+
 1.6.4
 -------
 
