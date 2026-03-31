@@ -61,10 +61,6 @@ defineProps({
     type: String,
     default: '',
   },
-  matchedFieldsMap: {
-    type: Object,
-    default: null,
-  },
   isFiltered: {
     type: Boolean,
     default: false,
@@ -294,15 +290,6 @@ const updateSelection = val => emit('update:selectedRow', val)
       </template>
     </Column>
 
-    <Column v-if="searchFilter" header="Match" :style="{ width: '7.5rem' }" :pt="columnPt.left">
-      <template #body="{ data }">
-        <span class="cell-text cell-match-fields">
-          <i class="pi pi-search cell-match-fields__icon" />
-          {{ matchedFieldsMap?.get(data.ruleId)?.join(', ') }}
-        </span>
-      </template>
-    </Column>
-
     <template #empty>
       <div class="agg-grid-empty-state">
         No checklist items found.
@@ -374,6 +361,7 @@ const updateSelection = val => emit('update:selectedRow', val)
 
 .cell-text--clamped {
   display: -webkit-box;
+  line-clamp: var(--line-clamp, 3);
   -webkit-line-clamp: var(--line-clamp, 3);
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -427,20 +415,6 @@ const updateSelection = val => emit('update:selectedRow', val)
   width: 1.4rem;
   height: 1.4rem;
   opacity: 0.7;
-  flex-shrink: 0;
-}
-
-.cell-match-fields {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  color: var(--color-primary-highlight, #60a5fa);
-  font-style: italic;
-}
-
-.cell-match-fields__icon {
-  font-size: 1.1rem;
-  opacity: 0.8;
   flex-shrink: 0;
 }
 

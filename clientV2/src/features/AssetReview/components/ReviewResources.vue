@@ -71,8 +71,9 @@ const tabPanelPt = {
 const tabPt = {
   root: {
     style: {
-      padding: '0.3rem 0.6rem',
-      fontSize: '0.85rem',
+      padding: '0.6rem 1.2rem',
+      fontSize: '1.1rem',
+      fontWeight: '600',
     },
   },
 }

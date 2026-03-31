@@ -3,9 +3,8 @@ import { FilterMatchMode } from '@primevue/core/api'
 import { computed, ref, watch } from 'vue'
 import ReviewEditPopover from '../../../components/common/ReviewEditPopover.vue'
 import { defaultFieldSettings } from '../../../shared/lib/reviewFormUtils.js'
-import { getMatchedFields } from '../../../shared/lib/searchUtils.js'
 import { useChecklistDisplayMode } from '../composables/useChecklistDisplayMode.js'
-import { calculateChecklistStats, getEngineDisplay } from '../lib/checklistUtils.js'
+import { calculateChecklistStats } from '../lib/checklistUtils.js'
 import ChecklistGridHeader from './ChecklistGridHeader.vue'
 import ChecklistGridTable from './ChecklistGridTable.vue'
 
@@ -178,36 +177,6 @@ watch(() => props.gridData, (val) => {
   }
 }, { immediate: true })
 
-const searchFieldDefs = [
-  { key: 'ruleId', label: 'rule id' },
-  { key: 'groupId', label: 'group' },
-  { key: 'ruleTitle', label: 'rule title' },
-  { key: 'groupTitle', label: 'group title' },
-  { key: 'detail', label: 'detail' },
-  { key: 'comment', label: 'comment' },
-  { key: 'username', label: 'eval user' },
-  { getter: row => row.status?.user?.username, label: 'status user' },
-  { getter: row => getEngineDisplay(row), label: 'engine' },
-  { getter: row => row.resultEngine?.product, label: 'engine product' },
-  { getter: row => row.resultEngine?.type, label: 'engine type' },
-  { getter: row => row.resultEngine?.version, label: 'engine version' },
-]
-
-const matchedFieldsMap = computed(() => {
-  const term = props.searchFilter?.toLowerCase().trim()
-  if (!term) {
-    return null
-  }
-  const map = new Map()
-  for (const row of currentFilteredData.value) {
-    const matched = getMatchedFields(row, searchFieldDefs, term)
-    if (matched.length) {
-      map.set(row.ruleId, matched)
-    }
-  }
-  return map
-})
-
 const stats = computed(() => {
   const result = calculateChecklistStats(isFiltered.value ? currentFilteredData.value : props.gridData)
   if (!result) {
@@ -262,7 +231,7 @@ function onRowClick(event) {
   event.originalEvent?.stopPropagation()
   const isSameRow = editingRow.value?.ruleId === event.data.ruleId
   if (!isSameRow && reviewEditPopover.value?.isDirty) {
-    reviewEditPopover.value.triggerButtonPulse()
+    reviewEditPopover.value.triggerWarningPulse()
     return
   }
   emit('select-rule', event.data.ruleId)
@@ -296,7 +265,6 @@ function onRowClick(event) {
       :show-rule-title="showRuleTitle"
       :show-group-title="showGroupTitle"
       :search-filter="searchFilter"
-      :matched-fields-map="matchedFieldsMap"
       :is-filtered="isFiltered"
       :current-filtered-data="currentFilteredData"
       :stats="stats"

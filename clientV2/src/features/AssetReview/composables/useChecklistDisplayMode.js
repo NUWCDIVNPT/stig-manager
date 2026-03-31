@@ -1,8 +1,10 @@
 import { computed, ref } from 'vue'
 
-export function useChecklistDisplayMode() {
-  const displayMode = ref('groupRule')
+// Shared state across all consumers
+const displayMode = ref('groupRule')
+const lineClamp = ref(3)
 
+export function useChecklistDisplayMode() {
   const displayModeItems = ref([
     {
       label: 'Group/Rule display',
@@ -32,7 +34,6 @@ export function useChecklistDisplayMode() {
   const showGroupTitle = computed(() => displayMode.value === 'groupGroup')
 
   // Row height control (line-clamp 1-10, default 3)
-  const lineClamp = ref(3)
   const itemSize = computed(() => (15 * lineClamp.value) + 6)
 
   function increaseRowHeight() {

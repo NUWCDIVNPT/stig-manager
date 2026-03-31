@@ -72,7 +72,7 @@ const actionIcon = computed(() => {
 }
 
 .status-button--active {
-  border-color: var(--color-shield-green-dark);
+  border-color: var(--color-border-default);
   background-color: var(--color-background-dark);
 }
 

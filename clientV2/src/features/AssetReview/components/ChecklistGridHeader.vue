@@ -6,7 +6,7 @@ import lineHeightUp from '../../../assets/line-height-up.svg'
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import Label from '../../../components/common/Label.vue'
 import { useChecklistDisplayMode } from '../composables/useChecklistDisplayMode.js'
-import { normalizeColor } from '../lib/colorUtils.js'
+import { normalizeColor } from '../../../shared/lib/colorUtils.js'
 
 const props = defineProps({
   headerTitle: {

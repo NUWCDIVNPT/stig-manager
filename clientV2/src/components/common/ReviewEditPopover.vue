@@ -57,7 +57,7 @@ const vTooltip = Tooltip
 const popover = ref()
 const lastAnchorEvent = ref(null)
 const closing = ref(false)
-const isButtonsHighlighted = ref(false)
+const showUnsavedWarning = ref(false)
 const showResources = ref(false)
 
 // Form state and business logic from composable
@@ -136,21 +136,19 @@ function onPopoverHide() {
     nextTick(() => {
       popover.value?.show(lastAnchorEvent.value)
     })
-    triggerButtonPulse()
+    showUnsavedWarning.value = true
     return
   }
   emit('close')
 }
 
-function triggerButtonPulse() {
-  isButtonsHighlighted.value = true
-  setTimeout(() => {
-    isButtonsHighlighted.value = false
-  }, 1200)
+function triggerWarningPulse() {
+  showUnsavedWarning.value = true
 }
 
 function dismiss() {
   discardChanges()
+  showUnsavedWarning.value = false
   closing.value = true
   popover.value.hide()
 }
@@ -159,15 +157,18 @@ function dismiss() {
 function toggle(event) {
   lastAnchorEvent.value = event
   popover.value.toggle(event)
+  showUnsavedWarning.value = false
 }
 
 function show(event) {
   lastAnchorEvent.value = event
   popover.value.show(event)
+  showUnsavedWarning.value = false
 }
 
 function hide() {
   closing.value = true
+  showUnsavedWarning.value = false
   popover.value.hide()
   showResources.value = false
 }
@@ -177,7 +178,7 @@ function reposition(event) {
   const pv = popover.value
   pv.target = event.currentTarget
   pv.eventTarget = event.currentTarget
-  pv.container.classList.remove('p-popover-flipped')
+  pv.container?.classList.remove('p-popover-flipped')
   nextTick(() => pv.alignOverlay())
 }
 
@@ -193,7 +194,7 @@ function bindOutsideHandler() {
         return
       }
       if (isDirty.value) {
-        triggerButtonPulse()
+        showUnsavedWarning.value = true
         return
       }
       closing.value = true
@@ -212,7 +213,7 @@ function unbindOutsideHandler() {
 
 onBeforeUnmount(unbindOutsideHandler)
 
-defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
+defineExpose({ toggle, show, hide, reposition, isDirty, triggerWarningPulse })
 </script>
 
 <template>
@@ -287,7 +288,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
           />
         </div>
 
-        <div class="review-edit-popover__actions" :class="{ 'review-edit-popover__actions--highlighted': isButtonsHighlighted }">
+        <div class="review-edit-popover__actions">
           <label class="review-edit-popover__label">Status</label>
           <StatusButton
             :label="buttonStates.save.text"
@@ -313,13 +314,20 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
             @click="onButtonClick(buttonStates.accept.actionType)"
           />
           <button
-            class="review-edit-popover__discard-link"
-            :class="{ 'review-edit-popover__discard-link--hidden': !isDirty }"
-            @click="discardChanges"
+            class="review-edit-popover__undo-btn"
+            :disabled="!isDirty"
+            title="Undo changes"
+            @click="discardChanges(); showUnsavedWarning = false"
           >
-            discard changes
+            Undo
           </button>
         </div>
+      </div>
+
+      <!-- Unsaved Changes Warning -->
+      <div v-if="showUnsavedWarning" class="review-edit-popover__unsaved-warning">
+        <i class="pi pi-exclamation-triangle" />
+        <span>Please <strong>Save</strong> or <strong>Undo</strong> your changes to close.</span>
       </div>
 
       <!-- Inline save error (Tier: Action Error) -->
@@ -382,8 +390,9 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
 
       <!-- Collapsible Review Resources -->
       <div class="review-edit-popover__resources-toggle" @click="showResources = !showResources">
+        <i class="pi" :class="showResources ? 'pi-angle-up' : 'pi-angle-down'" />
         <span>Review Resources</span>
-        <i class="pi" :class="showResources ? 'pi-chevron-up' : 'pi-chevron-down'" />
+        <div class="review-edit-popover__resources-toggle-line" />
       </div>
 
       <div v-if="showResources" class="review-edit-popover__resources-container">
@@ -496,7 +505,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
 }
 
 .review-edit-popover__result-item :deep(.status-badge) {
-  min-width: 1.8rem;
+  width: 2.25rem;
   justify-content: center;
 }
 
@@ -514,6 +523,13 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
   resize: none !important;
 }
 
+.review-edit-popover__textarea:disabled,
+.review-edit-popover__textarea.p-disabled {
+  background-color: color-mix(in srgb, var(--color-background-light) 30%, transparent) !important;
+  opacity: 0.7 !important;
+  cursor: not-allowed !important;
+}
+
 .review-edit-popover__actions {
   display: flex;
   flex-direction: column;
@@ -527,45 +543,45 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
   min-width: 7rem;
 }
 
-.review-edit-popover__actions--highlighted {
-  animation: actions-pulse 0.6s ease-in-out 2;
-}
-
-.review-edit-popover__actions--highlighted .review-edit-popover__discard-link {
-  animation: discard-pulse 0.6s ease-in-out 2;
-}
-
-@keyframes discard-pulse {
-  0%, 100% { color: var(--color-text-primary); opacity: 0.7; }
-  50% { color: var(--result-fail, #e74c3c); opacity: 1; }
-}
-
-@keyframes actions-pulse {
-  0%, 100% { filter: drop-shadow(0 0 0px transparent); }
-  50% { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--p-primary-color) 70%, transparent)); }
-}
-
-.review-edit-popover__discard-link {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  font-size: 0.9rem;
+.review-edit-popover__undo-btn {
+  background-color: transparent;
   color: var(--color-text-primary);
-  opacity: 0.7;
-  text-align: center;
-  white-space: nowrap;
-  transition: opacity 0.15s ease;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 30%, transparent);
+  border-radius: 4px;
+  padding: 0.45rem 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
   margin-top: auto;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.review-edit-popover__undo-btn:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-background-light) 50%, transparent);
+  border-color: var(--color-text-primary);
+}
+.review-edit-popover__undo-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
-.review-edit-popover__discard-link:hover {
-  opacity: 0.85;
-  text-decoration: underline;
+/* Unsaved Changes Banner */
+.review-edit-popover__unsaved-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  background-color: color-mix(in srgb, var(--color-warning, #f39c12) 15%, var(--color-background-dark));
+  border: 1px solid color-mix(in srgb, var(--color-warning, #f39c12) 50%, transparent);
+  border-radius: 4px;
+  color: var(--color-warning, #f1c40f);
+  font-size: 0.95rem;
+  animation: warning-slide-down 0.2s cubic-bezier(0, 0, 0.2, 1);
 }
 
-.review-edit-popover__discard-link--hidden {
-  visibility: hidden;
+@keyframes warning-slide-down {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Inline save error banner (Tier: Action Error) */
@@ -659,8 +675,8 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
    reveal the ::before border color as an outline. The flipped variants apply
    when the popover opens above the anchor instead of below. */
 :global(.review-popover) {
-  border: 1px solid var(--color-shield-green-dark);
-  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--color-shield-green-dark) 30%, transparent);
+  border: 1px solid var(--p-primary-color);
+  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--p-primary-color) 30%, transparent);
   margin-left: -5rem;
   margin-block-start: 2rem; /* gap below anchor row */
 }
@@ -673,7 +689,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
 :global(.review-popover::before) {
   border-width: 2rem; /* outer arrow size — matches gap */
   margin-left: -2rem; /* center the outer arrow */
-  border-bottom-color: var(--color-shield-green-dark);
+  border-bottom-color: var(--p-primary-color);
 }
 
 :global(.review-popover::after) {
@@ -682,7 +698,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
 }
 
 :global(.review-popover.p-popover-flipped::before) {
-  border-top-color: var(--color-shield-green-dark);
+  border-top-color: var(--p-primary-color);
 }
 
 :global(.review-popover-leave) {
@@ -733,14 +749,14 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
 .review-edit-popover__resources-toggle {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.8rem;
+  gap: 0.5rem;
+  padding: 0.6rem 0.8rem;
   margin: 0.5rem -0.8rem -0.8rem -0.8rem;
   background-color: color-mix(in srgb, var(--color-background-light) 20%, transparent);
   border-top: 1px solid var(--color-border-light);
   cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 700;
   color: var(--color-text-primary);
   transition: background-color 0.15s ease;
   user-select: none;
@@ -751,8 +767,15 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerButtonPulse })
 }
 
 .review-edit-popover__resources-toggle .pi {
-  font-size: 0.8rem;
-  opacity: 0.7;
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  transition: transform 0.2s ease;
+}
+
+.review-edit-popover__resources-toggle-line {
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-border-light);
 }
 
 .review-edit-popover__resources-container {
