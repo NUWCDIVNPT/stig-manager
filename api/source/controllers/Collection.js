@@ -1276,3 +1276,61 @@ module.exports.putAclRulesByCollectionGrant = async function (req, res, next) {
     next(err)
   }
 }
+
+function makeGetCollectionTaskConfig (taskName) {
+  return async function (req, res, next) {
+    try {
+      const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
+      const config = await CollectionService.getCollectionTaskConfig(collectionId, taskName)
+      if (config === undefined) throw new SmError.NotFoundError('No config found for this collection/task.')
+      res.json(config)
+    }
+    catch (err) {
+      next(err)
+    }
+  }
+}
+
+function makePutCollectionTaskConfig (taskName) {
+  return async function (req, res, next) {
+    try {
+      const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Owner)
+      const config = await CollectionService.putCollectionTaskConfig(collectionId, taskName, req.body)
+      res.json(config)
+    }
+    catch (err) {
+      next(err)
+    }
+  }
+}
+
+function makeDeleteCollectionTaskConfig (taskName) {
+  return async function (req, res, next) {
+    try {
+      const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Owner)
+      const deleted = await CollectionService.deleteCollectionTaskConfig(collectionId, taskName)
+      if (!deleted) throw new SmError.NotFoundError('No config found for this collection/task.')
+      res.status(204).end()
+    }
+    catch (err) {
+      next(err)
+    }
+  }
+}
+
+module.exports.getCollectionTaskConfigReviewAging = makeGetCollectionTaskConfig('review-aging')
+module.exports.putCollectionTaskConfigReviewAging = makePutCollectionTaskConfig('review-aging')
+module.exports.deleteCollectionTaskConfigReviewAging = makeDeleteCollectionTaskConfig('review-aging')
+
+module.exports.getCollectionTaskOutput = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
+    const taskName = req.params.taskName
+    const { start, end } = req.query
+    const output = await CollectionService.getCollectionTaskOutput(collectionId, taskName, { start, end })
+    res.json(output)
+  }
+  catch (err) {
+    next(err)
+  }
+}

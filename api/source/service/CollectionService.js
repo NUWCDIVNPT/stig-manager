@@ -2837,3 +2837,67 @@ exports.queryReviewAcl = async function ({grantId, collectionId, userId, userGro
   const [rows] = await dbUtils.pool.query(sql)
   return rows?.[0]
 }
+
+function kebabToPascal (kebabName) {
+  return kebabName.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join('')
+}
+
+exports.getCollectionTaskConfig = async function (collectionId, taskName) {
+  const sql = `
+    SELECT tcc.config FROM task_collection_config tcc
+    JOIN task t ON tcc.taskId = t.taskId
+    WHERE tcc.collectionId = ? AND t.name = ?`
+  const [rows] = await dbUtils.pool.query(sql, [collectionId, kebabToPascal(taskName)])
+  return rows[0]?.config
+}
+
+exports.putCollectionTaskConfig = async function (collectionId, taskName, config) {
+  const sql = `
+    INSERT INTO task_collection_config (taskId, collectionId, config)
+    VALUES ((SELECT taskId FROM task WHERE name = ?), ?, ?)
+    ON DUPLICATE KEY UPDATE config = VALUES(config)`
+  await dbUtils.pool.query(sql, [kebabToPascal(taskName), collectionId, JSON.stringify(config)])
+  return config
+}
+
+exports.deleteCollectionTaskConfig = async function (collectionId, taskName) {
+  const [result] = await dbUtils.pool.query(
+    `DELETE tcc FROM task_collection_config tcc
+    JOIN task t ON tcc.taskId = t.taskId
+    WHERE tcc.collectionId = ? AND t.name = ?`,
+    [collectionId, kebabToPascal(taskName)]
+  )
+  return result.affectedRows > 0
+}
+
+exports.getCollectionTaskOutput = async function (collectionId, taskName, { start, end } = {}) {
+  const columns = [
+    'tout.seq',
+    'tout.ts',
+    'CAST(tout.taskId AS CHAR) AS taskId',
+    't.name AS task',
+    'tout.type',
+    'tout.message',
+    'tout.collectionId'
+  ]
+  const joins = new Set([
+    'task_output tout',
+    'LEFT JOIN task t ON tout.taskId = t.taskId'
+  ])
+  const predicates = {
+    statements: ['tout.collectionId = ?', 't.name = ?'],
+    binds: [collectionId, kebabToPascal(taskName)]
+  }
+  if (start) {
+    predicates.statements.push('tout.ts >= ?')
+    predicates.binds.push(start)
+  }
+  if (end) {
+    predicates.statements.push('tout.ts <= ?')
+    predicates.binds.push(end)
+  }
+  const orderBy = ['tout.seq ASC']
+  const sql = dbUtils.makeQueryString({ columns, joins, predicates, orderBy, format: true })
+  const [rows] = await dbUtils.pool.query(sql)
+  return rows
+}

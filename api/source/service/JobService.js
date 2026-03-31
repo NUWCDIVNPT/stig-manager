@@ -309,9 +309,45 @@ exports.getOutputByRun = async (runId, {filters}) => {
   return (rows)
 }
 
-exports.getAllTasks = async () => {
-  const sql = `SELECT CAST(taskId AS CHAR(36)) AS taskId, name, description, command FROM task ORDER BY name`
-  let [rows] = await dbUtils.pool.query(sql)
+exports.getAllTasks = async ({ hasCollectionConfig } = {}) => {
+  const eventValues = `
+  IF(e.event_type = 'ONE TIME',
+    JSON_OBJECT(
+      'eventId', e.event_name,
+      'type', 'once',
+      'starts', DATE_FORMAT(e.execute_at,'%Y-%m-%dT%H:%i:%sZ')
+    ),
+    JSON_OBJECT(
+      'eventId', e.event_name,
+      'type', 'recurring',
+      'interval', JSON_OBJECT('value', CAST(e.interval_value as char), 'field', LCASE(e.interval_field)),
+      'starts', DATE_FORMAT(e.starts,'%Y-%m-%dT%H:%i:%sZ'),
+      'ends', DATE_FORMAT(e.ends,'%Y-%m-%dT%H:%i:%sZ'),
+      'enabled', e.status = 'ENABLED'
+    )
+  )`
+  const columns = [
+    'CAST(t.taskId AS CHAR) AS taskId',
+    't.name',
+    't.description',
+    't.command',
+    't.collectionConfig',
+    `(SELECT IF(COUNT(e.event_name), JSON_ARRAYAGG(${eventValues}), JSON_ARRAY())
+      FROM job_task_map jtm
+      JOIN information_schema.events e
+        ON e.event_schema = database()
+        AND e.event_name LIKE CONCAT('job-', jtm.jobId, '-stigman')
+      WHERE jtm.taskId = t.taskId
+    ) AS events`
+  ]
+  const joins = new Set(['task t'])
+  const predicates = { statements: [], binds: [] }
+  if (hasCollectionConfig) {
+    predicates.statements.push('t.collectionConfig IS NOT NULL')
+  }
+  const orderBy = ['t.name']
+  const sql = dbUtils.makeQueryString({ columns, joins, predicates, orderBy, format: true })
+  const [rows] = await dbUtils.pool.query(sql)
   return rows
 }
 
