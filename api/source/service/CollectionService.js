@@ -2898,6 +2898,6 @@ exports.getCollectionTaskOutput = async function (collectionId, taskName, { star
   }
   const orderBy = ['tout.seq ASC']
   const sql = dbUtils.makeQueryString({ columns, joins, predicates, orderBy, format: true })
-  const [rows] = await dbUtils.pool.query(sql, predicates.binds)
+  const [rows] = await dbUtils.pool.query(sql)
   return rows
 }
