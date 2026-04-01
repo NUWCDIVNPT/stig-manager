@@ -305,7 +305,7 @@ const emit = defineEmits(['retry'])
   word-break: break-word;
   line-height: 1.4;
   font-family: inherit;
-  font-size: inherit;
+  font-size: 1.08rem;
   margin: 0;
   padding: 0 1.25rem;
 }

@@ -2,7 +2,7 @@
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
 import Tooltip from 'primevue/tooltip'
-import { nextTick, onBeforeUnmount, ref, toRef } from 'vue'
+import { nextTick, onBeforeUnmount, ref, toRef, watch } from 'vue'
 import ReviewResources from '../../features/AssetReview/components/ReviewResources.vue'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
 import { defaultFieldSettings, formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
@@ -47,9 +47,18 @@ const props = defineProps({
     type: Number,
     default: null,
   },
+  collectionId: {
+    type: String,
+    default: null,
+  },
 })
 
 const emit = defineEmits(['save', 'status-action', 'close', 'clear-save-error'])
+
+// print collecitonid on moiunt
+watch(() => props.collectionId, (val) => {
+  console.log('collectionId', val)
+}, { immediate: true })
 
 // Register PrimeVue Tooltip directive for v-tooltip usage
 const vTooltip = Tooltip
@@ -126,6 +135,7 @@ function onButtonClick(actionType) {
 // Dirty close handling
 function onPopoverHide() {
   unbindOutsideHandler()
+  showResources.value = false
   if (closing.value) {
     closing.value = false
     emit('close')
@@ -156,12 +166,14 @@ function dismiss() {
 // Expose toggle for parent to open/close
 function toggle(event) {
   lastAnchorEvent.value = event
+  showResources.value = false
   popover.value.toggle(event)
   showUnsavedWarning.value = false
 }
 
 function show(event) {
   lastAnchorEvent.value = event
+  showResources.value = false
   popover.value.show(event)
   showUnsavedWarning.value = false
 }
@@ -399,6 +411,8 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerWarningPulse })
         <ReviewResources
           :current-review="currentReview"
           :review-history="reviewHistory"
+          :rule-id="rowData.ruleId"
+          :collection-id="collectionId"
         />
       </div>
     </div>
@@ -622,7 +636,8 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerWarningPulse })
 
 .review-edit-popover__attributions {
   display: flex;
-  gap: 3rem;
+  column-gap: 3rem;
+  row-gap: 0.5rem;
   flex-wrap: wrap;
   border-top: 1px solid var(--color-border-light);
   padding-top: 0.4rem;
