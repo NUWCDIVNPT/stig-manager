@@ -1946,12 +1946,12 @@ SM.Manage.Collection.Panel = Ext.extend(Ext.Panel, {
       canEdit: !!_this.canConfigureTasks,
       iconCls: 'sm-job-task-icon',
       title: 'Tasks',
-      border: false
+      border: false,
     })
 
     const tp = new Ext.TabPanel({
       region: 'center',
-      activeTab: 0,
+      activeTab: 5,
       border: false,
       items: [
         grantGrid,

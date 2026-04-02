@@ -112,7 +112,7 @@ SM.TaskConfig.ReviewAging.FilterGrid = Ext.extend(Ext.grid.GridPanel, {
       }
     })
 
-    function renderResource (value, metadata, record) {
+    function renderResource(value, metadata, record) {
       let html = ''
       if (record.data.assetName) {
         html += `<div class="sm-asset-icon sm-cell-with-icon">${SM.he(record.data.assetName)}</div>`
@@ -239,11 +239,14 @@ SM.TaskConfig.ReviewAging.FilterPanel = Ext.extend(Ext.Panel, {
       }
     })
 
-    function handleTreeClick (node) {
+    function handleTreeClick(node) {
       switch (node.attributes.node) {
         case 'stig':
+        case 'stig-asset':
         case 'asset':
+        case 'asset-stig':
         case 'label':
+        case 'label-stig':
           addBtn.setDisabled(isNodeInFilterGrid(node))
           break
         default:
@@ -252,13 +255,13 @@ SM.TaskConfig.ReviewAging.FilterPanel = Ext.extend(Ext.Panel, {
       }
     }
 
-    function isNodeInFilterGrid (node) {
+    function isNodeInFilterGrid(node) {
       const candidateId = `${node.attributes.benchmarkId ?? 'undefined'}-${node.attributes.assetName ?? 'undefined'}-${node.attributes.label?.name ?? 'undefined'}`
       const record = filterGrid.store.getById(candidateId)
       return !!record
     }
 
-    function handleAddBtn () {
+    function handleAddBtn() {
       const selectedNode = navTree.getSelectionModel().getSelectedNode()
       if (!selectedNode) return
       const assignment = {
@@ -287,6 +290,7 @@ SM.TaskConfig.ReviewAging.FilterPanel = Ext.extend(Ext.Panel, {
     const addBtn = new SM.Acl.ResourceAddBtn({
       tree: navTree,
       text: 'Add',
+      margins: "10 0 10 0",
       grid: filterGrid,
       handler: handleAddBtn
     })
@@ -301,7 +305,7 @@ SM.TaskConfig.ReviewAging.FilterPanel = Ext.extend(Ext.Panel, {
 
     const buttonPanel = new Ext.Panel({
       bodyStyle: 'background-color:transparent;border:none',
-      width: 80,
+      width: 100,
       layout: {
         type: 'vbox',
         pack: 'center',
@@ -314,7 +318,7 @@ SM.TaskConfig.ReviewAging.FilterPanel = Ext.extend(Ext.Panel, {
     const config = {
       bodyStyle: 'background:transparent;border:none',
       layout: 'hbox',
-      anchor: '100% -130',
+      anchor: '100% -30',
       layoutConfig: {
         align: 'stretch'
       },
@@ -376,6 +380,32 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       name: 'enabled',
       checked: ruleData?.enabled ?? true,
       disabled: isReadOnly
+    })
+
+    const titleEnabledRow = new Ext.Panel({
+      layout: 'column',
+      baseCls: 'x-plain',
+      border: false,
+      items: [
+        {
+          columnWidth: .6,
+          layout: 'form',
+          padding: '0px 10px 0px 0px',
+          border: false,
+          items: [
+            titleField
+          ]
+        },
+        {
+          columnWidth: .4,
+          layout: 'form',
+          padding: '0px 10px 0px 0px',
+          border: false,
+          items: [
+            enabledCheckbox
+          ]
+        },
+      ]
     })
 
     // Trigger Field
@@ -544,7 +574,7 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       }
     })
 
-    function refreshUpdateValueStore (field) {
+    function refreshUpdateValueStore(field) {
       const data = field === 'status'
         ? [['saved', 'Saved'], ['submitted', 'Submitted']]
         : [['notchecked', 'Not Checked'], ['informational', 'Informational']]
@@ -586,8 +616,9 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
     const triggerFieldSet = new Ext.form.FieldSet({
       title: 'Trigger',
       items: [
-        titleField,
-        enabledCheckbox,
+        // titleField,
+        // enabledCheckbox,
+        // titleEnabledRow,
         triggerFieldCombo,
         basisTypeCombo,
         {
@@ -643,10 +674,10 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       labelWidth: 100,
       autoScroll: true,
       padding: 10,
-      items: [triggerFieldSet, actionFieldSet, filterFieldSet]
+      items: [titleEnabledRow, triggerFieldSet, actionFieldSet, filterFieldSet]
     })
 
-    function serializeRule () {
+    function serializeRule() {
       const rule = {
         title: titleField.getValue() || null,
         enabled: enabledCheckbox.getValue(),
@@ -713,9 +744,9 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       modal: true,
       hidden: true,
       width: 750,
-      height: 600,
-      minWidth: 600,
-      minHeight: 400,
+      height: 700,
+      minWidth: 750,
+      minHeight: 700,
       maximizable: true,
       resizable: true,
       layout: 'fit',
@@ -773,7 +804,7 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
       toolsMarkup += '<span class="sm-grid-cell-tool"><img data-action="removeRule" ext:qtip="Delete rule" src="img/trash.svg" width="14" height="14"></span>'
     }
 
-    function renderRule (value, metadata, record) {
+    function renderRule(value, metadata, record) {
       const d = record.data
       const enabledIcon = d.enabled ? '●' : '○'
       const enabledColor = d.enabled ? 'green' : '#999'
@@ -838,7 +869,7 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
       }
     }
 
-    function cellclick (grid, rowIndex, columnIndex, e) {
+    function cellclick(grid, rowIndex, columnIndex, e) {
       if (e.target.tagName === 'IMG') {
         const record = grid.getStore().getAt(rowIndex)
         const handler = toolHandlers[e.target.dataset.action]
@@ -1012,6 +1043,7 @@ SM.TaskConfig.TasksPanel = Ext.extend(Ext.Panel, {
       layout: 'card',
       activeItem: 0,
       border: false,
+      padding: 10,
       items: [{
         xtype: 'panel',
         border: false,
@@ -1022,7 +1054,7 @@ SM.TaskConfig.TasksPanel = Ext.extend(Ext.Panel, {
 
     const taskCards = {}
 
-    function onTaskSelected (record) {
+    function onTaskSelected(record) {
       const taskName = record.data.name
       descriptionField.setValue(record.data.description || '')
       eventInfoField.setValue(SM.TaskConfig.formatEventSummary(record.data.events))
