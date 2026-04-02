@@ -7,6 +7,7 @@ import CatBadge from '../../../components/common/CatBadge.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import { durationToNow } from '../../../shared/lib.js'
+import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { fieldMatches, highlightText } from '../../../shared/lib/searchUtils.js'
 import { useChecklistDisplayMode } from '../composables/useChecklistDisplayMode.js'
 import { useSearch } from '../composables/useSearch.js'
@@ -247,7 +248,7 @@ const dataTablePt = {
         <i class="pi pi-clock" title="Last action" />
       </template>
       <template #body="{ data }">
-        <span :title="data.touchTs">{{ durationToNow(data.touchTs) }}</span>
+        <span :title="formatReviewDate(data.touchTs)">{{ durationToNow(data.touchTs) }}</span>
       </template>
     </Column>
 

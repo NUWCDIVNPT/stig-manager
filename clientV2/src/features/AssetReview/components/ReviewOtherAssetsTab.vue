@@ -27,7 +27,41 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  editable: {
+    type: Boolean,
+    default: false,
+  },
+  formResult: {
+    type: String,
+    default: '',
+  },
+  formDetail: {
+    type: String,
+    default: '',
+  },
+  formComment: {
+    type: String,
+    default: '',
+  },
 })
+
+const emit = defineEmits(['apply-review'])
+
+const isAlreadyApplied = (data) => {
+  return data.result === props.formResult
+    && (data.detail ?? '') === props.formDetail
+    && (data.comment ?? '') === props.formComment
+}
+
+const getApplyTooltip = (data) => {
+  if (!props.editable) {
+    return 'Cannot apply review while submitted or accepted'
+  }
+  if (isAlreadyApplied(data)) {
+    return 'Review is already applied'
+  }
+  return 'Apply this review'
+}
 
 const { state: otherReviews, isLoading, execute: loadOtherReviews } = useAsyncState(
   () => fetchOtherReviews(props.collectionId, props.ruleId),
@@ -216,6 +250,17 @@ const otherTablePt = {
                 {{ data.status.text }}
               </div>
             </div>
+            <div class="evaluation-actions">
+              <button
+                class="apply-review-btn"
+                :disabled="!editable || isAlreadyApplied(data)"
+                :title="getApplyTooltip(data)"
+                @click="emit('apply-review', data)"
+              >
+                <i class="pi pi-copy" />
+                Apply this review
+              </button>
+            </div>
           </div>
         </div>
 
@@ -227,10 +272,9 @@ const otherTablePt = {
           <div class="expansion-section__content grid-attributions">
             <!-- Evaluated Row -->
             <div class="attribution-row">
-              <span class="attribution-row__label">Evaluated</span>
+              <span class="attribution-row__label">Evaluated:</span>
               <div class="attribution-row__items">
                 <div class="attribution-badge" title="Evaluation time">
-                  <span class="attribution-badge-icon">🕒</span>
                   <span class="attribution-badge-text">{{ formatReviewDate(data.ts) }}</span>
                 </div>
                 <div class="attribution-badge" title="Evaluated by">
@@ -245,10 +289,9 @@ const otherTablePt = {
             </div>
             <!-- Statused Row -->
             <div class="attribution-row">
-              <span class="attribution-row__label">Statused</span>
+              <span class="attribution-row__label">Statused:</span>
               <div class="attribution-row__items">
                 <div class="attribution-badge" title="Status updated time">
-                  <span class="attribution-badge-icon">📅</span>
                   <span class="attribution-badge-text">{{ formatReviewDate(data.touchTs) }}</span>
                 </div>
                 <div v-if="data.status?.user?.username" class="attribution-badge" title="Status updated by">
@@ -282,7 +325,7 @@ const otherTablePt = {
 }
 
 :deep(.p-datatable-tbody > tr > td) {
-  padding: 0.4rem 0.4rem;
+  padding: 0.2rem 0.4rem;
   vertical-align: middle;
   font-size: 1.1rem;
   border-bottom: 1px solid var(--color-border-light);
@@ -339,11 +382,9 @@ const otherTablePt = {
 }
 
 .expansion-section__header {
-  font-size: 0.85rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--color-text-bright);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   padding-bottom: 0.4rem;
   border-bottom: 1px solid var(--color-border-light);
 }
@@ -367,7 +408,7 @@ const otherTablePt = {
 }
 
 .evaluation-field__label {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: var(--color-text-bright);
   font-weight: 600;
 }
@@ -415,7 +456,7 @@ const otherTablePt = {
 }
 
 .attribution-row__label {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--color-text-bright);
   width: 80px;
@@ -472,10 +513,48 @@ const otherTablePt = {
 }
 
 .other-table__empty {
-  padding: 3rem 1rem;
-  text-align: center;
-  color: var(--color-text-dim);
-  font-size: 1.1rem;
   font-style: italic;
+  color: var(--color-text-dim);
+}
+
+.evaluation-actions {
+  margin-top: 0.5rem;
+}
+
+.apply-review-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-primary-highlight);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  font-size: 1rem;
+}
+
+.apply-review-btn:hover {
+  background-color: color-mix(in srgb, var(--color-primary-highlight) 80%, black);
+}
+
+.apply-review-btn:active {
+  transform: scale(0.98);
+}
+
+.apply-review-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.apply-review-btn:disabled:active {
+  transform: none;
+}
+
+.apply-review-btn i {
+  font-size: 0.9rem;
 }
 </style>

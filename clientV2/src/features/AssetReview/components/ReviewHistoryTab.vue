@@ -17,7 +17,41 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  editable: {
+    type: Boolean,
+    default: false,
+  },
+  formResult: {
+    type: String,
+    default: '',
+  },
+  formDetail: {
+    type: String,
+    default: '',
+  },
+  formComment: {
+    type: String,
+    default: '',
+  },
 })
+
+const emit = defineEmits(['apply-review'])
+
+const isAlreadyApplied = (data) => {
+  return data.result === props.formResult
+    && (data.detail ?? '') === props.formDetail
+    && (data.comment ?? '') === props.formComment
+}
+
+const getApplyTooltip = (data) => {
+  if (!props.editable) {
+    return 'Cannot apply review while submitted or accepted'
+  }
+  if (isAlreadyApplied(data)) {
+    return 'Review is already applied'
+  }
+  return 'Apply this review'
+}
 
 const expandedRows = ref([])
 
@@ -157,6 +191,17 @@ const historyTablePt = {
             <span class="history-expansion__label">Status set by</span>
             <span class="history-expansion__value">{{ data.status.user.username }}</span>
           </div>
+          <div class="history-expansion__actions">
+            <button
+              class="apply-review-btn"
+              :disabled="!editable || isAlreadyApplied(data)"
+              :title="getApplyTooltip(data)"
+              @click="emit('apply-review', data)"
+            >
+              <i class="pi pi-copy" />
+              Apply this review
+            </button>
+          </div>
         </div>
       </div>
     </template>
@@ -216,9 +261,8 @@ const historyTablePt = {
 }
 
 .cell-text--mono {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  color: var(--color-text-dim);
-  font-size: 1rem;
+  color: var(--color-text-primary);
+  font-size: 1.1rem;
 }
 
 .cell-text--dim {
@@ -273,6 +317,49 @@ const historyTablePt = {
   padding: 0.4rem 0.75rem;
   border-radius: 4px;
   border-left: 2px solid var(--color-primary-highlight);
+}
+
+.history-expansion__actions {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.apply-review-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-primary-highlight);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  font-size: 1rem;
+}
+
+.apply-review-btn:hover {
+  background-color: color-mix(in srgb, var(--color-primary-highlight) 80%, black);
+}
+
+.apply-review-btn:active {
+  transform: scale(0.98);
+}
+
+.apply-review-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.apply-review-btn:disabled:active {
+  transform: none;
+}
+
+.apply-review-btn i {
+  font-size: 0.9rem;
 }
 
 .footer-divider {

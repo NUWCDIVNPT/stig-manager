@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatReviewDate, isFieldEnabled, isFieldRequired } from './reviewFormUtils.js'
+import { formatReviewDate, getTimeZone, isFieldEnabled, isFieldRequired } from './reviewFormUtils.js'
 
 describe('isFieldEnabled', () => {
   it('should return false when not editable', () => {
@@ -50,10 +50,21 @@ describe('formatReviewDate', () => {
     expect(formatReviewDate('')).toBe('--')
   })
 
-  it('should return a locale string for a valid date', () => {
+  it('should return a locale string with timezone for a valid date', () => {
     const result = formatReviewDate('2024-01-15T10:30:00Z')
-    // Just verify it returns a non-empty string (locale format varies)
     expect(result).toBeTruthy()
     expect(result).not.toBe('--')
+    // The format should contain something like "UTC" or "EDT" depending on local env,
+    // but Intl.DateTimeFormat with timeZoneName: 'short' should always append something.
+    // Check for at least one space which would separate the time from the timezone.
+    expect(result).toContain(' ')
+  })
+})
+
+describe('getTimeZone', () => {
+  it('should return a string', () => {
+    const tz = getTimeZone()
+    expect(typeof tz).toBe('string')
+    expect(tz.length).toBeGreaterThan(0)
   })
 })

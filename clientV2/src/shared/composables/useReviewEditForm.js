@@ -148,6 +148,15 @@ export function useReviewEditForm({ rowData, fieldSettings, accessMode, canAccep
     formResult.value = value
   }
 
+  function applyReviewData(data) {
+    if (!editable.value) {
+      return
+    }
+    formResult.value = data.result ?? ''
+    formDetail.value = data.detail ?? ''
+    formComment.value = data.comment ?? ''
+  }
+
   function discardChanges() {
     syncFormFromRow(rowData.value)
   }
@@ -177,6 +186,7 @@ export function useReviewEditForm({ rowData, fieldSettings, accessMode, canAccep
 
     // Actions
     selectResult,
+    applyReviewData,
     discardChanges,
   }
 }

@@ -87,6 +87,7 @@ const {
   engineTooltipHtml,
   overrideTooltipHtml,
   selectResult,
+  applyReviewData,
   discardChanges,
 } = useReviewEditForm({
   rowData: toRef(props, 'rowData'),
@@ -400,21 +401,27 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerWarningPulse })
         </div>
       </div>
 
-      <!-- Collapsible Review Resources -->
       <div class="review-edit-popover__resources-toggle" @click="showResources = !showResources">
         <i class="pi" :class="showResources ? 'pi-angle-up' : 'pi-angle-down'" />
         <span>Review Resources</span>
         <div class="review-edit-popover__resources-toggle-line" />
       </div>
 
-      <div v-if="showResources" class="review-edit-popover__resources-container">
-        <ReviewResources
-          :current-review="currentReview"
-          :review-history="reviewHistory"
-          :rule-id="rowData.ruleId"
-          :collection-id="collectionId"
-        />
-      </div>
+      <Transition name="expand">
+        <div v-if="showResources" class="review-edit-popover__resources-container">
+          <ReviewResources
+            :current-review="currentReview"
+            :review-history="reviewHistory"
+            :rule-id="rowData.ruleId"
+            :collection-id="collectionId"
+            :editable="editable"
+            :form-result="formResult"
+            :form-detail="formDetail"
+            :form-comment="formComment"
+            @apply-review="applyReviewData"
+          />
+        </div>
+      </Transition>
     </div>
   </Popover>
 </template>
@@ -430,23 +437,26 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerWarningPulse })
 
 .review-edit-popover__close {
   position: absolute;
-  top: -.8rem;
-  right: -.8rem;
+  top: -0.6rem;
+  right: -0.6rem;
   background: none;
   border: none;
   cursor: pointer;
   color: var(--color-text-primary);
-  opacity: 0.5;
-  padding: 0.2rem;
+  opacity: 0.6;
+  padding: 0.4rem;
   line-height: 1;
-}
-
-.review-edit-popover__close .pi {
-  font-size: 0.7rem;
+  z-index: 10;
+  transition: opacity 0.15s ease, transform 0.1s ease;
 }
 
 .review-edit-popover__close:hover {
-  opacity: 0.9;
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.review-edit-popover__close .pi {
+  font-size: 1.15rem;
 }
 
 .review-edit-popover__main {
@@ -748,7 +758,6 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerWarningPulse })
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-light);
   border-radius: 4px;
-  background-color: var(--color-background-dark);
   white-space: nowrap;
 }
 
@@ -799,5 +808,18 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerWarningPulse })
   height: 350px; /* Fixed height for the expanded section */
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.expand-enter-active,
+.expand-leave-active {
+  transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out;
+  max-height: 400px;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  max-height: 0;
+  opacity: 0;
 }
 </style>

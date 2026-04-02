@@ -147,12 +147,11 @@ const emit = defineEmits(['retry'])
   display: flex;
   align-items: center;
   padding: 0.7rem 0.9rem;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--color-background-light) 38%, transparent), transparent 75%),
-    var(--color-background-dark);
+  background: linear-gradient(180deg, var(--color-background-light), var(--color-background-dark));
   border-bottom: 1px solid var(--color-border-default);
+  transition: background 0.15s ease;
   flex-shrink: 0;
-  height: 7.2rem;
+  height: 7.28rem;
 }
 
 .rule-info__panel-title {

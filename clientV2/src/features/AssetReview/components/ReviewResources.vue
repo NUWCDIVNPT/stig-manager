@@ -4,14 +4,14 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
 import ReviewAttachmentsTab from './ReviewAttachmentsTab.vue'
 import ReviewHistoryTab from './ReviewHistoryTab.vue'
 import ReviewOtherAssetsTab from './ReviewOtherAssetsTab.vue'
 import ReviewStatusTextTab from './ReviewStatusTextTab.vue'
 
-const props = defineProps({
+defineProps({
   currentReview: {
     type: Object,
     default: null,
@@ -28,7 +28,25 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  editable: {
+    type: Boolean,
+    default: false,
+  },
+  formResult: {
+    type: String,
+    default: '',
+  },
+  formDetail: {
+    type: String,
+    default: '',
+  },
+  formComment: {
+    type: String,
+    default: '',
+  },
 })
+
+const emit = defineEmits(['apply-review'])
 
 const activeTab = ref('history')
 
@@ -127,7 +145,14 @@ const tabPt = {
 
       <TabPanels :pt="tabPanelsPt">
         <TabPanel value="history" :pt="tabPanelPt">
-          <ReviewHistoryTab :review-history="reviewHistory" />
+          <ReviewHistoryTab
+            :review-history="reviewHistory"
+            :editable="editable"
+            :form-result="formResult"
+            :form-detail="formDetail"
+            :form-comment="formComment"
+            @apply-review="emit('apply-review', $event)"
+          />
         </TabPanel>
 
         <TabPanel value="statusText" :pt="tabPanelPt">
@@ -139,6 +164,11 @@ const tabPt = {
             :rule-id="ruleId"
             :collection-id="collectionId"
             :asset-id="currentReview?.assetId"
+            :editable="editable"
+            :form-result="formResult"
+            :form-detail="formDetail"
+            :form-comment="formComment"
+            @apply-review="emit('apply-review', $event)"
           />
         </TabPanel>
 

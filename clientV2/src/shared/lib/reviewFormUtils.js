@@ -37,9 +37,24 @@ export function isFieldRequired(fieldSetting, result) {
   return false
 }
 
+export function getTimeZone() {
+  return Intl.DateTimeFormat('en-US', { timeZoneName: 'short' })
+    .formatToParts(new Date())
+    .find(part => part.type === 'timeZoneName')
+    ?.value || ''
+}
+
 export function formatReviewDate(dateStr) {
   if (!dateStr) {
     return '--'
   }
-  return new Date(dateStr).toLocaleString()
+  return new Date(dateStr).toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    timeZoneName: 'short',
+  })
 }
