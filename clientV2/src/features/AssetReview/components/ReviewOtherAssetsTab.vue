@@ -1,17 +1,14 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref, watch } from 'vue'
+import { computed, watch } from 'vue'
 
-import rejectIcon from '../../../assets/reject.png'
-import saveIcon from '../../../assets/save-icon-60.svg'
-import starIcon from '../../../assets/star.svg'
-import submitIcon from '../../../assets/submit.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { fetchOtherReviews } from '../api/assetReviewApi.js'
+import { useReviewDensity } from '../composables/useReviewDensity.js'
 import { getEngineDisplay, getResultDisplay } from '../lib/checklistUtils.js'
 
 const props = defineProps({
@@ -75,30 +72,18 @@ const filteredOtherReviews = computed(() => {
   return otherReviews.value.filter(review => review.assetId !== props.assetId)
 })
 
-const getStatusMeta = (status) => {
-  const s = status?.trim().toLowerCase()
-  if (s === 'saved') {
-    return { label: 'Saved', icon: saveIcon, class: 'status-saved' }
-  }
-  if (s === 'submitted') {
-    return { label: 'Submitted', icon: submitIcon, class: 'status-submitted' }
-  }
-  if (s === 'rejected') {
-    return { label: 'Rejected', icon: rejectIcon, class: 'status-rejected' }
-  }
-  if (s === 'accepted') {
-    return { label: 'Accepted', icon: starIcon, class: 'status-accepted' }
-  }
-  return { label: status, icon: null, class: '' }
-}
-
 watch([() => props.ruleId, () => props.collectionId], () => {
   if (props.ruleId && props.collectionId) {
     loadOtherReviews()
   }
 }, { immediate: true })
 
-const expandedRows = ref([])
+const {
+  lineClamp,
+  itemSize,
+  increaseRowHeight,
+  decreaseRowHeight,
+} = useReviewDensity()
 
 const otherTablePt = {
   root: { class: 'sm-scrollbar-thin', style: { backgroundColor: 'var(--color-background-dark)' } },
@@ -130,37 +115,31 @@ const otherTablePt = {
       transition: 'background-color 0.1s ease',
     },
   },
-  rowExpansionContent: {
-    style: {
-      background: 'color-mix(in srgb, var(--color-background-light) 15%, transparent)',
-      borderBottom: '1px solid var(--color-border-light)',
-    },
-  },
   footer: { style: { padding: '0', border: 'none', background: 'transparent' } },
 }
 </script>
 
 <template>
   <DataTable
-    v-model:expanded-rows="expandedRows"
     :value="filteredOtherReviews"
     :loading="isLoading"
     data-key="assetId"
     scrollable
     scroll-height="flex"
+    :virtual-scroll="true"
+    :virtual-scroll-item-size="itemSize"
     striped-rows
     class="other-assets-table"
     :pt="otherTablePt"
+    :style="{ '--line-clamp': lineClamp }"
   >
-    <Column expander :style="{ width: '28px' }" />
-
-    <Column header="Asset" field="assetName" sortable :style="{ width: '180px' }">
+    <Column header="Asset" field="assetName" sortable :style="{ width: '120px' }">
       <template #body="{ data }">
         <span class="cell-text--primary" :title="data.assetId">{{ data.assetName }}</span>
       </template>
     </Column>
 
-    <Column header="Labels" field="assetLabels" :style="{ width: '240px' }">
+    <Column header="Labels" field="assetLabels" :style="{ width: '160px' }">
       <template #body="{ data }">
         <LabelsRow :labels="data.assetLabels" compact />
       </template>
@@ -206,108 +185,55 @@ const otherTablePt = {
       </template>
     </Column>
 
-    <Column header="Time" field="ts" sortable :style="{ width: '130px' }">
+    <Column header="Detail" field="detail" :style="{ width: '250px' }">
+      <template #body="{ data }">
+        <div class="cell-text-field">
+          <span v-if="data.detail" class="cell-text cell-text--clamped" :title="data.detail">
+            {{ data.detail }}
+          </span>
+          <span v-else class="cell-text--empty">---</span>
+        </div>
+      </template>
+    </Column>
+
+    <Column header="Comment" field="comment" :style="{ width: '250px' }">
+      <template #body="{ data }">
+        <div class="cell-text-field">
+          <span v-if="data.comment" class="cell-text cell-text--clamped" :title="data.comment">
+            {{ data.comment }}
+          </span>
+          <span v-else class="cell-text--empty">---</span>
+        </div>
+      </template>
+    </Column>
+
+    <Column header="Evaluated" field="ts" sortable :style="{ width: '120px' }">
       <template #body="{ data }">
         <span class="cell-text--dim">{{ formatReviewDate(data.ts) }}</span>
       </template>
     </Column>
 
-    <Column header="User" field="username" />
+    <Column header="Statused" field="touchTs" sortable :style="{ width: '120px' }">
+      <template #body="{ data }">
+        <span v-if="data.touchTs" class="cell-text--dim">{{ formatReviewDate(data.touchTs) }}</span>
+        <span v-else class="cell-text--empty">---</span>
+      </template>
+    </Column>
 
-    <!-- Row Expansion -->
-    <template #expansion="{ data }">
-      <div class="modern-expansion">
-        <!-- Evaluation Section -->
-        <div class="expansion-section">
-          <div class="expansion-section__header">
-            Evaluation
-          </div>
-          <div class="expansion-section__content grid-evaluation">
-            <div class="evaluation-field result-row">
-              <span class="evaluation-field__label">Result:</span>
-              <div class="evaluation-field__value--compact">
-                <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
-                <span v-if="getEngineDisplay(data) !== 'manual'" class="engine-badge-inline">
-                  via {{ getEngineDisplay(data) }}
-                </span>
-              </div>
-            </div>
-            <div v-if="data.detail" class="evaluation-field text-area">
-              <span class="evaluation-field__label">Detail</span>
-              <div class="evaluation-field__value pre-wrap">
-                {{ data.detail }}
-              </div>
-            </div>
-            <div v-if="data.comment" class="evaluation-field text-area">
-              <span class="evaluation-field__label">Comment</span>
-              <div class="evaluation-field__value pre-wrap">
-                {{ data.comment }}
-              </div>
-            </div>
-            <div v-if="data.status?.text" class="evaluation-field text-area">
-              <span class="evaluation-field__label">Status text</span>
-              <div class="evaluation-field__value pre-wrap">
-                {{ data.status.text }}
-              </div>
-            </div>
-            <div class="evaluation-actions">
-              <button
-                class="apply-review-btn"
-                :disabled="!editable || isAlreadyApplied(data)"
-                :title="getApplyTooltip(data)"
-                @click="emit('apply-review', data)"
-              >
-                <i class="pi pi-copy" />
-                Apply this review
-              </button>
-            </div>
-          </div>
-        </div>
+    <Column header="User" field="username" :style="{ width: '90px' }" />
 
-        <!-- Attributions Section -->
-        <div class="expansion-section">
-          <div class="expansion-section__header">
-            Attributions
-          </div>
-          <div class="expansion-section__content grid-attributions">
-            <!-- Evaluated Row -->
-            <div class="attribution-row">
-              <span class="attribution-row__label">Evaluated:</span>
-              <div class="attribution-row__items">
-                <div class="attribution-badge" title="Evaluation time">
-                  <span class="attribution-badge-text">{{ formatReviewDate(data.ts) }}</span>
-                </div>
-                <div class="attribution-badge" title="Evaluated by">
-                  <img src="../../../assets/user.svg" alt="User" class="attribution-badge-icon img-icon">
-                  <span class="attribution-badge-text">{{ data.username }}</span>
-                </div>
-                <div v-if="data.ruleId" class="attribution-badge" title="Rule ID">
-                  <img src="../../../assets/shield-green-check.svg" alt="Rule" class="attribution-badge-icon img-icon">
-                  <span class="attribution-badge-text mono">{{ data.ruleId }}</span>
-                </div>
-              </div>
-            </div>
-            <!-- Statused Row -->
-            <div class="attribution-row">
-              <span class="attribution-row__label">Statused:</span>
-              <div class="attribution-row__items">
-                <div class="attribution-badge" title="Status updated time">
-                  <span class="attribution-badge-text">{{ formatReviewDate(data.touchTs) }}</span>
-                </div>
-                <div v-if="data.status?.user?.username" class="attribution-badge" title="Status updated by">
-                  <img src="../../../assets/user.svg" alt="User" class="attribution-badge-icon img-icon">
-                  <span class="attribution-badge-text">{{ data.status.user.username }}</span>
-                </div>
-                <div v-if="data.status?.label" class="attribution-badge status-badge-custom" :class="getStatusMeta(data.status.label).class">
-                  <img v-if="getStatusMeta(data.status.label).icon" :src="getStatusMeta(data.status.label).icon" alt="Status" class="attribution-badge-icon img-icon">
-                  <span class="attribution-badge-text status-label">{{ getStatusMeta(data.status.label).label }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </template>
+    <Column header="Apply" :style="{ width: '60px', textAlign: 'center' }">
+      <template #body="{ data }">
+        <button
+          class="apply-review-icon-btn"
+          :disabled="!editable || isAlreadyApplied(data)"
+          :title="getApplyTooltip(data)"
+          @click="emit('apply-review', data)"
+        >
+          <i class="pi pi-copy" />
+        </button>
+      </template>
+    </Column>
 
     <template #empty>
       <div class="other-table__empty">
@@ -354,6 +280,24 @@ const otherTablePt = {
   color: var(--color-text-dim);
 }
 
+.cell-text--clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: var(--line-clamp, 2);
+  line-clamp: var(--line-clamp, 2);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+}
+
+.cell-text--empty {
+  color: var(--color-text-dim);
+  opacity: 0.5;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
 .engine-header-icon {
   width: 14px;
   height: 14px;
@@ -366,195 +310,40 @@ const otherTablePt = {
   opacity: 0.9;
 }
 
-/* Modernized Row Expansion */
-.modern-expansion {
-  background: var(--color-background-dark);
-  padding: 1.25rem 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.expansion-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.expansion-section__header {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--color-text-bright);
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--color-border-light);
-}
-
-.grid-evaluation {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.evaluation-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.result-row {
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
-}
-
-.evaluation-field__label {
-  font-size: 0.9rem;
-  color: var(--color-text-bright);
-  font-weight: 600;
-}
-
-.evaluation-field__value--compact {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.engine-badge-inline {
-  font-size: 0.85rem;
-  color: var(--color-text-dim);
-  background: var(--color-background-darkest);
-  padding: 0.1rem 0.5rem;
-  border-radius: 4px;
-}
-
-.evaluation-field__value {
-  background: var(--color-background-darkest);
-  border: 1px solid var(--color-border-light);
-  border-radius: 4px;
-  padding: 0.6rem 0.8rem;
-  color: var(--color-text-bright);
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-.evaluation-field__value.pre-wrap {
-  white-space: pre-wrap;
-  word-break: break-word;
-  min-height: 2.5rem;
-}
-
-.grid-attributions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.attribution-row {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.attribution-row__label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-text-bright);
-  width: 80px;
-  flex-shrink: 0;
-}
-
-.attribution-row__items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
-  flex-grow: 1;
-}
-
-.attribution-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--color-background-darkest);
-  border: 1px solid var(--color-border-light);
-  border-radius: 4px;
-  padding: 0.25rem 0.6rem;
-  color: var(--color-text-bright);
-  font-size: 0.9rem;
-}
-
-.attribution-badge-icon {
-  width: 14px;
-  height: 14px;
-  opacity: 0.7;
-}
-
-.attribution-badge-icon.img-icon {
-  object-fit: contain;
-}
-
-.attribution-badge-text {
-  line-height: 1;
-}
-
-.attribution-badge-text.mono {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 0.85rem;
-  color: var(--color-text-bright);
-}
-
-.status-badge-custom {
-  color: var(--color-text-bright);
-  font-weight: 600;
-}
-
-.status-label {
-  text-transform: capitalize;
-}
-
 .other-table__empty {
   font-style: italic;
   color: var(--color-text-dim);
 }
 
-.evaluation-actions {
-  margin-top: 0.5rem;
-}
-
-.apply-review-btn {
+.apply-review-icon-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   background-color: var(--color-primary-highlight);
   color: white;
   border: none;
   border-radius: 4px;
-  font-weight: 600;
   cursor: pointer;
   transition: background-color 0.15s ease, transform 0.1s ease;
-  font-size: 1rem;
 }
 
-.apply-review-btn:hover {
+.apply-review-icon-btn:hover:not(:disabled) {
   background-color: color-mix(in srgb, var(--color-primary-highlight) 80%, black);
 }
 
-.apply-review-btn:active {
-  transform: scale(0.98);
+.apply-review-icon-btn:active:not(:disabled) {
+  transform: scale(0.95);
 }
 
-.apply-review-btn:disabled {
-  opacity: 0.5;
+.apply-review-icon-btn:disabled {
+  opacity: 0.3;
   cursor: not-allowed;
   filter: grayscale(1);
 }
 
-.apply-review-btn:disabled:active {
-  transform: none;
-}
-
-.apply-review-btn i {
+.apply-review-icon-btn i {
   font-size: 0.9rem;
 }
 </style>

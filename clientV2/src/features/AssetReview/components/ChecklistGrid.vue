@@ -187,11 +187,20 @@ watch(() => props.gridData, (data) => {
   }
 })
 
+function onSelectionChange(newRow) {
+  const isSameRow = editingRow.value?.ruleId === newRow?.ruleId
+  if (!isSameRow && reviewEditPopover.value?.isDirty) {
+    reviewEditPopover.value.triggerUnsavedWarning()
+    return
+  }
+  selectedRow.value = newRow
+}
+
 function onRowClick(event) {
   event.originalEvent?.stopPropagation()
   const isSameRow = editingRow.value?.ruleId === event.data.ruleId
   if (!isSameRow && reviewEditPopover.value?.isDirty) {
-    reviewEditPopover.value.triggerWarningPulse()
+    reviewEditPopover.value.triggerUnsavedWarning()
     return
   }
   emit('select-rule', event.data.ruleId)
@@ -216,8 +225,8 @@ function handleFooterAction(actionKey) {
     />
 
     <ChecklistGridTable
-      v-model:selected-row="selectedRow" :grid-data="gridData" :is-loading="isLoading"
-      @row-click="onRowClick"
+      :selected-row="selectedRow" :grid-data="gridData" :is-loading="isLoading"
+      @update:selected-row="onSelectionChange" @row-click="onRowClick"
     >
       <template #footer>
         <StatusFooter

@@ -1,7 +1,6 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref } from 'vue'
 
 import EngineBadge from '../../../components/common/EngineBadge.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
@@ -10,7 +9,8 @@ import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
-import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../lib/checklistUtils.js'
+import { useReviewDensity } from '../composables/useReviewDensity.js'
+import { getEngineDisplay, getResultDisplay } from '../lib/checklistUtils.js'
 
 const props = defineProps({
   reviewHistory: {
@@ -53,10 +53,12 @@ const getApplyTooltip = (data) => {
   return 'Apply this review'
 }
 
-const expandedRows = ref([])
-
-// History stats (computed from props.reviewHistory)
-const historyStats = computed(() => calculateChecklistStats(props.reviewHistory))
+const {
+  lineClamp,
+  itemSize,
+  increaseRowHeight,
+  decreaseRowHeight,
+} = useReviewDensity()
 
 const historyTablePt = {
   root: { class: 'sm-scrollbar-thin', style: { backgroundColor: 'var(--color-background-dark)' } },
@@ -88,36 +90,30 @@ const historyTablePt = {
       transition: 'background-color 0.1s ease',
     },
   },
-  rowExpansionContent: {
-    style: {
-      background: 'color-mix(in srgb, var(--color-background-light) 15%, transparent)',
-      borderBottom: '1px solid var(--color-border-light)',
-    },
-  },
   footer: { style: { padding: '0', border: 'none', background: 'transparent' } },
 }
 </script>
 
 <template>
   <DataTable
-    v-model:expanded-rows="expandedRows"
     :value="reviewHistory"
     data-key="touchTs"
     scrollable
     scroll-height="flex"
+    :virtual-scroll="true"
+    :virtual-scroll-item-size="itemSize"
     striped-rows
     class="history-table"
     :pt="historyTablePt"
+    :style="{ '--line-clamp': lineClamp }"
   >
-    <Column expander :style="{ width: '28px' }" />
-
-    <Column header="Timestamp" field="touchTs" sortable :style="{ width: '180px' }">
+    <Column header="Time" field="touchTs" sortable :style="{ width: '120px' }">
       <template #body="{ data }">
         <span class="cell-text--dim">{{ formatReviewDate(data.touchTs) }}</span>
       </template>
     </Column>
 
-    <Column header="Rule" field="ruleId" :style="{ width: '220px' }">
+    <Column header="Rule" field="ruleId" :style="{ width: '110px' }">
       <template #body="{ data }">
         <span class="cell-text--mono">{{ data.ruleId }}</span>
       </template>
@@ -163,48 +159,59 @@ const historyTablePt = {
       </template>
     </Column>
 
-    <Column header="Status" :style="{ width: '50px', textAlign: 'center' }">
+    <Column header="Detail" field="detail" :style="{ width: '250px' }">
+      <template #body="{ data }">
+        <div class="cell-text-field">
+          <span v-if="data.detail" class="cell-text cell-text--clamped" :title="data.detail">
+            {{ data.detail }}
+          </span>
+          <span v-else class="cell-text--empty">---</span>
+        </div>
+      </template>
+    </Column>
+
+    <Column header="Comment" field="comment" :style="{ width: '250px' }">
+      <template #body="{ data }">
+        <div class="cell-text-field">
+          <span v-if="data.comment" class="cell-text cell-text--clamped" :title="data.comment">
+            {{ data.comment }}
+          </span>
+          <span v-else class="cell-text--empty">---</span>
+        </div>
+      </template>
+    </Column>
+
+    <Column header="Status Text" field="statusText" :style="{ width: '180px' }">
+      <template #body="{ data }">
+        <div class="cell-text-field">
+          <span v-if="data.status?.text" class="cell-text cell-text--clamped" :title="data.status.text">
+            {{ data.status.text }}
+          </span>
+          <span v-else class="cell-text--empty">---</span>
+        </div>
+      </template>
+    </Column>
+
+    <Column header="Status" :style="{ width: '60px', textAlign: 'center' }">
       <template #body="{ data }">
         <StatusBadge v-if="data.status?.label" :status="data.status.label" />
       </template>
     </Column>
 
-    <Column header="User" field="username" />
+    <Column header="User" field="username" :style="{ width: '90px' }" />
 
-    <!-- Row Expansion -->
-    <template #expansion="{ data }">
-      <div class="history-expansion">
-        <div class="history-expansion__grid">
-          <div v-if="data.detail" class="history-expansion__field">
-            <span class="history-expansion__label">Detail</span>
-            <span class="history-expansion__value">{{ data.detail }}</span>
-          </div>
-          <div v-if="data.comment" class="history-expansion__field">
-            <span class="history-expansion__label">Comment</span>
-            <span class="history-expansion__value">{{ data.comment }}</span>
-          </div>
-          <div v-if="data.status?.text" class="history-expansion__field">
-            <span class="history-expansion__label">Status text</span>
-            <span class="history-expansion__value">{{ data.status.text }}</span>
-          </div>
-          <div v-if="data.status?.user?.username" class="history-expansion__field">
-            <span class="history-expansion__label">Status set by</span>
-            <span class="history-expansion__value">{{ data.status.user.username }}</span>
-          </div>
-          <div class="history-expansion__actions">
-            <button
-              class="apply-review-btn"
-              :disabled="!editable || isAlreadyApplied(data)"
-              :title="getApplyTooltip(data)"
-              @click="emit('apply-review', data)"
-            >
-              <i class="pi pi-copy" />
-              Apply this review
-            </button>
-          </div>
-        </div>
-      </div>
-    </template>
+    <Column header="Apply" :style="{ width: '60px', textAlign: 'center' }">
+      <template #body="{ data }">
+        <button
+          class="apply-review-icon-btn"
+          :disabled="!editable || isAlreadyApplied(data)"
+          :title="getApplyTooltip(data)"
+          @click="emit('apply-review', data)"
+        >
+          <i class="pi pi-copy" />
+        </button>
+      </template>
+    </Column>
 
     <template #empty>
       <div class="history-table__empty">
@@ -262,11 +269,29 @@ const historyTablePt = {
 
 .cell-text--mono {
   color: var(--color-text-primary);
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .cell-text--dim {
   color: var(--color-text-dim);
+}
+
+.cell-text--clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: var(--line-clamp, 2);
+  line-clamp: var(--line-clamp, 2);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+}
+
+.cell-text--empty {
+  color: var(--color-text-dim);
+  opacity: 0.5;
+  font-style: italic;
+  font-size: 0.9rem;
 }
 
 .engine-header-icon {
@@ -281,84 +306,35 @@ const historyTablePt = {
   opacity: 0.9;
 }
 
-/* Row expansion */
-.history-expansion {
-  padding: 0.5rem 1rem 0.5rem 2rem;
-}
-
-.history-expansion__grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.history-expansion__field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.history-expansion__label {
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-primary-highlight);
-  opacity: 1;
-}
-
-.history-expansion__value {
-  color: var(--color-text-primary);
-  white-space: pre-wrap;
-  word-break: break-word;
-  line-height: 1.5;
-  font-size: 1.05rem;
-  background: var(--color-background-light);
-  padding: 0.4rem 0.75rem;
-  border-radius: 4px;
-  border-left: 2px solid var(--color-primary-highlight);
-}
-
-.history-expansion__actions {
-  margin-top: 0.5rem;
-  display: flex;
-  justify-content: flex-start;
-}
-
-.apply-review-btn {
+.apply-review-icon-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   background-color: var(--color-primary-highlight);
   color: white;
   border: none;
   border-radius: 4px;
-  font-weight: 600;
   cursor: pointer;
   transition: background-color 0.15s ease, transform 0.1s ease;
-  font-size: 1rem;
 }
 
-.apply-review-btn:hover {
+.apply-review-icon-btn:hover:not(:disabled) {
   background-color: color-mix(in srgb, var(--color-primary-highlight) 80%, black);
 }
 
-.apply-review-btn:active {
-  transform: scale(0.98);
+.apply-review-icon-btn:active:not(:disabled) {
+  transform: scale(0.95);
 }
 
-.apply-review-btn:disabled {
-  opacity: 0.5;
+.apply-review-icon-btn:disabled {
+  opacity: 0.3;
   cursor: not-allowed;
   filter: grayscale(1);
 }
 
-.apply-review-btn:disabled:active {
-  transform: none;
-}
-
-.apply-review-btn i {
+.apply-review-icon-btn i {
   font-size: 0.9rem;
 }
 

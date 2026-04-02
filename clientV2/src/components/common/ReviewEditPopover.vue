@@ -153,7 +153,7 @@ function onPopoverHide() {
   emit('close')
 }
 
-function triggerWarningPulse() {
+function triggerUnsavedWarning() {
   showUnsavedWarning.value = true
 }
 
@@ -186,6 +186,12 @@ function hide() {
   showResources.value = false
 }
 
+function alignPopover() {
+  if (popover.value && lastAnchorEvent.value) {
+    popover.value.alignOverlay()
+  }
+}
+
 function reposition(event) {
   lastAnchorEvent.value = event
   const pv = popover.value
@@ -194,6 +200,12 @@ function reposition(event) {
   pv.container?.classList.remove('p-popover-flipped')
   nextTick(() => pv.alignOverlay())
 }
+
+watch(showResources, () => {
+  nextTick(() => {
+    alignPopover()
+  })
+})
 
 // Outside-click detection (replaces PrimeVue's dismissable which can't handle dirty checks)
 let outsideHandler = null
@@ -226,7 +238,7 @@ function unbindOutsideHandler() {
 
 onBeforeUnmount(unbindOutsideHandler)
 
-defineExpose({ toggle, show, hide, reposition, isDirty, triggerWarningPulse })
+defineExpose({ toggle, show, hide, reposition, alignPopover, isDirty, triggerUnsavedWarning })
 </script>
 
 <template>
@@ -407,7 +419,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerWarningPulse })
         <div class="review-edit-popover__resources-toggle-line" />
       </div>
 
-      <Transition name="expand">
+      <Transition name="expand" @after-enter="alignPopover" @after-leave="alignPopover">
         <div v-if="showResources" class="review-edit-popover__resources-container">
           <ReviewResources
             :current-review="currentReview"
