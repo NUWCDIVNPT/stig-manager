@@ -33,16 +33,31 @@ const upMigration = [
   `INSERT INTO user_data (username, taskId, status)
   VALUES ('_task_ReviewAging', 5, 'unavailable')`,
   
-    // New table to hold per-collection config for tasks
-  `CREATE TABLE task_collection_config (
-    tcId INT NOT NULL AUTO_INCREMENT,
-    taskId INT NOT NULL,
+  // Per-collection rules for the ReviewAging task
+  `CREATE TABLE review_aging_rule (
+    ruleId INT NOT NULL AUTO_INCREMENT,
     collectionId INT NOT NULL,
-    config JSON NOT NULL,
-    PRIMARY KEY (tcId),
-    UNIQUE KEY idx_tcc_task_collection (taskId, collectionId),
-    CONSTRAINT fk_tcc_taskId FOREIGN KEY (taskId) REFERENCES task(taskId) ON DELETE CASCADE,
-    CONSTRAINT fk_tcc_collectionId FOREIGN KEY (collectionId) REFERENCES collection(collectionId) ON DELETE CASCADE
+    ordinal INT NOT NULL DEFAULT 0,
+    title VARCHAR(45) NULL,
+    enabled TINYINT(1) NOT NULL DEFAULT 1,
+    triggerField ENUM('ts', 'statusTs', 'touchTs') NOT NULL,
+    triggerInterval INT NOT NULL,
+    triggerAction ENUM('delete', 'update') NOT NULL,
+    updateField ENUM('status', 'result') NULL,
+    updateValue VARCHAR(20) NULL,
+    assetId INT NULL,
+    clId INT NULL,
+    benchmarkId VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NULL,
+    PRIMARY KEY (ruleId),
+    UNIQUE KEY uq_rar_collection_ordinal (collectionId, ordinal),
+    CONSTRAINT fk_rar_collectionId FOREIGN KEY (collectionId) REFERENCES collection(collectionId) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_rar_assetId FOREIGN KEY (assetId) REFERENCES asset(assetId) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_rar_clId FOREIGN KEY (clId) REFERENCES collection_label(clId) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_rar_benchmarkId FOREIGN KEY (benchmarkId) REFERENCES stig(benchmarkId) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT chk_rar_update_consistency CHECK (
+      (triggerAction = 'delete' AND updateField IS NULL AND updateValue IS NULL)
+      OR (triggerAction = 'update' AND updateField IS NOT NULL AND updateValue IS NOT NULL)
+    )
   )`,
 
   // Add collectionId column to task_output for per-collection output routing
@@ -480,26 +495,26 @@ const upMigration = [
   `CREATE PROCEDURE review_aging()
     BEGIN
       DECLARE v_collectionId INT;
-      DECLARE v_config JSON;
-      DECLARE v_numRules INT;
-      DECLARE v_ruleIdx INT;
-      DECLARE v_rule JSON;
+      DECLARE v_ruleId INT;
+      DECLARE v_ordinal INT;
+      DECLARE v_enabled TINYINT(1);
       DECLARE v_triggerField VARCHAR(20);
-      DECLARE v_triggerBasis VARCHAR(40);
       DECLARE v_triggerInterval INT;
       DECLARE v_triggerAction VARCHAR(20);
       DECLARE v_updateField VARCHAR(20);
       DECLARE v_updateValue VARCHAR(20);
-      DECLARE v_updateFilter JSON;
+      DECLARE v_assetId INT;
+      DECLARE v_clId INT;
+      DECLARE v_benchmarkId VARCHAR(255);
       DECLARE v_cutoff DATETIME;
       DECLARE v_numReviews INT;
       DECLARE v_maxReviews INT;
       DECLARE v_done INT DEFAULT FALSE;
 
       DECLARE cur CURSOR FOR
-        SELECT tcc.collectionId, tcc.config FROM task_collection_config tcc
+        SELECT DISTINCT rar.collectionId FROM review_aging_rule rar
         INNER JOIN enabled_collection ec USING (collectionId)
-        WHERE tcc.taskId = @taskId;
+        ORDER BY rar.collectionId;
       DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = TRUE;
       DECLARE EXIT HANDLER FOR SQLEXCEPTION
       BEGIN
@@ -512,12 +527,12 @@ const upMigration = [
       END;
 
       CALL task_output('info', 'task started');
-      
+
       SELECT userId INTO @taskUserId FROM user_data WHERE taskId = @taskId;
 
       OPEN cur;
       collection_loop: LOOP
-        FETCH cur INTO v_collectionId, v_config;
+        FETCH cur INTO v_collectionId;
         IF v_done THEN LEAVE collection_loop; END IF;
 
         CALL task_output_collection('info', concat('processing collectionId ', v_collectionId), v_collectionId);
@@ -535,141 +550,128 @@ const upMigration = [
 
           START TRANSACTION;
 
-          SET v_numRules = JSON_LENGTH(v_config);
-          SET v_ruleIdx = 0;
+          -- Use a cursor for rules within the collection
+          BEGIN
+            DECLARE v_rule_done INT DEFAULT FALSE;
+            DECLARE cur_rules CURSOR FOR
+              SELECT ruleId, ordinal, enabled, triggerField, triggerInterval,
+                     triggerAction, updateField, updateValue, assetId, clId, benchmarkId
+              FROM review_aging_rule
+              WHERE collectionId = v_collectionId
+              ORDER BY ordinal;
+            DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_rule_done = TRUE;
 
-          rule_loop: WHILE v_ruleIdx < v_numRules DO
-            SET v_rule        = JSON_EXTRACT(v_config, CONCAT('$[', v_ruleIdx, ']'));
+            OPEN cur_rules;
+            rule_loop: LOOP
+              FETCH cur_rules INTO
+                v_ruleId, v_ordinal, v_enabled, v_triggerField, v_triggerInterval,
+                v_triggerAction, v_updateField, v_updateValue, v_assetId, v_clId, v_benchmarkId;
+              IF v_rule_done THEN LEAVE rule_loop; END IF;
 
-            IF JSON_VALUE(v_rule, '$.enabled') != 'true' THEN
-              SET v_ruleIdx = v_ruleIdx + 1;
-              ITERATE rule_loop;
-            END IF;
-
-            SET v_triggerField    = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerField'));
-            SET v_triggerBasis    = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerBasis'));
-            SET v_triggerInterval = JSON_VALUE(v_rule, '$.triggerInterval');
-            SET v_triggerAction   = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.triggerAction'));
-            SET v_updateField     = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateField'));
-            SET v_updateValue     = JSON_UNQUOTE(JSON_EXTRACT(v_rule, '$.updateValue'));
-            SET v_updateFilter    = JSON_EXTRACT(v_rule, '$.updateFilter');
-
-            -- Validate extracted values
-            IF v_triggerField NOT IN ('ts', 'statusTs', 'touchTs') THEN
-              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid triggerField value';
-            END IF;
-
-            IF v_triggerAction NOT IN ('delete', 'update') THEN
-              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid triggerAction value';
-            END IF;
-
-            IF v_triggerAction = 'update' AND v_updateField NOT IN ('status', 'result') THEN
-              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid updateField value';
-            END IF;
-
-            -- Compute cutoff datetime
-            -- CAST() does not accept ISO8601 T/Z separators; strip them with REPLACE before casting
-            IF v_triggerBasis = 'now' THEN
-              SET v_cutoff = DATE_SUB(NOW(), INTERVAL v_triggerInterval SECOND);
-            ELSE
-              SET v_cutoff = DATE_SUB(
-                CAST(REPLACE(REPLACE(v_triggerBasis, 'T', ' '), 'Z', '') AS DATETIME),
-                INTERVAL v_triggerInterval SECOND
-              );
-            END IF;
-
-            -- Identify affected reviews into t_reviewIds
-            DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
-            CREATE TEMPORARY TABLE t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY, reviewId INT);
-
-            -- Dynamic SQL needed to interpolate triggerField column name
-            SET @v_sql = CONCAT(
-              'INSERT INTO t_reviewIds (reviewId) ',
-              'SELECT r.reviewId FROM review r ',
-              'JOIN enabled_asset a ON r.assetId = a.assetId ',
-              'WHERE a.collectionId = ', v_collectionId,
-              ' AND r.', v_triggerField, ' < ''', DATE_FORMAT(v_cutoff, '%Y-%m-%d %H:%i:%s'), ''''
-            );
-
-            -- Optional assetIds filter
-            IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.assetIds')) > 0 THEN
-              SET @v_sql = CONCAT(@v_sql,
-                ' AND r.assetId IN (SELECT j.value FROM JSON_TABLE(''',
-                JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.assetIds')),
-                ''', ''$[*]'' COLUMNS (value INT PATH ''$'')) j)');
-            END IF;
-
-            -- Optional labelIds filter (UUID lookup via collection_label_asset_map)
-            IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.labelIds')) > 0 THEN
-              SET @v_sql = CONCAT(@v_sql,
-                ' AND r.assetId IN (',
-                '  SELECT clam.assetId FROM collection_label_asset_map clam',
-                '  JOIN collection_label cl ON clam.clId = cl.clId',
-                '  WHERE BIN_TO_UUID(cl.uuid,1) IN (',
-                '    SELECT j.value FROM JSON_TABLE(''',
-                JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.labelIds')),
-                ''', ''$[*]'' COLUMNS (value VARCHAR(36) PATH ''$'')) j',
-                '  )',
-                ')');
-            END IF;
-
-            -- Optional benchmarkIds filter (via stig_asset_map)
-            IF JSON_LENGTH(JSON_EXTRACT(v_updateFilter, '$.benchmarkIds')) > 0 THEN
-              SET @v_sql = CONCAT(@v_sql,
-                ' AND r.assetId IN (',
-                '  SELECT sam.assetId FROM stig_asset_map sam',
-                '  WHERE sam.benchmarkId IN (',
-                '    SELECT j.value FROM JSON_TABLE(''',
-                JSON_UNQUOTE(JSON_EXTRACT(v_updateFilter, '$.benchmarkIds')),
-                ''', ''$[*]'' COLUMNS (value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs PATH ''$'')) j',
-                '  )',
-                ')');
-            END IF;
-
-            PREPARE stmt_aging FROM @v_sql;
-            EXECUTE stmt_aging;
-            DEALLOCATE PREPARE stmt_aging;
-
-            SELECT MAX(seq) INTO v_numReviews FROM t_reviewIds;
-            CALL task_output_collection('info',
-              CONCAT('rule ', v_ruleIdx, ': found ', IFNULL(v_numReviews, 0), ' reviews to ', v_triggerAction),
-              v_collectionId);
-
-            IF IFNULL(v_numReviews, 0) > 0 THEN
-              IF v_triggerAction = 'delete' THEN
-                -- Capture affected saIds before deleting (reviews will not exist after)
-                SET @v_deleteSaIds = (
-                  SELECT JSON_ARRAYAGG(saId) FROM (
-                    SELECT DISTINCT sa.saId
-                    FROM t_reviewIds tri
-                    INNER JOIN review r ON tri.reviewId = r.reviewId
-                    INNER JOIN rule_version_check_digest rvcd ON (rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)
-                    INNER JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId
-                    INNER JOIN revision rev ON rev.revId = rgr.revId
-                    INNER JOIN stig_asset_map sa ON (sa.assetId = r.assetId AND sa.benchmarkId = rev.benchmarkId)
-                  ) AS distinct_saIds
-                );
-                CALL delete_review_batch();
-                IF @v_deleteSaIds IS NOT NULL THEN
-                  CALL update_stats_asset_stig(JSON_OBJECT('saIds', CAST(@v_deleteSaIds AS JSON)));
-                END IF;
-              ELSEIF v_triggerAction = 'update' THEN
-                SELECT CAST(c.settings->>"$.history.maxReviews" AS UNSIGNED)
-                  INTO v_maxReviews
-                FROM enabled_collection c WHERE c.collectionId = v_collectionId;
-                CALL prune_and_insert_history(v_maxReviews);
-                IF v_updateField = 'status' THEN
-                  CALL update_review_status_batch(v_updateValue);
-                ELSEIF v_updateField = 'result' THEN
-                  CALL update_review_result_batch(v_updateValue);
-                END IF;
-                CALL update_stats_asset_stig(JSON_OBJECT('reviewIds', (SELECT JSON_ARRAYAGG(reviewId) FROM t_reviewIds)));
+              IF v_enabled != 1 THEN
+                ITERATE rule_loop;
               END IF;
-            END IF;
 
-            DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
-            SET v_ruleIdx = v_ruleIdx + 1;
-          END WHILE rule_loop;
+              -- Compute cutoff: always relative to NOW()
+              SET v_cutoff = DATE_SUB(NOW(), INTERVAL v_triggerInterval SECOND);
+
+              -- Identify affected reviews into t_reviewIds
+              -- Dynamic SQL is required to interpolate the triggerField column name
+              DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
+              CREATE TEMPORARY TABLE t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY, reviewId INT);
+
+              SET @v_sql = CONCAT(
+                'INSERT INTO t_reviewIds (reviewId) ',
+                'SELECT r.reviewId FROM review r ',
+                'JOIN enabled_asset a ON r.assetId = a.assetId ',
+                'WHERE a.collectionId = ', v_collectionId,
+                ' AND r.', v_triggerField, ' < ''', DATE_FORMAT(v_cutoff, '%Y-%m-%d %H:%i:%s'), ''''
+              );
+
+              -- Apply target scoping
+              IF v_assetId IS NOT NULL AND v_benchmarkId IS NULL THEN
+                -- Asset target only: all reviews on this asset
+                SET @v_sql = CONCAT(@v_sql, ' AND r.assetId = ', v_assetId);
+              ELSEIF v_assetId IS NOT NULL AND v_benchmarkId IS NOT NULL THEN
+                -- Asset + benchmark: reviews on this asset for this STIG only
+                SET @v_sql = CONCAT(@v_sql,
+                  ' AND r.assetId = ', v_assetId,
+                  ' AND EXISTS (',
+                  '  SELECT 1 FROM rule_version_check_digest rvcd',
+                  '  JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId',
+                  '  JOIN revision rev ON rev.revId = rgr.revId AND rev.benchmarkId = ''', v_benchmarkId, '''',
+                  '  WHERE rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)');
+              ELSEIF v_clId IS NOT NULL AND v_benchmarkId IS NULL THEN
+                -- Label target only: reviews on assets with this label
+                SET @v_sql = CONCAT(@v_sql,
+                  ' AND r.assetId IN (',
+                  '  SELECT assetId FROM collection_label_asset_map WHERE clId = ', v_clId, ')');
+              ELSEIF v_clId IS NOT NULL AND v_benchmarkId IS NOT NULL THEN
+                -- Label + benchmark: reviews on labeled assets for this STIG only
+                SET @v_sql = CONCAT(@v_sql,
+                  ' AND r.assetId IN (',
+                  '  SELECT assetId FROM collection_label_asset_map WHERE clId = ', v_clId, ')',
+                  ' AND EXISTS (',
+                  '  SELECT 1 FROM rule_version_check_digest rvcd',
+                  '  JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId',
+                  '  JOIN revision rev ON rev.revId = rgr.revId AND rev.benchmarkId = ''', v_benchmarkId, '''',
+                  '  WHERE rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)');
+              ELSEIF v_benchmarkId IS NOT NULL THEN
+                -- Benchmark only: all reviews for this STIG in the collection
+                SET @v_sql = CONCAT(@v_sql,
+                  ' AND EXISTS (',
+                  '  SELECT 1 FROM rule_version_check_digest rvcd',
+                  '  JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId',
+                  '  JOIN revision rev ON rev.revId = rgr.revId AND rev.benchmarkId = ''', v_benchmarkId, '''',
+                  '  WHERE rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)');
+              -- ELSE: all three NULL — no target restriction, rule applies to entire collection
+              END IF;
+
+              PREPARE stmt_aging FROM @v_sql;
+              EXECUTE stmt_aging;
+              DEALLOCATE PREPARE stmt_aging;
+
+              SELECT MAX(seq) INTO v_numReviews FROM t_reviewIds;
+              CALL task_output_collection('info',
+                CONCAT('rule ordinal ', v_ordinal, ': found ', IFNULL(v_numReviews, 0), ' reviews to ', v_triggerAction),
+                v_collectionId);
+
+              IF IFNULL(v_numReviews, 0) > 0 THEN
+                IF v_triggerAction = 'delete' THEN
+                  -- Capture affected saIds before deleting (reviews will not exist after)
+                  SET @v_deleteSaIds = (
+                    SELECT JSON_ARRAYAGG(saId) FROM (
+                      SELECT DISTINCT sa.saId
+                      FROM t_reviewIds tri
+                      INNER JOIN review r ON tri.reviewId = r.reviewId
+                      INNER JOIN rule_version_check_digest rvcd ON (rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)
+                      INNER JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId
+                      INNER JOIN revision rev ON rev.revId = rgr.revId
+                      INNER JOIN stig_asset_map sa ON (sa.assetId = r.assetId AND sa.benchmarkId = rev.benchmarkId)
+                    ) AS distinct_saIds
+                  );
+                  CALL delete_review_batch();
+                  IF @v_deleteSaIds IS NOT NULL THEN
+                    CALL update_stats_asset_stig(JSON_OBJECT('saIds', CAST(@v_deleteSaIds AS JSON)));
+                  END IF;
+                ELSEIF v_triggerAction = 'update' THEN
+                  SELECT CAST(c.settings->>"$.history.maxReviews" AS UNSIGNED)
+                    INTO v_maxReviews
+                  FROM enabled_collection c WHERE c.collectionId = v_collectionId;
+                  CALL prune_and_insert_history(v_maxReviews);
+                  IF v_updateField = 'status' THEN
+                    CALL update_review_status_batch(v_updateValue);
+                  ELSEIF v_updateField = 'result' THEN
+                    CALL update_review_result_batch(v_updateValue);
+                  END IF;
+                  CALL update_stats_asset_stig(JSON_OBJECT('reviewIds', (SELECT JSON_ARRAYAGG(reviewId) FROM t_reviewIds)));
+                END IF;
+              END IF;
+
+              DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
+            END LOOP rule_loop;
+            CLOSE cur_rules;
+          END;  -- rule cursor block
 
           COMMIT;
         END;  -- collection-scoped block
@@ -694,7 +696,7 @@ const downMigration = [
   `DROP PROCEDURE IF EXISTS task_output_collection`,
   `ALTER TABLE task_output DROP FOREIGN KEY fk_to_collectionId`,
   `ALTER TABLE task_output DROP COLUMN collectionId`,
-  `DROP TABLE IF EXISTS task_collection_config`,
+  `DROP TABLE IF EXISTS review_aging_rule`,
   `DELETE FROM user_data WHERE username = '_task_ReviewAging'`,
   `ALTER TABLE user_data DROP FOREIGN KEY fk_ud_taskId`,
   `ALTER TABLE user_data DROP COLUMN taskId`,
