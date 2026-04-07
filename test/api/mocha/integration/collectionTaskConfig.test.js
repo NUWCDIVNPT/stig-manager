@@ -34,12 +34,10 @@ const baseOutputUrl = `${config.baseUrl}/collections/${collectionId}/tasks/revie
 const sampleConfig = [
   {
     triggerField: 'ts',
-    triggerBasis: 'now',
     triggerInterval: 86400,
     triggerAction: 'update',
     updateField: 'status',
     updateValue: 'saved',
-    updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
     enabled: true
   }
 ]
@@ -88,12 +86,14 @@ describe('Collection Task Config - /collections/{collectionId}/tasks/review-agin
       expect(res.status).to.eql(200)
       expect(res.body).to.be.an('array').with.length(1)
       expect(res.body[0]).to.have.property('triggerField', 'ts')
-      expect(res.body[0]).to.have.property('triggerBasis', 'now')
       expect(res.body[0]).to.have.property('triggerInterval', 86400)
       expect(res.body[0]).to.have.property('triggerAction', 'update')
       expect(res.body[0]).to.have.property('updateField', 'status')
       expect(res.body[0]).to.have.property('updateValue', 'saved')
       expect(res.body[0]).to.have.property('enabled', true)
+      expect(res.body[0]).to.not.have.property('triggerBasis')
+      expect(res.body[0]).to.not.have.property('updateFilter')
+      expect(res.body[0]).to.not.have.property('target')
     })
 
     it('should overwrite config on second PUT', async function () {
@@ -101,10 +101,8 @@ describe('Collection Task Config - /collections/{collectionId}/tasks/review-agin
       const newConfig = [
         {
           triggerField: 'statusTs',
-          triggerBasis: 'now',
           triggerInterval: 3600,
           triggerAction: 'delete',
-          updateFilter: { assetIds: [], labelIds: [], benchmarkIds: [] },
           enabled: false
         }
       ]
@@ -128,11 +126,18 @@ describe('Collection Task Config - /collections/{collectionId}/tasks/review-agin
       expect(res.status).to.eql(400)
     })
 
-    it('should accept a config with a fixed datetime triggerBasis', async function () {
-      const configWithDatetime = [{ ...sampleConfig[0], triggerBasis: '2024-01-01T00:00:00Z' }]
-      const res = await utils.executeRequest(baseConfigUrl, 'PUT', admin.token, configWithDatetime)
+    it('should accept a config with a benchmark target and return it expanded', async function () {
+      const configWithTarget = [{ ...sampleConfig[0], target: { benchmarkId: 'VPN_SRG_TEST' } }]
+      const res = await utils.executeRequest(baseConfigUrl, 'PUT', admin.token, configWithTarget)
       expect(res.status).to.eql(200)
-      expect(res.body[0]).to.have.property('triggerBasis', '2024-01-01T00:00:00Z')
+      expect(res.body[0]).to.have.property('target')
+      expect(res.body[0].target).to.have.property('benchmarkId', 'VPN_SRG_TEST')
+    })
+
+    it('should return 422 for a target referencing an asset not in the collection', async function () {
+      const invalidConfig = [{ ...sampleConfig[0], target: { assetId: '99999' } }]
+      const res = await utils.executeRequest(baseConfigUrl, 'PUT', admin.token, invalidConfig)
+      expect(res.status).to.eql(422)
     })
   })
 
