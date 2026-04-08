@@ -5,7 +5,6 @@ import { navigationGuard } from './navigationGuards.js'
 const Home = () => import('../features/Home/components/Home.vue')
 const CollectionView = () => import('../features/CollectionView/components/CollectionView.vue')
 const MetaCollectionView = () => import('../features/MetaCollectionView/components/MetaCollectionView.vue')
-const CollectionManage = () => import('../features/CollectionManage/components/CollectionManage.vue')
 const UserManage = () => import('../features/UserManage/components/UserManage.vue')
 const UserGroupManage = () => import('../features/UserGroupManage/components/UserGroupManage.vue')
 const StigManage = () => import('../features/STIGManage/components/STIGManage.vue')
@@ -74,13 +73,6 @@ const routes = [
         meta: { breadcrumbs: [{ label: 'Labels' }] },
       },
       {
-        path: 'users',
-        name: 'collection-users',
-        component: EmptyComponent,
-        props: true,
-        meta: { breadcrumbs: [{ label: 'Users' }] },
-      },
-      {
         path: 'findings',
         name: 'collection-findings',
         component: EmptyComponent,
@@ -88,11 +80,11 @@ const routes = [
         meta: { breadcrumbs: [{ label: 'Findings' }] },
       },
       {
-        path: 'settings',
-        name: 'collection-settings',
+        path: 'management',
+        name: 'collection-management',
         component: EmptyComponent,
         props: true,
-        meta: { breadcrumbs: [{ label: 'Settings' }] },
+        meta: { breadcrumbs: [{ label: 'Management' }] },
       },
     ],
   },
@@ -144,25 +136,6 @@ const routes = [
     name: 'whats-new',
     component: WhatsNewView,
     meta: { breadcrumbs: [{ label: 'What\'s New' }] },
-  },
-  {
-    path: '/collection/:collectionId/manage',
-    name: 'collection-manage',
-    component: CollectionManage,
-    props: true,
-    meta: {
-      requiresCollectionGrant: true,
-      minRoleId: 3,
-      breadcrumbs: [
-        { label: 'Collections', route: { name: 'collections' } },
-        {
-          label: (route, getCollectionName) => getCollectionName(route.params.collectionId),
-          route: route => ({ name: 'collection', params: { collectionId: route.params.collectionId } }),
-          pickerType: 'collection',
-        },
-        { label: 'Manage' },
-      ],
-    },
   },
   {
     path: '/app-management/collections',

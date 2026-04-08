@@ -10,6 +10,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import MetricsFilter from '../../CollectionMetrics/components/MetricsFilter.vue'
@@ -61,7 +62,7 @@ watch([collection, () => route.name], ([col, routeName]) => {
       label = `${col.name} / Findings`
       key = `collection-findings:${props.collectionId}`
     }
-    else if (['collection-settings', 'collection-users'].includes(routeName)) {
+    else if (routeName === 'collection-management') {
       label = `${col.name} / Manage`
       key = `collection-manage:${props.collectionId}`
     }
@@ -87,8 +88,7 @@ const routeToTab = {
   'collection-assets': 'assets',
   'collection-labels': 'labels',
   'collection-findings': 'findings',
-  'collection-users': 'users',
-  'collection-settings': 'settings',
+  'collection-management': 'management',
 }
 
 const tabToRoute = {
@@ -96,8 +96,7 @@ const tabToRoute = {
   assets: 'collection-assets',
   labels: 'collection-labels',
   findings: 'collection-findings',
-  users: 'collection-users',
-  settings: 'collection-settings',
+  management: 'collection-management',
 }
 
 // Active tab based on route
@@ -232,11 +231,10 @@ function toggleDashboardSidebar() {
               <Tab value="findings">
                 Findings
               </Tab>
-              <Tab value="users">
-                Users
-              </Tab>
-              <Tab value="settings">
-                Settings
+              <div class="tab-separator" />
+              <Tab value="management">
+                <i class="pi pi-cog tab-icon" />
+                Management
               </Tab>
 
               <div class="tab-filter-container">
@@ -261,17 +259,8 @@ function toggleDashboardSidebar() {
                   <p>Findings content will go here.</p>
                 </div>
               </TabPanel>
-              <TabPanel value="users" :pt="tabPanelPt">
-                <div class="placeholder-panel">
-                  <h2>Users Panel</h2>
-                  <p>User management content will go here.</p>
-                </div>
-              </TabPanel>
-              <TabPanel value="settings" :pt="tabPanelPt">
-                <div class="placeholder-panel">
-                  <h2>Settings Panel</h2>
-                  <p>Collection settings content will go here.</p>
-                </div>
+              <TabPanel value="management" :pt="tabPanelPt">
+                <CollectionManage :collection-id="collectionId" />
               </TabPanel>
             </TabPanels>
           </Tabs>
@@ -375,6 +364,20 @@ function toggleDashboardSidebar() {
   padding: 2rem;
   text-align: center;
   color: var(--color-text-dim);
+}
+
+.tab-separator {
+  width: 1px;
+  height: 1.5rem;
+  background: var(--color-border-default);
+  margin: 0 0.4rem;
+  align-self: center;
+}
+
+.tab-icon {
+  font-size: 0.85rem;
+  opacity: 0.6;
+  margin-right: 0.25rem;
 }
 
 .tab-filter-container {

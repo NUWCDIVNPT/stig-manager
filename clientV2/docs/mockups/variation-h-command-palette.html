@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H - Dashboard Cards + Right Drawer</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/primeicons@7.0.0/primeicons.css" rel="stylesheet">
+<style>
+:root {
+  font-size: 11px;
+  --bg-darkest: #09090b; --bg-dark: #18181b; --bg-surface: #1e1e22;
+  --bg-hover: #27272a; --bg-active: #323238; --border: #3f3f46;
+  --text: rgba(255,255,255,0.87); --dim: #a1a1aa; --muted: #71717a;
+  --accent: #6366f1; --green: #22c55e; --blue: #3b82f6; --orange: #f97316; --danger: #ef4444;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Open Sans',sans-serif; background:var(--bg-darkest); color:var(--text); height:100vh; display:flex; flex-direction:column; }
+
+.tab-bar { display:flex; align-items:center; background:var(--bg-dark); border-bottom:2px solid var(--border); padding:0 0.75rem; flex-shrink:0; }
+.tab { padding:0.85rem 1rem; font-size:1.1rem; font-weight:500; color:var(--dim); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; display:inline-flex; align-items:center; gap:0.4rem; }
+.tab:hover { color:var(--text); }
+.tab--active { color:var(--text); border-bottom-color:var(--accent); }
+.tab .mi { font-size:0.85rem; opacity:0.5; }
+.tab--active .mi { opacity:0.8; }
+.tab-sep { width:1px; height:1.5rem; background:var(--border); margin:0 0.4rem; align-self:center; }
+.tab-spacer { flex:1; }
+
+/* MAIN AREA: card grid + optional drawer */
+.main { flex:1; display:flex; overflow:hidden; }
+
+.card-area {
+  flex:1; overflow-y:auto; padding:1.5rem;
+  scrollbar-width:thin; scrollbar-color:var(--border) transparent;
+}
+
+/* Dashboard-style cards */
+.section-label {
+  font-size:0.95rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:0.08em; color:var(--muted); margin-bottom:0.6rem;
+  margin-top:1.25rem;
+}
+.section-label:first-child { margin-top:0; }
+
+.card-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(20rem, 1fr));
+  gap:0.75rem;
+}
+
+.card {
+  background:var(--bg-dark); border:1px solid var(--border); border-radius:0.5rem;
+  display:flex; flex-direction:column; cursor:pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.card:hover { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+.card--active { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+
+.card-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0.6rem 0.8rem; border-bottom:1px solid var(--border);
+}
+.card-title { font-size:1.1rem; font-weight:600; display:flex; align-items:center; gap:0.4rem; }
+.card-title i { font-size:0.95rem; color:var(--dim); }
+.card-badge {
+  font-size:0.9rem; font-weight:600; padding:0.1rem 0.5rem;
+  border-radius:10px; background:var(--bg-active); color:var(--dim);
+}
+
+.card-body { padding:0.6rem 0.8rem; flex:1; }
+.card-desc { font-size:1rem; color:var(--dim); line-height:1.4; }
+
+.card-preview { padding:0 0.8rem 0.6rem; }
+.card-preview-row {
+  display:flex; justify-content:space-between; font-size:0.95rem;
+  padding:0.2rem 0; color:var(--dim);
+}
+.card-preview-row span:first-child { color:var(--text); }
+
+/* RIGHT DRAWER */
+.drawer {
+  width:0; min-width:0; overflow:hidden;
+  background:var(--bg-dark); border-left:1px solid var(--border);
+  transition:width 0.2s, min-width 0.2s;
+  display:flex; flex-direction:column;
+}
+.drawer--open { width:40rem; min-width:40rem; }
+
+.drawer-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0.6rem 0.9rem; border-bottom:1px solid var(--border); flex-shrink:0;
+}
+.drawer-title { font-size:1.15rem; font-weight:700; }
+.drawer-close {
+  background:none; border:none; color:var(--dim); cursor:pointer; font-size:1.1rem;
+  padding:0.3rem; border-radius:0.3rem;
+}
+.drawer-close:hover { background:var(--bg-hover); color:var(--text); }
+
+.drawer-body { flex:1; overflow-y:auto; padding:0.9rem; scrollbar-width:thin; }
+
+/* Form elements reused */
+.form-group { display:flex; flex-direction:column; gap:0.25rem; margin-bottom:0.75rem; }
+.form-label { font-size:0.95rem; font-weight:500; color:var(--dim); }
+.form-input { background:var(--bg-surface); border:1px solid var(--border); border-radius:0.35rem; padding:0.4rem 0.6rem; font-size:1.05rem; color:var(--text); font-family:inherit; outline:none; width:100%; }
+.form-input:focus { border-color:var(--accent); }
+.form-textarea { resize:vertical; min-height:3rem; }
+
+.fieldset { border:1px solid var(--border); border-radius:0.4rem; padding:0.6rem; margin-bottom:0.6rem; }
+.fieldset-legend { font-weight:600; font-size:0.95rem; padding:0 0.3rem; color:var(--dim); }
+.setting-row { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; padding:0.35rem 0; }
+.setting-row + .setting-row { border-top:1px solid var(--border); }
+.setting-row label { font-size:1rem; }
+.sm-select { background:var(--bg-surface); border:1px solid var(--border); border-radius:0.3rem; padding:0.3rem 0.5rem; font-size:0.95rem; color:var(--text); font-family:inherit; outline:none; }
+.sm-checkbox { width:1.2rem; height:1.2rem; accent-color:var(--accent); }
+
+.grid { width:100%; border-collapse:collapse; font-size:1rem; }
+.grid th { text-align:left; font-weight:600; font-size:0.95rem; color:var(--dim); padding:0.35rem 0.5rem; border-bottom:1px solid var(--border); }
+.grid td { padding:0.3rem 0.5rem; border-bottom:1px solid var(--bg-hover); }
+.grid tr:hover td { background:var(--bg-hover); }
+
+.btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.4rem 0.7rem; border-radius:0.35rem; font-size:1rem; font-weight:500; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text); font-family:inherit; }
+.btn:hover { background:var(--bg-hover); }
+.btn--danger { border-color:var(--danger); color:var(--danger); }
+
+.toolbar-row { display:flex; gap:0.3rem; margin-bottom:0.5rem; }
+.btn-sm { display:inline-flex; align-items:center; gap:0.3rem; padding:0.3rem 0.5rem; border-radius:0.3rem; font-size:0.95rem; font-weight:500; cursor:pointer; border:none; background:transparent; color:var(--dim); font-family:inherit; }
+.btn-sm:hover { background:var(--bg-hover); color:var(--text); }
+.btn-sm--danger { color:var(--danger); }
+
+.role-tag { display:inline-block; padding:0.1rem 0.4rem; border-radius:0.2rem; font-size:0.9rem; font-weight:600; }
+.role-owner { background:rgba(99,102,241,0.2); color:var(--accent); }
+.role-manage { background:rgba(34,197,94,0.15); color:var(--green); }
+
+.label-dot { display:inline-block; width:0.7rem; height:0.7rem; border-radius:3px; margin-right:0.3rem; vertical-align:middle; }
+.label-chip { display:inline-block; padding:0.1rem 0.4rem; border-radius:0.2rem; font-size:0.9rem; font-weight:600; margin-right:0.15rem; }
+
+.variation-label { position:fixed; bottom:1rem; right:1rem; background:var(--accent); color:white; padding:0.5rem 1rem; border-radius:0.4rem; font-size:1rem; font-weight:600; z-index:100; }
+</style>
+</head>
+<body>
+
+<div class="tab-bar">
+  <div class="tab">STIGs</div>
+  <div class="tab">Assets</div>
+  <div class="tab">Labels</div>
+  <div class="tab">Findings</div>
+  <div class="tab-sep"></div>
+  <div class="tab tab--active"><i class="pi pi-cog mi"></i> Management</div>
+  <div class="tab-spacer"></div>
+</div>
+
+<div class="main">
+  <div class="card-area">
+
+    <div class="section-label">Collection</div>
+    <div class="card-grid">
+      <div class="card card--active" onclick="openDrawer('properties')">
+        <div class="card-header"><span class="card-title"><i class="pi pi-home"></i> Properties</span></div>
+        <div class="card-body"><div class="card-desc">Collection name, description, clone & delete</div></div>
+      </div>
+      <div class="card" onclick="openDrawer('settings')">
+        <div class="card-header"><span class="card-title"><i class="pi pi-cog"></i> Review Settings</span></div>
+        <div class="card-body"><div class="card-desc">Review fields, status, history configuration</div></div>
+      </div>
+      <div class="card" onclick="openDrawer('import')">
+        <div class="card-header"><span class="card-title"><i class="pi pi-download"></i> Import Options</span></div>
+        <div class="card-body"><div class="card-desc">Auto-status, unreviewed rules, empty field handling</div></div>
+      </div>
+      <div class="card" onclick="openDrawer('metadata')">
+        <div class="card-header"><span class="card-title"><i class="pi pi-tags"></i> Metadata</span><span class="card-badge">3 keys</span></div>
+        <div class="card-body">
+          <div class="card-preview">
+            <div class="card-preview-row"><span>pocName</span><span>Jane Doe</span></div>
+            <div class="card-preview-row"><span>pocEmail</span><span>jdoe@example.mil</span></div>
+            <div class="card-preview-row"><span>environment</span><span>production</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Access</div>
+    <div class="card-grid">
+      <div class="card" onclick="openDrawer('grants')">
+        <div class="card-header"><span class="card-title"><i class="pi pi-shield"></i> Grants</span><span class="card-badge">3</span></div>
+        <div class="card-body">
+          <div class="card-preview">
+            <div class="card-preview-row"><span>STIGMAN Admin</span><span class="role-tag role-owner">Owner</span></div>
+            <div class="card-preview-row"><span>Bob</span><span class="role-tag role-manage">Manage</span></div>
+            <div class="card-preview-row"><span>stigman-watcher</span><span class="role-tag role-manage">Manage</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" onclick="openDrawer('users')">
+        <div class="card-header"><span class="card-title"><i class="pi pi-users"></i> Effective Users</span><span class="card-badge">3</span></div>
+        <div class="card-body"><div class="card-desc">View resolved user access including group membership</div></div>
+      </div>
+    </div>
+
+    <div class="section-label">Inventory</div>
+    <div class="card-grid">
+      <div class="card" onclick="openDrawer('assets')">
+        <div class="card-header"><span class="card-title"><i class="pi pi-server"></i> Assets</span><span class="card-badge">123</span></div>
+        <div class="card-body"><div class="card-desc">Create, import, export, delete, transfer assets</div></div>
+      </div>
+      <div class="card" onclick="openDrawer('stigs')">
+        <div class="card-header"><span class="card-title"><i class="pi pi-list-check"></i> STIGs</span><span class="card-badge">45</span></div>
+        <div class="card-body"><div class="card-desc">Assign, unassign, modify STIG assignments & revisions</div></div>
+      </div>
+      <div class="card" onclick="openDrawer('labels')">
+        <div class="card-header"><span class="card-title"><i class="pi pi-bookmark"></i> Labels</span><span class="card-badge">5</span></div>
+        <div class="card-body">
+          <div class="card-preview">
+            <div class="card-preview-row"><span><span class="label-dot" style="background:#4568F2"></span>DB</span><span>3 assets</span></div>
+            <div class="card-preview-row"><span><span class="label-dot" style="background:#E46300"></span>Focus</span><span>8 assets</span></div>
+            <div class="card-preview-row"><span><span class="label-dot" style="background:#019900"></span>Group 1</span><span>15 assets</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT DRAWER (opens when card clicked) -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <span class="drawer-title" id="drawer-title">Properties</span>
+      <button class="drawer-close" onclick="closeDrawer()"><i class="pi pi-times"></i></button>
+    </div>
+    <div class="drawer-body" id="drawer-body">
+      <!-- Properties content (default) -->
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input class="form-input" type="text" value="1 Demo Collection!">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-input form-textarea">A demo collection for testing.</textarea>
+      </div>
+      <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+        <button class="btn">Clone Collection...</button>
+        <button class="btn btn--danger">Delete Collection</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="variation-label">H: Card Dashboard + Right Drawer (click cards)</div>
+
+<script>
+const drawerContents = {
+  properties: { title:'Properties', html:`
+    <div class="form-group"><label class="form-label">Name</label><input class="form-input" value="1 Demo Collection!"></div>
+    <div class="form-group"><label class="form-label">Description</label><textarea class="form-input form-textarea">A demo collection for testing.</textarea></div>
+    <div style="display:flex;gap:0.5rem;margin-top:0.5rem"><button class="btn">Clone Collection...</button><button class="btn btn--danger">Delete Collection</button></div>`},
+  settings: { title:'Review Settings', html:`
+    <div class="fieldset"><div class="fieldset-legend">Review Fields</div>
+    <div class="setting-row"><label>Detail enabled</label><select class="sm-select"><option>Always</option><option>Findings only</option></select></div>
+    <div class="setting-row"><label>Detail required</label><select class="sm-select"><option>Optional</option><option>Always</option></select></div>
+    <div class="setting-row"><label>Comment enabled</label><select class="sm-select"><option>Findings only</option></select></div>
+    <div class="setting-row"><label>Comment required</label><select class="sm-select"><option>Findings only</option></select></div></div>
+    <div class="fieldset"><div class="fieldset-legend">Status</div>
+    <div class="setting-row"><label>Reset upon change to</label><select class="sm-select"><option>Review result</option></select></div>
+    <div class="setting-row"><label>Accept/Reject</label><input type="checkbox" class="sm-checkbox" checked></div>
+    <div class="setting-row"><label>Min grant</label><select class="sm-select"><option>Manage or Owner</option></select></div></div>
+    <div class="fieldset"><div class="fieldset-legend">History</div>
+    <div class="setting-row"><label>Records</label><select class="sm-select"><option>Capped at 5</option></select></div></div>`},
+  import: { title:'Import Options', html:`
+    <div class="fieldset"><div class="fieldset-legend">Status Per Result</div>
+    <div class="setting-row"><label>Fail</label><select class="sm-select"><option>Submitted</option></select></div>
+    <div class="setting-row"><label>Not Applicable</label><select class="sm-select"><option>Accepted</option></select></div>
+    <div class="setting-row"><label>Pass</label><select class="sm-select"><option>Accepted</option></select></div></div>
+    <div class="setting-row"><label>Unreviewed rules</label><select class="sm-select"><option>Having comments</option></select></div>
+    <div class="setting-row"><label>With comment is</label><select class="sm-select"><option>Informational</option></select></div>
+    <div class="setting-row"><label>Empty detail</label><select class="sm-select"><option>Ignored</option></select></div>
+    <div class="setting-row"><label>Empty comment</label><select class="sm-select"><option>Ignored</option></select></div>
+    <div style="margin-top:0.5rem"><label style="display:flex;gap:0.4rem;align-items:center"><input type="checkbox" class="sm-checkbox" checked> Customizable per import</label></div>`},
+  metadata: { title:'Metadata', html:`
+    <div class="toolbar-row"><button class="btn-sm">+ Add Key</button><button class="btn-sm btn-sm--danger">Delete</button></div>
+    <table class="grid"><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody>
+    <tr><td>pocName</td><td>Jane Doe</td></tr><tr><td>pocEmail</td><td>jdoe@example.mil</td></tr><tr><td>environment</td><td>production</td></tr></tbody></table>`},
+  grants: { title:'Grants', html:`
+    <div class="toolbar-row"><button class="btn-sm">+ Add Grants...</button></div>
+    <table class="grid"><thead><tr><th>Role</th><th>User or Group</th></tr></thead><tbody>
+    <tr><td><span class="role-tag role-owner">Owner</span></td><td>STIGMAN Admin</td></tr>
+    <tr><td><span class="role-tag role-manage">Manage</span></td><td>Bob</td></tr>
+    <tr><td><span class="role-tag role-manage">Manage</span></td><td>stigman-watcher</td></tr></tbody></table>`},
+  users: { title:'Effective Users', html:`
+    <table class="grid"><thead><tr><th>User</th><th>Grantee</th><th>Role</th></tr></thead><tbody>
+    <tr><td>STIGMAN Admin</td><td>Direct</td><td><span class="role-tag role-owner">Owner</span></td></tr>
+    <tr><td>Bob</td><td>Direct</td><td><span class="role-tag role-manage">Manage</span></td></tr>
+    <tr><td>stigman-watcher</td><td>Direct</td><td><span class="role-tag role-manage">Manage</span></td></tr></tbody></table>`},
+  assets: { title:'Assets', html:`
+    <div class="toolbar-row"><button class="btn-sm">+ Create</button><button class="btn-sm">Import CSV</button><button class="btn-sm">Export CSV</button><button class="btn-sm">Import CKL/XCCDF</button><button class="btn-sm">Export Results</button><button class="btn-sm btn-sm--danger">Delete</button><button class="btn-sm">Transfer</button><button class="btn-sm">Modify</button></div>
+    <table class="grid"><thead><tr><th>Asset</th><th>Labels</th><th>STIGs</th><th>Rules</th><th>Assessed</th></tr></thead><tbody>
+    <tr><td>Asset_Linux_0260</td><td><span class="label-chip" style="background:#99CCFF;color:#000">Ref</span></td><td>2</td><td>286</td><td>73%</td></tr>
+    <tr><td>Asset_Linux_0265</td><td><span class="label-chip" style="background:#4568F2;color:white">DB</span></td><td>2</td><td>286</td><td>73%</td></tr>
+    <tr><td>Asset_Linux_0326</td><td></td><td>4</td><td>557</td><td>37%</td></tr></tbody></table>`},
+  stigs: { title:'STIGs', html:`
+    <div class="toolbar-row"><button class="btn-sm">+ Assign</button><button class="btn-sm">Export Results</button><button class="btn-sm btn-sm--danger">Unassign</button><button class="btn-sm">Modify</button></div>
+    <table class="grid"><thead><tr><th>BenchmarkId</th><th>Revision</th><th>Assets</th><th>Assessed</th></tr></thead><tbody>
+    <tr><td>CAN_Ubuntu-18-04_STIG</td><td>V2R12</td><td>74</td><td>56%</td></tr>
+    <tr><td>Google_Chrome_Current</td><td>V2R11</td><td>45</td><td>47%</td></tr>
+    <tr><td>IIS_10-0_Server_STIG</td><td>V3R4</td><td>25</td><td>61%</td></tr></tbody></table>`},
+  labels: { title:'Labels', html:`
+    <div class="toolbar-row"><button class="btn-sm">+ New Label</button><button class="btn-sm btn-sm--danger">Delete</button><button class="btn-sm">Tag Assets...</button></div>
+    <table class="grid"><thead><tr><th>Name</th><th>Description</th><th>Assets</th></tr></thead><tbody>
+    <tr><td><span class="label-dot" style="background:#4568F2"></span>DB</td><td>Database servers</td><td>3</td></tr>
+    <tr><td><span class="label-dot" style="background:#E46300"></span>Focus</td><td></td><td>8</td></tr>
+    <tr><td><span class="label-dot" style="background:#019900"></span>Group 1</td><td></td><td>15</td></tr>
+    <tr><td><span class="label-dot" style="background:#99CCFF"></span>Reference Asset</td><td></td><td>22</td></tr>
+    <tr><td><span class="label-dot" style="background:#DF584B"></span>test1</td><td></td><td>2</td></tr></tbody></table>`}
+}
+
+function openDrawer(key) {
+  const d = document.getElementById('drawer')
+  const c = drawerContents[key]
+  document.getElementById('drawer-title').textContent = c.title
+  document.getElementById('drawer-body').innerHTML = c.html
+  d.classList.add('drawer--open')
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('card--active'))
+  event.currentTarget.closest('.card').classList.add('card--active')
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('drawer--open')
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('card--active'))
+}
+</script>
+</body>
+</html>
