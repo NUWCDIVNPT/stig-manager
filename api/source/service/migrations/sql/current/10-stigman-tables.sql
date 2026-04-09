@@ -1678,9 +1678,9 @@ DELIMITER ;
 DELIMITER $
 CREATE PROCEDURE `update_stats_asset_stig`(IN p_filter JSON)
 BEGIN
-      DECLARE v_where    TEXT DEFAULT 'WHERE sa.assetId IS NOT NULL AND sa.benchmarkId IS NOT NULL';
+      DECLARE v_where    MEDIUMTEXT DEFAULT 'WHERE sa.assetId IS NOT NULL AND sa.benchmarkId IS NOT NULL';
       DECLARE v_json_arr JSON;
-      DECLARE v_sql      TEXT;
+      DECLARE v_sql      MEDIUMTEXT;
 
       -- rules: array of ruleIds -> filter by benchmarkId
       IF JSON_CONTAINS_PATH(p_filter, 'one', '$.rules') THEN
@@ -1760,9 +1760,12 @@ BEGIN
           ')');
       END IF;
 
-      -- reviewIds: array of reviewIds -> filter by saId
+      -- reviewIds: array of reviewIds -> filter by saId via temp table
       IF JSON_CONTAINS_PATH(p_filter, 'one', '$.reviewIds') THEN
         SET v_json_arr = JSON_EXTRACT(p_filter, '$.reviewIds');
+        DROP TEMPORARY TABLE IF EXISTS _tmp_review_ids;
+        CREATE TEMPORARY TABLE _tmp_review_ids (reviewId INT NOT NULL, PRIMARY KEY (reviewId))
+          SELECT value AS reviewId FROM JSON_TABLE(v_json_arr, '$[*]' COLUMNS(value INT PATH '$')) jt;
         SET v_where = CONCAT(v_where,
           ' AND sa.saId IN (',
             'SELECT DISTINCT sa2.saId FROM review r2 ',
@@ -1770,9 +1773,7 @@ BEGIN
             'INNER JOIN rev_group_rule_map rgr2 ON rgr2.ruleId = rvsd.ruleId ',
             'INNER JOIN revision rev2 ON rev2.revId = rgr2.revId ',
             'INNER JOIN stig_asset_map sa2 ON (sa2.assetId = r2.assetId AND sa2.benchmarkId = rev2.benchmarkId) ',
-            'WHERE r2.reviewId IN (',
-              'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value INT PATH ''$'')) jt',
-            ')',
+            'WHERE r2.reviewId IN (SELECT reviewId FROM _tmp_review_ids)',
           ')');
       END IF;
 
@@ -1871,6 +1872,7 @@ BEGIN
       PREPARE stmt FROM @stmt;
       EXECUTE stmt;
       DEALLOCATE PREPARE stmt;
+      DROP TEMPORARY TABLE IF EXISTS _tmp_review_ids;
     END $
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1938,4 +1940,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-06 14:51:33
+-- Dump completed on 2026-04-09 14:33:30
