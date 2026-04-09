@@ -39,13 +39,22 @@ SM.TaskConfig.formatAction = function (record) {
   return 'Update reviews'
 }
 
-SM.TaskConfig.formatFilterSummary = function (updateFilter) {
-  if (!updateFilter) return 'None'
-  const parts = []
-  if (updateFilter.assetIds?.length) parts.push(`${updateFilter.assetIds.length} asset${updateFilter.assetIds.length > 1 ? 's' : ''}`)
-  if (updateFilter.labelIds?.length) parts.push(`${updateFilter.labelIds.length} label${updateFilter.labelIds.length > 1 ? 's' : ''}`)
-  if (updateFilter.benchmarkIds?.length) parts.push(`${updateFilter.benchmarkIds.length} STIG${updateFilter.benchmarkIds.length > 1 ? 's' : ''}`)
-  return parts.length ? parts.join(', ') : 'None'
+SM.TaskConfig.formatTargetHtml = function (target) {
+  if (!target) return ''
+  let html = ''
+  if (target.collection) {
+    html += `<div class="sm-collection-icon sm-cell-with-icon">Collection</div>`
+  }
+  if (target.asset) {
+    html += `<div class="sm-asset-icon sm-cell-with-icon">${SM.he(target.asset.name)}</div>`
+  }
+  if (target.label) {
+    html += `<div class="sm-label-icon sm-cell-with-icon">${SM.Manage.Collection.LabelTpl.apply(target.label)}</div>`
+  }
+  if (target.benchmarkId) {
+    html += `<div class="sm-stig-icon sm-cell-with-icon">${SM.he(target.benchmarkId)}</div>`
+  }
+  return html
 }
 
 SM.TaskConfig.formatEventSummary = function (events) {
@@ -64,265 +73,94 @@ SM.TaskConfig.formatEventSummary = function (events) {
 }
 
 // ========================================================
-// SM.TaskConfig.ReviewAging.FilterGrid
-// Simplified version of SM.Acl.AssignedRulesGrid (no access column)
+// SM.TaskConfig.ReviewAging.TargetPanel
+// Layout: tree on top, selected target display below
 // ========================================================
-SM.TaskConfig.ReviewAging.FilterGrid = Ext.extend(Ext.grid.GridPanel, {
+SM.TaskConfig.ReviewAging.TargetPanel = Ext.extend(Ext.Panel, {
   initComponent: function () {
-    const _this = this
-    const filterStore = new Ext.data.JsonStore({
-      fields: [
-        'benchmarkId',
-        'assetId',
-        'assetName',
-        'labelId',
-        'labelName',
-        'label',
-        {
-          name: 'sorter',
-          convert: (v, r) => {
-            return `${r.assetName ?? ''}${r.labelName ?? ''}${r.benchmarkId ?? ''}`.toLowerCase()
-          }
-        }
-      ],
-      root: '',
-      sortInfo: {
-        field: 'sorter',
-        direction: 'ASC'
-      },
-      idProperty: v => `${v.benchmarkId}-${v.assetName}-${v.labelName}`,
-      listeners: {
-        remove: function () {
-          _this.panel.removeButton.disable()
-        }
-      }
+    const isReadOnly = this.disabled
+
+    let currentTarget = undefined
+
+    const collectionHtml = '<div class="sm-collection-icon sm-cell-with-icon">Collection</div>'
+
+    const displayPanel = new Ext.Panel({
+      height: 45,
+      bodyStyle: 'background:transparent;border:none;padding:8px;',
+      html: collectionHtml
     })
 
-    const selectionModel = new Ext.grid.RowSelectionModel({
-      singleSelect: false,
-      listeners: {
-        rowselect: function () {
-          _this.panel.removeButton.enable()
-        },
-        rowdeselect: function (sm) {
-          if (sm.getCount() < 1) {
-            _this.panel.removeButton.disable()
-          }
-        }
-      }
-    })
-
-    function renderResource(value, metadata, record) {
-      let html = ''
-      if (record.data.assetName) {
-        html += `<div class="sm-asset-icon sm-cell-with-icon">${SM.he(record.data.assetName)}</div>`
-      }
-      if (record.data.labelName) {
-        html += `<div class="sm-label-icon sm-cell-with-icon">${SM.Manage.Collection.LabelTpl.apply(record.data.label)}</div>`
-      }
-      if (record.data.benchmarkId) {
-        html += `<div class="sm-stig-icon sm-cell-with-icon">${SM.he(record.data.benchmarkId)}</div>`
-      }
-      return html
+    function setTarget(target) {
+      currentTarget = target
+      displayPanel.update(SM.TaskConfig.formatTargetHtml(target) || collectionHtml)
     }
-
-    const columns = [
-      {
-        header: 'Resource',
-        dataIndex: 'sorter',
-        sortable: true,
-        renderer: renderResource
-      }
-    ]
-
-    const totalTextCmp = new SM.RowCountTextItem({ store: filterStore })
-
-    const bbar = new Ext.Toolbar({
-      items: [
-        { xtype: 'tbfill' },
-        { xtype: 'tbseparator' },
-        totalTextCmp
-      ]
-    })
-
-    const config = {
-      name: 'updateFilter',
-      isFormField: true,
-      setValue: function (updateFilter) {
-        if (!updateFilter) {
-          filterStore.removeAll()
-          return
-        }
-        const data = []
-        if (updateFilter.assetIds) {
-          for (const assetId of updateFilter.assetIds) {
-            data.push({
-              assetId,
-              assetName: _this.assetMap?.[assetId] || `Asset ${assetId}`
-            })
-          }
-        }
-        if (updateFilter.labelIds) {
-          for (const labelId of updateFilter.labelIds) {
-            const label = _this.labelMap?.[labelId]
-            data.push({
-              labelId,
-              labelName: label?.name || `Label ${labelId}`,
-              label: label || { labelId, name: `Label ${labelId}` }
-            })
-          }
-        }
-        if (updateFilter.benchmarkIds) {
-          for (const benchmarkId of updateFilter.benchmarkIds) {
-            data.push({ benchmarkId })
-          }
-        }
-        filterStore.loadData(data)
-      },
-      getValue: function () {
-        const filter = {}
-        const records = filterStore.snapshot?.items ?? filterStore.getRange()
-        const assetIds = []
-        const labelIds = []
-        const benchmarkIds = []
-        for (const r of records) {
-          if (r.data.assetId) assetIds.push(r.data.assetId)
-          if (r.data.labelId) labelIds.push(r.data.labelId)
-          if (r.data.benchmarkId) benchmarkIds.push(r.data.benchmarkId)
-        }
-        if (assetIds.length) filter.assetIds = assetIds
-        if (labelIds.length) filter.labelIds = labelIds
-        if (benchmarkIds.length) filter.benchmarkIds = benchmarkIds
-        return Object.keys(filter).length ? filter : undefined
-      },
-      markInvalid: Ext.emptyFn,
-      clearInvalid: Ext.emptyFn,
-      isValid: function () { return true },
-      disabled: false,
-      getName: function () { return this.name },
-      validate: function () { return true },
-      store: filterStore,
-      view: new SM.ColumnFilters.GridView({
-        emptyText: 'No filters — rule applies to all reviews',
-        forceFit: true,
-        markDirty: false
-      }),
-      stripeRows: true,
-      sm: selectionModel,
-      columns,
-      bbar,
-      listeners: {
-        keydown: SM.CtrlAGridHandler
-      }
-    }
-
-    Ext.apply(this, Ext.apply(this.initialConfig, config))
-    this.superclass().initComponent.call(this)
-  }
-})
-
-// ========================================================
-// SM.TaskConfig.ReviewAging.FilterPanel
-// ACL-style layout: tree | add/remove | grid
-// ========================================================
-SM.TaskConfig.ReviewAging.FilterPanel = Ext.extend(Ext.Panel, {
-  initComponent: function () {
-    const _this = this
 
     const navTree = new SM.Acl.ResourceTreePanel({
-      panel: this,
       title: 'Collection Resources',
-      width: 280,
+      flex: 1,
       collectionId: this.collectionId,
       listeners: {
-        click: handleTreeClick
+        click: function (node) {
+          if (isReadOnly) return
+          const attrs = node.attributes
+          switch (attrs.node) {
+            case 'collection':
+              setTarget({ collection: true })
+              break
+            case 'stig':
+              setTarget({ benchmarkId: attrs.benchmarkId })
+              break
+            case 'asset':
+              setTarget({ asset: { assetId: attrs.assetId, name: attrs.assetName } })
+              break
+            case 'asset-stig':
+            case 'stig-asset':
+              setTarget({ asset: { assetId: attrs.assetId, name: attrs.assetName }, benchmarkId: attrs.benchmarkId })
+              break
+            case 'label':
+              setTarget({ label: attrs.label })
+              break
+            case 'label-stig':
+              setTarget({ label: attrs.label, benchmarkId: attrs.benchmarkId })
+              break
+            default:
+              break
+          }
+        }
       }
-    })
-
-    function handleTreeClick(node) {
-      switch (node.attributes.node) {
-        case 'stig':
-        case 'stig-asset':
-        case 'asset':
-        case 'asset-stig':
-        case 'label':
-        case 'label-stig':
-          addBtn.setDisabled(isNodeInFilterGrid(node))
-          break
-        default:
-          addBtn.disable()
-          break
-      }
-    }
-
-    function isNodeInFilterGrid(node) {
-      const candidateId = `${node.attributes.benchmarkId ?? 'undefined'}-${node.attributes.assetName ?? 'undefined'}-${node.attributes.label?.name ?? 'undefined'}`
-      const record = filterGrid.store.getById(candidateId)
-      return !!record
-    }
-
-    function handleAddBtn() {
-      const selectedNode = navTree.getSelectionModel().getSelectedNode()
-      if (!selectedNode) return
-      const assignment = {
-        benchmarkId: selectedNode.attributes.benchmarkId,
-        assetId: selectedNode.attributes.assetId,
-        assetName: selectedNode.attributes.assetName,
-        labelId: selectedNode.attributes.label?.labelId,
-        labelName: selectedNode.attributes.label?.name,
-        label: selectedNode.attributes.label
-      }
-      const store = filterGrid.getStore()
-      store.loadData(assignment, true)
-      store.sort(store.sortInfo.field, store.sortInfo.direction)
-      addBtn.disable()
-    }
-
-    const filterGrid = new SM.TaskConfig.ReviewAging.FilterGrid({
-      panel: this,
-      title: 'Selected Filters',
-      flex: 1,
-      assetMap: this.assetMap,
-      labelMap: this.labelMap
-    })
-    this.filterGrid = filterGrid
-
-    const addBtn = new SM.Acl.ResourceAddBtn({
-      tree: navTree,
-      text: 'Add',
-      margins: "10 0 10 0",
-      grid: filterGrid,
-      handler: handleAddBtn
-    })
-    this.addButton = addBtn
-
-    const removeBtn = new SM.Acl.ResourceRemoveBtn({
-      tree: navTree,
-      text: 'Remove',
-      grid: filterGrid
-    })
-    this.removeButton = removeBtn
-
-    const buttonPanel = new Ext.Panel({
-      bodyStyle: 'background-color:transparent;border:none',
-      width: 100,
-      layout: {
-        type: 'vbox',
-        pack: 'center',
-        align: 'center',
-        padding: '10 10 10 10'
-      },
-      items: [addBtn, removeBtn]
     })
 
     const config = {
       bodyStyle: 'background:transparent;border:none',
-      layout: 'hbox',
-      anchor: '100% -30',
+      layout: 'vbox',
       layoutConfig: {
         align: 'stretch'
       },
-      items: [navTree, buttonPanel, filterGrid]
+      items: [navTree, displayPanel],
+      getValue: function () {
+        if (!currentTarget) return undefined
+        // Convert GET-style target (with nested asset/label objects) to PUT format
+        if (currentTarget.asset) {
+          const t = { assetId: currentTarget.asset.assetId }
+          if (currentTarget.benchmarkId) t.benchmarkId = currentTarget.benchmarkId
+          return t
+        }
+        if (currentTarget.label) {
+          const t = { labelId: currentTarget.label.labelId }
+          if (currentTarget.benchmarkId) t.benchmarkId = currentTarget.benchmarkId
+          return t
+        }
+        if (currentTarget.benchmarkId) {
+          return { benchmarkId: currentTarget.benchmarkId }
+        }
+        return undefined
+      },
+      setValue: function (target) {
+        setTarget(target)
+      },
+      getDisplayTarget: function () {
+        return currentTarget
+      }
     }
 
     Ext.apply(this, Ext.apply(this.initialConfig, config))
@@ -340,29 +178,6 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
   onSave
 }) {
   try {
-    // Fetch assets, labels, benchmarks in parallel for filter name resolution
-    const [apiAssets, apiLabels, apiStigs] = await Promise.all([
-      Ext.Ajax.requestPromise({
-        responseType: 'json',
-        url: `${STIGMAN.Env.apiBase}/assets`,
-        method: 'GET',
-        params: { collectionId }
-      }),
-      Ext.Ajax.requestPromise({
-        responseType: 'json',
-        url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/labels`
-      }),
-      Ext.Ajax.requestPromise({
-        responseType: 'json',
-        url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/stigs`
-      })
-    ])
-
-    const assetMap = {}
-    for (const a of apiAssets) { assetMap[a.assetId] = a.name }
-    const labelMap = {}
-    for (const l of apiLabels) { labelMap[l.labelId] = l }
-
     // Title
     const titleField = new Ext.form.TextField({
       fieldLabel: 'Title',
@@ -388,8 +203,9 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       border: false,
       items: [
         {
-          columnWidth: .6,
+          columnWidth: .8,
           layout: 'form',
+          labelWidth: 30,
           padding: '0px 10px 0px 0px',
           border: false,
           items: [
@@ -397,8 +213,9 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
           ]
         },
         {
-          columnWidth: .4,
+          columnWidth: .2,
           layout: 'form',
+          labelWidth: 48,
           padding: '0px 10px 0px 0px',
           border: false,
           items: [
@@ -428,56 +245,6 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       displayField: 'display',
       value: ruleData?.triggerField || 'ts',
       width: 180,
-      disabled: isReadOnly
-    })
-
-    // Basis type
-    const basisTypeCombo = new Ext.form.ComboBox({
-      fieldLabel: 'Basis',
-      name: 'basisType',
-      mode: 'local',
-      forceSelection: true,
-      editable: false,
-      triggerAction: 'all',
-      store: new Ext.data.SimpleStore({
-        fields: ['value', 'display'],
-        data: [
-          ['now', 'Current time'],
-          ['datetime', 'Specific datetime']
-        ]
-      }),
-      valueField: 'value',
-      displayField: 'display',
-      value: ruleData?.triggerBasis === 'now' || !ruleData?.triggerBasis ? 'now' : 'datetime',
-      width: 180,
-      disabled: isReadOnly,
-      listeners: {
-        select: function (combo, record) {
-          basisDateField.setVisible(record.data.value === 'datetime')
-          basisTimeField.setVisible(record.data.value === 'datetime')
-        }
-      }
-    })
-
-    const basisDatetime = ruleData?.triggerBasis && ruleData.triggerBasis !== 'now' ? new Date(ruleData.triggerBasis) : new Date()
-    const basisDateField = new Ext.form.DateField({
-      fieldLabel: 'Date',
-      name: 'basisDate',
-      format: 'Y-m-d',
-      value: basisDatetime,
-      width: 130,
-      hidden: !ruleData?.triggerBasis || ruleData.triggerBasis === 'now',
-      disabled: isReadOnly
-    })
-
-    const basisTimeField = new Ext.form.TimeField({
-      fieldLabel: 'Time',
-      name: 'basisTime',
-      format: 'H:i',
-      increment: 30,
-      value: basisDatetime.toTimeString().substring(0, 5),
-      width: 100,
-      hidden: !ruleData?.triggerBasis || ruleData.triggerBasis === 'now',
       disabled: isReadOnly
     })
 
@@ -605,29 +372,10 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       disabled: isReadOnly
     })
 
-    // Filter panel
-    const filterPanel = new SM.TaskConfig.ReviewAging.FilterPanel({
-      collectionId,
-      assetMap,
-      labelMap,
-      height: 300
-    })
-
     const triggerFieldSet = new Ext.form.FieldSet({
       title: 'Trigger',
       items: [
-        // titleField,
-        // enabledCheckbox,
-        // titleEnabledRow,
         triggerFieldCombo,
-        basisTypeCombo,
-        {
-          xtype: 'compositefield',
-          fieldLabel: 'Datetime',
-          hidden: !ruleData?.triggerBasis || ruleData.triggerBasis === 'now',
-          items: [basisDateField, basisTimeField],
-          ref: '../basisDatetimeComposite'
-        },
         {
           xtype: 'compositefield',
           fieldLabel: 'Interval',
@@ -645,28 +393,16 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       ]
     })
 
-    const filterFieldSet = new Ext.form.FieldSet({
-      title: 'Filters',
-      height: 300,
-      // collapsible: true,
-      // collapsed: !ruleData?.updateFilter,
-      items: [filterPanel],
-      listeners: {
-        expand: function () {
-          appwindow.doLayout()
-        },
-        collapse: function () {
-          appwindow.doLayout()
-        }
-      }
+    const targetPanel = new SM.TaskConfig.ReviewAging.TargetPanel({
+      collectionId,
+      disabled: isReadOnly,
+      height: 260
     })
 
-    // Override basis combo listener to also toggle the composite field
-    basisTypeCombo.on('select', function (combo, record) {
-      const show = record.data.value === 'datetime'
-      if (formPanel.basisDatetimeComposite) {
-        formPanel.basisDatetimeComposite.setVisible(show)
-      }
+    const targetFieldSet = new Ext.form.FieldSet({
+      title: 'Target',
+      height: 300,
+      items: [targetPanel]
     })
 
     const formPanel = new Ext.form.FormPanel({
@@ -674,7 +410,7 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       labelWidth: 100,
       autoScroll: true,
       padding: 10,
-      items: [titleEnabledRow, triggerFieldSet, actionFieldSet, filterFieldSet]
+      items: [titleEnabledRow, targetFieldSet, triggerFieldSet, actionFieldSet]
     })
 
     function serializeRule() {
@@ -683,20 +419,6 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
         enabled: enabledCheckbox.getValue(),
         triggerField: triggerFieldCombo.getValue(),
         triggerAction: actionCombo.getValue()
-      }
-
-      // Basis
-      if (basisTypeCombo.getValue() === 'now') {
-        rule.triggerBasis = 'now'
-      } else {
-        const d = basisDateField.getValue()
-        const t = basisTimeField.getValue()
-        if (d) {
-          const dateStr = d.format('Y-m-d')
-          rule.triggerBasis = `${dateStr}T${t || '00:00'}:00Z`
-        } else {
-          rule.triggerBasis = 'now'
-        }
       }
 
       // Interval
@@ -711,11 +433,12 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
         rule.updateValue = updateValueCombo.getValue()
       }
 
-      // Filter
-      const updateFilter = filterPanel.filterGrid.getValue()
-      if (updateFilter) {
-        rule.updateFilter = updateFilter
+      // Target — PUT format for the API, display format for the record
+      const target = targetPanel.getValue()
+      if (target) {
+        rule.target = target
       }
+      rule._displayTarget = targetPanel.getDisplayTarget()
 
       return rule
     }
@@ -743,9 +466,9 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       cls: 'sm-dialog-window sm-round-panel',
       modal: true,
       hidden: true,
-      width: 750,
+      width: 420,
       height: 700,
-      minWidth: 750,
+      minWidth: 420,
       minHeight: 700,
       maximizable: true,
       resizable: true,
@@ -759,14 +482,9 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
 
     appwindow.show(Ext.getBody())
 
-    // Set filter values after render
-    if (ruleData?.updateFilter) {
-      filterPanel.filterGrid.setValue(ruleData.updateFilter)
-    }
-
-    if (isReadOnly) {
-      filterPanel.addButton.disable()
-      filterPanel.removeButton.disable()
+    // Set target value after render
+    if (ruleData?.target) {
+      targetPanel.setValue(ruleData.target)
     }
   }
   catch (e) {
@@ -785,9 +503,9 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
 
     const store = new Ext.data.JsonStore({
       fields: [
-        'title', 'enabled', 'triggerField', 'triggerBasis',
+        'title', 'enabled', 'triggerField',
         'triggerInterval', 'triggerAction', 'updateField',
-        'updateValue', 'updateFilter'
+        'updateValue', 'target'
       ],
       root: ''
     })
@@ -800,8 +518,10 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
 
     let toolsMarkup = ''
     if (canEdit) {
-      toolsMarkup = '<span class="sm-grid-cell-tool" style="padding-right:4px"><img data-action="editRule" ext:qtip="Edit rule" src="img/edit.svg" width="14" height="14"></span>'
-      toolsMarkup += '<span class="sm-grid-cell-tool"><img data-action="removeRule" ext:qtip="Delete rule" src="img/trash.svg" width="14" height="14"></span>'
+      toolsMarkup = '<span class="sm-grid-cell-tool" style="padding-right:4px"><img class="sm-taskconfig-action-moveUp" ext:qtip="Move up" src="img/move-up.svg" width="14" height="14"></span>'
+      toolsMarkup += '<span class="sm-grid-cell-tool" style="padding-right:4px"><img class="sm-taskconfig-action-moveDown" ext:qtip="Move down" src="img/move-down.svg" width="14" height="14"></span>'
+      toolsMarkup += '<span class="sm-grid-cell-tool" style="padding-right:4px"><img class="sm-taskconfig-action-editRule" ext:qtip="Edit rule" src="img/edit.svg" width="14" height="14"></span>'
+      toolsMarkup += '<span class="sm-grid-cell-tool"><img class="sm-taskconfig-action-removeRule" ext:qtip="Delete rule" src="img/trash.svg" width="14" height="14"></span>'
     }
 
     function renderRule(value, metadata, record) {
@@ -811,7 +531,7 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
       const title = SM.he(d.title || 'Untitled rule')
       const action = SM.TaskConfig.formatAction(d)
       const trigger = `when ${SM.TaskConfig.triggerFieldMap[d.triggerField] || d.triggerField} > ${SM.TaskConfig.formatInterval(d.triggerInterval)}`
-      const filterSummary = SM.TaskConfig.formatFilterSummary(d.updateFilter)
+      const targetHtml = SM.TaskConfig.formatTargetHtml(d.target)
 
       return `
         <div class="sm-grid-cell-with-toolbar">
@@ -819,7 +539,7 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
             <div style="font-weight:600;"><span style="color:${enabledColor}">${enabledIcon}</span> ${title}</div>
             <div style="color:#555;">${action}</div>
             <div style="color:#777;">${trigger}</div>
-            ${filterSummary !== 'None' ? `<div style="color:#999;">Filters: ${filterSummary}</div>` : ''}
+            ${targetHtml ? `<div style="color:#999;">Target: ${targetHtml}</div>` : ''}
           </div>
           <div class="sm-static-width">
             ${toolsMarkup}
@@ -837,6 +557,20 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
     ]
 
     const toolHandlers = {
+      moveUp: function (_data, record) {
+        const idx = store.indexOf(record)
+        if (idx <= 0) return
+        store.remove(record)
+        store.insert(idx - 1, record)
+        _this.saveConfig()
+      },
+      moveDown: function (_data, record) {
+        const idx = store.indexOf(record)
+        if (idx >= store.getCount() - 1) return
+        store.remove(record)
+        store.insert(idx + 1, record)
+        _this.saveConfig()
+      },
       editRule: function (data, record) {
         SM.TaskConfig.ReviewAging.showRuleEditWindow({
           collectionId,
@@ -844,15 +578,15 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
           isReadOnly: !canEdit,
           onSave: function (updatedRule) {
             for (const key of Object.keys(updatedRule)) {
+              if (key === '_displayTarget') continue
               record.set(key, updatedRule[key])
             }
+            // Store GET-format target for rendering
+            record.set('target', updatedRule._displayTarget)
             // Clear fields not present in updatedRule
             if (!updatedRule.updateField) {
               record.set('updateField', undefined)
               record.set('updateValue', undefined)
-            }
-            if (!updatedRule.updateFilter) {
-              record.set('updateFilter', undefined)
             }
             record.commit()
             _this.saveConfig()
@@ -869,10 +603,11 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
       }
     }
 
-    function cellclick(grid, rowIndex, columnIndex, e) {
-      if (e.target.tagName === 'IMG') {
+    function cellmousedown(grid, rowIndex, _columnIndex, e) {
+      const match = e.target.className?.match(/sm-taskconfig-action-(\w+)/)
+      if (match) {
         const record = grid.getStore().getAt(rowIndex)
-        const handler = toolHandlers[e.target.dataset.action]
+        const handler = toolHandlers[match[1]]
         if (handler) handler(record.data, record)
       }
     }
@@ -888,7 +623,9 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
             ruleData: null,
             isReadOnly: false,
             onSave: function (newRule) {
-              store.loadData([newRule], true)
+              const { _displayTarget, ...storeRule } = newRule
+              storeRule.target = _displayTarget
+              store.loadData([storeRule], true)
               _this.saveConfig()
             }
           })
@@ -911,6 +648,7 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
         emptyText: canEdit ? 'No rules configured. Click "New Rule" to add one.' : 'No rules configured.',
         forceFit: true,
         markDirty: false,
+        cellSelectorDepth: 6,
         getRowClass: function () {
           return 'sm-taskconfig-rule-row'
         }
@@ -918,7 +656,7 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
       stripeRows: true,
       border: false,
       listeners: {
-        cellclick,
+        cellmousedown,
         rowdblclick: function (grid, rowIndex) {
           const record = grid.getStore().getAt(rowIndex)
           toolHandlers.editRule(record.data, record)
@@ -962,6 +700,23 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
         const rules = records.map(r => {
           const d = { ...r.data }
           delete d.sorter
+          // Convert display-format target to PUT format
+          delete d.target
+          const t = r.data.target
+          if (t) {
+            if (t.asset) {
+              const pt = { assetId: t.asset.assetId }
+              if (t.benchmarkId) pt.benchmarkId = t.benchmarkId
+              d.target = pt
+            } else if (t.label) {
+              const pt = { labelId: t.label.labelId }
+              if (t.benchmarkId) pt.benchmarkId = t.benchmarkId
+              d.target = pt
+            } else if (t.benchmarkId) {
+              d.target = { benchmarkId: t.benchmarkId }
+            }
+            // t.collection or unrecognised: no target in PUT body
+          }
           // Remove undefined fields
           const clean = {}
           for (const [k, v] of Object.entries(d)) {
