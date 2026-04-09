@@ -9,6 +9,7 @@ import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
@@ -32,6 +33,12 @@ const router = useRouter()
 const { removeView } = useRecentViews()
 const { triggerError } = useGlobalError()
 const { addView } = useRecentViews()
+const { getCollectionRoleId } = useCurrentUser()
+
+const canManage = computed(() => {
+  const roleId = getCollectionRoleId(props.collectionId)
+  return roleId >= 3
+})
 
 // Fetch collection details for name
 const { state: collection, execute: loadCollection } = useAsyncState(
@@ -231,11 +238,13 @@ function toggleDashboardSidebar() {
               <Tab value="findings">
                 Findings
               </Tab>
-              <div class="tab-separator" />
-              <Tab value="management">
-                <i class="pi pi-cog tab-icon" />
-                Management
-              </Tab>
+              <template v-if="canManage">
+                <div class="tab-separator" />
+                <Tab value="management">
+                  <i class="pi pi-cog tab-icon" />
+                  Management
+                </Tab>
+              </template>
 
               <div class="tab-filter-container">
                 <span class="filter-label">FILTER:</span>
@@ -259,7 +268,7 @@ function toggleDashboardSidebar() {
                   <p>Findings content will go here.</p>
                 </div>
               </TabPanel>
-              <TabPanel value="management" :pt="tabPanelPt">
+              <TabPanel v-if="canManage" value="management" :pt="tabPanelPt">
                 <CollectionManage :collection-id="collectionId" />
               </TabPanel>
             </TabPanels>

@@ -84,7 +84,7 @@ const routes = [
         name: 'collection-management',
         component: EmptyComponent,
         props: true,
-        meta: { breadcrumbs: [{ label: 'Management' }] },
+        meta: { minRoleId: 3, breadcrumbs: [{ label: 'Management' }] },
       },
     ],
   },
