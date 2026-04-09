@@ -742,6 +742,52 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
 })
 
 // ========================================================
+// SM.TaskConfig.showTaskOutputWindow
+// ========================================================
+SM.TaskConfig.showTaskOutputWindow = async function ({ collectionId, taskName }) {
+  try {
+    Ext.getBody().mask('Loading...')
+
+    const outputGrid = new SM.Job.RunOutputGrid({
+      border: false,
+      loadMask: true
+    })
+
+    const appwindow = new Ext.Window({
+      title: 'Task Output',
+      cls: 'sm-dialog-window sm-round-panel',
+      modal: true,
+      hidden: true,
+      width: 900,
+      height: 500,
+      layout: 'fit',
+      plain: true,
+      bodyStyle: 'padding:5px;',
+      buttonAlign: 'right',
+      items: outputGrid,
+      buttons: [{
+        text: 'Close',
+        handler: function () { appwindow.close() }
+      }]
+    })
+
+    const output = await Ext.Ajax.requestPromise({
+      responseType: 'json',
+      url: `${STIGMAN.Env.apiBase}/collections/${collectionId}/tasks/${taskName}/output`
+    })
+
+    outputGrid.getStore().loadData(output)
+    appwindow.show(Ext.getBody())
+  }
+  catch (e) {
+    SM.Error.handleError(e)
+  }
+  finally {
+    Ext.getBody().unmask()
+  }
+}
+
+// ========================================================
 // SM.TaskConfig.TasksPanel
 // ========================================================
 SM.TaskConfig.TasksPanel = Ext.extend(Ext.Panel, {
@@ -783,6 +829,17 @@ SM.TaskConfig.TasksPanel = Ext.extend(Ext.Panel, {
       value: ''
     })
 
+    const taskOutputBtn = new Ext.Button({
+      text: 'Task Output...',
+      disabled: true,
+      handler: function () {
+        SM.TaskConfig.showTaskOutputWindow({
+          collectionId: _this.collectionId,
+          taskName: taskCombo.getValue().replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
+        })
+      }
+    })
+
     const northPanel = new Ext.Panel({
       region: 'north',
       layout: 'form',
@@ -790,7 +847,7 @@ SM.TaskConfig.TasksPanel = Ext.extend(Ext.Panel, {
       labelWidth: 80,
       autoHeight: true,
       border: false,
-      items: [taskCombo, descriptionField, eventInfoField]
+      items: [taskCombo, descriptionField, eventInfoField, taskOutputBtn]
     })
 
     const cardPanel = new Ext.Panel({
@@ -811,6 +868,7 @@ SM.TaskConfig.TasksPanel = Ext.extend(Ext.Panel, {
 
     function onTaskSelected(record) {
       const taskName = record.data.name
+      taskOutputBtn.enable()
       descriptionField.setValue(record.data.description || '')
       eventInfoField.setValue(SM.TaskConfig.formatEventSummary(record.data.events))
 
