@@ -103,7 +103,7 @@ function getRiskClass(riskRating) {
 @import './metrics.css';
 
 .metric-header {
-  margin-bottom: 5px
+  margin-bottom: 8px;
 }
 
 .help-icon {
@@ -114,13 +114,9 @@ function getRiskClass(riskRating) {
   color: var(--color-text-primary);
 }
 
-.cora-card {
-  height: 200px; /* fix when we known what we want */
-}
-
 .cora-content {
   display: flex;
-  gap: 15px;
+  gap: 12px;
   align-items: stretch;
   flex: 1;
   overflow: hidden;
@@ -135,10 +131,10 @@ function getRiskClass(riskRating) {
 }
 
 .subsection-title {
-  font-size: 1rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   color: var(--color-text-dim);
-  margin: 0 0 4px 0;
+  margin: 0 0 3px 0;
   font-weight: 600;
   letter-spacing: 0.5px;
 }
@@ -146,17 +142,17 @@ function getRiskClass(riskRating) {
 .cora-row {
   display: flex;
   background-color: var(--color-background-subtle);
-  border-radius: 6px;
+  border-radius: 5px;
   overflow: hidden;
-  height: 32px;
+  height: 30px;
 }
 
 .cora-bracket {
   width: 4px;
   height: 100%;
   flex-shrink: 0;
-  border-top-left-radius: 6px;
-  border-bottom-left-radius: 6px;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
 }
 
 .title-container {
@@ -180,17 +176,17 @@ function getRiskClass(riskRating) {
   justify-content: space-between;
   align-items: center;
   flex: 1;
-  padding: 0 12px;
+  padding: 0 10px;
 }
 
 .cora-cat-label {
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
 }
 
 .cora-cat-count {
   font-weight: 600;
-  font-size: 1.25rem;
+  font-size: 1rem;
   color: var(--color-text-bright);
 }
 .cora-risk-card {
@@ -198,34 +194,34 @@ function getRiskClass(riskRating) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: 20px;
-  min-width: 130px;
+  border-radius: 10px;
+  min-width: 110px;
   text-align: center;
 }
 
 .risk-label {
-  font-size: 1rem;
+  font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
   color: var(--color-text-bright);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .risk-score {
-  font-size: 2.5rem;
+  font-size: 1.9rem;
   font-weight: 800;
   color: var(--color-text-bright);
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .risk-rating {
-  font-size: 1.1rem;
+  font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
   color: var(--color-text-bright);
   background-color: rgba(0, 0, 0, 0.2);
-  padding: 2px 10px;
-  border-radius: 20px;
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 </style>
