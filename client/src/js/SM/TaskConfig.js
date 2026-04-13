@@ -40,18 +40,17 @@ SM.TaskConfig.formatAction = function (record) {
 }
 
 SM.TaskConfig.formatTargetHtml = function (target) {
-  if (!target) return ''
   let html = ''
-  if (target.collection) {
+  if (target?.collection || !target) {
     html += `<div class="sm-collection-icon sm-cell-with-icon">Collection</div>`
   }
-  if (target.asset) {
+  if (target?.asset) {
     html += `<div class="sm-asset-icon sm-cell-with-icon">${SM.he(target.asset.name)}</div>`
   }
-  if (target.label) {
+  if (target?.label) {
     html += `<div class="sm-label-icon sm-cell-with-icon">${SM.Manage.Collection.LabelTpl.apply(target.label)}</div>`
   }
-  if (target.benchmarkId) {
+  if (target?.benchmarkId) {
     html += `<div class="sm-stig-icon sm-cell-with-icon">${SM.he(target.benchmarkId)}</div>`
   }
   return html
@@ -183,10 +182,10 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       fieldLabel: 'Title',
       name: 'title',
       maxLength: 45,
-      allowBlank: true,
+      allowBlank: false,
       anchor: '100%',
       disabled: isReadOnly,
-      value: ruleData?.title || ''
+      value: ruleData?.title || 'New Rule'
     })
 
     // Enabled
@@ -405,12 +404,33 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       items: [targetPanel]
     })
 
+    const buttons = []
+    buttons.push({
+      text: 'Cancel',
+      handler: function () { appwindow.close() }
+    })
+    if (!isReadOnly) {
+      buttons.push({
+        text: 'Save',
+        formBind: true,
+        handler: function () {
+          if (!formPanel.getForm().isValid()) return
+          const rule = serializeRule()
+          onSave(rule)
+          appwindow.close()
+        }
+      })
+    }
+
+
     const formPanel = new Ext.form.FormPanel({
       baseCls: 'x-plain',
       labelWidth: 100,
       autoScroll: true,
       padding: 10,
-      items: [titleEnabledRow, targetFieldSet, triggerFieldSet, actionFieldSet]
+      monitorValid: true,
+      items: [titleEnabledRow, targetFieldSet, triggerFieldSet, actionFieldSet],
+      buttons
     })
 
     function serializeRule() {
@@ -443,23 +463,6 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       return rule
     }
 
-    const buttons = []
-    buttons.push({
-      text: 'Cancel',
-      handler: function () { appwindow.close() }
-    })
-    if (!isReadOnly) {
-      buttons.push({
-        text: 'Save',
-        formBind: true,
-        handler: function () {
-          if (!formPanel.getForm().isValid()) return
-          const rule = serializeRule()
-          onSave(rule)
-          appwindow.close()
-        }
-      })
-    }
 
     const appwindow = new Ext.Window({
       title: ruleData ? (isReadOnly ? 'View Rule' : 'Edit Rule') : 'New Rule',
@@ -477,7 +480,6 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       bodyStyle: 'padding:10px;',
       buttonAlign: 'right',
       items: formPanel,
-      buttons
     })
 
     appwindow.show(Ext.getBody())
@@ -536,10 +538,9 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
       return `
         <div class="sm-grid-cell-with-toolbar">
           <div class="sm-dynamic-width">
-            <div style="font-weight:600;"><span style="color:${enabledColor}">${enabledIcon}</span> ${title}</div>
-            <div style="color:#555;">${action}</div>
-            <div style="color:#777;">${trigger}</div>
-            ${targetHtml ? `<div style="color:#999;">Target: ${targetHtml}</div>` : ''}
+            <div style="font-weight:600;padding-bottom:6px;"><span style="color:${enabledColor}">${enabledIcon}</span> ${title}</div>
+            ${targetHtml ? targetHtml : ''}
+            <div style="color:#777;">${action} ${trigger}</div>
           </div>
           <div class="sm-static-width">
             ${toolsMarkup}
@@ -636,6 +637,7 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
     const config = {
       store,
       columns,
+      disableSelection: true,
       tbar: tbar.length ? tbar : undefined,
       bbar: new Ext.Toolbar({
         items: [
@@ -654,7 +656,6 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
         }
       }),
       stripeRows: true,
-      border: false,
       listeners: {
         cellmousedown,
         rowdblclick: function (grid, rowIndex) {
@@ -669,17 +670,16 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
   },
 
   loadConfig: async function () {
-    const _this = this
     try {
       const config = await Ext.Ajax.requestPromise({
         responseType: 'json',
-        url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/tasks/review-aging/config`
+        url: `${STIGMAN.Env.apiBase}/collections/${this.collectionId}/tasks/review-aging/config`
       })
-      _this.store.loadData(config)
+      this.store.loadData(config)
     }
     catch (e) {
       if (e.status === 404) {
-        _this.store.removeAll()
+        this.store.removeAll()
       } else {
         SM.Error.handleError(e)
       }
@@ -687,13 +687,12 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
   },
 
   saveConfig: async function () {
-    const _this = this
     try {
       Ext.getBody().mask('Saving...')
-      const records = _this.store.snapshot?.items ?? _this.store.getRange()
+      const records = this.store.snapshot?.items ?? this.store.getRange()
       if (records.length === 0) {
         await Ext.Ajax.requestPromise({
-          url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/tasks/review-aging/config`,
+          url: `${STIGMAN.Env.apiBase}/collections/${this.collectionId}/tasks/review-aging/config`,
           method: 'DELETE'
         })
       } else {
@@ -725,7 +724,7 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
           return clean
         })
         await Ext.Ajax.requestPromise({
-          url: `${STIGMAN.Env.apiBase}/collections/${_this.collectionId}/tasks/review-aging/config`,
+          url: `${STIGMAN.Env.apiBase}/collections/${this.collectionId}/tasks/review-aging/config`,
           method: 'PUT',
           headers: { 'Content-Type': 'application/json;charset=utf-8' },
           jsonData: rules
@@ -880,7 +879,7 @@ SM.TaskConfig.TasksPanel = Ext.extend(Ext.Panel, {
           card = new SM.TaskConfig.ReviewAging.RulesGrid({
             collectionId: _this.collectionId,
             canEdit: _this.canEdit,
-            border: false
+            border: true
           })
           cardPanel.add(card)
           cardPanel.getLayout().setActiveItem(card)

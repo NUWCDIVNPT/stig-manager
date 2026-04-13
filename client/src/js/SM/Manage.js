@@ -1951,7 +1951,7 @@ SM.Manage.Collection.Panel = Ext.extend(Ext.Panel, {
 
     const tp = new Ext.TabPanel({
       region: 'center',
-      activeTab: 5,
+      activeTab: 0,
       border: false,
       items: [
         grantGrid,
