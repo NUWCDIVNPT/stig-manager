@@ -7505,8 +7505,7 @@ components:
     Error:
       type: object
       properties:
-        detail:
-          type: string
+        detail: {}
         error:
           type: string
         stack:
@@ -7842,6 +7841,8 @@ components:
     ReviewAgingTargetAsset:
       additionalProperties: false
       type: object
+      required:
+        - asset
       properties:
         asset:
           $ref: '#/components/schemas/AssetBasic'
@@ -7850,6 +7851,8 @@ components:
     ReviewAgingTargetLabel:
       additionalProperties: false
       type: object
+      required:
+        - label
       properties:
         label:
           $ref: '#/components/schemas/LabelBasicWithColor'
@@ -7858,6 +7861,8 @@ components:
     ReviewAgingTargetBenchmark:
       additionalProperties: false
       type: object
+      required:
+        - benchmarkId
       properties:
         benchmarkId:
           $ref: '#/components/schemas/BenchmarkId'
