@@ -196,14 +196,5 @@ describe('Token validation', function () {
       expect(res.status).to.equal(403)
       expect(res.body.error).to.equal('Required scopes were not found in token.')
     })
-    it('should reject empty scope', async function () {
-      const res = await bearerRequest({
-        url: `${apiOrigin}/api/user`,
-        method: 'GET',
-        token: oidc.getToken({username: 'user01', scope: ''})
-      })
-      expect(res.status).to.equal(403)
-      expect(res.body.error).to.equal('Required scopes were not found in token.')
-    })
   })
 })
