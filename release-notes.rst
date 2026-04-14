@@ -1,3 +1,13 @@
+1.6.7
+-------
+
+Changes:
+
+  - (API) feature: Add projections to getChecklistByAssetStig
+  - (API/UI) feature: Add updateAssetProps flag and UI for asset information updates on checklist import
+  - (API) chore: Remove lodash dependency
+  - (Dependencies) Various security and maintenance updates
+
 1.6.6
 -------
 
