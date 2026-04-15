@@ -110,15 +110,22 @@ async function createEventByJob(jobId, eventData) {
     const params = [eventName, eventData.starts, jobId]
     await dbUtils.pool.query(sqlCreateEvent, params)
   } else if (eventData.type === 'recurring') {
-    let endsAt = eventData.ends ? `ENDS '${eventData.ends}'` : ''
-    // Interpolate the interval unit as a bare word
+    const intervalFields = {
+      minute: 'MINUTE', hour: 'HOUR', day: 'DAY',
+      week: 'WEEK', month: 'MONTH'
+    }
+    const intervalSql = intervalFields[eventData.interval.field]
+    const enabledSql = eventData.enabled === false ? 'DISABLE' : 'ENABLE'
+    const endsSql = eventData.ends ? 'ENDS ?' : ''
     const sqlCreateEvent = `
-      CREATE EVENT ?? 
-      ON SCHEDULE EVERY ? ${eventData.interval.field} STARTS ? ${endsAt}
-      ${eventData.enabled === false ? 'DISABLE' : 'ENABLE'}
+      CREATE EVENT ??
+      ON SCHEDULE EVERY ? ${intervalSql} STARTS ? ${endsSql}
+      ${enabledSql}
       DO CALL run_job(?, null)
     `
-    const params = [eventName, eventData.interval.value, eventData.starts, jobId]
+    const params = [eventName, eventData.interval.value, eventData.starts]
+    if (eventData.ends) params.push(eventData.ends)
+    params.push(jobId)
     await dbUtils.pool.query(sqlCreateEvent, params)
   }
   return eventName

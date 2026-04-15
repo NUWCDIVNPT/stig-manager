@@ -1064,7 +1064,7 @@ describe('POST - exportToCollection - /collections/{collectionId}/export-to/{dst
         let exportedAssetResults 
         let exportedAssetStatuses
         it('Merge provided properties with a Collection Copy', async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.scrapCollection.collectionId}?elevate=true`, 'PATCH', user.token, {
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.scrapCollection.collectionId}`, 'PATCH', user.token, {
                 "metadata": {
                 "pocName": "poc2Patched",
                 "pocEmail": "pocEmail@email.com",
@@ -1260,7 +1260,7 @@ describe('POST - exportToCollection - /collections/{collectionId}/export-to/{dst
             expect(res.body[0].metrics.statuses, "comparing source asset to exported asset statuses").to.eql(expectedStatuses);
         })
         it('Merge provided properties with a Collection Copy 2', async () => {
-            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.scrapCollection.collectionId}?elevate=true`, 'PATCH', user.token, {
+            const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.scrapCollection.collectionId}`, 'PATCH', user.token, {
                 "metadata": {
                 "pocName": "poc2Patched",
                 "pocEmail": "pocEmail@email.com",
@@ -1718,12 +1718,6 @@ describe('PUT - setStigAssetsByCollectionUser - /collections/{collectionId}/gran
         it('Add restricted user to collection Y', async () => {
 
             const res = await utils.executeRequest(`${config.baseUrl}/collections/83?elevate=true&projection=grants`, 'PATCH', user.token, {
-                "metadata": {
-                  "pocName": "poc2Patched",
-                  "pocEmail": "pocEmail@email.com",
-                  "pocPhone": "12342",
-                  "reqRar": "true"
-                },
                   "grants": [
                       {
                         "userId": "87",

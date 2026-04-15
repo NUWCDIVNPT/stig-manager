@@ -120,7 +120,7 @@ SM.Review.Form.CommentTextArea = Ext.extend(Ext.form.TextArea, {
 SM.Review.Form.ResultEngineSprite = Ext.extend(Ext.form.DisplayField, {
   generateMarkup: function(resultEngine) {
     if (!resultEngine) return `<span class="sm-result-engine-sprite">Manual</span>`
-    const productSpan = `<span class="sm-result-engine-sprite">${resultEngine.product}</span>`
+    const productSpan = `<span class="sm-result-engine-sprite">${SM.he(resultEngine.product)}</span>`
     const overrideSpan = resultEngine.overrides?.length ? `<span class="sm-result-override-sprite">Override</span>` : ''
     return `${productSpan}${overrideSpan}`
   },
