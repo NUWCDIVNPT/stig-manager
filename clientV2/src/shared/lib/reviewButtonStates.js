@@ -1,3 +1,5 @@
+import { REVIEW_STATUS } from './reviewConstants.js'
+
 /**
  * Determines the state of the three action buttons (save, submit, accept)
  * in the review form.
@@ -12,7 +14,7 @@
  */
 export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubmittable, canAccept }) {
   const status = statusLabel || ''
-  const editable = status === '' || status === 'saved' || status === 'rejected'
+  const editable = status === '' || status === REVIEW_STATUS.SAVED || status === REVIEW_STATUS.REJECTED
 
   if (accessMode !== 'rw') {
     return {
@@ -41,13 +43,13 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
 
   // Submit button
   const submit = (() => {
-    if (status === 'submitted' || status === 'accepted') {
+    if (status === REVIEW_STATUS.SUBMITTED || status === REVIEW_STATUS.ACCEPTED) {
       return {
         text: 'Submit',
         enabled: false,
         visible: true,
         actionType: '',
-        tooltip: status === 'submitted'
+        tooltip: status === REVIEW_STATUS.SUBMITTED
           ? 'Review has already been submitted'
           : 'Review has already been accepted',
       }
@@ -71,7 +73,7 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
       }
     }
     // Clean + submittable + editable (saved or empty)
-    if (status === 'saved' || status === '') {
+    if (status === REVIEW_STATUS.SAVED || status === '') {
       return {
         text: 'Submit',
         enabled: true,
@@ -93,12 +95,12 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
   // Accept button
   const accept = {
     text: 'Accept',
-    enabled: status === 'submitted',
+    enabled: status === REVIEW_STATUS.SUBMITTED,
     visible: canAccept,
-    actionType: status === 'submitted' ? 'accept' : '',
-    tooltip: status === 'accepted'
+    actionType: status === REVIEW_STATUS.SUBMITTED ? 'accept' : '',
+    tooltip: status === REVIEW_STATUS.ACCEPTED
       ? 'Review has already been accepted'
-      : status !== 'submitted'
+      : status !== REVIEW_STATUS.SUBMITTED
         ? 'Review must be submitted before it can be accepted'
         : '',
   }

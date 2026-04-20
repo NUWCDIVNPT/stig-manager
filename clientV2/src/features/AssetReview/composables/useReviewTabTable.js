@@ -1,13 +1,19 @@
 import { computed, inject, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { ENGINE_TYPE, REVIEW_STATUS } from '../../../shared/lib/reviewConstants.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../lib/checklistUtils.js'
 import { buildEngineOptions } from '../lib/reviewFilterOptions.js'
 
 const EMPTY_STATS = {
   total: 0,
   results: { pass: 0, fail: 0, notapplicable: 0, other: 0 },
-  engine: { manual: 0, engine: 0, override: 0 },
-  statuses: { saved: 0, submitted: 0, accepted: 0, rejected: 0 },
+  engine: { [ENGINE_TYPE.MANUAL]: 0, [ENGINE_TYPE.ENGINE]: 0, [ENGINE_TYPE.OVERRIDE]: 0 },
+  statuses: {
+    [REVIEW_STATUS.SAVED]: 0,
+    [REVIEW_STATUS.SUBMITTED]: 0,
+    [REVIEW_STATUS.ACCEPTED]: 0,
+    [REVIEW_STATUS.REJECTED]: 0,
+  },
 }
 
 export function useReviewTabTable(dataRef, filterSchema) {
@@ -18,8 +24,8 @@ export function useReviewTabTable(dataRef, filterSchema) {
   const editable = computed(() =>
     accessMode.value === 'rw' && (
       !currentReview.value?.status?.label
-      || currentReview.value.status.label === 'saved'
-      || currentReview.value.status.label === 'rejected'
+      || currentReview.value.status.label === REVIEW_STATUS.SAVED
+      || currentReview.value.status.label === REVIEW_STATUS.REJECTED
     ),
   )
 

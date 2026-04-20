@@ -1,12 +1,13 @@
 import engineIcon from '../../../assets/bot2.svg'
 import overrideIcon from '../../../assets/override2.svg'
 import manualIcon from '../../../assets/user.svg'
+import { ENGINE_TYPE } from '../../../shared/lib/reviewConstants.js'
 import { getEngineDisplay } from './checklistUtils.js'
 
 const ENGINE_META = {
-  engine: { label: 'Engine', image: engineIcon },
-  override: { label: 'Override', image: overrideIcon },
-  manual: { label: 'Manual', image: manualIcon },
+  [ENGINE_TYPE.ENGINE]: { label: 'Engine', image: engineIcon },
+  [ENGINE_TYPE.OVERRIDE]: { label: 'Override', image: overrideIcon },
+  [ENGINE_TYPE.MANUAL]: { label: 'Manual', image: manualIcon },
 }
 
 export function buildEngineOptions(items) {

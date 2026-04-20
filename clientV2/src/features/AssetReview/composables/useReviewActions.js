@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { REVIEW_STATUS } from '../../../shared/lib/reviewConstants.js'
 import { patchReview, putReview } from '../api/assetReviewApi.js'
 
 export function useReviewActions({ collectionId, assetId }, deps) {
@@ -26,7 +27,7 @@ export function useReviewActions({ collectionId, assetId }, deps) {
         detail: detail ?? '',
         comment: comment ?? '',
         resultEngine: resultChanged ? null : (row?.resultEngine ?? null),
-        status: status || 'saved',
+        status: status || REVIEW_STATUS.SAVED,
       }
 
       const result = await putReview(collectionId.value, assetId.value, ruleId, body)
@@ -49,13 +50,13 @@ export function useReviewActions({ collectionId, assetId }, deps) {
       let status
       switch (actionType) {
         case 'accept':
-          status = 'accepted'
+          status = REVIEW_STATUS.ACCEPTED
           break
         case 'submit':
-          status = 'submitted'
+          status = REVIEW_STATUS.SUBMITTED
           break
         case 'unsubmit':
-          status = 'saved'
+          status = REVIEW_STATUS.SAVED
           break
         default:
           return null

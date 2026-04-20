@@ -1,4 +1,5 @@
 import { computed, ref, watch } from 'vue'
+import { REVIEW_STATUS } from '../lib/reviewConstants.js'
 import { getReviewButtonStates } from '../lib/reviewButtonStates.js'
 import { isFieldEnabled, isFieldRequired } from '../lib/reviewFormUtils.js'
 
@@ -38,7 +39,7 @@ export function useReviewEditForm({ rowData, fieldSettings, accessMode, canAccep
 
   const editable = computed(() => {
     const s = statusLabel.value
-    return accessMode.value === 'rw' && (s === '' || s === 'saved' || s === 'rejected')
+    return accessMode.value === 'rw' && (s === '' || s === REVIEW_STATUS.SAVED || s === REVIEW_STATUS.REJECTED)
   })
 
   // --- Dirty tracking ---
@@ -85,16 +86,16 @@ export function useReviewEditForm({ rowData, fieldSettings, accessMode, canAccep
 
   function isActionActive(actionType) {
     const s = statusLabel.value
-    if (!s || s === '' || s === 'rejected') {
+    if (!s || s === '' || s === REVIEW_STATUS.REJECTED) {
       return false
     }
-    if (s === 'saved' && (actionType === 'save' || actionType === 'save and unsubmit')) {
+    if (s === REVIEW_STATUS.SAVED && (actionType === 'save' || actionType === 'save and unsubmit')) {
       return true
     }
-    if (s === 'submitted' && (actionType === 'submit' || actionType === 'save and submit')) {
+    if (s === REVIEW_STATUS.SUBMITTED && (actionType === 'submit' || actionType === 'save and submit')) {
       return true
     }
-    if (s === 'accepted' && actionType === 'accept') {
+    if (s === REVIEW_STATUS.ACCEPTED && actionType === 'accept') {
       return true
     }
     return false
