@@ -25,7 +25,7 @@ function getClientEnv(){
     `const STIGMAN = {
         Env: {
             version: "${config.version}",
-            mode: "${config.client.mode}",
+            consoleMode: "${config.client.consoleMode}",
             apiBase: "${config.client.apiBase}",
             displayAppManagers: ${config.client.displayAppManagers},
             stateEvents: ${config.client.stateEvents},

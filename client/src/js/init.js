@@ -1,7 +1,7 @@
 import { stylesheets, scripts, isMinimizedSource } from './resources.js'
 
 (async function () {
-  if (STIGMAN.Env.mode !== 'development') {
+  if (STIGMAN.Env.consoleMode !== 'development') {
     console.log = function () { }
     console.warn = function () { }
     console.error = function () { }
