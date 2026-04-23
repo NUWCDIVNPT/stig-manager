@@ -15,10 +15,10 @@
     "chai": "^5.1.2",
     "chai-datetime": "^1.8.1",
     "deep-equal-in-any-order": "^2.0.6",
-    "fast-xml-parser": "5.5.8",
+    "fast-xml-parser": "5.7.0",
     "jszip": "^3.10.1",
     "mocha": "^11.7.5",
-    "uuid": "^11.0.3",
+    "uuid": "^14.0.0",
     "ws": "^8.18.3"
   },
   "overrides": {
