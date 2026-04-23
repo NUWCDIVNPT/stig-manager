@@ -1,5 +1,5 @@
 
-const uuid = require('uuid')
+const { randomUUID } = require('node:crypto')
 const onFinished = require('on-finished')
 const onHeaders = require('on-headers')
 const config = require('./config')
@@ -104,7 +104,7 @@ function requestLogger (req, res, next) {
   res._startAt = undefined
   res._startTime = undefined
   res.svcStatus = {}
-  req.requestId = uuid.v1()
+  req.requestId = randomUUID()
   
   // Response body length for appinfo and content for privileged requests
   let responseBody

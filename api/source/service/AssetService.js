@@ -1,7 +1,7 @@
 'use strict';
+const { randomUUID } = require('node:crypto')
 const dbUtils = require('./utils')
 const config = require('../utils/config')
-const uuid = require('uuid')
 
 let _this = this
 
@@ -590,7 +590,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
     let revisionStrResolved // Will hold specific revision string value, as opposed to "latest"
     const cklb = {
       title: '',
-      id: uuid.v1(),
+      id: randomUUID(),
       active: false,
       mode: 1,
       has_path: true,
@@ -738,7 +738,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
         markings.push(stig.marking)
       }
 
-      const stigUuid = uuid.v1()
+      const stigUuid = randomUUID()
       const stigObj = {
         stig_name: stig.title,
         display_name: stig.title.replace(' Security Technical Implementation Guide', ''),
@@ -755,7 +755,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
       const [resultGetChecklist] = await connection.query(sqlGetChecklist, [assetId, revId])  
       for (const row of resultGetChecklist) {
         const rule = {
-          uuid: uuid.v1(),
+          uuid: randomUUID(),
           stig_uuid: stigUuid,
           target_key: null,
           stig_ref: null,

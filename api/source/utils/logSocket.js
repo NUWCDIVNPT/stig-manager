@@ -1,8 +1,8 @@
+const { randomUUID } = require('node:crypto')
 const logger = require('./logger')
 const WebSocket = require('ws')
 const component = 'logSocket'
 const auth = require('./auth')
-const uuid = require('uuid')
 const SmError = require('./error')
 const asyncApiValidator = require('./asyncApiValidator')
 
@@ -15,7 +15,7 @@ class LogSession {
     this.authorized = false;
     this.tokenExp = null;
     this.logForwarding = false;
-    this.sessionId = uuid.v1();
+    this.sessionId = randomUUID();
     this.filter = null;
     this.pingIntervalId = null
     this.unauthorizedTimerId = null
