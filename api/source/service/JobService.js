@@ -1,6 +1,6 @@
+const { randomUUID } = require('node:crypto')
 const dbUtils = require('./utils')
 const _this = this
-const uuid = require('uuid')
 
 exports.queryJobs = async function ({ projections = [], filters = {} } = {}) {
   const columns = [
@@ -261,12 +261,12 @@ exports.getRunsByJob = async (jobId) => {
 }
 
 exports.runImmediateJob = async (jobId) => {
-  const v1 = uuid.v1()
+  const runId = randomUUID()
   const sql = `CREATE EVENT IF NOT EXISTS ??
   ON SCHEDULE AT CURRENT_TIMESTAMP
   DO CALL run_job(?,?)`
-  await dbUtils.pool.query(sql, [`job-${jobId}-${v1}`, jobId, v1])
-  return v1
+  await dbUtils.pool.query(sql, [`job-${jobId}-${runId}`, jobId, runId])
+  return runId
 }
 
 exports.getOutputByRun = async (runId, {filters}) => {
