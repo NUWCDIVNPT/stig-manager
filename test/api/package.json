@@ -11,7 +11,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@nuwcdivnpt/stig-manager-client-modules": "^1.6.6",
+    "@nuwcdivnpt/stig-manager-client-modules": "^1.6.7",
     "chai": "^5.1.2",
     "chai-datetime": "^1.8.1",
     "deep-equal-in-any-order": "^2.0.6",
@@ -23,7 +23,8 @@
   },
   "overrides": {
     "serialize-javascript": "^7.0.5",
-    "diff": "^8.0.3"
+    "diff": "^8.0.3",
+    "uuid": "^14.0.0"
   },    
   "devDependencies": {
     "mochawesome": "^7.1.3"
