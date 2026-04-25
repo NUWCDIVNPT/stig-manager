@@ -2,7 +2,6 @@ const config = require('./config')
 const logger = require('./logger')
 const jwt = require('jsonwebtoken')
 const retry = require('async-retry')
-const _ = require('lodash')
 const UserService = require(`../service/UserService`)
 const SmError = require('./error')
 const state = require('./state')
@@ -170,17 +169,14 @@ const validateOauthSecurity = function (req, requiredScopes) {
     const grantedScopes = typeof tokenPayload[config.oauth.claims.scope] === 'string' ? 
         tokenPayload[config.oauth.claims.scope].split(' ') : 
         tokenPayload[config.oauth.claims.scope]
-    const commonScopes = _.intersectionWith(grantedScopes, requiredScopes, function(gs, rs) {
-        if (gs === rs) return gs
-        let gsTokens = gs.split(":").filter(i => i.length)
-        let rsTokens = rs.split(":").filter(i => i.length)
-        if (gsTokens.length === 0) {
-            return false
-        }
-        else {
-            return gsTokens.every((t, i) => rsTokens[i] === t)
-        }
-    })
+    const commonScopes = grantedScopes.filter(gs =>
+        requiredScopes.some(rs => {
+            if (gs === rs) return true
+            const gsTokens = gs.split(':').filter(i => i.length)
+            const rsTokens = rs.split(':').filter(i => i.length)
+            return gsTokens.length > 0 && gsTokens.every((t, i) => rsTokens[i] === t)
+        })
+    )
     if (commonScopes.length == 0) {
         throw new SmError.OutOfScopeError()
     }

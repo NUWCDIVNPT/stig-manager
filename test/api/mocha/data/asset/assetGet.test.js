@@ -805,6 +805,45 @@ describe(`GET - Asset`, function () {
 
         })
 
+        it(`Return the Checklist for the supplied Asset and benchmarkId and revisionStr json with projections`, async function () {
+
+          const res = await utils.executeRequest(
+            `${config.baseUrl}/assets/${reference.testAsset.assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=json&projection=detail&projection=comment&projection=rule`,
+            'GET',
+            iteration.token
+          )
+
+          if(!distinct.hasAccessToTestAsset){
+            expect(res.status).to.eql(403)
+            return
+          }
+
+          expect(res.status).to.eql(200)
+          expect(res.body).to.be.an(`array`).of.length(reference.checklistLength)
+
+          for (const checklist of res.body) {
+            expect(checklist.assetId).to.be.oneOf(reference.testCollection.assetIds)
+            if (checklist.ruleId === reference.testCollection.ruleId) {
+              expect(checklist.ruleId).to.eql(reference.testCollection.ruleId)
+              expect(checklist.assetId).to.eql(reference.testAsset.assetId)
+              expect(checklist.result).to.eql("pass")
+              expect(checklist.status).to.eql("submitted")
+              expect(checklist.autoResult).to.eql(false)
+              expect(checklist.detail).to.eql("test\nvisible to lvl1")
+              expect(checklist.comment).to.eql("idk")
+              expect(checklist.rule).to.be.an('object')
+              expect(checklist.rule.ruleId).to.eql(reference.testRule.ruleId)
+              expect(checklist.rule.groupId).to.eql(reference.testRule.groupId)
+              expect(checklist.rule.version).to.eql(reference.testRule.version)
+              expect(checklist.rule.detail).to.be.an('object')
+              expect(checklist.rule.detail.vulnDiscussion).to.include("Unrestricted traffic may contain malicious traffic")
+              expect(checklist.rule.ccis).to.be.an('array')
+              expect(checklist.rule.check).to.be.an('object')
+              expect(checklist.rule.fix).to.be.an('object')
+            }
+          }
+        })
+
         it(`Return the Checklist for the supplied Asset and STIG XML (.cklB) - specific STIG`, async function () {
 
           const res = await utils.executeRequest(`${config.baseUrl}/assets/${reference.testAsset.assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=cklb`, 'GET', iteration.token)
@@ -1034,4 +1073,3 @@ describe(`GET - Asset`, function () {
     })
   }
 })
-

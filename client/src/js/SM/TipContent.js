@@ -22,11 +22,15 @@ SM.TipContent.ImportOptions.UnreviewedCommented = `The result to be imported for
 `
 
 SM.TipContent.ImportOptions.EmptyComment = `How to handle Reviews with empty commentary text:
-<br><br><b>Ignored:</b> Retain any existing text already stored. 
+<br><br><b>Ignored:</b> Retain any existing text already stored.
 <br><br><b>Replaced:</b> Create a static message. This message will become the text for the purposes of meeting submission requirements.
 <br><br><b>Imported:</b> This will have the effect of clearing any existing text.
 `
 
+SM.TipContent.ImportOptions.UpdateAssetProps = `Should Asset properties be updated from the import source when the Asset already exists in the Collection?
+<br><br>When <b>checked</b>, the import will update Asset information (IP, MAC, FQDN, noncomputing, and metadata including role and tech area) from the import source, if present.
+<br><br>When <b>unchecked</b>, existing Asset properties will be preserved.
+`
 
 SM.TipContent.Roles = `
 <b>Roles</b> <br>

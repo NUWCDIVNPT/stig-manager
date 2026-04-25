@@ -185,7 +185,7 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
                 dataIndex: 'filename',
                 sortable: true,
                 renderer: (v, m, r) => {
-                    m.attr = `ext:qtip="${r.data.fullPath}"`
+                    m.attr = `ext:qtip="${SM.he(r.data.fullPath)}"`
                     return v
                 }
             },
@@ -786,6 +786,7 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
     initComponent: function () {
         const _this = this
         this.context = this.context ?? 'manage' // 'or 'wizard'
+        this.canUpdateAssetProps = this.canUpdateAssetProps ?? true
         this.autoStatusCombo = new SM.ReviewsImport.AutoStatusComboBox({
             value: this.initialOptions.autoStatus.fail,
             name: 'autoStatus.fail',
@@ -853,6 +854,26 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
             }
         })
 
+        this.updateAssetPropsCb = new SM.Global.HelperCheckbox({
+            boxLabel: 'Update existing Asset properties',
+            name: 'updateAssetProps',
+            checked: this.initialOptions.updateAssetProps ?? false,
+            helpText: SM.TipContent.ImportOptions.UpdateAssetProps,
+            hideLabel: true,
+            disabled: this.context === 'wizard',
+            listeners: {
+                check: function (cb, checked) {
+                    if (_this.localStorage) {
+                        localStorage.setItem('wizardImportOptions', JSON.stringify(_this.getOptions()))
+                    }
+                    _this.onOptionChanged?.(_this, cb, checked)
+                }
+            }
+        })
+        this.updateAssetPropsCb.setReadOnly = function (readOnly) {
+            _this.updateAssetPropsCb.setDisabled(readOnly)
+        }
+
         this.autoStatusFieldGroup = new Ext.form.FieldSet({
             title: 'Review Status Per Result',
             border: true,
@@ -879,7 +900,7 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
             this.unreviewedCombo,
             this.unreviewedCommentedCombo,
             this.emptyDetailCombo,
-            this.emptyCommentCombo
+            this.emptyCommentCombo,
         ]
         this.allowCustomCb = new Ext.form.Checkbox({
             boxLabel: `Options can be customized for each import`,
@@ -904,6 +925,9 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
                     for (const combo of _this.optionComboBoxes) {
                         combo.setReadOnly(!checked)
                     }
+                    if (_this.canUpdateAssetProps) {
+                        _this.updateAssetPropsCb.setReadOnly(!checked)
+                    }
                     _this.localStorage = checked
                     if (_this.localStorage && localStorage.wizardImportOptions?.length) {
                         _this.restoreOptions(JSON.parse(localStorage.wizardImportOptions))
@@ -911,6 +935,12 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
                     _this.onOptionChanged?.(_this, cb, checked)
                 }
             }
+        })
+
+        this.noUpdateAssetPropsDisplay = new Ext.form.DisplayField({
+            value: '<i>Asset property updates are configured in the Manage Collection interface.</i>',
+            height: 22,
+            hideLabel: true
         })
 
         this.noCustomizeDisplay = new Ext.form.DisplayField({
@@ -939,6 +969,9 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
             _this.autoStatusCombo.setValue(options.autoStatus.fail)
             _this.autoStatusNotApplicable.setValue(options.autoStatus.notapplicable)
             _this.autoStatusPass.setValue(options.autoStatus.pass)
+            _this.updateAssetPropsCb.suspendEvents()
+            _this.updateAssetPropsCb.setValue(options.updateAssetProps ?? false)
+            _this.updateAssetPropsCb.resumeEvents()
         }
 
         this.getOptions = function () {
@@ -952,6 +985,7 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
                 unreviewedCommented: _this.unreviewedCommentedCombo.value ,  
                 emptyDetail: _this.emptyDetailCombo.value,
                 emptyComment: _this.emptyCommentCombo.value,
+                updateAssetProps: _this.canUpdateAssetProps ? _this.updateAssetPropsCb.checked : false,
                 allowCustom: _this.allowCustomCb.checked
             }
             return options
@@ -961,8 +995,8 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
         if (this.context === 'wizard') {
             items.push(this.initialOptions.allowCustom ? this.customizeCb : this.noCustomizeDisplay)
         }
-        items.push(this.autoStatusFieldGroup, ...this.optionComboBoxes)
-
+        items.push(...this.optionComboBoxes)
+        items.push(this.canUpdateAssetProps ? this.updateAssetPropsCb : this.noUpdateAssetPropsDisplay)
         if (this.context !== 'wizard') {
             items.push(this.allowCustomCb)
         }
@@ -1324,10 +1358,11 @@ SM.ReviewsImport.MultiSelectPanel = Ext.extend(Ext.Panel, {
     initComponent: function () {
         const _this = this
         this.parseOptionsFieldSet = new SM.ReviewsImport.ParseOptionsFieldSet({
-            height: 300,
+            height: 330,
             context: this.optionsContext,
             canAccept: true,
             initialOptions: this.initialOptions,
+            canUpdateAssetProps: this.canUpdateAssetProps,
         })
         this.selectFilesGrid = new SM.ReviewsImport.SelectFilesGrid({
             flex: 3,
@@ -1411,7 +1446,9 @@ SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
             height: 300,
             context: 'wizard',
             initialOptions: this.initialOptions,
-            canAccept: this.canAccept
+            canAccept: this.canAccept,
+            canUpdateAssetProps: this.canUpdateAssetProps ?? false
+
         })
 
 
@@ -2038,7 +2075,7 @@ SM.ReviewsImport.ImportProgressPanel = Ext.extend(Ext.Panel, {
     }
 })
 
-async function showImportResultFiles(collectionId, createObjects = true) {
+async function showImportResultFiles(collectionId, createObjects = true, canUpdateAssetProps = true) {
     try {
         const cachedCollection = SM.Cache.CollectionMap.get(collectionId)
         const userGrant = curUser.collectionGrants.find( i => i.collection.collectionId === cachedCollection.collectionId )?.roleId
@@ -2059,6 +2096,7 @@ async function showImportResultFiles(collectionId, createObjects = true) {
             optionsContext: 'wizard',
             initialOptions,
             canAccept,
+            canUpdateAssetProps,
             listeners: {
                 continue: function(panel) {
                     const records = panel.selectFilesGrid.store.getRange()
@@ -2351,14 +2389,15 @@ async function showImportResultFiles(collectionId, createObjects = true) {
                 fpwindow.add(progressPanel)
                 fpwindow.doLayout()
 
+                const { updateAssetProps } = fp.parseOptionsFieldSet.getOptions()
                 let processedCount = 0
                 for (const taskAsset of taskAssets.values()) {
                     try {
                         let assetId = taskAsset.assetProps.assetId
                         updateProgress(processedCount / taskAssets.size, taskAsset.assetProps.name)
                         let importAssetResult
-                        if (modifyAssets && (!taskAsset.knownAsset || taskAsset.hasNewAssignment)) {
-                            importAssetResult = await importAsset(taskAsset)
+                        if (modifyAssets && (!taskAsset.knownAsset || taskAsset.hasNewAssignment || (taskAsset.hasUpdatedAssetProps && updateAssetProps))) {
+                            importAssetResult = await importAsset(taskAsset, updateAssetProps)
                             updateStatusGrid(importAssetResult)
                             assetId = importAssetResult.assetId
                         }
@@ -2404,14 +2443,18 @@ async function showImportResultFiles(collectionId, createObjects = true) {
                 progressPanel.st.store.loadData(status, true)
             }
 
-            async function importAsset(taskAsset) {
+            async function importAsset(taskAsset, updateAssetProps) {
                 let url, method, jsonData
-                if (taskAsset.knownAsset && taskAsset.hasNewAssignment) {
+                if (taskAsset.knownAsset) {
                     url = `${STIGMAN.Env.apiBase}/assets/${taskAsset.assetProps.assetId}`
                     method = 'PATCH'
-                    jsonData = {
-                        collectionId: taskAsset.assetProps.collectionId,
-                        stigs: taskAsset.assetProps.stigs
+                    jsonData = { collectionId: taskAsset.assetProps.collectionId }
+                    if (taskAsset.hasNewAssignment) {
+                        jsonData.stigs = taskAsset.assetProps.stigs
+                    }
+                    if (taskAsset.hasUpdatedAssetProps && updateAssetProps) {
+                        const { ip, fqdn, mac, noncomputing, metadata } = taskAsset.assetProps
+                        Object.assign(jsonData, { ip, fqdn, mac, noncomputing, metadata })
                     }
                 }
                 else {
@@ -2496,6 +2539,7 @@ async function showImportResultFile(params) {
             optionsContext: 'wizard',
             initialOptions,
             canAccept,
+            canUpdateAssetProps: false,
             onFileSelected,
             onFileDropped
         })

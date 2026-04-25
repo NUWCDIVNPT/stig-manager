@@ -79,6 +79,10 @@ async function exchangeCodeForToken({ code, codeVerifier, clientId = ENV.clientI
 async function initialize(options) {
   if (!initialized) {
     initialized = true
+    const parsedRedirectUri = new URL(options.redirectUri)
+    if (!parsedRedirectUri.protocol.startsWith('http')) {
+      return { success: false, error: `Invalid redirectUri scheme: ${parsedRedirectUri.protocol}` }
+    }
     redirectUri = options.redirectUri
     ENV = options.env || null
 
@@ -108,10 +112,10 @@ async function getStatus() {
 }
 
 function logout() {
-  return {
-    success: true,
-    redirect: oidcConfiguration.end_session_endpoint
+  if (!oidcConfiguration.end_session_endpoint) {
+    return { success: false, error: 'Logout not available' }
   }
+  return { success: true, redirect: oidcConfiguration.end_session_endpoint }
 }
 
 async function onMessage(e) {
@@ -201,8 +205,20 @@ function validateOidcConfiguration() {
   } else if (ENV.strictPkce && !oidcConfiguration.code_challenge_methods_supported?.includes('S256')) {
     result.success = false
     result.error = 'OP does not advertise PKCE and STIGMAN_CLIENT_STRICT_PKCE=true'
+  } else if (oidcConfiguration.end_session_endpoint) {
+    try {
+      const parsed = new URL(oidcConfiguration.end_session_endpoint)
+      if (!parsed.protocol.startsWith('http')) {
+        console.warn(logPrefix, 'end_session_endpoint has invalid scheme, logout will be unavailable:', oidcConfiguration.end_session_endpoint)
+        oidcConfiguration.end_session_endpoint = null
+      }
+    }
+    catch {
+      console.warn(logPrefix, 'end_session_endpoint is not a valid URL, logout will be unavailable:', oidcConfiguration.end_session_endpoint)
+      oidcConfiguration.end_session_endpoint = null
+    }
   }
-  return result 
+  return result
 }
 
 function getScopeStr() {

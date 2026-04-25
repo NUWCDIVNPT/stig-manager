@@ -1,7 +1,7 @@
 'use strict';
+const { randomUUID } = require('node:crypto')
 const dbUtils = require('./utils')
 const config = require('../utils/config')
-const uuid = require('uuid')
 
 let _this = this
 
@@ -182,7 +182,7 @@ exports.queryAssets = async function ({projections = [], filter = {}, grant = {}
   return (rows)
 }
 
-exports.queryChecklist = async function (inPredicates) {
+exports.queryChecklist = async function (inPredicates, projections = []) {
   let connection
   try {
     const columns = [
@@ -201,6 +201,83 @@ exports.queryChecklist = async function (inPredicates) {
       `review.ts`,
       `review.touchTs`
     ]
+    if (projections.includes('rule')) {
+      columns.push(`json_object(
+        'ruleId', rgr.ruleId,
+        'severity', rgr.severity,
+        'title', rgr.title,
+        'version', rgr.version,
+        'groupId', rgr.groupId,
+        'groupTitle', rgr.groupTitle,
+        'detail', json_object(
+          'weight', rgr.weight,
+          'vulnDiscussion', rgr.vulnDiscussion,
+          'falsePositives', rgr.falsePositives,
+          'falseNegatives', rgr.falseNegatives,
+          'documentable', rgr.documentable,
+          'mitigations', rgr.mitigations,
+          'severityOverrideGuidance', rgr.severityOverrideGuidance,
+          'potentialImpacts', rgr.potentialImpacts,
+          'thirdPartyTools', rgr.thirdPartyTools,
+          'mitigationControl', rgr.mitigationControl,
+          'responsibility', rgr.responsibility
+        ),
+        'ccis', coalesce(
+          (
+            select json_arrayagg(json_object(
+              'cci', rgrcc.cci,
+              'apAcronym', cci.apAcronym,
+              'definition', cci.definition,
+              'control', crm.parentControl
+            ))
+            from rev_group_rule_cci_map rgrcc
+            inner join cci using (cci)
+            left join cci_reference_map crm using (cci)
+            where rgrcc.rgrId = rgr.rgrId
+          ),
+          json_array()
+        ),
+        'check', json_object(
+          'system', rgr.checkSystem,
+          'content', (
+            select cc.content
+            from check_content cc
+            where cc.digest = rgr.checkDigest
+            limit 1
+          )
+        ),
+        'fix', json_object(
+          'fixref', rgr.fixref,
+          'text', (
+            select ft.text
+            from fix_text ft
+            where ft.digest = rgr.fixDigest
+            limit 1
+          )
+        ),
+        'ruleIds', coalesce(
+          (
+            select json_arrayagg(rvcd2.ruleId)
+            from rule_version_check_digest rvcd2
+            where rvcd2.version = rgr.version
+              and rvcd2.checkDigest = rgr.checkDigest
+          ),
+          json_array()
+        ),
+        'stigs', json_array(
+          json_object(
+            'benchmarkId', rev.benchmarkId,
+            'revisionStr', concat('V', rev.version, 'R', rev.release)
+          )
+        )
+      ) as rule`)
+    }
+    if (projections.includes('detail')) {
+      columns.push('review.detail as "detail"')
+    }
+    if (projections.includes('comment')) {
+      columns.push('review.comment as "comment"')
+    }
     const joins = [
       'current_rev rev',
       'left join rev_group_rule_map rgr using (revId)',
@@ -513,7 +590,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
     let revisionStrResolved // Will hold specific revision string value, as opposed to "latest"
     const cklb = {
       title: '',
-      id: uuid.v1(),
+      id: randomUUID(),
       active: false,
       mode: 1,
       has_path: true,
@@ -661,7 +738,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
         markings.push(stig.marking)
       }
 
-      const stigUuid = uuid.v1()
+      const stigUuid = randomUUID()
       const stigObj = {
         stig_name: stig.title,
         display_name: stig.title.replace(' Security Technical Implementation Guide', ''),
@@ -678,7 +755,7 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
       const [resultGetChecklist] = await connection.query(sqlGetChecklist, [assetId, revId])  
       for (const row of resultGetChecklist) {
         const rule = {
-          uuid: uuid.v1(),
+          uuid: randomUUID(),
           stig_uuid: stigUuid,
           target_key: null,
           stig_ref: null,
@@ -1310,7 +1387,7 @@ exports.getStigsByAsset = async function ({assetId, grant}) {
   return (rows)
 }
 
-exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionStr, format) {
+exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionStr, format, projections = []) {
   switch (format) {
     case 'json':
     case 'json-access': {
@@ -1318,7 +1395,7 @@ exports.getChecklistByAssetStig = async function(assetId, benchmarkId, revisionS
         assetId,
         benchmarkId,
         revisionStr
-      })
+      }, projections)
     }
     case 'ckl': 
       return _this.cklFromAssetStigs(assetId, [{benchmarkId, revisionStr}])

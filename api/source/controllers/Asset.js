@@ -209,11 +209,12 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
     const benchmarkId = req.params.benchmarkId
     const revisionStr = req.params.revisionStr
     const format = req.query.format || 'json'
+    const projections = req.query.projection
 
     const access = await dbUtils.getUserAssetStigAccess({assetId, benchmarkId, grants: req.userObject.grants})
     if (access === 'none') throw new SmError.PrivilegeError()
 
-    const checklist = await AssetService.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, format, req.userObject )
+    const checklist = await AssetService.getChecklistByAssetStig(assetId, benchmarkId, revisionStr, format, projections, req.userObject )
     if (format.startsWith('json')) {
       res.json(format === 'json-access' ? {access, checklist} : checklist)
       return
@@ -588,8 +589,8 @@ function getCollectionIdAndVerifyAccess(request, minimumRole = Security.ROLES.Ma
  */
 async function getAssetInfoAndVerifyAccess(request, roleId = Security.ROLES.Manage) {
   const assetId = request.params.assetId
-  const [rows] = await dbUtils.selectCollectionByAssetId(assetId)
-  const grant = request.userObject.grants[rows[0]?.collectionId]
+  const row = await dbUtils.selectCollectionByAssetId(assetId)
+  const grant = request.userObject.grants[row?.collectionId]
   // check if user has sufficient access level
   if (!grant || grant.roleId < roleId) {
     throw new SmError.PrivilegeError("Insufficient access to this asset's collection.")

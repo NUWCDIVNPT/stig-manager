@@ -54,6 +54,9 @@ module.exports.createCollection = async function createCollection (req, res, nex
     const elevate = req.query.elevate
     const body = req.body
     if ( elevate || req.userObject.privileges.create_collection ) {
+      if (elevate && (body.settings !== undefined || body.labels !== undefined || body.metadata !== undefined)) {
+        throw new SmError.PrivilegeError('Elevated requests cannot set collection settings, labels, or metadata.')
+      }
       if (!hasUniqueGrants(body.grants)) {
         throw new SmError.UnprocessableError('Duplicate user or user group in grant array')
       }
@@ -266,6 +269,9 @@ module.exports.replaceCollection = async function replaceCollection (req, res, n
     const projection = req.query.projection
     const body = req.body
 
+    if (elevate && (body.settings !== undefined || body.labels !== undefined || body.metadata !== undefined)) {
+      throw new SmError.PrivilegeError('Elevated requests cannot set collection settings, labels, or metadata.')
+    }
     if (!hasUniqueGrants(body.grants)) {
       throw new SmError.UnprocessableError('Duplicate user in grant array')
     }
@@ -306,6 +312,9 @@ module.exports.updateCollection = async function updateCollection (req, res, nex
     const {collectionId, grant} = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage, true)
     const projection = req.query.projection
     const body = req.body
+    if (elevate && (body.settings !== undefined || body.labels !== undefined || body.metadata !== undefined)) {
+      throw new SmError.PrivilegeError('Elevated requests cannot set collection settings, labels, or metadata.')
+    }
     if (body.grants) {
       if (!hasUniqueGrants(body.grants)) {
         throw new SmError.UnprocessableError('Duplicate user in grant array')

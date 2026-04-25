@@ -109,4 +109,92 @@ describe('Token validation', function () {
       expect(res.body.error).to.equal(`Required scopes were not found in token.`)
     })
   })
+
+  describe('Token scope validation', function () {
+    const {apiPort, dbPort, oidcPort, apiOrigin, oidcOrigin} = getPorts(54080)
+
+    before(async function () {
+      this.timeout(60000)
+      oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
+      await oidc.start({port: oidcPort})
+      console.log('    ✔ oidc started')
+      console.log('    try mysql start')
+      mysql = await spawnMySQL({tag:'8.0.24', port: dbPort})
+      console.log('    ✔ mysql started')
+      console.log('    try api start')
+      api = await spawnApiPromise({
+        resolveOnType: 'started',
+        resolveOnClose: false,
+        env: {
+          STIGMAN_API_PORT: apiPort,
+          STIGMAN_DEPENDENCY_RETRIES: 2,
+          STIGMAN_DB_PASSWORD: 'stigman',
+          STIGMAN_DB_HOST: '127.0.0.1',
+          STIGMAN_DB_PORT: dbPort,
+          STIGMAN_OIDC_PROVIDER: oidcOrigin,
+          STIGMAN_LOG_LEVEL: '4'
+        }
+      })
+      console.log('    ✔ api started')
+    })
+
+    after(async function () {
+      await api.stop()
+      await mysql.stop()
+      await oidc.stop()
+      addContext(this, {title: 'api-log', value: api.logRecords})
+    })
+
+    it('should accept top-level scope "stig-manager"', async function () {
+      const res = await bearerRequest({
+        url: `${apiOrigin}/api/user`,
+        method: 'GET',
+        token: oidc.getToken({username: 'user01', scope: 'stig-manager'})
+      })
+      expect(res.status).to.equal(200)
+    })
+    it('should accept parent scope "stig-manager:user"', async function () {
+      const res = await bearerRequest({
+        url: `${apiOrigin}/api/user`,
+        method: 'GET',
+        token: oidc.getToken({username: 'user01', scope: 'stig-manager:user'})
+      })
+      expect(res.status).to.equal(200)
+    })
+    it('should accept exact scope "stig-manager:user:read"', async function () {
+      const res = await bearerRequest({
+        url: `${apiOrigin}/api/user`,
+        method: 'GET',
+        token: oidc.getToken({username: 'user01', scope: 'stig-manager:user:read'})
+      })
+      expect(res.status).to.equal(200)
+    })
+    it('should reject wrong branch scope "stig-manager:stig"', async function () {
+      const res = await bearerRequest({
+        url: `${apiOrigin}/api/user`,
+        method: 'GET',
+        token: oidc.getToken({username: 'user01', scope: 'stig-manager:stig'})
+      })
+      expect(res.status).to.equal(403)
+      expect(res.body.error).to.equal('Required scopes were not found in token.')
+    })
+    it('should reject wrong branch scope "stig-manager:collection:read"', async function () {
+      const res = await bearerRequest({
+        url: `${apiOrigin}/api/user`,
+        method: 'GET',
+        token: oidc.getToken({username: 'user01', scope: 'stig-manager:collection:read'})
+      })
+      expect(res.status).to.equal(403)
+      expect(res.body.error).to.equal('Required scopes were not found in token.')
+    })
+    it('should reject unrelated scopes "openid profile"', async function () {
+      const res = await bearerRequest({
+        url: `${apiOrigin}/api/user`,
+        method: 'GET',
+        token: oidc.getToken({username: 'user01', scope: 'openid profile'})
+      })
+      expect(res.status).to.equal(403)
+      expect(res.body.error).to.equal('Required scopes were not found in token.')
+    })
+  })
 })

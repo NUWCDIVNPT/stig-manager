@@ -42,14 +42,20 @@ async function start () {
 			el.innerHTML += `<br/><br/>Error Fetching user data`
 			throw(e)
 		}
-		if (curUser.username !== undefined) {
-			loadApp();
-		} else {
-			el.innerHTML += `<br/>No account for ${window.oidcWorker.token}`
-		}
+		loadApp();
 	}
 	catch (e) {
-		el.innerHTML += `<br/></br/><textarea class="sm-bootstrap-error" wrap="off" rows=24 cols=80 style="font-size: 10px" readonly>${JSON.stringify(STIGMAN.serializeError(e), null, 2)}</textarea>`
+		const ta = document.createElement('textarea')
+		ta.className = 'sm-bootstrap-error'
+		ta.setAttribute('wrap', 'off')
+		ta.rows = 24
+		ta.cols = 80
+		ta.style.fontSize = '10px'
+		ta.readOnly = true
+		ta.value = JSON.stringify(STIGMAN.serializeError(e), null, 2)
+		el.appendChild(document.createElement('br'))
+		el.appendChild(document.createElement('br'))
+		el.appendChild(ta)
 	}
 }
 
@@ -269,7 +275,7 @@ async function loadApp () {
 
 	}
 	catch (e) {
-		Ext.get( 'indicator' ).dom.innerHTML = e.message
+		Ext.get( 'indicator' ).dom.innerHTML = SM.he(e.message)
 	}
 
 } //end loadApp()

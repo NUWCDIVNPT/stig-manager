@@ -1,6 +1,12 @@
 import { stylesheets, scripts, isMinimizedSource } from './resources.js'
 
 (async function () {
+  if (STIGMAN.Env.consoleMode !== 'development') {
+    console.log = function () { }
+    console.warn = function () { }
+    console.error = function () { }
+    console.debug = function () { }
+  }
   const statusEl = document.getElementById("loading-text")
   let OW // aka window.oidcWorker, created in setupOidcWorker()
   if (!window.isSecureContext) {
@@ -164,13 +170,18 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
     statusEl.innerHTML = html
   }
 
+  function escapeHtml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+  }
+
   function appendError(message, showReauth = true) {
+    const safeMessage = escapeHtml(message)
     if (showReauth) {
       const reauthHref = window.location.origin + window.location.pathname
-      statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${message}</span><br><br><a href="${reauthHref}">Retry authorization.</a>`
+      statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${safeMessage}</span><br><br><a href="${reauthHref}">Retry authorization.</a>`
     }
     else {
-      statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${message}</span>`
+      statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${safeMessage}</span>`
     }
     hideSpinner()
   }

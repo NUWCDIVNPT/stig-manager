@@ -199,7 +199,7 @@ SM.CollectionPanel.CommonColumns = [
     renderer: function (v, md, r) {
       const detailedCora = r.get('coraScoreDetail')
       let riskClass = getRiskClass(detailedCora.riskRating)
-      return `<div class="sm-cora-column ${riskClass}" ext:qtip="<div style='white-space: nowrap;'>${detailedCora.riskRating}</div>">${(detailedCora.weightedAvg * 100).toFixed(1)}</div>`
+      return `<div class="sm-cora-column ${riskClass}" ext:qtip="<div style='white-space: nowrap;'>${SM.he(detailedCora.riskRating)}</div>">${(detailedCora.weightedAvg * 100).toFixed(1)}</div>`
     }
   },
   {
@@ -1904,7 +1904,7 @@ SM.CollectionPanel.showCollectionTab = function (options) {
           text: 'Import CKL(B) or SCAP...',
           qtip: SM.TipContent.ImportFromCollectionPanel,
           handler: () => {
-            showImportResultFiles(collectionId, false)         
+            showImportResultFiles(collectionId, false, false)         
           }
         }
       ],

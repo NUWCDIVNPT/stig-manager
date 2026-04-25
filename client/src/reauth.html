@@ -108,9 +108,13 @@
       statusEl.innerHTML += `${statusEl.innerHTML ? '<br/><br/>' : ''}${html}`
     }
 
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+    }
+
     function appendError(message) {
       const cleanHref = window.location.origin + window.location.pathname
-      statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${message}</span><br><br><a href="${cleanHref}">Retry authorization.</a>`
+      statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${escapeHtml(message)}</span><br><br><a href="${cleanHref}">Retry authorization.</a>`
       hideSpinner()
     }
     function hideSpinner() {
