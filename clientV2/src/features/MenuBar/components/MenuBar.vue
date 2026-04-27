@@ -69,11 +69,11 @@ const items = computed(() => {
         {
           separator: true,
         },
-        {
+        ...(oidcWorker.logoutAvailable ? [{
           label: 'Sign out',
           icon: 'pi pi-sign-out',
           command: handleLogout,
-        },
+        }] : []),
       ],
     })
   }

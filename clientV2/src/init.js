@@ -179,13 +179,19 @@ function setStatus(html) {
   statusEl.innerHTML = html
 }
 
+function escHtml(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 function appendError(message, showReauth = true) {
   if (showReauth) {
     const reauthHref = window.location.origin + window.location.pathname
-    statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${message}</span><br><br><a href="${reauthHref}">Retry authorization.</a>`
+    statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${escHtml(message)}</span><br><br><a href="${reauthHref}">Retry authorization.</a>`
   }
   else {
-    statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${message}</span>`
+    statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${escHtml(message)}</span>`
   }
   hideSpinner()
 }
@@ -229,6 +235,7 @@ async function setupOidcWorker() {
       this.worker.port.postMessage({ requestId: 'contextActive' })
     },
     channelName: null,
+    logoutAvailable: true,
     token: null,
     tokenParsed: null,
     worker: new SharedWorker(`${import.meta.env.BASE_URL}workers/oidc-worker.js`, { name: 'stigman-oidc-worker', type: 'module' }),
@@ -242,6 +249,7 @@ async function setupOidcWorker() {
     return
   }
   OW.channelName = response.channelName
+  OW.logoutAvailable = response.logoutAvailable ?? true
   const bc = new BroadcastChannel(STIGMAN.oidcWorker.channelName)
   bc.onmessage = (event) => {
     if (event.data.type === 'accessToken') {
