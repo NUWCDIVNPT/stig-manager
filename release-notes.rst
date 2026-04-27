@@ -1,3 +1,21 @@
+1.6.9
+-------
+
+Changes:
+
+  - (API) Added guard to prevent elevated requests from modifying collection ``settings``, ``labels``, or ``metadata`` on create/replace/update
+  - (API) Simplified asset collection retrieval in controllers
+  - (API) Refactored JWKS cache error logging
+  - (API) Replaced direct string interpolation in SQL query construction with parameterized binds in MetricsService and JobService
+  - (UI) New ``STIGMAN_CLIENT_CONSOLE_MODE`` environment variable to suppress console output in non-development environments
+  - (UI) Various escaping and DOM insertion improvements across multiple SM components
+  - (UI) Updated OIDC worker initialization
+  - (Docs) Clarified data and permissions documentation for elevated actions
+  - (Tests) Added regression tests for cross-collection write access; updated test utilities and collection test fixtures to align with API behavior
+  - (Dependencies) Update ``fast-xml-parser`` to v5.7.1 and remove the ``uuid`` runtime dependency from the API
+  - (Dependencies) Update ``@nuwcdivnpt/stig-manager-client-modules`` to v1.6.7
+  - (Dependencies) Various security and maintenance updates
+
 1.6.8
 -------
 
