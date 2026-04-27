@@ -69,13 +69,12 @@ const upMigration = [
   `DROP PROCEDURE IF EXISTS task_output_collection`,
   `CREATE PROCEDURE task_output_collection(
     IN in_type VARCHAR(45),
-    IN in_message VARCHAR(255),
-    IN in_collectionId INT
+    IN in_message VARCHAR(255)
   )
     BEGIN
       IF in_message IS NULL THEN SET in_message = ''; END IF;
       INSERT INTO task_output (runId, taskId, collectionId, type, message)
-      VALUES (@runId, @taskId, in_collectionId, in_type, in_message);
+      VALUES (@runId, @taskId, @taskCollectionId, in_type, in_message);
     END`,
 
   // Reusable utility: delete reviews (and their history) in batches from t_reviewIds temp table.
@@ -96,22 +95,23 @@ const upMigration = [
         DECLARE err_msg TEXT;
         GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
         ROLLBACK;
-        CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
+        CALL task_output('error', concat('[delete_review_batch] code: ', err_code, ' message: ', err_msg));
+        CALL task_output_collection('error', concat('[delete_review_batch] code: ', err_code, ' message: ', err_msg));
         RESIGNAL;
       END;
 
       SELECT MAX(seq) INTO v_numReviewIds FROM t_reviewIds;
-      CALL task_output('info', concat('found ', IFNULL(v_numReviewIds, 0), ' reviews to delete'));
+      CALL task_output_collection('info', concat('found ', IFNULL(v_numReviewIds, 0), ' reviews to delete'));
 
       IF IFNULL(v_numReviewIds, 0) > 0 THEN
         DROP TEMPORARY TABLE IF EXISTS t_historyIds;
         CREATE TEMPORARY TABLE t_historyIds (seq INT AUTO_INCREMENT PRIMARY KEY)
           SELECT historyId FROM review_history WHERE reviewId IN (SELECT reviewId FROM t_reviewIds);
         SELECT MAX(seq) INTO v_numHistoryIds FROM t_historyIds;
-        CALL task_output('info', concat('found ', IFNULL(v_numHistoryIds, 0), ' history records to delete'));
+        CALL task_output_collection('info', concat('found ', IFNULL(v_numHistoryIds, 0), ' history records to delete'));
 
         IF IFNULL(v_numHistoryIds, 0) > 0 THEN
-          CALL task_output('info', concat('deleting ', v_numHistoryIds, ' history records'));
+          CALL task_output_collection('info', concat('deleting ', v_numHistoryIds, ' history records'));
           SET v_curMinId = 1;
           SET v_curMaxId = v_curMinId + v_incrementValue;
           REPEAT
@@ -124,7 +124,7 @@ const upMigration = [
         END IF;
         DROP TEMPORARY TABLE IF EXISTS t_historyIds;
 
-        CALL task_output('info', concat('deleting ', v_numReviewIds, ' reviews'));
+        CALL task_output_collection('info', concat('deleting ', v_numReviewIds, ' reviews'));
         SET v_curMinId = 1;
         SET v_curMaxId = v_curMinId + v_incrementValue;
         REPEAT
@@ -155,7 +155,8 @@ const upMigration = [
         DECLARE err_msg TEXT;
         GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
         ROLLBACK;
-        CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
+        CALL task_output('error', concat('[update_review_status_batch] code: ', err_code, ' message: ', err_msg));
+        CALL task_output_collection('error', concat('[update_review_status_batch] code: ', err_code, ' message: ', err_msg));
         RESIGNAL;
       END;
 
@@ -163,7 +164,7 @@ const upMigration = [
       SELECT statusId INTO v_statusId FROM status WHERE api = in_status LIMIT 1;
 
       SELECT MAX(seq) INTO v_numReviewIds FROM t_reviewIds;
-      CALL task_output('info', concat('updating ', IFNULL(v_numReviewIds, 0), ' reviews: status -> ', in_status));
+      CALL task_output_collection('info', concat('updating ', IFNULL(v_numReviewIds, 0), ' reviews: status: ', in_status));
 
       IF IFNULL(v_numReviewIds, 0) > 0 THEN
         REPEAT
@@ -196,7 +197,8 @@ const upMigration = [
         DECLARE err_msg TEXT;
         GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
         ROLLBACK;
-        CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
+        CALL task_output('error', concat('[update_review_result_batch] code: ', err_code, ' message: ', err_msg));
+        CALL task_output_collection('error', concat('[update_review_result_batch] code: ', err_code, ' message: ', err_msg));
         RESIGNAL;
       END;
 
@@ -206,7 +208,7 @@ const upMigration = [
       SELECT resultId INTO v_resultId FROM result WHERE api = in_result LIMIT 1;
 
       SELECT MAX(seq) INTO v_numReviewIds FROM t_reviewIds;
-      CALL task_output('info', concat('updating ', IFNULL(v_numReviewIds, 0), ' reviews: result -> ', in_result));
+      CALL task_output_collection('info', concat('updating ', IFNULL(v_numReviewIds, 0), ' reviews: result: ', in_result));
 
       IF IFNULL(v_numReviewIds, 0) > 0 THEN
         REPEAT
@@ -235,7 +237,8 @@ const upMigration = [
         DECLARE err_msg TEXT;
         GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
         ROLLBACK;
-        CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
+        CALL task_output('error', concat('[prune_and_insert_history] code: ', err_code, ' message: ', err_msg));
+        CALL task_output_collection('error', concat('[prune_and_insert_history] code: ', err_code, ' message: ', err_msg));
         RESIGNAL;
       END;
 
@@ -537,7 +540,9 @@ const upMigration = [
         FETCH cur INTO v_collectionId;
         IF v_done THEN LEAVE collection_loop; END IF;
 
-        CALL task_output_collection('info', concat('processing collectionId ', v_collectionId), v_collectionId);
+        SET @taskCollectionId = v_collectionId;
+        CALL task_output('info', concat('processing collectionId ', v_collectionId));
+        CALL task_output_collection('info', concat('processing collectionId ', v_collectionId));
 
         BEGIN  -- collection-scoped block: error here rolls back and continues the loop
           DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -546,7 +551,7 @@ const upMigration = [
             DECLARE err_msg TEXT;
             GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
             ROLLBACK;
-            CALL task_output_collection('error', concat('code: ', err_code, ' message: ', err_msg), v_collectionId);
+            CALL task_output_collection('error', concat('code: ', err_code, ' message: ', err_msg));
             CALL task_output('error', concat('error processing collectionId ', v_collectionId, ': code: ', err_code, ' message: ', err_msg));
           END;
 
@@ -589,6 +594,17 @@ const upMigration = [
                 'WHERE a.collectionId = ', v_collectionId,
                 ' AND r.', v_triggerField, ' < ''', DATE_FORMAT(v_cutoff, '%Y-%m-%d %H:%i:%s'), ''''
               );
+
+              -- Exclude reviews already in the desired state
+              IF v_triggerAction = 'update' THEN
+                IF v_updateField = 'status' THEN
+                  SET @v_sql = CONCAT(@v_sql,
+                    ' AND r.statusId != (SELECT statusId FROM status WHERE api = ''', v_updateValue, ''' LIMIT 1)');
+                ELSEIF v_updateField = 'result' THEN
+                  SET @v_sql = CONCAT(@v_sql,
+                    ' AND r.resultId != (SELECT resultId FROM result WHERE api = ''', v_updateValue, ''' LIMIT 1)');
+                END IF;
+              END IF;
 
               -- Apply target scoping
               IF v_assetId IS NOT NULL AND v_benchmarkId IS NULL THEN
@@ -635,8 +651,7 @@ const upMigration = [
 
               SELECT MAX(seq) INTO v_numReviews FROM t_reviewIds;
               CALL task_output_collection('info',
-                CONCAT('rule ordinal ', v_ordinal, ': found ', IFNULL(v_numReviews, 0), ' reviews to ', v_triggerAction),
-                v_collectionId);
+                CONCAT('rule ordinal ', v_ordinal, ': found ', IFNULL(v_numReviews, 0), ' reviews to ', v_triggerAction));
 
               IF IFNULL(v_numReviews, 0) > 0 THEN
                 IF v_triggerAction = 'delete' THEN
@@ -654,7 +669,11 @@ const upMigration = [
                   );
                   CALL delete_review_batch();
                   IF @v_deleteSaIds IS NOT NULL THEN
+                    CALL task_output('info','reviews processed, updating metrics');
+                    CALL task_output_collection('info','review deletes finished, updating metrics');
                     CALL update_stats_asset_stig(JSON_OBJECT('saIds', CAST(@v_deleteSaIds AS JSON)));
+                    CALL task_output('info','update metrics finished');
+                    CALL task_output_collection('info','update metrics finished');
                   END IF;
                 ELSEIF v_triggerAction = 'update' THEN
                   SELECT CAST(c.settings->>"$.history.maxReviews" AS UNSIGNED)
@@ -666,7 +685,11 @@ const upMigration = [
                   ELSEIF v_updateField = 'result' THEN
                     CALL update_review_result_batch(v_updateValue);
                   END IF;
+                  CALL task_output('info','reviews processed, updating metrics');
+                  CALL task_output_collection('info','review updates finished, updating metrics');
                   CALL update_stats_asset_stig(JSON_OBJECT('reviewIds', (SELECT JSON_ARRAYAGG(reviewId) FROM t_reviewIds)));
+                  CALL task_output('info','update metrics finished');
+                  CALL task_output_collection('info','update metrics finished');
                 END IF;
               END IF;
 
@@ -678,7 +701,8 @@ const upMigration = [
           COMMIT;
         END;  -- collection-scoped block
 
-        CALL task_output_collection('info', CONCAT('finished collectionId ', v_collectionId), v_collectionId);
+        CALL task_output('info', CONCAT('finished collectionId ', v_collectionId));
+        CALL task_output_collection('info', CONCAT('finished collectionId ', v_collectionId));
       END LOOP collection_loop;
       CLOSE cur;
 
