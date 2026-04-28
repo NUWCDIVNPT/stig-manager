@@ -551,6 +551,8 @@ const upMigration = [
             DECLARE err_msg TEXT;
             GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
             ROLLBACK;
+            DROP TEMPORARY TABLE IF EXISTS t_pre_approved;
+            DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
             CALL task_output_collection('error', concat('code: ', err_code, ' message: ', err_msg));
             CALL task_output('error', concat('error processing collectionId ', v_collectionId, ': code: ', err_code, ' message: ', err_msg));
           END;
@@ -582,15 +584,25 @@ const upMigration = [
               -- Compute cutoff: always relative to NOW()
               SET v_cutoff = DATE_SUB(NOW(), INTERVAL v_triggerInterval SECOND);
 
-              -- Identify affected reviews into t_reviewIds
-              -- Dynamic SQL is required to interpolate the triggerField column name
-              DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
-              CREATE TEMPORARY TABLE t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY, reviewId INT);
+              -- Phase 1: Identify eligible reviews into t_pre_approved
+              -- Sorted by assetId, benchmarkId to group related stig-asset pairs for stats efficiency
+              DROP TEMPORARY TABLE IF EXISTS t_pre_approved;
+              CREATE TEMPORARY TABLE t_pre_approved (
+                seq INT AUTO_INCREMENT PRIMARY KEY,
+                reviewId INT NOT NULL,
+                assetId INT NOT NULL,
+                benchmarkId VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+                KEY idx_pa_reviewId (reviewId)
+              ) ENGINE=InnoDB;
 
               SET @v_sql = CONCAT(
-                'INSERT INTO t_reviewIds (reviewId) ',
-                'SELECT r.reviewId FROM review r ',
+                'INSERT INTO t_pre_approved (reviewId, assetId, benchmarkId) ',
+                'SELECT r.reviewId, r.assetId, rev.benchmarkId ',
+                'FROM review r ',
                 'JOIN enabled_asset a ON r.assetId = a.assetId ',
+                'JOIN rule_version_check_digest rvcd ON (rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest) ',
+                'JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId ',
+                'JOIN revision rev ON rev.revId = rgr.revId ',
                 'WHERE a.collectionId = ', v_collectionId,
                 ' AND r.', v_triggerField, ' < ''', DATE_FORMAT(v_cutoff, '%Y-%m-%d %H:%i:%s'), ''''
               );
@@ -614,11 +626,7 @@ const upMigration = [
                 -- Asset + benchmark: reviews on this asset for this STIG only
                 SET @v_sql = CONCAT(@v_sql,
                   ' AND r.assetId = ', v_assetId,
-                  ' AND EXISTS (',
-                  '  SELECT 1 FROM rule_version_check_digest rvcd',
-                  '  JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId',
-                  '  JOIN revision rev ON rev.revId = rgr.revId AND rev.benchmarkId = ''', v_benchmarkId, '''',
-                  '  WHERE rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)');
+                  ' AND rev.benchmarkId = ''', v_benchmarkId, '''');
               ELSEIF v_clId IS NOT NULL AND v_benchmarkId IS NULL THEN
                 -- Label target only: reviews on assets with this label
                 SET @v_sql = CONCAT(@v_sql,
@@ -629,71 +637,117 @@ const upMigration = [
                 SET @v_sql = CONCAT(@v_sql,
                   ' AND r.assetId IN (',
                   '  SELECT assetId FROM collection_label_asset_map WHERE clId = ', v_clId, ')',
-                  ' AND EXISTS (',
-                  '  SELECT 1 FROM rule_version_check_digest rvcd',
-                  '  JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId',
-                  '  JOIN revision rev ON rev.revId = rgr.revId AND rev.benchmarkId = ''', v_benchmarkId, '''',
-                  '  WHERE rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)');
+                  ' AND rev.benchmarkId = ''', v_benchmarkId, '''');
               ELSEIF v_benchmarkId IS NOT NULL THEN
                 -- Benchmark only: all reviews for this STIG in the collection
                 SET @v_sql = CONCAT(@v_sql,
-                  ' AND EXISTS (',
-                  '  SELECT 1 FROM rule_version_check_digest rvcd',
-                  '  JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId',
-                  '  JOIN revision rev ON rev.revId = rgr.revId AND rev.benchmarkId = ''', v_benchmarkId, '''',
-                  '  WHERE rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)');
+                  ' AND rev.benchmarkId = ''', v_benchmarkId, '''');
               -- ELSE: all three NULL — no target restriction, rule applies to entire collection
               END IF;
+
+              SET @v_sql = CONCAT(@v_sql, ' ORDER BY r.assetId, rev.benchmarkId');
 
               PREPARE stmt_aging FROM @v_sql;
               EXECUTE stmt_aging;
               DEALLOCATE PREPARE stmt_aging;
 
-              SELECT MAX(seq) INTO v_numReviews FROM t_reviewIds;
+              SELECT COUNT(*) INTO v_numReviews FROM t_pre_approved;
               CALL task_output_collection('info',
                 CONCAT('rule ordinal ', v_ordinal, ': found ', IFNULL(v_numReviews, 0), ' reviews to ', v_triggerAction));
 
+              -- Phase 2: Process pre-approved reviews in batches
               IF IFNULL(v_numReviews, 0) > 0 THEN
-                IF v_triggerAction = 'delete' THEN
-                  -- Capture affected saIds before deleting (reviews will not exist after)
-                  SET @v_deleteSaIds = (
-                    SELECT JSON_ARRAYAGG(saId) FROM (
-                      SELECT DISTINCT sa.saId
-                      FROM t_reviewIds tri
-                      INNER JOIN review r ON tri.reviewId = r.reviewId
-                      INNER JOIN rule_version_check_digest rvcd ON (rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)
-                      INNER JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId
-                      INNER JOIN revision rev ON rev.revId = rgr.revId
-                      INNER JOIN stig_asset_map sa ON (sa.assetId = r.assetId AND sa.benchmarkId = rev.benchmarkId)
-                    ) AS distinct_saIds
+                BEGIN
+                  DECLARE v_batchSize INT DEFAULT 5000;
+                  DECLARE v_seqMin INT DEFAULT 1;
+                  DECLARE v_batchSeqMin INT;
+                  DECLARE v_batchSeqMax INT;
+                  DECLARE v_numVerified INT;
+
+                  batch_loop: LOOP
+                  -- Find seq range for this batch
+                  SELECT MIN(seq), MAX(seq) INTO v_batchSeqMin, v_batchSeqMax
+                  FROM (SELECT seq FROM t_pre_approved WHERE seq >= v_seqMin ORDER BY seq LIMIT v_batchSize) t;
+
+                  IF v_batchSeqMin IS NULL THEN LEAVE batch_loop; END IF;
+
+                  START TRANSACTION;
+
+                  -- Re-verify: candidates still meeting trigger condition
+                  DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
+                  CREATE TEMPORARY TABLE t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY, reviewId INT);
+
+                  SET @v_verify_sql = CONCAT(
+                    'INSERT INTO t_reviewIds (reviewId) ',
+                    'SELECT pa.reviewId ',
+                    'FROM t_pre_approved pa ',
+                    'JOIN review r ON r.reviewId = pa.reviewId ',
+                    'WHERE pa.seq BETWEEN ', v_batchSeqMin, ' AND ', v_batchSeqMax,
+                    ' AND r.', v_triggerField, ' < DATE_SUB(NOW(), INTERVAL ', v_triggerInterval, ' SECOND)'
                   );
-                  CALL delete_review_batch();
-                  IF @v_deleteSaIds IS NOT NULL THEN
-                    CALL task_output('info','reviews processed, updating metrics');
-                    CALL task_output_collection('info','review deletes finished, updating metrics');
-                    CALL update_stats_asset_stig(JSON_OBJECT('saIds', CAST(@v_deleteSaIds AS JSON)));
-                    CALL task_output('info','update metrics finished');
-                    CALL task_output_collection('info','update metrics finished');
+
+                  -- Exclude reviews already in the desired state
+                  IF v_triggerAction = 'update' THEN
+                    IF v_updateField = 'status' THEN
+                      SET @v_verify_sql = CONCAT(@v_verify_sql,
+                        ' AND r.statusId != (SELECT statusId FROM status WHERE api = ''', v_updateValue, ''' LIMIT 1)');
+                    ELSEIF v_updateField = 'result' THEN
+                      SET @v_verify_sql = CONCAT(@v_verify_sql,
+                        ' AND r.resultId != (SELECT resultId FROM result WHERE api = ''', v_updateValue, ''' LIMIT 1)');
+                    END IF;
                   END IF;
-                ELSEIF v_triggerAction = 'update' THEN
-                  SELECT CAST(c.settings->>"$.history.maxReviews" AS UNSIGNED)
-                    INTO v_maxReviews
-                  FROM enabled_collection c WHERE c.collectionId = v_collectionId;
-                  CALL prune_and_insert_history(v_maxReviews);
-                  IF v_updateField = 'status' THEN
-                    CALL update_review_status_batch(v_updateValue);
-                  ELSEIF v_updateField = 'result' THEN
-                    CALL update_review_result_batch(v_updateValue);
+
+                  PREPARE stmt_verify FROM @v_verify_sql;
+                  EXECUTE stmt_verify;
+                  DEALLOCATE PREPARE stmt_verify;
+
+                  SELECT MAX(seq) INTO v_numVerified FROM t_reviewIds;
+
+                  IF IFNULL(v_numVerified, 0) > 0 THEN
+                    IF v_triggerAction = 'delete' THEN
+                      -- Capture affected saIds before deleting
+                      SET @v_deleteSaIds = (
+                        SELECT JSON_ARRAYAGG(saId) FROM (
+                          SELECT DISTINCT sa.saId
+                          FROM t_reviewIds tri
+                          INNER JOIN review r ON tri.reviewId = r.reviewId
+                          INNER JOIN rule_version_check_digest rvcd ON (rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)
+                          INNER JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId
+                          INNER JOIN revision rev ON rev.revId = rgr.revId
+                          INNER JOIN stig_asset_map sa ON (sa.assetId = r.assetId AND sa.benchmarkId = rev.benchmarkId)
+                        ) AS distinct_saIds
+                      );
+                      CALL delete_review_batch();
+                      IF @v_deleteSaIds IS NOT NULL THEN
+                        CALL update_stats_asset_stig(JSON_OBJECT('saIds', CAST(@v_deleteSaIds AS JSON)));
+                      END IF;
+                    ELSEIF v_triggerAction = 'update' THEN
+                      SELECT CAST(c.settings->>"$.history.maxReviews" AS UNSIGNED)
+                        INTO v_maxReviews
+                      FROM enabled_collection c WHERE c.collectionId = v_collectionId;
+                      CALL prune_and_insert_history(v_maxReviews);
+                      IF v_updateField = 'status' THEN
+                        CALL update_review_status_batch(v_updateValue);
+                      ELSEIF v_updateField = 'result' THEN
+                        CALL update_review_result_batch(v_updateValue);
+                      END IF;
+                      CALL update_stats_asset_stig(JSON_OBJECT('reviewIds', (SELECT JSON_ARRAYAGG(reviewId) FROM t_reviewIds)));
+                    END IF;
                   END IF;
-                  CALL task_output('info','reviews processed, updating metrics');
-                  CALL task_output_collection('info','review updates finished, updating metrics');
-                  CALL update_stats_asset_stig(JSON_OBJECT('reviewIds', (SELECT JSON_ARRAYAGG(reviewId) FROM t_reviewIds)));
-                  CALL task_output('info','update metrics finished');
-                  CALL task_output_collection('info','update metrics finished');
-                END IF;
+
+                  DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
+                  COMMIT;
+
+                  CALL task_output_collection('info',
+                    CONCAT('rule ordinal ', v_ordinal, ': batch seq ', v_batchSeqMin, '-', v_batchSeqMax,
+                           ': ', IFNULL(v_numVerified, 0), ' reviews processed'));
+
+                  SET v_seqMin = v_batchSeqMax + 1;
+                  END LOOP batch_loop;
+                END;
               END IF;
 
-              DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
+              DROP TEMPORARY TABLE IF EXISTS t_pre_approved;
             END LOOP rule_loop;
             CLOSE cur_rules;
           END;  -- rule cursor block
