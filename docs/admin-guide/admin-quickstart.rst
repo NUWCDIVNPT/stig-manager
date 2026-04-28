@@ -203,6 +203,43 @@ Schedule these jobs to run during off-peak hours to minimize performance impact.
    Always ensure you have appropriate database backups before enabling these jobs for the first time. See the :ref:`service-jobs` section of the Admin Guide for detailed information about job configuration and monitoring.
 
 
+-------------------------------
+
+.. _configure-review-aging:
+
+Configure Review Aging
+============================
+
+The **Update Aged Reviews** job runs the Review Aging task, which automatically acts on
+reviews that have not been updated within a configurable time threshold. Each collection
+can define its own aging rules; the job processes all collections with configured rules
+in sequence when it runs.
+
+.. rubric:: Enabling the Job
+
+The Update Aged Reviews job is installed but disabled by default. To activate it:
+
+#. Navigate to ``Application Management -> Service Jobs`` in the Navigation Tree.
+#. Double-click **Update Aged Reviews** to open its properties.
+#. Configure a schedule. **Recommended cadence: daily**, during off-peak hours when
+   user activity is low, as the job may hold brief write locks on reviewed rows
+   while it processes each batch.
+#. Check the **Enabled** checkbox and click **Save**.
+
+Once enabled, the job runs automatically on the configured schedule. You can also trigger
+an immediate run at any time using the **Run now...** button.
+
+.. note::
+   The job only acts on collections that have at least one enabled aging rule.
+   Collections without rules configured are silently skipped.
+
+.. rubric:: Monitoring Execution
+
+App Managers can view system-level run history and output from the Service Jobs panel.
+Collection Managers and Owners can view output scoped to their collection from the
+**Tasks** tab in their Collection Management workspace (see :ref:`review-aging-rules`).
+
+
 .. _automated-imports:
 
 Configure a Source of Automated Evaluations

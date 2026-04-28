@@ -152,7 +152,7 @@ This panel allows App Managers to control and view the background Service Jobs t
 
 The Service Jobs feature provides a framework for managing scheduled background operations in STIG Manager. This feature enables both system-defined and user-defined jobs that can run one or more predefined tasks either on a schedule or immediately on demand.
 
-The initial implementation provides database maintenance and cleanup tasks. However, Service Jobs will serve as the foundation for future capabilities, including Review aging operations and time-based snapshots and analysis.
+The initial implementation provides database maintenance and cleanup tasks, as well as the Review Aging task, which automatically acts on reviews that have not been updated within a configurable time threshold. Service Jobs will continue to serve as the foundation for future capabilities, including time-based snapshots and analysis.
 
 .. rubric:: Job Types
 
