@@ -2,6 +2,7 @@
 const path = require('node:path')
 const multer  = require('multer')
 const express = require('express')
+const qs = require('qs')
 const cors = require('cors')
 const { middleware: openApiMiddleware } = require('express-openapi-validator')
 const config = require('../utils/config')
@@ -13,6 +14,13 @@ const state = require('../utils/state')
 const logger = require('../utils/logger')
 
 function configureMiddleware(app) {
+
+    // Must run before any app.use() call: Express's lazyrouter binds the query
+    // parser at the moment the first middleware is registered and ignores
+    // later changes. qs >=6.14 enforces arrayLimit on repeated bare keys, which
+    // would otherwise corrupt type:array+explode params (e.g., benchmarkId,
+    // assetId) once they exceed 20 values.
+    app.set('query parser', str => qs.parse(str, { arrayLimit: 5000, allowPrototypes: true }))
 
     const middlewareConfigFunctions = [
       configureMulter,
