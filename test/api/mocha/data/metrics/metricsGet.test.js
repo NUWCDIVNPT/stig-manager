@@ -1229,13 +1229,13 @@ describe('GET - Metrics', function () {
   }
 
   describe('GET - getMetricsSummaryByCollection - large benchmarkId array', function () {
-    // Regression: qs default arrayLimit (20) collapses repeated bare keys into an
+    // Regression: express query parser defaults to `qs`. whose default arrayLimit (20) collapses repeated bare keys into an
     // object, which the OpenAPI validator then wraps in [] and rejects with
-    // "request/query/benchmarkId/0 must be string". The api configures a custom
-    // query parser to keep array semantics for any reasonable count.
-    it('accepts > 20 benchmarkId query values without a 400 from the validator', async function () {
+    // "request/query/benchmarkId/0 must be string". The api sets the query parser to `simple`
+    // and uses the built-in Node query parser which does not have this behavior
+    it('accepts 100 benchmarkId query values without a 400 from the validator', async function () {
       const adminToken = iterations.find(i => i.name === 'stigmanadmin').token
-      const params = Array.from({length: 25}, (_, i) => `benchmarkId=Synthetic_Stig_${i}`).join('&')
+      const params = Array.from({length: 100}, (_, i) => `benchmarkId=Synthetic_Stig_${i}`).join('&')
       const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/metrics/summary?${params}`, 'GET', adminToken)
       expect(res.status).to.not.eql(400)
     })
