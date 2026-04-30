@@ -1,11 +1,14 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { computed, provide, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import RuleInfo from '../../../components/common/RuleInfo.vue'
 import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useDebouncedRef } from '../../../shared/composables/useDebouncedRef.js'
+import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 import { defaultFieldSettings } from '../../../shared/lib/reviewFormUtils.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import {
@@ -14,10 +17,8 @@ import {
   fetchStigRevisions,
 } from '../api/assetReviewApi.js'
 import { useChecklistData } from '../composables/useChecklistData.js'
-import { useReviewActions } from '../composables/useReviewActions.js'
 import { useRuleDetail } from '../composables/useRuleDetail.js'
-import ChecklistGrid from './ChecklistGrid.vue'
-import RuleInfo from './RuleInfo.vue'
+import AssetChecklistGrid from './AssetChecklistGrid.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -36,11 +37,6 @@ function handleRouteError(err) {
   const status = getHttpStatus(err)
   const isPrivilegeError = err.body?.error === 'User has insufficient privilege to complete this request.'
   if (status === 404 || status === 403 || status === 400 || isPrivilegeError) {
-    removeView(key => key.includes(`:${collectionId.value}:${assetId.value}`))
-    router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
-  }
-  else {
-    // Unexpected error on a critical resource → also treat as inaccessible
     removeView(key => key.includes(`:${collectionId.value}:${assetId.value}`))
     router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
   }
@@ -72,7 +68,6 @@ const fieldSettings = computed(() => collection.value?.settings?.fields ?? defau
 const statusSettings = computed(() => collection.value?.settings?.status ?? {
   canAccept: false,
   minAcceptGrant: 4,
-  resetCriteria: 'result',
 })
 
 const roleId = computed(() => getCollectionRoleId(collectionId.value))
@@ -85,28 +80,7 @@ const { state: stigRevisions, execute: loadStigRevisions } = useAsyncState(
   { immediate: false, initialState: [] },
 )
 
-const revisionInfo = computed(() => {
-  const rs = revisionStr.value
-  if (!rs) {
-    return null
-  }
-  const match = rs.match(/^V(\d+)R(\d+)$/)
-  if (!match) {
-    return { display: rs }
-  }
-  const version = match[1]
-  const release = match[2]
-  const rev = stigRevisions.value?.find(r => r.revisionStr === rs)
-  const benchmarkDate = rev?.benchmarkDate
-    ? new Date(rev.benchmarkDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
-    : null
-  return {
-    display: benchmarkDate ? `Version ${version} Release ${release} (${benchmarkDate})` : `Version ${version} Release ${release}`,
-    version,
-    release,
-    benchmarkDate,
-  }
-})
+const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, stigRevisions.value))
 
 const {
   accessMode,
@@ -125,41 +99,9 @@ const {
   ruleContent,
   isRuleLoading,
   ruleContentError,
-  currentReview,
   selectRule,
   clearSelectedRule,
 } = useRuleDetail({ ruleLookupMap, collectionId, assetId, benchmarkId, revisionStr })
-
-const {
-  isSaving,
-  saveError,
-  clearSaveError,
-  saveFullReview,
-  saveStatusAction,
-} = useReviewActions({ collectionId, assetId }, { gridData, upsertReview, selectedRuleId, currentReview })
-
-provide('assetReviewContext', {
-  collectionId,
-  assetId,
-  asset,
-  accessMode,
-  checklistData,
-  gridData,
-  ruleLookupMap,
-  isChecklistLoading,
-  checklistError,
-  fieldSettings,
-  statusSettings,
-  canAccept,
-  isSaving,
-  saveError,
-  currentReview,
-  selectedRuleId,
-  revisionInfo,
-  selectRule,
-  loadChecklist,
-  clearSaveError,
-})
 
 watch([benchmarkId, revisionStr], () => {
   clearSelectedRule()
@@ -193,17 +135,15 @@ watch(checklistError, (err) => {
   }
 })
 
-function onRowSave({ ruleId, result, detail, comment, status }) {
-  saveFullReview(ruleId, { result, detail, comment, status })
-}
-
-function onStatusAction({ ruleId, actionType }) {
-  saveStatusAction(ruleId, actionType)
+function onReviewSaved(review) {
+  upsertReview(review.ruleId, review)
 }
 
 function onGridRefresh() {
   loadChecklist()
 }
+
+const searchFilter = useDebouncedRef('', 220)
 </script>
 
 <template>
@@ -232,9 +172,22 @@ function onGridRefresh() {
         style="height: 100%"
       >
         <SplitterPanel :size="75" :min-size="40">
-          <ChecklistGrid
-            @row-save="onRowSave"
-            @status-action="onStatusAction"
+          <AssetChecklistGrid
+            :search-filter="searchFilter"
+            :grid-data="gridData"
+            :is-checklist-loading="isChecklistLoading"
+            :selected-rule-id="selectedRuleId"
+            :asset="asset"
+            :revision-info="revisionInfo"
+            :access-mode="accessMode"
+            :select-rule="selectRule"
+            :rule-lookup-map="ruleLookupMap"
+            :field-settings="fieldSettings"
+            :can-accept="canAccept"
+            :collection-id="collectionId"
+            :asset-id="assetId"
+            @update:search-filter="searchFilter = $event"
+            @review-saved="onReviewSaved"
             @refresh="onGridRefresh"
           />
         </SplitterPanel>
@@ -243,7 +196,6 @@ function onGridRefresh() {
             :rule-content="ruleContent"
             :is-loading="isRuleLoading"
             :rule-content-error="ruleContentError"
-            :selected-checklist-item="selectedChecklistItem"
             @retry="selectRule(selectedRuleId)"
           />
         </SplitterPanel>

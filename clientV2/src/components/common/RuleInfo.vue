@@ -1,8 +1,8 @@
 <script setup>
-import CatBadge from '../../../components/common/CatBadge.vue'
-import { severityMap } from '../lib/checklistUtils.js'
+import { severityMap } from '../../shared/lib/checklistUtils.js'
+import CatBadge from './CatBadge.vue'
 
-defineProps({
+const props = defineProps({
   ruleContent: {
     type: Object,
     default: null,
@@ -15,10 +15,6 @@ defineProps({
     type: Object,
     default: null,
   },
-  selectedChecklistItem: {
-    type: Object,
-    default: null,
-  },
 })
 
 const emit = defineEmits(['retry'])
@@ -27,8 +23,8 @@ const emit = defineEmits(['retry'])
 <template>
   <div class="rule-info">
     <div class="rule-info__panel-header">
-      <span v-if="selectedChecklistItem" class="rule-info__panel-title">
-        Rule for Group {{ selectedChecklistItem.groupId }}
+      <span v-if="ruleContent" class="rule-info__panel-title">
+        Rule for Group {{ ruleContent.groupId }}
       </span>
       <span v-else class="rule-info__panel-title">
         Rule Content
@@ -48,7 +44,7 @@ const emit = defineEmits(['retry'])
       </button>
     </div>
 
-    <div v-else-if="!selectedChecklistItem" class="rule-info__empty">
+    <div v-else-if="!ruleContent" class="rule-info__empty">
       Select a rule from the checklist to view its content.
     </div>
 

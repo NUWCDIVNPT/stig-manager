@@ -5,6 +5,7 @@ import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 import {
   fetchAsset,
   fetchAssetStigs,
+  fetchCollectionStigs,
   fetchStigRevisions,
 } from '../api/menuBarApi.js'
 
@@ -50,11 +51,20 @@ export function useAppBreadcrumb() {
   })
 
   // --- Asset Review: STIG and Revision data for breadcrumb pickers ---
+  const collectionId = computed(() => route.params.collectionId)
   const assetId = computed(() => route.params.assetId)
   const benchmarkId = computed(() => route.params.benchmarkId)
 
   const { state: assetStigOptions, execute: loadAssetStigs } = useAsyncState(
-    () => fetchAssetStigs(assetId.value),
+    () => {
+      if (assetId.value) {
+        return fetchAssetStigs(assetId.value)
+      }
+      if (collectionId.value) {
+        return fetchCollectionStigs(collectionId.value)
+      }
+      return []
+    },
     { initialState: [], immediate: false },
   )
 
@@ -68,10 +78,12 @@ export function useAppBreadcrumb() {
     { initialState: [], immediate: false },
   )
 
-  // Load STIGs when asset changes
-  watch(assetId, (id) => {
-    if (id) {
+  // Load STIGs when asset or collection changes
+  watch([assetId, collectionId], () => {
+    if (assetId.value || collectionId.value) {
       loadAssetStigs()
+    }
+    if (assetId.value) {
       loadAsset()
     }
   }, { immediate: true })
@@ -127,37 +139,69 @@ export function useAppBreadcrumb() {
     }
   }
 
-  // Navigation helper for STIG dropdown (asset review)
+  // Navigation helper for STIG dropdown (review)
   function navigateToStig(newBenchmarkId) {
     if (!newBenchmarkId) {
       return
     }
+
+    const currentRouteName = route.name
+    const isCollectionReview = currentRouteName === 'collection-benchmark-review'
     const stigData = assetStigOptions.value.find(s => s.benchmarkId === newBenchmarkId)
-    router.push({
-      name: 'collection-asset-review',
-      params: {
-        collectionId: route.params.collectionId,
-        assetId: assetId.value,
-        benchmarkId: newBenchmarkId,
-        revisionStr: stigData?.revisionStr || undefined,
-      },
-    })
+
+    if (isCollectionReview) {
+      router.push({
+        name: 'collection-benchmark-review',
+        params: {
+          collectionId: route.params.collectionId,
+          benchmarkId: newBenchmarkId,
+          revisionStr: stigData?.revisionStr || route.params.revisionStr,
+        },
+      })
+    }
+    else {
+      router.push({
+        name: 'collection-asset-review',
+        params: {
+          collectionId: route.params.collectionId,
+          assetId: route.params.assetId,
+          benchmarkId: newBenchmarkId,
+          revisionStr: stigData?.revisionStr || undefined,
+        },
+      })
+    }
   }
 
-  // Navigation helper for revision dropdown (asset review)
+  // Navigation helper for revision dropdown (review)
   function navigateToRevision(newRevisionStr) {
     if (!newRevisionStr) {
       return
     }
-    router.push({
-      name: 'collection-asset-review',
-      params: {
-        collectionId: route.params.collectionId,
-        assetId: assetId.value,
-        benchmarkId: benchmarkId.value,
-        revisionStr: newRevisionStr,
-      },
-    })
+
+    const currentRouteName = route.name
+    const isCollectionReview = currentRouteName === 'collection-benchmark-review'
+
+    if (isCollectionReview) {
+      router.push({
+        name: 'collection-benchmark-review',
+        params: {
+          collectionId: route.params.collectionId,
+          benchmarkId: route.params.benchmarkId,
+          revisionStr: newRevisionStr,
+        },
+      })
+    }
+    else {
+      router.push({
+        name: 'collection-asset-review',
+        params: {
+          collectionId: route.params.collectionId,
+          assetId: route.params.assetId,
+          benchmarkId: route.params.benchmarkId,
+          revisionStr: newRevisionStr,
+        },
+      })
+    }
   }
 
   return {

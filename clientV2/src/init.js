@@ -93,6 +93,7 @@ async function initializeOidcWorker() {
   }
   return OW.sendWorkerRequest({
     request: 'initialize',
+    redirectUri: `${window.location.origin}${window.location.pathname}`,
     oidcConfiguration,
     env: STIGMAN.Env.oauth,
     reauthUri,

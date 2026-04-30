@@ -111,7 +111,19 @@ const routes = [
     path: '/collection/:collectionId/benchmark/:benchmarkId/revision/:revisionStr',
     name: 'collection-benchmark-review',
     component: CollectionReview,
-    meta: { requiresCollectionGrant: true },
+    meta: {
+      requiresCollectionGrant: true,
+      breadcrumbs: [
+        { label: 'Collections', route: { name: 'collections' } },
+        {
+          label: (route, getCollectionName) => getCollectionName(route.params.collectionId),
+          route: route => ({ name: 'collection', params: { collectionId: route.params.collectionId } }),
+          pickerType: 'collection',
+        },
+        { label: route => route.params.benchmarkId || 'STIG', isDropdown: true, dropdownType: 'stig' },
+        { label: route => route.params.revisionStr, isDropdown: true, dropdownType: 'revision' },
+      ],
+    },
   },
   {
     path: '/collections',

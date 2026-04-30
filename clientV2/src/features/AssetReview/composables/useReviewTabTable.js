@@ -1,7 +1,7 @@
 import { computed, inject, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ENGINE_TYPE, REVIEW_STATUS } from '../../../shared/lib/reviewConstants.js'
-import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../lib/checklistUtils.js'
+import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { buildEngineOptions } from '../lib/reviewFilterOptions.js'
 
 const EMPTY_STATS = {

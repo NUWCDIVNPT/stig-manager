@@ -31,10 +31,8 @@ export function useReviewEditForm({ rowData, fieldSettings, accessMode, canAccep
   // --- Status / editability ---
   const statusLabel = computed(() => {
     const s = rowData.value?.status
-    if (!s) {
-      return ''
-    }
-    return s?.label
+    if (!s) return ''
+    return typeof s === 'string' ? s : (s?.label ?? '')
   })
 
   const editable = computed(() => {

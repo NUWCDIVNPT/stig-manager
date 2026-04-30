@@ -57,6 +57,7 @@ export function useNavItems() {
     switch (type) {
       case 'collection': return 'nav-icon-collection'
       case 'asset-review': return 'pi pi-file-edit'
+      case 'collection-review': return 'pi pi-list-check'
       case 'library': return 'nav-icon-library'
       case 'admin': return 'nav-icon-admin'
       default: return 'pi pi-link'

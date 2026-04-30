@@ -13,7 +13,7 @@ import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
-import { getResultDisplay } from '../lib/checklistUtils.js'
+import { getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 
 const props = defineProps({
   value: { type: Array, required: true },

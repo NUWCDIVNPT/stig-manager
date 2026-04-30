@@ -55,6 +55,7 @@ const props = defineProps({
    *   value: string|number, (required)
    *   label?: string,
    *   icon?: string,
+   *   iconSrc?: string,
    *   title?: string,
    *   class?: string|object,
    *   style?: string|object
@@ -64,7 +65,18 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-
+  totalLabel: {
+    type: String,
+    default: 'rows',
+  },
+  totalIcon: {
+    type: String,
+    default: 'pi pi-list',
+  },
+  totalIconSrc: {
+    type: String,
+    default: '',
+  },
 })
 
 const emit = defineEmits(['action'])
@@ -146,8 +158,15 @@ function onActionClick(action) {
         :style="metric.style"
         :title="metric.title"
       >
+        <img
+          v-if="metric.iconSrc"
+          :src="metric.iconSrc"
+          class="status-footer__info-icon status-footer__info-icon--img"
+          alt=""
+          aria-hidden="true"
+        >
         <i
-          v-if="metric.icon"
+          v-else-if="metric.icon"
           class="status-footer__info-icon"
           :class="[metric.icon]"
           aria-hidden="true"
@@ -168,16 +187,23 @@ function onActionClick(action) {
 
       <div
         class="status-footer__info-box status-footer__metric-total"
-        :title="filteredCount !== null ? `Showing ${filteredCount} of ${totalCount} rows` : 'Total rows'"
+        :title="filteredCount !== null ? `Showing ${filteredCount} of ${totalCount} ${totalLabel}` : `Total ${totalLabel}`"
       >
-        <i class="status-footer__info-icon pi pi-list" aria-hidden="true" />
+        <img
+          v-if="totalIconSrc"
+          :src="totalIconSrc"
+          class="status-footer__info-icon status-footer__info-icon--img"
+          alt=""
+          aria-hidden="true"
+        >
+        <i v-else class="status-footer__info-icon" :class="totalIcon" aria-hidden="true" />
         <template v-if="filteredCount !== null">
           <span class="status-footer__info-value">{{ filteredCount }}</span>
-          <span class="status-footer__info-label">of {{ totalCount }} rows</span>
+          <span class="status-footer__info-label">of {{ totalCount }} {{ totalLabel }}</span>
         </template>
         <template v-else>
           <span class="status-footer__info-value">{{ totalCount }}</span>
-          <span class="status-footer__info-label">rows</span>
+          <span class="status-footer__info-label">{{ totalLabel }}</span>
         </template>
       </div>
     </div>
@@ -257,6 +283,13 @@ function onActionClick(action) {
 
 .status-footer__info-icon {
   color: var(--color-primary-highlight);
+}
+
+.status-footer__info-icon--img {
+  width: 1em;
+  height: 1em;
+  object-fit: contain;
+  display: inline-block;
 }
 
 .status-footer__info-value {

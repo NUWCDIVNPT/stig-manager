@@ -1,4 +1,4 @@
-import { ENGINE_TYPE, REVIEW_STATUS } from '../../../shared/lib/reviewConstants.js'
+import { ENGINE_TYPE, REVIEW_STATUS } from './reviewConstants.js'
 
 export const severityMap = { high: 1, medium: 2, low: 3 }
 
@@ -81,4 +81,26 @@ export function calculateChecklistStats(data) {
   }
 
   return { results, engine, statuses, total: data.length }
+}
+
+export function getRevisionInfo(revisionStr, revisionsArray) {
+  if (!revisionStr) {
+    return null
+  }
+  const match = revisionStr.match(/^V(\d+)R(\d+)$/)
+  if (!match) {
+    return { display: revisionStr }
+  }
+  const version = match[1]
+  const release = match[2]
+  const rev = revisionsArray?.find(r => r.revisionStr === revisionStr)
+  const benchmarkDate = rev?.benchmarkDate
+    ? new Date(rev.benchmarkDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+    : null
+  return {
+    display: benchmarkDate ? `Version ${version} Release ${release} (${benchmarkDate})` : `Version ${version} Release ${release}`,
+    version,
+    release,
+    benchmarkDate,
+  }
 }

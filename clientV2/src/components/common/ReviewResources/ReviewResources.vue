@@ -4,17 +4,49 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 import ReviewAttachmentsTab from './ReviewAttachmentsTab.vue'
 import ReviewHistoryTab from './ReviewHistoryTab.vue'
 import ReviewOtherAssetsTab from './ReviewOtherAssetsTab.vue'
 import ReviewStatusTextTab from './ReviewStatusTextTab.vue'
 
+const props = defineProps({
+  ruleId: {
+    type: String,
+    default: null,
+  },
+  collectionId: {
+    type: String,
+    default: null,
+  },
+  assetId: {
+    type: [String, Number],
+    default: null,
+  },
+  accessMode: {
+    type: String,
+    default: 'r',
+  },
+  currentReview: {
+    type: Object,
+    default: null,
+  },
+  enabledTabs: {
+    type: Array,
+    default: () => ['history', 'statusText', 'otherAssets', 'attachments'],
+  },
+})
+
 const emit = defineEmits(['apply-review'])
 
+const activeTab = ref(props.enabledTabs[0] ?? 'history')
 
-const activeTab = ref('history')
+watch(() => props.enabledTabs, (tabs) => {
+  if (!tabs.includes(activeTab.value)) {
+    activeTab.value = tabs[0] ?? 'history'
+  }
+})
 
 const tabsPt = {
   root: {
@@ -94,40 +126,50 @@ const tabPt = {
   <div class="review-resources">
     <Tabs v-model:value="activeTab" :pt="tabsPt">
       <TabList :pt="tabListPt">
-        <Tab value="history" :pt="tabPt">
+        <Tab v-if="enabledTabs.includes('history')" value="history" :pt="tabPt">
           History
         </Tab>
-        <Tab value="statusText" :pt="tabPt">
+        <Tab v-if="enabledTabs.includes('statusText')" value="statusText" :pt="tabPt">
           Status Text
         </Tab>
-        <Tab value="otherAssets" :pt="tabPt">
+        <Tab v-if="enabledTabs.includes('otherAssets')" value="otherAssets" :pt="tabPt">
           Other Assets
         </Tab>
-        <Tab value="attachments" :pt="tabPt" disabled>
+        <Tab v-if="enabledTabs.includes('attachments')" value="attachments" :pt="tabPt" disabled>
           Attachments
         </Tab>
       </TabList>
 
       <TabPanels :pt="tabPanelsPt">
-        <TabPanel value="history" :pt="tabPanelPt">
+        <TabPanel v-if="enabledTabs.includes('history')" value="history" :pt="tabPanelPt">
           <ReviewHistoryTab
             :active="activeTab === 'history'"
+            :rule-id="ruleId"
+            :collection-id="collectionId"
+            :asset-id="assetId"
+            :access-mode="accessMode"
+            :current-review="currentReview"
             @apply-review="emit('apply-review', $event)"
           />
         </TabPanel>
 
-        <TabPanel value="statusText" :pt="tabPanelPt">
-          <ReviewStatusTextTab />
+        <TabPanel v-if="enabledTabs.includes('statusText')" value="statusText" :pt="tabPanelPt">
+          <ReviewStatusTextTab :current-review="currentReview" />
         </TabPanel>
 
-        <TabPanel value="otherAssets" :pt="tabPanelPt">
+        <TabPanel v-if="enabledTabs.includes('otherAssets')" value="otherAssets" :pt="tabPanelPt">
           <ReviewOtherAssetsTab
             v-if="activeTab === 'otherAssets'"
+            :rule-id="ruleId"
+            :collection-id="collectionId"
+            :asset-id="assetId"
+            :access-mode="accessMode"
+            :current-review="currentReview"
             @apply-review="emit('apply-review', $event)"
           />
         </TabPanel>
 
-        <TabPanel value="attachments" :pt="tabPanelPt">
+        <TabPanel v-if="enabledTabs.includes('attachments')" value="attachments" :pt="tabPanelPt">
           <ReviewAttachmentsTab />
         </TabPanel>
       </TabPanels>
