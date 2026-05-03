@@ -597,7 +597,7 @@ const upMigration = [
 
               SET @v_sql = CONCAT(
                 'INSERT INTO t_pre_approved (reviewId, assetId, benchmarkId) ',
-                'SELECT r.reviewId, r.assetId, rev.benchmarkId ',
+                'SELECT DISTINCT r.reviewId, r.assetId, rev.benchmarkId ',
                 'FROM review r ',
                 'JOIN enabled_asset a ON r.assetId = a.assetId ',
                 'JOIN rule_version_check_digest rvcd ON (rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest) ',
