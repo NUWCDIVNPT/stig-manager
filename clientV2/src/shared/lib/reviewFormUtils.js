@@ -58,3 +58,35 @@ export function formatReviewDate(dateStr) {
     timeZoneName: 'short',
   })
 }
+
+export function statusPayloadForAction(actionType, rejectText) {
+  switch (actionType) {
+    case 'accept': return 'accepted'
+    case 'submit': return 'submitted'
+    case 'unsubmit': return 'saved'
+    case 'reject': return { label: 'rejected', text: rejectText ?? '' }
+    default: return null
+  }
+}
+
+export function isReviewComplete(review, fieldSettings = defaultFieldSettings) {
+  const result = review?.result
+  if (!result) {
+    return false
+  }
+
+  const validResults = ['pass', 'fail', 'notapplicable']
+  if (!validResults.includes(result)) {
+    return false
+  }
+
+  if (isFieldRequired(fieldSettings?.detail, result) && !review?.detail) {
+    return false
+  }
+
+  if (isFieldRequired(fieldSettings?.comment, result) && !review?.comment) {
+    return false
+  }
+
+  return true
+}

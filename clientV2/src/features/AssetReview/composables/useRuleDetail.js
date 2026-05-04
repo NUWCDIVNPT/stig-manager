@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { fetchReview, fetchRule } from '../api/assetReviewApi.js'
+import { fetchRule } from '../api/assetReviewApi.js'
 
 export function useRuleDetail({ ruleLookupMap, collectionId, assetId, benchmarkId, revisionStr }) {
   const selectedRuleId = ref(null)
@@ -22,32 +22,16 @@ export function useRuleDetail({ ruleLookupMap, collectionId, assetId, benchmarkI
     { immediate: false, initialState: null, onError: null },
   )
 
-  const {
-    state: currentReview,
-    isLoading: isReviewLoading,
-    error: reviewError,
-    execute: loadCurrentReview,
-  } = useAsyncState(
-    ruleId => fetchReview(collectionId.value, assetId.value, ruleId),
-    { immediate: false, initialState: null, onError: null },
-  )
-
   watch(selectedRuleId, (ruleId) => {
     if (!ruleId) {
       ruleContent.value = null
-      currentReview.value = null
       return
     }
 
     ruleContent.value = null
-    currentReview.value = null
 
     if (benchmarkId?.value && revisionStr?.value) {
       loadRuleContent(ruleId)
-    }
-
-    if (collectionId?.value && assetId?.value) {
-      loadCurrentReview(ruleId)
     }
   })
 
@@ -68,9 +52,6 @@ export function useRuleDetail({ ruleLookupMap, collectionId, assetId, benchmarkI
     ruleContent,
     isRuleLoading,
     ruleContentError,
-    currentReview,
-    isReviewLoading,
-    reviewError,
     selectRule,
     clearSelectedRule,
   }

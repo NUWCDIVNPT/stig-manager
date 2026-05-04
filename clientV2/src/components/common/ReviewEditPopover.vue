@@ -1,9 +1,9 @@
 <script setup>
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
-import { nextTick, onBeforeUnmount, provide, ref, toRef, watch } from 'vue'
+import { nextTick, onBeforeUnmount, provide, ref, toRefs, watch } from 'vue'
+import ReviewResources from './ReviewResources/ReviewResources.vue'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
-import { REVIEW_STATUS } from '../../shared/lib/reviewConstants.js'
 import { formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
 import ResultBadge from './ResultBadge.vue'
 import ResultEngineBadges from './ResultEngineBadges.vue'
@@ -14,20 +14,58 @@ import StatusButton from './StatusButton.vue'
 const emit = defineEmits(['save', 'status-action', 'close', 'clear-save-error'])
 
 const props = defineProps({
-  fieldSettings: { type: Object, required: true },
-  accessMode: { type: String, required: true },
-  canAccept: { type: Boolean, default: false },
-  isSaving: { type: Boolean, default: false },
-  saveError: { type: String, default: null },
-  currentReview: { type: Object, default: null },
-  selectedRuleId: { type: String, default: null },
+  // Review data
+  currentReview: {
+    type: Object,
+    default: null,
+  },
+  selectedRuleId: {
+    type: String,
+    default: null,
+  },
+  collectionId: {
+    type: String,
+    default: null,
+  },
+  assetId: {
+    type: [String, Number],
+    default: null,
+  },
+  // Field/form config
+  fieldSettings: {
+    type: Object,
+    default: null,
+  },
+  accessMode: {
+    type: String,
+    default: 'r',
+  },
+  canAccept: {
+    type: Boolean,
+    default: false,
+  },
+  isSaving: {
+    type: Boolean,
+    default: false,
+  },
+  // Tab config
+  enabledTabs: {
+    type: Array,
+    default: () => ['history', 'statusText', 'otherAssets', 'attachments'],
+  },
+  // Optional label identifying what is being edited (e.g. asset or rule name).
+  // When provided, shown in a header strip so the user knows which row the
+  // popover targets — useful when multiple rows are also checkbox-selected.
+  subjectLabel: {
+    type: String,
+    default: null,
+  },
 })
 
 defineSlots()
 
-function clearSaveError() {
-  emit('clear-save-error')
-}
+// Expose props as refs so all .value access in the component body is unchanged
+const { currentReview, selectedRuleId, collectionId, assetId, fieldSettings, accessMode, canAccept, isSaving, saveError } = toRefs(props)
 
 const popover = ref()
 const lastAnchorEvent = ref(null)
@@ -37,10 +75,10 @@ const showResources = ref(false)
 
 // Form state and business logic from composable
 const reviewEditForm = useReviewEditForm({
-  rowData: toRef(props, 'currentReview'),
-  fieldSettings: toRef(props, 'fieldSettings'),
-  accessMode: toRef(props, 'accessMode'),
-  canAccept: toRef(props, 'canAccept'),
+  rowData: currentReview,
+  fieldSettings,
+  accessMode,
+  canAccept,
 })
 
 const {
@@ -65,7 +103,7 @@ const {
 provide('reviewEditForm', reviewEditForm)
 
 function onButtonClick(actionType) {
-  const ruleId = props.selectedRuleId
+  const ruleId = selectedRuleId.value
   if (!actionType || !ruleId) {
     return
   }
@@ -82,7 +120,7 @@ function onButtonClick(actionType) {
     return
   }
 
-  let status = REVIEW_STATUS.SAVED
+  let status = 'saved'
   if (actionType === 'save and submit') {
     status = REVIEW_STATUS.SUBMITTED
   }
@@ -192,11 +230,49 @@ function clampPopoverPosition() {
   container.style.setProperty('--p-popover-arrow-left', `${arrowLeftEdge}px`)
 }
 
-function alignPopover() {
+function alignPopoverAnimated() {
   const pv = popover.value
-  if (pv && pv.container && lastAnchorEvent.value) {
-    pv.alignOverlay()
-    nextTick(clampPopoverPosition)
+  if (!pv?.container || !lastAnchorEvent.value) { return }
+  const el = pv.container
+  const prevTop = el.style.top
+
+  pv.alignOverlay()
+  nextTick(clampPopoverPosition)
+
+  const newTop = el.style.top
+  if (!prevTop || !newTop || prevTop === newTop) { return }
+
+  // Slide transition: snap back to old top, then animate to new top
+  el.style.transition = 'none'
+  el.style.top = prevTop
+  void el.offsetHeight // flush
+  el.style.transition = 'top 0.3s ease'
+  requestAnimationFrame(() => {
+    el.style.top = newTop
+    el.addEventListener('transitionend', () => { el.style.transition = '' }, { once: true })
+  })
+}
+
+function onResourceTransitionStart() {
+  const el = popover.value?.container
+  if (!el || !el.classList.contains('p-popover-flipped')) { return }
+
+  // Anchor to bottom so expansion pushes the box UP naturally
+  const rect = el.getBoundingClientRect()
+  el.style.bottom = `${window.innerHeight - rect.bottom}px`
+  el.style.top = 'auto'
+}
+
+function onResourceTransitionEnd() {
+  const el = popover.value?.container
+  if (!el) { return }
+
+  // Reset to top-based positioning for PrimeVue
+  el.style.top = `${el.getBoundingClientRect().top}px`
+  el.style.bottom = 'auto'
+
+  if (showResources.value) {
+    alignPopoverAnimated()
   }
 }
 
@@ -211,12 +287,6 @@ function reposition(event) {
     clampPopoverPosition()
   })
 }
-
-watch(showResources, () => {
-  nextTick(() => {
-    alignPopover()
-  })
-})
 
 let outsideHandler = null
 let outsideBindTimer = null
@@ -292,7 +362,7 @@ onBeforeUnmount(() => {
   unbindOutsideHandler()
 })
 
-defineExpose({ toggle, show, hide, reposition, alignPopover, isDirty, triggerUnsavedWarning })
+defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 </script>
 
 <template>
@@ -319,6 +389,9 @@ defineExpose({ toggle, show, hide, reposition, alignPopover, isDirty, triggerUns
       <button class="review-edit-popover__close" :title="isDirty ? 'Close (discards unsaved changes)' : 'Close'" @click="dismiss">
         <i class="pi pi-times" />
       </button>
+      <div v-if="subjectLabel" class="review-edit-popover__subject">
+        <span class="review-edit-popover__subject-value" :title="subjectLabel">{{ subjectLabel }}</span>
+      </div>
       <div class="review-edit-popover__main">
         <div class="review-edit-popover__result" :class="{ 'review-edit-popover__result--emphasis': showResultEmphasis }">
           <label class="review-edit-popover__label">
@@ -411,14 +484,6 @@ defineExpose({ toggle, show, hide, reposition, alignPopover, isDirty, triggerUns
         <span>Please <strong>Save</strong> or <strong>Undo</strong> your changes to close.</span>
       </div>
 
-      <div v-if="saveError" class="review-edit-popover__save-error">
-        <i class="pi pi-exclamation-circle" />
-        <span>{{ saveError }}</span>
-        <button class="review-edit-popover__save-error-dismiss" @click="clearSaveError">
-          <i class="pi pi-times" />
-        </button>
-      </div>
-
       <div class="review-edit-popover__attributions">
         <ResultEngineBadges :result-engine="currentReview?.resultEngine" />
         <div class="review-edit-popover__attr-section">
@@ -456,9 +521,23 @@ defineExpose({ toggle, show, hide, reposition, alignPopover, isDirty, triggerUns
         <div class="review-edit-popover__resources-toggle-line" />
       </div>
 
-      <Transition name="expand" @after-enter="alignPopover" @after-leave="alignPopover">
+      <Transition
+        name="expand"
+        @before-enter="onResourceTransitionStart"
+        @after-enter="onResourceTransitionEnd"
+        @before-leave="onResourceTransitionStart"
+        @after-leave="onResourceTransitionEnd"
+      >
         <div v-if="showResources" class="review-edit-popover__resources-container">
-          <slot name="resources" :apply-review-data="applyReviewData" />
+          <ReviewResources
+            :rule-id="selectedRuleId"
+            :collection-id="collectionId"
+            :asset-id="assetId"
+            :access-mode="accessMode"
+            :current-review="currentReview"
+            :enabled-tabs="props.enabledTabs"
+            @apply-review="applyReviewData"
+          />
         </div>
       </Transition>
     </div>
@@ -471,6 +550,7 @@ defineExpose({ toggle, show, hide, reposition, alignPopover, isDirty, triggerUns
   flex-direction: column;
   gap: 0.4rem;
   min-width: 650px;
+  max-width: 850px;
   position: relative;
 }
 
@@ -503,6 +583,21 @@ defineExpose({ toggle, show, hide, reposition, alignPopover, isDirty, triggerUns
   gap: 0.5rem;
   align-items: stretch;
   min-height: 16rem;
+}
+
+.review-edit-popover__subject {
+  padding: 0.4rem 0.6rem;
+  margin: -0.4rem -0.4rem 0.2rem -0.4rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border-default) 40%, transparent);
+}
+
+.review-edit-popover__subject-value {
+  font-weight: 600;
+  color: var(--color-text-bright);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .review-edit-popover__label {
@@ -647,42 +742,6 @@ defineExpose({ toggle, show, hide, reposition, alignPopover, isDirty, triggerUns
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Inline save error banner (Tier: Action Error) */
-.review-edit-popover__save-error {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.6rem;
-  background-color: color-mix(in srgb, var(--color-text-error, #e74c3c) 12%, var(--color-background-dark));
-  border: 1px solid color-mix(in srgb, var(--color-text-error, #e74c3c) 40%, transparent);
-  border-radius: 4px;
-  color: var(--color-text-error, #e74c3c);
-  font-size: 0.95rem;
-}
-
-.review-edit-popover__save-error .pi-exclamation-circle {
-  flex-shrink: 0;
-}
-
-.review-edit-popover__save-error span {
-  flex: 1;
-}
-
-.review-edit-popover__save-error-dismiss {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-error, #e74c3c);
-  opacity: 0.7;
-  padding: 0;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.review-edit-popover__save-error-dismiss:hover {
-  opacity: 1;
-}
-
 .review-edit-popover__attributions {
   display: flex;
   column-gap: 3rem;
@@ -808,6 +867,7 @@ defineExpose({ toggle, show, hide, reposition, alignPopover, isDirty, triggerUns
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
 }
 
 .expand-enter-active,

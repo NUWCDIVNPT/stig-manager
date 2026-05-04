@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
+import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../lib/checklistUtils.js'
 
 describe('getResultDisplay', () => {
   it('should map known results', () => {

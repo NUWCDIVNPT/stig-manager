@@ -1,15 +1,6 @@
 import { computed, ref } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchChecklist } from '../api/assetReviewApi.js'
-import { getEngineDisplay } from '../lib/checklistUtils.js'
-
-function augmentItem(item) {
-  return {
-    ...item,
-    _statusText: item.status?.label ?? item.status,
-    _engineDisplay: getEngineDisplay(item),
-  }
-}
 
 export function useChecklistData({ assetId, benchmarkId, revisionStr }) {
   const accessMode = ref('r')
@@ -28,7 +19,7 @@ export function useChecklistData({ assetId, benchmarkId, revisionStr }) {
         ['comment', 'detail'],
       )
       accessMode.value = response.access ?? 'r'
-      return (response.checklist ?? []).map(augmentItem)
+      return response.checklist ?? []
     },
     { immediate: false, initialState: [], onError: null },
   )
@@ -46,7 +37,8 @@ export function useChecklistData({ assetId, benchmarkId, revisionStr }) {
   function upsertReview(ruleId, review) {
     const idx = checklistData.value.findIndex(r => r.ruleId === ruleId)
     if (idx !== -1) {
-      checklistData.value[idx] = augmentItem({ ...checklistData.value[idx], ...review })
+      const updatedItem = { ...checklistData.value[idx], ...review }
+      checklistData.value[idx] = updatedItem
     }
   }
 

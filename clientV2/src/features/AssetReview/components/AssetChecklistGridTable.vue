@@ -1,20 +1,23 @@
 <script setup>
+import { FilterMatchMode } from '@primevue/core/api'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed } from 'vue'
-
+import { computed, ref, watch } from 'vue'
+import engineIcon from '../../../assets/bot2.svg'
+import overrideIcon from '../../../assets/override2.svg'
+import manualIcon from '../../../assets/user.svg'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import ColumnFilter from '../../../components/common/ColumnFilter.vue'
-import EngineIconCell from '../../../components/common/EngineIconCell.vue'
+import EngineBadge from '../../../components/common/EngineBadge.vue'
+import ManualBadge from '../../../components/common/ManualBadge.vue'
+import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
+import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
+import { calculateChecklistStats, getEngineDisplay, getResultDisplay, severityMap } from '../../../shared/lib/checklistUtils.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { fieldMatches, highlightText } from '../../../shared/lib/searchUtils.js'
-import { useChecklistDisplayMode } from '../composables/useChecklistDisplayMode.js'
-import { useSearch } from '../composables/useSearch.js'
-import { getResultDisplay, severityMap } from '../../../shared/lib/checklistUtils.js'
-import { buildEngineOptions } from '../lib/reviewFilterOptions.js'
 
 const props = defineProps({
   gridData: {
@@ -29,16 +32,73 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  searchFilter: {
+    type: String,
+    default: '',
+  },
+  visibleFields: {
+    type: Object,
+    required: true,
+  },
+  itemSize: {
+    type: Number,
+    required: true,
+  },
 })
 
-const emit = defineEmits(['update:selectedRow', 'row-click'])
+const emit = defineEmits(['update:selectedRow', 'row-click', 'refresh'])
 
-const {
-  isColVisible,
-  itemSize,
-} = useChecklistDisplayMode()
 
-const { filters, dsFilterFields, searchFilter, updateFilteredData } = useSearch()
+const dsFilterFields = [
+  'ruleId',
+  'groupId',
+  'ruleTitle',
+  'groupTitle',
+  'detail',
+  'comment',
+  'username',
+  'status.user.username',
+  'resultEngine.product',
+  'resultEngine.type',
+  'resultEngine.version',
+]
+
+const filters = ref({
+  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  severity: { value: null, matchMode: FilterMatchMode.IN },
+  result: { value: null, matchMode: FilterMatchMode.IN },
+  _statusText: { value: null, matchMode: FilterMatchMode.IN },
+  _engineDisplay: { value: null, matchMode: FilterMatchMode.IN },
+})
+
+const filteredData = ref(null)
+
+watch(() => props.searchFilter, (val) => {
+  filters.value.global.value = val || null
+})
+
+const visibleData = computed(() => filteredData.value ?? props.gridData)
+const isFiltered = computed(() => filteredData.value !== null && filteredData.value.length !== props.gridData.length)
+
+const stats = computed(() => {
+  const result = calculateChecklistStats(visibleData.value)
+  if (!result) {
+    return {
+      results: { pass: 0, fail: 0, notapplicable: 0, other: 0 },
+      engine: { manual: 0, engine: 0, override: 0 },
+      statuses: { saved: 0, submitted: 0, accepted: 0, rejected: 0 },
+    }
+  }
+  return result
+})
+
+const processedGridData = computed(() => {
+  return props.gridData.map(item => ({
+    ...item,
+    _statusText: item.status?.label ?? item.status,
+    _engineDisplay: getEngineDisplay(item),
+  }))
+})
 
 const catOptions = computed(() => {
   const severities = new Set(props.gridData.map(item => item.severity).filter(Boolean))
@@ -64,13 +124,19 @@ const statusOptions = computed(() => {
   })).sort((a, b) => a.label.localeCompare(b.label))
 })
 
-const engineOptions = computed(() => buildEngineOptions(props.gridData))
+const engineOptions = computed(() => {
+  const engines = new Set(props.gridData.map(item => getEngineDisplay(item)).filter(Boolean))
+  return Array.from(engines).map(val => ({
+    value: val,
+    label: val === 'engine' ? 'Engine' : val === 'override' ? 'Override' : 'Manual',
+    image: val === 'engine' ? engineIcon : val === 'override' ? overrideIcon : manualIcon,
+  }))
+})
 function onFilter(event) {
-  updateFilteredData(event.filteredValue)
+  filteredData.value = event.filteredValue
 }
 
-
-const defaultSortField = computed(() => isColVisible('groupId') ? 'groupId' : 'ruleId')
+const defaultSortField = computed(() => props.visibleFields.has('groupId') ? 'groupId' : 'ruleId')
 
 function getColumnPt(alignment = 'left') {
   const isCenter = alignment === 'center'
@@ -125,13 +191,13 @@ const dataTablePt = {
 
 <template>
   <DataTable
-    v-model:filters="filters" :selection="selectedRow" :global-filter-fields="dsFilterFields" :value="gridData"
+    v-model:filters="filters" :selection="selectedRow" :global-filter-fields="dsFilterFields" :value="processedGridData"
     :loading="isLoading" data-key="ruleId" selection-mode="single" scrollable scroll-height="flex"
     :virtual-scroller-options="{ itemSize }" resizable-columns striped-rows :sort-field="defaultSortField"
     :sort-order="1" class="checklist-grid__table" :pt="dataTablePt" @update:selection="(val) => $emit('update:selectedRow', val)"
     @row-click="$emit('row-click', $event)" @filter="onFilter" @pointerdown.stop
   >
-    <Column v-if="isColVisible('severity')" field="severity" filter-field="severity" sortable :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('severity')" field="severity" filter-field="severity" sortable :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
           Cat
@@ -149,7 +215,7 @@ const dataTablePt = {
       </template>
     </Column>
 
-    <Column v-if="isColVisible('groupId')" header="Group" field="groupId" sortable :style="{ width: '7rem', minWidth: '7rem' }" :pt="columnPt.left">
+    <Column v-if="visibleFields.has('groupId')" header="Group" field="groupId" sortable :style="{ width: '7rem', minWidth: '7rem' }" :pt="columnPt.left">
       <template #body="{ data }">
         <span class="cell-text" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupId, searchFilter) }">
           <span v-if="searchFilter" v-html="highlightText(data.groupId, searchFilter)" />
@@ -159,7 +225,7 @@ const dataTablePt = {
     </Column>
 
     <Column
-      v-if="isColVisible('ruleId')" header="Rule Id" field="ruleId" sortable :style="{ width: '15rem', minWidth: '12rem' }"
+      v-if="visibleFields.has('ruleId')" header="Rule Id" field="ruleId" sortable :style="{ width: '15rem', minWidth: '12rem' }"
       :pt="columnPt.left"
     >
       <template #body="{ data }">
@@ -171,7 +237,7 @@ const dataTablePt = {
     </Column>
 
     <Column
-      v-if="isColVisible('ruleTitle')" header="Rule Title" field="ruleTitle" sortable :style="{ width: '25%', minWidth: '16rem' }"
+      v-if="visibleFields.has('ruleTitle')" header="Rule Title" field="ruleTitle" sortable :style="{ width: '25%', minWidth: '16rem' }"
       :pt="columnPt.left"
     >
       <template #body="{ data }">
@@ -189,7 +255,7 @@ const dataTablePt = {
     </Column>
 
     <Column
-      v-if="isColVisible('groupTitle')" header="Group Title" field="groupTitle" sortable :style="{ width: '25%', minWidth: '16rem' }"
+      v-if="visibleFields.has('groupTitle')" header="Group Title" field="groupTitle" sortable :style="{ width: '25%', minWidth: '16rem' }"
       :pt="columnPt.left"
     >
       <template #body="{ data }">
@@ -204,7 +270,7 @@ const dataTablePt = {
       </template>
     </Column>
 
-    <Column v-if="isColVisible('result')" field="result" filter-field="result" sortable :style="{ width: '8%', minWidth: '6rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('result')" field="result" filter-field="result" sortable :style="{ width: '8%', minWidth: '6rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
           Result
@@ -223,7 +289,7 @@ const dataTablePt = {
       </template>
     </Column>
 
-    <Column v-if="isColVisible('detail')" header="Detail" field="detail" sortable :style="{ width: '25%', minWidth: '14rem' }" :pt="columnPt.left">
+    <Column v-if="visibleFields.has('detail')" header="Detail" field="detail" sortable :style="{ width: '25%', minWidth: '14rem' }" :pt="columnPt.left">
       <template #body="{ data }">
         <div class="cell-text-field">
           <span
@@ -238,7 +304,7 @@ const dataTablePt = {
       </template>
     </Column>
 
-    <Column v-if="isColVisible('comment')" header="Comment" field="comment" sortable :style="{ width: '25%', minWidth: '14rem' }" :pt="columnPt.left">
+    <Column v-if="visibleFields.has('comment')" header="Comment" field="comment" sortable :style="{ width: '25%', minWidth: '14rem' }" :pt="columnPt.left">
       <template #body="{ data }">
         <div class="cell-text-field">
           <span
@@ -254,7 +320,7 @@ const dataTablePt = {
     </Column>
 
     <Column
-      v-if="isColVisible('resultEngine')"
+      v-if="visibleFields.has('resultEngine')"
       field="resultEngine" sortable filter-field="_engineDisplay" sort-field="resultEngine.product" :style="{ width: '5.5rem', minWidth: '5.5rem' }"
       :pt="columnPt.center"
     >
@@ -265,12 +331,23 @@ const dataTablePt = {
         </div>
       </template>
       <template #body="{ data }">
-        <EngineIconCell :display="data._engineDisplay" />
+        <img
+          v-if="data._engineDisplay === 'engine'" src="../../../assets/bot2.svg" alt="Engine"
+          class="engine-icon" title="Result engine"
+        >
+        <img
+          v-else-if="data._engineDisplay === 'override'" src="../../../assets/override2.svg" alt="Override"
+          class="engine-icon" title="Overridden result"
+        >
+        <img
+          v-else-if="data._engineDisplay === 'manual'" src="../../../assets/user.svg" alt="Manual"
+          class="engine-icon" title="Manual result"
+        >
       </template>
     </Column>
 
     <Column
-      v-if="isColVisible('status')"
+      v-if="visibleFields.has('status')"
       field="status" filter-field="_statusText" sortable sort-field="status.label" :style="{ width: '9rem', minWidth: '9rem' }"
       :pt="columnPt.center"
     >
@@ -289,7 +366,7 @@ const dataTablePt = {
       </template>
     </Column>
 
-    <Column v-if="isColVisible('touchTs')" field="touchTs" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('touchTs')" field="touchTs" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
       <template #header>
         <i class="pi pi-clock" title="Last action" />
       </template>
@@ -305,7 +382,26 @@ const dataTablePt = {
     </template>
 
     <template #footer>
-      <slot name="footer" />
+      <StatusFooter
+        :refresh-loading="isLoading" :total-count="gridData.length"
+        :filtered-count="isFiltered ? visibleData.length : null" @action="(key) => emit('refresh', key)"
+      >
+        <template #right-extra>
+          <ResultBadge status="O" :count="stats.results.fail" />
+          <ResultBadge status="NF" :count="stats.results.pass" />
+          <ResultBadge status="NA" :count="stats.results.notapplicable" />
+          <ResultBadge status="NR+" :count="stats.results.other" />
+          <span class="footer-divider">|</span>
+          <ManualBadge :count="stats.engine.manual" />
+          <EngineBadge :count="stats.engine.engine" />
+          <OverrideBadge :count="stats.engine.override" />
+          <span class="footer-divider">|</span>
+          <StatusBadge status="saved" :count="stats.statuses.saved" />
+          <StatusBadge status="submitted" :count="stats.statuses.submitted" />
+          <StatusBadge status="accepted" :count="stats.statuses.accepted" />
+          <StatusBadge status="rejected" :count="stats.statuses.rejected" />
+        </template>
+      </StatusFooter>
     </template>
   </DataTable>
 </template>

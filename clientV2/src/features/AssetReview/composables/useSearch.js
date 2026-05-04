@@ -1,7 +1,7 @@
 import { FilterMatchMode } from '@primevue/core/api'
 import { computed, ref, watch } from 'vue'
 import { useDebouncedRef } from '../../../shared/composables/useDebouncedRef.js'
-import { calculateChecklistStats } from '../lib/checklistUtils.js'
+import { calculateChecklistStats } from '../../../shared/lib/checklistUtils.js'
 
 const searchFilter = useDebouncedRef('', 220)
 

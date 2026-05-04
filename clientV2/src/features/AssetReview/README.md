@@ -12,15 +12,10 @@ src/features/AssetReview/
 │   └── assetReviewApi.js         # All API calls for this feature
 ├── components/
 │   ├── AssetReview.vue            # Feature root / "store" component
-│   ├── ChecklistGrid.vue          # Left pane: grid + popover controller
-│   ├── ChecklistGridHeader.vue    # Toolbar above the grid
-│   ├── ChecklistGridTable.vue     # Pure PrimeVue DataTable wrapper
-│   ├── ReviewEditPopover.vue      # (shared) Floating form for editing a review
-│   ├── ReviewHistoryTab.vue       # Popover tab: history of this rule's reviews
-│   ├── ReviewOtherAssetsTab.vue   # Popover tab: same rule across other assets
-│   ├── ReviewResources.vue        # Popover tab: attachments / resources
-│   ├── ReviewStatusTextTab.vue    # Popover tab: status text detail
-│   └── RuleInfo.vue               # Right pane: rule content / detail panel
+│   ├── assetChecklistGrid.vue          # Left pane: grid + popover controller
+│   ├── AssetChecklistGridHeader.vue    # Toolbar above the grid
+│   ├── AssetChecklistGridTable.vue     # Pure PrimeVue DataTable wrapper
+│   └── RuleDetailPanel.vue        # Right pane: rule content / detail panel
 ├── composables/
 │   ├── useChecklistData.js        # Fetches and caches the checklist array
 │   ├── useChecklistDisplayMode.js # Controls column visibility and row height
@@ -38,23 +33,30 @@ src/features/AssetReview/
 
 ## State Architecture
 
-`AssetReview.vue` is the **feature root**. It is the single source of truth — it initializes all composables, wires their outputs together, and distributes state downward via Vue's `provide`/`inject`.
+`AssetReview.vue` is the **feature root**. It is the single source of truth — it initializes all composables and passes state downward via **explicit props**.
 
 ```
-AssetReview.vue  (provide → 'assetReviewContext')
-├── ChecklistGrid.vue              (inject assetReviewContext)
-│   ├── ChecklistGridHeader.vue
-│   ├── ChecklistGridTable.vue
-│   └── ReviewEditPopover.vue      (inject assetReviewContext, provide → 'reviewEditForm')
-│       ├── ReviewHistoryTab.vue   (inject assetReviewContext, inject reviewEditForm)
-│       ├── ReviewOtherAssetsTab.vue
-│       └── ReviewResources.vue
-└── RuleInfo.vue
+AssetReview.vue  (maintains feature state)
+├── assetChecklistGrid.vue              (props: gridData, selectedRuleId, asset, revisionInfo, fieldSettings, canAccept, isSaving, saveError, currentReview)
+│   ├── AssetChecklistGridHeader.vue    (props: asset, revisionInfo, accessMode)
+│   ├── AssetChecklistGridTable.vue     (props: gridData, selectedRow)
+│   └── ReviewEditPopover.vue      (props: currentReview, selectedRuleId, collectionId, assetId, fieldSettings, accessMode, canAccept, isSaving, saveError; provide → 'reviewEditForm')
+│       └── ReviewResources.vue    (common)
+│           ├── ReviewHistoryTab.vue
+│           ├── ReviewOtherAssetsTab.vue
+│           ├── ReviewStatusTextTab.vue
+│           └── ReviewAttachmentsTab.vue
+└── RuleInfo.vue                   (props: ruleContent, selectedChecklistItem)
 ```
 
-### Why `provide`/`inject` instead of props?
+### Why Props-Down instead of `provide`/`inject`?
 
-The page uses a `<Splitter>` which adds non-feature-aware wrapper components between the root and the children. Threading 15+ reactive values through opaque wrappers as props would be unworkable. `provide`/`inject` creates a **feature-scoped context** that is destroyed with the component tree when the user navigates away — giving us the cleanup benefits of local state without prop drilling.
+We transitioned the UI children to use **explicit props** instead of the "magic" `assetReviewContext` injection to improve:
+1. **Portability**: Components like `ReviewEditPopover` can now be reused in other features (e.g., `CollectionReview`) by simply passing the required data.
+2. **Explicitness**: Component dependencies are now clear from their interfaces.
+3. **Testability**: Easier isolation for unit tests.
+
+`ReviewEditPopover` still uses `provide('reviewEditForm')` for its local form state, as this state is purely internal to the popover and its tabs.
 
 ---
 
@@ -138,13 +140,13 @@ accepted
 - **Unsubmit** → `PATCH /reviews` with `status: 'saved'` (resets to editable)
 - **Accept** → `PATCH /reviews` with `status: 'accepted'`
 
-All saves flow: `ReviewEditPopover` → emits `save`/`status-action` → `ChecklistGrid` re-emits up → `AssetReview` calls `saveFullReview` or `saveStatusAction` → optimistic `upsertReview` updates the grid row in place without a re-fetch.
+All saves flow: `ReviewEditPopover` → emits `save`/`status-action` → `assetChecklistGrid` re-emits up → `AssetReview` calls `saveFullReview` or `saveStatusAction` → optimistic `upsertReview` updates the grid row in place without a re-fetch.
 
 ---
 
 ## The Popover Anchoring System
 
-The `ReviewEditPopover` is anchored to a hidden `<div class="popover-anchor">` inside `ChecklistGrid`. When a row is clicked:
+The `ReviewEditPopover` is anchored to a hidden `<div class="popover-anchor">` inside `assetChecklistGrid`. When a row is clicked:
 
 1. The anchor `div` is repositioned to `{ left: clickX, top: rowTop, height: rowHeight }` using inline styles.
 2. A synthetic event object (`{ currentTarget: anchor, clientX }`) is passed to the popover's `show` / `reposition` method.
@@ -156,13 +158,13 @@ This approach avoids conflicts with PrimeVue's internal scroll/target tracking b
 
 ## Unsaved Changes Guard
 
-`ReviewEditPopover` exposes `isDirty` and `triggerUnsavedWarning()` via `defineExpose`. `ChecklistGrid` uses these to:
+`ReviewEditPopover` exposes `isDirty` and `triggerUnsavedWarning()` via `defineExpose`. `assetChecklistGrid` uses these to:
 
 - **Block row switching** if the user clicks a different row while `isDirty` is `true`.
 - **Show a warning banner** inside the popover by calling `triggerUnsavedWarning()`.
 - **Lock grid scroll** via the `scrollLocked` computed when the form is dirty.
 
-All "guard" checks in `ChecklistGrid` go through the shared `guardUnsaved(targetRuleId)` helper to avoid duplication.
+All "guard" checks in `assetChecklistGrid` go through the shared `guardUnsaved(targetRuleId)` helper to avoid duplication.
 
 ---
 
