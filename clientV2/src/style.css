@@ -220,7 +220,7 @@ textarea:focus {
 .sm-scrollbar-thin {
   scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border-default) transparent;
+  scrollbar-color: var(--color-border-default) rgba(255,255,255,0.04);
 }
 
 .sm-scrollbar-thin::-webkit-scrollbar {
@@ -228,7 +228,7 @@ textarea:focus {
 }
 
 .sm-scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(255,255,255,0.04);
 }
 
 .sm-scrollbar-thin::-webkit-scrollbar-button {

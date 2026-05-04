@@ -1,26 +1,53 @@
 <script setup>
-defineProps({
+import Button from 'primevue/button'
+import { ref } from 'vue'
+import ImportResultsModal from './ImportResultsModal.vue'
+
+const props = defineProps({
   collectionId: {
     type: String,
     required: true,
   },
 })
+
+const showImportModal = ref(false)
+
+function handleImported() {
+  // TODO: trigger collection asset/review cache invalidation once the app has a reactive collection store
+}
 </script>
 
 <template>
-  <div class="manage-stub">
-    <p>Import Options: auto-status per result, unreviewed rules, empty field handling</p>
-    <p class="manage-stub-id">Collection {{ collectionId }}</p>
+  <div class="manage-import-options">
+    <div class="import-action">
+      <Button
+        label="Import results from CKL(B) or XCCDF files"
+        icon="pi pi-upload"
+        :pt="{
+          root: { style: 'color: rgba(255,255,255,0.87); border-color: var(--color-border-default);' },
+        }"
+        @click="showImportModal = true"
+      />
+    </div>
+
+    <ImportResultsModal
+      v-model:visible="showImportModal"
+      :collection-id="props.collectionId"
+      @imported="handleImported"
+    />
   </div>
 </template>
 
 <style scoped>
-.manage-stub {
-  color: var(--color-text-dim);
+.manage-import-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.manage-stub-id {
-  margin-top: 0.5rem;
-  color: var(--color-text-muted);
+.import-action {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 </style>
