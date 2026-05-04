@@ -2,6 +2,10 @@ import { computed, ref } from 'vue'
 
 const densityState = new Map()
 
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => densityState.clear())
+}
+
 export function useGridDensity(gridKey, defaultLineClamp = 1, baseItemSize = 12, sizeMultiplier = 24) {
   if (!densityState.has(gridKey)) {
     densityState.set(gridKey, ref(defaultLineClamp))

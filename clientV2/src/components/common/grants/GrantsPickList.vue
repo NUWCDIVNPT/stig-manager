@@ -8,8 +8,8 @@ import Popover from 'primevue/popover'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import { computed, ref } from 'vue'
+import { roleMap, roleOptions } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
-import { roleOptions, roleMap } from './roleOptions.js'
 import { useGranteeFilter } from './useGranteeFilter.js'
 
 const props = defineProps({

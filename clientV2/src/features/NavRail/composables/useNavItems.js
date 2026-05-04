@@ -29,7 +29,7 @@ export function useNavItems() {
         label: 'STIG Library',
         iconClass: 'nav-icon-library',
         route: '/stig-library',
-        matchFn: () => route.name === 'stig-library' || route.name === 'library',
+        matchFn: () => route.name === 'stig-library' || route.name === 'stig-library-benchmark',
       },
       {
         key: 'whats-new',
