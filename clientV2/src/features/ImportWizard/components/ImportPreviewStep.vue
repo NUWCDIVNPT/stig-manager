@@ -1,62 +1,37 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
+import { ref } from 'vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { formatDateTimeString } from '../../../shared/lib.js'
 
 defineOptions({ inheritAttrs: false })
 
-const props = defineProps({
+defineProps({
   rows: { type: Array, required: true },
 })
 
-const emit = defineEmits(['export-csv'])
+const dtRef = ref()
 
 function onFooterAction(action) {
-  if (action === 'export') {
-    exportCsv()
-  }
-}
-
-function exportCsv() {
-  const headers = ['Asset', 'STIG', 'I', 'NR', 'NA', 'NF', 'O', 'File', 'Date']
-  const csvRows = props.rows.map(r => [
-    (r.taskAsset.assetProps.assetId ? '' : '(+) ') + r.taskAsset.assetProps.name,
-    (r.checklist.newAssignment ? '(+) ' : '') + r.checklist.benchmarkId,
-    r.checklist.stats?.informational ?? 0,
-    r.checklist.stats?.notchecked ?? 0,
-    r.checklist.stats?.notapplicable ?? 0,
-    r.checklist.stats?.pass ?? 0,
-    r.checklist.stats?.fail ?? 0,
-    r.checklist.sourceRef.name,
-    r.checklist.sourceRef.lastModifiedDate?.toLocaleString() ?? '',
-  ])
-  const csv = [headers, ...csvRows]
-    .map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
-    .join('\n')
-  const blob = new Blob([csv], { type: 'text/csv' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'import-preview.csv'
-  a.click()
-  URL.revokeObjectURL(url)
+  if (action === 'export') { dtRef.value.exportCSV() }
 }
 </script>
 
 <template>
   <div v-bind="$attrs">
-    <!-- Step header -->
     <div class="step-header">
       <p class="step-subtitle">
         If you continue, these results will be added to the Collection.
       </p>
     </div>
 
-    <!-- Preview table wrapper -->
     <div class="preview-table-wrapper">
       <DataTable
+        ref="dtRef"
         :value="rows"
+        export-filename="import-preview"
         scrollable
         scroll-height="flex"
         resizable-columns
@@ -64,22 +39,21 @@ function exportCsv() {
         :virtual-scroller-options="{ itemSize: 46 }"
         class="preview-table"
       >
-        <Column header="Asset" style="width: 16%">
+        <Column header="Asset" field="taskAsset.assetProps.name" style="width: 16%" sortable :sort-field="r => r.taskAsset.assetProps.name">
           <template #body="{ data }">
             <span :class="{ 'new-item': !data.taskAsset.assetProps.assetId }">
               {{ data.taskAsset.assetProps.assetId ? '' : '(+) ' }}{{ data.taskAsset.assetProps.name }}
             </span>
           </template>
         </Column>
-        <Column header="STIG" style="width: 20%">
+        <Column header="STIG" field="checklist.benchmarkId" style="width: 20%" sortable :sort-field="r => r.checklist.benchmarkId">
           <template #body="{ data }">
             <span :class="{ 'new-item': data.checklist.newAssignment }">
               {{ data.checklist.newAssignment ? '(+) ' : '' }}{{ data.checklist.benchmarkId }}
             </span>
           </template>
         </Column>
-        <!-- Stat columns — 5% each × 5 = 25% -->
-        <Column style="width: 5%; text-align: center">
+        <Column header="I" field="checklist.stats.informational" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.informational ?? 0">
           <template #header>
             <ResultBadge status="I" />
           </template>
@@ -87,7 +61,7 @@ function exportCsv() {
             {{ data.checklist.stats?.informational ?? 0 }}
           </template>
         </Column>
-        <Column style="width: 5%; text-align: center">
+        <Column header="NR" field="checklist.stats.notchecked" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notchecked ?? 0">
           <template #header>
             <ResultBadge status="NR" />
           </template>
@@ -95,7 +69,7 @@ function exportCsv() {
             {{ data.checklist.stats?.notchecked ?? 0 }}
           </template>
         </Column>
-        <Column style="width: 5%; text-align: center">
+        <Column header="NA" field="checklist.stats.notapplicable" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notapplicable ?? 0">
           <template #header>
             <ResultBadge status="NA" />
           </template>
@@ -103,7 +77,7 @@ function exportCsv() {
             {{ data.checklist.stats?.notapplicable ?? 0 }}
           </template>
         </Column>
-        <Column style="width: 5%; text-align: center">
+        <Column header="NF" field="checklist.stats.pass" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.pass ?? 0">
           <template #header>
             <ResultBadge status="NF" />
           </template>
@@ -111,7 +85,7 @@ function exportCsv() {
             {{ data.checklist.stats?.pass ?? 0 }}
           </template>
         </Column>
-        <Column style="width: 5%; text-align: center">
+        <Column header="O" field="checklist.stats.fail" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.fail ?? 0">
           <template #header>
             <ResultBadge status="O" />
           </template>
@@ -119,19 +93,18 @@ function exportCsv() {
             {{ data.checklist.stats?.fail ?? 0 }}
           </template>
         </Column>
-        <Column header="File" style="width: 25%">
+        <Column header="File" field="checklist.sourceRef.name" style="width: 25%" sortable :sort-field="r => r.checklist.sourceRef.name">
           <template #body="{ data }">
             <span :title="data.checklist.sourceRef.fullPath">{{ data.checklist.sourceRef.name }}</span>
           </template>
         </Column>
-        <Column header="Date" style="width: 17.5%">
+        <Column header="Date" field="checklist.sourceRef.lastModifiedDate" style="width: 17.5%" sortable :sort-field="r => r.checklist.sourceRef.lastModifiedDate ?? ''">
           <template #body="{ data }">
-            {{ data.checklist.sourceRef.lastModifiedDate?.toLocaleString() ?? '' }}
+            {{ formatDateTimeString(data.checklist.sourceRef.lastModifiedDate) }}
           </template>
         </Column>
       </DataTable>
 
-      <!-- Footer -->
       <StatusFooter
         :total-count="rows.length"
         :show-refresh="false"
@@ -154,7 +127,7 @@ function exportCsv() {
   font-size: 1.6rem;
   font-weight: 600;
   margin: 0 0 0.5rem;
-  color: var(--color-primary-highlight); /* Blue text */
+  color: var(--color-primary-highlight);
 }
 
 .step-subtitle {

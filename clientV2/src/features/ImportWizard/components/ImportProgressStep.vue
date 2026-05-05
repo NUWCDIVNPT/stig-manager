@@ -2,7 +2,7 @@
 import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 
 const props = defineProps({
@@ -20,49 +20,19 @@ const progressValue = computed(() =>
 
 const rejectedRows = computed(() => props.selectedRow?.rejected ?? [])
 
+const statusRef = ref()
+const rejectedRef = ref()
+
 function onStatusFooterAction(action) {
-  if (action === 'export') { exportStatusCsv() }
+  if (action === 'export') { statusRef.value.exportCSV() }
 }
 
 function onRejectedFooterAction(action) {
-  if (action === 'export') { exportRejectedCsv() }
-}
-
-function exportStatusCsv() {
-  const headers = ['Asset', 'Created', 'Added STIGs', 'Inserted', 'Updated', 'Rejected']
-  const rows = props.statusRows.map(r => [
-    r.assetName,
-    r.created ? 'true' : 'false',
-    r.addedStigs ? 'true' : 'false',
-    r.error ? '-' : (r.inserted ?? 0),
-    r.error ? '-' : (r.updated ?? 0),
-    r.error ? '!' : (r.rejected?.length ?? 0),
-  ])
-  downloadCsv([headers, ...rows], 'import-results.csv')
-}
-
-function exportRejectedCsv() {
-  const headers = ['Rule', 'Reason']
-  const rows = rejectedRows.value.map(r => [r.ruleId, r.reason])
-  downloadCsv([headers, ...rows], 'rejected-reviews.csv')
-}
-
-function downloadCsv(data, filename) {
-  const csv = data
-    .map(row => row.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
-    .join('\n')
-  const blob = new Blob([csv], { type: 'text/csv' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
+  if (action === 'export') { rejectedRef.value.exportCSV() }
 }
 </script>
 
 <template>
-  <!-- Title + status strip -->
   <div class="step-header">
     <h2 class="step-title">
       Importing results
@@ -79,12 +49,13 @@ function downloadCsv(data, filename) {
     </div>
   </div>
 
-  <!-- Main results table -->
   <div class="import-table-wrapper">
     <div class="table-flex">
       <DataTable
+        ref="statusRef"
         :model-value="selectedRow"
         :value="statusRows"
+        export-filename="import-results"
         selection-mode="single"
         data-key="assetId"
         scrollable
@@ -94,28 +65,28 @@ function downloadCsv(data, filename) {
         @row-select="e => emit('update:selectedRow', e.data)"
         @row-unselect="emit('update:selectedRow', null)"
       >
-        <Column field="assetName" header="Asset" style="min-width: 180px" />
-        <Column header="Created" style="width: 90px">
+        <Column field="assetName" header="Asset" style="min-width: 180px" sortable />
+        <Column field="created" header="Created" style="width: 90px" sortable>
           <template #body="{ data }">
             {{ data.created ? 'true' : 'false' }}
           </template>
         </Column>
-        <Column header="Added STIGs" style="width: 110px">
+        <Column field="addedStigs" header="Added STIGs" style="width: 110px" sortable>
           <template #body="{ data }">
             {{ data.addedStigs ? 'true' : 'false' }}
           </template>
         </Column>
-        <Column header="Inserted" style="width: 90px">
+        <Column field="inserted" header="Inserted" style="width: 90px" sortable>
           <template #body="{ data }">
             {{ data.error ? '-' : (data.inserted ?? 0) }}
           </template>
         </Column>
-        <Column header="Updated" style="width: 90px">
+        <Column field="updated" header="Updated" style="width: 90px" sortable>
           <template #body="{ data }">
             {{ data.error ? '-' : (data.updated ?? 0) }}
           </template>
         </Column>
-        <Column header="Rejected" style="width: 90px">
+        <Column header="Rejected" :exportable="false" style="width: 90px" sortable :sort-field="r => r.error ? -1 : (r.rejected?.length ?? 0)">
           <template #body="{ data }">
             {{ data.error ? '!' : (data.rejected?.length ?? 0) }}
           </template>
@@ -126,13 +97,12 @@ function downloadCsv(data, filename) {
       :total-count="statusRows.length"
       :show-refresh="false"
       :show-export="true"
-      total-label="records"
+      total-label="reviews"
       total-icon="pi pi-file"
       @action="onStatusFooterAction"
     />
   </div>
 
-  <!-- Rejected reviews (always visible) -->
   <div class="rejected-wrapper">
     <div class="rejected-header">
       Rejected reviews
@@ -140,16 +110,17 @@ function downloadCsv(data, filename) {
     <div class="import-table-wrapper rejected-table-wrapper">
       <div class="table-flex">
         <DataTable
+          ref="rejectedRef"
           :value="rejectedRows"
+          export-filename="rejected-reviews"
           scrollable
           scroll-height="flex"
           resizable-columns
           striped-rows
-          :virtual-scroller-options="{ itemSize: 26 }"
           class="rejected-table"
         >
-          <Column field="ruleId" header="Rule" style="min-width: 160px" />
-          <Column field="reason" header="Reason" />
+          <Column field="ruleId" header="Rule" style="min-width: 160px" sortable />
+          <Column field="reason" header="Reason" sortable />
           <template #empty>
             <div class="rejected-empty">
               <span class="pi pi-info-circle" style="color: var(--color-primary-highlight); font-size: 1.2rem;" />
@@ -162,7 +133,7 @@ function downloadCsv(data, filename) {
         :total-count="rejectedRows.length"
         :show-refresh="false"
         :show-export="true"
-        total-label="records"
+        total-label="reviews"
         total-icon="pi pi-file"
         @action="onRejectedFooterAction"
       />

@@ -1,7 +1,7 @@
 <script setup>
 import Button from 'primevue/button'
 import { ref } from 'vue'
-import ImportResultsModal from './ImportResultsModal.vue'
+import ImportResultsModal from '../../ImportWizard/components/ImportResultsModal.vue'
 
 const props = defineProps({
   collectionId: {

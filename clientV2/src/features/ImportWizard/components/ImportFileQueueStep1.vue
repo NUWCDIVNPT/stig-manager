@@ -17,7 +17,7 @@ const props = defineProps({
   customizing: { type: Boolean, required: true },
   showCustomizeCb: { type: Boolean, default: false },
   allowCustom: { type: Boolean, default: false },
-  canUpdateAssetProps: { type: Boolean, default: false },
+  canUpdateAssetProps: { type: Boolean, default: true },
   statusOptions: { type: Array, required: true },
   unreviewedOptions: { type: Array, required: true },
   unreviewedCommentedOptions: { type: Array, required: true },
@@ -37,7 +37,6 @@ const emit = defineEmits([
 
 const fileInputRef = ref(null)
 
-/** Set of _queueId strings for O(1) checked lookups. */
 const selectedIdSet = computed(() => new Set(props.selectedRows.map(f => f._queueId)))
 
 const isAllSelected = computed(() =>
@@ -85,14 +84,12 @@ function onFilePicked(event) {
 </script>
 
 <template>
-  <!-- File queue toolbar + table -->
   <div
     class="queue-table-wrapper"
     @dragover.prevent="emit('drag-over')"
     @dragleave="emit('drag-leave')"
     @drop.prevent="e => emit('drop-files', e)"
   >
-    <!-- Toolbar -->
     <div class="queue-toolbar" :class="{ 'queue-toolbar--dragover': isDragOver }">
       <button
         type="button"
@@ -122,7 +119,6 @@ function onFilePicked(event) {
       </button>
     </div>
 
-    <!-- File table (drop target) -->
     <div class="queue-table-flex">
       <DataTable
         :value="fileQueue"
@@ -169,7 +165,6 @@ function onFilePicked(event) {
       </DataTable>
     </div>
 
-    <!-- Row count footer -->
     <StatusFooter
       :total-count="fileQueue.length"
       :show-refresh="false"
@@ -179,7 +174,6 @@ function onFilePicked(event) {
     />
   </div>
 
-  <!-- Import Options -->
   <ImportOptionsPanel
     :model-value="importOptions"
     :customizing="customizing"

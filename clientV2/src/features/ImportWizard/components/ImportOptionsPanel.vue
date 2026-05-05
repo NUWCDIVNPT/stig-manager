@@ -26,7 +26,7 @@ const props = defineProps({
   /** Whether the current user can update existing asset properties */
   canUpdateAssetProps: {
     type: Boolean,
-    default: false,
+    default: true,
   },
   /** Status options array (Saved / Submitted / Accepted depending on role) */
   statusOptions: {
@@ -82,7 +82,6 @@ const checkboxPt = {
 
 <template>
   <div class="import-options-panel">
-    <!-- Header -->
     <div class="panel-header">
       <span class="panel-title">Import Options</span>
       <div v-if="showCustomizeCb" class="customize-toggle">
@@ -100,7 +99,6 @@ const checkboxPt = {
       </div>
     </div>
 
-    <!-- Options Body -->
     <div class="options-body" :class="{ 'options-disabled': !customizing && allowCustom }">
       <div class="options-section">
         <div class="section-title">
@@ -146,7 +144,6 @@ const checkboxPt = {
         </div>
       </div>
 
-      <!-- Section: General Options -->
       <div class="options-section">
         <div class="options-row">
           <label>Include unreviewed rules</label>
@@ -198,17 +195,20 @@ const checkboxPt = {
         </div>
       </div>
 
-      <!-- Section: Asset Updates -->
-      <div class="options-section no-border checkbox-row">
+      <div v-if="canUpdateAssetProps" class="options-section no-border checkbox-row">
         <Checkbox
           :model-value="modelValue.updateAssetProps"
           binary
           input-id="updateAssetProps"
-          :disabled="!canUpdateAssetProps || !customizing"
+          :disabled="!customizing"
           :pt="checkboxPt"
           @update:model-value="update('updateAssetProps', $event)"
         />
         <label for="updateAssetProps">Update existing Asset properties</label>
+      </div>
+      <div v-else class="options-section no-border asset-update-note">
+        <i class="pi pi-info-circle" />
+        <span>Asset property updates are configured in the Manage Collection interface.</span>
       </div>
     </div>
   </div>
@@ -335,5 +335,15 @@ const checkboxPt = {
 
 .checkbox-row label {
   cursor: pointer;
+}
+
+.asset-update-note {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-dim);
+  font-size: 0.88rem;
+  font-style: italic;
 }
 </style>

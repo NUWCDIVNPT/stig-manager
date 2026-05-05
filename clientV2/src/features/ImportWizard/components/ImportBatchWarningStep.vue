@@ -6,7 +6,6 @@ defineProps({
 
 <template>
   <div class="bw-step">
-    <!-- Impact header -->
     <div class="bw-header">
       <span class="pi pi-exclamation-circle bw-header__icon" />
       <div class="bw-header__text">
@@ -19,12 +18,10 @@ defineProps({
       </div>
     </div>
 
-    <!-- Recommendations -->
     <p class="bw-section-label">
       Recommendations
     </p>
     <div class="bw-cards">
-      <!-- Card 1: smaller batches -->
       <div class="bw-card">
         <span class="pi pi-sliders-h bw-card__icon" />
         <div>
@@ -37,7 +34,6 @@ defineProps({
         </div>
       </div>
 
-      <!-- Card 2: STIG Manager Watcher -->
       <div class="bw-card bw-card--accent">
         <span class="pi pi-desktop bw-card__icon bw-card__icon--accent" />
         <div class="bw-watcher-body">

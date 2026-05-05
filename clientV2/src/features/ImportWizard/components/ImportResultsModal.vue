@@ -1,11 +1,10 @@
 <script setup>
 import Button from 'primevue/button'
-import Column from 'primevue/column'
-import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
 import { computed, watch } from 'vue'
 import { useImportWizard } from '../composables/useImportWizard.js'
 import ImportBatchWarningStep from './ImportBatchWarningStep.vue'
+import ImportErrorsWarningsStep from './ImportErrorsWarningsStep.vue'
 import ImportFileQueueStep from './ImportFileQueueStep1.vue'
 import ImportPreviewStep from './ImportPreviewStep.vue'
 import ImportProgressStep from './ImportProgressStep.vue'
@@ -49,7 +48,6 @@ watch(() => props.visible, (isOpen) => { if (isOpen) { openWizard() } })
 function closeWizard() { visible.value = false }
 function doneImport() { visible.value = false }
 
-// ─── Dialog styling ────────────────────────────────────────────────────────
 const dialogPt = {
   root: { style: 'background-color: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 6px; color: var(--color-text-primary); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06); display: flex; flex-direction: column; overflow: hidden;' },
   header: { style: 'background-color: var(--color-background-dark); color: var(--color-text-primary); border-top-left-radius: 6px; border-top-right-radius: 6px; padding: 1rem; border-bottom: 1px solid var(--color-background-light); flex-shrink: 0;' },
@@ -74,7 +72,6 @@ const primaryBtnPt = {
     :style="{ height: '85vh', width: 'min(75vw, 1024px)' }"
     :pt="dialogPt"
   >
-    <!-- ── fileQueue step ── -->
     <div v-if="step === 'fileQueue'" class="step-container">
       <div v-if="collection.collectionError.value" class="error-message">
         Failed to load collection settings: {{ collection.collectionError.value }}
@@ -102,14 +99,12 @@ const primaryBtnPt = {
       </template>
     </div>
 
-    <!-- ── batchWarning step ── -->
     <ImportBatchWarningStep
       v-else-if="step === 'batchWarning'"
       :file-count="queue.fileQueue.value.length"
       class="step-container"
     />
 
-    <!-- ── parseProgress step ── -->
     <div v-else-if="step === 'parseProgress'" class="step-container">
       <p class="pp-label">
         <span class="pi pi-spin pi-spinner" style="margin-right: 0.5rem;" />Parsing files…
@@ -125,64 +120,21 @@ const primaryBtnPt = {
       </p>
     </div>
 
-    <!-- ── errorsWarnings step ── -->
-    <div v-else-if="step === 'errorsWarnings'" class="step-container">
-      <div v-if="parser.parseResults.value.stopWizard" class="stop-notice">
-        No importable rows remain. Close this dialog.
-      </div>
-      <div v-if="parser.parseResults.value.errors.length > 0" class="errors-section">
-        <p class="section-title">
-          Errors and warnings ({{ parser.parseResults.value.errors.length }})
-        </p>
-        <DataTable :value="parser.parseResults.value.errors" scrollable scroll-height="200px" resizable-columns striped-rows :virtual-scroller-options="{ itemSize: 46 }" :pt="{ tableContainer: { class: 'sm-scrollbar-thin' } }">
-          <Column header="File">
-            <template #body="{ data }">
-              {{ data.file?.name ?? '(unknown)' }}
-            </template>
-          </Column>
-          <Column field="error" header="Error / Warning" />
-        </DataTable>
-      </div>
-      <div v-if="parser.parseResults.value.hasDuplicates" class="dupes-section">
-        <p class="section-title">
-          Duplicates excluded
-        </p>
-        <p class="section-desc">
-          Multiple result files were found for some Asset/STIG pairs. The rows below will NOT be imported because a more recently modified file was used for the same Asset/STIG.
-        </p>
-        <DataTable :value="parser.parseResults.value.dupedRows" scrollable scroll-height="200px" resizable-columns striped-rows :virtual-scroller-options="{ itemSize: 46 }" :pt="{ tableContainer: { class: 'sm-scrollbar-thin' } }">
-          <Column header="Asset">
-            <template #body="{ data }">
-              {{ data.taskAsset.assetProps.name }}
-            </template>
-          </Column>
-          <Column header="STIG">
-            <template #body="{ data }">
-              {{ data.checklist.benchmarkId }}
-            </template>
-          </Column>
-          <Column header="File">
-            <template #body="{ data }">
-              {{ data.checklist.sourceRef.name }}
-            </template>
-          </Column>
-          <Column header="Modified">
-            <template #body="{ data }">
-              {{ data.checklist.sourceRef.lastModifiedDate?.toLocaleDateString() ?? '' }}
-            </template>
-          </Column>
-        </DataTable>
-      </div>
-    </div>
+    <ImportErrorsWarningsStep
+      v-else-if="step === 'errorsWarnings'"
+      :errors="parser.parseResults.value.errors"
+      :duped-rows="parser.parseResults.value.dupedRows"
+      :has-duplicates="parser.parseResults.value.hasDuplicates"
+      :stop-wizard="parser.parseResults.value.stopWizard"
+      class="step-container"
+    />
 
-    <!-- ── preview step ── -->
     <ImportPreviewStep
       v-else-if="step === 'preview'"
       :rows="parser.filteredPreviewRows.value"
       class="step-container"
     />
 
-    <!-- ── importProgress step ── -->
     <ImportProgressStep
       v-else-if="step === 'importProgress'"
       :status-text="executor.importProgressText.value || 'Importing…'"
@@ -193,7 +145,6 @@ const primaryBtnPt = {
       @update:selected-row="executor.selectedStatusRow.value = $event"
     />
 
-    <!-- ── Footer ── -->
     <template #footer>
       <div class="modal-footer">
         <Button v-if="step === 'fileQueue'" label="Continue" icon="pi pi-arrow-right" icon-pos="right" :disabled="!queue.canContinue.value" :pt="primaryBtnPt" @click="advanceFromFileQueue" />
@@ -226,11 +177,6 @@ const primaryBtnPt = {
 .pp-track { height: 8px; background: var(--color-border-default); border-radius: 4px; overflow: hidden; }
 .pp-fill { height: 100%; background: #2563eb; border-radius: 4px; transition: width 0.2s ease; }
 .pp-filename { margin: 0; color: var(--color-text-dim); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.stop-notice { background-color: rgba(241,105,105,0.08); border: 1px solid rgba(241,105,105,0.25); border-radius: 6px; padding: 0.75rem 1rem; color: var(--color-text-error); }
-.errors-section, .dupes-section { display: flex; flex-direction: column; gap: 0.5rem; }
-.section-title { font-weight: 600; }
-.section-desc { color: var(--color-text-dim); margin: 0; line-height: 1.5; }
 
 .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; }
 </style>
