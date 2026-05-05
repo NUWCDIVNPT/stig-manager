@@ -33,7 +33,7 @@ export function useMenuNodes() {
     const stigLibraryNode = {
       key: 'Stig',
       label: 'STIG Library',
-      component: 'StigLibrarySelection',
+      component: 'StigLibrary',
       icon: 'icon-stig-library',
       routeName: 'stig-library',
     }

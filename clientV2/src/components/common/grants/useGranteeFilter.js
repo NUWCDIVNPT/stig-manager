@@ -28,7 +28,7 @@ export function useGranteeFilter(usersRef, groupsRef) {
       const cutoffDate = new Date()
       cutoffDate.setDate(cutoffDate.getDate() - selectedFilter.value.value)
       users = users.filter((u) => {
-        if (!u.lastAccess) return false
+        if (!u.lastAccess) { return false }
         return new Date(u.lastAccess) >= cutoffDate
       })
     }

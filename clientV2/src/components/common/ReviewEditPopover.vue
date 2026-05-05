@@ -10,9 +10,6 @@ import ResultEngineBadges from './ResultEngineBadges.vue'
 import StatusBadge from './StatusBadge.vue'
 import StatusButton from './StatusButton.vue'
 
-
-const emit = defineEmits(['save', 'status-action', 'close', 'clear-save-error'])
-
 const props = defineProps({
   // Review data
   currentReview: {
@@ -61,6 +58,8 @@ const props = defineProps({
     default: null,
   },
 })
+
+const emit = defineEmits(['save', 'status-action', 'close', 'clear-save-error'])
 
 defineSlots()
 

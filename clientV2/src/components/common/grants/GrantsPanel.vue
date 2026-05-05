@@ -5,15 +5,15 @@ import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
 import Toolbar from 'primevue/toolbar'
 import { ref, watch } from 'vue'
-import DeleteModal from '../DeleteModal.vue'
-import RolePopover from './RolePopover.vue'
+import { createGrants, deleteGrant, fetchGrantsByCollection, updateGrant } from '../../../shared/api/grantsApi.js'
+import { fetchUserGroups, fetchUsers } from '../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
-import { fetchGrantsByCollection, createGrants, updateGrant, deleteGrant } from '../../../shared/api/grantsApi.js'
-import { fetchUsers, fetchUserGroups } from '../../../shared/api/userApi.js'
-import { roleMap } from './roleOptions.js'
+import DeleteModal from '../DeleteModal.vue'
 import EditGrantModal from './EditGrantModal.vue'
 import GrantsPickList from './GrantsPickList.vue'
+import { roleMap } from './roleOptions.js'
+import RolePopover from './RolePopover.vue'
 
 const props = defineProps({
   collectionId: {
@@ -139,8 +139,8 @@ const openEditGrant = async (grant) => {
 const onUpdateGrant = async (updatedGrant) => {
   try {
     const body = { roleId: updatedGrant.roleId }
-    if (updatedGrant.userId) body.userId = updatedGrant.userId
-    else if (updatedGrant.userGroupId) body.userGroupId = updatedGrant.userGroupId
+    if (updatedGrant.userId) { body.userId = updatedGrant.userId }
+    else if (updatedGrant.userGroupId) { body.userGroupId = updatedGrant.userGroupId }
 
     await updateGrant(
       props.collectionId,
@@ -187,7 +187,7 @@ const confirmDeleteGrant = async () => {
   }
 }
 
-const getRoleLabel = (roleId) => roleMap[roleId] || 'Unknown'
+const getRoleLabel = roleId => roleMap[roleId] || 'Unknown'
 </script>
 
 <template>
