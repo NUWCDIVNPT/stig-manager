@@ -4,6 +4,7 @@ import Textarea from 'primevue/textarea'
 import { nextTick, onBeforeUnmount, provide, ref, toRefs, watch } from 'vue'
 import ReviewResources from './ReviewResources/ReviewResources.vue'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
+import { REVIEW_STATUS } from '../../shared/lib/reviewConstants.js'
 import { formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
 import ResultBadge from './ResultBadge.vue'
 import ResultEngineBadges from './ResultEngineBadges.vue'
@@ -119,7 +120,7 @@ function onButtonClick(actionType) {
     return
   }
 
-  let status = 'saved'
+  let status = REVIEW_STATUS.SAVED
   if (actionType === 'save and submit') {
     status = REVIEW_STATUS.SUBMITTED
   }
