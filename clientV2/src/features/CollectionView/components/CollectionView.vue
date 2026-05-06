@@ -17,6 +17,7 @@ import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetr
 import MetricsFilter from '../../CollectionMetrics/components/MetricsFilter.vue'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchCollection } from '../api/collectionApi.js'
+import Findings from '../../Findings/components/Findings.vue'
 import CollectionAssetsTab from './CollectionAssetsTab.vue'
 import CollectionLabelsTab from './CollectionLabelsTab.vue'
 import CollectionStigsTab from './CollectionStigsTab.vue'
@@ -263,10 +264,7 @@ function toggleDashboardSidebar() {
                 <CollectionLabelsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
               </TabPanel>
               <TabPanel value="findings" :pt="tabPanelPt">
-                <div class="placeholder-panel">
-                  <h2>Findings Panel</h2>
-                  <p>Findings content will go here.</p>
-                </div>
+                <Findings :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
               </TabPanel>
               <TabPanel v-if="canManage" value="management" :pt="tabPanelPt">
                 <CollectionManage :collection-id="collectionId" />
