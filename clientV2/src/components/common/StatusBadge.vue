@@ -81,5 +81,4 @@ const statusMeta = computed(() => {
   height: 14px;
   object-fit: contain;
 }
-
 </style>

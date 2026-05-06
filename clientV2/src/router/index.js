@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
+import { getLastStigLibraryUrl } from '../features/STIGLibrary/lastVisited.js'
 import { navigationGuard } from './navigationGuards.js'
 
 // Lazy load components
@@ -13,7 +14,6 @@ const AppInfo = () => import('../features/AppInfo/components/AppInfo.vue')
 const ExportImportManage = () => import('../features/ExportImportManage/components/ExportImportManage.vue')
 const StigLibrary = () => import('../features/STIGLibrary/components/StigLibrary.vue')
 const AppManagementSelection = () => import('../features/AppManagement/components/AppManagementSelection.vue')
-const StigLibrarySelection = () => import('../features/STIGLibrary/components/StigLibrarySelection.vue')
 const CollectionsAdmin = () => import('../features/AppManagement/Collections/components/Collections.vue')
 const WhatsNewView = () => import('../features/WhatsNew/components/WhatsNewView.vue')
 const AssetReview = () => import('../features/AssetReview/components/AssetReview.vue')
@@ -140,8 +140,25 @@ const routes = [
   {
     path: '/stig-library',
     name: 'stig-library',
-    component: StigLibrarySelection,
+    component: StigLibrary,
     meta: { breadcrumbs: [{ label: 'STIG Library' }] },
+    beforeEnter: () => {
+      const last = getLastStigLibraryUrl()
+      if (last && last !== '/stig-library') {
+        return last
+      }
+    },
+  },
+  {
+    path: '/stig-library/:benchmarkId/:revisionStr?',
+    name: 'stig-library-benchmark',
+    component: StigLibrary,
+    meta: {
+      breadcrumbs: [
+        { label: 'STIG Library', route: { name: 'stig-library' } },
+        { label: route => route.params.benchmarkId },
+      ],
+    },
   },
   {
     path: '/whats-new',
@@ -199,9 +216,7 @@ const routes = [
   },
   {
     path: '/library',
-    name: 'library',
-    component: StigLibrary,
-    meta: { breadcrumbs: [{ label: 'STIG Library' }] },
+    redirect: { name: 'stig-library' },
   },
   {
     path: '/settings',

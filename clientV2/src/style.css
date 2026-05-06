@@ -93,6 +93,32 @@
   --color-override-text: hsl(30, 90%, 75%);
   --color-override-bg: hsl(30, 50%, 22%);
   --color-override-border: hsl(30, 40%, 35%);
+
+  /* Rule-diff changed-property chips (one muted hue per property kind) */
+  --color-chip-ruleid-bg: rgba(168, 85, 247, 0.16);
+  --color-chip-ruleid-border: rgba(168, 85, 247, 0.4);
+  --color-chip-ruleid-text: hsl(270, 75%, 85%);
+  --color-chip-check-bg: rgba(239, 68, 68, 0.14);
+  --color-chip-check-border: rgba(239, 68, 68, 0.4);
+  --color-chip-check-text: hsl(5, 80%, 80%);
+  --color-chip-fix-bg: rgba(59, 130, 246, 0.18);
+  --color-chip-fix-border: rgba(59, 130, 246, 0.45);
+  --color-chip-fix-text: hsl(215, 80%, 82%);
+  --color-chip-vulndiscussion-bg: rgba(249, 115, 22, 0.16);
+  --color-chip-vulndiscussion-border: rgba(249, 115, 22, 0.5);
+  --color-chip-vulndiscussion-text: hsl(25, 85%, 78%);
+  --color-chip-severity-bg: rgba(234, 179, 8, 0.18);
+  --color-chip-severity-border: rgba(234, 179, 8, 0.5);
+  --color-chip-severity-text: hsl(41, 80%, 80%);
+  --color-chip-default-bg: var(--color-background-darkest);
+  --color-chip-default-border: var(--color-border-default);
+  --color-chip-default-text: var(--color-text-primary);
+
+  /* Inline rule-ID character-level diff highlight (red for old, green for new) */
+  --color-diff-inline-del-bg: rgba(239, 68, 68, 0.3);
+  --color-diff-inline-del-text: hsl(5, 80%, 85%);
+  --color-diff-inline-add-bg: rgba(34, 197, 94, 0.3);
+  --color-diff-inline-add-text: hsl(146, 80%, 85%);
 }
 
 *, *::before, *::after {

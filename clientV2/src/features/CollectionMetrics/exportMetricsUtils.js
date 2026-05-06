@@ -1,5 +1,6 @@
 import { saveAs } from 'file-saver-es'
 import { apiCall } from '../../shared/api/apiClient.js'
+import { buildQueryString } from '../../shared/api/queryString.js'
 import { useGlobalError } from '../../shared/composables/useGlobalError.js'
 import { filenameEscaped } from '../../shared/lib.js'
 import { getDownloadUrl } from '../../shared/serviceWorker.js'
@@ -295,25 +296,15 @@ export async function handleMetricDownload({
   let filename
 
   if (isMeta) {
-    const queryEntries = Object.entries(baseParams).flatMap(([key, value]) => {
-      if (Array.isArray(value)) {
-        return value.map(item => [key, item])
-      }
-      return [[key, value]]
-    })
-    queryEntries.push(['format', format])
-
-    const queryParams = new URLSearchParams(queryEntries)
     const aggPath = aggregation === 'unagg' ? '' : `/${aggregation}`
-    url = `${apiUrl}/collections/meta/metrics/${style}${aggPath}?${queryParams.toString()}`
+    const search = buildQueryString({ ...baseParams, format })
+    url = `${apiUrl}/collections/meta/metrics/${style}${aggPath}${search}`
     filename = filenameEscaped(`Meta-${aggregation}-${style}_${filenameComponentFromDate()}.${format}`)
   }
   else {
-    const queryParams = new URLSearchParams()
-    queryParams.append('format', format)
-
     const aggPath = aggregation === 'ungrouped' ? '' : `/${aggregation}`
-    url = `${apiUrl}/collections/${collectionId}/metrics/${style}${aggPath}?${queryParams.toString()}`
+    const search = buildQueryString({ format })
+    url = `${apiUrl}/collections/${collectionId}/metrics/${style}${aggPath}${search}`
     filename = filenameEscaped(`${collectionName}-${aggregation}-${style}_${filenameComponentFromDate()}.${format}`)
   }
 
