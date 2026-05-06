@@ -1,4 +1,5 @@
 import { dereferenceSync } from '@trojs/openapi-dereference'
+import { buildQueryString } from './queryString.js'
 
 class OpenApiOps {
   /**
@@ -88,17 +89,11 @@ class OpenApiOps {
     // create URL from our base and the path with substitutions
     const urlObj = new URL(`${this.apiBase}${path}`)
 
-    // append remaining params as query params
-    for (const [key, value] of Object.entries(params)) {
-      if (Array.isArray(value)) {
-        // Use form/explode style for array query params
-        for (const item of value) {
-          urlObj.searchParams.append(key, item)
-        }
-      }
-      else {
-        urlObj.searchParams.append(key, value)
-      }
+    // Use buildQueryString for RFC3986 encoding (spaces → %20). URLSearchParams
+    // would encode spaces as '+' which the API server rejects. See queryString.js.
+    const search = buildQueryString(params)
+    if (search) {
+      urlObj.search = search
     }
     return urlObj.toString()
   }
