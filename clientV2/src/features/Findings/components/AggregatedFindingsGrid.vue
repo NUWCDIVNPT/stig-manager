@@ -47,6 +47,13 @@ const dataTablePt = {
   bodyRow: { style: { cursor: 'pointer' } },
   footer: { style: { padding: '0', border: 'none' } },
 }
+
+// Default cell padding so columns aren't crammed against each other.
+// Mirrors the pattern used by CollectionChecklistGridTable.
+const cellPt = {
+  bodyCell: { style: { padding: '0.15rem 0.5rem', verticalAlign: 'top' } },
+  headerCell: { style: { padding: '0.4rem 0.5rem' } },
+}
 </script>
 
 <template>
@@ -56,7 +63,7 @@ const dataTablePt = {
         Aggregated Findings
       </h3>
       <span v-if="selectedStigId" class="agg-grid-panel__scope">
-        in <span class="cell-mono">{{ selectedStigId }}</span>
+        in {{ selectedStigId }}
       </span>
       <span v-else class="agg-grid-panel__scope agg-grid-panel__scope--all">
         across all collection STIGs
@@ -99,47 +106,47 @@ const dataTablePt = {
         :pt="dataTablePt"
         @row-select="onRowSelect"
       >
-        <Column field="severity" header="CAT" sortable :style="{ width: '4rem', minWidth: '4rem' }">
+        <Column field="severity" header="CAT" sortable :style="{ width: '4.5rem', minWidth: '4.5rem' }" :pt="cellPt">
           <template #body="{ data }">
             <CatBadge :category="severityMap[data.severity] ?? 2" variant="label" />
           </template>
         </Column>
-        <Column v-if="visibleColumns.has('group')" field="groupId" header="Group" sortable :style="{ width: '6rem', minWidth: '6rem' }">
+        <Column v-if="visibleColumns.has('group')" field="groupId" header="Group" sortable :style="{ width: '8rem', minWidth: '6rem' }" :pt="cellPt">
           <template #body="{ data }">
-            <span class="cell-mono">{{ data.groupId }}</span>
+            <span class="cell-text">{{ data.groupId }}</span>
           </template>
         </Column>
-        <Column v-if="visibleColumns.has('rule')" field="ruleId" header="Rule" sortable :style="{ width: '13rem', minWidth: '10rem' }">
+        <Column v-if="visibleColumns.has('rule')" field="ruleId" header="Rule" sortable :style="{ width: '15rem', minWidth: '13rem' }" :pt="cellPt">
           <template #body="{ data }">
-            <span class="cell-mono">{{ data.ruleId }}</span>
+            <span class="cell-text">{{ data.ruleId }}</span>
           </template>
         </Column>
-        <Column v-if="visibleColumns.has('cci')" field="cci" header="CCI" sortable :style="{ width: '8rem', minWidth: '7rem' }">
+        <Column v-if="visibleColumns.has('cci')" field="cci" header="CCI" sortable :style="{ width: '8rem', minWidth: '7rem' }" :pt="cellPt">
           <template #body="{ data }">
-            <span class="cell-mono">{{ data.cci }}</span>
+            <span class="cell-text">{{ data.cci }}</span>
           </template>
         </Column>
-        <Column v-if="visibleColumns.has('apAcronym')" field="apAcronym" header="AP Acronym" sortable :style="{ width: '11rem', minWidth: '9rem' }">
+        <Column v-if="visibleColumns.has('apAcronym')" field="apAcronym" header="AP Acronym" sortable :style="{ width: '11rem', minWidth: '9rem' }" :pt="cellPt">
           <template #body="{ data }">
-            <span class="cell-mono">{{ data.apAcronym }}</span>
+            <span class="cell-text">{{ data.apAcronym }}</span>
           </template>
         </Column>
-        <Column v-if="visibleColumns.has('title')" field="title" header="Title" sortable :style="{ width: '60%', minWidth: '14rem' }">
+        <Column v-if="visibleColumns.has('title')" field="title" header="Title" sortable :style="{ width: '60%', minWidth: '14rem' }" :pt="cellPt">
           <template #body="{ data }">
             <span class="cell-text cell-text--clamped" :title="data.title">{{ data.title }}</span>
           </template>
         </Column>
-        <Column v-if="visibleColumns.has('definition')" field="definition" header="Definition" sortable :style="{ width: '50%', minWidth: '14rem' }">
+        <Column v-if="visibleColumns.has('definition')" field="definition" header="Definition" sortable :style="{ width: '50%', minWidth: '14rem' }" :pt="cellPt">
           <template #body="{ data }">
             <span class="cell-text cell-text--clamped" :title="data.definition">{{ data.definition }}</span>
           </template>
         </Column>
-        <Column field="assetCount" header="Assets" sortable :style="{ width: '5rem', minWidth: '5rem' }">
+        <Column field="assetCount" header="Assets" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="cellPt">
           <template #body="{ data }">
             <span class="cell-asset-count">{{ data.assetCount }}</span>
           </template>
         </Column>
-        <Column v-if="visibleColumns.has('stigs')" header="STIGs" :style="{ width: '14rem', minWidth: '12rem' }">
+        <Column v-if="visibleColumns.has('stigs')" header="STIGs" :style="{ width: '14rem', minWidth: '12rem' }" :pt="cellPt">
           <template #body="{ data }">
             <div class="stig-list">
               <span v-for="s in (data.stigs ?? [])" :key="s.benchmarkId" class="stig-pill">
@@ -267,14 +274,8 @@ const dataTablePt = {
   min-height: 0;
 }
 
-.cell-mono {
-  font-family: var(--font-mono);
-  font-size: 1.2rem;
-  color: var(--color-text-primary);
-}
-
 .cell-text {
-  font-size: 1rem;
+  font-size: 1.2rem;
   color: var(--color-text-primary);
 }
 
@@ -291,6 +292,7 @@ const dataTablePt = {
   display: inline-block;
   width: 100%;
   text-align: right;
+  font-size: 1rem;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   color: var(--color-text-bright);

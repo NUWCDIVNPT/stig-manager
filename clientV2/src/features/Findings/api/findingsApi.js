@@ -26,7 +26,7 @@ export function fetchFindings(collectionId, { aggregator, benchmarkId, projectio
 // GET /collections/{collectionId}/reviews?result=fail&projection=stigs&<aggregator>=<value>
 // Returns failed review records that back a single aggregated finding.
 // NOTE: same label-filter caveat as fetchFindings.
-export function fetchFailedReviews(collectionId, { aggregator, aggregatorValue, projection = ['stigs', 'metadata'] } = {}) {
+export function fetchFailedReviews(collectionId, { aggregator, aggregatorValue, projection = ['stigs'] } = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch reviews.')
   }

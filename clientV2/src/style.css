@@ -375,8 +375,8 @@ textarea:focus {
    font-synthesis-weight: none prevents the browser from faking a bold by smearing
    the 400 strokes thicker (which looks awful on monospace). Any element that asks
    for font-weight > 400 with this family will fall back to the system mono stack,
-   which has real bold variants. Don't add font-weight to .cell-mono / .stig-pill /
-   .stig-list__id etc. — use color or background for emphasis instead. */
+   which has real bold variants. Don't pair font-weight with var(--font-mono) — use
+   color or background for emphasis on mono elements instead. */
 @font-face {
   font-family: 'Ubuntu Mono';
   font-style: normal;

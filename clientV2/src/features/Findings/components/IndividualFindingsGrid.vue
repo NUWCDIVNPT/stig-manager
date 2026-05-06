@@ -66,8 +66,15 @@ function statusLabelOf(row) {
 
 const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
-  table: { style: { minWidth: '100%' } },
+  table: { style: { tableLayout: 'fixed', minWidth: '100%' } },
   footer: { style: { padding: '0', border: 'none' } },
+}
+
+// Slim down the expander column: tight padding on the cells and a smaller toggle button.
+const expanderColumnPt = {
+  headerCell: { style: { padding: '0', textAlign: 'center' } },
+  bodyCell: { style: { padding: '0', textAlign: 'center' } },
+  rowToggleButton: { style: { width: '1.25rem', height: '1.5rem', padding: '0' } },
 }
 </script>
 
@@ -78,8 +85,7 @@ const dataTablePt = {
         Individual Findings
       </h3>
       <span v-if="selectedAggregated" class="ind-grid-panel__context">
-        for
-        <span class="cell-mono">{{ selectedAggregated.groupId ?? selectedAggregated.ruleId ?? selectedAggregated.cci }}</span>
+        for {{ selectedAggregated.groupId ?? selectedAggregated.ruleId ?? selectedAggregated.cci }}
       </span>
     </header>
 
@@ -108,7 +114,7 @@ const dataTablePt = {
       class="ind-grid-panel__table"
       :pt="dataTablePt"
     >
-      <Column expander :style="{ width: '2.2rem', minWidth: '2.2rem' }" />
+      <Column expander :style="{ width: '1.5rem', minWidth: '1.5rem' }" :pt="expanderColumnPt" />
       <Column field="assetName" header="Asset" sortable :style="{ width: '12rem', minWidth: '10rem' }">
         <template #body="{ data }">
           <span class="cell-text cell-text--bright">{{ data.assetName }}</span>
@@ -121,12 +127,12 @@ const dataTablePt = {
       </Column>
       <Column field="ruleId" header="Rule" sortable :style="{ width: '13rem', minWidth: '11rem' }">
         <template #body="{ data }">
-          <span class="cell-mono">{{ data.ruleId }}</span>
+          {{ data.ruleId }}
         </template>
       </Column>
       <Column field="ts" header="Last changed" sortable :style="{ width: '12rem', minWidth: '11rem' }">
         <template #body="{ data }">
-          <span class="cell-text cell-text--dim cell-mono">{{ fmtTs(data.ts) }}</span>
+          <span class="cell-text cell-text--dim">{{ fmtTs(data.ts) }}</span>
         </template>
       </Column>
       <Column header="STIGs" :style="{ width: '12rem', minWidth: '10rem' }">
@@ -216,14 +222,14 @@ const dataTablePt = {
 
 .ind-grid-panel__title {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--color-text-primary);
   letter-spacing: 0.02em;
 }
 
 .ind-grid-panel__context {
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: var(--color-text-dim);
 }
 
@@ -262,12 +268,6 @@ const dataTablePt = {
 
 .ind-grid-empty__hint-icon {
   color: var(--color-primary-highlight);
-}
-
-.cell-mono {
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  color: var(--color-text-primary);
 }
 
 .cell-text {

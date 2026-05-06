@@ -332,7 +332,7 @@ function onSelect(row) {
 .stig-list__id {
   grid-area: id;
   font-family: var(--font-mono);
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   color: var(--color-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -352,7 +352,7 @@ function onSelect(row) {
 
 .stig-list__name {
   grid-area: name;
-  font-size: 0.9rem;
+  font-size: .95rem;
   color: var(--color-text-dim);
   overflow: hidden;
   text-overflow: ellipsis;
