@@ -159,9 +159,10 @@ const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === '
 const selectedLabelIds = ref([])
 const isAnimating = ref(false)
 const showImportModal = ref(false)
+const refreshKey = ref(0)
 
 function handleImported() {
-  // TODO: invalidate collection assets/reviews/metrics cache when reactive store exists
+  refreshKey.value++
 }
 
 function toggleDashboardSidebar() {
@@ -215,6 +216,7 @@ function toggleDashboardSidebar() {
               :collection-id="collectionId"
               :collection-name="collectionName"
               :selected-label-ids="selectedLabelIds"
+              :refresh-key="refreshKey"
               vertical
             />
             <div class="sidebar-export">
@@ -264,10 +266,10 @@ function toggleDashboardSidebar() {
 
             <TabPanels :pt="tabPanelsPt">
               <TabPanel value="stigs" :pt="tabPanelPt">
-                <CollectionStigsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
+                <CollectionStigsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" :refresh-key="refreshKey" />
               </TabPanel>
               <TabPanel value="assets" :pt="tabPanelPt">
-                <CollectionAssetsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
+                <CollectionAssetsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" :refresh-key="refreshKey" />
               </TabPanel>
               <TabPanel value="labels" :pt="tabPanelPt">
                 <CollectionLabelsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
@@ -279,7 +281,7 @@ function toggleDashboardSidebar() {
                 </div>
               </TabPanel>
               <TabPanel v-if="canManage" value="management" :pt="tabPanelPt">
-                <CollectionManage :collection-id="collectionId" />
+                <CollectionManage :collection-id="collectionId" @imported="handleImported" />
               </TabPanel>
             </TabPanels>
           </Tabs>

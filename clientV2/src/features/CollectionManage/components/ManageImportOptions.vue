@@ -10,10 +10,12 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['imported'])
+
 const showImportModal = ref(false)
 
 function handleImported() {
-  // TODO: trigger collection asset/review cache invalidation once the app has a reactive collection store
+  emit('imported')
 }
 </script>
 
