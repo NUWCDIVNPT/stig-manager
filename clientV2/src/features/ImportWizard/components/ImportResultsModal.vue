@@ -6,6 +6,7 @@ import { useImportWizard } from '../composables/useImportWizard.js'
 import ImportBatchWarningStep from './ImportBatchWarningStep.vue'
 import ImportErrorsWarningsStep from './ImportErrorsWarningsStep.vue'
 import ImportFileQueueStep from './ImportFileQueueStep1.vue'
+import ImportOptionsPanel from './ImportOptionsPanel.vue'
 import ImportPreviewStep from './ImportPreviewStep.vue'
 import ImportProgressStep from './ImportProgressStep.vue'
 
@@ -42,8 +43,8 @@ const {
   onImported: () => emit('imported'),
 })
 
-// Open/reset the wizard whenever the dialog becomes visible
-watch(() => props.visible, (isOpen) => { if (isOpen) { openWizard() } })
+// Open/reset the wizard whenever the dialog becomes visible, but not if an import is in flight
+watch(() => props.visible, (isOpen) => { if (isOpen && !(step.value === 'importProgress' && !executor.importIsDone.value)) { openWizard() } })
 
 function closeWizard() { visible.value = false }
 function doneImport() { visible.value = false }
@@ -79,22 +80,21 @@ const primaryBtnPt = {
       <template v-else-if="options.importOptions.value">
         <ImportFileQueueStep
           v-model:selected-rows="queue.selectedQueueRows.value"
-          v-model:import-options="options.importOptions.value"
-          v-model:customizing="options.isCustomizing.value"
           :file-queue="queue.fileQueue.value"
           :is-drag-over="queue.isDragOver.value"
-          :show-customize-cb="collection.showCustomizeCb.value"
-          :allow-custom="collection.allowCustom.value"
-          :can-update-asset-props="props.canUpdateAssetProps"
-          :status-options="options.statusOptions.value"
-          :unreviewed-options="options.UNREVIEWED_OPTIONS"
-          :unreviewed-commented-options="options.UNREVIEWED_COMMENTED_OPTIONS"
-          :empty-field-options="options.EMPTY_FIELD_OPTIONS"
           @add-files="queue.addFilesToQueue"
           @drop-files="queue.onDropFiles"
           @remove-selected="queue.removeSelectedFromQueue"
           @drag-over="queue.onDragOver"
           @drag-leave="queue.onDragLeave"
+        />
+        <ImportOptionsPanel
+          v-model="options.importOptions.value"
+          v-model:customizing="options.isCustomizing.value"
+          :show-customize-cb="collection.showCustomizeCb.value"
+          :allow-custom="collection.allowCustom.value"
+          :can-update-asset-props="props.canUpdateAssetProps"
+          :status-options="options.statusOptions.value"
         />
       </template>
     </div>
@@ -141,6 +141,7 @@ const primaryBtnPt = {
       :status-rows="executor.importStatusRows.value"
       :selected-row="executor.selectedStatusRow.value"
       :total-count="parser.parseResults.value.taskAssets?.size ?? 0"
+      :is-done="executor.importIsDone.value"
       class="step-container"
       @update:selected-row="executor.selectedStatusRow.value = $event"
     />

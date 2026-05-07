@@ -20,7 +20,7 @@ export function useImportWizard({ collectionId, createObjects = true, canUpdateA
   const parser = useFileParsing({
     collectionId,
     createObjects,
-    fileQueue: queue.fileQueue,
+    sourceFiles: queue.sourceFiles,
     fieldSettings: collection.fieldSettings,
     canAccept: collection.canAccept,
     importOptions: options.importOptions,
@@ -31,7 +31,7 @@ export function useImportWizard({ collectionId, createObjects = true, canUpdateA
     canUpdateAssetProps,
     parseResults: parser.parseResults,
     importOptions: options.importOptions,
-    previewCreateObjects: parser.previewCreateObjects,
+    allowNewObjects: parser.allowNewObjects,
     onImported,
   })
 
@@ -52,7 +52,7 @@ export function useImportWizard({ collectionId, createObjects = true, canUpdateA
 
   // Step transitions
   async function advanceFromFileQueue() {
-    if (queue.fileQueue.value.length >= 250) {
+    if (queue.sourceFiles.value.length >= 250) {
       step.value = 'batchWarning'
     }
     else {

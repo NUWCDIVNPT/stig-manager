@@ -16,11 +16,11 @@ const errorsRef = ref()
 const dupesRef = ref()
 
 function onErrorsFooterAction(action) {
-  if (action === 'export') errorsRef.value.exportCSV()
+  if (action === 'export') { errorsRef.value.exportCSV() }
 }
 
 function onDupesFooterAction(action) {
-  if (action === 'export') dupesRef.value.exportCSV()
+  if (action === 'export') { dupesRef.value.exportCSV() }
 }
 </script>
 

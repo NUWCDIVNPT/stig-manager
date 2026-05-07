@@ -1,26 +1,26 @@
 import { computed, ref } from 'vue'
 
 export function useFileQueue() {
-  const fileQueue = ref([])
+  const sourceFiles = ref([])
   const selectedQueueRows = ref([])
   const isDragOver = ref(false)
-  const canContinue = computed(() => fileQueue.value.length > 0)
+  const canContinue = computed(() => sourceFiles.value.length > 0)
 
   function _queueId(file) { return `${file.name}-${file.size}-${file.lastModified}` }
 
   function addFilesToQueue(files) {
     for (const file of files) {
       const id = _queueId(file)
-      if (!fileQueue.value.some(f => f._queueId === id)) {
+      if (!sourceFiles.value.some(f => f._queueId === id)) {
         file._queueId = id
-        fileQueue.value.push(file)
+        sourceFiles.value.push(file)
       }
     }
   }
 
   function removeSelectedFromQueue() {
     const ids = new Set(selectedQueueRows.value.map(f => f._queueId))
-    fileQueue.value = fileQueue.value.filter(f => !ids.has(f._queueId))
+    sourceFiles.value = sourceFiles.value.filter(f => !ids.has(f._queueId))
     selectedQueueRows.value = []
   }
 
@@ -30,7 +30,7 @@ export function useFileQueue() {
   async function onDropFiles(event) {
     isDragOver.value = false
     const items = event.dataTransfer?.items
-    if (!items) return
+    if (!items) { return }
     const entries = await _getAllFileEntries(items)
     const files = await Promise.all(entries.map(_entryFilePromise))
     addFilesToQueue(files)
@@ -41,7 +41,7 @@ export function useFileQueue() {
     const queue = []
     for (let i = 0; i < dataTransferItemList.length; i++) {
       const entry = dataTransferItemList[i].webkitGetAsEntry?.()
-      if (entry) queue.push(entry)
+      if (entry) { queue.push(entry) }
     }
     while (queue.length > 0) {
       const entry = queue.shift()
@@ -74,13 +74,13 @@ export function useFileQueue() {
   }
 
   function reset() {
-    fileQueue.value = []
+    sourceFiles.value = []
     selectedQueueRows.value = []
     isDragOver.value = false
   }
 
   return {
-    fileQueue,
+    sourceFiles,
     selectedQueueRows,
     isDragOver,
     canContinue,
@@ -89,6 +89,6 @@ export function useFileQueue() {
     onDragOver,
     onDragLeave,
     onDropFiles,
-    reset
+    reset,
   }
 }

@@ -10,10 +10,10 @@ export function useImportCollection(collectionId) {
   const roleId = computed(() => getCollectionRoleId(toValue(collectionId)))
   const canAccept = computed(() => {
     const status = collection.value?.settings?.status
-    if (!status?.canAccept) return false
+    if (!status?.canAccept) { return false }
     return roleId.value != null && roleId.value >= status.minAcceptGrant
   })
-  
+
   const fieldSettings = computed(() => collection.value?.settings?.fields)
   const showCustomizeCb = computed(() => collection.value?.settings?.importOptions?.allowCustom === true)
   const allowCustom = computed(() => collection.value?.settings?.importOptions?.allowCustom === true)
@@ -41,6 +41,6 @@ export function useImportCollection(collectionId) {
     showCustomizeCb,
     allowCustom,
     loadCollection,
-    reset
+    reset,
   }
 }

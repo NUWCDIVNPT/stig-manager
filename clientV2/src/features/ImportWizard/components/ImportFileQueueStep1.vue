@@ -1,33 +1,21 @@
 <script setup>
-import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { formatDateTimeString } from '../../../shared/lib.js'
-import ImportOptionsPanel from './ImportOptionsPanel.vue'
 import './style.css'
 
 const props = defineProps({
-  fileQueue: { type: Array, required: true },
+  sourceFiles: { type: Array, required: true },
   selectedRows: { type: Array, required: true },
   isDragOver: { type: Boolean, default: false },
-  importOptions: { type: Object, required: true },
-  customizing: { type: Boolean, required: true },
-  showCustomizeCb: { type: Boolean, default: false },
-  allowCustom: { type: Boolean, default: false },
-  canUpdateAssetProps: { type: Boolean, default: true },
-  statusOptions: { type: Array, required: true },
-  unreviewedOptions: { type: Array, required: true },
-  unreviewedCommentedOptions: { type: Array, required: true },
-  emptyFieldOptions: { type: Array, required: true },
+  singleFile: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
   'update:selectedRows',
-  'update:importOptions',
-  'update:customizing',
   'add-files',
   'drop-files',
   'remove-selected',
@@ -40,7 +28,7 @@ const fileInputRef = ref(null)
 const selectedIdSet = computed(() => new Set(props.selectedRows.map(f => f._queueId)))
 
 const isAllSelected = computed(() =>
-  props.fileQueue.length > 0 && props.fileQueue.every(f => selectedIdSet.value.has(f._queueId)),
+  props.sourceFiles.length > 0 && props.sourceFiles.every(f => selectedIdSet.value.has(f._queueId)),
 )
 
 function onToggleSelectRow(file) {
@@ -53,7 +41,7 @@ function onToggleSelectRow(file) {
 }
 
 function onSelectAllChange(checked) {
-  emit('update:selectedRows', checked ? [...props.fileQueue] : [])
+  emit('update:selectedRows', checked ? [...props.sourceFiles] : [])
 }
 
 const lastClickedIndex = ref(null)
@@ -62,7 +50,7 @@ function onCheckboxClick(event, file, index) {
   if (event.shiftKey && lastClickedIndex.value !== null) {
     const start = Math.min(lastClickedIndex.value, index)
     const end = Math.max(lastClickedIndex.value, index)
-    const rangeFiles = props.fileQueue.slice(start, end + 1)
+    const rangeFiles = props.sourceFiles.slice(start, end + 1)
     const existing = selectedIdSet.value
     const next = [...props.selectedRows]
     for (const f of rangeFiles) {
@@ -86,6 +74,7 @@ function onFilePicked(event) {
 <template>
   <div
     class="queue-table-wrapper"
+    :class="{ 'queue-table-wrapper--dragover': isDragOver }"
     @dragover.prevent="emit('drag-over')"
     @dragleave="emit('drag-leave')"
     @drop.prevent="e => emit('drop-files', e)"
@@ -96,14 +85,14 @@ function onFilePicked(event) {
         class="toolbar-btn"
         @click="fileInputRef?.click()"
       >
-        <span class="pi pi-plus toolbar-btn__icon-font" />
-        <span class="toolbar-btn__label">Add files to queue...</span>
+        <span :class="`pi ${singleFile && sourceFiles.length > 0 ? 'pi-refresh' : 'pi-plus'} toolbar-btn__icon-font`" />
+        <span class="toolbar-btn__label">{{ singleFile && sourceFiles.length > 0 ? 'Replace file...' : singleFile ? 'Add file...' : 'Add files to queue...' }}</span>
       </button>
       <input
         ref="fileInputRef"
         type="file"
         accept=".ckl,.cklb,.xml"
-        multiple
+        :multiple="!singleFile"
         style="display: none"
         @change="onFilePicked"
       >
@@ -121,7 +110,7 @@ function onFilePicked(event) {
 
     <div class="queue-table-flex">
       <DataTable
-        :value="fileQueue"
+        :value="sourceFiles"
         data-key="_queueId"
         scrollable
         scroll-height="flex"
@@ -132,7 +121,7 @@ function onFilePicked(event) {
         <Column style="width: 3rem; flex-shrink: 0">
           <template #header>
             <Checkbox
-              v-if="fileQueue.length > 0"
+              v-if="sourceFiles.length > 0"
               :model-value="isAllSelected"
               :binary="true"
               @update:model-value="onSelectAllChange"
@@ -166,27 +155,13 @@ function onFilePicked(event) {
     </div>
 
     <StatusFooter
-      :total-count="fileQueue.length"
+      :total-count="sourceFiles.length"
       :show-refresh="false"
       :show-export="false"
       total-label="files"
       total-icon="pi pi-file"
     />
   </div>
-
-  <ImportOptionsPanel
-    :model-value="importOptions"
-    :customizing="customizing"
-    :show-customize-cb="showCustomizeCb"
-    :allow-custom="allowCustom"
-    :can-update-asset-props="canUpdateAssetProps"
-    :status-options="statusOptions"
-    :unreviewed-options="unreviewedOptions"
-    :unreviewed-commented-options="unreviewedCommentedOptions"
-    :empty-field-options="emptyFieldOptions"
-    @update:model-value="emit('update:importOptions', $event)"
-    @update:customizing="emit('update:customizing', $event)"
-  />
 </template>
 
 <style scoped>
@@ -195,9 +170,15 @@ function onFilePicked(event) {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  border: 1px solid var(--color-border-default);
+  border: 2px solid var(--color-border-default);
   border-radius: 4px;
   overflow: hidden;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.queue-table-wrapper--dragover {
+  border: 2px dashed #2563eb;
+  background-color: rgba(37, 99, 235, 0.05);
 }
 
 .queue-toolbar {
@@ -211,8 +192,18 @@ function onFilePicked(event) {
 }
 
 .queue-toolbar--dragover {
-  background-color: rgba(99, 102, 241, 0.1);
-  border-bottom-color: var(--p-primary-color);
+  background-color: rgba(37, 99, 235, 0.08);
+  border-bottom-color: #2563eb;
+}
+
+.queue-single-badge {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  background: var(--color-background-dark);
+  border: 1px solid var(--color-border-default);
+  border-radius: 3px;
+  padding: 0.1rem 0.4rem;
+  white-space: nowrap;
 }
 
 .queue-toolbar-spacer {

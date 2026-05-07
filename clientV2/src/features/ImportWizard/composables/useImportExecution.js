@@ -1,7 +1,7 @@
 import { ref, toValue } from 'vue'
 import { createAsset, postReviewsByAsset, updateAsset } from '../api/importResultsApi.js'
 
-export function useImportExecution({ collectionId, canUpdateAssetProps, parseResults, importOptions, previewCreateObjects, onImported }) {
+export function useImportExecution({ collectionId, canUpdateAssetProps, parseResults, importOptions, allowNewObjects, onImported }) {
   const importProgressText = ref('')
   const importStatusRows = ref([])
   const importIsDone = ref(false)
@@ -21,7 +21,7 @@ export function useImportExecution({ collectionId, canUpdateAssetProps, parseRes
       let statusRow = { assetName: taskAsset.assetProps.name, assetId, created: false, addedStigs: false }
 
       try {
-        const needsWrite = previewCreateObjects.value && (
+        const needsWrite = allowNewObjects.value && (
           !taskAsset.knownAsset
           || taskAsset.hasNewAssignment
           || ((taskAsset.hasUpdatedAssetProps ?? false) && doUpdateAssetProps)
@@ -56,7 +56,7 @@ export function useImportExecution({ collectionId, canUpdateAssetProps, parseRes
   async function _doImportAsset(taskAsset, doUpdateAssetProps) {
     if (taskAsset.knownAsset) {
       const body = { collectionId: taskAsset.assetProps.collectionId }
-      if (taskAsset.hasNewAssignment) body.stigs = taskAsset.assetProps.stigs
+      if (taskAsset.hasNewAssignment) { body.stigs = taskAsset.assetProps.stigs }
       if ((taskAsset.hasUpdatedAssetProps ?? false) && doUpdateAssetProps) {
         const { ip, fqdn, mac, noncomputing, metadata } = taskAsset.assetProps
         Object.assign(body, { ip, fqdn, mac, noncomputing, metadata })
@@ -79,6 +79,6 @@ export function useImportExecution({ collectionId, canUpdateAssetProps, parseRes
     importIsDone,
     selectedStatusRow,
     runImport,
-    reset
+    reset,
   }
 }

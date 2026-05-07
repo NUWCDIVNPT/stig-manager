@@ -2,7 +2,7 @@ import { reviewsFromCkl, reviewsFromCklb, reviewsFromScc, TaskObject } from '@nu
 import { computed, ref, toValue } from 'vue'
 import { fetchCollectionAssetsWithStigs, fetchInstalledStigs, fetchScapMap } from '../api/importResultsApi.js'
 
-export function useFileParsing({ collectionId, createObjects, fileQueue, fieldSettings, canAccept, importOptions }) {
+export function useFileParsing({ collectionId, createObjects, sourceFiles, fieldSettings, canAccept, importOptions }) {
   const parseProgressValue = ref(0)
   const parseProgressText = ref('')
   const parseProgressCurrent = ref(0)
@@ -16,14 +16,15 @@ export function useFileParsing({ collectionId, createObjects, fileQueue, fieldSe
     stopWizard: false,
   })
 
-  const previewCreateObjects = ref(true)
-  const filteredPreviewRows = computed(() => {
-    if (!previewCreateObjects.value) {
+  const allowNewObjects = ref(true)
+  const previewRows = computed(() => {
+    if (!allowNewObjects.value) {
       return parseResults.value.rows.filter(r => r.taskAsset.assetProps.assetId && !r.checklist.newAssignment)
     }
     return parseResults.value.rows
   })
 
+  // mostly copied from ReviewsImport.js old client
   async function startParsing() {
     parseProgressValue.value = 0
     parseProgressText.value = ''
@@ -37,8 +38,9 @@ export function useFileParsing({ collectionId, createObjects, fileQueue, fieldSe
     ])
 
     const scapBenchmarkMap = new Map(apiScapMapsRaw.map(r => [r.scapBenchmarkId, r.benchmarkId]))
-    const rawSuccess = []; const rawFail = []
-    const files = fileQueue.value
+    const rawSuccess = []
+    const rawFail = []
+    const files = sourceFiles.value
     parseProgressTotal.value = files.length
     let handled = 0
 
@@ -129,7 +131,7 @@ export function useFileParsing({ collectionId, createObjects, fileQueue, fieldSe
     parseProgressCurrent.value = 0
     parseProgressTotal.value = 0
     parseResults.value = { taskAssets: null, rows: [], dupedRows: [], errors: [], hasDuplicates: false, stopWizard: false }
-    previewCreateObjects.value = true
+    allowNewObjects.value = true
   }
 
   return {
@@ -138,8 +140,8 @@ export function useFileParsing({ collectionId, createObjects, fileQueue, fieldSe
     parseProgressCurrent,
     parseProgressTotal,
     parseResults,
-    previewCreateObjects,
-    filteredPreviewRows,
+    allowNewObjects,
+    previewRows,
     startParsing,
     reset,
   }

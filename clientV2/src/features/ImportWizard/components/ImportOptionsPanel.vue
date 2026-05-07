@@ -1,6 +1,11 @@
 <script setup>
 import Checkbox from 'primevue/checkbox'
 import Select from 'primevue/select'
+import {
+  EMPTY_FIELD_OPTIONS,
+  UNREVIEWED_COMMENTED_OPTIONS,
+  UNREVIEWED_OPTIONS,
+} from '../composables/useImportOptions.js'
 
 const props = defineProps({
   /** The full importOptions object (deep v-model) */
@@ -30,21 +35,6 @@ const props = defineProps({
   },
   /** Status options array (Saved / Submitted / Accepted depending on role) */
   statusOptions: {
-    type: Array,
-    required: true,
-  },
-  /** Unreviewed-rules options */
-  unreviewedOptions: {
-    type: Array,
-    required: true,
-  },
-  /** Unreviewed-with-comment options */
-  unreviewedCommentedOptions: {
-    type: Array,
-    required: true,
-  },
-  /** Empty-field options */
-  emptyFieldOptions: {
     type: Array,
     required: true,
   },
@@ -149,7 +139,7 @@ const checkboxPt = {
           <label>Include unreviewed rules</label>
           <Select
             :model-value="modelValue.unreviewed"
-            :options="unreviewedOptions"
+            :options="UNREVIEWED_OPTIONS"
             option-label="label"
             option-value="value"
             :disabled="!customizing"
@@ -161,7 +151,7 @@ const checkboxPt = {
           <label>Unreviewed with a comment</label>
           <Select
             :model-value="modelValue.unreviewedCommented"
-            :options="unreviewedCommentedOptions"
+            :options="UNREVIEWED_COMMENTED_OPTIONS"
             option-label="label"
             option-value="value"
             :disabled="!customizing || modelValue.unreviewed === 'never'"
@@ -173,7 +163,7 @@ const checkboxPt = {
           <label>Empty detail text</label>
           <Select
             :model-value="modelValue.emptyDetail"
-            :options="emptyFieldOptions"
+            :options="EMPTY_FIELD_OPTIONS"
             option-label="label"
             option-value="value"
             :disabled="!customizing"
@@ -185,7 +175,7 @@ const checkboxPt = {
           <label>Empty comment text</label>
           <Select
             :model-value="modelValue.emptyComment"
-            :options="emptyFieldOptions"
+            :options="EMPTY_FIELD_OPTIONS"
             option-label="label"
             option-value="value"
             :disabled="!customizing"

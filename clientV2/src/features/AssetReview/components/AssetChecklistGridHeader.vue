@@ -1,6 +1,7 @@
 <script setup>
 import TieredMenu from 'primevue/tieredmenu'
 import { computed, ref, toRefs } from 'vue'
+import { useRoute } from 'vue-router'
 
 import lineHeightDown from '../../../assets/line-height-down.svg'
 import lineHeightUp from '../../../assets/line-height-up.svg'
@@ -8,6 +9,8 @@ import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
 import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import AssetStigImportModal from '../../AssetStigImport/components/AssetStigImportModal.vue'
+
 const props = defineProps({
   asset: {
     type: Object,
@@ -27,11 +30,37 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['refresh'])
+
 const {
   asset,
   revisionInfo,
   accessMode,
 } = toRefs(props)
+
+const route = useRoute()
+const showImportModal = ref(false)
+
+const canImport = computed(() => accessMode.value === 'rw')
+
+const importContext = computed(() => {
+  const params = route?.params ?? {}
+  return {
+    collectionId: params.collectionId,
+    assetId: asset.value?.assetId ?? asset.value?.id ?? params.assetId,
+    assetName: asset.value?.name ?? '',
+    benchmarkId: params.benchmarkId,
+    revisionStr: params.revisionStr,
+  }
+})
+
+function openImport() {
+  showImportModal.value = true
+}
+
+function onImported() {
+  emit('refresh')
+}
 
 const displayMode = defineModel('displayMode', { type: String, required: true })
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
@@ -53,49 +82,52 @@ const headerTitle = computed(() => {
   return 'Checklist'
 })
 
-const checklistMenuItems = computed(() => [
-  {
-    label: 'Group/Rule Display',
-    icon: 'pi pi-list',
-    items: [
-      {
-        label: 'Group ID and Rule Title',
-        icon: displayMode.value === 'groupRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
-        command: () => { displayMode.value = 'groupRule' },
-      },
-      {
-        label: 'Group ID and Group Title',
-        icon: displayMode.value === 'groupGroup' ? 'pi pi-circle-fill' : 'pi pi-circle',
-        command: () => { displayMode.value = 'groupGroup' },
-      },
-      {
-        label: 'Rule ID and Rule Title',
-        icon: displayMode.value === 'ruleRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
-        command: () => { displayMode.value = 'ruleRule' },
-      },
-    ],
-  },
-  {
-    label: 'Export to file',
-    icon: 'pi pi-download',
-    items: [
-      { label: 'CKL - STIG Viewer v2' },
-      { label: 'CKLB - STIG Viewer v3' },
-      { label: 'XCCDF' },
-      { separator: true },
-      { label: 'Attachments Archive' },
-    ],
-  },
-  {
-    label: 'Import Results...',
-    icon: 'pi pi-upload',
-    items: [
-      { label: 'CKL' },
-      { label: 'CKLB' },
-      { label: 'XCCDF' },
-    ],
-  },
-])
+const checklistMenuItems = computed(() => {
+  const items = [
+    {
+      label: 'Group/Rule Display',
+      icon: 'pi pi-list',
+      items: [
+        {
+          label: 'Group ID and Rule Title',
+          icon: displayMode.value === 'groupRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
+          command: () => { displayMode.value = 'groupRule' },
+        },
+        {
+          label: 'Group ID and Group Title',
+          icon: displayMode.value === 'groupGroup' ? 'pi pi-circle-fill' : 'pi pi-circle',
+          command: () => { displayMode.value = 'groupGroup' },
+        },
+        {
+          label: 'Rule ID and Rule Title',
+          icon: displayMode.value === 'ruleRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
+          command: () => { displayMode.value = 'ruleRule' },
+        },
+      ],
+    },
+    {
+      label: 'Export to file',
+      icon: 'pi pi-download',
+      items: [
+        { label: 'CKL - STIG Viewer v2' },
+        { label: 'CKLB - STIG Viewer v3' },
+        { label: 'XCCDF' },
+        { separator: true },
+        { label: 'Attachments Archive' },
+      ],
+    },
+  ]
+
+  if (canImport.value) {
+    items.push({
+      label: 'Import Results...',
+      icon: 'pi pi-upload',
+      command: openImport,
+    })
+  }
+
+  return items
+})
 
 const checklistMenuPT = {
   root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,0.6); padding: 0.25rem 0; min-width: 12rem;' },
@@ -111,7 +143,6 @@ const checklistMenuPT = {
 function toggleChecklistMenu(event) {
   checklistMenu.value.toggle(event)
 }
-
 </script>
 
 <template>
@@ -177,6 +208,16 @@ function toggleChecklistMenu(event) {
         </div>
       </div>
     </div>
+    <AssetStigImportModal
+      v-if="canImport && importContext.collectionId && importContext.assetId && importContext.benchmarkId && importContext.revisionStr"
+      v-model:visible="showImportModal"
+      :collection-id="String(importContext.collectionId)"
+      :asset-id="String(importContext.assetId)"
+      :asset-name="importContext.assetName"
+      :benchmark-id="importContext.benchmarkId"
+      :revision-str="importContext.revisionStr"
+      @imported="onImported"
+    />
   </div>
 </template>
 

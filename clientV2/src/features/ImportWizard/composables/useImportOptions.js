@@ -38,24 +38,24 @@ export function useImportOptions({ collection, canAccept }) {
     }
     else {
       const stored = JSON.parse(readStoredValue('wizardImportOptions', 'null'))
-      if (stored) importOptions.value = stored
+      if (stored) { importOptions.value = stored }
     }
   })
-  
+
   watch(importOptions, (val) => {
-    if (isCustomizing.value && val) storeValue('wizardImportOptions', JSON.stringify(val))
+    if (isCustomizing.value && val) { storeValue('wizardImportOptions', JSON.stringify(val)) }
   }, { deep: true })
 
   function restoreCollectionDefaults() {
-    if (!collection.value) return
+    if (!collection.value) { return }
     const opts = JSON.parse(JSON.stringify(collection.value.settings.importOptions))
     applyAutoStatusGuard(opts)
     importOptions.value = opts
   }
-  
+
   function applyAutoStatusGuard(opts) {
     for (const key of ['fail', 'notapplicable', 'pass']) {
-      if (opts.autoStatus?.[key] === 'accepted' && !canAccept.value) opts.autoStatus[key] = 'submitted'
+      if (opts.autoStatus?.[key] === 'accepted' && !canAccept.value) { opts.autoStatus[key] = 'submitted' }
     }
   }
 
@@ -72,6 +72,6 @@ export function useImportOptions({ collection, canAccept }) {
     UNREVIEWED_COMMENTED_OPTIONS,
     EMPTY_FIELD_OPTIONS,
     restoreCollectionDefaults,
-    reset
+    reset,
   }
 }
