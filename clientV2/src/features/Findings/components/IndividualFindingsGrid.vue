@@ -66,8 +66,25 @@ function statusLabelOf(row) {
 
 const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
-  table: { style: { tableLayout: 'fixed', minWidth: '100%' } },
+  // No minWidth: 100% — that forces the table to expand past the container
+  // when fixed columns sum past it, producing a horizontal scrollbar. width:
+  // 100% sizes the table to the container; the Asset column flexes to absorb
+  // the remainder.
+  table: { style: { tableLayout: 'fixed', width: '100%' } },
   footer: { style: { padding: '0', border: 'none' } },
+}
+
+// Asset column flexes; truncate the asset name with ellipsis if the cell
+// gets narrow. Labels render below on their own (wrapping) line.
+const assetCellPt = {
+  bodyCell: {
+    style: {
+      padding: '0.15rem 0.5rem',
+      verticalAlign: 'top',
+      overflow: 'hidden',
+    },
+  },
+  headerCell: { style: { padding: '0.4rem 0.5rem' } },
 }
 
 // Slim down the expander column: tight padding on the cells and a smaller toggle button.
@@ -115,27 +132,27 @@ const expanderColumnPt = {
       :pt="dataTablePt"
     >
       <Column expander :style="{ width: '1.5rem', minWidth: '1.5rem' }" :pt="expanderColumnPt" />
-      <Column field="assetName" header="Asset" sortable :style="{ width: '12rem', minWidth: '10rem' }">
+      <Column field="assetName" header="Asset" sortable :style="{ minWidth: '8rem' }" :pt="assetCellPt">
         <template #body="{ data }">
-          <span class="cell-text cell-text--bright">{{ data.assetName }}</span>
+          <div class="asset-cell">
+            <div class="asset-cell__name" :title="data.assetName">
+              {{ data.assetName }}
+            </div>
+            <LabelsRow v-if="data.labels?.length" :labels="data.labels" compact />
+          </div>
         </template>
       </Column>
-      <Column header="Labels" :style="{ width: '14rem', minWidth: '10rem' }">
-        <template #body="{ data }">
-          <LabelsRow :labels="data.labels" compact />
-        </template>
-      </Column>
-      <Column field="ruleId" header="Rule" sortable :style="{ width: '13rem', minWidth: '11rem' }">
+      <Column field="ruleId" header="Rule" sortable :style="{ width: '11rem', minWidth: '10rem' }">
         <template #body="{ data }">
           {{ data.ruleId }}
         </template>
       </Column>
-      <Column field="ts" header="Last changed" sortable :style="{ width: '12rem', minWidth: '11rem' }">
+      <Column field="ts" header="Last changed" sortable :style="{ width: '9rem', minWidth: '9rem' }">
         <template #body="{ data }">
           <span class="cell-text cell-text--dim">{{ fmtTs(data.ts) }}</span>
         </template>
       </Column>
-      <Column header="STIGs" :style="{ width: '12rem', minWidth: '10rem' }">
+      <Column header="STIGs" :style="{ width: '9rem', minWidth: '8rem' }">
         <template #body="{ data }">
           <div class="stig-list">
             <span v-for="s in (data.stigs ?? [])" :key="s.benchmarkId" class="stig-pill">
@@ -144,14 +161,14 @@ const expanderColumnPt = {
           </div>
         </template>
       </Column>
-      <Column header="Engine" :style="{ width: '5.5rem', minWidth: '5rem' }">
+      <Column header="Engine" :style="{ width: '5rem', minWidth: '4.5rem' }">
         <template #body="{ data }">
           <span class="engine-chip" :class="`engine-chip--${engineKindOf(data)}`">
             {{ engineLabel[engineKindOf(data)] }}
           </span>
         </template>
       </Column>
-      <Column header="Status" :style="{ width: '5rem', minWidth: '4.5rem' }">
+      <Column header="Status" :style="{ width: '4.5rem', minWidth: '4rem' }">
         <template #body="{ data }">
           <StatusBadge :status="statusLabelOf(data)" />
         </template>
@@ -275,14 +292,25 @@ const expanderColumnPt = {
   color: var(--color-text-primary);
 }
 
-.cell-text--bright {
-  color: var(--color-text-bright);
-  font-weight: 500;
-}
-
 .cell-text--dim {
   color: var(--color-text-dim);
   font-size: 1rem;
+}
+
+.asset-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.asset-cell__name {
+  color: var(--color-text-bright);
+  font-weight: 500;
+  font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stig-list {

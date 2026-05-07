@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import StatusFooter from '../../../components/common/StatusFooter.vue'
 
 const props = defineProps({
   stigs: { type: Array, default: () => [] },
@@ -13,6 +14,12 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select-stig', 'retry'])
+
+function onFooterAction(key) {
+  if (key === 'refresh') {
+    emit('retry')
+  }
+}
 
 const ALL_STIGS_ID = '__all__'
 
@@ -143,6 +150,16 @@ function onSelect(row) {
         No STIGs in this collection.
       </li>
     </ul>
+
+    <StatusFooter
+      :metrics="[]"
+      :total-count="stigs.length"
+      total-label="STIGs"
+      :show-refresh="true"
+      :show-export="false"
+      :refresh-loading="isLoading"
+      @action="onFooterAction"
+    />
   </div>
 </template>
 

@@ -43,7 +43,11 @@ function onRowSelect(event) {
 
 const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
-  table: { style: { tableLayout: 'fixed', minWidth: '100%' } },
+  // No minWidth: 100% — that forces the table to expand past the container when
+  // fixed columns sum past it, producing a horizontal scrollbar. width: 100%
+  // sizes the table to the container; flex columns (Title/Definition) absorb
+  // the remainder.
+  table: { style: { tableLayout: 'fixed', width: '100%' } },
   bodyRow: { style: { cursor: 'pointer' } },
   footer: { style: { padding: '0', border: 'none' } },
 }
@@ -52,6 +56,20 @@ const dataTablePt = {
 // Mirrors the pattern used by CollectionChecklistGridTable.
 const cellPt = {
   bodyCell: { style: { padding: '0.15rem 0.5rem', verticalAlign: 'top' } },
+  headerCell: { style: { padding: '0.4rem 0.5rem' } },
+}
+
+// Title/Definition flex into the remaining space; truncate with ellipsis.
+const ellipsisCellPt = {
+  bodyCell: {
+    style: {
+      padding: '0.15rem 0.5rem',
+      verticalAlign: 'top',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    },
+  },
   headerCell: { style: { padding: '0.4rem 0.5rem' } },
 }
 </script>
@@ -131,14 +149,14 @@ const cellPt = {
             <span class="cell-text">{{ data.apAcronym }}</span>
           </template>
         </Column>
-        <Column v-if="visibleColumns.has('title')" field="title" header="Title" sortable :style="{ width: '60%', minWidth: '14rem' }" :pt="cellPt">
+        <Column v-if="visibleColumns.has('title')" field="title" header="Title" sortable :style="{ minWidth: '12rem' }" :pt="ellipsisCellPt">
           <template #body="{ data }">
-            <span class="cell-text cell-text--clamped" :title="data.title">{{ data.title }}</span>
+            <span class="cell-text" :title="data.title">{{ data.title }}</span>
           </template>
         </Column>
-        <Column v-if="visibleColumns.has('definition')" field="definition" header="Definition" sortable :style="{ width: '50%', minWidth: '14rem' }" :pt="cellPt">
+        <Column v-if="visibleColumns.has('definition')" field="definition" header="Definition" sortable :style="{ minWidth: '12rem' }" :pt="ellipsisCellPt">
           <template #body="{ data }">
-            <span class="cell-text cell-text--clamped" :title="data.definition">{{ data.definition }}</span>
+            <span class="cell-text" :title="data.definition">{{ data.definition }}</span>
           </template>
         </Column>
         <Column field="assetCount" header="Assets" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="cellPt">
@@ -146,7 +164,7 @@ const cellPt = {
             <span class="cell-asset-count">{{ data.assetCount }}</span>
           </template>
         </Column>
-        <Column v-if="visibleColumns.has('stigs')" header="STIGs" :style="{ width: '14rem', minWidth: '12rem' }" :pt="cellPt">
+        <Column v-if="visibleColumns.has('stigs')" header="STIGs" :style="{ width: '11rem', minWidth: '10rem' }" :pt="cellPt">
           <template #body="{ data }">
             <div class="stig-list">
               <span v-for="s in (data.stigs ?? [])" :key="s.benchmarkId" class="stig-pill">
@@ -277,15 +295,6 @@ const cellPt = {
 .cell-text {
   font-size: 1.2rem;
   color: var(--color-text-primary);
-}
-
-.cell-text--clamped {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  white-space: normal;
 }
 
 .cell-asset-count {
