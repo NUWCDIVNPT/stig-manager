@@ -103,7 +103,7 @@ function onSelectFinding(row) {
         root: { style: 'border: none; background: transparent; height: 100%' },
       }"
     >
-      <SplitterPanel :size="22" :min-size="18">
+      <SplitterPanel :size="17" :min-size="13">
         <StigSelectorPanel
           :stigs="stigs ?? []"
           :totals="totals"
@@ -115,7 +115,7 @@ function onSelectFinding(row) {
         />
       </SplitterPanel>
 
-      <SplitterPanel :size="42" :min-size="28">
+      <SplitterPanel :size="40" :min-size="26">
         <AggregatedFindingsGrid
           :rows="findings ?? []"
           :visible-columns="visibleColumns"
@@ -131,7 +131,7 @@ function onSelectFinding(row) {
         />
       </SplitterPanel>
 
-      <SplitterPanel :size="36" :min-size="24">
+      <SplitterPanel :size="43" :min-size="28">
         <IndividualFindingsGrid
           :rows="reviews ?? []"
           :is-loading="isReviewsLoading"

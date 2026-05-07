@@ -3,8 +3,11 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Select from 'primevue/select'
 import { ref } from 'vue'
+import lineHeightDown from '../../../assets/line-height-down.svg'
+import lineHeightUp from '../../../assets/line-height-up.svg'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
 
 const props = defineProps({
@@ -27,6 +30,8 @@ const aggregatorOptions = [
   { label: 'Rule', value: 'ruleId' },
   { label: 'CCI', value: 'cci' },
 ]
+
+const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity('findings-aggregated', 2, 6, 15)
 
 function onFooterAction(key) {
   if (key === 'export') {
@@ -59,15 +64,14 @@ const cellPt = {
   headerCell: { style: { padding: '0.4rem 0.5rem' } },
 }
 
-// Title/Definition flex into the remaining space; truncate with ellipsis.
-const ellipsisCellPt = {
+// Title/Definition flex into the remaining space; the inner span clamps to
+// `--line-clamp` lines so the row height is driven by the density control.
+const flexCellPt = {
   bodyCell: {
     style: {
       padding: '0.15rem 0.5rem',
       verticalAlign: 'top',
       overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
     },
   },
   headerCell: { style: { padding: '0.4rem 0.5rem' } },
@@ -108,6 +112,27 @@ const ellipsisCellPt = {
             @update:model-value="(v) => emit('update:aggregator', v)"
           />
         </label>
+        <div class="toolbar-density">
+          <span class="toolbar-density__label">Density</span>
+          <button
+            class="toolbar-density__btn"
+            type="button"
+            title="Decrease row height"
+            :disabled="lineClamp <= 1"
+            @click="decreaseRowHeight"
+          >
+            <img :src="lineHeightDown" alt="Decrease row height">
+          </button>
+          <button
+            class="toolbar-density__btn"
+            type="button"
+            title="Increase row height"
+            :disabled="lineClamp >= 10"
+            @click="increaseRowHeight"
+          >
+            <img :src="lineHeightUp" alt="Increase row height">
+          </button>
+        </div>
       </div>
 
       <DataTable
@@ -121,6 +146,7 @@ const ellipsisCellPt = {
         scroll-height="flex"
         striped-rows
         class="agg-grid-panel__table"
+        :style="{ '--line-clamp': lineClamp }"
         :pt="dataTablePt"
         @row-select="onRowSelect"
       >
@@ -149,17 +175,17 @@ const ellipsisCellPt = {
             <span class="cell-text">{{ data.apAcronym }}</span>
           </template>
         </Column>
-        <Column v-if="visibleColumns.has('title')" field="title" header="Title" sortable :style="{ minWidth: '12rem' }" :pt="ellipsisCellPt">
+        <Column v-if="visibleColumns.has('title')" field="title" header="Title" sortable :style="{ minWidth: '12rem' }" :pt="flexCellPt">
           <template #body="{ data }">
-            <span class="cell-text" :title="data.title">{{ data.title }}</span>
+            <span class="cell-text cell-text--clamped" :title="data.title">{{ data.title }}</span>
           </template>
         </Column>
-        <Column v-if="visibleColumns.has('definition')" field="definition" header="Definition" sortable :style="{ minWidth: '12rem' }" :pt="ellipsisCellPt">
+        <Column v-if="visibleColumns.has('definition')" field="definition" header="Definition" sortable :style="{ minWidth: '12rem' }" :pt="flexCellPt">
           <template #body="{ data }">
-            <span class="cell-text" :title="data.definition">{{ data.definition }}</span>
+            <span class="cell-text cell-text--clamped" :title="data.definition">{{ data.definition }}</span>
           </template>
         </Column>
-        <Column field="assetCount" header="Assets" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="cellPt">
+        <Column field="assetCount" header="Assets" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="cellPt">
           <template #body="{ data }">
             <span class="cell-asset-count">{{ data.assetCount }}</span>
           </template>
@@ -287,14 +313,79 @@ const ellipsisCellPt = {
   min-width: 7rem;
 }
 
+.toolbar-density {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+  padding: 0.2rem 0.3rem 0.2rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 85%, transparent);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--color-background-light) 45%, transparent);
+}
+
+.toolbar-density__label {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--color-text-bright);
+  margin-right: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.toolbar-density__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-background-light) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border-light) 40%, transparent);
+  border-radius: 5px;
+  margin: 0 0.1rem;
+  width: 1.8rem;
+  height: 1.8rem;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.toolbar-density__btn:hover:not(:disabled) {
+  opacity: 1;
+  border-color: var(--color-border-default);
+  background: color-mix(in srgb, var(--color-background-light) 75%, transparent);
+}
+
+.toolbar-density__btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.toolbar-density__btn img {
+  width: 15px;
+  height: 15px;
+}
+
 .agg-grid-panel__table {
   flex: 1;
   min-height: 0;
 }
 
 .cell-text {
-  font-size: 1.2rem;
+  font-size: 1.05rem;
+  line-height: 1.3;
   color: var(--color-text-primary);
+}
+
+.cell-text--clamped {
+  display: -webkit-box;
+  line-clamp: var(--line-clamp, 2);
+  -webkit-line-clamp: var(--line-clamp, 2);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .cell-asset-count {
@@ -322,6 +413,9 @@ const ellipsisCellPt = {
   border: 1px solid color-mix(in srgb, var(--color-primary-highlight) 18%, transparent);
   border-radius: 2px;
   align-self: flex-start;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .occurrences {
@@ -357,9 +451,10 @@ const ellipsisCellPt = {
 
 :deep(.p-datatable-thead > tr > th) {
   background: var(--color-background-dark);
-  color: var(--color-text-dim);
-  font-size: 0.95rem;
+  color: var(--color-text-bright);
+  font-size: 1.1rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
   border-bottom: 1px solid var(--color-border-default);
 }
 
