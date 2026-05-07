@@ -193,7 +193,7 @@ const createTempCollection = async (collectionPost) => {
       }
   }
   
-  const res = await fetch(`${baseUrl}/collections?elevate=true&projection=grants&projection=labels`, {
+  const res = await fetch(`${baseUrl}/collections?projection=grants&projection=labels`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${adminToken}`,

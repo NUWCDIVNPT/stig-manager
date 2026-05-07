@@ -26,6 +26,7 @@ const config = {
             ? process.env.STIGMAN_CLIENT_PATH_PREFIX.replace(/\/+$/, "") + "/"
             : "",
         historyBase: process.env.STIGMAN_CLIENT_HISTORY_BASE || "",
+        consoleMode: process.env.STIGMAN_CLIENT_CONSOLE_MODE || "production",
         displayAppManagers: process.env.STIGMAN_CLIENT_DISPLAY_APPMANAGERS || "true",
         idleTimeoutUser: (() => {
             const val = parseInt(process.env.STIGMAN_CLIENT_USER_TIMEOUT)

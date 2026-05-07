@@ -297,7 +297,7 @@ SM.Exports.StigTree = Ext.extend(Ext.tree.TreePanel, {
           const badgeClass = badgePercent === 100 ? 'sm-export-sprite-low' : badgePercent >= 50 ? 'sm-export-sprite-medium' : 'sm-export-sprite-high'
           let stigNode = {
             id: `${collectionId}-${stig.benchmarkId}-assignment-stigs-stig-node`,
-            text: `${stig.benchmarkId} <span class="sm-export-sprite ${badgeClass}">${badgePercent}%</span>`,
+            text: `${SM.he(stig.benchmarkId)} <span class="sm-export-sprite ${badgeClass}">${badgePercent}%</span>`,
             node: 'stig',
             collectionId: collectionId,
             benchmarkId: stig.benchmarkId,

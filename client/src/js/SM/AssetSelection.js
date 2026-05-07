@@ -68,7 +68,7 @@ SM.AssetSelection.GridPanel = Ext.extend(Ext.grid.GridPanel, {
             let longest = Math.max(...(value.map(el => el.length)))
             qtipWidth = longest * 8
           }
-          metadata.attr = ` ext:qwidth=${qtipWidth} ext:qtip="<b>${record.data.name} STIGs</b><br>${value.join('<br>')}"`
+          metadata.attr = ` ext:qwidth=${qtipWidth} ext:qtip="<b>${SM.he(record.data.name)} STIGs</b><br>${value.map(SM.he).join('<br>')}"`
           return `<i>${value.length}</i>`
         }
       },

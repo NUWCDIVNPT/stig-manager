@@ -252,7 +252,7 @@ SM.RuleContentTpl = new Ext.XTemplate(
       if (!value) return
 
       if (value.length > SM.TruncateLimit) {
-          return `${value.slice(0,SM.TruncateLimit)}... <span class=sm-truncated-action onclick="SM.ShowUntruncated('${record.store.storeId}','${record.id}','${property}')">Full text</span>`
+          return `${value.slice(0,SM.TruncateLimit)}... <span class=sm-truncated-action onclick="SM.ShowUntruncated('${SM.he(record.store.storeId)}','${SM.he(record.id)}','${SM.he(property)}')">Full text</span>`
       }
       else {
           return value

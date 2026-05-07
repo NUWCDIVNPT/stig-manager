@@ -119,14 +119,15 @@ This is a glossary with definitions for terms like :term:`Asset`:
         For each Collection they are granted access to, Users can have one of 4 :term:`Roles <Role>` , providing different capabilities and default access to your Collection.  See :ref:`roles-and-access` for more information. 
 
         Users can also be given one of 2 **Privileges** on the STIG Manager system. These privileges can be administered in your Authentication Provider (such as Keycloak):
-            * Collection Creator: Gives the User the ability to create their own Collections in STIG Manager.  
-            * Administrator (Application Manager): Gives the user elevated access to STIG Manager via the "Application Management" node of the Nav Tree. The Administrator Privilege allows the User to:
-            
+            * Collection Creator: Gives the User the ability to create their own Collections in STIG Manager.
+            * Administrator (Application Manager): Gives the user the ability to invoke elevated access via the "Application Management" node of the Nav Tree. The Administrator Privilege allows the User to:
+
                 * Import new STIGs into STIG Manager, as well as Delete them.
-                * Create and Alter Collections, and view their metadata.
-                * Create and Alter Users, and view their metadata.
-                * Import and Export Application Data. An experimental feature that will export all the Collection data in STIG Manager
-                * The Administrator privilege does not by itself provide access to any Collection, however, they can Grant themselves access to any Collection in STIG Manager via the Application Manager interface.
+                * Enumerate, Create, and Delete Collections, and view a Collection's name and description.
+                * Create and modify Grants (without ACLs) on any Collection.
+                * Create and Alter Users and User Groups.
+                * Import and Export Application Data.
+                * The Administrator privilege does not grant access to collection content. An admin cannot read or write Reviews, access Asset or STIG checklist data, or modify a Collection's settings, labels, metadata, or Grant ACLs without holding a Collection Grant. These operations require a normal (non-elevated) request governed by a Grant.
 
     User Group
         A named collection of Users that can be granted access to a Collection as a single entity. User Groups can be created and modified in the User Groups interface available to Application Managers. User Groups are  available to all Collection Owners and Managers for use in the Grants panel.  See :ref:`roles-and-access` for more information.

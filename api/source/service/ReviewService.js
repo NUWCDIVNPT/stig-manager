@@ -1006,8 +1006,9 @@ from
   ${grant.roleId === 1 ? 'inner' : 'left'} join cteAclEffective cae on sa.saId = cae.saId
   left join revision rev on sa.benchmarkId = rev.benchmarkId
   left join rev_group_rule_map rgr using (revId)
-where 
+where
   a.assetId = @assetId
+  and a.collectionId = @collectionId
   and coalesce(cae.access, 'rw') = 'rw'
 ),
 cteCandidate AS (
