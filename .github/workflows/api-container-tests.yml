@@ -11,6 +11,8 @@ on:
       - ".github/workflows/api-container-tests.yml"
 
 jobs:
+  build-client-v2:
+    uses: ./.github/workflows/build-client-v2.yml
   fetch-mysql-versions:
     runs-on: ubuntu-latest
     outputs:
@@ -30,7 +32,9 @@ jobs:
           echo "version_array=$VERSIONS" >> $GITHUB_OUTPUT
 
   test_api:
-    needs: fetch-mysql-versions
+    needs: 
+      - fetch-mysql-versions
+      - build-client-v2
     name: ${{ matrix.container.name }} and MySQL ${{ matrix.mysql_version }}
     runs-on: ubuntu-latest
     strategy:
