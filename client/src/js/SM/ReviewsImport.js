@@ -185,7 +185,7 @@ SM.ReviewsImport.Grid = Ext.extend(Ext.grid.GridPanel, {
                 dataIndex: 'filename',
                 sortable: true,
                 renderer: (v, m, r) => {
-                    m.attr = `ext:qtip="${r.data.fullPath}"`
+                    m.attr = `ext:qtip="${SM.he(r.data.fullPath)}"`
                     return v
                 }
             },

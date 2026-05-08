@@ -81,6 +81,19 @@
 :: set STIGMAN_CLASSIFICATION=
 
 ::==============================================================================
+:: STIGMAN_CLIENT_ADMIN_TIMEOUT
+::
+::  | Default: "0" | The maximum time (in minutes) a user with admin privileges
+::  can be inactive in the web client before discarding their access token and
+::  requiring reauthorization. Activity is defined as mouse click, keypress, or
+::  scrolling in any tab or window of a same-origin browsing context group. Set
+::  to zero to disable idle detection.
+::
+::  Affects: Client
+::==============================================================================
+:: set STIGMAN_CLIENT_ADMIN_TIMEOUT=
+
+::==============================================================================
 :: STIGMAN_CLIENT_API_BASE
 ::
 ::  | Default: "api" | The base URL for Client requests to the API relative to
@@ -89,6 +102,16 @@
 ::  Affects: Client
 ::==============================================================================
 :: set STIGMAN_CLIENT_API_BASE=
+
+::==============================================================================
+:: STIGMAN_CLIENT_CONSOLE_MODE
+::
+::  | Default: "production" | The console mode of the web client, setting to
+::  "development" enables console logging which is otherwise disabled
+::
+::  Affects: Client
+::==============================================================================
+:: set STIGMAN_CLIENT_CONSOLE_MODE=
 
 ::==============================================================================
 :: STIGMAN_CLIENT_DIRECTORY
@@ -142,19 +165,6 @@
 ::  Affects: Client
 ::==============================================================================
 :: set STIGMAN_CLIENT_ID=
-
-::==============================================================================
-:: STIGMAN_CLIENT_ADMIN_TIMEOUT
-::
-::  | Default: "0" | The maximum time (in minutes) a user with admin privileges
-::  can be inactive in the web client before discarding their access token and
-::  requiring reauthorization. Activity is defined as mouse click, keypress, or
-::  scrolling in any tab or window of a same-origin browsing context group. Set
-::  to zero to disable idle detection.
-::
-::  Affects: Client
-::==============================================================================
-:: set STIGMAN_CLIENT_ADMIN_TIMEOUT=
 
 ::==============================================================================
 :: STIGMAN_CLIENT_OIDC_PROVIDER

@@ -163,7 +163,7 @@ class JWKSCache extends EventEmitter {
       }
    
       function onTimeout() {
-        console.log('Request timed out', formatSocket(socketInfo))
+        logger.writeError('jwksCache', 'requestTimeout', { socket: formatSocket(socketInfo) })
         httpRequest.destroy()
       }
   

@@ -215,8 +215,12 @@ SM.Attachments.Grid = Ext.extend(Ext.grid.GridPanel, {
       fpwindow.show()
       // could show a wait indicator for image loading if necessary
       try {
+        const allowedMimeTypes = ['image/gif', 'image/jpeg', 'image/svg+xml', 'image/png', 'image/bmp']
+        if (!allowedMimeTypes.includes(artifactObj.type)) {
+          throw new Error(`Unsupported image type: ${artifactObj.type}`)
+        }
         const imageB64 = await getMetadataValue(artifactObj.digest)
-        imagePanel.update(`<img style='height: 100%; width: 100%; object-fit: contain' src='data:${artifactObj.type};base64,${encodeURI(imageB64)}'></img>`) 
+        imagePanel.update(`<img style='height: 100%; width: 100%; object-fit: contain' src='data:${SM.he(artifactObj.type)};base64,${encodeURI(imageB64)}'></img>`)
       }
       catch (e) {
        SM.Error.handleError(e)

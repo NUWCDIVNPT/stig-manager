@@ -344,13 +344,13 @@ module.exports.parseRevisionStr = function (revisionStr) {
 }
 
 module.exports.selectCollectionByAssetId = async function (assetId) {
-  // another possibility: return _this.pool.query(`SELECT c.* from asset a left join enabled_collection c using (collectionId) where a.assetId = ?`, [assetId])
-  return _this.pool.query(`SELECT * from enabled_collection where collectionId = (select collectionId from enabled_asset where assetId = ?)`, [assetId])
+  const [rows] = await _this.pool.query(`SELECT c.* from enabled_asset a left join enabled_collection c using (collectionId) where a.assetId = ?`, [assetId])
+  return rows[0]
 }
 
 module.exports.getGrantByAssetId = async function (assetId, grants) {
-  const [rows] = await _this.selectCollectionByAssetId(assetId)
-  return rows.length ? grants[rows[0].collectionId] : null
+  const row = await _this.selectCollectionByAssetId(assetId)
+  return row ? grants[row.collectionId] : null
 }
 
 module.exports.getUserAssetStigAccess = async function ({assetId, benchmarkId, grants}) {

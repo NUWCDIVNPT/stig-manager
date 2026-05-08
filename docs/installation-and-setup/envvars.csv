@@ -15,8 +15,12 @@
 | If necessary, the passphrase that decrypts the PEM encoded Server private key used for TLS. Additionally requires setting ``STIGMAN_API_TLS_CERT_FILE`` to enable TLS.","API"
 "STIGMAN_CLASSIFICATION","| **Default** ``U``
 | Sets the classification banner, if any. Available values: ``NONE`` ``U`` ``CUI`` ``C`` ``S`` ``TS`` ``SCI`` ","API, Client"
+"STIGMAN_CLIENT_ADMIN_TIMEOUT","| **Default** ``0``
+| The maximum time (in minutes) a user with admin privileges can be inactive in the web client before discarding their access token and requiring reauthorization. Activity is defined as mouse click, keypress, or scrolling in any tab or window of a same-origin browsing context group. Set to zero to disable idle detection.","Client"
 "STIGMAN_CLIENT_API_BASE","| **Default** ``api``
 | The base URL for Client requests to the API relative to ``window.location`` ","Client"
+"STIGMAN_CLIENT_CONSOLE_MODE","| **Default** ``production``
+| The console mode of the web client, setting to ``development`` enables console logging which is otherwise disabled","Client"
 "STIGMAN_CLIENT_DIRECTORY","| **Default** ``./clients``
 | The location of the web client files, relative to the API source directory. Note that if running source from a clone of the GitHub repository, the client is located at `../../clients` relative to the API directory. ","API, Client"
 "STIGMAN_CLIENT_DISABLED","| **Default** ``false``
@@ -27,8 +31,6 @@
 | A space separated list of OAuth2 scopes to request in addition to ``stig-manager:stig`` ``stig-manager:stig:read`` ``stig-manager:collection`` ``stig-manager:user`` ``stig-manager:user:read`` ``stig-manager:op``. Some OIDC providers (Okta) generate a refresh token only if the scope ``offline_access`` is requested","Client"
 "STIGMAN_CLIENT_ID","| **Default** ``stig-manager``
 | The OIDC clientId of the web client","Client"
-"STIGMAN_CLIENT_ADMIN_TIMEOUT","| **Default** ``0``
-| The maximum time (in minutes) a user with admin privileges can be inactive in the web client before discarding their access token and requiring reauthorization. Activity is defined as mouse click, keypress, or scrolling in any tab or window of a same-origin browsing context group. Set to zero to disable idle detection.","Client"
 "STIGMAN_CLIENT_OIDC_PROVIDER","| **Default** Value of ``STIGMAN_OIDC_PROVIDER``
 | Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended by the client when fetching metadata.","Client "
 "STIGMAN_CLIENT_REAUTH_ACTION","| **Default** ``popup``

@@ -21,8 +21,9 @@ describe('Boot with no dependencies', function () {
   })
 
   after(async function () {
-    await api.stop()
-    addContext(this, {title: 'api-log', value: api.logRecords})
+    this.timeout(60000)
+    if (api) await api.stop().catch(() => {})
+    if (api) addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
   describe('GET /op/state', function () {
@@ -113,10 +114,11 @@ describe('Boot with both dependencies', function () {
   })
 
   after(async function () {
-    await api.stop()
-    await mysql.stop()
-    await oidc.stop()
-    addContext(this, {title: 'api-log', value: api.logRecords})
+    this.timeout(60000)
+    if (api) await api.stop().catch(() => {})
+    if (mysql) await mysql.stop().catch(() => {})
+    if (oidc) await oidc.stop().catch(() => {})
+    if (api) addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
   describe('GET /op/state', function () {
@@ -127,7 +129,7 @@ describe('Boot with both dependencies', function () {
       expect(res.body.dependencies).to.eql({db: true, oidc: true})
     })
   })
-  
+
   describe('GET /op/configuration', function () {
     it('should return 200 when dependencies are available', async function () {
       const res = await simpleRequest(`${apiOrigin}/api/op/configuration`)
@@ -189,10 +191,11 @@ describe('Boot with old mysql', function () {
   })
 
   after(async function () {
-    await api.stop()
-    await mysql.stop()
-    await oidc.stop()
-    addContext(this, {title: 'api-log', value: api.logRecords})
+    this.timeout(60000)
+    if (api) await api.stop().catch(() => {})
+    if (mysql) await mysql.stop().catch(() => {})
+    if (oidc) await oidc.stop().catch(() => {})
+    if (api) addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
   describe('exit code', function () {
@@ -249,10 +252,11 @@ describe('Boot with insecure kid - allow insecure tokens false', function () {
   })
 
   after(async function () {
-    await api.stop()
-    await mysql.stop()
-    await oidc.stop()
-    addContext(this, {title: 'api-log', value: api.logRecords})
+    this.timeout(60000)
+    if (api) await api.stop().catch(() => {})
+    if (mysql) await mysql.stop().catch(() => {})
+    if (oidc) await oidc.stop().catch(() => {})
+    if (api) addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
   describe('exit code', function () {
@@ -312,10 +316,11 @@ describe('Boot without insecure kid - request with insecure token' , function ()
   })
 
   after(async function () {
-    await api.stop()
-    await mysql.stop()
-    await oidc.stop()
-    addContext(this, {title: 'api-log', value: api.logRecords})
+    this.timeout(60000)
+    if (api) await api.stop().catch(() => {})
+    if (mysql) await mysql.stop().catch(() => {})
+    if (oidc) await oidc.stop().catch(() => {})
+    if (api) addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
   describe('GET /op/state', function () {
@@ -361,10 +366,11 @@ describe('Boot with STIGMAN_JWKS_CACHE_MAX_AGE out of range', function () {
   })
 
   after(async function () {
-    await mysql.stop()
-    await oidc.stop()
-    await api.stop()
-    addContext(this, {title: 'api-log', value: api.logRecords})
+    this.timeout(60000)
+    if (mysql) await mysql.stop().catch(() => {})
+    if (oidc) await oidc.stop().catch(() => {})
+    if (api) await api.stop().catch(() => {})
+    if (api) addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
   describe('Mimimum value enforced', function () {
@@ -382,7 +388,8 @@ describe('Boot with STIGMAN_JWKS_CACHE_MAX_AGE out of range', function () {
       })
     })
     after(async function () {
-      await api.stop()
+      this.timeout(60000)
+      if (api) await api.stop().catch(() => {})
     })
     it('should return minimum oauth.maxCacheAge (1)', async function () {
       const configLog = api.logRecords.filter(r => r.type === 'configuration')[0]
@@ -405,7 +412,8 @@ describe('Boot with STIGMAN_JWKS_CACHE_MAX_AGE out of range', function () {
       })
     })
     after(async function () {
-      await api.stop()
+      this.timeout(60000)
+      if (api) await api.stop().catch(() => {})
     })
     it('should return maximum oauth.maxCacheAge (35791)', async function () {
       const configLog = api.logRecords.filter(r => r.type === 'configuration')[0]
@@ -428,7 +436,8 @@ describe('Boot with STIGMAN_JWKS_CACHE_MAX_AGE out of range', function () {
       })
     })
     after(async function () {
-      await api.stop()
+      this.timeout(60000)
+      if (api) await api.stop().catch(() => {})
     })
     it('should return default oauth.maxCacheAge (10)', async function () {
       const configLog = api.logRecords.filter(r => r.type === 'configuration')[0]
