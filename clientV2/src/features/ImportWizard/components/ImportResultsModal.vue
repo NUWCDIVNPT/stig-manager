@@ -2,6 +2,7 @@
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { computed, watch } from 'vue'
+import { useImportProgressStore } from '../../../shared/stores/importProgressStore.js'
 import { useImportWizard } from '../composables/useImportWizard.js'
 import ImportBatchWarningStep from './ImportBatchWarningStep.vue'
 import ImportErrorsWarningsStep from './ImportErrorsWarningsStep.vue'
@@ -43,8 +44,45 @@ const {
   onImported: () => emit('imported'),
 })
 
-// Open/reset the wizard whenever the dialog becomes visible, but not if an import is in flight
-watch(() => props.visible, (isOpen) => { if (isOpen && !(step.value === 'importProgress' && !executor.importIsDone.value)) { openWizard() } })
+const progressStore = useImportProgressStore()
+
+function _importInFlight() {
+  return step.value === 'importProgress' && !executor.importIsDone.value
+}
+
+watch(() => props.visible, (isOpen) => {
+  if (isOpen) {
+    // If the user opens the modal while an import is running,
+    // dismiss the background notification (since they can see progress in the modal)
+    if (_importInFlight()) {
+      progressStore.dismiss()
+    }
+    else {
+      openWizard()
+    }
+  }
+  else {
+    // If the user closes the modal while an import is running,
+    // show the background notification
+    if (_importInFlight()) {
+      progressStore.startBackground({ totalCount: parser.parseResults.value.taskAssets?.size ?? 0 })
+    }
+  }
+})
+
+// Keep the notification in sync with executor state while it's active
+watch(
+  [executor.importProgressText, () => executor.importStatusRows.value.length, executor.importIsDone],
+  ([text, count, done]) => {
+    if (!progressStore.isActive()) { return }
+    if (done) {
+      progressStore.finish()
+    }
+    else {
+      progressStore.update(text, count)
+    }
+  },
+)
 
 function closeWizard() { visible.value = false }
 function doneImport() { visible.value = false }
@@ -80,7 +118,7 @@ const primaryBtnPt = {
       <template v-else-if="options.importOptions.value">
         <ImportFileQueueStep
           v-model:selected-rows="queue.selectedQueueRows.value"
-          :file-queue="queue.fileQueue.value"
+          :source-files="queue.sourceFiles.value"
           :is-drag-over="queue.isDragOver.value"
           @add-files="queue.addFilesToQueue"
           @drop-files="queue.onDropFiles"
@@ -101,7 +139,7 @@ const primaryBtnPt = {
 
     <ImportBatchWarningStep
       v-else-if="step === 'batchWarning'"
-      :file-count="queue.fileQueue.value.length"
+      :file-count="queue.sourceFiles.value.length"
       class="step-container"
     />
 
@@ -131,7 +169,7 @@ const primaryBtnPt = {
 
     <ImportPreviewStep
       v-else-if="step === 'preview'"
-      :rows="parser.filteredPreviewRows.value"
+      :rows="parser.previewRows.value"
       class="step-container"
     />
 
