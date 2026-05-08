@@ -13,11 +13,11 @@ import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
+import CollectionImportResults from '../../CollectionMetrics/components/CollectionImportResults.vue'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import MetricsFilter from '../../CollectionMetrics/components/MetricsFilter.vue'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchCollection } from '../api/collectionApi.js'
-import ImportResultsModal from '../../ImportWizard/components/ImportResultsModal.vue'
 import CollectionAssetsTab from './CollectionAssetsTab.vue'
 import CollectionLabelsTab from './CollectionLabelsTab.vue'
 import CollectionStigsTab from './CollectionStigsTab.vue'
@@ -158,7 +158,6 @@ const DASHBOARD_STORAGE_KEY = 'stigman:collectionDashboardCollapsed'
 const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === 'true')
 const selectedLabelIds = ref([])
 const isAnimating = ref(false)
-const showImportModal = ref(false)
 const refreshKey = ref(0)
 
 function handleImported() {
@@ -220,6 +219,10 @@ function toggleDashboardSidebar() {
               vertical
             />
             <div class="sidebar-export">
+              <CollectionImportResults
+                :collection-id="collectionId"
+                @imported="handleImported"
+              />
               <CollectionExportMetrics
                 :collection-id="collectionId"
                 :collection-name="collectionName"
@@ -255,10 +258,6 @@ function toggleDashboardSidebar() {
               </template>
 
               <div class="tab-filter-container">
-                <button class="import-btn" @click="showImportModal = true">
-                  <i class="pi pi-upload" />
-                  Import CKL(B) or SCAP...
-                </button>
                 <span class="filter-label">FILTER:</span>
                 <MetricsFilter v-model="selectedLabelIds" type="label" :collection-id="collectionId" />
               </div>
@@ -288,13 +287,6 @@ function toggleDashboardSidebar() {
         </div>
       </SplitterPanel>
     </Splitter>
-    <ImportResultsModal
-      v-model:visible="showImportModal"
-      :collection-id="collectionId"
-      :create-objects="false"
-      :can-update-asset-props="false"
-      @imported="handleImported"
-    />
   </div>
 </template>
 
@@ -377,6 +369,9 @@ function toggleDashboardSidebar() {
 }
 
 .sidebar-export {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   padding: 0 12px 12px;
 }
 
@@ -421,24 +416,5 @@ function toggleDashboardSidebar() {
   font-weight: 600;
   letter-spacing: 0.05em;
   color: var(--color-text-dim);
-}
-
-.import-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  background: none;
-  border: 1px solid var(--color-border-default);
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.import-btn:hover {
-  background-color: var(--color-button-hover-bg);
-  border-color: var(--color-text-dim);
 }
 </style>
