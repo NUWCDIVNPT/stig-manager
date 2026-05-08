@@ -1,4 +1,5 @@
 <script setup>
+import { saveAs } from 'file-saver-es'
 import TieredMenu from 'primevue/tieredmenu'
 import { computed, ref, toRefs } from 'vue'
 import { useRoute } from 'vue-router'
@@ -8,8 +9,10 @@ import lineHeightUp from '../../../assets/line-height-up.svg'
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
 import ColumnToggle from '../../../components/common/ColumnToggle.vue'
+import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import AssetStigImportModal from '../../AssetStigImport/components/AssetStigImportModal.vue'
+import { CHECKLIST_EXPORT_FORMATS, exportAssetStigChecklist } from '../api/assetReviewApi.js'
 
 const props = defineProps({
   asset: {
@@ -39,7 +42,9 @@ const {
 } = toRefs(props)
 
 const route = useRoute()
+const { triggerError } = useGlobalError()
 const showImportModal = ref(false)
+const exportIsRunning = ref(false)
 
 const canImport = computed(() => accessMode.value === 'rw')
 
@@ -54,12 +59,49 @@ const importContext = computed(() => {
   }
 })
 
+const exportContext = computed(() => {
+  const params = route?.params ?? {}
+  return {
+    assetId: asset.value?.assetId ?? asset.value?.id ?? params.assetId,
+    benchmarkId: params.benchmarkId,
+    revisionStr: revisionInfo.value?.revisionStr ?? params.revisionStr,
+  }
+})
+
 function openImport() {
   showImportModal.value = true
 }
 
 function onImported() {
   emit('refresh')
+}
+
+async function exportChecklist(format) {
+  if (exportIsRunning.value) {
+    return
+  }
+  const { assetId, benchmarkId, revisionStr } = exportContext.value
+  if (!assetId || !benchmarkId || !revisionStr) {
+    triggerError('Missing checklist context for export.')
+    return
+  }
+
+  exportIsRunning.value = true
+  try {
+    const { blob, filename } = await exportAssetStigChecklist({
+      assetId,
+      benchmarkId,
+      revisionStr,
+      format,
+    })
+    saveAs(blob, filename)
+  }
+  catch (e) {
+    triggerError(e)
+  }
+  finally {
+    exportIsRunning.value = false
+  }
 }
 
 const displayMode = defineModel('displayMode', { type: String, required: true })
@@ -109,11 +151,23 @@ const checklistMenuItems = computed(() => {
       label: 'Export to file',
       icon: 'pi pi-download',
       items: [
-        { label: 'CKL - STIG Viewer v2' },
-        { label: 'CKLB - STIG Viewer v3' },
-        { label: 'XCCDF' },
+        {
+          label: 'CKL - STIG Viewer v2',
+          disabled: exportIsRunning.value,
+          command: () => exportChecklist(CHECKLIST_EXPORT_FORMATS.CKL),
+        },
+        {
+          label: 'CKLB - STIG Viewer v3',
+          disabled: exportIsRunning.value,
+          command: () => exportChecklist(CHECKLIST_EXPORT_FORMATS.CKLB),
+        },
+        {
+          label: 'XCCDF',
+          disabled: exportIsRunning.value,
+          command: () => exportChecklist(CHECKLIST_EXPORT_FORMATS.XCCDF),
+        },
         { separator: true },
-        { label: 'Attachments Archive' },
+        { label: 'Attachments Archive', disabled: true },
       ],
     },
   ]
