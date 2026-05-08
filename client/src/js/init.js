@@ -1,6 +1,12 @@
 import { stylesheets, scripts, isMinimizedSource } from './resources.js'
 
 (async function () {
+  if (STIGMAN.Env.consoleMode !== 'development') {
+    console.log = function () { }
+    console.warn = function () { }
+    console.error = function () { }
+    console.debug = function () { }
+  }
   const statusEl = document.getElementById("loading-text")
   let OW // aka window.oidcWorker, created in setupOidcWorker()
   if (!window.isSecureContext) {

@@ -114,6 +114,35 @@ export function spawnApi ({
 }
 
 /**
+ * Resolves with a log record matching `type` once `count` such records have
+ * been seen at index >= `since` in `api.logRecords`. Race-safe: counts past
+ * records so the helper still resolves if the trigger fired before the caller
+ * awaited. Capture `api.logRecords.length` into `since` *before* triggering
+ * the action that produces the event(s).
+ * @param {Object} api - Result of spawnApiPromise; must have logRecords + logEvents.
+ * @param {string} type - The log record type to wait for.
+ * @param {Object} [opts]
+ * @param {number} [opts.count=1] - Number of matching records before resolving.
+ * @param {number} [opts.since=0] - Index in api.logRecords at which to start counting.
+ * @param {(log: Object) => boolean} [opts.predicate] - Optional filter applied to each record.
+ * @returns {Promise<Object>} Resolves with the count-th matching log record.
+ */
+export function waitForLog (api, type, { count = 1, since = 0, predicate = null } = {}) {
+  const past = api.logRecords.slice(since).filter(r =>
+    r.type === type && (!predicate || predicate(r))
+  )
+  if (past.length >= count) return Promise.resolve(past[count - 1])
+  let seen = past.length
+  return new Promise((resolve) => {
+    api.logEvents.on(type, (log) => {
+      if (predicate && !predicate(log)) return
+      seen++
+      if (seen >= count) resolve(log)
+    })
+  })
+}
+
+/**
  * Waits for a child process to close.
  * @param {ChildProcess} child - The child process to wait for.
  * @returns {Promise<number>} A promise that resolves with the exit code of the child process.

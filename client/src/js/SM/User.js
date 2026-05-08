@@ -931,7 +931,7 @@ SM.User.UserGrid = Ext.extend(Ext.grid.GridPanel, {
           renderer: function (value, metadata, record, ri, ci, store) {
             let qtipContent
             if (record.data.statusUser) {
-              qtipContent = `ext:qtip="<b>Status:</b> ${value}<br><b>Set by:</b> userId ${record.data.statusUser}<br><b>Date:</b> ${Ext.util.Format.date(record.data.statusDate,'Y-m-d H:i T')}"`
+              qtipContent = `ext:qtip="<b>Status:</b> ${SM.he(value)}<br><b>Set by:</b> userId ${SM.he(record.data.statusUser)}<br><b>Date:</b> ${Ext.util.Format.date(record.data.statusDate,'Y-m-d H:i T')}"`
             }
             metadata.attr = 'style="line-height: 17px;white-space:normal;"'
             return `<span class="sm-label-sprite" style="color:black;background-color:${value === 'available' ? 'green' : 'red'};" ${qtipContent}>${value}</span>`

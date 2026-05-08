@@ -16,9 +16,9 @@ module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res,
     const assetId = req.params.assetId
     const reviews = req.body
 
-    // check assetId exists and is enabled
-    const assetExists = await AssetService.doesAssetExist(assetId) 
-    if (!assetExists) {
+    // check assetId exists, is enabled, and belongs to the collection in the URL path
+    const assetRow = await dbUtils.selectCollectionByAssetId(assetId)
+    if (!assetRow || assetRow.collectionId.toString() !== collectionId) {
       throw new SmError.PrivilegeError()
     }
 
@@ -162,9 +162,10 @@ module.exports.putReviewByAssetRule = async function (req, res, next) {
     const {assetId, ruleId} = {...req.params}
     const review = {...req.body, ruleId}
     const projections = req.query.projection
-    // check assetId exists and is enabled
-    const assetExists = await AssetService.doesAssetExist(assetId) 
-    if (!assetExists) {
+
+    // check assetId exists, is enabled, and belongs to the collection in the URL path
+    const assetRow = await dbUtils.selectCollectionByAssetId(assetId)
+    if (!assetRow || assetRow.collectionId.toString() !== collectionId) {
       throw new SmError.PrivilegeError()
     }
 
@@ -181,7 +182,7 @@ module.exports.putReviewByAssetRule = async function (req, res, next) {
     }
     const rows =  await ReviewService.getReviews({
       projections,
-      filter: {assetId, ruleId},
+      filter: {collectionId, assetId, ruleId},
       grant,
       userObject: req.userObject
     })
@@ -199,8 +200,17 @@ module.exports.patchReviewByAssetRule = async function (req, res, next) {
     }
     const {collectionId, grant} = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
     const {assetId, ruleId} = {...req.params}
+
+    // check assetId exists, is enabled, and belongs to the collection in the URL path —
+    // must run before the pre-write existence read so a foreign-collection asset
+    // cannot satisfy the "review must exist" gate and reveal review state via 404 vs 403
+    const assetRow = await dbUtils.selectCollectionByAssetId(assetId)
+    if (!assetRow || assetRow.collectionId.toString() !== collectionId) {
+      throw new SmError.PrivilegeError()
+    }
+
     const currentReviews =  await ReviewService.getReviews({
-      filter: {assetId, ruleId},
+      filter: {collectionId, assetId, ruleId},
       grant,
       userObject: req.userObject
     })
@@ -222,7 +232,7 @@ module.exports.patchReviewByAssetRule = async function (req, res, next) {
     }
     const rows =  await ReviewService.getReviews({
       projections,
-      filter: {assetId, ruleId},
+      filter: {collectionId, assetId, ruleId},
       grant,
       userObject: req.userObject
     })

@@ -174,7 +174,21 @@ STIG Manager recognizes two "privileges" that can be granted to users via config
 
 Users with the **create_collection** privilege can create new Collections of their own, but are otherwise ordinary users. 
 
-Users with the **admin** privilege must explicitly invoke the "elevate" parameter in queries to the API to make use of their privilege. In our reference UI, this parameter is sent when certain "Application Management" functions are invoked, such as importing new Reference STIGs, requesting a list of all Collections, or creating a new Grant in a Collection they do not otherwise have access to. 
+Users with the **admin** privilege may explicitly invoke the ``elevate`` parameter in API requests to act as a privileged principal. The elevation mechanism is designed so that an admin user does not need a separate privileged account on the identity provider — the same account is used, and the user opts into elevated mode on a per-request basis.
+
+When a request includes ``?elevate=true``, it is governed by the elevation access model rather than by any Collection Grant the user may also hold. Elevation is scoped exclusively to Collection management and application administration operations:
+
+- Enumerate, create, and delete Collections
+- Read and modify a Collection's name and description
+- Create, modify, and delete Grants on any Collection, assigning any Role to any User or User Group (without supplying an ACL)
+- Manage Users and User Groups
+
+Elevation does **not** grant access to collection content. An elevated admin cannot read or write Reviews, access Asset or STIG checklist data, or modify a Collection's settings, labels, metadata, or Grant ACLs — even with ``?elevate=true`` supplied. These operations require a Collection Grant and are performed via normal (non-elevated) requests.
+
+In the reference UI, the ``elevate`` parameter is sent when "Application Management" functions are invoked, such as importing new Reference STIGs, listing all Collections, or creating a Grant in a Collection the admin does not otherwise have access to.
+
+.. note::
+   An elevated admin can create a Grant giving themselves any Role in any Collection. This is intentional: it avoids requiring admins who also need content access to maintain a second OIDC account. The accepted control is that **every elevated request — including self-grant operations — has its complete request and response bodies written to the application log**, regardless of whether the request succeeds. Administrators responsible for deploying STIG Manager should ensure elevated-request log entries are retained and reviewed.
 
 These **privileges** must be present in the token presented to the API in order to be successfully invoked. 
 

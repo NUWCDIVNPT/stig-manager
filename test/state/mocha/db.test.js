@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { getPorts, spawnApiPromise, spawnMySQL, simpleRequest, execIpTables } from './lib.js'
+import { getPorts, spawnApiPromise, spawnMySQL, simpleRequest, execIpTables, waitForLog } from './lib.js'
 import MockOidc from '../../utils/mockOidc.js'
 import addContext from 'mochawesome/addContext.js'
 
@@ -10,16 +10,7 @@ describe('DB outage: shutdown', function () {
   let mysql
   let oidc
 
-  async function waitLogEvent(type, count = 1) {
-    let seen = 0
-    return new Promise((resolve) => {
-      api.logEvents.on(type, function (log) {
-        seen++
-        if (seen >= count) resolve(log)
-      })
-    })
-  }
-  
+
   before(async function () {
     this.timeout(60000)
     oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
@@ -47,10 +38,11 @@ describe('DB outage: shutdown', function () {
   })
 
   after(async function () {
-    await api.stop()
-    await mysql.stop()
-    await oidc.stop()
-    addContext(this, {title: 'api-log', value: api.logRecords})
+    this.timeout(60000)
+    if (api) await api.stop().catch(() => {})
+    if (mysql) await mysql.stop().catch(() => {})
+    if (oidc) await oidc.stop().catch(() => {})
+    if (api) addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
   describe('DB up', function () {
@@ -64,8 +56,10 @@ describe('DB outage: shutdown', function () {
   })
 
   describe('DB shutdown', function () {
+    let logMark
     before(async function () {
       this.timeout(30000)
+      logMark = api.logRecords.length
       await mysql.stop()
       console.log('      mysql shutdown')
     })
@@ -74,21 +68,23 @@ describe('DB outage: shutdown', function () {
       const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.currentState).to.equal('unavailable')
-      expect(res.body.dependencies).to.eql({db: false, oidc: true})     
+      expect(res.body.dependencies).to.eql({db: false, oidc: true})
     })
 
     it('should log retry fail', async function () {
       this.timeout(30000)
       console.log('      wait for log: restore (2)')
-      const log = await waitLogEvent('restore', 2)
+      const log = await waitForLog(api, 'restore', {count: 2, since: logMark})
       expect(log.data.message).to.equal(`connect ECONNREFUSED 127.0.0.1:${dbPort}`)
     })
   })
 
   describe('DB restarted', function() {
+    let logMark
     before( async function() {
       this.timeout(30000)
       console.log('      try mysql restart')
+      logMark = api.logRecords.length
       mysql = await spawnMySQL({tag: '8.0.24', port: dbPort})
       console.log('      ✔ mysql restarted')
     })
@@ -96,7 +92,7 @@ describe('DB outage: shutdown', function () {
     it('should return state "available"', async function () {
       this.timeout(60000)
       console.log('      wait for log: state-changed')
-      const log = await waitLogEvent('state-changed')
+      const log = await waitForLog(api, 'state-changed', {since: logMark})
       expect(log.data.currentState).to.equal('available')
       expect(log.data.previousState).to.equal('unavailable')
       const res = await simpleRequest(`${apiOrigin}/api/op/state`)
@@ -112,16 +108,6 @@ describe('DB outage: network/host down', function () {
   let mysql
   let oidc
 
-  async function waitLogEvent(type, count = 1) {
-    let seen = 0
-    return new Promise((resolve) => {
-      api.logEvents.on(type, function (log) {
-        seen++
-        if (seen >= count) resolve(log)
-      })
-    })
-  }
-  
   before(async function () {
     this.timeout(60000)
     oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
@@ -149,10 +135,11 @@ describe('DB outage: network/host down', function () {
   })
 
   after(async function () {
-    await api.stop()
-    await mysql.stop()
-    await oidc.stop()
-    addContext(this, {title: 'api-log', value: api.logRecords})
+    this.timeout(60000)
+    if (api) await api.stop().catch(() => {})
+    if (mysql) await mysql.stop().catch(() => {})
+    if (oidc) await oidc.stop().catch(() => {})
+    if (api) addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
   describe('Network/host up', function () {
@@ -166,33 +153,37 @@ describe('DB outage: network/host down', function () {
   })
 
   describe('Network/host down', function () {
+    let logMark
     before(async function () {
+      logMark = api.logRecords.length
       execIpTables(`-A OUTPUT -p tcp --dport ${dbPort} -j DROP`)
       console.log('      iptables dropping packets')
     })
     it('should return state "unavailable"', async function () {
       this.timeout(30000)
       console.log('      wait for log: state-changed')
-      const log = await waitLogEvent('state-changed')
+      const log = await waitForLog(api, 'state-changed', {since: logMark})
       expect(log.data.currentState).to.equal('unavailable')
       expect(log.data.previousState).to.equal('available')
       const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.currentState).to.equal('unavailable')
-      expect(res.body.dependencies).to.eql({db: false, oidc: true})     
+      expect(res.body.dependencies).to.eql({db: false, oidc: true})
     })
 
     it('should log retry fail', async function () {
       this.timeout(45000)
       console.log('      wait for log: restore (2)')
-      const log = await waitLogEvent('restore', 2)
+      const log = await waitForLog(api, 'restore', {count: 2, since: logMark})
       expect(log.data.message).to.equal('connect ETIMEDOUT')
     })
   })
 
   describe('Network/host up', function() {
+    let logMark
     before( async function() {
       this.timeout(30000)
+      logMark = api.logRecords.length
       execIpTables(`-D OUTPUT -p tcp --dport ${dbPort} -j DROP`)
       console.log('      iptables accepting packets')
     })
@@ -200,7 +191,7 @@ describe('DB outage: network/host down', function () {
     it('should return state "available"', async function () {
       this.timeout(60000)
       console.log('      wait for log: state-changed')
-      const log = await waitLogEvent('state-changed')
+      const log = await waitForLog(api, 'state-changed', {since: logMark})
       expect(log.data.currentState).to.equal('available')
       expect(log.data.previousState).to.equal('unavailable')
       const res = await simpleRequest(`${apiOrigin}/api/op/state`)
