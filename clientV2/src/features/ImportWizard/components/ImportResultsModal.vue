@@ -4,12 +4,12 @@ import Dialog from 'primevue/dialog'
 import { computed, watch } from 'vue'
 import { useImportProgressStore } from '../../../shared/stores/importProgressStore.js'
 import { useImportWizard } from '../composables/useImportWizard.js'
-import ImportBatchWarningStep from './ImportBatchWarningStep.vue'
-import ImportErrorsWarningsStep from './ImportErrorsWarningsStep.vue'
+import ImportBatchWarningStep from './ImportBatchWarningStep2.vue'
+import ImportErrorsWarningsStep from './ImportErrorsWarningsStep3.vue'
 import ImportFileQueueStep from './ImportFileQueueStep1.vue'
 import ImportOptionsPanel from './ImportOptionsPanel.vue'
-import ImportPreviewStep from './ImportPreviewStep.vue'
-import ImportProgressStep from './ImportProgressStep.vue'
+import ImportPreviewStep from './ImportPreviewStep4.vue'
+import ImportProgressStep from './ImportProgressStep5.vue'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },

@@ -4,7 +4,7 @@ import Dialog from 'primevue/dialog'
 import { computed, watch } from 'vue'
 import ImportFileQueueStep from '../../ImportWizard/components/ImportFileQueueStep1.vue'
 import ImportOptionsPanel from '../../ImportWizard/components/ImportOptionsPanel.vue'
-import ImportProgressStep from '../../ImportWizard/components/ImportProgressStep.vue'
+import ImportProgressStep from '../../ImportWizard/components/ImportProgressStep5.vue'
 import { useAssetStigImport } from '../composables/useAssetStigImport.js'
 import AssetStigPreviewStep from './AssetStigPreviewStep.vue'
 

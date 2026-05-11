@@ -42,7 +42,7 @@ const progressPct = computed(() => {
 
 <style scoped>
 .header-icon {
-  font-size: 0.9rem;
+  font-size: 1.25rem;
   color: var(--color-text-dim);
   flex-shrink: 0;
 }
@@ -52,7 +52,7 @@ const progressPct = computed(() => {
 }
 
 .header-title {
-  font-size: 0.875rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--color-text-primary);
   flex: 1;
@@ -79,13 +79,13 @@ const progressPct = computed(() => {
 }
 
 .meta-count {
-  font-size: 0.75rem;
+  font-size: 1.05rem;
   color: var(--color-text-dim);
   flex-shrink: 0;
 }
 
 .meta-text {
-  font-size: 0.75rem;
+  font-size: 1.05rem;
   color: var(--color-text-dim);
   white-space: nowrap;
   overflow: hidden;
