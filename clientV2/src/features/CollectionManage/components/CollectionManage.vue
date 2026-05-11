@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import ManageAssets from './ManageAssets.vue'
 import ManageGrants from './ManageGrants.vue'
+import ManageImportOptions from './ManageImportOptions.vue'
 import ManageLabels from './ManageLabels.vue'
 import ManageMetadata from './ManageMetadata.vue'
 import ManageProperties from './ManageProperties.vue'
@@ -39,6 +40,7 @@ const sections = [
 const drawerComponents = {
   properties: ManageProperties,
   settings: ManageSettings,
+  import: ManageImportOptions,
   metadata: ManageMetadata,
   grants: ManageGrants,
   users: ManageUsers,

@@ -31,6 +31,16 @@ export function useImportExecution({ collectionId, canUpdateAssetProps, parseRes
           assetId = apiAsset.assetId
           statusRow = { assetName: apiAsset.name, assetId: apiAsset.assetId, created: !taskAsset.knownAsset, addedStigs: taskAsset.hasNewAssignment }
         }
+        else if (!assetId) {
+          importStatusRows.value.push({
+            ...statusRow,
+            error: 'Skipped: asset does not exist and new-object creation is disabled',
+            inserted: 0,
+            updated: 0,
+            rejected: [],
+          })
+          continue
+        }
 
         let reviewResult = { inserted: 0, updated: 0, rejected: [] }
         let reviewsArray = []

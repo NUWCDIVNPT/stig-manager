@@ -21,6 +21,7 @@ export const EMPTY_FIELD_OPTIONS = [
 export function useImportOptions({ collection, canAccept }) {
   const importOptions = ref(null)
   const isCustomizing = ref(false)
+  let suppressPersist = false
 
   const STATUS_OPTIONS_BASE = [
     { label: 'Keep Existing', value: 'null' },
@@ -35,14 +36,17 @@ export function useImportOptions({ collection, canAccept }) {
   watch(isCustomizing, (val) => {
     if (!val) {
       restoreCollectionDefaults()
+      return
     }
-    else {
-      const stored = JSON.parse(readStoredValue('wizardImportOptions', 'null'))
-      if (stored) { importOptions.value = stored }
+    const stored = JSON.parse(readStoredValue('wizardImportOptions', 'null'))
+    if (stored) {
+      suppressPersist = true
+      importOptions.value = stored
     }
   })
 
   watch(importOptions, (val) => {
+    if (suppressPersist) { suppressPersist = false; return }
     if (isCustomizing.value && val) { storeValue('wizardImportOptions', JSON.stringify(val)) }
   }, { deep: true })
 
@@ -50,6 +54,7 @@ export function useImportOptions({ collection, canAccept }) {
     if (!collection.value) { return }
     const opts = JSON.parse(JSON.stringify(collection.value.settings.importOptions))
     applyAutoStatusGuard(opts)
+    suppressPersist = true
     importOptions.value = opts
   }
 
