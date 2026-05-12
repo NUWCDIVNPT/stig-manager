@@ -41,10 +41,11 @@ describe('Token validation', function () {
     })
 
     after(async function () {
-      await api.stop()
-      await mysql.stop()
-      await oidc.stop()
-      addContext(this, {title: 'api-log', value: api.logRecords})
+      this.timeout(60000)
+      if (api) await api.stop().catch(() => {})
+      if (mysql) await mysql.stop().catch(() => {})
+      if (oidc) await oidc.stop().catch(() => {})
+      if (api) addContext(this, {title: 'api-log', value: api.logRecords})
     })
 
     it('should accept token having correct audience (string)', async function () {
@@ -139,10 +140,11 @@ describe('Token validation', function () {
     })
 
     after(async function () {
-      await api.stop()
-      await mysql.stop()
-      await oidc.stop()
-      addContext(this, {title: 'api-log', value: api.logRecords})
+      this.timeout(60000)
+      if (api) await api.stop().catch(() => {})
+      if (mysql) await mysql.stop().catch(() => {})
+      if (oidc) await oidc.stop().catch(() => {})
+      if (api) addContext(this, {title: 'api-log', value: api.logRecords})
     })
 
     it('should accept top-level scope "stig-manager"', async function () {

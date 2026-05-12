@@ -250,9 +250,9 @@ SM.ApplicationManagers = Ext.extend(Ext.Panel, {
             return `
            <li class="sm-user-item">
               <div class="sm-user-details">
-                <span class="sm-user-name">${user.displayName}</span>
-                ${user.email 
-                  ? `<span class="sm-user-email">${user.email}</span>` 
+                <span class="sm-user-name">${SM.he(user.displayName)}</span>
+                ${user.email
+                  ? `<span class="sm-user-email">${SM.he(user.email)}</span>`
                   : `<span class="sm-user-email">No Email Available</span>`}
               </div>
           </li>`

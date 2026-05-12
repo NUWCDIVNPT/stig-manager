@@ -366,12 +366,11 @@ async function addReview( params ) {
   async function exportArtifacts(leaf) {
     try {
       // Fetch all reviews for this asset with metadata projection
-      await window.oidcProvider.updateToken(10)
       const url = `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${leaf.assetId}?benchmarkId=${leaf.benchmarkId}&projection=metadata`
       const response = await fetch(url, {
         method: 'GET',
         headers: new Headers({
-          'Authorization': `Bearer ${window.oidcProvider.token}`
+          'Authorization': `Bearer ${window.oidcWorker.token}`
         })
       })
       

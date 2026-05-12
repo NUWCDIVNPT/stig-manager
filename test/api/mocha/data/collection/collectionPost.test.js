@@ -42,7 +42,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
         it("Create a Collection and test projections",async function () {
           const post = JSON.parse(JSON.stringify(requestBodies.createCollection))
           post.name = "testCollection" + random
-          const res = await utils.executeRequest(`${config.baseUrl}/collections?elevate=${distinct.canElevate}&projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`, 'POST', iteration.token, post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections?projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`, 'POST', iteration.token, post)
           if(distinct.canCreateCollection === false){
             expect(res.status).to.eql(403)
             return
@@ -138,7 +138,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           }
           const post = JSON.parse(JSON.stringify(requestBodies.collectionWithNoSettings))
           post.name = post.name + random
-          const res = await utils.executeRequest(`${config.baseUrl}/collections?elevate=${distinct.canElevate}&projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`, 'POST', iteration.token, post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections?projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`, 'POST', iteration.token, post)
           if(distinct.canCreateCollection === false){
             expect(res.status).to.eql(403)
             return
@@ -197,7 +197,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
               maxReviews: 10
             },
           }
-          const res = await utils.executeRequest(`${config.baseUrl}/collections?elevate=${distinct.canElevate}&projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`, 'POST', iteration.token, post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections?projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`, 'POST', iteration.token, post)
           if(distinct.canCreateCollection === false){
             expect(res.status).to.eql(403)
             return
@@ -221,7 +221,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const post = requestBodies.createCollectionWithTestGroup
           let uuid = uuidv4().slice(0, 10)
           post.name = "testCollection" + uuid
-          const res = await utils.executeRequest(`${config.baseUrl}/collections?elevate=${distinct.canElevate}&projection=grants`, 'POST', iteration.token, post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections?projection=grants`, 'POST', iteration.token, post)
           if(distinct.canCreateCollection === false){
             expect(res.status).to.eql(403)
             return
@@ -236,7 +236,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
           const post = JSON.parse(JSON.stringify(requestBodies.createCollection))
           post.grants.push(post.grants[0])
           post.name = "TEST" + utils.getUUIDSubString()
-          const res = await utils.executeRequest(`${config.baseUrl}/collections?elevate=${distinct.canElevate}`, 'POST', iteration.token, post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections`, 'POST', iteration.token, post)
             if(distinct.canCreateCollection === false){
               expect(res.status).to.eql(403)
               return
@@ -248,7 +248,7 @@ describe('POST - Collection - not all tests run for all iterations', function ()
         it("should throw SmError.UnprocessableError due to duplicate name exists ",async function () {
           const post = JSON.parse(JSON.stringify(requestBodies.createCollection))
           post.name = "testCollection" + random
-          const res = await utils.executeRequest(`${config.baseUrl}/collections?elevate=${distinct.canElevate}&projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`, 'POST', iteration.token, post)
+          const res = await utils.executeRequest(`${config.baseUrl}/collections?projection=grants&projection=labels&projection=assets&projection=owners&projection=statistics&projection=stigs`, 'POST', iteration.token, post)
           if(distinct.canCreateCollection === false){
             expect(res.status).to.eql(403)
             return

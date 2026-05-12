@@ -505,7 +505,10 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                 tokenParsed.exp = `${tokenParsed.exp} (${expDate.format('Y-m-d H:i:s')})`
                 tokenParsed.iat = `${tokenParsed.iat} (${iatDate.format('Y-m-d H:i:s')})`
                 tokenParsed.auth_time = `${tokenParsed.auth_time} (${authTimeDate.format('Y-m-d H:i:s')})`
-                tip.update("<pre style='white-space: pre-wrap;'>" + JSON.stringify(tokenParsed,null,2) + "</pre>")
+                const pre = document.createElement('pre')
+                pre.style.whiteSpace = 'pre-wrap'
+                pre.textContent = JSON.stringify(tokenParsed, null, 2)
+                tip.body.dom.replaceChildren(pre)
               }
           }
       }).getId() //for sonarcloud to see object used

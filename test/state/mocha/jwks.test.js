@@ -15,7 +15,7 @@ describe('JWKS Tests', function () {
   const {apiPort, dbPort, oidcPort, apiOrigin, oidcOrigin} = getPorts(54020)
 
   before(async function () {
-    this.timeout(30000)
+    this.timeout(60000)
     oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
     tokens.rotation0 = oidc.getToken({username: 'prerotation', privileges:['create_collection']}) // default privileges
     oidc.rotateKeys({keyCount: 1, includeInsecureKid: false})
@@ -46,10 +46,11 @@ describe('JWKS Tests', function () {
   })
 
   after(async function () {
-    await api.stop()
-    await mysql.stop()
-    await oidc.stop()
-    addContext(this, {title: 'api-log', value: api.logRecords})
+    this.timeout(60000)
+    if (api) await api.stop().catch(() => {})
+    if (mysql) await mysql.stop().catch(() => {})
+    if (oidc) await oidc.stop().catch(() => {})
+    if (api) addContext(this, {title: 'api-log', value: api.logRecords})
   })
   
   describe('Create user according to token', function () {
