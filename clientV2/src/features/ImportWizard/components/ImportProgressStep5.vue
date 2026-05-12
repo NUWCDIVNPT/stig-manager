@@ -186,8 +186,8 @@ function onRejectedFooterAction(action) {
   align-items: center;
   gap: 0.5rem;
 }
-.isp-icon { font-size: 0.8rem; color: #3b82f6; flex-shrink: 0; }
-.isp-icon--done { color: #22c55e; }
+.isp-icon { font-size: 0.8rem; color: var(--color-action-blue); flex-shrink: 0; }
+.isp-icon--done { color: var(--color-success); }
 .isp-text {
   flex: 1;
   font-size: 0.875rem;
@@ -211,7 +211,7 @@ function onRejectedFooterAction(action) {
 }
 .isp-fill {
   height: 100%;
-  background: #2563eb;
+  background: var(--color-action-blue-dark);
   border-radius: 4px;
   transition: width 0.3s ease;
 }
@@ -296,7 +296,7 @@ function onRejectedFooterAction(action) {
 }
 .running-icon {
   font-size: 1.4rem;
-  color: #3b82f6;
+  color: var(--color-action-blue);
 }
 .running-text {
   font-size: 1rem;

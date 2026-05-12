@@ -90,6 +90,6 @@ function onImported() {
 .import-button:hover,
 .import-button:active,
 .import-button:focus-visible {
-  background-color: rgba(96, 165, 250, 0.1) !important;
+  background-color: color-mix(in srgb, var(--color-primary-highlight) 10%, transparent) !important;
 }
 </style>

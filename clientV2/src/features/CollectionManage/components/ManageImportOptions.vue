@@ -26,7 +26,7 @@ function handleImported() {
         label="Import results from CKL(B) or XCCDF files"
         icon="pi pi-upload"
         :pt="{
-          root: { style: 'color: rgba(255,255,255,0.87); border-color: var(--color-border-default);' },
+          root: { style: 'color: var(--color-text-primary); border-color: var(--color-border-default);' },
         }"
         @click="showImportModal = true"
       />

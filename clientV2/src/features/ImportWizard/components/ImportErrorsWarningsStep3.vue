@@ -129,8 +129,8 @@ function onDupesFooterAction(action) {
 }
 
 .stop-notice {
-  background-color: rgba(241, 105, 105, 0.08);
-  border: 1px solid rgba(241, 105, 105, 0.25);
+  background-color: color-mix(in srgb, var(--color-text-error) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text-error) 25%, transparent);
   border-radius: 6px;
   padding: 0.75rem 1rem;
   color: var(--color-text-error);

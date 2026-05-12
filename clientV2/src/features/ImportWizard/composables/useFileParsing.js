@@ -24,7 +24,6 @@ export function useFileParsing({ collectionId, createObjects, sourceFiles, field
     return parseResults.value.rows
   })
 
-  // mostly copied from ReviewsImport.js old client
   async function startParsing() {
     parseProgressValue.value = 0
     parseProgressText.value = ''

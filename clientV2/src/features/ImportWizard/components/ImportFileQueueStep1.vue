@@ -177,8 +177,8 @@ function onFilePicked(event) {
 }
 
 .queue-table-wrapper--dragover {
-  border: 2px dashed #2563eb;
-  background-color: rgba(37, 99, 235, 0.05);
+  border: 2px dashed var(--color-action-blue-dark);
+  background-color: color-mix(in srgb, var(--color-action-blue-dark) 5%, transparent);
 }
 
 .queue-toolbar {
@@ -192,8 +192,8 @@ function onFilePicked(event) {
 }
 
 .queue-toolbar--dragover {
-  background-color: rgba(37, 99, 235, 0.08);
-  border-bottom-color: #2563eb;
+  background-color: color-mix(in srgb, var(--color-action-blue-dark) 8%, transparent);
+  border-bottom-color: var(--color-action-blue-dark);
 }
 
 .queue-single-badge {

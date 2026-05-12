@@ -48,7 +48,7 @@ const progressPct = computed(() => {
 }
 
 .header-icon--done {
-  color: #22c55e;
+  color: var(--color-success);
 }
 
 .header-title {
@@ -67,7 +67,7 @@ const progressPct = computed(() => {
 
 .progress-fill {
   height: 100%;
-  background: #2563eb;
+  background: var(--color-action-blue-dark);
   border-radius: 2px;
   transition: width 0.2s ease;
 }

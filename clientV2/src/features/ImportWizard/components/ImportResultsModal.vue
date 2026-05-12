@@ -3,6 +3,7 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { computed, watch } from 'vue'
 import { useImportProgressStore } from '../../../shared/stores/importProgressStore.js'
+import { importDialogPt, primaryBtnPt } from '../lib/importDialogPt.js'
 import { useImportWizard } from '../composables/useImportWizard.js'
 import ImportBatchWarningStep from './ImportBatchWarningStep2.vue'
 import ImportErrorsWarningsStep from './ImportErrorsWarningsStep3.vue'
@@ -46,7 +47,7 @@ const {
 
 const progressStore = useImportProgressStore()
 
-function _importInFlight() {
+function importInFlight() {
   return step.value === 'importProgress' && !executor.importIsDone.value
 }
 
@@ -54,7 +55,7 @@ watch(() => props.visible, (isOpen) => {
   if (isOpen) {
     // If the user opens the modal while an import is running,
     // dismiss the background notification (since they can see progress in the modal)
-    if (_importInFlight()) {
+    if (importInFlight()) {
       progressStore.dismiss()
     }
     else {
@@ -64,7 +65,7 @@ watch(() => props.visible, (isOpen) => {
   else {
     // If the user closes the modal while an import is running,
     // show the background notification
-    if (_importInFlight()) {
+    if (importInFlight()) {
       progressStore.startBackground({ totalCount: parser.parseResults.value.taskAssets?.size ?? 0 })
     }
   }
@@ -86,20 +87,6 @@ watch(
 
 function closeWizard() { visible.value = false }
 function doneImport() { visible.value = false }
-
-const dialogPt = {
-  root: { style: 'background-color: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 6px; color: var(--color-text-primary); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06); display: flex; flex-direction: column; overflow: hidden;' },
-  header: { style: 'background-color: var(--color-background-dark); color: var(--color-text-primary); border-top-left-radius: 6px; border-top-right-radius: 6px; padding: 1rem; border-bottom: 1px solid var(--color-background-light); flex-shrink: 0;' },
-  content: { style: 'background-color: var(--color-background-dark); color: var(--color-text-primary); padding: 1.5rem; flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;' },
-  footer: { style: 'flex-shrink: 0;' },
-  closeButton: { style: 'color: var(--color-text-dim);' },
-  title: { style: 'font-size: 1.5rem; font-weight: 600;' },
-}
-const primaryBtnPt = {
-  root: ({ context }) => ({
-    style: `border: 1px solid ${context.disabled ? 'var(--color-border-default)' : '#2563eb'}; padding: 0.5rem 1.5rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;`,
-  }),
-}
 </script>
 
 <template>
@@ -109,7 +96,7 @@ const primaryBtnPt = {
     modal
     :draggable="true"
     :style="{ height: '85vh', width: 'min(75vw, 1024px)' }"
-    :pt="dialogPt"
+    :pt="importDialogPt"
   >
     <div v-if="step === 'fileQueue'" class="step-container">
       <div v-if="collection.collectionError.value" class="error-message">
@@ -214,7 +201,7 @@ const primaryBtnPt = {
 .pp-label { font-weight: 600; margin: 0; }
 .pp-count { margin: 0; color: var(--color-text-dim); font-size: 0.9rem; }
 .pp-track { height: 8px; background: var(--color-border-default); border-radius: 4px; overflow: hidden; }
-.pp-fill { height: 100%; background: #2563eb; border-radius: 4px; transition: width 0.2s ease; }
+.pp-fill { height: 100%; background: var(--color-action-blue-dark); border-radius: 4px; transition: width 0.2s ease; }
 .pp-filename { margin: 0; color: var(--color-text-dim); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; }

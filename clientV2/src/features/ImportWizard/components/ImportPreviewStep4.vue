@@ -37,7 +37,7 @@ function onFooterAction(action) {
         resizable-columns
         striped-rows
         :virtual-scroller-options="{ itemSize: 46 }"
-        class="preview-table"
+        :pt="{ table: { style: 'table-layout: fixed; width: 100%' }, tableContainer: { style: 'overflow-x: hidden' } }"
       >
         <Column header="Asset" field="taskAsset.assetProps.name" style="width: 16%" sortable :sort-field="r => r.taskAsset.assetProps.name">
           <template #body="{ data }">
@@ -148,14 +148,5 @@ function onFooterAction(action) {
 
 .new-item {
   color: var(--color-primary-highlight);
-}
-
-.preview-table :deep(.p-datatable-table) {
-  table-layout: fixed;
-  width: 100%;
-}
-
-.preview-table :deep(.p-datatable-table-container) {
-  overflow-x: hidden;
 }
 </style>

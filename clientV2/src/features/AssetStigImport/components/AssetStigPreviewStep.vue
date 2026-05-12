@@ -79,7 +79,7 @@ function badgeFor(result) {
         resizable-columns
         striped-rows
         :virtual-scroller-options="{ itemSize: 38 }"
-        class="preview-table"
+        :pt="{ table: { style: 'table-layout: fixed; width: 100%' } }"
       >
         <Column field="ruleId" header="Rule" style="min-width: 130px" sortable />
         <Column field="title" header="Title" style="min-width: 220px" sortable>
@@ -207,11 +207,6 @@ function badgeFor(result) {
   overflow: hidden;
   flex: 1;
   min-height: 0;
-}
-
-.preview-table :deep(.p-datatable-table) {
-  table-layout: fixed;
-  width: 100%;
 }
 
 .preview-empty {

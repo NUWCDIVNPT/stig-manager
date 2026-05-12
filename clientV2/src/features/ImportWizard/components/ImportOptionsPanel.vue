@@ -65,7 +65,7 @@ const selectPt = {
 
 const checkboxPt = {
   box: ({ context }) => ({
-    style: `background-color: transparent; border-color: #71717a; ${context.checked ? 'background-color: #60a5fa; border-color: #60a5fa;' : ''}`,
+    style: `background-color: transparent; border-color: var(--color-border-hover); ${context.checked ? 'background-color: var(--color-primary-highlight); border-color: var(--color-primary-highlight);' : ''}`,
   }),
 }
 </script>

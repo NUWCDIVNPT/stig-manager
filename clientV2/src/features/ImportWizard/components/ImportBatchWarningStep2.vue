@@ -78,17 +78,17 @@ defineProps({
   gap: 1rem;
   align-items: flex-start;
   padding: 1.1rem 1.25rem;
-  background: linear-gradient(135deg, rgba(234,179,8,0.07) 0%, rgba(234,179,8,0.03) 100%);
-  border: 1px solid rgba(234,179,8,0.3);
-  border-left: 4px solid #eab308;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-warning-yellow) 7%, transparent) 0%, color-mix(in srgb, var(--color-warning-yellow) 3%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--color-warning-yellow) 30%, transparent);
+  border-left: 4px solid var(--color-warning-yellow);
   border-radius: 8px;
 }
 .bw-header__icon {
   font-size: 2.47rem;
-  color: #eab308;
+  color: var(--color-warning-yellow);
   flex-shrink: 0;
   margin-top: 0.15rem;
-  filter: drop-shadow(0 0 6px rgba(234,179,8,0.4));
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-warning-yellow) 40%, transparent));
 }
 .bw-header__text { display: flex; flex-direction: column; gap: 0.4rem; }
 .bw-header__headline {
@@ -99,7 +99,7 @@ defineProps({
   line-height: 1.3;
 }
 .bw-header__count {
-  color: #eab308;
+  color: var(--color-warning-yellow);
   font-size: 1.69rem;
   font-variant-numeric: tabular-nums;
 }
@@ -135,8 +135,8 @@ defineProps({
   border-radius: 8px;
 }
 .bw-card--accent {
-  background: linear-gradient(135deg, rgba(37,99,235,0.06) 0%, rgba(37,99,235,0.02) 100%);
-  border-color: rgba(37,99,235,0.3);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-action-blue-dark) 6%, transparent) 0%, color-mix(in srgb, var(--color-action-blue-dark) 2%, transparent) 100%);
+  border-color: color-mix(in srgb, var(--color-action-blue-dark) 30%, transparent);
 }
 .bw-card__icon {
   font-size: 1.56rem;
@@ -144,7 +144,7 @@ defineProps({
   flex-shrink: 0;
   margin-top: 0.1rem;
 }
-.bw-card__icon--accent { color: #3b82f6; }
+.bw-card__icon--accent { color: var(--color-action-blue); }
 .bw-card__title {
   margin: 0 0 0.35rem;
   font-weight: 600;
@@ -164,19 +164,19 @@ defineProps({
   align-items: center;
   gap: 0.35rem;
   font-size: 1.04rem;
-  color: #3b82f6;
+  color: var(--color-action-blue);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.15s;
 }
-.bw-watcher-link:hover { color: #60a5fa; text-decoration: underline; }
+.bw-watcher-link:hover { color: var(--color-primary-highlight); text-decoration: underline; }
 .bw-watcher-badge {
   display: inline-block;
   font-size: 0.91rem;
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
-  background: rgba(37,99,235,0.12);
-  color: #3b82f6;
+  background: color-mix(in srgb, var(--color-action-blue-dark) 12%, transparent);
+  color: var(--color-action-blue);
   font-weight: 600;
   letter-spacing: 0.02em;
   width: fit-content;
