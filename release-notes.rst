@@ -1,3 +1,13 @@
+1.6.10
+-------
+
+Changes:
+
+  - (API) Configured Express to use the built-in Node query parser to correctly handle large param arrays previously affected by the ``qs`` parameter limit
+  - (Tests) Improved timeout handling and logging across state tests and OIDC mock utilities
+  - (Dependencies) Various security and maintenance updates
+  - (Dependencies) Update ``@nuwcdivnpt/stig-manager-client-modules`` to v1.6.8
+
 1.6.9
 -------
 
