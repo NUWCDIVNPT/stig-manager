@@ -11,6 +11,7 @@ import Cora from './Cora.vue'
 import ExportMetricsModal from './ExportMetricsModal.vue'
 import FindingsStats from './FindingsStats.vue'
 import InventoryStats from './InventoryStats.vue'
+import MetricsFilter from './MetricsFilter.vue'
 import Progress from './Progress.vue'
 import ReviewAgesStats from './ReviewAgesStats.vue'
 
@@ -44,6 +45,8 @@ const fetchMetrics = () => {
   )
 }
 
+const emit = defineEmits(['update:selectedLabelIds'])
+
 const { state: metrics, isLoading, error: errorMessage, execute: loadMetrics } = useAsyncState(
   fetchMetrics,
   { immediate: false },
@@ -67,6 +70,14 @@ const showExportModal = ref(false)
       {{ errorMessage }}
     </div>
     <div v-else class="metrics-container" :class="{ 'metrics-container--vertical': vertical }">
+      <div v-if="vertical" class="metrics-filter-row">
+        <MetricsFilter
+          :model-value="selectedLabelIds"
+          type="label"
+          :collection-id="collectionId"
+          @update:model-value="emit('update:selectedLabelIds', $event)"
+        />
+      </div>
       <Progress :stats="progressStats" />
       <Cora :cora-data="coraData" />
       <div class="stats-column">
@@ -103,5 +114,17 @@ const showExportModal = ref(false)
 
 .metrics-container--vertical .stats-column {
   max-width: none;
+}
+
+.metrics-filter-row {
+  width: 100%;
+}
+
+.metrics-filter-row :deep(.metrics-filter-container) {
+  width: 100%;
+}
+
+.metrics-filter-row :deep(.metrics-multiselect) {
+  width: 100%;
 }
 </style>
