@@ -239,7 +239,7 @@ async function setupOidcWorker() {
     logoutAvailable: true,
     token: null,
     tokenParsed: null,
-    worker: new SharedWorker(`${import.meta.env.BASE_URL}workers/oidc-worker.js`, { name: 'stigman-oidc-worker', type: 'module' }),
+    worker: new SharedWorker(new URL('../js/workers/oidc-worker.js', window.location.href).href, { name: 'stigman-oidc-worker', type: 'module' }),
   }
 
   OW = STIGMAN.oidcWorker

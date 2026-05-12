@@ -43,6 +43,7 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
       return
     }
     OW.channelName = response.channelName
+    OW.logoutAvailable = response.logoutAvailable ?? true
     const bc = new BroadcastChannel(window.oidcWorker.channelName)
     bc.onmessage = (event) => {
       if (event.data.type === 'accessToken') {
@@ -63,7 +64,7 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
       return handleRedirectAndParameters(redirectUri, paramStr)
     }
     else {
-      return handleNoParameters()
+      return handleNoParameters(redirectUri)
     }
   
   }
@@ -91,7 +92,9 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
       return response
     }
     const oidcConfiguration = await getOidcMetadata()
-    return OW.sendWorkerRequest({ request: 'initialize', redirectUri, oidcConfiguration, env: STIGMAN.Env.oauth })
+    const url = new URL(window.location.href)
+    const reauthUri = `${url.origin}${url.pathname.replace(/index\.html$/, '')}reauth.html`
+    return OW.sendWorkerRequest({ request: 'initialize', redirectUri, oidcConfiguration, env: STIGMAN.Env.oauth, reauthUri })
   } 
 
   function extractParamString(url) {
@@ -109,17 +112,17 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
     return params
   }
 
-  async function handleNoParameters() {
-    const response = await OW.sendWorkerRequest({ request: 'getAccessToken' })
+  async function handleNoParameters(redirectUri) {
+    const response = await OW.sendWorkerRequest({ request: 'getAccessToken', redirectUri })
     if (response.accessToken) {
       OW.token = response.accessToken
       OW.tokenParsed = response.accessTokenPayload
       // appendStatus(`getAccessToken`)
       loadResources()
-    } else if (response.redirect) {
+    } else if (response.redirectOidc) {
       sessionStorage.setItem('codeVerifier', response.codeVerifier)
       sessionStorage.setItem('oidcState', response.state)
-      window.location.href = response.redirect
+      window.location.href = response.redirectOidc
     }
   }
 
