@@ -1,7 +1,7 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import bot2 from '../../../assets/bot2.svg'
 import lineHeightDown from '../../../assets/line-height-down.svg'
@@ -11,8 +11,10 @@ import LabelsRow from '../../../components/columns/LabelsRow.vue'
 import EngineIconCell from '../../../components/common/EngineIconCell.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { durationToNow } from '../../../shared/lib.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
+import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 
 const props = defineProps({
   rows: { type: Array, default: () => [] },
@@ -35,9 +37,27 @@ const router = useRouter()
 const emit = defineEmits(['retry'])
 
 const dataTableRef = ref(null)
-const expandedRows = ref({})
+const showDetails = ref(false)
 
-const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity('findings-individual', 1, 6, 15)
+// Row geometry — derived from CSS, not eyeballed:
+//   sizeMultiplier = 15px ≈ `.cell-text` font-size 1.05rem × line-height 1.3 at the 11px root.
+//                    Each density step adds exactly one rendered line of Detail/Comment.
+//   baseItemSize   = 36px ≈ cell padding (~6px) + 2 baseline lines of detail.
+// With effectiveLineClamp = lineClamp + 2 (below), the floor row at lineClamp=1
+// is 3 lines × 15 + 6 = 51px — just enough to fit the asset cell with shield
+// (~24px) + labels row (~14px) + padding. The asset cell is the *floor*;
+// Detail/Comment is the only growth driver beyond that.
+const { lineClamp, itemSize, increaseRowHeight, decreaseRowHeight } = useGridDensity('findings-individual', 1, 36, 15)
+
+// Bias the user-facing lineClamp by +2 so even the most compact density shows
+// enough Detail/Comment lines to fill the asset-cell-with-labels floor. The
+// composable's lineClamp drives row height; this drives `-webkit-line-clamp`
+// on the clamped cells. Keeping them locked together prevents drift.
+const effectiveLineClamp = computed(() => lineClamp.value + 2)
+
+function toggleShowDetails() {
+  showDetails.value = !showDetails.value
+}
 
 // Decorate rows with labels objects for LabelsRow (review payload has assetLabelIds only),
 // precompute the engine display kind for the icon cell, and build a composite row key.
@@ -56,34 +76,6 @@ const decoratedRows = computed(() => {
   })
 })
 
-// Reset expanded state when the user picks a different aggregated finding —
-// otherwise expanded rows leak across selections.
-watch(() => props.selectedAggregated, () => {
-  expandedRows.value = {}
-})
-
-const allExpanded = computed(() => {
-  const rows = decoratedRows.value
-  if (rows.length === 0) {
-    return false
-  }
-  const expanded = expandedRows.value
-  return rows.every(r => expanded[r._rowKey])
-})
-
-function toggleExpandAll() {
-  if (allExpanded.value) {
-    expandedRows.value = {}
-  }
-  else {
-    const next = {}
-    for (const r of decoratedRows.value) {
-      next[r._rowKey] = true
-    }
-    expandedRows.value = next
-  }
-}
-
 function onFooterAction(key) {
   if (key === 'export') {
     dataTableRef.value?.exportCSV()
@@ -91,13 +83,6 @@ function onFooterAction(key) {
   else if (key === 'refresh') {
     emit('retry')
   }
-}
-
-function fmtTs(ts) {
-  if (!ts) {
-    return ''
-  }
-  return ts.replace('T', ' ').replace(/\.\d+/, '')
 }
 
 function statusLabelOf(row) {
@@ -138,10 +123,26 @@ const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
   // No minWidth: 100% — that forces the table to expand past the container
   // when fixed columns sum past it, producing a horizontal scrollbar. width:
-  // 100% sizes the table to the container; the Asset column flexes to absorb
-  // the remainder.
+  // 100% sizes the table to the container; Detail / Comment (when shown)
+  // flex to absorb the remainder.
   table: { style: { tableLayout: 'fixed', width: '100%' } },
+  // Pin every row to a fixed height driven by `--item-size` so virtual
+  // scrolling's position math (n * itemSize) stays correct. Overflow hidden
+  // clips wrapping labels / long detail text that exceed the budgeted height.
+  bodyRow: { style: { height: 'var(--item-size)', overflow: 'hidden' } },
   footer: { style: { padding: '0', border: 'none' } },
+}
+
+// Standard padding for the new Detail / Comment cells (flex columns).
+const flexCellPt = {
+  bodyCell: {
+    style: {
+      padding: '0.15rem 0.5rem',
+      verticalAlign: 'top',
+      overflow: 'hidden',
+    },
+  },
+  headerCell: { style: { padding: '0.4rem 0.5rem' } },
 }
 
 // Asset column flexes; truncate the asset name with ellipsis if the cell
@@ -181,17 +182,10 @@ const engineColumnPt = {
   bodyCell: { style: { padding: '0.15rem 0', textAlign: 'center', verticalAlign: 'top' } },
   headerCell: { style: { padding: '0.4rem 0', textAlign: 'center' } },
 }
-
-// Slim down the expander column: tight padding on the cells and a smaller toggle button.
-const expanderColumnPt = {
-  headerCell: { style: { padding: '0', textAlign: 'center' } },
-  bodyCell: { style: { padding: '0', textAlign: 'center' } },
-  rowToggleButton: { style: { width: '1.25rem', height: '1.5rem', padding: '0' } },
-}
 </script>
 
 <template>
-  <div class="ind-grid-panel">
+  <div class="ind-grid-panel" :style="{ '--line-clamp': effectiveLineClamp, '--item-size': `${itemSize}px` }">
     <header class="ind-grid-panel__header">
       <h3 class="ind-grid-panel__title">
         Individual Findings
@@ -203,12 +197,13 @@ const expanderColumnPt = {
         <button
           type="button"
           class="ind-grid-panel__icon-btn ind-grid-panel__icon-btn--text"
-          :title="allExpanded ? 'Collapse all rows' : 'Expand all rows'"
+          :class="{ 'ind-grid-panel__icon-btn--active': showDetails }"
+          :title="showDetails ? 'Hide reviewer, detail, and comment columns' : 'Show reviewer, detail, and comment columns'"
           :disabled="!selectedAggregated || decoratedRows.length === 0"
-          @click="toggleExpandAll"
+          @click="toggleShowDetails"
         >
-          <i :class="allExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" />
-          <span>{{ allExpanded ? 'Collapse all' : 'Expand all' }}</span>
+          <i :class="showDetails ? 'pi pi-eye-slash' : 'pi pi-eye'" />
+          <span>{{ showDetails ? 'Hide details' : 'Show details' }}</span>
         </button>
         <div class="ind-grid-panel__density">
           <span class="ind-grid-panel__density-label">Density</span>
@@ -249,18 +244,16 @@ const expanderColumnPt = {
     <DataTable
       v-else
       ref="dataTableRef"
-      v-model:expanded-rows="expandedRows"
       :value="decoratedRows"
       :loading="isLoading"
       data-key="_rowKey"
       scrollable
       scroll-height="flex"
+      :virtual-scroller-options="{ itemSize }"
       striped-rows
       class="ind-grid-panel__table"
-      :style="{ '--line-clamp': lineClamp }"
       :pt="dataTablePt"
     >
-      <Column expander :style="{ width: '1.5rem', minWidth: '1.5rem' }" :pt="expanderColumnPt" />
       <Column field="assetName" header="Asset" sortable :style="{ width: '14rem', minWidth: '10rem' }" :pt="assetCellPt">
         <template #body="{ data }">
           <div class="asset-cell">
@@ -281,14 +274,12 @@ const expanderColumnPt = {
           </div>
         </template>
       </Column>
-      <Column field="ruleId" header="Rule" sortable :style="{ width: '11rem', minWidth: '10rem' }" :pt="ruleCellPt">
-        <template #body="{ data }">
-          <span class="cell-text">{{ data.ruleId }}</span>
+      <Column field="ts" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="engineColumnPt">
+        <template #header>
+          <i class="pi pi-clock" title="Last action" />
         </template>
-      </Column>
-      <Column field="ts" header="Last changed" sortable :style="{ width: '9rem', minWidth: '9rem' }" :pt="ruleCellPt">
         <template #body="{ data }">
-          <span class="cell-text cell-text--dim">{{ fmtTs(data.ts) }}</span>
+          <span class="cell-text cell-text--dim" :title="formatReviewDate(data.ts)">{{ durationToNow(data.ts) }}</span>
         </template>
       </Column>
       <Column header="STIGs" :style="{ width: '10rem', minWidth: '8rem' }" :pt="stigsCellPt">
@@ -313,19 +304,21 @@ const expanderColumnPt = {
           <StatusBadge :status="statusLabelOf(data)" />
         </template>
       </Column>
-
-      <template #expansion="{ data }">
-        <div class="ind-grid-expansion">
-          <dl class="kv">
-            <dt>Reviewer</dt>
-            <dd>{{ data.username || '—' }}</dd>
-            <dt>Detail</dt>
-            <dd>{{ data.detail || '—' }}</dd>
-            <dt>Comment</dt>
-            <dd>{{ data.comment || '—' }}</dd>
-          </dl>
-        </div>
-      </template>
+      <Column v-if="showDetails" field="username" header="Reviewer" sortable :style="{ width: '8rem', minWidth: '7rem' }" :pt="ruleCellPt">
+        <template #body="{ data }">
+          <span class="cell-text">{{ data.username || '—' }}</span>
+        </template>
+      </Column>
+      <Column v-if="showDetails" field="detail" header="Detail" :style="{ minWidth: '12rem' }" :pt="flexCellPt">
+        <template #body="{ data }">
+          <span class="cell-text cell-text--clamped" :title="data.detail">{{ data.detail || '—' }}</span>
+        </template>
+      </Column>
+      <Column v-if="showDetails" field="comment" header="Comment" :style="{ minWidth: '12rem' }" :pt="flexCellPt">
+        <template #body="{ data }">
+          <span class="cell-text cell-text--clamped" :title="data.comment">{{ data.comment || '—' }}</span>
+        </template>
+      </Column>
 
       <template #footer>
         <StatusFooter
@@ -451,6 +444,13 @@ const expanderColumnPt = {
   cursor: default;
 }
 
+.ind-grid-panel__icon-btn--active {
+  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-background-light));
+  border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+  color: var(--color-text-bright);
+  opacity: 1;
+}
+
 .ind-grid-panel__icon-btn img {
   width: 14px;
   height: 14px;
@@ -504,6 +504,19 @@ const expanderColumnPt = {
   font-size: 1rem;
 }
 
+.cell-text--clamped {
+  display: -webkit-box;
+  line-clamp: var(--line-clamp, 1);
+  -webkit-line-clamp: var(--line-clamp, 1);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .asset-cell {
   display: flex;
   flex-direction: column;
@@ -524,13 +537,12 @@ const expanderColumnPt = {
   color: var(--color-text-bright);
   font-weight: 500;
   font-size: 1.05rem;
-  display: -webkit-box;
-  line-clamp: var(--line-clamp, 1);
-  -webkit-line-clamp: var(--line-clamp, 1);
-  -webkit-box-orient: vertical;
+  /* Pin to 1 line so the asset cell is constant-height regardless of density.
+     Detail / Comment are the only growth driver — keeps the linear itemSize
+     math honest. Long names truncate; full name in the title attribute. */
   overflow: hidden;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .shield-action {
@@ -620,34 +632,6 @@ const expanderColumnPt = {
   color: var(--color-override-text);
   background: var(--color-override-bg);
   border-color: var(--color-override-border);
-}
-
-.ind-grid-expansion {
-  padding: 0.6rem 1rem;
-  background: var(--color-background-dark);
-  border-top: 1px solid var(--color-border-light);
-}
-
-.kv {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 0.2rem 0.75rem;
-  margin: 0;
-  font-size: 1rem;
-}
-
-.kv dt {
-  font-weight: 600;
-  color: var(--color-text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 0.85rem;
-  align-self: center;
-}
-
-.kv dd {
-  margin: 0;
-  color: var(--color-text-primary);
 }
 
 .status-cluster {
