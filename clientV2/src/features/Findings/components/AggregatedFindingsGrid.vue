@@ -288,7 +288,7 @@ const flexCellPt = {
             <span class="cell-text cell-text--clamped" :title="data.definition">{{ data.definition }}</span>
           </template>
         </Column>
-        <Column field="assetCount" header="Assets" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="cellPt">
+        <Column field="assetCount" header="Assets" sortable :style="{ width: '7rem', minWidth: '6.5rem' }" :pt="cellPt">
           <template #body="{ data }">
             <span class="cell-asset-count">{{ data.assetCount }}</span>
           </template>
