@@ -60,8 +60,8 @@ module.exports.queryMetrics = async function ({
       collectionLabelTableAlias: 'clPred'
     })
     const innerQueryRaw = `select distinct assetId from enabled_asset left join collection_label_asset_map using (assetId)
-    left join collection_label clPred using(clId) where a.collectionId = ${collectionId} and ${statement}`
-    const innerQueryFormatted = dbUtils.pool.format(innerQueryRaw, binds )
+    left join collection_label clPred using(clId) where a.collectionId = ? and ${statement}`
+    const innerQueryFormatted = dbUtils.pool.format(innerQueryRaw, [collectionId, ...binds])
     predicates.statements.push(`a.assetId IN (${innerQueryFormatted})`)
   }
   if (filter.assetIds) {

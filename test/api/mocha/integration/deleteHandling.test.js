@@ -23,7 +23,7 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
         let deletedCollection = null
         it('Create a Collection in order to delete it', async () => {
             
-            const res = await utils.executeRequest(`${config.baseUrl}/collections?elevate=true&projection=grants&projection=labels`, 'POST', user.token, {
+            const res = await utils.executeRequest(`${config.baseUrl}/collections?projection=grants&projection=labels`, 'POST', user.token, {
                 "name": "TEST_"+ utils.getUUIDSubString(),
                 "description": "Collection TEST description",
                 "settings": {
