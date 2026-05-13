@@ -2,6 +2,7 @@
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { computed, ref, toRef, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { fetchCollectionLabels } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCollectionStigSummary } from '../composables/useCollectionStigSummary.js'
@@ -20,11 +21,39 @@ const props = defineProps({
 const collectionId = toRef(props, 'collectionId')
 const labelIds = toRef(props, 'selectedLabelIds')
 
-// null === "All Collection STIGs"
-const selectedBenchmarkId = ref(null)
-const aggregator = ref('groupId')
+const route = useRoute()
+const router = useRouter()
+
+// Restore initial state from URL query params so navigating back from Asset
+// Review (or refreshing the page) preserves the last selection. null === "All
+// Collection STIGs".
+const VALID_AGGREGATORS = new Set(['groupId', 'ruleId', 'cci'])
+const initialAggregator = VALID_AGGREGATORS.has(route.query.agg) ? route.query.agg : 'groupId'
+const initialBenchmarkId = typeof route.query.stig === 'string' && route.query.stig ? route.query.stig : null
+
+const selectedBenchmarkId = ref(initialBenchmarkId)
+const aggregator = ref(initialAggregator)
 const selectedFinding = ref(null)
 const isAllStigsMode = computed(() => selectedBenchmarkId.value === null)
+
+// Mirror the user's selection into the URL (replace, not push, so browser
+// history isn't polluted with every click).
+watch([selectedBenchmarkId, aggregator], ([stig, agg]) => {
+  const next = { ...route.query }
+  if (stig) {
+    next.stig = stig
+  }
+  else {
+    delete next.stig
+  }
+  if (agg && agg !== 'groupId') {
+    next.agg = agg
+  }
+  else {
+    delete next.agg
+  }
+  router.replace({ query: next })
+})
 
 // Left pane: per-STIG metrics + collection totals (respects label filter natively).
 const {
@@ -139,6 +168,8 @@ function onSelectFinding(row) {
           :selected-aggregated="selectedFinding"
           :status-counts="statusCounts"
           :label-map="labelMap"
+          :collection-id="collectionId"
+          :selected-benchmark-id="selectedBenchmarkId"
           @retry="retryReviews"
         />
       </SplitterPanel>

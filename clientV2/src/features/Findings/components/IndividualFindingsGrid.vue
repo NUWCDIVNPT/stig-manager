@@ -2,9 +2,11 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import bot2 from '../../../assets/bot2.svg'
 import lineHeightDown from '../../../assets/line-height-down.svg'
 import lineHeightUp from '../../../assets/line-height-up.svg'
+import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
 import EngineIconCell from '../../../components/common/EngineIconCell.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
@@ -23,7 +25,12 @@ const props = defineProps({
   },
   // Map<labelId, { labelId, name, color }> — provided by orchestrator from /collections/{id}/labels.
   labelMap: { type: Map, default: () => new Map() },
+  collectionId: { type: [String, Number, null], default: null },
+  // Used to disambiguate when a row's stigs[] has more than one entry (cci + all-stigs mode).
+  selectedBenchmarkId: { type: [String, null], default: null },
 })
+
+const router = useRouter()
 
 const emit = defineEmits(['retry'])
 
@@ -95,6 +102,36 @@ function fmtTs(ts) {
 
 function statusLabelOf(row) {
   return (row.status?.label ?? row.status ?? '').toLowerCase()
+}
+
+// Prefer the STIG that's currently scoped in the parent; otherwise the first one
+// the row reports. Multi-entry rows happen under cci aggregator + "All STIGs".
+function pickStigForRow(row) {
+  const stigs = row.stigs ?? []
+  if (props.selectedBenchmarkId) {
+    const match = stigs.find(s => s.benchmarkId === props.selectedBenchmarkId)
+    if (match) {
+      return match
+    }
+  }
+  return stigs[0] ?? null
+}
+
+function openAssetReview(row) {
+  const stig = pickStigForRow(row)
+  if (!stig?.benchmarkId || !stig?.revisionStr || !props.collectionId) {
+    return
+  }
+  router.push({
+    name: 'collection-asset-review',
+    params: {
+      collectionId: props.collectionId,
+      assetId: row.assetId,
+      benchmarkId: stig.benchmarkId,
+      revisionStr: stig.revisionStr,
+    },
+    query: { ruleId: row.ruleId },
+  })
 }
 
 const dataTablePt = {
@@ -227,8 +264,18 @@ const expanderColumnPt = {
       <Column field="assetName" header="Asset" sortable :style="{ width: '14rem', minWidth: '10rem' }" :pt="assetCellPt">
         <template #body="{ data }">
           <div class="asset-cell">
-            <div class="asset-cell__name" :title="data.assetName">
-              {{ data.assetName }}
+            <div class="asset-cell__name-row">
+              <div class="asset-cell__name" :title="data.assetName">
+                {{ data.assetName }}
+              </div>
+              <button
+                type="button"
+                class="shield-action"
+                title="Open Asset Review"
+                @click.stop="openAssetReview(data)"
+              >
+                <img :src="shieldGreenCheck" width="14" height="14" alt="Review">
+              </button>
             </div>
             <LabelsRow v-if="data.labels?.length" :labels="data.labels" compact />
           </div>
@@ -464,7 +511,16 @@ const expanderColumnPt = {
   min-width: 0;
 }
 
+.asset-cell__name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
 .asset-cell__name {
+  flex: 1;
+  min-width: 0;
   color: var(--color-text-bright);
   font-weight: 500;
   font-size: 1.05rem;
@@ -475,6 +531,31 @@ const expanderColumnPt = {
   overflow: hidden;
   white-space: normal;
   overflow-wrap: anywhere;
+}
+
+.shield-action {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.15s, transform 0.15s, background-color 0.15s;
+}
+
+.shield-action:hover {
+  opacity: 1;
+  transform: scale(1.2);
+  background-color: var(--color-button-hover-bg);
+}
+
+.shield-action img {
+  pointer-events: none;
 }
 
 .stig-list {
