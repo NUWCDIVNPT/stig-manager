@@ -11,7 +11,6 @@ import { useFindingReviews } from '../composables/useFindingReviews.js'
 import { useFindingsColumns } from '../composables/useFindingsColumns.js'
 import AggregatedFindingsGrid from './AggregatedFindingsGrid.vue'
 import IndividualFindingsGrid from './IndividualFindingsGrid.vue'
-import StigSelectorPanel from './StigSelectorPanel.vue'
 
 const props = defineProps({
   collectionId: { type: [String, Number], required: true },
@@ -132,19 +131,7 @@ function onSelectFinding(row) {
         root: { style: 'border: none; background: transparent; height: 100%' },
       }"
     >
-      <SplitterPanel :size="17" :min-size="13">
-        <StigSelectorPanel
-          :stigs="stigs ?? []"
-          :totals="totals"
-          :selected-benchmark-id="selectedBenchmarkId"
-          :is-loading="isStigsLoading"
-          :error="stigsError"
-          @select-stig="onSelectStig"
-          @retry="retryStigs"
-        />
-      </SplitterPanel>
-
-      <SplitterPanel :size="40" :min-size="26">
+      <SplitterPanel :size="48" :min-size="32">
         <AggregatedFindingsGrid
           :rows="findings ?? []"
           :visible-columns="visibleColumns"
@@ -154,13 +141,19 @@ function onSelectFinding(row) {
           :aggregator="aggregator"
           :selected-row="selectedFinding"
           :total-occurrences="totalOccurrences"
+          :stigs="stigs ?? []"
+          :stig-totals="totals"
+          :is-stigs-loading="isStigsLoading"
+          :stigs-error="stigsError"
           @update:aggregator="onUpdateAggregator"
           @select-finding="onSelectFinding"
+          @select-stig="onSelectStig"
           @retry="retryFindings"
+          @retry-stigs="retryStigs"
         />
       </SplitterPanel>
 
-      <SplitterPanel :size="43" :min-size="28">
+      <SplitterPanel :size="52" :min-size="36">
         <IndividualFindingsGrid
           :rows="reviews ?? []"
           :is-loading="isReviewsLoading"

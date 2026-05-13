@@ -1,14 +1,16 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
+import Popover from 'primevue/popover'
 import Select from 'primevue/select'
-import { ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import lineHeightDown from '../../../assets/line-height-down.svg'
 import lineHeightUp from '../../../assets/line-height-up.svg'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
+import StigSelectorPanel from './StigSelectorPanel.vue'
 
 const props = defineProps({
   rows: { type: Array, default: () => [] },
@@ -19,11 +21,61 @@ const props = defineProps({
   aggregator: { type: String, default: 'groupId' },
   selectedRow: { type: Object, default: null },
   totalOccurrences: { type: Number, default: 0 },
+  stigs: { type: Array, default: () => [] },
+  stigTotals: {
+    type: Object,
+    default: () => ({ cat1: 0, cat2: 0, cat3: 0, findings: 0 }),
+  },
+  isStigsLoading: { type: Boolean, default: false },
+  stigsError: { type: [Object, null], default: null },
 })
 
-const emit = defineEmits(['update:aggregator', 'select-finding', 'retry'])
+const emit = defineEmits(['update:aggregator', 'select-finding', 'retry', 'select-stig', 'retry-stigs'])
 
 const dataTableRef = ref(null)
+const stigPopover = ref(null)
+const stigSelectorRef = ref(null)
+
+const stigPopoverPt = {
+  root: {
+    style: [
+      'min-width: 28rem',
+      'max-width: 36rem',
+      'border: 1px solid var(--color-border-default)',
+      'box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.55)',
+    ].join('; '),
+  },
+  content: { style: 'padding: 0' },
+}
+
+const selectedStigTotals = computed(() => {
+  if (!props.selectedStigId) {
+    return null
+  }
+  const stig = (props.stigs ?? []).find(s => s.benchmarkId === props.selectedStigId)
+  if (!stig) {
+    return null
+  }
+  const f = stig.metrics?.findings ?? {}
+  return {
+    cat1: f.high ?? 0,
+    cat2: f.medium ?? 0,
+    cat3: f.low ?? 0,
+  }
+})
+
+function toggleStigPopover(event) {
+  stigPopover.value?.toggle(event)
+}
+
+function onPopoverShow() {
+  nextTick(() => stigSelectorRef.value?.focusFilter())
+}
+
+function onPopoverSelectStig(benchmarkId) {
+  emit('select-stig', benchmarkId)
+  stigPopover.value?.hide()
+}
 
 const aggregatorOptions = [
   { label: 'Group', value: 'groupId' },
@@ -84,13 +136,64 @@ const flexCellPt = {
       <h3 class="agg-grid-panel__title">
         Aggregated Findings
       </h3>
-      <span v-if="selectedStigId" class="agg-grid-panel__scope">
-        in {{ selectedStigId }}
-      </span>
-      <span v-else class="agg-grid-panel__scope agg-grid-panel__scope--all">
-        across all collection STIGs
-      </span>
+      <button
+        type="button"
+        class="agg-grid-panel__scope-trigger"
+        :class="{ 'agg-grid-panel__scope-trigger--all': !selectedStigId }"
+        :aria-haspopup="true"
+        title="Change STIG scope"
+        @click="toggleStigPopover"
+      >
+        <span v-if="selectedStigId" class="agg-grid-panel__scope-text">in {{ selectedStigId }}</span>
+        <span v-else class="agg-grid-panel__scope-text">across all collection STIGs</span>
+        <span v-if="selectedStigTotals" class="agg-grid-panel__scope-totals">
+          <span
+            class="scope-cat-pill scope-cat-pill--1"
+            :class="{ 'scope-cat-pill--zero': selectedStigTotals.cat1 === 0 }"
+          >{{ selectedStigTotals.cat1 }}</span>
+          <span
+            class="scope-cat-pill scope-cat-pill--2"
+            :class="{ 'scope-cat-pill--zero': selectedStigTotals.cat2 === 0 }"
+          >{{ selectedStigTotals.cat2 }}</span>
+          <span
+            class="scope-cat-pill scope-cat-pill--3"
+            :class="{ 'scope-cat-pill--zero': selectedStigTotals.cat3 === 0 }"
+          >{{ selectedStigTotals.cat3 }}</span>
+        </span>
+        <i class="pi pi-chevron-down agg-grid-panel__scope-caret" />
+      </button>
+
+      <div class="agg-grid-panel__totals">
+        <span class="agg-grid-panel__totals-label">Overall</span>
+        <span class="header-cat-pill header-cat-pill--1" :title="`${stigTotals.cat1} CAT 1 findings across the collection`">
+          <span class="header-cat-pill__label">CAT 1</span>
+          <span class="header-cat-pill__value">{{ stigTotals.cat1 }}</span>
+        </span>
+        <span class="header-cat-pill header-cat-pill--2" :title="`${stigTotals.cat2} CAT 2 findings across the collection`">
+          <span class="header-cat-pill__label">CAT 2</span>
+          <span class="header-cat-pill__value">{{ stigTotals.cat2 }}</span>
+        </span>
+        <span class="header-cat-pill header-cat-pill--3" :title="`${stigTotals.cat3} CAT 3 findings across the collection`">
+          <span class="header-cat-pill__label">CAT 3</span>
+          <span class="header-cat-pill__value">{{ stigTotals.cat3 }}</span>
+        </span>
+      </div>
     </header>
+
+    <Popover ref="stigPopover" :pt="stigPopoverPt" @show="onPopoverShow">
+      <div class="stig-dropdown-content">
+        <StigSelectorPanel
+          ref="stigSelectorRef"
+          :stigs="stigs"
+          :totals="stigTotals"
+          :selected-benchmark-id="selectedStigId"
+          :is-loading="isStigsLoading"
+          :error="stigsError"
+          @select-stig="onPopoverSelectStig"
+          @retry="emit('retry-stigs')"
+        />
+      </div>
+    </Popover>
 
     <div v-if="error" class="agg-grid-panel__error">
       <p>Couldn't load findings.</p>
@@ -244,12 +347,94 @@ const flexCellPt = {
 
 .agg-grid-panel__header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.5rem;
-  padding: 0.4rem 0.6rem;
+  padding: 0.5rem 0.6rem;
   background: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-default);
-  min-height: 28px;
+  min-height: 44px;
+}
+
+.agg-grid-panel__scope-totals {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-left: 0.55rem;
+  margin-left: 0.1rem;
+  border-left: 1px solid color-mix(in srgb, var(--color-border-default) 80%, transparent);
+}
+
+.scope-cat-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-dark);
+  border: 1px solid transparent;
+}
+
+.scope-cat-pill--1 { background: var(--color-cat1); }
+.scope-cat-pill--2 { background: var(--color-cat2); }
+.scope-cat-pill--3 { background: var(--color-cat3); }
+
+.scope-cat-pill--zero {
+  background: transparent;
+  color: var(--color-text-dim);
+  border-color: color-mix(in srgb, var(--color-border-default) 70%, transparent);
+  opacity: 0.6;
+}
+
+.agg-grid-panel__totals {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+
+.agg-grid-panel__totals-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-dim);
+  margin-right: 0.15rem;
+}
+
+.header-cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid;
+  background: color-mix(in srgb, var(--color-background-darkest) 60%, transparent);
+  line-height: 1.2;
+}
+
+.header-cat-pill--1 { border-color: var(--color-cat1); }
+.header-cat-pill--2 { border-color: var(--color-cat2); }
+.header-cat-pill--3 { border-color: var(--color-cat3); }
+
+.header-cat-pill__label {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.header-cat-pill--1 .header-cat-pill__label { color: var(--color-cat1); }
+.header-cat-pill--2 .header-cat-pill__label { color: var(--color-cat2); }
+.header-cat-pill--3 .header-cat-pill__label { color: var(--color-cat3); }
+
+.header-cat-pill__value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-bright);
 }
 
 .agg-grid-panel__title {
@@ -260,13 +445,58 @@ const flexCellPt = {
   letter-spacing: 0.02em;
 }
 
-.agg-grid-panel__scope {
+.agg-grid-panel__scope-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
   font-size: 1.1rem;
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-background-darkest) 65%, var(--color-background-light));
+  border: 1px solid var(--color-border-default);
+  border-radius: 5px;
+  padding: 0.25rem 0.55rem 0.25rem 0.7rem;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1.2;
+  max-width: 100%;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+
+.agg-grid-panel__scope-trigger:hover {
+  background: var(--color-background-light);
+  border-color: var(--color-primary-highlight);
+  color: var(--color-text-bright);
+}
+
+.agg-grid-panel__scope-trigger:focus-visible {
+  outline: none;
+  border-color: var(--color-primary-highlight);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-highlight) 35%, transparent);
+}
+
+.agg-grid-panel__scope-trigger--all .agg-grid-panel__scope-text {
+  font-style: italic;
   color: var(--color-text-dim);
 }
 
-.agg-grid-panel__scope--all {
-  font-style: italic;
+.agg-grid-panel__scope-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agg-grid-panel__scope-caret {
+  font-size: 0.8em;
+  opacity: 0.7;
+  flex-shrink: 0;
+  margin-left: 0.1rem;
+}
+
+.stig-dropdown-content {
+  width: 32rem;
+  max-height: 64rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .agg-grid-panel__error {

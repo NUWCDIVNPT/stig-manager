@@ -1,6 +1,5 @@
 <script setup>
-import { computed } from 'vue'
-import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   stigs: { type: Array, default: () => [] },
@@ -15,13 +14,17 @@ const props = defineProps({
 
 const emit = defineEmits(['select-stig', 'retry'])
 
-function onFooterAction(key) {
-  if (key === 'refresh') {
-    emit('retry')
-  }
+const ALL_STIGS_ID = '__all__'
+
+const filterText = ref('')
+const filterInput = ref(null)
+
+function focusFilter() {
+  filterInput.value?.focus()
+  filterInput.value?.select()
 }
 
-const ALL_STIGS_ID = '__all__'
+defineExpose({ focusFilter })
 
 // Merge metrics.findings.{high,medium,low} → {cat1,cat2,cat3} and sort by risk.
 const sortedRows = computed(() => {
@@ -44,6 +47,19 @@ const sortedRows = computed(() => {
   return list
 })
 
+const filteredRows = computed(() => {
+  const q = filterText.value.trim().toLowerCase()
+  if (!q) {
+    return sortedRows.value
+  }
+  return sortedRows.value.filter(r =>
+    r.benchmarkId.toLowerCase().includes(q)
+    || (r.title ?? '').toLowerCase().includes(q),
+  )
+})
+
+const isFiltering = computed(() => filterText.value.trim().length > 0)
+
 function isSelected(benchmarkId) {
   if (benchmarkId === ALL_STIGS_ID) {
     return props.selectedBenchmarkId === null
@@ -63,35 +79,26 @@ function onSelect(row) {
 
 <template>
   <div class="stig-panel">
-    <header class="stig-panel__header">
-      <h3 class="stig-panel__title">
-        STIGs
-      </h3>
-      <span class="stig-panel__count">{{ stigs.length }}</span>
-    </header>
-
-    <section class="stig-panel__summary">
-      <div class="summary-card">
-        <div class="summary-card__row summary-card__row--head">
-          <span class="summary-card__label">Open Findings</span>
-          <span class="summary-card__total">{{ totals.findings }}</span>
-        </div>
-        <div class="summary-card__row summary-card__row--cats">
-          <div class="cat-stat cat-stat--1" :title="`${totals.cat1} CAT 1 findings`">
-            <span class="cat-stat__name">CAT 1</span>
-            <span class="cat-stat__value">{{ totals.cat1 }}</span>
-          </div>
-          <div class="cat-stat cat-stat--2" :title="`${totals.cat2} CAT 2 findings`">
-            <span class="cat-stat__name">CAT 2</span>
-            <span class="cat-stat__value">{{ totals.cat2 }}</span>
-          </div>
-          <div class="cat-stat cat-stat--3" :title="`${totals.cat3} CAT 3 findings`">
-            <span class="cat-stat__name">CAT 3</span>
-            <span class="cat-stat__value">{{ totals.cat3 }}</span>
-          </div>
-        </div>
-      </div>
-    </section>
+    <div class="stig-panel__filter">
+      <i class="pi pi-search stig-panel__filter-icon" />
+      <input
+        ref="filterInput"
+        v-model="filterText"
+        type="text"
+        class="stig-panel__filter-input"
+        placeholder="Filter STIGs by ID or title…"
+        aria-label="Filter STIGs"
+      >
+      <button
+        v-if="filterText"
+        type="button"
+        class="stig-panel__filter-clear"
+        title="Clear filter"
+        @click="filterText = ''"
+      >
+        <i class="pi pi-times" />
+      </button>
+    </div>
 
     <div v-if="error" class="stig-panel__error">
       <p>Couldn't load STIG metrics.</p>
@@ -102,6 +109,7 @@ function onSelect(row) {
 
     <ul v-else class="stig-list" role="listbox" :aria-busy="isLoading">
       <li
+        v-if="!isFiltering"
         class="stig-list__item stig-list__item--all"
         :class="{ 'stig-list__item--selected': isSelected(ALL_STIGS_ID) }"
         role="option"
@@ -115,14 +123,14 @@ function onSelect(row) {
           — All Collection STIGs —
         </div>
         <div class="stig-list__counts">
-          <span v-if="totals.cat1 > 0" class="cat-pill cat-pill--1">{{ totals.cat1 }}</span>
-          <span v-if="totals.cat2 > 0" class="cat-pill cat-pill--2">{{ totals.cat2 }}</span>
-          <span v-if="totals.cat3 > 0" class="cat-pill cat-pill--3">{{ totals.cat3 }}</span>
+          <span class="cat-pill cat-pill--1" :class="{ 'cat-pill--zero': totals.cat1 === 0 }">{{ totals.cat1 }}</span>
+          <span class="cat-pill cat-pill--2" :class="{ 'cat-pill--zero': totals.cat2 === 0 }">{{ totals.cat2 }}</span>
+          <span class="cat-pill cat-pill--3" :class="{ 'cat-pill--zero': totals.cat3 === 0 }">{{ totals.cat3 }}</span>
         </div>
       </li>
 
       <li
-        v-for="row in sortedRows"
+        v-for="row in filteredRows"
         :key="row.benchmarkId"
         class="stig-list__item"
         :class="{ 'stig-list__item--selected': isSelected(row.benchmarkId) }"
@@ -140,26 +148,21 @@ function onSelect(row) {
           {{ row.title }}
         </div>
         <div class="stig-list__counts">
-          <span v-if="row.cat1 > 0" class="cat-pill cat-pill--1">{{ row.cat1 }}</span>
-          <span v-if="row.cat2 > 0" class="cat-pill cat-pill--2">{{ row.cat2 }}</span>
-          <span v-if="row.cat3 > 0" class="cat-pill cat-pill--3">{{ row.cat3 }}</span>
+          <span class="cat-pill cat-pill--1" :class="{ 'cat-pill--zero': row.cat1 === 0 }">{{ row.cat1 }}</span>
+          <span class="cat-pill cat-pill--2" :class="{ 'cat-pill--zero': row.cat2 === 0 }">{{ row.cat2 }}</span>
+          <span class="cat-pill cat-pill--3" :class="{ 'cat-pill--zero': row.cat3 === 0 }">{{ row.cat3 }}</span>
         </div>
       </li>
 
-      <li v-if="!isLoading && sortedRows.length === 0" class="stig-list__empty">
-        No STIGs in this collection.
+      <li v-if="!isLoading && filteredRows.length === 0" class="stig-list__empty">
+        <template v-if="isFiltering">
+          No STIGs match "{{ filterText }}".
+        </template>
+        <template v-else>
+          No STIGs in this collection.
+        </template>
       </li>
     </ul>
-
-    <StatusFooter
-      :metrics="[]"
-      :total-count="stigs.length"
-      total-label="STIGs"
-      :show-refresh="true"
-      :show-export="false"
-      :refresh-loading="isLoading"
-      @action="onFooterAction"
-    />
   </div>
 </template>
 
@@ -170,111 +173,67 @@ function onSelect(row) {
   flex-direction: column;
   overflow: hidden;
   background: var(--color-background-darkest);
-  border-right: 1px solid var(--color-border-light);
 }
 
-.stig-panel__header {
+.stig-panel__filter {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.6rem;
+  padding: 0.5rem 0.5rem 0.4rem;
+  border-bottom: 1px solid var(--color-border-light);
   background: var(--color-background-dark);
-  border-bottom: 1px solid var(--color-border-default);
-  min-height: 28px;
 }
 
-.stig-panel__title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  letter-spacing: 0.02em;
-}
-
-.stig-panel__count {
+.stig-panel__filter-icon {
+  position: absolute;
+  left: 0.95rem;
   font-size: 0.9rem;
   color: var(--color-text-dim);
-  background: var(--color-background-light);
-  padding: 0.05rem 0.35rem;
-  border-radius: 8px;
-  font-variant-numeric: tabular-nums;
+  pointer-events: none;
 }
 
-.stig-panel__summary {
-  padding: 0.5rem;
-  border-bottom: 1px solid var(--color-border-light);
-}
-
-.summary-card {
-  background: color-mix(in srgb, var(--color-background-light) 50%, var(--color-background-dark));
+.stig-panel__filter-input {
+  flex: 1;
+  width: 100%;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  background: var(--color-background-darkest);
   border: 1px solid var(--color-border-default);
   border-radius: 4px;
-  padding: 0.5rem;
+  padding: 0.35rem 1.8rem 0.35rem 1.9rem;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
-.summary-card__row {
-  display: flex;
-  align-items: center;
-}
-
-.summary-card__row--head {
-  justify-content: space-between;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--color-border-light);
-}
-
-.summary-card__label {
-  font-size: 0.85rem;
+.stig-panel__filter-input::placeholder {
   color: var(--color-text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
-.summary-card__total {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--color-text-bright);
-  font-variant-numeric: tabular-nums;
+.stig-panel__filter-input:focus {
+  border-color: var(--color-primary-highlight);
+  box-shadow: 0 0 0 1px var(--color-primary-highlight);
 }
 
-.summary-card__row--cats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.3rem;
-  padding-top: 0.5rem;
-}
-
-.cat-stat {
-  display: flex;
-  flex-direction: column;
+.stig-panel__filter-clear {
+  position: absolute;
+  right: 0.95rem;
+  display: inline-flex;
   align-items: center;
-  padding: 0.3rem 0.2rem;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  background: transparent;
+  border: none;
   border-radius: 3px;
-  border: 1px solid;
-  background: color-mix(in srgb, var(--color-background-darkest) 60%, transparent);
+  color: var(--color-text-dim);
+  cursor: pointer;
+  font-size: 0.85rem;
 }
 
-.cat-stat--1 { border-color: color-mix(in srgb, var(--color-cat1) 50%, transparent); }
-.cat-stat--2 { border-color: color-mix(in srgb, var(--color-cat2) 50%, transparent); }
-.cat-stat--3 { border-color: color-mix(in srgb, var(--color-cat3) 50%, transparent); }
-
-.cat-stat__name {
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.cat-stat--1 .cat-stat__name { color: var(--color-cat1); }
-.cat-stat--2 .cat-stat__name { color: var(--color-cat2); }
-.cat-stat--3 .cat-stat__name { color: var(--color-cat3); }
-
-.cat-stat__value {
-  font-size: 1.3rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-  color: var(--color-text-bright);
-  margin-top: 0.1rem;
+.stig-panel__filter-clear:hover {
+  background: var(--color-button-hover-bg);
+  color: var(--color-text-primary);
 }
 
 .stig-panel__error {
@@ -405,4 +364,11 @@ function onSelect(row) {
 .cat-pill--1 { background: var(--color-cat1); }
 .cat-pill--2 { background: var(--color-cat2); }
 .cat-pill--3 { background: var(--color-cat3); }
+
+.cat-pill--zero {
+  background: transparent;
+  color: var(--color-text-dim);
+  border: 1px solid color-mix(in srgb, var(--color-border-default) 70%, transparent);
+  opacity: 0.6;
+}
 </style>
