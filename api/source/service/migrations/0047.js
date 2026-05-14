@@ -101,7 +101,6 @@ const upMigration = [
       END;
 
       SELECT MAX(seq) INTO v_numReviewIds FROM t_reviewIds;
-      CALL task_output_collection('info', concat('found ', IFNULL(v_numReviewIds, 0), ' reviews to delete'));
 
       IF IFNULL(v_numReviewIds, 0) > 0 THEN
         DROP TEMPORARY TABLE IF EXISTS t_historyIds;
@@ -164,7 +163,6 @@ const upMigration = [
       SELECT statusId INTO v_statusId FROM status WHERE api = in_status LIMIT 1;
 
       SELECT MAX(seq) INTO v_numReviewIds FROM t_reviewIds;
-      CALL task_output_collection('info', concat('updating ', IFNULL(v_numReviewIds, 0), ' reviews: status: ', in_status));
 
       IF IFNULL(v_numReviewIds, 0) > 0 THEN
         REPEAT
@@ -208,12 +206,11 @@ const upMigration = [
       SELECT resultId INTO v_resultId FROM result WHERE api = in_result LIMIT 1;
 
       SELECT MAX(seq) INTO v_numReviewIds FROM t_reviewIds;
-      CALL task_output_collection('info', concat('updating ', IFNULL(v_numReviewIds, 0), ' reviews: result: ', in_result));
 
       IF IFNULL(v_numReviewIds, 0) > 0 THEN
         REPEAT
           UPDATE review
-            SET resultId = v_resultId, ts = NOW(), userId = @taskUserId, 
+            SET resultId = v_resultId, ts = NOW(), userId = @taskUserId,
             statusId = 0, statusTs = NOW(), statusUserId = @taskUserId,
             statusText = 'Review change triggered status update'
           WHERE reviewId IN (
@@ -544,22 +541,19 @@ const upMigration = [
         CALL task_output('info', concat('processing collectionId ', v_collectionId));
         CALL task_output_collection('info', concat('processing collectionId ', v_collectionId));
 
-        BEGIN  -- collection-scoped block: error here rolls back and continues the loop
+        BEGIN  -- collection-scoped error handling (no transaction at this scope)
           DECLARE EXIT HANDLER FOR SQLEXCEPTION
           BEGIN
             DECLARE err_code INT;
             DECLARE err_msg TEXT;
             GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
-            ROLLBACK;
             DROP TEMPORARY TABLE IF EXISTS t_pre_approved;
             DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
             CALL task_output_collection('error', concat('code: ', err_code, ' message: ', err_msg));
             CALL task_output('error', concat('error processing collectionId ', v_collectionId, ': code: ', err_code, ' message: ', err_msg));
           END;
 
-          START TRANSACTION;
-
-          -- Use a cursor for rules within the collection
+          -- Use a cursor for task rules within the collection
           BEGIN
             DECLARE v_rule_done INT DEFAULT FALSE;
             DECLARE cur_rules CURSOR FOR
@@ -583,6 +577,12 @@ const upMigration = [
 
               -- Compute cutoff: always relative to NOW()
               SET v_cutoff = DATE_SUB(NOW(), INTERVAL v_triggerInterval SECOND);
+
+              CALL task_output_collection('info',
+                CONCAT('rule ordinal ', v_ordinal, ': ', v_triggerAction,
+                       IF(v_triggerAction = 'delete', ' reviews',
+                          CONCAT(' ', v_updateField, '=', v_updateValue)),
+                       ' when ', v_triggerField, ' older than ', v_triggerInterval, 's'));
 
               -- Phase 1: Identify eligible reviews into t_pre_approved
               -- Sorted by assetId, benchmarkId to group related stig-asset pairs for stats efficiency
@@ -663,6 +663,12 @@ const upMigration = [
                   DECLARE v_batchSeqMin INT;
                   DECLARE v_batchSeqMax INT;
                   DECLARE v_numVerified INT;
+                  DECLARE v_totalProcessed INT DEFAULT 0;
+                  DECLARE v_progressMark INT;
+                  DECLARE v_nextProgressLog INT DEFAULT CEIL(v_numReviews * 0.2);
+
+                  CALL task_output_collection('info',
+                    CONCAT('rule ordinal ', v_ordinal, ': processing ', v_numReviews, ' reviews'));
 
                   batch_loop: LOOP
                   -- Find seq range for this batch
@@ -671,6 +677,7 @@ const upMigration = [
 
                   IF v_batchSeqMin IS NULL THEN LEAVE batch_loop; END IF;
 
+                  SET TRANSACTION ISOLATION LEVEL READ COMMITTED; -- Avoid locking rows when verifying/updating, to reduce contention with other transactions
                   START TRANSACTION;
 
                   -- Re-verify: candidates still meeting trigger condition
@@ -738,12 +745,18 @@ const upMigration = [
                   DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
                   COMMIT;
 
-                  CALL task_output_collection('info',
-                    CONCAT('rule ordinal ', v_ordinal, ': batch seq ', v_batchSeqMin, '-', v_batchSeqMax,
-                           ': ', IFNULL(v_numVerified, 0), ' reviews processed'));
+                  SET v_totalProcessed = v_totalProcessed + IFNULL(v_numVerified, 0);
+                  IF v_totalProcessed >= v_nextProgressLog THEN
+                    CALL task_output_collection('info',
+                      CONCAT('rule ordinal ', v_ordinal, ': ', v_totalProcessed, '/', v_numReviews, ' reviews processed'));
+                    SET v_nextProgressLog = v_nextProgressLog + CEIL(v_numReviews * 0.2);
+                  END IF;
 
                   SET v_seqMin = v_batchSeqMax + 1;
                   END LOOP batch_loop;
+
+                  CALL task_output_collection('info',
+                    CONCAT('rule ordinal ', v_ordinal, ': completed ', v_totalProcessed, ' reviews'));
                 END;
               END IF;
 
@@ -751,9 +764,7 @@ const upMigration = [
             END LOOP rule_loop;
             CLOSE cur_rules;
           END;  -- rule cursor block
-
-          COMMIT;
-        END;  -- collection-scoped block
+        END;  -- collection-scoped error handling
 
         CALL task_output('info', CONCAT('finished collectionId ', v_collectionId));
         CALL task_output_collection('info', CONCAT('finished collectionId ', v_collectionId));
