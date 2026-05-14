@@ -724,20 +724,16 @@ class MockOidc {
   }
   
   stop () {
+    // Order matters: drop active connections first, then await close() so the
+    // returned promise doesn't resolve until the listening socket has been
+    // released. Resolving early lets a follow-up start() on the same port
+    // race with kernel teardown and intermittently throw EADDRINUSE.
     return new Promise((resolve, reject) => {
-      if (this.server) {
-        this.server.close((err) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve()
-          }
-        })
-        this.server.closeAllConnections()
-        this.server = null
-      } else {
-        resolve()
-      }
+      if (!this.server) return resolve()
+      const server = this.server
+      this.server = null
+      server.closeAllConnections()
+      server.close((err) => err ? reject(err) : resolve())
     })
   }
 }

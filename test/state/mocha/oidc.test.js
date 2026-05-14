@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { getPorts, spawnApiPromise, spawnMySQL, simpleRequest } from './lib.js'
+import { getPorts, spawnApiPromise, spawnMySQL, simpleRequest, waitForLog } from './lib.js'
 import MockOidc from '../../utils/mockOidc.js'
 import addContext from 'mochawesome/addContext.js'
 
@@ -11,17 +11,7 @@ describe('OIDC state', function () {
   let cachedKid
 
   const {apiPort, dbPort, oidcPort, apiOrigin, oidcOrigin} = getPorts(54030)
-  
-  async function waitLogType(type, count = 1) {
-    let seen = 0
-    return new Promise((resolve) => {
-      api.logEvents.on(type, function (log) {
-        seen++
-        if (seen >= count) resolve(log)
-      })
-    })
-  }
-  
+
   before(async function () {
     this.timeout(60000)
     oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
@@ -49,17 +39,18 @@ describe('OIDC state', function () {
   })
 
   after(async function () {
-    await api.stop()
-    await mysql.stop()
-    await oidc.stop()
-    addContext(this, {title: 'api-log', value: api.logRecords})
+    this.timeout(60000)
+    if (api) await api.stop().catch(() => {})
+    if (mysql) await mysql.stop().catch(() => {})
+    if (oidc) await oidc.stop().catch(() => {})
+    if (api) addContext(this, {title: 'api-log', value: api.logRecords})
   })
 
   describe('OIDC up', function () {
     it('should log cacheUpdate with 1 kid', async function () {
       this.timeout(20000)
       console.log('      wait for log: jwksCacheEvent/cacheUpdate')
-      const log = await waitLogType('jwksCacheEvent')
+      const log = await waitForLog(api, 'jwksCacheEvent')
       expect(log.data.event).to.equal('cacheUpdate')
       const kids = Object.keys(log.data.kids)
       cachedKid = kids[0]
@@ -67,7 +58,7 @@ describe('OIDC state', function () {
     })
     it('should return state "available"', async function () {
       this.timeout(20000)
-      await waitLogType('started')
+      await waitForLog(api, 'started')
       const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.currentState).to.equal('available')
@@ -76,40 +67,44 @@ describe('OIDC state', function () {
   })
 
   describe('OIDC down', function () {
+    let logMark
     before(async function () {
+      logMark = api.logRecords.length
       await oidc.stop()
       console.log('      oidc shutdown')
     })
     it('should log cache update attempt', async function () {
       this.timeout(45000)
       console.log('      wait for log: refreshing cache')
-      const log = await waitLogType('refreshing cache')
+      const log = await waitForLog(api, 'refreshing cache', {since: logMark})
       expect(log.data.uri).to.equal(`${oidcOrigin}/jwks`)
     })
     it('should log refresh error', async function () {
       this.timeout(15000)
       console.log('      wait for log: refresh error')
-      const log = await waitLogType('refresh error')
+      const log = await waitForLog(api, 'refresh error', {since: logMark})
       expect(log.data.message).to.equal('updateCache returned false')
     })
     it('should return state "unavailable"', async function () {
       this.timeout(75000)
       console.log('      wait for log: state-changed')
-      const log = await waitLogType('state-changed')
+      const log = await waitForLog(api, 'state-changed', {since: logMark})
       expect(log.data.currentState).to.equal('unavailable')
       expect(log.data.previousState).to.equal('available')
     })
   })
 
   describe('OIDC restarted', function () {
+    let logMark
     before(async function () {
+      logMark = api.logRecords.length
       await oidc.start({port: oidcPort})
       console.log('      ✔ oidc started')
     })
     it('should log cacheUpdate with same kid as bootstrap', async function () {
       this.timeout(20000)
       console.log('      wait for log: jwksCacheEvent/cacheUpdate')
-      const log = await waitLogType('jwksCacheEvent')
+      const log = await waitForLog(api, 'jwksCacheEvent', {since: logMark})
       expect(log.data.event).to.equal('cacheUpdate')
       const kids = Object.keys(log.data.kids)
       expect(kids).to.have.lengthOf(1)
@@ -120,19 +115,21 @@ describe('OIDC state', function () {
       const res = await simpleRequest(`${apiOrigin}/api/op/state`)
       expect(res.status).to.equal(200)
       expect(res.body.currentState).to.equal('available')
-      expect(res.body.dependencies).to.eql({db: true, oidc: true})     
+      expect(res.body.dependencies).to.eql({db: true, oidc: true})
     })
   })
 
   describe('OIDC rekeyed', function () {
+    let logMark
     before(async function () {
+      logMark = api.logRecords.length
       await oidc.rotateKeys({keyCount: 1, includeInsecureKid: false})
       console.log('      ✔ oidc rekeyed')
     })
     it('should log cacheUpdate with different kid than bootstrap', async function () {
       this.timeout(40000)
       console.log('      wait for log: jwksCacheEvent/cacheUpdate')
-      const log = await waitLogType('jwksCacheEvent')
+      const log = await waitForLog(api, 'jwksCacheEvent', {since: logMark})
       expect(log.data.event).to.equal('cacheUpdate')
       const kids = Object.keys(log.data.kids)
       expect(kids).to.have.lengthOf(1)

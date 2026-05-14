@@ -14,6 +14,11 @@ const logger = require('../utils/logger')
 
 function configureMiddleware(app) {
 
+    // Must run before any app.use() call: Express's lazyrouter binds the query
+    // parser at the moment the first middleware is registered and ignores
+    // later changes.
+    app.set('query parser', 'simple')
+
     const middlewareConfigFunctions = [
       configureMulter,
       configureExpress,
