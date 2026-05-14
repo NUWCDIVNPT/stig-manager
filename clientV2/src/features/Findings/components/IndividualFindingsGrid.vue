@@ -153,7 +153,7 @@ const assetCellPt = {
   headerCell: { style: { padding: '0.4rem 0.5rem' } },
 }
 
-// Standard cell padding used by the simple text columns (Rule, Last changed, Status).
+// Standard cell padding for simple text columns (Status, Reviewer).
 const ruleCellPt = {
   bodyCell: { style: { padding: '0.15rem 0.5rem', verticalAlign: 'top' } },
   headerCell: { style: { padding: '0.4rem 0.5rem' } },
@@ -172,7 +172,8 @@ const stigsCellPt = {
   headerCell: { style: { padding: '0.4rem 0.5rem' } },
 }
 
-// Engine column is icon-only — center horizontally and trim padding.
+// Centered + tight-padding cell — used by the engine icon column and the
+// clock-style timestamp column.
 const engineColumnPt = {
   bodyCell: { style: { padding: '0.15rem 0', textAlign: 'center', verticalAlign: 'top' } },
   headerCell: { style: { padding: '0.4rem 0', textAlign: 'center' } },
@@ -410,13 +411,6 @@ const engineColumnPt = {
   font-size: 0.95rem;
 }
 
-.ind-grid-panel__icon-btn--text {
-  width: auto;
-  padding: 0 0.55rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
 .ind-grid-panel__icon-btn:hover:not(:disabled) {
   opacity: 1;
   border-color: var(--color-border-default);
@@ -568,6 +562,10 @@ const engineColumnPt = {
   word-break: break-word;
 }
 
+/* Sizes the <img> root of <EngineIconCell> in the engine column. The cell
+   component has no styles of its own — every consumer owns the dimensions
+   via this class, which lands on the child's root through Vue scoped-CSS
+   data-attr propagation. */
 .engine-icon {
   width: 1.1rem;
   height: 1.1rem;

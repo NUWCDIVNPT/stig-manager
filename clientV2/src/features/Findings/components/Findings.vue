@@ -54,7 +54,8 @@ watch([selectedBenchmarkId, aggregator], ([stig, agg]) => {
   router.replace({ query: next })
 })
 
-// Left pane: per-STIG metrics + collection totals (respects label filter natively).
+// Per-STIG metrics + collection totals — rendered in the AggregatedFindingsGrid
+// header dropdown (formerly the left pane). Respects label filter natively.
 const {
   stigs,
   totals,
