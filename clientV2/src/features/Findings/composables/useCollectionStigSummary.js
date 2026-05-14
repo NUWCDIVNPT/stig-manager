@@ -3,8 +3,14 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionStigSummary } from '../api/findingsApi.js'
 
-// Drives the left pane: per-STIG metrics + collection-level totals.
-// `collectionId` and `labelIds` are Refs so the panel reacts to filter changes.
+// Drives the per-STIG metrics shown in the AggregatedFindingsGrid header
+// dropdown (StigSelectorPanel) and the "Overall" CAT 1/2/3 totals badges.
+// `collectionId` and `labelIds` are Refs so the panel reacts to the
+// orchestrator-level label filter.
+//
+// Unlike useFindings/useFindingReviews, the underlying metrics endpoint
+// (getCollectionStigs) accepts label filter params server-side via
+// labelId/labelMatch, so this view honors the label filter natively.
 export function useCollectionStigSummary({ collectionId, labelIds }) {
   const { state: rawStigs, isLoading, error, execute } = useAsyncState(
     () => fetchCollectionStigSummary(
@@ -22,11 +28,12 @@ export function useCollectionStigSummary({ collectionId, labelIds }) {
         execute()
       }
     },
-    { immediate: true, deep: true },
+    { immediate: true },
   )
 
-  // Findings view only cares about STIGs with at least one open finding.
-  // (totals computed against this filtered list — STIGs with 0 findings would contribute 0 anyway.)
+  // The Findings view only cares about STIGs with at least one open finding —
+  // dropping the rest keeps the popover list focused (a STIG with zero CAT 1/2/3
+  // counts contributes nothing to the totals anyway).
   const stigs = computed(() => {
     return (rawStigs.value ?? []).filter((s) => {
       const f = s?.metrics?.findings
@@ -34,7 +41,8 @@ export function useCollectionStigSummary({ collectionId, labelIds }) {
     })
   })
 
-  // Map metrics.findings.{high,medium,low} → CAT 1/2/3 and roll up the totals.
+  // Roll up severity counts. The API returns metrics.findings.{high,medium,low};
+  // remap to {cat1,cat2,cat3} so consumers don't need to know the API's spelling.
   const totals = computed(() => {
     const out = { cat1: 0, cat2: 0, cat3: 0, findings: 0, occurrences: 0 }
     for (const s of stigs.value) {

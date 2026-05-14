@@ -1,17 +1,24 @@
 import { computed, watch } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { fetchFailedReviews } from '../api/findingsApi.js'
 
-// Drives the right pane: per-asset failed reviews backing the selected aggregated row.
-// All inputs are Refs.
+// Drives the right pane (IndividualFindingsGrid): per-asset failed review
+// records backing the currently selected aggregated finding. All inputs are
+// Refs so the pane reacts to selection changes in the middle pane.
 //   selectedFinding === null → returns [] without firing a request
-// NOTE: same label-filter caveat as useFindings — labelIds not passed to the API yet.
+// TODO(label-filter): /collections/{id}/reviews does not accept label params
+// server-side — see docs/pending-api-enhancements.md #2. Review rows currently
+// ignore the orchestrator's label filter.
 export function useFindingReviews({ collectionId, selectedFinding, aggregator }) {
-  // The API expects the aggregator field's value (groupId / ruleId / cci) on the matching row.
+  // The reviews API expects the aggregator field's value on the matching
+  // record (e.g. aggregator=ruleId&ruleId=SV-12345r1_rule).
   const aggregatorValue = computed(() => {
     const f = selectedFinding.value
     const a = aggregator.value
-    if (!f || !a) { return null }
+    if (!f || !a) {
+      return null
+    }
     return f[a] ?? null
   })
 
@@ -27,7 +34,7 @@ export function useFindingReviews({ collectionId, selectedFinding, aggregator })
     [collectionId, aggregator, aggregatorValue],
     () => {
       if (!collectionId.value || !aggregator.value || !aggregatorValue.value) {
-        // No selection — clear without fetching.
+        // No selection in the middle pane — clear the right pane without fetching.
         reviews.value = []
         return
       }
@@ -36,32 +43,22 @@ export function useFindingReviews({ collectionId, selectedFinding, aggregator })
     { immediate: true },
   )
 
-  // Sum the engine attribution + submission-status counts for the footer.
+  // Engine attribution (manual/engine/override) + submission status counts.
+  // Rendered as badge groups in the footer's right-extra slot.
   const statusCounts = computed(() => {
     const out = { saved: 0, submitted: 0, rejected: 0, accepted: 0, manual: 0, engine: 0, override: 0 }
     for (const r of reviews.value ?? []) {
       const statusLabel = (r.status?.label ?? r.status ?? '').toLowerCase()
-      if (out[statusLabel] !== undefined) { out[statusLabel] += 1 }
-      const engineKind = engineKindFor(r)
-      if (out[engineKind] !== undefined) { out[engineKind] += 1 }
+      if (out[statusLabel] !== undefined) {
+        out[statusLabel] += 1
+      }
+      const engineKind = getEngineDisplay(r)
+      if (engineKind && out[engineKind] !== undefined) {
+        out[engineKind] += 1
+      }
     }
     return out
   })
 
   return { reviews, isLoading, error, retry: execute, statusCounts }
-}
-
-// Mirrors how legacy classifies review attribution:
-//   - resultEngine present + override present → 'override'
-//   - resultEngine present (no override)      → 'engine'
-//   - otherwise                               → 'manual'
-function engineKindFor(review) {
-  const engine = review.resultEngine
-  if (engine && engine.overrides && engine.overrides.length > 0) {
-    return 'override'
-  }
-  if (engine) {
-    return 'engine'
-  }
-  return 'manual'
 }

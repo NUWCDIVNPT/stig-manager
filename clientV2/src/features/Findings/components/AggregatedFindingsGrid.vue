@@ -4,12 +4,12 @@ import DataTable from 'primevue/datatable'
 import Popover from 'primevue/popover'
 import Select from 'primevue/select'
 import { computed, nextTick, ref } from 'vue'
-import lineHeightDown from '../../../assets/line-height-down.svg'
-import lineHeightUp from '../../../assets/line-height-up.svg'
 import CatBadge from '../../../components/common/CatBadge.vue'
+import DensityControls from '../../../components/common/DensityControls.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
+import { FINDINGS_AGGREGATOR_OPTIONS } from '../constants.js'
 import StigSelectorPanel from './StigSelectorPanel.vue'
 
 const props = defineProps({
@@ -77,13 +77,7 @@ function onPopoverSelectStig(benchmarkId) {
   stigPopover.value?.hide()
 }
 
-const aggregatorOptions = [
-  { label: 'Group', value: 'groupId' },
-  { label: 'Rule', value: 'ruleId' },
-  { label: 'CCI', value: 'cci' },
-]
-
-const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity('findings-aggregated', 2, 6, 15)
+const { lineClamp } = useGridDensity('findings-aggregated', 2, 6, 15)
 
 function onFooterAction(key) {
   if (key === 'export') {
@@ -100,24 +94,17 @@ function onRowSelect(event) {
 
 const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
-  // No minWidth: 100% — that forces the table to expand past the container when
-  // fixed columns sum past it, producing a horizontal scrollbar. width: 100%
-  // sizes the table to the container; flex columns (Title/Definition) absorb
-  // the remainder.
+  // table width:100% (not minWidth) — minWidth forces overflow when fixed columns sum past container.
   table: { style: { tableLayout: 'fixed', width: '100%' } },
   bodyRow: { style: { cursor: 'pointer' } },
   footer: { style: { padding: '0', border: 'none' } },
 }
 
-// Default cell padding so columns aren't crammed against each other.
-// Mirrors the pattern used by CollectionChecklistGridTable.
 const cellPt = {
   bodyCell: { style: { padding: '0.15rem 0.5rem', verticalAlign: 'top' } },
   headerCell: { style: { padding: '0.4rem 0.5rem' } },
 }
 
-// Title/Definition flex into the remaining space; the inner span clamps to
-// `--line-clamp` lines so the row height is driven by the density control.
 const flexCellPt = {
   bodyCell: {
     style: {
@@ -208,34 +195,14 @@ const flexCellPt = {
           <span class="toolbar-field__label">Aggregator</span>
           <Select
             :model-value="aggregator"
-            :options="aggregatorOptions"
+            :options="FINDINGS_AGGREGATOR_OPTIONS"
             option-label="label"
             option-value="value"
             class="toolbar-field__select"
             @update:model-value="(v) => emit('update:aggregator', v)"
           />
         </label>
-        <div class="toolbar-density">
-          <span class="toolbar-density__label">Density</span>
-          <button
-            class="toolbar-density__btn"
-            type="button"
-            title="Decrease row height"
-            :disabled="lineClamp <= 1"
-            @click="decreaseRowHeight"
-          >
-            <img :src="lineHeightDown" alt="Decrease row height">
-          </button>
-          <button
-            class="toolbar-density__btn"
-            type="button"
-            title="Increase row height"
-            :disabled="lineClamp >= 10"
-            @click="increaseRowHeight"
-          >
-            <img :src="lineHeightUp" alt="Increase row height">
-          </button>
-        </div>
+        <DensityControls grid-key="findings-aggregated" :default-line-clamp="2" class="toolbar-density" />
       </div>
 
       <DataTable
@@ -245,6 +212,8 @@ const flexCellPt = {
         :selection="selectedRow"
         selection-mode="single"
         :data-key="aggregator"
+        sort-field="assetCount"
+        :sort-order="-1"
         scrollable
         scroll-height="flex"
         striped-rows
@@ -253,7 +222,7 @@ const flexCellPt = {
         :pt="dataTablePt"
         @row-select="onRowSelect"
       >
-        <Column field="severity" header="CAT" sortable :style="{ width: '4.5rem', minWidth: '4.5rem' }" :pt="cellPt">
+        <Column field="severity" header="CAT" sortable :style="{ width: '5rem', minWidth: '4.5rem' }" :pt="cellPt">
           <template #body="{ data }">
             <CatBadge :category="severityMap[data.severity] ?? 2" variant="label" />
           </template>
@@ -544,54 +513,7 @@ const flexCellPt = {
 }
 
 .toolbar-density {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
   margin-left: auto;
-  padding: 0.2rem 0.3rem 0.2rem 0.65rem;
-  border: 1px solid color-mix(in srgb, var(--color-border-default) 85%, transparent);
-  border-radius: 5px;
-  background: color-mix(in srgb, var(--color-background-light) 45%, transparent);
-}
-
-.toolbar-density__label {
-  font-size: 0.98rem;
-  font-weight: 600;
-  color: var(--color-text-bright);
-  margin-right: 0.2rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.toolbar-density__btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: color-mix(in srgb, var(--color-background-light) 25%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-border-light) 40%, transparent);
-  border-radius: 5px;
-  margin: 0 0.1rem;
-  width: 1.8rem;
-  height: 1.8rem;
-  padding: 0;
-  cursor: pointer;
-  opacity: 0.9;
-}
-
-.toolbar-density__btn:hover:not(:disabled) {
-  opacity: 1;
-  border-color: var(--color-border-default);
-  background: color-mix(in srgb, var(--color-background-light) 75%, transparent);
-}
-
-.toolbar-density__btn:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.toolbar-density__btn img {
-  width: 15px;
-  height: 15px;
 }
 
 .agg-grid-panel__table {
@@ -621,7 +543,7 @@ const flexCellPt = {
 .cell-asset-count {
   display: inline-block;
   width: 100%;
-  text-align: right;
+  text-align: center;
   font-size: 1rem;
   font-variant-numeric: tabular-nums;
   font-weight: 600;

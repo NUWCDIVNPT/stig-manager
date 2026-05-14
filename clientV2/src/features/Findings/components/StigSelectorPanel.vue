@@ -26,7 +26,10 @@ function focusFilter() {
 
 defineExpose({ focusFilter })
 
-// Merge metrics.findings.{high,medium,low} → {cat1,cat2,cat3} and sort by risk.
+// Map the API's severity buckets (high/medium/low) → display naming
+// (cat1/cat2/cat3) and sort by risk: CAT 1 first, CAT 2 as tiebreaker, then
+// total findings as the final tiebreaker. Surfaces the riskiest STIGs at the
+// top of the dropdown.
 const sortedRows = computed(() => {
   const list = (props.stigs ?? []).map((s) => {
     const f = s.metrics?.findings ?? {}
@@ -40,8 +43,12 @@ const sortedRows = computed(() => {
     }
   })
   list.sort((a, b) => {
-    if (b.cat1 !== a.cat1) { return b.cat1 - a.cat1 }
-    if (b.cat2 !== a.cat2) { return b.cat2 - a.cat2 }
+    if (b.cat1 !== a.cat1) {
+      return b.cat1 - a.cat1
+    }
+    if (b.cat2 !== a.cat2) {
+      return b.cat2 - a.cat2
+    }
     return b.findings - a.findings
   })
   return list
@@ -307,8 +314,8 @@ function onSelect(row) {
 
 .stig-list__id {
   grid-area: id;
-  font-family: var(--font-mono);
-  font-size: 1.3rem;
+  font-family: inherit;
+  font-size: 1.2rem;
   color: var(--color-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;

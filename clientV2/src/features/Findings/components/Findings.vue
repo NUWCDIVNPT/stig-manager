@@ -6,9 +6,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { fetchCollectionLabels } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCollectionStigSummary } from '../composables/useCollectionStigSummary.js'
-import { useFindings } from '../composables/useFindings.js'
 import { useFindingReviews } from '../composables/useFindingReviews.js'
+import { useFindings } from '../composables/useFindings.js'
 import { useFindingsColumns } from '../composables/useFindingsColumns.js'
+import { FINDINGS_AGGREGATOR_VALUES, FINDINGS_AGGREGATORS } from '../constants.js'
 import AggregatedFindingsGrid from './AggregatedFindingsGrid.vue'
 import IndividualFindingsGrid from './IndividualFindingsGrid.vue'
 
@@ -23,11 +24,12 @@ const labelIds = toRef(props, 'selectedLabelIds')
 const route = useRoute()
 const router = useRouter()
 
-// Restore initial state from URL query params so navigating back from Asset
-// Review (or refreshing the page) preserves the last selection. null === "All
-// Collection STIGs".
-const VALID_AGGREGATORS = new Set(['groupId', 'ruleId', 'cci'])
-const initialAggregator = VALID_AGGREGATORS.has(route.query.agg) ? route.query.agg : 'groupId'
+// Restore initial selection from URL query params so back-navigation from Asset
+// Review (and full reloads) preserve the user's last view. benchmarkId === null
+// means "All Collection STIGs".
+const initialAggregator = FINDINGS_AGGREGATOR_VALUES.includes(route.query.agg)
+  ? route.query.agg
+  : FINDINGS_AGGREGATORS.GROUP
 const initialBenchmarkId = typeof route.query.stig === 'string' && route.query.stig ? route.query.stig : null
 
 const selectedBenchmarkId = ref(initialBenchmarkId)
@@ -35,8 +37,9 @@ const aggregator = ref(initialAggregator)
 const selectedFinding = ref(null)
 const isAllStigsMode = computed(() => selectedBenchmarkId.value === null)
 
-// Mirror the user's selection into the URL (replace, not push, so browser
-// history isn't polluted with every click).
+// Mirror selection into the URL with replace (not push) so each click doesn't
+// pollute browser history. Omit defaults (groupId aggregator, no stig) so the
+// URL stays clean for the common case.
 watch([selectedBenchmarkId, aggregator], ([stig, agg]) => {
   const next = { ...route.query }
   if (stig) {
@@ -45,7 +48,7 @@ watch([selectedBenchmarkId, aggregator], ([stig, agg]) => {
   else {
     delete next.stig
   }
-  if (agg && agg !== 'groupId') {
+  if (agg && agg !== FINDINGS_AGGREGATORS.GROUP) {
     next.agg = agg
   }
   else {
@@ -54,8 +57,10 @@ watch([selectedBenchmarkId, aggregator], ([stig, agg]) => {
   router.replace({ query: next })
 })
 
-// Per-STIG metrics + collection totals — rendered in the AggregatedFindingsGrid
-// header dropdown (formerly the left pane). Respects label filter natively.
+// Per-STIG metrics + collection totals. Drives both the popover STIG list and
+// the "Overall" CAT 1/2/3 totals in the AggregatedFindingsGrid header. The
+// metrics endpoint accepts label filters server-side, so this view is the only
+// one that currently honors `labelIds` (see useFindings/useFindingReviews).
 const {
   stigs,
   totals,
@@ -64,7 +69,9 @@ const {
   retry: retryStigs,
 } = useCollectionStigSummary({ collectionId, labelIds })
 
-// Middle pane: aggregated findings (label filter not yet supported by this endpoint).
+// Middle pane: aggregated findings, optionally scoped to one STIG.
+// TODO(label-filter): /collections/{id}/findings does not accept label params
+// server-side — see docs/pending-api-enhancements.md #1.
 const {
   findings,
   isLoading: isFindingsLoading,
@@ -75,7 +82,10 @@ const {
 
 const visibleColumns = useFindingsColumns(aggregator, isAllStigsMode)
 
-// Right pane: per-asset failed reviews backing the selected aggregated row.
+// Right pane: per-asset failed reviews backing the currently selected
+// aggregated row. selectedFinding === null → returns [] without fetching.
+// TODO(label-filter): same caveat as useFindings — see
+// docs/pending-api-enhancements.md #2.
 const {
   reviews,
   isLoading: isReviewsLoading,
@@ -84,15 +94,18 @@ const {
   statusCounts,
 } = useFindingReviews({ collectionId, selectedFinding, aggregator })
 
-// Collection labels — fetched once per collection so we can decorate review rows
-// (the reviews endpoint returns assetLabelIds only, not full label objects).
+// Labels for decorating review rows. The reviews payload includes assetLabelIds
+// only; this endpoint supplies the full {name, color} objects LabelsRow needs.
+// Fetched once per collection (no benchmark/aggregator dependency).
 const { state: labels, execute: loadLabels } = useAsyncState(
   () => fetchCollectionLabels(collectionId.value),
   { immediate: false, initialState: [], onError: null },
 )
 
 watch(collectionId, () => {
-  if (collectionId.value) { loadLabels() }
+  if (collectionId.value) {
+    loadLabels()
+  }
 }, { immediate: true })
 
 const labelMap = computed(() => {
@@ -103,11 +116,9 @@ const labelMap = computed(() => {
   return m
 })
 
-// Cascading resets: changing a parent dimension clears the child selection.
-watch(selectedBenchmarkId, () => {
-  selectedFinding.value = null
-})
-watch(aggregator, () => {
+// Cascading reset: changing the STIG scope or aggregator invalidates the
+// previously selected finding (different rule/cci/group dimension).
+watch([selectedBenchmarkId, aggregator], () => {
   selectedFinding.value = null
 })
 
@@ -132,7 +143,7 @@ function onSelectFinding(row) {
         root: { style: 'border: none; background: transparent; height: 100%' },
       }"
     >
-      <SplitterPanel :size="48" :min-size="32">
+      <SplitterPanel :size="40" :min-size="30">
         <AggregatedFindingsGrid
           :rows="findings ?? []"
           :visible-columns="visibleColumns"
@@ -154,7 +165,7 @@ function onSelectFinding(row) {
         />
       </SplitterPanel>
 
-      <SplitterPanel :size="52" :min-size="36">
+      <SplitterPanel :size="60" :min-size="42">
         <IndividualFindingsGrid
           :rows="reviews ?? []"
           :is-loading="isReviewsLoading"

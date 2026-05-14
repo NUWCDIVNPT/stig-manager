@@ -4,15 +4,17 @@ import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import bot2 from '../../../assets/bot2.svg'
-import lineHeightDown from '../../../assets/line-height-down.svg'
-import lineHeightUp from '../../../assets/line-height-up.svg'
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
+import DensityControls from '../../../components/common/DensityControls.vue'
+import EngineBadge from '../../../components/common/EngineBadge.vue'
 import EngineIconCell from '../../../components/common/EngineIconCell.vue'
+import ManualBadge from '../../../components/common/ManualBadge.vue'
+import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
-import { durationToNow } from '../../../shared/lib.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 
@@ -25,39 +27,46 @@ const props = defineProps({
     type: Object,
     default: () => ({ saved: 0, submitted: 0, rejected: 0, accepted: 0, manual: 0, engine: 0, override: 0 }),
   },
-  // Map<labelId, { labelId, name, color }> — provided by orchestrator from /collections/{id}/labels.
+  // Map<labelId, { labelId, name, color }> from /collections/{id}/labels. Used to
+  // decorate review rows (the reviews endpoint only returns assetLabelIds).
   labelMap: { type: Map, default: () => new Map() },
   collectionId: { type: [String, Number, null], default: null },
-  // Used to disambiguate when a row's stigs[] has more than one entry (cci + all-stigs mode).
+  // Used to disambiguate when a row's stigs[] has more than one entry — happens
+  // under the cci aggregator in "All STIGs" mode where one CCI maps to rules
+  // across multiple STIGs.
   selectedBenchmarkId: { type: [String, null], default: null },
 })
 
-const router = useRouter()
-
 const emit = defineEmits(['retry'])
+
+const router = useRouter()
 
 const dataTableRef = ref(null)
 
-// Row geometry — derived from CSS, not eyeballed:
+// Row geometry — values derived from CSS, not eyeballed:
 //   sizeMultiplier = 15px ≈ `.cell-text` font-size 1.05rem × line-height 1.3 at the 11px root.
 //                    Each density step adds exactly one rendered line of Detail/Comment.
 //   baseItemSize   = 36px ≈ cell padding (~6px) + 2 baseline lines of detail.
-// With effectiveLineClamp = lineClamp + 2 (below), the floor row at lineClamp=1
-// is 3 lines × 15 + 6 = 51px — just enough to fit the asset cell with shield
-// (~24px) + labels row (~14px) + padding. The asset cell is the *floor*;
-// Detail/Comment is the only growth driver beyond that.
-const { lineClamp, itemSize, increaseRowHeight, decreaseRowHeight } = useGridDensity('findings-individual', 1, 36, 15)
+// Combined with effectiveLineClamp = lineClamp + 2 (below), the floor row at
+// lineClamp=1 is 3 lines × 15 + 6 = 51px — just enough to fit the asset cell
+// with shield (~24px) + labels row (~14px) + padding. The asset cell is the
+// *floor*; Detail/Comment is the only growth driver beyond that.
+const { lineClamp, itemSize } = useGridDensity('findings-individual', 1, 36, 15)
 
-// Bias the user-facing lineClamp by +2 so even the most compact density shows
+// Bias the user-facing line-clamp by +2 so even the most compact density shows
 // enough Detail/Comment lines to fill the asset-cell-with-labels floor. The
 // composable's lineClamp drives row height; this drives `-webkit-line-clamp`
 // on the clamped cells. Keeping them locked together prevents drift.
 const effectiveLineClamp = computed(() => lineClamp.value + 2)
 
-// Decorate rows with labels objects for LabelsRow (review payload has assetLabelIds only),
-// precompute the engine display kind for the icon cell, and build a composite row key.
-// (assetId alone isn't unique under the cci aggregator: a single CCI can map to multiple
-// rules in different STIGs, so the same asset shows up once per rule.)
+// Decorate each row with:
+//   - labels: resolved {labelId,name,color} objects for LabelsRow (review payload
+//             carries assetLabelIds only)
+//   - _engineDisplay: precomputed manual/engine/override classification
+//   - _statusLabel / _durationLabel / _tsFormatted: precomputed so per-row
+//     template helpers don't recalculate on every virtual-scroll render
+//   - _rowKey: composite — assetId alone isn't unique under the cci aggregator
+//     because one CCI can map to multiple rules in different STIGs
 const decoratedRows = computed(() => {
   return (props.rows ?? []).map((r) => {
     const ids = r.assetLabelIds ?? []
@@ -66,6 +75,9 @@ const decoratedRows = computed(() => {
       ...r,
       labels,
       _engineDisplay: getEngineDisplay(r),
+      _statusLabel: (r.status?.label ?? r.status ?? '').toLowerCase(),
+      _durationLabel: durationToNow(r.ts),
+      _tsFormatted: formatReviewDate(r.ts),
       _rowKey: `${r.assetId}::${r.ruleId}`,
     }
   })
@@ -80,12 +92,8 @@ function onFooterAction(key) {
   }
 }
 
-function statusLabelOf(row) {
-  return (row.status?.label ?? row.status ?? '').toLowerCase()
-}
-
-// Prefer the STIG that's currently scoped in the parent; otherwise the first one
-// the row reports. Multi-entry rows happen under cci aggregator + "All STIGs".
+// Prefer the STIG currently scoped in the parent; otherwise the first one the
+// row reports. Multi-entry rows happen under the cci aggregator + "All STIGs".
 function pickStigForRow(row) {
   const stigs = row.stigs ?? []
   if (props.selectedBenchmarkId) {
@@ -116,19 +124,20 @@ function openAssetReview(row) {
 
 const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
-  // No minWidth: 100% — that forces the table to expand past the container
-  // when fixed columns sum past it, producing a horizontal scrollbar. width:
-  // 100% sizes the table to the container; Detail / Comment (when shown)
-  // flex to absorb the remainder.
+  // Use width:100% (not minWidth) — minWidth forces the table to expand past
+  // its container when fixed columns sum past it, producing a horizontal
+  // scrollbar. width:100% sizes the table to the container; flex columns
+  // (Detail / Comment) absorb the remainder.
   table: { style: { tableLayout: 'fixed', width: '100%' } },
-  // Pin every row to a fixed height driven by `--item-size` so virtual
-  // scrolling's position math (n * itemSize) stays correct. Overflow hidden
-  // clips wrapping labels / long detail text that exceed the budgeted height.
+  // Pin every row to a fixed height driven by `--item-size` so virtual-scroll's
+  // position math (n * itemSize) stays correct. overflow:hidden clips wrapping
+  // labels / long detail text that exceed the budgeted height.
   bodyRow: { style: { height: 'var(--item-size)', overflow: 'hidden' } },
   footer: { style: { padding: '0', border: 'none' } },
 }
 
-// Standard padding for the new Detail / Comment cells (flex columns).
+// Flex columns (Detail / Comment / Asset / STIGs) — top-aligned, overflow hidden
+// so multi-line content is clipped by the pinned row height.
 const flexCellPt = {
   bodyCell: {
     style: {
@@ -140,41 +149,22 @@ const flexCellPt = {
   headerCell: { style: { padding: '0.4rem 0.5rem' } },
 }
 
-// Asset column flexes; truncate the asset name with ellipsis if the cell
-// gets narrow. Labels render below on their own (wrapping) line.
-const assetCellPt = {
-  bodyCell: {
-    style: {
-      padding: '0.15rem 0.5rem',
-      verticalAlign: 'top',
-      overflow: 'hidden',
-    },
-  },
-  headerCell: { style: { padding: '0.4rem 0.5rem' } },
-}
+// Asset and STIGs cells reuse flexCellPt — both flex, both clip overflow,
+// labels (asset) and pills (stigs) wrap within the cell.
+const assetCellPt = flexCellPt
+const stigsCellPt = flexCellPt
 
-// Standard cell padding for simple text columns (Status, Reviewer).
-const ruleCellPt = {
+// Simple text columns (Status, Reviewer) — same padding as the flex cells but
+// no overflow constraint since their content is single-line.
+const textCellPt = {
   bodyCell: { style: { padding: '0.15rem 0.5rem', verticalAlign: 'top' } },
   headerCell: { style: { padding: '0.4rem 0.5rem' } },
 }
 
-// STIGs column is fixed-width but pills can wrap so long benchmarkIds don't
-// overflow into the engine icon column.
-const stigsCellPt = {
-  bodyCell: {
-    style: {
-      padding: '0.15rem 0.5rem',
-      verticalAlign: 'top',
-      overflow: 'hidden',
-    },
-  },
-  headerCell: { style: { padding: '0.4rem 0.5rem' } },
-}
-
-// Centered + tight-padding cell — used by the engine icon column and the
-// clock-style timestamp column.
-const engineColumnPt = {
+// Centered + tight-padding cell, shared by the engine icon column and the
+// clock-style "last action" timestamp column. Tight padding keeps these narrow
+// columns from claiming horizontal space they don't need.
+const compactColumnPt = {
   bodyCell: { style: { padding: '0.15rem 0', textAlign: 'center', verticalAlign: 'top' } },
   headerCell: { style: { padding: '0.4rem 0', textAlign: 'center' } },
 }
@@ -189,29 +179,7 @@ const engineColumnPt = {
       <span v-if="selectedAggregated" class="ind-grid-panel__context">
         for {{ selectedAggregated.groupId ?? selectedAggregated.ruleId ?? selectedAggregated.cci }}
       </span>
-      <div class="ind-grid-panel__controls">
-        <div class="ind-grid-panel__density">
-          <span class="ind-grid-panel__density-label">Density</span>
-          <button
-            class="ind-grid-panel__icon-btn"
-            type="button"
-            title="Decrease row height"
-            :disabled="lineClamp <= 1"
-            @click="decreaseRowHeight"
-          >
-            <img :src="lineHeightDown" alt="Decrease row height">
-          </button>
-          <button
-            class="ind-grid-panel__icon-btn"
-            type="button"
-            title="Increase row height"
-            :disabled="lineClamp >= 10"
-            @click="increaseRowHeight"
-          >
-            <img :src="lineHeightUp" alt="Increase row height">
-          </button>
-        </div>
-      </div>
+      <DensityControls grid-key="findings-individual" :default-line-clamp="1" class="ind-grid-panel__density" />
     </header>
 
     <div v-if="error" class="ind-grid-panel__error">
@@ -239,7 +207,7 @@ const engineColumnPt = {
       class="ind-grid-panel__table"
       :pt="dataTablePt"
     >
-      <Column field="assetName" header="Asset" sortable :style="{ width: '14rem', minWidth: '10rem' }" :pt="assetCellPt">
+      <Column field="assetName" header="Asset" sortable :style="{ width: '18rem', minWidth: '12rem' }" :pt="assetCellPt">
         <template #body="{ data }">
           <div class="asset-cell">
             <div class="asset-cell__name-row">
@@ -278,7 +246,7 @@ const engineColumnPt = {
           <span class="cell-text cell-text--clamped" :title="data.comment">{{ data.comment || '—' }}</span>
         </template>
       </Column>
-      <Column :pt="engineColumnPt" :style="{ width: '2.25rem', minWidth: '2.25rem' }">
+      <Column :pt="compactColumnPt" :style="{ width: '2.25rem', minWidth: '2.25rem' }">
         <template #header>
           <img :src="bot2" alt="" class="engine-header-icon" title="Result engine">
         </template>
@@ -286,22 +254,22 @@ const engineColumnPt = {
           <EngineIconCell :display="data._engineDisplay" />
         </template>
       </Column>
-      <Column header="Status" :style="{ width: '4.5rem', minWidth: '4rem' }" :pt="ruleCellPt">
+      <Column header="Status" :style="{ width: '4.5rem', minWidth: '4rem' }" :pt="textCellPt">
         <template #body="{ data }">
-          <StatusBadge :status="statusLabelOf(data)" />
+          <StatusBadge :status="data._statusLabel" />
         </template>
       </Column>
-      <Column field="username" header="Reviewer" sortable :style="{ width: '8rem', minWidth: '7rem' }" :pt="ruleCellPt">
+      <Column field="username" header="Reviewer" sortable :style="{ width: '8rem', minWidth: '7rem' }" :pt="textCellPt">
         <template #body="{ data }">
           <span class="cell-text">{{ data.username || '—' }}</span>
         </template>
       </Column>
-      <Column field="ts" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="engineColumnPt">
+      <Column field="ts" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="compactColumnPt">
         <template #header>
           <i class="pi pi-clock" title="Last action" />
         </template>
         <template #body="{ data }">
-          <span class="cell-text cell-text--dim" :title="formatReviewDate(data.ts)">{{ durationToNow(data.ts) }}</span>
+          <span class="cell-text cell-text--dim" :title="data._tsFormatted">{{ data._durationLabel }}</span>
         </template>
       </Column>
 
@@ -317,9 +285,9 @@ const engineColumnPt = {
           <template #right-extra>
             <span class="status-cluster">
               <span class="status-cluster__group" title="Engine attribution">
-                <span class="engine-chip engine-chip--manual">M·{{ statusCounts.manual }}</span>
-                <span class="engine-chip engine-chip--engine">E·{{ statusCounts.engine }}</span>
-                <span class="engine-chip engine-chip--override">O·{{ statusCounts.override }}</span>
+                <ManualBadge :count="statusCounts.manual" />
+                <EngineBadge :count="statusCounts.engine" />
+                <OverrideBadge :count="statusCounts.override" />
               </span>
               <span class="status-cluster__divider">|</span>
               <span class="status-cluster__group" title="Submission status">
@@ -368,63 +336,8 @@ const engineColumnPt = {
   color: var(--color-text-dim);
 }
 
-.ind-grid-panel__controls {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-left: auto;
-}
-
 .ind-grid-panel__density {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.15rem 0.3rem 0.15rem 0.55rem;
-  border: 1px solid color-mix(in srgb, var(--color-border-default) 85%, transparent);
-  border-radius: 5px;
-  background: color-mix(in srgb, var(--color-background-light) 45%, transparent);
-}
-
-.ind-grid-panel__density-label {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-text-bright);
-  margin-right: 0.15rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.ind-grid-panel__icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  background: color-mix(in srgb, var(--color-background-light) 25%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-border-light) 40%, transparent);
-  border-radius: 5px;
-  padding: 0;
-  width: 1.7rem;
-  height: 1.7rem;
-  color: var(--color-text-bright);
-  cursor: pointer;
-  opacity: 0.9;
-  font-size: 0.95rem;
-}
-
-.ind-grid-panel__icon-btn:hover:not(:disabled) {
-  opacity: 1;
-  border-color: var(--color-border-default);
-  background: color-mix(in srgb, var(--color-background-light) 75%, transparent);
-}
-
-.ind-grid-panel__icon-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.ind-grid-panel__icon-btn img {
-  width: 14px;
-  height: 14px;
+  margin-left: auto;
 }
 
 .ind-grid-panel__error {
@@ -562,10 +475,9 @@ const engineColumnPt = {
   word-break: break-word;
 }
 
-/* Sizes the <img> root of <EngineIconCell> in the engine column. The cell
-   component has no styles of its own — every consumer owns the dimensions
-   via this class, which lands on the child's root through Vue scoped-CSS
-   data-attr propagation. */
+/* Sizes the <img> root of <EngineIconCell> in the engine column. EngineIconCell
+   has no styles of its own — Vue scoped-CSS data-attr propagation makes this
+   rule apply to the child component's root <img>. */
 .engine-icon {
   width: 1.1rem;
   height: 1.1rem;
@@ -579,34 +491,6 @@ const engineColumnPt = {
   display: inline-block;
   vertical-align: middle;
   opacity: 0.85;
-}
-
-.engine-chip {
-  display: inline-block;
-  font-size: 0.95rem;
-  font-weight: 600;
-  padding: 0.05rem 0.4rem;
-  border-radius: 2px;
-  border: 1px solid;
-  letter-spacing: 0.02em;
-}
-
-.engine-chip--manual {
-  color: var(--color-text-dim);
-  background: var(--color-background-dark);
-  border-color: var(--color-border-default);
-}
-
-.engine-chip--engine {
-  color: var(--color-engine-text);
-  background: var(--color-engine-bg);
-  border-color: var(--color-engine-border);
-}
-
-.engine-chip--override {
-  color: var(--color-override-text);
-  background: var(--color-override-bg);
-  border-color: var(--color-override-border);
 }
 
 .status-cluster {
