@@ -31,6 +31,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  refreshKey: {
+    type: Number,
+    default: 0,
+  },
 })
 
 const fetchMetrics = () => {
@@ -45,7 +49,7 @@ const { state: metrics, isLoading, error: errorMessage, execute: loadMetrics } =
   { immediate: false },
 )
 
-watch([() => props.collectionId, () => props.selectedLabelIds], loadMetrics, { immediate: true, deep: true })
+watch([() => props.collectionId, () => props.selectedLabelIds, () => props.refreshKey], loadMetrics, { immediate: true, deep: true })
 
 // hint metrics is reactive cuz it's from a query
 const { stats: progressStats } = useCollectionProgress(metrics)

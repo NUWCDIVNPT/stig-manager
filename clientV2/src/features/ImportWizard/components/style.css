@@ -1,0 +1,38 @@
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  height: var(--checklist-control-height, 32px);
+  padding: 0.35rem 0.75rem;
+  color: var(--color-text-bright);
+  background: color-mix(in srgb, var(--color-background-light) 45%, transparent);
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.toolbar-btn__label {
+  font-size: 1.02rem;
+  font-weight: 600;
+}
+
+.toolbar-btn-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 0.3rem;
+  object-fit: contain;
+}
+
+.toolbar-btn__icon-font {
+  font-size: 0.9rem;
+  margin-right: 0.3rem;
+}
+
+.toolbar-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-text-dim) 25%, transparent);
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
