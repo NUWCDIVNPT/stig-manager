@@ -3,12 +3,12 @@ import ReauthPrompt from './auth/ReauthPrompt.vue'
 import { useOidcWorker } from './auth/useOidcWorker.js'
 import GlobalBanner from './components/global/GlobalBanner.vue'
 import GlobalErrorModal from './components/global/GlobalErrorModal.vue'
+import GlobalNotifications from './components/global/GlobalNotifications.vue'
 import GlobalServiceOverlay from './components/global/GlobalServiceOverlay.vue'
 import WhatsNew from './components/global/WhatsNew.vue'
 import HomePage from './Home/Home.vue'
 
 const oidcWorker = useOidcWorker()
-console.log('oidcWorker state', oidcWorker)
 </script>
 
 <template>
@@ -22,6 +22,7 @@ console.log('oidcWorker state', oidcWorker)
   />
   <GlobalServiceOverlay />
   <WhatsNew />
+  <GlobalNotifications />
   <HomePage />
 </template>
 

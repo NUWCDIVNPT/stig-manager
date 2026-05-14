@@ -17,6 +17,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  refreshKey: {
+    type: Number,
+    default: 0,
+  },
 })
 
 const router = useRouter()
@@ -51,7 +55,7 @@ const { state: checklistAssets, isLoading: checklistAssetsLoading, error: checkl
 )
 
 // Initial Load
-watch([() => props.collectionId, () => props.selectedLabelIds], () => {
+watch([() => props.collectionId, () => props.selectedLabelIds, () => props.refreshKey], () => {
   loadStigs()
   selectedBenchmarkId.value = null
 }, { immediate: true, deep: true })
