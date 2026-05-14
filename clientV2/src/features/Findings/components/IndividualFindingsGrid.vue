@@ -37,7 +37,6 @@ const router = useRouter()
 const emit = defineEmits(['retry'])
 
 const dataTableRef = ref(null)
-const showDetails = ref(false)
 
 // Row geometry — derived from CSS, not eyeballed:
 //   sizeMultiplier = 15px ≈ `.cell-text` font-size 1.05rem × line-height 1.3 at the 11px root.
@@ -54,10 +53,6 @@ const { lineClamp, itemSize, increaseRowHeight, decreaseRowHeight } = useGridDen
 // composable's lineClamp drives row height; this drives `-webkit-line-clamp`
 // on the clamped cells. Keeping them locked together prevents drift.
 const effectiveLineClamp = computed(() => lineClamp.value + 2)
-
-function toggleShowDetails() {
-  showDetails.value = !showDetails.value
-}
 
 // Decorate rows with labels objects for LabelsRow (review payload has assetLabelIds only),
 // precompute the engine display kind for the icon cell, and build a composite row key.
@@ -194,17 +189,6 @@ const engineColumnPt = {
         for {{ selectedAggregated.groupId ?? selectedAggregated.ruleId ?? selectedAggregated.cci }}
       </span>
       <div class="ind-grid-panel__controls">
-        <button
-          type="button"
-          class="ind-grid-panel__icon-btn ind-grid-panel__icon-btn--text"
-          :class="{ 'ind-grid-panel__icon-btn--active': showDetails }"
-          :title="showDetails ? 'Hide reviewer, detail, and comment columns' : 'Show reviewer, detail, and comment columns'"
-          :disabled="!selectedAggregated || decoratedRows.length === 0"
-          @click="toggleShowDetails"
-        >
-          <i :class="showDetails ? 'pi pi-eye-slash' : 'pi pi-eye'" />
-          <span>{{ showDetails ? 'Hide details' : 'Show details' }}</span>
-        </button>
         <div class="ind-grid-panel__density">
           <span class="ind-grid-panel__density-label">Density</span>
           <button
@@ -274,14 +258,6 @@ const engineColumnPt = {
           </div>
         </template>
       </Column>
-      <Column field="ts" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="engineColumnPt">
-        <template #header>
-          <i class="pi pi-clock" title="Last action" />
-        </template>
-        <template #body="{ data }">
-          <span class="cell-text cell-text--dim" :title="formatReviewDate(data.ts)">{{ durationToNow(data.ts) }}</span>
-        </template>
-      </Column>
       <Column header="STIGs" :style="{ width: '10rem', minWidth: '8rem' }" :pt="stigsCellPt">
         <template #body="{ data }">
           <div class="stig-list">
@@ -289,6 +265,16 @@ const engineColumnPt = {
               {{ s.benchmarkId }}
             </span>
           </div>
+        </template>
+      </Column>
+      <Column field="detail" header="Detail" :style="{ minWidth: '12rem' }" :pt="flexCellPt">
+        <template #body="{ data }">
+          <span class="cell-text cell-text--clamped" :title="data.detail">{{ data.detail || '—' }}</span>
+        </template>
+      </Column>
+      <Column field="comment" header="Comment" :style="{ minWidth: '12rem' }" :pt="flexCellPt">
+        <template #body="{ data }">
+          <span class="cell-text cell-text--clamped" :title="data.comment">{{ data.comment || '—' }}</span>
         </template>
       </Column>
       <Column :pt="engineColumnPt" :style="{ width: '2.25rem', minWidth: '2.25rem' }">
@@ -304,19 +290,17 @@ const engineColumnPt = {
           <StatusBadge :status="statusLabelOf(data)" />
         </template>
       </Column>
-      <Column v-if="showDetails" field="username" header="Reviewer" sortable :style="{ width: '8rem', minWidth: '7rem' }" :pt="ruleCellPt">
+      <Column field="username" header="Reviewer" sortable :style="{ width: '8rem', minWidth: '7rem' }" :pt="ruleCellPt">
         <template #body="{ data }">
           <span class="cell-text">{{ data.username || '—' }}</span>
         </template>
       </Column>
-      <Column v-if="showDetails" field="detail" header="Detail" :style="{ minWidth: '12rem' }" :pt="flexCellPt">
-        <template #body="{ data }">
-          <span class="cell-text cell-text--clamped" :title="data.detail">{{ data.detail || '—' }}</span>
+      <Column field="ts" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="engineColumnPt">
+        <template #header>
+          <i class="pi pi-clock" title="Last action" />
         </template>
-      </Column>
-      <Column v-if="showDetails" field="comment" header="Comment" :style="{ minWidth: '12rem' }" :pt="flexCellPt">
         <template #body="{ data }">
-          <span class="cell-text cell-text--clamped" :title="data.comment">{{ data.comment || '—' }}</span>
+          <span class="cell-text cell-text--dim" :title="formatReviewDate(data.ts)">{{ durationToNow(data.ts) }}</span>
         </template>
       </Column>
 
@@ -442,13 +426,6 @@ const engineColumnPt = {
 .ind-grid-panel__icon-btn:disabled {
   opacity: 0.3;
   cursor: default;
-}
-
-.ind-grid-panel__icon-btn--active {
-  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-background-light));
-  border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
-  color: var(--color-text-bright);
-  opacity: 1;
 }
 
 .ind-grid-panel__icon-btn img {
