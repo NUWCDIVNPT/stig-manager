@@ -86,6 +86,7 @@ describe('useImportExecution', () => {
       expect(e.importProgressText.value).toBe('')
       expect(e.importStatusRows.value).toEqual([])
       expect(e.importIsDone.value).toBe(false)
+      expect(e.importCancelled.value).toBe(false)
       expect(e.selectedStatusRow.value).toBeNull()
     })
   })
@@ -411,7 +412,114 @@ describe('useImportExecution', () => {
       expect(e.importProgressText.value).toBe('')
       expect(e.importStatusRows.value).toEqual([])
       expect(e.importIsDone.value).toBe(false)
+      expect(e.importCancelled.value).toBe(false)
       expect(e.selectedStatusRow.value).toBeNull()
+    })
+
+    it('clears importCancelled after a cancelled run', () => {
+      const e = setup({ taskAssetsObj: {} })
+      e.cancel()
+      expect(e.importCancelled.value).toBe(true)
+      e.reset()
+      expect(e.importCancelled.value).toBe(false)
+    })
+  })
+
+  describe('cancel', () => {
+    function makePendingApiMock() {
+      const pending = []
+      const mockImpl = (...args) => {
+        const opts = args[args.length - 1]
+        return new Promise((_resolve, reject) => {
+          if (opts?.signal) {
+            opts.signal.addEventListener('abort', () => {
+              reject(new DOMException('Aborted', 'AbortError'))
+            })
+          }
+          pending.push({ resolve: _resolve, reject, signal: opts?.signal })
+        })
+      }
+      return { mockImpl, pending }
+    }
+
+    it('aborts the in-flight signal and exits the loop without processing remaining assets', async () => {
+      const { mockImpl, pending } = makePendingApiMock()
+      postReviewsByAssetMock.mockImplementation(mockImpl)
+
+      const onImported = vi.fn()
+      const e = setup({
+        taskAssetsObj: {
+          a: makeAsset({ name: 'a', assetId: 1, knownAsset: true, checklists: [makeChecklist('B1', [{ id: 'r' }])] }),
+          b: makeAsset({ name: 'b', assetId: 2, knownAsset: true, checklists: [makeChecklist('B1', [{ id: 'r' }])] }),
+        },
+        onImported,
+      })
+
+      const runPromise = e.runImport()
+      // Let the loop reach the first await
+      await Promise.resolve()
+      await Promise.resolve()
+
+      expect(postReviewsByAssetMock).toHaveBeenCalledTimes(1)
+      expect(pending[0].signal).toBeInstanceOf(AbortSignal)
+      expect(pending[0].signal.aborted).toBe(false)
+      expect(e.importCancelled.value).toBe(false)
+
+      e.cancel()
+
+      expect(e.importCancelled.value).toBe(true)
+      expect(pending[0].signal.aborted).toBe(true)
+
+      await runPromise
+
+      // Second asset should never be touched
+      expect(postReviewsByAssetMock).toHaveBeenCalledTimes(1)
+      // No "Finished" / completion side effects
+      expect(onImported).not.toHaveBeenCalled()
+      expect(e.importIsDone.value).toBe(false)
+      expect(e.importProgressText.value).not.toBe('Finished')
+      // The aborted call must not get logged as an error row
+      expect(e.importStatusRows.value).toEqual([])
+    })
+
+    it('does not call onImported or set importIsDone when cancelled before processing any asset', async () => {
+      const { mockImpl } = makePendingApiMock()
+      postReviewsByAssetMock.mockImplementation(mockImpl)
+
+      const onImported = vi.fn()
+      const e = setup({
+        taskAssetsObj: {
+          a: makeAsset({ assetId: 1, knownAsset: true, checklists: [makeChecklist('B1', [{ id: 'r' }])] }),
+        },
+        onImported,
+      })
+
+      const runPromise = e.runImport()
+      await Promise.resolve()
+      await Promise.resolve()
+
+      e.cancel()
+      await runPromise
+
+      expect(onImported).not.toHaveBeenCalled()
+      expect(e.importIsDone.value).toBe(false)
+    })
+
+    it('threads the same AbortSignal through createAsset, updateAsset, and postReviewsByAsset', async () => {
+      updateAssetMock.mockResolvedValue({ assetId: 100, name: 'host' })
+      postReviewsByAssetMock.mockResolvedValue({ affected: { inserted: 0, updated: 0 }, rejected: [] })
+
+      const e = setup({
+        taskAssetsObj: {
+          a: makeAsset({ knownAsset: true, hasNewAssignment: true, stigs: ['S'], checklists: [makeChecklist('B1', [{ id: 'r' }])] }),
+        },
+      })
+      await e.runImport()
+
+      const updateSignal = updateAssetMock.mock.calls[0][2].signal
+      const reviewSignal = postReviewsByAssetMock.mock.calls[0][3].signal
+      expect(updateSignal).toBeInstanceOf(AbortSignal)
+      expect(updateSignal).toBe(reviewSignal)
     })
   })
 })

@@ -7,6 +7,9 @@ const state = reactive({
   completedCount: 0,
   totalCount: 0,
   isDone: false,
+  // Bumped each time the user clicks "View Results" on the finished notification.
+  // The import modal watches this counter and reopens itself to the results view.
+  viewResultsRequestId: 0,
 })
 
 let _notifId = null
@@ -44,5 +47,10 @@ export function useImportProgressStore() {
     return _notifId !== null
   }
 
-  return { state, startBackground, update, finish, dismiss, isActive }
+  function requestViewResults() {
+    state.viewResultsRequestId += 1
+    dismiss()
+  }
+
+  return { state, startBackground, update, finish, dismiss, isActive, requestViewResults }
 }
