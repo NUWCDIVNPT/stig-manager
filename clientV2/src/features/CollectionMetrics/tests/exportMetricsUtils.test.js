@@ -140,7 +140,7 @@ describe('exportMetricsUtils', () => {
 
       expect(text).toContain('Name,Description,IP,FQDN,MAC,Non-Computing,STIGs,Labels,Metadata')
 
-      expect(text).toContain('TRUE')
+      expect(text).toContain('True')
       expect(text).toContain('Label1')
       expect(text).toContain('"{""key"":""value""}"')
       expect(text).toContain('STIG1')

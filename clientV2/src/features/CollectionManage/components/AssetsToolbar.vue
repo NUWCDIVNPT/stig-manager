@@ -1,6 +1,7 @@
 <script setup>
 import targetIcon from '../../../assets/target.svg'
 import ExportResultsButton from '../ExportResults/components/ExportResultsButton.vue'
+import ExportAssetsCsvButton from './ExportAssetsCsvButton.vue'
 import ImportResultsAction from './ImportResultsAction.vue'
 import TransferAssetButton from './TransferAssetButton.vue'
 
@@ -40,9 +41,11 @@ const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify
       <i class="pi pi-plus-circle icon-green" /> Import Assets CSV
     </button>
     <div class="toolbar-divider" />
-    <button class="action-btn">
-      <i class="pi pi-download icon-blue" /> Export Assets CSV
-    </button>
+    <ExportAssetsCsvButton
+      :collection-id="props.collectionId"
+      :collection-name="props.collectionName"
+      :selected-assets="props.selectedAssets"
+    />
     <div class="toolbar-divider" />
     <ImportResultsAction :collection-id="props.collectionId" @imported="emit('imported')" />
     <div class="toolbar-divider" />
