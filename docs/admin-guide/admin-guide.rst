@@ -143,7 +143,10 @@ Use the buttons at the top to add new STIGS, delete entire STIGs or specific rev
 Service Jobs Panel
 ------------------------------------
 
-This panel allows App Managers to control and view the background Service Jobs that have been created in the STIGMan database. It includes information about the jobs, their schedule, component tasks, status, run history and output.  App Managers can create, modify, schedule, delete, and run jobs from this panel.  Jobs created by `system` cannot be deleted, but they can be disabled and their schedule can be modified. 
+This panel allows App Managers to control and view the background Service Jobs that have been created in the STIGMan database. It includes information about the jobs, their schedule, component tasks, status, run history and output.  App Managers can create, modify, schedule, delete, and run jobs from this panel.  Jobs created by `system` cannot be deleted, but they can be disabled and their schedule can be modified.
+
+**It is highly recommended that you enable and schedule these jobs to maintain the health of your STIG Manager database.** These jobs help keep your database lean and performant by cleaning up unreferenced data that can accumulate over time.  They also enable some important features such as Review Aging, which automatically acts on reviews that have not been updated within a configurable time threshold. See suggested setup in the :ref:`enable-service-jobs` section of this guide.
+
 
 .. thumbnail:: /assets/images/admin-service-jobs.png
       :width: 75% 
@@ -152,7 +155,7 @@ This panel allows App Managers to control and view the background Service Jobs t
 
 The Service Jobs feature provides a framework for managing scheduled background operations in STIG Manager. This feature enables both system-defined and user-defined jobs that can run one or more predefined tasks either on a schedule or immediately on demand.
 
-The initial implementation provides database maintenance and cleanup tasks, as well as the Review Aging task, which automatically acts on reviews that have not been updated within a configurable time threshold. Service Jobs will continue to serve as the foundation for future capabilities, including time-based snapshots and analysis.
+Service Jobs manage features such as database maintenance and cleanup tasks, as well as the Review Aging task, which automatically acts on reviews that have not been updated within a configurable time threshold. Service Jobs will continue to serve as the foundation for future capabilities, including time-based snapshots and analysis.
 
 .. rubric:: Job Types
 
@@ -162,16 +165,17 @@ The initial implementation provides database maintenance and cleanup tasks, as w
 **User Jobs**  
    Custom jobs created by App Managers to meet specific organizational needs. User jobs provide full flexibility in task selection, scheduling, and configuration.
 
-The feature provides several built-in System Jobs that are disabled by default. It is highly recommended that you enable and schedule these jobs to maintain the health of your STIG Manager database. Scheduling these jobs to run during off-peak hours is advisable to minimize any potential performance impact on users and reduce resource usage.
+The feature provides several built-in System Jobs that are disabled by default. It is highly recommended that you enable and schedule these jobs to maintain the health of your STIG Manager database. Scheduling these jobs to run during off-peak hours is advisable to minimize any potential performance impact on users and reduce resource usage. 
 
 System-provided Jobs:
  - **Cleanup Database**: Removes database records related to deleted Collections and Assets and their associated reviews. Disabled by default.
  - **Delete Unmapped Asset Reviews**: Delete reviews for rules in STIGs that are no longer assigned to an Asset.  This can occur when STIGs are unassigned from an Asset by a Collection Manager. Disabled by default.
  - **Delete Unmapped Reviews**: Delete reviews that no longer match any STIG Rule in the system. This can occur when old Reference STIGs are removed from the system by an App Manager. Disabled by default.
+ - **Update Aged Reviews**: Modifies or deletes reviews that meet conditions defined by the Review Aging rules specified at the Collection level. Disabled by default. See the :ref:`review-aging-rules` section of the User Guide for more information about Review Aging rules and configuration.
 
 
 .. note::
-   These database maintenance Jobs are not enabled by default. Administrators must enable the Jobs they wish to use. Exercise caution when modifying or running database maintenance jobs, as these operations can affect system data. Always ensure you have appropriate backups before running destructive maintenance operations.
+   Some System Jobs, such as **Update Aged Reviews**, are enabled and scheduled by the App Manager but driven by configuration specified by Collection level rules. When the job runs, it processes each collection that has configured rules; collections without rules are silently skipped. See :ref:`review-aging-rules` in the User Guide for rule configuration details.
 
 .. rubric:: Job Components
 
@@ -181,10 +185,12 @@ Each job consists of the following components:
    Individual operations that perform specific functions. Tasks are pre-defined by the system and can include database maintenance operations, cleanup procedures, and analytical functions. Multiple tasks can be assigned to a single job, and will be run sequentially.
 
    The system provides various pre-defined tasks for common maintenance operations. These tasks can be combined into jobs as needed:
+
    * **WipeDeletedObjects**: Removes soft-deleted records from the database
    * **DeleteUnmappedReviews**: Cleans up reviews that are no longer mapped to current STIG requirements
    * **DeleteUnmappedAssetReviews**: Removes unmapped reviews specific to individual assets
-   * **AnalyzeReviewTables**: Runs the `ANALYZE TABLE` command on review-related database tables to optimize query performance   
+   * **ReviewAging**: Modifies or deletes reviews that meet conditions defined by the Review Aging rules specified at the Collection level
+   * **AnalyzeReviewTables**: Runs the ``ANALYZE TABLE`` command on review-related database tables to optimize query performance
 
 **Schedule (Event)**
    Optional scheduling configuration that determines when and how frequently a job runs:
@@ -228,6 +234,9 @@ The Service Jobs interface provides detailed execution monitoring:
 
 **Run Management**
    Individual job runs can be deleted from the execution history as needed for maintenance purposes with the Trash button in the Job Run row.
+
+.. note::
+   These Service Jobs are not enabled by default. Administrators must enable the Jobs they wish to use. Exercise caution when modifying or running database maintenance jobs, as these operations can affect system data. Always ensure you have appropriate backups before running destructive maintenance operations.
 
 
 

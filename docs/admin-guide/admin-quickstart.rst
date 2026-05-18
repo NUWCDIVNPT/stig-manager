@@ -177,7 +177,7 @@ The only changes that can be made to Users in the STIG Manager interface is thei
 Enable Service Jobs
 ============================
 
-Service Jobs are scheduled background operations that perform essential database maintenance tasks in STIG Manager. **It is highly recommended that you enable and schedule these jobs to maintain the health of your STIG Manager database.** These jobs help keep your database lean and performant by cleaning up unreferenced data that can accumulate over time.
+Service Jobs are scheduled background operations that perform essential database maintenance tasks in STIG Manager. **It is highly recommended that you enable and schedule these jobs to maintain the health of your STIG Manager database.** These jobs help keep your database lean and performant by cleaning up unreferenced data that can accumulate over time.  They also enable some important features such as Review Aging, which automatically acts on reviews that have not been updated within a configurable time threshold.
 
 .. thumbnail:: /assets/images/admin-service-jobs.png
       :width: 75%
@@ -191,6 +191,7 @@ Access the Service Jobs interface from ``Application Management -> Service Jobs`
 #. **Cleanup Database** - Removes records related to deleted Collections and Assets. **Recommended cadence: Weekly**
 #. **Delete Unmapped Reviews** - Cleans up reviews that no longer match any STIG Rule in the system (often because old Reference STIGs were removed). **Recommended cadence: Monthly**
 #. **Delete Unmapped Asset Reviews** - Removes reviews for STIGs that are no longer assigned to Assets. **Recommended cadence: Every 90 days**
+#. **Update Aged Reviews** - Modifies or deletes reviews that meet conditions defined by the Review Aging rules specified at the Collection level. See the :ref:`review-aging-rules` section of the User Guide for more information about Review Aging rules and configuration. **Recommended cadence: Daily or Weekly**
 
 Schedule these jobs to run during off-peak hours to minimize performance impact. You can also run any job immediately using the "Run now..." button if needed. Be sure to click the "Enabled" checkbox to activate each job after configuring its schedule, and Save.
 
@@ -199,45 +200,18 @@ Schedule these jobs to run during off-peak hours to minimize performance impact.
       :show_caption: True
       :title: Service Job Properties   
 
-.. note::
-   Always ensure you have appropriate database backups before enabling these jobs for the first time. See the :ref:`service-jobs` section of the Admin Guide for detailed information about job configuration and monitoring.
-
-
--------------------------------
-
 .. _configure-review-aging:
 
-Configure Review Aging
-============================
+.. rubric:: Configuring Review Aging Behavior
 
-The **Update Aged Reviews** job runs the Review Aging task, which automatically acts on
-reviews that have not been updated within a configurable time threshold. Each collection
-can define its own aging rules; the job processes all collections with configured rules
-in sequence when it runs.
+Some jobs, such as **Update Aged Reviews**, are enabled and scheduled by the App Manager but driven by rules defined per-collection by Collection Owners. When the job runs, it processes each collection that has configured rules; collections without rules are silently skipped.
 
-.. rubric:: Enabling the Job
+This means enabling the job alone has no immediate effect on any reviews. Once it is scheduled, coordinate with your Collection Owners so they can define rules appropriate for their workflows. See :ref:`review-aging-rules` in the User Guide for rule configuration details.
 
-The Update Aged Reviews job is installed but disabled by default. To activate it:
-
-#. Navigate to ``Application Management -> Service Jobs`` in the Navigation Tree.
-#. Double-click **Update Aged Reviews** to open its properties.
-#. Configure a schedule. **Recommended cadence: daily**, during off-peak hours when
-   user activity is low, as the job may hold brief write locks on reviewed rows
-   while it processes each batch.
-#. Check the **Enabled** checkbox and click **Save**.
-
-Once enabled, the job runs automatically on the configured schedule. You can also trigger
-an immediate run at any time using the **Run now...** button.
+App Managers can view system-level run history and output from the Service Jobs panel. Collection Managers and Owners can view output scoped to their own collection from the **Tasks** tab in their Collection Management workspace.
 
 .. note::
-   The job only acts on collections that have at least one enabled aging rule.
-   Collections without rules configured are silently skipped.
-
-.. rubric:: Monitoring Execution
-
-App Managers can view system-level run history and output from the Service Jobs panel.
-Collection Managers and Owners can view output scoped to their collection from the
-**Tasks** tab in their Collection Management workspace (see :ref:`review-aging-rules`).
+   Always ensure you have appropriate database backups before enabling these jobs for the first time. See the :ref:`service-jobs` section of the Admin Guide for detailed information about job configuration and monitoring.
 
 
 .. _automated-imports:

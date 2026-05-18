@@ -1265,23 +1265,33 @@ When a Label is selected in Label tab of the Collection Properties Panel, the "T
 Review Aging
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Review Aging allows Collection Owners to define rules that automatically act on reviews
-that have not been updated within a configurable time period. Rules are processed by the
-**Update Aged Reviews** system job, which is scheduled and enabled by an App Manager.
+Review Aging allows Collection Owners to define rules that automatically act on reviews that have not been updated within a configurable time period. Rules are processed by the **Update Aged Reviews** system job, which is scheduled and enabled by an App Manager.
 
-Collection Managers can view the configured rules and task output. Only Collection Owners
-can create, edit, or delete rules.
+Collection Managers can view the configured rules and task output. Only Collection Owners can create, edit, or delete rules.
 
-Access Review Aging configuration from the **Tasks** tab in the Collection Management
-workspace. Select the **ReviewAging** task from the task list to display the rules grid
-and current schedule summary.
+Access Review Aging configuration from the **Tasks** tab in the Collection Management workspace. Select the **ReviewAging** task from the task list to display the rules grid and current schedule summary.
+
+.. important::
+   Rules defined here will not act on any reviews unless the **Update Aged Reviews** system job is enabled and scheduled by an App Manager. Coordinate with your App Manager to confirm the job is running on a cadence appropriate for your rules.
+
+
+.. thumbnail:: /assets/images/collection-manage-tasks.png
+      :width: 35% 
+      :show_caption: True
+      :title: Review Aging Task
+
 
 .. rubric:: Rules and Ordinal
 
-A collection can have multiple rules, processed in ordinal order. Rules are independent —
-each rule scans the collection's reviews separately without awareness of other rules.
+A collection can have multiple rules, processed in ordinal order. Rules are independent — each rule scans the collection's reviews separately without awareness of other rules.
 
 .. rubric:: Creating a Rule
+
+.. thumbnail:: /assets/images/collection-manage-review-aging-rule.png
+      :width: 35% 
+      :show_caption: True
+      :title: Review Aging Rule
+
 
 Click **New Rule** (Owners only) to open the rule editor. Each rule has three sections:
 
@@ -1295,8 +1305,7 @@ Defines which reviews are eligible and when:
   - *Status timestamp* (``statusTs``) — When the review status (Saved, Submitted, Accepted, Rejected) was last changed.
   - *Touch timestamp* (``touchTs``) — When any aspect of the review was last touched (latest of the two above).
 
-- **Interval** — The age threshold. Reviews where the trigger field is older than this value
-  are eligible. Expressed in days, hours, minutes, or seconds.
+- **Interval** — The age threshold. Reviews where the trigger field is older than this value   are eligible. Expressed in days, hours, minutes, or seconds.
 
 **Action**
 
@@ -1311,17 +1320,14 @@ Defines what happens to eligible reviews:
   - *Set result to Informational* — Changes the result to Informational and resets status to Saved.
 
 .. note::
-   Update actions that change the result will also reset the review status to Saved,
-   regardless of its current status.
+   Update actions that change the result will also reset the review status to Saved, regardless of its current status.
 
 .. note::
-   Update actions skip reviews already in the target state. For example, a "Set status
-   to Saved" rule will not reprocess reviews that are already Saved.
+   Update actions skip reviews already in the target state. For example, a "Set status to Saved" rule will not reprocess reviews that are already Saved.
 
 **Target**
 
-Optionally restricts which reviews the rule applies to. If no target is set, the rule
-applies to all reviews in the collection. Available targets:
+Optionally restricts which reviews the rule applies to. If no target is set, the rule applies to all reviews in the collection. Available targets:
 
 - **Entire collection** (no target) — All reviews on all assets and STIGs.
 - **Asset** — All reviews on a specific asset, across all assigned STIGs.
@@ -1339,10 +1345,7 @@ applies to all reviews in the collection. Available targets:
 
 .. rubric:: Viewing Task Output
 
-Click **Task Output...** to open the output log for this collection's aging task runs.
-The log shows progress per batch processed, including how many reviews were acted on.
-Use this to confirm rules are matching the expected reviews and to diagnose unexpected
-results.
+Click **Task Output...** to open the output log for this collection's aging task runs. The log shows progress per batch processed, including how many reviews were acted on. Use this to confirm rules are matching the expected reviews and to diagnose unexpected results.
 
 -------------------------------
 
