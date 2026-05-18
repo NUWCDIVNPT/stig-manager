@@ -201,13 +201,25 @@ const dialogPt = {
   closeButton: { style: 'color: var(--color-text-dim); border-radius: 4px;' },
 }
 
+
+const checkboxPt = {
+  box: ({ context }) => ({
+    style: `background: ${context.checked ? 'var(--color-action-blue-dark)' : 'var(--color-background-light)'}; border-color: ${context.checked ? 'var(--color-action-blue-dark)' : 'var(--color-border-default)'};`,
+  }),
+  icon: { style: 'color: white;' },
+}
+
+const inputTextPt = {
+  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 0.88rem; padding: 0.45rem 0.65rem;' },
+}
+
 const labelPickerPt = {
   root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; display: inline-flex; align-items: center; height: 1.9rem; cursor: pointer; transition: all 0.15s;' },
   labelContainer: { style: 'padding: 0; display: flex; align-items: center;' },
   label: { style: 'padding: 0;' },
   dropdown: { style: 'color: var(--color-text-dim); width: 1.8rem;' },
   panel: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); min-width: 140px;' },
-  header: { style: 'display: none;' },
+  header: { style: 'padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--color-border-default); display: flex; align-items: center; gap: 0.5rem;' },
   listContainer: { style: 'padding: 0.25rem;' },
   item: ({ context }) => ({
     style: {
@@ -217,16 +229,39 @@ const labelPickerPt = {
       cursor: 'pointer',
     },
   }),
+  // option checkboxes
+  optionCheckbox: {
+    box: ({ context }) => ({
+      style: `width: 14px; height: 14px; background: ${context.checked ? 'var(--color-action-blue-dark)' : 'var(--color-background-light)'}; border-color: ${context.checked ? 'var(--color-action-blue-dark)' : 'var(--color-border-default)'};`,
+    }),
+    icon: { style: 'color: white;' },
+  },
+  // select-all header checkbox
+  headerCheckbox: {
+    box: ({ context }) => ({
+      style: `background: ${context.checked ? 'var(--color-action-blue-dark)' : 'var(--color-background-light)'}; border-color: ${context.checked ? 'var(--color-action-blue-dark)' : 'var(--color-border-default)'};`,
+    }),
+    icon: { style: 'color: white;' },
+  },
 }
 
-const checkboxPt = {
-  box: ({ context }) => ({
-    style: `background-color: transparent; border-color: var(--color-border-hover); ${context.checked ? 'background-color: var(--color-primary-highlight) !important; border-color: var(--color-primary-highlight) !important;' : ''}`,
-  }),
-  icon: ({ context }) => ({
-    style: context.checked ? 'color: white !important;' : '',
-  }),
+const pickListPt = {
+  sourceFilterInput: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border: 1px solid var(--color-border-default); border-radius: 4px; font-size: 0.82rem; padding: 0.2rem 0.5rem; width: 100%;' },
+  targetFilterInput: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border: 1px solid var(--color-border-default); border-radius: 4px; font-size: 0.82rem; padding: 0.2rem 0.5rem; width: 100%;' },
+  sourceControls: {
+    moveUpButton: { root: { style: 'border-radius: 4px;' } },
+    moveDownButton: { root: { style: 'border-radius: 4px;' } },
+    moveTopButton: { root: { style: 'border-radius: 4px;' } },
+    moveBottomButton: { root: { style: 'border-radius: 4px;' } },
+  },
+  transferControls: {
+    moveToTargetButton: { root: { style: 'border-radius: 4px;' } },
+    moveAllToTargetButton: { root: { style: 'border-radius: 4px;' } },
+    moveToSourceButton: { root: { style: 'border-radius: 4px;' } },
+    moveAllToSourceButton: { root: { style: 'border-radius: 4px;' } },
+  },
 }
+
 </script>
 
 <template>
@@ -266,6 +301,7 @@ const checkboxPt = {
               id="am-name"
               v-model="form.name"
               :invalid="!!nameError"
+              :pt="inputTextPt"
               style="width: 100%"
             />
           </div>
@@ -282,15 +318,15 @@ const checkboxPt = {
         <div class="row row--3col">
           <div class="labeled-field">
             <span class="flabel">FQDN <span class="opt-tag">optional</span></span>
-            <InputText v-model="form.fqdn" placeholder="Enter FQDN" class="fi" />
+            <InputText v-model="form.fqdn" placeholder="Enter FQDN" :pt="inputTextPt" class="fi" />
           </div>
           <div class="labeled-field">
             <span class="flabel">IP address <span class="opt-tag">optional</span></span>
-            <InputText v-model="form.ip" placeholder="Enter IP address" class="fi" />
+            <InputText v-model="form.ip" placeholder="Enter IP address" :pt="inputTextPt" class="fi" />
           </div>
           <div class="labeled-field">
             <span class="flabel">MAC address <span class="opt-tag">optional</span></span>
-            <InputText v-model="form.mac" placeholder="Enter MAC address" class="fi" />
+            <InputText v-model="form.mac" placeholder="Enter MAC address" :pt="inputTextPt" class="fi" />
           </div>
         </div>
 
@@ -313,6 +349,7 @@ const checkboxPt = {
               option-label="name"
               option-value="labelId"
               :pt="labelPickerPt"
+              :show-toggle-all="true"
               placeholder="Add label"
               @hide="commitLabelPicker"
             >
@@ -348,6 +385,7 @@ const checkboxPt = {
           filter-by="benchmarkId"
           source-filter-placeholder="Search STIGs..."
           target-filter-placeholder="Search assigned..."
+          :pt="pickListPt"
         >
           <template #sourceheader>
             Available
@@ -414,7 +452,6 @@ const checkboxPt = {
   line-height: 1.3;
 }
 
-/* ── Body ──────────────────────────────────────────────────────────────────── */
 
 .loading-state {
   display: flex;
@@ -431,7 +468,6 @@ const checkboxPt = {
   overflow: hidden;
 }
 
-/* ── Asset details section ─────────────────────────────────────────────────── */
 
 .form-section {
   display: flex;
@@ -549,22 +585,6 @@ const checkboxPt = {
   opacity: 0.5;
 }
 
-:deep(.p-multiselect:hover) {
-  border-color: var(--color-action-blue-dark) !important;
-}
-
-:deep(.p-multiselect-option .p-checkbox .p-checkbox-box) {
-  background: var(--color-background-light) !important;
-  border-color: var(--color-border-default) !important;
-  width: 14px;
-  height: 14px;
-}
-
-:deep(.p-multiselect-option.p-selected .p-checkbox .p-checkbox-box) {
-  background: var(--color-action-blue-dark) !important;
-  border-color: var(--color-action-blue-dark) !important;
-}
-
 .label-chip-wrapper {
   display: inline-flex;
   align-items: center;
@@ -624,64 +644,5 @@ const checkboxPt = {
   justify-content: flex-end;
   gap: 0.8rem;
   padding: 0.75rem 1.25rem;
-}
-
-/* ── PrimeVue overrides ────────────────────────────────────────────────────── */
-
-:deep(.p-inputtext) {
-  background: var(--color-background-light) !important;
-  color: var(--color-text-primary) !important;
-  border-color: var(--color-border-default) !important;
-  font-size: 0.88rem;
-  padding: 0.45rem 0.65rem;
-}
-
-:deep(.p-inputtext:focus) {
-  border-color: var(--color-action-blue-dark) !important;
-  box-shadow: none !important;
-}
-
-:deep(.p-inputtext.p-invalid) {
-  border-color: #f87171 !important;
-}
-
-:deep(.p-checkbox .p-checkbox-box) {
-  background: var(--color-background-light) !important;
-  border-color: var(--color-border-default) !important;
-}
-
-:deep(.p-checkbox.p-checked .p-checkbox-box) {
-  background: var(--color-action-blue-dark) !important;
-  border-color: var(--color-action-blue-dark) !important;
-}
-
-:deep(.p-picklist-filter-input) {
-  background: var(--color-background-light) !important;
-  color: var(--color-text-primary) !important;
-  border: 1px solid var(--color-border-default) !important;
-  border-radius: 4px !important;
-  font-size: 0.82rem !important;
-  padding: 0.2rem 0.5rem !important;
-  width: 100%;
-}
-
-:deep(.p-picklist-filter-input:focus) {
-  outline: none;
-  border-color: var(--color-action-blue-dark) !important;
-}
-
-:deep(.p-picklist-controls button:hover) {
-  color: var(--color-text-bright) !important;
-  background: var(--color-background-subtle) !important;
-  border-radius: 4px;
-}
-
-:deep(.p-button-primary) {
-  background: var(--color-action-blue-dark) !important;
-  color: #fff !important;
-}
-
-:deep(.p-button-primary:hover:not(:disabled)) {
-  background: color-mix(in srgb, var(--color-action-blue-dark) 85%, #000) !important;
 }
 </style>

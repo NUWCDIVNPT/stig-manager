@@ -1,13 +1,16 @@
 <script setup>
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import Select from 'primevue/select'
+import RadioButton from 'primevue/radiobutton'
 
+import Select from 'primevue/select'
 import Tree from 'primevue/tree'
 import { computed, reactive, ref, watch } from 'vue'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../ImportWizard/lib/importDialogPt.js'
+import targetIcon from '../../../assets/target.svg'
+import shieldIcon from '../../../assets/shield-green-check.svg'
 import {
   downloadArchive,
   fetchAssetStigSummary,
@@ -108,9 +111,11 @@ function formatPct(value) {
   return `${rounded}%`
 }
 
+const ROOT_KEY = 'root-all'
+
 function buildInitialTree() {
   const keys = {}
-  nodes.value = eligibleAssets.value.map((a) => {
+  const assetNodes = eligibleAssets.value.map((a) => {
     keys[assetKey(a.assetId)] = { checked: true, partialChecked: false }
     return {
       key: assetKey(a.assetId),
@@ -124,6 +129,14 @@ function buildInitialTree() {
       children: [],
     }
   })
+  keys[ROOT_KEY] = { checked: true, partialChecked: false }
+  nodes.value = [{
+    key: ROOT_KEY,
+    label: 'All Assets',
+    data: { type: 'root' },
+    leaf: false,
+    children: assetNodes,
+  }]
   selectionKeys.value = keys
   expandedAssetIds.clear()
   loadingAssetIds.clear()
@@ -159,10 +172,11 @@ async function onNodeExpand(node) {
         leaf: true,
       }
     })
-    const idx = nodes.value.findIndex(n => n.key === assetKey(assetId))
-    if (idx !== -1) {
-      const next = { ...nodes.value[idx], children }
-      nodes.value = nodes.value.with(idx, next)
+    const rootNode = nodes.value[0]
+    if (!rootNode) return
+    const assetNode = (rootNode.children ?? []).find(n => n.key === assetKey(assetId))
+    if (assetNode) {
+      assetNode.children = children
     }
     if (parentChecked) {
       const nextKeys = { ...selectionKeys.value }
@@ -185,7 +199,9 @@ async function onNodeExpand(node) {
 
 const effectiveSelections = computed(() => {
   const out = []
-  for (const node of nodes.value) {
+  const rootNode = nodes.value[0]
+  if (!rootNode) return out
+  for (const node of rootNode.children ?? []) {
     if (node.data?.type !== 'asset') {
       continue
     }
@@ -401,10 +417,13 @@ const treePt = {
   },
 }
 
-
-
 const selectPt = {
   root: { style: 'background: var(--color-background-light); border-color: var(--color-border-default); color: var(--color-text-primary);' },
+}
+
+const radioButtonPt = {
+  root: { style: 'width: 1.3rem; height: 1.3rem; cursor: pointer;' },
+  box: { style: 'width: 1.3rem; height: 1.3rem; cursor: pointer;' },
 }
 </script>
 
@@ -453,6 +472,18 @@ const selectPt = {
         >
           <template #default="{ node }">
             <div class="node-row">
+              <img
+                v-if="node.data?.type === 'asset'"
+                :src="targetIcon"
+                class="node-icon"
+                alt=""
+              />
+              <img
+                v-else-if="node.data?.type === 'stig'"
+                :src="shieldIcon"
+                class="node-icon"
+                alt=""
+              />
               <span class="node-label">{{ node.label }}</span>
               <span
                 v-if="node.data?.type === 'asset' && loadingAssetIds.has(node.data.assetId)"
@@ -478,10 +509,10 @@ const selectPt = {
         <div class="options-row">
           <span class="opt-label">Export to:</span>
           <div class="radio-group">
-            <label v-for="opt in TARGETS" :key="opt.value" class="radio-option">
-              <input type="radio" :value="opt.value" v-model="target" />
-              {{ opt.label }}
-            </label>
+            <div v-for="opt in TARGETS" :key="opt.value" class="radio-option">
+              <RadioButton v-model="target" :value="opt.value" :input-id="`target-${opt.value}`" :pt="radioButtonPt" />
+              <label :for="`target-${opt.value}`">{{ opt.label }}</label>
+            </div>
           </div>
         </div>
 
@@ -515,22 +546,14 @@ const selectPt = {
 
     <template #footer>
       <div class="modal-footer">
-        <span v-if="validationMessage" class="status-error">
-          <i class="pi pi-exclamation-triangle" /> {{ validationMessage }}
-        </span>
-        <span v-else class="status-ok">
-          <i class="pi pi-check-circle" /> {{ effectiveSelections.length }} asset{{ effectiveSelections.length === 1 ? '' : 's' }} ready
-        </span>
-        <div class="footer-actions">
-          <Button label="Cancel" :pt="secondaryBtnPt" @click="localVisible = false" />
-          <Button
-            :label="submitLabel"
-            :pt="primaryBtnPt"
-            :loading="isSubmitting"
-            :disabled="!canSubmit"
-            @click="onSubmit"
-          />
-        </div>
+        <Button label="Cancel" :pt="secondaryBtnPt" @click="localVisible = false" />
+        <Button
+          :label="submitLabel"
+          :pt="primaryBtnPt"
+          :loading="isSubmitting"
+          :disabled="!canSubmit"
+          @click="onSubmit"
+        />
       </div>
     </template>
   </Dialog>
@@ -623,7 +646,7 @@ const selectPt = {
 }
 
 .opt-label {
-  font-size: 0.82rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-primary);
   white-space: nowrap;
@@ -642,19 +665,13 @@ const selectPt = {
 .radio-option {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  font-size: 1rem;
-  color: var(--color-text-primary);
-  cursor: pointer;
-  user-select: none;
+  gap: 0.4rem;
 }
 
-.radio-option input[type='radio'] {
-  accent-color: var(--color-action-blue-dark);
-  width: 1.1rem;
-  height: 1.1rem;
+.radio-option label {
   cursor: pointer;
-  flex-shrink: 0;
+  font-size: 1rem;
+  color: var(--color-text-primary);
 }
 
 /* ── Footer ── */
@@ -663,7 +680,7 @@ const selectPt = {
   align-items: center;
   gap: 0.8rem;
   padding: 0.65rem 1rem;
-  border-top: 1px solid var(--color-border-default);
+  justify-content: flex-end;
 }
 
 .footer-actions {
@@ -702,6 +719,13 @@ const selectPt = {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.node-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  flex-shrink: 0;
+  display: block;
 }
 
 .node-loading {
