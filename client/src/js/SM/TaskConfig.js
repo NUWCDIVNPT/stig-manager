@@ -271,9 +271,7 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
         fields: ['value', 'display'],
         data: [
           ['days', 'days'],
-          ['hours', 'hours'],
-          ['minutes', 'minutes'],
-          ['seconds', 'seconds']
+          ['hours', 'hours']
         ]
       }),
       valueField: 'value',
