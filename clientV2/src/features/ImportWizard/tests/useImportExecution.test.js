@@ -107,7 +107,7 @@ describe('useImportExecution', () => {
 
       expect(createAssetMock).toHaveBeenCalledTimes(1)
       expect(updateAssetMock).not.toHaveBeenCalled()
-      expect(postReviewsByAssetMock).toHaveBeenCalledWith('9', 555, [{ id: 'r1' }])
+      expect(postReviewsByAssetMock).toHaveBeenCalledWith('9', 555, [{ id: 'r1' }], expect.objectContaining({ signal: expect.any(AbortSignal) }))
       expect(e.importStatusRows.value[0]).toMatchObject({ assetId: 555, created: true, addedStigs: false })
     })
 
@@ -126,7 +126,7 @@ describe('useImportExecution', () => {
         },
       })
       await e.runImport()
-      expect(updateAssetMock).toHaveBeenCalledWith(100, { collectionId: '9', stigs: ['S1'] })
+      expect(updateAssetMock).toHaveBeenCalledWith(100, { collectionId: '9', stigs: ['S1'] }, expect.objectContaining({ signal: expect.any(AbortSignal) }))
       expect(createAssetMock).not.toHaveBeenCalled()
       expect(e.importStatusRows.value[0]).toMatchObject({ created: false, addedStigs: true, inserted: 1, updated: 2 })
     })
@@ -154,7 +154,7 @@ describe('useImportExecution', () => {
         mac: 'aa:bb',
         noncomputing: false,
         metadata: { tag: 'x' },
-      })
+      }, expect.objectContaining({ signal: expect.any(AbortSignal) }))
     })
 
     it('skips asset write when only hasUpdatedAssetProps but option is disabled', async () => {
@@ -267,7 +267,7 @@ describe('useImportExecution', () => {
         },
       })
       await e.runImport()
-      expect(postReviewsByAssetMock).toHaveBeenCalledWith('99', 100, [{ id: 'r1' }])
+      expect(postReviewsByAssetMock).toHaveBeenCalledWith('99', 100, [{ id: 'r1' }], expect.objectContaining({ signal: expect.any(AbortSignal) }))
     })
   })
 
@@ -312,7 +312,7 @@ describe('useImportExecution', () => {
         },
       })
       await e.runImport()
-      expect(postReviewsByAssetMock).toHaveBeenCalledWith('9', 9001, [{ id: 'r' }])
+      expect(postReviewsByAssetMock).toHaveBeenCalledWith('9', 9001, [{ id: 'r' }], expect.objectContaining({ signal: expect.any(AbortSignal) }))
     })
   })
 

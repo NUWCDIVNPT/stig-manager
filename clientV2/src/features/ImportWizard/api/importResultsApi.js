@@ -15,20 +15,20 @@ export function fetchScapMap() {
   return apiCall('getScapMap', {})
 }
 
-export function createAsset(body) {
-  return apiCall('createAsset', {}, body)
+export function createAsset(body, opts = {}) {
+  return apiCall('createAsset', {}, body, opts)
 }
 
-export function updateAsset(assetId, body) {
+export function updateAsset(assetId, body, opts = {}) {
   if (!assetId) {
     throw new Error('An assetId is required.')
   }
-  return apiCall('updateAsset', { assetId }, body)
+  return apiCall('updateAsset', { assetId }, body, opts)
 }
 
-export function postReviewsByAsset(collectionId, assetId, body) {
+export function postReviewsByAsset(collectionId, assetId, body, opts = {}) {
   if (!collectionId || !assetId) {
     throw new Error('collectionId and assetId are required.')
   }
-  return apiCall('postReviewsByAsset', { collectionId, assetId }, body)
+  return apiCall('postReviewsByAsset', { collectionId, assetId }, body, opts)
 }

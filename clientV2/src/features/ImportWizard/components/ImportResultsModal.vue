@@ -1,7 +1,7 @@
 <script setup>
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useImportProgressStore } from '../../../shared/stores/importProgressStore.js'
 import { importDialogPt, primaryBtnPt } from '../lib/importDialogPt.js'
 import { useImportWizard } from '../composables/useImportWizard.js'
@@ -48,29 +48,44 @@ const {
 
 const progressStore = useImportProgressStore()
 
+// Tracks which UI affordance is closing the modal so the visibility watcher
+// can branch between "minimize, keep importing" and "cancel and stop".
+// null means the dialog X / Esc / scrim — those cancel.
+const closeAction = ref(null)
+
 function importInFlight() {
-  return step.value === 'importProgress' && !executor.importIsDone.value
+  return step.value === 'importProgress'
+    && !executor.importIsDone.value
+    && !executor.importCancelled.value
 }
 
 watch(() => props.visible, (isOpen) => {
   if (isOpen) {
-    // If the user opens the modal while an import is running,
-    // dismiss the background notification (since they can see progress in the modal)
+    closeAction.value = null
     if (importInFlight()) {
       progressStore.dismiss()
     }
     else {
       openWizard()
     }
+    return
   }
-  else {
-    // If the user closes the modal while an import is running,
-    // show the background notification
-    if (importInFlight()) {
+
+  if (importInFlight()) {
+    if (closeAction.value === 'minimize') {
       progressStore.startBackground({ totalCount: parser.parseResults.value.taskAssets?.size ?? 0 })
     }
+    else {
+      executor.cancel()
+    }
   }
+  closeAction.value = null
 })
+
+function minimizeWizard() {
+  closeAction.value = 'minimize'
+  visible.value = false
+}
 
 // Keep the notification in sync with executor state while it's active
 watch(
@@ -99,6 +114,28 @@ function doneImport() { visible.value = false }
     :style="{ height: '85vh', width: 'min(75vw, 1024px)' }"
     :pt="importDialogPt"
   >
+    <template #closebutton="{ closeCallback }">
+      <button
+        v-if="importInFlight()"
+        type="button"
+        class="dialog-header-icon"
+        aria-label="Minimize"
+        title="Minimize (keep importing in the background)"
+        @click="minimizeWizard"
+      >
+        <span class="dialog-header-icon__minimize-bar" />
+      </button>
+      <button
+        type="button"
+        class="dialog-header-icon"
+        aria-label="Close"
+        :title="importInFlight() ? 'Cancel import and close' : 'Close'"
+        @click="closeCallback"
+      >
+        <span class="pi pi-times" />
+      </button>
+    </template>
+
     <div v-if="step === 'fileQueue'" class="step-container">
       <div v-if="collection.collectionError.value" class="error-message">
         Failed to load collection settings: {{ collection.collectionError.value }}
@@ -211,4 +248,34 @@ function doneImport() { visible.value = false }
 .pp-filename { margin: 0; color: var(--color-text-dim); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; }
+
+.dialog-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-dim);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+.dialog-header-icon:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 12%, transparent);
+  color: var(--color-text-primary);
+}
+.dialog-header-icon:focus-visible {
+  outline: 2px solid var(--color-action-blue);
+  outline-offset: 1px;
+}
+.dialog-header-icon__minimize-bar {
+  display: block;
+  width: 12px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+}
 </style>
