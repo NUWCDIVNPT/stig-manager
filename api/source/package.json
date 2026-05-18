@@ -38,7 +38,7 @@
     "swagger-ui-express": "^4.1.6",
     "umzug": "^2.3.0",
     "undici": "^6.24.0",
-    "ws": "^8.18.3",
+    "ws": "^8.20.1",
     "xlsx-template": "file:utils/xlsx-template-js-zip-upgrade"
   }
 }
