@@ -5,8 +5,11 @@ import { useImportCollection } from './useImportCollection.js'
 import { useImportExecution } from './useImportExecution.js'
 import { useImportOptions } from './useImportOptions.js'
 
+const LARGE_BATCH_THRESHOLD = 250
+
 export function useImportWizard({ collectionId, createObjects = true, canUpdateAssetProps = true, onImported } = {}) {
   const step = ref('fileQueue')
+  const awaitingParseConfirmation = ref(false)
 
   const collection = useImportCollection(collectionId)
 
@@ -43,6 +46,7 @@ export function useImportWizard({ collectionId, createObjects = true, canUpdateA
 
   function reset() {
     step.value = 'fileQueue'
+    awaitingParseConfirmation.value = false
     collection.reset()
     options.reset()
     queue.reset()
@@ -52,20 +56,20 @@ export function useImportWizard({ collectionId, createObjects = true, canUpdateA
 
   // Step transitions
   async function advanceFromFileQueue() {
-    if (queue.sourceFiles.value.length >= 250) {
-      step.value = 'batchWarning'
-    }
-    else {
-      await advanceToParsing()
-    }
-  }
-
-  async function advanceFromBatchWarning() {
-    await advanceToParsing()
-  }
-
-  async function advanceToParsing() {
     step.value = 'parseProgress'
+    if (queue.sourceFiles.value.length >= LARGE_BATCH_THRESHOLD) {
+      awaitingParseConfirmation.value = true
+      return
+    }
+    await runParsing()
+  }
+
+  async function confirmAndStartParsing() {
+    awaitingParseConfirmation.value = false
+    await runParsing()
+  }
+
+  async function runParsing() {
     await parser.startParsing()
 
     if (parser.parseResults.value.errors.length > 0 || parser.parseResults.value.hasDuplicates) {
@@ -87,6 +91,7 @@ export function useImportWizard({ collectionId, createObjects = true, canUpdateA
 
   return {
     step,
+    awaitingParseConfirmation,
     collection,
     options,
     queue,
@@ -97,7 +102,7 @@ export function useImportWizard({ collectionId, createObjects = true, canUpdateA
     reset,
 
     advanceFromFileQueue,
-    advanceFromBatchWarning,
+    confirmAndStartParsing,
     advanceFromErrors,
     startImport,
   }

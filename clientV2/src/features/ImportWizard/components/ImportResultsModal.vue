@@ -5,7 +5,7 @@ import { computed, watch } from 'vue'
 import { useImportProgressStore } from '../../../shared/stores/importProgressStore.js'
 import { importDialogPt, primaryBtnPt } from '../lib/importDialogPt.js'
 import { useImportWizard } from '../composables/useImportWizard.js'
-import ImportBatchWarningStep from './ImportBatchWarningStep2.vue'
+import ImportBatchWarning from './ImportBatchWarning.vue'
 import ImportErrorsWarningsStep from './ImportErrorsWarningsStep3.vue'
 import ImportFileQueueStep from './ImportFileQueueStep1.vue'
 import ImportOptionsPanel from './ImportOptionsPanel.vue'
@@ -29,13 +29,14 @@ const visible = computed({
 const {
   open: openWizard,
   step,
+  awaitingParseConfirmation,
   collection,
   options,
   queue,
   parser,
   executor,
   advanceFromFileQueue,
-  advanceFromBatchWarning,
+  confirmAndStartParsing,
   advanceFromErrors,
   startImport,
 } = useImportWizard({
@@ -124,18 +125,16 @@ function doneImport() { visible.value = false }
       </template>
     </div>
 
-    <ImportBatchWarningStep
-      v-else-if="step === 'batchWarning'"
-      :file-count="queue.sourceFiles.value.length"
-      class="step-container"
-    />
-
     <div v-else-if="step === 'parseProgress'" class="step-container">
       <p class="pp-label">
-        <span class="pi pi-spin pi-spinner" style="margin-right: 0.5rem;" />Parsing files…
+        <span
+          :class="['pi', awaitingParseConfirmation ? 'pi-exclamation-circle pp-label__icon--warn' : 'pi-spin pi-spinner']"
+          style="margin-right: 0.5rem;"
+        />
+        {{ awaitingParseConfirmation ? `Ready to parse ${queue.sourceFiles.value.length} files` : 'Parsing files…' }}
       </p>
       <p class="pp-count">
-        {{ parser.parseProgressCurrent.value }} of {{ parser.parseProgressTotal.value }} files
+        {{ parser.parseProgressCurrent.value }} of {{ awaitingParseConfirmation ? queue.sourceFiles.value.length : parser.parseProgressTotal.value }} files
       </p>
       <div class="pp-track">
         <div class="pp-fill" :style="{ width: `${parser.parseProgressValue.value}%` }" />
@@ -143,6 +142,12 @@ function doneImport() { visible.value = false }
       <p class="pp-filename">
         {{ parser.parseProgressText.value }}
       </p>
+
+      <ImportBatchWarning
+        v-if="queue.sourceFiles.value.length >= 250"
+        :file-count="queue.sourceFiles.value.length"
+        :show-continue-hint="awaitingParseConfirmation"
+      />
     </div>
 
     <ImportErrorsWarningsStep
@@ -174,7 +179,7 @@ function doneImport() { visible.value = false }
     <template #footer>
       <div class="modal-footer">
         <Button v-if="step === 'fileQueue'" label="Continue" icon="pi pi-arrow-right" icon-pos="right" :disabled="!queue.canContinue.value" :pt="primaryBtnPt" @click="advanceFromFileQueue" />
-        <Button v-else-if="step === 'batchWarning'" label="Continue" icon="pi pi-arrow-right" icon-pos="right" :pt="primaryBtnPt" @click="advanceFromBatchWarning" />
+        <Button v-else-if="step === 'parseProgress' && awaitingParseConfirmation" label="Continue" icon="pi pi-arrow-right" icon-pos="right" :pt="primaryBtnPt" @click="confirmAndStartParsing" />
         <template v-else-if="step === 'errorsWarnings'">
           <Button v-if="parser.parseResults.value.stopWizard" label="Close" :pt="primaryBtnPt" @click="closeWizard" />
           <Button v-else label="Continue" icon="pi pi-arrow-right" icon-pos="right" :pt="primaryBtnPt" @click="advanceFromErrors" />
@@ -199,6 +204,7 @@ function doneImport() { visible.value = false }
 .error-message { color: var(--color-text-error); }
 
 .pp-label { font-weight: 600; margin: 0; }
+.pp-label__icon--warn { color: var(--color-warning-yellow); }
 .pp-count { margin: 0; color: var(--color-text-dim); font-size: 0.9rem; }
 .pp-track { height: 8px; background: var(--color-border-default); border-radius: 4px; overflow: hidden; }
 .pp-fill { height: 100%; background: var(--color-action-blue-dark); border-radius: 4px; transition: width 0.2s ease; }

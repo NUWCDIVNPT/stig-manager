@@ -1,6 +1,7 @@
 <script setup>
 defineProps({
   fileCount: { type: Number, required: true },
+  showContinueHint: { type: Boolean, default: true },
 })
 </script>
 
@@ -60,8 +61,8 @@ defineProps({
       </div>
     </div>
 
-    <p class="bw-continue-hint">
-      Click <strong>Continue</strong> to proceed anyway.
+    <p v-if="showContinueHint" class="bw-continue-hint">
+      Click <strong>Continue</strong> to begin parsing.
     </p>
   </div>
 </template>
