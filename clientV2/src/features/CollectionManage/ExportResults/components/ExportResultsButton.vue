@@ -2,7 +2,7 @@
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { computed, reactive, ref } from 'vue'
-import { primaryBtnPt } from '../../ImportWizard/lib/importDialogPt.js'
+import { primaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
 import ExportResultsModal from './ExportResultsModal.vue'
 
 const props = defineProps({

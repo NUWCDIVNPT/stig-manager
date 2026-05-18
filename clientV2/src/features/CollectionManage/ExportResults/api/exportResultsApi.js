@@ -1,7 +1,7 @@
 import { saveAs } from 'file-saver-es'
-import { apiCall } from '../../../shared/api/apiClient.js'
-import { buildQueryString } from '../../../shared/api/queryString.js'
-import { getDownloadUrl } from '../../../shared/serviceWorker.js'
+import { apiCall } from '../../../../shared/api/apiClient.js'
+import { buildQueryString } from '../../../../shared/api/queryString.js'
+import { getDownloadUrl } from '../../../../shared/serviceWorker.js'
 
 function apiBase() {
   try {

@@ -6,11 +6,12 @@ import RadioButton from 'primevue/radiobutton'
 import Select from 'primevue/select'
 import Tree from 'primevue/tree'
 import { computed, reactive, ref, watch } from 'vue'
-import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
-import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../ImportWizard/lib/importDialogPt.js'
-import targetIcon from '../../../assets/target.svg'
-import shieldIcon from '../../../assets/shield-green-check.svg'
+import shieldIcon from '../../../../assets/shield-green-check.svg'
+import targetIcon from '../../../../assets/target.svg'
+import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
+import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import { formatPercent } from '../../../../shared/lib.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
 import {
   downloadArchive,
   fetchAssetStigSummary,
@@ -99,17 +100,6 @@ function badgeClass(pct) {
   return pct >= 99.5 ? 'badge-complete' : 'badge-incomplete'
 }
 
-function formatPct(value) {
-  if (value == null || Number.isNaN(value)) {
-    return '—'
-  }
-  const rounded = value > 0 && value < 1
-    ? 1
-    : value > 99 && value < 100
-      ? 99
-      : Math.round(value)
-  return `${rounded}%`
-}
 
 const ROOT_KEY = 'root-all'
 
@@ -173,7 +163,7 @@ async function onNodeExpand(node) {
       }
     })
     const rootNode = nodes.value[0]
-    if (!rootNode) return
+    if (!rootNode) { return }
     const assetNode = (rootNode.children ?? []).find(n => n.key === assetKey(assetId))
     if (assetNode) {
       assetNode.children = children
@@ -200,7 +190,7 @@ async function onNodeExpand(node) {
 const effectiveSelections = computed(() => {
   const out = []
   const rootNode = nodes.value[0]
-  if (!rootNode) return out
+  if (!rootNode) { return out }
   for (const node of rootNode.children ?? []) {
     if (node.data?.type !== 'asset') {
       continue
@@ -339,7 +329,7 @@ async function submitCollection() {
       dstCollectionId: dstId,
       selections: effectiveSelections.value,
     })
-    const { readNdjson } = await import('../../../shared/lib/ndjsonStream.js')
+    const { readNdjson } = await import('../../../../shared/lib/ndjsonStream.js')
     for await (const event of readNdjson(response)) {
       emit('collection-export-progress', event)
     }
@@ -477,13 +467,13 @@ const radioButtonPt = {
                 :src="targetIcon"
                 class="node-icon"
                 alt=""
-              />
+              >
               <img
                 v-else-if="node.data?.type === 'stig'"
                 :src="shieldIcon"
                 class="node-icon"
                 alt=""
-              />
+              >
               <span class="node-label">{{ node.label }}</span>
               <span
                 v-if="node.data?.type === 'asset' && loadingAssetIds.has(node.data.assetId)"
@@ -495,9 +485,9 @@ const radioButtonPt = {
                 v-if="node.data?.acceptedPct != null"
                 class="badge"
                 :class="badgeClass(node.data.acceptedPct)"
-                :title="`Accepted ${formatPct(node.data.acceptedPct)}`"
+                :title="`Accepted ${formatPercent(node.data.acceptedPct, 100)}`"
               >
-                {{ formatPct(node.data.acceptedPct) }}
+                {{ formatPercent(node.data.acceptedPct, 100) }}
               </span>
             </div>
           </template>
@@ -602,7 +592,6 @@ const radioButtonPt = {
 }
 
 .legend-label {
-  font-size: 0.75rem;
   color: var(--color-text-dim);
   margin-right: 0.1rem;
 }
@@ -745,12 +734,12 @@ const radioButtonPt = {
 }
 
 .badge-complete {
-  background-color: #425722;
+  background-color: var(--metrics-status-chart-accepted);
   color: var(--color-text-bright);
 }
 
 .badge-incomplete {
-  background-color: hsl(220deg 10% 18%);
-  color: var(--color-text-dim);
+  background-color: var(--metrics-status-chart-unassessed);
+  color: var(--color-text-bright);
 }
 </style>
