@@ -30,6 +30,11 @@ export function useCollectionExportProgressStore() {
   function pushStage(event) {
     if (event && typeof event === 'object') {
       state.stages.push(event)
+      if (event.status === 'error') {
+        state.isActive = false
+        state.isDone = true
+        state.error = event.message || 'Export failed'
+      }
     }
   }
 

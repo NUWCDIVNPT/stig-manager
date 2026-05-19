@@ -37,7 +37,7 @@ function exportToCollectionUrl(collectionId, dstCollectionId) {
   return `${apiBase()}/collections/${collectionId}/export-to/${dstCollectionId}`
 }
 
-export async function downloadArchive({ collectionId, format, mode, selections, filename, onProgress, signal }) {
+export async function downloadArchive({ collectionId, format, mode, selections, filename, onProgress, onStreamStart, signal }) {
   const token = bearerToken()
   const url = archiveUrl(collectionId, format, mode)
   const init = {
@@ -51,16 +51,16 @@ export async function downloadArchive({ collectionId, format, mode, selections, 
     attachment: filename,
   }
 
-  // When a progress consumer is attached we stream directly so byte counts
-  // can be reported; otherwise the service worker is preferred.
-  if (!onProgress) {
-    const href = await getDownloadUrl(init)
-    if (href) {
-      window.location = href
-      return { via: 'service-worker' }
-    }
+  // Prefer the service worker — it streams the download without buffering
+  // the archive in memory. Only fall back to an in-page stream when no
+  // service worker controller is available.
+  const href = await getDownloadUrl(init)
+  if (href) {
+    window.location = href
+    return { via: 'service-worker' }
   }
 
+  onStreamStart?.()
   const response = await fetch(url, {
     method: init.method,
     headers: init.headers,

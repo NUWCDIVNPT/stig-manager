@@ -313,19 +313,26 @@ async function submitArchive() {
   const [value, modeRaw] = formatKey.value.split('|')
   const mode = modeRaw || null
   const filename = archiveFilename(value)
-  emit('export-started', { type: 'archive', format: value, mode, filename })
   try {
-    await downloadArchive({
+    // Only emit `export-started` (which opens the in-page progress dialog)
+    // if the service worker is unavailable and we have to stream into memory.
+    const result = await downloadArchive({
       collectionId: props.collectionId,
       format: value,
       mode,
       selections: effectiveSelections.value,
       filename,
+      onStreamStart: () => {
+        emit('export-started', { type: 'archive', format: value, mode, filename })
+      },
       onProgress: ({ bytesReceived, totalBytes }) => {
         emit('archive-export-progress', { bytesReceived, totalBytes })
       },
     })
-    emit('archive-export-complete', { filename })
+    console.log('[export] archive via:', result?.via)
+    if (result?.via !== 'service-worker') {
+      emit('archive-export-complete', { filename })
+    }
   }
   catch (err) {
     emit('archive-export-error', err)
@@ -343,8 +350,18 @@ async function submitCollection() {
       selections: effectiveSelections.value,
     })
     const { readNdjson } = await import('../../../../shared/lib/ndjsonStream.js')
+    let errorEvent = null
     for await (const event of readNdjson(response)) {
       emit('collection-export-progress', event)
+      if (event && event.status === 'error') {
+        errorEvent = event
+      }
+    }
+    if (errorEvent) {
+      const err = new Error(errorEvent.message || 'Export failed')
+      err.event = errorEvent
+      emit('collection-export-error', err)
+      return
     }
     emit('collection-export-complete', { dstCollectionId: dstId })
   }
