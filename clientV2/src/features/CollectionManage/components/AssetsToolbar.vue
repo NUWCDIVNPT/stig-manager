@@ -2,6 +2,7 @@
 import targetIcon from '../../../assets/target.svg'
 import ExportResultsButton from '../ExportResults/components/ExportResultsButton.vue'
 import ExportAssetsCsvButton from './ExportAssetsCsvButton.vue'
+import ImportAssetsCsvButton from './ImportAssetsCsvButton.vue'
 import ImportResultsAction from './ImportResultsAction.vue'
 import TransferAssetButton from './TransferAssetButton.vue'
 
@@ -37,9 +38,10 @@ const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify
       <i class="pi pi-plus-circle icon-green" /> Create...
     </button>
     <div class="toolbar-divider" />
-    <button class="action-btn">
-      <i class="pi pi-plus-circle icon-green" /> Import Assets CSV
-    </button>
+    <ImportAssetsCsvButton
+      :collection-id="props.collectionId"
+      @imported="emit('imported')"
+    />
     <div class="toolbar-divider" />
     <ExportAssetsCsvButton
       :collection-id="props.collectionId"

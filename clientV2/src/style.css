@@ -77,6 +77,17 @@
   /* Error Colors */
   --color-text-error: #f16969;
 
+  /* Status Indicator Colors (success/warning/error) — banners, badges, etc. */
+  --color-status-success-bg: color-mix(in srgb, #166534 18%, var(--color-background-dark));
+  --color-status-success-border: #4ade80;
+  --color-status-success-text: #86efac;
+  --color-status-warning-bg: color-mix(in srgb, #92400e 18%, var(--color-background-dark));
+  --color-status-warning-border: #fbbf24;
+  --color-status-warning-text: #fcd34d;
+  --color-status-error-bg: color-mix(in srgb, #7f1d1d 18%, var(--color-background-dark));
+  --color-status-error-border: #f87171;
+  --color-status-error-text: #fca5a5;
+
   /* Result Status Colors */
   --result-pass: hsl(120 84% 42% / 1);
   --result-fail: hsl(19 100% 40% / 1);
