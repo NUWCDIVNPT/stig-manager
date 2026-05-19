@@ -31,6 +31,9 @@ const emit = defineEmits([
   'collection-export-progress',
   'collection-export-complete',
   'collection-export-error',
+  'archive-export-progress',
+  'archive-export-complete',
+  'archive-export-error',
 ])
 
 const localVisible = computed({
@@ -310,19 +313,29 @@ async function submitArchive() {
   const [value, modeRaw] = formatKey.value.split('|')
   const mode = modeRaw || null
   const filename = archiveFilename(value)
-  await downloadArchive({
-    collectionId: props.collectionId,
-    format: value,
-    mode,
-    selections: effectiveSelections.value,
-    filename,
-  })
-  emit('export-started', { type: 'archive', format: value, mode })
+  emit('export-started', { type: 'archive', format: value, mode, filename })
+  try {
+    await downloadArchive({
+      collectionId: props.collectionId,
+      format: value,
+      mode,
+      selections: effectiveSelections.value,
+      filename,
+      onProgress: ({ bytesReceived, totalBytes }) => {
+        emit('archive-export-progress', { bytesReceived, totalBytes })
+      },
+    })
+    emit('archive-export-complete', { filename })
+  }
+  catch (err) {
+    emit('archive-export-error', err)
+  }
 }
 
 async function submitCollection() {
   const dstId = selectedDestinationId.value
-  emit('export-started', { type: 'collection', dstCollectionId: dstId })
+  const dstName = destinationOptions.value.find(d => d.value === String(dstId))?.label ?? ''
+  emit('export-started', { type: 'collection', dstCollectionId: dstId, dstCollectionName: dstName })
   try {
     const response = await startCollectionExport({
       collectionId: props.collectionId,
@@ -347,14 +360,13 @@ async function onSubmit() {
   isSubmitting.value = true
   savePrefs()
   try {
+    // Close the dialog first; the parent renders a progress window
+    // and the export runs in the background.
+    localVisible.value = false
     if (target.value === 'archive') {
-      await submitArchive()
-      localVisible.value = false
+      submitArchive()
     }
     else {
-      // close modal first; parent shows progress window
-      localVisible.value = false
-      // fire collection export without blocking the dialog close
       submitCollection()
     }
   }

@@ -1,8 +1,10 @@
 <script setup>
+import { saveAs } from 'file-saver-es'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { computed, reactive, ref } from 'vue'
-import { primaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { useCollectionExportProgressStore } from '../../../../shared/stores/collectionExportProgressStore.js'
 import ExportResultsModal from './ExportResultsModal.vue'
 
 const props = defineProps({
@@ -19,23 +21,55 @@ const disabled = computed(() => eligibleAssets.value.length === 0)
 
 const modalVisible = ref(false)
 
-// Progress sub-window state for collection export
-const progressVisible = ref(false)
-const progress = reactive({
+const collectionExportStore = useCollectionExportProgressStore()
+
+// Progress sub-window state for archive download
+const archiveProgressVisible = ref(false)
+const archiveProgress = reactive({
   active: false,
-  stages: [],
-  result: null,
+  bytesReceived: 0,
+  totalBytes: null,
+  filename: '',
+  log: [],
   error: null,
-  dstCollectionId: null,
 })
 
-function resetProgress() {
-  progress.active = false
-  progress.stages = []
-  progress.result = null
-  progress.error = null
-  progress.dstCollectionId = null
+function resetArchiveProgress() {
+  archiveProgress.active = false
+  archiveProgress.bytesReceived = 0
+  archiveProgress.totalBytes = null
+  archiveProgress.filename = ''
+  archiveProgress.log = []
+  archiveProgress.error = null
 }
+
+function appendLog(message) {
+  archiveProgress.log.push(message)
+}
+
+function formatBytes(bytes) {
+  if (bytes == null) {
+    return '—'
+  }
+  if (bytes < 1024) {
+    return `${bytes} B`
+  }
+  const kb = bytes / 1024
+  if (kb < 1024) {
+    return `${kb.toFixed(2)} KB`
+  }
+  const mb = kb / 1024
+  return `${mb.toFixed(2)} MB`
+}
+
+const archiveFetchedLabel = computed(() => {
+  const got = formatBytes(archiveProgress.bytesReceived)
+  if (archiveProgress.totalBytes) {
+    const pct = Math.round((archiveProgress.bytesReceived / archiveProgress.totalBytes) * 100)
+    return `Fetched: ${got} of ${formatBytes(archiveProgress.totalBytes)} (${pct}%)`
+  }
+  return `Fetched: ${got}`
+})
 
 function openModal() {
   if (disabled.value) {
@@ -46,55 +80,69 @@ function openModal() {
 
 function onExportStarted(detail) {
   if (detail.type === 'collection') {
-    resetProgress()
-    progress.active = true
-    progress.dstCollectionId = detail.dstCollectionId
-    progressVisible.value = true
+    collectionExportStore.start({
+      dstCollectionId: detail.dstCollectionId,
+      dstCollectionName: detail.dstCollectionName,
+    })
   }
+  else if (detail.type === 'archive') {
+    resetArchiveProgress()
+    archiveProgress.active = true
+    archiveProgress.filename = detail.filename ?? ''
+    archiveProgressVisible.value = true
+    appendLog(`Starting download (${detail.format}${detail.mode ? ` / ${detail.mode}` : ''}).`)
+    appendLog('When the stream has finished you will be prompted to save the data to disk. The final size of the archive is unknown during streaming.')
+  }
+}
+
+function onArchiveProgress({ bytesReceived, totalBytes }) {
+  archiveProgress.bytesReceived = bytesReceived ?? 0
+  if (totalBytes) {
+    archiveProgress.totalBytes = totalBytes
+  }
+}
+
+function onArchiveComplete() {
+  archiveProgress.active = false
+  appendLog('Streaming is complete.')
+}
+
+function onArchiveError(err) {
+  archiveProgress.active = false
+  archiveProgress.error = err?.message ?? String(err)
+  appendLog(`Error: ${archiveProgress.error}`)
+}
+
+function closeArchiveProgress() {
+  if (archiveProgress.active) {
+    return
+  }
+  archiveProgressVisible.value = false
+  resetArchiveProgress()
+}
+
+function saveArchiveLog() {
+  if (archiveProgress.log.length === 0) {
+    return
+  }
+  const text = archiveProgress.log.join('\n')
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+  const base = archiveProgress.filename
+    ? archiveProgress.filename.replace(/\.zip$/i, '')
+    : 'archive-download'
+  saveAs(blob, `${base}.log.txt`)
 }
 
 function onCollectionProgress(event) {
-  // Each NDJSON line is a stage event. Capture stages in order.
-  if (event && typeof event === 'object') {
-    progress.stages.push(event)
-    // server may emit a terminal "result" stage
-    if (event.stage === 'result' || event.result) {
-      progress.result = event
-    }
-  }
+  collectionExportStore.pushStage(event)
 }
 
 function onCollectionComplete() {
-  progress.active = false
-  if (!progress.result) {
-    progress.result = { stage: 'complete' }
-  }
+  collectionExportStore.finish()
 }
 
 function onCollectionError(err) {
-  progress.active = false
-  progress.error = err?.body ?? err?.message ?? String(err)
-}
-
-function closeProgress() {
-  if (progress.active) {
-    return
-  }
-  progressVisible.value = false
-  resetProgress()
-}
-
-function stageLabel(s) {
-  if (!s) {
-    return ''
-  }
-  if (s.stage) {
-    return s.stage
-  }
-  if (s.status) {
-    return s.status
-  }
-  return JSON.stringify(s)
+  collectionExportStore.fail(err)
 }
 </script>
 
@@ -118,54 +166,41 @@ function stageLabel(s) {
     @collection-export-progress="onCollectionProgress"
     @collection-export-complete="onCollectionComplete"
     @collection-export-error="onCollectionError"
+    @archive-export-progress="onArchiveProgress"
+    @archive-export-complete="onArchiveComplete"
+    @archive-export-error="onArchiveError"
   />
 
   <Dialog
-    v-model:visible="progressVisible"
+    v-model:visible="archiveProgressVisible"
     modal
     :draggable="false"
-    :closable="!progress.active"
-    :close-on-escape="!progress.active"
-    :style="{ width: 'min(500px, 92vw)' }"
-    header="Exporting to collection"
+    :closable="!archiveProgress.active"
+    :close-on-escape="!archiveProgress.active"
+    :style="{ width: 'min(560px, 94vw)' }"
+    header="Downloading checklists"
   >
-    <div class="progress-body">
-      <div v-if="progress.active" class="progress-active">
-        <i class="pi pi-spin pi-spinner spinner-icon" />
-        <div class="progress-text">
-          Streaming export...
-        </div>
+    <div class="archive-progress-body">
+      <div class="archive-bytes-bar" role="status" aria-live="polite">
+        {{ archiveFetchedLabel }}
       </div>
-      <div v-else-if="progress.error" class="progress-error">
-        <i class="pi pi-times-circle error-icon" />
-        <div>
-          <div class="progress-text">
-            Export failed
-          </div>
-          <pre class="error-detail">{{ progress.error }}</pre>
-        </div>
-      </div>
-      <div v-else class="progress-done">
-        <i class="pi pi-check-circle done-icon" />
-        <div class="progress-text">
-          Export complete
-        </div>
-      </div>
-
-      <ul v-if="progress.stages.length > 0" class="stage-list">
-        <li v-for="(s, i) in progress.stages" :key="i" class="stage-item">
-          <span class="stage-name">{{ stageLabel(s) }}</span>
-          <span v-if="s.count != null" class="stage-meta">{{ s.count }}</span>
-        </li>
-      </ul>
+      <pre class="archive-log">{{ archiveProgress.log.join('\n') }}</pre>
     </div>
     <template #footer>
-      <Button
-        label="Close"
-        :pt="primaryBtnPt"
-        :disabled="progress.active"
-        @click="closeProgress"
-      />
+      <div class="archive-progress-footer">
+        <Button
+          label="Save log..."
+          :pt="secondaryBtnPt"
+          :disabled="archiveProgress.log.length === 0"
+          @click="saveArchiveLog"
+        />
+        <Button
+          label="Close"
+          :pt="primaryBtnPt"
+          :disabled="archiveProgress.active"
+          @click="closeArchiveProgress"
+        />
+      </div>
     </template>
   </Dialog>
 </template>
@@ -200,81 +235,42 @@ function stageLabel(s) {
   color: #60a5fa;
 }
 
-.progress-body {
+.archive-progress-body {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 0.6rem;
   padding: 0.25rem 0;
 }
 
-.progress-active,
-.progress-error,
-.progress-done {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.spinner-icon {
-  font-size: 1.6rem;
-  color: var(--color-action-blue-dark);
-}
-
-.error-icon {
-  font-size: 1.6rem;
-  color: var(--color-text-error);
-}
-
-.done-icon {
-  font-size: 1.6rem;
-  color: var(--color-success);
-}
-
-.progress-text {
-  font-size: 0.95rem;
+.archive-bytes-bar {
   font-weight: 600;
-}
-
-.error-detail {
-  font-family: monospace;
-  font-size: 0.8rem;
-  color: var(--color-text-dim);
+  text-align: center;
   background: var(--color-background-light);
-  padding: 0.5rem;
-  border-radius: 4px;
-  margin: 0.3rem 0 0 0;
-  max-height: 160px;
-  overflow: auto;
-}
-
-.stage-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   border: 1px solid var(--color-border-default);
   border-radius: 4px;
-  max-height: 220px;
-  overflow: auto;
-  background: var(--color-background-light);
+  padding: 0.4rem 0.6rem;
+  color: var(--color-text-bright);
 }
 
-.stage-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.3rem 0.6rem;
-  border-bottom: 1px solid var(--color-border-light);
+.archive-log {
+  font-family: monospace;
   font-size: 0.82rem;
-}
-
-.stage-item:last-child {
-  border-bottom: none;
-}
-
-.stage-name {
   color: var(--color-text-primary);
+  background: var(--color-background-light);
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+  padding: 0.6rem;
+  margin: 0;
+  min-height: 220px;
+  max-height: 360px;
+  overflow: auto;
+  white-space: pre-wrap;
 }
 
-.stage-meta {
-  color: var(--color-text-dim);
+.archive-progress-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
 }
 </style>

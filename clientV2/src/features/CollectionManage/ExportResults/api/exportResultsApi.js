@@ -37,7 +37,7 @@ function exportToCollectionUrl(collectionId, dstCollectionId) {
   return `${apiBase()}/collections/${collectionId}/export-to/${dstCollectionId}`
 }
 
-export async function downloadArchive({ collectionId, format, mode, selections, filename }) {
+export async function downloadArchive({ collectionId, format, mode, selections, filename, onProgress, signal }) {
   const token = bearerToken()
   const url = archiveUrl(collectionId, format, mode)
   const init = {
@@ -51,24 +51,54 @@ export async function downloadArchive({ collectionId, format, mode, selections, 
     attachment: filename,
   }
 
-  const href = await getDownloadUrl(init)
-  if (href) {
-    window.location = href
-    return { via: 'service-worker' }
+  // When a progress consumer is attached we stream directly so byte counts
+  // can be reported; otherwise the service worker is preferred.
+  if (!onProgress) {
+    const href = await getDownloadUrl(init)
+    if (href) {
+      window.location = href
+      return { via: 'service-worker' }
+    }
   }
 
   const response = await fetch(url, {
     method: init.method,
     headers: init.headers,
     body: init.body,
+    signal,
   })
   if (!response.ok) {
     const body = await response.text().catch(() => '')
     throw new Error(`Archive request failed (${response.status}). ${body}`)
   }
-  const blob = await response.blob()
+
+  const totalHeader = response.headers.get('Content-Length')
+  const totalBytes = totalHeader ? Number(totalHeader) : null
+
+  if (!response.body || !onProgress) {
+    const blob = await response.blob()
+    saveAs(blob, filename)
+    return { via: 'fallback', bytes: blob.size, totalBytes }
+  }
+
+  const reader = response.body.getReader()
+  const chunks = []
+  let receivedBytes = 0
+  onProgress({ bytesReceived: 0, totalBytes })
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) {
+      break
+    }
+    chunks.push(value)
+    receivedBytes += value.length
+    onProgress({ bytesReceived: receivedBytes, totalBytes })
+  }
+
+  const blob = new Blob(chunks, { type: 'application/zip' })
   saveAs(blob, filename)
-  return { via: 'fallback' }
+  return { via: 'stream', bytes: receivedBytes, totalBytes }
 }
 
 export async function startCollectionExport({ collectionId, dstCollectionId, selections }) {
