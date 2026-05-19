@@ -36,7 +36,7 @@ See the User Guide's section on the :ref:`Collection Review Workspace` for more 
 Set the Default STIG Revision for a Collection
 =================================================
 
-By default, STIG Manager presents and calculates all Metrics against the latest Revision of STIG in the system.  To override this behavior, Collection Owners and Managers can "Pin" their Collection to a specific Revision of a STIG.  All Review Workspaces for the Collection will open with the pinned Revision, and all Metrics will be calculated against the pinned Revision. 
+By default, STIG Manager presents and calculates all Metrics against the latest Revision of STIG in the system. "Latest" means the highest version+release of an imported Revision, regardless of the ``status`` DISA assigned (``accepted``, ``deprecated``, ``draft``) — so a higher-numbered Revision published as ``deprecated`` will still be treated as the default. To override this behavior, Collection Owners and Managers can "Pin" their Collection to a specific Revision of a STIG.  All Review Workspaces for the Collection will open with the pinned Revision, and all Metrics will be calculated against the pinned Revision.
 
 See the User Guide's section on  :ref:`Revision Pinning <pin-revision>` for more information. 
 
