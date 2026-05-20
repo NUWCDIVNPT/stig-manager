@@ -1,4 +1,7 @@
+const path = require('path')
 const MigrationHandler = require('./lib/MigrationHandler')
+const logger = require('../../utils/logger')
+const dbUtils = require('../utils')
 
 // Drop the `status` priority from v_current_rev / v_latest_rev so the
 // highest version+release wins regardless of DISA-assigned status
@@ -187,7 +190,7 @@ const refreshDefaultRev = [
     SELECT collectionId, benchmarkId, revId, revisionPinned FROM v_default_rev`
 ]
 
-const upMigration = [
+const upStatements = [
   newCurrentRev,
   newLatestRev,
   ...refreshCurrentRev,
@@ -201,10 +204,56 @@ const downMigration = [
   ...refreshDefaultRev
 ]
 
-const migrationHandler = new MigrationHandler(upMigration, downMigration)
+const migrationHandler = new MigrationHandler([], downMigration)
+
 module.exports = {
   up: async (pool) => {
-    await migrationHandler.up(pool, __filename)
+    const migrationName = path.basename(__filename, '.js')
+    let connection
+    try {
+      logger.writeInfo('mysql', 'migration', {status: 'start', direction: 'up', name: migrationName})
+      connection = await pool.getConnection()
+      // Defensive: a pool-borrowed connection may have namedPlaceholders left
+      // enabled from a prior service call, which breaks stored-procedure
+      // bodies containing `:label` syntax if a replay ever hits one.
+      connection.config.namedPlaceholders = false
+
+      // Snapshot pre-migration default_rev so we can identify which benchmarks
+      // had their resolved revId shift once the new views are in effect.
+      await connection.query(`CREATE TEMPORARY TABLE old_default_rev AS
+        SELECT collectionId, benchmarkId, revId FROM default_rev`)
+
+      for (const statement of upStatements) {
+        logger.writeInfo('mysql', 'migration', {status: 'running', name: migrationName, statement})
+        await connection.query(statement)
+      }
+
+      // Benchmarks whose default_rev.revId changed for any non-pinned
+      // collection. The INNER JOIN keeps only (collectionId, benchmarkId)
+      // pairs present in both snapshots; pinned rows keep their revId so
+      // they never satisfy `o.revId <> n.revId`.
+      const [affectedRows] = await connection.query(`
+        SELECT DISTINCT o.benchmarkId AS benchmarkId
+        FROM old_default_rev o
+        INNER JOIN default_rev n
+          ON o.collectionId = n.collectionId AND o.benchmarkId = n.benchmarkId
+        WHERE o.revId <> n.revId`)
+
+      await connection.query('DROP TEMPORARY TABLE old_default_rev')
+
+      for (const {benchmarkId} of affectedRows) {
+        logger.writeInfo('mysql', 'migration', {status: 'recompute stats', name: migrationName, benchmarkId})
+        await dbUtils.updateStatsAssetStig(connection, {benchmarkId})
+      }
+    }
+    catch (e) {
+      logger.writeError('mysql', 'migration', {status: 'error', name: migrationName, message: e.message})
+      throw e
+    }
+    finally {
+      if (connection) await connection.release()
+      logger.writeInfo('mysql', 'migration', {status: 'finish', name: migrationName})
+    }
   },
   down: async (pool) => {
     await migrationHandler.down(pool, __filename)
