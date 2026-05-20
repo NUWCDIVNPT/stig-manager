@@ -12,7 +12,7 @@ defineEmits(['dismiss'])
 const progressStore = useImportProgressStore()
 
 const progressPct = computed(() => {
-  if (!props.state.totalCount) return 0
+  if (!props.state.totalCount) { return 0 }
   return Math.round((props.state.completedCount / props.state.totalCount) * 100)
 })
 </script>
@@ -30,7 +30,7 @@ const progressPct = computed(() => {
 
     <template v-if="!state.isDone">
       <div class="progress-track">
-        <div class="progress-fill" :style="{ width: progressPct + '%' }" />
+        <div class="progress-fill" :style="{ width: `${progressPct}%` }" />
       </div>
       <div class="progress-meta">
         <span class="meta-count">{{ state.completedCount }} / {{ state.totalCount }}</span>

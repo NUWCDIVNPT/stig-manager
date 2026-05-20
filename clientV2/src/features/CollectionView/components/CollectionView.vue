@@ -223,9 +223,9 @@ function toggleDashboardSidebar() {
           </div>
           <div v-show="!dashboardCollapsed" class="sidebar-content">
             <CollectionMetrics
+              v-model:selected-label-ids="selectedLabelIds"
               :collection-id="collectionId"
               :collection-name="collectionName"
-              v-model:selected-label-ids="selectedLabelIds"
               :refresh-key="refreshKey"
               vertical
             />
@@ -267,7 +267,6 @@ function toggleDashboardSidebar() {
                   Management
                 </Tab>
               </template>
-
             </TabList>
 
             <TabPanels :pt="tabPanelsPt">

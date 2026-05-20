@@ -3,8 +3,8 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { computed, ref, watch } from 'vue'
 import { useImportProgressStore } from '../../../shared/stores/importProgressStore.js'
-import { importDialogPt, primaryBtnPt } from '../lib/importDialogPt.js'
 import { useImportWizard } from '../composables/useImportWizard.js'
+import { importDialogPt, primaryBtnPt } from '../lib/importDialogPt.js'
 import ImportBatchWarning from './ImportBatchWarning.vue'
 import ImportErrorsWarningsStep from './ImportErrorsWarningsStep3.vue'
 import ImportFileQueueStep from './ImportFileQueueStep1.vue'
@@ -181,7 +181,7 @@ function doneImport() { visible.value = false }
     <div v-else-if="step === 'parseProgress'" class="step-container">
       <p class="pp-label">
         <span
-          :class="['pi', awaitingParseConfirmation ? 'pi-exclamation-circle pp-label__icon--warn' : 'pi-spin pi-spinner']"
+          class="pi" :class="[awaitingParseConfirmation ? 'pi-exclamation-circle pp-label__icon--warn' : 'pi-spin pi-spinner']"
           style="margin-right: 0.5rem;"
         />
         {{ awaitingParseConfirmation ? `Ready to parse ${queue.sourceFiles.value.length} files` : 'Parsing files…' }}
