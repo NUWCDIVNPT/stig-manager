@@ -88,13 +88,14 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
     if (response.error) {
       throw new Error(`OIDC Worker getStatus error: ${response.error}`)
     }
+    const url = new URL(window.location.href)
+    const clientReauthUri = `${url.origin}${url.pathname.replace(/index\.html$/, '')}reauth.html`
+
     if (response.initialized) {
-      return response
+      return OW.sendWorkerRequest({ request: 'initialize', redirectUri, env: STIGMAN.Env.oauth, clientReauthUri })
     }
     const oidcConfiguration = await getOidcMetadata()
-    const url = new URL(window.location.href)
-    const reauthUri = `${url.origin}${url.pathname.replace(/index\.html$/, '')}reauth.html`
-    return OW.sendWorkerRequest({ request: 'initialize', redirectUri, oidcConfiguration, env: STIGMAN.Env.oauth, reauthUri })
+    return OW.sendWorkerRequest({ request: 'initialize', redirectUri, oidcConfiguration, env: STIGMAN.Env.oauth, clientReauthUri })
   } 
 
   function extractParamString(url) {

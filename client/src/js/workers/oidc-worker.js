@@ -16,7 +16,8 @@ const bc = new BroadcastChannel(channelName)
 let idleTimeoutId = null
 let idleTimeoutM = null
 let isIdle = false
-let reauthUri = null
+let clientReauthUri = null
+let clientV2ReauthUri = null
 
 // Worker entry point
 onconnect = function (e) {
@@ -105,7 +106,6 @@ async function initialize(options) {
       return { success: false, error: `Invalid redirectUri scheme: ${parsedRedirectUri.protocol}` }
     }
     ENV = options.env || null
-    reauthUri = options.reauthUri || null
 
     try {
       oidcConfiguration = options.oidcConfiguration || await fetchOpenIdConfiguration()
@@ -120,6 +120,10 @@ async function initialize(options) {
       return { success: false, error: validation.error }
     }
   }
+
+  clientReauthUri = options.clientReauthUri || clientReauthUri
+  clientV2ReauthUri = options.clientV2ReauthUri || clientV2ReauthUri
+
   return { success: true, env: ENV, channelName, logoutAvailable: !!oidcConfiguration.end_session_endpoint }
 }
 
@@ -128,7 +132,8 @@ async function getStatus() {
     initialized,
     env: ENV,
     channelName,
-    reauthUri,
+    clientReauthUri,
+    clientV2ReauthUri,
   }
 }
 
@@ -287,12 +292,18 @@ async function getPkce() {
 
 async function broadcastNoToken() {
   console.log(logPrefix, 'Broadcasting no token')
-  // let baseRedirectUri = redirectUri?.endsWith('index.html')
-  //   ? redirectUri.slice(0, -'index.html'.length)
-  //   : redirectUri
+  const data = { type: 'noToken', isIdle }
 
-  const auth = await createAuthorization({ redirectUri: reauthUri })
-  bc.postMessage({ type: 'noToken', ...auth, isIdle })
+  if (clientReauthUri) {
+    const clientAuth = await createAuthorization({ redirectUri: clientReauthUri })
+    data.client = clientAuth
+  }
+  if (clientV2ReauthUri) {
+    const clientV2Auth = await createAuthorization({ redirectUri: clientV2ReauthUri })
+    data.clientV2 = clientV2Auth
+  }
+
+  bc.postMessage(data)
 }
 
 function broadcastToken() {

@@ -500,7 +500,7 @@ class MockOidc {
     
           response.writeHead(302, {
             Location: responseUrl.toString(),
-            'Set-Cookie': `sid=${sid}; Path=/;`
+            'Set-Cookie': `sid=${sid}; Path=/; SameSite=None; Secure`
           })
         
           response.end()
