@@ -10,7 +10,9 @@ defineProps({
 <template>
   <div class="manage-stub">
     <p>Review Settings: detail/comment fields, status rules, history configuration</p>
-    <p class="manage-stub-id">Collection {{ collectionId }}</p>
+    <p class="manage-stub-id">
+      Collection {{ collectionId }}
+    </p>
   </div>
 </template>
 

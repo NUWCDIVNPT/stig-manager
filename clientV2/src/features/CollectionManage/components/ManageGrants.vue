@@ -10,7 +10,9 @@ defineProps({
 <template>
   <div class="manage-stub">
     <p>Grants: add, edit, remove user and group access grants</p>
-    <p class="manage-stub-id">Collection {{ collectionId }}</p>
+    <p class="manage-stub-id">
+      Collection {{ collectionId }}
+    </p>
   </div>
 </template>
 

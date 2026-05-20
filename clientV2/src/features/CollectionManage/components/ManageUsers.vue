@@ -10,7 +10,9 @@ defineProps({
 <template>
   <div class="manage-stub">
     <p>Effective Users: resolved user access including group membership</p>
-    <p class="manage-stub-id">Collection {{ collectionId }}</p>
+    <p class="manage-stub-id">
+      Collection {{ collectionId }}
+    </p>
   </div>
 </template>
 

@@ -6,12 +6,13 @@ import InputText from 'primevue/inputtext'
 import MultiSelect from 'primevue/multiselect'
 import { computed, reactive, ref, watch } from 'vue'
 
-import CommonPickList from '../../../components/common/PickList.vue'
-import MetadataEditor from '../../../components/common/MetadataEditor.vue'
 import LabelChip from '../../../components/common/Label.vue'
+import MetadataEditor from '../../../components/common/MetadataEditor.vue'
+import CommonPickList from '../../../components/common/PickList.vue'
 
 import { fetchCollectionAssetSummary, fetchCollectionLabels } from '../../../shared/api/collectionsApi.js'
 import { fetchStigs } from '../../../shared/api/stigsApi.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { normalizeColor } from '../../../shared/lib/colorUtils.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../ImportWizard/lib/importDialogPt.js'
 import { createAsset, fetchAssetWithStigs, replaceAsset } from '../api/assetManageApi.js'
@@ -25,7 +26,6 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'asset-created', 'asset-changed'])
 
 const isEditMode = computed(() => !!props.assetId)
-const isLoading = ref(false)
 const isSubmitting = ref(false)
 const nameError = ref(null)
 
@@ -85,21 +85,8 @@ function removeLabel(id) {
   form.labelIds = form.labelIds.filter(x => x !== id)
 }
 
-async function initialize() {
-  nameError.value = null
-  isLoading.value = true
-  form.name = ''
-  form.noncomputing = false
-  form.fqdn = ''
-  form.ip = ''
-  form.mac = ''
-  form.labelIds = []
-  labelPickerIds.value = []
-  metadataRows.value = []
-  availableStigs.value = []
-  assignedStigs.value = []
-
-  try {
+const { isLoading, execute: loadFormData } = useAsyncState(
+  async () => {
     const [labels, stigs] = await Promise.all([
       fetchCollectionLabels(props.collectionId),
       fetchStigs(),
@@ -116,7 +103,6 @@ async function initialize() {
       form.mac = asset.mac ?? ''
       form.labelIds = (asset.labels ?? []).map(l => l.labelId)
       metadataRows.value = Object.entries(asset.metadata ?? {}).map(([key, value]) => ({ key, value }))
-
       const assignedIds = new Set((asset.stigs ?? []).map(s => s.benchmarkId))
       assignedStigs.value = allStigs.value.filter(s => assignedIds.has(s.benchmarkId))
       availableStigs.value = allStigs.value.filter(s => !assignedIds.has(s.benchmarkId))
@@ -124,10 +110,23 @@ async function initialize() {
     else {
       availableStigs.value = [...allStigs.value]
     }
-  }
-  finally {
-    isLoading.value = false
-  }
+  },
+  { immediate: false },
+)
+
+async function initialize() {
+  nameError.value = null
+  form.name = ''
+  form.noncomputing = false
+  form.fqdn = ''
+  form.ip = ''
+  form.mac = ''
+  form.labelIds = []
+  labelPickerIds.value = []
+  metadataRows.value = []
+  availableStigs.value = []
+  assignedStigs.value = []
+  await loadFormData()
 }
 
 watch(() => props.visible, (open) => { if (open) { initialize() } })
@@ -159,7 +158,7 @@ function buildPayload() {
   return payload
 }
 
-async function save(andAnother = false) {
+async function save() {
   if (!isValid.value) { return }
   nameError.value = null
   isSubmitting.value = true
@@ -173,8 +172,7 @@ async function save(andAnother = false) {
     const row = { ...(metrics?.[0] ?? {}), collection: result.collection }
 
     emit(isEditMode.value ? 'asset-changed' : 'asset-created', row)
-    if (andAnother) { initialize() }
-    else { close() }
+    close()
   }
   catch (err) {
     const detail = String(err?.body?.detail ?? '')
@@ -200,7 +198,6 @@ const dialogPt = {
   footer: { style: 'flex-shrink: 0; padding: 0; border: none;' },
   closeButton: { style: 'color: var(--color-text-dim); border-radius: 4px;' },
 }
-
 
 const checkboxPt = {
   box: ({ context }) => ({
@@ -261,7 +258,6 @@ const pickListPt = {
     moveAllToSourceButton: { root: { style: 'border-radius: 4px;' } },
   },
 }
-
 </script>
 
 <template>
@@ -409,7 +405,7 @@ const pickListPt = {
           :pt="primaryBtnPt"
           :loading="isSubmitting"
           :disabled="!isValid"
-          @click="save(false)"
+          @click="save"
         />
       </div>
     </template>
@@ -452,7 +448,6 @@ const pickListPt = {
   line-height: 1.3;
 }
 
-
 .loading-state {
   display: flex;
   align-items: center;
@@ -467,7 +462,6 @@ const pickListPt = {
   min-height: 0;
   overflow: hidden;
 }
-
 
 .form-section {
   display: flex;

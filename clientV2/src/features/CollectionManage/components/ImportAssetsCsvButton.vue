@@ -6,8 +6,8 @@ import Dialog from 'primevue/dialog'
 import { ref } from 'vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
-import { useAssetCsvImport } from '../composables/useAssetCsvImport.js'
 import { importDialogPt, primaryBtnPt, secondaryBtnPt } from '../../ImportWizard/lib/importDialogPt.js'
+import { useAssetCsvImport } from '../composables/useAssetCsvImport.js'
 
 const props = defineProps({
   collectionId: { type: String, required: true },

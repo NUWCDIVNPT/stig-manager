@@ -13,11 +13,12 @@ import DeleteModal from '../../../components/common/DeleteModal.vue'
 
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { fetchCollectionAssetSummary } from '../../../shared/api/collectionsApi.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useTableSelection } from '../../../shared/composables/useTableSelection.js'
 import { deleteAssets } from '../api/assetManageApi.js'
+import AssetFormModal from './AssetFormModal.vue'
 import AssetsToolbar from './AssetsToolbar.vue'
-import CreateAssetModal from './CreateAssetModal.vue'
 
 const props = defineProps({
   collectionId: {
@@ -26,8 +27,6 @@ const props = defineProps({
   },
 })
 
-const isLoading = ref(false)
-const assets = ref([])
 const dataTableRef = ref(null)
 
 const { getCollectionGrant } = useCurrentUser()
@@ -35,19 +34,10 @@ const collectionName = computed(
   () => getCollectionGrant(props.collectionId)?.collection?.name ?? '',
 )
 
-async function loadAssets() {
-  if (!props.collectionId) { return }
-  isLoading.value = true
-  try {
-    assets.value = await fetchCollectionAssetSummary(props.collectionId)
-  }
-  catch (error) {
-    console.error('Failed to load assets', error)
-  }
-  finally {
-    isLoading.value = false
-  }
-}
+const { state: assets, isLoading, execute: loadAssets } = useAsyncState(
+  () => fetchCollectionAssetSummary(props.collectionId),
+  { initialState: [], immediate: false },
+)
 
 watch(() => props.collectionId, loadAssets, { immediate: true })
 
@@ -120,7 +110,11 @@ const {
 } = useTableSelection(
   filteredData,
   computed(() => selectedAssets.value),
+  // 'next': The updated array of selected items computed by the composable during selection changes.
+  // We assign this new list to our local `selectedAssets.value` reactive reference to apply the updates.
   next => (selectedAssets.value = next),
+  // 'assetId': The unique property/key name on each asset object (instead of the default 'id')
+  // used by the composable to track and perform selection lookups.
   'assetId',
 )
 
@@ -219,7 +213,7 @@ function handleFooterAction(action) {
       @assets-transferred="onAssetsTransferred"
     />
 
-    <CreateAssetModal
+    <AssetFormModal
       v-model:visible="createModalVisible"
       :collection-id="props.collectionId"
       :asset-id="editAssetId"
