@@ -358,7 +358,7 @@ async function setupStateWorker() {
 async function setupServiceWorker() {
   if ('serviceWorker' in navigator) {
     try {
-      await navigator.serviceWorker.register('workers/service-worker.js')
+      await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}service-worker.js`)
       appendStatus('Service Worker registered successfully')
     }
     catch (err) {

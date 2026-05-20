@@ -76,10 +76,6 @@ const destinationOptions = computed(() => {
     .sort((a, b) => a.label.localeCompare(b.label))
 })
 
-const eligibleAssets = computed(() =>
-  props.selectedAssets.filter(a => (a.stigCnt ?? 0) > 0),
-)
-
 const isSubmitting = ref(false)
 
 // ── Tree state ────────────────────────────────────────────────────────────────
@@ -108,7 +104,7 @@ const ROOT_KEY = 'root-all'
 
 function buildInitialTree() {
   const keys = {}
-  const assetNodes = eligibleAssets.value.map((a) => {
+  const assetNodes = props.selectedAssets.map((a) => {
     keys[assetKey(a.assetId)] = { checked: true, partialChecked: false }
     return {
       key: assetKey(a.assetId),

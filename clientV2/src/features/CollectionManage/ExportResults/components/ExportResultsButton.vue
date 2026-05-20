@@ -4,6 +4,7 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { computed, reactive, ref } from 'vue'
 import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { formatBytes } from '../../../../shared/lib.js'
 import { useCollectionExportProgressStore } from '../../../../shared/stores/collectionExportProgressStore.js'
 import ExportResultsModal from './ExportResultsModal.vue'
 
@@ -23,43 +24,19 @@ const modalVisible = ref(false)
 
 const collectionExportStore = useCollectionExportProgressStore()
 
-// Progress sub-window state for archive download
 const archiveProgressVisible = ref(false)
-const archiveProgress = reactive({
-  active: false,
-  bytesReceived: 0,
-  totalBytes: null,
-  filename: '',
-  log: [],
-  error: null,
-})
+
+function initialArchiveProgress() {
+  return { active: false, bytesReceived: 0, totalBytes: null, filename: '', log: [], error: null }
+}
+const archiveProgress = reactive(initialArchiveProgress())
 
 function resetArchiveProgress() {
-  archiveProgress.active = false
-  archiveProgress.bytesReceived = 0
-  archiveProgress.totalBytes = null
-  archiveProgress.filename = ''
-  archiveProgress.log = []
-  archiveProgress.error = null
+  Object.assign(archiveProgress, initialArchiveProgress())
 }
 
 function appendLog(message) {
   archiveProgress.log.push(message)
-}
-
-function formatBytes(bytes) {
-  if (bytes == null) {
-    return '—'
-  }
-  if (bytes < 1024) {
-    return `${bytes} B`
-  }
-  const kb = bytes / 1024
-  if (kb < 1024) {
-    return `${kb.toFixed(2)} KB`
-  }
-  const mb = kb / 1024
-  return `${mb.toFixed(2)} MB`
 }
 
 const archiveFetchedLabel = computed(() => {
@@ -161,7 +138,7 @@ function onCollectionError(err) {
     v-model:visible="modalVisible"
     :collection-id="collectionId"
     :collection-name="collectionName"
-    :selected-assets="selectedAssets"
+    :selected-assets="eligibleAssets"
     @export-started="onExportStarted"
     @collection-export-progress="onCollectionProgress"
     @collection-export-complete="onCollectionComplete"
