@@ -17,6 +17,8 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['imported'])
+
 const sections = [
   { label: 'Collection', cards: [
     { key: 'properties', icon: 'pi-home', title: 'Properties', desc: 'Collection name, description, clone & delete' },
@@ -119,6 +121,7 @@ function closeDrawer() {
           <component
             :is="drawerComponent"
             :collection-id="props.collectionId"
+            @imported="emit('imported')"
           />
         </div>
       </div>

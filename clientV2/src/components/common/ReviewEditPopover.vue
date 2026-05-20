@@ -2,11 +2,11 @@
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
 import { nextTick, onBeforeUnmount, provide, ref, toRefs, watch } from 'vue'
-import ReviewResources from './ReviewResources/ReviewResources.vue'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
 import { formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
 import ResultBadge from './ResultBadge.vue'
 import ResultEngineBadges from './ResultEngineBadges.vue'
+import ReviewResources from './ReviewResources/ReviewResources.vue'
 import StatusBadge from './StatusBadge.vue'
 import StatusButton from './StatusButton.vue'
 
@@ -60,8 +60,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['save', 'status-action', 'close', 'clear-save-error'])
-
-defineSlots()
 
 // Expose props as refs so all .value access in the component body is unchanged
 const { currentReview, selectedRuleId, collectionId, assetId, fieldSettings, accessMode, canAccept, isSaving, saveError } = toRefs(props)

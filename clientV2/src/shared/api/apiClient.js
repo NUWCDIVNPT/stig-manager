@@ -66,6 +66,9 @@ async function doFetch(url, opts) {
     throw new ApiError(`HTTP ${res.status}`, res.status, url, errorBody)
   }
 
+  if (responseType === 'response') {
+    return res
+  }
   if (responseType === 'blob') {
     return res.blob()
   }

@@ -13,6 +13,7 @@ import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
+import CollectionImportResults from '../../CollectionMetrics/components/CollectionImportResults.vue'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import MetricsFilter from '../../CollectionMetrics/components/MetricsFilter.vue'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
@@ -157,6 +158,11 @@ const DASHBOARD_STORAGE_KEY = 'stigman:collectionDashboardCollapsed'
 const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === 'true')
 const selectedLabelIds = ref([])
 const isAnimating = ref(false)
+const refreshKey = ref(0)
+
+function handleImported() {
+  refreshKey.value++
+}
 
 function toggleDashboardSidebar() {
   isAnimating.value = true
@@ -209,9 +215,14 @@ function toggleDashboardSidebar() {
               :collection-id="collectionId"
               :collection-name="collectionName"
               :selected-label-ids="selectedLabelIds"
+              :refresh-key="refreshKey"
               vertical
             />
             <div class="sidebar-export">
+              <CollectionImportResults
+                :collection-id="collectionId"
+                @imported="handleImported"
+              />
               <CollectionExportMetrics
                 :collection-id="collectionId"
                 :collection-name="collectionName"
@@ -254,10 +265,10 @@ function toggleDashboardSidebar() {
 
             <TabPanels :pt="tabPanelsPt">
               <TabPanel value="stigs" :pt="tabPanelPt">
-                <CollectionStigsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
+                <CollectionStigsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" :refresh-key="refreshKey" />
               </TabPanel>
               <TabPanel value="assets" :pt="tabPanelPt">
-                <CollectionAssetsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
+                <CollectionAssetsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" :refresh-key="refreshKey" />
               </TabPanel>
               <TabPanel value="labels" :pt="tabPanelPt">
                 <CollectionLabelsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
@@ -269,7 +280,7 @@ function toggleDashboardSidebar() {
                 </div>
               </TabPanel>
               <TabPanel v-if="canManage" value="management" :pt="tabPanelPt">
-                <CollectionManage :collection-id="collectionId" />
+                <CollectionManage :collection-id="collectionId" @imported="handleImported" />
               </TabPanel>
             </TabPanels>
           </Tabs>
@@ -358,6 +369,9 @@ function toggleDashboardSidebar() {
 }
 
 .sidebar-export {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   padding: 0 12px 12px;
 }
 

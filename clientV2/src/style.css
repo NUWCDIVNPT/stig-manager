@@ -25,6 +25,9 @@
   --color-primary-highlight: #60a5fa; /* Blue-400 */
   --color-primary-highlight-light: #93c5fd;
   --color-action-blue: #3b82f6; /* Blue-500 */
+  --color-action-blue-dark: #2563eb; /* Blue-700 */
+  --color-success: #22c55e; /* Green-500 */
+  --color-warning-yellow: #eab308; /* Yellow-500 */
   --color-shield-green: #44ab5e; /* Green-500 */
   --color-shield-green-dark: #4f7769; /* Green-700 */
   --color-oss-blue: #273f6f; /* Green-700 */
@@ -246,7 +249,7 @@ textarea:focus {
 .sm-scrollbar-thin {
   scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border-default) transparent;
+  scrollbar-color: var(--color-border-default) rgba(255,255,255,0.04);
 }
 
 .sm-scrollbar-thin::-webkit-scrollbar {
@@ -254,7 +257,7 @@ textarea:focus {
 }
 
 .sm-scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(255,255,255,0.04);
 }
 
 .sm-scrollbar-thin::-webkit-scrollbar-button {

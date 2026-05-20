@@ -17,6 +17,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  refreshKey: {
+    type: Number,
+    default: 0,
+  },
 })
 
 const router = useRouter()
@@ -42,7 +46,7 @@ const { state: selectedAssetStigs, isLoading: selectedAssetStigsLoading, error: 
 )
 
 // Initial Load
-watch([() => props.collectionId, () => props.selectedLabelIds], () => {
+watch([() => props.collectionId, () => props.selectedLabelIds, () => props.refreshKey], () => {
   loadAssets()
   selectedAssetId.value = null
 }, { immediate: true, deep: true })
