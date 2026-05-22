@@ -51,9 +51,6 @@ export async function downloadArchive({ collectionId, format, mode, selections, 
     attachment: filename,
   }
 
-  // Prefer the service worker — it streams the download without buffering
-  // the archive in memory. Only fall back to an in-page stream when no
-  // service worker controller is available.
   const href = await getDownloadUrl(init)
   if (href) {
     window.location = href

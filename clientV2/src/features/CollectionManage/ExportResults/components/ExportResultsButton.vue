@@ -3,9 +3,9 @@ import { saveAs } from 'file-saver-es'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { computed, reactive, ref } from 'vue'
-import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
 import { formatBytes } from '../../../../shared/lib.js'
 import { useCollectionExportProgressStore } from '../../../../shared/stores/collectionExportProgressStore.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
 import ExportResultsModal from './ExportResultsModal.vue'
 
 const props = defineProps({
@@ -27,7 +27,7 @@ const collectionExportStore = useCollectionExportProgressStore()
 const archiveProgressVisible = ref(false)
 
 function initialArchiveProgress() {
-  return { active: false, bytesReceived: 0, totalBytes: null, filename: '', log: [], error: null }
+  return { active: false, bytesReceived: 0, totalBytes: null, filename: '', log: [] }
 }
 const archiveProgress = reactive(initialArchiveProgress())
 
@@ -86,8 +86,7 @@ function onArchiveComplete() {
 
 function onArchiveError(err) {
   archiveProgress.active = false
-  archiveProgress.error = err?.message ?? String(err)
-  appendLog(`Error: ${archiveProgress.error}`)
+  appendLog(`Error: ${err?.message ?? String(err)}`)
 }
 
 function closeArchiveProgress() {

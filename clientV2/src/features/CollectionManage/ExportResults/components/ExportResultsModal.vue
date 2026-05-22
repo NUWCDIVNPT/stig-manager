@@ -11,6 +11,7 @@ import targetIcon from '../../../../assets/target.svg'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { formatPercent } from '../../../../shared/lib.js'
+import { readStoredValue, storeValue } from '../../../../shared/lib/localStorage.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
 import {
   downloadArchive,
@@ -63,7 +64,7 @@ const FORMATS = [
 const prefsKey = computed(() => `exportResults:${props.collectionId}`)
 
 const target = ref('archive')
-const formatKey = ref('ckl|mono')
+const selectedFormat = ref(FORMATS[0])
 const selectedDestinationId = ref(null)
 
 const destinationOptions = computed(() => {
@@ -75,8 +76,6 @@ const destinationOptions = computed(() => {
     .map(g => ({ label: g.collection.name, value: String(g.collection.collectionId) }))
     .sort((a, b) => a.label.localeCompare(b.label))
 })
-
-const isSubmitting = ref(false)
 
 // ── Tree state ────────────────────────────────────────────────────────────────
 
@@ -244,7 +243,7 @@ const validationMessage = computed(() => {
   return null
 })
 
-const canSubmit = computed(() => !isSubmitting.value && validationMessage.value === null)
+const canSubmit = computed(() => validationMessage.value === null)
 
 const submitLabel = computed(() => {
   if (target.value === 'collection') {
@@ -257,41 +256,32 @@ const submitLabel = computed(() => {
 
 function loadPrefs() {
   try {
-    const raw = localStorage.getItem(prefsKey.value)
-    if (!raw) {
-      return
-    }
+    const raw = readStoredValue(prefsKey.value, null)
+    if (!raw) { return }
     const parsed = JSON.parse(raw)
     if (parsed.target === 'collection' || parsed.target === 'archive') {
       target.value = parsed.target
     }
-    if (typeof parsed.formatKey === 'string' && FORMATS.some(f => `${f.value}|${f.mode ?? ''}` === parsed.formatKey)) {
-      formatKey.value = parsed.formatKey
-    }
+    const found = FORMATS.find(f => `${f.value}|${f.mode ?? ''}` === parsed.formatKey)
+    if (found) { selectedFormat.value = found }
     if (parsed.destinationId && destinationOptions.value.some(d => d.value === String(parsed.destinationId))) {
       selectedDestinationId.value = String(parsed.destinationId)
     }
   }
   catch {
-    // ignore
+    // ignore (JSON.parse can throw)
   }
-  // If remembered destination is missing for collection mode, fall back to archive
   if (target.value === 'collection' && !selectedDestinationId.value) {
     target.value = 'archive'
   }
 }
 
 function savePrefs() {
-  try {
-    localStorage.setItem(prefsKey.value, JSON.stringify({
-      target: target.value,
-      formatKey: formatKey.value,
-      destinationId: selectedDestinationId.value,
-    }))
-  }
-  catch {
-    // ignore
-  }
+  storeValue(prefsKey.value, JSON.stringify({
+    target: target.value,
+    formatKey: `${selectedFormat.value.value}|${selectedFormat.value.mode ?? ''}`,
+    destinationId: selectedDestinationId.value,
+  }))
 }
 
 // ── Submit ────────────────────────────────────────────────────────────────────
@@ -306,8 +296,7 @@ function archiveFilename(format) {
 }
 
 async function submitArchive() {
-  const [value, modeRaw] = formatKey.value.split('|')
-  const mode = modeRaw || null
+  const { value, mode } = selectedFormat.value
   const filename = archiveFilename(value)
   try {
     // Only emit `export-started` (which opens the in-page progress dialog)
@@ -325,7 +314,6 @@ async function submitArchive() {
         emit('archive-export-progress', { bytesReceived, totalBytes })
       },
     })
-    console.log('[export] archive via:', result?.via)
     if (result?.via !== 'service-worker') {
       emit('archive-export-complete', { filename })
     }
@@ -366,28 +354,17 @@ async function submitCollection() {
   }
 }
 
-async function onSubmit() {
-  if (!canSubmit.value) {
-    return
-  }
-  isSubmitting.value = true
+function onSubmit() {
+  if (!canSubmit.value) { return }
   savePrefs()
-  try {
-    // Close the dialog first; the parent renders a progress window
-    // and the export runs in the background.
-    localVisible.value = false
-    if (target.value === 'archive') {
-      submitArchive()
-    }
-    else {
-      submitCollection()
-    }
+  // Close the dialog first; the parent renders a progress window
+  // and the export runs in the background.
+  localVisible.value = false
+  if (target.value === 'archive') {
+    submitArchive()
   }
-  catch (err) {
-    triggerError(err)
-  }
-  finally {
-    isSubmitting.value = false
+  else {
+    submitCollection()
   }
 }
 
@@ -534,10 +511,9 @@ const radioButtonPt = {
         <div v-if="target === 'archive'" class="options-row">
           <span class="opt-label">Format:</span>
           <Select
-            v-model="formatKey"
-            :options="FORMATS.map(f => ({ label: f.label, value: `${f.value}|${f.mode ?? ''}` }))"
+            v-model="selectedFormat"
+            :options="FORMATS"
             option-label="label"
-            option-value="value"
             class="opt-select"
             :pt="selectPt"
           />
@@ -565,7 +541,6 @@ const radioButtonPt = {
         <Button
           :label="submitLabel"
           :pt="primaryBtnPt"
-          :loading="isSubmitting"
           :disabled="!canSubmit"
           @click="onSubmit"
         />
@@ -695,29 +670,6 @@ const radioButtonPt = {
   gap: 0.8rem;
   padding: 0.65rem 1rem;
   justify-content: flex-end;
-}
-
-.footer-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-left: auto;
-}
-
-.status-error {
-  font-size: 0.82rem;
-  color: var(--color-text-error);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.status-ok {
-  font-size: 0.82rem;
-  color: var(--color-success);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
 }
 
 /* ── Tree node ── */

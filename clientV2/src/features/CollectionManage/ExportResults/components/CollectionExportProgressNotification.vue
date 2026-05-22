@@ -64,7 +64,6 @@ const currentStep = computed(() => {
 const canRoute = computed(() => !!props.state.dstCollectionId)
 
 function dismissSelf() {
-  // tell GlobalNotifications to remove this card AND clear store state
   emit('dismiss')
   progressStore.dismiss()
 }
@@ -98,9 +97,7 @@ function goView() {
         {{ state.error ? 'Export Failed' : state.isDone ? 'Export Complete' : 'Exporting…' }}
       </span>
     </template>
-    <template v-if="state.isActive" #close>
-      <!-- hide close while active -->
-    </template>
+    <template v-if="state.isActive" #close />
 
     <template v-if="state.isDone && !state.error">
       <div v-if="state.dstCollectionName" class="dst-name dst-name--done">
