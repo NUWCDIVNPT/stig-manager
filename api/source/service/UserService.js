@@ -86,7 +86,7 @@ exports.queryUsers = async function (inProjection, inPredicates, elevate, userOb
 
   // PREDICATES
   let predicates = {
-    statements: [],
+    statements: [`ud.taskId IS NULL`],
     binds: [
       `$.${config.oauth.claims.email}`,
       `$.${config.oauth.claims.name}`,

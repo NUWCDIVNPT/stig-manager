@@ -1941,6 +1941,14 @@ SM.Manage.Collection.Panel = Ext.extend(Ext.Panel, {
       })
     }
 
+    const tasksPanel = new SM.TaskConfig.TasksPanel({
+      collectionId: _this.apiCollection.collectionId,
+      canEdit: !!_this.canConfigureTasks,
+      iconCls: 'sm-job-task-icon',
+      title: 'Tasks',
+      border: false,
+    })
+
     const tp = new Ext.TabPanel({
       region: 'center',
       activeTab: 0,
@@ -1967,12 +1975,17 @@ SM.Manage.Collection.Panel = Ext.extend(Ext.Panel, {
           ]
         },
         metadataGrid,
-        this.labelGrid
+        this.labelGrid,
+        tasksPanel
       ],
       listeners: {
         tabchange: function (tp, tab) {
           if (tab.title === 'Users') {
             usersGrid.store.load()
+          }
+          if (tab.title === 'Tasks' && !tab.initialized) {
+            tab.initPanel()
+            tab.initialized = true
           }
         }
       }
