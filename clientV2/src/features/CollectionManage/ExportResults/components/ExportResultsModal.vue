@@ -18,6 +18,14 @@ import {
   fetchAssetStigSummary,
   startCollectionExport,
 } from '../api/exportResultsApi.js'
+import {
+  archiveFilename,
+  assetKey,
+  buildDestinationOptions,
+  computeEffectiveSelections,
+  parsePrefs,
+  validateExport,
+} from '../exportResultsLogic.js'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },
@@ -45,9 +53,6 @@ const localVisible = computed({
 const { user } = useCurrentUser()
 const { triggerError } = useGlobalError()
 
-const COLLECTION_MIN = 1
-const COLLECTION_MAX = 100
-
 const TARGETS = [
   { label: 'Zip archive', value: 'archive' },
   { label: 'Collection', value: 'collection' },
@@ -67,15 +72,9 @@ const target = ref('archive')
 const selectedFormat = ref(FORMATS[0])
 const selectedDestinationId = ref(null)
 
-const destinationOptions = computed(() => {
-  if (!user.value?.collectionGrants?.length) {
-    return []
-  }
-  return user.value.collectionGrants
-    .filter(g => g.roleId >= 3 && String(g.collection.collectionId) !== String(props.collectionId))
-    .map(g => ({ label: g.collection.name, value: String(g.collection.collectionId) }))
-    .sort((a, b) => a.label.localeCompare(b.label))
-})
+const destinationOptions = computed(() =>
+  buildDestinationOptions(user.value?.collectionGrants, props.collectionId),
+)
 
 // ── Tree state ────────────────────────────────────────────────────────────────
 
@@ -85,10 +84,6 @@ const selectionKeys = ref({})
 // Track which asset nodes have been expanded (children resolved)
 const expandedAssetIds = reactive(new Set())
 const loadingAssetIds = reactive(new Set())
-
-function assetKey(assetId) {
-  return `asset-${assetId}`
-}
 
 function stigKey(assetId, benchmarkId) {
   return `stig-${assetId}-${benchmarkId}`
@@ -185,63 +180,15 @@ async function onNodeExpand(node) {
 
 // ── Submission shape ──────────────────────────────────────────────────────────
 
-const effectiveSelections = computed(() => {
-  const out = []
-  const rootNode = nodes.value[0]
-  if (!rootNode) { return out }
-  for (const node of rootNode.children ?? []) {
-    if (node.data?.type !== 'asset') {
-      continue
-    }
-    const assetId = node.data.assetId
-    const state = selectionKeys.value[assetKey(assetId)]
-    if (!state) {
-      continue
-    }
+const effectiveSelections = computed(() =>
+  computeEffectiveSelections(nodes.value, selectionKeys.value),
+)
 
-    const hasChildren = node.children?.length > 0
-    const fullyChecked = state.checked && !state.partialChecked
-
-    if (fullyChecked && !hasChildren) {
-      // Asset checked but children never loaded → omit stigs, server uses defaults
-      out.push({ assetId: String(assetId) })
-      continue
-    }
-
-    if (state.checked || state.partialChecked) {
-      const benchmarkIds = []
-      for (const child of node.children ?? []) {
-        const cState = selectionKeys.value[child.key]
-        if (cState?.checked) {
-          benchmarkIds.push(child.data.benchmarkId)
-        }
-      }
-      if (benchmarkIds.length > 0) {
-        out.push({ assetId: String(assetId), stigs: benchmarkIds })
-      }
-      else if (fullyChecked) {
-        out.push({ assetId: String(assetId) })
-      }
-    }
-  }
-  return out
-})
-
-const validationMessage = computed(() => {
-  const count = effectiveSelections.value.length
-  if (count === 0) {
-    return 'Select at least one asset.'
-  }
-  if (target.value === 'collection') {
-    if (count < COLLECTION_MIN || count > COLLECTION_MAX) {
-      return `Collection export requires ${COLLECTION_MIN}–${COLLECTION_MAX} assets (currently ${count}).`
-    }
-    if (!selectedDestinationId.value) {
-      return 'Choose a destination collection.'
-    }
-  }
-  return null
-})
+const validationMessage = computed(() => validateExport({
+  target: target.value,
+  count: effectiveSelections.value.length,
+  destinationId: selectedDestinationId.value,
+}))
 
 const canSubmit = computed(() => validationMessage.value === null)
 
@@ -255,25 +202,15 @@ const submitLabel = computed(() => {
 // ── Prefs (localStorage) ──────────────────────────────────────────────────────
 
 function loadPrefs() {
-  try {
-    const raw = readStoredValue(prefsKey.value, null)
-    if (!raw) { return }
-    const parsed = JSON.parse(raw)
-    if (parsed.target === 'collection' || parsed.target === 'archive') {
-      target.value = parsed.target
-    }
-    const found = FORMATS.find(f => `${f.value}|${f.mode ?? ''}` === parsed.formatKey)
-    if (found) { selectedFormat.value = found }
-    if (parsed.destinationId && destinationOptions.value.some(d => d.value === String(parsed.destinationId))) {
-      selectedDestinationId.value = String(parsed.destinationId)
-    }
-  }
-  catch {
-    // ignore (JSON.parse can throw)
-  }
-  if (target.value === 'collection' && !selectedDestinationId.value) {
-    target.value = 'archive'
-  }
+  const raw = readStoredValue(prefsKey.value, null)
+  const next = parsePrefs(raw, FORMATS, destinationOptions.value, {
+    target: target.value,
+    format: selectedFormat.value,
+    destinationId: selectedDestinationId.value,
+  })
+  target.value = next.target
+  selectedFormat.value = next.format
+  selectedDestinationId.value = next.destinationId
 }
 
 function savePrefs() {
@@ -286,18 +223,9 @@ function savePrefs() {
 
 // ── Submit ────────────────────────────────────────────────────────────────────
 
-function timestamp() {
-  return new Date().toISOString().replace(/[:.]/g, '-').replace(/Z$/, '')
-}
-
-function archiveFilename(format) {
-  const safeName = (props.collectionName || 'collection').replace(/[\\/:*?"<>|]/g, '_')
-  return `${safeName}_${format}_${timestamp()}.zip`
-}
-
 async function submitArchive() {
   const { value, mode } = selectedFormat.value
-  const filename = archiveFilename(value)
+  const filename = archiveFilename(props.collectionName, value)
   try {
     // Only emit `export-started` (which opens the in-page progress dialog)
     // if the service worker is unavailable and we have to stream into memory.

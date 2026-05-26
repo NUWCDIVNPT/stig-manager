@@ -17,6 +17,7 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useTableSelection } from '../../../shared/composables/useTableSelection.js'
 import { deleteAssets } from '../api/assetManageApi.js'
+import { useAssetTable } from '../composables/useAssetTable.js'
 import AssetFormModal from './AssetFormModal.vue'
 import AssetsToolbar from './AssetsToolbar.vue'
 
@@ -41,53 +42,17 @@ const { state: assets, isLoading, execute: loadAssets } = useAsyncState(
 
 watch(() => props.collectionId, loadAssets, { immediate: true })
 
-const tableData = computed(() =>
-  assets.value.map(r => ({
-    assetId: r.assetId,
-    assetName: r.name,
-    labels: r.labels,
-    stigCnt: r.benchmarkIds?.length ?? 0,
-    checks: r.metrics?.assessments ?? 0,
-    oldest: r.metrics?.minTs,
-    newest: r.metrics?.maxTs,
-    assessedPct: r.metrics?.assessments ? (r.metrics.assessed / r.metrics.assessments) * 100 : 0,
-    submittedPct: r.metrics?.assessments
-      ? ((r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100
-      : 0,
-    acceptedPct: r.metrics?.assessments ? (r.metrics.statuses.accepted / r.metrics.assessments) * 100 : 0,
-    rejectedPct: r.metrics?.assessments ? (r.metrics.statuses.rejected / r.metrics.assessments) * 100 : 0,
-  })),
-)
+const {
+  assetFilter,
+  labelFilter,
+  labelOptions,
+  filteredData,
+  applyAssetCreated,
+  applyAssetChanged,
+  applyAssetsTransferred,
+} = useAssetTable(assets)
 
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
-
-const assetFilter = ref('')
-const labelFilter = ref([])
-
-const labelOptions = computed(() => {
-  const seen = new Map()
-  for (const row of tableData.value) {
-    for (const lbl of (row.labels ?? [])) {
-      if (!seen.has(lbl.labelId)) {
-        seen.set(lbl.labelId, { label: lbl.name, value: lbl.labelId })
-      }
-    }
-  }
-  return [...seen.values()].sort((a, b) => a.label.localeCompare(b.label))
-})
-
-const filteredData = computed(() => {
-  let data = tableData.value
-  if (assetFilter.value) {
-    const q = assetFilter.value.toLowerCase()
-    data = data.filter(r => r.assetName.toLowerCase().includes(q))
-  }
-  if (labelFilter.value.length > 0) {
-    const ids = new Set(labelFilter.value)
-    data = data.filter(r => (r.labels ?? []).some(l => ids.has(l.labelId)))
-  }
-  return data
-})
 
 const columns = [
   { field: 'stigCnt', header: 'STIGs', component: Column, width: '30px', pt: borderPt },
@@ -135,30 +100,6 @@ function openEditModal(assetId) {
   createModalVisible.value = true
 }
 
-function onAssetCreated(row) {
-  assets.value = [...assets.value, {
-    assetId: row.assetId,
-    name: row.name ?? row.assetName,
-    labels: row.labels ?? [],
-    benchmarkIds: row.benchmarkIds ?? [],
-    metrics: row.metrics,
-    collection: row.collection,
-  }]
-}
-
-function onAssetChanged(row) {
-  const idx = assets.value.findIndex(a => a.assetId === row.assetId)
-  if (idx !== -1) {
-    assets.value = assets.value.with(idx, {
-      ...assets.value[idx],
-      name: row.name ?? row.assetName,
-      labels: row.labels ?? [],
-      benchmarkIds: row.benchmarkIds ?? [],
-      metrics: row.metrics,
-    })
-  }
-}
-
 const deleteModalVisible = ref(false)
 
 function onDeleteAssets() {
@@ -174,7 +115,7 @@ async function onDeleteConfirmed() {
 
 function onAssetsTransferred(transferredIds) {
   const idSet = new Set(transferredIds)
-  assets.value = assets.value.filter(a => !idSet.has(a.assetId))
+  applyAssetsTransferred(transferredIds)
   selectedAssets.value = selectedAssets.value.filter(a => !idSet.has(a.assetId))
 }
 
@@ -217,8 +158,8 @@ function handleFooterAction(action) {
       v-model:visible="createModalVisible"
       :collection-id="props.collectionId"
       :asset-id="editAssetId"
-      @asset-created="onAssetCreated"
-      @asset-changed="onAssetChanged"
+      @asset-created="applyAssetCreated"
+      @asset-changed="applyAssetChanged"
     />
 
     <DeleteModal

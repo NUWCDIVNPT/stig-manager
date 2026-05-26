@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-import ManageAssets from './ManageAssets.vue'
+import ManageAssetsTable from './ManageAssetsTable.vue'
 import ManageGrants from './ManageGrants.vue'
 import ManageImportOptions from './ManageImportOptions.vue'
 import ManageLabels from './ManageLabels.vue'
@@ -44,7 +44,7 @@ const panelComponents = {
   metadata: ManageMetadata,
   grants: ManageGrants,
   users: ManageUsers,
-  assets: ManageAssets,
+  assets: ManageAssetsTable,
   stigs: ManageStigs,
   labels: ManageLabels,
 }

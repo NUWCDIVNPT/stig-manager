@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiCall } from '../../../shared/api/apiClient.js'
-import { useAssetCsvImport } from './useAssetCsvImport.js'
+import { useAssetCsvImport } from '../composables/useAssetCsvImport.js'
 
 vi.mock('../../../shared/api/apiClient.js', () => ({
   apiCall: vi.fn(),
@@ -78,6 +78,22 @@ describe('useAssetCsvImport — parseFile', () => {
     parseMock.mockRejectedValue(new Error('boom'))
     const c = useAssetCsvImport(getCollectionId)
     await expect(c.parseFile('f')).rejects.toThrow('boom')
+  })
+
+  it('clears prior validAssets, newLabels, and serverErrors when a new file is parsed', async () => {
+    parseMock.mockResolvedValue({
+      assets: [{ name: 'new', CSVRow: 1 }],
+      errors: {},
+    })
+    const c = useAssetCsvImport(getCollectionId)
+    c.validAssets.value = [{ name: 'old' }]
+    c.newLabels.value = [{ labelName: 'old-label' }]
+    c.serverErrors.value = [{ row: 5, messages: 'old error' }]
+    await c.parseFile('newfile')
+    expect(c.parsedAssets.value).toEqual([{ name: 'new', CSVRow: 1 }])
+    expect(c.validAssets.value).toEqual([])
+    expect(c.newLabels.value).toEqual([])
+    expect(c.serverErrors.value).toEqual([])
   })
 })
 
@@ -279,9 +295,10 @@ describe('useAssetCsvImport — runDryRun (error handling & edge cases)', () => 
     expect(c.serverErrors.value).toEqual([])
   })
 
-  // EDGE CASE — a server failure with no `name` field falls back to csvRow=0. If any
-  // real asset happens to have CSVRow=0, it gets incorrectly dropped.
-  it('does not falsely block an asset with CSVRow=0 when the server error has no asset name', async () => {
+  // A server failure with no asset `name` cannot be tied to a specific row.
+  // The unmatched-row sentinel must be null (not 0) so a real CSVRow=0 asset is not
+  // accidentally dropped from validAssets.
+  it('keeps every asset valid when the server error cannot be tied to a named row', async () => {
     apiCall.mockResolvedValue({
       error: 'X',
       detail: [{ failure: 'global problem', detail: {} }],
@@ -296,6 +313,52 @@ describe('useAssetCsvImport — runDryRun (error handling & edge cases)', () => 
       { name: 'a', CSVRow: 0 },
       { name: 'b', CSVRow: 2 },
     ])
+    expect(c.serverErrors.value).toEqual([
+      { row: null, messages: 'Data error: global problem' },
+    ])
+  })
+
+  // The matched-asset path must use blockedRows.has(CSVRow) correctly even when
+  // CSVRow is 0 — Set membership on 0 is the boundary that's easy to break with
+  // truthy checks.
+  it('blocks an asset with CSVRow=0 when the server error names it', async () => {
+    apiCall.mockResolvedValue({
+      error: 'X',
+      detail: [{ failure: 'Bad data', detail: { name: 'rowZero' } }],
+    })
+    const c = useAssetCsvImport(getCollectionId)
+    c.parsedAssets.value = [
+      { name: 'rowZero', CSVRow: 0 },
+      { name: 'other', CSVRow: 1 },
+    ]
+    await c.runDryRun()
+    expect(c.validAssets.value).toEqual([{ name: 'other', CSVRow: 1 }])
+    expect(c.serverErrors.value).toEqual([
+      { row: 0, messages: 'Data error: Bad data\n• Asset Affected: rowZero' },
+    ])
+  })
+
+  it('does not call the API and short-circuits when parsedAssets is empty', async () => {
+    const c = useAssetCsvImport(getCollectionId)
+    c.newLabels.value = [{ labelName: 'stale' }]
+    c.serverErrors.value = [{ row: 1, messages: 'stale' }]
+    await c.runDryRun()
+    expect(apiCall).not.toHaveBeenCalled()
+  })
+
+  // The "else" branch handles a non-204, non-error-shaped response (e.g. an
+  // unexpected 200 body). It must clear stale newLabels/serverErrors from a
+  // prior failing dry-run so the UI doesn't show orphaned errors.
+  it('clears stale newLabels and serverErrors when the response is non-204 and not an error shape', async () => {
+    apiCall.mockResolvedValue({ ok: true })
+    const c = useAssetCsvImport(getCollectionId)
+    c.parsedAssets.value = [{ name: 'a', CSVRow: 1 }]
+    c.newLabels.value = [{ labelName: 'stale' }]
+    c.serverErrors.value = [{ row: 99, messages: 'stale' }]
+    await c.runDryRun()
+    expect(c.validAssets.value).toEqual([{ name: 'a', CSVRow: 1 }])
+    expect(c.newLabels.value).toEqual([])
+    expect(c.serverErrors.value).toEqual([])
   })
 })
 

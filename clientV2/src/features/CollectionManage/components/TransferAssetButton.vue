@@ -2,10 +2,9 @@
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Menu from 'primevue/menu'
-import { computed, ref } from 'vue'
+import { computed, ref, toRef } from 'vue'
 import ErrorListDialog from '../../../components/common/ErrorListDialog.vue'
-import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
-import { updateAsset } from '../api/assetManageApi.js'
+import { useAssetTransfer } from '../composables/useAssetTransfer.js'
 
 const props = defineProps({
   collectionId: {
@@ -24,24 +23,21 @@ const props = defineProps({
 
 const emit = defineEmits(['assets-transferred'])
 
-const { user } = useCurrentUser()
-
 const menuRef = ref(null)
 const confirmVisible = ref(false)
-const isTransferring = ref(false)
-const transferProgress = ref('')
-const pendingDestination = ref(null)
-const transferFailures = ref([])
 const resultsVisible = ref(false)
 
-const destinationCollections = computed(() => {
-  if (!user.value?.collectionGrants?.length) {
-    return []
-  }
-  return user.value.collectionGrants
-    .filter(g => g.roleId >= 3 && String(g.collection.collectionId) !== String(props.collectionId))
-    .map(g => g.collection)
-    .sort((a, b) => a.name.localeCompare(b.name))
+const {
+  destinationCollections,
+  pendingDestination,
+  transferFailures,
+  isTransferring,
+  triggerLabel,
+  confirmMessage,
+  transfer,
+} = useAssetTransfer({
+  collectionId: toRef(props, 'collectionId'),
+  selectedAssets: toRef(props, 'selectedAssets'),
 })
 
 const menuItems = computed(() => {
@@ -53,20 +49,6 @@ const menuItems = computed(() => {
     icon: 'pi pi-th-large',
     command: () => onSelect(collection),
   }))
-})
-
-const confirmMessage = computed(() => {
-  const count = props.selectedAssets.length
-  const dest = pendingDestination.value?.name ?? ''
-  const subject = count === 1 ? 'this asset' : `these ${count} assets`
-  return `Transferring ${subject} to ${dest} will transfer all data associated with the asset. This includes all the corresponding STIG assessments.`
-})
-
-const triggerLabel = computed(() => {
-  if (isTransferring.value) {
-    return transferProgress.value || 'Transferring...'
-  }
-  return 'Transfer To'
 })
 
 const menuPt = {
@@ -93,41 +75,12 @@ function onSelect(collection) {
 
 async function onTransferConfirmed() {
   confirmVisible.value = false
-  const destId = pendingDestination.value.collectionId
-  const toTransfer = [...props.selectedAssets]
-  const transferred = []
-  const failures = []
-
-  isTransferring.value = true
-  try {
-    for (let i = 0; i < toTransfer.length; i++) {
-      const asset = toTransfer[i]
-      transferProgress.value = `Transferring ${i + 1}/${toTransfer.length}...`
-      try {
-        await updateAsset(asset.assetId, { collectionId: destId })
-        transferred.push(asset.assetId)
-      }
-      catch (err) {
-        const isDupe = err?.body?.code === 'ER_DUP_ENTRY'
-        failures.push({
-          label: asset.assetName,
-          message: isDupe
-            ? 'An asset with this name already exists in the destination collection.'
-            : (err?.message ?? 'Unknown error'),
-        })
-      }
-    }
+  const transferred = await transfer()
+  if (transferred.length > 0) {
+    emit('assets-transferred', transferred)
   }
-  finally {
-    isTransferring.value = false
-    transferProgress.value = ''
-    if (transferred.length > 0) {
-      emit('assets-transferred', transferred)
-    }
-    if (failures.length > 0) {
-      transferFailures.value = failures
-      resultsVisible.value = true
-    }
+  if (transferFailures.value.length > 0) {
+    resultsVisible.value = true
   }
 }
 </script>

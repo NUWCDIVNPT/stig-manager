@@ -52,6 +52,9 @@ export function useAssetCsvImport(getCollectionId) {
     const result = await parser.parse(file)
     parsedAssets.value = result.assets ?? []
     parserErrors.value = result.errors ?? {}
+    validAssets.value = []
+    newLabels.value = []
+    serverErrors.value = []
   }
 
   async function runDryRun() {
@@ -110,6 +113,8 @@ export function useAssetCsvImport(getCollectionId) {
       }
       else {
         validAssets.value = [...parsedAssets.value]
+        newLabels.value = []
+        serverErrors.value = []
       }
     }
     catch (err) {
