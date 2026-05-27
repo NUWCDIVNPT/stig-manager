@@ -30,3 +30,10 @@ export function fetchCollectionAssetSummary(collectionId, options = {}) {
   }
   return apiCall('getMetricsSummaryByCollectionAggAsset', { collectionId, ...options })
 }
+
+export function fetchCollectionStigSummary(collectionId, options = {}) {
+  if (!collectionId) {
+    throw new Error('A collectionId is required to fetch STIG metrics.')
+  }
+  return apiCall('getMetricsSummaryByCollectionAggStig', { collectionId, ...options })
+}

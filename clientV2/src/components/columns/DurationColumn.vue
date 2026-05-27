@@ -12,7 +12,7 @@ defineProps({
 <template>
   <Column :field="field" :header="header">
     <template #body="slotProps">
-      {{ durationToNow(slotProps.data[slotProps.field]) }}
+      {{ durationToNow(slotProps.data[slotProps.field]) || '-' }}
       {{ tooltipX }}
     </template>
   </Column>

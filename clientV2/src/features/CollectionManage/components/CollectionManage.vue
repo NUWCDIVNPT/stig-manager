@@ -8,7 +8,7 @@ import ManageMetadata from './ManageMetadata.vue'
 import ManageProperties from './ManageProperties.vue'
 import ManageSettings from './ManageSettings.vue'
 import ManageUsers from './ManageUsers.vue'
-import ManageStigs from './Stig/ManageStigs.vue'
+import ManageStigsTable from './Stig/ManageStigsTable.vue'
 
 const props = defineProps({
   collectionId: {
@@ -45,7 +45,7 @@ const panelComponents = {
   grants: ManageGrants,
   users: ManageUsers,
   assets: ManageAssetsTable,
-  stigs: ManageStigs,
+  stigs: ManageStigsTable,
   labels: ManageLabels,
 }
 
