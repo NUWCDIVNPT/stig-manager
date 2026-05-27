@@ -93,7 +93,6 @@ function badgeClass(pct) {
   return pct >= 99.5 ? 'badge-complete' : 'badge-incomplete'
 }
 
-
 const ROOT_KEY = 'root-all'
 
 function buildInitialTree() {
@@ -424,7 +423,6 @@ const radioButtonPt = {
         </Tree>
       </div>
 
-      <!-- Bottom options bar -->
       <div class="options-bar">
         <div class="options-row">
           <span class="opt-label">Export to:</span>

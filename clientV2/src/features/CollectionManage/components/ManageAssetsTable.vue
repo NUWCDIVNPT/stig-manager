@@ -181,6 +181,7 @@ function handleFooterAction(action) {
         :loading="isLoading"
         :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
         class="flex-fill"
+        :table-style="{ 'table-layout': 'fixed' }"
       >
         <Column style="width: 3rem; height: 27px; padding: 0 0.5rem;" :pt="{ headerContent: { style: 'justify-content: flex-start; width: 100%' } }">
           <template #header>
