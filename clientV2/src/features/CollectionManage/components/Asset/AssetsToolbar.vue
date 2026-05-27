@@ -1,6 +1,6 @@
 <script setup>
-import targetIcon from '../../../assets/target.svg'
-import ExportResultsButton from '../ExportResults/components/ExportResultsButton.vue'
+import targetIcon from '../../../../assets/target.svg'
+import ExportResultsButton from '../../ExportResults/components/ExportResultsButton.vue'
 import ExportAssetsCsvButton from './ExportAssetsCsvButton.vue'
 import ImportAssetsCsvButton from './ImportAssetsCsvButton.vue'
 import ImportResultsButton from './ImportResultsButton.vue'

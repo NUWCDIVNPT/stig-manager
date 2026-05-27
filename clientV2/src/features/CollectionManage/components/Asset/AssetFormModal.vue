@@ -6,12 +6,12 @@ import InputText from 'primevue/inputtext'
 import MultiSelect from 'primevue/multiselect'
 import { computed, toRef } from 'vue'
 
-import LabelChip from '../../../components/common/Label.vue'
-import MetadataEditor from '../../../components/common/MetadataEditor.vue'
-import CommonPickList from '../../../components/common/PickList.vue'
+import LabelChip from '../../../../components/common/Label.vue'
+import MetadataEditor from '../../../../components/common/MetadataEditor.vue'
+import CommonPickList from '../../../../components/common/PickList.vue'
 
-import { primaryBtnPt, secondaryBtnPt } from '../../ImportWizard/lib/importDialogPt.js'
-import { useAssetForm } from '../composables/useAssetForm.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { useAssetForm } from '../../composables/useAssetForm.js'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },

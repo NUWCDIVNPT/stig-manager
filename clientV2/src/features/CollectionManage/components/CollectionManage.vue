@@ -1,14 +1,14 @@
 <script setup>
 import { computed, ref } from 'vue'
-import ManageAssetsTable from './ManageAssetsTable.vue'
+import ManageAssetsTable from './Asset/ManageAssetsTable.vue'
 import ManageGrants from './ManageGrants.vue'
 import ManageImportOptions from './ManageImportOptions.vue'
 import ManageLabels from './ManageLabels.vue'
 import ManageMetadata from './ManageMetadata.vue'
 import ManageProperties from './ManageProperties.vue'
 import ManageSettings from './ManageSettings.vue'
-import ManageStigs from './ManageStigs.vue'
 import ManageUsers from './ManageUsers.vue'
+import ManageStigs from './Stig/ManageStigs.vue'
 
 const props = defineProps({
   collectionId: {
