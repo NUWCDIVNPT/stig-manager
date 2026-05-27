@@ -388,13 +388,13 @@ const pickListPt = {
 }
 
 .req-star {
-  color: #f87171;
+  color: var(--color-action-red);
   font-size: 0.8rem;
 }
 
 .name-error {
   font-size: 0.8rem;
-  color: #f87171;
+  color: var(--color-text-error);
   margin-top: -0.5rem;
 }
 

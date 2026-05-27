@@ -3,7 +3,7 @@ import targetIcon from '../../../assets/target.svg'
 import ExportResultsButton from '../ExportResults/components/ExportResultsButton.vue'
 import ExportAssetsCsvButton from './ExportAssetsCsvButton.vue'
 import ImportAssetsCsvButton from './ImportAssetsCsvButton.vue'
-import ImportResultsAction from './ImportResultsAction.vue'
+import ImportResultsButton from './ImportResultsButton.vue'
 import TransferAssetButton from './TransferAssetButton.vue'
 
 const props = defineProps({
@@ -49,7 +49,7 @@ const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify
       :selected-assets="props.selectedAssets"
     />
     <div class="toolbar-divider" />
-    <ImportResultsAction :collection-id="props.collectionId" @imported="emit('imported')" />
+    <ImportResultsButton :collection-id="props.collectionId" @imported="emit('imported')" />
     <div class="toolbar-divider" />
     <ExportResultsButton
       :collection-id="props.collectionId"
@@ -120,7 +120,7 @@ const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify
 }
 
 .action-btn--clear:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-hover);
 }
 
 .action-btn:disabled {
@@ -133,11 +133,11 @@ const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify
 }
 
 .action-btn i.icon-green {
-  color: #4ade80;
+  color: var(--color-action-green);
 }
 
 .action-btn i.icon-blue {
-  color: #60a5fa;
+  color: var(--color-action-blue);
 }
 
 .action-btn i.icon-grey {
@@ -145,7 +145,7 @@ const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify
 }
 
 .action-btn i.icon-red {
-  color: #f87171;
+  color: var(--color-action-red);
 }
 
 .btn-icon {

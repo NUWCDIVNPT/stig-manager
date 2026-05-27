@@ -208,7 +208,7 @@ function onCollectionError(err) {
 }
 
 .action-btn i.icon-blue {
-  color: #60a5fa;
+  color: var(--color-action-blue);
 }
 
 .archive-progress-body {

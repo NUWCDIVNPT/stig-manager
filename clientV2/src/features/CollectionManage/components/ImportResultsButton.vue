@@ -52,6 +52,6 @@ function handleImported() {
 }
 
 .icon-blue {
-  color: #60a5fa; /* STIG Manager blue */
+  color: var(--color-action-blue);
 }
 </style>

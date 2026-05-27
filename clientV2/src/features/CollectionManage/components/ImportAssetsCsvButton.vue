@@ -319,7 +319,7 @@ const dataTablePt = {
 }
 
 .action-btn i.icon-green {
-  color: #4ade80;
+  color: var(--color-action-blue);
 }
 
 .modal-body {
