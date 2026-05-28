@@ -2,10 +2,10 @@
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import RadioButton from 'primevue/radiobutton'
-
 import Select from 'primevue/select'
-import Tree from 'primevue/tree'
+import VirtualScroller from 'primevue/virtualscroller'
 import { computed, reactive, ref, watch } from 'vue'
+
 import shieldIcon from '../../../../assets/shield-green-check.svg'
 import targetIcon from '../../../../assets/target.svg'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
@@ -15,14 +15,14 @@ import { readStoredValue, storeValue } from '../../../../shared/lib/localStorage
 import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
 import {
   downloadArchive,
-  fetchAssetStigSummary,
+  fetchStigAssetSummary,
   startCollectionExport,
 } from '../api/exportResultsApi.js'
 import {
   archiveFilename,
-  assetKey,
   buildDestinationOptions,
-  computeEffectiveSelections,
+  buildStigTree,
+  computeStigEffectiveSelections,
   parsePrefs,
   validateExport,
 } from '../exportResultsLogic.js'
@@ -31,7 +31,7 @@ const props = defineProps({
   visible: { type: Boolean, required: true },
   collectionId: { type: String, required: true },
   collectionName: { type: String, default: '' },
-  selectedAssets: { type: Array, default: () => [] },
+  selectedStigs: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits([
@@ -66,7 +66,7 @@ const FORMATS = [
   { label: 'XCCDF', value: 'xccdf', mode: null },
 ]
 
-const prefsKey = computed(() => `exportResults:${props.collectionId}`)
+const prefsKey = computed(() => `exportResultsStig:${props.collectionId}`)
 
 const target = ref('archive')
 const selectedFormat = ref(FORMATS[0])
@@ -79,108 +79,178 @@ const destinationOptions = computed(() =>
 // ── Tree state ────────────────────────────────────────────────────────────────
 
 const nodes = ref([])
-// PrimeVue checkbox selection keys: { [key]: { checked, partialChecked } }
 const selectionKeys = ref({})
-// Track which asset nodes have been expanded (children resolved)
-const expandedAssetIds = reactive(new Set())
-const loadingAssetIds = reactive(new Set())
-
-function stigKey(assetId, benchmarkId) {
-  return `stig-${assetId}-${benchmarkId}`
-}
+const loadingTree = ref(false)
+const expandedStigIds = reactive(new Set())
 
 function badgeClass(pct) {
   return pct >= 99.5 ? 'badge-complete' : 'badge-incomplete'
 }
 
-const ROOT_KEY = 'root-all'
-
-function buildInitialTree() {
-  const keys = {}
-  const assetNodes = props.selectedAssets.map((a) => {
-    keys[assetKey(a.assetId)] = { checked: true, partialChecked: false }
-    return {
-      key: assetKey(a.assetId),
-      label: a.assetName,
-      data: {
-        type: 'asset',
-        assetId: a.assetId,
-        acceptedPct: a.acceptedPct ?? 0,
-      },
-      leaf: false,
-      children: [],
-    }
-  })
-  keys[ROOT_KEY] = { checked: true, partialChecked: false }
-  nodes.value = [{
-    key: ROOT_KEY,
-    label: 'All Assets',
-    data: { type: 'root' },
-    leaf: false,
-    children: assetNodes,
-  }]
-  selectionKeys.value = keys
-  expandedAssetIds.clear()
-  loadingAssetIds.clear()
-}
-
-async function onNodeExpand(node) {
-  if (node?.data?.type !== 'asset') {
+async function loadTree() {
+  if (props.selectedStigs.length === 0) {
+    nodes.value = []
+    selectionKeys.value = {}
     return
   }
-  const assetId = node.data.assetId
-  if (expandedAssetIds.has(assetId) || loadingAssetIds.has(assetId)) {
-    return
-  }
-  loadingAssetIds.add(assetId)
+
+  loadingTree.value = true
   try {
-    const summary = await fetchAssetStigSummary(props.collectionId, assetId)
-    const parentSelection = selectionKeys.value[assetKey(assetId)]
-    const parentChecked = !!parentSelection?.checked && !parentSelection?.partialChecked
-    const children = (summary ?? []).map((row) => {
-      const benchmarkId = row.benchmarkId
-      const assessments = row.metrics?.assessments ?? 0
-      const accepted = row.metrics?.statuses?.accepted ?? 0
-      const pct = assessments ? (accepted / assessments) * 100 : 0
-      return {
-        key: stigKey(assetId, benchmarkId),
-        label: benchmarkId,
-        data: {
-          type: 'stig',
-          assetId,
-          benchmarkId,
-          acceptedPct: pct,
-        },
-        leaf: true,
-      }
+    const results = await Promise.all(
+      props.selectedStigs.map(s => fetchStigAssetSummary(props.collectionId, s.benchmarkId)),
+    )
+    const rowsByBenchmarkId = new Map()
+    props.selectedStigs.forEach((s, i) => {
+      rowsByBenchmarkId.set(s.benchmarkId, results[i] ?? [])
     })
-    const rootNode = nodes.value[0]
-    if (!rootNode) { return }
-    const assetNode = (rootNode.children ?? []).find(n => n.key === assetKey(assetId))
-    if (assetNode) {
-      assetNode.children = children
-    }
-    if (parentChecked) {
-      const nextKeys = { ...selectionKeys.value }
-      for (const child of children) {
-        nextKeys[child.key] = { checked: true, partialChecked: false }
-      }
-      selectionKeys.value = nextKeys
-    }
-    expandedAssetIds.add(assetId)
+    const built = buildStigTree(props.selectedStigs, rowsByBenchmarkId)
+    nodes.value = built.nodes
+    selectionKeys.value = built.selectionKeys
   }
   catch (err) {
     triggerError(err)
+    nodes.value = []
+    selectionKeys.value = {}
   }
   finally {
-    loadingAssetIds.delete(assetId)
+    loadingTree.value = false
+  }
+}
+
+// ── Flat rows for VirtualScroller ─────────────────────────────────────────────
+
+const flatRows = computed(() => {
+  const rows = []
+  const root = nodes.value?.[0]
+  if (!root) { return rows }
+
+  rows.push({ type: 'root', key: root.key, label: root.label, data: root.data, _node: root })
+
+  for (const stigNode of (root.children ?? [])) {
+    const isExpanded = expandedStigIds.has(stigNode.data.benchmarkId)
+    rows.push({
+      type: 'stig',
+      key: stigNode.key,
+      label: stigNode.label,
+      data: stigNode.data,
+      _node: stigNode,
+      assetCount: stigNode.children?.length ?? 0,
+      expanded: isExpanded,
+    })
+    if (isExpanded) {
+      for (const assetNode of (stigNode.children ?? [])) {
+        rows.push({
+          type: 'asset',
+          key: assetNode.key,
+          label: assetNode.label,
+          data: assetNode.data,
+          _node: assetNode,
+          _stigNode: stigNode,
+        })
+      }
+    }
+  }
+  return rows
+})
+
+// ── Checkbox state helpers ────────────────────────────────────────────────────
+
+function computeStigCheckState(stigNode, keys) {
+  const assetNodes = stigNode.children ?? []
+  if (assetNodes.length === 0) {
+    const s = keys[stigNode.key]
+    return { checked: s?.checked ?? false, partialChecked: false }
+  }
+  const checkedCount = assetNodes.filter(a => keys[a.key]?.checked).length
+  if (checkedCount === assetNodes.length) { return { checked: true, partialChecked: false } }
+  if (checkedCount > 0) { return { checked: false, partialChecked: true } }
+  return { checked: false, partialChecked: false }
+}
+
+function computeRootCheckState(rootNode, keys) {
+  const stigNodes = rootNode.children ?? []
+  if (stigNodes.length === 0) { return { checked: false, partialChecked: false } }
+  let allChecked = true
+  let anyChecked = false
+  for (const stig of stigNodes) {
+    const s = keys[stig.key]
+    if (s?.checked) {
+      anyChecked = true
+    }
+    else if (s?.partialChecked) {
+      anyChecked = true
+      allChecked = false
+    }
+    else {
+      allChecked = false
+    }
+  }
+  if (allChecked) { return { checked: true, partialChecked: false } }
+  if (anyChecked) { return { checked: false, partialChecked: true } }
+  return { checked: false, partialChecked: false }
+}
+
+// ── Checkbox toggle handlers ──────────────────────────────────────────────────
+
+function toggleRoot() {
+  const root = nodes.value?.[0]
+  if (!root) { return }
+  const keys = { ...selectionKeys.value }
+  const rootState = keys[root.key]
+  const newChecked = !(rootState?.checked)
+
+  keys[root.key] = { checked: newChecked, partialChecked: false }
+  for (const stig of (root.children ?? [])) {
+    keys[stig.key] = { checked: newChecked, partialChecked: false }
+    for (const asset of (stig.children ?? [])) {
+      keys[asset.key] = { checked: newChecked, partialChecked: false }
+    }
+  }
+  selectionKeys.value = keys
+}
+
+function toggleStig(stigNode) {
+  const root = nodes.value?.[0]
+  if (!root) { return }
+  const keys = { ...selectionKeys.value }
+  const stigState = keys[stigNode.key]
+  const newChecked = !(stigState?.checked || stigState?.partialChecked)
+
+  keys[stigNode.key] = { checked: newChecked, partialChecked: false }
+  for (const asset of (stigNode.children ?? [])) {
+    keys[asset.key] = { checked: newChecked, partialChecked: false }
+  }
+
+  keys[root.key] = computeRootCheckState(root, keys)
+  selectionKeys.value = keys
+}
+
+function toggleAsset(assetNode, stigNode) {
+  const root = nodes.value?.[0]
+  if (!root) { return }
+  const keys = { ...selectionKeys.value }
+  const assetState = keys[assetNode.key]
+  keys[assetNode.key] = { checked: !assetState?.checked, partialChecked: false }
+
+  keys[stigNode.key] = computeStigCheckState(stigNode, keys)
+  keys[root.key] = computeRootCheckState(root, keys)
+  selectionKeys.value = keys
+}
+
+function toggleExpand(row) {
+  const id = row.data.benchmarkId
+  if (expandedStigIds.has(id)) {
+    expandedStigIds.delete(id)
+  }
+  else {
+    expandedStigIds.add(id)
   }
 }
 
 // ── Submission shape ──────────────────────────────────────────────────────────
 
 const effectiveSelections = computed(() =>
-  computeEffectiveSelections(nodes.value, selectionKeys.value),
+  computeStigEffectiveSelections(nodes.value, selectionKeys.value),
 )
 
 const validationMessage = computed(() => validateExport({
@@ -189,14 +259,11 @@ const validationMessage = computed(() => validateExport({
   destinationId: selectedDestinationId.value,
 }))
 
-const canSubmit = computed(() => validationMessage.value === null)
+const canSubmit = computed(() => !loadingTree.value && validationMessage.value === null)
 
-const submitLabel = computed(() => {
-  if (target.value === 'collection') {
-    return 'Export to collection'
-  }
-  return 'Download archive'
-})
+const submitLabel = computed(() =>
+  target.value === 'collection' ? 'Export to collection' : 'Download archive',
+)
 
 // ── Prefs (localStorage) ──────────────────────────────────────────────────────
 
@@ -226,8 +293,6 @@ async function submitArchive() {
   const { value, mode } = selectedFormat.value
   const filename = archiveFilename(props.collectionName, value)
   try {
-    // Only emit `export-started` (which opens the in-page progress dialog)
-    // if the service worker is unavailable and we have to stream into memory.
     const result = await downloadArchive({
       collectionId: props.collectionId,
       format: value,
@@ -284,8 +349,6 @@ async function submitCollection() {
 function onSubmit() {
   if (!canSubmit.value) { return }
   savePrefs()
-  // Close the dialog first; the parent renders a progress window
-  // and the export runs in the background.
   localVisible.value = false
   if (target.value === 'archive') {
     submitArchive()
@@ -299,7 +362,8 @@ function onSubmit() {
 
 watch(() => props.visible, (open) => {
   if (open) {
-    buildInitialTree()
+    expandedStigIds.clear()
+    loadTree()
     loadPrefs()
   }
 })
@@ -318,22 +382,6 @@ const dialogPt = {
   content: { style: 'background: var(--color-background-dark); padding: 0; flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;' },
   footer: { style: 'flex-shrink: 0; padding: 0; border: none;' },
   closeButton: { style: 'color: var(--color-text-dim);' },
-}
-
-const treePt = {
-  root: { style: 'background: transparent; padding: 0; border: none; color: var(--color-text-primary);' },
-  nodeContent: ({ context }) => ({
-    style: `padding: 0.2rem 0.4rem; border-radius: 3px; background: ${context.selected ? 'var(--color-background-subtle)' : 'transparent'};`,
-    onmouseenter: (e) => { e.currentTarget.style.background = 'var(--color-background-subtle)' },
-    onmouseleave: (e) => { e.currentTarget.style.background = context.selected ? 'var(--color-background-subtle)' : 'transparent' },
-  }),
-  nodeCheckbox: {
-    root: { style: 'display: flex; align-items: center;' },
-    box: ({ context }) => ({
-      style: `background: ${context.checked || context.partialChecked ? 'var(--color-action-blue-dark)' : 'var(--color-background-light)'}; border-color: ${context.checked || context.partialChecked ? 'var(--color-action-blue-dark)' : 'var(--color-border-default)'};`,
-    }),
-    icon: { style: 'color: white;' },
-  },
 }
 
 const selectPt = {
@@ -359,12 +407,12 @@ const radioButtonPt = {
         <div class="modal-header-icon">
           <i class="pi pi-download" />
         </div>
-        <div class="modal-header-text">
+        <div>
           <div class="modal-header-title">
             Export results
           </div>
           <div class="modal-header-sub">
-            Select Assets and STIGs
+            Select STIGs and Assets
           </div>
         </div>
         <div class="badge-legend">
@@ -376,51 +424,95 @@ const radioButtonPt = {
     </template>
 
     <div class="modal-body">
-      <!-- Tree -->
+      <!-- Virtual list pane -->
       <div class="tree-pane">
-        <div v-if="nodes.length === 0" class="empty">
-          No selected assets have STIG assignments to export.
+        <div v-if="loadingTree" class="loading-state">
+          <i class="pi pi-spin pi-spinner" />
+          <span>Loading assets...</span>
         </div>
-        <Tree
+        <div v-else-if="nodes.length === 0" class="empty">
+          No assets found for the selected STIGs.
+        </div>
+        <VirtualScroller
           v-else
-          v-model:selection-keys="selectionKeys"
-          :value="nodes"
-          selection-mode="checkbox"
-          :pt="treePt"
-          @node-expand="onNodeExpand"
+          :items="flatRows"
+          :item-size="30"
+          style="height: 100%; width: 100%;"
         >
-          <template #default="{ node }">
-            <div class="node-row">
-              <img
-                v-if="node.data?.type === 'root' || node.data?.type === 'asset'"
-                :src="targetIcon"
-                class="node-icon"
-                alt=""
+          <template #item="{ item: row }">
+            <!-- Root row -->
+            <div v-if="row.type === 'root'" class="vs-row vs-row--root">
+              <div
+                class="custom-cb"
+                :class="{
+                  'custom-cb--on': selectionKeys[row.key]?.checked,
+                  'custom-cb--partial': selectionKeys[row.key]?.partialChecked,
+                }"
+                @click.stop="toggleRoot"
               >
-              <img
-                v-else-if="node.data?.type === 'stig'"
-                :src="shieldIcon"
-                class="node-icon"
-                alt=""
+                <i v-if="selectionKeys[row.key]?.checked" class="pi pi-check" />
+                <i v-else-if="selectionKeys[row.key]?.partialChecked" class="pi pi-minus" />
+              </div>
+              <img :src="shieldIcon" class="node-icon" alt="">
+              <span class="node-label node-label--bold">{{ row.label }}</span>
+            </div>
+
+            <!-- STIG row -->
+            <div v-else-if="row.type === 'stig'" class="vs-row vs-row--stig">
+              <button class="expand-btn" :aria-label="row.expanded ? 'Collapse' : 'Expand'" @click.stop="toggleExpand(row)">
+                <i :class="row.expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
+              </button>
+              <div
+                class="custom-cb"
+                :class="{
+                  'custom-cb--on': selectionKeys[row.key]?.checked,
+                  'custom-cb--partial': selectionKeys[row.key]?.partialChecked,
+                }"
+                @click.stop="toggleStig(row._node)"
               >
-              <span class="node-label">{{ node.label }}</span>
-              <span
-                v-if="node.data?.type === 'asset' && loadingAssetIds.has(node.data.assetId)"
-                class="node-loading"
+                <i v-if="selectionKeys[row.key]?.checked" class="pi pi-check" />
+                <i v-else-if="selectionKeys[row.key]?.partialChecked" class="pi pi-minus" />
+              </div>
+              <img :src="shieldIcon" class="node-icon" alt="">
+              <div class="row-content">
+                <span class="node-label" :title="row.data.title">{{ row.label }}</span>
+                <span class="asset-count">· {{ row.assetCount }}</span>
+                <span
+                  v-if="row.data.acceptedPct != null"
+                  class="badge"
+                  :class="badgeClass(row.data.acceptedPct)"
+                  :title="`Accepted ${formatPercent(row.data.acceptedPct, 100)}`"
+                >
+                  {{ formatPercent(row.data.acceptedPct, 100) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Asset row -->
+            <div v-else-if="row.type === 'asset'" class="vs-row vs-row--asset">
+              <div class="asset-indent" />
+              <div
+                class="custom-cb"
+                :class="{ 'custom-cb--on': selectionKeys[row.key]?.checked }"
+                @click.stop="toggleAsset(row._node, row._stigNode)"
               >
-                <i class="pi pi-spin pi-spinner" />
-              </span>
-              <span
-                v-if="node.data?.acceptedPct != null"
-                class="badge"
-                :class="badgeClass(node.data.acceptedPct)"
-                :title="`Accepted ${formatPercent(node.data.acceptedPct, 100)}`"
-              >
-                {{ formatPercent(node.data.acceptedPct, 100) }}
-              </span>
+                <i v-if="selectionKeys[row.key]?.checked" class="pi pi-check" />
+              </div>
+              <img :src="targetIcon" class="node-icon" alt="">
+              <div class="row-content">
+                <span class="node-label">{{ row.label }}</span>
+                <span
+                  v-if="row.data.acceptedPct != null"
+                  class="badge"
+                  :class="badgeClass(row.data.acceptedPct)"
+                  :title="`Accepted ${formatPercent(row.data.acceptedPct, 100)}`"
+                >
+                  {{ formatPercent(row.data.acceptedPct, 100) }}
+                </span>
+              </div>
             </div>
           </template>
-        </Tree>
+        </VirtualScroller>
       </div>
 
       <div class="options-bar">
@@ -432,8 +524,8 @@ const radioButtonPt = {
           <span class="opt-label">Export to:</span>
           <div class="radio-group">
             <div v-for="opt in TARGETS" :key="opt.value" class="radio-option">
-              <RadioButton v-model="target" :value="opt.value" :input-id="`target-${opt.value}`" :pt="radioButtonPt" />
-              <label :for="`target-${opt.value}`">{{ opt.label }}</label>
+              <RadioButton v-model="target" :value="opt.value" :input-id="`stig-target-${opt.value}`" :pt="radioButtonPt" />
+              <label :for="`stig-target-${opt.value}`">{{ opt.label }}</label>
             </div>
           </div>
         </div>
@@ -536,9 +628,17 @@ const radioButtonPt = {
 
 .tree-pane {
   flex: 1;
-  padding: 0.75rem;
-  overflow: auto;
   min-height: 0;
+  overflow: hidden;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem;
+  color: var(--color-text-dim);
+  font-size: 0.9rem;
 }
 
 .empty {
@@ -546,6 +646,128 @@ const radioButtonPt = {
   color: var(--color-text-dim);
   padding: 1rem;
   text-align: center;
+}
+
+/* ── Virtual scroller rows ── */
+.vs-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 30px;
+  padding: 0 0.5rem;
+  box-sizing: border-box;
+  cursor: default;
+  border-radius: 3px;
+}
+
+.vs-row:hover {
+  background: var(--color-background-subtle);
+}
+
+.vs-row--root {
+  padding-left: 0.6rem;
+}
+
+.vs-row--stig,
+.vs-row--asset {
+  padding-left: 0.3rem;
+}
+
+/* Indent asset rows to sit under the STIG content area */
+.asset-indent {
+  width: 2.6rem;
+  flex-shrink: 0;
+}
+
+/* Expand / collapse chevron button */
+.expand-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 1.4rem;
+  height: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-dim);
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  border-radius: 3px;
+}
+
+.expand-btn:hover {
+  color: var(--color-text-primary);
+  background: var(--color-background-light);
+}
+
+/* Custom tri-state checkbox */
+.custom-cb {
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  border: 2px solid var(--color-border-default);
+  border-radius: 3px;
+  background: var(--color-background-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: #111;
+  transition: background-color 0.1s, border-color 0.1s;
+  user-select: none;
+}
+
+.custom-cb--on,
+.custom-cb--partial {
+  background: var(--p-primary-color);
+  border-color: var(--p-primary-color);
+}
+
+.custom-cb:hover {
+  border-color: var(--color-border-strong, #888);
+}
+
+/* Node icon */
+.node-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Row content: label + count + badge flow together */
+.row-content {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+/* Node label */
+.node-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1rem;
+}
+
+.node-label--bold {
+  font-weight: 600;
+  font-size: 1.02rem;
+  flex: 1;
+}
+
+/* Asset count — inline after STIG name */
+.asset-count {
+  font-size: 0.82rem;
+  color: var(--color-text-dim);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* ── Options bar ── */
@@ -602,33 +824,7 @@ const radioButtonPt = {
   justify-content: flex-end;
 }
 
-/* ── Tree node ── */
-.node-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-}
-
-.node-label {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.node-icon {
-  width: 1.2rem;
-  height: 1.2rem;
-  flex-shrink: 0;
-  display: block;
-}
-
-.node-loading {
-  color: var(--color-text-dim);
-  font-size: 0.75rem;
-}
-
+/* ── Badges ── */
 .badge {
   font-size: 0.9rem;
   font-weight: 600;
@@ -650,6 +846,7 @@ const radioButtonPt = {
   color: var(--color-text-bright);
 }
 
+/* ── Validation warning ── */
 .validation-warning {
   display: flex;
   align-items: center;

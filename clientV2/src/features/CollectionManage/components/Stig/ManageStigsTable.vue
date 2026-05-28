@@ -148,7 +148,9 @@ function handleFooterAction(action) {
           field="benchmarkId"
           sortable
           :pt="borderPt"
-          style="width: 80px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"
+          style="min-width: 100px; width: 140px;"
+          :body-style="{ height: '27px', padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
+          :header-style="{ padding: '0 0.5rem' }"
         >
           <template #header>
             <div class="column-header-with-filter">
@@ -170,7 +172,9 @@ function handleFooterAction(action) {
             :is="col.component"
             v-bind="col"
             sortable
-            :style="`width: ${col.width}; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;`"
+            :style="`width: ${col.width}; min-width: ${col.width};`"
+            :body-style="{ height: '27px', padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
+            :header-style="{ padding: '0 0.5rem' }"
           />
         </template>
 
@@ -194,6 +198,7 @@ function handleFooterAction(action) {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-width: 1000px;
   padding: 1.5rem 3rem 3rem 3rem;
 }
 

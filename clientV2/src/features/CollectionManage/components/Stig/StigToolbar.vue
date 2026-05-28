@@ -1,4 +1,5 @@
 <script setup>
+import ExportResultsAction from './ExportResultsAction.vue'
 import UnassignStigButton from './UnassignStigButton.vue'
 
 const props = defineProps({
@@ -43,6 +44,12 @@ const emit = defineEmits(['assign-stig', 'unassign-stig', 'modify-stig', 'clear-
     <button class="action-btn" :disabled="!singleSelection" @click="emit('modify-stig')">
       <i class="pi pi-sliders-h icon-grey" /> Modify
     </button>
+    <div class="toolbar-divider" />
+    <ExportResultsAction
+      :collection-id="props.collectionId"
+      :collection-name="props.collectionName"
+      :selected-stigs="props.selectedStigs"
+    />
     <div class="toolbar-spacer" />
     <button class="action-btn action-btn--clear" :disabled="!hasSelection" @click="emit('clear-selection')">
       Clear Selection <i class="pi pi-times clear-x" />

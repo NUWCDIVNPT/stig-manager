@@ -255,6 +255,7 @@ function handleFooterAction(action) {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-width: 1000px;
   padding: 1.5rem 3rem 3rem 3rem;
 }
 

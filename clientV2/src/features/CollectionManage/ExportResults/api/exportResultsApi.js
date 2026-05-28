@@ -28,6 +28,13 @@ export function fetchAssetStigSummary(collectionId, assetId) {
   return apiCall('getMetricsSummaryByCollection', { collectionId, assetId })
 }
 
+export function fetchStigAssetSummary(collectionId, benchmarkId) {
+  if (!collectionId || !benchmarkId) {
+    return Promise.resolve([])
+  }
+  return apiCall('getMetricsSummaryByCollection', { collectionId, benchmarkId })
+}
+
 function archiveUrl(collectionId, format, mode) {
   const search = mode ? buildQueryString({ mode }) : ''
   return `${apiBase()}/collections/${collectionId}/archive/${format}${search}`

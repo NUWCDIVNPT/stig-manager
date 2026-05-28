@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import {
+  STIG_ROOT_KEY,
   archiveFilename,
   assetKey,
   buildDestinationOptions,
+  buildStigTree,
   computeEffectiveSelections,
+  computeStigEffectiveSelections,
   parsePrefs,
+  stigAssetNodeKey,
+  stigNodeKey,
   validateExport,
 } from '../exportResultsLogic.js'
 
@@ -175,14 +180,21 @@ describe('validateExport', () => {
       .toBe('Select at least one asset.')
   })
 
-  it('accepts any non-zero count for archive', () => {
+  it('accepts any count between 1 and max for archive', () => {
     expect(validateExport({ target: 'archive', count: 1, destinationId: null })).toBeNull()
-    expect(validateExport({ target: 'archive', count: 500, destinationId: null })).toBeNull()
+    expect(validateExport({ target: 'archive', count: 100, destinationId: null })).toBeNull()
   })
 
-  it('enforces the 1–100 asset range for collection exports', () => {
+  it('rejects archive when count exceeds max', () => {
+    expect(validateExport({ target: 'archive', count: 101, destinationId: null }))
+      .toBe('Export is limited to 100 assets at a time (101 currently selected).')
+    expect(validateExport({ target: 'archive', count: 500, destinationId: null }))
+      .toBe('Export is limited to 100 assets at a time (500 currently selected).')
+  })
+
+  it('rejects collection when count exceeds max (hits the shared max check first)', () => {
     expect(validateExport({ target: 'collection', count: 101, destinationId: 'd1' }))
-      .toBe('Collection export requires 1–100 assets (currently 101).')
+      .toBe('Export is limited to 100 assets at a time (101 currently selected).')
   })
 
   it('requires a destination for collection exports', () => {
@@ -295,5 +307,259 @@ describe('parsePrefs', () => {
       FORMATS, destOptions, current,
     )
     expect(current).toEqual(snapshot)
+  })
+})
+
+// ── buildStigTree ─────────────────────────────────────────────────────────────
+
+function makeAssetRows(specs) {
+  // specs: [{ assetId, name?, accepted?, assessments? }]
+  return specs.map(s => ({
+    assetId: s.assetId,
+    name: s.name ?? `Asset-${s.assetId}`,
+    metrics: {
+      assessments: s.assessments ?? 0,
+      statuses: { accepted: s.accepted ?? 0 },
+    },
+  }))
+}
+
+describe('buildStigTree', () => {
+  it('produces a root node keyed with STIG_ROOT_KEY, checked by default', () => {
+    const { nodes, selectionKeys } = buildStigTree(
+      [{ benchmarkId: 'B1', title: 'T' }],
+      new Map([['B1', makeAssetRows([{ assetId: 'a1' }])]]),
+    )
+    expect(nodes).toHaveLength(1)
+    expect(nodes[0].key).toBe(STIG_ROOT_KEY)
+    expect(nodes[0].label).toBe('All STIGs')
+    expect(selectionKeys[STIG_ROOT_KEY]).toEqual({ checked: true, partialChecked: false })
+  })
+
+  it('builds one STIG child node per selectedStig with correct key and label', () => {
+    const { nodes, selectionKeys } = buildStigTree(
+      [{ benchmarkId: 'B1', title: 'T1' }, { benchmarkId: 'B2', title: 'T2' }],
+      new Map(),
+    )
+    const stigChildren = nodes[0].children
+    expect(stigChildren).toHaveLength(2)
+    expect(stigChildren[0].key).toBe(stigNodeKey('B1'))
+    expect(stigChildren[0].label).toBe('B1')
+    expect(stigChildren[1].key).toBe(stigNodeKey('B2'))
+    expect(selectionKeys[stigNodeKey('B1')]).toEqual({ checked: true, partialChecked: false })
+  })
+
+  it('stores benchmarkId and title on the STIG node data', () => {
+    const { nodes } = buildStigTree(
+      [{ benchmarkId: 'B1', title: 'My STIG Title' }],
+      new Map(),
+    )
+    expect(nodes[0].children[0].data.benchmarkId).toBe('B1')
+    expect(nodes[0].children[0].data.title).toBe('My STIG Title')
+  })
+
+  it('falls back to empty string when title is missing', () => {
+    const { nodes } = buildStigTree([{ benchmarkId: 'B1' }], new Map())
+    expect(nodes[0].children[0].data.title).toBe('')
+  })
+
+  it('builds asset leaf nodes under each STIG with correct key, label, and leaf:true', () => {
+    const { nodes, selectionKeys } = buildStigTree(
+      [{ benchmarkId: 'B1', title: 'T' }],
+      new Map([['B1', makeAssetRows([{ assetId: 'a1', name: 'Asset-One' }, { assetId: 'a2', name: 'Asset-Two' }])]]),
+    )
+    const assetChildren = nodes[0].children[0].children
+    expect(assetChildren).toHaveLength(2)
+    expect(assetChildren[0].key).toBe(stigAssetNodeKey('B1', 'a1'))
+    expect(assetChildren[0].label).toBe('Asset-One')
+    expect(assetChildren[0].leaf).toBe(true)
+    expect(assetChildren[0].data).toMatchObject({ type: 'asset', assetId: 'a1', benchmarkId: 'B1' })
+    expect(selectionKeys[stigAssetNodeKey('B1', 'a1')]).toEqual({ checked: true, partialChecked: false })
+  })
+
+  it('computes asset acceptedPct as accepted / assessments × 100', () => {
+    const { nodes } = buildStigTree(
+      [{ benchmarkId: 'B1', title: '' }],
+      new Map([['B1', makeAssetRows([{ assetId: 'a1', accepted: 25, assessments: 100 }])]]),
+    )
+    expect(nodes[0].children[0].children[0].data.acceptedPct).toBe(25)
+  })
+
+  it('yields 0 acceptedPct for asset when assessments is zero (no divide-by-zero)', () => {
+    const { nodes } = buildStigTree(
+      [{ benchmarkId: 'B1', title: '' }],
+      new Map([['B1', makeAssetRows([{ assetId: 'a1', accepted: 0, assessments: 0 }])]]),
+    )
+    expect(nodes[0].children[0].children[0].data.acceptedPct).toBe(0)
+  })
+
+  it('rolls up acceptedPct on the STIG node across all its assets', () => {
+    const { nodes } = buildStigTree(
+      [{ benchmarkId: 'B1', title: '' }],
+      new Map([['B1', makeAssetRows([
+        { assetId: 'a1', accepted: 30, assessments: 100 },
+        { assetId: 'a2', accepted: 70, assessments: 100 },
+      ])]]),
+    )
+    // (30 + 70) / (100 + 100) = 50 %
+    expect(nodes[0].children[0].data.acceptedPct).toBe(50)
+  })
+
+  it('gives STIG node acceptedPct of 0 when it has no assets', () => {
+    const { nodes } = buildStigTree([{ benchmarkId: 'B1', title: '' }], new Map())
+    expect(nodes[0].children[0].data.acceptedPct).toBe(0)
+  })
+
+  it('marks STIG node as leaf:false when it has assets', () => {
+    const { nodes } = buildStigTree(
+      [{ benchmarkId: 'B1', title: '' }],
+      new Map([['B1', makeAssetRows([{ assetId: 'a1' }])]]),
+    )
+    expect(nodes[0].children[0].leaf).toBe(false)
+  })
+
+  it('marks STIG node as leaf:true when it has no assets', () => {
+    const { nodes } = buildStigTree([{ benchmarkId: 'B1', title: '' }], new Map())
+    expect(nodes[0].children[0].leaf).toBe(true)
+  })
+
+  it('marks root as leaf:true when selectedStigs is empty', () => {
+    const { nodes, selectionKeys } = buildStigTree([], new Map())
+    expect(nodes[0].children).toHaveLength(0)
+    expect(nodes[0].leaf).toBe(true)
+    expect(selectionKeys[STIG_ROOT_KEY]).toEqual({ checked: true, partialChecked: false })
+  })
+
+  it('uses empty rows when a STIG has no entry in the rowsByBenchmarkId map', () => {
+    const { nodes } = buildStigTree(
+      [{ benchmarkId: 'B1', title: '' }],
+      new Map(), // no entry for B1
+    )
+    expect(nodes[0].children[0].children).toHaveLength(0)
+  })
+})
+
+// ── computeStigEffectiveSelections ────────────────────────────────────────────
+
+function makeStigTree(stigSpecs) {
+  // stigSpecs: [{ benchmarkId, assets?: [{ assetId }] }]
+  const children = stigSpecs.map(spec => ({
+    key: stigNodeKey(spec.benchmarkId),
+    data: { type: 'stig', benchmarkId: spec.benchmarkId },
+    children: (spec.assets ?? []).map(a => ({
+      key: stigAssetNodeKey(spec.benchmarkId, a.assetId),
+      data: { type: 'asset', assetId: a.assetId, benchmarkId: spec.benchmarkId },
+      leaf: true,
+    })),
+  }))
+  return [{ key: STIG_ROOT_KEY, data: { type: 'root' }, children }]
+}
+
+describe('computeStigEffectiveSelections', () => {
+  it('returns [] for empty / null / undefined nodes', () => {
+    expect(computeStigEffectiveSelections([], {})).toEqual([])
+    expect(computeStigEffectiveSelections(undefined, {})).toEqual([])
+    expect(computeStigEffectiveSelections(null, {})).toEqual([])
+  })
+
+  it('includes a checked asset under a checked STIG', () => {
+    const nodes = makeStigTree([{ benchmarkId: 'B1', assets: [{ assetId: 'a1' }] }])
+    const keys = {
+      [stigNodeKey('B1')]: { checked: true, partialChecked: false },
+      [stigAssetNodeKey('B1', 'a1')]: { checked: true, partialChecked: false },
+    }
+    expect(computeStigEffectiveSelections(nodes, keys)).toEqual([
+      { assetId: 'a1', stigs: ['B1'] },
+    ])
+  })
+
+  it('excludes an unchecked asset under a checked STIG', () => {
+    const nodes = makeStigTree([{ benchmarkId: 'B1', assets: [{ assetId: 'a1' }] }])
+    const keys = {
+      [stigNodeKey('B1')]: { checked: true, partialChecked: false },
+      [stigAssetNodeKey('B1', 'a1')]: { checked: false, partialChecked: false },
+    }
+    expect(computeStigEffectiveSelections(nodes, keys)).toEqual([])
+  })
+
+  it('excludes all assets under an unchecked (and non-partial) STIG', () => {
+    const nodes = makeStigTree([{
+      benchmarkId: 'B1',
+      assets: [{ assetId: 'a1' }, { assetId: 'a2' }],
+    }])
+    const keys = {
+      [stigNodeKey('B1')]: { checked: false, partialChecked: false },
+      [stigAssetNodeKey('B1', 'a1')]: { checked: true, partialChecked: false },
+      [stigAssetNodeKey('B1', 'a2')]: { checked: true, partialChecked: false },
+    }
+    expect(computeStigEffectiveSelections(nodes, keys)).toEqual([])
+  })
+
+  it('handles a partial STIG — only individually checked assets are included', () => {
+    const nodes = makeStigTree([{
+      benchmarkId: 'B1',
+      assets: [{ assetId: 'a1' }, { assetId: 'a2' }, { assetId: 'a3' }],
+    }])
+    const keys = {
+      [stigNodeKey('B1')]: { checked: false, partialChecked: true },
+      [stigAssetNodeKey('B1', 'a1')]: { checked: true, partialChecked: false },
+      [stigAssetNodeKey('B1', 'a2')]: { checked: false, partialChecked: false },
+      [stigAssetNodeKey('B1', 'a3')]: { checked: true, partialChecked: false },
+    }
+    const result = computeStigEffectiveSelections(nodes, keys)
+    const assetIds = result.map(r => r.assetId).sort()
+    expect(assetIds).toEqual(['a1', 'a3'])
+    expect(result.find(r => r.assetId === 'a1').stigs).toEqual(['B1'])
+  })
+
+  it('merges multiple STIGs for the same asset into one output entry with both benchmarkIds', () => {
+    const nodes = makeStigTree([
+      { benchmarkId: 'B1', assets: [{ assetId: 'a1' }] },
+      { benchmarkId: 'B2', assets: [{ assetId: 'a1' }] },
+    ])
+    const keys = {
+      [stigNodeKey('B1')]: { checked: true, partialChecked: false },
+      [stigNodeKey('B2')]: { checked: true, partialChecked: false },
+      [stigAssetNodeKey('B1', 'a1')]: { checked: true, partialChecked: false },
+      [stigAssetNodeKey('B2', 'a1')]: { checked: true, partialChecked: false },
+    }
+    const result = computeStigEffectiveSelections(nodes, keys)
+    expect(result).toHaveLength(1)
+    expect(result[0].assetId).toBe('a1')
+    expect(result[0].stigs.sort()).toEqual(['B1', 'B2'])
+  })
+
+  it('stringifies numeric assetIds', () => {
+    const nodes = makeStigTree([{ benchmarkId: 'B1', assets: [{ assetId: 42 }] }])
+    const keys = {
+      [stigNodeKey('B1')]: { checked: true, partialChecked: false },
+      [stigAssetNodeKey('B1', 42)]: { checked: true, partialChecked: false },
+    }
+    expect(computeStigEffectiveSelections(nodes, keys)[0].assetId).toBe('42')
+  })
+
+  it('handles a complex mix of STIGs, assets, and selection states in one pass', () => {
+    const nodes = makeStigTree([
+      { benchmarkId: 'B1', assets: [{ assetId: 'a1' }, { assetId: 'a2' }] }, // partial
+      { benchmarkId: 'B2', assets: [{ assetId: 'a1' }, { assetId: 'a3' }] }, // fully checked
+      { benchmarkId: 'B3', assets: [{ assetId: 'a1' }] },                    // unchecked
+    ])
+    const keys = {
+      [stigNodeKey('B1')]: { checked: false, partialChecked: true },
+      [stigAssetNodeKey('B1', 'a1')]: { checked: true, partialChecked: false },
+      [stigAssetNodeKey('B1', 'a2')]: { checked: false, partialChecked: false },
+      [stigNodeKey('B2')]: { checked: true, partialChecked: false },
+      [stigAssetNodeKey('B2', 'a1')]: { checked: true, partialChecked: false },
+      [stigAssetNodeKey('B2', 'a3')]: { checked: true, partialChecked: false },
+      [stigNodeKey('B3')]: { checked: false, partialChecked: false },
+      [stigAssetNodeKey('B3', 'a1')]: { checked: true, partialChecked: false },
+    }
+    const result = computeStigEffectiveSelections(nodes, keys)
+    expect(result).toHaveLength(2)
+    const a1 = result.find(r => r.assetId === 'a1')
+    expect(a1.stigs.sort()).toEqual(['B1', 'B2']) // B3 unchecked → not included
+    const a3 = result.find(r => r.assetId === 'a3')
+    expect(a3.stigs).toEqual(['B2'])
+    expect(result.find(r => r.assetId === 'a2')).toBeUndefined() // unchecked in B1
   })
 })

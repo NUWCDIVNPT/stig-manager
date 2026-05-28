@@ -203,7 +203,7 @@ function openPanel(key) {
 /* ── RIGHT: panel area ── */
 .panel-col {
   flex: 1;
-  overflow: hidden;
+  overflow: auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
