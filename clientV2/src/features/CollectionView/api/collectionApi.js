@@ -29,12 +29,7 @@ export async function deleteCollection(collectionId) {
   return result
 }
 
-export function fetchCollectionAssetSummary(collectionId, options = {}) {
-  if (!collectionId) {
-    throw new Error('A collectionId is required to fetch asset metrics.')
-  }
-  return apiCall('getMetricsSummaryByCollectionAggAsset', { collectionId, ...options })
-}
+
 
 export function fetchCollections() {
   return apiCall('getCollections')

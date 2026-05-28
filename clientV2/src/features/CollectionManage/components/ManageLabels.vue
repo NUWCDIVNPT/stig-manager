@@ -10,7 +10,9 @@ defineProps({
 <template>
   <div class="manage-stub">
     <p>Labels: create, edit, delete labels and tag assets</p>
-    <p class="manage-stub-id">Collection {{ collectionId }}</p>
+    <p class="manage-stub-id">
+      Collection {{ collectionId }}
+    </p>
   </div>
 </template>
 

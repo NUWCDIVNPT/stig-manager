@@ -10,7 +10,9 @@ defineProps({
 <template>
   <div class="manage-stub">
     <p>Metadata: custom key-value pairs for collection tracking</p>
-    <p class="manage-stub-id">Collection {{ collectionId }}</p>
+    <p class="manage-stub-id">
+      Collection {{ collectionId }}
+    </p>
   </div>
 </template>
 
