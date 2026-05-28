@@ -91,7 +91,7 @@ cp $SrcDir/reauth.html $DistDir/reauth.html
 echo "Preparing Worker resources"
 mkdir -p $DistDir/js
 mkdir -p $DistDir/js/workers
-cp $SrcDir/js/workers/service-worker.js $DistDir/js/workers/service-worker.js
+cp $SrcDir/service-worker.js $DistDir/service-worker.js
 cp $SrcDir/js/workers/oidc-worker.js $DistDir/js/workers/oidc-worker.js
 cp $SrcDir/js/workers/state-worker.js $DistDir/js/workers/state-worker.js
 
