@@ -1,5 +1,7 @@
 <script setup>
+import AssignStigButton from './AssignStigButton.vue'
 import ExportResultsAction from './ExportResultsAction.vue'
+import ModifyStig from './ModifyStig.vue'
 import UnassignStigButton from './UnassignStigButton.vue'
 
 const props = defineProps({
@@ -25,14 +27,15 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['assign-stig', 'unassign-stig', 'modify-stig', 'clear-selection', 'stigs-changed'])
+const emit = defineEmits(['clear-selection', 'stigs-changed'])
 </script>
 
 <template>
   <div class="action-toolbar">
-    <button class="action-btn" @click="emit('assign-stig')">
-      <i class="pi pi-plus-circle icon-green" /> Assign
-    </button>
+    <AssignStigButton
+      :collection-id="props.collectionId"
+      @stigs-changed="emit('stigs-changed')"
+    />
     <div class="toolbar-divider" />
     <UnassignStigButton
       :collection-id="props.collectionId"
@@ -41,9 +44,12 @@ const emit = defineEmits(['assign-stig', 'unassign-stig', 'modify-stig', 'clear-
       @unassigned="emit('stigs-changed')"
     />
     <div class="toolbar-divider" />
-    <button class="action-btn" :disabled="!singleSelection" @click="emit('modify-stig')">
-      <i class="pi pi-sliders-h icon-grey" /> Modify
-    </button>
+    <ModifyStig
+      :collection-id="props.collectionId"
+      :selected-stigs="props.selectedStigs"
+      :disabled="!singleSelection"
+      @stigs-changed="emit('stigs-changed')"
+    />
     <div class="toolbar-divider" />
     <ExportResultsAction
       :collection-id="props.collectionId"

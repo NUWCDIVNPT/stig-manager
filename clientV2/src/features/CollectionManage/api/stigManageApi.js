@@ -10,3 +10,28 @@ export function unassignStig(collectionId, benchmarkId) {
   }
   return apiCall('attachAssetsToStig', { collectionId, benchmarkId }, [])
 }
+
+export function fetchInstalledStigsWithRevisions() {
+  return apiCall('getSTIGs', { projection: 'revisions' })
+}
+
+export function fetchCollectionAssetsWithStigs(collectionId) {
+  if (!collectionId) {
+    throw new Error('A collectionId is required to fetch collection assets.')
+  }
+  return apiCall('getAssets', { collectionId, projection: 'stigs' })
+}
+
+export function fetchAssetsByCollectionStig(collectionId, benchmarkId) {
+  if (!collectionId || !benchmarkId) {
+    throw new Error('collectionId and benchmarkId are required to fetch assets by STIG.')
+  }
+  return apiCall('getAssetsByStig', { collectionId, benchmarkId })
+}
+
+export function writeStigProps(collectionId, benchmarkId, body) {
+  if (!collectionId || !benchmarkId) {
+    throw new Error('collectionId and benchmarkId are required to write STIG props.')
+  }
+  return apiCall('writeStigPropsByCollectionStig', { collectionId, benchmarkId }, body)
+}

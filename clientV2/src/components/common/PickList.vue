@@ -15,6 +15,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  optionKey: {
+    type: String,
+    default: null,
+  },
   showSourceFilter: {
     type: Boolean,
     default: false,
@@ -35,6 +39,14 @@ const props = defineProps({
     type: String,
     default: 'Search...',
   },
+  virtualScrollerOptions: {
+    type: [Object, Boolean],
+    default: false,
+  },
+  textFilterFn: {
+    type: Function,
+    default: null,
+  },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -45,35 +57,121 @@ const targetSearch = ref('')
 const selectionSource = ref([])
 const selectionTarget = ref([])
 
+const lastClickedSource = ref(null)
+const lastClickedTarget = ref(null)
+const prevSelectionSource = ref([])
+const prevSelectionTarget = ref([])
+
 const sourceList = computed(() => props.modelValue[0] || [])
 const targetList = computed(() => props.modelValue[1] || [])
 
-const filteredSource = computed(() => {
-  if (!props.showSourceFilter || !sourceSearch.value || !props.filterBy) return sourceList.value
-  const lowerSearch = sourceSearch.value.toLowerCase()
-  return sourceList.value.filter(item => {
-    const val = item[props.filterBy]
-    return val && String(val).toLowerCase().includes(lowerSearch)
-  })
-})
+function defaultTextMatch(item, lowerSearch) {
+  if (!props.filterBy) {
+    return true
+  }
+  const val = item[props.filterBy]
+  return val && String(val).toLowerCase().includes(lowerSearch)
+}
 
-const filteredTarget = computed(() => {
-  if (!props.showTargetFilter || !targetSearch.value || !props.filterBy) return targetList.value
-  const lowerSearch = targetSearch.value.toLowerCase()
-  return targetList.value.filter(item => {
-    const val = item[props.filterBy]
-    return val && String(val).toLowerCase().includes(lowerSearch)
+function applyFilters(list, searchText, useTextFilter) {
+  const trimmed = searchText?.trim() ?? ''
+  if (!useTextFilter || trimmed.length === 0) {
+    return list
+  }
+  const lowerSearch = trimmed.toLowerCase()
+  return list.filter((item) => {
+    return props.textFilterFn
+      ? props.textFilterFn(item, trimmed)
+      : defaultTextMatch(item, lowerSearch)
   })
-})
+}
+
+const filteredSource = computed(() =>
+  applyFilters(sourceList.value, sourceSearch.value, props.showSourceFilter),
+)
+
+const filteredTarget = computed(() =>
+  applyFilters(targetList.value, targetSearch.value, props.showTargetFilter),
+)
+
+function diffClickedItem(prev, next) {
+  const prevSet = new Set(prev)
+  for (const item of next) {
+    if (!prevSet.has(item)) {
+      return item
+    }
+  }
+  const nextSet = new Set(next)
+  for (const item of prev) {
+    if (!nextSet.has(item)) {
+      return item
+    }
+  }
+  return null
+}
+
+function applyShiftRange({ originalEvent, value, selectionRef, prevSelRef, lastClickedRef, filtered }) {
+  const clicked = diffClickedItem(prevSelRef.value, value)
+  if (originalEvent?.shiftKey && lastClickedRef.value && clicked) {
+    const a = filtered.indexOf(lastClickedRef.value)
+    const b = filtered.indexOf(clicked)
+    if (a !== -1 && b !== -1) {
+      const [start, end] = a < b ? [a, b] : [b, a]
+      const range = filtered.slice(start, end + 1)
+      const merged = Array.from(new Set([...prevSelRef.value, ...range]))
+      selectionRef.value = merged
+      prevSelRef.value = merged
+      return
+    }
+  }
+  if (clicked) {
+    lastClickedRef.value = clicked
+  }
+  prevSelRef.value = [...value]
+}
+
+function onSourceChange(event) {
+  applyShiftRange({
+    originalEvent: event.originalEvent,
+    value: event.value,
+    selectionRef: selectionSource,
+    prevSelRef: prevSelectionSource,
+    lastClickedRef: lastClickedSource,
+    filtered: filteredSource.value,
+  })
+}
+
+function onTargetChange(event) {
+  applyShiftRange({
+    originalEvent: event.originalEvent,
+    value: event.value,
+    selectionRef: selectionTarget,
+    prevSelRef: prevSelectionTarget,
+    lastClickedRef: lastClickedTarget,
+    filtered: filteredTarget.value,
+  })
+}
+
+function resetSourceSelection() {
+  selectionSource.value = []
+  prevSelectionSource.value = []
+  lastClickedSource.value = null
+}
+
+function resetTargetSelection() {
+  selectionTarget.value = []
+  prevSelectionTarget.value = []
+  lastClickedTarget.value = null
+}
 
 const onMoveRight = () => {
   if (selectionSource.value.length > 0) {
     const itemsToMove = [...selectionSource.value]
     const newTarget = [...targetList.value, ...itemsToMove]
     const newSource = sourceList.value.filter(item => !itemsToMove.includes(item))
-    
+
     emit('update:modelValue', [newSource, newTarget])
-    selectionSource.value = []
+    resetSourceSelection()
   }
 }
 
@@ -82,26 +180,50 @@ const onMoveLeft = () => {
     const itemsToMove = [...selectionTarget.value]
     const newSource = [...sourceList.value, ...itemsToMove]
     const newTarget = targetList.value.filter(item => !itemsToMove.includes(item))
-    
+
     emit('update:modelValue', [newSource, newTarget])
-    selectionTarget.value = []
+    resetTargetSelection()
   }
 }
 
 const onMoveAllRight = () => {
   const newTarget = [...targetList.value, ...filteredSource.value]
   const newSource = sourceList.value.filter(item => !filteredSource.value.includes(item))
-  
+
   emit('update:modelValue', [newSource, newTarget])
-  selectionSource.value = []
+  resetSourceSelection()
 }
 
 const onMoveAllLeft = () => {
   const newSource = [...sourceList.value, ...filteredTarget.value]
   const newTarget = targetList.value.filter(item => !filteredTarget.value.includes(item))
-  
+
   emit('update:modelValue', [newSource, newTarget])
-  selectionTarget.value = []
+  resetTargetSelection()
+}
+
+const OPTION_BASE_STYLE
+  = 'padding:0.45rem 0.75rem; font-size:0.9rem; border-radius:3px; margin-bottom:1px; user-select:none;'
+const OPTION_SELECTED_STYLE
+  = 'background:color-mix(in srgb, var(--color-action-blue-dark) 18%, transparent); color:var(--color-text-bright);'
+
+const listboxPt = {
+  root: {
+    style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; border:none; background:transparent;',
+  },
+  listContainer: {
+    style: 'flex:1 1 auto; min-height:0; height:100%; max-height:none; overflow:auto;',
+  },
+  virtualScroller: {
+    root: {
+      style: 'flex:1 1 auto; min-height:0; height:100%; max-height:none;',
+    },
+  },
+  option: ({ context }) => ({
+    style: context.selected
+      ? `${OPTION_BASE_STYLE} ${OPTION_SELECTED_STYLE}`
+      : OPTION_BASE_STYLE,
+  }),
 }
 </script>
 
@@ -124,9 +246,11 @@ const onMoveAllLeft = () => {
           v-model="selectionSource"
           :options="filteredSource"
           multiple
-          :pt="{
-            root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column;' },
-          }"
+          scroll-height="100%"
+          :data-key="optionKey || dataKey"
+          :virtual-scroller-options="virtualScrollerOptions || undefined"
+          :pt="listboxPt"
+          @change="onSourceChange"
         >
           <template #option="slotProps">
             <slot name="item" :item="slotProps.option">
@@ -159,9 +283,11 @@ const onMoveAllLeft = () => {
           v-model="selectionTarget"
           :options="filteredTarget"
           multiple
-          :pt="{
-            root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column;' },
-          }"
+          scroll-height="100%"
+          :data-key="optionKey || dataKey"
+          :virtual-scroller-options="virtualScrollerOptions || undefined"
+          :pt="listboxPt"
+          @change="onTargetChange"
         >
           <template #option="slotProps">
             <slot name="item" :item="slotProps.option">
@@ -225,30 +351,5 @@ const onMoveAllLeft = () => {
   gap: 0.5rem;
   justify-content: center;
   padding: 0 0.25rem;
-}
-
-:deep(.p-listbox) {
-  border: none;
-  background: transparent;
-}
-
-:deep(.p-listbox-list-container) {
-  flex: 1 1 auto;
-  min-height: 0;
-  height: 100%;
-  max-height: none !important;
-  overflow: auto;
-}
-
-:deep(.p-listbox-option) {
-  padding: 0.45rem 0.75rem;
-  font-size: 0.9rem;
-  border-radius: 3px;
-  margin-bottom: 1px;
-}
-
-:deep(.p-listbox-option[data-p-highlight="true"]) {
-  background: color-mix(in srgb, var(--color-action-blue-dark) 18%, transparent);
-  color: var(--color-text-bright);
 }
 </style>
