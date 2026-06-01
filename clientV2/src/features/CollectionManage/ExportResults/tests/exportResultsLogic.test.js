@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import {
-  STIG_ROOT_KEY,
   archiveFilename,
   assetKey,
   buildDestinationOptions,
@@ -8,6 +7,7 @@ import {
   computeEffectiveSelections,
   computeStigEffectiveSelections,
   parsePrefs,
+  STIG_ROOT_KEY,
   stigAssetNodeKey,
   stigNodeKey,
   validateExport,
@@ -53,7 +53,9 @@ describe('buildDestinationOptions', () => {
       { roleId: 3, collection: { collectionId: '3', name: 'Bravo' } },
     ]
     expect(buildDestinationOptions(grants, 'x').map(o => o.label)).toEqual([
-      'Alpha', 'Bravo', 'Charlie',
+      'Alpha',
+      'Bravo',
+      'Charlie',
     ])
   })
 })
@@ -264,38 +266,50 @@ describe('parsePrefs', () => {
   it('applies a format whose formatKey matches "value|mode" (null mode encoded as empty string)', () => {
     expect(parsePrefs(
       JSON.stringify({ formatKey: 'cklb|multi' }),
-      FORMATS, destOptions, current,
+      FORMATS,
+      destOptions,
+      current,
     ).format).toEqual({ label: 'CKLB (multi-STIG)', value: 'cklb', mode: 'multi' })
 
     expect(parsePrefs(
       JSON.stringify({ formatKey: 'xccdf|' }),
-      FORMATS, destOptions, current,
+      FORMATS,
+      destOptions,
+      current,
     ).format).toEqual({ label: 'XCCDF', value: 'xccdf', mode: null })
   })
 
   it('keeps the current format when formatKey does not match', () => {
     expect(parsePrefs(
       JSON.stringify({ formatKey: 'unknown|zzz' }),
-      FORMATS, destOptions, current,
+      FORMATS,
+      destOptions,
+      current,
     ).format).toBe(current.format)
   })
 
   it('applies destinationId only when it appears in destinationOptions, stringifying it', () => {
     expect(parsePrefs(
       JSON.stringify({ target: 'collection', destinationId: 10 }),
-      FORMATS, destOptions, current,
+      FORMATS,
+      destOptions,
+      current,
     ).destinationId).toBe('10')
 
     expect(parsePrefs(
       JSON.stringify({ target: 'collection', destinationId: 999 }),
-      FORMATS, destOptions, current,
+      FORMATS,
+      destOptions,
+      current,
     ).destinationId).toBeNull()
   })
 
   it('snaps target back to "archive" when collection is requested with no destination', () => {
     const next = parsePrefs(
       JSON.stringify({ target: 'collection' }),
-      FORMATS, destOptions, current,
+      FORMATS,
+      destOptions,
+      current,
     )
     expect(next.target).toBe('archive')
   })
@@ -304,7 +318,9 @@ describe('parsePrefs', () => {
     const snapshot = { ...current }
     parsePrefs(
       JSON.stringify({ target: 'collection', formatKey: 'cklb|multi', destinationId: '10' }),
-      FORMATS, destOptions, current,
+      FORMATS,
+      destOptions,
+      current,
     )
     expect(current).toEqual(snapshot)
   })
@@ -542,7 +558,7 @@ describe('computeStigEffectiveSelections', () => {
     const nodes = makeStigTree([
       { benchmarkId: 'B1', assets: [{ assetId: 'a1' }, { assetId: 'a2' }] }, // partial
       { benchmarkId: 'B2', assets: [{ assetId: 'a1' }, { assetId: 'a3' }] }, // fully checked
-      { benchmarkId: 'B3', assets: [{ assetId: 'a1' }] },                    // unchecked
+      { benchmarkId: 'B3', assets: [{ assetId: 'a1' }] }, // unchecked
     ])
     const keys = {
       [stigNodeKey('B1')]: { checked: false, partialChecked: true },

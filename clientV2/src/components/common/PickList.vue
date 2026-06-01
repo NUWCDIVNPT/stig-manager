@@ -232,9 +232,11 @@ const listboxPt = {
     <div class="picklist-container">
       <div class="list-column">
         <h4 class="list-header">
-          <slot name="sourceheader">Available</slot>
+          <slot name="sourceheader">
+            Available
+          </slot>
         </h4>
-        
+
         <div v-if="showSourceFilter" class="filter-container">
           <IconField class="search-field">
             <InputIcon class="pi pi-search" />
@@ -269,9 +271,11 @@ const listboxPt = {
 
       <div class="list-column">
         <h4 class="list-header">
-          <slot name="targetheader">Selected</slot>
+          <slot name="targetheader">
+            Selected
+          </slot>
         </h4>
-        
+
         <div v-if="showTargetFilter" class="filter-container">
           <IconField class="search-field">
             <InputIcon class="pi pi-search" />

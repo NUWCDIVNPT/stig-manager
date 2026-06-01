@@ -178,23 +178,23 @@ export function buildStigTree(selectedStigs, rowsByBenchmarkId) {
 export function computeStigEffectiveSelections(nodes, selectionKeys) {
   const out = []
   const rootNode = nodes?.[0]
-  if (!rootNode) return out
+  if (!rootNode) { return out }
 
   // Accumulate: assetId → Set of benchmarkIds
   const assetMap = new Map()
 
   for (const stigNode of (rootNode.children ?? [])) {
-    if (stigNode.data?.type !== 'stig') continue
+    if (stigNode.data?.type !== 'stig') { continue }
     const { benchmarkId } = stigNode.data
     const stigState = selectionKeys?.[stigNode.key]
-    if (!stigState?.checked && !stigState?.partialChecked) continue
+    if (!stigState?.checked && !stigState?.partialChecked) { continue }
 
     for (const assetNode of (stigNode.children ?? [])) {
-      if (assetNode.data?.type !== 'asset') continue
+      if (assetNode.data?.type !== 'asset') { continue }
       const assetState = selectionKeys?.[assetNode.key]
-      if (!assetState?.checked) continue
+      if (!assetState?.checked) { continue }
       const assetId = String(assetNode.data.assetId)
-      if (!assetMap.has(assetId)) assetMap.set(assetId, new Set())
+      if (!assetMap.has(assetId)) { assetMap.set(assetId, new Set()) }
       assetMap.get(assetId).add(benchmarkId)
     }
   }
