@@ -113,8 +113,9 @@ function handleFooterAction(action) {
         column-resize-mode="fit"
         :loading="isLoading"
         :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
-        class="flex-fill"
+        class="flex-fill clickable-rows"
         :table-style="{ 'table-layout': 'fixed' }"
+        @row-click="handleCheckboxClick($event.originalEvent, $event.data, $event.index)"
       >
         <Column
           style="width: 3rem; height: 27px; padding: 0 0.5rem;"
@@ -235,6 +236,11 @@ function handleFooterAction(action) {
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* Whole row toggles selection via @row-click. */
+.clickable-rows :deep(.p-datatable-tbody > tr) {
+  cursor: pointer;
 }
 
 .column-header-with-filter {

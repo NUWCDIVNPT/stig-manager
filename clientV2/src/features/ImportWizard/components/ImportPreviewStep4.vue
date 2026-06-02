@@ -144,6 +144,7 @@ function onFooterAction(action) {
   overflow: hidden;
   flex: 1;
   min-height: 0;
+  user-select: none;
 }
 
 .new-item {

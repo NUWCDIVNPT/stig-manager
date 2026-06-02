@@ -90,7 +90,8 @@ function onFilePicked(event) {
         scroll-height="flex"
         resizable-columns
         striped-rows
-        class="queue-table"
+        class="queue-table clickable-rows"
+        @row-click="onCheckboxClick($event.originalEvent, $event.data, $event.index)"
       >
         <Column style="width: 3rem; flex-shrink: 0">
           <template #header>
@@ -190,6 +191,11 @@ function onFilePicked(event) {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  user-select: none;
+}
+
+.clickable-rows :deep(.p-datatable-tbody > tr) {
+  cursor: pointer;
 }
 
 .queue-empty-hint {
