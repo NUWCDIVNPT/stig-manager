@@ -10,6 +10,9 @@ import { ref, computed } from 'vue'
  */
 export function useTableSelection(items, selectedItems, onUpdate, idKey = 'id') {
   const lastClickedIndex = ref(null)
+  // Tracks whether the most recent (non-shift) click selected or deselected its
+  // row, so a following shift-click can apply the same action across the range.
+  const lastAction = ref('select')
 
   const selectedIdSet = computed(() => {
     const sel = selectedItems.value || []
@@ -42,22 +45,31 @@ export function useTableSelection(items, selectedItems, onUpdate, idKey = 'id') 
     if (event.shiftKey && lastClickedIndex.value !== null) {
       const its = items.value || []
       const sel = selectedItems.value || []
-      
+
       const start = Math.min(lastClickedIndex.value, index)
       const end = Math.max(lastClickedIndex.value, index)
       const rangeItems = its.slice(start, end + 1)
-      
-      const next = [...sel]
+      const rangeIds = new Set(rangeItems.map(i => i[idKey]))
       const currentIds = selectedIdSet.value
-      
-      for (const i of rangeItems) {
-        if (!currentIds.has(i[idKey])) {
-          next.push(i)
+
+      let next
+      if (lastAction.value === 'deselect') {
+        // Remove every row in the range from the selection.
+        next = sel.filter(i => !rangeIds.has(i[idKey]))
+      } else {
+        // Add every row in the range that isn't already selected.
+        next = [...sel]
+        for (const i of rangeItems) {
+          if (!currentIds.has(i[idKey])) {
+            next.push(i)
+          }
         }
       }
       onUpdate(next)
     } else {
       lastClickedIndex.value = index
+      // Record the resulting state so a subsequent shift-click repeats it.
+      lastAction.value = selectedIdSet.value.has(item[idKey]) ? 'deselect' : 'select'
       toggleRow(item)
     }
   }

@@ -61,6 +61,10 @@ const lastClickedSource = ref(null)
 const lastClickedTarget = ref(null)
 const prevSelectionSource = ref([])
 const prevSelectionTarget = ref([])
+// Whether the most recent (non-shift) click on each side selected ('add') or
+// deselected ('remove') its row, so a following shift-click repeats that action.
+const lastActionSource = ref('add')
+const lastActionTarget = ref('add')
 
 const sourceList = computed(() => props.modelValue[0] || [])
 const targetList = computed(() => props.modelValue[1] || [])
@@ -94,38 +98,48 @@ const filteredTarget = computed(() =>
   applyFilters(targetList.value, targetSearch.value, props.showTargetFilter),
 )
 
+// Returns the row that changed between the previous and next selection, along
+// with whether it was added ('add') or removed ('remove').
 function diffClickedItem(prev, next) {
   const prevSet = new Set(prev)
   for (const item of next) {
     if (!prevSet.has(item)) {
-      return item
+      return { item, action: 'add' }
     }
   }
   const nextSet = new Set(next)
   for (const item of prev) {
     if (!nextSet.has(item)) {
-      return item
+      return { item, action: 'remove' }
     }
   }
   return null
 }
 
-function applyShiftRange({ originalEvent, value, selectionRef, prevSelRef, lastClickedRef, filtered }) {
+function applyShiftRange({ originalEvent, value, selectionRef, prevSelRef, lastClickedRef, lastActionRef, filtered }) {
   const clicked = diffClickedItem(prevSelRef.value, value)
   if (originalEvent?.shiftKey && lastClickedRef.value && clicked) {
     const a = filtered.indexOf(lastClickedRef.value)
-    const b = filtered.indexOf(clicked)
+    const b = filtered.indexOf(clicked.item)
     if (a !== -1 && b !== -1) {
       const [start, end] = a < b ? [a, b] : [b, a]
       const range = filtered.slice(start, end + 1)
-      const merged = Array.from(new Set([...prevSelRef.value, ...range]))
+      let merged
+      if (lastActionRef.value === 'remove') {
+        const rangeSet = new Set(range)
+        merged = prevSelRef.value.filter(item => !rangeSet.has(item))
+      }
+      else {
+        merged = Array.from(new Set([...prevSelRef.value, ...range]))
+      }
       selectionRef.value = merged
       prevSelRef.value = merged
       return
     }
   }
   if (clicked) {
-    lastClickedRef.value = clicked
+    lastClickedRef.value = clicked.item
+    lastActionRef.value = clicked.action
   }
   prevSelRef.value = [...value]
 }
@@ -137,6 +151,7 @@ function onSourceChange(event) {
     selectionRef: selectionSource,
     prevSelRef: prevSelectionSource,
     lastClickedRef: lastClickedSource,
+    lastActionRef: lastActionSource,
     filtered: filteredSource.value,
   })
 }
@@ -148,6 +163,7 @@ function onTargetChange(event) {
     selectionRef: selectionTarget,
     prevSelRef: prevSelectionTarget,
     lastClickedRef: lastClickedTarget,
+    lastActionRef: lastActionTarget,
     filtered: filteredTarget.value,
   })
 }
