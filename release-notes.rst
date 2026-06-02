@@ -1,3 +1,10 @@
+1.6.12
+-------
+
+Changes:
+
+  - (UI) Fixed the client build script to bundle ``SM/TaskConfig.js`` in the minified client; its omission in 1.6.11 caused an error when opening the collection manager
+
 1.6.11
 -------
 
