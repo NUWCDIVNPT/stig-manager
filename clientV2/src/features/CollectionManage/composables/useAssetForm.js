@@ -70,6 +70,77 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
     form.labelIds = form.labelIds.filter(x => x !== id)
   }
 
+  // ── Label picker (filterable checklist + bulk select) ──────────────────────
+  const labelFilter = ref('')
+
+  const filteredLabels = computed(() => {
+    const q = labelFilter.value.trim().toLowerCase()
+    if (!q) {
+      return collectionLabels.value
+    }
+    return collectionLabels.value.filter(l => l.name.toLowerCase().includes(q))
+  })
+
+  function isLabelSelected(id) {
+    return form.labelIds.includes(id)
+  }
+
+  function toggleLabel(id) {
+    if (form.labelIds.includes(id)) {
+      form.labelIds = form.labelIds.filter(x => x !== id)
+    }
+    else {
+      form.labelIds = [...form.labelIds, id]
+    }
+  }
+
+  // True only when every currently-filtered label is selected (and there's at
+  // least one), so the "select all" toggle reflects the visible subset.
+  const allFilteredSelected = computed(() =>
+    filteredLabels.value.length > 0
+    && filteredLabels.value.every(l => form.labelIds.includes(l.labelId)),
+  )
+
+  function selectAllFiltered() {
+    const ids = new Set(form.labelIds)
+    for (const l of filteredLabels.value) {
+      ids.add(l.labelId)
+    }
+    form.labelIds = [...ids]
+  }
+
+  function clearFiltered() {
+    const filteredIds = new Set(filteredLabels.value.map(l => l.labelId))
+    form.labelIds = form.labelIds.filter(id => !filteredIds.has(id))
+  }
+
+  function toggleAllFiltered() {
+    if (allFilteredSelected.value) {
+      clearFiltered()
+    }
+    else {
+      selectAllFiltered()
+    }
+  }
+
+  // Apply a single selection state across a contiguous slice of filteredLabels
+  // (used by shift-click range select/deselect).
+  function setLabelRange(fromIndex, toIndex, selected) {
+    const start = Math.min(fromIndex, toIndex)
+    const end = Math.max(fromIndex, toIndex)
+    const rangeIds = filteredLabels.value.slice(start, end + 1).map(l => l.labelId)
+    const ids = new Set(form.labelIds)
+    for (const id of rangeIds) {
+      if (selected) {
+        ids.add(id)
+      }
+      else {
+        ids.delete(id)
+      }
+    }
+    form.labelIds = [...ids]
+  }
+
   const { isLoading, execute: loadFormData } = useAsyncState(
     async () => {
       const [labels, stigs] = await Promise.all([
@@ -108,6 +179,7 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
     form.mac = ''
     form.labelIds = []
     labelPickerIds.value = []
+    labelFilter.value = ''
     metadataRows.value = []
     availableStigs.value = []
     assignedStigs.value = []
@@ -186,10 +258,18 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
     labelPickerIds,
     unselectedLabels,
 
+    labelFilter,
+    filteredLabels,
+    allFilteredSelected,
+
     getLabelById,
     labelColor,
     commitLabelPicker,
     removeLabel,
+    isLabelSelected,
+    toggleLabel,
+    toggleAllFiltered,
+    setLabelRange,
 
     initialize,
     buildPayload,

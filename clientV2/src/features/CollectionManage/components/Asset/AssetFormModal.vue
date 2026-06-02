@@ -3,8 +3,7 @@ import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
-import MultiSelect from 'primevue/multiselect'
-import { computed, toRef } from 'vue'
+import { computed, ref, toRef } from 'vue'
 
 import LabelChip from '../../../../components/common/Label.vue'
 import MetadataEditor from '../../../../components/common/MetadataEditor.vue'
@@ -36,18 +35,36 @@ const {
   metadataRows,
   assignedStigs,
   pickListValue,
-  labelPickerIds,
-  unselectedLabels,
-  getLabelById,
+  collectionLabels,
+  labelFilter,
+  filteredLabels,
+  allFilteredSelected,
   labelColor,
-  commitLabelPicker,
-  removeLabel,
+  isLabelSelected,
+  toggleLabel,
+  toggleAllFiltered,
+  setLabelRange,
   save: saveAsset,
 } = useAssetForm({
   collectionId: toRef(props, 'collectionId'),
   assetId: toRef(props, 'assetId'),
   visible: toRef(props, 'visible'),
 })
+
+// Anchor for shift-click range selection over the filtered label list.
+const lastLabelIndex = ref(null)
+
+function onLabelRowClick(label, index, event) {
+  if (event.shiftKey && lastLabelIndex.value !== null) {
+    // Apply the clicked row's *new* state across the whole range.
+    const selected = !isLabelSelected(label.labelId)
+    setLabelRange(lastLabelIndex.value, index, selected)
+  }
+  else {
+    toggleLabel(label.labelId)
+  }
+  lastLabelIndex.value = index
+}
 
 function close() {
   emit('update:visible', false)
@@ -78,52 +95,13 @@ const dialogPt = {
   closeButton: { style: 'color: var(--color-text-dim); border-radius: 4px;' },
 }
 
-const checkboxPt = {
-  box: ({ context }) => ({
-    style: `background: ${context.checked ? 'var(--color-action-blue-dark)' : 'var(--color-background-light)'}; border-color: ${context.checked ? 'var(--color-action-blue-dark)' : 'var(--color-border-default)'};`,
-  }),
-  icon: { style: 'color: white;' },
-}
-
 const inputTextPt = {
-  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 0.88rem; padding: 0.45rem 0.65rem;' },
-}
-
-const labelPickerPt = {
-  root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; display: inline-flex; align-items: center; height: 1.9rem; cursor: pointer; transition: all 0.15s;' },
-  labelContainer: { style: 'padding: 0; display: flex; align-items: center;' },
-  label: { style: 'padding: 0;' },
-  dropdown: { style: 'color: var(--color-text-dim); width: 1.8rem;' },
-  panel: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); min-width: 140px;' },
-  header: { style: 'padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--color-border-default); display: flex; align-items: center; gap: 0.5rem;' },
-  listContainer: { style: 'padding: 0.25rem;' },
-  item: ({ context }) => ({
-    style: {
-      padding: '0.4rem 0.6rem',
-      borderRadius: '3px',
-      background: context.focused ? 'var(--color-background-light)' : 'transparent',
-      cursor: 'pointer',
-    },
-  }),
-  // option checkboxes
-  optionCheckbox: {
-    box: ({ context }) => ({
-      style: `width: 14px; height: 14px; background: ${context.checked ? 'var(--color-action-blue-dark)' : 'var(--color-background-light)'}; border-color: ${context.checked ? 'var(--color-action-blue-dark)' : 'var(--color-border-default)'};`,
-    }),
-    icon: { style: 'color: white;' },
-  },
-  // select-all header checkbox
-  headerCheckbox: {
-    box: ({ context }) => ({
-      style: `background: ${context.checked ? 'var(--color-action-blue-dark)' : 'var(--color-background-light)'}; border-color: ${context.checked ? 'var(--color-action-blue-dark)' : 'var(--color-border-default)'};`,
-    }),
-    icon: { style: 'color: white;' },
-  },
+  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem;' },
 }
 
 const pickListPt = {
-  sourceFilterInput: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border: 1px solid var(--color-border-default); border-radius: 4px; font-size: 0.82rem; padding: 0.2rem 0.5rem; width: 100%;' },
-  targetFilterInput: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border: 1px solid var(--color-border-default); border-radius: 4px; font-size: 0.82rem; padding: 0.2rem 0.5rem; width: 100%;' },
+  sourceFilterInput: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border: 1px solid var(--color-border-default); border-radius: 4px; font-size: 0.95rem; padding: 0.35rem 0.6rem; width: 100%;' },
+  targetFilterInput: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border: 1px solid var(--color-border-default); border-radius: 4px; font-size: 0.95rem; padding: 0.35rem 0.6rem; width: 100%;' },
   sourceControls: {
     moveUpButton: { root: { style: 'border-radius: 4px;' } },
     moveDownButton: { root: { style: 'border-radius: 4px;' } },
@@ -144,7 +122,7 @@ const pickListPt = {
     v-model:visible="localVisible"
     modal
     :draggable="false"
-    :style="{ width: 'min(760px, 96vw)', height: '82vh' }"
+    :style="{ width: 'min(980px, 96vw)', height: '85vh' }"
     :pt="dialogPt"
   >
     <template #header>
@@ -207,38 +185,58 @@ const pickListPt = {
 
         <!-- Labels -->
         <div class="labeled-field">
-          <span class="flabel">Labels</span>
-          <div class="label-chips-row">
-            <span
-              v-for="id in form.labelIds"
-              :key="id"
-              class="label-chip-wrapper"
-            >
-              <LabelChip :value="getLabelById(id)?.name ?? ''" :color="labelColor(getLabelById(id))" />
-              <button class="chip-x" @click.stop="removeLabel(id)">×</button>
-            </span>
-            <MultiSelect
-              v-if="unselectedLabels.length > 0"
-              v-model="labelPickerIds"
-              :options="unselectedLabels"
-              option-label="name"
-              option-value="labelId"
-              :pt="labelPickerPt"
-              :show-toggle-all="true"
-              placeholder="Add label"
-              @hide="commitLabelPicker"
-            >
-              <template #value="slotProps">
-                <div style="font-size: 0.85rem; font-weight: 500; color: var(--color-text-primary); padding: 0 0.2rem 0 0.6rem; white-space: nowrap; display: flex; align-items: center; gap: 0.35rem;">
-                  <i class="pi pi-plus" style="font-size: 0.75rem; color: var(--color-text-dim);" />
-                  <span>{{ slotProps.value && slotProps.value.length ? `${slotProps.value.length} selected` : slotProps.placeholder }}</span>
-                </div>
-              </template>
-              <template #option="{ option }">
-                <LabelChip :value="option.name" :color="labelColor(option)" />
-              </template>
-            </MultiSelect>
-            <span v-else-if="form.labelIds.length === 0" class="no-labels-hint">None</span>
+          <div class="field-header-row">
+            <span class="flabel">Labels</span>
+            <span class="field-hint">{{ form.labelIds.length }} of {{ collectionLabels.length }} selected</span>
+          </div>
+
+          <div v-if="collectionLabels.length === 0" class="no-labels-hint">
+            No labels defined for this collection.
+          </div>
+
+          <div v-else class="label-picker">
+            <div class="label-picker-toolbar">
+              <span class="label-search">
+                <i class="pi pi-search" />
+                <input
+                  v-model="labelFilter"
+                  type="text"
+                  placeholder="Filter labels..."
+                  class="label-search-input"
+                >
+                <button v-if="labelFilter" class="label-search-clear" @click="labelFilter = ''">×</button>
+              </span>
+              <label class="label-selectall">
+                <Checkbox
+                  :model-value="allFilteredSelected"
+                  :binary="true"
+                  @update:model-value="toggleAllFiltered"
+                />
+                <span>Select all</span>
+              </label>
+            </div>
+
+            <div class="label-list">
+              <div
+                v-for="(label, index) in filteredLabels"
+                :key="label.labelId"
+                class="label-row"
+                :class="{ 'label-row--selected': isLabelSelected(label.labelId) }"
+                @click="onLabelRowClick(label, index, $event)"
+              >
+                <Checkbox
+                  :model-value="isLabelSelected(label.labelId)"
+                  :binary="true"
+                  :pt="checkboxPt"
+                  @click.stop
+                  @update:model-value="toggleLabel(label.labelId)"
+                />
+                <LabelChip :value="label.name" :color="labelColor(label)" />
+              </div>
+              <div v-if="filteredLabels.length === 0" class="label-empty">
+                No labels match “{{ labelFilter }}”
+              </div>
+            </div>
           </div>
         </div>
 
@@ -297,13 +295,13 @@ const pickListPt = {
 .modal-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 0.5rem;
+  gap: 0.65rem;
+  padding: 1rem 0.75rem;
 }
 
 .modal-header-icon {
-  width: 2rem;
-  height: 2rem;
+  width: 2.4rem;
+  height: 2.4rem;
   border-radius: 50%;
   background: color-mix(in srgb, var(--color-action-blue-dark) 20%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-action-blue-dark) 40%, transparent);
@@ -312,7 +310,7 @@ const pickListPt = {
   justify-content: center;
   flex-shrink: 0;
   color: var(--color-action-blue-dark);
-  font-size: 0.9rem;
+  font-size: 1.1rem;
 }
 
 .modal-header-text {
@@ -321,7 +319,7 @@ const pickListPt = {
 }
 
 .modal-header-title {
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--color-text-bright);
   line-height: 1.3;
@@ -379,21 +377,21 @@ const pickListPt = {
   align-items: center;
   gap: 0.5rem;
   white-space: nowrap;
-  font-size: 0.88rem;
+  font-size: 1rem;
   color: var(--color-text-primary);
   cursor: pointer;
   flex-shrink: 0;
-  padding-bottom: 0.35rem;
+  padding-bottom: 0.45rem;
   user-select: none;
 }
 
 .req-star {
   color: var(--color-action-red);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 .name-error {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: var(--color-text-error);
   margin-top: -0.5rem;
 }
@@ -411,7 +409,7 @@ const pickListPt = {
 }
 
 .flabel {
-  font-size: 1rem;
+  font-size: 1.15rem;
   font-weight: 600;
   color: var(--color-text-primary);
   text-transform: none;
@@ -419,7 +417,7 @@ const pickListPt = {
 }
 
 .opt-tag {
-  font-size: 0.87rem;
+  font-size: 0.95rem;
   font-weight: 400;
   color: var(--color-text-dim);
   opacity: 0.85;
@@ -429,58 +427,134 @@ const pickListPt = {
 }
 
 .field-hint {
-  font-size: 0.87rem;
+  font-size: 0.95rem;
   color: var(--color-text-dim);
   opacity: 0.85;
 }
 
 .fi {
   width: 100%;
-  font-size: 0.88rem;
+  font-size: 1rem;
 }
 
 /* Labels */
-.label-chips-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem;
-  min-height: 2rem;
-  padding: 0.25rem 0.5rem;
-  background: var(--color-background-light);
+.no-labels-hint {
+  font-size: 0.95rem;
+  color: var(--color-text-dim);
+  opacity: 0.7;
+  padding: 0.4rem 0;
+}
+
+.label-picker {
   border: 1px solid var(--color-border-default);
   border-radius: 4px;
+  background: var(--color-background-light);
+  overflow: hidden;
 }
 
-.no-labels-hint {
+.label-picker-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.label-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 0.4rem;
+}
+
+.label-search .pi-search {
   font-size: 0.8rem;
   color: var(--color-text-dim);
-  opacity: 0.5;
+  flex-shrink: 0;
 }
 
-.label-chip-wrapper {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
+.label-search-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary);
+  font-size: 0.98rem;
+  padding: 0.15rem 0;
 }
 
-.chip-x {
+.label-search-input::placeholder {
+  color: var(--color-text-dim);
+  opacity: 0.7;
+}
+
+.label-search-clear {
   background: transparent;
   border: none;
   cursor: pointer;
   color: var(--color-text-dim);
-  opacity: 0.8;
-  padding: 0 0.1rem;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   line-height: 1;
-  display: flex;
-  align-items: center;
-  transition: opacity 0.15s, color 0.15s;
+  padding: 0 0.2rem;
+  flex-shrink: 0;
 }
 
-.chip-x:hover {
-  opacity: 1;
-  color: #f87171;
+.label-search-clear:hover {
+  color: var(--color-text-primary);
+}
+
+.label-selectall {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.label-list {
+  max-height: 11rem;
+  overflow-y: auto;
+  padding: 0.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s;
+}
+
+.label-row:hover {
+  background: var(--color-background-dark);
+}
+
+.label-row--selected {
+  background: color-mix(in srgb, var(--color-action-blue-dark) 14%, transparent);
+}
+
+.label-row--selected:hover {
+  background: color-mix(in srgb, var(--color-action-blue-dark) 22%, transparent);
+}
+
+.label-empty {
+  padding: 0.6rem 0.5rem;
+  font-size: 0.95rem;
+  color: var(--color-text-dim);
+  text-align: center;
 }
 
 /* ── STIG section ──────────────────────────────────────────────────────────── */
@@ -502,7 +576,7 @@ const pickListPt = {
 }
 
 .stig-section-title {
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--color-text-primary);
   text-transform: none;
