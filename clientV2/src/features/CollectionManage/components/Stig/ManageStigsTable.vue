@@ -228,6 +228,7 @@ function handleFooterAction(action) {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  user-select: none;
 }
 
 .flex-fill {

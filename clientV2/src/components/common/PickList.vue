@@ -7,42 +7,75 @@ import Listbox from 'primevue/listbox'
 import { computed, ref } from 'vue'
 
 const props = defineProps({
+  /**
+   * Two-element tuple `[sourceList, targetList]` holding the items in each pane.
+   * Used with `v-model`; the component emits `update:modelValue` with a new tuple
+   * whenever items are moved between panes.
+   * @type {[Array<object>, Array<object>]}
+   */
   modelValue: {
     type: Array,
     default: () => [[], []],
   },
+  /**
+   * Name of the item property rendered as each row's default label (and used as
+   * the listbox `data-key` when `optionKey` is not provided).
+   */
   dataKey: {
     type: String,
     required: true,
   },
+  /**
+   * Property used to uniquely identify items for selection tracking. Defaults to
+   * `dataKey` when null. Set this when the displayed field differs from the
+   * unique identifier.
+   */
   optionKey: {
     type: String,
     default: null,
   },
+  /** Show the search input above the source (left) pane. */
   showSourceFilter: {
     type: Boolean,
     default: false,
   },
+  /** Show the search input above the target (right) pane. */
   showTargetFilter: {
     type: Boolean,
     default: false,
   },
+  /**
+   * Item property the built-in (case-insensitive `includes`) text filter matches
+   * against. Ignored when a custom `textFilterFn` is supplied.
+   */
   filterBy: {
     type: String,
     default: null,
   },
+  /** Placeholder text for the source pane's search input. */
   sourceFilterPlaceholder: {
     type: String,
     default: 'Search...',
   },
+  /** Placeholder text for the target pane's search input. */
   targetFilterPlaceholder: {
     type: String,
     default: 'Search...',
   },
+  /**
+   * PrimeVue virtual scroller options forwarded to each Listbox (e.g.
+   * `{ itemSize: 31 }`). Pass `false` to disable virtual scrolling.
+   * @type {object | boolean}
+   */
   virtualScrollerOptions: {
     type: [Object, Boolean],
     default: false,
   },
+  /**
+   * Custom filter predicate `(item, searchText) => boolean`. When provided it
+   * replaces the default `filterBy` matching for both panes.
+   * @type {(item: object, searchText: string) => boolean}
+   */
   textFilterFn: {
     type: Function,
     default: null,

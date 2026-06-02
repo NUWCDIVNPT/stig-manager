@@ -11,48 +11,86 @@ import { computed, ref } from 'vue'
 import { useTableSelection } from '../../shared/composables/useTableSelection.js'
 
 const props = defineProps({
+  /**
+   * Two-element tuple `[sourceList, targetList]` holding the rows in each table.
+   * Used with `v-model`; the component emits `update:modelValue` with a new tuple
+   * whenever rows are moved between tables.
+   * @type {[Array<object>, Array<object>]}
+   */
   modelValue: {
     type: Array,
     default: () => [[], []],
   },
+  /**
+   * Name of the row property rendered in the default single column (and used as
+   * the table `data-key` when `optionKey` is not provided).
+   */
   dataKey: {
     type: String,
     required: true,
   },
+  /**
+   * Property used to uniquely identify rows for selection tracking. Defaults to
+   * `dataKey` when null. Set this when the displayed field differs from the
+   * unique identifier.
+   */
   optionKey: {
     type: String,
     default: null,
   },
-  // Optional explicit column definitions. Each entry: { field, header, sortable, style, ... }
-  // When omitted, a single column is rendered using the `item` slot (or `dataKey` value).
+  /**
+   * Optional explicit column definitions, each spread onto a PrimeVue `<Column>`
+   * (e.g. `{ field, header, sortable, style }`). When omitted, a single column is
+   * rendered using the `item` slot (falling back to the `dataKey` value).
+   * @type {Array<object>}
+   */
   columns: {
     type: Array,
     default: null,
   },
+  /** Show the search input above the source (left) table. */
   showSourceFilter: {
     type: Boolean,
     default: false,
   },
+  /** Show the search input above the target (right) table. */
   showTargetFilter: {
     type: Boolean,
     default: false,
   },
+  /**
+   * Row property the built-in (case-insensitive `includes`) text filter matches
+   * against. Ignored when a custom `textFilterFn` is supplied.
+   */
   filterBy: {
     type: String,
     default: null,
   },
+  /** Placeholder text for the source table's search input. */
   sourceFilterPlaceholder: {
     type: String,
     default: 'Search...',
   },
+  /** Placeholder text for the target table's search input. */
   targetFilterPlaceholder: {
     type: String,
     default: 'Search...',
   },
+  /**
+   * PrimeVue virtual scroller options forwarded to each DataTable. The
+   * `itemSize` also drives row height so rows align with the scroller slots.
+   * Pass `false` to disable virtual scrolling.
+   * @type {object | boolean}
+   */
   virtualScrollerOptions: {
     type: [Object, Boolean],
     default: () => ({ itemSize: 31, delay: 0 }),
   },
+  /**
+   * Custom filter predicate `(item, searchText) => boolean`. When provided it
+   * replaces the default `filterBy` matching for both tables.
+   * @type {(item: object, searchText: string) => boolean}
+   */
   textFilterFn: {
     type: Function,
     default: null,
