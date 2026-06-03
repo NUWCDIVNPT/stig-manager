@@ -16,6 +16,10 @@ export default defineConfig(({ mode, command }) => {
           changeOrigin: true,
           rewrite: (path) => `/client-v2/Env.js`,
         },
+        '/js/workers/oidc-worker.js': {
+          target: envOrigin,
+          changeOrigin: true,
+        },
       },
     },
     build: {

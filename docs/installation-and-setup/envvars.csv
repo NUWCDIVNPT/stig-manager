@@ -33,6 +33,8 @@
 | The OIDC clientId of the web client","Client"
 "STIGMAN_CLIENT_OIDC_PROVIDER","| **Default** Value of ``STIGMAN_OIDC_PROVIDER``
 | Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended by the client when fetching metadata.","Client "
+"STIGMAN_CLIENT_PATH_PREFIX","| **No default**
+| The URL path prefix under which the API (and clientV2) are mounted when not served from the origin root (e.g. ``/stigman/``). Set this variable when the application is deployed at a non-root path **and** hashless (HTML5 history) routing is required for clientV2. When set, clientV2 switches from hash-based to HTML5 history routing using ``{pathPrefix}client-v2/`` as the history base, and the API injects a ``<base>`` tag into the clientV2 ``index.html`` accordingly. If the application is served from a non-root path but hash routing is acceptable, this variable should not be set.","Client"
 "STIGMAN_CLIENT_REAUTH_ACTION","| **Default** ``popup``
 | How to prompt for re-authentication when user credentials expire. Available values: ``popup``, ``iframe``, ``tab``, or ``reload``. See :ref:`stigman_client_reauth_action` in the Authentication document for details.","Client"
 "STIGMAN_CLIENT_RESPONSE_MODE","| **Default** ``fragment``

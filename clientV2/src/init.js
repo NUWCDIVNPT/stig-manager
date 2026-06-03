@@ -77,27 +77,29 @@ async function initializeOidcWorker() {
   if (response.error) {
     throw new Error(`OIDC Worker getStatus error: ${response.error}`)
   }
-  if (response.initialized) {
-    return response
-  }
-  const oidcConfiguration = await getOidcMetadata()
-  let reauthUri
+  let clientV2ReauthUri
   if (import.meta.env.DEV) {
-    reauthUri = `${window.location.origin}/reauth.html`
+    clientV2ReauthUri = `${window.location.origin}/reauth.html`
   }
   else {
-  // Change first condition when nextgen client is served from root instead of /client-v2
-    reauthUri = STIGMAN.Env.pathPrefix
+    clientV2ReauthUri = STIGMAN.Env.pathPrefix
       ? `${window.location.origin}${STIGMAN.Env.pathPrefix}client-v2/reauth.html`
-      : `${window.location.origin}${window.location.pathname}reauth.html`
+      : `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, '')}reauth.html`
   }
-  return OW.sendWorkerRequest({
+
+  const initRequest = {
     request: 'initialize',
     redirectUri: `${window.location.origin}${window.location.pathname}`,
-    oidcConfiguration,
     env: STIGMAN.Env.oauth,
-    reauthUri,
-  })
+    clientV2ReauthUri,
+  }
+
+  if (!response.initialized) {
+    const oidcConfiguration = await getOidcMetadata()
+    initRequest.oidcConfiguration = oidcConfiguration
+  }
+
+  return OW.sendWorkerRequest(initRequest)
 }
 
 function extractParamString(url) {
@@ -211,6 +213,7 @@ async function loadApp() {
 }
 
 async function setupOidcWorker() {
+  const oidcworkerUrl = STIGMAN.Env.pathPrefix ? '../js/workers/oidc-worker.js' : new URL('../js/workers/oidc-worker.js', window.location.href).href
   STIGMAN.oidcWorker = {
     async logout() {
       const response = await this.sendWorkerRequest({ request: 'logout' })
@@ -241,7 +244,7 @@ async function setupOidcWorker() {
     logoutAvailable: true,
     token: null,
     tokenParsed: null,
-    worker: new SharedWorker(`${import.meta.env.BASE_URL}workers/oidc-worker.js`, { name: 'stigman-oidc-worker', type: 'module' }),
+    worker: new SharedWorker(oidcworkerUrl, { name: 'stigman-oidc-worker', type: 'module' }),
   }
 
   OW = STIGMAN.oidcWorker

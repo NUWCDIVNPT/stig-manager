@@ -43,6 +43,7 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
       return
     }
     OW.channelName = response.channelName
+    OW.logoutAvailable = response.logoutAvailable ?? true
     const bc = new BroadcastChannel(window.oidcWorker.channelName)
     bc.onmessage = (event) => {
       if (event.data.type === 'accessToken') {
@@ -63,7 +64,7 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
       return handleRedirectAndParameters(redirectUri, paramStr)
     }
     else {
-      return handleNoParameters()
+      return handleNoParameters(redirectUri)
     }
   
   }
@@ -87,11 +88,14 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
     if (response.error) {
       throw new Error(`OIDC Worker getStatus error: ${response.error}`)
     }
+    const url = new URL(window.location.href)
+    const clientReauthUri = `${url.origin}${url.pathname.replace(/index\.html$/, '')}reauth.html`
+
     if (response.initialized) {
-      return response
+      return OW.sendWorkerRequest({ request: 'initialize', redirectUri, env: STIGMAN.Env.oauth, clientReauthUri })
     }
     const oidcConfiguration = await getOidcMetadata()
-    return OW.sendWorkerRequest({ request: 'initialize', redirectUri, oidcConfiguration, env: STIGMAN.Env.oauth })
+    return OW.sendWorkerRequest({ request: 'initialize', redirectUri, oidcConfiguration, env: STIGMAN.Env.oauth, clientReauthUri })
   } 
 
   function extractParamString(url) {
@@ -109,17 +113,17 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
     return params
   }
 
-  async function handleNoParameters() {
-    const response = await OW.sendWorkerRequest({ request: 'getAccessToken' })
+  async function handleNoParameters(redirectUri) {
+    const response = await OW.sendWorkerRequest({ request: 'getAccessToken', redirectUri })
     if (response.accessToken) {
       OW.token = response.accessToken
       OW.tokenParsed = response.accessTokenPayload
       // appendStatus(`getAccessToken`)
       loadResources()
-    } else if (response.redirect) {
+    } else if (response.redirectOidc) {
       sessionStorage.setItem('codeVerifier', response.codeVerifier)
       sessionStorage.setItem('oidcState', response.state)
-      window.location.href = response.redirect
+      window.location.href = response.redirectOidc
     }
   }
 

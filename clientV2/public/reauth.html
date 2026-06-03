@@ -30,7 +30,7 @@
         }
       })
       const statusEl = document.getElementById('loading-text')
-      const OW = new SharedWorker('workers/oidc-worker.js', { name: 'stigman-oidc-worker', type: 'module' })
+      const OW = new SharedWorker(new URL('../js/workers/oidc-worker.js', window.location.href).href, { name: 'stigman-oidc-worker', type: 'module' })
       OW.port.start()
       const init = await sendWorkerRequest({ request: 'getStatus' })
       await run()
