@@ -165,9 +165,6 @@ async function loadAssetsForBenchmark(benchmarkId) {
 function resetSelections() {
   if (isModify.value && props.selectedStig?.benchmarkId) {
     selectedBenchmarkId.value = props.selectedStig.benchmarkId
-    // Modify mode preserves the existing default: 'latest' when revisionPinned
-    // is false, otherwise the pinned revisionStr. Saving without touching the
-    // select must NOT silently change the default revision.
     selectedRevisionStr.value = props.selectedStig.revisionPinned
       ? props.selectedStig.revisionStr ?? LATEST_REVISION
       : LATEST_REVISION
@@ -219,8 +216,6 @@ watch(() => props.visible, (open) => {
     onOpen()
   }
 })
-
-// ── Asset picker partition ────────────────────────────────────────────────────
 
 function buildAssetRow(asset) {
   const labelIds = asset.labelIds ?? []

@@ -17,17 +17,18 @@ export function validateExport({ target, count, destinationId, min = COLLECTION_
   if (count === 0) {
     return 'Select at least one asset.'
   }
-  if (count > max) {
-    return `Export is limited to ${max} assets at a time (${count} currently selected).`
-  }
   if (target === 'collection') {
     if (count < min) {
       return `Collection export requires ${min}–${max} assets (currently ${count}).`
+    }
+    if (count > max) {
+      return `Collection export is limited to ${max} assets at a time (${count} currently selected).`
     }
     if (!destinationId) {
       return 'Choose a destination collection.'
     }
   }
+  // Archive (file) export has no asset-count limit.
   return null
 }
 
@@ -115,6 +116,10 @@ export function stigAssetNodeKey(benchmarkId, assetId) {
   return `stigan-${benchmarkId}-${assetId}`
 }
 
+function pct(numerator, denominator) {
+  return denominator ? (numerator / denominator) * 100 : 0
+}
+
 /**
  * Build the inverted tree (STIGs → Assets) from the selected STIG descriptors
  * and the fetched flat rows (getMetricsSummaryByCollection filtered per benchmarkId).
@@ -129,15 +134,17 @@ export function buildStigTree(selectedStigs, rowsByBenchmarkId) {
     const rows = rowsByBenchmarkId.get(s.benchmarkId) ?? []
 
     const assetNodes = rows.map((row) => {
-      const assessments = row.metrics?.assessments ?? 0
-      const accepted = row.metrics?.statuses?.accepted ?? 0
-      const pct = assessments ? (accepted / assessments) * 100 : 0
       const key = stigAssetNodeKey(s.benchmarkId, row.assetId)
       keys[key] = { checked: true, partialChecked: false }
       return {
         key,
         label: row.name,
-        data: { type: 'asset', assetId: row.assetId, benchmarkId: s.benchmarkId, acceptedPct: pct },
+        data: {
+          type: 'asset',
+          assetId: row.assetId,
+          benchmarkId: s.benchmarkId,
+          acceptedPct: pct(row.metrics?.statuses?.accepted ?? 0, row.metrics?.assessments ?? 0),
+        },
         leaf: true,
       }
     })
@@ -145,7 +152,7 @@ export function buildStigTree(selectedStigs, rowsByBenchmarkId) {
     // Roll up accepted% across all assets for this STIG node badge
     const totalAccepted = rows.reduce((sum, r) => sum + (r.metrics?.statuses?.accepted ?? 0), 0)
     const totalAssessments = rows.reduce((sum, r) => sum + (r.metrics?.assessments ?? 0), 0)
-    const stigAcceptedPct = totalAssessments ? (totalAccepted / totalAssessments) * 100 : 0
+    const stigAcceptedPct = pct(totalAccepted, totalAssessments)
 
     const key = stigNodeKey(s.benchmarkId)
     keys[key] = { checked: true, partialChecked: false }
@@ -203,4 +210,72 @@ export function computeStigEffectiveSelections(nodes, selectionKeys) {
     out.push({ assetId, stigs: [...stigs] })
   }
   return out
+}
+
+// ── Tri-state checkbox propagation ────────────────────────────────────────────
+// Pure transforms over a PrimeVue-style selection map
+// ({ [key]: { checked, partialChecked } }) for the root → branch → leaf tree
+// rendered by ExportTreeView. Each toggle returns a new selection map.
+
+// Fold a list of child states into a parent's { checked, partialChecked }.
+function rollupChildState(childKeys, keys) {
+  if (childKeys.length === 0) { return { checked: false, partialChecked: false } }
+  let allChecked = true
+  let anyChecked = false
+  for (const key of childKeys) {
+    const s = keys[key]
+    if (s?.checked) { anyChecked = true }
+    else if (s?.partialChecked) { anyChecked = true; allChecked = false }
+    else { allChecked = false }
+  }
+  if (allChecked) { return { checked: true, partialChecked: false } }
+  if (anyChecked) { return { checked: false, partialChecked: true } }
+  return { checked: false, partialChecked: false }
+}
+
+export function computeBranchSelectionState(branch, keys) {
+  const leaves = branch.children ?? []
+  // No children loaded (lazy) → the branch carries its own checked flag.
+  if (leaves.length === 0) {
+    return { checked: keys[branch.key]?.checked ?? false, partialChecked: false }
+  }
+  return rollupChildState(leaves.map(l => l.key), keys)
+}
+
+export function computeRootSelectionState(root, keys) {
+  return rollupChildState((root.children ?? []).map(b => b.key), keys)
+}
+
+// Set a branch and all its (loaded) leaves to one checked value, in place.
+function setBranchChecked(branch, checked, keys) {
+  keys[branch.key] = { checked, partialChecked: false }
+  for (const leaf of (branch.children ?? [])) {
+    keys[leaf.key] = { checked, partialChecked: false }
+  }
+}
+
+export function toggleRootSelection(root, keys) {
+  const next = { ...keys }
+  const checked = !(next[root.key]?.checked)
+  next[root.key] = { checked, partialChecked: false }
+  for (const branch of (root.children ?? [])) {
+    setBranchChecked(branch, checked, next)
+  }
+  return next
+}
+
+export function toggleBranchSelection(root, branch, keys) {
+  const next = { ...keys }
+  const s = keys[branch.key]
+  setBranchChecked(branch, !(s?.checked || s?.partialChecked), next)
+  next[root.key] = computeRootSelectionState(root, next)
+  return next
+}
+
+export function toggleLeafSelection(root, branch, leaf, keys) {
+  const next = { ...keys }
+  next[leaf.key] = { checked: !next[leaf.key]?.checked, partialChecked: false }
+  next[branch.key] = computeBranchSelectionState(branch, next)
+  next[root.key] = computeRootSelectionState(root, next)
+  return next
 }

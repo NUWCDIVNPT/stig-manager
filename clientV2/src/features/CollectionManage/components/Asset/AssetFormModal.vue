@@ -36,6 +36,15 @@ const {
   assignedStigs,
   pickListValue,
   collectionLabels,
+  labels,
+  save: saveAsset,
+} = useAssetForm({
+  collectionId: toRef(props, 'collectionId'),
+  assetId: toRef(props, 'assetId'),
+  visible: toRef(props, 'visible'),
+})
+
+const {
   labelFilter,
   filteredLabels,
   allFilteredSelected,
@@ -44,12 +53,7 @@ const {
   toggleLabel,
   toggleAllFiltered,
   setLabelRange,
-  save: saveAsset,
-} = useAssetForm({
-  collectionId: toRef(props, 'collectionId'),
-  assetId: toRef(props, 'assetId'),
-  visible: toRef(props, 'visible'),
-})
+} = labels
 
 // Anchor for shift-click range selection over the filtered label list.
 const lastLabelIndex = ref(null)

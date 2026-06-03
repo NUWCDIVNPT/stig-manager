@@ -1,6 +1,6 @@
 <script setup>
 import AssignStigButton from './AssignStigButton.vue'
-import ExportResultsAction from './ExportResultsAction.vue'
+import ExportByStigButton from '../../ExportResults/components/ExportByStigButton.vue'
 import ModifyStig from './ModifyStig.vue'
 import UnassignStigButton from './UnassignStigButton.vue'
 
@@ -51,7 +51,7 @@ const emit = defineEmits(['clear-selection', 'stigs-changed'])
       @stigs-changed="emit('stigs-changed')"
     />
     <div class="toolbar-divider" />
-    <ExportResultsAction
+    <ExportByStigButton
       :collection-id="props.collectionId"
       :collection-name="props.collectionName"
       :selected-stigs="props.selectedStigs"

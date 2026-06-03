@@ -4,12 +4,17 @@ import {
   assetKey,
   buildDestinationOptions,
   buildStigTree,
+  computeBranchSelectionState,
   computeEffectiveSelections,
+  computeRootSelectionState,
   computeStigEffectiveSelections,
   parsePrefs,
   STIG_ROOT_KEY,
   stigAssetNodeKey,
   stigNodeKey,
+  toggleBranchSelection,
+  toggleLeafSelection,
+  toggleRootSelection,
   validateExport,
 } from '../exportResultsLogic.js'
 
@@ -182,21 +187,16 @@ describe('validateExport', () => {
       .toBe('Select at least one asset.')
   })
 
-  it('accepts any count between 1 and max for archive', () => {
+  it('accepts any count for archive — file exports are not capped', () => {
     expect(validateExport({ target: 'archive', count: 1, destinationId: null })).toBeNull()
     expect(validateExport({ target: 'archive', count: 100, destinationId: null })).toBeNull()
+    expect(validateExport({ target: 'archive', count: 101, destinationId: null })).toBeNull()
+    expect(validateExport({ target: 'archive', count: 500, destinationId: null })).toBeNull()
   })
 
-  it('rejects archive when count exceeds max', () => {
-    expect(validateExport({ target: 'archive', count: 101, destinationId: null }))
-      .toBe('Export is limited to 100 assets at a time (101 currently selected).')
-    expect(validateExport({ target: 'archive', count: 500, destinationId: null }))
-      .toBe('Export is limited to 100 assets at a time (500 currently selected).')
-  })
-
-  it('rejects collection when count exceeds max (hits the shared max check first)', () => {
+  it('rejects collection when count exceeds max (collection-only cap)', () => {
     expect(validateExport({ target: 'collection', count: 101, destinationId: 'd1' }))
-      .toBe('Export is limited to 100 assets at a time (101 currently selected).')
+      .toBe('Collection export is limited to 100 assets at a time (101 currently selected).')
   })
 
   it('requires a destination for collection exports', () => {
@@ -577,5 +577,165 @@ describe('computeStigEffectiveSelections', () => {
     const a3 = result.find(r => r.assetId === 'a3')
     expect(a3.stigs).toEqual(['B2'])
     expect(result.find(r => r.assetId === 'a2')).toBeUndefined() // unchecked in B1
+  })
+})
+
+// ── Tri-state selection helpers ────────────────────────────────────────────────
+
+const ON = { checked: true, partialChecked: false }
+const OFF = { checked: false, partialChecked: false }
+const PARTIAL = { checked: false, partialChecked: true }
+
+// root → branches → leaves; `leaves` lists the leaf keys under each branch.
+function makeSelTree(branches) {
+  return {
+    key: 'root',
+    children: branches.map(b => ({
+      key: b.key,
+      children: (b.leaves ?? []).map(k => ({ key: k })),
+    })),
+  }
+}
+
+describe('computeBranchSelectionState', () => {
+  it('uses the branch\'s own checked flag when no children are loaded (lazy)', () => {
+    const branch = { key: 'b1', children: [] }
+    expect(computeBranchSelectionState(branch, { b1: ON })).toEqual(ON)
+    expect(computeBranchSelectionState(branch, { b1: OFF })).toEqual(OFF)
+    expect(computeBranchSelectionState(branch, {})).toEqual(OFF)
+  })
+
+  it('is fully checked when every loaded leaf is checked', () => {
+    const branch = { key: 'b1', children: [{ key: 'l1' }, { key: 'l2' }] }
+    expect(computeBranchSelectionState(branch, { l1: ON, l2: ON })).toEqual(ON)
+  })
+
+  it('is partial when only some leaves are checked', () => {
+    const branch = { key: 'b1', children: [{ key: 'l1' }, { key: 'l2' }] }
+    expect(computeBranchSelectionState(branch, { l1: ON, l2: OFF })).toEqual(PARTIAL)
+  })
+
+  it('is unchecked when no leaves are checked', () => {
+    const branch = { key: 'b1', children: [{ key: 'l1' }, { key: 'l2' }] }
+    expect(computeBranchSelectionState(branch, { l1: OFF, l2: OFF })).toEqual(OFF)
+    expect(computeBranchSelectionState(branch, {})).toEqual(OFF)
+  })
+})
+
+describe('computeRootSelectionState', () => {
+  it('returns unchecked for an empty tree', () => {
+    expect(computeRootSelectionState({ key: 'root', children: [] }, {})).toEqual(OFF)
+    expect(computeRootSelectionState({ key: 'root' }, {})).toEqual(OFF)
+  })
+
+  it('is fully checked when every branch is checked', () => {
+    const root = makeSelTree([{ key: 'b1' }, { key: 'b2' }])
+    expect(computeRootSelectionState(root, { b1: ON, b2: ON })).toEqual(ON)
+  })
+
+  it('is partial when a branch is partial', () => {
+    const root = makeSelTree([{ key: 'b1' }, { key: 'b2' }])
+    expect(computeRootSelectionState(root, { b1: ON, b2: PARTIAL })).toEqual(PARTIAL)
+  })
+
+  it('is partial when some branches are checked and others are not', () => {
+    const root = makeSelTree([{ key: 'b1' }, { key: 'b2' }])
+    expect(computeRootSelectionState(root, { b1: ON, b2: OFF })).toEqual(PARTIAL)
+  })
+
+  it('is unchecked when no branch is checked or partial', () => {
+    const root = makeSelTree([{ key: 'b1' }, { key: 'b2' }])
+    expect(computeRootSelectionState(root, { b1: OFF, b2: OFF })).toEqual(OFF)
+  })
+})
+
+describe('toggleRootSelection', () => {
+  it('checks root + every branch + every leaf when root was unchecked', () => {
+    const root = makeSelTree([{ key: 'b1', leaves: ['l1', 'l2'] }, { key: 'b2', leaves: ['l3'] }])
+    const next = toggleRootSelection(root, { root: OFF })
+    expect(next).toMatchObject({ root: ON, b1: ON, b2: ON, l1: ON, l2: ON, l3: ON })
+  })
+
+  it('unchecks everything when root was checked', () => {
+    const root = makeSelTree([{ key: 'b1', leaves: ['l1'] }])
+    const next = toggleRootSelection(root, { root: ON, b1: ON, l1: ON })
+    expect(next).toMatchObject({ root: OFF, b1: OFF, l1: OFF })
+  })
+
+  it('still sets branches that have no loaded leaves', () => {
+    const root = makeSelTree([{ key: 'b1' }])
+    const next = toggleRootSelection(root, { root: OFF })
+    expect(next).toMatchObject({ root: ON, b1: ON })
+  })
+
+  it('does not mutate the input keys', () => {
+    const root = makeSelTree([{ key: 'b1', leaves: ['l1'] }])
+    const keys = { root: OFF, b1: OFF, l1: OFF }
+    toggleRootSelection(root, keys)
+    expect(keys).toEqual({ root: OFF, b1: OFF, l1: OFF })
+  })
+})
+
+describe('toggleBranchSelection', () => {
+  it('checks a branch + its leaves; root goes partial while a sibling stays unchecked', () => {
+    const root = makeSelTree([{ key: 'b1', leaves: ['l1', 'l2'] }, { key: 'b2', leaves: ['l3'] }])
+    const next = toggleBranchSelection(root, root.children[0], { root: OFF, b1: OFF, l1: OFF, l2: OFF, b2: OFF, l3: OFF })
+    expect(next).toMatchObject({ b1: ON, l1: ON, l2: ON, root: PARTIAL })
+  })
+
+  it('checks the root when the toggled branch is the only one', () => {
+    const root = makeSelTree([{ key: 'b1', leaves: ['l1'] }])
+    const next = toggleBranchSelection(root, root.children[0], { root: OFF, b1: OFF, l1: OFF })
+    expect(next).toMatchObject({ b1: ON, l1: ON, root: ON })
+  })
+
+  it('unchecks a partial branch (and its leaves)', () => {
+    const root = makeSelTree([{ key: 'b1', leaves: ['l1', 'l2'] }])
+    const next = toggleBranchSelection(root, root.children[0], { root: PARTIAL, b1: PARTIAL, l1: ON, l2: OFF })
+    expect(next).toMatchObject({ b1: OFF, l1: OFF, l2: OFF, root: OFF })
+  })
+
+  it('handles a lazy branch with no loaded leaves', () => {
+    const root = makeSelTree([{ key: 'b1' }])
+    const next = toggleBranchSelection(root, root.children[0], { root: OFF, b1: OFF })
+    expect(next).toMatchObject({ b1: ON, root: ON })
+  })
+})
+
+describe('toggleLeafSelection', () => {
+  it('checks a leaf; branch + root go partial while a sibling stays unchecked', () => {
+    const root = makeSelTree([{ key: 'b1', leaves: ['l1', 'l2'] }])
+    const branch = root.children[0]
+    const next = toggleLeafSelection(root, branch, branch.children[0], { root: OFF, b1: OFF, l1: OFF, l2: OFF })
+    expect(next).toMatchObject({ l1: ON, b1: PARTIAL, root: PARTIAL })
+  })
+
+  it('fully checks branch + root when the last unchecked leaf is toggled on', () => {
+    const root = makeSelTree([{ key: 'b1', leaves: ['l1', 'l2'] }])
+    const branch = root.children[0]
+    const next = toggleLeafSelection(root, branch, branch.children[1], { root: PARTIAL, b1: PARTIAL, l1: ON, l2: OFF })
+    expect(next).toMatchObject({ l2: ON, b1: ON, root: ON })
+  })
+
+  it('unchecks a leaf; branch + root fall back to partial', () => {
+    const root = makeSelTree([{ key: 'b1', leaves: ['l1', 'l2'] }])
+    const branch = root.children[0]
+    const next = toggleLeafSelection(root, branch, branch.children[0], { root: ON, b1: ON, l1: ON, l2: ON })
+    expect(next).toMatchObject({ l1: OFF, b1: PARTIAL, root: PARTIAL })
+  })
+
+  it('does not mutate the input keys', () => {
+    const root = makeSelTree([{ key: 'b1', leaves: ['l1'] }])
+    const branch = root.children[0]
+    const keys = { root: OFF, b1: OFF, l1: OFF }
+    toggleLeafSelection(root, branch, branch.children[0], keys)
+    expect(keys).toEqual({ root: OFF, b1: OFF, l1: OFF })
+  })
+})
+
+describe('stigNodeKey / stigAssetNodeKey', () => {
+  it('namespaces benchmark and asset keys', () => {
+    expect(stigNodeKey('RHEL_8')).toBe('stign-RHEL_8')
+    expect(stigAssetNodeKey('RHEL_8', '42')).toBe('stigan-RHEL_8-42')
   })
 })

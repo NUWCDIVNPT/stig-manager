@@ -6,15 +6,19 @@ import { computed, reactive, ref } from 'vue'
 import { formatBytes } from '../../../../shared/lib.js'
 import { useCollectionExportProgressStore } from '../../../../shared/stores/collectionExportProgressStore.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
-import StigExportModal from '../../ExportResults/components/StigExportModal.vue'
+import ExportByAssetModal from './ExportByAssetModal.vue'
 
 const props = defineProps({
   collectionId: { type: String, required: true },
   collectionName: { type: String, default: '' },
-  selectedStigs: { type: Array, default: () => [] },
+  selectedAssets: { type: Array, default: () => [] },
 })
 
-const disabled = computed(() => props.selectedStigs.length === 0)
+const eligibleAssets = computed(() =>
+  props.selectedAssets.filter(a => (a.stigCnt ?? 0) > 0),
+)
+
+const disabled = computed(() => eligibleAssets.value.length === 0)
 
 const modalVisible = ref(false)
 
@@ -45,7 +49,9 @@ const archiveFetchedLabel = computed(() => {
 })
 
 function openModal() {
-  if (disabled.value) { return }
+  if (disabled.value) {
+    return
+  }
   modalVisible.value = true
 }
 
@@ -84,13 +90,17 @@ function onArchiveError(err) {
 }
 
 function closeArchiveProgress() {
-  if (archiveProgress.active) { return }
+  if (archiveProgress.active) {
+    return
+  }
   archiveProgressVisible.value = false
   resetArchiveProgress()
 }
 
 function saveArchiveLog() {
-  if (archiveProgress.log.length === 0) { return }
+  if (archiveProgress.log.length === 0) {
+    return
+  }
   const text = archiveProgress.log.join('\n')
   const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
   const base = archiveProgress.filename
@@ -117,17 +127,17 @@ function onCollectionError(err) {
     type="button"
     class="action-btn"
     :disabled="disabled"
-    title="Export selected STIG results"
+    title="Export selected assets and their results"
     @click="openModal"
   >
-    <i class="pi pi-download icon-blue" /> Export results
+    <i class="pi pi-download icon-blue" /> Export results...
   </button>
 
-  <StigExportModal
+  <ExportByAssetModal
     v-model:visible="modalVisible"
     :collection-id="collectionId"
     :collection-name="collectionName"
-    :selected-stigs="selectedStigs"
+    :selected-assets="eligibleAssets"
     @export-started="onExportStarted"
     @collection-export-progress="onCollectionProgress"
     @collection-export-complete="onCollectionComplete"
@@ -179,7 +189,7 @@ function onCollectionError(err) {
   background: transparent;
   border: none;
   color: var(--color-text-default);
-  font-size: 0.98rem;
+  font-size: 0.92rem;
   font-weight: 500;
   cursor: pointer;
   padding: 0.45rem 0.7rem;
