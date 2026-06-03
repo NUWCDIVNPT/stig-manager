@@ -2837,3 +2837,203 @@ exports.queryReviewAcl = async function ({grantId, collectionId, userId, userGro
   const [rows] = await dbUtils.pool.query(sql)
   return rows?.[0]
 }
+
+function kebabToPascal (kebabName) {
+  return kebabName.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join('')
+}
+
+exports._reviewAgingConfigValidate = async function (collectionId, config) {
+  // Validate target references for all rules in a single SQL round-trip using JSON_TABLE
+  const targets = config
+    .map((rule, idx) => rule.target ? { idx, ...rule.target } : null)
+    .filter(Boolean)
+
+  if (targets.length === 0) return { pass: config, fail: [] }
+
+  const sql = `
+    SELECT
+      jt.idx,
+      jt.assetId,
+      jt.labelId,
+      jt.benchmarkId,
+      CASE
+        WHEN jt.assetId IS NOT NULL AND a.assetId IS NULL
+          THEN 'asset not found in collection'
+        WHEN jt.labelId IS NOT NULL AND cl.clId IS NULL
+          THEN 'label not found in collection'
+        WHEN jt.benchmarkId IS NOT NULL AND s.benchmarkId IS NULL
+          THEN 'stig not installed'
+        ELSE 'pass'
+      END AS validity
+    FROM JSON_TABLE(
+      ?,
+      '$[*]' COLUMNS (
+        idx INT PATH '$.idx',
+        assetId INT PATH '$.assetId',
+        labelId VARCHAR(255) PATH '$.labelId',
+        benchmarkId VARCHAR(255) PATH '$.benchmarkId'
+      )
+    ) jt
+    LEFT JOIN enabled_asset a ON jt.assetId = a.assetId AND a.collectionId = ?
+    LEFT JOIN collection_label cl ON cl.uuid = UUID_TO_BIN(jt.labelId, 1) AND cl.collectionId = ?
+    LEFT JOIN stig s ON jt.benchmarkId COLLATE utf8mb4_0900_as_cs = s.benchmarkId`
+
+  const [rows] = await dbUtils.pool.query(sql, [JSON.stringify(targets), collectionId, collectionId])
+
+  const fail = rows.filter(r => r.validity !== 'pass')
+  if (fail.length > 0) return { pass: [], fail }
+  return { pass: config, fail: [] }
+}
+
+exports.getCollectionReviewAgingConfig = async function (collectionId) {
+  const sql = `
+    SELECT
+      rar.ruleId,
+      rar.ordinal,
+      rar.title,
+      rar.enabled,
+      rar.triggerField,
+      rar.triggerInterval,
+      rar.triggerAction,
+      rar.updateField,
+      rar.updateValue,
+      CASE
+        WHEN rar.assetId IS NOT NULL THEN
+          JSON_OBJECT(
+            'asset', JSON_OBJECT('assetId', CAST(a.assetId AS CHAR), 'name', a.name),
+            'benchmarkId', rar.benchmarkId
+          )
+        WHEN rar.clId IS NOT NULL THEN
+          JSON_OBJECT(
+            'label', JSON_OBJECT('labelId', BIN_TO_UUID(cl.uuid, 1), 'name', cl.name, 'color', cl.color),
+            'benchmarkId', rar.benchmarkId
+          )
+        WHEN rar.benchmarkId IS NOT NULL THEN
+          JSON_OBJECT('benchmarkId', rar.benchmarkId)
+        ELSE NULL
+      END AS target
+    FROM review_aging_rule rar
+    LEFT JOIN enabled_asset a ON rar.assetId = a.assetId
+    LEFT JOIN collection_label cl ON rar.clId = cl.clId
+    WHERE rar.collectionId = ?
+    ORDER BY rar.ordinal`
+
+  const [rows] = await dbUtils.pool.query(sql, [collectionId])
+  if (rows.length === 0) return undefined
+
+  return rows.map(row => {
+    const rule = {
+      triggerField: row.triggerField,
+      triggerInterval: row.triggerInterval,
+      triggerAction: row.triggerAction,
+      enabled: row.enabled === 1
+    }
+    if (row.title != null) rule.title = row.title
+    if (row.updateField != null) {
+      rule.updateField = row.updateField
+      rule.updateValue = row.updateValue
+    }
+    if (row.target != null) {
+      const target = row.target
+      if (target.benchmarkId === null) delete target.benchmarkId
+      rule.target = target
+    }
+    return rule
+  })
+}
+
+exports.putCollectionReviewAgingConfig = async function (collectionId, config) {
+  async function transactionFn (connection) {
+    await connection.query('DELETE FROM review_aging_rule WHERE collectionId = ?', [collectionId])
+
+    if (config.length === 0) return
+
+    // Resolve labelId UUIDs to clIds in one batch query
+    const labelIds = [...new Set(
+      config
+        .filter(r => r.target?.labelId)
+        .map(r => r.target.labelId)
+    )]
+    let labelMap = {}
+    if (labelIds.length > 0) {
+      const [labelRows] = await connection.query(
+        `SELECT clId, BIN_TO_UUID(uuid, 1) AS labelId
+         FROM collection_label
+         WHERE collectionId = ? AND BIN_TO_UUID(uuid, 1) IN (?)`,
+        [collectionId, labelIds]
+      )
+      labelMap = Object.fromEntries(labelRows.map(r => [r.labelId, r.clId]))
+    }
+
+    const ruleValues = config.map((rule, idx) => {
+      const target = rule.target ?? {}
+      const assetId = target.assetId != null ? parseInt(target.assetId) : null
+      const clId = target.labelId != null ? (labelMap[target.labelId] ?? null) : null
+      const benchmarkId = target.benchmarkId ?? null
+      return [
+        collectionId,
+        idx,
+        rule.title ?? null,
+        rule.enabled ? 1 : 0,
+        rule.triggerField,
+        rule.triggerInterval,
+        rule.triggerAction,
+        rule.updateField ?? null,
+        rule.updateValue ?? null,
+        assetId,
+        clId,
+        benchmarkId
+      ]
+    })
+
+    await connection.query(
+      `INSERT INTO review_aging_rule
+        (collectionId, ordinal, title, enabled, triggerField, triggerInterval,
+         triggerAction, updateField, updateValue, assetId, clId, benchmarkId)
+       VALUES ?`,
+      [ruleValues]
+    )
+  }
+
+  return dbUtils.retryOnDeadlock2({ transactionFn, statusObj: {} })
+}
+
+exports.deleteCollectionReviewAgingConfig = async function (collectionId) {
+  const [result] = await dbUtils.pool.query(
+    'DELETE FROM review_aging_rule WHERE collectionId = ?',
+    [collectionId]
+  )
+  return result.affectedRows > 0
+}
+
+exports.getCollectionTaskOutput = async function (collectionId, taskName, { start, end } = {}) {
+  const columns = [
+    'tout.seq',
+    'tout.ts',
+    'CAST(tout.taskId AS CHAR) AS taskId',
+    't.name AS task',
+    'tout.type',
+    'tout.message',
+    'tout.collectionId'
+  ]
+  const joins = new Set([
+    'task_output tout',
+    'LEFT JOIN task t ON tout.taskId = t.taskId'
+  ])
+  const predicates = {
+    statements: ['tout.collectionId = ?', 't.name = ?'],
+    binds: [collectionId, kebabToPascal(taskName)]
+  }
+  if (start) {
+    predicates.statements.push('tout.ts >= ?')
+    predicates.binds.push(start)
+  }
+  if (end) {
+    predicates.statements.push('tout.ts <= ?')
+    predicates.binds.push(end)
+  }
+  const orderBy = ['tout.seq ASC']
+  const sql = dbUtils.makeQueryString({ columns, joins, predicates, orderBy, format: true })
+  const [rows] = await dbUtils.pool.query(sql)
+  return rows
+}

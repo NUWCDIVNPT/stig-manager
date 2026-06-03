@@ -499,6 +499,37 @@ CREATE TABLE `review` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
+-- Table structure for table `review_aging_rule`
+--
+
+DROP TABLE IF EXISTS `review_aging_rule`;
+CREATE TABLE `review_aging_rule` (
+  `ruleId` int NOT NULL AUTO_INCREMENT,
+  `collectionId` int NOT NULL,
+  `ordinal` int NOT NULL DEFAULT '0',
+  `title` varchar(45) DEFAULT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `triggerField` enum('ts','statusTs','touchTs') NOT NULL,
+  `triggerInterval` int NOT NULL,
+  `triggerAction` enum('delete','update') NOT NULL,
+  `updateField` enum('status','result') DEFAULT NULL,
+  `updateValue` varchar(20) DEFAULT NULL,
+  `assetId` int DEFAULT NULL,
+  `clId` int DEFAULT NULL,
+  `benchmarkId` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  PRIMARY KEY (`ruleId`),
+  UNIQUE KEY `uq_rar_collection_ordinal` (`collectionId`,`ordinal`),
+  KEY `fk_rar_assetId` (`assetId`),
+  KEY `fk_rar_clId` (`clId`),
+  KEY `fk_rar_benchmarkId` (`benchmarkId`),
+  CONSTRAINT `fk_rar_assetId` FOREIGN KEY (`assetId`) REFERENCES `asset` (`assetId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_rar_benchmarkId` FOREIGN KEY (`benchmarkId`) REFERENCES `stig` (`benchmarkId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_rar_clId` FOREIGN KEY (`clId`) REFERENCES `collection_label` (`clId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_rar_collectionId` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `chk_rar_update_consistency` CHECK ((((`triggerAction` = _utf8mb4'delete') and (`updateField` is null) and (`updateValue` is null)) or ((`triggerAction` = _utf8mb4'update') and (`updateField` is not null) and (`updateValue` is not null))))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
 -- Table structure for table `review_history`
 --
 
@@ -675,6 +706,7 @@ CREATE TABLE `task` (
   `name` varchar(45) NOT NULL,
   `description` varchar(255) DEFAULT NULL,
   `command` varchar(255) NOT NULL,
+  `collectionConfig` varchar(255) DEFAULT NULL COMMENT 'OpenAPI $ref path to the per-collection config schema, if supported',
   PRIMARY KEY (`taskId`),
   UNIQUE KEY `idx_task_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -691,11 +723,14 @@ CREATE TABLE `task_output` (
   `taskId` int DEFAULT NULL,
   `type` varchar(45) NOT NULL,
   `message` varchar(255) NOT NULL,
+  `collectionId` int DEFAULT NULL,
   PRIMARY KEY (`seq`),
   KEY `fk_task_output_runId` (`runId`),
   KEY `fk_task_output_taskId` (`taskId`),
+  KEY `fk_to_collectionId` (`collectionId`),
   CONSTRAINT `fk_task_output_runId` FOREIGN KEY (`runId`) REFERENCES `job_run` (`runId`) ON DELETE CASCADE,
-  CONSTRAINT `fk_task_output_taskId` FOREIGN KEY (`taskId`) REFERENCES `task` (`taskId`) ON DELETE CASCADE
+  CONSTRAINT `fk_task_output_taskId` FOREIGN KEY (`taskId`) REFERENCES `task` (`taskId`) ON DELETE CASCADE,
+  CONSTRAINT `fk_to_collectionId` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -713,9 +748,12 @@ CREATE TABLE `user_data` (
   `statusDate` datetime NOT NULL DEFAULT (`created`),
   `statusUser` int DEFAULT NULL,
   `webPreferences` json NOT NULL DEFAULT (_utf8mb4'{"darkMode": true, "lastWhatsNew": "2000-01-01"}'),
+  `taskId` int DEFAULT NULL,
   PRIMARY KEY (`userId`),
   UNIQUE KEY `INDEX_username` (`username`),
-  KEY `INDEX_status` (`status`)
+  KEY `INDEX_status` (`status`),
+  KEY `fk_ud_taskId` (`taskId`),
+  CONSTRAINT `fk_ud_taskId` FOREIGN KEY (`taskId`) REFERENCES `task` (`taskId`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -817,6 +855,18 @@ DELIMITER $
 /*!50003 SET @saved_time_zone      = @@time_zone */ $
 /*!50003 SET time_zone             = 'SYSTEM' */ $
 /*!50106 CREATE*/ /*!50117 */ /*!50106 EVENT `job-1-stigman` ON SCHEDULE EVERY 1 DAY STARTS '2025-10-01 05:00:00' ON COMPLETION NOT PRESERVE DISABLE DO CALL run_job(1, NULL) */ $
+/*!50003 SET time_zone             = @saved_time_zone */ $
+/*!50003 SET sql_mode              = @saved_sql_mode */ $
+/*!50003 SET collation_connection  = @saved_col_connection */ $
+/*!50106 DROP EVENT IF EXISTS `job-4-stigman` */$
+DELIMITER $
+/*!50003 SET @saved_col_connection = @@collation_connection */ $
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ $
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ $
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ $
+/*!50003 SET @saved_time_zone      = @@time_zone */ $
+/*!50003 SET time_zone             = 'SYSTEM' */ $
+/*!50106 CREATE*/ /*!50117 */ /*!50106 EVENT `job-4-stigman` ON SCHEDULE EVERY 1 DAY STARTS '2026-03-29 05:00:00' ON COMPLETION NOT PRESERVE DISABLE DO CALL run_job(4, NULL) */ $
 /*!50003 SET time_zone             = @saved_time_zone */ $
 /*!50003 SET sql_mode              = @saved_sql_mode */ $
 /*!50003 SET collation_connection  = @saved_col_connection */ $
@@ -981,6 +1031,69 @@ BEGIN
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `delete_review_batch` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `delete_review_batch`()
+BEGIN
+      DECLARE v_numReviewIds INT;
+      DECLARE v_numHistoryIds INT;
+      DECLARE v_incrementValue INT DEFAULT 10000;
+      DECLARE v_curMinId BIGINT DEFAULT 1;
+      DECLARE v_curMaxId BIGINT DEFAULT v_incrementValue + 1;
+
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION
+      BEGIN
+        DECLARE err_code INT;
+        DECLARE err_msg TEXT;
+        GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
+        CALL task_output('error', concat('[delete_review_batch] code: ', err_code, ' message: ', err_msg));
+        CALL task_output_collection('error', concat('[delete_review_batch] code: ', err_code, ' message: ', err_msg));
+        RESIGNAL;
+      END;
+
+      SELECT MAX(seq) INTO v_numReviewIds FROM t_reviewIds;
+
+      IF IFNULL(v_numReviewIds, 0) > 0 THEN
+        DROP TEMPORARY TABLE IF EXISTS t_historyIds;
+        CREATE TEMPORARY TABLE t_historyIds (seq INT AUTO_INCREMENT PRIMARY KEY)
+          SELECT historyId FROM review_history WHERE reviewId IN (SELECT reviewId FROM t_reviewIds);
+        SELECT MAX(seq) INTO v_numHistoryIds FROM t_historyIds;
+        CALL task_output_collection('info', concat('found ', IFNULL(v_numHistoryIds, 0), ' history records to delete'));
+
+        IF IFNULL(v_numHistoryIds, 0) > 0 THEN
+          CALL task_output_collection('info', concat('deleting ', v_numHistoryIds, ' history records'));
+          SET v_curMinId = 1;
+          SET v_curMaxId = v_curMinId + v_incrementValue;
+          REPEAT
+            DELETE FROM review_history WHERE historyId IN (
+              SELECT historyId FROM t_historyIds WHERE seq >= v_curMinId AND seq < v_curMaxId
+            );
+            SET v_curMinId = v_curMinId + v_incrementValue;
+            SET v_curMaxId = v_curMaxId + v_incrementValue;
+          UNTIL v_curMinId > v_numHistoryIds END REPEAT;
+        END IF;
+        DROP TEMPORARY TABLE IF EXISTS t_historyIds;
+
+        CALL task_output_collection('info', concat('deleting ', v_numReviewIds, ' reviews'));
+        SET v_curMinId = 1;
+        SET v_curMaxId = v_curMinId + v_incrementValue;
+        REPEAT
+          DELETE FROM review WHERE reviewId IN (
+            SELECT reviewId FROM t_reviewIds WHERE seq >= v_curMinId AND seq < v_curMaxId
+          );
+          SET v_curMinId = v_curMinId + v_incrementValue;
+          SET v_curMaxId = v_curMaxId + v_incrementValue;
+        UNTIL v_curMinId > v_numReviewIds END REPEAT;
+      END IF;
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `delete_unmapped` */;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
@@ -1063,6 +1176,364 @@ BEGIN
           SET v_curMaxId = v_curMaxId + v_incrementValue;
         UNTIL ROW_COUNT() = 0 END REPEAT;
       END IF;
+      CALL task_output('info', 'task finished');
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `prune_and_insert_history` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `prune_and_insert_history`(IN in_maxReviews INT)
+BEGIN
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION
+      BEGIN
+        DECLARE err_code INT;
+        DECLARE err_msg TEXT;
+        GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
+        CALL task_output('error', concat('[prune_and_insert_history] code: ', err_code, ' message: ', err_msg));
+        CALL task_output_collection('error', concat('[prune_and_insert_history] code: ', err_code, ' message: ', err_msg));
+        RESIGNAL;
+      END;
+
+      -- Step 1: prune existing history to cap-1, making room for the incoming snapshot
+      WITH historyRecs AS (
+        SELECT
+          rh.historyId,
+          ROW_NUMBER() OVER (PARTITION BY r.reviewId ORDER BY rh.historyId DESC) AS rowNum
+        FROM review_history rh
+        INNER JOIN review r USING (reviewId)
+        WHERE r.reviewId IN (SELECT reviewId FROM t_reviewIds)
+      )
+      DELETE review_history
+      FROM review_history
+      LEFT JOIN historyRecs ON review_history.historyId = historyRecs.historyId
+      WHERE historyRecs.rowNum > in_maxReviews - 1;
+
+      -- Step 2: insert snapshot of current review state before the update
+      INSERT INTO review_history (
+        reviewId,
+        ruleId,
+        resultId,
+        detail,
+        comment,
+        autoResult,
+        ts,
+        userId,
+        statusText,
+        statusUserId,
+        statusTs,
+        statusId,
+        touchTs,
+        resultEngine
+      ) SELECT
+          reviewId,
+          ruleId,
+          resultId,
+          LEFT(detail, 32767),
+          LEFT(comment, 32767),
+          autoResult,
+          ts,
+          userId,
+          statusText,
+          statusUserId,
+          statusTs,
+          statusId,
+          touchTs,
+          CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END
+        FROM review
+        WHERE reviewId IN (SELECT reviewId FROM t_reviewIds);
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `review_aging` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `review_aging`()
+BEGIN
+      DECLARE v_collectionId INT;
+      DECLARE v_ruleId INT;
+      DECLARE v_ordinal INT;
+      DECLARE v_enabled TINYINT(1);
+      DECLARE v_triggerField VARCHAR(20);
+      DECLARE v_triggerInterval INT;
+      DECLARE v_triggerAction VARCHAR(20);
+      DECLARE v_updateField VARCHAR(20);
+      DECLARE v_updateValue VARCHAR(20);
+      DECLARE v_assetId INT;
+      DECLARE v_clId INT;
+      DECLARE v_benchmarkId VARCHAR(255);
+      DECLARE v_cutoff DATETIME;
+      DECLARE v_numReviews INT;
+      DECLARE v_maxReviews INT;
+      DECLARE v_done INT DEFAULT FALSE;
+
+      DECLARE cur CURSOR FOR
+        SELECT DISTINCT rar.collectionId FROM review_aging_rule rar
+        INNER JOIN enabled_collection ec USING (collectionId)
+        ORDER BY rar.collectionId;
+      DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = TRUE;
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION
+      BEGIN
+        DECLARE err_code INT;
+        DECLARE err_msg TEXT;
+        GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
+        CALL task_output('error', concat('code: ', err_code, ' message: ', err_msg));
+        RESIGNAL;
+      END;
+
+      CALL task_output('info', 'task started');
+
+      SELECT userId INTO @taskUserId FROM user_data WHERE taskId = @taskId;
+
+      OPEN cur;
+      collection_loop: LOOP
+        FETCH cur INTO v_collectionId;
+        IF v_done THEN LEAVE collection_loop; END IF;
+
+        SET @taskCollectionId = v_collectionId;
+        CALL task_output('info', concat('processing collectionId ', v_collectionId));
+        CALL task_output_collection('info', concat('processing collectionId ', v_collectionId));
+
+        BEGIN  -- collection-scoped error handling (no transaction at this scope)
+          DECLARE EXIT HANDLER FOR SQLEXCEPTION
+          BEGIN
+            DECLARE err_code INT;
+            DECLARE err_msg TEXT;
+            GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+            DROP TEMPORARY TABLE IF EXISTS t_pre_approved;
+            DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
+            CALL task_output_collection('error', concat('code: ', err_code, ' message: ', err_msg));
+            CALL task_output('error', concat('error processing collectionId ', v_collectionId, ': code: ', err_code, ' message: ', err_msg));
+          END;
+
+          -- Use a cursor for task rules within the collection
+          BEGIN
+            DECLARE v_rule_done INT DEFAULT FALSE;
+            DECLARE cur_rules CURSOR FOR
+              SELECT ruleId, ordinal, enabled, triggerField, triggerInterval,
+                     triggerAction, updateField, updateValue, assetId, clId, benchmarkId
+              FROM review_aging_rule
+              WHERE collectionId = v_collectionId
+              ORDER BY ordinal;
+            DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_rule_done = TRUE;
+
+            OPEN cur_rules;
+            rule_loop: LOOP
+              FETCH cur_rules INTO
+                v_ruleId, v_ordinal, v_enabled, v_triggerField, v_triggerInterval,
+                v_triggerAction, v_updateField, v_updateValue, v_assetId, v_clId, v_benchmarkId;
+              IF v_rule_done THEN LEAVE rule_loop; END IF;
+
+              IF v_enabled != 1 THEN
+                ITERATE rule_loop;
+              END IF;
+
+              -- Compute cutoff: always relative to NOW()
+              SET v_cutoff = DATE_SUB(NOW(), INTERVAL v_triggerInterval SECOND);
+
+              CALL task_output_collection('info',
+                CONCAT('rule ordinal ', v_ordinal, ': ', v_triggerAction,
+                       IF(v_triggerAction = 'delete', ' reviews',
+                          CONCAT(' ', v_updateField, '=', v_updateValue)),
+                       ' when ', v_triggerField, ' older than ', v_triggerInterval, 's'));
+
+              -- Phase 1: Identify eligible reviews into t_pre_approved
+              -- Sorted by assetId, benchmarkId to group related stig-asset pairs for stats efficiency
+              DROP TEMPORARY TABLE IF EXISTS t_pre_approved;
+              CREATE TEMPORARY TABLE t_pre_approved (
+                seq INT AUTO_INCREMENT PRIMARY KEY,
+                reviewId INT NOT NULL,
+                assetId INT NOT NULL,
+                benchmarkId VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+                KEY idx_pa_reviewId (reviewId)
+              ) ENGINE=InnoDB;
+
+              SET @v_sql = CONCAT(
+                'INSERT INTO t_pre_approved (reviewId, assetId, benchmarkId) ',
+                'SELECT DISTINCT r.reviewId, r.assetId, rev.benchmarkId ',
+                'FROM review r ',
+                'JOIN enabled_asset a ON r.assetId = a.assetId ',
+                'JOIN rule_version_check_digest rvcd ON (rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest) ',
+                'JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId ',
+                'JOIN revision rev ON rev.revId = rgr.revId ',
+                'WHERE a.collectionId = ', v_collectionId,
+                ' AND r.', v_triggerField, ' < ''', DATE_FORMAT(v_cutoff, '%Y-%m-%d %H:%i:%s'), ''''
+              );
+
+              -- Exclude reviews already in the desired state
+              IF v_triggerAction = 'update' THEN
+                IF v_updateField = 'status' THEN
+                  SET @v_sql = CONCAT(@v_sql,
+                    ' AND r.statusId != (SELECT statusId FROM status WHERE api = ''', v_updateValue, ''' LIMIT 1)');
+                ELSEIF v_updateField = 'result' THEN
+                  SET @v_sql = CONCAT(@v_sql,
+                    ' AND r.resultId != (SELECT resultId FROM result WHERE api = ''', v_updateValue, ''' LIMIT 1)');
+                END IF;
+              END IF;
+
+              -- Apply target scoping
+              IF v_assetId IS NOT NULL AND v_benchmarkId IS NULL THEN
+                -- Asset target only: all reviews on this asset
+                SET @v_sql = CONCAT(@v_sql, ' AND r.assetId = ', v_assetId);
+              ELSEIF v_assetId IS NOT NULL AND v_benchmarkId IS NOT NULL THEN
+                -- Asset + benchmark: reviews on this asset for this STIG only
+                SET @v_sql = CONCAT(@v_sql,
+                  ' AND r.assetId = ', v_assetId,
+                  ' AND rev.benchmarkId = ''', v_benchmarkId, '''');
+              ELSEIF v_clId IS NOT NULL AND v_benchmarkId IS NULL THEN
+                -- Label target only: reviews on assets with this label
+                SET @v_sql = CONCAT(@v_sql,
+                  ' AND r.assetId IN (',
+                  '  SELECT assetId FROM collection_label_asset_map WHERE clId = ', v_clId, ')');
+              ELSEIF v_clId IS NOT NULL AND v_benchmarkId IS NOT NULL THEN
+                -- Label + benchmark: reviews on labeled assets for this STIG only
+                SET @v_sql = CONCAT(@v_sql,
+                  ' AND r.assetId IN (',
+                  '  SELECT assetId FROM collection_label_asset_map WHERE clId = ', v_clId, ')',
+                  ' AND rev.benchmarkId = ''', v_benchmarkId, '''');
+              ELSEIF v_benchmarkId IS NOT NULL THEN
+                -- Benchmark only: all reviews for this STIG in the collection
+                SET @v_sql = CONCAT(@v_sql,
+                  ' AND rev.benchmarkId = ''', v_benchmarkId, '''');
+              -- ELSE: all three NULL — no target restriction, rule applies to entire collection
+              END IF;
+
+              SET @v_sql = CONCAT(@v_sql, ' ORDER BY r.assetId, rev.benchmarkId');
+
+              PREPARE stmt_aging FROM @v_sql;
+              EXECUTE stmt_aging;
+              DEALLOCATE PREPARE stmt_aging;
+
+              SELECT COUNT(*) INTO v_numReviews FROM t_pre_approved;
+              CALL task_output_collection('info',
+                CONCAT('rule ordinal ', v_ordinal, ': found ', IFNULL(v_numReviews, 0), ' reviews to ', v_triggerAction));
+
+              -- Phase 2: Process pre-approved reviews in batches
+              IF IFNULL(v_numReviews, 0) > 0 THEN
+                BEGIN
+                  DECLARE v_batchSize INT DEFAULT 5000;
+                  DECLARE v_seqMin INT DEFAULT 1;
+                  DECLARE v_batchSeqMin INT;
+                  DECLARE v_batchSeqMax INT;
+                  DECLARE v_numVerified INT;
+                  DECLARE v_totalProcessed INT DEFAULT 0;
+                  DECLARE v_progressMark INT;
+                  DECLARE v_nextProgressLog INT DEFAULT CEIL(v_numReviews * 0.2);
+
+                  CALL task_output_collection('info',
+                    CONCAT('rule ordinal ', v_ordinal, ': processing ', v_numReviews, ' reviews'));
+
+                  batch_loop: LOOP
+                  -- Find seq range for this batch
+                  SELECT MIN(seq), MAX(seq) INTO v_batchSeqMin, v_batchSeqMax
+                  FROM (SELECT seq FROM t_pre_approved WHERE seq >= v_seqMin ORDER BY seq LIMIT v_batchSize) t;
+
+                  IF v_batchSeqMin IS NULL THEN LEAVE batch_loop; END IF;
+
+                  SET TRANSACTION ISOLATION LEVEL READ COMMITTED; -- Avoid locking rows when verifying/updating, to reduce contention with other transactions
+                  START TRANSACTION;
+
+                  -- Re-verify: candidates still meeting trigger condition
+                  DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
+                  CREATE TEMPORARY TABLE t_reviewIds (seq INT AUTO_INCREMENT PRIMARY KEY, reviewId INT);
+
+                  SET @v_verify_sql = CONCAT(
+                    'INSERT INTO t_reviewIds (reviewId) ',
+                    'SELECT pa.reviewId ',
+                    'FROM t_pre_approved pa ',
+                    'JOIN review r ON r.reviewId = pa.reviewId ',
+                    'WHERE pa.seq BETWEEN ', v_batchSeqMin, ' AND ', v_batchSeqMax,
+                    ' AND r.', v_triggerField, ' < DATE_SUB(NOW(), INTERVAL ', v_triggerInterval, ' SECOND)'
+                  );
+
+                  -- Exclude reviews already in the desired state
+                  IF v_triggerAction = 'update' THEN
+                    IF v_updateField = 'status' THEN
+                      SET @v_verify_sql = CONCAT(@v_verify_sql,
+                        ' AND r.statusId != (SELECT statusId FROM status WHERE api = ''', v_updateValue, ''' LIMIT 1)');
+                    ELSEIF v_updateField = 'result' THEN
+                      SET @v_verify_sql = CONCAT(@v_verify_sql,
+                        ' AND r.resultId != (SELECT resultId FROM result WHERE api = ''', v_updateValue, ''' LIMIT 1)');
+                    END IF;
+                  END IF;
+
+                  PREPARE stmt_verify FROM @v_verify_sql;
+                  EXECUTE stmt_verify;
+                  DEALLOCATE PREPARE stmt_verify;
+
+                  SELECT MAX(seq) INTO v_numVerified FROM t_reviewIds;
+
+                  IF IFNULL(v_numVerified, 0) > 0 THEN
+                    IF v_triggerAction = 'delete' THEN
+                      -- Capture affected saIds before deleting
+                      SET @v_deleteSaIds = (
+                        SELECT JSON_ARRAYAGG(saId) FROM (
+                          SELECT DISTINCT sa.saId
+                          FROM t_reviewIds tri
+                          INNER JOIN review r ON tri.reviewId = r.reviewId
+                          INNER JOIN rule_version_check_digest rvcd ON (rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)
+                          INNER JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId
+                          INNER JOIN revision rev ON rev.revId = rgr.revId
+                          INNER JOIN stig_asset_map sa ON (sa.assetId = r.assetId AND sa.benchmarkId = rev.benchmarkId)
+                        ) AS distinct_saIds
+                      );
+                      CALL delete_review_batch();
+                      IF @v_deleteSaIds IS NOT NULL THEN
+                        CALL update_stats_asset_stig(JSON_OBJECT('saIds', CAST(@v_deleteSaIds AS JSON)));
+                      END IF;
+                    ELSEIF v_triggerAction = 'update' THEN
+                      SELECT CAST(c.settings->>"$.history.maxReviews" AS UNSIGNED)
+                        INTO v_maxReviews
+                      FROM enabled_collection c WHERE c.collectionId = v_collectionId;
+                      CALL prune_and_insert_history(v_maxReviews);
+                      IF v_updateField = 'status' THEN
+                        CALL update_review_status_batch(v_updateValue);
+                      ELSEIF v_updateField = 'result' THEN
+                        CALL update_review_result_batch(v_updateValue);
+                      END IF;
+                      CALL update_stats_asset_stig(JSON_OBJECT('reviewIds', (SELECT JSON_ARRAYAGG(reviewId) FROM t_reviewIds)));
+                    END IF;
+                  END IF;
+
+                  DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
+                  COMMIT;
+
+                  SET v_totalProcessed = v_totalProcessed + IFNULL(v_numVerified, 0);
+                  IF v_totalProcessed >= v_nextProgressLog THEN
+                    CALL task_output_collection('info',
+                      CONCAT('rule ordinal ', v_ordinal, ': ', v_totalProcessed, '/', v_numReviews, ' reviews processed'));
+                    SET v_nextProgressLog = v_nextProgressLog + CEIL(v_numReviews * 0.2);
+                  END IF;
+
+                  SET v_seqMin = v_batchSeqMax + 1;
+                  END LOOP batch_loop;
+
+                  CALL task_output_collection('info',
+                    CONCAT('rule ordinal ', v_ordinal, ': completed ', v_totalProcessed, ' reviews'));
+                END;
+              END IF;
+
+              DROP TEMPORARY TABLE IF EXISTS t_pre_approved;
+            END LOOP rule_loop;
+            CLOSE cur_rules;
+          END;  -- rule cursor block
+        END;  -- collection-scoped error handling
+
+        CALL task_output('info', CONCAT('finished collectionId ', v_collectionId));
+        CALL task_output_collection('info', CONCAT('finished collectionId ', v_collectionId));
+      END LOOP collection_loop;
+      CLOSE cur;
+
       CALL task_output('info', 'task finished');
     END $
 DELIMITER ;
@@ -1172,6 +1643,329 @@ BEGIN
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `task_output_collection` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `task_output_collection`(
+    IN in_type VARCHAR(45),
+    IN in_message VARCHAR(255)
+  )
+BEGIN
+      IF in_message IS NULL THEN SET in_message = ''; END IF;
+      INSERT INTO task_output (runId, taskId, collectionId, type, message)
+      VALUES (@runId, @taskId, @taskCollectionId, in_type, in_message);
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_review_result_batch` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `update_review_result_batch`(
+    IN in_result VARCHAR(20)
+  )
+BEGIN
+      DECLARE v_resultId INT;
+      DECLARE v_numReviewIds INT;
+      DECLARE v_incrementValue INT DEFAULT 10000;
+      DECLARE v_curMinId BIGINT DEFAULT 1;
+      DECLARE v_curMaxId BIGINT DEFAULT v_incrementValue + 1;
+
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION
+      BEGIN
+        DECLARE err_code INT;
+        DECLARE err_msg TEXT;
+        GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
+        CALL task_output('error', concat('[update_review_result_batch] code: ', err_code, ' message: ', err_msg));
+        CALL task_output_collection('error', concat('[update_review_result_batch] code: ', err_code, ' message: ', err_msg));
+        RESIGNAL;
+      END;
+
+      -- Map result string to resultId: notReviewed -> notchecked=1, informational=8
+      -- The API value "notReviewed" is not in the result table; map it to "notchecked" (resultId=1)
+      SET in_result = IF(in_result = 'notReviewed', 'notchecked', in_result);
+      SELECT resultId INTO v_resultId FROM result WHERE api = in_result LIMIT 1;
+
+      SELECT MAX(seq) INTO v_numReviewIds FROM t_reviewIds;
+
+      IF IFNULL(v_numReviewIds, 0) > 0 THEN
+        REPEAT
+          UPDATE review
+            SET resultId = v_resultId, ts = NOW(), userId = @taskUserId,
+            statusId = 0, statusTs = NOW(), statusUserId = @taskUserId,
+            statusText = 'Review change triggered status update'
+          WHERE reviewId IN (
+            SELECT reviewId FROM t_reviewIds WHERE seq >= v_curMinId AND seq < v_curMaxId
+          );
+          SET v_curMinId = v_curMinId + v_incrementValue;
+          SET v_curMaxId = v_curMaxId + v_incrementValue;
+        UNTIL v_curMinId > v_numReviewIds END REPEAT;
+      END IF;
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_review_status_batch` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `update_review_status_batch`(
+    IN in_status VARCHAR(20)
+  )
+BEGIN
+      DECLARE v_statusId INT;
+      DECLARE v_numReviewIds INT;
+      DECLARE v_incrementValue INT DEFAULT 10000;
+      DECLARE v_curMinId BIGINT DEFAULT 1;
+      DECLARE v_curMaxId BIGINT DEFAULT v_incrementValue + 1;
+
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION
+      BEGIN
+        DECLARE err_code INT;
+        DECLARE err_msg TEXT;
+        GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+        ROLLBACK;
+        CALL task_output('error', concat('[update_review_status_batch] code: ', err_code, ' message: ', err_msg));
+        CALL task_output_collection('error', concat('[update_review_status_batch] code: ', err_code, ' message: ', err_msg));
+        RESIGNAL;
+      END;
+
+      -- Map status string to statusId: saved=0, submitted=1, rejected=2, accepted=3
+      SELECT statusId INTO v_statusId FROM status WHERE api = in_status LIMIT 1;
+
+      SELECT MAX(seq) INTO v_numReviewIds FROM t_reviewIds;
+
+      IF IFNULL(v_numReviewIds, 0) > 0 THEN
+        REPEAT
+          UPDATE review
+            SET statusId = v_statusId, statusTs = NOW(), statusUserId = @taskUserId
+          WHERE reviewId IN (
+            SELECT reviewId FROM t_reviewIds WHERE seq >= v_curMinId AND seq < v_curMaxId
+          );
+          SET v_curMinId = v_curMinId + v_incrementValue;
+          SET v_curMaxId = v_curMaxId + v_incrementValue;
+        UNTIL v_curMinId > v_numReviewIds END REPEAT;
+      END IF;
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `update_stats_asset_stig` */;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER $
+CREATE PROCEDURE `update_stats_asset_stig`(IN p_filter JSON)
+BEGIN
+      DECLARE v_where    MEDIUMTEXT DEFAULT 'WHERE sa.assetId IS NOT NULL AND sa.benchmarkId IS NOT NULL';
+      DECLARE v_json_arr JSON;
+      DECLARE v_sql      MEDIUMTEXT;
+
+      -- rules: array of ruleIds -> filter by benchmarkId
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.rules') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.rules');
+        SET v_where = CONCAT(v_where,
+          ' AND sa.benchmarkId IN (',
+            'SELECT DISTINCT benchmarkId FROM rev_group_rule_map ',
+            'LEFT JOIN revision USING (revId) ',
+            'WHERE ruleId IN (',
+              'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value VARCHAR(255) PATH ''$'')) jt',
+            ')',
+          ')');
+      END IF;
+
+      -- collectionId: scalar
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.collectionId') THEN
+        SET v_where = CONCAT(v_where,
+          ' AND a.collectionId = ', JSON_VALUE(p_filter, '$.collectionId'));
+      END IF;
+
+      -- collectionIds: array
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.collectionIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.collectionIds');
+        SET v_where = CONCAT(v_where,
+          ' AND a.collectionId IN (',
+            'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value INT PATH ''$'')) jt',
+          ')');
+      END IF;
+
+      -- assetId: scalar
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.assetId') THEN
+        SET v_where = CONCAT(v_where,
+          ' AND a.assetId = ', JSON_VALUE(p_filter, '$.assetId'));
+      END IF;
+
+      -- assetIds: array
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.assetIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.assetIds');
+        SET v_where = CONCAT(v_where,
+          ' AND a.assetId IN (',
+            'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value INT PATH ''$'')) jt',
+          ')');
+      END IF;
+
+      -- assetBenchmarkIds: array of benchmarkIds -> filter by assetId
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.assetBenchmarkIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.assetBenchmarkIds');
+        SET v_where = CONCAT(v_where,
+          ' AND a.assetId IN (',
+            'SELECT assetId FROM stig_asset_map WHERE benchmarkId IN (',
+              'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value VARCHAR(255) PATH ''$'')) jt',
+            ')',
+          ')');
+      END IF;
+
+      -- benchmarkId: scalar
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.benchmarkId') THEN
+        SET v_where = CONCAT(v_where,
+          ' AND sa.benchmarkId = ', QUOTE(JSON_UNQUOTE(JSON_EXTRACT(p_filter, '$.benchmarkId'))));
+      END IF;
+
+      -- benchmarkIds: array
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.benchmarkIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.benchmarkIds');
+        SET v_where = CONCAT(v_where,
+          ' AND sa.benchmarkId IN (',
+            'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value VARCHAR(255) PATH ''$'')) jt',
+          ')');
+      END IF;
+
+      -- saIds: array
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.saIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.saIds');
+        SET v_where = CONCAT(v_where,
+          ' AND sa.saId IN (',
+            'SELECT value FROM JSON_TABLE(', QUOTE(v_json_arr), ', ''$[*]'' COLUMNS(value INT PATH ''$'')) jt',
+          ')');
+      END IF;
+
+      -- reviewIds: array of reviewIds -> filter by saId via temp table
+      IF JSON_CONTAINS_PATH(p_filter, 'one', '$.reviewIds') THEN
+        SET v_json_arr = JSON_EXTRACT(p_filter, '$.reviewIds');
+        DROP TEMPORARY TABLE IF EXISTS _tmp_review_ids;
+        CREATE TEMPORARY TABLE _tmp_review_ids (reviewId INT NOT NULL, PRIMARY KEY (reviewId))
+          SELECT value AS reviewId FROM JSON_TABLE(v_json_arr, '$[*]' COLUMNS(value INT PATH '$')) jt;
+        SET v_where = CONCAT(v_where,
+          ' AND sa.saId IN (',
+            'SELECT DISTINCT sa2.saId FROM review r2 ',
+            'INNER JOIN rule_version_check_digest rvsd ON (rvsd.version = r2.version AND rvsd.checkDigest = r2.checkDigest) ',
+            'INNER JOIN rev_group_rule_map rgr2 ON rgr2.ruleId = rvsd.ruleId ',
+            'INNER JOIN revision rev2 ON rev2.revId = rgr2.revId ',
+            'INNER JOIN stig_asset_map sa2 ON (sa2.assetId = r2.assetId AND sa2.benchmarkId = rev2.benchmarkId) ',
+            'WHERE r2.reviewId IN (SELECT reviewId FROM _tmp_review_ids)',
+          ')');
+      END IF;
+
+      SET v_sql = CONCAT('
+      WITH source AS (
+        SELECT
+          sa.assetId,
+          sa.benchmarkId,
+          MIN(review.ts)      AS minTs,
+          MAX(review.ts)      AS maxTs,
+          MAX(review.touchTs) AS maxTouchTs,
+          SUM(CASE WHEN review.statusId = 0 THEN 1 ELSE 0 END) AS saved,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.statusId = 0 THEN 1 ELSE 0 END) AS savedResultEngine,
+          SUM(CASE WHEN review.statusId = 1 THEN 1 ELSE 0 END) AS submitted,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.statusId = 1 THEN 1 ELSE 0 END) AS submittedResultEngine,
+          SUM(CASE WHEN review.statusId = 2 THEN 1 ELSE 0 END) AS rejected,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.statusId = 2 THEN 1 ELSE 0 END) AS rejectedResultEngine,
+          SUM(CASE WHEN review.statusId = 3 THEN 1 ELSE 0 END) AS accepted,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.statusId = 3 THEN 1 ELSE 0 END) AS acceptedResultEngine,
+          SUM(CASE WHEN review.resultId = 4 AND rgr.severity = ''high''   THEN 1 ELSE 0 END) AS highCount,
+          SUM(CASE WHEN review.resultId = 4 AND rgr.severity = ''medium'' THEN 1 ELSE 0 END) AS mediumCount,
+          SUM(CASE WHEN review.resultId = 4 AND rgr.severity = ''low''    THEN 1 ELSE 0 END) AS lowCount,
+          SUM(CASE WHEN review.resultId IN (2,3,4) AND rgr.severity = ''high''   THEN 1 ELSE 0 END) AS assessedHighCount,
+          SUM(CASE WHEN review.resultId IN (2,3,4) AND rgr.severity = ''medium'' THEN 1 ELSE 0 END) AS assessedMediumCount,
+          SUM(CASE WHEN review.resultId IN (2,3,4) AND rgr.severity = ''low''    THEN 1 ELSE 0 END) AS assessedLowCount,
+          SUM(CASE WHEN review.resultId = 1 THEN 1 ELSE 0 END) AS notchecked,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 1 THEN 1 ELSE 0 END) AS notcheckedResultEngine,
+          SUM(CASE WHEN review.resultId = 2 THEN 1 ELSE 0 END) AS notapplicable,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 2 THEN 1 ELSE 0 END) AS notapplicableResultEngine,
+          SUM(CASE WHEN review.resultId = 3 THEN 1 ELSE 0 END) AS pass,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 3 THEN 1 ELSE 0 END) AS passResultEngine,
+          SUM(CASE WHEN review.resultId = 4 THEN 1 ELSE 0 END) AS fail,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 4 THEN 1 ELSE 0 END) AS failResultEngine,
+          SUM(CASE WHEN review.resultId = 5 THEN 1 ELSE 0 END) AS unknown,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 5 THEN 1 ELSE 0 END) AS unknownResultEngine,
+          SUM(CASE WHEN review.resultId = 6 THEN 1 ELSE 0 END) AS error,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 6 THEN 1 ELSE 0 END) AS errorResultEngine,
+          SUM(CASE WHEN review.resultId = 7 THEN 1 ELSE 0 END) AS notselected,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 7 THEN 1 ELSE 0 END) AS notselectedResultEngine,
+          SUM(CASE WHEN review.resultId = 8 THEN 1 ELSE 0 END) AS informational,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 8 THEN 1 ELSE 0 END) AS informationalResultEngine,
+          SUM(CASE WHEN review.resultId = 9 THEN 1 ELSE 0 END) AS fixed,
+          SUM(CASE WHEN review.resultEngine IS NOT NULL AND review.resultId = 9 THEN 1 ELSE 0 END) AS fixedResultEngine
+        FROM
+          enabled_asset a
+          INNER JOIN enabled_collection ec ON a.collectionId = ec.collectionId
+          LEFT JOIN stig_asset_map sa USING (assetId)
+          LEFT JOIN default_rev dr ON (sa.benchmarkId = dr.benchmarkId AND a.collectionId = dr.collectionId)
+          LEFT JOIN rev_group_rule_map rgr ON dr.revId = rgr.revId
+          LEFT JOIN rule_version_check_digest rvcd ON rgr.ruleId = rvcd.ruleId
+          LEFT JOIN review ON (rvcd.version = review.version AND rvcd.checkDigest = review.checkDigest AND review.assetId = sa.assetId)
+        ', v_where, '
+        GROUP BY sa.assetId, sa.benchmarkId
+      )
+      UPDATE stig_asset_map sam
+        INNER JOIN source ON sam.assetId = source.assetId AND source.benchmarkId = sam.benchmarkId
+        SET
+          sam.minTs                     = source.minTs,
+          sam.maxTs                     = source.maxTs,
+          sam.maxTouchTs                = source.maxTouchTs,
+          sam.saved                     = source.saved,
+          sam.savedResultEngine         = source.savedResultEngine,
+          sam.submitted                 = source.submitted,
+          sam.submittedResultEngine     = source.submittedResultEngine,
+          sam.rejected                  = source.rejected,
+          sam.rejectedResultEngine      = source.rejectedResultEngine,
+          sam.accepted                  = source.accepted,
+          sam.acceptedResultEngine      = source.acceptedResultEngine,
+          sam.highCount                 = source.highCount,
+          sam.mediumCount               = source.mediumCount,
+          sam.lowCount                  = source.lowCount,
+          sam.assessedHighCount         = source.assessedHighCount,
+          sam.assessedMediumCount       = source.assessedMediumCount,
+          sam.assessedLowCount          = source.assessedLowCount,
+          sam.notchecked                = source.notchecked,
+          sam.notcheckedResultEngine    = source.notcheckedResultEngine,
+          sam.notapplicable             = source.notapplicable,
+          sam.notapplicableResultEngine = source.notapplicableResultEngine,
+          sam.pass                      = source.pass,
+          sam.passResultEngine          = source.passResultEngine,
+          sam.fail                      = source.fail,
+          sam.failResultEngine          = source.failResultEngine,
+          sam.unknown                   = source.unknown,
+          sam.unknownResultEngine       = source.unknownResultEngine,
+          sam.error                     = source.error,
+          sam.errorResultEngine         = source.errorResultEngine,
+          sam.notselected               = source.notselected,
+          sam.notselectedResultEngine   = source.notselectedResultEngine,
+          sam.informational             = source.informational,
+          sam.informationalResultEngine = source.informationalResultEngine,
+          sam.fixed                     = source.fixed,
+          sam.fixedResultEngine         = source.fixedResultEngine
+      ');
+
+      SET @stmt = v_sql;
+      PREPARE stmt FROM @stmt;
+      EXECUTE stmt;
+      DEALLOCATE PREPARE stmt;
+      DROP TEMPORARY TABLE IF EXISTS _tmp_review_ids;
+    END $
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Final view structure for view `enabled_asset`
@@ -1203,7 +1997,7 @@ DELIMITER ;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50001 VIEW `v_current_rev` AS select `rr`.`revId` AS `revId`,`rr`.`benchmarkId` AS `benchmarkId`,`rr`.`version` AS `version`,`rr`.`release` AS `release`,`rr`.`benchmarkDate` AS `benchmarkDate`,`rr`.`benchmarkDateSql` AS `benchmarkDateSql`,`rr`.`status` AS `status`,`rr`.`statusDate` AS `statusDate`,`rr`.`marking` AS `marking`,`rr`.`description` AS `description`,`rr`.`active` AS `active`,`rr`.`groupCount` AS `groupCount`,`rr`.`ruleCount` AS `ruleCount`,`rr`.`lowCount` AS `lowCount`,`rr`.`mediumCount` AS `mediumCount`,`rr`.`highCount` AS `highCount`,`rr`.`checkCount` AS `checkCount`,`rr`.`fixCount` AS `fixCount` from (select `r`.`revId` AS `revId`,`r`.`benchmarkId` AS `benchmarkId`,`r`.`version` AS `version`,`r`.`release` AS `release`,`r`.`benchmarkDate` AS `benchmarkDate`,`r`.`benchmarkDateSql` AS `benchmarkDateSql`,`r`.`status` AS `status`,`r`.`statusDate` AS `statusDate`,`r`.`marking` AS `marking`,`r`.`description` AS `description`,`r`.`active` AS `active`,`r`.`groupCount` AS `groupCount`,`r`.`ruleCount` AS `ruleCount`,`r`.`lowCount` AS `lowCount`,`r`.`mediumCount` AS `mediumCount`,`r`.`highCount` AS `highCount`,`r`.`checkCount` AS `checkCount`,`r`.`fixCount` AS `fixCount`,row_number() OVER (PARTITION BY `r`.`benchmarkId` ORDER BY (`r`.`version` + 0) desc,(`r`.`release` + 0) desc )  AS `rn` from `revision` `r`) `rr` where (`rr`.`rn` = 1) */;
+/*!50001 VIEW `v_current_rev` AS select `rr`.`revId` AS `revId`,`rr`.`benchmarkId` AS `benchmarkId`,`rr`.`version` AS `version`,`rr`.`release` AS `release`,`rr`.`benchmarkDate` AS `benchmarkDate`,`rr`.`benchmarkDateSql` AS `benchmarkDateSql`,`rr`.`status` AS `status`,`rr`.`statusDate` AS `statusDate`,`rr`.`marking` AS `marking`,`rr`.`description` AS `description`,`rr`.`active` AS `active`,`rr`.`groupCount` AS `groupCount`,`rr`.`ruleCount` AS `ruleCount`,`rr`.`lowCount` AS `lowCount`,`rr`.`mediumCount` AS `mediumCount`,`rr`.`highCount` AS `highCount`,`rr`.`checkCount` AS `checkCount`,`rr`.`fixCount` AS `fixCount` from (select `r`.`revId` AS `revId`,`r`.`benchmarkId` AS `benchmarkId`,`r`.`version` AS `version`,`r`.`release` AS `release`,`r`.`benchmarkDate` AS `benchmarkDate`,`r`.`benchmarkDateSql` AS `benchmarkDateSql`,`r`.`status` AS `status`,`r`.`statusDate` AS `statusDate`,`r`.`marking` AS `marking`,`r`.`description` AS `description`,`r`.`active` AS `active`,`r`.`groupCount` AS `groupCount`,`r`.`ruleCount` AS `ruleCount`,`r`.`lowCount` AS `lowCount`,`r`.`mediumCount` AS `mediumCount`,`r`.`highCount` AS `highCount`,`r`.`checkCount` AS `checkCount`,`r`.`fixCount` AS `fixCount`,row_number() OVER (PARTITION BY `r`.`benchmarkId` ORDER BY field(`r`.`status`,'draft','accepted') desc,(`r`.`version` + 0) desc,(`r`.`release` + 0) desc )  AS `rn` from `revision` `r`) `rr` where (`rr`.`rn` = 1) */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
@@ -1225,7 +2019,7 @@ DELIMITER ;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50001 VIEW `v_latest_rev` AS select `rr`.`revId` AS `revId`,`rr`.`benchmarkId` AS `benchmarkId`,concat('V',`rr`.`version`,'R',`rr`.`release`) AS `revisionStr` from (select `r`.`revId` AS `revId`,`r`.`benchmarkId` AS `benchmarkId`,`r`.`version` AS `version`,`r`.`release` AS `release`,row_number() OVER (PARTITION BY `r`.`benchmarkId` ORDER BY (`r`.`version` + 0) desc,(`r`.`release` + 0) desc )  AS `rn` from `revision` `r`) `rr` where (`rr`.`rn` = 1) */;
+/*!50001 VIEW `v_latest_rev` AS select `rr`.`revId` AS `revId`,`rr`.`benchmarkId` AS `benchmarkId`,concat('V',`rr`.`version`,'R',`rr`.`release`) AS `revisionStr` from (select `r`.`revId` AS `revId`,`r`.`benchmarkId` AS `benchmarkId`,`r`.`version` AS `version`,`r`.`release` AS `release`,row_number() OVER (PARTITION BY `r`.`benchmarkId` ORDER BY field(`r`.`status`,'draft','accepted') desc,(`r`.`version` + 0) desc,(`r`.`release` + 0) desc )  AS `rn` from `revision` `r`) `rr` where (`rr`.`rn` = 1) */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -1235,4 +2029,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-09 22:40:40
+-- Dump completed on 2026-05-14  3:16:42
