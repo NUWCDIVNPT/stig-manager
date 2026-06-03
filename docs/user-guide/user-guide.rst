@@ -1677,7 +1677,7 @@ Set a Default STIG Revision
 You can "Pin" a specific Revision of a STIG to the Collection. This will lock this Collection to that specific Revision of a STIG, rather than use the default behavior of always using the latest Revision of a STIG. This will affect all calculated Metrics as well as the initial Revision of a STIG presented in all Workspaces.
 
 .. note::
-   "Latest" is determined by the highest version+release of an imported Revision, regardless of the ``status`` DISA assigned to it (``accepted``, ``deprecated``, ``draft``). If DISA publishes a higher-numbered Revision with a ``deprecated`` status, that Revision will be treated as the default. Pin a specific Revision here to override that behavior for this Collection.
+   "Latest" is determined by the highest version+release among imported Revisions whose ``status`` is not ``draft`` (i.e. ``accepted``, ``deprecated``, ``sunset``, etc. all compete equally). If DISA publishes a higher-numbered Revision with a ``deprecated`` status, that Revision will be treated as the default. Revisions with a ``draft`` status are held back and only chosen if no non-draft Revision exists. Pin a specific Revision here to override this behavior for this Collection.
 
 
 To set a specific default Revision of a STIG for a Collection, open the STIG Assignment window with the "Assign STIG" button or double-click on the Revision in the STIGs panel. Select the desired Revision from the "Default revision" dropdown menu, and click "Update."  To revert to the default behavior, select "Most Recent Revision" from the dropdown menu and click "Update."

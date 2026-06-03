@@ -3,11 +3,13 @@ const MigrationHandler = require('./lib/MigrationHandler')
 const logger = require('../../utils/logger')
 const dbUtils = require('../utils')
 
-// Drop the `status` priority from v_current_rev / v_latest_rev so the
-// highest version+release wins regardless of DISA-assigned status
-// (accepted, deprecated, draft). See issue #2051: DISA has been
-// publishing "deprecated" revisions with newer rule content, and users
-// expect those to surface as "latest".
+// Re-rank v_current_rev / v_latest_rev so non-draft revisions
+// (accepted, deprecated, sunset, etc.) all compete on version+release
+// for "latest". Only `draft` is held back. See issue #2051: DISA has
+// been publishing "deprecated" revisions with newer rule content, and
+// users expect those to surface as "latest" -- but `draft` revisions
+// should still be considered preliminary and never promoted unless
+// nothing else exists.
 
 const newCurrentRev = `ALTER VIEW v_current_rev AS
   select
@@ -47,6 +49,7 @@ const newCurrentRev = `ALTER VIEW v_current_rev AS
   r.checkCount AS checkCount,
   r.fixCount AS fixCount,
   row_number() OVER (PARTITION BY r.benchmarkId ORDER BY
+  field(r.status,'draft') asc,
   (r.\`version\` + 0) desc,
   (r.\`release\` + 0) desc )  AS rn from revision r) rr where (rr.rn = 1)`
 
@@ -65,6 +68,7 @@ const newLatestRev = `ALTER VIEW v_latest_rev AS
         row_number() OVER (
           PARTITION BY r.benchmarkId
           ORDER BY
+            field(r.status, 'draft') asc,
             (r.version + 0) desc,
             (r.release + 0) desc
         ) AS rn
