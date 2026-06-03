@@ -33,3 +33,4 @@ mysqldump -h 127.0.0.1 -P 3306 -u root -prootpw --no-create-info stigman $static
 
 echo "ALTER TABLE job AUTO_INCREMENT=100;" >> 20-stigman-static.sql
 echo "ALTER TABLE job_task_map AUTO_INCREMENT=1000;" >> 20-stigman-static.sql
+echo "INSERT INTO user_data (username, taskId, status) VALUES ('_task_ReviewAging', 5, 'unavailable');" >> 20-stigman-static.sql

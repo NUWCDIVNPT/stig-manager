@@ -1285,3 +1285,54 @@ module.exports.putAclRulesByCollectionGrant = async function (req, res, next) {
     next(err)
   }
 }
+
+module.exports.getCollectionTaskConfigReviewAging = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
+    const config = await CollectionService.getCollectionReviewAgingConfig(collectionId)
+    if (config === undefined) throw new SmError.NotFoundError('No config found for this collection/task.')
+    res.json(config)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.putCollectionTaskConfigReviewAging = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Owner)
+    const validated = await CollectionService._reviewAgingConfigValidate(collectionId, req.body)
+    if (validated.fail.length > 0) throw new SmError.UnprocessableError(validated.fail)
+    await CollectionService.putCollectionReviewAgingConfig(collectionId, validated.pass)
+    const config = await CollectionService.getCollectionReviewAgingConfig(collectionId)
+    res.json(config)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.deleteCollectionTaskConfigReviewAging = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Owner)
+    const deleted = await CollectionService.deleteCollectionReviewAgingConfig(collectionId)
+    if (!deleted) throw new SmError.NotFoundError('No config found for this collection/task.')
+    res.status(204).end()
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getCollectionTaskOutput = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
+    const taskName = req.params.taskName
+    const { start, end } = req.query
+    const output = await CollectionService.getCollectionTaskOutput(collectionId, taskName, { start, end })
+    res.json(output)
+  }
+  catch (err) {
+    next(err)
+  }
+}

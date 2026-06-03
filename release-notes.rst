@@ -1,3 +1,33 @@
+1.6.12
+-------
+
+Changes:
+
+  - (UI) Fixed the client build script to bundle ``SM/TaskConfig.js`` in the minified client; its omission in 1.6.11 caused an error when opening the collection manager
+
+1.6.11
+-------
+
+Changes:
+
+  - (API) Added a scheduled review aging task that ages reviews according to configurable per-collection rules, updating or deleting reviews once they exceed a defined age
+  - (UI) Registered the service worker with a relative root path and fixed its copy path in the build script
+  - (Dependencies) Various security and maintenance updates
+
+Note 1: The scheduled Job that manages review aging is disabled by default. Application Managers should enable and schedule the "Review Aging" job in the Service Jobs panel to take advantage of this new feature.
+
+Note 2: This release includes a database migration to support the new review aging task.
+
+1.6.10
+-------
+
+Changes:
+
+  - (API) Configured Express to use the built-in Node query parser to correctly handle large param arrays previously affected by the ``qs`` parameter limit
+  - (Tests) Improved timeout handling and logging across state tests and OIDC mock utilities
+  - (Dependencies) Various security and maintenance updates
+  - (Dependencies) Update ``@nuwcdivnpt/stig-manager-client-modules`` to v1.6.8
+
 1.6.9
 -------
 
