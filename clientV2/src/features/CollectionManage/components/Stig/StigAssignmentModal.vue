@@ -390,8 +390,7 @@ const selectPt = {
       <div class="picker-pane" :class="{ 'picker-pane--blurred': !selectedBenchmarkId }">
         <PickList
           :model-value="pickerValue"
-          data-key="name"
-          option-key="assetId"
+          data-key="assetId"
           :show-source-filter="true"
           :show-target-filter="true"
           filter-by="name"

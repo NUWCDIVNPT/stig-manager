@@ -18,21 +18,13 @@ const props = defineProps({
     default: () => [[], []],
   },
   /**
-   * Name of the item property rendered as each row's default label (and used as
-   * the listbox `data-key` when `optionKey` is not provided).
+   * Item property that uniquely identifies an item — maps to the PrimeVue
+   * Listbox `data-key`, and is rendered as each row's default label when the
+   * `item` slot is not provided.
    */
   dataKey: {
     type: String,
     required: true,
-  },
-  /**
-   * Property used to uniquely identify items for selection tracking. Defaults to
-   * `dataKey` when null. Set this when the displayed field differs from the
-   * unique identifier.
-   */
-  optionKey: {
-    type: String,
-    default: null,
   },
   /** Show the search input above the source (left) pane. */
   showSourceFilter: {
@@ -298,7 +290,7 @@ const listboxPt = {
           :options="filteredSource"
           multiple
           scroll-height="100%"
-          :data-key="optionKey || dataKey"
+          :data-key="dataKey"
           :virtual-scroller-options="virtualScrollerOptions || undefined"
           :pt="listboxPt"
           @change="onSourceChange"
@@ -337,7 +329,7 @@ const listboxPt = {
           :options="filteredTarget"
           multiple
           scroll-height="100%"
-          :data-key="optionKey || dataKey"
+          :data-key="dataKey"
           :virtual-scroller-options="virtualScrollerOptions || undefined"
           :pt="listboxPt"
           @change="onTargetChange"
