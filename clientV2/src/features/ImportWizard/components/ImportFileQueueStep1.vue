@@ -1,10 +1,8 @@
 <script setup>
-import Checkbox from 'primevue/checkbox'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
-import { useTableSelection } from '../../../shared/composables/useTableSelection.js'
 import { formatDateTimeString } from '../../../shared/lib.js'
 import './style.css'
 
@@ -26,17 +24,10 @@ const emit = defineEmits([
 
 const fileInputRef = ref(null)
 
-const {
-  selectedIdSet,
-  isAllSelected,
-  selectAll: onSelectAllChange,
-  handleCheckboxClick: onCheckboxClick,
-} = useTableSelection(
-  computed(() => props.sourceFiles),
-  computed(() => props.selectedRows),
-  next => emit('update:selectedRows', next),
-  '_queueId',
-)
+const selectedRowsModel = computed({
+  get: () => props.selectedRows,
+  set: next => emit('update:selectedRows', next),
+})
 
 function onFilePicked(event) {
   const files = Array.from(event.target.files)
@@ -90,27 +81,11 @@ function onFilePicked(event) {
         scroll-height="flex"
         resizable-columns
         striped-rows
-        class="queue-table"
+        selection-mode="multiple"
+        class="queue-table clickable-rows"
+        v-model:selection="selectedRowsModel"
       >
-        <Column style="width: 3rem; flex-shrink: 0">
-          <template #header>
-            <Checkbox
-              v-if="sourceFiles.length > 0"
-              :model-value="isAllSelected"
-              :binary="true"
-              @update:model-value="onSelectAllChange"
-            />
-          </template>
-          <template #body="{ data, index }">
-            <div style="display:flex;align-items:center;justify-content:center;cursor:pointer" @click.stop="onCheckboxClick($event, data, index)">
-              <Checkbox
-                :model-value="selectedIdSet.has(data._queueId)"
-                :binary="true"
-                style="pointer-events:none"
-              />
-            </div>
-          </template>
-        </Column>
+        <Column selection-mode="multiple" style="width: 3rem; flex-shrink: 0" />
         <Column field="name" header="Filename" sortable />
         <Column field="size" header="Size" style="width: 90px" sortable>
           <template #body="{ data }">
@@ -190,6 +165,11 @@ function onFilePicked(event) {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  user-select: none;
+}
+
+.clickable-rows :deep(.p-datatable-tbody > tr) {
+  cursor: pointer;
 }
 
 .queue-empty-hint {

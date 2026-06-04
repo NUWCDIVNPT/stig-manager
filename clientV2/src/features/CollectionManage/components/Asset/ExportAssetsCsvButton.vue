@@ -2,16 +2,16 @@
 import { saveAs } from 'file-saver-es'
 import Dialog from 'primevue/dialog'
 import { ref } from 'vue'
-import { apiCall } from '../../../shared/api/apiClient.js'
-import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { apiCall } from '../../../../shared/api/apiClient.js'
+import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import {
   ASSET_FIELDS,
   formatAssetsForCsv,
   generateCsv,
   mapAssetToLabel,
-} from '../../../shared/csv.js'
-import { filenameEscaped } from '../../../shared/lib.js'
-import { importDialogPt } from '../../ImportWizard/lib/importDialogPt.js'
+} from '../../../../shared/csv.js'
+import { filenameEscaped } from '../../../../shared/lib.js'
+import { importDialogPt } from '../../../ImportWizard/lib/importDialogPt.js'
 
 const props = defineProps({
   collectionId: { type: String, required: true },

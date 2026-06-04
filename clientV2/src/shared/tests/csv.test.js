@@ -41,6 +41,28 @@ describe('escapeCsv', () => {
   it('handles all three triggers together', () => {
     expect(escapeCsv('a,"b"\nc')).toBe('"a,""b""\nc"')
   })
+
+  it('prefixes = with a tab regardless of what follows', () => {
+    expect(escapeCsv('=SUM(A1:A10)')).toBe('"\t=SUM(A1:A10)"')
+    expect(escapeCsv('=anything')).toBe('"\t=anything"')
+  })
+
+  it('prefixes +, -, @ with a tab only when followed by a digit', () => {
+    expect(escapeCsv('+1')).toBe('"\t+1"')
+    expect(escapeCsv('-2')).toBe('"\t-2"')
+    expect(escapeCsv('@3')).toBe('"\t@3"')
+  })
+
+  it('does not alter +, -, @ when followed by a letter', () => {
+    expect(escapeCsv('-assethello')).toBe('-assethello')
+    expect(escapeCsv('+asset')).toBe('+asset')
+    expect(escapeCsv('@user')).toBe('@user')
+  })
+
+  it('does not alter values that do not start with formula chars', () => {
+    expect(escapeCsv('asset-01')).toBe('asset-01')
+    expect(escapeCsv('1.2.3.4')).toBe('1.2.3.4')
+  })
 })
 
 describe('generateCsv', () => {

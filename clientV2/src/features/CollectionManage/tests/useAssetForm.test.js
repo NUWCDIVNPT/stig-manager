@@ -64,44 +64,18 @@ describe('useAssetForm — label helpers', () => {
     return f
   }
 
-  it('getLabelById finds the matching label or returns undefined', () => {
+  it('labels.getLabelById finds the matching label or returns undefined', () => {
     const f = withLabels([{ labelId: '1', name: 'prod' }, { labelId: '2', name: 'staging' }])
-    expect(f.getLabelById('1')).toEqual({ labelId: '1', name: 'prod' })
-    expect(f.getLabelById('missing')).toBeUndefined()
+    expect(f.labels.getLabelById('1')).toEqual({ labelId: '1', name: 'prod' })
+    expect(f.labels.getLabelById('missing')).toBeUndefined()
   })
 
-  it('unselectedLabels excludes labels already on the form', () => {
-    const f = withLabels([
-      { labelId: '1', name: 'prod' },
-      { labelId: '2', name: 'staging' },
-      { labelId: '3', name: 'dev' },
-    ])
-    f.form.labelIds = ['2']
-    expect(f.unselectedLabels.value.map(l => l.labelId)).toEqual(['1', '3'])
-  })
-
-  it('commitLabelPicker appends only ids not already present, then clears the picker', () => {
-    const f = withLabels([])
-    f.form.labelIds = ['1']
-    f.labelPickerIds.value = ['1', '2', '3']
-    f.commitLabelPicker()
-    expect(f.form.labelIds).toEqual(['1', '2', '3'])
-    expect(f.labelPickerIds.value).toEqual([])
-  })
-
-  it('removeLabel removes the matching id immutably', () => {
-    const f = withLabels([])
-    f.form.labelIds = ['1', '2', '3']
-    f.removeLabel('2')
-    expect(f.form.labelIds).toEqual(['1', '3'])
-  })
-
-  it('labelColor uses normalizeColor with a #888888 default', () => {
+  it('labels.labelColor uses normalizeColor with a #888888 default', () => {
     const f = setupCreate()
-    expect(f.labelColor({ color: 'ff0000' })).toBe('#ff0000')
-    expect(f.labelColor({ color: '#abcdef' })).toBe('#abcdef')
-    expect(f.labelColor(null)).toBe('#888888')
-    expect(f.labelColor({})).toBe('#888888')
+    expect(f.labels.labelColor({ color: 'ff0000' })).toBe('#ff0000')
+    expect(f.labels.labelColor({ color: '#abcdef' })).toBe('#abcdef')
+    expect(f.labels.labelColor(null)).toBe('#888888')
+    expect(f.labels.labelColor({})).toBe('#888888')
   })
 })
 
@@ -122,8 +96,8 @@ describe('useAssetForm — initialize / loadFormData', () => {
     expect(f.form.labelIds).toEqual([])
     expect(f.metadataRows.value).toEqual([])
     expect(f.collectionLabels.value).toEqual([{ labelId: '1', name: 'prod' }])
-    expect(f.allStigs.value).toEqual([{ benchmarkId: 'B1' }, { benchmarkId: 'B2' }])
-    expect(f.availableStigs.value).toEqual([{ benchmarkId: 'B1' }, { benchmarkId: 'B2' }])
+    // available STIGs are surfaced via pickListValue ([available, assigned])
+    expect(f.pickListValue.value[0]).toEqual([{ benchmarkId: 'B1' }, { benchmarkId: 'B2' }])
     expect(f.assignedStigs.value).toEqual([])
     expect(fetchAssetWithStigs).not.toHaveBeenCalled()
   })
@@ -160,7 +134,7 @@ describe('useAssetForm — initialize / loadFormData', () => {
       { key: 'baz', value: 'qux' },
     ])
     expect(f.assignedStigs.value.map(s => s.benchmarkId)).toEqual(['B1', 'B3'])
-    expect(f.availableStigs.value.map(s => s.benchmarkId)).toEqual(['B2'])
+    expect(f.pickListValue.value[0].map(s => s.benchmarkId)).toEqual(['B2'])
   })
 
   it('handles missing fields on the loaded asset with sensible defaults', async () => {

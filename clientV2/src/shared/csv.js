@@ -1,13 +1,21 @@
 /**
  * Escapes a value for CSV output. Null/undefined → empty string.
- * Wraps in quotes if the value contains delimiter, quote, or newline.
+ * Wraps in quotes if the value contains delimiter, quote, newline, or tab.
+ * Prefixes values starting with =, +, -, @ with a tab to prevent spreadsheet
+ * apps from evaluating them as formulas (CSV injection defense).
  */
 export function escapeCsv(value) {
   if (value == null) {
     return ''
   }
-  const str = String(value)
-  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
+  let str = String(value)
+  // Guard against CSV formula injection. `=` is always dangerous as a leading
+  // char. `+`, `-`, `@` are only dangerous when followed by a digit or operator
+  // (e.g. `-2+cmd|...`), so asset names like `-assethello` are left intact.
+  if (/^=/.test(str) || /^[+\-@]\d/.test(str)) {
+    str = `\t${str}`
+  }
+  return /[",\n\t]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
 }
 
 /**

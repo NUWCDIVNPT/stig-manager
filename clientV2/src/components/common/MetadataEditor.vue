@@ -120,7 +120,7 @@ function onDeleteConfirmed() {
 
 .meta-input {
   width: 100%;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
 }
 
 .meta-del {
