@@ -5,6 +5,8 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import { computed, toRef } from 'vue'
 
+import shieldIcon from '../../../../assets/shield-green-check.svg'
+
 import LabelChip from '../../../../components/common/Label.vue'
 import MetadataEditor from '../../../../components/common/MetadataEditor.vue'
 import CommonPickList from '../../../../components/common/PickList.vue'
@@ -269,7 +271,10 @@ const pickListPt = {
             Assigned
           </template>
           <template #item="{ item }">
-            <span>{{ item.benchmarkId }}</span>
+            <div class="stig-item-row">
+              <img :src="shieldIcon" class="stig-item-icon" alt="">
+              <span class="stig-item-label">{{ item.benchmarkId }}</span>
+            </div>
           </template>
         </CommonPickList>
       </div>
@@ -598,6 +603,33 @@ const pickListPt = {
   color: var(--color-text-primary);
   text-transform: none;
   letter-spacing: normal;
+}
+
+/* ── STIG picklist items ───────────────────────────────────────────────────── */
+
+.stig-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.stig-item-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+  flex-shrink: 0;
+  display: block;
+}
+
+.stig-item-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 /* ── Footer ────────────────────────────────────────────────────────────────── */
