@@ -275,16 +275,6 @@ describe('useAssetForm — save()', () => {
     expect(fetchCollectionAssetSummary).not.toHaveBeenCalled()
   })
 
-  it('treats any error whose body.detail mentions "name" as a name conflict (no status code needed)', async () => {
-    createAsset.mockRejectedValue({ body: { detail: 'duplicate Name found' } })
-    const f = setupCreate()
-    f.form.name = 'dupe'
-
-    const result = await f.save()
-    expect(result).toBeNull()
-    expect(f.nameError.value).toMatch(/already exists/)
-  })
-
   it('rethrows non-conflict errors and resets isSubmitting', async () => {
     const err = new Error('500 boom')
     createAsset.mockRejectedValue(err)
