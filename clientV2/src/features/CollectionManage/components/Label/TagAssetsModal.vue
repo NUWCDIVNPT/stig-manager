@@ -18,6 +18,7 @@ import {
   fetchCollectionAssetsBasic,
   replaceLabelAssets,
 } from '../../api/labelManageApi.js'
+import { assetTextFilter as matchAsset, partitionAssets } from './tagAssets.js'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },
@@ -46,24 +47,6 @@ const labelColor = computed(() => normalizeColor(props.label?.color, '#cccccc'))
 const availableCount = computed(() => pickerValue.value[0].length)
 const taggedCount = computed(() => pickerValue.value[1].length)
 
-function buildAssetRow(asset) {
-  const labelIds = asset.labelIds ?? []
-  const labels = []
-  for (const id of labelIds) {
-    const label = labelMap.value.get(id)
-    if (label) {
-      labels.push(label)
-    }
-  }
-  return {
-    assetId: asset.assetId,
-    name: asset.name,
-    labelIds,
-    labels,
-    stigCount: (asset.stigs ?? []).length,
-  }
-}
-
 async function loadData() {
   pickerValue.value = [[], []]
   if (!props.label) {
@@ -82,19 +65,7 @@ async function loadData() {
     }
     labelMap.value = map
 
-    const taggedIds = new Set((taggedAssets ?? []).map(a => String(a.assetId)))
-    const available = []
-    const tagged = []
-    for (const asset of (allAssets ?? [])) {
-      const row = buildAssetRow(asset)
-      if (taggedIds.has(String(asset.assetId))) {
-        tagged.push(row)
-      }
-      else {
-        available.push(row)
-      }
-    }
-    pickerValue.value = [available, tagged]
+    pickerValue.value = partitionAssets(allAssets, taggedAssets, map)
   }
   catch (err) {
     triggerError(err)
@@ -137,17 +108,7 @@ async function onSave() {
 }
 
 function assetTextFilter(item, text) {
-  const lower = text.toLowerCase()
-  if (item.name && item.name.toLowerCase().includes(lower)) {
-    return true
-  }
-  for (const id of (item.labelIds ?? [])) {
-    const label = labelMap.value.get(id)
-    if (label?.name?.toLowerCase().includes(lower)) {
-      return true
-    }
-  }
-  return false
+  return matchAsset(item, text, labelMap.value)
 }
 
 const dialogPt = {
