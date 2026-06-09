@@ -92,6 +92,7 @@ function handleFooterAction(action) {
     <div class="table-container">
       <DataTable
         ref="dataTableRef"
+        v-model:selection="selectedStigs"
         :value="filteredData"
         data-key="benchmarkId"
         scrollable
@@ -103,10 +104,9 @@ function handleFooterAction(action) {
         class="flex-fill clickable-rows"
         :table-style="{ 'table-layout': 'fixed' }"
         :pt="tablePt"
-        v-model:selection="selectedStigs"
         selection-mode="multiple"
       >
-        <Column selection-mode="multiple" style="width: 1.5rem; height: 27px; padding: 0 0.5rem;" />
+        <Column selection-mode="multiple" style="width: 1rem; height: 27px; padding: 0 0.5rem;" />
 
         <Column
           field="benchmarkId"
