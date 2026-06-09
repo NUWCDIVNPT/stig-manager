@@ -2,17 +2,18 @@ import { computed, reactive, ref, unref, watch } from 'vue'
 import { fetchCollectionAssetSummary, fetchCollectionLabels } from '../../../shared/api/collectionsApi.js'
 import { fetchStigs } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { normalizeColor } from '../../../shared/lib/colorUtils.js'
 import { createAsset, fetchAssetWithStigs, replaceAsset } from '../api/assetManageApi.js'
+import { useLabelSelection } from './useLabelSelection.js'
 
 /**
  * State + actions for the asset create/edit form. The host component owns
  * dialog visibility and PrimeVue passthrough objects; everything else lives
- * here.
+ * here. Label multi-select is delegated to useLabelSelection (returned as
+ * `labels`); STIG assignment is exposed via `pickListValue`.
  *
  * save() returns the freshly-fetched summary row on success, `null` on a name
- * conflict (caller stays open and shows nameError), and re-throws on any other
- * error (caller closes and re-throws to its own handler).
+ * conflict (caller stays open and shows nameError), and throws on any other
+ * error (caller should close and forward to triggerError).
  */
 export function useAssetForm({ collectionId, assetId, visible } = {}) {
   const isEditMode = computed(() => !!unref(assetId))
@@ -33,7 +34,6 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
   const availableStigs = ref([])
   const assignedStigs = ref([])
   const collectionLabels = ref([])
-  const labelPickerIds = ref([])
 
   const isValid = computed(() => form.name.trim().length > 0)
 
@@ -45,38 +45,19 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
     },
   })
 
-  function getLabelById(id) {
-    return collectionLabels.value.find(l => l.labelId === id)
-  }
-
-  function labelColor(label) {
-    return normalizeColor(label?.color, '#888888')
-  }
-
-  const unselectedLabels = computed(() =>
-    collectionLabels.value.filter(l => !form.labelIds.includes(l.labelId)),
-  )
-
-  function commitLabelPicker() {
-    for (const id of labelPickerIds.value) {
-      if (!form.labelIds.includes(id)) {
-        form.labelIds.push(id)
-      }
-    }
-    labelPickerIds.value = []
-  }
-
-  function removeLabel(id) {
-    form.labelIds = form.labelIds.filter(x => x !== id)
-  }
+  // Label multi-select operates on form.labelIds as its source of truth.
+  const labels = useLabelSelection(collectionLabels, computed({
+    get: () => form.labelIds,
+    set: (v) => { form.labelIds = v },
+  }))
 
   const { isLoading, execute: loadFormData } = useAsyncState(
     async () => {
-      const [labels, stigs] = await Promise.all([
+      const [labelList, stigs] = await Promise.all([
         fetchCollectionLabels(unref(collectionId)),
         fetchStigs(),
       ])
-      collectionLabels.value = labels ?? []
+      collectionLabels.value = labelList ?? []
       allStigs.value = stigs ?? []
 
       if (isEditMode.value) {
@@ -107,7 +88,7 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
     form.ip = ''
     form.mac = ''
     form.labelIds = []
-    labelPickerIds.value = []
+    labels.labelFilter.value = ''
     metadataRows.value = []
     availableStigs.value = []
     assignedStigs.value = []
@@ -123,7 +104,7 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
   }
 
   function buildPayload() {
-    const labelNames = form.labelIds.map(id => getLabelById(id)?.name).filter(Boolean)
+    const labelNames = form.labelIds.map(id => labels.getLabelById(id)?.name).filter(Boolean)
     const metadata = Object.fromEntries(
       metadataRows.value.filter(r => r.key.trim()).map(r => [r.key.trim(), r.value]),
     )
@@ -157,8 +138,7 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
       return { ...(metrics?.[0] ?? {}), collection: result.collection }
     }
     catch (err) {
-      const detail = String(err?.body?.detail ?? '')
-      if (err?.status === 409 || detail.toLowerCase().includes('name')) {
+      if (err?.status === 409) {
         nameError.value = 'An asset with this name already exists in this collection.'
         return null
       }
@@ -178,18 +158,10 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
 
     form,
     metadataRows,
-    allStigs,
-    availableStigs,
     assignedStigs,
     pickListValue,
     collectionLabels,
-    labelPickerIds,
-    unselectedLabels,
-
-    getLabelById,
-    labelColor,
-    commitLabelPicker,
-    removeLabel,
+    labels,
 
     initialize,
     buildPayload,

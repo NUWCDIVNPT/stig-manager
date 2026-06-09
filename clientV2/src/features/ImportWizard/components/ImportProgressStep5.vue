@@ -231,6 +231,7 @@ function onRejectedFooterAction(action) {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  user-select: none;
 }
 
 .import-table-wrapper {

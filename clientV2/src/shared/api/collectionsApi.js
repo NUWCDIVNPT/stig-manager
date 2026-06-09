@@ -19,8 +19,8 @@ export function updateCollection(collectionId, body, { elevate, projection } = {
     throw new Error('A collectionId is required to update a collection.')
   }
   const params = { collectionId }
-  if (elevate) params.elevate = elevate
-  if (projection) params.projection = projection
+  if (elevate) { params.elevate = elevate }
+  if (projection) { params.projection = projection }
   return apiCall('updateCollection', params, body)
 }
 
@@ -29,4 +29,11 @@ export function fetchCollectionAssetSummary(collectionId, options = {}) {
     throw new Error('A collectionId is required to fetch asset metrics.')
   }
   return apiCall('getMetricsSummaryByCollectionAggAsset', { collectionId, ...options })
+}
+
+export function fetchCollectionStigSummary(collectionId, options = {}) {
+  if (!collectionId) {
+    throw new Error('A collectionId is required to fetch STIG metrics.')
+  }
+  return apiCall('getMetricsSummaryByCollectionAggStig', { collectionId, ...options })
 }

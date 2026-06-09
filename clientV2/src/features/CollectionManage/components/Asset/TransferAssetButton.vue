@@ -3,8 +3,8 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Menu from 'primevue/menu'
 import { computed, ref, toRef } from 'vue'
-import ErrorListDialog from '../../../components/common/ErrorListDialog.vue'
-import { useAssetTransfer } from '../composables/useAssetTransfer.js'
+import ErrorListDialog from '../../../../components/common/ErrorListDialog.vue'
+import { useAssetTransfer } from '../../composables/useAssetTransfer.js'
 
 const props = defineProps({
   collectionId: {

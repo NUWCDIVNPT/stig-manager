@@ -98,7 +98,11 @@ export function useAssetCsvImport(getCollectionId) {
           if (item.detail?.benchmarkIdIndex != null) { lines.push(`• STIG Unknown Index: ${item.detail.benchmarkIdIndex}`) }
 
           let csvRow = null
-          if (item.detail?.name) {
+          if (item.detail?.assetIndex != null) {
+            const matched = parsedAssets.value[item.detail.assetIndex]
+            if (matched) { csvRow = matched.CSVRow ?? null }
+          }
+          else if (item.detail?.name) {
             const matched = parsedAssets.value.find(a => a.name === item.detail.name)
             if (matched) { csvRow = matched.CSVRow ?? null }
           }

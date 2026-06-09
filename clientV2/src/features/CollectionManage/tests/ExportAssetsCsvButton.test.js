@@ -4,7 +4,7 @@ import { screen, waitFor } from '@testing-library/vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import { apiCall } from '../../../shared/api/apiClient.js'
-import ExportAssetsCsvButton from '../components/ExportAssetsCsvButton.vue'
+import ExportAssetsCsvButton from '../components/Asset/ExportAssetsCsvButton.vue'
 
 vi.mock('file-saver-es', () => ({
   saveAs: vi.fn(),

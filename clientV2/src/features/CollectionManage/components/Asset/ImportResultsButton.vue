@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import ImportResultsModal from '../../ImportWizard/components/ImportResultsModal.vue'
+import ImportResultsModal from '../../../ImportWizard/components/ImportResultsModal.vue'
 
 const props = defineProps({
   collectionId: {

@@ -1,23 +1,21 @@
 <script setup>
-import Checkbox from 'primevue/checkbox'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
 
-import DurationColumn from '../../../components/columns/DurationColumn.vue'
-import LabelsRow from '../../../components/columns/LabelsRow.vue'
-import PercentageColumn from '../../../components/columns/PercentageColumn.vue'
-import ColumnFilter from '../../../components/common/ColumnFilter.vue'
-import ColumnSearchFilter from '../../../components/common/ColumnSearchFilter.vue'
-import DeleteModal from '../../../components/common/DeleteModal.vue'
-
-import StatusFooter from '../../../components/common/StatusFooter.vue'
-import { fetchCollectionAssetSummary } from '../../../shared/api/collectionsApi.js'
-import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
-import { useTableSelection } from '../../../shared/composables/useTableSelection.js'
-import { deleteAssets } from '../api/assetManageApi.js'
-import { useAssetTable } from '../composables/useAssetTable.js'
+import DurationColumn from '../../../../components/columns/DurationColumn.vue'
+import LabelsRow from '../../../../components/columns/LabelsRow.vue'
+import PercentageColumn from '../../../../components/columns/PercentageColumn.vue'
+import ColumnFilter from '../../../../components/common/ColumnFilter.vue'
+import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
+import DeleteModal from '../../../../components/common/DeleteModal.vue'
+import StatusFooter from '../../../../components/common/StatusFooter.vue'
+import { fetchCollectionAssetSummary } from '../../../../shared/api/collectionsApi.js'
+import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
+import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import { deleteAssets } from '../../api/assetManageApi.js'
+import { useAssetTable } from '../../composables/useAssetTable.js'
 import AssetFormModal from './AssetFormModal.vue'
 import AssetsToolbar from './AssetsToolbar.vue'
 
@@ -30,6 +28,7 @@ const props = defineProps({
 
 const dataTableRef = ref(null)
 
+const { triggerError } = useGlobalError()
 const { getCollectionGrant } = useCurrentUser()
 const collectionName = computed(
   () => getCollectionGrant(props.collectionId)?.collection?.name ?? '',
@@ -53,6 +52,7 @@ const {
 } = useAssetTable(assets)
 
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
+const tablePt = { footer: { style: 'padding: 0; border: none;' } }
 
 const columns = [
   { field: 'stigCnt', header: 'STIGs', component: Column, width: '30px', pt: borderPt },
@@ -66,22 +66,6 @@ const columns = [
 ]
 
 const selectedAssets = ref([])
-
-const {
-  selectedIdSet,
-  isAllSelected,
-  selectAll,
-  handleCheckboxClick,
-} = useTableSelection(
-  filteredData,
-  computed(() => selectedAssets.value),
-  // 'next': The updated array of selected items computed by the composable during selection changes.
-  // We assign this new list to our local `selectedAssets.value` reactive reference to apply the updates.
-  next => (selectedAssets.value = next),
-  // 'assetId': The unique property/key name on each asset object (instead of the default 'id')
-  // used by the composable to track and perform selection lookups.
-  'assetId',
-)
 
 function clearSelection() {
   selectedAssets.value = []
@@ -108,9 +92,14 @@ function onDeleteAssets() {
 
 async function onDeleteConfirmed() {
   const assetIds = selectedAssets.value.map(a => a.assetId)
-  await deleteAssets(props.collectionId, assetIds)
-  selectedAssets.value = []
-  await loadAssets()
+  try {
+    await deleteAssets(props.collectionId, assetIds)
+    selectedAssets.value = []
+    await loadAssets()
+  }
+  catch (err) {
+    triggerError(err)
+  }
 }
 
 function onAssetsTransferred(transferredIds) {
@@ -178,23 +167,15 @@ function handleFooterAction(action) {
         scroll-height="flex"
         resizable-columns
         column-resize-mode="fit"
+        selection-mode="multiple"
         :loading="isLoading"
         :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
-        class="flex-fill"
+        class="flex-fill clickable-rows"
         :table-style="{ 'table-layout': 'fixed' }"
+        :pt="tablePt"
+        v-model:selection="selectedAssets"
       >
-        <Column style="width: 3rem; height: 27px; padding: 0 0.5rem;" :pt="{ headerContent: { style: 'justify-content: flex-start; width: 100%' } }">
-          <template #header>
-            <div style="display: flex; align-items: center; justify-content: center; width: 100%;">
-              <Checkbox v-if="filteredData.length > 0" :model-value="isAllSelected" :binary="true" @update:model-value="selectAll" />
-            </div>
-          </template>
-          <template #body="{ data, index }">
-            <div style="display:flex;align-items:center;justify-content:center;cursor:pointer" @click.stop="handleCheckboxClick($event, data, index)">
-              <Checkbox :model-value="selectedIdSet.has(data.assetId)" :binary="true" style="pointer-events:none" />
-            </div>
-          </template>
-        </Column>
+        <Column selection-mode="multiple" style="width: 1.5rem; height: 27px; padding: 0 0.5rem;" />
 
         <Column field="assetName" sortable :pt="borderPt" style="width: 60px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
@@ -256,6 +237,7 @@ function handleFooterAction(action) {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-width: 1000px;
   padding: 1.5rem 3rem 3rem 3rem;
 }
 
@@ -285,12 +267,18 @@ function handleFooterAction(action) {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  user-select: none;
 }
 
 .flex-fill {
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* Whole row toggles selection via @row-click. */
+.clickable-rows :deep(.p-datatable-tbody > tr) {
+  cursor: pointer;
 }
 
 .column-header-with-filter {
@@ -334,11 +322,6 @@ function handleFooterAction(action) {
 
 .row-edit-btn:hover {
   color: var(--color-text-bright);
-}
-
-:deep(.p-datatable-footer) {
-  padding: 0;
-  border: none;
 }
 
 :deep(th:nth-child(n+4) .p-datatable-column-header-content) {
