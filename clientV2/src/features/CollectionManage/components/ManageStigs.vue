@@ -10,7 +10,9 @@ defineProps({
 <template>
   <div class="manage-stub">
     <p>STIGs: assign, unassign, modify STIG assignments & revisions</p>
-    <p class="manage-stub-id">Collection {{ collectionId }}</p>
+    <p class="manage-stub-id">
+      Collection {{ collectionId }}
+    </p>
   </div>
 </template>
 

@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import NotificationCard from '../../../components/global/NotificationCard.vue'
+import { useImportProgressStore } from '../../../shared/stores/importProgressStore.js'
 
 const props = defineProps({
   state: { type: Object, required: true },
@@ -8,8 +9,10 @@ const props = defineProps({
 
 defineEmits(['dismiss'])
 
+const progressStore = useImportProgressStore()
+
 const progressPct = computed(() => {
-  if (!props.state.totalCount) return 0
+  if (!props.state.totalCount) { return 0 }
   return Math.round((props.state.completedCount / props.state.totalCount) * 100)
 })
 </script>
@@ -27,16 +30,22 @@ const progressPct = computed(() => {
 
     <template v-if="!state.isDone">
       <div class="progress-track">
-        <div class="progress-fill" :style="{ width: progressPct + '%' }" />
+        <div class="progress-fill" :style="{ width: `${progressPct}%` }" />
       </div>
       <div class="progress-meta">
         <span class="meta-count">{{ state.completedCount }} / {{ state.totalCount }}</span>
         <span class="meta-text">{{ state.progressText }}</span>
       </div>
     </template>
-    <div v-else class="progress-meta">
-      <span class="meta-count">{{ state.totalCount }} asset{{ state.totalCount !== 1 ? 's' : '' }} processed</span>
-    </div>
+    <template v-else>
+      <div class="progress-meta">
+        <span class="meta-count">{{ state.totalCount }} asset{{ state.totalCount !== 1 ? 's' : '' }} processed</span>
+      </div>
+      <button class="view-results-btn" @click="progressStore.requestViewResults()">
+        <span class="pi pi-external-link" />
+        View Results
+      </button>
+    </template>
   </NotificationCard>
 </template>
 
@@ -90,5 +99,27 @@ const progressPct = computed(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.view-results-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-action-blue);
+  background: color-mix(in srgb, var(--color-action-blue-dark) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-action-blue-dark) 35%, transparent);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+  align-self: flex-start;
+}
+.view-results-btn:hover {
+  background: color-mix(in srgb, var(--color-action-blue-dark) 20%, transparent);
+  color: var(--color-primary-highlight);
 }
 </style>

@@ -6,7 +6,7 @@ export function getDownloadUrl(request) {
       request,
     }, [messageChannel.port1])
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(resolve, 3000)
+      const timer = setTimeout(() => resolve(null), 3000)
       messageChannel.port2.onmessage = (event) => {
         clearTimeout(timer)
         resolve(event.data)

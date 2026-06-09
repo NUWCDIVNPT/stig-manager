@@ -4,6 +4,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { useTableSelection } from '../../../shared/composables/useTableSelection.js'
 import { formatDateTimeString } from '../../../shared/lib.js'
 import './style.css'
 
@@ -25,44 +26,17 @@ const emit = defineEmits([
 
 const fileInputRef = ref(null)
 
-const selectedIdSet = computed(() => new Set(props.selectedRows.map(f => f._queueId)))
-
-const isAllSelected = computed(() =>
-  props.sourceFiles.length > 0 && props.sourceFiles.every(f => selectedIdSet.value.has(f._queueId)),
+const {
+  selectedIdSet,
+  isAllSelected,
+  selectAll: onSelectAllChange,
+  handleCheckboxClick: onCheckboxClick,
+} = useTableSelection(
+  computed(() => props.sourceFiles),
+  computed(() => props.selectedRows),
+  next => emit('update:selectedRows', next),
+  '_queueId',
 )
-
-function onToggleSelectRow(file) {
-  if (selectedIdSet.value.has(file._queueId)) {
-    emit('update:selectedRows', props.selectedRows.filter(f => f._queueId !== file._queueId))
-  }
-  else {
-    emit('update:selectedRows', [...props.selectedRows, file])
-  }
-}
-
-function onSelectAllChange(checked) {
-  emit('update:selectedRows', checked ? [...props.sourceFiles] : [])
-}
-
-const lastClickedIndex = ref(null)
-
-function onCheckboxClick(event, file, index) {
-  if (event.shiftKey && lastClickedIndex.value !== null) {
-    const start = Math.min(lastClickedIndex.value, index)
-    const end = Math.max(lastClickedIndex.value, index)
-    const rangeFiles = props.sourceFiles.slice(start, end + 1)
-    const existing = selectedIdSet.value
-    const next = [...props.selectedRows]
-    for (const f of rangeFiles) {
-      if (!existing.has(f._queueId)) { next.push(f) }
-    }
-    emit('update:selectedRows', next)
-  }
-  else {
-    lastClickedIndex.value = index
-    onToggleSelectRow(file)
-  }
-}
 
 function onFilePicked(event) {
   const files = Array.from(event.target.files)

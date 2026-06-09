@@ -6,7 +6,8 @@ import { useRouter } from 'vue-router'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
-import { fetchCollectionAssetStigs, fetchCollectionAssetSummary, fetchCollectionLabelSummary } from '../api/collectionApi.js'
+import { fetchCollectionAssetStigs, fetchCollectionLabelSummary } from '../api/collectionApi.js'
+import { fetchCollectionAssetSummary } from '../../../shared/api/collectionsApi.js'
 
 const props = defineProps({
   collectionId: {

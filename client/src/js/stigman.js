@@ -32,7 +32,7 @@ async function start () {
 
 	try {
 		if ('serviceWorker' in navigator) {
-			await navigator.serviceWorker.register('js/workers/service-worker.js')
+			await navigator.serviceWorker.register('./service-worker.js')
 		}
 		el.innerHTML += "<br/><br/>Fetching user data"
 		try {
@@ -285,7 +285,10 @@ function broadcastHandler (event)  {
 	console.log('[stigman] Received from worker:', event.type, event.data)
 	if (event.data.type === 'noToken') {
 		SM.ActivityHandler.remove()
-		reauthenticate(event.data)
+		reauthenticate({
+			...event.data.client,
+			isIdle: event.data.isIdle,
+		})
 	}
 	else if (event.data.type === 'accessToken') {
 		SM.ActivityHandler.add()
@@ -302,7 +305,7 @@ function broadcastHandler (event)  {
 	}
 }
 
-function reauthenticate({ codeVerifier, redirect, state, isIdle }) {
+function reauthenticate({ codeVerifier, redirectOidc, state, isIdle }) {
 	reauthAlert?.close()
 	reauthAlert = null
 	reauthWindow?.close()
@@ -337,7 +340,7 @@ function reauthenticate({ codeVerifier, redirect, state, isIdle }) {
 		if (action === 'popup') {
 			if (!reauthPopup || reauthPopup.closed || reauthPopup.closed === undefined) {
 				reauthPopup = window.open(
-					redirect,
+					redirectOidc,
 					'_blank',
 					`popup=yes,width=${width},height=${height},left=${left},top=${top}`
 					)
@@ -356,7 +359,7 @@ function reauthenticate({ codeVerifier, redirect, state, isIdle }) {
 					height,
 					modal: false,
 					closeAction: 'hide',
-					html: `<iframe src="${redirect}" width="100%" height="100%" frameborder="0"></iframe>`,
+					html: `<iframe src="${redirectOidc}" width="100%" height="100%" frameborder="0"></iframe>`,
 				})
 			}
 			reauthWindow.show()
@@ -364,7 +367,7 @@ function reauthenticate({ codeVerifier, redirect, state, isIdle }) {
 		else if (action === 'tab') {
 			if (!reauthTab || reauthTab.closed || reauthTab.closed === undefined) {
 				reauthTab = window.open(
-					redirect,
+					redirectOidc,
 					'_blank'
 				)
 			}	

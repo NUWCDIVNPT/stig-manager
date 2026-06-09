@@ -33,131 +33,141 @@ function onRejectedFooterAction(action) {
 </script>
 
 <template>
-  <div class="step-header">
-    <h2 class="step-title">
-      Importing results
-    </h2>
-  </div>
-  <div class="import-status-strip">
-    <div class="isp-header">
-      <span :class="progressValue === 100 ? 'pi pi-check isp-icon isp-icon--done' : 'pi pi-spin pi-spinner isp-icon'" />
-      <span class="isp-text">{{ statusText }}</span>
-      <span class="isp-pct">{{ progressValue }}%</span>
+  <div class="import-progress-root">
+    <div class="step-header">
+      <h2 class="step-title">
+        Importing results
+      </h2>
     </div>
-    <div class="isp-track">
-      <div class="isp-fill" :style="{ width: `${progressValue}%` }" />
-    </div>
-  </div>
-
-  <template v-if="isDone">
-    <div class="import-table-wrapper">
-      <div class="table-flex">
-        <DataTable
-          ref="statusRef"
-          :model-value="selectedRow"
-          :value="statusRows"
-          export-filename="import-results"
-          selection-mode="single"
-          data-key="assetId"
-          scrollable
-          scroll-height="flex"
-          resizable-columns
-          striped-rows
-          @row-select="e => emit('update:selectedRow', e.data)"
-          @row-unselect="emit('update:selectedRow', null)"
-        >
-          <Column field="assetName" header="Asset" style="min-width: 180px" sortable />
-          <Column field="created" header="Created" style="width: 90px" sortable>
-            <template #body="{ data }">
-              {{ data.created ? 'true' : 'false' }}
-            </template>
-          </Column>
-          <Column field="addedStigs" header="Added STIGs" style="width: 110px" sortable>
-            <template #body="{ data }">
-              {{ data.addedStigs ? 'true' : 'false' }}
-            </template>
-          </Column>
-          <Column field="inserted" header="Inserted" style="width: 90px" sortable>
-            <template #body="{ data }">
-              {{ data.error ? '-' : (data.inserted ?? 0) }}
-            </template>
-          </Column>
-          <Column field="updated" header="Updated" style="width: 90px" sortable>
-            <template #body="{ data }">
-              {{ data.error ? '-' : (data.updated ?? 0) }}
-            </template>
-          </Column>
-          <Column header="Rejected" :exportable="false" style="width: 90px" sortable :sort-field="r => r.error ? -1 : (r.rejected?.length ?? 0)">
-            <template #body="{ data }">
-              {{ data.error ? '!' : (data.rejected?.length ?? 0) }}
-            </template>
-          </Column>
-        </DataTable>
+    <div class="import-status-strip">
+      <div class="isp-header">
+        <span :class="progressValue === 100 ? 'pi pi-check isp-icon isp-icon--done' : 'pi pi-spin pi-spinner isp-icon'" />
+        <span class="isp-text">{{ statusText }}</span>
+        <span class="isp-pct">{{ progressValue }}%</span>
       </div>
-      <StatusFooter
-        :total-count="statusRows.length"
-        :show-refresh="false"
-        :show-export="true"
-        total-label="reviews"
-        total-icon="pi pi-file"
-        @action="onStatusFooterAction"
-      />
+      <div class="isp-track">
+        <div class="isp-fill" :style="{ width: `${progressValue}%` }" />
+      </div>
     </div>
 
-    <div class="rejected-wrapper">
-      <div class="rejected-header">
-        Rejected reviews
-      </div>
-      <div class="import-table-wrapper rejected-table-wrapper">
+    <template v-if="isDone">
+      <div class="import-table-wrapper">
         <div class="table-flex">
           <DataTable
-            ref="rejectedRef"
-            :value="rejectedRows"
-            export-filename="rejected-reviews"
+            ref="statusRef"
+            :model-value="selectedRow"
+            :value="statusRows"
+            export-filename="import-results"
+            selection-mode="single"
+            data-key="assetId"
             scrollable
             scroll-height="flex"
             resizable-columns
             striped-rows
-            class="rejected-table"
+            @row-select="e => emit('update:selectedRow', e.data)"
+            @row-unselect="emit('update:selectedRow', null)"
           >
-            <Column field="ruleId" header="Rule" style="min-width: 160px" sortable />
-            <Column field="reason" header="Reason" sortable />
-            <template #empty>
-              <div class="rejected-empty">
-                <span class="pi pi-info-circle" style="color: var(--color-primary-highlight); font-size: 1.2rem;" />
-                <span>{{ selectedRow ? 'No rejected reviews for this asset.' : 'Select a row above with rejected reviews to inspect them here.' }}</span>
-              </div>
-            </template>
+            <Column field="assetName" header="Asset" style="min-width: 180px" sortable />
+            <Column field="created" header="Created" style="width: 90px" sortable>
+              <template #body="{ data }">
+                {{ data.created ? 'true' : 'false' }}
+              </template>
+            </Column>
+            <Column field="addedStigs" header="Added STIGs" style="width: 110px" sortable>
+              <template #body="{ data }">
+                {{ data.addedStigs ? 'true' : 'false' }}
+              </template>
+            </Column>
+            <Column field="inserted" header="Inserted" style="width: 90px" sortable>
+              <template #body="{ data }">
+                {{ data.error ? '-' : (data.inserted ?? 0) }}
+              </template>
+            </Column>
+            <Column field="updated" header="Updated" style="width: 90px" sortable>
+              <template #body="{ data }">
+                {{ data.error ? '-' : (data.updated ?? 0) }}
+              </template>
+            </Column>
+            <Column header="Rejected" :exportable="false" style="width: 90px" sortable :sort-field="r => r.error ? -1 : (r.rejected?.length ?? 0)">
+              <template #body="{ data }">
+                {{ data.error ? '!' : (data.rejected?.length ?? 0) }}
+              </template>
+            </Column>
           </DataTable>
         </div>
         <StatusFooter
-          :total-count="rejectedRows.length"
+          :total-count="statusRows.length"
           :show-refresh="false"
           :show-export="true"
           total-label="reviews"
           total-icon="pi pi-file"
-          @action="onRejectedFooterAction"
+          @action="onStatusFooterAction"
         />
       </div>
-    </div>
 
-    <div v-if="selectedRow?.error" class="error-row">
-      <i class="pi pi-times-circle" /> {{ selectedRow.error }}
-    </div>
-  </template>
+      <div class="rejected-wrapper">
+        <div class="rejected-header">
+          Rejected reviews
+        </div>
+        <div class="import-table-wrapper rejected-table-wrapper">
+          <div class="table-flex">
+            <DataTable
+              ref="rejectedRef"
+              :value="rejectedRows"
+              export-filename="rejected-reviews"
+              scrollable
+              scroll-height="flex"
+              resizable-columns
+              striped-rows
+              class="rejected-table"
+            >
+              <Column field="ruleId" header="Rule" style="min-width: 160px" sortable />
+              <Column field="reason" header="Reason" sortable />
+              <template #empty>
+                <div class="rejected-empty">
+                  <span class="pi pi-info-circle" style="color: var(--color-primary-highlight); font-size: 1.2rem;" />
+                  <span>{{ selectedRow ? 'No rejected reviews for this asset.' : 'Select a row above with rejected reviews to inspect them here.' }}</span>
+                </div>
+              </template>
+            </DataTable>
+          </div>
+          <StatusFooter
+            :total-count="rejectedRows.length"
+            :show-refresh="false"
+            :show-export="true"
+            total-label="reviews"
+            total-icon="pi pi-file"
+            @action="onRejectedFooterAction"
+          />
+        </div>
+      </div>
 
-  <div v-else class="running-placeholder">
-    <span class="pi pi-spin pi-spinner running-icon" />
-    <div class="running-text">
-      Processing {{ statusRows.length }} of {{ totalCount }}
-    </div>
-    <div class="running-hint">
-      Full results appear here when the import finishes.
+      <div v-if="selectedRow?.error" class="error-row">
+        <i class="pi pi-times-circle" /> {{ selectedRow.error }}
+      </div>
+    </template>
+
+    <div v-else class="running-placeholder">
+      <span class="pi pi-spin pi-spinner running-icon" />
+      <div class="running-text">
+        Processing {{ statusRows.length }} of {{ totalCount }}
+      </div>
+      <div class="running-hint">
+        Full results appear here when the import finishes.
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+.import-progress-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+
 .step-header {
   flex-shrink: 0;
 }
@@ -165,7 +175,7 @@ function onRejectedFooterAction(action) {
 .step-title {
   font-size: 1.6rem;
   font-weight: 600;
-  margin: 0 0 0.5rem;
+  margin: 0;
   color: var(--color-primary-highlight);
 }
 
@@ -178,7 +188,6 @@ function onRejectedFooterAction(action) {
   border: 1px solid var(--color-border-default);
   border-radius: 4px;
   flex-shrink: 0;
-  margin-bottom: 0.75rem;
 }
 
 .isp-header {
@@ -232,7 +241,6 @@ function onRejectedFooterAction(action) {
   overflow: hidden;
   flex: 1;
   min-height: 0;
-  margin-bottom: 1rem;
 }
 
 .rejected-wrapper {

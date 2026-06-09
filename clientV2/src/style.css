@@ -26,6 +26,8 @@
   --color-primary-highlight-light: #93c5fd;
   --color-action-blue: #3b82f6; /* Blue-500 */
   --color-action-blue-dark: #2563eb; /* Blue-700 */
+  --color-action-red: #ef4444;
+  --color-action-green: #4ade80;
   --color-success: #22c55e; /* Green-500 */
   --color-warning-yellow: #eab308; /* Yellow-500 */
   --color-shield-green: #44ab5e; /* Green-500 */
@@ -82,6 +84,17 @@
 
   /* Error Colors */
   --color-text-error: #f16969;
+
+  /* Status Indicator Colors (success/warning/error) — banners, badges, etc. */
+  --color-status-success-bg: color-mix(in srgb, #166534 18%, var(--color-background-dark));
+  --color-status-success-border: #4ade80;
+  --color-status-success-text: #86efac;
+  --color-status-warning-bg: color-mix(in srgb, #92400e 18%, var(--color-background-dark));
+  --color-status-warning-border: #fbbf24;
+  --color-status-warning-text: #fcd34d;
+  --color-status-error-bg: color-mix(in srgb, #7f1d1d 18%, var(--color-background-dark));
+  --color-status-error-border: #f87171;
+  --color-status-error-text: #fca5a5;
 
   /* Result Status Colors */
   --result-pass: hsl(120 84% 42% / 1);

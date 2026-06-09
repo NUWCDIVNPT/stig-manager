@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-import ManageAssets from './ManageAssets.vue'
+import ManageAssetsTable from './ManageAssetsTable.vue'
 import ManageGrants from './ManageGrants.vue'
 import ManageImportOptions from './ManageImportOptions.vue'
 import ManageLabels from './ManageLabels.vue'
@@ -21,79 +21,59 @@ const emit = defineEmits(['imported'])
 
 const sections = [
   { label: 'Collection', cards: [
-    { key: 'properties', icon: 'pi-home', title: 'Properties', desc: 'Collection name, description, clone & delete' },
-    { key: 'settings', icon: 'pi-cog', title: 'Review Settings', desc: 'Review fields, status, history configuration' },
+    { key: 'properties', icon: 'pi-building', title: 'Properties', desc: 'Collection name, description, clone & delete' },
+    { key: 'settings', icon: 'pi-cog', title: 'Review Settings', desc: 'Review fields, status transitions, history behavior' },
     { key: 'import', icon: 'pi-download', title: 'Import Options', desc: 'Auto-status, unreviewed rules, empty field handling' },
-    { key: 'metadata', icon: 'pi-tags', title: 'Metadata', desc: 'Custom key-value pairs for collection tracking' },
+    { key: 'metadata', icon: 'pi-tag', title: 'Metadata', desc: 'Custom key-value pairs for collection tracking' },
   ] },
   { label: 'Access', cards: [
-    { key: 'grants', icon: 'pi-shield', title: 'Grants', desc: 'Add, edit, remove user and group access grants' },
-    { key: 'users', icon: 'pi-users', title: 'Effective Users', desc: 'View resolved user access including group membership' },
+    { key: 'grants', icon: 'pi-shield', title: 'Grants', desc: 'Add, edit, and remove user and group access grants' },
+    { key: 'users', icon: 'pi-users', title: 'Effective Users', desc: 'Resolved access including inherited group membership' },
   ] },
   { label: 'Inventory', cards: [
-    { key: 'assets', icon: 'pi-server', title: 'Assets', desc: 'Create, import, export, delete, transfer assets' },
-    { key: 'stigs', icon: 'pi-list-check', title: 'STIGs', desc: 'Assign, unassign, modify STIG assignments & revisions' },
-    { key: 'labels', icon: 'pi-bookmark', title: 'Labels', desc: 'Create, edit, delete labels and tag assets' },
+    { key: 'assets', icon: 'pi-server', title: 'Assets', desc: 'Create, import, export, delete, and transfer assets' },
+    { key: 'stigs', icon: 'pi-list-check', title: 'STIGs', desc: 'Assign, unassign, and modify STIG assignments & revisions' },
+    { key: 'labels', icon: 'pi-bookmark', title: 'Labels', desc: 'Create, edit, and delete labels for tagging assets' },
   ] },
 ]
 
-const drawerComponents = {
+const panelComponents = {
   properties: ManageProperties,
   settings: ManageSettings,
   import: ManageImportOptions,
   metadata: ManageMetadata,
   grants: ManageGrants,
   users: ManageUsers,
-  assets: ManageAssets,
+  assets: ManageAssetsTable,
   stigs: ManageStigs,
   labels: ManageLabels,
 }
 
-const activeDrawer = ref(null)
+const activePanel = ref(null)
 
-const drawerComponent = computed(() => {
-  if (activeDrawer.value) {
-    return drawerComponents[activeDrawer.value]
-  }
-  return null
+const panelComponent = computed(() => {
+  return activePanel.value ? panelComponents[activePanel.value] : null
 })
 
-const drawerTitle = computed(() => {
-  if (!activeDrawer.value) {
-    return ''
-  }
-  for (const section of sections) {
-    const card = section.cards.find(c => c.key === activeDrawer.value)
-    if (card) {
-      return card.title
-    }
-  }
-  return ''
-})
-
-function openDrawer(key) {
-  activeDrawer.value = activeDrawer.value === key ? null : key
-}
-
-function closeDrawer() {
-  activeDrawer.value = null
+function openPanel(key) {
+  activePanel.value = activePanel.value === key ? null : key
 }
 </script>
 
 <template>
   <div class="manage-layout">
-    <div class="card-area">
-      <template v-for="section in sections" :key="section.label">
+    <div class="cards-col">
+      <div v-for="section in sections" :key="section.label" class="manage-section">
         <div class="section-label">
           {{ section.label }}
         </div>
-        <div class="card-grid">
+        <div class="cards-list">
           <div
             v-for="card in section.cards"
             :key="card.key"
             class="manage-card"
-            :class="{ 'manage-card--active': activeDrawer === card.key }"
-            @click="openDrawer(card.key)"
+            :class="{ 'manage-card--active': activePanel === card.key }"
+            @click="openPanel(card.key)"
           >
             <div class="manage-card-header">
               <span class="manage-card-title">
@@ -106,26 +86,26 @@ function closeDrawer() {
             </div>
           </div>
         </div>
-      </template>
+      </div>
     </div>
 
-    <Transition name="drawer">
-      <div v-if="activeDrawer" class="manage-drawer">
-        <div class="manage-drawer-header">
-          <span class="manage-drawer-title">{{ drawerTitle }}</span>
-          <button class="manage-drawer-close" @click="closeDrawer">
-            <i class="pi pi-times" />
-          </button>
+    <div class="panel-col">
+      <component
+        :is="panelComponent"
+        v-if="panelComponent"
+        :collection-id="props.collectionId"
+        @imported="emit('imported')"
+      />
+      <div v-else class="panel-empty">
+        <i class="pi pi-table panel-empty-icon" />
+        <div class="panel-empty-title">
+          Select a section
         </div>
-        <div class="manage-drawer-body">
-          <component
-            :is="drawerComponent"
-            :collection-id="props.collectionId"
-            @imported="emit('imported')"
-          />
+        <div class="panel-empty-sub">
+          Choose a card on the left to manage this collection
         </div>
       </div>
-    </Transition>
+    </div>
   </div>
 </template>
 
@@ -136,44 +116,50 @@ function closeDrawer() {
   overflow: hidden;
 }
 
-.card-area {
-  flex: 1;
+/* ── LEFT: card navigation ── */
+.cards-col {
+  width: 23rem;
+  flex-shrink: 0;
   overflow-y: auto;
-  padding: 1.5rem;
+  padding: 1.5rem 1rem 1.5rem 1.5rem;
+  border-right: 1px solid var(--color-border-default);
+}
+
+.cards-col::-webkit-scrollbar { width: 4px; }
+.cards-col::-webkit-scrollbar-track { background: transparent; }
+.cards-col::-webkit-scrollbar-thumb { background: var(--color-border-default); border-radius: 4px; }
+
+.manage-section {
+  margin-bottom: 1.75rem;
 }
 
 .section-label {
+  font-size: .9rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1rem;
   color: var(--color-text-muted);
-  margin-bottom: 0.6rem;
-  margin-top: 1.25rem;
+  margin-bottom: 0.625rem;
+  padding: 0 0.25rem;
 }
 
-.section-label:first-child {
-  margin-top: 0;
-}
-
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-  gap: 0.75rem;
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
 }
 
 .manage-card {
-  background: var(--color-background-dark);
+  background: var(--color-background-subtle);
   border: 1px solid var(--color-border-default);
   border-radius: 0.5rem;
-  display: flex;
-  flex-direction: column;
   cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.12s, box-shadow 0.12s, background 0.12s;
 }
 
 .manage-card:hover {
   border-color: var(--p-primary-color);
-  box-shadow: 0 0 0 1px var(--p-primary-color);
+  background: var(--color-background-hover, var(--color-background-dark));
 }
 
 .manage-card--active {
@@ -184,86 +170,70 @@ function closeDrawer() {
 .manage-card-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.6rem 0.8rem;
-  border-bottom: 1px solid var(--color-border-default);
+  padding: 0.75rem 0.875rem 0.25rem;
 }
 
 .manage-card-title {
   font-weight: 600;
+  font-size: 1.05rem;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .manage-card-title i {
   color: var(--color-text-dim);
+  font-size: 1.1rem;
+}
+
+.manage-card--active .manage-card-title i {
+  color: var(--p-primary-color);
 }
 
 .manage-card-body {
-  padding: 0.6rem 0.8rem;
-  flex: 1;
+  padding: 0 0.875rem 0.75rem;
 }
 
 .manage-card-desc {
   color: var(--color-text-dim);
-  line-height: 1.4;
+  font-size: 0.9rem;
+  line-height: 1.15;
 }
 
-/* Drawer */
-.manage-drawer {
-  width: 80rem;
-  max-width: 70vw;
-  flex-shrink: 0;
-  background: var(--color-background-dark);
-  border-left: 1px solid var(--color-border-default);
+/* ── RIGHT: panel area ── */
+.panel-col {
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
-.manage-drawer-header {
+/* ── empty state ── */
+.panel-empty {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.6rem 0.9rem;
-  border-bottom: 1px solid var(--color-border-default);
-  flex-shrink: 0;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: var(--color-text-muted);
+  gap: 0.5rem;
 }
 
-.manage-drawer-title {
-  font-weight: 700;
+.panel-empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.4;
 }
 
-.manage-drawer-close {
-  background: none;
-  border: none;
+.panel-empty-title {
+  font-size: 0.9rem;
+  font-weight: 500;
   color: var(--color-text-dim);
-  cursor: pointer;
-  padding: 0.3rem;
-  border-radius: 0.3rem;
 }
 
-.manage-drawer-close:hover {
-  background: var(--color-button-hover-bg);
-  color: var(--color-text-primary);
-}
-
-.manage-drawer-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0.9rem;
-}
-
-/* Drawer transition */
-.drawer-enter-active,
-.drawer-leave-active {
-  transition: width 0.2s ease, opacity 0.2s ease;
-}
-
-.drawer-enter-from,
-.drawer-leave-to {
-  width: 0;
-  opacity: 0;
+.panel-empty-sub {
+  font-size: 0.8rem;
 }
 </style>

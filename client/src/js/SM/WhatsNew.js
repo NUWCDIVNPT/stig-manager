@@ -2,13 +2,18 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
-    date: '2025-11-03',
-    header: 'Batch Assignment of Collection Grants to User Groups',
+    date: '2026-05-15',
+    header: 'Review Aging: Automatically Act on Stale Reviews',
     body: `
-    <p>Application Managers can now assign Collection Grants to User Groups in bulk from the User Groups management interface. This feature allows for quick and easy assignment of multiple Collection Grants to a User Group at once.</p>
-    <p>To use this feature, navigate to the User Groups management interface, select a User Group, and click the "Modify Group" button. From the resulting dialog, you can select multiple Collections and assign the desired Grant type to the User Group for each selected Collection.</p>
-    
-    <p><img src="img/whatsnew/2025-11-03-group-grants.png" width=500/></p>`
+    <p>Collection Owners can now define <b>Review Aging</b> rules to keep stale Reviews from accumulating in their Collections. A rule can delete a Review, reset its status, or reset its result, and can be scoped to the entire Collection or to a specific Asset, STIG, or Label.</p>
+
+    <p>Rules are processed by the new <b>Update Aged Reviews</b> system job, which must be enabled and scheduled by an App Manager from the <b>Application Management -> Service Jobs</b> workspace before any rules will run.</p>
+
+    <p>Collection Owners configure rules from the <b>Tasks</b> tab in the Collection Management workspace. Collection Managers can view rules and run output, but cannot modify them.</p>
+
+    <p><img src="img/whatsnew/2026-05-18-collection-manage-tasks.png" /></p>
+
+    <p>Documentation is available in the <a target="_blank" href="./docs/user-guide/user-guide.html#review-aging-rules">STIGMan User Guide</a> and the <a target="_blank" href="./docs/admin-guide/admin-quickstart.html#enable-service-jobs">App Manager Walkthrough</a>.</p>`
   },
   {
     date: '2025-10-29',

@@ -23,3 +23,10 @@ export function updateCollection(collectionId, body, { elevate, projection } = {
   if (projection) params.projection = projection
   return apiCall('updateCollection', params, body)
 }
+
+export function fetchCollectionAssetSummary(collectionId, options = {}) {
+  if (!collectionId) {
+    throw new Error('A collectionId is required to fetch asset metrics.')
+  }
+  return apiCall('getMetricsSummaryByCollectionAggAsset', { collectionId, ...options })
+}

@@ -15,7 +15,6 @@ import CollectionManage from '../../CollectionManage/components/CollectionManage
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
 import CollectionImportResults from '../../CollectionMetrics/components/CollectionImportResults.vue'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
-import MetricsFilter from '../../CollectionMetrics/components/MetricsFilter.vue'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchCollection } from '../api/collectionApi.js'
 import Findings from '../../Findings/components/Findings.vue'
@@ -122,6 +121,18 @@ const activeTab = computed({
   },
 })
 
+const isManagement = computed(() => route.name === 'collection-management')
+
+const sidebarTransitioning = ref(false)
+watch(isManagement, () => {
+  sidebarTransitioning.value = true
+  setTimeout(() => { sidebarTransitioning.value = false }, 300)
+})
+
+// Lazy-mount tab panels: only render a tab's content after it has been visited
+const visitedTabs = ref(new Set([activeTab.value]))
+watch(activeTab, tab => visitedTabs.value.add(tab))
+
 const tabsPt = {
   root: {
     style: {
@@ -186,7 +197,7 @@ function toggleDashboardSidebar() {
   <div v-if="collection" class="collection-view">
     <Splitter
       :pt="{
-        gutter: { style: 'background: var(--color-border-dark)' },
+        gutter: { style: isManagement ? 'display: none' : 'background: var(--color-border-dark)' },
         root: { style: 'border: none; border-radius: 0; background: transparent; height: 100%; overflow: hidden;' },
       }"
     >
@@ -194,7 +205,7 @@ function toggleDashboardSidebar() {
       <SplitterPanel
         :size="14"
         :min-size="4"
-        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating }, style: 'min-width: 330px; max-width: 600px;' } }"
+        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating || sidebarTransitioning, 'sidebar-panel--hidden': isManagement }, style: isManagement ? '' : 'min-width: 330px; max-width: 600px;' } }"
       >
         <aside class="dashboard-sidebar">
           <button
@@ -213,9 +224,9 @@ function toggleDashboardSidebar() {
           </div>
           <div v-show="!dashboardCollapsed" class="sidebar-content">
             <CollectionMetrics
+              v-model:selected-label-ids="selectedLabelIds"
               :collection-id="collectionId"
               :collection-name="collectionName"
-              :selected-label-ids="selectedLabelIds"
               :refresh-key="refreshKey"
               vertical
             />
@@ -257,28 +268,25 @@ function toggleDashboardSidebar() {
                   Management
                 </Tab>
               </template>
-
-              <div class="tab-filter-container">
-                <span class="filter-label">FILTER:</span>
-                <MetricsFilter v-model="selectedLabelIds" type="label" :collection-id="collectionId" />
-              </div>
             </TabList>
 
             <TabPanels :pt="tabPanelsPt">
               <TabPanel value="stigs" :pt="tabPanelPt">
-                <CollectionStigsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" :refresh-key="refreshKey" />
+                <CollectionStigsTab v-if="visitedTabs.has('stigs')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" :refresh-key="refreshKey" />
               </TabPanel>
               <TabPanel value="assets" :pt="tabPanelPt">
-                <CollectionAssetsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" :refresh-key="refreshKey" />
+                <CollectionAssetsTab v-if="visitedTabs.has('assets')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" :refresh-key="refreshKey" />
               </TabPanel>
               <TabPanel value="labels" :pt="tabPanelPt">
-                <CollectionLabelsTab :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
+                <CollectionLabelsTab v-if="visitedTabs.has('labels')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
               </TabPanel>
               <TabPanel value="findings" :pt="tabPanelPt">
                 <Findings :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
               </TabPanel>
               <TabPanel v-if="canManage" value="management" :pt="tabPanelPt">
-                <CollectionManage :collection-id="collectionId" @imported="handleImported" />
+                <Transition name="management-fade">
+                  <CollectionManage v-if="isManagement" :collection-id="collectionId" @imported="handleImported" />
+                </Transition>
               </TabPanel>
             </TabPanels>
           </Tabs>
@@ -305,6 +313,15 @@ function toggleDashboardSidebar() {
   width: 3.25rem !important;
   min-width: 3.25rem !important;
   max-width: 3.25rem !important;
+  overflow: hidden;
+}
+
+:deep(.sidebar-panel--hidden) {
+  flex: none !important;
+  flex-basis: 0 !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
   overflow: hidden;
 }
 
@@ -401,18 +418,12 @@ function toggleDashboardSidebar() {
   margin-right: 0.25rem;
 }
 
-.tab-filter-container {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-left: auto;
-  padding-right: 1rem;
+.management-fade-enter-active {
+  transition: opacity 0.2s ease 0.15s, transform 0.2s ease 0.15s;
 }
 
-.filter-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: var(--color-text-dim);
+.management-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
 }
 </style>

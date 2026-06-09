@@ -1,6 +1,6 @@
 {
   "name": "stig-management-api",
-  "version": "1.6.9",
+  "version": "1.6.12",
   "description": "An API for managing evaluations of Security Technical Implementation Guide (STIG) assessments.",
   "main": "index.js",
   "scripts": {
@@ -21,9 +21,9 @@
     "connect-history-api-fallback": "^2.0.0",
     "cors": "^2.8.5",
     "csv-stringify": "^6.5.1",
-    "express": "^4.21.2",
+    "express": "^4.22.2",
     "express-openapi-validator": "^5.6.2",
-    "fast-xml-parser": "^5.5.8",
+    "fast-xml-parser": "^5.7.3",
     "he": "^1.2.0",
     "js-yaml": "^4.1.0",
     "jsonpath-plus": "^10.3.0",
@@ -39,7 +39,7 @@
     "swagger-ui-express": "^4.1.6",
     "umzug": "^2.3.0",
     "undici": "^6.24.0",
-    "ws": "^8.18.3",
+    "ws": "^8.20.1",
     "xlsx-template": "file:utils/xlsx-template-js-zip-upgrade"
   }
 }

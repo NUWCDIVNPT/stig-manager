@@ -2,8 +2,17 @@ import { saveAs } from 'file-saver-es'
 import { apiCall } from '../../shared/api/apiClient.js'
 import { buildQueryString } from '../../shared/api/queryString.js'
 import { useGlobalError } from '../../shared/composables/useGlobalError.js'
+import {
+  ASSET_FIELDS,
+  formatAssetsForCsv,
+  generateCsv,
+  mapAssetToLabel,
+  STIG_FIELDS,
+} from '../../shared/csv.js'
 import { filenameEscaped } from '../../shared/lib.js'
 import { getDownloadUrl } from '../../shared/serviceWorker.js'
+
+export { ASSET_FIELDS, generateCsv, STIG_FIELDS }
 
 function filenameComponentFromDate() {
   const d = new Date()
@@ -15,76 +24,6 @@ const delimiterOptions = [
   { label: 'Comma and Space', value: 'comma_space', string: ', ' },
   { label: 'Newline', value: 'newline', string: '\n' },
 ]
-
-export const STIG_FIELDS = [
-  { apiProperty: 'benchmark', header: 'Benchmark' },
-  { apiProperty: 'title', header: 'Title' },
-  { apiProperty: 'revision', header: 'Revision' },
-  { apiProperty: 'date', header: 'Date' },
-  { apiProperty: 'assets', header: 'Assets' },
-]
-
-export const ASSET_FIELDS = [
-  { apiProperty: 'name', header: 'Name' },
-  { apiProperty: 'description', header: 'Description' },
-  { apiProperty: 'ip', header: 'IP' },
-  { apiProperty: 'fqdn', header: 'FQDN' },
-  { apiProperty: 'mac', header: 'MAC' },
-  { apiProperty: 'noncomputing', header: 'Non-Computing' },
-  { apiProperty: 'stigs', header: 'STIGs' },
-  { apiProperty: 'labels', header: 'Labels' },
-  { apiProperty: 'metadata', header: 'Metadata' },
-]
-
-/**
- * Escapes a value for CSV format.
- * Null/undefined becomes empty string.
- * Wraps in quotes if contains delimiter, quote, or newline.
- */
-function escapeCsv(value) {
-  if (value == null) {
-    return ''
-  }
-  const str = String(value)
-  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
-}
-
-/**
- * Generates a CSV string derived from data and column definitions.
- * If data is missing a property defined in columns, outputs empty string (preserving header order).
- * @param {Array} data - Array of objects to convert to CSV.
- * @param {Array} columns - Array of column definitions with `header` and `apiProperty` properties.
- * @param {string} [listDelimiter] - Delimiter for lists (e.g., Stigs, Labels).
- * @returns {string} CSV string.
- */
-export function generateCsv(data, columns, listDelimiter = ',') {
-  const csvRows = []
-
-  // make the header row
-  const headerRow = columns.map(c => escapeCsv(c.header)).join(',')
-  csvRows.push(headerRow)
-
-  // make the data rows
-  for (const item of data) {
-    const rowValues = columns.map((col) => {
-      let val = item[col.apiProperty]
-
-      // special handling for lists (Stigs, Labels) or objects that need delimiting
-      if (Array.isArray(val)) {
-        // if it's an array of objects (it should be this is being extra) and we need a specific property (like benchmarkId), extract it
-        if (val.length > 0 && typeof val[0] === 'object' && col.delimitedProperty) {
-          val = val.map(v => v[col.delimitedProperty]) // grab the property we need
-        }
-        // escape the list
-        return escapeCsv(val.join(listDelimiter))
-      }
-      // escape the value
-      return escapeCsv(val)
-    })
-    csvRows.push(rowValues.join(','))
-  }
-  return csvRows.join('\n')
-}
 
 async function fetchLabels(_apiUrl, collectionId, _authToken) {
   return await apiCall('getCollectionLabels', { collectionId })
@@ -105,50 +44,6 @@ async function fetchApiData({ groupBy, includeProjection, collectionId }) {
     }
     return await apiCall('getStigsByCollection', params)
   }
-}
-
-/**
- * Maps Label IDs to asaset Names
- */
-function mapAssetToLabel(assets, labels) {
-  return assets.map((asset) => {
-    const mapped = { ...asset }
-
-    if (asset.labelIds && labels) {
-      mapped.labels = labels
-        .filter(l => asset.labelIds.includes(l.labelId))
-        .map(l => l.name)
-    }
-    return mapped
-  })
-}
-
-/**
- * - Converts booleans to "TRUE"/"FALSE"
- * - Stringifies Metadata
- * - Keeps Arrays as Arrays (generateCsv will join them)
- */
-function formatAssetsForCsv(assets) {
-  return assets.map((asset) => {
-    const row = { ...asset }
-
-    // 1. Non-Computing
-    if (asset.noncomputing !== undefined) {
-      row.noncomputing = asset.noncomputing ? 'TRUE' : 'FALSE'
-    }
-
-    // 2. Metadata
-    if (asset.metadata) {
-      row.metadata = JSON.stringify(asset.metadata)
-    }
-
-    // 3. STIGs (benchmarkId extraction)
-    if (asset.stigs) {
-      row.stigs = asset.stigs.map(s => s.benchmarkId)
-    }
-
-    return row
-  })
 }
 
 // used to export metrics from inventory export modal
