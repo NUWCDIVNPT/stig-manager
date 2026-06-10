@@ -31,16 +31,29 @@ const initialAggregator = FINDINGS_AGGREGATOR_VALUES.includes(route.query.agg)
   ? route.query.agg
   : FINDINGS_AGGREGATORS.GROUP
 const initialBenchmarkId = typeof route.query.stig === 'string' && route.query.stig ? route.query.stig : null
+// One-shot: the dimension value (?sel=...) to re-select once the first findings
+// fetch lands. Consumed by the restore watcher below; never re-applied after
+// later loads so a scope change can't resurrect a stale selection.
+let pendingSelectionValue = typeof route.query.sel === 'string' && route.query.sel ? route.query.sel : null
 
 const selectedBenchmarkId = ref(initialBenchmarkId)
 const aggregator = ref(initialAggregator)
 const selectedFinding = ref(null)
 const isAllStigsMode = computed(() => selectedBenchmarkId.value === null)
 
+// Cascading reset: changing the STIG scope or aggregator invalidates the
+// previously selected finding (different rule/cci/group dimension). Registered
+// BEFORE the URL mirror and useFindingReviews so a scope change clears the
+// selection before either reacts — no stale ?sel= write, and no window where
+// the reviews composable could see the old selection under the new scope.
+watch([selectedBenchmarkId, aggregator], () => {
+  selectedFinding.value = null
+})
+
 // Mirror selection into the URL with replace (not push) so each click doesn't
-// pollute browser history. Omit defaults (groupId aggregator, no stig) so the
-// URL stays clean for the common case.
-watch([selectedBenchmarkId, aggregator], ([stig, agg]) => {
+// pollute browser history. Omit defaults (groupId aggregator, no stig, no
+// selection) so the URL stays clean for the common case.
+watch([selectedBenchmarkId, aggregator, selectedFinding], ([stig, agg, sel]) => {
   const next = { ...route.query }
   if (stig) {
     next.stig = stig
@@ -53,6 +66,19 @@ watch([selectedBenchmarkId, aggregator], ([stig, agg]) => {
   }
   else {
     delete next.agg
+  }
+  // The row's value for the active aggregator (e.g. V-220706 / SV-…_rule / a
+  // CCI) — the same key the reviews fetch uses, so it round-trips cleanly.
+  const selValue = sel?.[agg]
+  if (selValue) {
+    next.sel = selValue
+    // A sel value is only meaningful relative to its aggregator, so pin agg
+    // (overriding the omit-default above) whenever a selection is present —
+    // saved links survive a future change of the default aggregator.
+    next.agg = agg
+  }
+  else {
+    delete next.sel
   }
   router.replace({ query: next })
 })
@@ -79,6 +105,22 @@ const {
   retry: retryFindings,
   totalOccurrences,
 } = useFindings({ collectionId, aggregator, benchmarkId: selectedBenchmarkId })
+
+// Restore the ?sel= selection once the first findings load completes. One-shot:
+// pending is consumed on the first load regardless of outcome, so subsequent
+// loads (aggregator/STIG changes) never re-apply it. Selecting the matched row
+// flows through the normal path — reviews fetch, grid highlight, URL mirror.
+watch(findings, (rows) => {
+  const sel = pendingSelectionValue
+  pendingSelectionValue = null
+  if (!sel) {
+    return
+  }
+  const match = (rows ?? []).find(r => r[aggregator.value] === sel)
+  if (match) {
+    selectedFinding.value = match
+  }
+})
 
 const visibleColumns = useFindingsColumns(aggregator, isAllStigsMode)
 
@@ -114,12 +156,6 @@ const labelMap = computed(() => {
     m.set(l.labelId, { labelId: l.labelId, name: l.name, color: l.color })
   }
   return m
-})
-
-// Cascading reset: changing the STIG scope or aggregator invalidates the
-// previously selected finding (different rule/cci/group dimension).
-watch([selectedBenchmarkId, aggregator], () => {
-  selectedFinding.value = null
 })
 
 function onSelectStig(benchmarkId) {
