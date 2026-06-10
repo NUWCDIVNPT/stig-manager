@@ -1,14 +1,14 @@
 <script setup>
 import { computed, ref } from 'vue'
-import ManageAssetsTable from './ManageAssetsTable.vue'
+import ManageAssetsTable from './Asset/ManageAssetsTable.vue'
 import ManageGrants from './ManageGrants.vue'
 import ManageImportOptions from './ManageImportOptions.vue'
 import ManageLabels from './ManageLabels.vue'
 import ManageMetadata from './ManageMetadata.vue'
 import ManageProperties from './ManageProperties.vue'
 import ManageSettings from './ManageSettings.vue'
-import ManageStigs from './ManageStigs.vue'
 import ManageUsers from './ManageUsers.vue'
+import ManageStigsTable from './Stig/ManageStigsTable.vue'
 
 const props = defineProps({
   collectionId: {
@@ -45,7 +45,7 @@ const panelComponents = {
   grants: ManageGrants,
   users: ManageUsers,
   assets: ManageAssetsTable,
-  stigs: ManageStigs,
+  stigs: ManageStigsTable,
   labels: ManageLabels,
 }
 
@@ -203,7 +203,7 @@ function openPanel(key) {
 /* ── RIGHT: panel area ── */
 .panel-col {
   flex: 1;
-  overflow: hidden;
+  overflow: auto;
   min-width: 0;
   display: flex;
   flex-direction: column;

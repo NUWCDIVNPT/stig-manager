@@ -174,5 +174,6 @@ function onDupesFooterAction(action) {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  user-select: none;
 }
 </style>

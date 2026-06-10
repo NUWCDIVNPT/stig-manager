@@ -2,15 +2,15 @@ import { userEvent } from '@testing-library/user-event'
 import { screen } from '@testing-library/vue'
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
-import AssetsToolbar from '../components/AssetsToolbar.vue'
+import AssetsToolbar from '../components/Asset/AssetsToolbar.vue'
 
 vi.mock('../../../assets/target.svg', () => ({ default: 'target.svg' }))
 
-vi.mock('../ExportResults/components/ExportResultsButton.vue', () => ({ default: { render: () => {} } }))
-vi.mock('../components/ExportAssetsCsvButton.vue', () => ({ default: { render: () => {} } }))
-vi.mock('../components/ImportAssetsCsvButton.vue', () => ({ default: { render: () => {} } }))
-vi.mock('../components/ImportResultsAction.vue', () => ({ default: { render: () => {} } }))
-vi.mock('../components/TransferAssetButton.vue', () => ({ default: { render: () => {} } }))
+vi.mock('../ExportResults/components/ExportByAssetButton.vue', () => ({ default: { render: () => {} } }))
+vi.mock('../components/Asset/ExportAssetsCsvButton.vue', () => ({ default: { render: () => {} } }))
+vi.mock('../components/Asset/ImportAssetsCsvButton.vue', () => ({ default: { render: () => {} } }))
+vi.mock('../components/Asset/ImportResultsButton.vue', () => ({ default: { render: () => {} } }))
+vi.mock('../components/Asset/TransferAssetButton.vue', () => ({ default: { render: () => {} } }))
 
 function renderToolbar(props = {}) {
   return renderWithProviders(AssetsToolbar, {

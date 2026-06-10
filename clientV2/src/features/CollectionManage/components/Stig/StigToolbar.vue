@@ -1,10 +1,8 @@
 <script setup>
-import targetIcon from '../../../assets/target.svg'
-import ExportResultsButton from '../ExportResults/components/ExportResultsButton.vue'
-import ExportAssetsCsvButton from './ExportAssetsCsvButton.vue'
-import ImportAssetsCsvButton from './ImportAssetsCsvButton.vue'
-import ImportResultsButton from './ImportResultsButton.vue'
-import TransferAssetButton from './TransferAssetButton.vue'
+import AssignStigButton from './AssignStigButton.vue'
+import ExportByStigButton from '../../ExportResults/components/ExportByStigButton.vue'
+import ModifyStig from './ModifyStig.vue'
+import UnassignStigButton from './UnassignStigButton.vue'
 
 const props = defineProps({
   collectionId: {
@@ -23,54 +21,41 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  selectedAssets: {
+  selectedStigs: {
     type: Array,
     default: () => [],
   },
 })
 
-const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify-asset', 'delete-assets', 'assets-transferred'])
+const emit = defineEmits(['clear-selection', 'stigs-changed'])
 </script>
 
 <template>
   <div class="action-toolbar">
-    <button class="action-btn" @click="emit('create-asset')">
-      <i class="pi pi-plus-circle icon-green" /> Create...
-    </button>
-    <div class="toolbar-divider" />
-    <ImportAssetsCsvButton
+    <AssignStigButton
       :collection-id="props.collectionId"
-      @imported="emit('imported')"
+      @stigs-changed="emit('stigs-changed')"
     />
     <div class="toolbar-divider" />
-    <ExportAssetsCsvButton
+    <UnassignStigButton
       :collection-id="props.collectionId"
-      :collection-name="props.collectionName"
-      :selected-assets="props.selectedAssets"
-    />
-    <div class="toolbar-divider" />
-    <ImportResultsButton :collection-id="props.collectionId" @imported="emit('imported')" />
-    <div class="toolbar-divider" />
-    <ExportResultsButton
-      :collection-id="props.collectionId"
-      :collection-name="props.collectionName"
-      :selected-assets="props.selectedAssets"
-    />
-    <div class="toolbar-divider" />
-    <button class="action-btn" :disabled="!hasSelection" @click="emit('delete-assets')">
-      <i class="pi pi-trash icon-red" /> Delete...
-    </button>
-    <div class="toolbar-divider" />
-    <TransferAssetButton
-      :collection-id="collectionId"
-      :selected-assets="selectedAssets"
+      :selected-stigs="props.selectedStigs"
       :disabled="!hasSelection"
-      @assets-transferred="emit('assets-transferred', $event)"
+      @unassigned="emit('stigs-changed')"
     />
     <div class="toolbar-divider" />
-    <button class="action-btn" :disabled="!singleSelection" @click="emit('modify-asset')">
-      <img :src="targetIcon" class="btn-icon"> Modify...
-    </button>
+    <ModifyStig
+      :collection-id="props.collectionId"
+      :selected-stigs="props.selectedStigs"
+      :disabled="!singleSelection"
+      @stigs-changed="emit('stigs-changed')"
+    />
+    <div class="toolbar-divider" />
+    <ExportByStigButton
+      :collection-id="props.collectionId"
+      :collection-name="props.collectionName"
+      :selected-stigs="props.selectedStigs"
+    />
     <div class="toolbar-spacer" />
     <button class="action-btn action-btn--clear" :disabled="!hasSelection" @click="emit('clear-selection')">
       Clear Selection <i class="pi pi-times clear-x" />
@@ -102,7 +87,7 @@ const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify
   background: transparent;
   border: none;
   color: var(--color-text-default);
-  font-size: 0.92rem;
+  font-size: 0.98rem;
   font-weight: 500;
   cursor: pointer;
   padding: 0.45rem 0.7rem;
