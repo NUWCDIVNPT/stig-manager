@@ -9,10 +9,9 @@ export function escapeCsv(value) {
     return ''
   }
   let str = String(value)
-  // Guard against CSV formula injection. `=` is always dangerous as a leading
-  // char. `+`, `-`, `@` are only dangerous when followed by a digit or operator
-  // (e.g. `-2+cmd|...`), so asset names like `-assethello` are left intact.
-  if (/^=/.test(str) || /^[+\-@]\d/.test(str)) {
+  // Guard against CSV formula injection by prepending a tab to any value
+  // that starts with formula trigger characters: =, +, -, @
+  if (/^[=+\-@]/.test(str)) {
     str = `\t${str}`
   }
   return /[",\n\t]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str

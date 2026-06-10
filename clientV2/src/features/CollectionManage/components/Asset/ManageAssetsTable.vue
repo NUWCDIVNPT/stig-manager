@@ -161,6 +161,7 @@ function handleFooterAction(action) {
     <div class="table-container">
       <DataTable
         ref="dataTableRef"
+        v-model:selection="selectedAssets"
         :value="filteredData"
         data-key="assetId"
         scrollable
@@ -173,9 +174,8 @@ function handleFooterAction(action) {
         class="flex-fill clickable-rows"
         :table-style="{ 'table-layout': 'fixed' }"
         :pt="tablePt"
-        v-model:selection="selectedAssets"
       >
-        <Column selection-mode="multiple" style="width: 1.5rem; height: 27px; padding: 0 0.5rem;" />
+        <Column selection-mode="multiple" style="width: 1rem; height: 27px; padding: 0 0.5rem;" />
 
         <Column field="assetName" sortable :pt="borderPt" style="width: 60px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
