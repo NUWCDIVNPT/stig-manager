@@ -10,6 +10,7 @@ import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
 import { FINDINGS_AGGREGATOR_OPTIONS } from '../constants.js'
+import StigPillStack from './StigPillStack.vue'
 import StigSelectorPanel from './StigSelectorPanel.vue'
 
 const props = defineProps({
@@ -77,7 +78,11 @@ function onPopoverSelectStig(benchmarkId) {
   stigPopover.value?.hide()
 }
 
-const { lineClamp } = useGridDensity('findings-aggregated', 2, 6, 15)
+// Same geometry as AssetChecklistGrid: 15px per rendered line of clamped text
+// (1.05rem × 1.3 line-height at the 11px root) + 6px cell padding. itemSize
+// drives the virtual scroller; rows are pinned to it via --item-size below so
+// the scroller's position math (n × itemSize) stays correct.
+const { lineClamp, itemSize } = useGridDensity('findings-aggregated', 2, 6, 15)
 
 function onFooterAction(key) {
   if (key === 'export') {
@@ -96,7 +101,9 @@ const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
   // table width:100% (not minWidth) — minWidth forces overflow when fixed columns sum past container.
   table: { style: { tableLayout: 'fixed', width: '100%' } },
-  bodyRow: { style: { cursor: 'pointer' } },
+  // Pin rows to --item-size so virtual-scroll position math stays correct;
+  // overflow clipping happens per-cell (flexCellPt) since <tr> cannot clip.
+  bodyRow: { style: { cursor: 'pointer', height: 'var(--item-size)', overflow: 'hidden' } },
   footer: { style: { padding: '0', border: 'none' } },
 }
 
@@ -202,7 +209,9 @@ const flexCellPt = {
             @update:model-value="(v) => emit('update:aggregator', v)"
           />
         </label>
-        <DensityControls grid-key="findings-aggregated" :default-line-clamp="2" class="toolbar-density" />
+        <!-- min 2: the floor row (itemSize 36) must always fit one 2-line STIG
+             pill — StigPillStack's "always show at least one" invariant. -->
+        <DensityControls grid-key="findings-aggregated" :default-line-clamp="2" :min="2" class="toolbar-density" />
       </div>
 
       <DataTable
@@ -216,9 +225,10 @@ const flexCellPt = {
         :sort-order="-1"
         scrollable
         scroll-height="flex"
+        :virtual-scroller-options="{ itemSize }"
         striped-rows
         class="agg-grid-panel__table"
-        :style="{ '--line-clamp': lineClamp }"
+        :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
         :pt="dataTablePt"
         @row-select="onRowSelect"
       >
@@ -262,13 +272,9 @@ const flexCellPt = {
             <span class="cell-asset-count">{{ data.assetCount }}</span>
           </template>
         </Column>
-        <Column v-if="visibleColumns.has('stigs')" header="STIGs" :style="{ width: '11rem', minWidth: '10rem' }" :pt="cellPt">
+        <Column v-if="visibleColumns.has('stigs')" header="STIGs" :style="{ width: '11rem', minWidth: '10rem' }" :pt="flexCellPt">
           <template #body="{ data }">
-            <div class="stig-list">
-              <span v-for="s in (data.stigs ?? [])" :key="s.benchmarkId" class="stig-pill">
-                {{ s.benchmarkId }}
-              </span>
-            </div>
+            <StigPillStack :stigs="data.stigs ?? []" :item-size="itemSize" />
           </template>
         </Column>
 
@@ -548,26 +554,6 @@ const flexCellPt = {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   color: var(--color-text-bright);
-}
-
-.stig-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.stig-pill {
-  font-size: 0.95rem;
-  font-family: var(--font-mono);
-  color: var(--color-text-dim);
-  padding: 0.05rem 0.3rem;
-  background: color-mix(in srgb, var(--color-primary-highlight) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-primary-highlight) 18%, transparent);
-  border-radius: 2px;
-  align-self: flex-start;
-  max-width: 100%;
-  overflow-wrap: anywhere;
-  word-break: break-word;
 }
 
 .occurrences {

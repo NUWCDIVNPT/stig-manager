@@ -17,6 +17,7 @@ import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
+import StigPillStack from './StigPillStack.vue'
 
 const props = defineProps({
   rows: { type: Array, default: () => [] },
@@ -229,11 +230,7 @@ const compactColumnPt = {
       </Column>
       <Column header="STIGs" :style="{ width: '10rem', minWidth: '8rem' }" :pt="stigsCellPt">
         <template #body="{ data }">
-          <div class="stig-list">
-            <span v-for="s in (data.stigs ?? [])" :key="s.benchmarkId" class="stig-pill">
-              {{ s.benchmarkId }}
-            </span>
-          </div>
+          <StigPillStack :stigs="data.stigs ?? []" :item-size="itemSize" />
         </template>
       </Column>
       <Column field="detail" header="Detail" :style="{ minWidth: '12rem' }" :pt="flexCellPt">
@@ -452,27 +449,6 @@ const compactColumnPt = {
 
 .shield-action img {
   pointer-events: none;
-}
-
-.stig-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  min-width: 0;
-}
-
-.stig-pill {
-  font-size: 0.95rem;
-  font-family: var(--font-mono);
-  color: var(--color-text-dim);
-  padding: 0.05rem 0.3rem;
-  background: color-mix(in srgb, var(--color-primary-highlight) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-primary-highlight) 18%, transparent);
-  border-radius: 2px;
-  align-self: flex-start;
-  max-width: 100%;
-  overflow-wrap: anywhere;
-  word-break: break-word;
 }
 
 /* Sizes the <img> root of <EngineIconCell> in the engine column. EngineIconCell
