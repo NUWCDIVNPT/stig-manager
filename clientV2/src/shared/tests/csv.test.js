@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   ASSET_FIELDS,
-  STIG_FIELDS,
   escapeCsv,
   formatAssetsForCsv,
   generateCsv,
   mapAssetToLabel,
+  STIG_FIELDS,
 } from '../csv.js'
 
 describe('escapeCsv', () => {
@@ -42,21 +42,15 @@ describe('escapeCsv', () => {
     expect(escapeCsv('a,"b"\nc')).toBe('"a,""b""\nc"')
   })
 
-  it('prefixes = with a tab regardless of what follows', () => {
+  it('prefixes =, +, -, @ with a tab regardless of what follows', () => {
     expect(escapeCsv('=SUM(A1:A10)')).toBe('"\t=SUM(A1:A10)"')
     expect(escapeCsv('=anything')).toBe('"\t=anything"')
-  })
-
-  it('prefixes +, -, @ with a tab only when followed by a digit', () => {
     expect(escapeCsv('+1')).toBe('"\t+1"')
     expect(escapeCsv('-2')).toBe('"\t-2"')
     expect(escapeCsv('@3')).toBe('"\t@3"')
-  })
-
-  it('does not alter +, -, @ when followed by a letter', () => {
-    expect(escapeCsv('-assethello')).toBe('-assethello')
-    expect(escapeCsv('+asset')).toBe('+asset')
-    expect(escapeCsv('@user')).toBe('@user')
+    expect(escapeCsv('-assethello')).toBe('"\t-assethello"')
+    expect(escapeCsv('+asset')).toBe('"\t+asset"')
+    expect(escapeCsv('@user')).toBe('"\t@user"')
   })
 
   it('does not alter values that do not start with formula chars', () => {
@@ -117,15 +111,27 @@ describe('generateCsv', () => {
 })
 
 describe('field constants', () => {
-  it('ASSET_FIELDS is the documented shape', () => {
+  it('aSSET_FIELDS is the documented shape', () => {
     expect(ASSET_FIELDS.map(f => f.apiProperty)).toEqual([
-      'name', 'description', 'ip', 'fqdn', 'mac', 'noncomputing', 'stigs', 'labels', 'metadata',
+      'name',
+      'description',
+      'ip',
+      'fqdn',
+      'mac',
+      'noncomputing',
+      'stigs',
+      'labels',
+      'metadata',
     ])
   })
 
-  it('STIG_FIELDS is the documented shape', () => {
+  it('sTIG_FIELDS is the documented shape', () => {
     expect(STIG_FIELDS.map(f => f.apiProperty)).toEqual([
-      'benchmark', 'title', 'revision', 'date', 'assets',
+      'benchmark',
+      'title',
+      'revision',
+      'date',
+      'assets',
     ])
   })
 })
