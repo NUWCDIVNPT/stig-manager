@@ -2,7 +2,8 @@
 import { FilterMatchMode } from '@primevue/core/api'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import engineIcon from '../../../assets/bot2.svg'
 import overrideIcon from '../../../assets/override2.svg'
 import manualIcon from '../../../assets/user.svg'
@@ -16,6 +17,7 @@ import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay, severityMap } from '../../../shared/lib/checklistUtils.js'
+import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { fieldMatches, highlightText } from '../../../shared/lib/searchUtils.js'
 
@@ -136,6 +138,82 @@ function onFilter(event) {
   filteredData.value = event.filteredValue
 }
 
+const dataTableRef = ref(null)
+const route = useRoute()
+
+// Scroll a rule into view. Skip if it already sits in the upper half of the
+// viewport; otherwise (lower half, off-screen below, or off-screen above)
+// recenter it. We measure the scroller's element directly because PrimeVue's
+// scrollToIndex aligns to the top edge.
+async function scrollToRule(ruleId) {
+  if (!ruleId) {
+    return
+  }
+  await nextTick()
+  const dt = dataTableRef.value
+  if (!dt) {
+    return
+  }
+  const data = dt.processedData ?? processedGridData.value
+  const index = data.findIndex(r => r.ruleId === ruleId)
+  if (index === -1) {
+    return
+  }
+  const vs = dt.getVirtualScrollerRef?.()
+  const el = vs?.$el ?? vs?.elementRef?.value
+  const itemSize = props.itemSize
+  if (!vs || !el || !el.clientHeight || !itemSize) {
+    vs?.scrollToIndex?.(index, 'auto')
+    return
+  }
+  const viewportHeight = el.clientHeight
+  const itemTop = index * itemSize
+  const currentTop = el.scrollTop
+  // Land the row this many rows *above* the exact viewport center, so there's
+  // a bit more context visible below it (e.g. for the review-edit popover).
+  const ABOVE_CENTER_ROWS = 2
+  const idealTop = currentTop + viewportHeight / 2 - ABOVE_CENTER_ROWS * itemSize
+  if (itemTop >= currentTop && itemTop < idealTop) {
+    return
+  }
+  const targetTop = Math.max(0, itemTop - viewportHeight / 2 + itemSize / 2 + ABOVE_CENTER_ROWS * itemSize)
+  if (typeof vs.scrollTo === 'function') {
+    vs.scrollTo({ top: targetTop, behavior: 'auto' })
+  }
+  else {
+    el.scrollTop = targetTop
+  }
+}
+
+// Initial-load auto-scroll. Triggered from inside the grid (not the parent)
+// because the parent's ruleLookupMap watcher can fire *before* this component
+// mounts: AssetChecklistGrid is gated behind `v-else-if="asset"`, so if the
+// checklist fetch resolves before the asset fetch, the parent's ref is still
+// null and its scroll call silently drops. Watching our own gridData prop
+// avoids that race — when the watcher fires, this component is by definition
+// mounted. We track scrolled state so user clicks within the grid (which
+// don't change gridData) never trigger a scroll, but a fresh checklist load
+// (data goes empty → populated) does.
+let hasScrolledForCurrentChecklist = false
+watch(() => props.gridData, (data) => {
+  if (!data?.length) {
+    hasScrolledForCurrentChecklist = false
+    return
+  }
+  if (hasScrolledForCurrentChecklist) {
+    return
+  }
+  const target = route.query.ruleId
+  if (!target) {
+    return
+  }
+  if (!data.some(r => r.ruleId === target)) {
+    return
+  }
+  hasScrolledForCurrentChecklist = true
+  scrollToRule(target)
+}, { immediate: true, flush: 'post' })
+
 const defaultSortField = computed(() => props.visibleFields.has('groupId') ? 'groupId' : 'ruleId')
 
 function getColumnPt(alignment = 'left') {
@@ -191,13 +269,14 @@ const dataTablePt = {
 
 <template>
   <DataTable
+    ref="dataTableRef"
     v-model:filters="filters" :selection="selectedRow" :global-filter-fields="dsFilterFields" :value="processedGridData"
     :loading="isLoading" data-key="ruleId" selection-mode="single" scrollable scroll-height="flex"
     :virtual-scroller-options="{ itemSize }" resizable-columns striped-rows :sort-field="defaultSortField"
     :sort-order="1" class="checklist-grid__table" :pt="dataTablePt" @update:selection="(val) => $emit('update:selectedRow', val)"
     @row-click="$emit('row-click', $event)" @filter="onFilter" @pointerdown.stop
   >
-    <Column v-if="visibleFields.has('severity')" field="severity" filter-field="severity" sortable :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('severity')" field="severity" :sort-field="severitySortValue" filter-field="severity" sortable :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
           Cat

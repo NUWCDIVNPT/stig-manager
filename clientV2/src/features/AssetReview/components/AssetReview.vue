@@ -103,6 +103,43 @@ const {
   clearSelectedRule,
 } = useRuleDetail({ ruleLookupMap, collectionId, assetId, benchmarkId, revisionStr })
 
+// If the route arrives with ?ruleId=… (e.g. from the Findings shield button),
+// pre-select that rule once the checklist's lookup map has populated.
+// AssetChecklistGridTable handles the scroll itself by watching its own
+// gridData, which avoids a mount-order race when the asset fetch lags the
+// checklist fetch. `map.has(...)` guards stale links pointing at rules
+// outside the loaded benchmark/revision.
+watch(ruleLookupMap, (map) => {
+  const queryRuleId = route.query.ruleId
+  if (!queryRuleId || !map) {
+    return
+  }
+  if (map.has(queryRuleId)) {
+    selectRule(queryRuleId)
+  }
+})
+
+// Mirror the active rule into ?ruleId so the URL stays shareable as the user
+// clicks through rules. router.replace avoids cluttering history; vue-router
+// no-ops when the next query equals the current one, so the watcher set above
+// (which echoes the URL → selectedRuleId) doesn't bounce.
+watch(selectedRuleId, (ruleId) => {
+  const next = { ...route.query }
+  if (ruleId) {
+    if (next.ruleId === ruleId) {
+      return
+    }
+    next.ruleId = ruleId
+  }
+  else {
+    if (next.ruleId === undefined) {
+      return
+    }
+    delete next.ruleId
+  }
+  router.replace({ query: next })
+})
+
 watch([benchmarkId, revisionStr], () => {
   clearSelectedRule()
   if (benchmarkId.value && revisionStr.value) {

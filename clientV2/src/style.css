@@ -48,6 +48,12 @@
   --metrics-status-chart-unsaved: hsl(0deg 0% 18%);
   --metrics-status-chart-rejected: hsl(5, 89%, 32%);
   
+  /* Typography */
+  /* Use for IDs (benchmark/rule/group/CCI), timestamps, and other tabular data where
+     character alignment helps scanning. Use sparingly — primary content stays in Open Sans.
+     Ubuntu Mono is bundled (matches the legacy client); system stack as fallback. */
+  --font-mono: 'Ubuntu Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+
   /* CAT Rating Colors */
   --color-cat1: #c68c8c;
   --color-cat2: #d4b056;
@@ -379,4 +385,18 @@ textarea:focus {
   font-style: italic;
   font-weight: 800;
   src: url('../fonts/open-sans-v15-latin-800italic.woff2') format('woff2')
+}
+
+/* Ubuntu Mono — regular weight only.
+   font-synthesis-weight: none prevents the browser from faking a bold by smearing
+   the 400 strokes thicker (which looks awful on monospace). Any element that asks
+   for font-weight > 400 with this family will fall back to the system mono stack,
+   which has real bold variants. Don't pair font-weight with var(--font-mono) — use
+   color or background for emphasis on mono elements instead. */
+@font-face {
+  font-family: 'Ubuntu Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-synthesis-weight: none;
+  src: url('../fonts/ubuntu-mono-v15-latin-regular.woff2') format('woff2');
 }
