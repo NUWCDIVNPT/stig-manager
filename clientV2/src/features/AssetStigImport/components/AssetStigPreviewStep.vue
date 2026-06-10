@@ -5,6 +5,7 @@ import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 
 const props = defineProps({
   matched: { type: Array, required: true },
@@ -88,7 +89,7 @@ function badgeFor(result) {
           </template>
         </Column>
         <Column field="groupId" header="Group" style="width: 110px" sortable />
-        <Column field="severity" header="Severity" style="width: 100px" sortable />
+        <Column field="severity" :sort-field="severitySortValue" header="Severity" style="width: 100px" sortable />
         <Column header="Current" style="width: 80px; text-align: center" :sort-field="r => r.currentResult ?? ''" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.currentResult)" :status="badgeFor(data.currentResult)" />

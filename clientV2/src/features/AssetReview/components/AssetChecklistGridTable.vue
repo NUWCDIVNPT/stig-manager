@@ -17,6 +17,7 @@ import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay, severityMap } from '../../../shared/lib/checklistUtils.js'
+import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { fieldMatches, highlightText } from '../../../shared/lib/searchUtils.js'
 
@@ -275,7 +276,7 @@ const dataTablePt = {
     :sort-order="1" class="checklist-grid__table" :pt="dataTablePt" @update:selection="(val) => $emit('update:selectedRow', val)"
     @row-click="$emit('row-click', $event)" @filter="onFilter" @pointerdown.stop
   >
-    <Column v-if="visibleFields.has('severity')" field="severity" filter-field="severity" sortable :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('severity')" field="severity" :sort-field="severitySortValue" filter-field="severity" sortable :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
           Cat

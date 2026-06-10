@@ -9,6 +9,7 @@ import DensityControls from '../../../components/common/DensityControls.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
+import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { FINDINGS_AGGREGATOR_OPTIONS } from '../constants.js'
 import StigPillStack from './StigPillStack.vue'
 import StigSelectorPanel from './StigSelectorPanel.vue'
@@ -232,7 +233,7 @@ const flexCellPt = {
         :pt="dataTablePt"
         @row-select="onRowSelect"
       >
-        <Column field="severity" header="CAT" sortable :style="{ width: '5rem', minWidth: '4.5rem' }" :pt="cellPt">
+        <Column v-if="visibleColumns.has('cat')" field="severity" :sort-field="severitySortValue" header="CAT" sortable :style="{ width: '5rem', minWidth: '4.5rem' }" :pt="cellPt">
           <template #body="{ data }">
             <CatBadge :category="severityMap[data.severity] ?? 2" variant="label" />
           </template>

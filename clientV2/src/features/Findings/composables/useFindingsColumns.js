@@ -17,6 +17,10 @@ export function useFindingsColumns(aggregator, isAllStigsMode) {
         set.add('title')
         break
       case FINDINGS_AGGREGATORS.CCI:
+        // No CAT column: CCIs do not have severities themselves (only the
+        // rules that map to them do), and the API's cci aggregation returns
+        // no severity field. Matches the legacy client.
+        set.delete('cat')
         set.add('cci')
         set.add('apAcronym')
         set.add('definition')
