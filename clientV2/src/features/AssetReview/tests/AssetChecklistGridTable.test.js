@@ -3,6 +3,12 @@ import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import AssetChecklistGridTable from '../components/AssetChecklistGridTable.vue'
 
+// The component reads route.query.ruleId (initial-load auto-scroll) at mount;
+// an empty query makes that watcher a no-op under test.
+vi.mock('vue-router', () => ({
+  useRoute: () => ({ query: {} }),
+}))
+
 // Mock PrimeVue components to avoid JSDOM virtual scrolling issues
 vi.mock('primevue/datatable', () => ({
   default: {
