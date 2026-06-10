@@ -32,6 +32,15 @@ Most originated from the Findings feature review (2026-06-10) — see
   fix: add a `reset()` to `useAsyncState` that bumps generation / aborts — other
   features clear state manually the same way. Think about this holistically.
 
+## Consistency
+
+- [ ] **Consolidate ad-hoc mono fonts onto `var(--font-mono)`.** The token serves
+  Ubuntu Mono (legacy client's mono, now bundled; used by `StigPillStack` so far).
+  ~15 other components use their own mono stacks
+  (`grep -rn "monospace" src --include="*.vue"`). Mechanical swaps + a visual pass.
+  Caveats: token is regular-weight only (no bold), and `DiffPropertySection.vue`'s
+  bold header needs a decision.
+
 ## Behavior / UX
 
 - [ ] **Dashboard tab switches wipe per-tab URL state — fix at the CollectionView
