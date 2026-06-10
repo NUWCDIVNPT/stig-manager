@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   ASSET_FIELDS,
-  STIG_FIELDS,
   escapeCsv,
   formatAssetsForCsv,
   generateCsv,
   mapAssetToLabel,
+  STIG_FIELDS,
 } from '../csv.js'
 
 describe('escapeCsv', () => {
@@ -111,15 +111,27 @@ describe('generateCsv', () => {
 })
 
 describe('field constants', () => {
-  it('ASSET_FIELDS is the documented shape', () => {
+  it('aSSET_FIELDS is the documented shape', () => {
     expect(ASSET_FIELDS.map(f => f.apiProperty)).toEqual([
-      'name', 'description', 'ip', 'fqdn', 'mac', 'noncomputing', 'stigs', 'labels', 'metadata',
+      'name',
+      'description',
+      'ip',
+      'fqdn',
+      'mac',
+      'noncomputing',
+      'stigs',
+      'labels',
+      'metadata',
     ])
   })
 
-  it('STIG_FIELDS is the documented shape', () => {
+  it('sTIG_FIELDS is the documented shape', () => {
     expect(STIG_FIELDS.map(f => f.apiProperty)).toEqual([
-      'benchmark', 'title', 'revision', 'date', 'assets',
+      'benchmark',
+      'title',
+      'revision',
+      'date',
+      'assets',
     ])
   })
 })
