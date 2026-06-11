@@ -37,3 +37,26 @@ export function fetchCollectionStigSummary(collectionId, options = {}) {
   }
   return apiCall('getMetricsSummaryByCollectionAggStig', { collectionId, ...options })
 }
+
+export function deleteCollection(collectionId, { elevate } = {}) {
+  if (!collectionId) {
+    throw new Error('A collectionId is required to delete a collection.')
+  }
+  const params = { collectionId }
+  if (elevate) { params.elevate = elevate }
+  return apiCall('deleteCollection', params)
+}
+
+export function cloneCollection(collectionId, body) {
+  if (!collectionId) {
+    throw new Error('A collectionId is required to clone a collection.')
+  }
+  return apiCall('cloneCollection', { collectionId }, body, { responseType: 'response' })
+}
+
+export function putCollectionMetadata(collectionId, metadata) {
+  if (!collectionId) {
+    throw new Error('A collectionId is required to update collection metadata.')
+  }
+  return apiCall('putCollectionMetadata', { collectionId }, metadata)
+}

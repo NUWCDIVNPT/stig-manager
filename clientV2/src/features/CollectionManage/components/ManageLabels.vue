@@ -117,15 +117,6 @@ function handleFooterAction(action) {
 
 <template>
   <div class="manage-labels">
-    <header class="page-header">
-      <h2 class="page-title">
-        Labels
-      </h2>
-      <p class="page-desc">
-        Create, edit, and delete collection labels, and tag assets with them.
-      </p>
-    </header>
-
     <LabelsToolbar
       :has-selection="selectedLabels.length > 0"
       :single-selection="selectedLabels.length === 1"
@@ -177,23 +168,5 @@ function handleFooterAction(action) {
   height: 100%;
   min-width: 760px;
   padding: 1.5rem 3rem 3rem 3rem;
-}
-
-.page-header {
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.page-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-text-default);
-  margin-bottom: 0.25rem;
-}
-
-.page-desc {
-  color: var(--color-text-dim);
-  font-size: 0.9rem;
 }
 </style>

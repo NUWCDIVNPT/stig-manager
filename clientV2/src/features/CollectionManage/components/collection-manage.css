@@ -1,0 +1,110 @@
+/* Shared styling for Collection Management sub-panels */
+
+/* Layout content containers */
+.properties-content,
+.settings-content,
+.metadata-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 700px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0.25rem 0;
+}
+
+/* Settings groups */
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background-color: var(--color-background-subtle);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-default);
+}
+
+.group-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.group-desc {
+  margin: -0.85rem 0 0.5rem 0;
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: var(--color-text-dim);
+}
+
+/* Labeled fields & rows */
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.labeled-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 250px;
+  transition: opacity 0.2s ease;
+}
+
+.disabled-field {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.field-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Right-aligned row holding a panel's SaveStatusBadge */
+.panel-status-row {
+  display: flex;
+  justify-content: flex-end;
+  min-height: 1.35rem;
+  margin-bottom: -1rem;
+}
+
+.flabel {
+  font-size: 0.97rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.req-star {
+  color: var(--color-text-error);
+}
+
+.char-count {
+  font-size: 0.8rem;
+  color: var(--color-text-dim);
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-dim);
+}
+
+/* Hover, focus, and disabled overrides for root Select element (scoped-safe, no :deep needed) */
+.p-select:not(.p-disabled):hover {
+  border-color: var(--color-border-hover) !important;
+}
+
+.p-select.p-focus {
+  border-color: var(--color-primary-highlight) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary-highlight) 30%, transparent) !important;
+}
+
+.p-select.p-disabled {
+  opacity: 0.6;
+}

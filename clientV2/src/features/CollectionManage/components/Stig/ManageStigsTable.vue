@@ -71,15 +71,6 @@ function handleFooterAction(action) {
 
 <template>
   <div class="manage-stigs">
-    <header class="page-header">
-      <h2 class="page-title">
-        STIGs
-      </h2>
-      <p class="page-desc">
-        Manage collection STIGs and view their assessment metrics.
-      </p>
-    </header>
-
     <StigToolbar
       :collection-id="props.collectionId"
       :selected-stigs="selectedStigs"
@@ -164,24 +155,6 @@ function handleFooterAction(action) {
   height: 100%;
   min-width: 1000px;
   padding: 1.5rem 3rem 3rem 3rem;
-}
-
-.page-header {
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.page-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-text-default);
-  margin-bottom: 0.25rem;
-}
-
-.page-desc {
-  color: var(--color-text-dim);
-  font-size: 0.9rem;
 }
 
 .table-container {

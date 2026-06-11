@@ -41,7 +41,7 @@ export function useStigTable(stigs) {
   )
 
   const filteredData = computed(() => {
-    if (!stigFilter.value) return tableData.value
+    if (!stigFilter.value) { return tableData.value }
     const q = stigFilter.value.toLowerCase()
     return tableData.value.filter(
       r =>

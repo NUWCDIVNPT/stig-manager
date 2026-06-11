@@ -1,9 +1,9 @@
 import { userEvent } from '@testing-library/user-event'
-import { saveAs } from 'file-saver-es'
 import { screen, waitFor } from '@testing-library/vue'
+import { saveAs } from 'file-saver-es'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { renderWithProviders } from '../../../testUtils/utils'
 import { apiCall } from '../../../shared/api/apiClient.js'
+import { renderWithProviders } from '../../../testUtils/utils'
 import ExportAssetsCsvButton from '../components/Asset/ExportAssetsCsvButton.vue'
 
 vi.mock('file-saver-es', () => ({

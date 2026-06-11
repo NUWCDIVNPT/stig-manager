@@ -1,5 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import Select from 'primevue/select'
+import ToggleSwitch from 'primevue/toggleswitch'
+import SaveStatusBadge from '../../../components/common/SaveStatusBadge.vue'
+import { useCollectionSettingsSave } from '../composables/useCollectionSettingsSave.js'
+import { collectionSelectPt } from './pt.js'
 
 const props = defineProps({
   collectionId: {
@@ -8,29 +12,160 @@ const props = defineProps({
   },
 })
 
-// eslint-disable-next-line unused-imports/no-unused-vars
-const emit = defineEmits(['imported'])
+const statusOptions = [
+  { label: 'Keep existing', value: 'null' },
+  { label: 'Saved', value: 'saved' },
+  { label: 'Submitted', value: 'submitted' },
+  { label: 'Accepted', value: 'accepted' },
+]
+
+const unreviewedOptions = [
+  { label: 'Never', value: 'never' },
+  { label: 'Having comments', value: 'commented' },
+  { label: 'Always', value: 'always' },
+]
+
+const unreviewedCommentedOptions = [
+  { label: 'Informational', value: 'informational' },
+  { label: 'Not Reviewed', value: 'notchecked' },
+]
+
+const emptyOptions = [
+  { label: 'Ignored', value: 'ignore' },
+  { label: 'Replaced', value: 'replace' },
+  { label: 'Imported', value: 'import' },
+]
+
+const defaultImportOptions = {
+  autoStatus: { fail: 'saved', notapplicable: 'saved', pass: 'saved' },
+  unreviewed: 'commented',
+  unreviewedCommented: 'informational',
+  emptyDetail: 'replace',
+  emptyComment: 'ignore',
+  updateAssetProps: false,
+  allowCustom: true,
+}
+
+// The template binds nested importOptions paths directly, so every key must
+// exist. Legacy payloads stored autoStatus as a single string for all results.
+const normalizeImportOptions = (options) => {
+  const opts = { ...defaultImportOptions, ...options }
+  opts.autoStatus = typeof opts.autoStatus === 'string'
+    ? { fail: opts.autoStatus, notapplicable: opts.autoStatus, pass: opts.autoStatus }
+    : { ...defaultImportOptions.autoStatus, ...opts.autoStatus }
+  return opts
+}
+
+const { state, isLoading, performSave, saveStatus } = useCollectionSettingsSave({
+  collectionId: () => props.collectionId,
+  buildPayload: state => ({
+    fields: {
+      detail: { ...state.fields.detail },
+      comment: { ...state.fields.comment },
+    },
+    status: { ...state.status },
+    history: { ...state.history },
+    importOptions: {
+      ...state.importOptions,
+    },
+  }),
+  normalizeSettings: (settings) => {
+    settings.importOptions = normalizeImportOptions(settings.importOptions)
+    return settings
+  },
+})
 </script>
 
 <template>
-  <div class="manage-stub">
-    <p>Import Options: configure auto-status, unreviewed rules, and empty field handling</p>
-    <p class="manage-stub-id">
-      Collection {{ collectionId }}
-    </p>
+  <div class="manage-import-options">
+    <div v-if="isLoading" class="loading-state">
+      <i class="pi pi-spin pi-spinner" /> Loading import options...
+    </div>
+    <div v-else-if="state" class="settings-content">
+      <div class="panel-status-row">
+        <SaveStatusBadge :status="saveStatus" />
+      </div>
+      <div class="settings-group">
+        <h3 class="group-title">
+          Review Status Per Result
+        </h3>
+
+        <div class="labeled-field">
+          <label class="flabel">Fail:</label>
+          <Select v-model="state.importOptions.autoStatus.fail" :options="statusOptions" option-label="label" option-value="value" :pt="collectionSelectPt" @update:model-value="performSave" />
+        </div>
+
+        <div class="labeled-field">
+          <label class="flabel">Not Applicable:</label>
+          <Select v-model="state.importOptions.autoStatus.notapplicable" :options="statusOptions" option-label="label" option-value="value" :pt="collectionSelectPt" @update:model-value="performSave" />
+        </div>
+
+        <div class="labeled-field">
+          <label class="flabel">Pass:</label>
+          <Select v-model="state.importOptions.autoStatus.pass" :options="statusOptions" option-label="label" option-value="value" :pt="collectionSelectPt" @update:model-value="performSave" />
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="field-row">
+          <div class="labeled-field">
+            <label class="flabel">Include unreviewed rules:</label>
+            <Select v-model="state.importOptions.unreviewed" :options="unreviewedOptions" option-label="label" option-value="value" :pt="collectionSelectPt" @update:model-value="performSave" />
+          </div>
+
+          <div class="labeled-field" :class="{ 'disabled-field': state.importOptions.unreviewed === 'never' }">
+            <label class="flabel">Unreviewed with a comment is:</label>
+            <Select v-model="state.importOptions.unreviewedCommented" :options="unreviewedCommentedOptions" option-label="label" option-value="value" :disabled="state.importOptions.unreviewed === 'never'" :pt="collectionSelectPt" @update:model-value="performSave" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="labeled-field">
+            <label class="flabel">Empty detail text is:</label>
+            <Select v-model="state.importOptions.emptyDetail" :options="emptyOptions" option-label="label" option-value="value" :pt="collectionSelectPt" @update:model-value="performSave" />
+          </div>
+
+          <div class="labeled-field">
+            <label class="flabel">Empty comment text is:</label>
+            <Select v-model="state.importOptions.emptyComment" :options="emptyOptions" option-label="label" option-value="value" :pt="collectionSelectPt" @update:model-value="performSave" />
+          </div>
+        </div>
+
+        <div class="labeled-field">
+          <div class="checkbox-row">
+            <ToggleSwitch v-model="state.importOptions.updateAssetProps" @update:model-value="performSave" />
+            <span class="checkbox-label">Update existing Asset properties <i class="pi pi-question-circle" /></span>
+          </div>
+        </div>
+
+        <div class="labeled-field">
+          <div class="checkbox-row">
+            <ToggleSwitch v-model="state.importOptions.allowCustom" @update:model-value="performSave" />
+            <span class="checkbox-label">Options can be customized for each import</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
+@import "./collection-manage.css";
+
 .manage-import-options {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
-.import-action {
+.checkbox-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.checkbox-label {
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
 }
 </style>

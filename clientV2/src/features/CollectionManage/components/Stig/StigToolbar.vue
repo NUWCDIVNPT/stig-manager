@@ -1,6 +1,6 @@
 <script setup>
-import AssignStigButton from './AssignStigButton.vue'
 import ExportByStigButton from '../../ExportResults/components/ExportByStigButton.vue'
+import AssignStigButton from './AssignStigButton.vue'
 import ModifyStig from './ModifyStig.vue'
 import UnassignStigButton from './UnassignStigButton.vue'
 

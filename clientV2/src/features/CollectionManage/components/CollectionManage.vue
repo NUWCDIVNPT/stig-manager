@@ -1,13 +1,11 @@
 <script setup>
+import SelectButton from 'primevue/selectbutton'
 import { computed, ref } from 'vue'
+
 import ManageAssetsTable from './Asset/ManageAssetsTable.vue'
+import ManageConfiguration from './ManageConfiguration.vue'
 import ManageGrants from './ManageGrants.vue'
-import ManageImportOptions from './ManageImportOptions.vue'
 import ManageLabels from './ManageLabels.vue'
-import ManageMetadata from './ManageMetadata.vue'
-import ManageProperties from './ManageProperties.vue'
-import ManageSettings from './ManageSettings.vue'
-import ManageUsers from './ManageUsers.vue'
 import ManageStigsTable from './Stig/ManageStigsTable.vue'
 
 const props = defineProps({
@@ -19,92 +17,115 @@ const props = defineProps({
 
 const emit = defineEmits(['imported'])
 
-const sections = [
-  { label: 'Collection', cards: [
-    { key: 'properties', icon: 'pi-building', title: 'Properties', desc: 'Collection name, description, clone & delete' },
-    { key: 'settings', icon: 'pi-cog', title: 'Review Settings', desc: 'Review fields, status transitions, history behavior' },
-    { key: 'import', icon: 'pi-download', title: 'Import Options', desc: 'Auto-status, unreviewed rules, empty field handling' },
-    { key: 'metadata', icon: 'pi-tag', title: 'Metadata', desc: 'Custom key-value pairs for collection tracking' },
-  ] },
-  { label: 'Access', cards: [
-    { key: 'grants', icon: 'pi-shield', title: 'Grants', desc: 'Add, edit, and remove user and group access grants' },
-    { key: 'users', icon: 'pi-users', title: 'Effective Users', desc: 'Resolved access including inherited group membership' },
-  ] },
-  { label: 'Inventory', cards: [
-    { key: 'assets', icon: 'pi-server', title: 'Assets', desc: 'Create, import, export, delete, and transfer assets' },
-    { key: 'stigs', icon: 'pi-list-check', title: 'STIGs', desc: 'Assign, unassign, and modify STIG assignments & revisions' },
-    { key: 'labels', icon: 'pi-bookmark', title: 'Labels', desc: 'Create, edit, and delete labels for tagging assets' },
-  ] },
-]
+const selectOptions = ref([
+  {
+    label: 'Configuration',
+    key: 'configuration',
+    icon: 'pi pi-sliders-h',
+    title: 'Configuration',
+    desc: 'Configure properties, review settings, metadata, and import options for this collection.',
+  },
+  {
+    label: 'Users & Grants',
+    key: 'grants',
+    icon: 'pi pi-users',
+    title: 'Users & Grants',
+    desc: 'Manage access grants and view effective user permissions for this collection.',
+  },
+  {
+    label: 'Assets',
+    key: 'assets',
+    icon: 'pi pi-server',
+    title: 'Assets',
+    desc: 'Manage collection assets, add or import new systems, and view assessment metrics.',
+  },
+  {
+    label: 'STIGs',
+    key: 'stigs',
+    icon: 'pi pi-list-check',
+    title: 'STIGs',
+    desc: 'Assign, unassign, and modify STIG assignments and revision rules.',
+  },
+  {
+    label: 'Labels',
+    key: 'labels',
+    icon: 'pi pi-bookmark',
+    title: 'Labels',
+    desc: 'Create, edit, and delete labels, and apply them to tag collection assets.',
+  },
+])
 
 const panelComponents = {
-  properties: ManageProperties,
-  settings: ManageSettings,
-  import: ManageImportOptions,
-  metadata: ManageMetadata,
+  configuration: ManageConfiguration,
   grants: ManageGrants,
-  users: ManageUsers,
   assets: ManageAssetsTable,
   stigs: ManageStigsTable,
   labels: ManageLabels,
 }
 
-const activePanel = ref(null)
+const activePanel = ref('configuration')
 
 const panelComponent = computed(() => {
   return activePanel.value ? panelComponents[activePanel.value] : null
 })
 
-function openPanel(key) {
-  activePanel.value = activePanel.value === key ? null : key
+const activeOption = computed(() => {
+  return selectOptions.value.find(opt => opt.key === activePanel.value)
+})
+
+const selectButtonPt = {
+  root: {
+    class: 'manage-select-button',
+  },
+  button: ({ context }) => ({
+    class: [
+      'manage-select-btn',
+      context.active ? 'manage-select-btn--active' : '',
+    ],
+  }),
 }
 </script>
 
 <template>
   <div class="manage-layout">
-    <div class="cards-col">
-      <div v-for="section in sections" :key="section.label" class="manage-section">
-        <div class="section-label">
-          {{ section.label }}
-        </div>
-        <div class="cards-list">
-          <div
-            v-for="card in section.cards"
-            :key="card.key"
-            class="manage-card"
-            :class="{ 'manage-card--active': activePanel === card.key }"
-            @click="openPanel(card.key)"
-          >
-            <div class="manage-card-header">
-              <span class="manage-card-title">
-                <i class="pi" :class="card.icon" />
-                {{ card.title }}
-              </span>
-            </div>
-            <div class="manage-card-body">
-              <span class="manage-card-desc">{{ card.desc }}</span>
-            </div>
-          </div>
-        </div>
+    <header class="manage-header">
+      <div class="header-left">
+        <h2 class="page-title">
+          {{ activeOption?.title }}
+        </h2>
+        <p class="page-desc">
+          {{ activeOption?.desc }}
+        </p>
       </div>
-    </div>
+
+      <SelectButton
+        v-model="activePanel"
+        :options="selectOptions"
+        option-label="label"
+        option-value="key"
+        :allow-empty="false"
+        class="flex-shrink-0"
+        :pt="selectButtonPt"
+      >
+        <template #option="slotProps">
+          <div class="option-content">
+            <i class="option-icon" :class="slotProps.option.icon" />
+            <span>{{ slotProps.option.label }}</span>
+          </div>
+        </template>
+      </SelectButton>
+    </header>
 
     <div class="panel-col">
-      <component
-        :is="panelComponent"
-        v-if="panelComponent"
-        :collection-id="props.collectionId"
-        @imported="emit('imported')"
-      />
-      <div v-else class="panel-empty">
-        <i class="pi pi-table panel-empty-icon" />
-        <div class="panel-empty-title">
-          Select a section
-        </div>
-        <div class="panel-empty-sub">
-          Choose a card on the left to manage this collection
-        </div>
-      </div>
+      <Transition name="fade" mode="out-in">
+        <component
+          :is="panelComponent"
+          v-if="panelComponent"
+          :key="activePanel"
+          :collection-id="props.collectionId"
+          @imported="emit('imported')"
+        />
+      </Transition>
     </div>
   </div>
 </template>
@@ -112,95 +133,91 @@ function openPanel(key) {
 <style scoped>
 .manage-layout {
   display: flex;
+  flex-direction: column;
   height: 100%;
   overflow: hidden;
 }
 
-/* ── LEFT: card navigation ── */
-.cards-col {
-  width: 23rem;
+.manage-header {
+  background-color: var(--color-background-dark);
+  padding: 1rem 2rem;
   flex-shrink: 0;
-  overflow-y: auto;
-  padding: 1.5rem 1rem 1.5rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--color-text-bright);
+  margin: 0;
+}
+
+.page-desc {
+  color: var(--color-text-dim);
+  font-weight: 500;
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.option-content {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.option-icon {
+  font-size: 1.05rem;
+  opacity: 0.8;
+}
+
+.manage-select-button {
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+  background-color: var(--color-background-light);
+  display: inline-flex;
+  overflow: hidden;
+}
+
+.manage-select-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-dim);
+  padding: 0.65rem 1.2rem;
+  font-size: 1.05rem;
+  border-radius: 0;
+  transition: all 0.15s ease;
+  box-shadow: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.manage-select-btn:not(:last-child) {
   border-right: 1px solid var(--color-border-default);
 }
 
-.cards-col::-webkit-scrollbar { width: 4px; }
-.cards-col::-webkit-scrollbar-track { background: transparent; }
-.cards-col::-webkit-scrollbar-thumb { background: var(--color-border-default); border-radius: 4px; }
-
-.manage-section {
-  margin-bottom: 1.75rem;
+.manage-select-btn:hover {
+  background-color: var(--color-background-subtle);
+  color: var(--color-text-bright);
 }
 
-.section-label {
-  font-size: .9rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1rem;
-  color: var(--color-text-muted);
-  margin-bottom: 0.625rem;
-  padding: 0 0.25rem;
+.manage-select-btn--active {
+  background-color: color-mix(in srgb, var(--color-primary) 15%, transparent) !important;
+  color: var(--color-primary-highlight-light) !important;
 }
 
-.cards-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.manage-card {
-  background: var(--color-background-subtle);
-  border: 1px solid var(--color-border-default);
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: border-color 0.12s, box-shadow 0.12s, background 0.12s;
-}
-
-.manage-card:hover {
-  border-color: var(--p-primary-color);
-  background: var(--color-background-hover, var(--color-background-dark));
-}
-
-.manage-card--active {
-  border-color: var(--p-primary-color);
-  box-shadow: 0 0 0 1px var(--p-primary-color);
-}
-
-.manage-card-header {
-  display: flex;
-  align-items: center;
-  padding: 0.75rem 0.875rem 0.25rem;
-}
-
-.manage-card-title {
-  font-weight: 600;
-  font-size: 1.05rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.manage-card-title i {
-  color: var(--color-text-dim);
-  font-size: 1.1rem;
-}
-
-.manage-card--active .manage-card-title i {
-  color: var(--p-primary-color);
-}
-
-.manage-card-body {
-  padding: 0 0.875rem 0.75rem;
-}
-
-.manage-card-desc {
-  color: var(--color-text-dim);
-  font-size: 0.9rem;
-  line-height: 1.15;
-}
-
-/* ── RIGHT: panel area ── */
 .panel-col {
   flex: 1;
   overflow: auto;
@@ -209,31 +226,15 @@ function openPanel(key) {
   flex-direction: column;
 }
 
-/* ── empty state ── */
-.panel-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  text-align: center;
-  color: var(--color-text-muted);
-  gap: 0.5rem;
+.fade-enter-active {
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.fade-leave-active {
+  transition: none;
 }
 
-.panel-empty-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  opacity: 0.4;
-}
-
-.panel-empty-title {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--color-text-dim);
-}
-
-.panel-empty-sub {
-  font-size: 0.8rem;
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
 }
 </style>
