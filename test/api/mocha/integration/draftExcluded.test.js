@@ -130,10 +130,6 @@ describe('Issue #2051 - draft revision excluded from "latest"', () => {
       describe('Reverting after delete', () => {
 
         it('Deleting the draft revision leaves V1R1 as latest', async () => {
-          if (distinct.grant === 'none') {
-            // collection-creator has no read access to confirm
-            return
-          }
           await utils.deleteStigByRevision(benchmarkId, draftRevisionStr)
           const res = await utils.executeRequest(`${config.baseUrl}/stigs/${benchmarkId}`, 'GET', user.token)
           expect(res.status).to.eql(200)

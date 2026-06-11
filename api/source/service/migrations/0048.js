@@ -224,6 +224,9 @@ module.exports = {
 
       // Snapshot pre-migration default_rev so we can identify which benchmarks
       // had their resolved revId shift once the new views are in effect.
+      // Temporary tables survive pool release, so drop any leftover from a
+      // failed prior attempt that returned this connection to the pool.
+      await connection.query('DROP TEMPORARY TABLE IF EXISTS old_default_rev')
       await connection.query(`CREATE TEMPORARY TABLE old_default_rev AS
         SELECT collectionId, benchmarkId, revId FROM default_rev`)
 
