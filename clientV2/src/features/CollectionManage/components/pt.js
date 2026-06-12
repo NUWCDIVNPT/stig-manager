@@ -34,3 +34,10 @@ export const collectionInputTextPt = (invalid = false) => {
 export const collectionTextareaPt = {
   root: { style: 'background: var(--color-background-dark); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%; resize: none;' },
 }
+
+export const collectionDialogPt = {
+  root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary);' },
+  header: { style: 'background: var(--color-background-dark); padding: 1.25rem 1.25rem 0.5rem; border-bottom: 1px solid var(--color-border-default);' },
+  content: { style: 'background: var(--color-background-dark); padding: 1.25rem;' },
+  footer: { style: 'padding: 1rem 1.25rem; border-top: 1px solid var(--color-border-default);' },
+}

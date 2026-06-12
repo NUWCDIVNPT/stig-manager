@@ -1,6 +1,7 @@
 <script setup>
 import ScrollSpyLayout from '../../../components/common/ScrollSpyLayout.vue'
 import ManageActions from './ManageActions.vue'
+import ManageDeleteCollection from './ManageDeleteCollection.vue'
 import ManageImportOptions from './ManageImportOptions.vue'
 import ManageMetadata from './ManageMetadata.vue'
 import ManageProperties from './ManageProperties.vue'
@@ -20,8 +21,8 @@ const sections = [
   { id: 'settings', title: 'Review Settings', icon: 'pi-cog', desc: 'Review fields, status transitions, and history behavior' },
   { id: 'import', title: 'Import Options', icon: 'pi-download', desc: 'Configure auto-status, unreviewed rules, and empty field handling' },
   { id: 'metadata', title: 'Metadata', icon: 'pi-tag', desc: 'Custom key-value pairs for collection tracking' },
-  { id: 'actions', title: 'Actions', icon: 'pi-bolt', desc: 'Clone or permanently delete this collection' },
-
+  { id: 'actions', title: 'Actions', icon: 'pi-bolt', desc: 'Clone this collection' },
+  { id: 'danger', title: 'Danger Zone', icon: 'pi-exclamation-triangle', desc: 'Permanently delete this collection' },
 ]
 </script>
 
@@ -43,6 +44,9 @@ const sections = [
       </template>
       <template #actions>
         <ManageActions :collection-id="props.collectionId" />
+      </template>
+      <template #danger>
+        <ManageDeleteCollection :collection-id="props.collectionId" />
       </template>
     </ScrollSpyLayout>
   </div>

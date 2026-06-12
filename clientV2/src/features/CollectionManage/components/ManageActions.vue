@@ -6,17 +6,14 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import DeleteModal from '../../../components/common/DeleteModal.vue'
-import { cloneCollection, deleteCollection, fetchCollection } from '../../../shared/api/collectionsApi.js'
+import { cloneCollection, fetchCollection } from '../../../shared/api/collectionsApi.js'
 import { fetchCurrentUser } from '../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { readNdjson } from '../../../shared/lib/ndjsonStream.js'
 import { useCollectionCloneProgressStore } from '../../../shared/stores/collectionCloneProgressStore.js'
 import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
-import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
-import { collectionInputTextPt, collectionSelectPt, collectionTextareaPt } from './pt.js'
+import { collectionDialogPt, collectionInputTextPt, collectionSelectPt, collectionTextareaPt } from './pt.js'
 
 const props = defineProps({
   collectionId: {
@@ -29,11 +26,9 @@ const props = defineProps({
 // clone of the session. Module-scoped so it survives component remounts.
 let cloneWarningAcknowledged = false
 
-const router = useRouter()
 const { triggerError } = useGlobalError()
 const cloneStore = useCollectionCloneProgressStore()
 const { setUser } = useGlobalAppStore()
-const { removeView } = useRecentViews()
 
 const { execute: fetchSource } = useAsyncState(
   id => fetchCollection(id),
@@ -94,10 +89,9 @@ const cloneValidationError = computed(() => {
 
 // Modals
 const showCloneWarning = ref(false)
-const showDeleteWarning = ref(false)
 
 // Refresh the current user's grant state after a clone (the created collection
-// grants the requesting user Owner) or a delete (the grant no longer exists).
+// grants the requesting user Owner).
 const refreshUserGrants = async () => {
   try {
     const updatedUser = await fetchCurrentUser()
@@ -196,62 +190,25 @@ const acknowledgeWarning = () => {
   startClone()
 }
 
-const confirmDelete = () => {
-  showDeleteWarning.value = true
-}
-
-const performDelete = async () => {
-  try {
-    await deleteCollection(props.collectionId)
-    removeView(key => key.includes(`:${props.collectionId}`))
-    await refreshUserGrants()
-    // Redirect to home or collections list after delete
-    router.push('/collections')
-  }
-  catch (err) {
-    triggerError(err)
-  }
-}
-
 const inputTextPt = computed(() => collectionInputTextPt(!cloneForm.value.name?.trim()))
 const textareaPt = collectionTextareaPt
-
-const dialogPt = {
-  root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary);' },
-  header: { style: 'background: var(--color-background-dark); padding: 1.25rem 1.25rem 0.5rem; border-bottom: 1px solid var(--color-border-default);' },
-  content: { style: 'background: var(--color-background-dark); padding: 1.25rem;' },
-  footer: { style: 'padding: 1rem 1.25rem; border-top: 1px solid var(--color-border-default);' },
-}
 </script>
 
 <template>
   <div class="manage-actions">
-    <!-- DELETE SECTION -->
-    <div class="action-section action-section--danger">
-      <div class="action-header">
-        <h3>Delete Collection</h3>
-        <p>Permanently remove this collection and all its data. This action cannot be undone.</p>
-      </div>
-      <Button
-        label="Delete Collection"
-        icon="pi pi-trash"
-        severity="danger"
-        @click="confirmDelete"
-      />
-    </div>
-
-    <hr class="section-divider">
-
     <!-- CLONE SECTION -->
     <div class="action-section">
       <div class="action-header">
-        <h3>Clone Collection</h3>
+        <div class="action-title-row">
+          <i class="pi pi-exclamation-triangle warning-icon" />
+          <h3>Clone Collection</h3>
+        </div>
         <p class="group-desc">
-          Create a duplicate of this collection with customizable options.
+          Create a duplicate of this collection with customizable options. Cloning large collections can take several minutes and may impact users of the source collection.
         </p>
       </div>
 
-      <div class="action-form">
+      <div class="action-form action-form--warning">
         <div class="labeled-field">
           <div class="field-header-row">
             <label class="flabel" for="cloneName">New Collection Name <span class="req-star">*</span></label>
@@ -345,7 +302,7 @@ const dialogPt = {
       v-model:visible="showCloneWarning"
       modal
       :style="{ width: '520px' }"
-      :pt="dialogPt"
+      :pt="collectionDialogPt"
     >
       <template #header>
         <div class="modal-header-warning">
@@ -371,14 +328,6 @@ const dialogPt = {
         <Button label="Start Clone" severity="primary" @click="acknowledgeWarning" />
       </template>
     </Dialog>
-
-    <!-- DELETE WARNING MODAL -->
-    <DeleteModal
-      v-model:visible="showDeleteWarning"
-      title="Confirm Delete"
-      message="Deleting this Collection will remove all data associated with the Collection. This includes all Assets and their associated assessments. This action cannot be undone."
-      @confirm="performDelete"
-    />
   </div>
 </template>
 
@@ -400,15 +349,27 @@ const dialogPt = {
   gap: 1.5rem;
 }
 
+.action-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.25rem;
+}
+
 .action-header h3 {
   font-size: 1.25rem;
   color: var(--color-text-bright);
-  margin: 0 0 0.25rem 0;
+  margin: 0;
 }
 
 .action-header p {
   color: var(--color-text-dim);
   margin: 0;
+}
+
+.warning-icon {
+  color: var(--color-warning-yellow);
+  font-size: 1.25rem;
 }
 
 .action-form {
@@ -419,6 +380,11 @@ const dialogPt = {
   padding: 1.25rem;
   border: 1px solid var(--color-border-default);
   border-radius: 8px;
+}
+
+.action-form--warning {
+  border-color: color-mix(in srgb, var(--color-warning-yellow) 35%, transparent);
+  background: color-mix(in srgb, var(--color-warning-yellow) 3%, var(--color-background-subtle));
 }
 
 .options-grid {
@@ -473,16 +439,6 @@ const dialogPt = {
 .field-error {
   font-size: 0.85rem;
   color: var(--color-text-error);
-}
-
-.section-divider {
-  border: none;
-  border-top: 1px solid var(--color-border-default);
-  margin: 0;
-}
-
-.action-section--danger {
-  align-items: flex-start;
 }
 
 .modal-content {
