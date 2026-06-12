@@ -7,12 +7,11 @@ import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
 import { cloneCollection, fetchCollection } from '../../../shared/api/collectionsApi.js'
-import { fetchCurrentUser } from '../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { readNdjson } from '../../../shared/lib/ndjsonStream.js'
 import { useCollectionCloneProgressStore } from '../../../shared/stores/collectionCloneProgressStore.js'
-import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 import { collectionDialogPt, collectionInputTextPt, collectionSelectPt, collectionTextareaPt } from './pt.js'
 
 const props = defineProps({
@@ -28,7 +27,7 @@ let cloneWarningAcknowledged = false
 
 const { triggerError } = useGlobalError()
 const cloneStore = useCollectionCloneProgressStore()
-const { setUser } = useGlobalAppStore()
+const { refreshUser } = useCurrentUser()
 
 const { execute: fetchSource } = useAsyncState(
   id => fetchCollection(id),
@@ -90,18 +89,6 @@ const cloneValidationError = computed(() => {
 // Modals
 const showCloneWarning = ref(false)
 
-// Refresh the current user's grant state after a clone (the created collection
-// grants the requesting user Owner).
-const refreshUserGrants = async () => {
-  try {
-    const updatedUser = await fetchCurrentUser()
-    setUser(updatedUser)
-  }
-  catch (err) {
-    console.error('Failed to refresh user grants after collection change', err)
-  }
-}
-
 const startClone = async () => {
   const name = cloneForm.value.name.trim()
   // Each clone gets its own progress handle, so concurrent clones track and
@@ -160,7 +147,9 @@ const startClone = async () => {
     }
 
     clone.finish()
-    await refreshUserGrants()
+    // The created collection grants the requesting user Owner; refresh so the
+    // nav rail and breadcrumb pick up the new collection.
+    await refreshUser()
   }
   catch (err) {
     clone.fail(err)

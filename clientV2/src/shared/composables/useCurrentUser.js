@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { fetchCurrentUser } from '../api/userApi.js'
 import { useGlobalAppStore } from '../stores/globalAppStore.js'
 
 export function useCurrentUser() {
@@ -29,6 +30,19 @@ export function useCurrentUser() {
     return grant?.roleId ?? null
   }
 
+  // Refetch the current user so grant-derived state (nav rail, breadcrumb,
+  // access checks) stays fresh after mutations that change grants or
+  // collection names (create, clone, rename, delete). Failures are logged
+  // rather than thrown: the triggering mutation already succeeded.
+  async function refreshUser() {
+    try {
+      appStore.setUser(await fetchCurrentUser())
+    }
+    catch (err) {
+      console.error('Failed to refresh current user', err)
+    }
+  }
+
   return {
     user,
     isAdmin,
@@ -36,5 +50,6 @@ export function useCurrentUser() {
     getCollectionGrant,
     hasCollectionAccess,
     getCollectionRoleId,
+    refreshUser,
   }
 }

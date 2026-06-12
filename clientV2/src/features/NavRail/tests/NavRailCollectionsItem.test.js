@@ -1,16 +1,9 @@
 import { userEvent } from '@testing-library/user-event'
-import { screen } from '@testing-library/vue'
-import { describe, expect, it, vi } from 'vitest'
+import { screen, waitFor } from '@testing-library/vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import NavRailCollectionsItem from '../components/NavRailCollectionsItem.vue'
-
-// Mock the API call
-vi.mock('../../CollectionView/api/collectionApi.js', () => ({
-  fetchCollections: vi.fn().mockResolvedValue([
-    { collectionId: '1', name: 'Alpha Collection' },
-    { collectionId: '2', name: 'Beta Collection' },
-  ]),
-}))
 
 // Mock route
 vi.mock('vue-router', () => ({
@@ -20,7 +13,19 @@ vi.mock('vue-router', () => ({
   }),
 }))
 
+// The nav list is derived from the current user's collection grants
+const makeUser = collections => ({
+  collectionGrants: collections.map(c => ({ roleId: 4, collection: c })),
+})
+
 describe('navRailCollectionsItem', () => {
+  beforeEach(() => {
+    useGlobalAppStore().setUser(makeUser([
+      { collectionId: '1', name: 'Alpha Collection' },
+      { collectionId: '2', name: 'Beta Collection' },
+    ]))
+  })
+
   it('renders correctly when expanded', async () => {
     renderWithProviders(NavRailCollectionsItem, {
       props: {
@@ -34,7 +39,7 @@ describe('navRailCollectionsItem', () => {
     // Contains the label text
     expect(screen.getByText('My Collections')).toBeInTheDocument()
 
-    // Checks that the fetch Collections rendered the mocked items
+    // Renders the collections from the user's grants
     expect(await screen.findByText('Alpha Collection')).toBeInTheDocument()
     expect(await screen.findByText('Beta Collection')).toBeInTheDocument()
   })
@@ -55,6 +60,27 @@ describe('navRailCollectionsItem', () => {
     expect(toggleBtn).toHaveClass('nav-rail-item--icon-only')
   })
 
+  it('updates when the user\'s grants change (e.g. after a delete)', async () => {
+    renderWithProviders(NavRailCollectionsItem, {
+      props: {
+        expanded: true,
+        active: false,
+      },
+    })
+
+    expect(await screen.findByText('Alpha Collection')).toBeInTheDocument()
+
+    // Simulate a delete: refreshUser() replaces the user with reduced grants
+    useGlobalAppStore().setUser(makeUser([
+      { collectionId: '2', name: 'Beta Collection' },
+    ]))
+
+    await waitFor(() => {
+      expect(screen.queryByText('Alpha Collection')).not.toBeInTheDocument()
+    })
+    expect(screen.getByText('Beta Collection')).toBeInTheDocument()
+  })
+
   it('filters collections based on search term', async () => {
     // Render collapsed so we can access the popover and its search field
     renderWithProviders(NavRailCollectionsItem, {
@@ -67,7 +93,6 @@ describe('navRailCollectionsItem', () => {
     // Set up user event
     const user = userEvent.setup()
 
-    // Wait for the mock API collections to render (which means it's loaded)
     // We might have to open the popover first!
     const toggleBtn = screen.getByTitle('Collections') // our mock didn't pass label prop, so it defaults to 'Collections'
     await user.click(toggleBtn)

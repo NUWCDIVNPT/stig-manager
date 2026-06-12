@@ -3,8 +3,7 @@ import InputText from 'primevue/inputtext'
 import Popover from 'primevue/popover'
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { fetchCollections } from '../../CollectionView/api/collectionApi.js'
+import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 
 defineProps({
   expanded: {
@@ -34,13 +33,23 @@ const collectionsPopoverPt = {
 const collectionSearchTerm = ref('')
 const collectionsExpanded = ref(true)
 
-const { state: collections, isLoading: collectionsLoading } = useAsyncState(
-  () => fetchCollections(),
-  { initialState: [], immediate: true },
+// Derive the list from the current user's grants rather than fetching it.
+// The grants are the single source of truth and are refreshed (via
+// useCurrentUser().refreshUser) after create/clone/rename/delete, so the nav
+// updates reactively instead of going stale.
+const { user } = useCurrentUser()
+
+const collectionsLoading = computed(() => !user.value)
+
+const collections = computed(() =>
+  (user.value?.collectionGrants ?? []).map(g => ({
+    collectionId: String(g.collection.collectionId),
+    name: g.collection.name,
+  })),
 )
 
 const filteredCollections = computed(() => {
-  let list = collections.value || []
+  let list = collections.value
   if (collectionSearchTerm.value) {
     const term = collectionSearchTerm.value.toLowerCase()
     list = list.filter(c => c.name.toLowerCase().includes(term))

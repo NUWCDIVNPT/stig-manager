@@ -1,7 +1,7 @@
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
+import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import {
   fetchAsset,
   fetchAssetStigs,
@@ -37,14 +37,16 @@ import {
 export function useAppBreadcrumb() {
   const route = useRoute()
   const router = useRouter()
-  const { user } = useGlobalAppStore()
+  // useCurrentUser's computed stays reactive when setUser replaces the user
+  // (e.g. after a collection create/clone/rename/delete refreshes grants).
+  const { user } = useCurrentUser()
 
   // Collections list for the collection dropdown (from user grants)
   const collectionOptions = computed(() => {
-    if (!user?.collectionGrants) {
+    if (!user.value?.collectionGrants) {
       return []
     }
-    return user.collectionGrants.map(g => ({
+    return user.value.collectionGrants.map(g => ({
       collectionId: String(g.collection.collectionId),
       name: g.collection.name,
     }))
@@ -97,7 +99,7 @@ export function useAppBreadcrumb() {
 
   // Helper function to resolve dynamic collection names from grants
   const getCollectionName = (id) => {
-    const grant = user?.collectionGrants?.find(g => String(g.collection.collectionId) === String(id))
+    const grant = user.value?.collectionGrants?.find(g => String(g.collection.collectionId) === String(id))
     return grant?.collection.name || `Collection ${id}`
   }
 
@@ -106,7 +108,9 @@ export function useAppBreadcrumb() {
     // Collect all breadcrumbs from the matched routes (handles nested child routes)
     const matchedBreadcrumbs = route.matched.flatMap(m => m.meta?.breadcrumbs || [])
 
-    if (matchedBreadcrumbs.length === 0) { return [] }
+    if (matchedBreadcrumbs.length === 0) {
+      return []
+    }
 
     return matchedBreadcrumbs.map((step) => {
       const label = typeof step.label === 'function' ? step.label(route, getCollectionName, asset) : step.label

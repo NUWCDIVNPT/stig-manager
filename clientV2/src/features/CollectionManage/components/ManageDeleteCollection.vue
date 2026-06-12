@@ -5,10 +5,9 @@ import InputText from 'primevue/inputtext'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { deleteCollection, fetchCollection } from '../../../shared/api/collectionsApi.js'
-import { fetchCurrentUser } from '../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
-import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { collectionDialogPt, collectionInputTextPt } from './pt.js'
 
@@ -21,7 +20,7 @@ const props = defineProps({
 
 const router = useRouter()
 const { triggerError } = useGlobalError()
-const { setUser } = useGlobalAppStore()
+const { refreshUser } = useCurrentUser()
 const { removeView } = useRecentViews()
 
 const { execute: fetchSource } = useAsyncState(
@@ -60,18 +59,6 @@ const confirmInputPt = computed(() =>
   collectionInputTextPt(!!confirmationName.value && !nameMatches.value),
 )
 
-// The collection's grant no longer exists after the delete; refresh the
-// current user's grant state so navigation reflects it.
-const refreshUserGrants = async () => {
-  try {
-    const updatedUser = await fetchCurrentUser()
-    setUser(updatedUser)
-  }
-  catch (err) {
-    console.error('Failed to refresh user grants after collection delete', err)
-  }
-}
-
 const performDelete = async () => {
   if (!nameMatches.value || deleting.value) {
     return
@@ -81,7 +68,9 @@ const performDelete = async () => {
     await deleteCollection(props.collectionId)
     showDeleteModal.value = false
     removeView(key => key.includes(`:${props.collectionId}`))
-    await refreshUserGrants()
+    // The collection's grant no longer exists; refresh so the nav rail and
+    // breadcrumb drop the deleted collection.
+    await refreshUser()
     // Redirect to the collections list after delete
     router.push('/collections')
   }

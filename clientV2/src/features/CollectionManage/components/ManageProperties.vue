@@ -5,6 +5,7 @@ import { computed, ref, watch } from 'vue'
 import SaveStatusBadge from '../../../components/common/SaveStatusBadge.vue'
 import { fetchCollection, updateCollection } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { collectionInputTextPt, collectionTextareaPt } from './pt.js'
 
@@ -16,6 +17,7 @@ const props = defineProps({
 })
 
 const { triggerError } = useGlobalError()
+const { refreshUser } = useCurrentUser()
 
 const name = ref('')
 const description = ref('')
@@ -93,6 +95,9 @@ const saveName = async () => {
     name.value = res.name || ''
     nameError.value = ''
     saveStatus.value = 'saved'
+    // Grants carry the collection name; refresh so the nav rail and
+    // breadcrumb show the new name.
+    await refreshUser()
   }
   catch (err) {
     name.value = originalValue // Revert on failure
