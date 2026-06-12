@@ -10,6 +10,12 @@ const dbUtils = require('../utils')
 // users expect those to surface as "latest" -- but `draft` revisions
 // should still be considered preliminary and never promoted unless
 // nothing else exists.
+//
+// Also redefines v_default_rev on enabled_asset instead of asset. See
+// issue #1780: disabled assets retain stig_asset_map rows, and those
+// rows were re-inserting default_rev pairs for benchmarks no longer
+// assigned to any enabled asset in the collection. The rematerialization
+// below corrects existing default_rev data for both changes.
 
 const newCurrentRev = `ALTER VIEW v_current_rev AS
   select
@@ -77,6 +83,18 @@ const newLatestRev = `ALTER VIEW v_latest_rev AS
     ) rr
   where
     (rr.rn = 1)`
+
+const newDefaultRev = `ALTER VIEW v_default_rev AS
+  select distinct
+    a.collectionId AS collectionId,
+    sa.benchmarkId AS benchmarkId,
+    case when crm.revId is not null then crm.revId else cr.revId end AS revId,
+    case when crm.revId is not null then 1 else 0 end AS revisionPinned
+  from
+    enabled_asset a
+    join stig_asset_map sa on a.assetId = sa.assetId
+    left join current_rev cr on sa.benchmarkId = cr.benchmarkId
+    left join collection_rev_map crm on sa.benchmarkId = crm.benchmarkId and a.collectionId = crm.collectionId`
 
 const oldCurrentRev = `ALTER VIEW v_current_rev AS
   select
@@ -146,6 +164,18 @@ const oldLatestRev = `ALTER VIEW v_latest_rev AS
   where
     (rr.rn = 1)`
 
+const oldDefaultRev = `ALTER VIEW v_default_rev AS
+  select distinct
+    a.collectionId AS collectionId,
+    sa.benchmarkId AS benchmarkId,
+    case when crm.revId is not null then crm.revId else cr.revId end AS revId,
+    case when crm.revId is not null then 1 else 0 end AS revisionPinned
+  from
+    asset a
+    join stig_asset_map sa on a.assetId = sa.assetId
+    left join current_rev cr on sa.benchmarkId = cr.benchmarkId
+    left join collection_rev_map crm on sa.benchmarkId = crm.benchmarkId and a.collectionId = crm.collectionId`
+
 const refreshCurrentRev = [
   `DELETE FROM current_rev`,
   `INSERT INTO current_rev (
@@ -197,6 +227,7 @@ const refreshDefaultRev = [
 const upStatements = [
   newCurrentRev,
   newLatestRev,
+  newDefaultRev,
   ...refreshCurrentRev,
   ...refreshDefaultRev
 ]
@@ -204,6 +235,7 @@ const upStatements = [
 const downMigration = [
   oldCurrentRev,
   oldLatestRev,
+  oldDefaultRev,
   ...refreshCurrentRev,
   ...refreshDefaultRev
 ]
@@ -238,7 +270,10 @@ module.exports = {
       // Benchmarks whose default_rev.revId changed for any non-pinned
       // collection. The INNER JOIN keeps only (collectionId, benchmarkId)
       // pairs present in both snapshots; pinned rows keep their revId so
-      // they never satisfy `o.revId <> n.revId`.
+      // they never satisfy `o.revId <> n.revId`. Pairs dropped by the
+      // v_default_rev change (benchmarks held only by disabled assets)
+      // are intentionally ignored -- they have no enabled-asset stats
+      // to recompute.
       const [affectedRows] = await connection.query(`
         SELECT DISTINCT o.benchmarkId AS benchmarkId
         FROM old_default_rev o
