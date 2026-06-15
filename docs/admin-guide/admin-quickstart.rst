@@ -60,7 +60,11 @@ These updates must be brought into STIG Manager if you wish the updates to be re
 
 
 
-By default, STIG Manager displays Checklists and Reviews according to the latest version of the STIG.  It will also recalculate statistics against the latest version(s) of the STIGs. No other action is needed after an update. When a new STIG is imported from this interface, ALL assets in the system will reflect new version of the imported STIG as the default. Older revisions of STIGs can still be selected from the Review or Collection Review Workspace checklist pulldown menu. 
+By default, STIG Manager displays Checklists and Reviews according to the latest version of the STIG.  It will also recalculate statistics against the latest version(s) of the STIGs. No other action is needed after an update. When a new STIG is imported from this interface, ALL assets in the system will reflect new version of the imported STIG as the default. Older revisions of STIGs can still be selected from the Review or Collection Review Workspace checklist pulldown menu.
+
+.. note::
+   "Latest" is determined by the STIG's version and release numbers across any revision whose ``status`` is not ``draft`` (i.e. ``accepted``, ``deprecated``, ``sunset``, etc. all compete equally). DISA sometimes publishes revisions with new rule content but a ``deprecated`` status; STIG Manager will treat such a revision as the latest if its version+release is higher than any other non-draft revision of the same STIG. Revisions with a ``draft`` status are held back and only chosen if no non-draft revision exists. To override this behavior for a particular Collection, :ref:`pin <pin-revision>` the desired Revision in Collection Management.
+
 
 
 .. thumbnail:: /assets/images/asset-review-stig-revisions.png
