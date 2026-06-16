@@ -464,6 +464,12 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
 
       // Process scalar properties
       if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
+        // description is optional in the request body, but this named INSERT
+        // binds :description and mysql2 rejects an undefined bind parameter. The
+        // column is nullable (DEFAULT NULL), so default an absent description to
+        // null. The UPDATE/REPLACE path is unaffected because it uses SET ? and
+        // simply omits columns that are not present. See #1303.
+        collectionFields.description = collectionFields.description ?? null
         // INSERT into collections
         let sqlInsert =
         `INSERT INTO
