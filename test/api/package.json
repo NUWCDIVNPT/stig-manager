@@ -19,7 +19,7 @@
     "jszip": "^3.10.1",
     "mocha": "^11.7.5",
     "uuid": "^14.0.0",
-    "ws": "^8.20.1"
+    "ws": "^8.21.0"
   },
   "overrides": {
     "serialize-javascript": "^7.0.5",
