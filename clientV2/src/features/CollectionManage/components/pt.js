@@ -1,10 +1,10 @@
 export const collectionSelectPt = {
-  root: {
-    style: 'background-color: var(--color-background-light); border: 1px solid var(--color-border-default); border-radius: 6px; color: var(--color-text-primary); width: 100%; transition: border-color 0.15s, box-shadow 0.15s;',
-  },
-  label: {
-    style: 'color: var(--color-text-primary); padding: 0.55rem 0.85rem;',
-  },
+  root: ({ props }) => ({
+    style: `background-color: ${props?.disabled ? 'var(--color-background-dark)' : 'var(--color-background-light)'}; border: 1px solid var(--color-border-default); border-radius: 6px; color: var(--color-text-primary); width: 100%; transition: border-color 0.15s, box-shadow 0.15s; ${props?.disabled ? 'opacity: 0.45; cursor: not-allowed;' : ''}`,
+  }),
+  label: ({ props }) => ({
+    style: `color: ${props?.disabled ? 'var(--color-text-dim)' : 'var(--color-text-primary)'}; padding: 0.55rem 0.85rem;`,
+  }),
   dropdown: {
     style: 'color: var(--color-text-dim); width: 2.5rem; display: flex; align-items: center; justify-content: center;',
   },
