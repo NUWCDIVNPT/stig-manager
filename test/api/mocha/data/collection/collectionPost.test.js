@@ -216,6 +216,28 @@ describe('POST - Collection - not all tests run for all iterations', function ()
 
 
         })
+
+        it("Create a Collection with no description, expect description to default to null (#1303)",async function () {
+          // Regression: omitting description from the body previously failed the
+          // named INSERT because mysql2 rejects an undefined bind parameter. The
+          // column is nullable, so an absent description defaults to null on create.
+          const post = JSON.parse(JSON.stringify(requestBodies.createCollection))
+          post.name = "testCollectionNoDesc" + utils.getUUIDSubString()
+          delete post.description
+          const res = await utils.executeRequest(`${config.baseUrl}/collections`, 'POST', iteration.token, post)
+          if(distinct.canCreateCollection === false){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(201)
+          if (distinct.grant === 'none') {
+            // grant = none iteration can create a collection, but does not give itself access to the collection
+            return
+          }
+          expect(res.body.name).to.equal(post.name)
+          expect(res.body.description).to.equal(null)
+        })
+
         it("Create A colleciton with grant to a user group",async function () {
 
           const post = requestBodies.createCollectionWithTestGroup
