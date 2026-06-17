@@ -26,6 +26,10 @@ import {
   UPDATE_FIELD_OPTIONS,
   updateValueOptions,
 } from './reviewAgingLogic.js'
+import collectionIcon from '../../../assets/collection.svg'
+import labelIcon from '../../../assets/label.svg'
+import shieldGreenCheckIcon from '../../../assets/shield-green-check.svg'
+import targetIcon from '../../../assets/target.svg'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },
@@ -55,6 +59,13 @@ const form = reactive(defaultForm())
 
 const targetScope = ref('Collection')
 const scopeOptions = ['Collection', 'Asset', 'Label', 'STIG']
+
+const scopeIconMap = {
+  Collection: collectionIcon,
+  Asset: targetIcon,
+  Label: labelIcon,
+  STIG: shieldGreenCheckIcon,
+}
 
 const selectedAsset = ref(null)
 const selectedLabel = ref(null)
@@ -310,11 +321,27 @@ const dialogPt = {
               :disabled="isReadOnly"
               :pt="collectionSelectPt"
               @change="onScopeChange"
-            />
+            >
+              <template #value="slotProps">
+                <div v-if="slotProps.value" class="select-option-with-icon">
+                  <img v-if="scopeIconMap[slotProps.value]" :src="scopeIconMap[slotProps.value]" class="label-icon" alt="" />
+                  <span>{{ slotProps.value }}</span>
+                </div>
+              </template>
+              <template #option="slotProps">
+                <div class="select-option-with-icon">
+                  <img v-if="scopeIconMap[slotProps.option]" :src="scopeIconMap[slotProps.option]" class="label-icon" alt="" />
+                  <span>{{ slotProps.option }}</span>
+                </div>
+              </template>
+            </Select>
           </div>
 
           <div class="labeled-field">
-            <label class="flabel">Select Asset <span v-if="targetScope === 'Asset'" class="req-star">*</span></label>
+            <label class="flabel">
+              <img :src="targetIcon" class="label-icon" alt=""/>
+              Select Asset <span v-if="targetScope === 'Asset'" class="req-star">*</span>
+            </label>
             <Select
               v-model="selectedAsset"
               :options="allAssets"
@@ -329,7 +356,10 @@ const dialogPt = {
           </div>
 
           <div class="labeled-field">
-            <label class="flabel">Select Label <span v-if="targetScope === 'Label'" class="req-star">*</span></label>
+            <label class="flabel">
+              <img :src="labelIcon" class="label-icon" alt=""/>
+              Select Label <span v-if="targetScope === 'Label'" class="req-star">*</span>
+            </label>
             <Select
               v-model="selectedLabel"
               :options="allLabels"
@@ -343,6 +373,7 @@ const dialogPt = {
 
           <div class="labeled-field">
             <label class="flabel">
+              <img :src="shieldGreenCheckIcon" class="label-icon" alt=""/>
               {{ targetScope === 'STIG' ? 'Select STIG' : 'Specific STIG (Optional)' }}
               <span v-if="targetScope === 'STIG'" class="req-star">*</span>
             </label>
@@ -535,10 +566,26 @@ const dialogPt = {
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .req-star {
   color: var(--color-text-error);
+}
+
+.label-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  display: block;
+}
+
+.select-option-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .char-count {

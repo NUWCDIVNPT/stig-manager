@@ -197,7 +197,7 @@ const textareaPt = collectionTextareaPt
         </p>
       </div>
 
-      <div class="action-form action-form--warning">
+      <div class="action-form">
         <div class="labeled-field">
           <div class="field-header-row">
             <label class="flabel" for="cloneName">New Collection Name <span class="req-star">*</span></label>
@@ -369,11 +369,6 @@ const textareaPt = collectionTextareaPt
   padding: 1.25rem;
   border: 1px solid var(--color-border-default);
   border-radius: 8px;
-}
-
-.action-form--warning {
-  border-color: color-mix(in srgb, var(--color-warning-yellow) 35%, transparent);
-  background: color-mix(in srgb, var(--color-warning-yellow) 3%, var(--color-background-subtle));
 }
 
 .options-grid {

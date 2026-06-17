@@ -3,6 +3,7 @@ import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Select from 'primevue/select'
+import Tag from 'primevue/tag'
 import Toolbar from 'primevue/toolbar'
 import { computed, ref, watch } from 'vue'
 import DeleteModal from '../../../components/common/DeleteModal.vue'
@@ -19,6 +20,9 @@ import {
   ruleTargetLines,
   ruleTitle,
 } from './reviewAgingLogic.js'
+import collectionIcon from '../../../assets/collection.svg'
+import shieldGreenCheckIcon from '../../../assets/shield-green-check.svg'
+import targetIcon from '../../../assets/target.svg'
 import ReviewAgingRuleEditModal from './ReviewAgingRuleEditModal.vue'
 import TaskOutput from './TaskOutput.vue'
 
@@ -28,6 +32,12 @@ const props = defineProps({
     required: true,
   },
 })
+
+const iconMap = {
+  collection: collectionIcon,
+  asset: targetIcon,
+  stig: shieldGreenCheckIcon,
+}
 
 const { triggerError } = useGlobalError()
 
@@ -254,10 +264,10 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               <template #body="{ data }">
                 <div class="rule-cell">
                   <div class="rule-title-line">
-                    <i
-                      class="pi rule-status"
-                      :class="data.enabled ? 'pi-circle-fill rule-status--on' : 'pi-circle rule-status--off'"
-                      :title="data.enabled ? 'Enabled' : 'Disabled'"
+                    <Tag
+                      :value="data.enabled ? 'Enabled' : 'Disabled'"
+                      :severity="data.enabled ? 'success' : 'secondary'"
+                      rounded
                     />
                     <span class="rule-title">{{ ruleTitle(data) }}</span>
                   </div>
@@ -270,7 +280,13 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
                         :color="normalizeColor(line.label.color, '#cccccc')"
                       />
                       <template v-else>
-                        <i class="pi rule-target-icon" :class="line.icon" />
+                        <img
+                          v-if="iconMap[line.type]"
+                          :src="iconMap[line.type]"
+                          class="rule-target-svg"
+                          alt=""
+                        />
+                        <i v-else class="pi rule-target-icon" :class="line.icon" />
                         <span>{{ line.text }}</span>
                       </template>
                     </span>
@@ -537,18 +553,6 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   color: var(--color-text-bright);
 }
 
-.rule-status {
-  font-size: 0.7rem;
-}
-
-.rule-status--on {
-  color: var(--color-action-green);
-}
-
-.rule-status--off {
-  color: var(--color-text-dim);
-}
-
 .rule-targets {
   display: flex;
   flex-wrap: wrap;
@@ -567,6 +571,14 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 .rule-target-icon {
   font-size: 0.8rem;
   color: var(--color-text-dim);
+}
+
+.rule-target-svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .rule-summary {
