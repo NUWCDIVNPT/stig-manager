@@ -6410,11 +6410,15 @@ components:
             $ref: '#/components/schemas/StigCklb'
     ChecklistJsonAccess:
       type: object
+      additionalProperties: false
       properties:
         access:
           $ref: '#/components/schemas/AclRuleAccess'
         checklist:
           $ref: '#/components/schemas/ChecklistAssetStig'
+      required:
+        - access
+        - checklist
     TargetData:
       type: object
       properties:
@@ -6550,9 +6554,11 @@ components:
         createdAt:
           type: string
           format: date-time
+          nullable: true
         updatedAt:
           type: string
           format: date-time
+          nullable: true
         STIGUuid:
           type: string
           format: uuid

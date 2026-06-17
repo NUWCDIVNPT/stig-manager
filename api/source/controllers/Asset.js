@@ -224,7 +224,10 @@ module.exports.getChecklistByAssetStig = async function getChecklistByAssetStig 
     const fileBasename = `${checklist.marking}_${checklist.assetName}-${benchmarkId}-${checklist.revisionStrResolved}`
     if (format === 'cklb') {
       checklist.cklb.title = fileBasename
-      writer.writeInlineFile(res, JSON.stringify(checklist.cklb), `${fileBasename}_${dateString}.cklb`, 'application/json')  // revisionStrResolved provides specific rev string, if "latest" was asked for.
+      res
+        .header('Content-Disposition', `inline; filename="${fileBasename}_${dateString}.cklb"`)
+        .header('Access-Control-Expose-Headers', 'Content-Disposition')
+        .json(checklist.cklb)
     }
     else if (format === 'ckl') {
       const builder = new XMLBuilder({
