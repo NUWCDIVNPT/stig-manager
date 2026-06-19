@@ -95,6 +95,81 @@
   color: var(--color-text-dim);
 }
 
+/* Panel root wrappers that simply stack their content */
+.manage-properties,
+.manage-metadata,
+.manage-settings,
+.manage-import-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Checkbox / toggle rows */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.checkbox-label {
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+}
+
+/* Action panels (Actions, Tasks) */
+.action-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.action-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.25rem;
+}
+
+.action-header h3 {
+  font-size: 1.25rem;
+  color: var(--color-text-bright);
+  margin: 0;
+}
+
+.action-header p {
+  color: var(--color-text-dim);
+  margin: 0;
+}
+
+.action-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: var(--color-background-subtle);
+  padding: 1.25rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: 8px;
+}
+
+.dropdown-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* Shared modal header (Clone warning, Delete confirmation). Prefixed to avoid
+   colliding with the unrelated `.modal-header` in TaskOutput / the rule editor,
+   since this file is imported as global (unscoped) CSS. */
+.collection-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--color-text-bright);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
 /* Hover, focus, and disabled overrides for root Select element (scoped-safe, no :deep needed) */
 .p-select:not(.p-disabled):hover {
   border-color: var(--color-border-hover) !important;

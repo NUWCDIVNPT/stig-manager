@@ -1,7 +1,7 @@
 import { ref, toValue, watch } from 'vue'
-import { fetchCollection, updateCollection } from '../../../shared/api/collectionsApi.js'
-import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { updateCollection } from '../../../shared/api/collectionsApi.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { useCollectionResource } from './useCollectionResource.js'
 
 /**
  * Shared load/save flow for collection settings panels.
@@ -21,10 +21,7 @@ export function useCollectionSettingsSave({ collectionId, buildPayload, normaliz
   const state = ref(null)
   const saveStatus = ref('idle')
 
-  const { state: collection, isLoading, execute: fetchCollectionAction } = useAsyncState(
-    id => fetchCollection(id),
-    { immediate: false },
-  )
+  const { collection, isLoading, setCollection } = useCollectionResource()
 
   const reportStatus = (status) => {
     saveStatus.value = status
@@ -34,18 +31,13 @@ export function useCollectionSettingsSave({ collectionId, buildPayload, normaliz
     state.value = normalizeSettings(JSON.parse(JSON.stringify(settings)))
   }
 
-  const loadCollection = async () => {
-    if (!toValue(collectionId)) {
-      return
-    }
-    const data = await fetchCollectionAction(toValue(collectionId))
+  // Seed the editable state from the shared collection whenever it (re)loads.
+  watch(collection, (data) => {
     if (data?.settings) {
       setStateFromSettings(data.settings)
       reportStatus('saved')
     }
-  }
-
-  watch(collectionId, loadCollection, { immediate: true })
+  }, { immediate: true })
 
   const performSave = async () => {
     if (!collection.value || !state.value) {
@@ -57,7 +49,7 @@ export function useCollectionSettingsSave({ collectionId, buildPayload, normaliz
 
     try {
       const res = await updateCollection(toValue(collectionId), { settings: payload })
-      collection.value = res
+      setCollection(res)
       setStateFromSettings(res.settings)
       reportStatus('saved')
     }
@@ -70,5 +62,5 @@ export function useCollectionSettingsSave({ collectionId, buildPayload, normaliz
     }
   }
 
-  return { state, collection, isLoading, loadCollection, performSave, saveStatus }
+  return { state, collection, isLoading, performSave, saveStatus }
 }

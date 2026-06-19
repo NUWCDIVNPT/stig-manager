@@ -1,8 +1,9 @@
 <script setup>
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
-import SaveStatusBadge from '../../../components/common/SaveStatusBadge.vue'
-import { useCollectionSettingsSave } from '../composables/useCollectionSettingsSave.js'
+import SaveStatusBadge from '../../../../components/common/SaveStatusBadge.vue'
+import { useCollectionSettingsSave } from '../../composables/useCollectionSettingsSave.js'
+import { normalizeImportOptions } from './importOptionsLogic.js'
 import { collectionSelectPt } from './pt.js'
 
 const props = defineProps({
@@ -35,26 +36,6 @@ const emptyOptions = [
   { label: 'Replaced', value: 'replace' },
   { label: 'Imported', value: 'import' },
 ]
-
-const defaultImportOptions = {
-  autoStatus: { fail: 'saved', notapplicable: 'saved', pass: 'saved' },
-  unreviewed: 'commented',
-  unreviewedCommented: 'informational',
-  emptyDetail: 'replace',
-  emptyComment: 'ignore',
-  updateAssetProps: false,
-  allowCustom: true,
-}
-
-// The template binds nested importOptions paths directly, so every key must
-// exist. Legacy payloads stored autoStatus as a single string for all results.
-const normalizeImportOptions = (options) => {
-  const opts = { ...defaultImportOptions, ...options }
-  opts.autoStatus = typeof opts.autoStatus === 'string'
-    ? { fail: opts.autoStatus, notapplicable: opts.autoStatus, pass: opts.autoStatus }
-    : { ...defaultImportOptions.autoStatus, ...opts.autoStatus }
-  return opts
-}
 
 const { state, isLoading, performSave, saveStatus } = useCollectionSettingsSave({
   collectionId: () => props.collectionId,
@@ -150,22 +131,5 @@ const { state, isLoading, performSave, saveStatus } = useCollectionSettingsSave(
 </template>
 
 <style scoped>
-@import "./collection-manage.css";
-
-.manage-import-options {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.checkbox-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.checkbox-label {
-  font-size: 0.9rem;
-  color: var(--color-text-primary);
-}
+@import "../collection-manage.css";
 </style>

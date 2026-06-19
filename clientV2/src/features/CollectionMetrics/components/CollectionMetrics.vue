@@ -38,14 +38,14 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['update:selectedLabelIds'])
+
 const fetchMetrics = () => {
   return fetchCollectionMetricsSummary(
     props.collectionId,
     buildLabelFilterParams(props.selectedLabelIds),
   )
 }
-
-const emit = defineEmits(['update:selectedLabelIds'])
 
 const { state: metrics, isLoading, error: errorMessage, execute: loadMetrics } = useAsyncState(
   fetchMetrics,

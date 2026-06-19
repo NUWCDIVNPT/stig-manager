@@ -3,7 +3,7 @@ import SelectButton from 'primevue/selectbutton'
 import { computed, ref } from 'vue'
 
 import ManageAssetsTable from './Asset/ManageAssetsTable.vue'
-import ManageConfiguration from './ManageConfiguration.vue'
+import ManageConfiguration from './Configuration/ManageConfiguration.vue'
 import ManageGrants from './ManageGrants.vue'
 import ManageLabels from './ManageLabels.vue'
 import ManageStigsTable from './Stig/ManageStigsTable.vue'

@@ -4,11 +4,11 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
 import { computed, watch } from 'vue'
-import StatusFooter from '../../../components/common/StatusFooter.vue'
-import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { formatDateTimeString } from '../../../shared/lib.js'
-import { secondaryBtnPt } from '../../ImportWizard/lib/importDialogPt.js'
-import { fetchTaskOutput, taskNameToPathParam } from '../api/tasksManageApi.js'
+import StatusFooter from '../../../../components/common/StatusFooter.vue'
+import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+import { formatDateTimeString } from '../../../../shared/lib.js'
+import { secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { fetchTaskOutput, taskNameToPathParam } from '../../api/tasksManageApi.js'
 
 const props = defineProps({
   visible: {

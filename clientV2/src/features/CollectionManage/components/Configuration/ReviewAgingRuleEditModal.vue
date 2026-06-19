@@ -6,14 +6,18 @@ import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { computed, reactive, ref, watch } from 'vue'
-import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../ImportWizard/lib/importDialogPt.js'
+import collectionIcon from '../../../../assets/collection.svg'
+import labelIcon from '../../../../assets/label.svg'
+import shieldGreenCheckIcon from '../../../../assets/shield-green-check.svg'
+import targetIcon from '../../../../assets/target.svg'
+import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
 import {
   fetchAssetStigs,
   fetchCollectionAssets,
   fetchCollectionLabels,
   fetchCollectionStigs,
-} from '../api/tasksManageApi.js'
+} from '../../api/tasksManageApi.js'
 import { collectionInputTextPt, collectionSelectPt } from './pt.js'
 import {
   ACTION_OPTIONS,
@@ -26,10 +30,6 @@ import {
   UPDATE_FIELD_OPTIONS,
   updateValueOptions,
 } from './reviewAgingLogic.js'
-import collectionIcon from '../../../assets/collection.svg'
-import labelIcon from '../../../assets/label.svg'
-import shieldGreenCheckIcon from '../../../assets/shield-green-check.svg'
-import targetIcon from '../../../assets/target.svg'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },
@@ -264,7 +264,7 @@ const dialogPt = {
     v-model:visible="localVisible"
     modal
     :draggable="false"
-    :style="{ width: 'min(650px, 96vw)', height: 'min(800px, 92vh)' }"
+    :style="{ width: 'min(650px, 96vw)', height: 'min(890px, 92vh)' }"
     :pt="dialogPt"
   >
     <template #header>
@@ -324,13 +324,13 @@ const dialogPt = {
             >
               <template #value="slotProps">
                 <div v-if="slotProps.value" class="select-option-with-icon">
-                  <img v-if="scopeIconMap[slotProps.value]" :src="scopeIconMap[slotProps.value]" class="label-icon" alt="" />
+                  <img v-if="scopeIconMap[slotProps.value]" :src="scopeIconMap[slotProps.value]" class="label-icon" alt="">
                   <span>{{ slotProps.value }}</span>
                 </div>
               </template>
               <template #option="slotProps">
                 <div class="select-option-with-icon">
-                  <img v-if="scopeIconMap[slotProps.option]" :src="scopeIconMap[slotProps.option]" class="label-icon" alt="" />
+                  <img v-if="scopeIconMap[slotProps.option]" :src="scopeIconMap[slotProps.option]" class="label-icon" alt="">
                   <span>{{ slotProps.option }}</span>
                 </div>
               </template>
@@ -339,7 +339,7 @@ const dialogPt = {
 
           <div class="labeled-field">
             <label class="flabel">
-              <img :src="targetIcon" class="label-icon" alt=""/>
+              <img :src="targetIcon" class="label-icon" alt="">
               Select Asset <span v-if="targetScope === 'Asset'" class="req-star">*</span>
             </label>
             <Select
@@ -357,7 +357,7 @@ const dialogPt = {
 
           <div class="labeled-field">
             <label class="flabel">
-              <img :src="labelIcon" class="label-icon" alt=""/>
+              <img :src="labelIcon" class="label-icon" alt="">
               Select Label <span v-if="targetScope === 'Label'" class="req-star">*</span>
             </label>
             <Select
@@ -373,7 +373,7 @@ const dialogPt = {
 
           <div class="labeled-field">
             <label class="flabel">
-              <img :src="shieldGreenCheckIcon" class="label-icon" alt=""/>
+              <img :src="shieldGreenCheckIcon" class="label-icon" alt="">
               {{ targetScope === 'STIG' ? 'Select STIG' : 'Specific STIG (Optional)' }}
               <span v-if="targetScope === 'STIG'" class="req-star">*</span>
             </label>

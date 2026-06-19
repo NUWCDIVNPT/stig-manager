@@ -6,12 +6,13 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
-import { cloneCollection, fetchCollection } from '../../../shared/api/collectionsApi.js'
-import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
-import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
-import { readNdjson } from '../../../shared/lib/ndjsonStream.js'
-import { useCollectionCloneProgressStore } from '../../../shared/stores/collectionCloneProgressStore.js'
+import { cloneCollection } from '../../../../shared/api/collectionsApi.js'
+import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
+import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import { readNdjson } from '../../../../shared/lib/ndjsonStream.js'
+import { useCollectionCloneProgressStore } from '../../../../shared/stores/collectionCloneProgressStore.js'
+import { useCollectionResource } from '../../composables/useCollectionResource.js'
+import { validateCollectionDescription, validateCollectionName } from './collectionValidation.js'
 import { collectionDialogPt, collectionInputTextPt, collectionSelectPt, collectionTextareaPt } from './pt.js'
 
 const props = defineProps({
@@ -29,10 +30,7 @@ const { triggerError } = useGlobalError()
 const cloneStore = useCollectionCloneProgressStore()
 const { refreshUser } = useCurrentUser()
 
-const { execute: fetchSource } = useAsyncState(
-  id => fetchCollection(id),
-  { immediate: false },
-)
+const { collection: sourceCollection } = useCollectionResource()
 
 const cloneForm = ref({
   name: '',
@@ -55,31 +53,25 @@ const pinRevisionOptions = [
   { label: 'Pin the source\'s default revisions', value: 'sourceDefaults' },
 ]
 
-const loadSource = async () => {
-  if (!props.collectionId) {
-    return
-  }
-  const data = await fetchSource(props.collectionId)
+// Seed the clone form's defaults from the source collection once it loads.
+watch(sourceCollection, (data) => {
   if (data) {
     const today = new Date().toISOString().split('T')[0]
     cloneForm.value.name = `Clone of ${data.name}`
     cloneForm.value.description = `Cloned from ${data.name} on ${today}`
   }
-}
-
-watch(() => props.collectionId, loadSource, { immediate: true })
+}, { immediate: true })
 
 const cloneValidationError = computed(() => {
-  const n = cloneForm.value.name?.trim() || ''
-  if (!n) {
-    return 'Collection name is required'
+  const nameError = validateCollectionName(cloneForm.value.name)
+  if (nameError) {
+    return nameError
   }
-  if (n.length > 45) {
-    return 'Collection names must be 45 characters or less'
+  const descriptionError = validateCollectionDescription(cloneForm.value.description)
+  if (descriptionError) {
+    return descriptionError
   }
-  if ((cloneForm.value.description || '').length > 255) {
-    return 'Collection descriptions must be 255 characters or less'
-  }
+  // Clone-specific: at least one content option must be selected.
   if (!cloneForm.value.assets && !cloneForm.value.labels && !cloneForm.value.grants) {
     return 'Must select at least one clone option (assets, labels, or grants)'
   }
@@ -294,7 +286,7 @@ const textareaPt = collectionTextareaPt
       :pt="collectionDialogPt"
     >
       <template #header>
-        <div class="modal-header-warning">
+        <div class="collection-modal-header">
           <i class="pi pi-exclamation-triangle warning-header-icon" />
           <span>Confirm Clone</span>
         </div>
@@ -321,7 +313,7 @@ const textareaPt = collectionTextareaPt
 </template>
 
 <style scoped>
-@import "./collection-manage.css";
+@import "../collection-manage.css";
 
 .manage-actions {
   display: flex;
@@ -332,43 +324,9 @@ const textareaPt = collectionTextareaPt
   margin: 0 auto;
 }
 
-.action-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.action-title-row {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  margin-bottom: 0.25rem;
-}
-
-.action-header h3 {
-  font-size: 1.25rem;
-  color: var(--color-text-bright);
-  margin: 0;
-}
-
-.action-header p {
-  color: var(--color-text-dim);
-  margin: 0;
-}
-
 .warning-icon {
   color: var(--color-warning-yellow);
   font-size: 1.25rem;
-}
-
-.action-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  background: var(--color-background-subtle);
-  padding: 1.25rem;
-  border: 1px solid var(--color-border-default);
-  border-radius: 8px;
 }
 
 .options-grid {
@@ -398,12 +356,6 @@ const textareaPt = collectionTextareaPt
   gap: 0.5rem;
   color: var(--color-text-primary);
   font-size: 0.95rem;
-}
-
-.dropdown-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
 }
 
 .action-submit {
@@ -451,15 +403,6 @@ const textareaPt = collectionTextareaPt
 
 .warning-recommendation {
   color: var(--color-text-bright);
-}
-
-.modal-header-warning {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  color: var(--color-text-bright);
-  font-size: 1.25rem;
-  font-weight: 600;
 }
 
 .warning-header-icon {

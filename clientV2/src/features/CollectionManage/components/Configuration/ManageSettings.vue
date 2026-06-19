@@ -3,8 +3,8 @@ import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { computed } from 'vue'
-import SaveStatusBadge from '../../../components/common/SaveStatusBadge.vue'
-import { useCollectionSettingsSave } from '../composables/useCollectionSettingsSave.js'
+import SaveStatusBadge from '../../../../components/common/SaveStatusBadge.vue'
+import { useCollectionSettingsSave } from '../../composables/useCollectionSettingsSave.js'
 import { collectionSelectPt } from './pt.js'
 
 const props = defineProps({
@@ -180,24 +180,7 @@ const commentRequiredOptions = computed(() => {
 </template>
 
 <style scoped>
-@import "./collection-manage.css";
-
-.manage-settings {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.checkbox-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.checkbox-label {
-  font-size: 0.9rem;
-  color: var(--color-text-primary);
-}
+@import "../collection-manage.css";
 
 .input-number-wrapper {
   max-width: 150px;

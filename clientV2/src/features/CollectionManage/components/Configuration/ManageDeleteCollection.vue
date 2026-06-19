@@ -4,11 +4,11 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { deleteCollection, fetchCollection } from '../../../shared/api/collectionsApi.js'
-import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
-import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
-import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
+import { deleteCollection } from '../../../../shared/api/collectionsApi.js'
+import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
+import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import { useRecentViews } from '../../../NavRail/composables/useRecentViews.js'
+import { useCollectionResource } from '../../composables/useCollectionResource.js'
 import { collectionDialogPt, collectionInputTextPt } from './pt.js'
 
 const props = defineProps({
@@ -23,18 +23,11 @@ const { triggerError } = useGlobalError()
 const { refreshUser } = useCurrentUser()
 const { removeView } = useRecentViews()
 
-const { execute: fetchSource } = useAsyncState(
-  id => fetchCollection(id),
-  { immediate: false },
-)
+const { collection } = useCollectionResource()
 
 const collectionName = ref('')
 
-watch(() => props.collectionId, async (id) => {
-  if (!id) {
-    return
-  }
-  const data = await fetchSource(id)
+watch(collection, (data) => {
   if (data) {
     collectionName.value = data.name
   }
@@ -109,7 +102,7 @@ const performDelete = async () => {
       :pt="collectionDialogPt"
     >
       <template #header>
-        <div class="modal-header-danger">
+        <div class="collection-modal-header">
           <i class="pi pi-exclamation-triangle danger-icon" />
           <span>Delete Collection</span>
         </div>
@@ -153,7 +146,7 @@ const performDelete = async () => {
 </template>
 
 <style scoped>
-@import "./collection-manage.css";
+@import "../collection-manage.css";
 
 .manage-delete {
   max-width: 700px;
@@ -192,15 +185,6 @@ const performDelete = async () => {
 .danger-icon {
   color: var(--color-text-error);
   font-size: 1.35rem;
-}
-
-.modal-header-danger {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  color: var(--color-text-bright);
-  font-size: 1.25rem;
-  font-weight: 600;
 }
 
 .modal-content {

@@ -2,11 +2,13 @@
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
-import SaveStatusBadge from '../../../components/common/SaveStatusBadge.vue'
-import { fetchCollection, updateCollection } from '../../../shared/api/collectionsApi.js'
-import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
-import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import SaveStatusBadge from '../../../../components/common/SaveStatusBadge.vue'
+import { updateCollection } from '../../../../shared/api/collectionsApi.js'
+import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
+import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import { useCollectionResource } from '../../composables/useCollectionResource.js'
+import { isDuplicateNameError } from './collectionApiErrors.js'
+import { normalizeCollectionName, validateCollectionDescription, validateCollectionName } from './collectionValidation.js'
 import { collectionInputTextPt, collectionTextareaPt } from './pt.js'
 
 const props = defineProps({
@@ -24,45 +26,16 @@ const description = ref('')
 const nameError = ref('')
 const saveStatus = ref('idle')
 
-const { state: collection, isLoading, execute: fetchCollectionAction } = useAsyncState(
-  id => fetchCollection(id),
-  { immediate: false },
-)
+const { collection, isLoading, setCollection } = useCollectionResource()
 
-const loadCollection = async () => {
-  if (!props.collectionId) {
-    return
-  }
-  const data = await fetchCollectionAction(props.collectionId)
+// Seed the editable fields from the shared collection whenever it (re)loads.
+watch(collection, (data) => {
   if (data) {
     name.value = data.name || ''
     description.value = data.description || ''
-    // Initially mark as saved
     saveStatus.value = 'saved'
   }
-}
-
-watch(() => props.collectionId, loadCollection, { immediate: true })
-
-const normalizeCollectionName = value => value?.trim() ?? ''
-
-const validateCollectionName = (value) => {
-  const n = normalizeCollectionName(value)
-  if (!n) {
-    return 'Collection name is required'
-  }
-  if (n.length > 45) {
-    return 'Collection names must be 45 characters or less'
-  }
-  return true
-}
-
-const validateCollectionDescription = (value) => {
-  if ((value ?? '').length > 255) {
-    return 'Collection descriptions must be 255 characters or less'
-  }
-  return true
-}
+}, { immediate: true })
 
 const saveName = async () => {
   if (!collection.value) {
@@ -71,9 +44,10 @@ const saveName = async () => {
   const newName = normalizeCollectionName(name.value)
 
   const validation = validateCollectionName(newName)
-  if (validation !== true) {
+  if (validation) {
     name.value = collection.value.name || '' // Revert
-    if (validation !== 'Collection name is required') {
+    // An empty name is reverted silently; a length error is surfaced inline.
+    if (newName) {
       nameError.value = validation
       setTimeout(() => {
         nameError.value = ''
@@ -91,7 +65,7 @@ const saveName = async () => {
   saveStatus.value = 'saving'
   try {
     const res = await updateCollection(props.collectionId, { name: newName })
-    collection.value = res
+    setCollection(res)
     name.value = res.name || ''
     nameError.value = ''
     saveStatus.value = 'saved'
@@ -103,8 +77,7 @@ const saveName = async () => {
     name.value = originalValue // Revert on failure
     saveStatus.value = 'error'
 
-    // Check for duplicate name error
-    if (err?.body?.code === 'ER_DUP_ENTRY' || JSON.stringify(err?.body || err).includes('ER_DUP_ENTRY')) {
+    if (isDuplicateNameError(err)) {
       nameError.value = 'A collection with this name already exists.'
       setTimeout(() => {
         nameError.value = ''
@@ -123,7 +96,7 @@ const saveDescription = async () => {
   const newDesc = description.value?.trim() ?? ''
 
   const validation = validateCollectionDescription(newDesc)
-  if (validation !== true) {
+  if (validation) {
     description.value = collection.value.description || '' // Revert
     triggerError(validation)
     return
@@ -138,7 +111,7 @@ const saveDescription = async () => {
   saveStatus.value = 'saving'
   try {
     const res = await updateCollection(props.collectionId, { description: newDesc })
-    collection.value = res
+    setCollection(res)
     description.value = res.description || ''
     saveStatus.value = 'saved'
   }
@@ -208,13 +181,7 @@ const textareaPt = collectionTextareaPt
 </template>
 
 <style scoped>
-@import "./collection-manage.css";
-
-.manage-properties {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
+@import "../collection-manage.css";
 
 .field-error {
   font-size: 0.85rem;
