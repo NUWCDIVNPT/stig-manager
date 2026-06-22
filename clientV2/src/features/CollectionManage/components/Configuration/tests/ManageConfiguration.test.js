@@ -21,7 +21,7 @@ function stub(name, extra = {}) {
 vi.mock('../ManageProperties.vue', () => stub('ManageProperties'))
 vi.mock('../ManageMetadata.vue', () => stub('ManageMetadata'))
 vi.mock('../ManageSettings.vue', () => stub('ManageSettings'))
-vi.mock('../ManageActions.vue', () => stub('ManageActions'))
+vi.mock('../ManageClone.vue', () => stub('ManageClone'))
 vi.mock('../ManageTasks.vue', () => stub('ManageTasks'))
 vi.mock('../ManageDeleteCollection.vue', () => stub('ManageDeleteCollection'))
 vi.mock('../ManageImportOptions.vue', () => stub('ManageImportOptions', {
@@ -64,7 +64,7 @@ describe('manageConfiguration', () => {
     expect(container.querySelector('.ManageProperties')).not.toBeNull()
     expect(container.querySelector('.ManageMetadata')).not.toBeNull()
     expect(container.querySelector('.ManageSettings')).not.toBeNull()
-    expect(container.querySelector('.ManageActions')).not.toBeNull()
+    expect(container.querySelector('.ManageClone')).not.toBeNull()
     expect(container.querySelector('.ManageTasks')).not.toBeNull()
     expect(container.querySelector('.ManageDeleteCollection')).not.toBeNull()
   })

@@ -1,7 +1,7 @@
 <script setup>
 import ScrollSpyLayout from '../../../../components/common/ScrollSpyLayout.vue'
 import { provideCollectionResource } from '../../composables/useCollectionResource.js'
-import ManageActions from './ManageActions.vue'
+import ManageClone from './ManageClone.vue'
 import ManageDeleteCollection from './ManageDeleteCollection.vue'
 import ManageImportOptions from './ManageImportOptions.vue'
 import ManageMetadata from './ManageMetadata.vue'
@@ -47,7 +47,7 @@ const sections = [
         <ManageImportOptions :collection-id="props.collectionId" @imported="emit('imported')" />
       </template>
       <template #actions>
-        <ManageActions :collection-id="props.collectionId" />
+        <ManageClone :collection-id="props.collectionId" />
         <div class="card-subsection">
           <ManageTasks :collection-id="props.collectionId" />
         </div>
