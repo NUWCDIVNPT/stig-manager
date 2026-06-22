@@ -1,0 +1,26 @@
+name: Dependency review
+# Scans the dependency manifests a pull request changes and fails only on
+# vulnerabilities the PR introduces (high severity or above). Pre-existing
+# advisories and being behind the base branch do not fail the check. Runs on
+# every PR to a long-lived branch regardless of which paths change, so it
+# covers the api/source, test, and clientV2 manifests alike. Findings are
+# written to the job summary.
+on:
+  pull_request:
+    branches:
+      - main
+      - new-client
+
+permissions:
+  contents: read # dependency-review-action reads the dependency graph diff
+
+jobs:
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
