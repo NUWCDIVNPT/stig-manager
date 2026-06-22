@@ -37,7 +37,7 @@
     "semver": "^7.6.3",
     "swagger-ui-express": "^4.1.6",
     "umzug": "^2.3.0",
-    "undici": "^6.24.0",
+    "undici": "^6.27.0",
     "ws": "^8.21.0",
     "xlsx-template": "file:utils/xlsx-template-js-zip-upgrade"
   }
