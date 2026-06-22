@@ -30,7 +30,7 @@ const { triggerError } = useGlobalError()
 const cloneStore = useCollectionCloneProgressStore()
 const { refreshUser } = useCurrentUser()
 
-const { collection: sourceCollection } = useCollectionResource()
+const { collection: sourceCollection, isLoading } = useCollectionResource()
 
 const cloneForm = ref({
   name: '',
@@ -189,7 +189,10 @@ const textareaPt = collectionTextareaPt
         </p>
       </div>
 
-      <div class="action-form">
+      <div v-if="isLoading" class="loading-state">
+        <i class="pi pi-spin pi-spinner" /> Loading clone options...
+      </div>
+      <div v-else class="action-form">
         <div class="labeled-field">
           <div class="field-header-row">
             <label class="flabel" for="cloneName">New Collection Name <span class="req-star">*</span></label>
