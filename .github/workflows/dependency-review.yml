@@ -1,6 +1,6 @@
 name: Dependency review
-# Scans the dependency manifests a pull request changes and fails only on
-# vulnerabilities the PR introduces (high severity or above). Pre-existing
+# Scans the dependency manifests a pull request changes and fails on any
+# vulnerability the PR introduces (severity low and above). Pre-existing
 # advisories and being behind the base branch do not fail the check. Runs on
 # every PR to a long-lived branch regardless of which paths change, so it
 # covers the api/source, test, and clientV2 manifests alike. Findings are
@@ -23,4 +23,4 @@ jobs:
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
         with:
-          fail-on-severity: high
+          fail-on-severity: low
