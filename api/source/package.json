@@ -25,7 +25,7 @@
     "express-openapi-validator": "^5.6.2",
     "fast-xml-parser": "^5.7.3",
     "he": "^1.2.0",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.2.0",
     "jsonpath-plus": "^10.3.0",
     "jsonwebtoken": "^9.0.2",
     "jszip": "^3.10.1",
@@ -39,7 +39,7 @@
     "swagger-ui-express": "^4.1.6",
     "umzug": "^2.3.0",
     "undici": "^6.24.0",
-    "ws": "^8.20.1",
+    "ws": "^8.21.0",
     "xlsx-template": "file:utils/xlsx-template-js-zip-upgrade"
   }
 }

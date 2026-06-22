@@ -138,7 +138,10 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
       return { ...(metrics?.[0] ?? {}), collection: result.collection }
     }
     catch (err) {
-      if (err?.status === 409) {
+      const isDuplicateName = err?.status === 409
+        || (err?.status === 422 && err?.body?.detail?.some(d => d.failure === 'name exists'))
+
+      if (isDuplicateName) {
         nameError.value = 'An asset with this name already exists in this collection.'
         return null
       }

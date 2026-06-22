@@ -131,7 +131,7 @@ const inputTextPt = {
 }
 
 const textareaPt = {
-  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%;' },
+  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%; resize: none;' },
 }
 </script>
 

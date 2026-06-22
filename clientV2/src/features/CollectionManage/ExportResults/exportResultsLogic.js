@@ -140,7 +140,7 @@ export function buildStigTree(selectedStigs, rowsByBenchmarkId) {
   const stigNodes = selectedStigs.map((s) => {
     const rows = rowsByBenchmarkId.get(s.benchmarkId) ?? []
 
-    const assetNodes = rows.map((row) =>
+    const assetNodes = rows.map(row =>
       makeNode(
         register(stigAssetNodeKey(s.benchmarkId, row.assetId)),
         row.name,
@@ -150,7 +150,7 @@ export function buildStigTree(selectedStigs, rowsByBenchmarkId) {
           benchmarkId: s.benchmarkId,
           acceptedPct: pct(row.metrics?.statuses?.accepted ?? 0, row.metrics?.assessments ?? 0),
         },
-      )
+      ),
     )
 
     const totalAccepted = rows.reduce((sum, r) => sum + (r.metrics?.statuses?.accepted ?? 0), 0)

@@ -8,7 +8,6 @@ export function useCollectionProgress(metrics) {
       return null
     }
 
-    console.log(m)
     const assessments = m.metrics.assessments
     const assessed = m.metrics.assessed
     const saved = m.metrics.statuses?.saved

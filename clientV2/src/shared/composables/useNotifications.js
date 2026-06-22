@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+import { markRaw, reactive } from 'vue'
 
 let nextId = 1
 const notifications = reactive([])
@@ -6,7 +6,9 @@ const notifications = reactive([])
 export function useNotifications() {
   function push(component, props = {}) {
     const id = nextId++
-    notifications.push({ id, component, props })
+    // markRaw the component definition so Vue doesn't make it reactive when it
+    // lands in the reactive notifications array (avoids a perf-overhead warning).
+    notifications.push({ id, component: markRaw(component), props })
     return id
   }
 

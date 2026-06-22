@@ -1,0 +1,185 @@
+/* Shared styling for Collection Management sub-panels */
+
+/* Layout content containers */
+.properties-content,
+.settings-content,
+.metadata-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 700px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0.25rem 0;
+}
+
+/* Settings groups */
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background-color: var(--color-background-subtle);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-default);
+}
+
+.group-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.group-desc {
+  margin: -0.85rem 0 0.5rem 0;
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: var(--color-text-dim);
+}
+
+/* Labeled fields & rows */
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.labeled-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 250px;
+  transition: opacity 0.2s ease;
+}
+
+.disabled-field {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.field-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Right-aligned row holding a panel's SaveStatusBadge */
+.panel-status-row {
+  display: flex;
+  justify-content: flex-end;
+  min-height: 1.35rem;
+  margin-bottom: -1rem;
+}
+
+.flabel {
+  font-size: 0.97rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.req-star {
+  color: var(--color-text-error);
+}
+
+.char-count {
+  font-size: 0.8rem;
+  color: var(--color-text-dim);
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-dim);
+}
+
+/* Panel root wrappers that simply stack their content */
+.manage-properties,
+.manage-metadata,
+.manage-settings,
+.manage-import-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Checkbox / toggle rows */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.checkbox-label {
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+}
+
+/* Action panels (Actions, Tasks) */
+.action-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.action-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.25rem;
+}
+
+.action-header h3 {
+  font-size: 1.25rem;
+  color: var(--color-text-bright);
+  margin: 0;
+}
+
+.action-header p {
+  color: var(--color-text-dim);
+  margin: 0;
+}
+
+.action-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: var(--color-background-subtle);
+  padding: 1.25rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: 8px;
+}
+
+.dropdown-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* Shared modal header (Clone warning, Delete confirmation). Prefixed to avoid
+   colliding with the unrelated `.modal-header` in TaskOutput / the rule editor,
+   since this file is imported as global (unscoped) CSS. */
+.collection-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--color-text-bright);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Hover, focus, and disabled overrides for root Select element (scoped-safe, no :deep needed) */
+.p-select:not(.p-disabled):hover {
+  border-color: var(--color-border-hover) !important;
+}
+
+.p-select.p-focus {
+  border-color: var(--color-primary-highlight) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary-highlight) 30%, transparent) !important;
+}
+
+.p-select.p-disabled {
+  opacity: 0.6;
+}

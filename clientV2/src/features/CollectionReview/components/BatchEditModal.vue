@@ -1,7 +1,7 @@
 <script setup>
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import Tooltip from 'primevue/tooltip'
 import { computed, ref, watch } from 'vue'
@@ -205,7 +205,7 @@ function onCancel() {
           Result
           <i v-tooltip="{ value: resultTooltipHtml, ...tooltipOpts }" class="pi pi-question-circle batch-modal__help-icon" />
         </label>
-        <Dropdown
+        <Select
           v-model="result"
           :options="resultOptions"
           option-label="label"
@@ -228,7 +228,7 @@ function onCancel() {
               <span>{{ slotProps.option.label }}</span>
             </div>
           </template>
-        </Dropdown>
+        </Select>
       </div>
 
       <div class="batch-modal__field">

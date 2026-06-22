@@ -10,7 +10,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'save'])
 
 const deleteModalVisible = ref(false)
 const pendingDeleteIndex = ref(null)
@@ -27,6 +27,7 @@ function confirmRemoveRow(i) {
     const arr = [...props.modelValue]
     arr.splice(i, 1)
     emit('update:modelValue', arr)
+    emit('save')
     return
   }
   pendingDeleteIndex.value = i
@@ -37,6 +38,7 @@ function onDeleteConfirmed() {
   const arr = [...props.modelValue]
   arr.splice(pendingDeleteIndex.value, 1)
   emit('update:modelValue', arr)
+  emit('save')
   pendingDeleteIndex.value = null
 }
 </script>
@@ -53,8 +55,14 @@ function onDeleteConfirmed() {
     <div class="meta-content-area">
       <div class="meta-grid">
         <template v-for="(row, i) in modelValue" :key="i">
-          <InputText v-model="row.key" placeholder="Key" class="meta-input" />
-          <InputText v-model="row.value" placeholder="Value" class="meta-input" />
+          <InputText
+            v-model="row.key"
+            placeholder="Key"
+            class="meta-input"
+            :class="{ 'p-invalid': !row.key?.trim() && row.value?.trim() }"
+            @blur="emit('save')"
+          />
+          <InputText v-model="row.value" placeholder="Value" class="meta-input" @blur="emit('save')" />
           <button class="meta-del" title="Remove" @click="confirmRemoveRow(i)">
             <i class="pi pi-times" />
           </button>
@@ -121,6 +129,14 @@ function onDeleteConfirmed() {
 .meta-input {
   width: 100%;
   font-size: 0.95rem;
+  background: var(--color-background-light);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-default);
+}
+
+.meta-input.p-invalid {
+  border-color: #f87171 !important;
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.4) !important;
 }
 
 .meta-del {
