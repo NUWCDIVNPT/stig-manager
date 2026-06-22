@@ -13,6 +13,7 @@ import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
+import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { fieldMatches, highlightText } from '../../../shared/lib/searchUtils.js'
 
 const props = defineProps({
@@ -189,7 +190,7 @@ const dataTablePt = {
     @update:selection="(val) => emit('update:selectedRow', val)"
     @filter="onFilter"
   >
-    <Column field="severity" filter-field="severity" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column field="severity" :sort-field="severitySortValue" filter-field="severity" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
           Cat

@@ -299,7 +299,6 @@ function onRowClick(event) {
   openRowEditor(event.originalEvent || event, event.data)
 }
 
-
 </script>
 
 <template>
