@@ -5,7 +5,7 @@ import {
   metadataObjectToRows,
   metadataRowsToObject,
   validateMetadataRows,
-} from '../Configuration/metadataLogic.js'
+} from '../metadataLogic.js'
 
 describe('metadataObjectToRows', () => {
   it('converts an object into rows sorted by key', () => {

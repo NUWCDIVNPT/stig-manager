@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { defaultImportOptions, normalizeImportOptions } from '../Configuration/importOptionsLogic.js'
+import { defaultImportOptions, normalizeImportOptions } from '../importOptionsLogic.js'
 
 describe('normalizeImportOptions', () => {
   it('fills in defaults for missing keys', () => {

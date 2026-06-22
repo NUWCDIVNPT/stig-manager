@@ -5,7 +5,7 @@ import {
   normalizeCollectionName,
   validateCollectionDescription,
   validateCollectionName,
-} from '../Configuration/collectionValidation.js'
+} from '../collectionValidation.js'
 
 describe('normalizeCollectionName', () => {
   it('trims surrounding whitespace', () => {

@@ -20,12 +20,38 @@ function scrollToSection(id) {
 }
 
 let observer = null
+// Ids of the sections whose card currently crosses the detection band. We keep
+// the whole set instead of reacting to one transient crossing so we can always
+// resolve the topmost visible section and avoid skipping fast-scrolled cards.
+const visibleSections = new Set()
+
+function updateActiveSection() {
+  const area = scrollAreaRef.value
+  if (!area || props.sections.length === 0) {
+    return
+  }
+
+  // The last card cannot rise into the detection band once the list is fully
+  // scrolled, so it would never activate on its own — force it at the bottom.
+  if (Math.ceil(area.scrollTop + area.clientHeight) >= area.scrollHeight - 1) {
+    activeSection.value = props.sections[props.sections.length - 1].id
+    return
+  }
+
+  // Otherwise the active section is the first one (in document order) whose
+  // card is currently in the band. If none is, keep the current selection.
+  const topmost = props.sections.find(sec => visibleSections.has(sec.id))
+  if (topmost) {
+    activeSection.value = topmost.id
+  }
+}
 
 function rebuildObserver() {
   if (observer) {
     observer.disconnect()
     observer = null
   }
+  visibleSections.clear()
 
   if (!props.sections.some(sec => sec.id === activeSection.value)) {
     activeSection.value = props.sections[0]?.id || ''
@@ -37,16 +63,21 @@ function rebuildObserver() {
 
   const options = {
     root: scrollAreaRef.value,
-    rootMargin: '-10% 0px -60% 0px',
+    rootMargin: '-10% 0px -70% 0px',
     threshold: 0,
   }
 
   observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
+      const id = entry.target.id.replace('section-', '')
       if (entry.isIntersecting) {
-        activeSection.value = entry.target.id.replace('section-', '')
+        visibleSections.add(id)
+      }
+      else {
+        visibleSections.delete(id)
       }
     })
+    updateActiveSection()
   }, options)
 
   props.sections.forEach((sec) => {
@@ -57,7 +88,12 @@ function rebuildObserver() {
   })
 }
 
-onMounted(rebuildObserver)
+onMounted(() => {
+  rebuildObserver()
+  // The observer covers crossings; the scroll listener settles the selection
+  // after fast scrolls and re-checks the bottom edge where no crossing fires.
+  scrollAreaRef.value?.addEventListener('scroll', updateActiveSection, { passive: true })
+})
 
 // Re-observe when the section list changes; flush 'post' waits until the
 // section elements rendered from the new list are in the DOM.
@@ -67,6 +103,7 @@ onUnmounted(() => {
   if (observer) {
     observer.disconnect()
   }
+  scrollAreaRef.value?.removeEventListener('scroll', updateActiveSection)
 })
 </script>
 
@@ -126,7 +163,6 @@ onUnmounted(() => {
   width: 100%;
 }
 
-/* ── Sidebar Nav ── */
 .scrollspy-nav {
   width: 16rem;
   flex-shrink: 0;
@@ -179,18 +215,16 @@ onUnmounted(() => {
   opacity: 0.85;
 }
 
-/* ── Scrollable Sections Area ── */
 .scrollspy-scroll-area {
   flex: 1;
-  overflow: auto; /* Allow both vertical and horizontal scroll */
+  overflow: auto;
   padding: 1.5rem 3rem;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Explicitly center cards horizontally in the scroll area */
+  align-items: center;
   scroll-behavior: smooth;
 }
 
-/* Center cards relative to the whole screen on wide displays while keeping the scrollbar on the right */
 @media (min-width: 1800px) {
   .scrollspy-nav {
     width: calc(16rem + (100vw - 1800px) / 2);
@@ -198,7 +232,7 @@ onUnmounted(() => {
 
   }
   .scrollspy-scroll-area {
-    padding-right: calc(19rem + (100vw - 1800px) / 2); /* 16rem (dynamic sidebar) + 3rem (left padding) */
+    padding-right: calc(19rem + (100vw - 1800px) / 2);
   }
 }
 
@@ -209,16 +243,15 @@ onUnmounted(() => {
   border: 1px solid var(--color-border-default);
   border-radius: 8px;
   padding: 1.5rem 2rem;
-  margin-bottom: 2rem; /* Bottom margin only, horizontal centering is handled by parent align-items */
+  margin-bottom: 2rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
   max-width: 1100px;
-  min-width: 800px; /* Prevent squishing of forms, trigger horizontal scroll instead */
-  flex-shrink: 0; /* Prevent vertical squishing inside the flex scroll area */
+  min-width: 800px;
+  flex-shrink: 0;
 }
 
-/* Modern Left Accent Gradient Line */
 .scrollspy-card::before {
   content: '';
   position: absolute;

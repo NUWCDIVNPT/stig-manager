@@ -11,7 +11,7 @@ import {
   targetDisplayLabel,
   targetToPut,
   updateValueOptions,
-} from '../Configuration/reviewAgingLogic.js'
+} from '../reviewAgingLogic.js'
 
 describe('interval conversion', () => {
   it('converts value + unit to seconds', () => {

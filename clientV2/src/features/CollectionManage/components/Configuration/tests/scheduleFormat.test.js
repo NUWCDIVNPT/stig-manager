@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatSchedule } from '../Configuration/scheduleFormat.js'
+import { formatSchedule } from '../scheduleFormat.js'
 
 describe('formatSchedule', () => {
   it('returns "Not scheduled" for missing or empty events', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isDuplicateNameError } from '../Configuration/collectionApiErrors.js'
+import { isDuplicateNameError } from '../collectionApiErrors.js'
 
 describe('isDuplicateNameError', () => {
   it('detects a structured ER_DUP_ENTRY code', () => {
