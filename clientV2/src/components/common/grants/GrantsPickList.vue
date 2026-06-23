@@ -21,9 +21,18 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  canModifyOwners: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const emit = defineEmits(['save', 'cancel'])
+
+// Only an Owner (or an elevated caller) may grant the Owner role.
+const availableRoleOptions = computed(() =>
+  props.canModifyOwners ? roleOptions : roleOptions.filter(option => option.value !== 4),
+)
 
 // Component is v-if guarded by parent, so direct initialization is safe
 const localSource = ref([...props.source])
@@ -214,7 +223,7 @@ const onCancel = () => {
     <Popover ref="popoverRef">
       <div class="popover-container">
         <span class="popover-header">Assign Role:</span>
-        <div v-for="option in roleOptions" :key="option.value">
+        <div v-for="option in availableRoleOptions" :key="option.value">
           <Button
             :label="option.label"
             text

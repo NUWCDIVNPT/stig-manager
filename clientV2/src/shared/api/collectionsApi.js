@@ -14,6 +14,25 @@ export function fetchCollectionLabels(collectionId) {
   return apiCall('getCollectionLabels', { collectionId })
 }
 
+export async function fetchCollectionUsers(collectionId, { elevate } = {}) {
+  if (!collectionId) {
+    throw new Error('A collectionId is required to fetch collection users.')
+  }
+  const params = { collectionId, projection: 'users' }
+  if (elevate) {
+    params.elevate = elevate
+  }
+  const collection = await apiCall('getCollection', params)
+  return collection.users ?? []
+}
+
+export function fetchCollectionStigs(collectionId, params = {}) {
+  if (!collectionId) {
+    throw new Error('A collectionId is required to fetch collection STIGs.')
+  }
+  return apiCall('getStigsByCollection', { collectionId, ...params })
+}
+
 export function updateCollection(collectionId, body, { elevate, projection } = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to update a collection.')

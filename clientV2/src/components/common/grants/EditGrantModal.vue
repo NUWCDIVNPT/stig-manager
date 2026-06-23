@@ -27,9 +27,18 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  canModifyOwners: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const emit = defineEmits(['update:visible', 'save', 'cancel'])
+
+// Only an Owner (or an elevated caller) may assign the Owner role.
+const availableRoleOptions = computed(() =>
+  props.canModifyOwners ? roleOptions : roleOptions.filter(option => option.value !== 4),
+)
 
 const localVisible = computed({
   get: () => props.visible,
@@ -55,6 +64,11 @@ watch(() => props.grant, (newVal) => {
     selectedGranteeInList.value = null
   }
 }, { immediate: true })
+
+const isOptionSelected = option => !!selectedGranteeInList.value && (
+  (option.type === 'user' && selectedGranteeInList.value.userId === option.userId)
+  || (option.type === 'group' && selectedGranteeInList.value.userGroupId === option.userGroupId)
+)
 
 const currentGrantee = computed(() => {
   if (selectedGranteeInList.value) {
@@ -108,21 +122,28 @@ const onCancel = () => {
     v-model:visible="localVisible"
     header="Edit Grant"
     :modal="true"
-    :style="{ width: '500px', height: '650px' }"
     :pt="{
-      content: { style: 'display: flex; flex-direction: column; overflow: hidden; padding-bottom: 0;' },
+      root: { style: 'width: 500px; height: 650px; display: flex; flex-direction: column;' },
+      content: { style: 'flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow: hidden; padding-bottom: 0;' },
     }"
   >
     <div class="edit-grant-layout">
       <!-- Top Section: Available Grantees -->
       <div class="available-section">
-        <div class="section-header">
-          Available Grantees
-        </div>
+        <span class="section-label">Available Grantees</span>
 
         <div class="filter-row">
+          <IconField class="search-field">
+            <InputIcon class="pi pi-search" />
+            <InputText
+              v-model="searchText"
+              placeholder="Filter names"
+              class="search-input"
+              :pt="{ root: { style: 'padding-top: 0.4rem; padding-bottom: 0.4rem; background-color: var(--color-background-light); border-color: var(--color-border-default);' } }"
+            />
+          </IconField>
           <div class="filter-item">
-            <span class="filter-label">Users:</span>
+            <span class="filter-label">Active:</span>
             <Select
               v-model="selectedFilter"
               :options="filterOptions"
@@ -131,10 +152,6 @@ const onCancel = () => {
               class="filter-select"
             />
           </div>
-          <IconField class="search-field">
-            <InputIcon class="pi pi-search" />
-            <InputText v-model="searchText" placeholder="Filter names" class="search-input" />
-          </IconField>
         </div>
 
         <Listbox
@@ -147,6 +164,7 @@ const onCancel = () => {
           class="grantee-listbox"
           :pt="{
             listContainer: { style: 'max-height: none;' },
+            list: { style: 'padding: 0;' },
           }"
         >
           <template #optiongroup="slotProps">
@@ -156,17 +174,17 @@ const onCancel = () => {
             </div>
           </template>
           <template #option="slotProps">
-            <div v-if="!slotProps.option.collapsed" class="option-item">
-              <!-- Selection indicator (radio button style logic managed by listbox selection) -->
-              <div
-                class="radio-circle"
-                :class="{ selected: selectedGranteeInList && ((slotProps.option.type === 'user' && selectedGranteeInList.userId === slotProps.option.userId) || (slotProps.option.type === 'group' && selectedGranteeInList.userGroupId === slotProps.option.userGroupId)) }"
-              >
+            <div
+              v-if="!slotProps.option.collapsed"
+              class="option-item"
+              :class="{ 'option-item--selected': isOptionSelected(slotProps.option) }"
+            >
+              <div class="radio-circle" :class="{ selected: isOptionSelected(slotProps.option) }">
                 <div class="radio-dot" />
               </div>
 
-              <i :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
-              <span>{{ slotProps.option[itemLabel] }}</span>
+              <i class="option-icon" :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
+              <span class="option-name">{{ slotProps.option[itemLabel] }}</span>
             </div>
           </template>
         </Listbox>
@@ -174,12 +192,10 @@ const onCancel = () => {
 
       <!-- Bottom Section: Modified Grant -->
       <div class="modified-section">
-        <div class="modified-header">
-          Modified Grant
-        </div>
+        <span class="section-label">Modified Grant</span>
         <div class="modified-content">
           <div class="field-row">
-            <label>Grantee:</label>
+            <label>Grantee</label>
             <div class="grantee-box">
               <div v-if="currentGrantee" class="grantee-details">
                 <i :class="currentGrantee.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
@@ -188,16 +204,17 @@ const onCancel = () => {
                   <span v-if="currentGrantee.username && currentGrantee.username !== currentGrantee.displayName" class="grantee-sub">{{ currentGrantee.username }}</span>
                 </div>
               </div>
-              <div v-else class="grantee-details">
+              <div v-else class="grantee-details grantee-details--empty">
+                <i class="pi pi-info-circle" />
                 <span>No selection</span>
               </div>
             </div>
           </div>
           <div class="field-row">
-            <label>Role:</label>
+            <label>Role</label>
             <Select
               v-model="selectedRoleId"
-              :options="roleOptions"
+              :options="availableRoleOptions"
               option-label="label"
               option-value="value"
               class="role-select"
@@ -208,8 +225,10 @@ const onCancel = () => {
     </div>
 
     <template #footer>
-      <Button label="Cancel" text @click="onCancel" />
-      <Button label="Save" @click="onSave" />
+      <div class="modal-footer">
+        <Button label="Cancel" text @click="onCancel" />
+        <Button label="Save" @click="onSave" />
+      </div>
     </template>
   </Dialog>
 </template>
@@ -218,9 +237,18 @@ const onCancel = () => {
 .edit-grant-layout {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  gap: 0.5rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 1rem;
   overflow: hidden;
+}
+
+.section-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-dim);
 }
 
 .available-section {
@@ -228,36 +256,36 @@ const onCancel = () => {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  padding: 0.5rem;
-  border-radius: 4px;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  border-radius: 6px;
   border: 1px solid var(--color-border-default);
-}
-
-.section-header {
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-  color: var(--color-text-primary);
+  background-color: var(--color-background-subtle);
 }
 
 .filter-row {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 6px;
+  background-color: var(--color-background-subtle);
 }
 
 .filter-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .filter-label {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  color: var(--color-text-dim);
   white-space: nowrap;
 }
 
 .filter-select {
-  width: 100px;
+  width: 90px;
 }
 
 .search-field {
@@ -266,57 +294,71 @@ const onCancel = () => {
 
 .search-input {
   width: 100%;
-  padding-left: 0.5rem;
-}
-/* last ditch try to fix input padding */
-:deep(.p-inputtext) {
-  padding-top: 0.4rem;
-  padding-bottom: 0.4rem;
 }
 
 .grantee-listbox {
   flex: 1;
-  border: none;
-  background: transparent;
-  padding: 0;
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+  background: var(--color-background-light);
+  padding: 0.25rem;
   overflow-y: auto;
-}
-
-:deep(.p-listbox-list) {
-  padding: 0;
 }
 
 .group-header {
   display: flex;
   align-items: center;
   cursor: pointer;
-  padding: 0.25rem ;
-  gap: 0.25rem;
-  font-weight: bold;
+  padding: 0.35rem 0.4rem;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
   color: var(--color-text-dim);
 }
 
 .option-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0.5rem;
+  gap: 0.6rem;
+  padding: 0.4rem 0.5rem;
+  margin: 0.1rem 0;
+  border-radius: 6px;
   cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.option-item:hover {
+  background-color: var(--color-background-light);
+}
+
+.option-item--selected {
+  background-color: color-mix(in srgb, var(--p-primary-color) 16%, transparent);
+}
+
+.option-icon {
+  font-size: 1.05rem;
+  color: var(--color-text-dim);
+}
+
+.option-name {
+  font-size: 0.92rem;
 }
 
 .radio-circle {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 1px solid var(--color-border-default);
+  border: 1px solid var(--color-border-hover);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .radio-circle.selected {
   border-color: var(--p-primary-color);
-  background-color: rgba(var(--p-primary-color-rgb), 0.2);
 }
 
 .radio-dot {
@@ -333,23 +375,19 @@ const onCancel = () => {
 
 .modified-section {
   flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
   border: 1px solid var(--color-border-default);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.modified-header {
-  padding: 0.5rem;
-  font-weight: bold;
-  color: var(--color-text-primary);
+  border-radius: 6px;
+  padding: 0.75rem;
+  background-color: var(--color-background-subtle);
 }
 
 .modified-content {
-  padding: 1rem;
-  background-color: var(--color-background-subtle);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .field-row {
@@ -359,16 +397,17 @@ const onCancel = () => {
 }
 
 .field-row label {
-  width: 70px;
+  width: 64px;
+  font-size: 0.85rem;
   color: var(--color-text-dim);
 }
 
 .grantee-box {
   flex: 1;
   border: 1px solid var(--color-border-default);
-  border-radius: 4px;
-  padding: 0.5rem;
-  background-color: var(--color-background-dark);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--color-background-light);
 }
 
 .grantee-details {
@@ -378,8 +417,17 @@ const onCancel = () => {
 }
 
 .grantee-details i {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   color: var(--color-text-dim);
+}
+
+.grantee-details--empty {
+  color: var(--color-text-dim);
+  font-size: 0.9rem;
+}
+
+.grantee-details--empty i {
+  font-size: 1rem;
 }
 
 .grantee-text {
@@ -388,7 +436,8 @@ const onCancel = () => {
 }
 
 .grantee-name {
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 .grantee-sub {
@@ -397,6 +446,15 @@ const onCancel = () => {
 }
 
 .role-select {
-  width: 155px;
+  flex: 1;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding-top: 1rem;
 }
 </style>

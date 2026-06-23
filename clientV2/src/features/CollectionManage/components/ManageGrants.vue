@@ -1,78 +1,75 @@
 <script setup>
+import { ref } from 'vue'
+import GrantsPanel from '../../../components/common/grants/GrantsPanel.vue'
+import ScrollSpyLayout from '../../../components/common/ScrollSpyLayout.vue'
+import GrantAclModal from './User/GrantAclModal.vue'
+import ManageUsers from './User/ManageUsers.vue'
+
 defineProps({
   collectionId: {
-    type: String,
+    type: [String, Number],
     required: true,
   },
 })
+
+const sections = [
+  { id: 'grants', title: 'Grants', icon: 'pi-shield', desc: 'Add, edit, and remove user and group access grants for this collection' },
+  { id: 'users', title: 'Effective Users', icon: 'pi-users', desc: 'Resolved user access, including permissions inherited from group memberships' },
+]
+
+// Grant ACL editor
+const aclVisible = ref(false)
+const aclGrant = ref(null)
+
+function onOpenAcl(grant) {
+  aclGrant.value = grant
+  aclVisible.value = true
+}
 </script>
 
 <template>
   <div class="manage-grants">
-    <div class="grants-content">
-      <div class="settings-group">
-        <h3 class="group-title">
-          Access Grants
-        </h3>
-        <p class="group-desc">
-          Add, edit, and remove user and group access grants for this collection.
-        </p>
-        <div class="stub-box">
-          <i class="pi pi-shield stub-icon" />
-          <span>Grants Administration UI Placeholder</span>
+    <ScrollSpyLayout :sections="sections">
+      <template #grants>
+        <div class="panel-frame">
+          <GrantsPanel
+            :collection-id="collectionId"
+            :show-header="false"
+            @open-acl="onOpenAcl"
+          />
         </div>
-      </div>
+      </template>
 
-      <div class="settings-group">
-        <h3 class="group-title">
-          Effective Users
-        </h3>
-        <p class="group-desc">
-          View resolved user access, including permissions inherited from group memberships.
-        </p>
-        <div class="stub-box">
-          <i class="pi pi-users stub-icon" />
-          <span>Effective Users List Placeholder</span>
+      <template #users>
+        <div class="panel-frame">
+          <ManageUsers :collection-id="collectionId" />
         </div>
-      </div>
-    </div>
+      </template>
+    </ScrollSpyLayout>
+
+    <GrantAclModal
+      v-model:visible="aclVisible"
+      :collection-id="collectionId"
+      :grant="aclGrant"
+    />
   </div>
 </template>
 
 <style scoped>
-@import "./collection-manage.css";
-
 .manage-grants {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.grants-content {
+/* Give the flex-based DataTables a bounded height so their internal
+   scroll-height="flex" resolves, while the page scrolls between sections. */
+.panel-frame {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  max-width: 700px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 0.25rem 0;
-}
-
-.stub-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1.5rem;
-  border: 1px dashed var(--color-border-default);
-  border-radius: 6px;
-  color: var(--color-text-dim);
-  gap: 0.75rem;
-  font-size: 0.95rem;
-}
-
-.stub-icon {
-  font-size: 2rem;
-  opacity: 0.6;
+  height: 60vh;
+  min-height: 360px;
 }
 </style>
