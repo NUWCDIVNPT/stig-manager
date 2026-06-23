@@ -464,6 +464,8 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
 
       // Process scalar properties
       if (writeAction === dbUtils.WRITE_ACTION.CREATE) {
+        // description is optional in the OAS; substitute null when it is absent so the bind param is not undefined
+        collectionFields.description = collectionFields.description ?? null
         // INSERT into collections
         let sqlInsert =
         `INSERT INTO
