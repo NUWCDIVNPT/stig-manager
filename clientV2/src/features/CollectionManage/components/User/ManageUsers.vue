@@ -4,12 +4,14 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Tooltip from 'primevue/tooltip'
 import { computed, ref } from 'vue'
+import targetSvg from '../../../../assets/target.svg'
 import { roleMap } from '../../../../components/common/grants/roleOptions.js'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
+import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
+import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { useCollectionUsers } from '../../composables/useCollectionUsers.js'
 import { getEffectiveUserDisplay } from '../../lib/grantsUsers.js'
 import EffectiveAclModal from './EffectiveAclModal.vue'
-import targetSvg from '../../../../assets/target.svg'
 
 const props = defineProps({
   collectionId: {
@@ -33,29 +35,9 @@ const displayUsers = computed(() => (users.value ?? []).map((row) => {
   }
 }))
 
-const exportCSV = () => {
-  usersDt.value?.exportCSV()
-}
+const { onFooterAction } = useTableFooterActions(usersDt, { onRefresh: reload })
 
-const onFooterAction = (key) => {
-  if (key === 'refresh') {
-    reload()
-  }
-  else if (key === 'export') {
-    exportCSV()
-  }
-}
-
-// Compact, flush-footer table styling via PassThrough (no scoped ::v-deep).
-const tablePt = {
-  root: { style: 'background: var(--p-datatable-row-background);' },
-  tableContainer: { style: 'background: var(--p-datatable-row-background);' },
-  footer: { style: 'padding: 0; border: none;' },
-  column: {
-    headerCell: { style: 'font-size: 1rem; font-weight: 600;' },
-    bodyCell: { style: 'padding: 0.4rem 0.6rem;' },
-  },
-}
+const tablePt = compactTablePt()
 
 // Effective ACL drawer
 const aclVisible = ref(false)
@@ -127,7 +109,7 @@ const openEffectiveAcl = (row) => {
                 class="action-btn"
                 @click="openEffectiveAcl(data)"
               >
-                <img :src="targetSvg" class="action-svg" alt="Target" />
+                <img :src="targetSvg" class="action-svg" alt="Target">
               </Button>
             </div>
           </template>

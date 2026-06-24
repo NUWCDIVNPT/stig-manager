@@ -1,53 +1,52 @@
 import { ref } from 'vue'
 import { fetchGrantAcl, replaceGrantAcl } from '../../../shared/api/grantsApi.js'
-import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { aclRuleToPayload, normalizeAclRule } from '../lib/aclRules.js'
 
 /**
  * Loads and saves a single grant's ACL rules.
  *
+ * `rules` is a writable copy of the server's ACL that the editor mutates
+ * directly; `defaultAccess` mirrors the server value. Both are re-applied from
+ * the response after every load/save. Errors are routed to the global error
+ * modal by `useAsyncState`.
+ *
  * @returns {object} Reactive ACL state plus load/save actions.
  */
 export function useGrantAcl() {
-  const { triggerError } = useGlobalError()
-
   const defaultAccess = ref('rw')
   const rules = ref([])
-  const isLoading = ref(false)
-  const isSaving = ref(false)
 
   function applyResponse(response) {
     defaultAccess.value = response?.defaultAccess ?? 'rw'
     rules.value = (response?.acl ?? []).map(normalizeAclRule)
   }
 
+  const { isLoading, execute: executeLoad } = useAsyncState(
+    (collectionId, grantId) => fetchGrantAcl(collectionId, grantId),
+    { immediate: false },
+  )
+
+  const { isLoading: isSaving, execute: executeSave } = useAsyncState(
+    (collectionId, grantId, payload) => replaceGrantAcl(collectionId, grantId, payload),
+    { immediate: false },
+  )
+
   async function load(collectionId, grantId) {
-    isLoading.value = true
-    try {
-      applyResponse(await fetchGrantAcl(collectionId, grantId))
-    }
-    catch (error) {
-      triggerError(error)
-    }
-    finally {
-      isLoading.value = false
+    const response = await executeLoad(collectionId, grantId)
+    if (response) {
+      applyResponse(response)
     }
   }
 
   async function save(collectionId, grantId) {
-    isSaving.value = true
-    try {
-      const payload = rules.value.map(aclRuleToPayload)
-      applyResponse(await replaceGrantAcl(collectionId, grantId, payload))
-      return true
-    }
-    catch (error) {
-      triggerError(error)
+    const payload = rules.value.map(aclRuleToPayload)
+    const response = await executeSave(collectionId, grantId, payload)
+    if (!response) {
       return false
     }
-    finally {
-      isSaving.value = false
-    }
+    applyResponse(response)
+    return true
   }
 
   return { defaultAccess, rules, isLoading, isSaving, load, save }

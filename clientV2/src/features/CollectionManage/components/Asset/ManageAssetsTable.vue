@@ -14,6 +14,7 @@ import { fetchCollectionAssetSummary } from '../../../../shared/api/collectionsA
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { deleteAssets } from '../../api/assetManageApi.js'
 import { useAssetTable } from '../../composables/useAssetTable.js'
 import AssetFormModal from './AssetFormModal.vue'
@@ -108,14 +109,7 @@ function onAssetsTransferred(transferredIds) {
   selectedAssets.value = selectedAssets.value.filter(a => !idSet.has(a.assetId))
 }
 
-function handleFooterAction(action) {
-  if (action === 'refresh') {
-    loadAssets()
-  }
-  else if (action === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-}
+const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: loadAssets })
 </script>
 
 <template>
@@ -215,7 +209,7 @@ function handleFooterAction(action) {
             :show-selected="selectedAssets.length > 0"
             :selected-items="selectedAssets"
             total-label="assets"
-            @action="handleFooterAction"
+            @action="onFooterAction"
           />
         </template>
       </DataTable>

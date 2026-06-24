@@ -83,6 +83,16 @@ export function granteeToGrantPayload(grantee) {
   return payload
 }
 
+// A grantee resolves to "Direct" when it's the user themselves, otherwise to
+// the group name that confers the access.
+export function granteeLabel(grantee) {
+  return grantee?.userId ? 'Direct' : grantee?.name
+}
+
+export function granteeLabels(grantees = []) {
+  return grantees.map(granteeLabel)
+}
+
 export function getEffectiveUserDisplay(row) {
   const user = row.user ?? {}
   return {
@@ -90,12 +100,7 @@ export function getEffectiveUserDisplay(row) {
     displayName: user.displayName || user.username,
     username: user.username,
     roleId: row.roleId,
-    granteeLabels: (row.grantees ?? []).map((grantee) => {
-      if (grantee.userId) {
-        return 'Direct'
-      }
-      return grantee.name
-    }),
+    granteeLabels: granteeLabels(row.grantees ?? []),
   }
 }
 

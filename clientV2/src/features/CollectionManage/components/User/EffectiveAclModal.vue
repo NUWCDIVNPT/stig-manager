@@ -8,7 +8,10 @@ import AclStateIcon from '../../../../components/common/AclStateIcon.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchEffectiveAclByCollectionUser } from '../../../../shared/api/grantsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
+import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { getDefaultAccessForRole } from '../../lib/aclRules.js'
+import { granteeLabel } from '../../lib/grantsUsers.js'
 
 const props = defineProps({
   collectionId: {
@@ -38,49 +41,25 @@ const aclDt = ref()
 
 const defaultAccess = computed(() => getDefaultAccessForRole(props.roleId))
 
-const sourceLabels = sources => (sources ?? []).map((source) => {
-  const grantee = source.grantee ?? {}
-  return grantee.userId ? 'Direct' : grantee.name
-})
-
 const displayAcl = computed(() => (acl.value ?? []).map(row => ({
   assetName: row.asset?.name ?? '',
   benchmarkId: row.benchmarkId ?? '',
   access: row.access,
-  sources: sourceLabels(row.aclSources).join(', '),
+  sources: (row.aclSources ?? []).map(source => granteeLabel(source.grantee)).join(', '),
 })))
 
-const exportCSV = () => {
-  aclDt.value?.exportCSV()
-}
+const { onFooterAction } = useTableFooterActions(aclDt, { onRefresh: execute })
 
-const onFooterAction = (key) => {
-  if (key === 'refresh') {
+const tablePt = compactTablePt({ bodyFontSize: '0.9rem' })
+
+// Clear prior results on every open/user change so a reopened drawer never
+// flashes the previous user's access before the new fetch resolves.
+watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
+  acl.value = []
+  if (isVisible && userId) {
     execute()
   }
-  else if (key === 'export') {
-    exportCSV()
-  }
-}
-
-// Compact, flush-footer table styling via PassThrough (no scoped ::v-deep).
-const tablePt = {
-  root: { style: 'background: var(--p-datatable-row-background);' },
-  tableContainer: { style: 'background: var(--p-datatable-row-background);' },
-  footer: { style: 'padding: 0; border: none;' },
-  column: {
-    headerCell: { style: 'font-size: 1rem; font-weight: 600;' },
-    bodyCell: { style: 'padding: 0.4rem 0.6rem; font-size: 0.9rem;' },
-  },
-}
-
-const load = () => {
-  if (visible.value && props.user?.userId) {
-    execute()
-  }
-}
-
-watch([visible, () => props.user?.userId], load, { immediate: true })
+}, { immediate: true })
 </script>
 
 <template>
