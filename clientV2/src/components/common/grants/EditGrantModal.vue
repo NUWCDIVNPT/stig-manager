@@ -33,7 +33,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:visible', 'save', 'cancel'])
+const emit = defineEmits(['update:visible', 'save'])
 
 // Only an Owner (or an elevated caller) may assign the Owner role.
 const availableRoleOptions = computed(() =>
@@ -130,78 +130,82 @@ const onCancel = () => {
     <div class="edit-grant-layout">
       <!-- Top Section: Available Grantees -->
       <div class="available-section">
-        <span class="section-label">Available Grantees</span>
-
-        <div class="filter-row">
-          <IconField class="search-field">
-            <InputIcon class="pi pi-search" />
-            <InputText
-              v-model="searchText"
-              placeholder="Filter names"
-              class="search-input"
-              :pt="{ root: { style: 'padding-top: 0.4rem; padding-bottom: 0.4rem; background-color: var(--color-background-light); border-color: var(--color-border-default);' } }"
-            />
-          </IconField>
-          <div class="filter-item">
-            <span class="filter-label">Active:</span>
-            <Select
-              v-model="selectedFilter"
-              :options="filterOptions"
-              option-label="label"
-              size="small"
-              class="filter-select"
-            />
+        <h4 class="col-header">
+          Available Grantees
+        </h4>
+        <div class="section-content">
+          <div class="filter-row">
+            <IconField class="search-field">
+              <InputIcon class="pi pi-search" />
+              <InputText
+                v-model="searchText"
+                placeholder="Filter names"
+                class="search-input"
+                :pt="{ root: { style: 'padding-top: 0.4rem; padding-bottom: 0.4rem; background-color: var(--color-background-light); border-color: var(--color-border-default);' } }"
+              />
+            </IconField>
+            <div class="filter-item">
+              <span class="filter-label">Active:</span>
+              <Select
+                v-model="selectedFilter"
+                :options="filterOptions"
+                option-label="label"
+                size="small"
+                class="filter-select"
+              />
+            </div>
           </div>
-        </div>
 
-        <Listbox
-          v-model="selectedGranteeInList"
-          :options="displaySource"
-          :option-label="itemLabel"
-          option-group-label="label"
-          option-group-children="items"
-          option-disabled="collapsed"
-          class="grantee-listbox"
-          :pt="{
-            listContainer: { style: 'max-height: none;' },
-            list: { style: 'padding: 0;' },
-          }"
-        >
-          <template #optiongroup="slotProps">
-            <div class="group-header" @click="toggleGroup(slotProps.option.value)">
-              <i :class="collapsedGroups[slotProps.option.value] ? 'pi pi-chevron-right' : 'pi pi-chevron-down'" />
-              <span>{{ slotProps.option.label }}</span>
-            </div>
-          </template>
-          <template #option="slotProps">
-            <div
-              v-if="!slotProps.option.collapsed"
-              class="option-item"
-              :class="{ 'option-item--selected': isOptionSelected(slotProps.option) }"
-            >
-              <div class="radio-circle" :class="{ selected: isOptionSelected(slotProps.option) }">
-                <div class="radio-dot" />
+          <Listbox
+            v-model="selectedGranteeInList"
+            :options="displaySource"
+            :option-label="itemLabel"
+            option-group-label="label"
+            option-group-children="items"
+            option-disabled="collapsed"
+            :virtual-scroller-options="{ itemSize: 42 }"
+            class="grantee-listbox"
+            :pt="{
+              root: { style: 'display: flex; flex-direction: column; min-height: 0;' },
+              list: { style: 'padding: 0;' },
+              option: { style: 'padding: 0;' },
+              optionGroup: { style: 'padding: 0;' },
+            }"
+          >
+            <template #optiongroup="slotProps">
+              <div class="group-header" @click="toggleGroup(slotProps.option.value)">
+                <i :class="collapsedGroups[slotProps.option.value] ? 'pi pi-chevron-right' : 'pi pi-chevron-down'" />
+                <span>{{ slotProps.option.label }}</span>
               </div>
-
-              <i class="option-icon" :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
-              <span class="option-name">{{ slotProps.option[itemLabel] }}</span>
-            </div>
-          </template>
-        </Listbox>
+            </template>
+            <template #option="slotProps">
+              <div
+                v-if="!slotProps.option.collapsed"
+                class="option-item"
+                :class="{ 'option-item--selected': isOptionSelected(slotProps.option) }"
+              >
+                <i :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
+                <span>{{ slotProps.option.displayName || slotProps.option.username || slotProps.option.name }}</span>
+              </div>
+            </template>
+          </Listbox>
+        </div>
       </div>
 
       <!-- Bottom Section: Modified Grant -->
       <div class="modified-section">
-        <span class="section-label">Modified Grant</span>
-        <div class="modified-content">
+        <h4 class="col-header">
+          Modified Grant
+        </h4>
+        <div class="section-content">
           <div class="field-row">
             <label>Grantee</label>
             <div class="grantee-box">
               <div v-if="currentGrantee" class="grantee-details">
                 <i :class="currentGrantee.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
                 <div class="grantee-text">
-                  <span class="grantee-name">{{ currentGrantee.displayName }}</span>
-                  <span v-if="currentGrantee.username && currentGrantee.username !== currentGrantee.displayName" class="grantee-sub">{{ currentGrantee.username }}</span>
+                  <span class="grantee-name">{{ currentGrantee.displayName || currentGrantee.username || currentGrantee.name }}</span>
+                  <span v-if="currentGrantee.username" class="grantee-sub">{{ currentGrantee.username }}</span>
                 </div>
               </div>
               <div v-else class="grantee-details grantee-details--empty">
@@ -243,12 +247,14 @@ const onCancel = () => {
   overflow: hidden;
 }
 
-.section-label {
-  font-size: 0.78rem;
+.col-header {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-dim);
+  color: #ffffff;
+  background: var(--p-datatable-row-background);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .available-section {
@@ -256,11 +262,19 @@ const onCancel = () => {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  gap: 0.6rem;
-  padding: 0.75rem;
   border-radius: 6px;
   border: 1px solid var(--color-border-default);
   background-color: var(--color-background-subtle);
+  overflow: hidden;
+}
+
+.section-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 0.6rem;
+  padding: 0.75rem;
 }
 
 .filter-row {
@@ -302,31 +316,47 @@ const onCancel = () => {
   border-radius: 6px;
   background: var(--color-background-light);
   padding: 0.25rem;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
+:deep(.grantee-listbox .p-listbox-list-container) {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none !important;
+  overflow: auto;
+}
+
+:deep(.grantee-listbox .p-virtualscroller) {
+  height: 100% !important;
+}
+
+/* Rows match the Add Grants modal: simple icon + name, filling the fixed-height
+   virtual-scroller slot so they read as uniform bands. */
 .group-header {
   display: flex;
   align-items: center;
+  height: 100%;
   cursor: pointer;
-  padding: 0.35rem 0.4rem;
-  gap: 0.35rem;
-  font-size: 0.8rem;
+  padding: 0 0.4rem;
+  gap: 0.3rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--color-text-dim);
 }
 
 .option-item {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.4rem 0.5rem;
-  margin: 0.1rem 0;
+  gap: 0.5rem;
+  height: 100%;
+  padding: 0 0.5rem;
   border-radius: 6px;
   cursor: pointer;
+  font-size: 1.15rem;
   transition: background-color 0.12s ease;
+}
+
+.option-item i {
+  font-size: 1.3rem;
 }
 
 .option-item:hover {
@@ -337,57 +367,14 @@ const onCancel = () => {
   background-color: color-mix(in srgb, var(--p-primary-color) 16%, transparent);
 }
 
-.option-icon {
-  font-size: 1.05rem;
-  color: var(--color-text-dim);
-}
-
-.option-name {
-  font-size: 0.92rem;
-}
-
-.radio-circle {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 1px solid var(--color-border-hover);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.radio-circle.selected {
-  border-color: var(--p-primary-color);
-}
-
-.radio-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--p-primary-color);
-  display: none;
-}
-
-.radio-circle.selected .radio-dot {
-  display: block;
-}
-
 .modified-section {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
   border: 1px solid var(--color-border-default);
   border-radius: 6px;
-  padding: 0.75rem;
   background-color: var(--color-background-subtle);
-}
-
-.modified-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  overflow: hidden;
 }
 
 .field-row {
@@ -441,7 +428,7 @@ const onCancel = () => {
 }
 
 .grantee-sub {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: var(--color-text-dim);
 }
 

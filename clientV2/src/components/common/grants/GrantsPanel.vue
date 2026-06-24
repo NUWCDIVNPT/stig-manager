@@ -17,6 +17,7 @@ import StatusFooter from '../StatusFooter.vue'
 import EditGrantModal from './EditGrantModal.vue'
 import GrantsPickList from './GrantsPickList.vue'
 import targetSvg from '../../../assets/target.svg'
+import lockSvg from '../../../assets/lock.svg'
 import { roleMap } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 
@@ -99,7 +100,7 @@ const ensureGranteesLoaded = async () => {
       fetchUsers({ status: 'available' }),
       fetchUserGroups(),
     ])
-    cachedUsers.value = users.map(u => ({ ...u, type: 'user', displayName: u.username }))
+    cachedUsers.value = users.map(u => ({ ...u, type: 'user', displayName: u.displayName || u.username }))
     cachedGroups.value = groups.map(g => ({ ...g, type: 'group', displayName: g.name }))
     granteesCached.value = true
   }
@@ -239,6 +240,15 @@ const confirmDeleteGrant = async () => {
 
 const getRoleLabel = roleId => roleMap[roleId] || 'Unknown'
 
+const userGroupSortValue = (data) => {
+  if (data.user) {
+    return data.user.displayName || data.user.username || ''
+  }
+  else if (data.userGroup) {
+    return data.userGroup.name || ''
+  }
+  return ''
+}
 // Compact, flush-footer table styling via PassThrough (no scoped ::v-deep).
 const tablePt = {
   root: { style: 'background: var(--p-datatable-row-background);' },
@@ -293,7 +303,7 @@ const tablePt = {
             {{ getRoleLabel(data.roleId) }}
           </template>
         </Column>
-        <Column header="User or Group">
+        <Column header="User or Group" sortable :sort-field="userGroupSortValue">
           <template #body="{ data }">
             <div v-if="data.user" class="user-group-cell">
               <i class="pi pi-user" />
@@ -353,7 +363,7 @@ const tablePt = {
             :refresh-loading="grantsLoading"
             :total-count="grants ? grants.length : 0"
             total-label="grants"
-            total-icon="pi pi-shield"
+            :total-icon-src="lockSvg"
             @action="onFooterAction"
           />
         </template>

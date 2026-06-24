@@ -2,7 +2,6 @@
 import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import Tag from 'primevue/tag'
 import Tooltip from 'primevue/tooltip'
 import { computed, ref } from 'vue'
 import { roleMap } from '../../../../components/common/grants/roleOptions.js'
@@ -10,6 +9,7 @@ import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useCollectionUsers } from '../../composables/useCollectionUsers.js'
 import { getEffectiveUserDisplay } from '../../lib/grantsUsers.js'
 import EffectiveAclModal from './EffectiveAclModal.vue'
+import targetSvg from '../../../../assets/target.svg'
 
 const props = defineProps({
   collectionId: {
@@ -102,13 +102,15 @@ const openEffectiveAcl = (row) => {
 
         <Column field="granteeText" header="Grantee" sortable>
           <template #body="{ data }">
-            <div class="grantee-tags">
-              <Tag
+            <div class="grantee-list">
+              <div
                 v-for="(label, index) in data.granteeLabels"
                 :key="index"
-                :value="label"
-                :severity="label === 'Direct' ? 'success' : 'info'"
-              />
+                class="grantee-item"
+              >
+                <i :class="label === 'Direct' ? 'pi pi-user' : 'pi pi-users'" />
+                <span>{{ label }}</span>
+              </div>
             </div>
           </template>
         </Column>
@@ -120,12 +122,13 @@ const openEffectiveAcl = (row) => {
             <div class="row-actions">
               <Button
                 v-tooltip.top="'View effective access'"
-                icon="pi pi-eye"
                 text
                 rounded
                 class="action-btn"
                 @click="openEffectiveAcl(data)"
-              />
+              >
+                <img :src="targetSvg" class="action-svg" alt="Target" />
+              </Button>
             </div>
           </template>
         </Column>
@@ -190,10 +193,17 @@ const openEffectiveAcl = (row) => {
   font-size: 0.8rem;
 }
 
-.grantee-tags {
+.grantee-list {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.grantee-item {
+  display: flex;
+  align-items: center;
   gap: 0.35rem;
+  font-size: 0.9rem;
 }
 
 .row-actions {
@@ -206,5 +216,10 @@ const openEffectiveAcl = (row) => {
   width: 2rem;
   height: 2rem;
   padding: 0;
+}
+
+.action-svg {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 </style>

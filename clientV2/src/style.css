@@ -143,6 +143,10 @@
   --color-diff-inline-add-text: hsl(146, 80%, 85%);
 }
 
+.text-green-500 {
+  color: var(--color-success) !important;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
