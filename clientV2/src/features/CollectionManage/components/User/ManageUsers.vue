@@ -3,13 +3,15 @@ import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Tooltip from 'primevue/tooltip'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import targetSvg from '../../../../assets/target.svg'
 import { roleMap } from '../../../../components/common/grants/roleOptions.js'
+import RolePopover from '../../../../components/common/grants/RolePopover.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
-import { useCollectionUsers } from '../../composables/useCollectionUsers.js'
+import { fetchCollectionUsers } from '../../../../shared/api/collectionsApi.js'
+import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { getEffectiveUserDisplay } from '../../lib/grantsUsers.js'
 import EffectiveAclModal from './EffectiveAclModal.vue'
 
@@ -22,10 +24,17 @@ const props = defineProps({
 
 const vTooltip = Tooltip
 
-const { users, isLoading, reload } = useCollectionUsers(() => props.collectionId)
+const { state: users, isLoading, execute: reload } = useAsyncState(
+  () => fetchCollectionUsers(props.collectionId),
+  { initialState: [], immediate: false },
+)
 
+watch(() => props.collectionId, id => id && reload(), { immediate: true })
+
+// data table ref for footer actions
 const usersDt = ref()
 
+// mapping users for the data table for ui display
 const displayUsers = computed(() => (users.value ?? []).map((row) => {
   const display = getEffectiveUserDisplay(row)
   return {
@@ -37,7 +46,15 @@ const displayUsers = computed(() => (users.value ?? []).map((row) => {
 
 const { onFooterAction } = useTableFooterActions(usersDt, { onRefresh: reload })
 
-const tablePt = compactTablePt()
+// compact table pt for footer actions and compact table
+const baseTablePt = compactTablePt({ bodyFontSize: '1.05rem' })
+const tablePt = {
+  ...baseTablePt,
+  column: {
+    ...baseTablePt.column,
+    headerCell: { style: 'font-size: 1.1rem; font-weight: 600;' },
+  },
+}
 
 // Effective ACL drawer
 const aclVisible = ref(false)
@@ -97,7 +114,12 @@ const openEffectiveAcl = (row) => {
           </template>
         </Column>
 
-        <Column field="role" header="Role" sortable />
+        <Column field="role" sortable>
+          <template #header>
+            <span class="role-header">Role</span>
+            <RolePopover />
+          </template>
+        </Column>
 
         <Column style="text-align: right">
           <template #body="{ data }">
@@ -167,12 +189,12 @@ const openEffectiveAcl = (row) => {
 
 .primary-text {
   font-weight: 600;
-  font-size: 0.92rem;
+  font-size: 1.05rem;
 }
 
 .secondary-text {
   color: var(--color-text-dim);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 .grantee-list {
@@ -185,7 +207,11 @@ const openEffectiveAcl = (row) => {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
+}
+
+.role-header {
+  margin-right: 0.15rem;
 }
 
 .row-actions {

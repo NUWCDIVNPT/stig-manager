@@ -6,6 +6,8 @@ import Dialog from 'primevue/dialog'
 import Toolbar from 'primevue/toolbar'
 import Tooltip from 'primevue/tooltip'
 import { computed, ref, watch } from 'vue'
+import lockSvg from '../../../assets/lock.svg'
+import targetSvg from '../../../assets/target.svg'
 import { canModifyGrant, canModifyOwnerGrants, filterOutExistingGrantees, granteeToGrantPayload } from '../../../features/CollectionManage/lib/grantsUsers.js'
 import { createGrants, deleteGrant, fetchGrantsByCollection, updateGrant } from '../../../shared/api/grantsApi.js'
 import { fetchUserGroups, fetchUsers } from '../../../shared/api/userApi.js'
@@ -16,8 +18,6 @@ import DeleteModal from '../DeleteModal.vue'
 import StatusFooter from '../StatusFooter.vue'
 import EditGrantModal from './EditGrantModal.vue'
 import GrantsPickList from './GrantsPickList.vue'
-import targetSvg from '../../../assets/target.svg'
-import lockSvg from '../../../assets/lock.svg'
 import { roleMap } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 
@@ -54,60 +54,38 @@ const canModifyOwners = computed(() =>
 // source of truth; this just hides obviously-invalid controls.
 const canModify = grant => canModifyGrant(grant, requesterRoleId.value, props.elevate)
 
-const openAcl = grant => emit('open-acl', grant)
-
 // If a mutation touched the current user's own direct grant, their navigation
 // permissions and collection role label may have changed, so refetch them.
-const affectsCurrentUser = (userIds) => {
-  const currentUserId = currentUser.value?.userId
-  return currentUserId != null && userIds.some(id => String(id) === String(currentUserId))
-}
+const affectsCurrentUser = userIds =>
+  userIds.some(id => String(id) === String(currentUser.value?.userId))
 
 const { state: grants, isLoading: grantsLoading, execute: loadGrants } = useAsyncState(
   () => fetchGrantsByCollection(props.collectionId, { elevate: props.elevate }),
   { initialState: [], immediate: false },
 )
 
-watch(() => props.collectionId, () => {
-  if (props.collectionId) {
-    loadGrants()
-  }
-}, { immediate: true })
+watch(() => props.collectionId, id => id && loadGrants(), { immediate: true })
 
 const grantsDt = ref()
-
-const exportGrantsCSV = () => {
-  grantsDt.value.exportCSV()
-}
 
 const onFooterAction = (key) => {
   if (key === 'refresh') {
     loadGrants()
   }
   else if (key === 'export') {
-    exportGrantsCSV()
+    grantsDt.value.exportCSV()
   }
 }
 
-// Cached users/groups — fetched once, invalidated after mutations
-const cachedUsers = ref([])
-const cachedGroups = ref([])
-const granteesCached = ref(false)
-
-const ensureGranteesLoaded = async () => {
-  if (!granteesCached.value) {
-    const [users, groups] = await Promise.all([
-      fetchUsers({ status: 'available' }),
-      fetchUserGroups(),
-    ])
-    cachedUsers.value = users.map(u => ({ ...u, type: 'user', displayName: u.displayName || u.username }))
-    cachedGroups.value = groups.map(g => ({ ...g, type: 'group', displayName: g.name }))
-    granteesCached.value = true
-  }
-}
-
-const invalidateGranteesCache = () => {
-  granteesCached.value = false
+async function fetchSystemGrantees() {
+  const [users, groups] = await Promise.all([
+    fetchUsers({ status: 'available' }),
+    fetchUserGroups(),
+  ])
+  return [
+    ...users.map(u => ({ ...u, type: 'user', displayName: u.displayName || u.username })),
+    ...groups.map(g => ({ ...g, type: 'group', displayName: g.name })),
+  ]
 }
 
 // Add grants flow
@@ -117,12 +95,8 @@ const selectedGrantees = ref([])
 
 const openAddGrants = async () => {
   try {
-    await ensureGranteesLoaded()
-
-    availableGrantees.value = filterOutExistingGrantees(
-      [...cachedUsers.value, ...cachedGroups.value],
-      grants.value,
-    )
+    const grantees = await fetchSystemGrantees()
+    availableGrantees.value = filterOutExistingGrantees(grantees, grants.value)
     selectedGrantees.value = []
     addGrantVisible.value = true
   }
@@ -136,7 +110,6 @@ const onSaveGrants = async ({ target }) => {
     const payload = target.map(granteeToGrantPayload)
 
     await createGrants(props.collectionId, payload, { elevate: props.elevate })
-    invalidateGranteesCache()
     await loadGrants()
     addGrantVisible.value = false
     if (affectsCurrentUser(target.filter(item => item.type === 'user').map(item => item.userId))) {
@@ -158,14 +131,10 @@ const editGroups = ref([])
 const openEditGrant = async (grant) => {
   grantToEdit.value = grant
   try {
-    await ensureGranteesLoaded()
+    const grantees = await fetchSystemGrantees()
     // Exclude grantees that already have a direct grant, but keep the grant
     // currently being edited so its grantee stays selectable.
-    const available = filterOutExistingGrantees(
-      [...cachedUsers.value, ...cachedGroups.value],
-      grants.value,
-      grant,
-    )
+    const available = filterOutExistingGrantees(grantees, grants.value, grant)
     editUsers.value = available.filter(g => g.type === 'user')
     editGroups.value = available.filter(g => g.type === 'group')
     editGrantVisible.value = true
@@ -177,12 +146,10 @@ const openEditGrant = async (grant) => {
 
 const onUpdateGrant = async (updatedGrant) => {
   try {
-    const body = { roleId: updatedGrant.roleId }
-    if (updatedGrant.userId) {
-      body.userId = updatedGrant.userId
-    }
-    else if (updatedGrant.userGroupId) {
-      body.userGroupId = updatedGrant.userGroupId
+    const body = {
+      roleId: updatedGrant.roleId,
+      userId: updatedGrant.userId || undefined,
+      userGroupId: updatedGrant.userGroupId || undefined,
     }
 
     await updateGrant(
@@ -191,7 +158,6 @@ const onUpdateGrant = async (updatedGrant) => {
       body,
       { elevate: props.elevate },
     )
-    invalidateGranteesCache()
     await loadGrants()
     editGrantVisible.value = false
     if (updatedGrant.userId && affectsCurrentUser([updatedGrant.userId])) {
@@ -226,7 +192,6 @@ const confirmDeleteGrant = async () => {
       grantToDelete.value.grantId,
       { elevate: props.elevate },
     )
-    invalidateGranteesCache()
     await loadGrants()
     if (deletedUserId && affectsCurrentUser([deletedUserId])) {
       await refreshUser()
@@ -240,23 +205,18 @@ const confirmDeleteGrant = async () => {
 
 const getRoleLabel = roleId => roleMap[roleId] || 'Unknown'
 
-const userGroupSortValue = (data) => {
-  if (data.user) {
-    return data.user.displayName || data.user.username || ''
-  }
-  else if (data.userGroup) {
-    return data.userGroup.name || ''
-  }
-  return ''
-}
+const userGroupSortValue = data =>
+  data.user
+    ? (data.user.displayName || data.user.username || '')
+    : (data.userGroup?.name || '')
 // Compact, flush-footer table styling via PassThrough (no scoped ::v-deep).
 const tablePt = {
   root: { style: 'background: var(--p-datatable-row-background);' },
   tableContainer: { style: 'background: var(--p-datatable-row-background);' },
   footer: { style: 'padding: 0; border: none;' },
   column: {
-    headerCell: { style: 'font-size: 1rem; font-weight: 600;' },
-    bodyCell: { style: 'padding: 0.4rem 0.6rem;' },
+    headerCell: { style: 'font-size: 1.1rem; font-weight: 600;' },
+    bodyCell: { style: 'padding: 0.4rem 0.6rem; font-size: 1.05rem;' },
   },
 }
 </script>
@@ -331,10 +291,10 @@ const tablePt = {
                 rounded
                 severity="secondary"
                 class="action-btn"
-                @click="openAcl(data)"
+                @click="emit('open-acl', data)"
               >
                 <template #icon>
-                  <img :src="targetSvg" class="svg-icon" />
+                  <img :src="targetSvg" class="svg-icon">
                 </template>
               </Button>
               <Button
@@ -492,12 +452,12 @@ const tablePt = {
 
 .primary-text {
   font-weight: 600;
-  font-size: 0.92rem;
+  font-size: 1.05rem;
 }
 
 .secondary-text {
   color: var(--color-text-dim);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 .row-actions {

@@ -8,13 +8,15 @@ import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { resourceSortKey } from '../../lib/aclRules.js'
-import ResourceCell from './ResourceCell.vue'
+import AclResourceDisplay from './AclResourceDisplay.vue'
 
 defineProps({
+  // rules is the items in the table
   rules: {
     type: Array,
     default: () => [],
   },
+  // used for if we need to allow none, read only or read / write role id 1 doesn't get none
   accessOptions: {
     type: Array,
     default: () => [],
@@ -56,7 +58,7 @@ const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
     </template>
     <Column header="Resource" sortable :sort-field="resourceSortKey" :export-field="resourceSortKey">
       <template #body="{ data }">
-        <ResourceCell :rule="data" />
+        <AclResourceDisplay :rule="data" />
       </template>
     </Column>
     <Column header="Access" field="access" sortable style="width: 140px">

@@ -19,11 +19,11 @@ export function useLazyResource(fetcher) {
 
   let loaded = false
 
+  // Fetches data exactly once when called. If called again after a successful fetch, it does nothing (uses cached data). If a previous fetch failed, it will retry.
   async function ensure(...args) {
     if (loaded) {
       return
     }
-    // execute() resolves to null on error/abort and to the result on success.
     const result = await execute(...args)
     if (result !== null) {
       loaded = true

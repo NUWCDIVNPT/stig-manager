@@ -113,3 +113,14 @@ export function canModifyOwnerGrants({ roleId, elevate = false }) {
 export function canModifyGrant(grant, requesterRoleId, elevate = false) {
   return Number(grant?.roleId) !== 4 || canModifyOwnerGrants({ roleId: requesterRoleId, elevate })
 }
+
+export function canAssignGrantRole(roleId, requesterRoleId, elevate = false) {
+  return Number(roleId) !== 4 || canModifyOwnerGrants({ roleId: requesterRoleId, elevate })
+}
+
+export function canSaveGrantChange(existingGrant, nextGrant, requesterRoleId, elevate = false) {
+  if (existingGrant && !canModifyGrant(existingGrant, requesterRoleId, elevate)) {
+    return false
+  }
+  return canAssignGrantRole(nextGrant?.roleId, requesterRoleId, elevate)
+}

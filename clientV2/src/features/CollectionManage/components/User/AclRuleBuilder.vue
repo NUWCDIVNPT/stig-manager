@@ -10,32 +10,28 @@ import { fetchCollectionLabels, fetchCollectionStigs } from '../../../../shared/
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
 import { useLazyResource } from '../../composables/useLazyResource.js'
 import { isDuplicateAclRule } from '../../lib/aclRules.js'
-import ResourceCell from './ResourceCell.vue'
+import AclResourceDisplay from './AclResourceDisplay.vue'
 
 const props = defineProps({
   collectionId: {
     type: [String, Number],
     required: true,
   },
-  // Existing rules, used only to flag a duplicate in the live preview.
+  // acls used if we need to check for duplicates already set for this user
   rules: {
     type: Array,
     default: () => [],
   },
-  // True while the parent modal is open; resets the builder on (re)activation.
   active: {
     type: Boolean,
     default: false,
   },
 })
 
-// Emits the rule the builder would create (access omitted; the parent supplies
-// it), or null when the current selection isn't a valid rule yet.
+// this emmites preview so the parent has the data disable buttons and actually adding
 const emit = defineEmits(['preview'])
 
-// A rule is two independent axes: a scope (whole collection / one asset / one
-// label) plus an optional STIG. Each axis is its own flat, virtualized,
-// filterable Select, so we only ever load N assets + M labels + K STIGs.
+// select options for the scope tabs
 const SCOPE_OPTIONS = [
   { label: 'Whole Collection', value: 'collection' },
   { label: 'Asset', value: 'asset' },
@@ -47,8 +43,7 @@ const selectedAsset = ref(null)
 const selectedLabel = ref(null)
 const selectedBenchmarkId = ref(null)
 
-// Each axis is fetched lazily and cached until reset(). useLazyResource routes
-// failures to the global error modal, so an empty Select never fails silently.
+// lazy load assets, labels, and stigs and "cache"
 const { items: assets, isLoading: assetsLoading, ensure: ensureAssets, reset: resetAssets }
   = useLazyResource(() => apiCall('getAssets', { collectionId: props.collectionId }))
 const { items: labels, isLoading: labelsLoading, ensure: ensureLabels, reset: resetLabels }
@@ -56,6 +51,9 @@ const { items: labels, isLoading: labelsLoading, ensure: ensureLabels, reset: re
 const { items: stigs, isLoading: stigsLoading, ensure: ensureStigs, reset: resetStigs }
   = useLazyResource(() => fetchCollectionStigs(props.collectionId))
 
+// on scope change clear selections for other scopes.
+// We call ensure() to lazily fetch the necessary dropdown options (like Assets or Labels)
+// only when the user actually navigates to that tab. ensure() guarantees we only hit the API once.
 watch(scope, (value) => {
   selectedAsset.value = null
   selectedLabel.value = null
@@ -67,6 +65,7 @@ watch(scope, (value) => {
   }
 })
 
+// used to enable buttons
 const scopeReady = computed(() => {
   if (scope.value === 'asset') {
     return !!selectedAsset.value
@@ -77,6 +76,7 @@ const scopeReady = computed(() => {
   return true
 })
 
+// takes the current selections and builds a rule for the parent
 function buildRule(access) {
   const rule = {
     benchmarkId: selectedBenchmarkId.value || undefined,
@@ -97,18 +97,19 @@ function buildRule(access) {
     rule.labelName = l.name
     rule.label = { labelId: l.labelId, name: l.name, color: l.color }
   }
-  // 'collection' scope leaves asset/label selectors undefined
   return rule
 }
 
-// Access is irrelevant to a rule's identity; 'r' is a placeholder for the preview.
+// create a preview of the rule
 const previewRule = computed(() => (scopeReady.value ? buildRule('r') : null))
+// checks if the preview rule is a duplicate of an existing rule
 const isPreviewDuplicate = computed(() =>
   !!previewRule.value && isDuplicateAclRule(props.rules, previewRule.value))
 
+// emit when the preview changes
 watch(previewRule, value => emit('preview', value), { immediate: true })
 
-// Reset to a clean slate and refetch whenever the modal (re)opens.
+// reset the builder when the active prop changes
 watch(() => props.active, (isActive) => {
   if (isActive) {
     scope.value = 'collection'
@@ -153,6 +154,7 @@ watch(() => props.active, (isActive) => {
         filter
         reset-filter-on-hide
         :virtual-scroller-options="{ itemSize: 38 }"
+        scroll-height="min(40vh, 320px)"
         placeholder="Select an asset"
         class="builder-input"
         :pt="{ label: { style: 'font-size: 1.15rem;' }, item: { style: 'font-size: 1.15rem;' } }"
@@ -184,6 +186,7 @@ watch(() => props.active, (isActive) => {
         filter
         reset-filter-on-hide
         :virtual-scroller-options="{ itemSize: 38 }"
+        scroll-height="min(40vh, 320px)"
         placeholder="Select a label"
         class="builder-input"
         :pt="{ label: { style: 'font-size: 1.15rem;' }, item: { style: 'font-size: 1.15rem;' } }"
@@ -212,6 +215,7 @@ watch(() => props.active, (isActive) => {
         show-clear
         reset-filter-on-hide
         :virtual-scroller-options="{ itemSize: 38 }"
+        scroll-height="min(40vh, 320px)"
         placeholder="Any STIG"
         class="builder-input"
         :pt="{ label: { style: 'font-size: 1.15rem;' }, item: { style: 'font-size: 1.15rem;' } }"
@@ -229,7 +233,7 @@ watch(() => props.active, (isActive) => {
 
     <div class="rule-preview">
       <span class="rule-preview-label">Rule preview</span>
-      <ResourceCell v-if="previewRule" :rule="previewRule" />
+      <AclResourceDisplay v-if="previewRule" :rule="previewRule" />
       <span v-else class="rule-preview-hint">
         {{ scope === 'asset' ? 'Select an asset to continue.' : 'Select a label to continue.' }}
       </span>
@@ -272,10 +276,10 @@ watch(() => props.active, (isActive) => {
 }
 
 .field-optional {
-  font-size: 0.62rem;
+  font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.04em;
-  padding: 0.1rem 0.45rem;
+  padding: 0.15rem 0.55rem;
   border-radius: 999px;
   background: var(--color-background-subtle);
   color: var(--color-text-dim);
@@ -302,7 +306,6 @@ watch(() => props.active, (isActive) => {
   font-size: 1.15rem;
 }
 
-/* Push the live preview to the bottom of the column. */
 .builder-spacer {
   flex: 1 1 auto;
   min-height: 0.5rem;

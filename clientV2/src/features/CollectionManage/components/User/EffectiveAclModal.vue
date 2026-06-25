@@ -18,10 +18,12 @@ const props = defineProps({
     type: [String, Number],
     required: true,
   },
+  // the user to get the effective acl for and edit...
   user: {
     type: Object,
     default: null,
   },
+  // the role id of the user to get the default access for
   roleId: {
     type: [Number, String],
     default: null,
@@ -32,6 +34,7 @@ const visible = defineModel('visible', { type: Boolean, default: false })
 
 // Handle errors locally so a 422 (user has no direct or group grant) shows an
 // in-modal message rather than the global error modal.
+// also lifecycle hooks for fetching the effective acl for a user
 const { state: acl, isLoading, error, execute } = useAsyncState(
   () => fetchEffectiveAclByCollectionUser(props.collectionId, props.user?.userId),
   { initialState: [], immediate: false, onError: null },
@@ -39,8 +42,10 @@ const { state: acl, isLoading, error, execute } = useAsyncState(
 
 const aclDt = ref()
 
+// get the default access for a user based on their role
 const defaultAccess = computed(() => getDefaultAccessForRole(props.roleId))
 
+// mapping users for the data table for ui display
 const displayAcl = computed(() => (acl.value ?? []).map(row => ({
   assetName: row.asset?.name ?? '',
   benchmarkId: row.benchmarkId ?? '',
@@ -52,12 +57,11 @@ const { onFooterAction } = useTableFooterActions(aclDt, { onRefresh: execute })
 
 const tablePt = compactTablePt({ bodyFontSize: '0.9rem' })
 
-// Clear prior results on every open/user change so a reopened drawer never
-// flashes the previous user's access before the new fetch resolves.
+// Clear prior results on every open/user change so a reopened drawer never flashes the previous user's access before the new fetch resolves.
 watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
   acl.value = []
   if (isVisible && userId) {
-    execute()
+    execute() // fetcher..
   }
 }, { immediate: true })
 </script>

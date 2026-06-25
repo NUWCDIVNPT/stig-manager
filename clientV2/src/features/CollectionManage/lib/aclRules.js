@@ -1,12 +1,11 @@
-// Framework-independent helpers for editing collection grant ACL rules.
-// See collection-manage-grants-users-tabs-notes.md "ACL Rule Data Shapes" for context.
-
 import { normalizeColor } from '../../../shared/lib/colorUtils.js'
 
+// gets the default access for a role everoyne has rw access except restricted users who only have no access by default restrectied number is 1
 export function getDefaultAccessForRole(roleId) {
   return Number(roleId) === 1 ? 'none' : 'rw'
 }
 
+// gets the options for that grant based on role id. Only roleId 1 (Restricted) CAN get the "No Access" option.
 export function getAllowedAclAccessOptions(roleId) {
   const options = [
     { label: 'Read/Write', value: 'rw' },

@@ -64,8 +64,6 @@ function onOpenAcl(grant) {
   overflow: hidden;
 }
 
-/* Give the flex-based DataTables a bounded height so their internal
-   scroll-height="flex" resolves, while the page scrolls between sections. */
 .panel-frame {
   display: flex;
   flex-direction: column;

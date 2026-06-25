@@ -4,8 +4,9 @@ import Dialog from 'primevue/dialog'
 import Menu from 'primevue/menu'
 import { computed, ref, watch } from 'vue'
 import targetSvg from '../../../../assets/target.svg'
-import { useGrantAcl } from '../../composables/useGrantAcl.js'
-import { getAclRuleKey, getAllowedAclAccessOptions, isDuplicateAclRule } from '../../lib/aclRules.js'
+import { fetchGrantAcl, replaceGrantAcl } from '../../../../shared/api/grantsApi.js'
+import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+import { aclRuleToPayload, getAclRuleKey, getAllowedAclAccessOptions, isDuplicateAclRule, normalizeAclRule } from '../../lib/aclRules.js'
 import { getGrantDisplay } from '../../lib/grantsUsers.js'
 import AclRuleBuilder from './AclRuleBuilder.vue'
 import AclRulesTable from './AclRulesTable.vue'
@@ -15,24 +16,37 @@ const props = defineProps({
     type: [String, Number],
     required: true,
   },
+  // the grant for this user.
   grant: {
     type: Object,
     default: null,
   },
 })
 
+// emits when the acl is saved
 const emit = defineEmits(['saved'])
 const visible = defineModel('visible', { type: Boolean, default: false })
 
-const { defaultAccess, rules, isLoading, isSaving, load, save } = useGrantAcl()
+const defaultAccess = ref(null)
+const rules = ref([])
+
+const { isLoading, execute: executeLoad } = useAsyncState(
+  () => fetchGrantAcl(props.collectionId, props.grant?.grantId),
+  { immediate: false },
+)
+
+const { isLoading: isSaving, execute: executeSave } = useAsyncState(
+  payload => replaceGrantAcl(props.collectionId, props.grant?.grantId, payload),
+  { immediate: false },
+)
 
 const granteeName = computed(() => getGrantDisplay(props.grant).title)
+// gets the options for that grant based on role id. Only roleId 1 (Restricted) CAN get the "No Access" option.
 const accessOptions = computed(() => getAllowedAclAccessOptions(props.grant?.roleId))
 
-// ---- Add a rule (driven by the builder's live preview) ----
 const previewRule = ref(null)
-const canAdd = computed(() =>
-  !!previewRule.value && !isDuplicateAclRule(rules.value, previewRule.value))
+// can add if there is a preview rule and it is not a duplicate
+const canAdd = computed(() => !!previewRule.value && !isDuplicateAclRule(rules.value, previewRule.value))
 
 const ACCESS_MENU_LABEL = {
   rw: 'with Read/Write access',
@@ -41,6 +55,7 @@ const ACCESS_MENU_LABEL = {
 }
 
 const addMenu = ref()
+// creates a menu of options based on the access options for the role
 const addMenuItems = computed(() => accessOptions.value.map(option => ({
   label: ACCESS_MENU_LABEL[option.value],
   icon: 'pi pi-angle-double-right',
@@ -55,10 +70,12 @@ function addRule(access) {
   if (!canAdd.value) {
     return
   }
+  // adds a new rule to the rules array immutably.
+  // The new rule is a copy of `previewRule.value` with the `access` property set to the selected `access` value.
+  // This ensures that the original `previewRule.value` is not mutated.
   rules.value = [...rules.value, { ...previewRule.value, access }]
 }
 
-// ---- Remove selected rules ----
 const selectedRules = ref([])
 
 function removeSelected() {
@@ -75,17 +92,25 @@ function updateRuleAccess({ rule, access }) {
   rules.value = rules.value.map(item => (item === rule ? { ...item, access } : item))
 }
 
-// ---- Lifecycle ----
-watch([visible, () => props.grant?.grantId], ([isOpen, grantId]) => {
+// watcher to load the acl rules when the modal is opened
+watch([visible, () => props.grant?.grantId], async ([isOpen, grantId]) => {
   if (isOpen && grantId) {
     selectedRules.value = []
-    load(props.collectionId, grantId)
+    const response = await executeLoad()
+    if (response) {
+      defaultAccess.value = response.defaultAccess ?? null
+      rules.value = (response.acl ?? []).map(normalizeAclRule)
+    }
   }
 }, { immediate: true })
 
+// sends the changes to the backend
 async function onSave() {
-  const ok = await save(props.collectionId, props.grant.grantId)
-  if (ok) {
+  const payload = rules.value.map(aclRuleToPayload)
+  const response = await executeSave(payload)
+  if (response) {
+    defaultAccess.value = response.defaultAccess ?? null
+    rules.value = (response.acl ?? []).map(normalizeAclRule)
     emit('saved')
     visible.value = false
   }
