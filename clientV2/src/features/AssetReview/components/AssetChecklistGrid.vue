@@ -9,6 +9,8 @@ import { patchReview, putReview } from '../../../shared/api/reviewsApi.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import AssetChecklistGridHeader from './AssetChecklistGridHeader.vue'
 import AssetChecklistGridTable from './AssetChecklistGridTable.vue'
+import { useBulkReviewStatus } from '../composables/useBulkReviewStatus.js'
+import BulkStatusConfirmModal from './BulkStatusConfirmModal.vue'
 
 const props = defineProps({
   searchFilter: {
@@ -82,6 +84,74 @@ const {
   collectionId,
   assetId,
 } = toRefs(props)
+
+const {
+  visibleRows,
+  submitPlan,
+  acceptPlan,
+  isApplying,
+  applySubmit,
+  applyAccept,
+} = useBulkReviewStatus({
+  collectionId,
+  assetId,
+  fieldSettings,
+  onApplied: () => emit('refresh'),
+})
+
+function onVisibleRowsChange(rows) {
+  visibleRows.value = rows ?? []
+}
+
+const pendingAction = ref(null)
+
+const confirmVisible = computed({
+  get: () => pendingAction.value !== null,
+  set: (open) => {
+    if (!open) {
+      pendingAction.value = null
+    }
+  },
+})
+
+const activePlan = computed(() => {
+  if (pendingAction.value === 'submit') {
+    return submitPlan.value
+  }
+  if (pendingAction.value === 'accept') {
+    return acceptPlan.value
+  }
+  return null
+})
+
+const activeSkipLines = computed(() => {
+  const plan = activePlan.value
+  if (!plan) {
+    return []
+  }
+  if (pendingAction.value === 'submit') {
+    return [
+      { label: 'unreviewed', count: plan.skip.unreviewed },
+      { label: 'incomplete', count: plan.skip.incomplete },
+    ].filter(line => line.count > 0)
+  }
+  return [{ label: 'not submitted', count: plan.skip.notSubmitted }].filter(line => line.count > 0)
+})
+
+function onBulkAction(action) {
+  pendingAction.value = action
+}
+
+async function onConfirmBulk() {
+  const action = pendingAction.value
+  if (action === 'submit') {
+    await applySubmit()
+  }
+  else if (action === 'accept') {
+    await applyAccept()
+  }
+  pendingAction.value = null
+}
 
 const selectedRow = computed(() => {
   if (!selectedRuleId.value || !gridData.value) {
@@ -312,7 +382,12 @@ function onRowClick(event) {
       v-model:selected-columns="selectedColumns"
       :toggleable-columns="TOGGLEABLE_COLUMNS"
       :asset="asset" :revision-info="revisionInfo" :is-loading="isLoading"
-      :access-mode="accessMode" @refresh="emit('refresh')"
+      :access-mode="accessMode"
+      :can-accept="canAccept"
+      :submit-count="submitPlan.eligible.length"
+      :accept-count="acceptPlan.eligible.length"
+      @refresh="emit('refresh')"
+      @bulk-action="onBulkAction"
     />
 
     <AssetChecklistGridTable
@@ -322,6 +397,7 @@ function onRowClick(event) {
       :item-size="itemSize"
       @update:selected-row="onSelectionChange" @row-click="onRowClick"
       @refresh="emit('refresh')"
+      @update:visible-rows="onVisibleRowsChange"
     />
 
     <ReviewEditPopover
@@ -343,6 +419,15 @@ function onRowClick(event) {
       ref="popoverAnchor"
       class="popover-anchor"
       style="position: fixed; width: 0px; pointer-events: none; visibility: hidden; z-index: -1;"
+    />
+
+    <BulkStatusConfirmModal
+      v-model:visible="confirmVisible"
+      :action="pendingAction"
+      :eligible-count="activePlan?.eligible.length ?? 0"
+      :skip-lines="activeSkipLines"
+      :is-busy="isApplying"
+      @confirm="onConfirmBulk"
     />
   </div>
 </template>
