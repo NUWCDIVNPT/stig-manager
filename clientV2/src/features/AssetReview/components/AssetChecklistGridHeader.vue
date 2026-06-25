@@ -7,6 +7,8 @@ import { useRoute } from 'vue-router'
 import lineHeightDown from '../../../assets/line-height-down.svg'
 import lineHeightUp from '../../../assets/line-height-up.svg'
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
+import starIcon from '../../../assets/star.svg'
+import submitIcon from '../../../assets/submit.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
 import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
@@ -31,9 +33,21 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  canAccept: {
+    type: Boolean,
+    default: false,
+  },
+  submitCount: {
+    type: Number,
+    default: 0,
+  },
+  acceptCount: {
+    type: Number,
+    default: 0,
+  },
 })
 
-const emit = defineEmits(['refresh'])
+const emit = defineEmits(['refresh', 'bulk-action'])
 
 const {
   asset,
@@ -236,6 +250,28 @@ function toggleChecklistMenu(event) {
         </button>
       </div>
       <div class="checklist-grid__header-controls">
+        <button
+          v-if="accessMode === 'rw'"
+          type="button"
+          class="checklist-grid__bulk-btn"
+          :disabled="submitCount === 0"
+          :title="submitCount === 0 ? 'No saved, complete reviews in the current view to submit' : `Submit ${submitCount} review(s)`"
+          @click="emit('bulk-action', 'submit')"
+        >
+          <img :src="submitIcon" alt="" class="checklist-grid__bulk-icon">
+          <span>Submit All</span>
+        </button>
+        <button
+          v-if="accessMode === 'rw' && canAccept"
+          type="button"
+          class="checklist-grid__bulk-btn"
+          :disabled="acceptCount === 0"
+          :title="acceptCount === 0 ? 'No submitted reviews in the current view to accept' : `Accept ${acceptCount} review(s)`"
+          @click="emit('bulk-action', 'accept')"
+        >
+          <img :src="starIcon" alt="" class="checklist-grid__bulk-icon">
+          <span>Accept All</span>
+        </button>
         <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
         <button
           type="button" class="checklist-grid__menu-btn checklist-grid__menu-btn--checklist"
@@ -526,5 +562,36 @@ function toggleChecklistMenu(event) {
 .checklist-grid__icon-btn img {
   width: 17px;
   height: 17px;
+}
+
+.checklist-grid__bulk-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--color-text-bright);
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-background-light) 45%, transparent);
+  height: var(--checklist-control-height);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checklist-grid__bulk-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-background-light) 85%, transparent);
+}
+
+.checklist-grid__bulk-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.checklist-grid__bulk-icon {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
 }
 </style>

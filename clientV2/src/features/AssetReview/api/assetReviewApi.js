@@ -8,6 +8,7 @@ export {
   fetchReview,
   fetchReviewMetadata,
   patchReview,
+  postReviewBatch,
   putReview,
   putReviewMetadataValue,
 } from '../../../shared/api/reviewsApi.js'
