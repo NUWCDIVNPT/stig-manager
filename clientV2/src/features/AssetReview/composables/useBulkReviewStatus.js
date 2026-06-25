@@ -30,20 +30,20 @@ export function useBulkReviewStatus({ collectionId, assetId, fieldSettings, onAp
     { immediate: false },
   )
 
-  function applySubmit() {
-    const ruleIds = submitPlan.value.eligible.map(r => r.ruleId)
+  function applyPlan(plan, status) {
+    const ruleIds = plan.eligible.map(r => r.ruleId)
     if (!ruleIds.length) {
       return Promise.resolve(null)
     }
-    return execute({ status: 'submitted', ruleIds })
+    return execute({ status, ruleIds })
+  }
+
+  function applySubmit() {
+    return applyPlan(submitPlan.value, 'submitted')
   }
 
   function applyAccept() {
-    const ruleIds = acceptPlan.value.eligible.map(r => r.ruleId)
-    if (!ruleIds.length) {
-      return Promise.resolve(null)
-    }
-    return execute({ status: 'accepted', ruleIds })
+    return applyPlan(acceptPlan.value, 'accepted')
   }
 
   return {

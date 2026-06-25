@@ -11,6 +11,9 @@ export const resultOptions = [
   { value: 'notchecked', label: 'Not Reviewed', display: 'NR' },
 ]
 
+// Results that represent a real assessment (vs. notchecked/informational).
+export const assessedResults = ['pass', 'fail', 'notapplicable']
+
 export function isFieldEnabled(fieldSetting, result, editable) {
   if (!editable) {
     return false
@@ -75,8 +78,7 @@ export function isReviewComplete(review, fieldSettings = defaultFieldSettings) {
     return false
   }
 
-  const validResults = ['pass', 'fail', 'notapplicable']
-  if (!validResults.includes(result)) {
+  if (!assessedResults.includes(result)) {
     return false
   }
 

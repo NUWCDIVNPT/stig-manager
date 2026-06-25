@@ -55,6 +55,24 @@ describe('planSubmitAll', () => {
     const { eligible } = planSubmitAll([row({ status: { label: 'saved' } })], fieldSettings)
     expect(eligible).toHaveLength(1)
   })
+
+  it('exposes only the nonzero unreviewed/incomplete skip lines for the dialog', () => {
+    const rows = [
+      row({ result: 'fail', comment: '' }), // incomplete
+      row({ result: 'notchecked', status: '' }), // unreviewed
+      row({ status: 'submitted' }), // already processed — not surfaced
+    ]
+    const { skipLines } = planSubmitAll(rows, fieldSettings)
+    expect(skipLines).toEqual([
+      { label: 'unreviewed', count: 1 },
+      { label: 'incomplete', count: 1 },
+    ])
+  })
+
+  it('returns no skip lines when every row is eligible', () => {
+    const { skipLines } = planSubmitAll([row({ ruleId: 'r1' })], fieldSettings)
+    expect(skipLines).toEqual([])
+  })
 })
 
 describe('planAcceptAll', () => {
@@ -67,5 +85,10 @@ describe('planAcceptAll', () => {
     const { eligible, skip } = planAcceptAll(rows)
     expect(eligible.map(r => r.ruleId)).toEqual(['r1'])
     expect(skip.notSubmitted).toBe(2)
+  })
+
+  it('exposes a not-submitted skip line', () => {
+    const { skipLines } = planAcceptAll([row({ status: 'submitted' }), row({ status: 'saved' })])
+    expect(skipLines).toEqual([{ label: 'not submitted', count: 1 }])
   })
 })

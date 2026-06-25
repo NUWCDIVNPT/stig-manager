@@ -124,19 +124,7 @@ const activePlan = computed(() => {
   return null
 })
 
-const activeSkipLines = computed(() => {
-  const plan = activePlan.value
-  if (!plan) {
-    return []
-  }
-  if (pendingAction.value === 'submit') {
-    return [
-      { label: 'unreviewed', count: plan.skip.unreviewed },
-      { label: 'incomplete', count: plan.skip.incomplete },
-    ].filter(line => line.count > 0)
-  }
-  return [{ label: 'not submitted', count: plan.skip.notSubmitted }].filter(line => line.count > 0)
-})
+const activeSkipLines = computed(() => activePlan.value?.skipLines ?? [])
 
 function onBulkAction(action) {
   pendingAction.value = action

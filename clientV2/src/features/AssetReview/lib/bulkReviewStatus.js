@@ -1,13 +1,11 @@
-import { isReviewComplete } from '../../../shared/lib/reviewFormUtils.js'
-
-const ASSESSED_RESULTS = ['pass', 'fail', 'notapplicable']
+import { assessedResults, isReviewComplete } from '../../../shared/lib/reviewFormUtils.js'
 
 export function statusLabel(row) {
   return (row?.status?.label || row?.status || '').toLowerCase()
 }
 
 function hasAssessment(row) {
-  return ASSESSED_RESULTS.includes(row?.result)
+  return assessedResults.includes(row?.result)
 }
 
 // Submit All: rows that are `saved` AND complete become eligible. Everything
@@ -36,7 +34,11 @@ export function planSubmitAll(rows = [], fieldSettings) {
       skip.incomplete++
     }
   }
-  return { eligible, skip }
+  const skipLines = [
+    { label: 'unreviewed', count: skip.unreviewed },
+    { label: 'incomplete', count: skip.incomplete },
+  ].filter(line => line.count > 0)
+  return { eligible, skip, skipLines }
 }
 
 // Accept All: rows currently `submitted` become eligible.
@@ -51,5 +53,6 @@ export function planAcceptAll(rows = []) {
       notSubmitted++
     }
   }
-  return { eligible, skip: { notSubmitted } }
+  const skipLines = [{ label: 'not submitted', count: notSubmitted }].filter(line => line.count > 0)
+  return { eligible, skip: { notSubmitted }, skipLines }
 }
