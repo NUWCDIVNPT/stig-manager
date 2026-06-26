@@ -125,4 +125,21 @@ describe('AssetChecklistGridTable', () => {
       expect(emitted()['refresh']).toBeTruthy()
     })
   })
+
+  describe('visible rows', () => {
+    it('emits update:visible-rows with all rows on mount', () => {
+      const gridData = [{ ruleId: 'V-1' }, { ruleId: 'V-2' }]
+      const { emitted } = createWrapper({ gridData })
+      const events = emitted()['update:visible-rows']
+      expect(events).toBeTruthy()
+      expect(events[events.length - 1][0].map(r => r.ruleId)).toEqual(['V-1', 'V-2'])
+    })
+
+    it('re-emits update:visible-rows when gridData changes', async () => {
+      const { emitted, rerender } = createWrapper({ gridData: [{ ruleId: 'V-1' }] })
+      await rerender({ ...defaultProps, gridData: [{ ruleId: 'V-1' }, { ruleId: 'V-2' }] })
+      const events = emitted()['update:visible-rows']
+      expect(events[events.length - 1][0].map(r => r.ruleId)).toEqual(['V-1', 'V-2'])
+    })
+  })
 })

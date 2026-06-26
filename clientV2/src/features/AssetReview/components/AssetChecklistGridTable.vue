@@ -48,7 +48,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:selectedRow', 'row-click', 'refresh'])
+const emit = defineEmits(['update:selectedRow', 'row-click', 'refresh', 'update:visible-rows'])
 
 
 const dsFilterFields = [
@@ -80,6 +80,11 @@ watch(() => props.searchFilter, (val) => {
 })
 
 const visibleData = computed(() => filteredData.value ?? props.gridData)
+
+watch(visibleData, (rows) => {
+  emit('update:visible-rows', rows)
+}, { immediate: true })
+
 const isFiltered = computed(() => filteredData.value !== null && filteredData.value.length !== props.gridData.length)
 
 const stats = computed(() => {

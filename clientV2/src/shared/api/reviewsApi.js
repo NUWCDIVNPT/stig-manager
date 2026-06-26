@@ -48,3 +48,7 @@ export function putReviewMetadataValue(collectionId, assetId, ruleId, key, value
 export function deleteReviewMetadataKey(collectionId, assetId, ruleId, key) {
   return apiCall('deleteReviewMetadataKey', { collectionId, assetId, ruleId, key })
 }
+
+export function postReviewBatch(collectionId, body) {
+  return apiCall('postReviewBatch', { collectionId }, body)
+}

@@ -182,4 +182,37 @@ describe('checklistGridHeader.vue', () => {
       expect(increaseBtn).toBeDisabled()
     })
   })
+
+  describe('bulk actions', () => {
+    it('shows Submit All when writable and emits bulk-action', async () => {
+      const { emitted } = createWrapper({ accessMode: 'rw', submitCount: 4 })
+      const btn = screen.getByRole('button', { name: /Submit All/i })
+      expect(btn).toBeEnabled()
+      await fireEvent.click(btn)
+      expect(emitted()['bulk-action']).toBeTruthy()
+      expect(emitted()['bulk-action'][0]).toEqual(['submit'])
+    })
+
+    it('disables Submit All when nothing is eligible', () => {
+      createWrapper({ accessMode: 'rw', submitCount: 0 })
+      expect(screen.getByRole('button', { name: /Submit All/i })).toBeDisabled()
+    })
+
+    it('hides bulk buttons when read only', () => {
+      createWrapper({ accessMode: 'r', submitCount: 4, canAccept: true, acceptCount: 2 })
+      expect(screen.queryByRole('button', { name: /Submit All/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /Accept All/i })).not.toBeInTheDocument()
+    })
+
+    it('shows Accept All only when canAccept', () => {
+      createWrapper({ accessMode: 'rw', canAccept: false, acceptCount: 2 })
+      expect(screen.queryByRole('button', { name: /Accept All/i })).not.toBeInTheDocument()
+    })
+
+    it('emits accept bulk-action', async () => {
+      const { emitted } = createWrapper({ accessMode: 'rw', canAccept: true, acceptCount: 2 })
+      await fireEvent.click(screen.getByRole('button', { name: /Accept All/i }))
+      expect(emitted()['bulk-action'][0]).toEqual(['accept'])
+    })
+  })
 })
