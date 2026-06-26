@@ -18,6 +18,7 @@ import {
   fetchCollectionLabels,
   fetchCollectionStigs,
 } from '../../api/tasksManageApi.js'
+import { useLazyResource } from '../../composables/useLazyResource.js'
 import { collectionInputTextPt, collectionSelectPt } from './pt.js'
 import {
   ACTION_OPTIONS,
@@ -71,20 +72,14 @@ const selectedAsset = ref(null)
 const selectedLabel = ref(null)
 const selectedStigId = ref(null)
 
-const { state: allAssets, isLoading: isLoadingAssets, execute: loadAssets } = useAsyncState(
-  () => fetchCollectionAssets(props.collectionId),
-  { initialState: [], immediate: false },
-)
-
-const { state: allLabels, execute: loadLabels } = useAsyncState(
-  () => fetchCollectionLabels(props.collectionId),
-  { initialState: [], immediate: false },
-)
-
-const { state: collectionStigs, execute: loadCollectionStigs } = useAsyncState(
-  () => fetchCollectionStigs(props.collectionId),
-  { initialState: [], immediate: false },
-)
+// Collection-level pickers: fetched lazily and cached until the modal needs
+// them. useLazyResource folds the "fetch once" guard into ensure().
+const { items: allAssets, isLoading: isLoadingAssets, ensure: ensureAssets }
+  = useLazyResource(() => fetchCollectionAssets(props.collectionId))
+const { items: allLabels, ensure: ensureLabels }
+  = useLazyResource(() => fetchCollectionLabels(props.collectionId))
+const { items: collectionStigs, ensure: ensureCollectionStigs }
+  = useLazyResource(() => fetchCollectionStigs(props.collectionId))
 
 const { state: assetStigs, execute: loadAssetStigs } = useAsyncState(
   assetId => fetchAssetStigs(assetId),
@@ -178,8 +173,8 @@ function onScopeChange() {
 }
 
 watch(targetScope, (newScope) => {
-  if (newScope === 'Asset' && !allAssets.value.length) {
-    loadAssets()
+  if (newScope === 'Asset') {
+    ensureAssets()
   }
 }, { immediate: true })
 
@@ -223,12 +218,8 @@ watch(() => props.visible, (open) => {
     Object.assign(form, ruleToForm(props.rule))
     initPickersFromTarget(form.target)
 
-    if (!allLabels.value.length) {
-      loadLabels()
-    }
-    if (!collectionStigs.value.length) {
-      loadCollectionStigs()
-    }
+    ensureLabels()
+    ensureCollectionStigs()
   }
 })
 

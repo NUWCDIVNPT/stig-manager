@@ -135,7 +135,8 @@ const selectButtonPt = {
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .manage-header {
@@ -146,6 +147,7 @@ const selectButtonPt = {
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
+  min-width: 900px;
 }
 
 .header-left {
@@ -220,8 +222,9 @@ const selectButtonPt = {
 
 .panel-col {
   flex: 1;
-  overflow: auto;
-  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-width: 1160px;
   display: flex;
   flex-direction: column;
 }

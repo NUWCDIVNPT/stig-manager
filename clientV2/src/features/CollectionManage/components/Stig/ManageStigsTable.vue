@@ -9,6 +9,7 @@ import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchCollectionStigSummary } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { useStigTable } from '../../composables/useStigTable.js'
 import StigToolbar from './StigToolbar.vue'
 
@@ -59,14 +60,7 @@ function onStigsChanged() {
   loadStigs()
 }
 
-function handleFooterAction(action) {
-  if (action === 'refresh') {
-    loadStigs()
-  }
-  else if (action === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-}
+const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: loadStigs })
 </script>
 
 <template>
@@ -140,7 +134,7 @@ function handleFooterAction(action) {
             :show-selected="selectedStigs.length > 0"
             :selected-items="selectedStigs"
             total-label="STIGs"
-            @action="handleFooterAction"
+            @action="onFooterAction"
           />
         </template>
       </DataTable>

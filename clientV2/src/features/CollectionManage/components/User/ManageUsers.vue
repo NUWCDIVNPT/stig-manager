@@ -1,0 +1,234 @@
+<script setup>
+import Button from 'primevue/button'
+import Column from 'primevue/column'
+import DataTable from 'primevue/datatable'
+import Tooltip from 'primevue/tooltip'
+import { computed, ref, watch } from 'vue'
+import targetSvg from '../../../../assets/target.svg'
+import { roleMap } from '../../../../components/common/grants/roleOptions.js'
+import RolePopover from '../../../../components/common/grants/RolePopover.vue'
+import StatusFooter from '../../../../components/common/StatusFooter.vue'
+import { fetchCollectionUsers } from '../../../../shared/api/collectionsApi.js'
+import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
+import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { getEffectiveUserDisplay } from '../../lib/grantsUsers.js'
+import EffectiveAclModal from './EffectiveAclModal.vue'
+
+const props = defineProps({
+  collectionId: {
+    type: [String, Number],
+    required: true,
+  },
+})
+
+const vTooltip = Tooltip
+
+const { state: users, isLoading, execute: reload } = useAsyncState(
+  () => fetchCollectionUsers(props.collectionId),
+  { initialState: [], immediate: false },
+)
+
+watch(() => props.collectionId, id => id && reload(), { immediate: true })
+
+// data table ref for footer actions
+const usersDt = ref()
+
+// mapping users for the data table for ui display
+const displayUsers = computed(() => (users.value ?? []).map((row) => {
+  const display = getEffectiveUserDisplay(row)
+  return {
+    ...display,
+    role: roleMap[display.roleId] || 'Unknown',
+    granteeText: display.granteeLabels.join(', '),
+  }
+}))
+
+const { onFooterAction } = useTableFooterActions(usersDt, { onRefresh: reload })
+
+// compact table pt for footer actions and compact table
+const baseTablePt = compactTablePt({ bodyFontSize: '1.05rem' })
+const tablePt = {
+  ...baseTablePt,
+  column: {
+    ...baseTablePt.column,
+    headerCell: { style: 'font-size: 1.1rem; font-weight: 600;' },
+  },
+}
+
+// Effective ACL drawer
+const aclVisible = ref(false)
+const selectedUser = ref(null)
+const selectedRoleId = ref(null)
+
+const openEffectiveAcl = (row) => {
+  selectedUser.value = { userId: row.userId, displayName: row.displayName }
+  selectedRoleId.value = row.roleId
+  aclVisible.value = true
+}
+</script>
+
+<template>
+  <div class="manage-users">
+    <div class="users-table-wrapper">
+      <DataTable
+        ref="usersDt"
+        :value="displayUsers"
+        :loading="isLoading"
+        sort-field="displayName"
+        :sort-order="1"
+        size="medium"
+        scrollable
+        scroll-height="flex"
+        :virtual-scroller-options="{ itemSize: 49, delay: 0 }"
+        :pt="tablePt"
+      >
+        <template #empty>
+          No effective users.
+        </template>
+
+        <Column field="displayName" header="User" sortable>
+          <template #body="{ data }">
+            <div class="user-cell">
+              <i class="pi pi-user" />
+              <div class="info-col">
+                <span class="primary-text">{{ data.displayName }}</span>
+                <span class="secondary-text">{{ data.username }}</span>
+              </div>
+            </div>
+          </template>
+        </Column>
+
+        <Column field="granteeText" header="Grantee" sortable>
+          <template #body="{ data }">
+            <div class="grantee-list">
+              <div
+                v-for="(label, index) in data.granteeLabels"
+                :key="index"
+                class="grantee-item"
+              >
+                <i :class="label === 'Direct' ? 'pi pi-user' : 'pi pi-users'" />
+                <span>{{ label }}</span>
+              </div>
+            </div>
+          </template>
+        </Column>
+
+        <Column field="role" sortable>
+          <template #header>
+            <span class="role-header">Role</span>
+            <RolePopover />
+          </template>
+        </Column>
+
+        <Column style="text-align: right">
+          <template #body="{ data }">
+            <div class="row-actions">
+              <Button
+                v-tooltip.top="'View effective access'"
+                text
+                rounded
+                class="action-btn"
+                @click="openEffectiveAcl(data)"
+              >
+                <img :src="targetSvg" class="action-svg" alt="Target">
+              </Button>
+            </div>
+          </template>
+        </Column>
+
+        <template #footer>
+          <StatusFooter
+            :refresh-loading="isLoading"
+            :total-count="displayUsers.length"
+            total-label="users"
+            total-icon="pi pi-users"
+            @action="onFooterAction"
+          />
+        </template>
+      </DataTable>
+    </div>
+
+    <EffectiveAclModal
+      v-model:visible="aclVisible"
+      :collection-id="collectionId"
+      :user="selectedUser"
+      :role-id="selectedRoleId"
+    />
+  </div>
+</template>
+
+<style scoped>
+.manage-users {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.users-table-wrapper {
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+  overflow: hidden;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.info-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.primary-text {
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.secondary-text {
+  color: var(--color-text-dim);
+  font-size: 0.9rem;
+}
+
+.grantee-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+}
+
+.grantee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 1.05rem;
+}
+
+.role-header {
+  margin-right: 0.15rem;
+}
+
+.row-actions {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+}
+
+.action-svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+</style>

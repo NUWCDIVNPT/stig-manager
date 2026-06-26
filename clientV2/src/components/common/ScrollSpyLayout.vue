@@ -217,7 +217,8 @@ onUnmounted(() => {
 
 .scrollspy-scroll-area {
   flex: 1;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 1.5rem 3rem;
   display: flex;
   flex-direction: column;
