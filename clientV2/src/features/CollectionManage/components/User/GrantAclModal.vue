@@ -6,7 +6,7 @@ import { computed, ref, watch } from 'vue'
 import targetSvg from '../../../../assets/target.svg'
 import { fetchGrantAcl, replaceGrantAcl } from '../../../../shared/api/grantsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
-import { aclRuleToPayload, getAclRuleKey, getAllowedAclAccessOptions, isDuplicateAclRule, normalizeAclRule } from '../../lib/aclRules.js'
+import { aclRuleToPayload, getAclRuleKey, getAllowedAclAccessOptions, getDefaultAccessForRole, isDuplicateAclRule, normalizeAclRule } from '../../lib/aclRules.js'
 import { getGrantDisplay } from '../../lib/grantsUsers.js'
 import AclRuleBuilder from './AclRuleBuilder.vue'
 import AclRulesTable from './AclRulesTable.vue'
@@ -95,7 +95,12 @@ function updateRuleAccess({ rule, access }) {
 // watcher to load the acl rules when the modal is opened
 watch([visible, () => props.grant?.grantId], async ([isOpen, grantId]) => {
   if (isOpen && grantId) {
+    // Clear prior grant's data before fetching so a reopened modal never flashes
+    // (or, worse, saves) the previous grant's ACL. Seed defaultAccess from the
+    // role so the header shows a real value instead of "null" during the load.
     selectedRules.value = []
+    rules.value = []
+    defaultAccess.value = getDefaultAccessForRole(props.grant?.roleId)
     const response = await executeLoad()
     if (response) {
       defaultAccess.value = response.defaultAccess ?? null
@@ -195,7 +200,7 @@ async function onSave() {
 
     <template #footer>
       <Button label="Cancel" icon="pi pi-times" text :disabled="isSaving" @click="visible = false" />
-      <Button label="Save" icon="pi pi-check" :loading="isSaving" @click="onSave" />
+      <Button label="Save" icon="pi pi-check" :loading="isSaving" :disabled="isLoading || isSaving" @click="onSave" />
     </template>
   </Dialog>
 </template>

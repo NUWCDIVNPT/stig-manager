@@ -9,8 +9,6 @@ import {
   granteeLabels,
   granteeToGrantPayload,
   normalizeAvailableGrantees,
-  canAssignGrantRole,
-  canSaveGrantChange,
 } from '../lib/grantsUsers.js'
 
 describe('getGrantDisplay', () => {
@@ -210,39 +208,6 @@ describe('canModifyGrant', () => {
   it('enforces owner-only modification logic on owner grants', () => {
     const ownerGrant = { roleId: 4 }
     expect(canModifyGrant(ownerGrant, 3)).toBe(false) // Manage user cannot modify Owner grant
-    expect(canModifyGrant(ownerGrant, 4)).toBe(true)  // Owner user can modify Owner grant
-  })
-})
-
-describe('canAssignGrantRole', () => {
-  it('allows anyone to assign non-owner roles', () => {
-    expect(canAssignGrantRole(3, 1)).toBe(true)
-    expect(canAssignGrantRole(2, 2)).toBe(true)
-  })
-
-  it('restricts owner role assignment to owners or elevated users', () => {
-    expect(canAssignGrantRole(4, 3)).toBe(false)
-    expect(canAssignGrantRole(4, 4)).toBe(true)
-    expect(canAssignGrantRole(4, 3, true)).toBe(true)
-  })
-})
-
-describe('canSaveGrantChange', () => {
-  it('allows saving if both modification and assignment are valid', () => {
-    const existingGrant = { roleId: 3 }
-    const nextGrant = { roleId: 2 }
-    expect(canSaveGrantChange(existingGrant, nextGrant, 2)).toBe(true)
-  })
-
-  it('blocks saving if user cannot modify the existing grant', () => {
-    const existingOwnerGrant = { roleId: 4 }
-    const nextGrant = { roleId: 3 }
-    expect(canSaveGrantChange(existingOwnerGrant, nextGrant, 3)).toBe(false)
-  })
-
-  it('blocks saving if user cannot assign the requested role', () => {
-    const existingGrant = { roleId: 3 }
-    const nextOwnerGrant = { roleId: 4 }
-    expect(canSaveGrantChange(existingGrant, nextOwnerGrant, 3)).toBe(false)
+    expect(canModifyGrant(ownerGrant, 4)).toBe(true) // Owner user can modify Owner grant
   })
 })

@@ -8,10 +8,10 @@ import targetSvg from '../../../../assets/target.svg'
 import { roleMap } from '../../../../components/common/grants/roleOptions.js'
 import RolePopover from '../../../../components/common/grants/RolePopover.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
-import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { fetchCollectionUsers } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
+import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { getEffectiveUserDisplay } from '../../lib/grantsUsers.js'
 import EffectiveAclModal from './EffectiveAclModal.vue'
 
@@ -199,12 +199,13 @@ const openEffectiveAcl = (row) => {
 
 .grantee-list {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
 }
 
 .grantee-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   font-size: 1.05rem;

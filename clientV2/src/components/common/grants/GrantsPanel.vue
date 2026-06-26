@@ -285,7 +285,7 @@ const tablePt = {
           <template #body="{ data }">
             <div class="row-actions">
               <Button
-                v-if="canModify(data)"
+                v-if="canModify(data) && !elevate"
                 v-tooltip.top="'Access Control List'"
                 text
                 rounded
