@@ -215,7 +215,6 @@ const columns = computed(() => {
 })
 
 const data = computed(() => {
-  console.log('Computing data for aggregation type:', aggregationType.value)
   if (!Array.isArray(props.apiMetricsSummary)) {
     return []
   }
