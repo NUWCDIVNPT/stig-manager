@@ -4,11 +4,10 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
-import Popover from 'primevue/popover'
+import Menu from 'primevue/menu'
 import Select from 'primevue/select'
-import Tag from 'primevue/tag'
 import { computed, ref } from 'vue'
-import { roleMap, roleOptions } from './roleOptions.js'
+import { getAssignableRoleOptions, roleMap } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 import { useGranteeFilter } from './useGranteeFilter.js'
 
@@ -21,16 +20,29 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  canModifyOwners: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const emit = defineEmits(['save', 'cancel'])
+
+// Only an Owner (or an elevated caller) may grant the Owner role.
+const availableRoleOptions = computed(() => getAssignableRoleOptions(props.canModifyOwners))
 
 // Component is v-if guarded by parent, so direct initialization is safe
 const localSource = ref([...props.source])
 const localTarget = ref([...props.target])
 const selectionSource = ref([])
 const selectionTarget = ref([])
-const popoverRef = ref()
+const addMenu = ref()
+
+const addMenuItems = computed(() => availableRoleOptions.value.map(option => ({
+  label: `with ${option.label} role`,
+  icon: 'pi pi-angle-right text-green-500',
+  command: () => onSelectRole(option),
+})))
 
 const sourceUsers = computed(() => localSource.value.filter(i => i.type === 'user'))
 const sourceGroups = computed(() => localSource.value.filter(i => i.type === 'group'))
@@ -61,27 +73,14 @@ const onSelectRole = (option) => {
 
     selectionSource.value = []
 
-    // op is the popover ref this closes it
-    popoverRef.value.hide()
+    // close the role menu now that the selection has been moved
+    addMenu.value?.hide()
   }
 }
 
 const onMoveRight = (event) => {
-  // if we have additional options, open the popover using the op ref, toggle is a popover method
-  if (roleOptions.length > 0) {
-    popoverRef.value.toggle(event)
-  }
-  else {
-    // no opion so just move items from source to target
-    if (selectionSource.value.length > 0) {
-      // this is a bit over done
-      const itemsToMove = [...selectionSource.value]
-      localTarget.value.push(...itemsToMove)
-      // remove items from source that are being moved
-      localSource.value = localSource.value.filter(item => !itemsToMove.includes(item))
-      selectionSource.value = []
-    }
-  }
+  // open the role menu; picking a role moves the selection (see onSelectRole)
+  addMenu.value.toggle(event)
 }
 
 const onMoveLeft = () => {
@@ -102,7 +101,7 @@ const onMoveLeft = () => {
 const onMoveAllRight = (event) => {
   // select all source values
   selectionSource.value = [...localSource.value]
-  // move them to the right (event is neeed to close the popover )
+  // move them to the right (event is needed to position the role menu)
   onMoveRight(event)
 }
 
@@ -129,7 +128,7 @@ const onCancel = () => {
   <div class="grants-picklist-root">
     <div class="picklist-container">
       <div class="list-column">
-        <h4 class="list-header">
+        <h4 class="col-header">
           Available Grantees
         </h4>
         <div class="filter-container">
@@ -139,7 +138,12 @@ const onCancel = () => {
           </IconField>
           <div class="filter-group">
             <label class="filter-label">User Last Active:</label>
-            <Select v-model="selectedFilter" :options="filterOptions" option-label="label" />
+            <Select
+              v-model="selectedFilter"
+              :options="filterOptions"
+              option-label="label"
+              :pt="{ label: { style: 'font-size: 1.15rem;' }, item: { style: 'font-size: 1.15rem;' } }"
+            />
           </div>
         </div>
 
@@ -151,8 +155,10 @@ const onCancel = () => {
           option-group-children="items"
           option-disabled="collapsed"
           multiple
+          :virtual-scroller-options="{ itemSize: 42 }"
           :pt="{
-            root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column;' },
+            root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background: transparent; border: none;' },
+            item: { style: 'font-size: 1.15rem;' },
           }"
         >
           <template #optiongroup="slotProps">
@@ -171,17 +177,47 @@ const onCancel = () => {
       </div>
 
       <div class="controls-column">
-        <Button icon="pi pi-angle-double-right" text @click="onMoveAllRight" />
-        <Button icon="pi pi-angle-right" text :disabled="selectionSource.length === 0" @click="onMoveRight" />
-        <Button icon="pi pi-angle-left" text :disabled="selectionTarget.length === 0" @click="onMoveLeft" />
-        <Button icon="pi pi-angle-double-left" text @click="onMoveAllLeft" />
+        <Button
+          label="Add All"
+          icon="pi pi-angle-double-right"
+          icon-pos="right"
+          severity="secondary"
+          class="control-btn"
+          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-success)' } }) }"
+          @click="onMoveAllRight"
+        />
+        <Button
+          label="Add"
+          icon="pi pi-angle-right"
+          icon-pos="right"
+          severity="secondary"
+          :disabled="selectionSource.length === 0"
+          class="control-btn"
+          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-success)' } }) }"
+          @click="onMoveRight"
+        />
+        <Button
+          label="Remove"
+          icon="pi pi-angle-left"
+          severity="secondary"
+          :disabled="selectionTarget.length === 0"
+          class="control-btn"
+          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-action-red)' } }) }"
+          @click="onMoveLeft"
+        />
+        <Button
+          label="Remove All"
+          icon="pi pi-angle-double-left"
+          severity="secondary"
+          class="control-btn"
+          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-action-red)' } }) }"
+          @click="onMoveAllLeft"
+        />
       </div>
 
       <div class="list-column">
-        <!-- Spacer to align list heights with left column filter area -->
-        <div class="filter-spacer" />
-        <h4 class="list-header" style="display: flex; align-items: center; gap: 0.5rem;">
-          New Grants
+        <h4 class="col-header" style="display: flex; align-items: center; justify-content: space-between;">
+          <span>New Grants</span>
           <RolePopover />
         </h4>
         <Listbox
@@ -190,7 +226,8 @@ const onCancel = () => {
           :option-label="itemLabel"
           multiple
           :pt="{
-            root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column;' },
+            root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background: transparent; border: none;' },
+            item: { style: 'font-size: 1.15rem;' },
           }"
         >
           <template #option="slotProps">
@@ -199,37 +236,20 @@ const onCancel = () => {
                 <i :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
                 <span>{{ slotProps.option[itemLabel] }}</span>
               </div>
-              <Tag
-                v-if="slotProps.option.roleId"
-                :value="roleMap[slotProps.option.roleId] || slotProps.option.roleId"
-                :class="`role-tag-${slotProps.option.roleId}`"
-              />
+              <span v-if="slotProps.option.roleId" class="target-option-role">
+                {{ roleMap[slotProps.option.roleId] || slotProps.option.roleId }}
+              </span>
             </div>
           </template>
         </Listbox>
       </div>
     </div>
 
-    <!-- op ref is in control of this popover -->
-    <Popover ref="popoverRef">
-      <div class="popover-container">
-        <span class="popover-header">Assign Role:</span>
-        <div v-for="option in roleOptions" :key="option.value">
-          <Button
-            :label="option.label"
-            text
-            :pt="{
-              root: { style: 'width: 100%; justify-content: flex-start; text-align: left;' },
-            }"
-            @click="onSelectRole(option)"
-          />
-        </div>
-      </div>
-    </Popover>
+    <Menu ref="addMenu" :model="addMenuItems" popup />
 
     <div class="picklist-footer">
       <Button label="Cancel" icon="pi pi-times" text @click="onCancel" />
-      <Button label="Save" icon="pi pi-check" @click="onSave" />
+      <Button label="Save" icon="pi pi-check" :disabled="localTarget.length === 0" @click="onSave" />
     </div>
   </div>
 </template>
@@ -262,24 +282,28 @@ const onCancel = () => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--color-background-subtle);
 }
 
-.list-header {
-  margin: 0 0 0.5rem 0;
+.col-header {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  flex: 0 0 auto;
+  color: var(--color-text-bright);
+  background: var(--p-datatable-row-background);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .filter-container {
-  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.5rem;
   display: flex;
   gap: 1rem;
   align-items: flex-end;
-}
-
-.filter-spacer {
-  height: 3.5rem;
-  flex: 0 0 auto;
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .filter-group {
@@ -289,21 +313,31 @@ const onCancel = () => {
 }
 
 .filter-label {
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--color-text-bright);
 }
 
 .controls-column {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   justify-content: center;
+  align-items: stretch;
+  gap: 1.2rem;
+  padding: 0 0.25rem;
+}
+
+.control-btn {
+  min-width: 8rem;
+  padding: 0.6rem 1rem;
+  font-size: 1.1rem;
 }
 
 .option-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 1.15rem;
 }
 
 .option-item i {
@@ -312,18 +346,6 @@ const onCancel = () => {
 
 .search-field {
   flex: 1;
-}
-
-.popover-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  padding: 0.2rem;
-}
-
-.popover-header {
-  font-weight: bold;
-  margin-bottom: 0.2rem;
 }
 
 .group-header {
@@ -336,13 +358,19 @@ const onCancel = () => {
   gap: 0.3rem;
 }
 
-/* last resort */
+/* Make the list fill its column. Source list is virtualized (the inner
+   .p-virtualscroller owns scrolling and exactly fills this container, so it
+   never overflows); target list is plain, so this container is its scroller —
+   overflow:auto serves both. */
 :deep(.p-listbox-list-container) {
   flex: 1 1 auto;
   min-height: 0;
-  height: 100%;
   max-height: none !important;
   overflow: auto;
+}
+
+:deep(.p-virtualscroller) {
+  height: 100% !important;
 }
 
 .target-option-item {
@@ -356,26 +384,15 @@ const onCancel = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 1.15rem;
 }
 
 .target-option-name i {
   font-size: 1.3rem;
 }
 
-.role-tag-1 {
-  background: var(--role-restricted);
-  color: var(--color-text-bright);
-}
-.role-tag-2 {
-  background: var(--role-full);
-  color: var(--color-text-bright);
-}
-.role-tag-3 {
-  background: var(--role-manage);
-  color: var(--color-text-bright);
-}
-.role-tag-4 {
-  background: var(--role-owner);
+.target-option-role {
+  font-size: 1.05rem;
   color: var(--color-text-bright);
 }
 </style>

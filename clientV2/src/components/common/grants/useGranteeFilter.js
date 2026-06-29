@@ -29,7 +29,8 @@ export function useGranteeFilter(usersRef, groupsRef) {
       cutoffDate.setDate(cutoffDate.getDate() - selectedFilter.value.value)
       users = users.filter((u) => {
         if (!u.lastAccess) { return false }
-        return new Date(u.lastAccess) >= cutoffDate
+        // lastAccess is stored as Unix seconds (see api auth.js), so scale to ms
+        return new Date(u.lastAccess * 1000) >= cutoffDate
       })
     }
 
