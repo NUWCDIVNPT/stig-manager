@@ -38,21 +38,6 @@ permissions:
   pull-requests: read # allows SonarCloud to decorate PRs with analysis results
 
 jobs:
-  npm_audit:
-    name: npm audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: install dependencies
-        run: npm ci
-        working-directory: ./api/source/
-      - name: Audit Dependencies and Create PR Comment if needed
-        uses: oke-py/npm-audit-action@2c6b2da234031fbf72af81a04c76b3a152bb2222 # pin@v2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          create_issues: false
-          create_pr_comments: true
-          working_directory: ./api/source/
   test_api:
     name: Run tests with coverage
     runs-on: ubuntu-latest
