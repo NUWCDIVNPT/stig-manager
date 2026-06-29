@@ -7,6 +7,7 @@ import targetSvg from '../../../../assets/target.svg'
 import LabelChip from '../../../../components/common/Label.vue'
 import { apiCall } from '../../../../shared/api/apiClient.js'
 import { fetchCollectionLabels, fetchCollectionStigs } from '../../../../shared/api/collectionsApi.js'
+import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
 import { useLazyResource } from '../../composables/useLazyResource.js'
 import { isDuplicateAclRule } from '../../lib/aclRules.js'
@@ -43,13 +44,39 @@ const selectedAsset = ref(null)
 const selectedLabel = ref(null)
 const selectedBenchmarkId = ref(null)
 
-// lazy load assets, labels, and stigs and "cache"
 const { items: assets, isLoading: assetsLoading, ensure: ensureAssets, reset: resetAssets }
   = useLazyResource(() => apiCall('getAssets', { collectionId: props.collectionId }))
 const { items: labels, isLoading: labelsLoading, ensure: ensureLabels, reset: resetLabels }
   = useLazyResource(() => fetchCollectionLabels(props.collectionId))
-const { items: stigs, isLoading: stigsLoading, ensure: ensureStigs, reset: resetStigs }
-  = useLazyResource(() => fetchCollectionStigs(props.collectionId))
+
+// STIG options for the current scope. The fetcher reads scope/selection
+// reactively and is (re)run by the watcher below via execute(). useAsyncState
+// owns the loading flag, routes failures to the global error modal, and discards
+// stale responses when the scope changes mid-flight (generation + AbortController),
+// so a slow earlier fetch can't clobber a newer one.
+const { state: stigs, isLoading: stigsLoading, execute: loadStigs } = useAsyncState(
+  () => {
+    if (scope.value === 'collection') {
+      return fetchCollectionStigs(props.collectionId)
+    }
+    if (scope.value === 'asset' && selectedAsset.value) {
+      return apiCall('getAsset', { assetId: selectedAsset.value.assetId, projection: 'stigs' })
+        .then(asset => asset.stigs ?? [])
+    }
+    if (scope.value === 'label' && selectedLabel.value) {
+      return fetchCollectionStigs(props.collectionId, { labelId: selectedLabel.value.labelId })
+    }
+    return []
+  },
+  { immediate: false, initialState: [] },
+)
+
+watch([scope, selectedAsset, selectedLabel, () => props.active], ([, , , isActive]) => {
+  if (!isActive) {
+    return
+  }
+  loadStigs()
+}, { immediate: true })
 
 // on scope change clear selections for other scopes.
 // We call ensure() to lazily fetch the necessary dropdown options (like Assets or Labels)
@@ -57,12 +84,17 @@ const { items: stigs, isLoading: stigsLoading, ensure: ensureStigs, reset: reset
 watch(scope, (value) => {
   selectedAsset.value = null
   selectedLabel.value = null
+  selectedBenchmarkId.value = null
   if (value === 'asset') {
     ensureAssets()
   }
   else if (value === 'label') {
     ensureLabels()
   }
+})
+
+watch([selectedAsset, selectedLabel], () => {
+  selectedBenchmarkId.value = null
 })
 
 // used to enable buttons
@@ -113,15 +145,19 @@ watch(previewRule, value => emit('preview', value), { immediate: true })
 watch(() => props.active, (isActive) => {
   if (isActive) {
     scope.value = 'collection'
-    selectedAsset.value = null
-    selectedLabel.value = null
-    selectedBenchmarkId.value = null
+    clear()
     resetAssets()
     resetLabels()
-    resetStigs()
-    ensureStigs()
   }
 }, { immediate: true })
+
+function clear() {
+  selectedAsset.value = null
+  selectedLabel.value = null
+  selectedBenchmarkId.value = null
+}
+
+defineExpose({ clear })
 </script>
 
 <template>

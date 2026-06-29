@@ -48,6 +48,8 @@ const previewRule = ref(null)
 // can add if there is a preview rule and it is not a duplicate
 const canAdd = computed(() => !!previewRule.value && !isDuplicateAclRule(rules.value, previewRule.value))
 
+const builderRef = ref()
+
 const ACCESS_MENU_LABEL = {
   rw: 'with Read/Write access',
   r: 'with Read Only access',
@@ -74,6 +76,7 @@ function addRule(access) {
   // The new rule is a copy of `previewRule.value` with the `access` property set to the selected `access` value.
   // This ensures that the original `previewRule.value` is not mutated.
   rules.value = [...rules.value, { ...previewRule.value, access }]
+  builderRef.value?.clear()
 }
 
 const selectedRules = ref([])
@@ -147,6 +150,7 @@ async function onSave() {
           Add a Resource Rule
         </h4>
         <AclRuleBuilder
+          ref="builderRef"
           :collection-id="collectionId"
           :rules="rules"
           :active="visible && !!grant"
