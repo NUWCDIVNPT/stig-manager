@@ -110,7 +110,9 @@ const onSaveGrants = async ({ target }) => {
     await createGrants(props.collectionId, payload, { elevate: props.elevate })
     await loadGrants()
     addGrantVisible.value = false
-    if (affectsCurrentUser(target.filter(item => item.type === 'user').map(item => item.userId))) {
+    const affectsUser = target.some(item => item.type === 'group')
+      || affectsCurrentUser(target.filter(item => item.type === 'user').map(item => item.userId))
+    if (affectsUser) {
       await refreshUser()
     }
     emit('updated')
@@ -158,7 +160,9 @@ const onUpdateGrant = async (updatedGrant) => {
     )
     await loadGrants()
     editGrantVisible.value = false
-    if (updatedGrant.userId && affectsCurrentUser([updatedGrant.userId])) {
+    const affectsUser = updatedGrant.userGroupId
+      || (updatedGrant.userId && affectsCurrentUser([updatedGrant.userId]))
+    if (affectsUser) {
       await refreshUser()
     }
     emit('updated')
@@ -191,7 +195,9 @@ const confirmDeleteGrant = async () => {
       { elevate: props.elevate },
     )
     await loadGrants()
-    if (deletedUserId && affectsCurrentUser([deletedUserId])) {
+    const affectsUser = grantToDelete.value.userGroup
+      || (deletedUserId && affectsCurrentUser([deletedUserId]))
+    if (affectsUser) {
       await refreshUser()
     }
     emit('updated')

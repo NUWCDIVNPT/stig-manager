@@ -66,6 +66,8 @@ const openEffectiveAcl = (row) => {
   selectedRoleId.value = row.roleId
   aclVisible.value = true
 }
+
+defineExpose({ reload })
 </script>
 
 <template>
@@ -114,7 +116,7 @@ const openEffectiveAcl = (row) => {
           </template>
         </Column>
 
-        <Column field="role" sortable>
+        <Column field="role" sort-field="roleId" sortable>
           <template #header>
             <span class="role-header">Role</span>
             <RolePopover />

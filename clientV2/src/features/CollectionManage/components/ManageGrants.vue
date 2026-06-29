@@ -21,9 +21,15 @@ const sections = [
 const aclVisible = ref(false)
 const aclGrant = ref(null)
 
+const usersRef = ref()
+
 function onOpenAcl(grant) {
   aclGrant.value = grant
   aclVisible.value = true
+}
+
+function onGrantsChanged() {
+  usersRef.value?.reload()
 }
 </script>
 
@@ -36,13 +42,14 @@ function onOpenAcl(grant) {
             :collection-id="collectionId"
             :show-header="false"
             @open-acl="onOpenAcl"
+            @updated="onGrantsChanged"
           />
         </div>
       </template>
 
       <template #users>
         <div class="panel-frame">
-          <ManageUsers :collection-id="collectionId" />
+          <ManageUsers ref="usersRef" :collection-id="collectionId" />
         </div>
       </template>
     </ScrollSpyLayout>
@@ -51,6 +58,7 @@ function onOpenAcl(grant) {
       v-model:visible="aclVisible"
       :collection-id="collectionId"
       :grant="aclGrant"
+      @saved="onGrantsChanged"
     />
   </div>
 </template>

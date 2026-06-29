@@ -7,7 +7,7 @@ import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import { computed, ref } from 'vue'
-import { getAssignableRoleOptions, roleMap, roleOptions } from './roleOptions.js'
+import { getAssignableRoleOptions, roleMap } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 import { useGranteeFilter } from './useGranteeFilter.js'
 
@@ -73,27 +73,14 @@ const onSelectRole = (option) => {
 
     selectionSource.value = []
 
-    // op is the popover ref this closes it
+    // close the role menu now that the selection has been moved
     addMenu.value?.hide()
   }
 }
 
 const onMoveRight = (event) => {
-  // if we have additional options, open the popover using the op ref, toggle is a popover method
-  if (roleOptions.length > 0) {
-    addMenu.value.toggle(event)
-  }
-  else {
-    // no opion so just move items from source to target
-    if (selectionSource.value.length > 0) {
-      // this is a bit over done
-      const itemsToMove = [...selectionSource.value]
-      localTarget.value.push(...itemsToMove)
-      // remove items from source that are being moved
-      localSource.value = localSource.value.filter(item => !itemsToMove.includes(item))
-      selectionSource.value = []
-    }
-  }
+  // open the role menu; picking a role moves the selection (see onSelectRole)
+  addMenu.value.toggle(event)
 }
 
 const onMoveLeft = () => {
@@ -114,7 +101,7 @@ const onMoveLeft = () => {
 const onMoveAllRight = (event) => {
   // select all source values
   selectionSource.value = [...localSource.value]
-  // move them to the right (event is neeed to close the popover )
+  // move them to the right (event is needed to position the role menu)
   onMoveRight(event)
 }
 
@@ -262,7 +249,7 @@ const onCancel = () => {
 
     <div class="picklist-footer">
       <Button label="Cancel" icon="pi pi-times" text @click="onCancel" />
-      <Button label="Save" icon="pi pi-check" @click="onSave" />
+      <Button label="Save" icon="pi pi-check" :disabled="localTarget.length === 0" @click="onSave" />
     </div>
   </div>
 </template>
