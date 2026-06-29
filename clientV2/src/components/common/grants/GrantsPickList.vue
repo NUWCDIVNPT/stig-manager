@@ -7,7 +7,7 @@ import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import { computed, ref } from 'vue'
-import { roleMap, roleOptions } from './roleOptions.js'
+import { getAssignableRoleOptions, roleMap, roleOptions } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 import { useGranteeFilter } from './useGranteeFilter.js'
 
@@ -29,9 +29,7 @@ const props = defineProps({
 const emit = defineEmits(['save', 'cancel'])
 
 // Only an Owner (or an elevated caller) may grant the Owner role.
-const availableRoleOptions = computed(() =>
-  props.canModifyOwners ? roleOptions : roleOptions.filter(option => option.value !== 4),
-)
+const availableRoleOptions = computed(() => getAssignableRoleOptions(props.canModifyOwners))
 
 // Component is v-if guarded by parent, so direct initialization is safe
 const localSource = ref([...props.source])
@@ -198,7 +196,7 @@ const onCancel = () => {
           icon-pos="right"
           severity="secondary"
           class="control-btn"
-          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: '#22c55e' } }) }"
+          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-success)' } }) }"
           @click="onMoveAllRight"
         />
         <Button
@@ -208,7 +206,7 @@ const onCancel = () => {
           severity="secondary"
           :disabled="selectionSource.length === 0"
           class="control-btn"
-          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: '#22c55e' } }) }"
+          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-success)' } }) }"
           @click="onMoveRight"
         />
         <Button
@@ -217,7 +215,7 @@ const onCancel = () => {
           severity="secondary"
           :disabled="selectionTarget.length === 0"
           class="control-btn"
-          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: '#ef4444' } }) }"
+          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-action-red)' } }) }"
           @click="onMoveLeft"
         />
         <Button
@@ -225,7 +223,7 @@ const onCancel = () => {
           icon="pi pi-angle-double-left"
           severity="secondary"
           class="control-btn"
-          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: '#ef4444' } }) }"
+          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-action-red)' } }) }"
           @click="onMoveAllLeft"
         />
       </div>
@@ -308,7 +306,7 @@ const onCancel = () => {
   padding: 0.75rem 1rem;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--color-text-bright);
   background: var(--p-datatable-row-background);
   border-bottom: 1px solid var(--color-border-default);
 }
@@ -330,7 +328,7 @@ const onCancel = () => {
 .filter-label {
   font-size: 1.1rem;
   font-weight: 400;
-  color: #ffffff;
+  color: var(--color-text-bright);
 }
 
 .controls-column {

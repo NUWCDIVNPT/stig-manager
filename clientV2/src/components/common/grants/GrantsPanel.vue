@@ -8,12 +8,13 @@ import Tooltip from 'primevue/tooltip'
 import { computed, ref, watch } from 'vue'
 import lockSvg from '../../../assets/lock.svg'
 import targetSvg from '../../../assets/target.svg'
-import { canModifyGrant, canModifyOwnerGrants, filterOutExistingGrantees, granteeToGrantPayload } from '../../../features/CollectionManage/lib/grantsUsers.js'
+import { canModifyGrant, canModifyOwnerGrants, filterOutExistingGrantees, granteeToGrantPayload, normalizeAvailableGrantees } from '../../../features/CollectionManage/lib/grantsUsers.js'
 import { createGrants, deleteGrant, fetchGrantsByCollection, updateGrant } from '../../../shared/api/grantsApi.js'
 import { fetchUserGroups, fetchUsers } from '../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
 import DeleteModal from '../DeleteModal.vue'
 import StatusFooter from '../StatusFooter.vue'
 import EditGrantModal from './EditGrantModal.vue'
@@ -82,10 +83,7 @@ async function fetchSystemGrantees() {
     fetchUsers({ status: 'available' }),
     fetchUserGroups(),
   ])
-  return [
-    ...users.map(u => ({ ...u, type: 'user', displayName: u.displayName || u.username })),
-    ...groups.map(g => ({ ...g, type: 'group', displayName: g.name })),
-  ]
+  return normalizeAvailableGrantees(users, groups)
 }
 
 // Add grants flow
@@ -210,13 +208,13 @@ const userGroupSortValue = data =>
     ? (data.user.displayName || data.user.username || '')
     : (data.userGroup?.name || '')
 // Compact, flush-footer table styling via PassThrough (no scoped ::v-deep).
+// Shared base, with a slightly larger header than the compact default.
+const baseTablePt = compactTablePt({ bodyFontSize: '1.05rem' })
 const tablePt = {
-  root: { style: 'background: var(--p-datatable-row-background);' },
-  tableContainer: { style: 'background: var(--p-datatable-row-background);' },
-  footer: { style: 'padding: 0; border: none;' },
+  ...baseTablePt,
   column: {
+    ...baseTablePt.column,
     headerCell: { style: 'font-size: 1.1rem; font-weight: 600;' },
-    bodyCell: { style: 'padding: 0.4rem 0.6rem; font-size: 1.05rem;' },
   },
 }
 </script>
