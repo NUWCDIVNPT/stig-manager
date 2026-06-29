@@ -8,7 +8,7 @@ import { fetchFailedReviews } from '../api/findingsApi.js'
 // Refs so the pane reacts to selection changes in the middle pane.
 //   selectedFinding === null → returns [] without firing a request
 // TODO(label-filter): /collections/{id}/reviews does not accept label params
-// server-side — see docs/pending-api-enhancements.md #2. Review rows currently
+// server-side — see docs/todos/pending-api-enhancements.md #2. Review rows currently
 // ignore the orchestrator's label filter.
 export function useFindingReviews({ collectionId, selectedFinding, aggregator }) {
   // The reviews API expects the aggregator field's value on the matching

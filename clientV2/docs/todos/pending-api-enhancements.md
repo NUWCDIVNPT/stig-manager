@@ -10,7 +10,7 @@ These are **server-side** changes — the OpenAPI spec, the service layer, and t
 
 **Operation:** `getFindingsByCollection`
 **Feature:** Findings report — middle pane (AggregatedFindingsGrid)
-**Consumer:** [`useFindings`](../src/features/Findings/composables/useFindings.js)
+**Consumer:** [`useFindings`](../../src/features/Findings/composables/useFindings.js)
 
 ### Current behavior
 
@@ -49,7 +49,7 @@ Pre-resolve `labelIds → assetIds` via `GET /assets?collectionId=X&labelId=...`
 
 **Operation:** `getReviewsByCollection`
 **Feature:** Findings report — right pane (IndividualFindingsGrid)
-**Consumer:** [`useFindingReviews`](../src/features/Findings/composables/useFindingReviews.js)
+**Consumer:** [`useFindingReviews`](../../src/features/Findings/composables/useFindingReviews.js)
 
 ### Current behavior
 
@@ -80,7 +80,7 @@ GET /collections/{collectionId}/reviews
 
 **Operations:** (new) — or extension of `getRulesByRevision`
 **Feature:** STIG Library — rule pane filter / cross-revision search
-**Consumer:** [`STIGLibrary/components/RulePane.vue`](../src/features/STIGLibrary/components/RulePane.vue) and friends
+**Consumer:** [`STIGLibrary/components/RulePane.vue`](../../src/features/STIGLibrary/components/RulePane.vue) and friends
 
 ### Current behavior
 
@@ -119,3 +119,37 @@ Lower-impact but limited to one revision at a time, which doesn't satisfy the cr
 ### Notes
 
 Option A is the one users actually need. The implementation cost is real (a server-side full-text index would help, but a `LIKE %q%` against the existing rule-text columns is a reasonable v1 and matches how the legacy ExtJS client searched the loaded payload). Highlighting is nice-to-have; the v1 client can re-find the match locally.
+
+---
+
+## 4. Asset search across collections
+
+**Operation:** (new) — or extension of `getAssets`
+**Feature:** Meta-dashboard — asset lookup across the selected collection set (net-new feature request, not a regression)
+**Consumer:** [`MetaStigsTab`](../../src/features/MetaCollectionView/components/MetaStigsTab.vue) / a future Meta asset panel
+
+### Current behavior
+
+`getAssets` is single-collection scoped — `GET /collections/{collectionId}/assets` (and `GET /assets?collectionId={id}` takes one collection). The meta-dashboard operates over a *set* of collections (`selectedCollectionIds`), but there is no way to query assets across them in one request. The STIGs tab can only reach assets by drilling STIG → one collection → assets (`fetchCollectionChecklistAssets`, one collection at a time).
+
+### Why it matters
+
+Reviewers using the meta-dashboard routinely want to find an asset — by name, FQDN, or IP — across every Collection they oversee ("where does host X live?") without first knowing which Collection holds it. Today that is N manual per-Collection lookups.
+
+### Proposed shape
+
+Accept a repeatable `collectionId` (the meta set) plus a search term:
+
+```
+GET /assets
+  ?collectionId={id}     # repeatable — the selected meta set
+  &name={substring}      # match name / FQDN / IP
+  &benchmarkId={id}      # optional — scope to one STIG
+  &projection=stigs
+```
+
+Each hit carries its originating `collectionId` so the client can route to the right Collection/Asset.
+
+### Notes
+
+Grant enforcement is the non-trivial part: a caller may hold a grant on only some of the requested collections. The endpoint should intersect with the caller's accessible set and silently drop the rest, rather than 403 the whole request — otherwise the meta-dashboard becomes unusable for anyone without uniform access across the set.

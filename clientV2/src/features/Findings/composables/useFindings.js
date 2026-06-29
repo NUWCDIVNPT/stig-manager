@@ -7,7 +7,7 @@ import { fetchFindings } from '../api/findingsApi.js'
 // orchestrator state changes.
 //   benchmarkId === null → "All Collection STIGs" (no benchmarkId query param)
 // TODO(label-filter): /collections/{id}/findings does not accept label params
-// server-side — see docs/pending-api-enhancements.md #1. Aggregated row counts
+// server-side — see docs/todos/pending-api-enhancements.md #1. Aggregated row counts
 // currently ignore the orchestrator's label filter.
 export function useFindings({ collectionId, aggregator, benchmarkId }) {
   const { state: findings, isLoading, error, execute } = useAsyncState(

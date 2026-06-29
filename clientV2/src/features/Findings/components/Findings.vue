@@ -97,7 +97,7 @@ const {
 
 // Middle pane: aggregated findings, optionally scoped to one STIG.
 // TODO(label-filter): /collections/{id}/findings does not accept label params
-// server-side — see docs/pending-api-enhancements.md #1.
+// server-side — see docs/todos/pending-api-enhancements.md #1.
 const {
   findings,
   isLoading: isFindingsLoading,
@@ -127,7 +127,7 @@ const visibleColumns = useFindingsColumns(aggregator, isAllStigsMode)
 // Right pane: per-asset failed reviews backing the currently selected
 // aggregated row. selectedFinding === null → returns [] without fetching.
 // TODO(label-filter): same caveat as useFindings — see
-// docs/pending-api-enhancements.md #2.
+// docs/todos/pending-api-enhancements.md #2.
 const {
   reviews,
   isLoading: isReviewsLoading,
