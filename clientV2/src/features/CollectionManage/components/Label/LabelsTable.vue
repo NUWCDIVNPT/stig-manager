@@ -6,6 +6,7 @@ import { computed, ref } from 'vue'
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import LabelChip from '../../../../components/common/Label.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
+import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
 
 const props = defineProps({
@@ -67,14 +68,10 @@ const tablePt = {
 
 const dataTableRef = ref(null)
 
-function handleFooterAction(action) {
-  if (action === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-  else {
-    emit('footer-action', action)
-  }
-}
+// Export is handled locally; refresh is forwarded to the parent, which owns the load.
+const { onFooterAction } = useTableFooterActions(dataTableRef, {
+  onRefresh: () => emit('footer-action', 'refresh'),
+})
 </script>
 
 <template>
@@ -166,7 +163,7 @@ function handleFooterAction(action) {
           :show-selected="selection.length > 0"
           :selected-items="selection"
           total-label="labels"
-          @action="handleFooterAction"
+          @action="onFooterAction"
         />
       </template>
     </DataTable>
