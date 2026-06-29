@@ -7,7 +7,7 @@ import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import Select from 'primevue/select'
 import { computed, ref, toRef, watch } from 'vue'
-import { roleOptions } from './roleOptions.js'
+import { getAssignableRoleOptions } from './roleOptions.js'
 import { useGranteeFilter } from './useGranteeFilter.js'
 
 const props = defineProps({
@@ -36,9 +36,7 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'save'])
 
 // Only an Owner (or an elevated caller) may assign the Owner role.
-const availableRoleOptions = computed(() =>
-  props.canModifyOwners ? roleOptions : roleOptions.filter(option => option.value !== 4),
-)
+const availableRoleOptions = computed(() => getAssignableRoleOptions(props.canModifyOwners))
 
 const localVisible = computed({
   get: () => props.visible,
@@ -252,7 +250,7 @@ const onCancel = () => {
   padding: 0.75rem 1rem;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--color-text-bright);
   background: var(--p-datatable-row-background);
   border-bottom: 1px solid var(--color-border-default);
 }
