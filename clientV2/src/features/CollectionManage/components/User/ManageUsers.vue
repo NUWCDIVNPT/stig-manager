@@ -2,7 +2,6 @@
 import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import Tooltip from 'primevue/tooltip'
 import { computed, ref, watch } from 'vue'
 import targetSvg from '../../../../assets/target.svg'
 import { roleMap } from '../../../../components/common/grants/roleOptions.js'
@@ -21,8 +20,6 @@ const props = defineProps({
     required: true,
   },
 })
-
-const vTooltip = Tooltip
 
 const { state: users, isLoading, execute: reload } = useAsyncState(
   () => fetchCollectionUsers(props.collectionId),

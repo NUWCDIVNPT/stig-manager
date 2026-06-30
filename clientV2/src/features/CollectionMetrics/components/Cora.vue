@@ -1,7 +1,7 @@
 <script setup>
-import Popover from 'primevue/popover'
-import { ref, toRefs } from 'vue'
-import CoraTooltip from './CoraTooltip.vue'
+import { toRefs } from 'vue'
+import HelpIcon from '../../../components/common/HelpIcon.vue'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
 const props = defineProps({
   coraData: {
@@ -12,12 +12,6 @@ const props = defineProps({
 })
 
 const { coraData } = toRefs(props)
-
-// Popover stuff
-const op = ref()
-const toggle = (event) => {
-  op.value.toggle(event)
-}
 
 function getRiskClass(riskRating) {
   switch (riskRating) {
@@ -44,14 +38,7 @@ function getRiskClass(riskRating) {
         <h2 class="metric-title">
           CORA
         </h2>
-        <i
-          v-if="coraData"
-          class="pi pi-question-circle help-icon"
-          @click="toggle"
-        />
-        <Popover ref="op">
-          <CoraTooltip />
-        </Popover>
+        <HelpIcon v-if="coraData" :content="TOOLTIPS.cora.html" tip-class="sm-cora-tip" />
       </div>
     </div>
 
@@ -104,14 +91,6 @@ function getRiskClass(riskRating) {
 
 .metric-header {
   margin-bottom: 8px;
-}
-
-.help-icon {
-  color: var(--color-text-dim);
-  cursor: pointer;
-}
-.help-icon:hover {
-  color: var(--color-text-primary);
 }
 
 .cora-content {

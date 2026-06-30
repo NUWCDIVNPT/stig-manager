@@ -4,7 +4,6 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
 import Toolbar from 'primevue/toolbar'
-import Tooltip from 'primevue/tooltip'
 import { computed, ref, watch } from 'vue'
 import lockSvg from '../../../assets/lock.svg'
 import targetSvg from '../../../assets/target.svg'
@@ -38,8 +37,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['updated', 'open-acl'])
-
-const vTooltip = Tooltip
 
 const { triggerError } = useGlobalError()
 const { user: currentUser, getCollectionRoleId, refreshUser } = useCurrentUser()

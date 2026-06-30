@@ -166,7 +166,43 @@
   background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
 }
 .sm-cora-risk-very-low {
-  background: linear-gradient(135deg, #15803d 0%, #14532d 100%); 
+  background: linear-gradient(135deg, #15803d 0%, #14532d 100%);
+}
+
+/* Rich help-tooltip content rendered via the v-tooltip directive (escape:false).
+   Tooltip content lives outside the triggering component, so its styles must be
+   global. Namespaced by the tipClass passed to HelpIcon. */
+
+/* Grant role tooltip (HelpIcon tip-class="sm-role-tip") */
+.role-text-restricted { color: var(--role-restricted); }
+.role-text-full { color: var(--role-full); }
+.role-text-manage { color: var(--role-manage); }
+.role-text-owner { color: var(--role-owner); }
+
+/* CORA explanation tooltip (HelpIcon tip-class="sm-cora-tip") */
+.sm-cora-tip ul.risk-list {
+  padding-left: 16px;
+  margin: 6px 0 0 0;
+  list-style-type: disc;
+}
+.sm-cora-tip code {
+  background-color: var(--color-background-subtle);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+.sm-cora-tip .formula {
+  display: inline-block;
+  margin: 2px 0;
+}
+.sm-cora-tip .tooltip-label {
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--color-text-bright);
+  margin-right: 4px;
+  font-size: 0.9em;
+  display: inline-block;
+  line-height: normal;
 }
 
 

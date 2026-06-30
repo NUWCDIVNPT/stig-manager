@@ -87,7 +87,7 @@ const emit = defineEmits(['clear-selection', 'stigs-changed'])
   background: transparent;
   border: none;
   color: var(--color-text-default);
-  font-size: 0.98rem;
+  font-size: 1.15rem;
   font-weight: 500;
   cursor: pointer;
   padding: 0.45rem 0.7rem;

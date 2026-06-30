@@ -4,17 +4,18 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, inject, ref, toRefs, watch } from 'vue'
 import { useRoute } from 'vue-router'
-
 import engineIcon from '../../../assets/bot2.svg'
+
 import overrideIcon from '../../../assets/override2.svg'
 import manualIcon from '../../../assets/user.svg'
-
 import { fetchOtherReviews } from '../../../shared/api/reviewsApi.js'
+
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { normalizeColor } from '../../../shared/lib/colorUtils.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import LabelsRow from '../../columns/LabelsRow.vue'
 import ColumnFilter from '../ColumnFilter.vue'
 import ColumnSearchFilter from '../ColumnSearchFilter.vue'
@@ -111,12 +112,12 @@ const isAlreadyApplied = (data) => {
 
 const getApplyTooltip = (data) => {
   if (!editable.value) {
-    return 'Cannot apply review while submitted or accepted'
+    return TOOLTIPS.applyReview.notWhileSubmitted
   }
   if (isAlreadyApplied(data)) {
-    return 'Review is already applied'
+    return TOOLTIPS.applyReview.alreadyApplied
   }
-  return 'Apply this review'
+  return TOOLTIPS.applyReview.apply
 }
 
 const { state: otherReviews, isLoading, execute: loadOtherReviews } = useAsyncState(
