@@ -3,10 +3,11 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
-import Tooltip from 'primevue/tooltip'
 import { computed, ref, watch } from 'vue'
+import HelpIcon from '../../../components/common/HelpIcon.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import { resultOptions } from '../../../shared/lib/reviewFormUtils.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
 const props = defineProps({
   visible: {
@@ -24,8 +25,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'confirm', 'cancel'])
-
-const vTooltip = Tooltip
 
 const visibleModel = computed({
   get: () => props.visible,
@@ -71,9 +70,7 @@ const isMeaningfulChange = computed(() => {
   return resultChanged || detailChanged || commentChanged
 })
 
-const tooltipOpts = { escape: false, autoHide: false, hideDelay: 300, pt: { root: { style: { maxWidth: '40rem' } } } }
-
-const resultTooltipHtml = '<b>Result</b><br>The result of an evaluation of a STIG ruleId.<br><br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;STATUS&gt;<br><b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;result&gt;'
+const resultTooltipHtml = TOOLTIPS.batchEdit.result
 
 function getFieldTooltipHtml(title, desc, fs, ckl, xccdf) {
   const enabledText = fs?.enabled === 'findings' ? 'for findings only.' : 'for any result.'
@@ -89,19 +86,19 @@ function getFieldTooltipHtml(title, desc, fs, ckl, xccdf) {
 }
 
 const detailTooltipHtml = computed(() => getFieldTooltipHtml(
-  'Detail',
-  'A description of how the evaluator or evaluation tool determined the result.',
+  TOOLTIPS.batchEdit.detail.title,
+  TOOLTIPS.batchEdit.detail.desc,
   props.fieldSettings?.detail,
-  '&lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;FINDING_DETAILS&gt;',
-  '&lt;TestResult&gt;&lt;rule-result&gt;&lt;check&gt;&lt;check-content&gt;&lt;sm:detail&gt;',
+  TOOLTIPS.batchEdit.detail.ckl,
+  TOOLTIPS.batchEdit.detail.xccdf,
 ))
 
 const commentTooltipHtml = computed(() => getFieldTooltipHtml(
-  'Comment',
-  'Additional comment by the evaluator or evaluation tool.',
+  TOOLTIPS.batchEdit.comment.title,
+  TOOLTIPS.batchEdit.comment.desc,
   props.fieldSettings?.comment,
-  '&lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;COMMENTS&gt;',
-  '&lt;TestResult&gt;&lt;rule-result&gt;&lt;check&gt;&lt;check-content&gt;&lt;sm:comment&gt;',
+  TOOLTIPS.batchEdit.comment.ckl,
+  TOOLTIPS.batchEdit.comment.xccdf,
 ))
 
 const dialogPt = {
@@ -203,7 +200,7 @@ function onCancel() {
       <div class="batch-modal__field">
         <label class="batch-modal__label">
           Result
-          <i v-tooltip="{ value: resultTooltipHtml, ...tooltipOpts }" class="pi pi-question-circle batch-modal__help-icon" />
+          <HelpIcon :content="resultTooltipHtml" />
         </label>
         <Select
           v-model="result"
@@ -234,7 +231,7 @@ function onCancel() {
       <div class="batch-modal__field">
         <label class="batch-modal__label">
           Detail
-          <i v-tooltip="{ value: detailTooltipHtml, ...tooltipOpts }" class="pi pi-question-circle batch-modal__help-icon" />
+          <HelpIcon :content="detailTooltipHtml" />
           <span v-if="!detailEnabled" class="batch-modal__muted">(disabled for selected result)</span>
         </label>
         <Textarea
@@ -251,7 +248,7 @@ function onCancel() {
       <div class="batch-modal__field">
         <label class="batch-modal__label">
           Comment
-          <i v-tooltip="{ value: commentTooltipHtml, ...tooltipOpts }" class="pi pi-question-circle batch-modal__help-icon" />
+          <HelpIcon :content="commentTooltipHtml" />
           <span v-if="!commentEnabled" class="batch-modal__muted">(disabled for selected result)</span>
         </label>
         <Textarea

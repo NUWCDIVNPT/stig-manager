@@ -4,9 +4,11 @@ import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import ChangedPropertyChip from '../../../components/common/ChangedPropertyChip.vue'
+import HelpIcon from '../../../components/common/HelpIcon.vue'
 import RuleIdDiffSpan from '../../../components/common/RuleIdDiffSpan.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
 const props = defineProps({
   rows: {
@@ -18,7 +20,6 @@ const props = defineProps({
     default: null,
   },
 })
-
 const emit = defineEmits(['select-row'])
 
 const SEVERITY_TO_CAT = { high: 1, medium: 2, low: 3 }
@@ -134,7 +135,11 @@ function onFooterAction(key) {
         <CatBadge v-if="data.cat" :category="SEVERITY_TO_CAT[data.cat] ?? 3" variant="label" />
       </template>
     </Column>
-    <Column header="Changed properties" :style="{ minWidth: '16rem' }" :pt="columnPt.left">
+    <Column :style="{ minWidth: '16rem' }" :pt="columnPt.left">
+      <template #header>
+        Changed properties
+        <HelpIcon :content="TOOLTIPS.rulePropertyDiffs" />
+      </template>
       <template #body="{ data }">
         <div class="chip-row">
           <ChangedPropertyChip

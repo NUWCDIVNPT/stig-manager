@@ -1,4 +1,5 @@
 import { REVIEW_STATUS } from './reviewConstants.js'
+import { TOOLTIPS } from './tooltips.js'
 
 /**
  * Determines the state of the three action buttons (save, submit, accept)
@@ -18,9 +19,9 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
 
   if (accessMode !== 'rw') {
     return {
-      save: { text: 'Save', enabled: false, visible: true, actionType: '', tooltip: 'Read-only access' },
-      submit: { text: 'Submit', enabled: false, visible: true, actionType: '', tooltip: 'Read-only access' },
-      accept: { text: 'Accept', enabled: false, visible: canAccept, actionType: '', tooltip: 'Read-only access' },
+      save: { text: 'Save', enabled: false, visible: true, actionType: '', tooltip: TOOLTIPS.reviewButtons.readOnly },
+      submit: { text: 'Submit', enabled: false, visible: true, actionType: '', tooltip: TOOLTIPS.reviewButtons.readOnly },
+      accept: { text: 'Accept', enabled: false, visible: canAccept, actionType: '', tooltip: TOOLTIPS.reviewButtons.readOnly },
     }
   }
 
@@ -31,7 +32,7 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
         enabled: isDirty,
         visible: true,
         actionType: isDirty ? 'save' : '',
-        tooltip: isDirty ? '' : 'Review has not been modified',
+        tooltip: isDirty ? '' : TOOLTIPS.reviewButtons.notModified,
       }
     : {
         text: 'Unsubmit',
@@ -50,8 +51,8 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
         visible: true,
         actionType: '',
         tooltip: status === REVIEW_STATUS.SUBMITTED
-          ? 'Review has already been submitted'
-          : 'Review has already been accepted',
+          ? TOOLTIPS.reviewButtons.alreadySubmitted
+          : TOOLTIPS.reviewButtons.alreadyAccepted,
       }
     }
     if (!isSubmittable) {
@@ -60,7 +61,7 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
         enabled: false,
         visible: true,
         actionType: '',
-        tooltip: 'Review is not complete and cannot be submitted',
+        tooltip: TOOLTIPS.reviewButtons.notComplete,
       }
     }
     if (isDirty) {
@@ -88,7 +89,7 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
       enabled: false,
       visible: true,
       actionType: '',
-      tooltip: 'Review has not been modified',
+      tooltip: TOOLTIPS.reviewButtons.notModified,
     }
   })()
 
@@ -99,9 +100,9 @@ export function getReviewButtonStates({ accessMode, statusLabel, isDirty, isSubm
     visible: canAccept,
     actionType: status === REVIEW_STATUS.SUBMITTED ? 'accept' : '',
     tooltip: status === REVIEW_STATUS.ACCEPTED
-      ? 'Review has already been accepted'
+      ? TOOLTIPS.reviewButtons.alreadyAccepted
       : status !== REVIEW_STATUS.SUBMITTED
-        ? 'Review must be submitted before it can be accepted'
+        ? TOOLTIPS.reviewButtons.mustSubmitBeforeAccept
         : '',
   }
 

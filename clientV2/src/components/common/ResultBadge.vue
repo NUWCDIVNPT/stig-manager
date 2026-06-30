@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { TOOLTIPS } from '../../shared/lib/tooltips.js'
 
 const props = defineProps({
   status: {
@@ -34,22 +35,22 @@ const statusTooltip = computed(() => {
   const s = props.status.trim().toUpperCase()
 
   if (s === 'NR+') {
-    return 'Not Reviewed or has a non-compliance result such as informational.'
+    return TOOLTIPS.resultCodes.notReviewedNonCompliant
   }
   if (s.startsWith('NR')) {
-    return 'Not Checked'
+    return TOOLTIPS.resultCodes.notChecked
   }
   if (s.startsWith('NF')) {
-    return 'Not A Finding/Pass'
+    return TOOLTIPS.resultCodes.notAFinding
   }
   if (s.startsWith('NA')) {
-    return 'Not Applicable'
+    return TOOLTIPS.resultCodes.notApplicable
   }
   if (s.startsWith('I')) {
-    return 'Informational'
+    return TOOLTIPS.resultCodes.informational
   }
   if (s.startsWith('O')) {
-    return 'Open/Fail'
+    return TOOLTIPS.resultCodes.open
   }
 
   return ''

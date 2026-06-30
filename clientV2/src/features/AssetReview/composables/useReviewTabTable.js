@@ -1,7 +1,8 @@
 import { computed, inject, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { ENGINE_TYPE, REVIEW_STATUS } from '../../../shared/lib/reviewConstants.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
+import { ENGINE_TYPE, REVIEW_STATUS } from '../../../shared/lib/reviewConstants.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { buildEngineOptions } from '../lib/reviewFilterOptions.js'
 
 const EMPTY_STATS = {
@@ -38,12 +39,12 @@ export function useReviewTabTable(dataRef, filterSchema) {
 
   const getApplyTooltip = (data) => {
     if (!editable.value) {
-      return 'Cannot apply review while submitted or accepted'
+      return TOOLTIPS.applyReview.notWhileSubmitted
     }
     if (isAlreadyApplied(data)) {
-      return 'Review is already applied'
+      return TOOLTIPS.applyReview.alreadyApplied
     }
-    return 'Apply this review'
+    return TOOLTIPS.applyReview.apply
   }
 
   const filters = ref(

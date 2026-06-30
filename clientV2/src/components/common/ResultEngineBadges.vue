@@ -1,8 +1,8 @@
 <script setup>
-import Tooltip from 'primevue/tooltip'
 import { computed } from 'vue'
 import { escapeHtml } from '../../shared/lib/htmlUtils.js'
 import { formatReviewDate } from '../../shared/lib/reviewFormUtils.js'
+import { TOOLTIP_OPTS } from '../../shared/lib/tooltips.js'
 
 const props = defineProps({
   resultEngine: {
@@ -10,9 +10,6 @@ const props = defineProps({
     default: null,
   },
 })
-
-// Register PrimeVue Tooltip directive for v-tooltip usage
-const vTooltip = Tooltip
 
 const engineTooltipHtml = computed(() => {
   const re = props.resultEngine
@@ -49,15 +46,13 @@ const overrideTooltipHtml = computed(() => {
     return lines.join('<br>')
   }).join('<hr style="margin: 0.3rem 0; opacity: 0.3">')
 })
-
-const tooltipOpts = { escape: false, autoHide: false, hideDelay: 300, pt: { root: { style: { maxWidth: '40rem' } } } }
 </script>
 
 <template>
   <div class="result-engine-badges">
     <span
       v-if="resultEngine"
-      v-tooltip="{ value: engineTooltipHtml, ...tooltipOpts }"
+      v-tooltip="{ value: engineTooltipHtml, ...TOOLTIP_OPTS }"
       class="result-engine-badges__badge result-engine-badges__badge--engine"
     >
       {{ resultEngine.product || 'Engine' }}
@@ -68,7 +63,7 @@ const tooltipOpts = { escape: false, autoHide: false, hideDelay: 300, pt: { root
 
     <span
       v-if="resultEngine?.overrides?.length"
-      v-tooltip="{ value: overrideTooltipHtml, ...tooltipOpts }"
+      v-tooltip="{ value: overrideTooltipHtml, ...TOOLTIP_OPTS }"
       class="result-engine-badges__badge result-engine-badges__badge--override"
     >
       Override

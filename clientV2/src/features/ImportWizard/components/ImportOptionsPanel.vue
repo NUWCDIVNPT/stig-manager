@@ -1,6 +1,8 @@
 <script setup>
 import Checkbox from 'primevue/checkbox'
 import Select from 'primevue/select'
+import HelpIcon from '../../../components/common/HelpIcon.vue'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import {
   EMPTY_FIELD_OPTIONS,
   UNREVIEWED_COMMENTED_OPTIONS,
@@ -92,7 +94,7 @@ const checkboxPt = {
     <div class="options-body" :class="{ 'options-disabled': !customizing && allowCustom }">
       <div class="options-section">
         <div class="section-title">
-          Review Status Per Result
+          Review Status Per Result <HelpIcon :content="TOOLTIPS.importOptions.reviewStatus" />
         </div>
         <div class="mapping-grid">
           <div class="mapping-item">
@@ -136,7 +138,7 @@ const checkboxPt = {
 
       <div class="options-section">
         <div class="options-row">
-          <label>Include unreviewed rules</label>
+          <label>Include unreviewed rules <HelpIcon :content="TOOLTIPS.importOptions.unreviewed" /></label>
           <Select
             :model-value="modelValue.unreviewed"
             :options="UNREVIEWED_OPTIONS"
@@ -148,7 +150,7 @@ const checkboxPt = {
           />
         </div>
         <div class="options-row">
-          <label>Unreviewed with a comment</label>
+          <label>Unreviewed with a comment <HelpIcon :content="TOOLTIPS.importOptions.unreviewedCommented" /></label>
           <Select
             :model-value="modelValue.unreviewedCommented"
             :options="UNREVIEWED_COMMENTED_OPTIONS"
@@ -160,7 +162,7 @@ const checkboxPt = {
           />
         </div>
         <div class="options-row">
-          <label>Empty detail text</label>
+          <label>Empty detail text <HelpIcon :content="TOOLTIPS.importOptions.emptyText" /></label>
           <Select
             :model-value="modelValue.emptyDetail"
             :options="EMPTY_FIELD_OPTIONS"
@@ -172,7 +174,7 @@ const checkboxPt = {
           />
         </div>
         <div class="options-row">
-          <label>Empty comment text</label>
+          <label>Empty comment text <HelpIcon :content="TOOLTIPS.importOptions.emptyText" /></label>
           <Select
             :model-value="modelValue.emptyComment"
             :options="EMPTY_FIELD_OPTIONS"
@@ -194,7 +196,7 @@ const checkboxPt = {
           :pt="checkboxPt"
           @update:model-value="update('updateAssetProps', $event)"
         />
-        <label for="updateAssetProps">Update existing Asset properties</label>
+        <label for="updateAssetProps">Update existing Asset properties <HelpIcon :content="TOOLTIPS.importOptions.updateAssetProps" /></label>
       </div>
       <div v-else class="options-section no-border asset-update-note">
         <i class="pi pi-info-circle" />
