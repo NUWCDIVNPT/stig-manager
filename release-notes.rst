@@ -1,3 +1,12 @@
+1.6.13
+-------
+
+Changes:
+
+  - (API) Adjust "default" STIG Revision calculation to prefer latest non-draft Revision when multiple revisions are present and no revision is pinned for the Collection. 
+  - (API) fix: accept “null” description when creating Collections (to align w/ OAS)
+  - (API) chore: Update dependencies
+
 1.6.12
 -------
 
