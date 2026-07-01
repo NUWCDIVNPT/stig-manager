@@ -1,4 +1,3 @@
-import { userEvent } from '@testing-library/user-event'
 import { screen } from '@testing-library/vue'
 import { describe, expect, it } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
@@ -86,20 +85,23 @@ describe('cora', () => {
     expect(container.querySelector('.cora-risk-card')).toHaveClass(expectedClass)
   })
 
-  it('toggles the help popover when the question mark icon is clicked', async () => {
+  // The help affordance is the shared HelpIcon (a hover tooltip carrying
+  // TOOLTIPS.cora.html), rendered only when data is present via v-if="coraData".
+  it('renders the CORA help icon when coraData is provided', () => {
     const { container } = renderWithProviders(Cora, {
       props: {
         coraData: mockCoraData,
       },
     })
-    const user = userEvent.setup()
+    expect(container.querySelector('.sm-help-icon')).toBeInTheDocument()
+  })
 
-    const helpIcon = container.querySelector('.help-icon')
-    expect(helpIcon).toBeInTheDocument()
-
-    await user.click(helpIcon)
-
-    const popoverContents = screen.getAllByText('Weighted Average')
-    expect(popoverContents[0]).toBeVisible()
+  it('omits the help icon when coraData is absent', () => {
+    const { container } = renderWithProviders(Cora, {
+      props: {
+        coraData: null,
+      },
+    })
+    expect(container.querySelector('.sm-help-icon')).not.toBeInTheDocument()
   })
 })

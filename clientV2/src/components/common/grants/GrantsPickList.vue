@@ -6,7 +6,7 @@ import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { getAssignableRoleOptions, roleMap } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 import { useGranteeFilter } from './useGranteeFilter.js'
@@ -24,9 +24,13 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  showFooter: {
+    type: Boolean,
+    default: true,
+  },
 })
 
-const emit = defineEmits(['save', 'cancel'])
+const emit = defineEmits(['save', 'cancel', 'update:source', 'update:target'])
 
 // Only an Owner (or an elevated caller) may grant the Owner role.
 const availableRoleOptions = computed(() => getAssignableRoleOptions(props.canModifyOwners))
@@ -34,6 +38,17 @@ const availableRoleOptions = computed(() => getAssignableRoleOptions(props.canMo
 // Component is v-if guarded by parent, so direct initialization is safe
 const localSource = ref([...props.source])
 const localTarget = ref([...props.target])
+
+// Emit shallow copies so the parent never aliases (and can't mutate) this
+// component's internal arrays — the parent owns its own snapshot.
+watch(localSource, (newVal) => {
+  emit('update:source', [...newVal])
+}, { deep: true })
+
+watch(localTarget, (newVal) => {
+  emit('update:target', [...newVal])
+}, { deep: true })
+
 const selectionSource = ref([])
 const selectionTarget = ref([])
 const addMenu = ref()
@@ -247,7 +262,7 @@ const onCancel = () => {
 
     <Menu ref="addMenu" :model="addMenuItems" popup />
 
-    <div class="picklist-footer">
+    <div v-if="showFooter" class="picklist-footer">
       <Button label="Cancel" icon="pi pi-times" text @click="onCancel" />
       <Button label="Save" icon="pi pi-check" :disabled="localTarget.length === 0" @click="onSave" />
     </div>
