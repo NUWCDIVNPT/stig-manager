@@ -30,6 +30,14 @@ watch(() => props.collection, (newVal) => {
   }
 }, { immediate: true })
 
+const inputTextPt = {
+  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); border-radius: 6px; width: 100%;' },
+}
+
+const textareaPt = {
+  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); border-radius: 6px; width: 100%; resize: none;' },
+}
+
 const updateCollection = async (field) => {
   if (localCollection.value[field] === props.collection[field]) {
     return
@@ -65,6 +73,7 @@ const updateCollection = async (field) => {
           id="name"
           v-model="localCollection.name"
           class="input-full"
+          :pt="inputTextPt"
           @blur="updateCollection('name')"
         />
       </div>
@@ -75,6 +84,7 @@ const updateCollection = async (field) => {
           v-model="localCollection.description"
           rows="3"
           class="input-full"
+          :pt="textareaPt"
           @blur="updateCollection('description')"
         />
       </div>

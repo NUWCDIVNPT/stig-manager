@@ -1,9 +1,11 @@
 <script setup>
-import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import Toolbar from 'primevue/toolbar'
 import { computed, ref } from 'vue'
+import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
+import StatusFooter from '../../../../components/common/StatusFooter.vue'
+import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
+import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 
 const props = defineProps({
   collections: {
@@ -20,12 +22,26 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:selection', 'create', 'delete'])
-const dt = ref()
+const emit = defineEmits(['update:selection', 'create', 'delete', 'refresh'])
+
+const dataTableRef = ref(null)
 
 const selectedCollection = computed({
   get: () => props.selection,
-  set: value => emit('update:selection', value),
+  // Never clear the selection: clicking the already-selected row (PrimeVue's
+  // single-select toggle) would emit null, so we ignore falsy values and keep
+  // the current row selected.
+  set: value => value && emit('update:selection', value),
+})
+
+const nameFilter = ref('')
+
+const filteredData = computed(() => {
+  const term = nameFilter.value.trim().toLowerCase()
+  if (!term) {
+    return props.collections
+  }
+  return props.collections.filter(c => c.name?.toLowerCase().includes(term))
 })
 
 const formatDate = (dateString) => {
@@ -35,115 +51,196 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString()
 }
 
-const formatOwners = (owners) => {
-  if (!owners || !owners.length) {
-    return '-'
-  }
-  return owners.map(o => o.displayName || o.username).join(', ')
-}
+const tablePt = compactTablePt({ bodyFontSize: '1rem' })
+const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
 
-const exportCSV = () => {
-  dt.value.exportCSV()
-}
+const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () => emit('refresh') })
 </script>
 
 <template>
-  <div class="collection-list-container">
-    <Toolbar class="collection-list-toolbar">
-      <template #start>
-        <Button label="New Collection" icon="pi pi-plus" size="small" @click="$emit('create')" />
-        <Button
-          label="Delete Collection"
-          icon="pi pi-trash"
-          severity="danger"
-          size="small"
-          :disabled="!selectedCollection"
-          @click="$emit('delete', selectedCollection)"
-        />
-      </template>
-    </Toolbar>
+  <div class="collection-list">
+    <div class="action-toolbar">
+      <button class="action-btn" @click="emit('create')">
+        <i class="pi pi-plus-circle icon-green" /> New Collection
+      </button>
+      <div class="toolbar-divider" />
+      <button
+        class="action-btn"
+        :disabled="!selectedCollection"
+        @click="emit('delete', selectedCollection)"
+      >
+        <i class="pi pi-trash icon-red" /> Delete Collection
+      </button>
+    </div>
 
-    <DataTable
-      ref="dt"
-      v-model:selection="selectedCollection"
-      :value="collections"
-      selection-mode="single"
-      data-key="collectionId"
-      :loading="loading"
-      scrollable
-      scroll-height="flex"
-      class="flex-grow-table"
-      table-style="min-width: 50rem"
-      size="small"
-      striped-rows
-    >
-      <template #empty>
-        No collections found.
-      </template>
-      <template #loading>
-        Loading collections data.
-      </template>
-      <Column field="name" header="Name" sortable />
-      <Column header="Owners" style="width: 20%;">
-        <template #body="{ data }">
-          <span class="owner-text" :title="formatOwners(data.owners)">
-            {{ formatOwners(data.owners) }}
-          </span>
+    <div class="table-container">
+      <DataTable
+        ref="dataTableRef"
+        v-model:selection="selectedCollection"
+        :value="filteredData"
+        selection-mode="single"
+        data-key="collectionId"
+        :loading="loading"
+        scrollable
+        scroll-height="flex"
+        resizable-columns
+        column-resize-mode="fit"
+        class="flex-fill clickable-rows"
+        :table-style="{ 'min-width': '50rem' }"
+        :pt="tablePt"
+      >
+        <template #empty>
+          No collections found.
         </template>
-      </Column>
-      <Column field="statistics.userCount" header="Users" sortable style="width: 5rem" />
-      <Column field="statistics.assetCount" header="Assets" sortable style="width: 5rem" />
-      <Column field="statistics.checklistCount" header="Checklists" sortable style="width: 6rem" />
-      <Column field="statistics.created" header="Created" sortable style="width: 8rem">
-        <template #body="{ data }">
-          {{ formatDate(data.statistics?.created) }}
-        </template>
-      </Column>
-      <Column field="collectionId" header="ID" sortable style="width: 4rem" />
 
-      <template #footer>
-        <div class="table-footer">
-          <Button icon="pi pi-download" label="CSV" text size="small" @click="exportCSV" />
-          <span>{{ collections ? collections.length : 0 }} rows</span>
-        </div>
-      </template>
-    </DataTable>
+        <Column field="name" sortable :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+          <template #header>
+            <div class="column-header-with-filter">
+              Name
+              <ColumnSearchFilter v-model="nameFilter" placeholder="Search name..." />
+            </div>
+          </template>
+        </Column>
+
+        <Column header="Owners" :pt="borderPt" style="width: 13%; vertical-align: top;">
+          <template #body="{ data }">
+            <div v-if="data.owners && data.owners.length" class="owners-cell">
+              <span
+                v-for="owner in data.owners"
+                :key="owner.userId ?? owner.username"
+                class="owner-line"
+                :title="owner.displayName || owner.username"
+              >
+                {{ owner.displayName || owner.username }}
+              </span>
+            </div>
+            <span v-else>-</span>
+          </template>
+        </Column>
+
+        <Column field="statistics.userCount" header="Users" sortable :pt="borderPt" style="width: 13%" />
+        <Column field="statistics.assetCount" header="Assets" sortable :pt="borderPt" style="width: 13%" />
+        <Column field="statistics.checklistCount" header="Checklists" sortable :pt="borderPt" style="width: 13%" />
+        <Column field="statistics.created" header="Created" sortable :pt="borderPt" style="width: 13%">
+          <template #body="{ data }">
+            {{ formatDate(data.statistics?.created) }}
+          </template>
+        </Column>
+        <Column field="collectionId" header="ID" sortable style="width: 13%" />
+
+        <template #footer>
+          <StatusFooter
+            :refresh-loading="loading"
+            :total-count="collections.length"
+            :filtered-count="nameFilter.trim() ? filteredData.length : null"
+            total-label="collections"
+            total-icon="pi pi-folder"
+            @action="onFooterAction"
+          />
+        </template>
+      </DataTable>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.collection-list-container {
+.collection-list {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: var(--surface-0);
-  color: var(--text-color);
-}
-
-.collection-list-toolbar {
+  gap: 6px;
   padding: 0.5rem;
-  border: none;
+  min-width: 0;
+}
+
+.action-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--color-background-light);
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
   gap: 0.5rem;
+  background: transparent;
+  border: none;
+  color: var(--color-text-default);
+  font-size: 1.05rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.45rem 0.7rem;
+  border-radius: 4px;
+  transition: background-color 0.1s, color 0.1s;
 }
 
-.flex-grow-table {
-  flex-grow: 1;
+.action-btn:hover:not(:disabled) {
+  background: var(--color-background-subtle);
+  color: var(--color-text-bright);
 }
 
-.owner-text {
-  display: block;
+.action-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.action-btn i.icon-green {
+  color: var(--color-action-green);
+}
+
+.action-btn i.icon-red {
+  color: var(--color-action-red);
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 1.6rem;
+  background: var(--color-border-default);
+  margin: 0 0.1rem;
+}
+
+.table-container {
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+.flex-fill {
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.clickable-rows :deep(.p-datatable-tbody > tr) {
+  cursor: pointer;
+}
+
+.column-header-with-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.owners-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.15rem 0;
+}
+
+.owner-line {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 20rem; /* Approximate equivalent to max-w-xs which is 20rem */
 }
-
-.table-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.875rem;
-  color: var(--text-color-secondary);
-}
-
 </style>

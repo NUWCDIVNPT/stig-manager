@@ -2,7 +2,7 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
-import { calculateCoraRiskRating } from '../../shared/libCora.js'
+import { calculateCora } from '../../shared/lib.js'
 import AssetColumn from '../columns/AssetColumn.vue'
 import BenchmarkColumn from '../columns/BenchmarkColumn.vue'
 import CatColumn from '../columns/CatColumn.vue'
@@ -219,6 +219,7 @@ const data = computed(() => {
     return []
   }
   return props.apiMetricsSummary.map((r) => {
+    const cora = calculateCora(r.metrics)
     const commonData = {
       checks: r.metrics.assessments,
       assessed: r.metrics.assessed,
@@ -229,8 +230,8 @@ const data = computed(() => {
       submittedPct: r.metrics.assessments ? ((r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0,
       acceptedPct: r.metrics.assessments ? (r.metrics.statuses.accepted / r.metrics.assessments) * 100 : 0,
       rejectedPct: r.metrics.assessments ? (r.metrics.statuses.rejected / r.metrics.assessments) * 100 : 0,
-      cora: (calculateCoraRiskRating(r.metrics).weightedAvg * 100).toFixed(1),
-      coraFull: calculateCoraRiskRating(r.metrics),
+      cora: cora.weightedAvg.toFixed(1),
+      coraFull: cora,
       cat3: r.metrics.findings.low,
       cat2: r.metrics.findings.medium,
       cat1: r.metrics.findings.high,
