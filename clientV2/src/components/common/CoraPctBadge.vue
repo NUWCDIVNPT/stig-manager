@@ -7,6 +7,7 @@ const props = defineProps({
     required: true,
     validator: value => ['Very High', 'High', 'Moderate', 'Low', 'Very Low'].includes(value),
   },
+  // percent scale (0-100), as returned by calculateCora
   weightedAvg: {
     type: Number,
     required: true,
@@ -24,7 +25,7 @@ const riskClass = computed(() => {
   }
 })
 
-const formattedScore = computed(() => (props.weightedAvg * 100).toFixed(1))
+const formattedScore = computed(() => props.weightedAvg.toFixed(1))
 </script>
 
 <template>
