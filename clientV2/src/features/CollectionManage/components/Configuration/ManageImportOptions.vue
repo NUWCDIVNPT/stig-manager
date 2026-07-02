@@ -1,7 +1,9 @@
 <script setup>
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
+import HelpIcon from '../../../../components/common/HelpIcon.vue'
 import SaveStatusBadge from '../../../../components/common/SaveStatusBadge.vue'
+import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
 import { useCollectionSettingsSave } from '../../composables/useCollectionSettingsSave.js'
 import { normalizeImportOptions } from './importOptionsLogic.js'
 import { collectionSelectPt } from './pt.js'
@@ -68,7 +70,7 @@ const { state, isLoading, performSave, saveStatus } = useCollectionSettingsSave(
       </div>
       <div class="settings-group">
         <h3 class="group-title">
-          Review Status Per Result
+          Review Status Per Result <HelpIcon :content="TOOLTIPS.importOptions.reviewStatus" />
         </h3>
 
         <div class="labeled-field">
@@ -90,24 +92,24 @@ const { state, isLoading, performSave, saveStatus } = useCollectionSettingsSave(
       <div class="settings-group">
         <div class="field-row">
           <div class="labeled-field">
-            <label class="flabel">Include unreviewed rules:</label>
+            <label class="flabel">Include unreviewed rules: <HelpIcon :content="TOOLTIPS.importOptions.unreviewed" /></label>
             <Select v-model="state.importOptions.unreviewed" :options="unreviewedOptions" option-label="label" option-value="value" :pt="collectionSelectPt" @update:model-value="performSave" />
           </div>
 
           <div class="labeled-field" :class="{ 'disabled-field': state.importOptions.unreviewed === 'never' }">
-            <label class="flabel">Unreviewed with a comment is:</label>
+            <label class="flabel">Unreviewed with a comment is: <HelpIcon :content="TOOLTIPS.importOptions.unreviewedCommented" /></label>
             <Select v-model="state.importOptions.unreviewedCommented" :options="unreviewedCommentedOptions" option-label="label" option-value="value" :disabled="state.importOptions.unreviewed === 'never'" :pt="collectionSelectPt" @update:model-value="performSave" />
           </div>
         </div>
 
         <div class="field-row">
           <div class="labeled-field">
-            <label class="flabel">Empty detail text is:</label>
+            <label class="flabel">Empty detail text is: <HelpIcon :content="TOOLTIPS.importOptions.emptyText" /></label>
             <Select v-model="state.importOptions.emptyDetail" :options="emptyOptions" option-label="label" option-value="value" :pt="collectionSelectPt" @update:model-value="performSave" />
           </div>
 
           <div class="labeled-field">
-            <label class="flabel">Empty comment text is:</label>
+            <label class="flabel">Empty comment text is: <HelpIcon :content="TOOLTIPS.importOptions.emptyText" /></label>
             <Select v-model="state.importOptions.emptyComment" :options="emptyOptions" option-label="label" option-value="value" :pt="collectionSelectPt" @update:model-value="performSave" />
           </div>
         </div>
@@ -115,7 +117,7 @@ const { state, isLoading, performSave, saveStatus } = useCollectionSettingsSave(
         <div class="labeled-field">
           <div class="checkbox-row">
             <ToggleSwitch v-model="state.importOptions.updateAssetProps" @update:model-value="performSave" />
-            <span class="checkbox-label">Update existing Asset properties <i class="pi pi-question-circle" /></span>
+            <span class="checkbox-label">Update existing Asset properties <HelpIcon :content="TOOLTIPS.importOptions.updateAssetProps" /></span>
           </div>
         </div>
 

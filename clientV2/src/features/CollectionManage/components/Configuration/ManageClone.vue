@@ -6,10 +6,12 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
+import HelpIcon from '../../../../components/common/HelpIcon.vue'
 import { cloneCollection } from '../../../../shared/api/collectionsApi.js'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { readNdjson } from '../../../../shared/lib/ndjsonStream.js'
+import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
 import { useCollectionCloneProgressStore } from '../../../../shared/stores/collectionCloneProgressStore.js'
 import { useCollectionResource } from '../../composables/useCollectionResource.js'
 import { validateCollectionDescription, validateCollectionName } from './collectionValidation.js'
@@ -225,22 +227,22 @@ const textareaPt = collectionTextareaPt
             <h4>Include Content</h4>
             <div class="checkbox-field">
               <Checkbox v-model="cloneForm.grants" :binary="true" input-id="cloneGrants" />
-              <label for="cloneGrants">Grants</label>
+              <label for="cloneGrants">Grants <HelpIcon :content="TOOLTIPS.cloneOptions.grants" /></label>
             </div>
             <div class="checkbox-field">
               <Checkbox v-model="cloneForm.labels" :binary="true" input-id="cloneLabels" />
-              <label for="cloneLabels">Labels</label>
+              <label for="cloneLabels">Labels <HelpIcon :content="TOOLTIPS.cloneOptions.labels" /></label>
             </div>
             <div class="checkbox-field">
               <Checkbox v-model="cloneForm.assets" :binary="true" input-id="cloneAssets" />
-              <label for="cloneAssets">Assets</label>
+              <label for="cloneAssets">Assets <HelpIcon :content="TOOLTIPS.cloneOptions.assets" /></label>
             </div>
           </div>
 
           <div class="option-col">
             <h4>Asset Settings</h4>
             <div class="dropdown-field">
-              <label class="flabel">STIGs</label>
+              <label class="flabel">STIGs <HelpIcon :content="TOOLTIPS.cloneOptions.stigs" /></label>
               <Select
                 v-model="cloneForm.stigMappings"
                 :options="stigMappingOptions"
@@ -252,7 +254,7 @@ const textareaPt = collectionTextareaPt
               />
             </div>
             <div class="dropdown-field">
-              <label class="flabel">Pin Revisions</label>
+              <label class="flabel">Pin Revisions <HelpIcon :content="TOOLTIPS.cloneOptions.revisions" /></label>
               <Select
                 v-model="cloneForm.pinRevisions"
                 :options="pinRevisionOptions"

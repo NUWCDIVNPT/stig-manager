@@ -1,4 +1,5 @@
 import PrimeVue from 'primevue/config'
+import Tooltip from 'primevue/tooltip'
 import { createApp, h } from 'vue'
 import App from './App.vue'
 import { setupOidcHandler } from './auth/useOidcWorker.js'
@@ -51,6 +52,10 @@ try {
     },
     pt: MyPrimeVuePT,
   })
+
+  // Register the PrimeVue tooltip directive globally so components can use
+  // `v-tooltip` (and the HelpIcon component) without re-importing it.
+  app.directive('tooltip', Tooltip)
 
   app.use(router)
   app.provide('worker', STIGMAN.oidcWorker)

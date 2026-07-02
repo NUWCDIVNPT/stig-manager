@@ -6,10 +6,12 @@ import Select from 'primevue/select'
 import { computed, ref, watch } from 'vue'
 
 import shieldIcon from '../../../../assets/shield-green-check.svg'
+import HelpIcon from '../../../../components/common/HelpIcon.vue'
 import PickList from '../../../../components/common/PickList.vue'
 import { fetchCollectionLabels } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { getContrastColor, normalizeColor } from '../../../../shared/lib/colorUtils.js'
+import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
 import {
   fetchAssetsByCollectionStig,
@@ -28,7 +30,6 @@ const props = defineProps({
   collectionId: { type: String, required: true },
   selectedStig: { type: Object, default: null },
 })
-
 const emit = defineEmits(['update:visible', 'stigs-changed'])
 
 const localVisible = computed({
@@ -375,7 +376,7 @@ const selectPt = {
       </div>
 
       <div class="selection-row">
-        <span class="selection-label">Default Revision</span>
+        <span class="selection-label">Default Revision <HelpIcon :content="TOOLTIPS.defaultRevision" /></span>
         <Select
           v-model="selectedRevisionStr"
           :options="revisionOptions"
