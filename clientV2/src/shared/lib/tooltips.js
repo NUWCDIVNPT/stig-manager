@@ -29,6 +29,22 @@ export const TOOLTIPS = Object.freeze({
 * By default, Users with a Restricted grant to a Collection can't access any STIG on any Asset. They can be assigned specific STIGs on specific Assets using the "Edit Restricted Access..." button in the Grants panel toolbar.`,
   }),
 
+  // Effective Grants tab in the App Management Users panel (HelpIcon on the
+  // Grantee column header).
+  effectiveGrants: Object.freeze({
+    html: `
+The <b>Grantee</b> column shows where each grant comes from:<br>
+- <b>Direct:</b> granted to the User directly.<br>
+- <b>Group name:</b> inherited from membership in that User Group.<br><br>
+`,
+  }),
+
+  // Last Claims tab in the App Management Users panel.
+  lastClaims: Object.freeze({
+    html: `<b>Last Claims</b><br>
+The claims presented by the authentication provider the last time this User authenticated to the API. Read-only diagnostic data.`,
+  }),
+
   // Review action buttons (Save / Submit / Accept) — explains why a button is
   // disabled. Used by getReviewButtonStates() in reviewButtonStates.js.
   reviewButtons: Object.freeze({
