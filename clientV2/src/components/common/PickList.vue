@@ -1,10 +1,10 @@
 <script setup>
-import Button from 'primevue/button'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import { computed, ref } from 'vue'
+import PickListControls from './PickListControls.vue'
 
 const props = defineProps({
   /**
@@ -70,6 +70,15 @@ const props = defineProps({
    */
   textFilterFn: {
     type: Function,
+    default: null,
+  },
+  /**
+   * Inline style appended to each Listbox option's default styling via
+   * pass-through, e.g. for denser row padding. Overrides the defaults but
+   * not the selected-state highlight. Applies to both panes.
+   */
+  optionStyle: {
+    type: String,
     default: null,
   },
 })
@@ -260,11 +269,12 @@ const listboxPt = {
       style: 'flex:1 1 auto; min-height:0; height:100%; max-height:none;',
     },
   },
-  option: ({ context }) => ({
-    style: context.selected
-      ? `${OPTION_BASE_STYLE} ${OPTION_SELECTED_STYLE}`
-      : OPTION_BASE_STYLE,
-  }),
+  // optionStyle comes after the base so its declarations win, while the
+  // selected-state style stays last so overrides can't lose the highlight.
+  option: ({ context }) => {
+    const base = props.optionStyle ? `${OPTION_BASE_STYLE} ${props.optionStyle}` : OPTION_BASE_STYLE
+    return { style: context.selected ? `${base} ${OPTION_SELECTED_STYLE}` : base }
+  },
 }
 </script>
 
@@ -303,12 +313,14 @@ const listboxPt = {
         </Listbox>
       </div>
 
-      <div class="controls-column">
-        <Button icon="pi pi-angle-double-right" text @click="onMoveAllRight" />
-        <Button icon="pi pi-angle-right" text :disabled="selectionSource.length === 0" @click="onMoveRight" />
-        <Button icon="pi pi-angle-left" text :disabled="selectionTarget.length === 0" @click="onMoveLeft" />
-        <Button icon="pi pi-angle-double-left" text @click="onMoveAllLeft" />
-      </div>
+      <PickListControls
+        :add-disabled="selectionSource.length === 0"
+        :remove-disabled="selectionTarget.length === 0"
+        @add="onMoveRight"
+        @add-all="onMoveAllRight"
+        @remove="onMoveLeft"
+        @remove-all="onMoveAllLeft"
+      />
 
       <div class="list-column">
         <h4 class="list-header">
@@ -370,31 +382,30 @@ const listboxPt = {
   min-height: 0;
   border: 1px solid var(--color-border-default);
   border-radius: 6px;
-  background: var(--color-background-light);
-  padding: 0.5rem;
+  overflow: hidden;
+  background-color: var(--color-background-subtle);
 }
 
 .list-header {
-  margin: 0 0 0.5rem 0;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  font-size: 1.2rem;
   font-weight: 600;
   flex: 0 0 auto;
-  color: var(--color-text-primary);
+  color: var(--color-text-bright);
+  background: var(--p-datatable-row-background);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .filter-container {
-  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.5rem;
   display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .search-field {
   flex: 1;
-}
-
-.controls-column {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  justify-content: center;
-  padding: 0 0.25rem;
 }
 </style>

@@ -2,6 +2,8 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
+import ActionButton from '../../../../components/common/ActionButton.vue'
+import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
@@ -59,19 +61,19 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
 
 <template>
   <div class="collection-list">
-    <div class="action-toolbar">
-      <button class="action-btn" @click="emit('create')">
-        <i class="pi pi-plus-circle icon-green" /> New Collection
-      </button>
+    <ActionToolbar>
+      <ActionButton icon="pi pi-plus-circle icon-green" @click="emit('create')">
+        New Collection
+      </ActionButton>
       <div class="toolbar-divider" />
-      <button
-        class="action-btn"
+      <ActionButton
+        icon="pi pi-trash icon-red"
         :disabled="!selectedCollection"
         @click="emit('delete', selectedCollection)"
       >
-        <i class="pi pi-trash icon-red" /> Delete Collection
-      </button>
-    </div>
+        Delete Collection
+      </ActionButton>
+    </ActionToolbar>
 
     <div class="table-container">
       <DataTable
@@ -153,56 +155,6 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
   min-width: 0;
 }
 
-.action-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.75rem;
-  background: var(--color-background-light);
-  border: 1px solid var(--color-border-default);
-  border-radius: 6px;
-  flex-wrap: wrap;
-}
-
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  border: none;
-  color: var(--color-text-default);
-  font-size: 1.05rem;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 0.45rem 0.7rem;
-  border-radius: 4px;
-  transition: background-color 0.1s, color 0.1s;
-}
-
-.action-btn:hover:not(:disabled) {
-  background: var(--color-background-subtle);
-  color: var(--color-text-bright);
-}
-
-.action-btn:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
-.action-btn i.icon-green {
-  color: var(--color-action-green);
-}
-
-.action-btn i.icon-red {
-  color: var(--color-action-red);
-}
-
-.toolbar-divider {
-  width: 1px;
-  height: 1.6rem;
-  background: var(--color-border-default);
-  margin: 0 0.1rem;
-}
 
 .table-container {
   flex: 1;

@@ -7,6 +7,7 @@ import Toolbar from 'primevue/toolbar'
 import collectionIcon from '../../../../assets/collection.svg'
 import shieldGreenCheckIcon from '../../../../assets/shield-green-check.svg'
 import targetIcon from '../../../../assets/target.svg'
+import ActionButton from '../../../../components/common/ActionButton.vue'
 import LabelChip from '../../../../components/common/Label.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
@@ -54,9 +55,9 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   <div class="rules-panel">
     <Toolbar v-if="canEdit" class="rules-toolbar">
       <template #start>
-        <button class="action-btn" @click="emit('new')">
-          <i class="pi pi-plus-circle icon-green" /> New Rule
-        </button>
+        <ActionButton icon="pi pi-plus-circle icon-green" @click="emit('new')">
+          New Rule
+        </ActionButton>
       </template>
     </Toolbar>
 
@@ -193,36 +194,6 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 .rules-table {
   flex: 1 1 auto;
   min-height: 0;
-}
-
-/* New Rule button — matches AssetsToolbar / LabelsToolbar */
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  border: none;
-  color: var(--color-text-default);
-  font-size: 0.98rem;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 0.45rem 0.7rem;
-  border-radius: 4px;
-  transition: background-color 0.1s, color 0.1s;
-}
-
-.action-btn:hover:not(:disabled) {
-  background: var(--color-bg-hover-strong);
-  color: var(--color-text-bright);
-}
-
-.action-btn:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
-.action-btn i.icon-green {
-  color: var(--color-action-green);
 }
 
 .rule-cell {
