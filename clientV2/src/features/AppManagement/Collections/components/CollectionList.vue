@@ -155,7 +155,6 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
   min-width: 0;
 }
 
-
 .table-container {
   flex: 1;
   min-height: 0;
