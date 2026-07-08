@@ -7,7 +7,7 @@ import { computed, watch } from 'vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { formatDateTimeString } from '../../../../shared/lib.js'
-import { secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { fetchTaskOutput, taskNameToPathParam } from '../../api/tasksManageApi.js'
 
 const props = defineProps({

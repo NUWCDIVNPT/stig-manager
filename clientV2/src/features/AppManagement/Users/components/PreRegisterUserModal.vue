@@ -8,16 +8,16 @@ import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
-import PickList from '../../../../components/common/PickList.vue'
+import { isDuplicateEntryError } from '../../../../shared/api/apiErrors.js'
 import { fetchUserGroups } from '../../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
-import { isDuplicateEntryError } from '../../../../shared/api/apiErrors.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { createPreregisteredUser, fetchCollectionsForGrantPicker } from '../api/usersAdminApi.js'
 import { sortByName } from '../lib/userDisplay.js'
 import { inputTextPt, tabListPt, tabPanelPt, tabPanelsPt, tabPt, tabsPt } from '../lib/usersPt.js'
 import CollectionGrantPickList from './CollectionGrantPickList.vue'
+import UserGroupsPickList from './UserGroupsPickList.vue'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },
@@ -36,8 +36,6 @@ const username = ref('')
 const saving = ref(false)
 const touched = ref(false)
 const activeTab = ref('groups')
-// API-reported username problem (e.g. duplicate); cleared as soon as the
-// admin edits the field.
 const usernameApiError = ref(null)
 
 watch(username, () => {
@@ -126,8 +124,6 @@ async function onSave() {
       usernameApiError.value = 'A user with this username already exists.'
     }
     else {
-      // Anything else (403/404/stale-reference 422/network): show the API
-      // error and leave the modal open so the admin can adjust and retry.
       triggerError(err)
     }
   }
@@ -143,7 +139,6 @@ const dialogPt = {
   footer: { style: 'flex-shrink: 0; padding: 0; border: none;' },
   closeButton: { style: 'color: var(--color-text-dim);' },
 }
-
 </script>
 
 <template>
@@ -205,30 +200,10 @@ const dialogPt = {
               <span>Could not load user groups.</span>
               <Button label="Retry" icon="pi pi-refresh" size="small" severity="secondary" @click="loadGroups" />
             </div>
-            <PickList
+            <UserGroupsPickList
               v-else
               v-model="groupsModel"
-              data-key="userGroupId"
-              filter-by="name"
-              show-source-filter
-              show-target-filter
-              source-filter-placeholder="Search groups..."
-              target-filter-placeholder="Search groups..."
-              option-style="padding: 0.4rem 0.75rem;"
-            >
-              <template #sourceheader>
-                Available Groups
-              </template>
-              <template #targetheader>
-                Assigned Groups
-              </template>
-              <template #item="{ item }">
-                <div class="group-item">
-                  <i class="pi pi-users" />
-                  <span>{{ item.name }}</span>
-                </div>
-              </template>
-            </PickList>
+            />
           </TabPanel>
           <TabPanel value="grants" :pt="tabPanelPt">
             <div v-if="collectionsLoading" class="tab-loading">
@@ -365,17 +340,6 @@ const dialogPt = {
 .tab-error .pi-exclamation-triangle {
   color: var(--color-text-error);
   font-size: 1.3rem;
-}
-
-.group-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1rem;
-}
-
-.group-item i {
-  font-size: 1.15rem;
 }
 
 .modal-footer {

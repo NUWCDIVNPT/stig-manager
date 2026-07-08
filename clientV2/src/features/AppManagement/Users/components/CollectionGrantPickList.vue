@@ -63,9 +63,9 @@ function onMoveAllRight(event) {
   onMoveRight(event)
 }
 
-// Make each list fill its column and own scrolling. The source list is
-// virtualized (the virtual scroller exactly fills the container); the target
-// list is plain, so the list container is its scroller.
+// Make each list fill its column and own scrolling. Both lists are
+// virtualized (the collection catalog can be large), so option rows are
+// fixed-height single lines with the full name available on hover.
 const listboxPt = {
   root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background: transparent; border: none;' },
   listContainer: { style: 'flex:1 1 auto; min-height:0; height:100%; max-height:none; overflow:auto;' },
@@ -93,10 +93,11 @@ const listboxPt = {
           :options="displaySource"
           option-label="name"
           multiple
+          :virtual-scroller-options="{ itemSize: 40 }"
           :pt="listboxPt"
         >
           <template #option="slotProps">
-            <div class="option-item">
+            <div class="option-item" :title="slotProps.option.name">
               <span>{{ slotProps.option.name }}</span>
             </div>
           </template>
@@ -122,11 +123,12 @@ const listboxPt = {
           :options="localTarget"
           option-label="name"
           multiple
+          :virtual-scroller-options="{ itemSize: 40 }"
           :pt="listboxPt"
         >
           <template #option="slotProps">
             <div class="target-option-item">
-              <span class="target-option-name">{{ slotProps.option.name }}</span>
+              <span class="target-option-name" :title="slotProps.option.name">{{ slotProps.option.name }}</span>
               <span v-if="slotProps.option.roleId" class="target-option-role">
                 {{ roleMap[slotProps.option.roleId] || slotProps.option.roleId }}
               </span>
@@ -188,10 +190,14 @@ const listboxPt = {
   flex: 1;
 }
 
+/* Fixed-height single-line rows (virtual scroller requirement); the full
+   name shows in the title tooltip on hover. */
 .option-item {
   font-size: 1rem;
   line-height: 1.4;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .target-option-item {
@@ -200,12 +206,17 @@ const listboxPt = {
   align-items: flex-start;
   width: 100%;
   gap: 0.5rem;
+  min-width: 0;
 }
 
 .target-option-name {
   font-size: 1rem;
   line-height: 1.4;
-  word-break: break-word;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .target-option-role {

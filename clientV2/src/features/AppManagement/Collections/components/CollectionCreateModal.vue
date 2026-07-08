@@ -9,7 +9,7 @@ import { fetchUserGroups, fetchUsers } from '../../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { granteeToGrantPayload, normalizeAvailableGrantees } from '../../../CollectionManage/lib/grantsUsers.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { createCollection } from '../api/collectionsAdminApi.js'
 
 const props = defineProps({

@@ -5,13 +5,13 @@ import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
 import { computed, ref, watch } from 'vue'
 import AclStateIcon from '../../../../components/common/AclStateIcon.vue'
+import { granteeLabel } from '../../../../components/common/grants/granteeDisplay.js'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchEffectiveAclByCollectionUser } from '../../../../shared/api/grantsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { getDefaultAccessForRole } from '../../lib/aclRules.js'
-import { granteeLabel } from '../../lib/grantsUsers.js'
 
 const props = defineProps({
   collectionId: {

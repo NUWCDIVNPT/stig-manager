@@ -106,7 +106,6 @@ async function onUnregisterConfirmed() {
   }
   catch (err) {
     triggerError(err)
-    // The failure may mean another admin changed this user; resync the table.
     await loadUsers()
   }
   finally {
@@ -120,7 +119,7 @@ const statusChange = ref(null) // { user, status }
 
 const statusModalTitle = computed(() =>
   statusChange.value?.status === 'unavailable'
-    ? `Set User ${statusChange.value?.user.username} status to Unavailable?`
+    ? `Set user ${statusChange.value?.user.username} status to Unavailable?`
     : `Set user ${statusChange.value?.user.username} status to Available?`)
 
 const statusModalLabel = computed(() =>
@@ -160,7 +159,6 @@ async function onStatusConfirmed() {
   }
   catch (err) {
     triggerError(err)
-    // The failure may mean another admin changed this user; resync the table.
     await loadUsers()
   }
   finally {

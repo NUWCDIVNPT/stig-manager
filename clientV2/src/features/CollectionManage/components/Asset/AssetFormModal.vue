@@ -12,7 +12,7 @@ import MetadataEditor from '../../../../components/common/MetadataEditor.vue'
 import CommonPickList from '../../../../components/common/PickList.vue'
 
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { useAssetForm } from '../../composables/useAssetForm.js'
 
 const props = defineProps({
@@ -262,6 +262,7 @@ const pickListPt = {
           filter-by="benchmarkId"
           source-filter-placeholder="Search STIGs..."
           target-filter-placeholder="Search assigned..."
+          :virtual-scroller-options="{ itemSize: 30 }"
           :pt="pickListPt"
         >
           <template #sourceheader>
@@ -271,7 +272,7 @@ const pickListPt = {
             Assigned
           </template>
           <template #item="{ item }">
-            <div class="stig-item-row">
+            <div class="stig-item-row" :title="item.benchmarkId">
               <img :src="shieldIcon" class="stig-item-icon" alt="">
               <span class="stig-item-label">{{ item.benchmarkId }}</span>
             </div>

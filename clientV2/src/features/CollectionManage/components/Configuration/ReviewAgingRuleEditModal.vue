@@ -11,7 +11,7 @@ import labelIcon from '../../../../assets/label.svg'
 import shieldGreenCheckIcon from '../../../../assets/shield-green-check.svg'
 import targetIcon from '../../../../assets/target.svg'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import {
   fetchAssetStigs,
   fetchCollectionAssets,

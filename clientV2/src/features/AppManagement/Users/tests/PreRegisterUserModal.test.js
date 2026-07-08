@@ -27,6 +27,20 @@ vi.mock('../../../../shared/composables/useGlobalError.js', () => ({
   useGlobalError: () => ({ triggerError: h.triggerError }),
 }))
 
+// Stub the base PickList (its virtual scroller renders no rows under jsdom)
+// with a plain listing of the [available, assigned] tuple, so tests can still
+// assert which groups reached the picklist.
+vi.mock('../../../../components/common/PickList.vue', () => ({
+  default: {
+    name: 'PickList',
+    props: ['modelValue', 'dataKey'],
+    emits: ['update:modelValue'],
+    template: `<div data-testid="groups-picklist">
+      <span v-for="item in (modelValue?.[0] ?? [])" :key="item.userGroupId">{{ item.name }}</span>
+    </div>`,
+  },
+}))
+
 function apiError(status, body) {
   return Object.assign(new Error(`HTTP ${status}`), { name: 'ApiError', status, body })
 }

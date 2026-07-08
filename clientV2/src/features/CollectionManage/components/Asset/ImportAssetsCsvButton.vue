@@ -7,7 +7,7 @@ import { ref } from 'vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
-import { importDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { importDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { useAssetCsvImport } from '../../composables/useAssetCsvImport.js'
 
 const props = defineProps({

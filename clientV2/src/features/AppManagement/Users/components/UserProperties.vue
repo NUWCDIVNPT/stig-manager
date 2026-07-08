@@ -6,7 +6,6 @@ import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
-import PickList from '../../../../components/common/PickList.vue'
 import { fetchUserGroups } from '../../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
@@ -16,6 +15,7 @@ import { inputTextPt, tabListPt, tabPanelPt, tabPanelsPt, tabPt, tabsPt } from '
 import CollectionGrantPickList from './CollectionGrantPickList.vue'
 import EffectiveGrants from './EffectiveGrants.vue'
 import LastClaims from './LastClaims.vue'
+import UserGroupsPickList from './UserGroupsPickList.vue'
 
 const props = defineProps({
   user: {
@@ -40,21 +40,25 @@ const { state: allCollections, isLoading: collectionsLoading } = useAsyncState(
 
 // [available, member] tuple for the User Groups PickList.
 const groupsModel = ref([[], []])
-// Collections without a direct grant / the user's direct grants.
 const availableCollections = ref([])
 const directGrants = ref([])
 // Remount key for CollectionGrantPickList: it copies its props once on mount,
-// so rebuilding the lists (user change, error resync) must remount it.
+// so rebuilding the lists (user change, error resync) must remount it.???
+
 const grantPickerGen = ref(0)
 
 // Rebuilds both picklist models from a freshly fetched user. Called only on
 // user change and error resync — successful live-applies leave the picklists
 // alone since they already reflect the admin's intent.
 function rebuildModels(apiUser) {
-  const memberIds = new Set((apiUser.userGroups ?? []).map(g => String(g.userGroupId)))
+  // The member pane comes from the user record itself, not by intersecting
+  // allGroups — a group missing from the picker source must not silently
+  // drop out of the assigned list, since patches send full replacements.
+  const memberGroups = (apiUser.userGroups ?? []).map(({ userGroupId, name }) => ({ userGroupId, name }))
+  const memberIds = new Set(memberGroups.map(g => String(g.userGroupId)))
   groupsModel.value = [
     sortByName(allGroups.value.filter(g => !memberIds.has(String(g.userGroupId)))),
-    sortByName(allGroups.value.filter(g => memberIds.has(String(g.userGroupId)))),
+    sortByName(memberGroups),
   ]
 
   // Direct grants are the user's grants where the grantee is the user itself
@@ -78,7 +82,14 @@ function rebuildModels(apiUser) {
 
 const { state: detailUser, isLoading: detailLoading, execute: loadDetail } = useAsyncState(
   async () => {
-    const apiUser = await fetchUserAdmin(props.user.userId)
+    const requestedId = props.user.userId
+    const apiUser = await fetchUserAdmin(requestedId)
+    // The selection may have moved on while the fetch was in flight; the
+    // generation guard in useAsyncState discards the stale state, but the
+    // picklist rebuild is a side effect and needs its own check.
+    if (String(requestedId) !== String(props.user?.userId)) {
+      return null
+    }
     rebuildModels(apiUser)
     return apiUser
   },
@@ -109,14 +120,22 @@ const privilegesText = computed(() => {
 // behavior). On failure the panel refetches to resync the picklists with the
 // server state.
 async function applyPatch(body) {
+  const userId = props.user.userId
+  // The selection may change while the request is in flight; the response
+  // must not overwrite (or trigger a refetch of) the newly selected user's
+  // panel. The table refresh via 'updated' is still wanted either way.
   try {
-    const updated = await patchUserAdmin(props.user.userId, body)
-    detailUser.value = updated
+    const updated = await patchUserAdmin(userId, body)
+    if (String(userId) === String(props.user?.userId)) {
+      detailUser.value = updated
+    }
     emit('updated', updated)
   }
   catch (err) {
     triggerError(err)
-    await loadDetail()
+    if (String(userId) === String(props.user?.userId)) {
+      await loadDetail()
+    }
   }
 }
 
@@ -134,7 +153,6 @@ function onGrantsTargetUpdate(target) {
     })),
   })
 }
-
 </script>
 
 <template>
@@ -218,31 +236,10 @@ function onGrantsTargetUpdate(target) {
             </TabList>
             <TabPanels :pt="tabPanelsPt">
               <TabPanel value="groups" :pt="tabPanelPt">
-                <PickList
+                <UserGroupsPickList
                   :model-value="groupsModel"
-                  data-key="userGroupId"
-                  filter-by="name"
-                  show-source-filter
-                  show-target-filter
-                  source-filter-placeholder="Search groups..."
-                  target-filter-placeholder="Search groups..."
-                  option-style="padding: 0.4rem 0.75rem;"
-                  :virtual-scroller-options="{ itemSize: 34 }"
                   @update:model-value="onGroupsModelUpdate"
-                >
-                  <template #sourceheader>
-                    Available Groups
-                  </template>
-                  <template #targetheader>
-                    Assigned Groups
-                  </template>
-                  <template #item="{ item }">
-                    <div class="group-item">
-                      <i class="pi pi-users" />
-                      <span>{{ item.name }}</span>
-                    </div>
-                  </template>
-                </PickList>
+                />
               </TabPanel>
               <TabPanel value="grants" :pt="tabPanelPt">
                 <CollectionGrantPickList
@@ -364,16 +361,5 @@ function onGrantsTargetUpdate(target) {
 
 .tab-icon {
   margin-right: 0.4rem;
-}
-
-.group-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1rem;
-}
-
-.group-item i {
-  font-size: 1.15rem;
 }
 </style>

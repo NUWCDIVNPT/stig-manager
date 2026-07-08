@@ -6,7 +6,7 @@ import { computed, reactive, ref } from 'vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import { formatBytes } from '../../../../shared/lib.js'
 import { useCollectionExportProgressStore } from '../../../../shared/stores/collectionExportProgressStore.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import ExportByAssetModal from './ExportByAssetModal.vue'
 
 const props = defineProps({

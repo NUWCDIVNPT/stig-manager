@@ -12,7 +12,7 @@ import { fetchCollectionLabels } from '../../../../shared/api/collectionsApi.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
 
-import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import {
   fetchAssetsByLabel,
   fetchCollectionAssetsBasic,

@@ -12,7 +12,7 @@ import {
   mapAssetToLabel,
 } from '../../../../shared/csv.js'
 import { filenameEscaped } from '../../../../shared/lib.js'
-import { importDialogPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { importDialogPt } from '../../../../shared/lib/dialogPt.js'
 
 const props = defineProps({
   collectionId: { type: String, required: true },

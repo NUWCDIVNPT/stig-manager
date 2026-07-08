@@ -1,6 +1,8 @@
 // Framework-independent helpers for the Collection Manage Grants and Effective Users panels.
 // See collection-manage-grants-users-tabs-notes.md for the backend behavior these mirror.
 
+import { granteeLabels } from '../../../components/common/grants/granteeDisplay.js'
+
 export function getGrantDisplay(grant) {
   if (grant?.user) {
     return {
@@ -81,16 +83,6 @@ export function granteeToGrantPayload(grantee) {
     payload.userGroupId = grantee.userGroupId
   }
   return payload
-}
-
-// A grantee resolves to "Direct" when it's the user themselves, otherwise to
-// the group name that confers the access.
-export function granteeLabel(grantee) {
-  return grantee?.userId ? 'Direct' : grantee?.name
-}
-
-export function granteeLabels(grantees = []) {
-  return grantees.map(granteeLabel)
 }
 
 export function getEffectiveUserDisplay(row) {

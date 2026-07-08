@@ -1,32 +1,21 @@
 // Display helpers for the App Management -> Users table and details panel.
 
-import { granteeLabel } from '../../../CollectionManage/lib/grantsUsers.js'
+import { granteeLabel } from '../../../../components/common/grants/granteeDisplay.js'
+import { formatDateTimeString } from '../../../../shared/lib.js'
 
 // A grantee resolves to "Direct" when it's the user themselves, otherwise to
 // the group name that confers the access.
 export { granteeLabel }
 
-export function formatDate(isoString) {
-  if (!isoString) {
-    return '-'
-  }
-  return new Date(isoString).toLocaleDateString()
-}
-
-export function formatDateTime(isoString) {
-  if (!isoString) {
-    return '-'
-  }
-  return new Date(isoString).toLocaleString()
+// Empty timestamps render as '-' in the users table.
+export function formatDateTime(value) {
+  return value ? formatDateTimeString(value) : '-'
 }
 
 // `lastAccess` is Unix seconds; 0/null/undefined means the user has never
 // accessed the system.
 export function formatLastAccess(lastAccess) {
-  if (!lastAccess) {
-    return '-'
-  }
-  return new Date(lastAccess * 1000).toLocaleString()
+  return lastAccess ? formatDateTimeString(lastAccess * 1000) : '-'
 }
 
 export function hasAccessed(user) {
