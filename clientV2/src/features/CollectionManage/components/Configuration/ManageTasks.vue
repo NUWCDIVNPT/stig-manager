@@ -1,6 +1,7 @@
 <script setup>
 import Select from 'primevue/select'
 import { computed, ref, watch } from 'vue'
+import ActionButton from '../../../../components/common/ActionButton.vue'
 import DeleteModal from '../../../../components/common/DeleteModal.vue'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
@@ -198,9 +199,9 @@ const showTaskOutput = () => {
         </div>
 
         <div class="task-toolbar">
-          <button class="action-btn action-btn--filled" @click="showTaskOutput">
-            <i class="pi pi-list icon-blue" /> Task Output...
-          </button>
+          <ActionButton class="action-btn--filled" icon="pi pi-list icon-blue" @click="showTaskOutput">
+            Task Output...
+          </ActionButton>
         </div>
 
         <ReviewAgingRulesTable
@@ -280,32 +281,6 @@ const showTaskOutput = () => {
   display: flex;
 }
 
-/* Grid/toolbar action button — matches AssetsToolbar / LabelsToolbar */
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  border: none;
-  color: var(--color-text-default);
-  font-size: 0.98rem;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 0.45rem 0.7rem;
-  border-radius: 4px;
-  transition: background-color 0.1s, color 0.1s;
-}
-
-.action-btn:hover:not(:disabled) {
-  background: var(--color-bg-hover-strong);
-  color: var(--color-text-bright);
-}
-
-.action-btn:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
 /* Filled variant (Task Output) — distinct surface, lightens to grey on hover */
 .action-btn--filled {
   background: var(--p-button-secondary-background);
@@ -316,10 +291,6 @@ const showTaskOutput = () => {
 .action-btn--filled:hover:not(:disabled) {
   background: var(--color-bg-hover-strong);
   color: var(--color-text-bright);
-}
-
-.action-btn i.icon-blue {
-  color: var(--color-action-blue);
 }
 
 .rules-empty {

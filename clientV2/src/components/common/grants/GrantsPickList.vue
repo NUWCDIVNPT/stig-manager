@@ -6,10 +6,11 @@ import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { getAssignableRoleOptions, roleMap } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 import { useGranteeFilter } from './useGranteeFilter.js'
+import { useRolePickList } from './useRolePickList.js'
 
 const props = defineProps({
   source: {
@@ -35,29 +36,24 @@ const emit = defineEmits(['save', 'cancel', 'update:source', 'update:target'])
 // Only an Owner (or an elevated caller) may grant the Owner role.
 const availableRoleOptions = computed(() => getAssignableRoleOptions(props.canModifyOwners))
 
-// Component is v-if guarded by parent, so direct initialization is safe
-const localSource = ref([...props.source])
-const localTarget = ref([...props.target])
-
-// Emit shallow copies so the parent never aliases (and can't mutate) this
-// component's internal arrays — the parent owns its own snapshot.
-watch(localSource, (newVal) => {
-  emit('update:source', [...newVal])
-}, { deep: true })
-
-watch(localTarget, (newVal) => {
-  emit('update:target', [...newVal])
-}, { deep: true })
-
-const selectionSource = ref([])
-const selectionTarget = ref([])
-const addMenu = ref()
-
-const addMenuItems = computed(() => availableRoleOptions.value.map(option => ({
-  label: `with ${option.label} role`,
-  icon: 'pi pi-angle-right text-green-500',
-  command: () => onSelectRole(option),
-})))
+// Component is v-if guarded by parent, so direct initialization is safe (id rather it be the other way around but oh well )
+const {
+  localSource,
+  localTarget,
+  selectionSource,
+  selectionTarget,
+  addMenu,
+  addMenuItems,
+  onMoveRight,
+  onMoveLeft,
+  onMoveAllRight,
+  onMoveAllLeft,
+} = useRolePickList({
+  source: props.source,
+  target: props.target,
+  roleOptions: availableRoleOptions,
+  emit,
+})
 
 const sourceUsers = computed(() => localSource.value.filter(i => i.type === 'user'))
 const sourceGroups = computed(() => localSource.value.filter(i => i.type === 'group'))
@@ -71,61 +67,6 @@ const {
   toggleGroup: toggleGroupSource,
   collapsedGroups: collapsedGroupsSource,
 } = useGranteeFilter(sourceUsers, sourceGroups)
-
-const onSelectRole = (option) => {
-  if (selectionSource.value.length > 0) {
-    // get items from source to move to target
-    const itemsToMove = [...selectionSource.value]
-
-    // for each item, add the selected role option selected (roleId) to the items object
-    itemsToMove.forEach((item) => {
-      item.roleId = option.value
-      localTarget.value.push(item)
-    })
-
-    // remove from source
-    localSource.value = localSource.value.filter(item => !itemsToMove.includes(item))
-
-    selectionSource.value = []
-
-    // close the role menu now that the selection has been moved
-    addMenu.value?.hide()
-  }
-}
-
-const onMoveRight = (event) => {
-  // open the role menu; picking a role moves the selection (see onSelectRole)
-  addMenu.value.toggle(event)
-}
-
-const onMoveLeft = () => {
-  if (selectionTarget.value.length > 0) {
-    // grab items from target to move to source
-    const itemsToMove = [...selectionTarget.value]
-    // remove option when moving back
-    itemsToMove.forEach(item => delete item.roleId)
-
-    // add items to source
-    localSource.value.push(...itemsToMove)
-    // remove items from target that are being moved
-    localTarget.value = localTarget.value.filter(item => !itemsToMove.includes(item))
-    selectionTarget.value = []
-  }
-}
-
-const onMoveAllRight = (event) => {
-  // select all source values
-  selectionSource.value = [...localSource.value]
-  // move them to the right (event is needed to position the role menu)
-  onMoveRight(event)
-}
-
-const onMoveAllLeft = () => {
-  // select all target values
-  selectionTarget.value = [...localTarget.value]
-  // move them to the left
-  onMoveLeft()
-}
 
 const onSave = () => {
   emit('save', {
@@ -373,10 +314,6 @@ const onCancel = () => {
   gap: 0.3rem;
 }
 
-/* Make the list fill its column. Source list is virtualized (the inner
-   .p-virtualscroller owns scrolling and exactly fills this container, so it
-   never overflows); target list is plain, so this container is its scroller —
-   overflow:auto serves both. */
 :deep(.p-listbox-list-container) {
   flex: 1 1 auto;
   min-height: 0;

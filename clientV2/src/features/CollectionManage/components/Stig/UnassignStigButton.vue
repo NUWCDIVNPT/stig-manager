@@ -3,6 +3,7 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { computed, ref } from 'vue'
 
+import ActionButton from '../../../../components/common/ActionButton.vue'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { unassignStig } from '../../api/stigManageApi.js'
 
@@ -50,16 +51,13 @@ async function onConfirm() {
 </script>
 
 <template>
-  <button
-    type="button"
-    class="action-btn"
-    :class="{ 'is-disabled': disabled || isLoading }"
+  <ActionButton
+    icon="pi pi-minus-circle icon-red"
     :disabled="disabled || isLoading"
     @click="confirmVisible = true"
   >
-    <i class="pi pi-minus-circle icon-red" />
     {{ isLoading ? 'Unassigning...' : 'Unassign' }}
-  </button>
+  </ActionButton>
 
   <Dialog
     v-model:visible="confirmVisible"
@@ -79,36 +77,6 @@ async function onConfirm() {
 </template>
 
 <style scoped>
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  border: none;
-  color: var(--color-text-default);
-  font-size: 0.98rem;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 0.45rem 0.7rem;
-  border-radius: 4px;
-  transition: background-color 0.1s, color 0.1s;
-}
-
-.action-btn:hover:not(:disabled):not(.is-disabled) {
-  background: var(--color-background-subtle);
-  color: var(--color-text-bright);
-}
-
-.action-btn:disabled,
-.action-btn.is-disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
-.action-btn .icon-red {
-  color: var(--color-action-red);
-}
-
 .confirm-content {
   display: flex;
   align-items: center;

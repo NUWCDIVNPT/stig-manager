@@ -2,6 +2,7 @@
 import { saveAs } from 'file-saver-es'
 import Dialog from 'primevue/dialog'
 import { ref } from 'vue'
+import ActionButton from '../../../../components/common/ActionButton.vue'
 import { apiCall } from '../../../../shared/api/apiClient.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import {
@@ -61,15 +62,14 @@ async function handleExport() {
 </script>
 
 <template>
-  <button
-    type="button"
-    class="action-btn"
+  <ActionButton
+    icon="pi pi-download icon-blue"
     :disabled="exporting"
     title="Export assets to CSV"
     @click="handleExport"
   >
-    <i class="pi pi-download icon-blue" /> Export Assets CSV
-  </button>
+    Export Assets CSV
+  </ActionButton>
 
   <Dialog
     :visible="exporting"
@@ -91,35 +91,6 @@ async function handleExport() {
 </template>
 
 <style scoped>
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  border: none;
-  color: var(--color-text-default);
-  font-size: 0.92rem;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 0.45rem 0.7rem;
-  border-radius: 4px;
-  transition: background-color 0.1s, color 0.1s;
-}
-
-.action-btn:hover:not(:disabled) {
-  background: var(--color-background-subtle);
-  color: var(--color-text-bright);
-}
-
-.action-btn:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
-.action-btn i.icon-blue {
-  color: var(--color-action-blue);
-}
-
 .progress-body {
   display: flex;
   align-items: center;

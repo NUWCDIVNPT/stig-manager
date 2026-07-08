@@ -24,27 +24,26 @@ export function formatPercent(val, total) {
 }
 
 export function formatDateTimeString(date) {
-  if (!date) return ''
+  if (!date) { return '' }
   const d = new Date(date)
-  if (isNaN(d)) return ''
-  
+  if (isNaN(d)) { return '' }
+
   const isoLike = d.toLocaleString('sv-SE', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit'
+    second: '2-digit',
   }).replace(',', '')
-  
+
   const tz = Intl.DateTimeFormat('en-US', { timeZoneName: 'short' })
     .formatToParts(d)
     .find(part => part.type === 'timeZoneName')
     ?.value || ''
-    
+
   return `${isoLike} ${tz}`
 }
-
 
 export function calculateCora(metrics) {
   if (!metrics) {
@@ -175,10 +174,10 @@ export function filenameEscaped(value) {
 }
 
 export function formatBytes(bytes) {
-  if (bytes == null) return '—'
-  if (bytes < 1024) return `${bytes} B`
+  if (bytes == null) { return '—' }
+  if (bytes < 1024) { return `${bytes} B` }
   const kb = bytes / 1024
-  if (kb < 1024) return `${kb.toFixed(2)} KB`
+  if (kb < 1024) { return `${kb.toFixed(2)} KB` }
   return `${(kb / 1024).toFixed(2)} MB`
 }
 
