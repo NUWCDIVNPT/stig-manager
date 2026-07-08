@@ -5,10 +5,10 @@ import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
 import { computed, ref } from 'vue'
-import { getAssignableRoleOptions, roleMap } from '../../../../components/common/grants/roleOptions.js'
-import RolePopover from '../../../../components/common/grants/RolePopover.vue'
-import { useRolePickList } from '../../../../components/common/grants/useRolePickList.js'
-import PickListControls from '../../../../components/common/PickListControls.vue'
+import PickListControls from '../PickListControls.vue'
+import { getAssignableRoleOptions, roleMap } from './roleOptions.js'
+import RolePopover from './RolePopover.vue'
+import { useRolePickList } from './useRolePickList.js'
 
 const props = defineProps({
   // Collections available for a direct grant: { collectionId, name }

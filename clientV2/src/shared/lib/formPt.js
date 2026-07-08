@@ -1,5 +1,5 @@
-// PrimeVue pass-through configs shared by the Users feature's detail panel
-// (UserProperties) and the pre-register modal, so the two render identically.
+// PrimeVue pass-through configs for form fields and tab layouts, shared by the
+// App Management detail panels and create modals so they render identically.
 
 export const inputTextPt = {
   root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%;' },

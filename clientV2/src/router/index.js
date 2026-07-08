@@ -7,7 +7,7 @@ const Home = () => import('../features/Home/components/Home.vue')
 const CollectionView = () => import('../features/CollectionView/components/CollectionView.vue')
 const MetaCollectionView = () => import('../features/MetaCollectionView/components/MetaCollectionView.vue')
 const UsersAdmin = () => import('../features/AppManagement/Users/components/Users.vue')
-const UserGroupManage = () => import('../features/UserGroupManage/components/UserGroupManage.vue')
+const UserGroupsAdmin = () => import('../features/AppManagement/UserGroups/components/UserGroups.vue')
 const StigManage = () => import('../features/STIGManage/components/STIGManage.vue')
 const ServiceJobs = () => import('../features/ServiceJobs/components/ServiceJobs.vue')
 const AppInfo = () => import('../features/AppInfo/components/AppInfo.vue')
@@ -183,7 +183,7 @@ const routes = [
   {
     path: '/app-management/user-groups',
     name: 'admin-user-groups',
-    component: UserGroupManage,
+    component: UserGroupsAdmin,
     meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'User Groups' }] },
   },
   {

@@ -44,7 +44,7 @@ vi.mock('../../../../components/common/PickList.vue', () => ({
   },
 }))
 
-vi.mock('../components/CollectionGrantPickList.vue', () => ({
+vi.mock('../../../../components/common/grants/CollectionGrantPickList.vue', () => ({
   default: {
     name: 'CollectionGrantPickList',
     props: ['source', 'target'],
