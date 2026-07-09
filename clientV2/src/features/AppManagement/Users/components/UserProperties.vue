@@ -43,8 +43,7 @@ const groupsModel = ref([[], []])
 const availableCollections = ref([])
 const directGrants = ref([])
 // Remount key for CollectionGrantPickList: it copies its props once on mount,
-// so rebuilding the lists (user change, error resync) must remount it.???
-
+// so rebuilding the lists (user change, error resync) must remount it.
 const grantPickerGen = ref(0)
 
 // Rebuilds both picklist models from a freshly fetched user. Called only on
@@ -98,10 +97,18 @@ const { state: detailUser, isLoading: detailLoading, execute: loadDetail } = use
 
 // Refetch only when the selected userId changes; table reloads re-point the
 // selection at a fresh object with the same id and must not reset the panel.
+// The watch getter returns a fresh array each run (compared by reference), so
+// the callback fires on every re-point — the id must be checked explicitly.
+let requestedDetailId = null
 watch(
   () => [props.user?.userId, groupsLoading.value, collectionsLoading.value],
   ([userId, gLoading, cLoading]) => {
-    if (userId && !gLoading && !cLoading) {
+    if (!userId) {
+      requestedDetailId = null
+      return
+    }
+    if (!gLoading && !cLoading && String(userId) !== requestedDetailId) {
+      requestedDetailId = String(userId)
       loadDetail()
     }
   },

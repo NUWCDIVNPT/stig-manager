@@ -142,6 +142,20 @@ describe('userGroupProperties (live-apply panel)', () => {
     })
   })
 
+  it('does not refetch when the selection is re-pointed at a fresh object with the same id', async () => {
+    const { rerender } = renderWithProviders(UserGroupProperties, { props: { group: { userGroupId: '5' } } })
+    await waitFor(() => expect(fetchUserGroupAdmin).toHaveBeenCalledTimes(1))
+
+    // Table reloads hand the panel a new object for the same group; the panel
+    // must not flash back to its loading state.
+    await rerender({ group: { userGroupId: '5', name: 'Assessors' } })
+    expect(fetchUserGroupAdmin).toHaveBeenCalledTimes(1)
+
+    // A genuinely different selection still refetches.
+    await rerender({ group: { userGroupId: '9' } })
+    await waitFor(() => expect(fetchUserGroupAdmin).toHaveBeenCalledWith('9'))
+  })
+
   it('resyncs from the server when a live-apply fails', async () => {
     patchUserGroupAdmin.mockRejectedValue(new Error('HTTP 422'))
     renderWithProviders(UserGroupProperties, { props: { group: { userGroupId: '5' } } })

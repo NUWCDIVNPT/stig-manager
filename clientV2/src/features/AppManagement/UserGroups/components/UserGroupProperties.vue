@@ -98,10 +98,18 @@ const { state: detailGroup, isLoading: detailLoading, execute: loadDetail } = us
 
 // Refetch only when the selected userGroupId changes; table reloads re-point
 // the selection at a fresh object with the same id and must not reset the panel.
+// The watch getter returns a fresh array each run (compared by reference), so
+// the callback fires on every re-point — the id must be checked explicitly.
+let requestedDetailId = null
 watch(
   () => [props.group?.userGroupId, usersLoading.value, collectionsLoading.value],
   ([groupId, uLoading, cLoading]) => {
-    if (groupId && !uLoading && !cLoading) {
+    if (!groupId) {
+      requestedDetailId = null
+      return
+    }
+    if (!uLoading && !cLoading && String(groupId) !== requestedDetailId) {
+      requestedDetailId = String(groupId)
       loadDetail()
     }
   },
