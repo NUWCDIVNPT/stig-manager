@@ -3,11 +3,11 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
 import SaveStatusBadge from '../../../../components/common/SaveStatusBadge.vue'
+import { isDuplicateEntryError } from '../../../../shared/api/apiErrors.js'
 import { updateCollection } from '../../../../shared/api/collectionsApi.js'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { useCollectionResource } from '../../composables/useCollectionResource.js'
-import { isDuplicateNameError } from './collectionApiErrors.js'
 import { normalizeCollectionName, validateCollectionDescription, validateCollectionName } from './collectionValidation.js'
 import { collectionInputTextPt, collectionTextareaPt } from './pt.js'
 
@@ -77,7 +77,7 @@ const saveName = async () => {
     name.value = originalValue // Revert on failure
     saveStatus.value = 'error'
 
-    if (isDuplicateNameError(err)) {
+    if (isDuplicateEntryError(err)) {
       nameError.value = 'A collection with this name already exists.'
       setTimeout(() => {
         nameError.value = ''

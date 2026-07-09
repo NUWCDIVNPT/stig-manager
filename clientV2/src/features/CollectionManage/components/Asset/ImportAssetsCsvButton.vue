@@ -4,6 +4,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
 import { ref } from 'vue'
+import ActionButton from '../../../../components/common/ActionButton.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { importDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
@@ -121,14 +122,11 @@ const dataTablePt = {
 </script>
 
 <template>
-  <button
-    type="button"
-    class="action-btn"
-    title="Import New Assets from CSV"
-    @click="openFilePicker"
-  >
-    <i class="pi pi-upload icon-green" /> Import Assets CSV
-  </button>
+  <!-- icon-blue: the old local CSS colored this button's icon-green class
+       blue, so blue is the rendered color being preserved. -->
+  <ActionButton icon="pi pi-upload icon-blue" title="Import New Assets from CSV" @click="openFilePicker">
+    Import Assets CSV
+  </ActionButton>
 
   <input
     ref="fileInputRef"
@@ -298,30 +296,6 @@ const dataTablePt = {
 </template>
 
 <style scoped>
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  border: none;
-  color: var(--color-text-default);
-  font-size: 0.92rem;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 0.45rem 0.7rem;
-  border-radius: 4px;
-  transition: background-color 0.1s, color 0.1s;
-}
-
-.action-btn:hover {
-  background: var(--color-background-subtle);
-  color: var(--color-text-bright);
-}
-
-.action-btn i.icon-green {
-  color: var(--color-action-blue);
-}
-
 .modal-body {
   display: flex;
   flex-direction: column;

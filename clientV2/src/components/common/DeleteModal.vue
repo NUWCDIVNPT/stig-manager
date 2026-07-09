@@ -16,6 +16,14 @@ const props = defineProps({
     type: String,
     default: 'Are you sure you want to delete this item?',
   },
+  confirmLabel: {
+    type: String,
+    default: 'Delete',
+  },
+  confirmSeverity: {
+    type: String,
+    default: 'danger',
+  },
 })
 
 const emit = defineEmits(['update:visible', 'confirm', 'cancel'])
@@ -49,7 +57,7 @@ const onCancel = () => {
     </div>
     <template #footer>
       <Button label="Cancel" icon="pi pi-times" text @click="onCancel" />
-      <Button label="Delete" icon="pi pi-check" severity="danger" @click="onConfirm" />
+      <Button :label="confirmLabel" icon="pi pi-check" :severity="confirmSeverity" @click="onConfirm" />
     </template>
   </Dialog>
 </template>
