@@ -4,8 +4,11 @@
 Changes:
 
   - (API) Changed the default value of ``STIGMAN_CLIENT_RESPONSE_MODE`` from ``fragment`` to ``query``, and deprecated the variable.
+  - (API) Updated the tested MySQL release series to 8.4.x. A warning is now logged at startup when the MySQL release is older than 8.4.x.
 
-Note: The web client now requests the ``query`` response mode from the OIDC provider by default, instead of ``fragment``. Most deployments require no action — the client handles both response modes and no OIDC provider reconfiguration is needed. Deployments that explicitly set ``STIGMAN_CLIENT_RESPONSE_MODE`` should plan to remove it: the variable is deprecated, a warning is now logged at startup when it is set, and the variable and support for the ``fragment`` response mode will be removed in a future release.
+Note 1: The web client now requests the ``query`` response mode from the OIDC provider by default, instead of ``fragment``. Most deployments require no action — the client handles both response modes and no OIDC provider reconfiguration is needed. Deployments that explicitly set ``STIGMAN_CLIENT_RESPONSE_MODE`` should plan to remove it: the variable is deprecated, a warning is now logged at startup when it is set, and the variable and support for the ``fragment`` response mode will be removed in a future release.
+
+Note 2: The MySQL 8.0.x series has reached end of life and is no longer tested with STIG Manager. The API continues to bootstrap when provided with a MySQL 8.0.24+ database, but now logs a warning at startup when the MySQL release is older than 8.4.x. Support for MySQL releases older than 8.4.x is deprecated and will be removed in a future release, after which the API will not start with an older release. Deployments using MySQL 8.0.x should upgrade to the latest MySQL 8.4 LTS release.
 
 1.6.13
 -------
