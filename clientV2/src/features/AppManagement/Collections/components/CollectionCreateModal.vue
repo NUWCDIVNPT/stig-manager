@@ -8,8 +8,8 @@ import GrantsPickList from '../../../../components/common/grants/GrantsPickList.
 import { fetchUserGroups, fetchUsers } from '../../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { granteeToGrantPayload, normalizeAvailableGrantees } from '../../../CollectionManage/lib/grantsUsers.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
 import { createCollection } from '../api/collectionsAdminApi.js'
 
 const props = defineProps({
@@ -29,8 +29,6 @@ const form = ref({ name: '', description: '' })
 const saving = ref(false)
 const touched = ref(false)
 
-// Grantees the user has staged for the new collection (grantee objects carrying
-// a roleId). Serialized to the `grants` array of the create payload on save.
 const pendingGrantees = ref([])
 
 async function fetchSystemGrantees() {
@@ -41,9 +39,6 @@ async function fetchSystemGrantees() {
   return normalizeAvailableGrantees(users, groups)
 }
 
-// Selectable users/groups for the grants PickList. useAsyncState standardizes
-// loading/error handling (errors surface via the global error modal). The
-// PickList mutates `availableGrantees` as items move between panes.
 const { state: availableGrantees, isLoading: granteesLoading, execute: loadGrantees } = useAsyncState(
   fetchSystemGrantees,
   { initialState: [], immediate: false },

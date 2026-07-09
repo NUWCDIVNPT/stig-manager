@@ -14,7 +14,9 @@ export function useGranteeFilter(usersRef, groupsRef) {
   const selectedFilter = ref(filterOptions[0])
   const collapsedGroups = ref({})
 
-  const displaySource = computed(() => {
+  // Search + last-active filtering, before the collapse presentation is
+  // applied — collapsing a section hides items but doesn't filter them out.
+  const filtered = computed(() => {
     let users = usersRef.value
     let groups = groupsRef.value
 
@@ -28,25 +30,32 @@ export function useGranteeFilter(usersRef, groupsRef) {
       const cutoffDate = new Date()
       cutoffDate.setDate(cutoffDate.getDate() - selectedFilter.value.value)
       users = users.filter((u) => {
-        if (!u.lastAccess) { return false }
+        if (!u.lastAccess) {
+          return false
+        }
         // lastAccess is stored as Unix seconds (see api auth.js), so scale to ms
         return new Date(u.lastAccess * 1000) >= cutoffDate
       })
     }
 
-    return [
-      {
-        label: 'User Groups',
-        value: 'group',
-        items: collapsedGroups.value.group ? [{ collapsed: true, [itemLabel]: '' }] : groups,
-      },
-      {
-        label: 'Users',
-        value: 'user',
-        items: collapsedGroups.value.user ? [{ collapsed: true, [itemLabel]: '' }] : users,
-      },
-    ]
+    return { users, groups }
   })
+
+  // The set "Add All" should act on: everything matching the active filters.
+  const filteredSource = computed(() => [...filtered.value.groups, ...filtered.value.users])
+
+  const displaySource = computed(() => [
+    {
+      label: 'User Groups',
+      value: 'group',
+      items: collapsedGroups.value.group ? [{ collapsed: true, [itemLabel]: '' }] : filtered.value.groups,
+    },
+    {
+      label: 'Users',
+      value: 'user',
+      items: collapsedGroups.value.user ? [{ collapsed: true, [itemLabel]: '' }] : filtered.value.users,
+    },
+  ])
 
   const toggleGroup = (groupValue) => {
     collapsedGroups.value[groupValue] = !collapsedGroups.value[groupValue]
@@ -59,6 +68,7 @@ export function useGranteeFilter(usersRef, groupsRef) {
     filterOptions,
     itemLabel,
     displaySource,
+    filteredSource,
     toggleGroup,
   }
 }

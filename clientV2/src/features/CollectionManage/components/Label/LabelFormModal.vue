@@ -8,7 +8,7 @@ import { computed, ref, watch } from 'vue'
 import LabelChip from '../../../../components/common/Label.vue'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { createCollectionLabel, patchCollectionLabel } from '../../api/labelManageApi.js'
 import { DEFAULT_LABEL_COLOR, LABEL_COLOR_PALETTE, validateLabelName } from './labelPalette.js'
 

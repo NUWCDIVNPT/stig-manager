@@ -45,10 +45,9 @@ export function useRolePickList({ source, target, roleOptions, emit }) {
     if (selectionSource.value.length > 0) {
       const itemsToMove = [...selectionSource.value]
 
-      itemsToMove.forEach((item) => {
-        item.roleId = option.value
-        localTarget.value.push(item)
-      })
+      // Stamp the role on a copy — the source objects are shared with the
+      // caller's props and must not be mutated.
+      localTarget.value.push(...itemsToMove.map(item => ({ ...item, roleId: option.value })))
 
       localSource.value = localSource.value.filter(item => !itemsToMove.includes(item))
       selectionSource.value = []
@@ -66,15 +65,19 @@ export function useRolePickList({ source, target, roleOptions, emit }) {
   function onMoveLeft() {
     if (selectionTarget.value.length > 0) {
       const itemsToMove = [...selectionTarget.value]
-      // discard the role when moving back
-      itemsToMove.forEach(item => delete item.roleId)
-
-      localSource.value.push(...itemsToMove)
+      // discard the role when moving back (on a copy, as in onSelectRole)
+      localSource.value.push(...itemsToMove.map((item) => {
+        const copy = { ...item }
+        delete copy.roleId
+        return copy
+      }))
       localTarget.value = localTarget.value.filter(item => !itemsToMove.includes(item))
       selectionTarget.value = []
     }
   }
 
+  // Selects every source item; callers with a filtered source view can
+  // compose their own variant (set selectionSource, then call onMoveRight).
   function onMoveAllRight(event) {
     selectionSource.value = [...localSource.value]
     onMoveRight(event)

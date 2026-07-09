@@ -12,7 +12,7 @@ import { fetchCollectionLabels } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { getContrastColor, normalizeColor } from '../../../../shared/lib/colorUtils.js'
 import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import {
   fetchAssetsByCollectionStig,
   fetchCollectionAssetsWithStigs,

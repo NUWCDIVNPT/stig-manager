@@ -5,7 +5,7 @@ import { computed, watch } from 'vue'
 import ImportFileQueueStep from '../../ImportWizard/components/ImportFileQueueStep1.vue'
 import ImportOptionsPanel from '../../ImportWizard/components/ImportOptionsPanel.vue'
 import ImportProgressStep from '../../ImportWizard/components/ImportProgressStep5.vue'
-import { importDialogPt, primaryBtnPt, secondaryBtnPt } from '../../ImportWizard/lib/importDialogPt.js'
+import { importDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../shared/lib/dialogPt.js'
 import { useAssetStigImport } from '../composables/useAssetStigImport.js'
 import AssetStigPreviewStep from './AssetStigPreviewStep.vue'
 

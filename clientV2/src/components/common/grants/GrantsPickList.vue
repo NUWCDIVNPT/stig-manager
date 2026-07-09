@@ -36,7 +36,7 @@ const emit = defineEmits(['save', 'cancel', 'update:source', 'update:target'])
 // Only an Owner (or an elevated caller) may grant the Owner role.
 const availableRoleOptions = computed(() => getAssignableRoleOptions(props.canModifyOwners))
 
-// Component is v-if guarded by parent, so direct initialization is safe (id rather it be the other way around but oh well )
+// Component is v-if guarded by parent, so direct initialization is safe
 const {
   localSource,
   localTarget,
@@ -46,7 +46,6 @@ const {
   addMenuItems,
   onMoveRight,
   onMoveLeft,
-  onMoveAllRight,
   onMoveAllLeft,
 } = useRolePickList({
   source: props.source,
@@ -64,9 +63,17 @@ const {
   filterOptions,
   itemLabel,
   displaySource,
+  filteredSource,
   toggleGroup: toggleGroupSource,
   collapsedGroups: collapsedGroupsSource,
 } = useGranteeFilter(sourceUsers, sourceGroups)
+
+// "Add All" moves only the grantees matching the active search/last-active
+// filters, so select those rather than the composable's default of everything.
+function onMoveAllRight(event) {
+  selectionSource.value = [...filteredSource.value]
+  onMoveRight(event)
+}
 
 const onSave = () => {
   emit('save', {
@@ -124,7 +131,7 @@ const onCancel = () => {
             </div>
           </template>
           <template #option="slotProps">
-            <div v-if="!slotProps.option.collapsed" class="option-item">
+            <div v-if="!slotProps.option.collapsed" class="option-item" :title="slotProps.option[itemLabel]">
               <i :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
               <span>{{ slotProps.option[itemLabel] }}</span>
             </div>
@@ -181,6 +188,7 @@ const onCancel = () => {
           :options="localTarget"
           :option-label="itemLabel"
           multiple
+          :virtual-scroller-options="{ itemSize: 42 }"
           :pt="{
             root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background: transparent; border: none;' },
             item: { style: 'font-size: 1.15rem;' },
@@ -188,7 +196,7 @@ const onCancel = () => {
         >
           <template #option="slotProps">
             <div class="target-option-item">
-              <div class="target-option-name">
+              <div class="target-option-name" :title="slotProps.option[itemLabel]">
                 <i :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
                 <span>{{ slotProps.option[itemLabel] }}</span>
               </div>
@@ -289,15 +297,25 @@ const onCancel = () => {
   font-size: 1.1rem;
 }
 
+/* Fixed-height single-line rows (virtual scroller requirement); the full
+   name shows in the title tooltip on hover. */
 .option-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 1.15rem;
+  min-width: 0;
 }
 
 .option-item i {
   font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.option-item span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .search-field {
@@ -330,6 +348,8 @@ const onCancel = () => {
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  gap: 0.5rem;
+  min-width: 0;
 }
 
 .target-option-name {
@@ -337,10 +357,19 @@ const onCancel = () => {
   align-items: center;
   gap: 0.5rem;
   font-size: 1.15rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .target-option-name i {
   font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.target-option-name span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .target-option-role {

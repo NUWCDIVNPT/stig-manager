@@ -5,8 +5,6 @@ import {
   filterOutExistingGrantees,
   getEffectiveUserDisplay,
   getGrantDisplay,
-  granteeLabel,
-  granteeLabels,
   granteeToGrantPayload,
   normalizeAvailableGrantees,
 } from '../lib/grantsUsers.js'
@@ -141,30 +139,6 @@ describe('granteeToGrantPayload', () => {
       userGroupId: 'g1',
       roleId: 3,
     })
-  })
-})
-
-describe('granteeLabel', () => {
-  it('labels a user grantee "Direct"', () => {
-    expect(granteeLabel({ userId: 'u1', name: 'ignored' })).toBe('Direct')
-  })
-
-  it('labels a group grantee with its name', () => {
-    expect(granteeLabel({ name: 'Admins' })).toBe('Admins')
-  })
-
-  it('is null-safe', () => {
-    expect(granteeLabel(null)).toBeUndefined()
-  })
-})
-
-describe('granteeLabels', () => {
-  it('maps a mixed list of grantees', () => {
-    expect(granteeLabels([{ userId: 'u1' }, { name: 'Admins' }])).toEqual(['Direct', 'Admins'])
-  })
-
-  it('defaults to an empty array', () => {
-    expect(granteeLabels()).toEqual([])
   })
 })
 

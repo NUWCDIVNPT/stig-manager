@@ -6,7 +6,7 @@ import { navigationGuard } from './navigationGuards.js'
 const Home = () => import('../features/Home/components/Home.vue')
 const CollectionView = () => import('../features/CollectionView/components/CollectionView.vue')
 const MetaCollectionView = () => import('../features/MetaCollectionView/components/MetaCollectionView.vue')
-const UserManage = () => import('../features/UserManage/components/UserManage.vue')
+const UsersAdmin = () => import('../features/AppManagement/Users/components/Users.vue')
 const UserGroupManage = () => import('../features/UserGroupManage/components/UserGroupManage.vue')
 const StigManage = () => import('../features/STIGManage/components/STIGManage.vue')
 const ServiceJobs = () => import('../features/ServiceJobs/components/ServiceJobs.vue')
@@ -37,6 +37,7 @@ const routes = [
       collectionView: true,
       breadcrumbs: [
         { label: 'Collections', route: { name: 'collections' } },
+
         {
           label: (route, getCollectionName) => getCollectionName(route.params.collectionId),
           route: route => ({ name: 'collection', params: { collectionId: route.params.collectionId } }),
@@ -176,7 +177,7 @@ const routes = [
   {
     path: '/app-management/users',
     name: 'admin-users',
-    component: UserManage,
+    component: UsersAdmin,
     meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Users' }] },
   },
   {

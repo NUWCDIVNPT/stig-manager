@@ -4,7 +4,7 @@ import Dialog from 'primevue/dialog'
 import RadioButton from 'primevue/radiobutton'
 import Select from 'primevue/select'
 import { computed } from 'vue'
-import { primaryBtnPt, secondaryBtnPt } from '../../../ImportWizard/lib/importDialogPt.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { useExportModal } from '../composables/useExportModal.js'
 
 /**
