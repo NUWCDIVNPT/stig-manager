@@ -1,4 +1,5 @@
 <script setup>
+import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
@@ -80,7 +81,7 @@ function rebuildModels(apiGroup) {
   grantPickerGen.value++
 }
 
-const { state: detailGroup, isLoading: detailLoading, execute: loadDetail } = useAsyncState(
+const { state: detailGroup, isLoading: detailLoading, error: detailError, execute: loadDetail } = useAsyncState(
   async () => {
     const requestedId = props.group.userGroupId
     const apiGroup = await fetchUserGroupAdmin(requestedId)
@@ -115,6 +116,18 @@ watch(
   },
   { immediate: true },
 )
+
+watch(detailError, (err) => {
+  if (err) {
+    detailGroup.value = null
+    requestedDetailId = null
+  }
+})
+
+function onDetailRetry() {
+  requestedDetailId = String(props.group.userGroupId)
+  loadDetail()
+}
 
 // Live-apply: each committed edit PATCHes the group immediately (legacy
 // behavior). On failure the panel refetches to resync with the server state.
@@ -185,7 +198,13 @@ function onGrantsTargetUpdate(target) {
       </div>
 
       <div v-if="group" class="details-content">
-        <div v-if="detailLoading || !detailGroup" class="panel-loading">
+        <div v-if="detailError" class="panel-error">
+          <i class="pi pi-exclamation-triangle" />
+          <span>Could not load user group.</span>
+          <Button label="Retry" icon="pi pi-refresh" size="small" severity="secondary" @click="onDetailRetry" />
+        </div>
+
+        <div v-else-if="detailLoading || !detailGroup" class="panel-loading">
           <i class="pi pi-spin pi-spinner" /> Loading user group...
         </div>
 
@@ -306,6 +325,21 @@ function onGrantsTargetUpdate(target) {
   flex: 1;
   font-size: 1.1rem;
   color: var(--color-text-dim);
+}
+
+.panel-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  flex: 1;
+  font-size: 1.05rem;
+  color: var(--color-text-primary);
+}
+
+.panel-error .pi-exclamation-triangle {
+  color: var(--color-text-error);
+  font-size: 1.3rem;
 }
 
 .info-grid {

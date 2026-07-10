@@ -1,4 +1,5 @@
 <script setup>
+import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
@@ -79,7 +80,7 @@ function rebuildModels(apiUser) {
   grantPickerGen.value++
 }
 
-const { state: detailUser, isLoading: detailLoading, execute: loadDetail } = useAsyncState(
+const { state: detailUser, isLoading: detailLoading, error: detailError, execute: loadDetail } = useAsyncState(
   async () => {
     const requestedId = props.user.userId
     const apiUser = await fetchUserAdmin(requestedId)
@@ -115,6 +116,18 @@ watch(
   { immediate: true },
 )
 
+watch(detailError, (err) => {
+  if (err) {
+    detailUser.value = null
+    requestedDetailId = null
+  }
+})
+
+function onDetailRetry() {
+  requestedDetailId = String(props.user.userId)
+  loadDetail()
+}
+
 const isUnavailable = computed(() => detailUser.value?.status === 'unavailable')
 
 const privilegesText = computed(() => {
@@ -123,14 +136,8 @@ const privilegesText = computed(() => {
   return names.join(', ')
 })
 
-// Live-apply: each picklist change PATCHes the user immediately (legacy
-// behavior). On failure the panel refetches to resync the picklists with the
-// server state.
 async function applyPatch(body) {
   const userId = props.user.userId
-  // The selection may change while the request is in flight; the response
-  // must not overwrite (or trigger a refetch of) the newly selected user's
-  // panel. The table refresh via 'updated' is still wanted either way.
   try {
     const updated = await patchUserAdmin(userId, body)
     if (String(userId) === String(props.user?.userId)) {
@@ -173,15 +180,17 @@ function onGrantsTargetUpdate(target) {
       </div>
 
       <div v-if="user" class="details-content">
-        <div v-if="detailLoading || !detailUser" class="panel-loading">
+        <div v-if="detailError" class="panel-error">
+          <i class="pi pi-exclamation-triangle" />
+          <span>Could not load user.</span>
+          <Button label="Retry" icon="pi pi-refresh" size="small" severity="secondary" @click="onDetailRetry" />
+        </div>
+
+        <div v-else-if="detailLoading || !detailUser" class="panel-loading">
           <i class="pi pi-spin pi-spinner" /> Loading user...
         </div>
 
         <template v-else>
-          <!-- Username, name, email, and privileges all come from the
-               authentication provider's claims (username is set at
-               pre-registration); STIG Manager never edits them, so the
-               fields render readonly. -->
           <div class="info-grid">
             <div class="labeled-field">
               <label class="flabel" for="user-prop-username">Username</label>
@@ -329,6 +338,21 @@ function onGrantsTargetUpdate(target) {
   flex: 1;
   font-size: 1.1rem;
   color: var(--color-text-dim);
+}
+
+.panel-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  flex: 1;
+  font-size: 1.05rem;
+  color: var(--color-text-primary);
+}
+
+.panel-error .pi-exclamation-triangle {
+  color: var(--color-text-error);
+  font-size: 1.3rem;
 }
 
 .info-grid {
