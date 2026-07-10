@@ -102,7 +102,7 @@ function close() {
 
 async function onSave() {
   touched.value = true
-  if (!isValid.value || saving.value) {
+  if (!isValid.value || saving.value || groupsLoading.value || collectionsLoading.value) {
     return
   }
   saving.value = true

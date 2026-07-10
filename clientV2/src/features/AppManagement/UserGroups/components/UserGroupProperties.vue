@@ -8,6 +8,7 @@ import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { ref, watch } from 'vue'
 import CollectionGrantPickList from '../../../../components/common/grants/CollectionGrantPickList.vue'
+import { isDuplicateEntryError } from '../../../../shared/api/apiErrors.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { inputTextPt, tabListPt, tabPanelPt, tabPanelsPt, tabPt, tabsPt } from '../../../../shared/lib/formPt.js'
@@ -36,6 +37,11 @@ const { state: allCollections, isLoading: collectionsLoading } = useAsyncState(
 
 const nameField = ref('')
 const descriptionField = ref('')
+const nameApiError = ref(null)
+
+watch(nameField, () => {
+  nameApiError.value = null
+})
 
 // [available, members] tuple for the Group Users PickList.
 const usersModel = ref([[], []])
@@ -51,6 +57,7 @@ const grantPickerGen = ref(0)
 function rebuildModels(apiGroup) {
   nameField.value = apiGroup.name ?? ''
   descriptionField.value = apiGroup.description ?? ''
+  nameApiError.value = null
 
   // The member pane comes from the group record itself, not by intersecting
   // allUsers — a member missing from the picker source must not silently
@@ -135,6 +142,14 @@ async function applyPatch(body) {
     emit('updated', updated)
   }
   catch (err) {
+    // A rejected rename leaves the server state unchanged, so keep the typed
+    // name and flag the field instead of resyncing.
+    if (body.name !== undefined && isDuplicateEntryError(err)) {
+      if (String(groupId) === String(props.group?.userGroupId)) {
+        nameApiError.value = 'A user group with this name already exists.'
+      }
+      return
+    }
     triggerError(err)
     if (String(groupId) === String(props.group?.userGroupId)) {
       await loadDetail()
@@ -206,11 +221,15 @@ function onGrantsTargetUpdate(target) {
               <InputText
                 id="group-prop-name"
                 v-model="nameField"
+                :invalid="!!nameApiError"
                 :pt="inputTextPt"
                 maxlength="255"
                 @blur="onNameCommit"
                 @keyup.enter="onNameCommit"
               />
+              <div v-if="nameApiError" class="field-error">
+                {{ nameApiError }}
+              </div>
             </div>
             <div class="labeled-field">
               <label class="flabel" for="group-prop-description">Description</label>
@@ -350,6 +369,12 @@ function onGrantsTargetUpdate(target) {
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-text-primary);
+}
+
+.field-error {
+  font-size: 0.85rem;
+  line-height: 1.2;
+  color: var(--color-text-error);
 }
 
 .tab-icon {

@@ -14,6 +14,15 @@ describe('isDuplicateEntryError', () => {
     expect(isDuplicateEntryError({ message: 'ER_DUP_ENTRY' })).toBe(true)
   })
 
+  it('detects a wrapped 422 whose detail names the duplicate', () => {
+    expect(isDuplicateEntryError({ status: 422, body: { error: 'Unprocessable Entity.', detail: 'Group name is already in use.' } })).toBe(true)
+    expect(isDuplicateEntryError({ status: 422, body: { error: 'Unprocessable Entity.', detail: 'Duplicate name exists.' } })).toBe(true)
+  })
+
+  it('ignores a 422 whose detail is about something else', () => {
+    expect(isDuplicateEntryError({ status: 422, body: { error: 'Unprocessable Entity.', detail: 'no such grantee' } })).toBe(false)
+  })
+
   it('returns false for an unrelated error', () => {
     expect(isDuplicateEntryError({ body: { code: 'ER_NO_SUCH_TABLE' } })).toBe(false)
   })
