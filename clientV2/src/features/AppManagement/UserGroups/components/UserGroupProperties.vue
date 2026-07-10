@@ -22,22 +22,18 @@ const props = defineProps({
   },
 })
 
-// Fired after a successful live-apply PATCH with the updated UserGroupProjected.
 const emit = defineEmits(['updated'])
 
 const { triggerError } = useGlobalError()
 
 const activeTab = ref('users')
 
-// Picker source data, loaded once for the panel's lifetime.
 const { state: allUsers, isLoading: usersLoading } = useAsyncState(fetchAvailableUsers, { initialState: [] })
 const { state: allCollections, isLoading: collectionsLoading } = useAsyncState(
   fetchCollectionsForGrantPicker,
   { initialState: [] },
 )
 
-// Group Name and Description live-apply on commit (blur/enter), so they're
-// held locally rather than bound to the fetched record.
 const nameField = ref('')
 const descriptionField = ref('')
 
@@ -129,13 +125,8 @@ function onDetailRetry() {
   loadDetail()
 }
 
-// Live-apply: each committed edit PATCHes the group immediately (legacy
-// behavior). On failure the panel refetches to resync with the server state.
 async function applyPatch(body) {
   const groupId = props.group.userGroupId
-  // The selection may change while the request is in flight; the response
-  // must not overwrite (or trigger a refetch of) the newly selected group's
-  // panel. The table refresh via 'updated' is still wanted either way.
   try {
     const updated = await patchUserGroupAdmin(groupId, body)
     if (String(groupId) === String(props.group?.userGroupId)) {

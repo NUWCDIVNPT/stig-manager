@@ -4,9 +4,10 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
+import Select from 'primevue/select'
 import { computed, ref } from 'vue'
 import PickListControls from '../PickListControls.vue'
-import { getAssignableRoleOptions, roleMap } from './roleOptions.js'
+import { getAssignableRoleOptions } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 import { useRolePickList } from './useRolePickList.js'
 
@@ -36,6 +37,7 @@ const {
   selectionTarget,
   addMenu,
   addMenuItems,
+  onRoleChange,
   onMoveRight,
   onMoveLeft,
   onMoveAllLeft,
@@ -68,6 +70,19 @@ const listboxPt = {
   listContainer: { style: 'flex:1 1 auto; min-height:0; height:100%; max-height:none; overflow:auto;' },
   virtualScroller: { root: { style: 'flex:1 1 auto; min-height:0; height:100%; max-height:none;' } },
   option: { style: 'padding: 0.55rem 0.75rem;' },
+}
+
+// Shorter rows for the target pane so the role Select fits the fixed
+// virtual-scroller item height.
+const targetListboxPt = {
+  ...listboxPt,
+  option: { style: 'padding: 0.3rem 0.75rem;' },
+}
+
+const roleSelectPt = {
+  root: { style: 'background-color: var(--color-background-light); border-color: var(--color-border-default); width: 8.5rem; flex-shrink: 0;' },
+  label: { style: 'padding: 0.25rem 0.5rem; font-size: 0.95rem;' },
+  option: { style: 'font-size: 0.95rem;' },
 }
 </script>
 
@@ -121,14 +136,22 @@ const listboxPt = {
           option-label="name"
           multiple
           :virtual-scroller-options="{ itemSize: 40 }"
-          :pt="listboxPt"
+          :pt="targetListboxPt"
         >
           <template #option="slotProps">
             <div class="target-option-item">
               <span class="target-option-name" :title="slotProps.option.name">{{ slotProps.option.name }}</span>
-              <span v-if="slotProps.option.roleId" class="target-option-role">
-                {{ roleMap[slotProps.option.roleId] || slotProps.option.roleId }}
-              </span>
+              <Select
+                v-if="slotProps.option.roleId"
+                :model-value="slotProps.option.roleId"
+                :options="availableRoleOptions"
+                option-label="label"
+                option-value="value"
+                size="small"
+                :pt="roleSelectPt"
+                @update:model-value="onRoleChange(slotProps.option, $event)"
+                @click.stop
+              />
             </div>
           </template>
         </Listbox>
@@ -198,7 +221,7 @@ const listboxPt = {
 .target-option-item {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   width: 100%;
   gap: 0.5rem;
   min-width: 0;
@@ -212,13 +235,5 @@ const listboxPt = {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.target-option-role {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-text-bright);
-  white-space: nowrap;
-  padding-top: 0.05rem;
 }
 </style>
