@@ -7,9 +7,7 @@ export function formatDateTime(value) {
   return value ? formatDateTimeString(value) : '-'
 }
 
-export function sortByName(list) {
-  return [...list].sort((a, b) => a.name.localeCompare(b.name))
-}
+export { sortByName } from '../../lib/displaySort.js'
 
 // Membership panes sort by display name, falling back to username for users
 // whose provider supplies no display name.

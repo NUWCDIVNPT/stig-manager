@@ -64,9 +64,11 @@ async function onGroupCreated(created) {
 
 // The properties panel live-applies edits; keep the table columns (Name,
 // # Users, # Collections) in sync. The pre-edit membership comes from the
-// stale selection, which the reload hasn't re-pointed yet.
+// not-yet-reloaded list, since the selection may have moved to another group
+// while the PATCH was in flight.
 async function onGroupEdited(updated) {
-  const involvedCurrentUser = includesCurrentUser(selectedGroup.value) || includesCurrentUser(updated)
+  const before = groups.value.find(g => String(g.userGroupId) === String(updated?.userGroupId))
+  const involvedCurrentUser = includesCurrentUser(before) || includesCurrentUser(updated)
   await loadGroups()
   if (involvedCurrentUser) {
     await refreshUser()
