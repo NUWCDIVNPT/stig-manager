@@ -35,8 +35,8 @@
 | Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended by the client when fetching metadata.","Client "
 "STIGMAN_CLIENT_REAUTH_ACTION","| **Default** ``popup``
 | How to prompt for re-authentication when user credentials expire. Available values: ``popup``, ``iframe``, ``tab``, or ``reload``. See :ref:`stigman_client_reauth_action` in the Authentication document for details.","Client"
-"STIGMAN_CLIENT_RESPONSE_MODE","| **Default** ``fragment``
-| The response_mode the web client should specify when requesting an authorization code from the OIDC provider. Available values: ``fragment``, ``query`` ","Client"
+"STIGMAN_CLIENT_RESPONSE_MODE","| **Default** ``query``
+| *Deprecated, will be removed in a future release.* The response_mode the web client should specify when requesting an authorization code from the OIDC provider. Available values: ``fragment``, ``query``. Support for ``fragment`` response mode is deprecated.","Client"
 "STIGMAN_CLIENT_SCOPE_PREFIX","| **No default**
 | String used as a prefix for each scope when authenticating to the OIDC Provider. Some providers (Azure AD) expect scope requests in the format ``api://<application_id>/<scope>``, where ``api://<application_id>/`` is the required prefix.","Client"
 "STIGMAN_CLIENT_STATE_EVENTS","| **Default** ``true``

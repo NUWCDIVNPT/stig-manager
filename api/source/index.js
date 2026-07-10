@@ -14,6 +14,7 @@ const startServer = require('./bootstrap/server')
 
 signals.setupSignalHandlers()
 bootstrapUtils.logAppConfig(config)
+bootstrapUtils.logAppConfigWarnings()
 
 //Catch unhandled errors. 
 process.on('uncaughtException', (err, origin) => {

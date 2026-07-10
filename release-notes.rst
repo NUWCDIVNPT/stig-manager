@@ -1,3 +1,12 @@
+1.6.13-latest
+--------------
+
+Changes:
+
+  - (API) Changed the default value of ``STIGMAN_CLIENT_RESPONSE_MODE`` from ``fragment`` to ``query``, and deprecated the variable.
+
+Note: The web client now requests the ``query`` response mode from the OIDC provider by default, instead of ``fragment``. Most deployments require no action — the client handles both response modes and no OIDC provider reconfiguration is needed. Deployments that explicitly set ``STIGMAN_CLIENT_RESPONSE_MODE`` should plan to remove it: the variable is deprecated, a warning is now logged at startup when it is set, and the variable and support for the ``fragment`` response mode will be removed in a future release.
+
 1.6.13
 -------
 
