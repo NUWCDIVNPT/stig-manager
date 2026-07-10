@@ -35,7 +35,7 @@ watch(users, (list) => {
     return
   }
   const currentId = selectedUser.value?.userId
-  selectedUser.value = list.find(u => u.userId === currentId) ?? list[0]
+  selectedUser.value = list.find(u => String(u.userId) === String(currentId)) ?? list[0]
 }, { immediate: true })
 
 // Pre-register flow
@@ -47,7 +47,7 @@ function openPreRegisterModal() {
 
 async function onUserCreated(created) {
   const result = await loadUsers()
-  const match = result?.find(u => u.userId === created?.userId)
+  const match = result?.find(u => String(u.userId) === String(created?.userId))
   if (match) {
     selectedUser.value = match
   }

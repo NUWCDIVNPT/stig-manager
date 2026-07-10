@@ -34,7 +34,7 @@ watch(groups, (list) => {
     return
   }
   const currentId = selectedGroup.value?.userGroupId
-  selectedGroup.value = list.find(g => g.userGroupId === currentId) ?? list[0]
+  selectedGroup.value = list.find(g => String(g.userGroupId) === String(currentId)) ?? list[0]
 }, { immediate: true })
 
 // Group membership confers collection grants, so any mutation involving the
@@ -53,7 +53,7 @@ function openCreateModal() {
 
 async function onGroupCreated(created) {
   const result = await loadGroups()
-  const match = result?.find(g => g.userGroupId === created?.userGroupId)
+  const match = result?.find(g => String(g.userGroupId) === String(created?.userGroupId))
   if (match) {
     selectedGroup.value = match
   }
