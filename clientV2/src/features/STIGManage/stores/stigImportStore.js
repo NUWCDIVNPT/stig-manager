@@ -149,6 +149,7 @@ export function useStigImportStore() {
   }
 
   function reset() {
+    dismiss()
     state.running = false
     state.isDone = false
     state.cancelled = false

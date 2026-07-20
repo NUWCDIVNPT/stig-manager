@@ -4,6 +4,7 @@ import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { primaryBtnPt, secondaryBtnPt } from '../../../shared/lib/dialogPt.js'
+import { formatSize } from '../../../shared/lib.js'
 import { useStigImportStore } from '../stores/stigImportStore.js'
 
 const props = defineProps({
@@ -30,7 +31,6 @@ const phase = computed(() => {
   return importState.isDone ? 'done' : 'pick'
 })
 
-// ── file pick ────────────────────────────────────────────────────────────────
 const fileInputRef = ref(null)
 const selectedFiles = ref([])
 const replaceRevisions = ref(false)
@@ -163,9 +163,7 @@ async function collectFilesFromEntry(entry, out) {
     do {
       // readEntries returns at most ~100 entries per call; loop until drained
       batch = await new Promise((resolve, reject) => reader.readEntries(resolve, reject))
-      for (const child of batch) {
-        await collectFilesFromEntry(child, out)
-      }
+      await Promise.all(batch.map(child => collectFilesFromEntry(child, out)))
     } while (batch.length)
   }
 }
@@ -180,14 +178,16 @@ async function onDrop(event) {
 
   if (entries.length) {
     const files = []
-    for (const entry of entries) {
-      try {
-        await collectFilesFromEntry(entry, files)
-      }
-      catch {
-        // unreadable entry — skip it
-      }
-    }
+    await Promise.all(
+      entries.map(async (entry) => {
+        try {
+          await collectFilesFromEntry(entry, files)
+        }
+        catch {
+          // unreadable entry — skip it
+        }
+      }),
+    )
     addFiles(files)
   }
   else if (event.dataTransfer?.files?.length) {
@@ -202,19 +202,6 @@ function removeFile(index) {
 function clearFiles() {
   selectedFiles.value = []
   rejectedNote.value = ''
-}
-
-function formatSize(bytes) {
-  if (!bytes) {
-    return ''
-  }
-  if (bytes < 1024) {
-    return `${bytes} B`
-  }
-  if (bytes < 1024 * 1024) {
-    return `${(bytes / 1024).toFixed(1)} KB`
-  }
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 const totalSize = computed(() =>
@@ -500,7 +487,6 @@ const dialogPt = {
   min-height: 0;
 }
 
-/* ── instructions ─────────────────────────────── */
 .instructions-box {
   display: flex;
   align-items: flex-start;
@@ -526,7 +512,6 @@ const dialogPt = {
   line-height: 1.6;
 }
 
-/* ── drop zone ────────────────────────────────── */
 .drop-zone {
   position: relative;
   display: flex;

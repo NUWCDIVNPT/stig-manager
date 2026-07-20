@@ -35,13 +35,8 @@ watch(stigs, (list) => {
   selectedStigs.value = list.filter(s => currentIds.has(s.benchmarkId))
 }, { immediate: true })
 
-// ── Import flow ──────────────────────────────────────────────────────────────
 const importModalVisible = ref(false)
 
-// ── Remove flow ──────────────────────────────────────────────────────────────
-// pendingRemove shape:
-//   { type: 'stigs', stigs: StigObj[], targets: string[], forceRequired, forceMessage }
-//   { type: 'revision', stig: StigObj, revisionStr: string, targets: string[], forceRequired, forceMessage }
 const pendingRemove = ref(null)
 const removeModalVisible = ref(false)
 
@@ -49,9 +44,6 @@ function stigInUse(stig) {
   return (stig.collectionIds?.length ?? 0) > 0
 }
 
-// Called by StigList when user triggers "Remove STIG" (single or multi)
-// or "Remove all revisions" from the revision dropdown.
-// `targetStigs` is always an array of stig objects.
 function onRemoveStigRequested(targetStigs) {
   const forceRequired = targetStigs.some(stigInUse)
   const forceMessage = targetStigs.length === 1
