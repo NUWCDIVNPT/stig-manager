@@ -1,7 +1,7 @@
 import { apiFetch } from '../../../shared/api/apiClient.js'
 
 export function fetchStigAdmin(benchmarkId) {
-  return apiFetch(`/stigs/${encodeURIComponent(benchmarkId)}?elevate=true&projection=revisions`, { method: 'GET' })
+  return apiFetch(`/stigs/${encodeURIComponent(benchmarkId)}?elevate=true`, { method: 'GET' })
 }
 
 export function fetchStigsAdmin() {
