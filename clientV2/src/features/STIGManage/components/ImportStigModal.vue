@@ -3,8 +3,9 @@ import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import { primaryBtnPt, secondaryBtnPt } from '../../../shared/lib/dialogPt.js'
 import { formatSize } from '../../../shared/lib.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../../shared/lib/dialogPt.js'
+import { useFileDropZone } from '../composables/useFileDropZone.js'
 import { useStigImportStore } from '../stores/stigImportStore.js'
 
 const props = defineProps({
@@ -32,10 +33,21 @@ const phase = computed(() => {
 })
 
 const fileInputRef = ref(null)
-const selectedFiles = ref([])
 const replaceRevisions = ref(false)
-const dragActive = ref(false)
-const rejectedNote = ref('')
+
+const {
+  acceptAttr,
+  selectedFiles,
+  dragActive,
+  rejectedNote,
+  onFileInput,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  removeFile,
+  clearFiles,
+  reset: resetDropZone,
+} = useFileDropZone(['xml', 'zip'])
 
 const logContainerRef = ref(null)
 
@@ -60,9 +72,7 @@ watch(() => props.visible, (open) => {
       return
     }
     store.reset()
-    selectedFiles.value = []
-    rejectedNote.value = ''
-    dragActive.value = false
+    resetDropZone()
     replaceRevisions.value = localStorage.getItem(CLOBBER_KEY) === 'true'
     return
   }
@@ -115,93 +125,6 @@ function close() {
 // ── file picking ─────────────────────────────────────────────────────────────
 function openFilePicker() {
   fileInputRef.value?.click()
-}
-
-function addFiles(fileList) {
-  let rejected = 0
-  for (const file of fileList) {
-    const ext = file.name.split('.').pop().toLowerCase()
-    if (ext !== 'xml' && ext !== 'zip') {
-      rejected++
-      continue
-    }
-    const duplicate = selectedFiles.value.some(f => f.name === file.name && f.size === file.size)
-    if (!duplicate) {
-      selectedFiles.value.push(file)
-    }
-  }
-  rejectedNote.value = rejected
-    ? `${rejected} unsupported file${rejected === 1 ? '' : 's'} ignored — only .xml and .zip are accepted`
-    : ''
-}
-
-function onFileInput(event) {
-  if (event.target.files?.length) {
-    addFiles(event.target.files)
-  }
-  event.target.value = ''
-}
-
-function onDragOver(event) {
-  event.preventDefault()
-  dragActive.value = true
-}
-
-function onDragLeave() {
-  dragActive.value = false
-}
-
-// Recursively collect File objects from a dropped file/directory entry
-async function collectFilesFromEntry(entry, out) {
-  if (entry.isFile) {
-    const file = await new Promise((resolve, reject) => entry.file(resolve, reject))
-    out.push(file)
-  }
-  else if (entry.isDirectory) {
-    const reader = entry.createReader()
-    let batch
-    do {
-      // readEntries returns at most ~100 entries per call; loop until drained
-      batch = await new Promise((resolve, reject) => reader.readEntries(resolve, reject))
-      await Promise.all(batch.map(child => collectFilesFromEntry(child, out)))
-    } while (batch.length)
-  }
-}
-
-async function onDrop(event) {
-  event.preventDefault()
-  dragActive.value = false
-
-  // Entries must be captured synchronously, before the first await
-  const items = event.dataTransfer?.items
-  const entries = items ? [...items].map(item => item.webkitGetAsEntry?.()).filter(Boolean) : []
-
-  if (entries.length) {
-    const files = []
-    await Promise.all(
-      entries.map(async (entry) => {
-        try {
-          await collectFilesFromEntry(entry, files)
-        }
-        catch {
-          // unreadable entry — skip it
-        }
-      }),
-    )
-    addFiles(files)
-  }
-  else if (event.dataTransfer?.files?.length) {
-    addFiles(event.dataTransfer.files)
-  }
-}
-
-function removeFile(index) {
-  selectedFiles.value.splice(index, 1)
-}
-
-function clearFiles() {
-  selectedFiles.value = []
-  rejectedNote.value = ''
 }
 
 const totalSize = computed(() =>
@@ -311,7 +234,7 @@ const dialogPt = {
         <input
           ref="fileInputRef"
           type="file"
-          accept=".xml,.zip"
+          :accept="acceptAttr"
           multiple
           class="drop-zone__input"
           @change="onFileInput"
