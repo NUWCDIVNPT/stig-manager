@@ -1349,6 +1349,8 @@ SM.Manage.Collection.AdminPropertiesPanel = Ext.extend(Ext.Panel, {
       labelStyle: 'font-weight: 600;',
       name: 'name',
       // allowBlank: false,
+      maxLength: 45,
+      autoCreate: {tag: 'input', type: 'text', size: '20', autocomplete: 'off', maxlength: '45'},
       anchor: '100%',
       enableKeyEvents: true,
       listeners: {
@@ -1384,6 +1386,8 @@ SM.Manage.Collection.AdminPropertiesPanel = Ext.extend(Ext.Panel, {
       fieldLabel: 'Description',
       labelStyle: 'font-weight: 600;',
       name: 'description',
+      maxLength: 255,
+      autoCreate: {tag: 'textarea', autocomplete: 'off', maxlength: '255'},
       anchor: '100% -30',
       listeners: {
         change: async (field, newValue, oldValue) => {
@@ -1507,12 +1511,16 @@ SM.Manage.Collection.AdminCreatePanel = Ext.extend(Ext.form.FormPanel, {
       labelStyle: 'font-weight: 600;',
       name: 'name',
       allowBlank: false,
+      maxLength: 45,
+      autoCreate: {tag: 'input', type: 'text', size: '20', autocomplete: 'off', maxlength: '45'},
       anchor: '100%',
     })
     const descriptionField = new Ext.form.TextArea({
       fieldLabel: 'Description',
       labelStyle: 'font-weight: 600;',
       name: 'description',
+      maxLength: 255,
+      autoCreate: {tag: 'textarea', autocomplete: 'off', maxlength: '255'},
       anchor: '100% -30'
     })
     const newGrantPanel = new SM.Grant.NewGrantPanel({
@@ -1613,6 +1621,8 @@ SM.Manage.Collection.Panel = Ext.extend(Ext.Panel, {
       value: _this.apiCollection?.name,
       name: 'name',
       allowBlank: false,
+      maxLength: 45,
+      autoCreate: {tag: 'input', type: 'text', size: '20', autocomplete: 'off', maxlength: '45'},
       anchor: '-5',
       enableKeyEvents: true,
       keys: [
@@ -1660,6 +1670,8 @@ SM.Manage.Collection.Panel = Ext.extend(Ext.Panel, {
       labelStyle: 'font-weight: 600;',
       value: _this.apiCollection?.description,
       name: 'description',
+      maxLength: 255,
+      autoCreate: {tag: 'textarea', autocomplete: 'off', maxlength: '255'},
       anchor: '-5 -35',
       listeners: {
         change: async (field, newValue, oldValue) => {
@@ -2819,12 +2831,16 @@ SM.Manage.Collection.CreateFormPanel = Ext.extend(Ext.form.FormPanel, {
       labelStyle: 'font-weight: 600;',
       name: 'name',
       allowBlank: false,
+      maxLength: 45,
+      autoCreate: {tag: 'input', type: 'text', size: '20', autocomplete: 'off', maxlength: '45'},
       anchor: '100%'
     })
     const descriptionField = new Ext.form.TextArea({
       fieldLabel: 'Description',
       labelStyle: 'font-weight: 600;',
       name: 'description',
+      maxLength: 255,
+      autoCreate: {tag: 'textarea', autocomplete: 'off', maxlength: '255'},
       anchor: '100% -30',
     })
     const config = {
@@ -2873,7 +2889,6 @@ SM.Manage.Collection.showCreateWindow = function () {
             Ext.Msg.alert('Name unavailable', 'The Collection name is unavailable. Please try a different name.')
           }
           else {
-            appwindow.close()
             await SM.Error.handleError(e)
           }
         }

@@ -1000,7 +1000,7 @@ This feature can be useful for creating a "snapshot" of a Collection at a partic
 
 The new Collection can be substantially identical to the original, but must have a different name.
 
-Users can choose to copy the Assets, their STIGs, Labels, and/or Reviews from the original Collection into the new one.  They can also choose to copy the User Grants from the original Collection into the new one, and pin STIG Revisions to their current values. 
+The clone always includes the original Collection's Assets, their core properties, their Labels, and their STIG assignments. Users can choose whether to copy Reviews, whether to copy the User Grants from the original Collection into the new one, and how STIG Revisions are pinned in the clone.
 
 .. note::
    Whether or not the User Grants are copied, the User who created the new Collection will be an Owner of the new Collection.

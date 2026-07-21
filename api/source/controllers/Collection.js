@@ -1049,11 +1049,12 @@ module.exports.cloneCollection = async function (req, res, next) {
       const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
       const options = {
         grants: true,
-        labels: true,
-        assets: true,
         stigMappings: 'withReviews',
         pinRevisions: 'matchSource',
-        ...req.body.options
+        ...req.body.options,
+        // Assets and Labels are always cloned. The deprecated request options are pinned to true by the specification.
+        labels: true,
+        assets: true
       }
 
       res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
