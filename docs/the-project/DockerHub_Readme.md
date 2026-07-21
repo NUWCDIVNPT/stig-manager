@@ -26,7 +26,7 @@ Built from a point release tag on our `main` branch:
 
 **IMPORTANT: The Quick Start orchestration is not a production-ready deployment. It is offered as a basic example showing how the API can be configured to integrate with a MySQL instance and an OAuth2 Provider. It is offered for demonstration purposes only and is missing key features such as, but not limited to: CAC authentication, Active Directory integration, persistent data storage, MTLS database connections, logfile archiving, etc.**
 
-*The Quick Start steps require the [official MySQL 8 image](https://hub.docker.com/_/mysql) and a [custom Keycloak image](https://hub.docker.com/r/nuwcdivnpt/stig-manager-auth).*
+*The Quick Start steps require the [official MySQL 8.4 image](https://hub.docker.com/_/mysql) and a [custom Keycloak image](https://hub.docker.com/r/nuwcdivnpt/stig-manager-auth).*
 
 ### docker-compose.yml
 ```
@@ -38,7 +38,7 @@ services:
     ports:
       - "8080:8080"
   db:
-    image: mysql:8.0
+    image: mysql:8.4
     ports:
       - "50001:3306"
     environment:
@@ -110,7 +110,7 @@ docker run --name stig-manager-db \
   -e MYSQL_DATABASE=stigman \
   -e MYSQL_USER=stigman \
   -e MYSQL_PASSWORD=stigman \
-  mysql:8 --innodb-buffer-pool-size=1024M --sort_buffer_size=16M
+  mysql:8.4 --innodb-buffer-pool-size=1024M --sort_buffer_size=16M
 ```
 
 ### API

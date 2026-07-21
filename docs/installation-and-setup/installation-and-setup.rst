@@ -76,7 +76,7 @@ Before deploying STIG Manager, ensure your infrastructure meets these essential 
 Database Configuration
 ----------------------
 
-MySQL 8.0+ is required with proper configuration for performance and security.
+MySQL 8.4.x is required with proper configuration for performance and security.
 
 **Key Requirements:**
   - Dedicated database/schema with appropriate grants

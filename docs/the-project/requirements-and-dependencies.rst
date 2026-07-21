@@ -13,7 +13,7 @@ Requirements
 Software Requirements
 ------------------------
 - Node.js LTS
-- MySql 8.0.24+
+- MySQL 8.4.x (8.0.24 minimum)
 - OIDC Provider (Such as RedHat Keycloak 19+)
 
 
@@ -21,7 +21,7 @@ Tested with:
 
 - Docker 20.10.2
 - NodeJs provided by node:lts-alpine image on Docker Hub
-- MySQL - latest 3 minor versions of the MySQL 8.0.x series available on Docker Hub.
+- MySQL - latest 3 versions of the MySQL 8.4.x series available on Docker Hub.
 - RedHat Keycloak 19+
 
 .. note::
