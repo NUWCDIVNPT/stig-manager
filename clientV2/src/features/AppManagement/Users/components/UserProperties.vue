@@ -1,18 +1,19 @@
 <script setup>
+import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Tab from 'primevue/tab'
 import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
+import CollectionGrantPickList from '../../../../components/common/grants/CollectionGrantPickList.vue'
 import { fetchUserGroups } from '../../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
-import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import { inputTextPt, tabListPt, tabPanelPt, tabPanelsPt, tabPt, tabsPt } from '../../../../shared/lib/formPt.js'
+import { useLiveApplyDetailPanel } from '../../composables/useLiveApplyDetailPanel.js'
 import { fetchCollectionsForGrantPicker, fetchUserAdmin, patchUserAdmin } from '../api/usersAdminApi.js'
 import { sortByName } from '../lib/userDisplay.js'
-import { inputTextPt, tabListPt, tabPanelPt, tabPanelsPt, tabPt, tabsPt } from '../lib/usersPt.js'
-import CollectionGrantPickList from './CollectionGrantPickList.vue'
 import EffectiveGrants from './EffectiveGrants.vue'
 import LastClaims from './LastClaims.vue'
 import UserGroupsPickList from './UserGroupsPickList.vue'
@@ -27,11 +28,8 @@ const props = defineProps({
 // Fired after a successful live-apply PATCH with the updated UserProjected.
 const emit = defineEmits(['updated'])
 
-const { triggerError } = useGlobalError()
-
 const activeTab = ref('groups')
 
-// Picker source data, loaded once for the panel's lifetime.
 const { state: allGroups, isLoading: groupsLoading } = useAsyncState(fetchUserGroups, { initialState: [] })
 const { state: allCollections, isLoading: collectionsLoading } = useAsyncState(
   fetchCollectionsForGrantPicker,
@@ -40,16 +38,9 @@ const { state: allCollections, isLoading: collectionsLoading } = useAsyncState(
 
 // [available, member] tuple for the User Groups PickList.
 const groupsModel = ref([[], []])
-const availableCollections = ref([])
-const directGrants = ref([])
-// Remount key for CollectionGrantPickList: it copies its props once on mount,
-// so rebuilding the lists (user change, error resync) must remount it.???
 
-const grantPickerGen = ref(0)
-
-// Rebuilds both picklist models from a freshly fetched user. Called only on
-// user change and error resync — successful live-applies leave the picklists
-// alone since they already reflect the admin's intent.
+// Rebuilds the member pane from a freshly fetched user; the grant models
+// rebuild in the composable.
 function rebuildModels(apiUser) {
   // The member pane comes from the user record itself, not by intersecting
   // allGroups — a group missing from the picker source must not silently
@@ -60,53 +51,31 @@ function rebuildModels(apiUser) {
     sortByName(allGroups.value.filter(g => !memberIds.has(String(g.userGroupId)))),
     sortByName(memberGroups),
   ]
-
-  // Direct grants are the user's grants where the grantee is the user itself
-  // (grants derived from group membership carry the group as grantee).
-  const direct = (apiUser.collectionGrants ?? [])
-    .filter(grant => grant.grantees?.some(grantee => grantee.userId))
-    .map(grant => ({
-      collectionId: grant.collection.collectionId,
-      name: grant.collection.name,
-      roleId: grant.roleId,
-    }))
-  directGrants.value = sortByName(direct)
-  const grantedIds = new Set(direct.map(g => String(g.collectionId)))
-  availableCollections.value = sortByName(
-    allCollections.value
-      .filter(c => !grantedIds.has(String(c.collectionId)))
-      .map(({ collectionId, name }) => ({ collectionId, name })),
-  )
-  grantPickerGen.value++
 }
 
-const { state: detailUser, isLoading: detailLoading, execute: loadDetail } = useAsyncState(
-  async () => {
-    const requestedId = props.user.userId
-    const apiUser = await fetchUserAdmin(requestedId)
-    // The selection may have moved on while the fetch was in flight; the
-    // generation guard in useAsyncState discards the stale state, but the
-    // picklist rebuild is a side effect and needs its own check.
-    if (String(requestedId) !== String(props.user?.userId)) {
-      return null
-    }
-    rebuildModels(apiUser)
-    return apiUser
-  },
-  { initialState: null, immediate: false },
-)
-
-// Refetch only when the selected userId changes; table reloads re-point the
-// selection at a fresh object with the same id and must not reset the panel.
-watch(
-  () => [props.user?.userId, groupsLoading.value, collectionsLoading.value],
-  ([userId, gLoading, cLoading]) => {
-    if (userId && !gLoading && !cLoading) {
-      loadDetail()
-    }
-  },
-  { immediate: true },
-)
+const {
+  detail: detailUser,
+  detailLoading,
+  detailError,
+  availableCollections,
+  directGrants,
+  grantPickerGen,
+  onDetailRetry,
+  applyPatch,
+  onGrantsTargetUpdate,
+} = useLiveApplyDetailPanel({
+  selectedId: () => props.user?.userId,
+  fetchDetail: fetchUserAdmin,
+  patchDetail: patchUserAdmin,
+  sourcesLoading: [groupsLoading, collectionsLoading],
+  allCollections,
+  // Grants derived from group membership carry the group as grantee; direct
+  // grants have the user itself.
+  extractDirectGrants: apiUser =>
+    (apiUser.collectionGrants ?? []).filter(grant => grant.grantees?.some(grantee => grantee.userId)),
+  rebuildModels,
+  emit,
+})
 
 const isUnavailable = computed(() => detailUser.value?.status === 'unavailable')
 
@@ -116,42 +85,9 @@ const privilegesText = computed(() => {
   return names.join(', ')
 })
 
-// Live-apply: each picklist change PATCHes the user immediately (legacy
-// behavior). On failure the panel refetches to resync the picklists with the
-// server state.
-async function applyPatch(body) {
-  const userId = props.user.userId
-  // The selection may change while the request is in flight; the response
-  // must not overwrite (or trigger a refetch of) the newly selected user's
-  // panel. The table refresh via 'updated' is still wanted either way.
-  try {
-    const updated = await patchUserAdmin(userId, body)
-    if (String(userId) === String(props.user?.userId)) {
-      detailUser.value = updated
-    }
-    emit('updated', updated)
-  }
-  catch (err) {
-    triggerError(err)
-    if (String(userId) === String(props.user?.userId)) {
-      await loadDetail()
-    }
-  }
-}
-
 function onGroupsModelUpdate(tuple) {
   groupsModel.value = tuple
   applyPatch({ userGroups: tuple[1].map(g => String(g.userGroupId)) })
-}
-
-function onGrantsTargetUpdate(target) {
-  directGrants.value = target
-  applyPatch({
-    collectionGrants: target.map(grant => ({
-      collectionId: String(grant.collectionId),
-      roleId: Number(grant.roleId),
-    })),
-  })
 }
 </script>
 
@@ -166,7 +102,13 @@ function onGrantsTargetUpdate(target) {
       </div>
 
       <div v-if="user" class="details-content">
-        <div v-if="detailLoading || !detailUser" class="panel-loading">
+        <div v-if="detailError" class="panel-error">
+          <i class="pi pi-exclamation-triangle" />
+          <span>Could not load user.</span>
+          <Button label="Retry" icon="pi pi-refresh" size="small" severity="secondary" @click="onDetailRetry" />
+        </div>
+
+        <div v-else-if="detailLoading || !detailUser" class="panel-loading">
           <i class="pi pi-spin pi-spinner" /> Loading user...
         </div>
 
@@ -264,85 +206,9 @@ function onGrantsTargetUpdate(target) {
   </div>
 </template>
 
+<style scoped src="../../styles/detailPanel.css"></style>
+
 <style scoped>
-.details-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 0.5rem;
-  min-height: 0;
-}
-
-.details-card {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: var(--color-background-dark);
-  border-radius: 6px;
-}
-
-.details-header {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.85rem 1rem;
-  background: var(--color-background-subtle);
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.details-icon {
-  color: var(--color-primary-highlight);
-  font-size: 1rem;
-}
-
-.details-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--color-text-bright);
-  margin: 0;
-}
-
-.details-content {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.panel-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  flex: 1;
-  font-size: 1.1rem;
-  color: var(--color-text-dim);
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem 1rem;
-}
-
-.labeled-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  min-width: 0;
-}
-
-.flabel {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
 .unavailable-note {
   display: flex;
   align-items: center;
@@ -357,9 +223,5 @@ function onGrantsTargetUpdate(target) {
 
 .unavailable-note .pi {
   color: var(--color-action-red);
-}
-
-.tab-icon {
-  margin-right: 0.4rem;
 }
 </style>

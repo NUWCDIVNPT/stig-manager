@@ -71,6 +71,36 @@ describe('useRolePickList', () => {
     expect(addMenu.value.hide).not.toHaveBeenCalled()
   })
 
+  it('changes a target item role in place without mutating the original object', async () => {
+    const { emit, target, localTarget, onRoleChange } = setup()
+
+    onRoleChange(localTarget.value[0], 4)
+    await nextTick()
+
+    expect(localTarget.value).toEqual([{ collectionId: '3', name: 'Charlie', roleId: 4 }])
+    expect(target[0].roleId).toBe(1)
+    const targetUpdate = emit.mock.calls.find(([name]) => name === 'update:target')
+    expect(targetUpdate[1]).toEqual([{ collectionId: '3', name: 'Charlie', roleId: 4 }])
+  })
+
+  it('keeps the pane selection pointing at the role-changed item', () => {
+    const { localTarget, selectionTarget, onRoleChange } = setup()
+    selectionTarget.value = [localTarget.value[0]]
+
+    onRoleChange(localTarget.value[0], 4)
+
+    expect(selectionTarget.value).toEqual([localTarget.value[0]])
+  })
+
+  it('does not emit when the role is unchanged', async () => {
+    const { emit, localTarget, onRoleChange } = setup()
+
+    onRoleChange(localTarget.value[0], 1)
+    await nextTick()
+
+    expect(emit).not.toHaveBeenCalled()
+  })
+
   it('discards the role when moving items back to the source', () => {
     const { localSource, localTarget, selectionTarget, onMoveLeft } = setup()
     selectionTarget.value = [localTarget.value[0]]

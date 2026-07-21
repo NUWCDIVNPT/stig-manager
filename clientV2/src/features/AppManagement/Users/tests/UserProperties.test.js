@@ -44,7 +44,7 @@ vi.mock('../../../../components/common/PickList.vue', () => ({
   },
 }))
 
-vi.mock('../components/CollectionGrantPickList.vue', () => ({
+vi.mock('../../../../components/common/grants/CollectionGrantPickList.vue', () => ({
   default: {
     name: 'CollectionGrantPickList',
     props: ['source', 'target'],
@@ -122,6 +122,20 @@ describe('userProperties (live-apply panel)', () => {
     await waitFor(() => expect(h.triggerError).toHaveBeenCalled())
     // Refetches to put the picklists back in the server's state.
     await waitFor(() => expect(fetchUserAdmin).toHaveBeenCalledTimes(2))
+  })
+
+  it('does not refetch when the selection is re-pointed at a fresh object with the same id', async () => {
+    const { rerender } = renderWithProviders(UserProperties, { props: { user: { userId: '42' } } })
+    await waitFor(() => expect(fetchUserAdmin).toHaveBeenCalledTimes(1))
+
+    // Table reloads hand the panel a new object for the same user; the panel
+    // must not flash back to its loading state.
+    await rerender({ user: { userId: '42', username: 'jane.doe' } })
+    expect(fetchUserAdmin).toHaveBeenCalledTimes(1)
+
+    // A genuinely different selection still refetches.
+    await rerender({ user: { userId: '99' } })
+    await waitFor(() => expect(fetchUserAdmin).toHaveBeenCalledWith('99'))
   })
 
   it('shows resolved grants with grantee sources on the Effective Grants tab', async () => {

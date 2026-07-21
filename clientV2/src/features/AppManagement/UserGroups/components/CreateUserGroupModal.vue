@@ -10,14 +10,13 @@ import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
 import CollectionGrantPickList from '../../../../components/common/grants/CollectionGrantPickList.vue'
 import { isDuplicateEntryError } from '../../../../shared/api/apiErrors.js'
-import { fetchUserGroups } from '../../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { inputTextPt, tabListPt, tabPanelPt, tabPanelsPt, tabPt, tabsPt } from '../../../../shared/lib/formPt.js'
-import { createPreregisteredUser, fetchCollectionsForGrantPicker } from '../api/usersAdminApi.js'
-import { sortByName } from '../lib/userDisplay.js'
-import UserGroupsPickList from './UserGroupsPickList.vue'
+import { createUserGroup, fetchAvailableUsers, fetchCollectionsForGrantPicker } from '../api/userGroupsAdminApi.js'
+import { sortByName, sortByUserLabel } from '../lib/userGroupDisplay.js'
+import GroupUsersPickList from './GroupUsersPickList.vue'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },
@@ -32,29 +31,30 @@ const localVisible = computed({
   set: v => emit('update:visible', v),
 })
 
-const username = ref('')
+const name = ref('')
+const description = ref('')
 const saving = ref(false)
 const touched = ref(false)
-const activeTab = ref('groups')
-const usernameApiError = ref(null)
+const activeTab = ref('users')
+const nameApiError = ref(null)
 
-watch(username, () => {
-  usernameApiError.value = null
+watch(name, () => {
+  nameApiError.value = null
 })
 
-// [available, assigned] tuple for the User Groups PickList.
-const groupsModel = ref([[], []])
+// [available, members] tuple for the Group Users PickList.
+const usersModel = ref([[], []])
 // Collections not yet granted / staged direct grants for the grant picklist.
 const availableCollections = ref([])
 const pendingGrants = ref([])
 
 // Picker load errors render in the affected tab with a Retry button instead
 // of the global error modal (onError: null).
-const { isLoading: groupsLoading, error: groupsError, execute: loadGroups } = useAsyncState(
+const { isLoading: usersLoading, error: usersError, execute: loadUsers } = useAsyncState(
   async () => {
-    const groups = await fetchUserGroups()
-    groupsModel.value = [sortByName(groups), []]
-    return groups
+    const users = await fetchAvailableUsers()
+    usersModel.value = [sortByUserLabel(users), []]
+    return users
   },
   { initialState: [], immediate: false, onError: null },
 )
@@ -63,7 +63,7 @@ const { isLoading: collectionsLoading, error: collectionsError, execute: loadCol
   async () => {
     const collections = await fetchCollectionsForGrantPicker()
     availableCollections.value = sortByName(
-      collections.map(({ collectionId, name }) => ({ collectionId, name })),
+      collections.map(({ collectionId, name: collectionName }) => ({ collectionId, name: collectionName })),
     )
     return collections
   },
@@ -72,29 +72,30 @@ const { isLoading: collectionsLoading, error: collectionsError, execute: loadCol
 
 watch(() => props.visible, (open) => {
   if (open) {
-    username.value = ''
-    usernameApiError.value = null
+    name.value = ''
+    description.value = ''
+    nameApiError.value = null
     touched.value = false
-    activeTab.value = 'groups'
-    groupsModel.value = [[], []]
+    activeTab.value = 'users'
+    usersModel.value = [[], []]
     availableCollections.value = []
     pendingGrants.value = []
-    loadGroups()
+    loadUsers()
     loadCollections()
   }
 })
 
-const usernameError = computed(() => {
-  if (usernameApiError.value) {
-    return usernameApiError.value
+const nameError = computed(() => {
+  if (nameApiError.value) {
+    return nameApiError.value
   }
   if (!touched.value) {
     return null
   }
-  return username.value.trim() ? null : 'Username is required'
+  return name.value.trim() ? null : 'Group Name is required'
 })
 
-const isValid = computed(() => !!username.value.trim())
+const isValid = computed(() => !!name.value.trim())
 
 function close() {
   emit('update:visible', false)
@@ -102,14 +103,15 @@ function close() {
 
 async function onSave() {
   touched.value = true
-  if (!isValid.value || saving.value || groupsLoading.value || collectionsLoading.value) {
+  if (!isValid.value || saving.value || usersLoading.value || collectionsLoading.value) {
     return
   }
   saving.value = true
   try {
-    const created = await createPreregisteredUser({
-      username: username.value.trim(),
-      userGroups: groupsModel.value[1].map(g => String(g.userGroupId)),
+    const created = await createUserGroup({
+      name: name.value.trim(),
+      description: description.value.trim(),
+      userIds: usersModel.value[1].map(u => String(u.userId)),
       collectionGrants: pendingGrants.value.map(g => ({
         collectionId: String(g.collectionId),
         roleId: Number(g.roleId),
@@ -120,8 +122,8 @@ async function onSave() {
   }
   catch (err) {
     if (isDuplicateEntryError(err)) {
-      // Keep the modal (and staged selections) open; flag the username field.
-      usernameApiError.value = 'A user with this username already exists.'
+      // Keep the modal (and staged selections) open; flag the name field.
+      nameApiError.value = 'A user group with this name already exists.'
     }
     else {
       triggerError(err)
@@ -152,57 +154,70 @@ const dialogPt = {
     <template #header>
       <div class="modal-header">
         <div class="modal-header-icon">
-          <i class="pi pi-user-plus" />
+          <i class="pi pi-users" />
         </div>
         <div class="modal-header-title">
-          Pre-register User
+          New User Group
         </div>
       </div>
     </template>
 
     <div class="form-body">
-      <div class="labeled-field">
-        <div class="field-header-row">
-          <label class="flabel" for="preregister-username">Username <span class="req-star">*</span></label>
+      <div class="fields-row">
+        <div class="labeled-field">
+          <label class="flabel" for="create-group-name">Group Name <span class="req-star">*</span></label>
+          <InputText
+            id="create-group-name"
+            v-model="name"
+            :invalid="!!nameError"
+            :pt="inputTextPt"
+            maxlength="255"
+            placeholder="Group Name"
+            autocomplete="off"
+            @blur="touched = true"
+            @keyup.enter="onSave"
+          />
+          <div class="field-error" :class="{ 'field-error--hidden': !nameError }">
+            {{ nameError }}
+          </div>
         </div>
-        <InputText
-          id="preregister-username"
-          v-model="username"
-          :invalid="!!usernameError"
-          :pt="inputTextPt"
-          maxlength="255"
-          placeholder="Username"
-          autocomplete="off"
-          @blur="touched = true"
-          @keyup.enter="onSave"
-        />
-        <div class="field-error" :class="{ 'field-error--hidden': !usernameError }">
-          {{ usernameError }}
+        <div class="labeled-field">
+          <label class="flabel" for="create-group-description">Description</label>
+          <InputText
+            id="create-group-description"
+            v-model="description"
+            :pt="inputTextPt"
+            maxlength="255"
+            placeholder="Description"
+            autocomplete="off"
+            @keyup.enter="onSave"
+          />
+          <div class="field-error field-error--hidden" />
         </div>
       </div>
 
       <Tabs v-model:value="activeTab" :pt="tabsPt">
         <TabList :pt="tabListPt">
-          <Tab value="groups" :pt="tabPt">
-            <i class="pi pi-users tab-icon" /> User Groups
+          <Tab value="users" :pt="tabPt">
+            <i class="pi pi-user tab-icon" /> Users
           </Tab>
           <Tab value="grants" :pt="tabPt">
             <i class="pi pi-folder tab-icon" /> Direct Grants
           </Tab>
         </TabList>
         <TabPanels :pt="tabPanelsPt">
-          <TabPanel value="groups" :pt="tabPanelPt">
-            <div v-if="groupsLoading" class="tab-loading">
-              <i class="pi pi-spin pi-spinner" /> Loading user groups...
+          <TabPanel value="users" :pt="tabPanelPt">
+            <div v-if="usersLoading" class="tab-loading">
+              <i class="pi pi-spin pi-spinner" /> Loading users...
             </div>
-            <div v-else-if="groupsError" class="tab-error">
+            <div v-else-if="usersError" class="tab-error">
               <i class="pi pi-exclamation-triangle" />
-              <span>Could not load user groups.</span>
-              <Button label="Retry" icon="pi pi-refresh" size="small" severity="secondary" @click="loadGroups" />
+              <span>Could not load users.</span>
+              <Button label="Retry" icon="pi pi-refresh" size="small" severity="secondary" @click="loadUsers" />
             </div>
-            <UserGroupsPickList
+            <GroupUsersPickList
               v-else
-              v-model="groupsModel"
+              v-model="usersModel"
             />
           </TabPanel>
           <TabPanel value="grants" :pt="tabPanelPt">
@@ -233,7 +248,7 @@ const dialogPt = {
           label="Save"
           :pt="primaryBtnPt"
           :loading="saving"
-          :disabled="!isValid || groupsLoading || collectionsLoading"
+          :disabled="!isValid || usersLoading || collectionsLoading"
           @click="onSave"
         />
       </div>
@@ -277,16 +292,17 @@ const dialogPt = {
   min-height: 0;
 }
 
+.fields-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1rem;
+}
+
 .labeled-field {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-}
-
-.field-header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  min-width: 0;
 }
 
 .flabel {

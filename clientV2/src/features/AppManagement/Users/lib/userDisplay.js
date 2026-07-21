@@ -22,9 +22,7 @@ export function hasAccessed(user) {
   return !!user?.lastAccess
 }
 
-export function sortByName(list) {
-  return [...list].sort((a, b) => a.name.localeCompare(b.name))
-}
+export { sortByName } from '../../lib/displaySort.js'
 
 export function sortedGroupNames(user) {
   return (user?.userGroups ?? [])

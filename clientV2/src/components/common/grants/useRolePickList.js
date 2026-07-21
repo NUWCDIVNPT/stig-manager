@@ -57,6 +57,17 @@ export function useRolePickList({ source, target, roleOptions, emit }) {
     }
   }
 
+  // In-place role change on a target item; replaces it with a copy so the
+  // caller's prop objects are never mutated.
+  function onRoleChange(item, roleId) {
+    if (item.roleId === roleId) {
+      return
+    }
+    const updated = { ...item, roleId }
+    localTarget.value = localTarget.value.map(t => (t === item ? updated : t))
+    selectionTarget.value = selectionTarget.value.map(t => (t === item ? updated : t))
+  }
+
   function onMoveRight(event) {
     // open the role menu; picking a role moves the selection (see onSelectRole)
     addMenu.value.toggle(event)
@@ -96,6 +107,7 @@ export function useRolePickList({ source, target, roleOptions, emit }) {
     addMenu,
     addMenuItems,
     onSelectRole,
+    onRoleChange,
     onMoveRight,
     onMoveLeft,
     onMoveAllRight,
