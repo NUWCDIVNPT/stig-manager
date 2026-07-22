@@ -86,6 +86,7 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
       labelStyle: 'font-weight: 600;',
       name: 'description',
       maxLength: 255,
+      autoCreate: {tag: 'textarea', autocomplete: 'off', maxlength: '255'},
       anchor: '-5',
       value: `Cloned from ${this.sourceName} on ${new Date().toLocaleDateString('en-CA')} by ${curUser.displayName}`.slice(0, 255)
     })
