@@ -93,13 +93,20 @@ export function useStigImportStore() {
       const ext = name.split('.').pop().toLowerCase()
       const displayName = contextName ? `${contextName} → ${name}` : name
 
-      if (ext === 'xml') {
-        const blob = await zipEntry.async('blob')
-        await uploadXml(blob, name, displayName)
+      try {
+        if (ext === 'xml') {
+          const blob = await zipEntry.async('blob')
+          await uploadXml(blob, name, displayName)
+        }
+        else if (ext === 'zip') {
+          const nested = await zipEntry.async('arraybuffer')
+          await processZip(nested, displayName)
+        }
       }
-      else if (ext === 'zip') {
-        const nested = await zipEntry.async('arraybuffer')
-        await processZip(nested, displayName)
+      catch {
+        // a corrupt entry must not abort the rest of the archive
+        const entry = addEntry(displayName)
+        updateEntry(entry, 'error', 'Could not extract file from ZIP archive')
       }
     }
   }

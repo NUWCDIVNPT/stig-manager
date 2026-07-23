@@ -5,6 +5,7 @@ import Dialog from 'primevue/dialog'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { formatSize } from '../../../shared/lib.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../shared/lib/dialogPt.js'
+import { readStoredValue, storeValue } from '../../../shared/lib/localStorage.js'
 import { useFileDropZone } from '../composables/useFileDropZone.js'
 import { useStigImportStore } from '../stores/stigImportStore.js'
 
@@ -14,7 +15,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'imported'])
 
-const CLOBBER_KEY = 'clobberRevision'
+const CLOBBER_KEY = 'stigImportClobber'
 
 const localVisible = computed({
   get: () => props.visible,
@@ -73,7 +74,7 @@ watch(() => props.visible, (open) => {
     }
     store.reset()
     resetDropZone()
-    replaceRevisions.value = localStorage.getItem(CLOBBER_KEY) === 'true'
+    replaceRevisions.value = readStoredValue(CLOBBER_KEY, 'false') === 'true'
     return
   }
 
@@ -115,7 +116,7 @@ watch(() => importState.isDone, (done) => {
 })
 
 watch(replaceRevisions, (v) => {
-  localStorage.setItem(CLOBBER_KEY, String(v))
+  storeValue(CLOBBER_KEY, String(v))
 })
 
 function close() {
@@ -171,6 +172,7 @@ const dialogPt = {
     v-model:visible="localVisible"
     modal
     :draggable="false"
+    :close-on-escape="phase !== 'running'"
     :style="{ width: '780px', maxWidth: '95vw', height: '640px', maxHeight: '95vh' }"
     :pt="dialogPt"
   >

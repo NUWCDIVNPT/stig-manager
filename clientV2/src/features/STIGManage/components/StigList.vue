@@ -7,11 +7,11 @@ import librarySvg from '../../../assets/library.svg'
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import ActionButton from '../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../components/common/ActionToolbar.vue'
+import ClassificationBadge from '../../../components/common/ClassificationBadge.vue'
 import ColumnSearchFilter from '../../../components/common/ColumnSearchFilter.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useTableFooterActions } from '../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
-import MarkingBadge from './MarkingBadge.vue'
 
 const props = defineProps({
   stigs: {
@@ -43,15 +43,24 @@ const titleFilter = ref('')
 const filteredData = computed(() => {
   const idTerm = benchmarkIdFilter.value.trim().toLowerCase()
   const titleTerm = titleFilter.value.trim().toLowerCase()
-  return props.stigs.filter((s) => {
-    if (idTerm && !s.benchmarkId?.toLowerCase().includes(idTerm)) {
-      return false
-    }
-    if (titleTerm && !s.title?.toLowerCase().includes(titleTerm)) {
-      return false
-    }
-    return true
-  })
+  return props.stigs
+    .filter((s) => {
+      if (idTerm && !s.benchmarkId?.toLowerCase().includes(idTerm)) {
+        return false
+      }
+      if (titleTerm && !s.title?.toLowerCase().includes(titleTerm)) {
+        return false
+      }
+      return true
+    })
+    // materialize collectionCount/earlierRevisions so those columns' fields
+    // sort and export; rows become shallow copies, which dataKey-based
+    // selection tolerates
+    .map(s => ({
+      ...s,
+      collectionCount: s.collectionIds?.length ?? 0,
+      earlierRevisions: s.revisionStrs?.slice(1).join(', ') ?? '',
+    }))
 })
 
 const filtersActive = computed(() => filteredData.value.length !== props.stigs.length)
@@ -232,7 +241,7 @@ function onRemoveAll() {
           <template #body="{ data }">
             <div class="benchmark-id-cell">
               <span :title="data.benchmarkId">{{ data.benchmarkId }}</span>
-              <MarkingBadge :marking="data.marking" />
+              <ClassificationBadge v-if="data.marking" :level="data.marking" />
             </div>
           </template>
         </Column>
@@ -254,14 +263,19 @@ function onRemoveAll() {
           </template>
         </Column>
 
-        <Column :pt="centerBorderPt" style="width: 7%; text-align: center;">
+        <Column
+          field="status"
+          sortable
+          :pt="centerBorderPt"
+          style="width: 7%; text-align: center;"
+        >
           <template #header>
             <span style="display: inline-block; text-align: center; width: 100%;">
               Status
             </span>
           </template>
-          <template #body>
-            <span class="dim-value">—</span>
+          <template #body="{ data }">
+            <span :class="{ 'dim-value': !data.status }">{{ data.status || '—' }}</span>
           </template>
         </Column>
 
@@ -297,7 +311,12 @@ function onRemoveAll() {
           </template>
         </Column>
 
-        <Column :pt="centerWrappedBorderPt" style="width: 10%; text-align: center;">
+        <Column
+          field="earlierRevisions"
+          sortable
+          :pt="centerWrappedBorderPt"
+          style="width: 10%; text-align: center;"
+        >
           <template #header>
             <span style="display: inline-block; text-align: center; line-height: 1.1; white-space: normal; width: 100%;">
               Earlier Revisions
@@ -338,8 +357,8 @@ function onRemoveAll() {
             </span>
           </template>
           <template #body="{ data }">
-            <span :class="{ 'dim-value': !(data.collectionIds?.length ?? data.collectionCount ?? data.collections) }">
-              {{ data.collectionIds?.length ?? data.collectionCount ?? data.collections ?? '—' }}
+            <span :class="{ 'dim-value': !data.collectionCount }">
+              {{ data.collectionCount }}
             </span>
           </template>
         </Column>
@@ -440,7 +459,7 @@ function onRemoveAll() {
 }
 
 .rev-dropdown__chevron {
-  font-size: 0.72rem;
+  font-size: 1rem;
   color: var(--color-text-dim);
 }
 </style>
@@ -471,7 +490,7 @@ function onRemoveAll() {
   border-radius: 6px;
   cursor: pointer;
   color: var(--color-text-primary);
-  font-size: 0.98rem;
+  font-size: 1.05rem;
   transition: background 0.1s;
   user-select: none;
 }
@@ -482,7 +501,7 @@ function onRemoveAll() {
 
 .rev-menu__icon {
   color: var(--color-action-red);
-  font-size: 0.9rem;
+  font-size: 1rem;
   flex-shrink: 0;
 }
 
@@ -497,7 +516,7 @@ function onRemoveAll() {
   gap: 0.25rem;
   padding: 2px 7px;
   border-radius: 4px;
-  font-size: 0.78rem;
+  font-size: 1rem;
   white-space: nowrap;
   flex-shrink: 0;
 }
