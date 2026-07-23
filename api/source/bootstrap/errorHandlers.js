@@ -18,7 +18,7 @@ function configureErrorHandlers(app) {
     }
 
     res.errorBody = { error: err.message, code: err.code, detail: err.detail}
-    if (err.status === 500 || !(err.status)) res.errorBody.stack = err.stack
+    if (err.status === 500 || !(err.status)) logger.writeError('rest', 'error', { stack: err.stack })
     if (!res._headerSent) {
       res.status(err.status || 500).header(err.headers).json(res.errorBody)
     }
