@@ -79,7 +79,7 @@ export function useLiveApplyDetailPanel({
       rebuildGrantModels(record)
       return record
     },
-    { initialState: null, immediate: false },
+    { initialState: null, immediate: false, onError: null },
   )
 
   // Refetch only when the selected id changes; table reloads re-point the

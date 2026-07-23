@@ -16,3 +16,9 @@ export const primaryBtnPt = {
 export const secondaryBtnPt = {
   root: { style: 'padding: 0.5rem 1.25rem; border-radius: 6px; border: 1px solid var(--color-border-default); background: transparent; color: var(--color-text-primary); display: flex; align-items: center; gap: 0.5rem;' },
 }
+
+export const dangerBtnPt = {
+  root: ({ context }) => ({
+    style: `border: 1px solid ${context.disabled ? 'var(--color-border-default)' : 'var(--color-action-red)'}; padding: 0.5rem 1.5rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;`,
+  }),
+}
