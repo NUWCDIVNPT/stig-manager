@@ -6776,10 +6776,13 @@ components:
         assets:
           type: boolean
           default: true
+          deprecated: true
+          enum:
+            - true
           description: >-
-            Clone the source Collection's Assets and their core properties. If
-            this option is not enabled then the stagMappings and pinRevisions
-            options are ignored.
+            Deprecated. The source Collection's Assets and their core
+            properties are always cloned. This option is retained for
+            compatibility and only accepts true.
         grants:
           default: true
           type: boolean
@@ -6790,10 +6793,13 @@ components:
         labels:
           type: boolean
           default: true
+          deprecated: true
+          enum:
+            - true
           description: >-
-            Clone the source Collection's available labels. You must enable this
-            option AND the assets option for labels to be mapped to Assets in
-            the clone.
+            Deprecated. The source Collection's Labels and their Asset mappings
+            are always cloned. This option is retained for compatibility and
+            only accepts true.
         pinRevisions:
           default: matchSource
           type: string
@@ -6821,11 +6827,8 @@ components:
             associated with a non-default Revision of a
             STIG.<br><br><b>withoutReviews:</b> Assets will be cloned with their
             current STIG assignments but NO stored Reviews will be cloned. All
-            Metrics will be set to zero.<br><br> <b>none:</b> Assets will be
-            cloned with only their core properties and no STIG assignments or
-            Reviews. The pinRevisions option will be ignored.
+            Metrics will be set to zero.
           enum:
-            - none
             - withReviews
             - withoutReviews
     CollectionCloneRequest:

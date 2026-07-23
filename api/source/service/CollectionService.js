@@ -1945,27 +1945,19 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
     }
     collectionQueries.push('insertOwnerGrant')
 
-    if (options.labels) {
-      collectionQueries.push('cloneLabels')
+    // Labels, Assets, and STIG mappings are always cloned
+    collectionQueries.push('cloneLabels')
+    collectionQueries.push('cloneAssets', 'dropAssetMap', 'createAssetMap')
+    collectionQueries.push('dropLabelMap', 'createLabelMap', 'cloneAssetLabels')
+    collectionQueries.push(options.stigMappings === 'withReviews' ? 'cloneStigMappingsWithReviews' : 'cloneStigMappingsWithoutReviews')
+    if (options.grants) {
+      collectionQueries.push('cloneGrantAcls')
+      // collectionQueries.push('cloneRestrictedUserGroupGrants')
     }
-
-    if (options.assets) {
-      collectionQueries.push('cloneAssets', 'dropAssetMap', 'createAssetMap')
-      if (options.labels) {
-        collectionQueries.push('dropLabelMap', 'createLabelMap', 'cloneAssetLabels')
-      }
-      if (options.stigMappings !== 'none') {
-        collectionQueries.push(options.stigMappings === 'withReviews' ? 'cloneStigMappingsWithReviews' : 'cloneStigMappingsWithoutReviews')
-        if (options.grants) {
-          collectionQueries.push('cloneGrantAcls')
-          // collectionQueries.push('cloneRestrictedUserGroupGrants')
-        }
-        collectionQueries.push(options.pinRevisions === 'matchSource' ? 'cloneRevisionsMatchSource' : 'cloneRevisionsSourceDefaults')
-        collectionQueries.push('insertDefaultRev')
-      }
-      if (options.stigMappings === 'withReviews') {
-        reviewQueries.push('dropReviewIdList', 'createReviewIdList', 'cloneReviews')
-      }
+    collectionQueries.push(options.pinRevisions === 'matchSource' ? 'cloneRevisionsMatchSource' : 'cloneRevisionsSourceDefaults')
+    collectionQueries.push('insertDefaultRev')
+    if (options.stigMappings === 'withReviews') {
+      reviewQueries.push('dropReviewIdList', 'createReviewIdList', 'cloneReviews')
     }
 
     async function transactionCollection () {
@@ -2070,6 +2062,14 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
   }
   finally {
     if (typeof connection !== 'undefined') {
+      // Temporary tables are scoped to the pooled connection, not the transaction.
+      // Drop them so a future request that reuses this connection cannot see stale data.
+      try {
+        await connection.query('DROP TEMPORARY TABLE IF EXISTS t_grantid_map, t_assetid_map, t_clid_map, t_reviewId_list')
+      }
+      catch (e) {
+        // the connection may be unusable after an earlier error; do not mask that error
+      }
       await connection.release()
     }
   }
@@ -2492,6 +2492,14 @@ exports.exportToCollection = async function ({srcCollectionId, dstCollectionId, 
   }
   finally {
     if (typeof connection !== 'undefined') {
+      // Temporary tables are scoped to the pooled connection, not the transaction.
+      // Drop them so a future request that reuses this connection cannot see stale data.
+      try {
+        await connection.query('DROP TEMPORARY TABLE IF EXISTS t_arg, t_collection_setting, t_src_reviewId, t_assetId_map, t_incoming_review')
+      }
+      catch (e) {
+        // the connection may be unusable after an earlier error; do not mask that error
+      }
       await connection.release()
     }
   }
