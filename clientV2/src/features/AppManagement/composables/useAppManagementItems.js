@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { isAppDataEnabled } from '../Appdata/lib/appDataFlag.js'
 
 const items = [
   {
@@ -53,7 +54,11 @@ const items = [
 ]
 
 export function useAppManagementItems() {
-  const appManagementItems = ref(items)
+  // The Export/Import Data page is gated by the server's experimental flag;
+  // hiding it here is a convenience only — the API endpoints independently
+  // enforce the flag and admin elevation.
+  const visibleItems = items.filter(item => item.key !== 'ExportImportManage' || isAppDataEnabled())
+  const appManagementItems = ref(visibleItems)
 
   return {
     appManagementItems,

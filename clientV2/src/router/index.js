@@ -11,7 +11,7 @@ const UserGroupsAdmin = () => import('../features/AppManagement/UserGroups/compo
 const StigManage = () => import('../features/STIGManage/components/STIGManage.vue')
 const ServiceJobs = () => import('../features/ServiceJobs/components/ServiceJobs.vue')
 const AppInfo = () => import('../features/AppInfo/components/AppInfo.vue')
-const ExportImportManage = () => import('../features/ExportImportManage/components/ExportImportManage.vue')
+const AppData = () => import('../features/AppManagement/Appdata/components/AppData.vue')
 const StigLibrary = () => import('../features/STIGLibrary/components/StigLibrary.vue')
 const AppManagementSelection = () => import('../features/AppManagement/components/AppManagementSelection.vue')
 const CollectionsAdmin = () => import('../features/AppManagement/Collections/components/Collections.vue')
@@ -207,8 +207,8 @@ const routes = [
   {
     path: '/app-management/transfer',
     name: 'admin-transfer',
-    component: ExportImportManage,
-    meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Export & Import' }] },
+    component: AppData,
+    meta: { requiresAdmin: true, requiresAppDataFlag: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Export & Import' }] },
   },
   {
     path: '/assets/:assetId',
