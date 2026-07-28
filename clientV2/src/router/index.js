@@ -8,7 +8,7 @@ const CollectionView = () => import('../features/CollectionView/components/Colle
 const MetaCollectionView = () => import('../features/MetaCollectionView/components/MetaCollectionView.vue')
 const UsersAdmin = () => import('../features/AppManagement/Users/components/Users.vue')
 const UserGroupsAdmin = () => import('../features/AppManagement/UserGroups/components/UserGroups.vue')
-const StigManage = () => import('../features/STIGManage/components/STIGManage.vue')
+const StigManage = () => import('../features/AppManagement/STIGManage/components/STIGManage.vue')
 const ServiceJobs = () => import('../features/ServiceJobs/components/ServiceJobs.vue')
 const AppInfo = () => import('../features/AppInfo/components/AppInfo.vue')
 const ExportImportManage = () => import('../features/ExportImportManage/components/ExportImportManage.vue')

@@ -1,6 +1,6 @@
 import { ref } from 'vue'
-import { getHttpStatus } from '../../../shared/api/apiClient.js'
-import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { getHttpStatus } from '../../../../shared/api/apiClient.js'
+import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { deleteRevisionByString, deleteStigById, fetchStigAdmin } from '../api/stigsAdminApi.js'
 
 function stigInUse(stig) {

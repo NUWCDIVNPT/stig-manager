@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { fetchStigsAdmin } from '../api/stigsAdminApi.js'
 import { useStigRemoval } from '../composables/useStigRemoval.js'
 import ImportStigModal from './ImportStigModal.vue'
