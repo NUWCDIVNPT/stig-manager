@@ -205,7 +205,7 @@ const routes = [
     meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'App Info' }] },
   },
   {
-    path: '/app-management/transfer',
+    path: '/app-management/appdata',
     name: 'admin-transfer',
     component: AppData,
     meta: { requiresAdmin: true, requiresAppDataFlag: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Export & Import' }] },
