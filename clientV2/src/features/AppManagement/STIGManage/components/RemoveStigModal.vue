@@ -3,8 +3,8 @@ import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
 import { computed, ref, watch } from 'vue'
-import shieldGreenCheck from '../../../assets/shield-green-check.svg'
-import { dangerBtnPt, importDialogPt, secondaryBtnPt } from '../../../shared/lib/dialogPt.js'
+import shieldGreenCheck from '../../../../assets/shield-green-check.svg'
+import { dangerBtnPt, importDialogPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },

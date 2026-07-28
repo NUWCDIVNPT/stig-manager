@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import NotificationCard from '../../../components/global/NotificationCard.vue'
+import NotificationCard from '../../../../components/global/NotificationCard.vue'
 import { useStigImportStore } from '../stores/stigImportStore.js'
 
 const props = defineProps({
@@ -11,18 +11,23 @@ const props = defineProps({
 defineEmits(['dismiss'])
 
 const store = useStigImportStore()
+const counts = store.counts
 const router = useRouter()
 const route = useRoute()
 
 const progressPct = computed(() => {
-  if (!props.state.totalCount) {
+  if (!counts.value.total) {
     return 0
   }
-  return Math.round((props.state.completedCount / props.state.totalCount) * 100)
+  return Math.round((counts.value.processed / counts.value.total) * 100)
 })
 
-const errorCount = computed(() =>
-  props.state.logEntries.filter(entry => entry.status === 'error').length)
+const headerTitle = computed(() => {
+  if (props.state.isDone) {
+    return 'STIG Import Complete'
+  }
+  return props.state.paused ? 'STIG Import Paused' : 'Importing STIGs…'
+})
 
 function viewResults() {
   store.requestReopen()
@@ -40,10 +45,11 @@ function goStigManagement() {
 <template>
   <NotificationCard @dismiss="$emit('dismiss')">
     <template #header>
-      <span v-if="!state.isDone" class="pi pi-spin pi-spinner header-icon" />
-      <span v-else-if="errorCount" class="pi pi-exclamation-circle header-icon header-icon--warn" />
+      <span v-if="!state.isDone && state.paused" class="pi pi-pause header-icon" />
+      <span v-else-if="!state.isDone" class="pi pi-spin pi-spinner header-icon" />
+      <span v-else-if="counts.failed" class="pi pi-exclamation-circle header-icon header-icon--warn" />
       <span v-else class="pi pi-check-circle header-icon header-icon--done" />
-      <span class="header-title">{{ state.isDone ? 'STIG Import Complete' : 'Importing STIGs…' }}</span>
+      <span class="header-title">{{ headerTitle }}</span>
     </template>
     <template v-if="!state.isDone" #close>
       <!-- hide close button while in progress -->
@@ -54,14 +60,24 @@ function goStigManagement() {
         <div class="progress-fill" :style="{ width: `${progressPct}%` }" />
       </div>
       <div class="progress-meta">
-        <span class="meta-count">{{ state.completedCount }} / {{ state.totalCount }} files</span>
-        <span class="meta-text">{{ state.progressText }}</span>
+        <span class="meta-count">{{ counts.processed }} / {{ counts.total }} files</span>
+        <span class="meta-text">{{ state.paused ? 'Paused' : state.currentLabel }}</span>
+      </div>
+      <div class="action-row">
+        <button v-if="!state.paused" class="action-btn" @click="store.pause()">
+          <span class="pi pi-pause" />
+          Pause
+        </button>
+        <button v-else class="action-btn" @click="store.resume()">
+          <span class="pi pi-play" />
+          Resume
+        </button>
       </div>
     </template>
     <template v-else>
       <div class="progress-meta">
         <span class="meta-count">
-          {{ state.totalCount }} file{{ state.totalCount !== 1 ? 's' : '' }} processed{{ errorCount ? `, ${errorCount} error${errorCount !== 1 ? 's' : ''}` : '' }}
+          {{ counts.processed }} file{{ counts.processed !== 1 ? 's' : '' }} processed{{ counts.failed ? `, ${counts.failed} error${counts.failed !== 1 ? 's' : ''}` : '' }}
         </span>
       </div>
       <div class="action-row">
@@ -146,7 +162,7 @@ function goStigManagement() {
   justify-content: center;
   gap: 0.4rem;
   padding: 0.35rem 0.75rem;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 500;
   color: var(--color-action-blue);
   background: color-mix(in srgb, var(--color-action-blue-dark) 10%, transparent);

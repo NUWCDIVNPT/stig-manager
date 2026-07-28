@@ -1,4 +1,4 @@
-import { apiFetch } from '../../../shared/api/apiClient.js'
+import { apiFetch } from '../../../../shared/api/apiClient.js'
 
 export function fetchStigAdmin(benchmarkId) {
   return apiFetch(`/stigs/${encodeURIComponent(benchmarkId)}?elevate=true`, { method: 'GET' })
