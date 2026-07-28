@@ -38,7 +38,7 @@ const badgeClass = computed(() => LEVEL_TO_CLASS[props.level])
   align-items: center;
   padding: 0 0.45rem;
   border-radius: 3px;
-  font-size: 0.8rem;
+  font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   line-height: 1.5;
