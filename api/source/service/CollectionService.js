@@ -1946,16 +1946,20 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
     collectionQueries.push('insertOwnerGrant')
 
     // Labels, Assets, and STIG mappings are always cloned
-    collectionQueries.push('cloneLabels')
-    collectionQueries.push('cloneAssets', 'dropAssetMap', 'createAssetMap')
-    collectionQueries.push('dropLabelMap', 'createLabelMap', 'cloneAssetLabels')
-    collectionQueries.push(options.stigMappings === 'withReviews' ? 'cloneStigMappingsWithReviews' : 'cloneStigMappingsWithoutReviews')
+    collectionQueries.push(
+      'cloneLabels',
+      'cloneAssets', 'dropAssetMap', 'createAssetMap',
+      'dropLabelMap', 'createLabelMap', 'cloneAssetLabels',
+      options.stigMappings === 'withReviews' ? 'cloneStigMappingsWithReviews' : 'cloneStigMappingsWithoutReviews'
+    )
     if (options.grants) {
+      // cloneGrantAcls joins t_assetid_map and t_clid_map, so it must follow createAssetMap and createLabelMap
       collectionQueries.push('cloneGrantAcls')
-      // collectionQueries.push('cloneRestrictedUserGroupGrants')
     }
-    collectionQueries.push(options.pinRevisions === 'matchSource' ? 'cloneRevisionsMatchSource' : 'cloneRevisionsSourceDefaults')
-    collectionQueries.push('insertDefaultRev')
+    collectionQueries.push(
+      options.pinRevisions === 'matchSource' ? 'cloneRevisionsMatchSource' : 'cloneRevisionsSourceDefaults',
+      'insertDefaultRev'
+    )
     if (options.stigMappings === 'withReviews') {
       reviewQueries.push('dropReviewIdList', 'createReviewIdList', 'cloneReviews')
     }
