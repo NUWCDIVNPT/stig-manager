@@ -492,10 +492,10 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone - test vari
                     }
                 }
             })
-            it('clone test collection - labels: false is rejected; labels are always cloned (issue 2089)', async () => {
+            it('clone test collection - deprecated option labels: false is rejected by spec validation (issue 2089)', async () => {
 
                 const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/clone`
-                const requestBody = JSON.stringify({
+                const res = await utils.executeRequest(url, 'POST', user.token, {
                     "name": "Clone_X" + utils.getUUIDSubString(10),
                     "description": "clone of test collection x",
                     "options": {
@@ -505,22 +505,14 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone - test vari
                       "stigMappings": "withReviews",
                       "pinRevisions": "matchSource"
                     }
-                  })
-                const options = {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${user.token}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: requestBody,
-                }
-                const res = await fetch(url, options)
+                })
                 expect(res.status).to.eql(400)
+                expect(res.body.error, "validation error identifies the labels option").to.include('options/labels')
             })
-            it('clone test collection - assets: false is rejected; assets are always cloned', async () => {
+            it('clone test collection - deprecated option assets: false is rejected by spec validation', async () => {
 
                 const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/clone`
-                const requestBody = JSON.stringify({
+                const res = await utils.executeRequest(url, 'POST', user.token, {
                     "name": "Clone_X" + utils.getUUIDSubString(10),
                     "description": "clone of test collection x",
                     "options": {
@@ -530,22 +522,14 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone - test vari
                       "stigMappings": "withReviews",
                       "pinRevisions": "matchSource"
                     }
-                  })
-                const options = {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${user.token}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: requestBody,
-                }
-                const res = await fetch(url, options)
+                })
                 expect(res.status).to.eql(400)
+                expect(res.body.error, "validation error identifies the assets option").to.include('options/assets')
             })
-            it('clone test collection - stigMappings: none is rejected; assignments are always cloned', async () => {
+            it('clone test collection - removed option stigMappings: none is rejected by spec validation', async () => {
 
                 const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/clone`
-                const requestBody = JSON.stringify({
+                const res = await utils.executeRequest(url, 'POST', user.token, {
                     "name": "Clone_X" + utils.getUUIDSubString(10),
                     "description": "clone of test collection x",
                     "options": {
@@ -553,17 +537,9 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone - test vari
                       "stigMappings": "none",
                       "pinRevisions": "matchSource"
                     }
-                  })
-                const options = {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${user.token}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: requestBody,
-                }
-                const res = await fetch(url, options)
+                })
                 expect(res.status).to.eql(400)
+                expect(res.body.error, "validation error identifies the stigMappings option").to.include('options/stigMappings')
             })
             it('clone test collection - grant ACLs are cloned and remapped to the new Collection (issue 2089)', async () => {
 
