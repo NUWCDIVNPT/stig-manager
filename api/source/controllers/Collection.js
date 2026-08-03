@@ -1051,10 +1051,7 @@ module.exports.cloneCollection = async function (req, res, next) {
         grants: true,
         stigMappings: 'withReviews',
         pinRevisions: 'matchSource',
-        ...req.body.options,
-        // Assets and Labels are always cloned. The deprecated request options are pinned to true by the specification.
-        labels: true,
-        assets: true
+        ...req.body.options
       }
 
       res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
