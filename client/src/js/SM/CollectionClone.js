@@ -97,11 +97,7 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
       boxLabel: 'Grants',
       name: 'grants',
       checked: true,
-      helpText: SM.TipContent.CloneOptions.Grants,
-      listeners: {
-        check: handleInput
-      }
-
+      helpText: SM.TipContent.CloneOptions.Grants
     })
     const cbGroup = new Ext.form.CheckboxGroup({
       fieldLabel: 'Include',
@@ -119,10 +115,7 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
       data: [
         ['withReviews', 'Assignments and Reviews'],
         ['withoutReviews', 'Assignments but not Reviews']
-      ],
-      listeners: {
-        select: handleInput
-      }
+      ]
     })
     const pinRevisionsComboBox = new SM.CollectionClone.ComboBox({
       name: 'pinRevisions',
