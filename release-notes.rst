@@ -1,3 +1,10 @@
+1.6.15
+-------
+
+Changes:
+
+  - (Dependencies) Update ``undici`` to v6.28.0 and ``fast-uri`` to v3.1.5
+
 1.6.14
 -------
 
