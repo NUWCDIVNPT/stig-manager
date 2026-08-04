@@ -1,5 +1,5 @@
-1.6.13-latest
---------------
+1.6.14
+-------
 
 Changes:
 
@@ -7,8 +7,10 @@ Changes:
   - (API) Updated the tested MySQL release series to 8.4.x. A warning is now logged at startup when the MySQL release is older than 8.4.x.
   - (API) Cloning a collection now always includes its assets, labels, and STIG assignments. The clone options ``assets`` and ``labels`` are deprecated and accept only ``true``, and the ``stigMappings`` value ``none`` has been removed (#2089).
   - (API) Temporary tables created by collection clone and export operations are now dropped before the pooled database connection is released.
+  - (API) Scoped the default STIG revision recalculation to the affected collection (and benchmark, where applicable) when deleting assets, updating an asset, or removing a STIG assignment, instead of recalculating across all collections (#2123).
   - (UI) Simplified the collection clone dialog to match the new clone behavior.
   - (UI) Added length limits to collection name and description fields in the clone and manage dialogs to prevent requests the API would reject, and fixed an error-handling bug in the create collection dialog.
+  - (Dependencies) Various security and maintenance updates
 
 Note 1: The web client now requests the ``query`` response mode from the OIDC provider by default, instead of ``fragment``. Most deployments require no action — the client handles both response modes and no OIDC provider reconfiguration is needed. Deployments that explicitly set ``STIGMAN_CLIENT_RESPONSE_MODE`` should plan to remove it: the variable is deprecated, a warning is now logged at startup when it is set, and the variable and support for the ``fragment`` response mode will be removed in a future release.
 
