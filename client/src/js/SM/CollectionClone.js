@@ -73,7 +73,9 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
       labelStyle: 'font-weight: 600;',
       name: 'name',
       allowBlank: false,
-      value: this.sourceName ? `Clone of ${this.sourceName}` : '',
+      maxLength: 45,
+      autoCreate: {tag: 'input', type: 'text', size: '20', autocomplete: 'off', maxlength: '45'},
+      value: this.sourceName ? `Clone of ${this.sourceName}`.slice(0, 45) : '',
       anchor: '-5',
       listeners: {
         keyup: handleInput
@@ -83,46 +85,26 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
       fieldLabel: 'Description',
       labelStyle: 'font-weight: 600;',
       name: 'description',
+      maxLength: 255,
       anchor: '-5',
-      value: `Cloned from ${this.sourceName} on ${new Date().toLocaleDateString('en-CA')} by ${curUser.displayName}`
+      value: `Cloned from ${this.sourceName} on ${new Date().toLocaleDateString('en-CA')} by ${curUser.displayName}`.slice(0, 255),
+      listeners: {
+        // set the DOM maxlength here rather than with autoCreate, which would drop the default height style
+        render: ta => ta.el.dom.maxLength = 255
+      }
     })
     const grantsCb = new SM.Global.HelperCheckbox({
       boxLabel: 'Grants',
       name: 'grants',
       checked: true,
-      helpText: SM.TipContent.CloneOptions.Grants,
-      listeners: {
-        check: handleInput
-      }
-
-    })
-    const labelsCb = new SM.Global.HelperCheckbox({
-      boxLabel: 'Labels',
-      name: 'labels',
-      checked: true,
-      helpText: SM.TipContent.CloneOptions.Labels,
-      listeners: {
-        check: handleInput
-      }
-    })
-    const assetsCb = new SM.Global.HelperCheckbox({
-      boxLabel: 'Assets',
-      name: 'assets',
-      checked: true,
-      helpText: SM.TipContent.CloneOptions.Assets,
-      listeners: {
-        check: handleInput
-      }
+      helpText: SM.TipContent.CloneOptions.Grants
     })
     const cbGroup = new Ext.form.CheckboxGroup({
       fieldLabel: 'Include',
-      allowBlank: false,
       name: 'include',
       columns: 1,
       items: [
-        grantsCb,
-        labelsCb,
-        assetsCb
+        grantsCb
       ]
     })
     const stigMappingsComboBox = new SM.CollectionClone.ComboBox({
@@ -132,12 +114,8 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
       helpText: SM.TipContent.CloneOptions.Stigs,
       data: [
         ['withReviews', 'Assignments and Reviews'],
-        ['withoutReviews', 'Assignments but not Reviews'],
-        ['none', 'Do not clone assignments or Reviews']
-      ],
-      listeners: {
-        select: handleInput
-      }
+        ['withoutReviews', 'Assignments but not Reviews']
+      ]
     })
     const pinRevisionsComboBox = new SM.CollectionClone.ComboBox({
       name: 'pinRevisions',
@@ -161,17 +139,13 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
         description: descriptionField.getValue(),
         options: {
           grants: grantsCb.getValue(),
-          labels: labelsCb.getValue(),
-          assets: assetsCb.getValue(),
           stigMappings: stigMappingsComboBox.getValue(),
           pinRevisions: pinRevisionsComboBox.getValue()
         }
       }
     }
     function handleInput () {
-      stigMappingsComboBox.setDisabled(!assetsCb.checked)
-      pinRevisionsComboBox.setDisabled(!assetsCb.checked || stigMappingsComboBox.getValue() === 'none')
-      cloneBtn.setDisabled(nameField.getValue() === '' || (!assetsCb.checked && !labelsCb.checked && !grantsCb.checked))
+      cloneBtn.setDisabled(!nameField.isValid())
     }
     const config = {
       baseCls: 'x-plain',
