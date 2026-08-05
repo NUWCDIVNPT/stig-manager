@@ -3,7 +3,6 @@ const path = require('node:path')
 const writer = require('../utils/writer')
 const logger = require('../utils/logger')
 const config = require('../utils/config')
-const history = require('connect-history-api-fallback');
 const fs = require('node:fs')
 
 function serveClient(app) {
@@ -158,8 +157,6 @@ function serveStaticV2Files(app){
     
     const expressStatic = express.static(staticPath)
 
-    // app.use(history())
-    
     // Intercept index.html requests to inject base path
     app.use('/client-v2', (req, res, next) => {
         req.component = 'static'
