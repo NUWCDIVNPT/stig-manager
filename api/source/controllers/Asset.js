@@ -103,7 +103,7 @@ module.exports.deleteAsset = async function deleteAsset (req, res, next) {
     let projections = req.query.projection
     const { assetId, grant } = await getAssetInfoAndVerifyAccess(req)
     const response = await AssetService.getAsset({assetId, projections, grant})
-    await AssetService.deleteAsset(assetId, req.userObject.userId, res.svcStatus)
+    await AssetService.deleteAsset(assetId, req.userObject.userId, grant.collectionId, res.svcStatus)
     res.json(response)
   }
   catch (err) {
@@ -358,6 +358,7 @@ module.exports.replaceAsset = async function replaceAsset (req, res, next) {
       assetId,
       body,
       transferring,
+      currentCollectionId: currentAsset.collection.collectionId,
       svcStatus: res.svcStatus
     })
     const asset = await AssetService.getAsset({assetId, projections, grant})
@@ -560,7 +561,7 @@ module.exports.patchAssets = async function (req, res, next) {
     if (!patchRequest.assetIds.every( a => collectionAssets.includes(a))) {
       throw new SmError.PrivilegeError('One or more assetId is not a Collection member.')
     }
-    await AssetService.deleteAssets(patchRequest.assetIds, req.userObject.userId, res.svcStatus)
+    await AssetService.deleteAssets(patchRequest.assetIds, req.userObject.userId, collectionId, res.svcStatus)
     res.json({
       operation: 'deleted',
       assetIds: patchRequest.assetIds

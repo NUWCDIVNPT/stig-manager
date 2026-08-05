@@ -202,13 +202,13 @@ describe('Boot with old mysql', function () {
     it('should have exited with code 1', function () {
       expect(api.process.exitCode).to.equal(1)
     })
-  })  
+  })
 
   describe('dependency failure count', function () {
     it('db, check message', function () {
       const failures = api.logRecords.filter(r => r.type === 'preflight' && r.component === 'mysql' && r.data.success === false)
       expect(failures).to.have.lengthOf(1)
-      expect(failures[0].data.message).to.equal('MySQL release 8.0.23 is too old. Update to release 8.0.24 or later.')
+      expect(failures[0].data.message).to.equal('MySQL release 8.0.23 is too old. Update to the latest MySQL 8.4.x release.')
     })
   })
 
@@ -224,6 +224,60 @@ describe('Boot with old mysql', function () {
       const stateChanged = api.logRecords.filter(r => r.type === 'state-changed')
       expect(stateChanged).to.have.lengthOf(1)
       expect(stateChanged[0].data.currentState).to.eql('fail')
+    })
+  })
+})
+
+describe('Boot with untested mysql', function () {
+  let api
+  let mysql
+  let oidc
+
+  before(async function () {
+    this.timeout(60000)
+    oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
+    await oidc.start({port: oidcPort})
+    mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
+    api = await spawnApiPromise({
+      resolveOnType: 'started',
+      env:{
+        STIGMAN_API_PORT: apiPort,
+        STIGMAN_DEPENDENCY_RETRIES: 2,
+        STIGMAN_DB_PASSWORD: 'stigman',
+        STIGMAN_DB_PORT: dbPort,
+        STIGMAN_OIDC_PROVIDER: `http://localhost:${oidcPort}`
+      }
+    })
+  })
+
+  after(async function () {
+    this.timeout(60000)
+    if (api) await api.stop().catch(() => {})
+    if (mysql) await mysql.stop().catch(() => {})
+    if (oidc) await oidc.stop().catch(() => {})
+    if (api) addContext(this, {title: 'api-log', value: api.logRecords})
+  })
+
+  describe('untested version warning', function () {
+    it('db, check message', function () {
+      const warnings = api.logRecords.filter(r => r.type === 'version' && r.component === 'mysql')
+      expect(warnings).to.have.lengthOf(1)
+      expect(warnings[0].data.message).to.equal('MySQL release 8.0.24 is not tested with STIG Manager and support will be removed in a future release. Update to the latest MySQL 8.4.x release.')
+    })
+  })
+
+  describe('dependency success count', function () {
+    it('db', function () {
+      const successes = api.logRecords.filter(r => r.type === 'preflight' && r.component === 'mysql' && r.data.success === true)
+      expect(successes).to.have.lengthOf(1)
+    })
+  })
+
+  describe('state-changed message', function () {
+    it('currentState = "available"', function () {
+      const stateChanged = api.logRecords.filter(r => r.type === 'state-changed')
+      expect(stateChanged).to.have.lengthOf(1)
+      expect(stateChanged[0].data.currentState).to.eql('available')
     })
   })
 })

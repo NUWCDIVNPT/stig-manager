@@ -10,6 +10,7 @@ const semverCoerce = require('semver/functions/coerce')
 const Importer = require('./migrations/lib/mysql-import.js')
 const state = require('../utils/state')
 const minMySqlVersion = '8.0.24'
+const testedMySqlSeries = '8.4'
 let _this = this
 let initAttempt = 0
 let NetKeepAlive
@@ -48,12 +49,34 @@ async function getTableCount () {
 }
 
 /**
- * Checks if the provided MySQL version is acceptable.
+ * Checks if the provided MySQL version meets the minimum version requirement.
  * @param {string} version - The MySQL version to check.
  * @returns {boolean} True if the version is acceptable, false otherwise.
  */
-function isOkVersion(version) {
+function isMinVersion(version) {
   return semverGte(semverCoerce(version), semverCoerce(minMySqlVersion))
+}
+
+/**
+ * Checks if the provided MySQL version is from a release series tested with STIG Manager.
+ * @param {string} version - The MySQL version to check.
+ * @returns {boolean} True if the version is from a tested series, false otherwise.
+ */
+function isTestedSeries(version) {
+  return semverGte(semverCoerce(version), semverCoerce(testedMySqlSeries))
+}
+
+/**
+ * Logs a warning if the provided MySQL version is not from a tested release series.
+ * @param {string} version - The MySQL version.
+ */
+function warnUntestedVersion(version) {
+  if (!isTestedSeries(version)) {
+    logger.writeWarn('mysql', 'version', {
+      version,
+      message: `MySQL release ${version} is not tested with STIG Manager and support will be removed in a future release. Update to the latest MySQL ${testedMySqlSeries}.x release.`
+    })
+  }
 }
 
 /**
@@ -221,15 +244,14 @@ async function poolMonitorRetryFn () {
     await preflightConnection()
     logger.writeInfo('mysql', 'restore', { message: `connection suceeded` })
     const version = await getMySqlVersion()
-    if (!isOkVersion(version)) {
+    if (!isMinVersion(version)) {
       const connection = await _this.pool.getConnection()
       connection.connection.destroy()
-      throw new Error(`MySQL release ${version} is too old. Update to release ${minMySqlVersion} or later.`)
-    } 
-    else {
-      await setupSchema()
-      logger.writeInfo('mysql', 'restore', { success: true, version, message: 'pool connection restored' })
-    } 
+      throw new Error(`MySQL release ${version} is too old. Update to the latest MySQL ${testedMySqlSeries}.x release.`)
+    }
+    warnUntestedVersion(version)
+    await setupSchema()
+    logger.writeInfo('mysql', 'restore', { success: true, version, message: 'pool connection restored' })
   }
   catch (e) {
     logger.writeError('mysql', 'restore', { success: false, message: e.message })
@@ -301,13 +323,12 @@ module.exports.initializeDatabase = async function () {
 
     // Check the MySQL version
     const version = await getMySqlVersion()
-    if (!isOkVersion(version)) {
-      logger.writeError('mysql', 'preflight', { success: false, message: `MySQL release ${version} is too old. Update to release ${minMySqlVersion} or later.` })
+    if (!isMinVersion(version)) {
+      logger.writeError('mysql', 'preflight', { success: false, message: `MySQL release ${version} is too old. Update to the latest MySQL ${testedMySqlSeries}.x release.` })
       throw new Error('MySQL release is too old.')
-    } 
-    else {
-      logger.writeInfo('mysql', 'preflight', {success: true, version })
     }
+    logger.writeInfo('mysql', 'preflight', {success: true, version })
+    warnUntestedVersion(version)
 
     // Patch the pool to emit a 'remove' event when a connection is removed
     patchRemoveConnection(_this.pool)
