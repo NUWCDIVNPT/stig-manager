@@ -8,6 +8,13 @@ export function navigationGuard(to) {
     return { name: 'home' }
   }
 
+  // Feature-gated routes declare their own predicate in meta.isEnabled.
+  // UI-hiding convenience only — the API independently enforces the
+  // server-side experimental flags on the actual endpoints.
+  if (to.meta.isEnabled && !to.meta.isEnabled()) {
+    return { name: to.meta.disabledRedirect ?? 'home' }
+  }
+
   // collection-specific routes require a collection grant
   if (to.meta.requiresCollectionGrant) {
     const collectionId = to.params.collectionId

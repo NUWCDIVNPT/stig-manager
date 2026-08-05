@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { isAppDataEnabled } from '../../../shared/lib/featureFlags.js'
 
 const items = [
   {
@@ -44,16 +45,21 @@ const items = [
     routeName: 'admin-app-info',
   },
   {
-    key: 'ExportImportManage',
-    component: 'ExportImportManage',
+    key: 'Appdata',
+    component: 'AppData',
     label: 'Export/Import Data',
     icon: 'icon-database',
     routeName: 'admin-transfer',
+    isEnabled: isAppDataEnabled,
   },
 ]
 
 export function useAppManagementItems() {
-  const appManagementItems = ref(items)
+  // Feature-gated pages declare their own isEnabled predicate; hiding them
+  // here is a convenience only — the API endpoints independently enforce the
+  // experimental flags and admin elevation.
+  const visibleItems = items.filter(item => item.isEnabled?.() !== false)
+  const appManagementItems = ref(visibleItems)
 
   return {
     appManagementItems,
