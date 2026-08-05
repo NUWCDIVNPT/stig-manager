@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { getLastStigLibraryUrl } from '../features/STIGLibrary/lastVisited.js'
+import { isAppDataEnabled } from '../shared/lib/featureFlags.js'
 import { navigationGuard } from './navigationGuards.js'
 
 // Lazy load components
@@ -208,7 +209,7 @@ const routes = [
     path: '/app-management/appdata',
     name: 'admin-transfer',
     component: AppData,
-    meta: { requiresAdmin: true, requiresAppDataFlag: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Export & Import' }] },
+    meta: { requiresAdmin: true, isEnabled: isAppDataEnabled, disabledRedirect: 'app-management', breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Export & Import' }] },
   },
   {
     path: '/assets/:assetId',

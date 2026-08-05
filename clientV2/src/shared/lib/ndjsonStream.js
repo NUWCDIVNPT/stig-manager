@@ -13,13 +13,21 @@ export function createNdjsonTransformStream(separator = '\n') {
     transform(chunk, controller) {
       buffer = buffer ? buffer + chunk : chunk
       const segments = buffer.split(separator)
+      // The last segment may be an incomplete record; hold it back until the
+      // next chunk (or flush) so a record split across chunks is emitted once.
+      buffer = segments.pop()
       for (const segment of segments) {
         const parsed = safeJSONParse(segment)
         if (parsed !== null) {
           controller.enqueue(parsed)
         }
       }
-      buffer = buffer.endsWith(separator) ? '' : segments[segments.length - 1]
+    },
+    flush(controller) {
+      const parsed = safeJSONParse(buffer)
+      if (parsed !== null) {
+        controller.enqueue(parsed)
+      }
     },
   })
 }

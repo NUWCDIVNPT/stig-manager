@@ -1,4 +1,3 @@
-import { isAppDataEnabled } from '../features/AppManagement/Appdata/lib/appDataFlag.js'
 import { useCurrentUser } from '../shared/composables/useCurrentUser.js'
 
 const { isAdmin, hasCollectionAccess, getCollectionRoleId } = useCurrentUser()
@@ -9,10 +8,11 @@ export function navigationGuard(to) {
     return { name: 'home' }
   }
 
+  // Feature-gated routes declare their own predicate in meta.isEnabled.
   // UI-hiding convenience only — the API independently enforces the
-  // server-side experimental flag on the actual endpoints.
-  if (to.meta.requiresAppDataFlag && !isAppDataEnabled()) {
-    return { name: 'app-management' }
+  // server-side experimental flags on the actual endpoints.
+  if (to.meta.isEnabled && !to.meta.isEnabled()) {
+    return { name: to.meta.disabledRedirect ?? 'home' }
   }
 
   // collection-specific routes require a collection grant

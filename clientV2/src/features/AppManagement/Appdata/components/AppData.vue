@@ -3,7 +3,8 @@ import Button from 'primevue/button'
 import Select from 'primevue/select'
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'
 import HelpIcon from '../../../../components/common/HelpIcon.vue'
 import { dangerBtnPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
@@ -30,7 +31,8 @@ const isBusy = () => exportState.phase === 'requesting' || exportState.phase ===
 const fileInputRef = ref(null)
 const logRef = ref(null)
 
-const canPickFile = computed(() => !['uploading', 'confirming', 'succeeded'].includes(importState.phase))
+const canPickFile = computed(() => !['analyzing', 'uploading', 'confirming', 'succeeded'].includes(importState.phase))
+const logText = computed(() => importState.log.join('\n'))
 const isErrorState = computed(() => importState.phase === 'invalid' || importState.phase === 'failed')
 const progressPct = computed(() => Math.round((importState.progress || 0) * 100))
 
@@ -59,6 +61,23 @@ function onFileChange(event) {
 function reload() {
   window.location.reload()
 }
+
+// Leaving mid-upload detaches the truncate/insert stream (and a remount would
+// allow a second concurrent import), so navigation is blocked until the
+// import reaches a terminal phase.
+const importInProgress = computed(() => importState.phase === 'uploading')
+
+onBeforeRouteLeave(() => !importInProgress.value)
+
+function onBeforeUnload(event) {
+  if (importInProgress.value) {
+    event.preventDefault()
+    event.returnValue = ''
+  }
+}
+
+onMounted(() => window.addEventListener('beforeunload', onBeforeUnload))
+onBeforeUnmount(() => window.removeEventListener('beforeunload', onBeforeUnload))
 
 watch(() => importState.log.length, () => {
   nextTick(() => {
@@ -183,7 +202,7 @@ const filePickerBtnPt = {
                 <span v-else class="picked-filename picked-filename--empty">No file has been selected</span>
               </div>
 
-              <pre ref="logRef" class="status-log">{{ importState.log.join('\n') }}</pre>
+              <pre ref="logRef" class="status-log">{{ logText }}</pre>
 
               <div class="progress-strip">
                 <div class="progress-header">
@@ -208,7 +227,7 @@ const filePickerBtnPt = {
 
               <div v-if="importState.phase === 'succeeded'" class="success-panel">
                 <i class="pi pi-check-circle success-icon" />
-                <span>Refresh the entire application to use the replaced data. Cached identity, grants, and collections must be rebuilt.</span>
+                <span>Refresh the entire application to use the replaced data. Cached identity, Grants, and Collections must be rebuilt.</span>
               </div>
 
               <div class="action-submit">

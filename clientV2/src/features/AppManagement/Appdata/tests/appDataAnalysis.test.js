@@ -61,9 +61,21 @@ describe('applyAnalysisLine', () => {
       '[1,10,"extra","column"]',
     ]
     const { state } = analyzeLines(lines)
-    expect(state.rowWidthMismatches).toEqual([
-      { table: 'asset', expected: 2, actual: 4 },
-    ])
+    expect(state.rowWidthMismatches.get('asset')).toEqual({ expected: 2, count: 1, widths: new Set([4]) })
+  })
+
+  it('aggregates repeated width mismatches per table instead of per row', () => {
+    const lines = [
+      '{"table":"asset","columns":"`assetId`,`name`","rowCount":3}',
+      '[1]',
+      '[1,2,3]',
+      '[1]',
+    ]
+    const { state } = analyzeLines(lines)
+    expect(state.rowWidthMismatches.size).toBe(1)
+    const mismatch = state.rowWidthMismatches.get('asset')
+    expect(mismatch.count).toBe(3)
+    expect([...mismatch.widths]).toEqual([1, 3])
   })
 
   it('flags duplicate table headers', () => {

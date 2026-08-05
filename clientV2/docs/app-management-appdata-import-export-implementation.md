@@ -1,6 +1,6 @@
 # App Management: Application Data Import/Export Implementation Guide
 
-This document describes the experimental **App Management -> Export/Import Data** feature in implementation-neutral terms. It is intended to be sufficient for rebuilding the feature in another frontend or backend language without depending on the current ExtJS implementation.
+This document describes the experimental **App Management -> Export/Import Data** feature in implementation-neutral terms, and maps it to the current implementations: the API, the legacy ExtJS client, and the Vue clientV2 feature at `clientV2/src/features/AppManagement/Appdata/`.
 
 The feature exports most application-owned database data as a streaming JSON Lines (JSONL) document, optionally compressed with GZip, and can import such a document to replace the destination instance's application data. It is an administrative migration/restore mechanism, not a general-purpose interchange format and not a substitute for a database backup.
 
@@ -17,15 +17,19 @@ The feature exports most application-owned database data as a streaming JSON Lin
 | Feature flag | `api/source/utils/config.js` |
 | Feature flag delivered to clients | `api/source/bootstrap/client.js` |
 | Authentication/elevation enforcement | `api/source/utils/auth.js` |
-| Legacy, working UI | `client/src/js/SM/AppData.js` |
+| Legacy UI | `client/src/js/SM/AppData.js` |
 | Legacy conditional navigation | `client/src/js/SM/NavTree.js` |
-| V2 route | `clientV2/src/router/index.js` (`admin-transfer`) |
+| V2 route (`admin-transfer`, `/app-management/appdata`) and guard | `clientV2/src/router/index.js`, `clientV2/src/router/navigationGuards.js` |
 | V2 App Management menu item | `clientV2/src/features/AppManagement/composables/useAppManagementItems.js` |
-| V2 page | `clientV2/src/features/ExportImportManage/components/ExportImportManage.vue` |
+| V2 feature-flag helper | `clientV2/src/shared/lib/featureFlags.js` |
+| V2 page | `clientV2/src/features/AppManagement/Appdata/components/AppData.vue` |
+| V2 export/import state machines | `clientV2/src/features/AppManagement/Appdata/composables/` |
+| V2 pure analysis/progress/stream modules (unit-tested) | `clientV2/src/features/AppManagement/Appdata/lib/`, `.../tests/` |
+| V2 API module | `clientV2/src/features/AppManagement/Appdata/api/appDataApi.js` |
 | Existing administrator documentation | `docs/admin-guide/admin-guide.rst` |
 | API fixture loader and export authorization test | `test/api/mocha/utils/testUtils.js`, `test/api/mocha/data/operation/op.test.js` |
 
-The V2 page is currently a placeholder. The working behavior described below comes from the legacy UI and the live API implementation. The V2 route is `/app-management/transfer`, is named `admin-transfer`, and has an administrator route guard, but the V2 menu currently lists the page unconditionally. A completed V2 implementation should restore the feature-flag behavior used by the legacy client.
+The V2 route is `/app-management/appdata`, is named `admin-transfer`, and is gated twice: `requiresAdmin` plus a `meta.isEnabled` feature-flag predicate enforced by the shared navigation guard. The App Management menu applies the same predicate to the item definition, so the page is listed only when the server-side experimental flag is enabled.
 
 ## 2. Feature enablement and authorization
 
@@ -39,7 +43,7 @@ STIGMAN_EXPERIMENTAL_APPDATA=true
 
 The comparison is exact and case-sensitive. Any value other than the string `true`, including an unset value, disables the feature. The default is therefore disabled.
 
-The generated client environment exposes the result as `experimental.appData`, currently serialized as the string `"true"` or `"false"`, not a Boolean. The legacy navigation only adds the **Export/Import Data (experimental)** node when the value is exactly `"true"`.
+The generated client environment exposes the result as `experimental.appData`, currently serialized as the string `"true"` or `"false"`, not a Boolean. The legacy navigation only adds the **Export/Import Data (experimental)** node when the value is exactly `"true"`. The V2 client reads the flag through `isAppDataEnabled()` in `clientV2/src/shared/lib/featureFlags.js`, used by both the route guard and the menu filter.
 
 Both `getAppData` and `replaceAppData` check the server-side flag and return a not-found error when disabled. UI hiding is only a convenience; the server check is authoritative. `getAppDataTables` does not currently check this flag.
 
@@ -236,7 +240,7 @@ The exporter currently supplies no `ORDER BY`, and schema discovery supplies no 
 
 ### 6.1 Client-side analysis
 
-Before enabling the destructive action, the working UI reads the selected file locally without uploading it:
+Before enabling the destructive action, both clients read the selected file locally without uploading it. The legacy UI performs:
 
 1. Accept a single `.gz` or `.jsonl` file.
 2. Stream file-read progress as **Analyzing**.
@@ -247,9 +251,9 @@ Before enabling the destructive action, the working UI reads the selected file l
 7. Reject the file if its `lastMigration` is greater than the current API migration.
 8. Enable **Replace Application Data** only when migration compatibility passes and a table-summary object was found.
 
-A safer reimplementation should strengthen step 8: require a valid integer `lastMigration`, exactly one summary, valid table headers, expected row-array lengths, safe known table/column names, accurate declared counts, and no malformed JSONL. The legacy analyzer silently ignores malformed JSON and can incorrectly accept a file with a summary but no `lastMigration` because its initial false-like value compares as less than a number.
+The V2 analyzer (`clientV2/src/features/AppManagement/Appdata/lib/appDataAnalysis.js`) strengthens step 8: it requires a valid integer `lastMigration`, exactly one metadata and one summary record, well-formed table headers, row-array widths that match their header, accurate declared counts, and no malformed JSONL. The legacy analyzer silently ignores malformed JSON and can incorrectly accept a file with a summary but no `lastMigration` because its initial false-like value compares as less than a number.
 
-Browser MIME detection is unreliable. Prefer checking both MIME and file extension, then verify the GZip magic bytes (`1f 8b`) before decompression. Do not rely solely on `File.type` as the legacy UI does.
+Browser MIME detection is unreliable. Prefer checking both MIME and file extension, then verify the GZip magic bytes (`1f 8b`) before decompression; the V2 client sniffs the magic bytes and treats name/type as hints only. Do not rely solely on `File.type` as the legacy UI does.
 
 ### 6.2 Upload and server-side replacement
 
@@ -303,17 +307,17 @@ Label it as experimental. The page has two clearly separated areas:
 - **Export**: format selector (`GZip` default, `JSONL`) and **Download Application Data**.
 - **Import**: destructive warning and **Replace Application Data...**.
 
-The V2 application should use its existing `admin-transfer` route and administrator navigation guard, but must add runtime feature-flag filtering because this is absent today.
+The V2 application uses its `admin-transfer` route with the administrator navigation guard, a `meta.isEnabled` feature-flag predicate on the route, and the same predicate on the menu item definition.
 
 ### 8.2 Export interaction
 
-The authenticated download cannot assume a plain anchor can attach the bearer token. The legacy client sends the request description through its service worker, receives a temporary/downloadable URL, and navigates the window to it. A replacement can instead use an authenticated streaming fetch and a platform download mechanism, but must avoid loading a large export into JavaScript memory if streaming-to-disk support is available.
+The authenticated download cannot assume a plain anchor can attach the bearer token. Both clients send the request description through the service worker, receive a temporary/downloadable URL, and navigate the window to it; the V2 client falls back to a buffered authenticated fetch when no service worker controls the page. A replacement can instead use an authenticated streaming fetch and a platform download mechanism, but must avoid loading a large export into JavaScript memory if streaming-to-disk support is available.
 
 Show indeterminate activity rather than a percentage because the server does not know the final compressed size before streaming.
 
 ### 8.3 Import dialog
 
-The working dialog is modal, 500 by 400 pixels, and cannot be dismissed with Escape. It contains:
+The legacy dialog is modal, 500 by 400 pixels, and cannot be dismissed with Escape. The V2 implementation is an inline page section rather than a dialog, with the same elements:
 
 - a single-file picker limited in the UI to `.gz` and `.jsonl`;
 - a read-only, auto-scrolling status log;
@@ -322,7 +326,7 @@ The working dialog is modal, 500 by 400 pixels, and cannot be dismissed with Esc
 
 Selecting another file resets prior analysis. During upload, disable the button and hide/disable the close control. Stream every progress object into the status log, update table/row progress, show migrations separately, and only show **Done** after `status:"success"`.
 
-The legacy UI does not currently ask for a typed or second confirmation after analysis. A reimplementation should add an explicit confirmation stating that destination data will be overwritten and that the operation is non-transactional.
+The legacy UI does not ask for a second confirmation after analysis. The V2 page adds an explicit confirmation step (the `confirming` phase) stating that destination data will be overwritten and that the operation is non-transactional, and blocks in-app navigation and page unload while an upload is in progress.
 
 ## 9. Critical gotchas and failure modes
 
@@ -382,8 +386,7 @@ The legacy UI does not currently ask for a typed or second confirmation after an
 - The client parser only recognizes object lines beginning with `{` and silently ignores whitespace-prefixed objects, arrays, and malformed lines during analysis.
 - The server catches import exceptions and converts them to progress events rather than an error HTTP status.
 - Export service errors occur after streaming has begun and the controller does not await the export promise, complicating propagation and cleanup.
-- The legacy completion message is displayed after the response ends even if the stream contained `status:"fail"`; this must not be copied.
-- V2 currently exposes the menu/route while its page is a stub and does not filter by `experimental.appData`.
+- The legacy completion message is displayed after the response ends even if the stream contained `status:"fail"`; this must not be copied. (The V2 import requires the terminal `{status:"success"}` record and treats an ended stream without a terminal record as indeterminate/failed.)
 
 ## 10. Recommended reimplementation architecture
 

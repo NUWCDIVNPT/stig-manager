@@ -41,19 +41,24 @@ function streamFromChunks(chunks) {
 }
 
 describe('createLineSplitStream', () => {
-  it('splits a single chunk into lines without trailing separators', async () => {
+  it('splits a single chunk into one batch of lines without trailing separators', async () => {
     const stream = streamFromChunks(['a\nb\nc\n']).pipeThrough(createLineSplitStream())
-    expect(await collect(stream)).toEqual(['a', 'b', 'c'])
+    expect(await collect(stream)).toEqual([['a', 'b', 'c']])
   })
 
   it('retains a line split across chunk boundaries', async () => {
     const stream = streamFromChunks(['{"foo":', '"bar"}\n']).pipeThrough(createLineSplitStream())
-    expect(await collect(stream)).toEqual(['{"foo":"bar"}'])
+    expect(await collect(stream)).toEqual([['{"foo":"bar"}']])
   })
 
-  it('flushes a final line with no trailing newline', async () => {
+  it('does not emit an empty batch for a chunk with no complete line', async () => {
+    const stream = streamFromChunks(['{"foo":', '"bar"}\n']).pipeThrough(createLineSplitStream())
+    expect((await collect(stream)).length).toBe(1)
+  })
+
+  it('flushes a final line with no trailing newline as its own batch', async () => {
     const stream = streamFromChunks(['a\nb']).pipeThrough(createLineSplitStream())
-    expect(await collect(stream)).toEqual(['a', 'b'])
+    expect(await collect(stream)).toEqual([['a'], ['b']])
   })
 
   it('produces nothing for an empty stream', async () => {

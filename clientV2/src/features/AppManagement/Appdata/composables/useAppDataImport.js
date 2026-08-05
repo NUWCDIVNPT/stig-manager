@@ -113,8 +113,18 @@ export function useAppDataImport() {
 
       const migration = await ensureMigration()
 
+      // Whole-percent granularity — a per-chunk write for every byte chunk of
+      // a large file schedules thousands of re-renders for a bar with only
+      // ~100 distinguishable states.
+      let lastPct = -1
       let byteStream = file.stream()
-        .pipeThrough(createByteProgressStream(file.size, (ratio) => { state.progress = ratio }))
+        .pipeThrough(createByteProgressStream(file.size, (ratio) => {
+          const pct = Math.round(ratio * 100)
+          if (pct !== lastPct) {
+            lastPct = pct
+            state.progress = ratio
+          }
+        }))
       if (magicIsGzip) {
         byteStream = byteStream.pipeThrough(new DecompressionStream('gzip'))
       }
@@ -123,10 +133,20 @@ export function useAppDataImport() {
         .pipeThrough(createLineSplitStream())
 
       const analysisState = createInitialAnalysisState()
-      for await (const rawLine of iterateStream(lineStream)) {
-        const event = applyAnalysisLine(analysisState, rawLine)
-        if (event) {
-          appendLog(formatAnalysisEvent(event, migration))
+      let paintedProgress = -1
+      for await (const lines of iterateStream(lineStream)) {
+        for (const rawLine of lines) {
+          const event = applyAnalysisLine(analysisState, rawLine)
+          if (event) {
+            appendLog(formatAnalysisEvent(event, migration))
+          }
+        }
+        // The loop churns through microtasks without reaching the browser's
+        // paint phase, so the bar stays frozen until the end; yield a
+        // macrotask whenever the displayed percentage advances.
+        if (state.progress !== paintedProgress) {
+          paintedProgress = state.progress
+          await new Promise(resolve => setTimeout(resolve))
         }
       }
 

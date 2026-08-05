@@ -18,10 +18,14 @@ export async function detectGzipFile(file) {
   return detectGzipMagicBytes(head)
 }
 
-// Splits decoded text into lines, retaining an incomplete line across chunk
-// boundaries and flushing a final line that has no trailing newline. Unlike
-// shared/lib/ndjsonStream.js, this yields raw strings (not parsed/dropped
-// JSON) so a caller can distinguish malformed lines from valid ones.
+// Splits decoded text into batches of lines (one batch per incoming chunk),
+// retaining an incomplete line across chunk boundaries and flushing a final
+// line that has no trailing newline. Unlike shared/lib/ndjsonStream.js, this
+// yields raw strings (not parsed/dropped JSON) so a caller can distinguish
+// malformed lines from valid ones. Batching keeps the consumer's await count
+// proportional to chunks rather than lines — a per-line reader.read() over a
+// multi-million-line file is millions of promise ticks, slow enough under
+// DevTools async instrumentation to look like a hang.
 export function createLineSplitStream() {
   let buffer = ''
   return new TransformStream({
@@ -29,13 +33,13 @@ export function createLineSplitStream() {
       buffer += chunk
       const lines = buffer.split('\n')
       buffer = lines.pop()
-      for (const line of lines) {
-        controller.enqueue(line)
+      if (lines.length > 0) {
+        controller.enqueue(lines)
       }
     },
     flush(controller) {
       if (buffer.length > 0) {
-        controller.enqueue(buffer)
+        controller.enqueue([buffer])
       }
     },
   })

@@ -20,7 +20,7 @@ export function createInitialAnalysisState() {
     currentTable: null,
     rowsBeforeHeader: 0,
     duplicateHeaders: [],
-    rowWidthMismatches: [],
+    rowWidthMismatches: new Map(),
     malformedLines: 0,
     malformedSamples: [],
   }
@@ -56,11 +56,19 @@ export function applyAnalysisLine(state, rawLine) {
     }
     state.currentTable.actualRowCount += 1
     if (value.length !== state.currentTable.expectedColumnCount) {
-      state.rowWidthMismatches.push({
-        table: state.currentTable.name,
-        expected: state.currentTable.expectedColumnCount,
-        actual: value.length,
-      })
+      // Aggregated per table — a systematic mismatch (e.g. a header whose
+      // column list parses to the wrong width) would otherwise accumulate one
+      // entry per row of a multi-million-row table.
+      const name = state.currentTable.name
+      let mismatch = state.rowWidthMismatches.get(name)
+      if (!mismatch) {
+        mismatch = { expected: state.currentTable.expectedColumnCount, count: 0, widths: new Set() }
+        state.rowWidthMismatches.set(name, mismatch)
+      }
+      mismatch.count += 1
+      if (mismatch.widths.size < 5) {
+        mismatch.widths.add(value.length)
+      }
     }
     return null
   }
@@ -139,8 +147,10 @@ export function finalizeAnalysis(state, currentMigration) {
   if (state.duplicateHeaders.length > 0) {
     reasons.push(`Duplicate table header(s): ${[...new Set(state.duplicateHeaders)].join(', ')}.`)
   }
-  if (state.rowWidthMismatches.length > 0) {
-    reasons.push(`${state.rowWidthMismatches.length} row(s) had a column count that didn't match their table header.`)
+  if (state.rowWidthMismatches.size > 0) {
+    const parts = [...state.rowWidthMismatches.entries()]
+      .map(([name, m]) => `${name} (expected ${m.expected} column(s), ${m.count} row(s) had ${[...m.widths].join('/')})`)
+    reasons.push(`Row column count didn't match the table header for: ${parts.join(', ')}.`)
   }
 
   const countMismatches = []
