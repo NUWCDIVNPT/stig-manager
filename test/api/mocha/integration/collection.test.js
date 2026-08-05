@@ -492,16 +492,63 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone - test vari
                     }
                 }
             })
-            it('clone test collection - no labels will be transfered', async () => {
+            it('clone test collection - deprecated option labels: false is rejected by spec validation (issue 2089)', async () => {
 
-                const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`
-                const requestBody = JSON.stringify({
+                const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/clone`
+                const res = await utils.executeRequest(url, 'POST', user.token, {
                     "name": "Clone_X" + utils.getUUIDSubString(10),
                     "description": "clone of test collection x",
                     "options": {
                       "grants": true,
                       "labels": false,
                       "assets": true,
+                      "stigMappings": "withReviews",
+                      "pinRevisions": "matchSource"
+                    }
+                })
+                expect(res.status).to.eql(400)
+                expect(res.body.error, "validation error identifies the labels option").to.include('options/labels')
+            })
+            it('clone test collection - deprecated option assets: false is rejected by spec validation', async () => {
+
+                const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/clone`
+                const res = await utils.executeRequest(url, 'POST', user.token, {
+                    "name": "Clone_X" + utils.getUUIDSubString(10),
+                    "description": "clone of test collection x",
+                    "options": {
+                      "grants": true,
+                      "labels": true,
+                      "assets": false,
+                      "stigMappings": "withReviews",
+                      "pinRevisions": "matchSource"
+                    }
+                })
+                expect(res.status).to.eql(400)
+                expect(res.body.error, "validation error identifies the assets option").to.include('options/assets')
+            })
+            it('clone test collection - removed option stigMappings: none is rejected by spec validation', async () => {
+
+                const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/clone`
+                const res = await utils.executeRequest(url, 'POST', user.token, {
+                    "name": "Clone_X" + utils.getUUIDSubString(10),
+                    "description": "clone of test collection x",
+                    "options": {
+                      "grants": true,
+                      "stigMappings": "none",
+                      "pinRevisions": "matchSource"
+                    }
+                })
+                expect(res.status).to.eql(400)
+                expect(res.body.error, "validation error identifies the stigMappings option").to.include('options/stigMappings')
+            })
+            it('clone test collection - grant ACLs are cloned and remapped to the new Collection (issue 2089)', async () => {
+
+                const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/clone?projection=grants&projection=labels`
+                const requestBody = JSON.stringify({
+                    "name": "Clone_X" + utils.getUUIDSubString(10),
+                    "description": "clone of test collection x",
+                    "options": {
+                      "grants": true,
                       "stigMappings": "withReviews",
                       "pinRevisions": "matchSource"
                     }
@@ -518,257 +565,38 @@ describe('POST - cloneCollection - /collections/{collectionId}/clone - test vari
                 expect(res.status).to.eql(200)
                 const responseText = await res.text();
                 const response = responseText.split("\n");
-
-                const labelsProjected = []
-
+                let clonedCollection = null
                 for(const message of response){
                     if(message.length > 0){
                         let messageObject = JSON.parse(message)
                         if(messageObject.stage === "result"){
-                            expect(messageObject.collection).to.have.property('grants')
-
-                            // remove grantId from grants response and grantsProjected expected response ( this cannot be tested well q)
-                            let grantsProjectedResponse = []
-                            for (let grant of messageObject.collection.grants){
-                                let {grantId, ...grantCheckProps} = grant
-                                grantsProjectedResponse.push(grantCheckProps)
-                            }
-
-                            let expectedGrantsResponse = []
-                            for (let grant of reference.testCollection.grantsProjected){
-                                let {grantId, ...grantCheckProps} = grant
-                                expectedGrantsResponse.push(grantCheckProps)
-                            }
-                            expect(grantsProjectedResponse, "check cloned collection grants").to.eql(expectedGrantsResponse)
-                            
-                            //stats
-                            expect(messageObject.collection, "testing stats projection").to.have.property('statistics')
-                            expect(messageObject.collection.statistics.assetCount, "assetCount").to.eql(reference.testCollection.statisticsProjected.assetCount)
-                            // expect(messageObject.collection.statistics.grantCount, "grant Count").to.eql(reference.testCollection.statisticsProjected.grantCount)
-                            expect(messageObject.collection.statistics.checklistCount, "checklist Count").to.eql(reference.testCollection.statisticsProjected.checklistCount)
-
-                            // labels 
-                            expect(messageObject.collection).to.have.property('labels');
-                            let labelProjectedResponse = []
-                            for (label of messageObject.collection.labels){
-                                let {labelId, ...labelCheckProps} = label
-                                labelProjectedResponse.push(labelCheckProps)
-                            }
-                            expect(labelProjectedResponse).to.eql(labelsProjected)
-
-                            //owners 
-                            expect(messageObject.collection).to.have.property('owners');
-                            // let ownerProjectedResponse = []
-                            // for (owner of messageObject.collection.owners){
-                            //     let {email, ...ownerCheckProps} = owner
-                            //     ownerProjectedResponse.push(ownerCheckProps)
-                            // }
-                            expect(messageObject.collection.owners, "checking owners were cloned").to.have.same.deep.members(reference.testCollection.ownersProjected)
-
-                            //assets
-                            let assetsProjectedResponse = []
-                            for (let asset of messageObject.collection.assets){
-                                let {assetId, ...assetCheckProps} = asset
-                                assetsProjectedResponse.push(assetCheckProps)
-                            }        
-                            const assetsProjectedWithoutId = reference.testCollection.assetsProjected.map(({ name }) => ({ name }));
-
-                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(assetsProjectedWithoutId)            
-
-                            //stigs 
-                            expect(messageObject.collection.stigs).to.eql(reference.testCollection.stigsProjected)
+                            clonedCollection = messageObject.collection
                         }
                     }
                 }
-            })
-            it('clone test collection - no assets will be transfered', async () => {
+                expect(clonedCollection, "expected a result stage in the clone response").to.not.be.null
 
-                const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`
-                const requestBody = JSON.stringify({
-                "name": "Clone_X" + utils.getUUIDSubString(10),
-                "description": "clone of test collection x",
-                "options": {
-                    "grants": true,
-                    "labels": true,
-                    "assets": false,
-                    "stigMappings": "withReviews",
-                    "pinRevisions": "matchSource"
-                }
-                })
-                const options = {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${user.token}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: requestBody,
-                }
-                const res = await fetch(url, options)
-                expect(res.status).to.eql(200)
-                const responseText = await res.text();
-                const response = responseText.split("\n");
-                const assetsProjected = []
-                const assetCount = 0
-                const checklistCount = 0
-                const stigsProjected = []
-                const labelsProjected = [
-                    {
-                      name: "test-label-full",
-                      description: "",
-                      color: "FF99CC",
-                      uses: 0
-                    },
-                    {
-                      name: "test-label-lvl1",
-                      description: "",
-                      color: "99CCFF",
-                      uses: 0
-                    }
-                  ]
+                // the cloned TestGroup grant should carry the same ACL as the source grant
+                const clonedGroupGrant = clonedCollection.grants.find(g => g.userGroup?.name === reference.testCollection.testGroup.name)
+                expect(clonedGroupGrant, "expected a cloned TestGroup grant").to.exist
 
-                for(const message of response){
-                    if(message.length > 0){
-                        let messageObject = JSON.parse(message)
-                        if(messageObject.stage === "result"){
-                            expect(messageObject.collection).to.have.property('grants');
-                              // remove grantId from grants response and grantsProjected expected response ( this cannot be tested well q)
-                              let grantsProjectedResponse = []
-                              for (let grant of messageObject.collection.grants){
-                                  let {grantId, ...grantCheckProps} = grant
-                                  grantsProjectedResponse.push(grantCheckProps)
-                              }
-  
-                              let expectedGrantsResponse = []
-                              for (let grant of reference.testCollection.grantsProjected){
-                                  let {grantId, ...grantCheckProps} = grant
-                                  expectedGrantsResponse.push(grantCheckProps)
-                              }
-                              expect(grantsProjectedResponse, "check cloned collection grants").to.eql(expectedGrantsResponse)
+                const aclRes = await utils.executeRequest(`${config.baseUrl}/collections/${clonedCollection.collectionId}/grants/${clonedGroupGrant.grantId}/acl`, 'GET', user.token)
+                expect(aclRes.status).to.eql(200)
 
-                            //stats
-                            expect(messageObject.collection, "testing stats projection").to.have.property('statistics')
-                            expect(messageObject.collection.statistics.assetCount, "assetCount").to.eql(assetCount)
-                            // expect(messageObject.collection.statistics.grantCount, "grant Count").to.eql(reference.testCollection.statisticsProjected.grantCount)
-                            expect(messageObject.collection.statistics.checklistCount, "checklist Count").to.eql(checklistCount)
+                // compare by name/benchmarkId/access; assetIds and labelIds are remapped in the clone
+                const normalize = rules => rules.map(rule => ({
+                    asset: rule.asset?.name ?? null,
+                    label: rule.label?.name ?? null,
+                    benchmarkId: rule.benchmarkId ?? null,
+                    access: rule.access
+                }))
+                expect(normalize(aclRes.body.acl), "cloned ACL rules match the source rules").to.have.deep.members(normalize(reference.testCollection.testGroup.acl))
 
-                            // labels 
-                            expect(messageObject.collection).to.have.property('labels');
-                            let labelProjectedResponse = []
-                            for (let label of messageObject.collection.labels){
-                                let {labelId, ...labelCheckProps} = label
-                                labelProjectedResponse.push(labelCheckProps)
-                            }
-                            expect(labelProjectedResponse).to.eql(labelsProjected)
-
-                            //owners 
-                            expect(messageObject.collection).to.have.property('owners');
-                            // let ownerProjectedResponse = []
-                            // for (owner of messageObject.collection.owners){
-                            //     let {email, ...ownerCheckProps} = owner
-                            //     ownerProjectedResponse.push(ownerCheckProps)
-                            // }
-                            expect(messageObject.collection.owners, "checking owners were cloned").to.have.same.deep.members(reference.testCollection.ownersProjected)
-
-                            //assets
-                            let assetsProjectedResponse = []
-                            for (asset of messageObject.collection.assets){
-                                let {assetId, ...assetCheckProps} = asset
-                                assetsProjectedResponse.push(assetCheckProps)
-                            }                    
-                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(assetsProjected)
-
-                            //stigs 
-                            expect(messageObject.collection.stigs).to.eql(stigsProjected)
-                        }
-                    }
-                }
-            })
-            it('clone test collection - stigMapping=none - stig mappings not transfered', async () => {
-
-                const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/clone?projection=assets&projection=grants&projection=owners&projection=statistics&projection=stigs&projection=labels`
-                const requestBody = JSON.stringify({
-                "name": "Clone_X" + utils.getUUIDSubString(10),
-                "description": "clone of test collection x",
-                "options": {
-                    "grants": true,
-                    "labels": true,
-                    "assets": true,
-                    "stigMappings": "none",
-                    "pinRevisions": "matchSource"
-                }
-                })
-                const options = {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${user.token}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: requestBody,
-                }
-                const res = await fetch(url, options)
-                expect(res.status).to.eql(200)
-                const responseText = await res.text();
-                const response = responseText.split("\n");
-
-                const checklistCount = 0
-                const stigsProjected = []
-
-                for(const message of response){
-                    if(message.length > 0){
-                        let messageObject = JSON.parse(message)
-                        if(messageObject.stage === "result"){
-                            expect(messageObject.collection).to.have.property('grants');
-                            // remove grantId from grants response and grantsProjected expected response ( this cannot be tested well q)
-                            let grantsProjectedResponse = []
-                            for (let grant of messageObject.collection.grants){
-                                let {grantId, ...grantCheckProps} = grant
-                                grantsProjectedResponse.push(grantCheckProps)
-                            }
-
-                            let expectedGrantsResponse = []
-                            for (let grant of reference.testCollection.grantsProjected){
-                                let {grantId, ...grantCheckProps} = grant
-                                expectedGrantsResponse.push(grantCheckProps)
-                            }
-                            expect(grantsProjectedResponse, "check cloned collection grants").to.eql(expectedGrantsResponse)
-
-                            //stats
-                            expect(messageObject.collection, "testing stats projection").to.have.property('statistics')
-                            expect(messageObject.collection.statistics.assetCount, "assetCount").to.eql(reference.testCollection.statisticsProjected.assetCount)
-                            // expect(messageObject.collection.statistics.grantCount, "grant Count").to.eql(reference.testCollection.statisticsProjected.grantCount)
-                            expect(messageObject.collection.statistics.checklistCount, "checklist Count").to.eql(checklistCount)
-
-                            // labels 
-                            expect(messageObject.collection).to.have.property('labels');
-                            let labelProjectedResponse = []
-                            for (let label of messageObject.collection.labels){
-                                let {labelId, ...labelCheckProps} = label
-                                labelProjectedResponse.push(labelCheckProps)
-                            }
-                            expect(labelProjectedResponse).to.eql(reference.testCollection.labelsProjected)
-
-                            //owners 
-                            expect(messageObject.collection).to.have.property('owners');
-                            // let ownerProjectedResponse = []
-                            // for (owner of messageObject.collection.owners){
-                            //     let {email, ...ownerCheckProps} = owner
-                            //     ownerProjectedResponse.push(ownerCheckProps)
-                            // }
-                            expect(messageObject.collection.owners, "checking owners were cloned").to.have.same.deep.members(reference.testCollection.ownersProjected)
-
-                            //assets
-                            let assetsProjectedResponse = []
-                            for (let asset of messageObject.collection.assets){
-                                let {assetId, ...assetCheckProps} = asset
-                                assetsProjectedResponse.push(assetCheckProps)
-                            }                    
-                            const assetsProjectedWithoutId = reference.testCollection.assetsProjected.map(({ name }) => ({ name }));
-
-                            expect(assetsProjectedResponse, "checking assets were cloned").to.eql(assetsProjectedWithoutId)       
-
-                            //stigs 
-                            expect(messageObject.collection.stigs).to.eql(stigsProjected)
-                        }
+                // label-scoped rules must reference labels belonging to the clone, not the source or another collection
+                const cloneLabelIds = clonedCollection.labels.map(l => l.labelId)
+                for (const rule of aclRes.body.acl) {
+                    if (rule.label) {
+                        expect(cloneLabelIds, "label-scoped ACL rule references a label of the clone").to.include(rule.label.labelId)
                     }
                 }
             })

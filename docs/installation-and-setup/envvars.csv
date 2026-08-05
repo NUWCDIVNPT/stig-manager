@@ -37,8 +37,8 @@
 | The URL path prefix under which the API (and clientV2) are mounted when not served from the origin root (e.g. ``/stigman/``). Set this variable when the application is deployed at a non-root path **and** hashless (HTML5 history) routing is required for clientV2. When set, clientV2 switches from hash-based to HTML5 history routing using ``{pathPrefix}client-v2/`` as the history base, and the API injects a ``<base>`` tag into the clientV2 ``index.html`` accordingly. If the application is served from a non-root path but hash routing is acceptable, this variable should not be set.","Client"
 "STIGMAN_CLIENT_REAUTH_ACTION","| **Default** ``popup``
 | How to prompt for re-authentication when user credentials expire. Available values: ``popup``, ``iframe``, ``tab``, or ``reload``. See :ref:`stigman_client_reauth_action` in the Authentication document for details.","Client"
-"STIGMAN_CLIENT_RESPONSE_MODE","| **Default** ``fragment``
-| The response_mode the web client should specify when requesting an authorization code from the OIDC provider. Available values: ``fragment``, ``query`` ","Client"
+"STIGMAN_CLIENT_RESPONSE_MODE","| **Default** ``query``
+| *Deprecated, will be removed in a future release.* The response_mode the web client should specify when requesting an authorization code from the OIDC provider. Available values: ``fragment``, ``query``. Support for ``fragment`` response mode is deprecated.","Client"
 "STIGMAN_CLIENT_SCOPE_PREFIX","| **No default**
 | String used as a prefix for each scope when authenticating to the OIDC Provider. Some providers (Azure AD) expect scope requests in the format ``api://<application_id>/<scope>``, where ``api://<application_id>/`` is the required prefix.","Client"
 "STIGMAN_CLIENT_STATE_EVENTS","| **Default** ``true``

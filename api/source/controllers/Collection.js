@@ -1049,8 +1049,6 @@ module.exports.cloneCollection = async function (req, res, next) {
       const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
       const options = {
         grants: true,
-        labels: true,
-        assets: true,
         stigMappings: 'withReviews',
         pinRevisions: 'matchSource',
         ...req.body.options
