@@ -8,11 +8,9 @@ import {
   buildRequestsSummary,
   buildUsernameLookup,
 } from '../../lib/adapters/requestRows.js'
-import OperationClientsTable from '../requests/OperationClientsTable.vue'
-import OperationErrorsTable from '../requests/OperationErrorsTable.vue'
+import KeyValueTable from '../common/KeyValueTable.vue'
 import OperationProjectionsTable from '../requests/OperationProjectionsTable.vue'
 import OperationsTable from '../requests/OperationsTable.vue'
-import OperationUsersTable from '../requests/OperationUsersTable.vue'
 
 const props = defineProps({
   requests: { type: Object, default: null },
@@ -45,6 +43,30 @@ const bottomSplitterPt = {
   root: { style: 'border: none; background: transparent; height: 100%; min-width: max-content;' },
   gutter: { style: 'width: 8px; background: var(--color-background-darkest); border-left: 1px solid var(--color-border-default); border-right: 1px solid var(--color-border-default);' },
 }
+
+const USERS_CONFIG = {
+  title: 'User requests',
+  keyHeader: 'Username',
+  valueHeader: 'Requests',
+  noun: 'user',
+  exportFilename: 'appinfo-operation-users',
+}
+
+const CLIENTS_CONFIG = {
+  title: 'Client requests',
+  keyHeader: 'Client',
+  valueHeader: 'Requests',
+  noun: 'client',
+  exportFilename: 'appinfo-operation-clients',
+}
+
+const ERRORS_CONFIG = {
+  title: 'Errors',
+  keyHeader: 'Code',
+  valueHeader: 'Requests',
+  noun: 'error',
+  exportFilename: 'appinfo-operation-errors',
+}
 </script>
 
 <template>
@@ -60,13 +82,13 @@ const bottomSplitterPt = {
     <SplitterPanel :size="35" :min-size="15" class="requests-panel bottom-row-panel">
       <Splitter :pt="bottomSplitterPt">
         <SplitterPanel :size="16" :min-size="10" class="requests-panel subpanel-table">
-          <OperationUsersTable :rows="details.users" />
+          <KeyValueTable v-bind="USERS_CONFIG" :rows="details.users" />
         </SplitterPanel>
         <SplitterPanel :size="16" :min-size="10" class="requests-panel subpanel-table">
-          <OperationClientsTable :rows="details.clients" />
+          <KeyValueTable v-bind="CLIENTS_CONFIG" :rows="details.clients" />
         </SplitterPanel>
         <SplitterPanel :size="16" :min-size="10" class="requests-panel subpanel-table">
-          <OperationErrorsTable :rows="details.errors" />
+          <KeyValueTable v-bind="ERRORS_CONFIG" :rows="details.errors" />
         </SplitterPanel>
         <SplitterPanel :size="52" :min-size="15" class="requests-panel subpanel-table subpanel-table--projections">
           <OperationProjectionsTable :rows="details.projections" />

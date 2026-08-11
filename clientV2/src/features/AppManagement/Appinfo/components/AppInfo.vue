@@ -6,12 +6,13 @@ import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { onMounted, ref, watch } from 'vue'
-import { filenameEscaped } from '../../../../shared/lib.js'
+import collectionSvg from '../../../../assets/collection.svg'
+import jsIconGreenSvg from '../../../../assets/jsIconGreen.svg'
+import { filenameComponentFromDate, filenameEscaped } from '../../../../shared/lib.js'
 import { fetchAppInfo } from '../api/appInfoApi.js'
 import { generateSharable } from '../lib/appInfoSharing.js'
 import { transformPreviousSchemas } from '../lib/appInfoTransforms.js'
-import collectionSvg from '../../../../assets/collection.svg'
-import jsIconGreenSvg from '../../../../assets/jsIconGreen.svg'
+import { reportTabListPt, reportTabPanelsPt, reportTabPt, reportTabsPt } from '../lib/reportTabsPt.js'
 import AppInfoSourceSummary from './AppInfoSourceSummary.vue'
 import CollectionsTab from './tabs/CollectionsTab.vue'
 import GroupsTab from './tabs/GroupsTab.vue'
@@ -82,7 +83,7 @@ function saveFullReport() {
   if (!report.value) {
     return
   }
-  downloadJson(report.value, `stig-manager-appinfo_${reportDate()}.json`)
+  downloadJson(report.value, `stig-manager-appinfo_${filenameComponentFromDate(reportDate())}.json`)
 }
 
 function saveShareableReport(options) {
@@ -90,38 +91,16 @@ function saveShareableReport(options) {
     return
   }
   const sharable = generateSharable(report.value, options)
-  downloadJson(sharable, `stig-manager-appinfo-shareable_${reportDate()}.json`)
+  downloadJson(sharable, `stig-manager-appinfo-shareable_${filenameComponentFromDate(reportDate())}.json`)
 }
 
-onMounted(() => fetchReport(true))
+onMounted(() => fetchReport(false))
 
 const activeTab = ref('requests')
 
 // Lazy-mount tab panels: only render a tab's content after it has been visited
 const visitedTabs = ref(new Set([activeTab.value]))
 watch(activeTab, tab => visitedTabs.value.add(tab))
-
-const tabsPt = {
-  root: {
-    style: {
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-    },
-  },
-}
-
-const tabPanelsPt = {
-  root: {
-    style: {
-      flex: '1',
-      padding: '0',
-      overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'column',
-    },
-  },
-}
 
 const tabPanelPt = {
   root: {
@@ -157,32 +136,32 @@ const tabPanelPt = {
         </div>
 
         <div class="report-tabs">
-          <Tabs v-model:value="activeTab" :pt="tabsPt">
-            <TabList>
-              <Tab value="requests">
+          <Tabs v-model:value="activeTab" :pt="reportTabsPt">
+            <TabList :pt="reportTabListPt()">
+              <Tab value="requests" :pt="reportTabPt()">
                 <i class="pi pi-arrow-right-arrow-left tab-icon" /> Requests
               </Tab>
-              <Tab value="collections">
-                <img :src="collectionSvg" class="tab-svg-icon" alt="" /> Collections
+              <Tab value="collections" :pt="reportTabPt()">
+                <img :src="collectionSvg" class="tab-svg-icon" alt=""> Collections
               </Tab>
-              <Tab value="users">
+              <Tab value="users" :pt="reportTabPt()">
                 <i class="pi pi-user tab-icon" /> Users
               </Tab>
-              <Tab value="groups">
+              <Tab value="groups" :pt="reportTabPt()">
                 <i class="pi pi-users tab-icon" /> Groups
               </Tab>
-              <Tab value="mysql">
+              <Tab value="mysql" :pt="reportTabPt()">
                 <i class="pi pi-database tab-icon" /> MySQL
               </Tab>
-              <Tab value="nodejs">
-                <img :src="jsIconGreenSvg" class="tab-svg-icon" alt="" /> Node.js
+              <Tab value="nodejs" :pt="reportTabPt()">
+                <img :src="jsIconGreenSvg" class="tab-svg-icon" alt=""> Node.js
               </Tab>
-              <Tab value="json">
+              <Tab value="json" :pt="reportTabPt()">
                 <i class="pi pi-code tab-icon" /> JSON Tree
               </Tab>
             </TabList>
 
-            <TabPanels :pt="tabPanelsPt">
+            <TabPanels :pt="reportTabPanelsPt">
               <TabPanel value="requests" :pt="tabPanelPt">
                 <RequestsTab v-if="visitedTabs.has('requests')" :requests="report?.requests ?? null" :users="report?.users ?? null" />
               </TabPanel>
@@ -232,9 +211,6 @@ const tabPanelPt = {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--color-background-dark);
-  border: 1px solid var(--color-border-default);
-  border-radius: 6px;
 }
 
 .appinfo-content {
@@ -253,56 +229,8 @@ const tabPanelPt = {
   display: flex;
   flex-direction: column;
   background: var(--color-background-light);
-  border: 1px solid var(--color-border-default);
   border-radius: 6px;
   overflow: hidden;
-}
-
-:deep(.p-tablist) {
-  background: var(--color-background-subtle);
-  border-bottom: 1px solid var(--color-border-default);
-  padding: 0.4rem 0.6rem 0;
-}
-
-:deep(.p-tablist-tab-list) {
-  gap: 0.35rem;
-  background: transparent;
-  border: none;
-}
-
-:deep(.p-tab) {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.55rem 1.1rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-text-dim);
-  background: color-mix(in srgb, var(--color-background-dark) 40%, transparent);
-  border: 1px solid var(--color-border-default);
-  border-bottom: none;
-  border-radius: 6px 6px 0 0;
-  transition: all 0.15s ease;
-  cursor: pointer;
-  margin-bottom: -1px;
-}
-
-:deep(.p-tab:hover:not(.p-tab-active)) {
-  color: var(--color-text-primary);
-  background: color-mix(in srgb, var(--color-background-light) 60%, transparent);
-}
-
-:deep(.p-tab-active) {
-  color: var(--color-primary-highlight, #3b82f6);
-  background: var(--color-background-light);
-  border-color: var(--color-border-default);
-  border-bottom-color: var(--color-background-light);
-  font-weight: 700;
-  box-shadow: 0 -2px 0 0 var(--color-primary-highlight, #3b82f6) inset;
-}
-
-:deep(.p-tab-active .tab-icon) {
-  color: var(--color-primary-highlight, #3b82f6);
 }
 
 .tab-icon {

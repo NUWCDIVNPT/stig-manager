@@ -112,23 +112,23 @@ const reportVersion = computed(() => props.report?.stigmanVersion ?? props.repor
   background: var(--color-background-subtle);
   border: 1px solid var(--color-border-default);
   border-radius: 8px;
-  padding: 0.85rem 1.1rem;
+  padding: 0.55rem 0.9rem;
   overflow: hidden;
 }
 
 .share-callout-title {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-text-bright);
   text-align: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
 }
 
 .share-callout p {
   margin: 0;
   color: var(--color-text-dim);
-  font-size: 1.05rem;
-  line-height: 1.5;
+  font-size: 0.9rem;
+  line-height: 1.35;
 }
 
 .share-callout a {

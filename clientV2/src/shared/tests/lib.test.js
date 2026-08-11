@@ -162,6 +162,12 @@ describe('formatBytes', () => {
     expect(formatBytes(1024 * 1024 * 5)).toBe('5.00 MB')
     expect(formatBytes(1024 * 1024 * 2.5)).toBe('2.50 MB')
   })
+
+  it('renders binary-prefixed sizes with the "binary" style', () => {
+    expect(formatBytes(0, { style: 'binary' })).toBe('0 Bytes')
+    expect(formatBytes(1024, { style: 'binary' })).toBe('1 KiB')
+    expect(formatBytes(1048576 + 524288, { style: 'binary' })).toBe('1.5 MiB')
+  })
 })
 
 describe('durationToNow', () => {

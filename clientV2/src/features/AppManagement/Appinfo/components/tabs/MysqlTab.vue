@@ -7,9 +7,8 @@ import {
   buildMysqlSummary,
   buildMysqlTableRows,
 } from '../../lib/adapters/mysqlRows.js'
-import MysqlStatusTable from '../mysql/MysqlStatusTable.vue'
+import KeyValueTable from '../common/KeyValueTable.vue'
 import MysqlTablesTable from '../mysql/MysqlTablesTable.vue'
-import MysqlVariablesTable from '../mysql/MysqlVariablesTable.vue'
 
 const props = defineProps({
   mysql: { type: Object, default: null },
@@ -19,6 +18,22 @@ const tableRows = computed(() => buildMysqlTableRows(props.mysql))
 const summary = computed(() => (props.mysql ? buildMysqlSummary(props.mysql) : null))
 const variableRows = computed(() => buildKeyValueRows(props.mysql?.variables))
 const statusRows = computed(() => buildKeyValueRows(props.mysql?.status))
+
+const VARIABLES_CONFIG = {
+  title: 'Variables',
+  keyHeader: 'Variable',
+  valueHeader: 'Value',
+  noun: 'variable',
+  exportFilename: 'appinfo-mysql-variables',
+}
+
+const STATUS_CONFIG = {
+  title: 'Status',
+  keyHeader: 'Variable',
+  valueHeader: 'Value',
+  noun: 'variable',
+  exportFilename: 'appinfo-mysql-status',
+}
 
 const splitterPt = {
   root: { style: 'border: none; background: transparent; height: 100%;' },
@@ -40,10 +55,10 @@ const bottomSplitterPt = {
     <SplitterPanel :size="45" :min-size="15" class="mysql-panel bottom-row-panel">
       <Splitter :pt="bottomSplitterPt">
         <SplitterPanel :size="50" :min-size="20" class="mysql-panel subpanel-table">
-          <MysqlVariablesTable :rows="variableRows" />
+          <KeyValueTable v-bind="VARIABLES_CONFIG" :rows="variableRows" />
         </SplitterPanel>
         <SplitterPanel :size="50" :min-size="20" class="mysql-panel subpanel-table">
-          <MysqlStatusTable :rows="statusRows" />
+          <KeyValueTable v-bind="STATUS_CONFIG" :rows="statusRows" />
         </SplitterPanel>
       </Splitter>
     </SplitterPanel>

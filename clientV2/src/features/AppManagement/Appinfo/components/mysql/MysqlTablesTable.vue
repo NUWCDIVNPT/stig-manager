@@ -4,7 +4,8 @@ import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
 import ColumnSearchFilter from '../../../../../components/common/ColumnSearchFilter.vue'
 import ColumnToggle from '../../../../../components/common/ColumnToggle.vue'
-import { formatBytes, formatNumber, formatUptime } from '../../lib/appInfoFormatters.js'
+import { formatBytes } from '../../../../../shared/lib.js'
+import { formatNumber, formatUptime } from '../../lib/appInfoFormatters.js'
 import { reportTablePt } from '../../lib/appInfoTablePt.js'
 import ReportTableFooter from '../common/ReportTableFooter.vue'
 
@@ -34,7 +35,7 @@ const summaryText = computed(() => {
   if (!props.summary) {
     return ''
   }
-  return `Data ≈ ${formatBytes(props.summary.dataLength)} ｜ Indexes ≈ ${formatBytes(props.summary.indexLength)} `
+  return `Data ≈ ${formatBytes(props.summary.dataLength, { style: 'binary' })} ｜ Indexes ≈ ${formatBytes(props.summary.indexLength, { style: 'binary' })} `
     + `｜ Version ${props.summary.version} ｜ Up ${formatUptime(props.summary.uptime)}`
 })
 

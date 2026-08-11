@@ -14,15 +14,3 @@ export function formatUptime(uptime) {
   const seconds = Math.floor(uptime % 60)
   return `${days}d ${hours}h ${minutes}m ${seconds}s`
 }
-
-/** Bytes -> "1.23 MiB", matching the legacy client's formatBytes. */
-export function formatBytes(bytes, decimals = 2) {
-  if (!+bytes) {
-    return '0 Bytes'
-  }
-  const k = 1024
-  const dm = decimals < 0 ? 0 : decimals
-  const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${Number.parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`
-}

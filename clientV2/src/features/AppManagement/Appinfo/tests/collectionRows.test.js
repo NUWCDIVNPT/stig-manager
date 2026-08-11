@@ -46,8 +46,8 @@ const collection = {
   },
   settings: {
     fields: {
-      detail: { enabled: true, required: false },
-      comment: { enabled: true, required: false },
+      detail: { enabled: 'always', required: 'findings' },
+      comment: { enabled: 'findings', required: 'optional' },
     },
     status: { canAccept: true, resetCriteria: 'result', minAcceptGrant: 'manage' },
   },
@@ -68,7 +68,7 @@ describe('buildCollectionRows', () => {
       range00: 1,
       restricted: 4,
       collectionLabels: 6,
-      detailEnabled: true,
+      detailEnabled: 'always',
       canAccept: true,
       resetCriteria: 'result',
       minAcceptGrant: 'manage',

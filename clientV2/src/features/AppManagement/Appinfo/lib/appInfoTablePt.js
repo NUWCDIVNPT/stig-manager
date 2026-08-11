@@ -6,12 +6,5 @@ import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
  * header cell padding (0.75rem 1rem) wastes too much vertical space here.
  */
 export function reportTablePt(options) {
-  const pt = compactTablePt(options)
-  return {
-    ...pt,
-    column: {
-      ...pt.column,
-      headerCell: { style: `${pt.column.headerCell.style} padding: 0.25rem 0.6rem;` },
-    },
-  }
+  return compactTablePt({ ...options, headerPadding: '0.25rem 0.6rem' })
 }

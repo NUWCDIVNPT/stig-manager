@@ -13,6 +13,7 @@ import {
   buildGroupNameLookup,
 } from '../../lib/adapters/collectionRows.js'
 import { buildUsernameLookup } from '../../lib/adapters/requestRows.js'
+import { reportTabListPt, reportTabPanelsPt, reportTabPt, reportTabsPt } from '../../lib/reportTabsPt.js'
 import CollectionGrantsTable from '../collections/CollectionGrantsTable.vue'
 import CollectionLabelsTable from '../collections/CollectionLabelsTable.vue'
 import CollectionRolesTable from '../collections/CollectionRolesTable.vue'
@@ -67,20 +68,6 @@ const splitterPt = {
   gutter: { style: 'background: var(--color-border-dark);' },
 }
 
-const tabsPt = {
-  root: { style: 'display: flex; flex-direction: column; height: 100%;' },
-}
-
-// The default Tab padding (1rem 1.125rem) is sized for top-level nav; these
-// inner tabs sit above already-labeled tables, so a slim bar reads better.
-const tabPt = {
-  root: { style: 'padding: 0.55rem 1rem; font-size: 1rem;' },
-}
-
-const tabPanelsPt = {
-  root: { style: 'flex: 1; padding: 0; overflow: hidden; display: flex; flex-direction: column;' },
-}
-
 const tabPanelPt = {
   root: { style: 'flex: 1; overflow: hidden; height: 100%; display: flex; flex-direction: column;' },
 }
@@ -90,13 +77,13 @@ const tabPanelPt = {
   <div class="collections-tab">
     <Splitter :key="grantsOpen" layout="vertical" :pt="splitterPt">
       <SplitterPanel :size="grantsOpen ? 62 : 100" :min-size="25" class="collections-panel">
-        <Tabs v-model:value="activeTab" :pt="tabsPt">
-          <TabList>
-            <Tab v-for="tab in TABS" :key="tab.value" :value="tab.value" :pt="tabPt">
+        <Tabs v-model:value="activeTab" :pt="reportTabsPt">
+          <TabList :pt="reportTabListPt({ compact: true })">
+            <Tab v-for="tab in TABS" :key="tab.value" :value="tab.value" :pt="reportTabPt({ compact: true })">
               {{ tab.label }}
             </Tab>
           </TabList>
-          <TabPanels :pt="tabPanelsPt">
+          <TabPanels :pt="reportTabPanelsPt">
             <TabPanel v-for="tab in TABS" :key="tab.value" :value="tab.value" :pt="tabPanelPt">
               <component
                 :is="tab.component"
@@ -177,47 +164,5 @@ const tabPanelPt = {
 .collapsed-name {
   font-weight: 600;
   color: var(--color-text-primary);
-}
-
-:deep(.p-tablist) {
-  background: var(--color-background-subtle);
-  border-bottom: 1px solid var(--color-border-default);
-  padding: 0.35rem 0.5rem 0;
-}
-
-:deep(.p-tablist-tab-list) {
-  gap: 0.25rem;
-  background: transparent;
-  border: none;
-}
-
-:deep(.p-tab) {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.45rem 0.85rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-text-dim);
-  background: color-mix(in srgb, var(--color-background-dark) 40%, transparent);
-  border: 1px solid var(--color-border-default);
-  border-bottom: none;
-  border-radius: 4px 4px 0 0;
-  transition: all 0.15s ease;
-  cursor: pointer;
-  margin-bottom: -1px;
-}
-
-:deep(.p-tab:hover:not(.p-tab-active)) {
-  color: var(--color-text-primary);
-  background: color-mix(in srgb, var(--color-background-light) 60%, transparent);
-}
-
-:deep(.p-tab-active) {
-  color: var(--color-primary-highlight, #3b82f6);
-  background: var(--color-background-light);
-  border-color: var(--color-border-default);
-  border-bottom-color: var(--color-background-light);
-  font-weight: 700;
-  box-shadow: 0 -2px 0 0 var(--color-primary-highlight, #3b82f6) inset;
 }
 </style>

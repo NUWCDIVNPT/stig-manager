@@ -1,0 +1,53 @@
+/* Shared, unscoped styles for the report's boxed tabs (see lib/reportTabsPt.js).
+   Plain CSS so these rules reach PrimeVue's internally rendered Tab/TabList nodes
+   without :deep() — :pt covers layout, class hooks, and the active state (via
+   context.active), but :hover has no pt equivalent. */
+
+.report-tablist {
+  background: var(--color-background-subtle);
+  border-bottom: 1px solid var(--color-border-default);
+  padding: 0.4rem 0.6rem 0;
+}
+
+.report-tablist--compact {
+  padding: 0.35rem 0.5rem 0;
+}
+
+.report-tablist-list {
+  gap: 0.35rem;
+  background: transparent;
+  border: none;
+}
+
+.report-tablist--compact .report-tablist-list {
+  gap: 0.25rem;
+}
+
+.report-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.1rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-border-default);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+
+.report-tab--compact {
+  padding: 0.45rem 0.85rem;
+  font-size: 0.95rem;
+  border-radius: 4px 4px 0 0;
+}
+
+.report-tab:hover:not([data-p-active='true']) {
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-background-light) 60%, transparent);
+}
+
+.report-tab[data-p-active='true'] .tab-icon {
+  color: var(--color-primary-highlight, #3b82f6);
+}

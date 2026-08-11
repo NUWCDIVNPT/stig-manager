@@ -5,7 +5,7 @@ import {
   buildMysqlTableRows,
 } from '../lib/adapters/mysqlRows.js'
 import { buildCpuRows, buildNodejsSummary } from '../lib/adapters/runtimeRows.js'
-import { formatBytes, formatUptime } from '../lib/appInfoFormatters.js'
+import { formatUptime } from '../lib/appInfoFormatters.js'
 
 const mysql = {
   version: '8.0.36',
@@ -82,13 +82,5 @@ describe('formatUptime', () => {
   it('renders days/hours/minutes/seconds', () => {
     expect(formatUptime(90061)).toBe('1d 1h 1m 1s')
     expect(formatUptime(0)).toBe('0d 0h 0m 0s')
-  })
-})
-
-describe('formatBytes', () => {
-  it('renders binary-prefixed sizes', () => {
-    expect(formatBytes(0)).toBe('0 Bytes')
-    expect(formatBytes(1024)).toBe('1 KiB')
-    expect(formatBytes(1048576 + 524288)).toBe('1.5 MiB')
   })
 })

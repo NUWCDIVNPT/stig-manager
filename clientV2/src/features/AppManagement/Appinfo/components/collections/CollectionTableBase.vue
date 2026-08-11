@@ -241,7 +241,11 @@ function rowClass(data) {
 <style>
 /* row-class lands inside the DataTable child component, so this cannot be scoped */
 .collection-row-disabled > td {
-  color: var(--color-text-dim) !important;
+  color: var(--color-text-error) !important;
   font-style: italic;
+}
+
+.collection-row-disabled .dim-value {
+  color: var(--color-text-error) !important;
 }
 </style>

@@ -8,7 +8,7 @@ const ADMIN_ROUTE_LABELS = {
   'admin-user-groups': 'User Groups',
   'admin-stigs': 'STIGs',
   'admin-service-jobs': 'Service Jobs',
-  'admin-app-info': 'App Info',
+  'admin-app-info': 'Application Info',
   'admin-transfer': 'Export & Import',
 }
 

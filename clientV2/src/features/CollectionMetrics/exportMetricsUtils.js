@@ -9,15 +9,10 @@ import {
   mapAssetToLabel,
   STIG_FIELDS,
 } from '../../shared/csv.js'
-import { filenameEscaped } from '../../shared/lib.js'
+import { filenameComponentFromDate, filenameEscaped } from '../../shared/lib.js'
 import { getDownloadUrl } from '../../shared/serviceWorker.js'
 
 export { ASSET_FIELDS, generateCsv, STIG_FIELDS }
-
-function filenameComponentFromDate() {
-  const d = new Date()
-  return d.toISOString().replace(/:|\d{2}\.\d{3}/g, '')
-}
 
 const delimiterOptions = [
   { label: 'Comma', value: 'comma', string: ',' },

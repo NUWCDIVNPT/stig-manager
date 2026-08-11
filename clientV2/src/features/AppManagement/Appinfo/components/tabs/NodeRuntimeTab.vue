@@ -5,10 +5,8 @@ import { computed } from 'vue'
 import { buildKeyValueRows } from '../../lib/adapters/mysqlRows.js'
 import { buildCpuRows, buildNodejsSummary } from '../../lib/adapters/runtimeRows.js'
 import { formatUptime } from '../../lib/appInfoFormatters.js'
+import KeyValueTable from '../common/KeyValueTable.vue'
 import CpuTable from '../runtime/CpuTable.vue'
-import EnvironmentVariablesTable from '../runtime/EnvironmentVariablesTable.vue'
-import MemoryTable from '../runtime/MemoryTable.vue'
-import OperatingSystemTable from '../runtime/OperatingSystemTable.vue'
 
 const props = defineProps({
   nodejs: { type: Object, default: null },
@@ -27,6 +25,31 @@ const environmentTitle = computed(() => {
   return `Environment ｜ Version ${version} ｜ up ${formatUptime(uptime)}`
 })
 
+const ENVIRONMENT_CONFIG = {
+  keyHeader: 'Variable',
+  valueHeader: 'Value',
+  valueAlign: 'left',
+  noun: 'item',
+  exportFilename: 'appinfo-nodejs-environment',
+}
+
+const MEMORY_CONFIG = {
+  title: 'Memory',
+  keyHeader: 'Key',
+  valueHeader: 'Value',
+  noun: 'key',
+  exportFilename: 'appinfo-nodejs-memory',
+}
+
+const OS_CONFIG = {
+  title: 'OS',
+  keyHeader: 'Key',
+  valueHeader: 'Value',
+  valueAlign: 'left',
+  noun: 'key',
+  exportFilename: 'appinfo-nodejs-os',
+}
+
 const splitterPt = {
   root: { style: 'border: none; background: transparent; height: 100%;' },
   gutter: { style: 'background: var(--color-border-dark);' },
@@ -41,7 +64,7 @@ const bottomSplitterPt = {
 <template>
   <Splitter layout="vertical" :pt="splitterPt">
     <SplitterPanel :size="55" :min-size="20" class="nodejs-panel">
-      <EnvironmentVariablesTable :rows="environmentRows" :title="environmentTitle" />
+      <KeyValueTable v-bind="ENVIRONMENT_CONFIG" :rows="environmentRows" :title="environmentTitle" />
     </SplitterPanel>
 
     <SplitterPanel :size="45" :min-size="15" class="nodejs-panel bottom-row-panel">
@@ -50,10 +73,10 @@ const bottomSplitterPt = {
           <CpuTable :rows="cpuRows" />
         </SplitterPanel>
         <SplitterPanel :size="30" :min-size="15" class="nodejs-panel subpanel-table">
-          <MemoryTable :rows="memoryRows" />
+          <KeyValueTable v-bind="MEMORY_CONFIG" :rows="memoryRows" />
         </SplitterPanel>
         <SplitterPanel :size="30" :min-size="15" class="nodejs-panel subpanel-table">
-          <OperatingSystemTable :rows="osRows" />
+          <KeyValueTable v-bind="OS_CONFIG" :rows="osRows" />
         </SplitterPanel>
       </Splitter>
     </SplitterPanel>
