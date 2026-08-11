@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from 'vue'
-import StatusFooter from '../../../../../components/common/StatusFooter.vue'
 import collectionSvg from '../../../../../assets/collection.svg'
 import lockSvg from '../../../../../assets/lock.svg'
+import StatusFooter from '../../../../../components/common/StatusFooter.vue'
 
 const props = defineProps({
   count: { type: Number, default: 0 },
@@ -30,10 +30,10 @@ const NOUN_ICON_MAP = {
 }
 
 const computedIconSrc = computed(() => {
-  if (props.iconSrc) return props.iconSrc
+  if (props.iconSrc) { return props.iconSrc }
   const lowerNoun = props.noun?.toLowerCase()
-  if (lowerNoun === 'collection') return collectionSvg
-  if (lowerNoun === 'grant') return lockSvg
+  if (lowerNoun === 'collection') { return collectionSvg }
+  if (lowerNoun === 'grant') { return lockSvg }
   return null
 })
 
