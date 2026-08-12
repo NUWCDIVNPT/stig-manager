@@ -213,6 +213,18 @@ async function loadApp() {
 }
 
 async function setupOidcWorker() {
+  // The OIDC worker is deliberately loaded from the legacy client's path, outside
+  // this client's own tree. A SharedWorker instance is keyed by script URL *and*
+  // name, so both clients must request the identical URL to share one worker and,
+  // with it, one authenticated session. Localizing this path to clientV2 would
+  // silently spawn a second worker: no error, but sessions stop being shared and
+  // users see unexplained reauth prompts.
+  //
+  // The worker itself is co-serving aware. It tracks clientReauthUri and
+  // clientV2ReauthUri separately and broadcasts both authorizations, so each
+  // client picks its own. When the legacy client is sunset, move
+  // client/src/js/workers/oidc-worker.js into this client and drop the
+  // clientReauthUri branch.
   const oidcworkerUrl = STIGMAN.Env.pathPrefix ? '../js/workers/oidc-worker.js' : new URL('../js/workers/oidc-worker.js', window.location.href).href
   STIGMAN.oidcWorker = {
     async logout() {
