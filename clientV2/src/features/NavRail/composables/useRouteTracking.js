@@ -2,16 +2,6 @@ import { onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRecentViews } from './useRecentViews.js'
 
-const ADMIN_ROUTE_LABELS = {
-  'admin-collections': 'Collections',
-  'admin-users': 'Users',
-  'admin-user-groups': 'User Groups',
-  'admin-stigs': 'STIGs',
-  'admin-service-jobs': 'Service Jobs',
-  'admin-app-info': 'App Info',
-  'admin-transfer': 'Export & Import',
-}
-
 export function useRouteTracking() {
   const router = useRouter()
   const { addView } = useRecentViews()
@@ -19,9 +9,11 @@ export function useRouteTracking() {
   const unregister = router.afterEach((to) => {
     const { name, fullPath } = to
 
-    // Admin routes → one entry per admin section
+    // Admin routes → one entry per admin section, labeled from the route's
+    // breadcrumb meta so the label lives only in router/index.js
     if (name?.startsWith('admin')) {
-      const label = ADMIN_ROUTE_LABELS[name] ? `Admin / ${ADMIN_ROUTE_LABELS[name]}` : 'Admin'
+      const section = to.meta?.breadcrumbs?.at(-1)?.label
+      const label = section ? `Admin / ${section}` : 'Admin'
       addView({
         key: name,
         url: fullPath,

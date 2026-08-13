@@ -143,6 +143,23 @@ export function calculateCora(metrics) {
   }
 }
 
+export function filenameComponentFromDate(date = new Date()) {
+  let d = new Date(date)
+  // Caller-supplied dates can come from user-loaded files; fall back to now
+  if (Number.isNaN(d.getTime())) {
+    d = new Date()
+  }
+  return d.toISOString().replace(/:|\d{2}\.\d{3}/g, '')
+}
+
+const localeNumberFormat = new Intl.NumberFormat()
+
+/** Locale-formatted number; nullish/non-numbers render as '0'. */
+export function formatNumber(value) {
+  const n = Number(value)
+  return Number.isFinite(n) ? localeNumberFormat.format(n) : '0'
+}
+
 export function filenameEscaped(value) {
   /**
    * Regexes match characters that need to be escaped in filenames.

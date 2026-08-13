@@ -162,6 +162,7 @@ describe('formatBytes', () => {
     expect(formatBytes(1024 * 1024 * 5)).toBe('5.00 MB')
     expect(formatBytes(1024 * 1024 * 2.5)).toBe('2.50 MB')
   })
+
 })
 
 describe('durationToNow', () => {

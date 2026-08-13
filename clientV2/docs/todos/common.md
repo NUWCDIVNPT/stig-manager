@@ -22,6 +22,12 @@ Most originated from the Findings feature review (2026-06-10) — see
   export output; use `exportable` / `exportHeader` on Column. Likely applies to every
   grid using the decorate-rows pattern.
 
+- [ ] **CSV exports omit the classification "Marking" column.**
+  The legacy client prepends a `Marking` header with `(${apiConfig.classification})`
+  in every row (`client/src/js/ExportButton.js:134`); clientV2 grids use PrimeVue
+  `exportCSV`, which has no such column anywhere. Product decision needed, then a
+  shared fix (all grids), not per-feature.
+
 ## Hardening (latent — not reachable today)
 
 - [ ] **Manual state clears bypass `useAsyncState`'s race guard.**

@@ -11,8 +11,8 @@ const UsersAdmin = () => import('../features/AppManagement/Users/components/User
 const UserGroupsAdmin = () => import('../features/AppManagement/UserGroups/components/UserGroups.vue')
 const StigManage = () => import('../features/AppManagement/STIGManage/components/STIGManage.vue')
 const ServiceJobs = () => import('../features/ServiceJobs/components/ServiceJobs.vue')
-const AppInfo = () => import('../features/AppInfo/components/AppInfo.vue')
-const AppData = () => import('../features/AppManagement/Appdata/components/AppData.vue')
+const AppInfo = () => import('../features/AppManagement/Appinfo/components/AppInfo.vue')
+const ExportImportManage = () => import('../features/AppManagement/Appdata/components/AppData.vue')
 const StigLibrary = () => import('../features/STIGLibrary/components/StigLibrary.vue')
 const AppManagementSelection = () => import('../features/AppManagement/components/AppManagementSelection.vue')
 const CollectionsAdmin = () => import('../features/AppManagement/Collections/components/Collections.vue')
@@ -203,12 +203,12 @@ const routes = [
     path: '/app-management/app-info',
     name: 'admin-app-info',
     component: AppInfo,
-    meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'App Info' }] },
+    meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Application Info' }] },
   },
   {
-    path: '/app-management/appdata',
+    path: '/app-management/transfer',
     name: 'admin-transfer',
-    component: AppData,
+    component: ExportImportManage,
     meta: { requiresAdmin: true, isEnabled: isAppDataEnabled, disabledRedirect: 'app-management', breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Export & Import' }] },
   },
   {

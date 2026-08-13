@@ -1,0 +1,140 @@
+/* Shared, unscoped styles for the report's boxed tabs (see lib/reportTabsPt.js).
+   Plain CSS so these rules reach PrimeVue's internally rendered Tab/TabList nodes
+   without :deep() — :pt covers layout, class hooks, and the active state (via
+   context.active), but :hover has no pt equivalent. */
+
+.report-tablist {
+  background: var(--color-background-subtle);
+  border-bottom: 1px solid var(--color-border-default);
+  padding: 0.4rem 0.6rem 0;
+}
+
+.report-tablist--compact {
+  padding: 0.35rem 0.5rem 0;
+}
+
+.report-tablist-list {
+  gap: 0.35rem;
+  background: transparent;
+  border: none;
+}
+
+.report-tablist--compact .report-tablist-list {
+  gap: 0.25rem;
+}
+
+.report-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.1rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-border-default);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+
+.report-tab--compact {
+  padding: 0.45rem 0.85rem;
+  font-size: 0.95rem;
+  border-radius: 4px 4px 0 0;
+}
+
+.report-tab:hover:not([data-p-active='true']) {
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-background-light) 60%, transparent);
+}
+
+.report-tab[data-p-active='true'] .tab-icon {
+  color: var(--color-primary-highlight);
+}
+
+/* Report table shell (see components/common/ReportTableBase.vue). Descendant
+   selectors are scoped under .report-table-panel so the generic class names
+   (dim-value, flex-fill, ...) cannot leak into other features. */
+
+.report-table-panel {
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.report-table-title {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0.45rem 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text-bright);
+  background: var(--color-background-subtle);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+/* Denser variant for tables hosting a ColumnToggle, whose button otherwise
+   forces the bar to ~2.4rem tall */
+.report-table-title--compact {
+  padding: 0.2rem 0.65rem;
+  font-size: 0.95rem;
+  --checklist-control-height: 1.65rem;
+}
+
+.report-table-title .title-sep {
+  color: var(--color-text-dim);
+  margin: 0 0.35rem;
+}
+
+.report-table-title .title-summary {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.report-table-title .title-hint {
+  margin-left: 0.75rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--color-text-dim);
+}
+
+.report-table-title .title-spacer {
+  flex: 1;
+}
+
+.report-table-panel .flex-fill {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.report-table-panel .column-header-with-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.report-table-panel .numeric-header {
+  display: inline-block;
+  text-align: right;
+  width: 100%;
+}
+
+.report-table-panel .dim-value {
+  color: var(--color-text-dim);
+}
+
+.report-table-panel .bool-true {
+  color: var(--color-success);
+  font-size: 0.95rem;
+}
+
+.report-table-panel .bool-false {
+  color: var(--color-text-dim);
+  font-size: 0.95rem;
+}

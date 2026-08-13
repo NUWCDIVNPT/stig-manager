@@ -18,24 +18,31 @@ function onToggle(val) {
   emit('update:modelValue', val)
 }
 
+// The theme's small variant sizes root/box/icon from matched tokens,
+// keeping the check centered in the box
+const compactCheckboxPt = {
+  root: { class: 'p-checkbox-sm' },
+}
+
 const columnTogglePT = {
   root: { class: 'column-toggle-select' },
   label: { style: 'padding: 0.35rem 0.75rem; display: flex; align-items: center;' },
-  trigger: { style: 'width: auto; padding-right: 0.75rem; color: var(--color-text-bright);' },
-  panel: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,0.6);' },
-  header: { style: 'background: var(--color-background-dark); border-bottom: 1px solid var(--color-border-light); padding: 0.35rem 0.6rem;' },
-  item: ({ context }) => ({
+  dropdown: { style: 'width: auto; padding-right: 0.75rem; color: var(--color-text-bright);' },
+  overlay: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,0.6);' },
+  header: { style: 'background: var(--color-background-dark); border-bottom: 1px solid var(--color-border-light); padding: 0.35rem 0.6rem; gap: 0.5rem;' },
+  option: ({ context }) => ({
     style: {
       color: context.selected ? 'var(--color-text-bright)' : 'var(--color-text-primary)',
-      padding: '0.2rem 0.4rem',
+      padding: '0.2rem 0.6rem',
+      gap: '0.5rem',
       fontSize: '1rem',
       transition: 'background 0.12s',
       background: context.focused ? 'var(--color-background-light)' : 'transparent',
     },
   }),
-  headerCheckboxContainer: { style: 'margin-right: 0.5rem;' },
-  itemCheckboxContainer: { style: 'margin-right: 0.5rem;' },
-  filterInput: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border: 1px solid var(--color-border-default); padding: 0.25rem 0.45rem;' },
+  pcHeaderCheckbox: compactCheckboxPt,
+  pcOptionCheckbox: compactCheckboxPt,
+  pcFilter: { root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border: 1px solid var(--color-border-default); padding: 0.25rem 0.45rem;' } },
   filterIcon: { style: 'color: var(--color-text-dim);' },
 }
 </script>
@@ -47,6 +54,7 @@ const columnTogglePT = {
     option-label="header"
     placeholder="Columns"
     :pt="columnTogglePT"
+    scroll-height="22rem"
     filter
     @update:model-value="onToggle"
   >

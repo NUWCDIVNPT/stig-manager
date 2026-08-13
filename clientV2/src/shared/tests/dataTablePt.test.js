@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { compactTablePt } from './dataTablePt.js'
+import { compactTablePt } from '../lib/dataTablePt.js'
 
 describe('compactTablePt', () => {
   it('defaults to a flush (borderless) footer and no body font size', () => {
@@ -23,5 +23,15 @@ describe('compactTablePt', () => {
     const pt = compactTablePt()
     expect(pt.root.style).toContain('var(--p-datatable-row-background)')
     expect(pt.tableContainer.style).toContain('var(--p-datatable-row-background)')
+  })
+
+  it('defaults the header cell to font styling with no padding override', () => {
+    const pt = compactTablePt()
+    expect(pt.column.headerCell.style).toBe('font-size: 1rem; font-weight: 600;')
+  })
+
+  it('appends a header-cell padding when provided', () => {
+    const pt = compactTablePt({ headerPadding: '0.25rem 0.6rem' })
+    expect(pt.column.headerCell.style).toContain('padding: 0.25rem 0.6rem;')
   })
 })
