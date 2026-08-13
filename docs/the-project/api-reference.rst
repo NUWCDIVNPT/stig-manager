@@ -26,4 +26,14 @@ When sending a request from the test client, make sure ``authorizationCode`` is 
 
 The specification file itself, as built with this documentation, can be downloaded here: `stig-manager.yaml <../api-reference/stig-manager.yaml>`_
 
+
+Log Stream WebSocket API
+=========================
+
+The API also provides a WebSocket endpoint for streaming log messages in real time, defined by an `AsyncAPI 3.0 specification <https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/log-socket.yaml>`_. A browseable presentation is available here:
+
+`Open the Log Stream API Reference Browser <../api-reference/log-socket.html>`_
+
+The specification file can be downloaded here: `log-socket.yaml <../api-reference/log-socket.yaml>`_
+
 |

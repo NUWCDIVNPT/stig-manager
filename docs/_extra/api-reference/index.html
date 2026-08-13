@@ -34,9 +34,9 @@
         hideClientButton: true,
         theme: 'deepSpace',
         // Preselect the oauth scheme. Do not configure flows here: in Scalar
-        // 1.64.1 any flows entry makes an openIdConnect scheme lose its
-        // discovery UI (the editable configuration URL and its Fetch
-        // Configuration button) and breaks Authorize. After the discovery
+        // (verified through 1.65.0) any flows entry makes an openIdConnect
+        // scheme lose its discovery UI (the editable configuration URL and its
+        // Fetch Configuration button) and breaks Authorize. After the discovery
         // document is fetched, PKCE is enabled automatically when the
         // provider advertises S256; the client id must be entered manually.
         authentication: {

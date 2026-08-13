@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <title>STIG Manager Log Stream API Reference</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        margin: 0;
+        background-color: #1a1a1a;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <!-- scalar.standalone.js and log-socket.yaml are placed here at build time by conf.py -->
+    <script src="./scalar.standalone.js"></script>
+    <script>
+      Scalar.createApiReference('#app', {
+        url: './log-socket.yaml',
+        darkMode: true,
+        withDefaultFonts: false,
+        telemetry: false,
+        // No hooks into Scalar cloud services; see index.html for details.
+        showDeveloperTools: 'localhost',
+        agent: { disabled: true },
+        mcp: { disabled: true },
+        hideClientButton: true,
+        theme: 'deepSpace'
+      })
+    </script>
+  </body>
+</html>

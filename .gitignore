@@ -37,6 +37,7 @@ coverage/
 /docs/_build/doctrees/
 /docs/_extra/api-reference/scalar.standalone.js
 /docs/_extra/api-reference/stig-manager.yaml
+/docs/_extra/api-reference/log-socket.yaml
 
 # macOS file
 .DS_Store

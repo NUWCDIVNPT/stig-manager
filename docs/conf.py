@@ -22,8 +22,9 @@ import sphinx_rtd_theme
 
 
 # -- API Reference browser assets --------------------------------------------
-# The standalone API Reference browser page (_extra/api-reference/index.html)
-# requires two files that are generated at build time and not committed:
+# The standalone API Reference browser pages (_extra/api-reference/index.html
+# and log-socket.html) require files that are generated at build time and not
+# committed:
 #
 #   _extra/api-reference/scalar.standalone.js
 #       The Scalar API Reference bundle, downloaded from the jsDelivr CDN,
@@ -32,11 +33,12 @@ import sphinx_rtd_theme
 #       fetched copy allows fully offline builds.
 #
 #   _extra/api-reference/stig-manager.yaml
+#   _extra/api-reference/log-socket.yaml
 #       Copied from api/source/specification/ so each documentation build
-#       presents the API specification it was built alongside.
+#       presents the API specifications it was built alongside.
 
-scalar_version = '1.64.1'
-scalar_sha256 = '397f33ac357dd4de28ea124499e97e315db98251015ea7e2b9870b575a4a1c3d'
+scalar_version = '1.65.0'
+scalar_sha256 = 'b239df03d69061d849814ee8349c7bdec56441d00aa836ede64dd94b2ef1ded0'
 
 docs_dir = Path(__file__).resolve().parent
 api_reference_dir = docs_dir / '_extra' / 'api-reference'
@@ -62,20 +64,21 @@ def fetch_scalar_bundle():
     dest.write_bytes(data)
 
 
-def copy_api_specification():
-    src = docs_dir.parent / 'api' / 'source' / 'specification' / 'stig-manager.yaml'
-    dest = api_reference_dir / 'stig-manager.yaml'
-    if src.exists():
-        shutil.copyfile(src, dest)
-    elif not dest.exists():
-        raise RuntimeError(
-            f'API specification not found at {src} and no existing copy at {dest}. '
-            f'When building outside the repository, place a copy of the specification at {dest}.'
-        )
+def copy_api_specifications():
+    for filename in ('stig-manager.yaml', 'log-socket.yaml'):
+        src = docs_dir.parent / 'api' / 'source' / 'specification' / filename
+        dest = api_reference_dir / filename
+        if src.exists():
+            shutil.copyfile(src, dest)
+        elif not dest.exists():
+            raise RuntimeError(
+                f'API specification not found at {src} and no existing copy at {dest}. '
+                f'When building outside the repository, place a copy of the specification at {dest}.'
+            )
 
 
 fetch_scalar_bundle()
-copy_api_specification()
+copy_api_specifications()
 
 
 # -- Project information -----------------------------------------------------
