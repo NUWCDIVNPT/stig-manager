@@ -1,5 +1,7 @@
 const { randomUUID } = require('node:crypto')
+const EventEmitter = require('node:events')
 const config = require('./config')
+const logger = require('./logger')
 
 // res.eventInfo keys the capture logic consumes itself; everything else on
 // eventInfo passes through verbatim to envelope.info (design §6).
@@ -79,7 +81,79 @@ function buildEnvelope (req, res, options = {}) {
   return envelope
 }
 
+const EVENT_NAME = 'event'
+
+const emitter = new EventEmitter()
+// SSE will eventually mean one listener per connected client, as logSocket
+// sessions do on loggerEvents today. Remove the warning threshold rather than
+// pick an arbitrary ceiling.
+emitter.setMaxListeners(0)
+
+// Maps a caller's handler to the isolating shim actually registered, so that
+// off() can remove the right listener.
+const shims = new Map()
+
+/**
+ * Subscribe to every event on the bus. Consumers filter on
+ * envelope.resource / action / ids themselves.
+ *
+ * The handler is wrapped rather than registered directly: EventEmitter calls
+ * listeners synchronously inside emit(), so a throwing listener would
+ * propagate into the onFinished callback and starve every later listener,
+ * and an async listener's rejection would become an unhandled rejection that
+ * terminates the process. The shim makes a consumer bug cost a log line.
+ */
+function on (handler) {
+  if (shims.has(handler)) return
+  const shim = async (envelope) => {
+    try {
+      await handler(envelope)
+    }
+    catch (e) {
+      logger.writeError('eventBus', 'consumer-error', {
+        message: e?.message,
+        stack: e?.stack
+      })
+    }
+  }
+  shims.set(handler, shim)
+  emitter.on(EVENT_NAME, shim)
+}
+
+function off (handler) {
+  const shim = shims.get(handler)
+  if (!shim) return
+  emitter.off(EVENT_NAME, shim)
+  shims.delete(handler)
+}
+
+/**
+ * Called by the onFinished hook that bootstrap/extensionCheck.js registers for
+ * x-event annotated operations. The response has already been sent by the time
+ * this runs, so nothing here may throw.
+ */
+function finishHandler (req, res) {
+  try {
+    if (!req || !res) return
+    if (res._eventEmitted) return
+    if (!shouldEmit(req, res)) return
+    res._eventEmitted = true
+    emitter.emit(EVENT_NAME, buildEnvelope(req, res))
+  }
+  catch (e) {
+    logger.writeError('eventBus', 'emit-error', {
+      message: e?.message,
+      stack: e?.stack,
+      requestId: req?.requestId
+    })
+  }
+}
+
 module.exports = {
+  finishHandler,
+  on,
+  off,
+  // exported for unit tests
   shouldEmit,
   buildEnvelope
 }

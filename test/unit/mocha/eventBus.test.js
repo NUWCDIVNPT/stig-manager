@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import eventBus from '../../../api/source/utils/eventBus.js'
 
-const { shouldEmit, buildEnvelope } = eventBus
+const { shouldEmit, buildEnvelope, finishHandler, on, off } = eventBus
 
 // A minimally realistic req/res pair, shaped as express-openapi-validator
 // leaves them by the time an operation handler runs. The x-event annotation
@@ -151,5 +151,129 @@ describe('eventBus.buildEnvelope', function () {
     const env = buildEnvelope(makeReq(), makeRes(), { maxBody: 0 })
     expect(env.body).to.equal(undefined)
     expect(env.bodyBytes).to.be.a('number').greaterThan(0)
+  })
+})
+
+describe('eventBus consumer subscription', function () {
+  let handlers = []
+
+  // The bus is a singleton shared across tests in this file, so every
+  // subscription must be torn down or later tests see stray events.
+  afterEach(function () {
+    for (const h of handlers) off(h)
+    handlers = []
+  })
+
+  function subscribe (fn) {
+    handlers.push(fn)
+    on(fn)
+    return fn
+  }
+
+  it('delivers an emitted envelope to a subscriber', function () {
+    const received = []
+    subscribe(env => received.push(env))
+    finishHandler(makeReq(), makeRes())
+    expect(received).to.have.lengthOf(1)
+    expect(received[0].operationId).to.equal('replaceCollection')
+    expect(received[0].resource).to.equal('collection')
+  })
+
+  it('delivers to every subscriber', function () {
+    const a = [], b = []
+    subscribe(env => a.push(env))
+    subscribe(env => b.push(env))
+    finishHandler(makeReq(), makeRes())
+    expect(a).to.have.lengthOf(1)
+    expect(b).to.have.lengthOf(1)
+  })
+
+  it('does not emit when shouldEmit is false', function () {
+    const received = []
+    subscribe(env => received.push(env))
+    finishHandler(makeReq(), makeRes({ statusCode: 400 }))
+    expect(received).to.have.lengthOf(0)
+  })
+
+  it('emits at most once per request even if the hook fires twice', function () {
+    const received = []
+    subscribe(env => received.push(env))
+    const req = makeReq()
+    const res = makeRes()
+    finishHandler(req, res)
+    finishHandler(req, res)
+    expect(received).to.have.lengthOf(1)
+  })
+
+  it('off() stops delivery to that handler only', function () {
+    const a = [], b = []
+    const handlerA = env => a.push(env)
+    const handlerB = env => b.push(env)
+    subscribe(handlerA)
+    subscribe(handlerB)
+    off(handlerA)
+    finishHandler(makeReq(), makeRes())
+    expect(a).to.have.lengthOf(0)
+    expect(b).to.have.lengthOf(1)
+  })
+
+  it('off() with an unknown handler is a no-op', function () {
+    expect(() => off(() => {})).to.not.throw()
+  })
+
+  it('subscribing the same handler twice delivers once and off() removes it', function () {
+    const received = []
+    const handler = env => received.push(env)
+    subscribe(handler)
+    on(handler)
+    finishHandler(makeReq(), makeRes())
+    expect(received).to.have.lengthOf(1)
+    off(handler)
+    finishHandler(makeReq(), makeRes({ statusCode: 200 }))
+    expect(received).to.have.lengthOf(1)
+  })
+})
+
+describe('eventBus consumer isolation', function () {
+  let handlers = []
+  afterEach(function () {
+    for (const h of handlers) off(h)
+    handlers = []
+  })
+  function subscribe (fn) {
+    handlers.push(fn)
+    on(fn)
+    return fn
+  }
+
+  it('a throwing sync consumer does not starve later consumers', function () {
+    const later = []
+    subscribe(() => { throw new Error('boom') })
+    subscribe(env => later.push(env))
+    expect(() => finishHandler(makeReq(), makeRes())).to.not.throw()
+    expect(later).to.have.lengthOf(1)
+  })
+
+  it('a rejecting async consumer does not starve later consumers or reject out', async function () {
+    const later = []
+    subscribe(async () => { throw new Error('async boom') })
+    subscribe(env => later.push(env))
+    expect(() => finishHandler(makeReq(), makeRes())).to.not.throw()
+    expect(later).to.have.lengthOf(1)
+    // Give the rejected promise a turn to settle; an unhandled rejection here
+    // would fail the process, which is exactly what the shim prevents.
+    await new Promise(resolve => setImmediate(resolve))
+  })
+
+  it('a consumer error does not propagate out of finishHandler', function () {
+    subscribe(() => { throw new Error('boom') })
+    expect(() => finishHandler(makeReq(), makeRes())).to.not.throw()
+  })
+})
+
+describe('eventBus.finishHandler error containment', function () {
+  it('never throws even when the request object is malformed', function () {
+    expect(() => finishHandler({}, {})).to.not.throw()
+    expect(() => finishHandler(null, null)).to.not.throw()
   })
 })
