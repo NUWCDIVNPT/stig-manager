@@ -11,14 +11,14 @@ describe('fetchAppInfo', () => {
     vi.clearAllMocks()
   })
 
-  it('uses exact row counts by default', async () => {
+  it('uses estimated row counts by default', async () => {
     apiCall.mockResolvedValue({ schema: 'stig-manager-appinfo-v1.1' })
 
     await fetchAppInfo()
 
     expect(apiCall).toHaveBeenCalledWith(
       'getAppInfo',
-      { elevate: true, includeRowCounts: true },
+      { elevate: true, includeRowCounts: false },
       undefined,
       { signal: undefined },
     )

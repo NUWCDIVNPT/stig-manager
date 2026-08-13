@@ -144,7 +144,20 @@ export function calculateCora(metrics) {
 }
 
 export function filenameComponentFromDate(date = new Date()) {
-  return new Date(date).toISOString().replace(/:|\d{2}\.\d{3}/g, '')
+  let d = new Date(date)
+  // Caller-supplied dates can come from user-loaded files; fall back to now
+  if (Number.isNaN(d.getTime())) {
+    d = new Date()
+  }
+  return d.toISOString().replace(/:|\d{2}\.\d{3}/g, '')
+}
+
+const localeNumberFormat = new Intl.NumberFormat()
+
+/** Locale-formatted number; nullish/non-numbers render as '0'. */
+export function formatNumber(value) {
+  const n = Number(value)
+  return Number.isFinite(n) ? localeNumberFormat.format(n) : '0'
 }
 
 export function filenameEscaped(value) {
@@ -177,16 +190,7 @@ export function filenameEscaped(value) {
     .substring(0, 255)
 }
 
-const BINARY_BYTE_UNITS = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
-
-export function formatBytes(bytes, { decimals = 2, style = 'decimal' } = {}) {
-  if (style === 'binary') {
-    if (!+bytes) { return '0 Bytes' }
-    const k = 1024
-    const dm = decimals < 0 ? 0 : decimals
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return `${Number.parseFloat((bytes / k ** i).toFixed(dm))} ${BINARY_BYTE_UNITS[i]}`
-  }
+export function formatBytes(bytes) {
   if (bytes == null) { return '—' }
   if (bytes < 1024) { return `${bytes} B` }
   const kb = bytes / 1024

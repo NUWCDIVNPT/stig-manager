@@ -10,8 +10,9 @@ const props = defineProps({
 
 const emit = defineEmits(['load-file', 'save-full', 'save-shareable', 'fetch-quick', 'fetch-full'])
 
-const reportDate = computed(() => props.report?.dateGenerated ?? props.report?.date ?? '—')
-const reportVersion = computed(() => props.report?.stigmanVersion ?? props.report?.version ?? '—')
+// Reports are normalized to the v1.1 schema before reaching this component
+const reportDate = computed(() => props.report?.date ?? '—')
+const reportVersion = computed(() => props.report?.version ?? '—')
 </script>
 
 <template>

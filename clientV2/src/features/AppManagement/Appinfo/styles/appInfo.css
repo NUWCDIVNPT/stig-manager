@@ -49,5 +49,92 @@
 }
 
 .report-tab[data-p-active='true'] .tab-icon {
-  color: var(--color-primary-highlight, #3b82f6);
+  color: var(--color-primary-highlight);
+}
+
+/* Report table shell (see components/common/ReportTableBase.vue). Descendant
+   selectors are scoped under .report-table-panel so the generic class names
+   (dim-value, flex-fill, ...) cannot leak into other features. */
+
+.report-table-panel {
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.report-table-title {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0.45rem 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text-bright);
+  background: var(--color-background-subtle);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+/* Denser variant for tables hosting a ColumnToggle, whose button otherwise
+   forces the bar to ~2.4rem tall */
+.report-table-title--compact {
+  padding: 0.2rem 0.65rem;
+  font-size: 0.95rem;
+  --checklist-control-height: 1.65rem;
+}
+
+.report-table-title .title-sep {
+  color: var(--color-text-dim);
+  margin: 0 0.35rem;
+}
+
+.report-table-title .title-summary {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.report-table-title .title-hint {
+  margin-left: 0.75rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--color-text-dim);
+}
+
+.report-table-title .title-spacer {
+  flex: 1;
+}
+
+.report-table-panel .flex-fill {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.report-table-panel .column-header-with-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.report-table-panel .numeric-header {
+  display: inline-block;
+  text-align: right;
+  width: 100%;
+}
+
+.report-table-panel .dim-value {
+  color: var(--color-text-dim);
+}
+
+.report-table-panel .bool-true {
+  color: var(--color-success);
+  font-size: 0.95rem;
+}
+
+.report-table-panel .bool-false {
+  color: var(--color-text-dim);
+  font-size: 0.95rem;
 }

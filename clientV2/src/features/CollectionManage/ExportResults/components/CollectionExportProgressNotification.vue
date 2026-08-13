@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import NotificationCard from '../../../../components/global/NotificationCard.vue'
+import { formatNumber } from '../../../../shared/lib.js'
 import { useCollectionExportProgressStore } from '../../../../shared/stores/collectionExportProgressStore.js'
 
 const props = defineProps({
@@ -12,10 +13,6 @@ const emit = defineEmits(['dismiss'])
 
 const router = useRouter()
 const progressStore = useCollectionExportProgressStore()
-
-function fmt(n) {
-  return Number(n ?? 0).toLocaleString()
-}
 
 function stepText(event) {
   if (!event || typeof event !== 'object') {
@@ -28,12 +25,12 @@ function stepText(event) {
       return 'Preparing Assets'
     case 'reviews':
       if (event.reviewsTotal != null) {
-        return `Exporting reviews (${fmt(event.reviewsExported)} of ${fmt(event.reviewsTotal)})`
+        return `Exporting reviews (${formatNumber(event.reviewsExported)} of ${formatNumber(event.reviewsTotal)})`
       }
       return 'Exporting reviews'
     case 'metrics':
       if (event.metricsTotal != null) {
-        return `Updating metrics (${fmt(event.metricsUpdated)} of ${fmt(event.metricsTotal)})`
+        return `Updating metrics (${formatNumber(event.metricsUpdated)} of ${formatNumber(event.metricsTotal)})`
       }
       return 'Updating metrics'
     case 'commit':

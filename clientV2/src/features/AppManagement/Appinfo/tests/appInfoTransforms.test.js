@@ -16,6 +16,12 @@ describe('transformPreviousSchemas', () => {
     expect(transformPreviousSchemas({})).toBe(false)
   })
 
+  it('rejects non-object JSON values', () => {
+    expect(transformPreviousSchemas(null)).toBe(false)
+    expect(transformPreviousSchemas('stig-manager-appinfo-v1.1')).toBe(false)
+    expect(transformPreviousSchemas(42)).toBe(false)
+  })
+
   it('upgrades a v1.0 report to v1.1', () => {
     const report = {
       schema: 'stig-manager-appinfo-v1.0',
@@ -49,9 +55,37 @@ describe('transformPreviousSchemas', () => {
     expect(transformed.collections['7'].roleCounts).toEqual({ restricted: 1 })
     expect(transformed.collections['7'].grants['3']).toMatchObject({
       grantId: '3',
-      grantee: { userId: '3', groupId: null },
+      grantee: { userId: '3', userGroupId: null },
       uniqueAssets: 2,
     })
+  })
+
+  it('upgrades a v0 report with empty sections without throwing', () => {
+    const report = {
+      stigmanVersion: '1.4.0',
+      dateGenerated: '2023-01-01T00:00:00.000Z',
+      countsByCollection: {},
+      userInfo: {},
+      userPrivilegeCounts: {
+        overall: {},
+        activeInLast90Days: {},
+        activeInLast30Days: {},
+      },
+      operationalStats: { operationIdStats: {} },
+      mySqlVersion: '8.0.0',
+      dbInfo: { tables: [] },
+      mySqlVariablesRaw: [],
+      mySqlStatusRaw: [],
+      nodeUptime: '0 days, 0 hours, 0 minutes, 0 seconds',
+      nodeMemoryUsageInMb: {},
+    }
+
+    const transformed = transformPreviousSchemas(report)
+
+    expect(transformed.schema).toBe(CURRENT_APP_INFO_SCHEMA)
+    expect(transformed.version).toBe('1.4.0')
+    expect(transformed.collections).toEqual({})
+    expect(transformed.users.userInfo).toEqual({})
   })
 })
 

@@ -48,7 +48,6 @@ const grantRows = computed(() =>
 )
 
 const activeTab = ref('overview')
-const grantsOpen = ref(true)
 
 // Lazy-mount inner tables but keep them alive so filters and column toggles persist
 const visitedTabs = ref(new Set([activeTab.value]))
@@ -75,8 +74,8 @@ const tabPanelPt = {
 
 <template>
   <div class="collections-tab">
-    <Splitter :key="grantsOpen" layout="vertical" :pt="splitterPt">
-      <SplitterPanel :size="grantsOpen ? 62 : 100" :min-size="25" class="collections-panel">
+    <Splitter layout="vertical" :pt="splitterPt">
+      <SplitterPanel :size="62" :min-size="25" class="collections-panel">
         <Tabs v-model:value="activeTab" :pt="reportTabsPt">
           <TabList :pt="reportTabListPt({ compact: true })">
             <Tab v-for="tab in TABS" :key="tab.value" :value="tab.value" :pt="reportTabPt({ compact: true })">
@@ -96,26 +95,13 @@ const tabPanelPt = {
         </Tabs>
       </SplitterPanel>
 
-      <SplitterPanel v-if="grantsOpen" :size="38" :min-size="15" class="collections-panel">
+      <SplitterPanel :size="38" :min-size="15" class="collections-panel">
         <CollectionGrantsTable
           :rows="grantRows"
           :collection-name="selectedCollection?.name ?? ''"
-          @collapse="grantsOpen = false"
         />
       </SplitterPanel>
     </Splitter>
-
-    <button
-      v-if="!grantsOpen"
-      type="button"
-      class="grants-collapsed-bar"
-      title="Expand the grants panel"
-      @click="grantsOpen = true"
-    >
-      <i class="pi pi-chevron-up" />
-      <span>Grants</span>
-      <span v-if="selectedCollection" class="collapsed-name">{{ selectedCollection.name }}</span>
-    </button>
   </div>
 </template>
 
@@ -136,33 +122,4 @@ const tabPanelPt = {
   overflow: hidden;
 }
 
-.grants-collapsed-bar {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.45rem 0.75rem;
-  background: var(--color-background-subtle);
-  border: none;
-  border-top: 1px solid var(--color-border-default);
-  color: var(--color-text-bright);
-  font-size: 1.05rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color 0.1s;
-}
-
-.grants-collapsed-bar:hover {
-  background: var(--color-background-light);
-}
-
-.grants-collapsed-bar i {
-  color: var(--color-text-dim);
-}
-
-.collapsed-name {
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
 </style>

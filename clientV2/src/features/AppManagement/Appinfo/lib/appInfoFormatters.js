@@ -1,7 +1,12 @@
-/** Locale-formatted number for report cells; nullish/non-numbers render as '0'. */
-export function formatNumber(value) {
-  const n = Number(value)
-  return Number.isFinite(n) ? n.toLocaleString() : '0'
+const BINARY_BYTE_UNITS = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+
+/** Binary-prefixed byte sizes (KiB/MiB), matching the legacy AppInfo grids. */
+export function formatBytesBinary(bytes, decimals = 2) {
+  if (!+bytes) { return '0 Bytes' }
+  const k = 1024
+  const dm = decimals < 0 ? 0 : decimals
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${Number.parseFloat((bytes / k ** i).toFixed(dm))} ${BINARY_BYTE_UNITS[i]}`
 }
 
 /** Seconds -> "1d 2h 3m 4s", matching the legacy client's uptimeString. */

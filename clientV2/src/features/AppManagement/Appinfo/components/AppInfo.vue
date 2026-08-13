@@ -5,7 +5,7 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, markRaw, onMounted, ref, watch } from 'vue'
 import collectionSvg from '../../../../assets/collection.svg'
 import jsIconGreenSvg from '../../../../assets/jsIconGreen.svg'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
@@ -46,11 +46,13 @@ const { state: report, isLoading: loading, error, execute: loadReport } = useAsy
         throw new Error('The file is not a recognized Application Info report.')
       }
       reportSource.value = source.file.name
-      return normalized
+      // markRaw: the report is immutable display data; deep reactivity over a
+      // potentially multi-MB object graph only adds proxy overhead
+      return markRaw(normalized)
     }
     const result = await fetchAppInfo({ includeRowCounts: source.includeRowCounts, signal: opts?.signal })
     reportSource.value = 'API'
-    return result
+    return markRaw(result)
   },
   { initialState: null, immediate: false, onError: null },
 )
@@ -70,7 +72,7 @@ function loadReportFile(file) {
 }
 
 function reportDate() {
-  return report.value?.dateGenerated ?? report.value?.date ?? new Date().toISOString()
+  return report.value?.date ?? new Date().toISOString()
 }
 
 function downloadJson(data, filename) {
@@ -135,6 +137,9 @@ const tabPanelPt = {
         </div>
 
         <div class="report-tabs">
+          <div v-if="loading" class="report-tabs-mask" aria-busy="true">
+            <i class="pi pi-spin pi-spinner" />
+          </div>
           <Tabs v-model:value="activeTab" :pt="reportTabsPt">
             <TabList :pt="reportTabListPt()">
               <Tab value="requests" :pt="reportTabPt()">
@@ -223,6 +228,7 @@ const tabPanelPt = {
 }
 
 .report-tabs {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -230,6 +236,20 @@ const tabPanelPt = {
   background: var(--color-background-light);
   border-radius: 6px;
   overflow: hidden;
+}
+
+.report-tabs-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-background-subtle) 60%, transparent);
+  backdrop-filter: blur(1px);
+  cursor: wait;
+  font-size: 1.6rem;
+  color: var(--color-text-dim);
 }
 
 .tab-icon {
