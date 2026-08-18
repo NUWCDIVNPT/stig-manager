@@ -13,7 +13,27 @@ jobs:
           ref: ${{ github.ref }}
       - name: run image, generating docs
         working-directory: ./docs
+        env:
+          SPHINXOPTS: "-W --keep-going"
         run: ./build.sh
+      - name: verify API Reference assets are in the build output
+        working-directory: ./docs
+        run: |
+          for f in index.html log-socket.html scalar.standalone.js stig-manager.yaml log-socket.yaml; do
+            if ! test -s "_build/html/api-reference/$f"; then
+              echo "::error ::_build/html/api-reference/$f is missing or empty"
+              exit 1
+            fi
+          done
+          size=$(stat -c%s _build/html/api-reference/scalar.standalone.js)
+          if [ "$size" -lt 1000000 ]; then
+            echo "::error ::scalar.standalone.js is only $size bytes; expected a bundle over 1MB"
+            exit 1
+          fi
+      - name: verify built API specifications match the source specifications
+        run: |
+          diff api/source/specification/stig-manager.yaml docs/_build/html/api-reference/stig-manager.yaml
+          diff api/source/specification/log-socket.yaml docs/_build/html/api-reference/log-socket.yaml
       - name: Upload docs
         uses: actions/upload-artifact@v4
         with:
