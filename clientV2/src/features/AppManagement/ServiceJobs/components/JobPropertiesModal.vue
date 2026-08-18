@@ -51,6 +51,14 @@ const { isLoading: tasksLoading, error: tasksError, execute: loadTasks } = useAs
   { initialState: [], immediate: false, onError: null },
 )
 
+// Fetch the catalog and partition it into the PickList's available/assigned
+// columns; shared by the open-watch and the error Retry button so a recovered
+// load failure repopulates the list.
+async function loadAndSplitTasks() {
+  const catalog = await loadTasks()
+  tasksModel.value = splitTasks(catalog ?? [], props.job)
+}
+
 // Reset the form whenever the modal opens, then split the task catalog into
 // available vs. already-assigned based on the job's tasks.
 watch(() => props.visible, async (open) => {
@@ -63,16 +71,15 @@ watch(() => props.visible, async (open) => {
   description.value = job?.description ?? ''
   schedule.value = hydrateSchedule(job?.event)
   tasksModel.value = [[], []]
-
-  const catalog = await loadTasks()
-  tasksModel.value = splitTasks(catalog ?? [], props.job)
+  await loadAndSplitTasks()
 })
 
 // A job requires at least one task (JobTaskListCreate minItems: 1). System jobs
 // keep their fixed name/tasks, so only the schedule matters there.
 const selectedTaskIds = computed(() => tasksModel.value[1].map(t => t.taskId))
 // A chosen schedule must yield a valid event; guards against saving with an
-// invalid start date-time, which buildEventPayload resolves to null.
+// invalid start date-time or a cleared repeat interval, which buildEventPayload
+// resolves to null.
 const scheduleValid = computed(() => schedule.value.frequency === 'none' || buildEventPayload(schedule.value) != null)
 const isValid = computed(() => {
   if (!scheduleValid.value) {
@@ -141,7 +148,7 @@ const dialogPt = {
             v-model="name"
             :disabled="isSystemJob"
             :pt="inputTextPt"
-            maxlength="255"
+            maxlength="45"
             placeholder="Enter a job name..."
             autocomplete="off"
           />
@@ -177,7 +184,7 @@ const dialogPt = {
             <div v-else-if="tasksError" class="tab-status tab-status--error">
               <i class="pi pi-exclamation-triangle" />
               <span>Could not load tasks.</span>
-              <Button label="Retry" icon="pi pi-refresh" size="small" severity="secondary" @click="loadTasks" />
+              <Button label="Retry" icon="pi pi-refresh" size="small" severity="secondary" @click="loadAndSplitTasks" />
             </div>
             <!-- System jobs have a fixed task set; only the schedule is editable. -->
             <div v-else-if="isSystemJob" class="readonly-tasks">

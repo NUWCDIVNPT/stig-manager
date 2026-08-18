@@ -2,9 +2,10 @@
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { ref } from 'vue'
+import DeleteModal from '../../../../components/common/DeleteModal.vue'
 import { useServiceJobs } from '../composables/useServiceJobs.js'
+import { formatDateTime } from '../lib/serviceJobsFormat.js'
 import { splitterPt } from '../lib/serviceJobsPt.js'
-import ConfirmActionModal from './ConfirmActionModal.vue'
 import JobPropertiesModal from './JobPropertiesModal.vue'
 import JobsTable from './JobsTable.vue'
 import RunsPanel from './runs/RunsPanel.vue'
@@ -20,6 +21,7 @@ const {
   loadJobs,
   selectJob,
   selectRun,
+  saving,
   saveJob,
   removeJob,
   runNow,
@@ -28,13 +30,15 @@ const {
 
 const propsModalVisible = ref(false)
 const editingJob = ref(null)
-const saving = ref(false)
 
 const removeModalVisible = ref(false)
 const jobToRemove = ref(null)
 
 const runNowVisible = ref(false)
 const jobToRun = ref(null)
+
+const deleteRunVisible = ref(false)
+const runToDelete = ref(null)
 
 function onCreate() {
   editingJob.value = null
@@ -47,9 +51,7 @@ function onModify(job) {
 }
 
 async function onSaveJob(payload) {
-  saving.value = true
   const ok = await saveJob(payload)
-  saving.value = false
   if (ok) {
     propsModalVisible.value = false
   }
@@ -74,6 +76,17 @@ function onRunNow(job) {
 function confirmRunNow() {
   if (jobToRun.value) {
     runNow(jobToRun.value)
+  }
+}
+
+function onDeleteRun(run) {
+  runToDelete.value = run
+  deleteRunVisible.value = true
+}
+
+function confirmDeleteRun() {
+  if (runToDelete.value) {
+    removeRun(runToDelete.value)
   }
 }
 </script>
@@ -101,7 +114,7 @@ function confirmRunNow() {
           :output="output"
           :output-loading="outputLoading"
           @select-run="selectRun"
-          @delete-run="removeRun"
+          @delete-run="onDeleteRun"
         />
       </SplitterPanel>
     </Splitter>
@@ -113,26 +126,29 @@ function confirmRunNow() {
       @save="onSaveJob"
     />
 
-    <ConfirmActionModal
+    <DeleteModal
       v-model:visible="removeModalVisible"
       title="Remove Job"
-      tone="danger"
-      icon="pi pi-trash"
       :message="jobToRemove ? `Remove “${jobToRemove.name}”? This also removes the job's scheduled events and run output.` : ''"
       confirm-label="Remove"
-      confirm-icon="pi pi-trash"
       @confirm="confirmRemove"
     />
 
-    <ConfirmActionModal
+    <DeleteModal
       v-model:visible="runNowVisible"
       title="Run Job Now"
-      tone="primary"
-      icon="pi pi-play"
       :message="jobToRun ? `Start “${jobToRun.name}” now? It will run once immediately, outside its schedule.` : ''"
       confirm-label="Run Now"
-      confirm-icon="pi pi-play"
+      confirm-severity="primary"
       @confirm="confirmRunNow"
+    />
+
+    <DeleteModal
+      v-model:visible="deleteRunVisible"
+      title="Delete Run"
+      :message="runToDelete ? `Delete the run started ${formatDateTime(runToDelete.created)}? Its output is also removed.` : ''"
+      confirm-label="Delete"
+      @confirm="confirmDeleteRun"
     />
   </div>
 </template>
