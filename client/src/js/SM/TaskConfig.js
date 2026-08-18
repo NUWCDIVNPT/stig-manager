@@ -697,6 +697,12 @@ SM.TaskConfig.ReviewAging.RulesGrid = Ext.extend(Ext.grid.GridPanel, {
         const rules = records.map(r => {
           const d = { ...r.data }
           delete d.sorter
+          // updateField/updateValue are only valid for update rules; the store
+          // defaults absent fields to empty strings, which the API rejects
+          if (d.triggerAction !== 'update') {
+            delete d.updateField
+            delete d.updateValue
+          }
           // Convert display-format target to PUT format
           delete d.target
           const t = r.data.target
