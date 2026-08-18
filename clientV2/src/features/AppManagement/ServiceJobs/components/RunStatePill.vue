@@ -23,14 +23,14 @@ const meta = computed(() => runStateMeta(props.state))
   gap: 0.35rem;
   padding: 0.1rem 0.5rem;
   border-radius: 999px;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   border: 1px solid transparent;
   white-space: nowrap;
 }
 
 .run-pill i {
-  font-size: 0.85rem;
+  font-size: 1rem;
 }
 
 .run-pill--success {

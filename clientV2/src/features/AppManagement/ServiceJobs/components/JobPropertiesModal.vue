@@ -13,7 +13,7 @@ import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { inputTextPt, tabListPt, tabPanelPt, tabPanelsPt, tabPt, tabsPt } from '../../../../shared/lib/formPt.js'
 import { fetchTasks } from '../api/serviceJobsApi.js'
-import { buildEventPayload } from '../lib/serviceJobsFormat.js'
+import { buildEventPayload, defaultSchedule, hydrateSchedule, isSystemJob as isSystemJobRecord, splitTasks } from '../lib/serviceJobsFormat.js'
 import ScheduleForm from './schedule/ScheduleForm.vue'
 import TaskPickList from './schedule/TaskPickList.vue'
 
@@ -35,26 +35,14 @@ const localVisible = computed({
 })
 
 const isEdit = computed(() => props.job != null)
-// System jobs (jobId < 100) have fixed name/description/tasks; only the
-// schedule is editable.
-const isSystemJob = computed(() => isEdit.value && Number(props.job.jobId) < 100)
+// System jobs have fixed name/description/tasks; only the schedule is editable.
+const isSystemJob = computed(() => isEdit.value && isSystemJobRecord(props.job))
 
 const name = ref('')
 const description = ref('')
 const activeTab = ref('tasks')
 const tasksModel = ref([[], []])
 const schedule = ref(defaultSchedule())
-
-function defaultSchedule() {
-  return {
-    frequency: 'recurring',
-    intervalValue: 1,
-    intervalField: 'day',
-    startDate: new Date(),
-    startTime: new Date(),
-    enabled: true,
-  }
-}
 
 // Task catalog, loaded from /jobs/tasks the first time the modal is opened and
 // reused thereafter. Errors render inline with a Retry button (onError: null).
@@ -77,43 +65,19 @@ watch(() => props.visible, async (open) => {
   tasksModel.value = [[], []]
 
   const catalog = await loadTasks()
-  hydrateTasks(catalog ?? [])
+  tasksModel.value = splitTasks(catalog ?? [], props.job)
 })
-
-function hydrateTasks(catalog) {
-  // The job's own task list carries the assignment order; keep it. The event
-  // payload sends task ids, so we track full task objects only for display.
-  const catalogById = new Map(catalog.map(t => [t.taskId, t]))
-  const assigned = (props.job?.tasks ?? []).map(
-    t => catalogById.get(t.taskId) ?? { taskId: t.taskId, name: t.name, description: '' },
-  )
-  const assignedIds = new Set(assigned.map(t => t.taskId))
-  const available = catalog.filter(t => !assignedIds.has(t.taskId))
-  tasksModel.value = [available, assigned]
-}
-
-function hydrateSchedule(event) {
-  if (!event) {
-    return { ...defaultSchedule(), frequency: 'none' }
-  }
-  const base = defaultSchedule()
-  base.frequency = event.type
-  if (event.starts) {
-    base.startDate = new Date(event.starts)
-    base.startTime = new Date(event.starts)
-  }
-  if (event.type === 'recurring') {
-    base.intervalValue = Number(event.interval?.value ?? 1)
-    base.intervalField = event.interval?.field ?? 'day'
-    base.enabled = event.enabled !== false
-  }
-  return base
-}
 
 // A job requires at least one task (JobTaskListCreate minItems: 1). System jobs
 // keep their fixed name/tasks, so only the schedule matters there.
 const selectedTaskIds = computed(() => tasksModel.value[1].map(t => t.taskId))
+// A chosen schedule must yield a valid event; guards against saving with an
+// invalid start date-time, which buildEventPayload resolves to null.
+const scheduleValid = computed(() => schedule.value.frequency === 'none' || buildEventPayload(schedule.value) != null)
 const isValid = computed(() => {
+  if (!scheduleValid.value) {
+    return false
+  }
   if (isSystemJob.value) {
     return true
   }
@@ -215,6 +179,21 @@ const dialogPt = {
               <span>Could not load tasks.</span>
               <Button label="Retry" icon="pi pi-refresh" size="small" severity="secondary" @click="loadTasks" />
             </div>
+            <!-- System jobs have a fixed task set; only the schedule is editable. -->
+            <div v-else-if="isSystemJob" class="readonly-tasks">
+              <p class="readonly-note">
+                <i class="pi pi-lock" /> This is a system job. Its tasks are fixed and cannot be changed.
+              </p>
+              <ul class="task-readonly-list">
+                <li v-for="task in tasksModel[1]" :key="task.taskId" class="task-readonly-item">
+                  <i class="pi pi-cog" />
+                  <div class="task-readonly-text">
+                    <span class="task-readonly-name">{{ task.name }}</span>
+                    <span class="task-readonly-desc">{{ task.description }}</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
             <TaskPickList v-else v-model="tasksModel" />
           </TabPanel>
           <TabPanel value="schedule" :pt="tabPanelPt">
@@ -283,7 +262,7 @@ const dialogPt = {
 }
 
 .flabel {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -313,6 +292,64 @@ const dialogPt = {
 .tab-status--error .pi-exclamation-triangle {
   color: var(--color-text-error);
   font-size: 1.3rem;
+}
+
+.readonly-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+}
+
+.readonly-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-text-dim);
+  font-style: italic;
+}
+
+.task-readonly-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.task-readonly-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--color-background-light);
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+}
+
+.task-readonly-item i {
+  font-size: 1.1rem;
+  color: var(--color-text-dim);
+  flex-shrink: 0;
+}
+
+.task-readonly-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.task-readonly-name {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.task-readonly-desc {
+  font-size: 1rem;
+  color: var(--color-text-dim);
 }
 
 .modal-footer {

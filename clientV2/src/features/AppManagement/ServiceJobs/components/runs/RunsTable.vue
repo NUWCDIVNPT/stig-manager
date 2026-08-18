@@ -1,10 +1,13 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref } from 'vue'
+import { ref, watch } from 'vue'
+import ActionButton from '../../../../../components/common/ActionButton.vue'
 import StatusFooter from '../../../../../components/common/StatusFooter.vue'
-import { formatDateTime, formatDuration } from '../../lib/serviceJobsFormat.js'
-import { jobsTablePt } from '../../lib/serviceJobsPt.js'
+import { useTableFooterActions } from '../../../../../shared/composables/useTableFooterActions.js'
+import { compactTablePt } from '../../../../../shared/lib/dataTablePt.js'
+import { formatDateTime, formatDuration, runDuration } from '../../lib/serviceJobsFormat.js'
+import { borderPt } from '../../lib/serviceJobsPt.js'
 import RunStatePill from '../RunStatePill.vue'
 
 const props = defineProps({
@@ -17,17 +20,23 @@ const emit = defineEmits(['select', 'delete-run'])
 const dataTableRef = ref(null)
 const selectedRun = ref(null)
 
-// Elapsed ms between start and end, unless the run is still running.
-function runDuration(run) {
-  if (run.state === 'running') {
-    return null
-  }
-  return new Date(run.updated) - new Date(run.created)
+// Mirror the legacy grid, which auto-selected the newest run on every load so
+// the output panel shows the latest run without a manual click.
+watch(() => props.runs, (list) => {
+  const newest = (list ?? []).reduce(
+    (a, b) => (!a || new Date(b.created) > new Date(a.created) ? b : a),
+    null,
+  )
+  selectedRun.value = newest
+  emit('select', newest)
+}, { immediate: true })
+
+const tablePt = {
+  ...compactTablePt({ bodyFontSize: '1rem', footer: 'divider', headerPadding: '0.3rem 0.6rem' }),
+  bodyRow: { style: 'cursor: pointer;' },
 }
 
-const tablePt = jobsTablePt({ bodyFontSize: '0.95rem', footer: 'divider' })
-
-const rowCount = computed(() => props.runs.length)
+const { onFooterAction } = useTableFooterActions(dataTableRef)
 </script>
 
 <template>
@@ -35,62 +44,69 @@ const rowCount = computed(() => props.runs.length)
     <div class="panel-title">
       <i class="pi pi-history" /> Recent Runs
     </div>
-    <DataTable
-      ref="dataTableRef"
-      v-model:selection="selectedRun"
-      :value="runs"
-      :loading="loading"
-      data-key="runId"
-      selection-mode="single"
-      sort-field="created"
-      :sort-order="-1"
-      scrollable
-      scroll-height="flex"
-      export-filename="job-runs"
-      class="flex-fill"
-      :pt="tablePt"
-      @row-select="emit('select', selectedRun)"
-    >
-      <template #empty>
-        No runs found
-      </template>
-
-      <Column field="created" header="Started" sortable>
-        <template #body="{ data }">
-          {{ formatDateTime(data.created) }}
+    <div class="table-container">
+      <DataTable
+        ref="dataTableRef"
+        v-model:selection="selectedRun"
+        :value="runs"
+        :loading="loading"
+        selection-mode="single"
+        data-key="runId"
+        sort-field="created"
+        :sort-order="-1"
+        scrollable
+        scroll-height="flex"
+        export-filename="stig-manager-job-runs"
+        class="flex-fill"
+        :pt="tablePt"
+        @row-select="emit('select', selectedRun)"
+      >
+        <template #empty>
+          No runs found.
         </template>
-      </Column>
 
-      <Column field="state" header="State" sortable>
-        <template #body="{ data }">
-          <RunStatePill :state="data.state" />
+        <Column field="created" header="Started" sortable :pt="borderPt" style="width: 42%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+          <template #body="{ data }">
+            {{ formatDateTime(data.created) }}
+          </template>
+        </Column>
+
+        <Column field="state" header="State" sortable :pt="borderPt" style="width: 28%;">
+          <template #body="{ data }">
+            <RunStatePill :state="data.state" />
+          </template>
+        </Column>
+
+        <Column field="duration" :pt="borderPt" style="width: 18%; text-align: right;">
+          <template #header>
+            <span class="right-label">Duration</span>
+          </template>
+          <template #body="{ data }">
+            {{ formatDuration(runDuration(data)) }}
+          </template>
+        </Column>
+
+        <Column style="width: 12%; text-align: center;">
+          <template #body="{ data }">
+            <ActionButton
+              icon="pi pi-trash icon-red"
+              title="Delete run"
+              @click.stop="emit('delete-run', data)"
+            />
+          </template>
+        </Column>
+
+        <template #footer>
+          <StatusFooter
+            :show-refresh="false"
+            :total-count="runs.length"
+            total-label="runs"
+            total-icon="pi pi-history"
+            @action="onFooterAction"
+          />
         </template>
-      </Column>
-
-      <Column field="duration" header="Duration">
-        <template #body="{ data }">
-          {{ formatDuration(runDuration(data)) }}
-        </template>
-      </Column>
-
-      <Column header="" style="width: 3rem; text-align: center;">
-        <template #body="{ data }">
-          <button class="row-delete" title="Delete run" @click.stop="emit('delete-run', data)">
-            <i class="pi pi-trash" />
-          </button>
-        </template>
-      </Column>
-
-      <template #footer>
-        <StatusFooter
-          :show-refresh="false"
-          :total-count="rowCount"
-          total-label="runs"
-          total-icon="pi pi-history"
-          @action="key => key === 'export' && dataTableRef?.exportCSV()"
-        />
-      </template>
-    </DataTable>
+      </DataTable>
+    </div>
   </div>
 </template>
 
@@ -119,24 +135,24 @@ const rowCount = computed(() => props.runs.length)
   border-bottom: 1px solid var(--color-border-default);
 }
 
-.flex-fill {
+.table-container {
   flex: 1;
   min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+.flex-fill {
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.row-delete {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-dim);
-  padding: 0.2rem;
-  border-radius: 4px;
-}
-
-.row-delete:hover {
-  color: var(--color-action-red);
-  background: color-mix(in srgb, var(--color-action-red) 10%, transparent);
+.right-label {
+  display: inline-block;
+  width: 100%;
+  text-align: right;
 }
 </style>

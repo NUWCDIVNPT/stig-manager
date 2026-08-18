@@ -70,7 +70,7 @@ function taskFilter(task, searchText) {
 }
 
 .task-desc {
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: var(--color-text-dim);
   white-space: nowrap;
   overflow: hidden;
