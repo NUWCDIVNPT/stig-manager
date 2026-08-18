@@ -2,7 +2,7 @@ import engineIcon from '../../../assets/bot2.svg'
 import overrideIcon from '../../../assets/override2.svg'
 import manualIcon from '../../../assets/user.svg'
 import { ENGINE_TYPE } from '../../../shared/lib/reviewConstants.js'
-import { getEngineDisplay } from './checklistUtils.js'
+import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 
 const ENGINE_META = {
   [ENGINE_TYPE.ENGINE]: { label: 'Engine', image: engineIcon },
