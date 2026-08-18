@@ -27,14 +27,14 @@ export function reportTabPt({ compact = false } = {}) {
     root: ({ context }) => ({
       class: ['report-tab', compact && 'report-tab--compact'],
       style: {
-        color: context.active ? 'var(--color-primary-highlight, #3b82f6)' : 'var(--color-text-dim)',
+        color: context.active ? 'var(--color-primary-highlight)' : 'var(--color-text-dim)',
         background: context.active
           ? 'var(--color-background-light)'
           : 'color-mix(in srgb, var(--color-background-dark) 40%, transparent)',
         borderColor: 'var(--color-border-default)',
         borderBottomColor: context.active ? 'var(--color-background-light)' : 'var(--color-border-default)',
         fontWeight: context.active ? '700' : '600',
-        boxShadow: context.active ? '0 -2px 0 0 var(--color-primary-highlight, #3b82f6) inset' : 'none',
+        boxShadow: context.active ? '0 -2px 0 0 var(--color-primary-highlight) inset' : 'none',
       },
     }),
   }

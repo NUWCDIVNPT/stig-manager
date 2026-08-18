@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import NotificationCard from '../../../components/global/NotificationCard.vue'
+import { formatNumber } from '../../../shared/lib.js'
 
 const props = defineProps({
   state: { type: Object, required: true },
@@ -10,10 +11,6 @@ const props = defineProps({
 const emit = defineEmits(['dismiss'])
 
 const router = useRouter()
-
-function fmt(n) {
-  return Number(n ?? 0).toLocaleString()
-}
 
 const lastStage = computed(() => {
   for (let i = props.state.stages.length - 1; i >= 0; i--) {
@@ -38,7 +35,7 @@ const currentStep = computed(() => {
   }
   if (ev.stage === 'reviews') {
     if (ev.stepName === 'cloneReviews' && ev.reviewsTotal != null) {
-      return `Cloning reviews (${fmt(ev.reviewsCopied)} of ${fmt(ev.reviewsTotal)})`
+      return `Cloning reviews (${formatNumber(ev.reviewsCopied)} of ${formatNumber(ev.reviewsTotal)})`
     }
     return 'Preparing to clone reviews…'
   }

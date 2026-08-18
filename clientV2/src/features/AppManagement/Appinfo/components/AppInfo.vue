@@ -5,9 +5,10 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { onMounted, ref, watch } from 'vue'
+import { computed, markRaw, onMounted, ref, watch } from 'vue'
 import collectionSvg from '../../../../assets/collection.svg'
 import jsIconGreenSvg from '../../../../assets/jsIconGreen.svg'
+import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { filenameComponentFromDate, filenameEscaped } from '../../../../shared/lib.js'
 import { fetchAppInfo } from '../api/appInfoApi.js'
 import { generateSharable } from '../lib/appInfoSharing.js'
@@ -22,56 +23,56 @@ import NodeRuntimeTab from './tabs/NodeRuntimeTab.vue'
 import RequestsTab from './tabs/RequestsTab.vue'
 import UsersTab from './tabs/UsersTab.vue'
 
-const report = ref(null)
 const reportSource = ref('')
-const loading = ref(false)
 const loadingMessage = ref('')
-const error = ref(null)
 
-async function fetchReport(includeRowCounts) {
-  loading.value = true
+// A single async loader backs both report sources (live API and uploaded file).
+// useAsyncState provides the loading/error state and cancels a stale request
+// when the user triggers another load. onError is null because failures render
+// inline in the status strip rather than the global error modal.
+const { state: report, isLoading: loading, error, execute: loadReport } = useAsyncState(
+  async (source, opts) => {
+    if (source.type === 'file') {
+      const text = await source.file.text()
+      let parsed
+      try {
+        parsed = JSON.parse(text)
+      }
+      catch {
+        throw new Error('The file does not contain valid JSON.')
+      }
+      const normalized = transformPreviousSchemas(parsed)
+      if (!normalized) {
+        throw new Error('The file is not a recognized Application Info report.')
+      }
+      reportSource.value = source.file.name
+      // markRaw: the report is immutable display data; deep reactivity over a
+      // potentially multi-MB object graph only adds proxy overhead
+      return markRaw(normalized)
+    }
+    const result = await fetchAppInfo({ includeRowCounts: source.includeRowCounts, signal: opts?.signal })
+    reportSource.value = 'API'
+    return markRaw(result)
+  },
+  { initialState: null, immediate: false, onError: null },
+)
+
+const errorMessage = computed(() => error.value?.message ?? null)
+
+function fetchReport(includeRowCounts) {
   loadingMessage.value = includeRowCounts
     ? 'Fetching from API with exact row counts…'
     : 'Fetching from API with estimated row counts…'
-  error.value = null
-  try {
-    report.value = await fetchAppInfo({ includeRowCounts })
-    reportSource.value = 'API'
-  }
-  catch (e) {
-    error.value = e.message
-  }
-  finally {
-    loading.value = false
-    loadingMessage.value = ''
-  }
+  return loadReport({ type: 'api', includeRowCounts })
 }
 
-async function loadReportFile(file) {
-  loading.value = true
+function loadReportFile(file) {
   loadingMessage.value = `Loading ${file.name}…`
-  error.value = null
-  try {
-    const text = await file.text()
-    const parsed = JSON.parse(text)
-    const normalized = transformPreviousSchemas(parsed)
-    if (!normalized) {
-      throw new Error('The file is not a recognized Application Info report.')
-    }
-    report.value = normalized
-    reportSource.value = file.name
-  }
-  catch (e) {
-    error.value = e instanceof SyntaxError ? 'The file does not contain valid JSON.' : e.message
-  }
-  finally {
-    loading.value = false
-    loadingMessage.value = ''
-  }
+  return loadReport({ type: 'file', file })
 }
 
 function reportDate() {
-  return report.value?.dateGenerated ?? report.value?.date ?? new Date().toISOString()
+  return report.value?.date ?? new Date().toISOString()
 }
 
 function downloadJson(data, filename) {
@@ -131,11 +132,14 @@ const tabPanelPt = {
         <div v-if="loading" class="status-strip status-strip--busy">
           <i class="pi pi-spin pi-spinner" /> {{ loadingMessage }}
         </div>
-        <div v-else-if="error" class="status-strip status-strip--error">
-          <i class="pi pi-exclamation-triangle" /> {{ error }}
+        <div v-else-if="errorMessage" class="status-strip status-strip--error">
+          <i class="pi pi-exclamation-triangle" /> {{ errorMessage }}
         </div>
 
         <div class="report-tabs">
+          <div v-if="loading" class="report-tabs-mask" aria-busy="true">
+            <i class="pi pi-spin pi-spinner" />
+          </div>
           <Tabs v-model:value="activeTab" :pt="reportTabsPt">
             <TabList :pt="reportTabListPt()">
               <Tab value="requests" :pt="reportTabPt()">
@@ -224,6 +228,7 @@ const tabPanelPt = {
 }
 
 .report-tabs {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -231,6 +236,20 @@ const tabPanelPt = {
   background: var(--color-background-light);
   border-radius: 6px;
   overflow: hidden;
+}
+
+.report-tabs-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-background-subtle) 60%, transparent);
+  backdrop-filter: blur(1px);
+  cursor: wait;
+  font-size: 1.6rem;
+  color: var(--color-text-dim);
 }
 
 .tab-icon {

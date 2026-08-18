@@ -53,7 +53,11 @@ describe('useRouteTracking', () => {
     const hitRoute = afterEachMock.mock.calls[0][0] // The callback passed to afterEach
 
     // Simulate router navigating to admin collections
-    hitRoute({ name: 'admin-collections', fullPath: '/admin/collections' })
+    hitRoute({
+      name: 'admin-collections',
+      fullPath: '/admin/collections',
+      meta: { breadcrumbs: [{ label: 'Admin' }, { label: 'Collections' }] },
+    })
 
     expect(addViewMock).toHaveBeenCalledWith({
       key: 'admin-collections',
@@ -63,11 +67,11 @@ describe('useRouteTracking', () => {
     })
   })
 
-  it('adds generic admin route if label not found', () => {
+  it('adds generic admin route if breadcrumb meta is missing', () => {
     useRouteTracking()
     const hitRoute = afterEachMock.mock.calls[0][0]
 
-    hitRoute({ name: 'admin-unknown', fullPath: '/admin/unknown' })
+    hitRoute({ name: 'admin-unknown', fullPath: '/admin/unknown', meta: {} })
 
     expect(addViewMock).toHaveBeenCalledWith({
       key: 'admin-unknown',

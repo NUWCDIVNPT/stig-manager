@@ -153,3 +153,38 @@ Each hit carries its originating `collectionId` so the client can route to the r
 ### Notes
 
 Grant enforcement is the non-trivial part: a caller may hold a grant on only some of the requested collections. The endpoint should intersect with the caller's accessible set and silently drop the rest, rather than 403 the whole request — otherwise the meta-dashboard becomes unusable for anyone without uniform access across the set.
+
+---
+
+## 5. Prior-revision rule content for the "same rule"
+
+**Operation:** (new) — e.g. `GET /stigs/{benchmarkId}/rules/{ruleId}/revisions`
+**Feature:** Review presentation — diff the current rule's check (or other fields) against the rule content that was in effect when the Review was last touched
+**Consumer:** [`useRuleDetail`](../../src/features/AssetReview/composables/useRuleDetail.js) / a future rule-content diff panel in Asset Review
+
+### Current behavior
+
+Rule content lookups are either ruleId-scoped (`getRuleByRuleId` — unpinned, with documented edge cases) or pinned to one revision (`getRuleByRevision`). There is no endpoint that, given a rule, returns the corresponding rule content from **other revisions of the same benchmark**. RuleIds mutate across revisions (the `rNNN` segment increments even for trivial edits), so "same rule" has to be resolved through a stable key — `version` (STIG ID), with `groupId` as a secondary candidate. Reaching prior-revision content today means: `getRevisionsByBenchmarkId`, then the **full** rule list per revision, then a client-side join — the entire catalog fetched to diff one rule.
+
+### Why it matters
+
+Reviews are keyed by `(assetId, version, checkDigest)` (see the `rule_version_check_digest` joins in `ReviewService`). When a new revision changes a rule's check content, the digest changes and the existing Review no longer attaches — precisely the moment a reviewer asks "what changed in the check since I evaluated this?". The review presentation should answer that with an inline diff of check content (and optionally fix text / discussion) between the reviewed-era rule and the current one, rather than sending the user to hunt through the STIG Library.
+
+### Proposed shape
+
+```
+GET /stigs/{benchmarkId}/rules/{ruleId}/revisions
+  ?projection=check,fix,detail    # same projections as getRuleByRevision
+```
+
+Server resolves `{ruleId}` to its `version` (STIG ID), then returns one entry per revision of the benchmark where a rule with that `version` exists:
+
+```
+[ { revisionStr, ruleId, version, groupId, title, severity, checkDigest, ...projections } ]
+```
+
+Keying the path on `ruleId` (not `version`) matches what the client already holds in the review presentation; returning `checkDigest` per entry lets the client identify which prior revision the existing Review actually matches, not just the immediately previous one.
+
+### Notes
+
+The STIG Library's revision diff ([`useRevisionDiff`](../../src/features/STIGLibrary/composables/useRevisionDiff.js)) already joins revisions by `rule.version` client-side — same mapping, so the server and client agree on what "same rule" means. `groupId` alone is not sufficient (DISA's group renumbering makes it less stable than the STIG ID) but could serve as a fallback when `version` is absent. Diff rendering itself stays client-side; the endpoint only needs to supply the per-revision text.

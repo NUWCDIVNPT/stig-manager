@@ -314,7 +314,6 @@ function onSelect(row) {
 
 .stig-list__id {
   grid-area: id;
-  font-family: inherit;
   font-size: 1.2rem;
   color: var(--color-text-primary);
   overflow: hidden;
@@ -323,7 +322,6 @@ function onSelect(row) {
 }
 
 .stig-list__id--all {
-  font-family: inherit;
   font-style: italic;
   font-size: 1.2rem;
   color: var(--color-text-bright);

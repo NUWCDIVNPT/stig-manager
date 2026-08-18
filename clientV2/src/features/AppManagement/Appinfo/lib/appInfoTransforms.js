@@ -1,6 +1,10 @@
 export const CURRENT_APP_INFO_SCHEMA = 'stig-manager-appinfo-v1.1'
 
 export function transformPreviousSchemas(input) {
+  // JSON.parse can produce null or non-object primitives from a well-formed file
+  if (input === null || typeof input !== 'object') {
+    return false
+  }
   if (input.schema === 'stig-manager-appinfo-v1.1') {
     return input
   }
@@ -30,7 +34,7 @@ export function transformPreviousSchemas(input) {
             grantId,
             grantee: {
               userId: grantId,
-              groupId: null,
+              userGroupId: null,
             },
             ...aclCounts.users[grantId],
           }
@@ -64,7 +68,7 @@ export function transformPreviousSchemas(input) {
     // renames properties "assetStigByCollection" and "restrictedGrantCountsByUser"
     function transformCountsByCollection(i) {
       const o = {}
-      const padLength = Object.keys(i).at(-1).length
+      const padLength = Object.keys(i).at(-1)?.length
       for (const id in i) {
         const {
           assetStigByCollection,
@@ -144,7 +148,7 @@ export function transformPreviousSchemas(input) {
     // renames property "roles" and removes the string "other"
     function transformUserInfo(i) {
       const o = {}
-      const padLength = Object.keys(i).at(-1).length
+      const padLength = Object.keys(i).at(-1)?.length
       for (const id in i) {
         const { roles, ...keep } = i[id]
         o[id] = {

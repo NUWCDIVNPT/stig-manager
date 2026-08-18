@@ -19,7 +19,7 @@ The feature exports most application-owned database data as a streaming JSON Lin
 | Authentication/elevation enforcement | `api/source/utils/auth.js` |
 | Legacy UI | `client/src/js/SM/AppData.js` |
 | Legacy conditional navigation | `client/src/js/SM/NavTree.js` |
-| V2 route (`admin-transfer`, `/app-management/appdata`) and guard | `clientV2/src/router/index.js`, `clientV2/src/router/navigationGuards.js` |
+| V2 route (`admin-transfer`, `/app-management/transfer`) and guard | `clientV2/src/router/index.js`, `clientV2/src/router/navigationGuards.js` |
 | V2 App Management menu item | `clientV2/src/features/AppManagement/composables/useAppManagementItems.js` |
 | V2 feature-flag helper | `clientV2/src/shared/lib/featureFlags.js` |
 | V2 page | `clientV2/src/features/AppManagement/Appdata/components/AppData.vue` |
@@ -29,7 +29,7 @@ The feature exports most application-owned database data as a streaming JSON Lin
 | Existing administrator documentation | `docs/admin-guide/admin-guide.rst` |
 | API fixture loader and export authorization test | `test/api/mocha/utils/testUtils.js`, `test/api/mocha/data/operation/op.test.js` |
 
-The V2 route is `/app-management/appdata`, is named `admin-transfer`, and is gated twice: `requiresAdmin` plus a `meta.isEnabled` feature-flag predicate enforced by the shared navigation guard. The App Management menu applies the same predicate to the item definition, so the page is listed only when the server-side experimental flag is enabled.
+The V2 route is `/app-management/transfer`, is named `admin-transfer`, and is gated twice: `requiresAdmin` plus a `meta.isEnabled` feature-flag predicate enforced by the shared navigation guard. The App Management menu applies the same predicate to the item definition, so the page is listed only when the server-side experimental flag is enabled.
 
 ## 2. Feature enablement and authorization
 

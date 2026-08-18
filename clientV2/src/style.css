@@ -216,6 +216,18 @@ body {
   font-weight: 400;
 }
 
+/* Form controls don't inherit font-family: every UA stylesheet sets an explicit
+   `font: ... Arial` on them, and an explicit UA declaration beats inheritance.
+   Without this, any button/input/select/textarea silently renders in Arial
+   instead of Open Sans. font-family only (not the `font` shorthand) so
+   component-level font-size/font-weight keep working. */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
 #app {
   height: 100vh;
   overflow: hidden;

@@ -1,8 +1,8 @@
-import { klona } from '../../../../shared/lib/klona.js'
+import { toRaw } from 'vue'
 
 export function generateSharable(data, options) {
-  const kloned = klona(data)
-  const { collections, requests, users, groups, nodejs } = kloned
+  const clone = structuredClone(toRaw(data))
+  const { collections, requests, users, groups, nodejs } = clone
   if (options.collectionName) {
     const padLength = Object.keys(collections).at(-1)?.length
     for (const id in collections) {
@@ -25,7 +25,7 @@ export function generateSharable(data, options) {
   if (options.envvar) {
     delete nodejs.environment
   }
-  return kloned
+  return clone
 
   function obfuscateClients(operationIds) {
     const obfuscationMap = {
