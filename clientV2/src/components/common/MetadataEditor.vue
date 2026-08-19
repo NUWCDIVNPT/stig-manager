@@ -59,7 +59,7 @@ function onDeleteConfirmed() {
             v-model="row.key"
             placeholder="Key"
             class="meta-input"
-            :class="{ 'p-invalid': !row.key?.trim() && row.value?.trim() }"
+            :invalid="!row.key?.trim() && !!row.value?.trim()"
             @blur="emit('save')"
           />
           <InputText v-model="row.value" placeholder="Value" class="meta-input" @blur="emit('save')" />

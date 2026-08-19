@@ -533,7 +533,7 @@ const otherTablePt = {
   table-layout: fixed;
 }
 
-:deep(.p-datatable-wrapper),
+:deep(.p-datatable-table-container),
 :deep(.p-virtualscroller) {
   overflow-x: auto !important;
 }
