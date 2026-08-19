@@ -1,7 +1,6 @@
 <script setup>
 import { useAppManagementItems } from '../composables/useAppManagementItems.js'
 
-// Single source of truth: same list drives this side-nav and the landing grid.
 const { appManagementItems } = useAppManagementItems()
 </script>
 
@@ -20,9 +19,9 @@ const { appManagementItems } = useAppManagementItems()
       </router-link>
     </nav>
 
-    <main class="admin-content">
+    <div class="admin-content">
       <router-view />
-    </main>
+    </div>
   </div>
 </template>
 
@@ -53,7 +52,7 @@ const { appManagementItems } = useAppManagementItems()
   border-radius: 6px;
   text-decoration: none;
   color: var(--color-text-primary);
-  font-size: 0.95rem;
+  font-size: 1rem;
   transition: background-color 0.15s ease;
 }
 
@@ -66,7 +65,6 @@ const { appManagementItems } = useAppManagementItems()
   font-weight: 600;
 }
 
-/* Same icon treatment as the landing cards for visual continuity. */
 .icon-bg {
   width: 20px;
   height: 20px;
@@ -76,17 +74,32 @@ const { appManagementItems } = useAppManagementItems()
   background-size: contain;
 }
 
-.icon-user,
-.icon-user-group,
-.icon-green-shield,
-.icon-wrench,
-.icon-info-circle,
-.icon-database {
-  background-image: url('/src/assets/gear.svg');
-}
-
 .icon-collection {
   background-image: url('/src/assets/collection.svg');
+}
+
+.icon-user {
+  background-image: url('/src/assets/user.svg');
+}
+
+.icon-user-group {
+  background-image: url('/src/assets/users.svg');
+}
+
+.icon-green-shield {
+  background-image: url('/src/assets/shield-green-check.svg');
+}
+
+.icon-job {
+  background-image: url('/src/assets/job.svg');
+}
+
+.icon-info-circle {
+  background-image: url('/src/assets/info-circle.svg');
+}
+
+.icon-database {
+  background-image: url('/src/assets/database.svg');
 }
 
 .admin-content {

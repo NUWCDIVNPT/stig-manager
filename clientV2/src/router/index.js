@@ -1,5 +1,4 @@
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { useAppManagementItems } from '../features/AppManagement/composables/useAppManagementItems.js'
 import { getLastStigLibraryUrl } from '../features/STIGLibrary/lastVisited.js'
 import { isAppDataEnabled } from '../shared/lib/featureFlags.js'
 import { navigationGuard } from './navigationGuards.js'
@@ -142,14 +141,13 @@ const routes = [
       {
         path: '',
         name: 'app-management',
-        // No landing page — send straight to the first visible section.
-        redirect: () => ({ name: useAppManagementItems().appManagementItems.value[0].routeName }),
+        // No landing page — send straight to the first section.
+        redirect: { name: 'admin-collections' },
       },
       {
         path: 'collections',
         name: 'admin-collections',
         component: CollectionsAdmin,
-        props: true,
         meta: { breadcrumbs: [{ label: 'Collections' }] },
       },
       {
