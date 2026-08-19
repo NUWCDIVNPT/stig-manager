@@ -43,7 +43,8 @@ const formattedScore = computed(() => props.weightedAvg.toFixed(1))
   border-radius: 5px;
   outline: #bbb solid 1px;
   outline-offset: -1px;
-  width: 35px;
+  width: fit-content;
+  min-width: 3.2rem;
   font-weight: 400;
   color: #fff;
   text-shadow: 0 1px 2px rgba(0,0,0,0.5);
@@ -51,6 +52,8 @@ const formattedScore = computed(() => props.weightedAvg.toFixed(1))
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 20px;
+  height: 1.8rem;
+  white-space: nowrap;
+  padding: 0 0.3rem;
 }
 </style>

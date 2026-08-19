@@ -17,7 +17,7 @@ const { typeIcon } = useNavItems()
 const recentViewsPopover = ref(null)
 
 const recentViewsPopoverPt = {
-  root: { style: 'min-width: 20rem; max-width: 27rem' },
+  root: { class: 'nav-popover', style: 'min-width: 20rem; max-width: 36rem' },
 }
 
 function toggleRecentViewsPopover(event) {
@@ -113,7 +113,7 @@ function toggleRecentViewsPopover(event) {
 
 .nav-rail-section-label {
   padding: 0.75rem 1.1rem 0.35rem;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-dim);
   text-transform: uppercase;
@@ -132,7 +132,7 @@ function toggleRecentViewsPopover(event) {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  font-size: 1rem;
   transition: all 0.2s ease;
 }
 
@@ -155,7 +155,7 @@ function toggleRecentViewsPopover(event) {
   border-radius: 0.35rem;
   color: var(--color-text-dim);
   text-decoration: none;
-  font-size: 1rem;
+  font-size: 1.1rem;
   white-space: nowrap;
   overflow: hidden;
 }
@@ -172,7 +172,7 @@ function toggleRecentViewsPopover(event) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  font-size: 1.2rem;
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -185,21 +185,24 @@ function toggleRecentViewsPopover(event) {
 
 .nav-rail-recent-empty {
   padding: 0.75rem 1.1rem;
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--color-text-dim);
   font-style: italic;
 }
 
 .recent-views-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 0.75rem 1.1rem;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--color-text-primary);
   border-bottom: 1px solid var(--color-border-default);
 }
 
 .recent-views-popover-list {
-  max-height: 27rem;
+  max-height: 36rem;
   overflow-y: auto;
   padding: 0.35rem;
 }
@@ -212,7 +215,7 @@ function toggleRecentViewsPopover(event) {
   border-radius: 0.35rem;
   color: var(--color-text-dim);
   text-decoration: none;
-  font-size: 1rem;
+  font-size: 1.1rem;
   white-space: nowrap;
   overflow: hidden;
 }

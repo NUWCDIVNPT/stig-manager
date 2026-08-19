@@ -46,14 +46,15 @@ const title = computed(() => `CAT ${props.category}`)
 <style scoped>
 .cat-badge {
   border-radius: 5px;
-  width: 45px;
+  width: fit-content;
+  min-width: 4.1rem;
   font-size: 1.1rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 20px;
-  max-width: 45px;
+  height: 1.8rem;
+  white-space: nowrap;
 }
 
 .cat-1 {
