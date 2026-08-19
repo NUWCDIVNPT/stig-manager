@@ -250,6 +250,26 @@ textarea:focus {
   border-color: var(--color-primary-highlight-light) !important;
 }
 
+/* Nav rail popovers (Collections, Recent Views) share a subtle outline so the
+   flyout reads as a distinct surface against the page behind it */
+.p-popover.nav-popover {
+  border: 2px solid var(--color-border-default);
+  /* Triggers sit at the window edge; nudge the flyout right so it is not flush
+     against the edge of the viewport */
+  margin-left: 0.75rem;
+  /* The theme reserves a ~10px gap below the trigger to house the connector
+     arrow; with the arrow hidden, close most of that gap so the flyout stays
+     visually anchored to its button */
+  margin-top: 0.25rem;
+}
+
+/* The Popover arrow pseudo-elements paint a background-colored notch under the
+   trigger, which reads as a gap in the custom border - hide them */
+.p-popover.nav-popover::before,
+.p-popover.nav-popover::after {
+  display: none;
+}
+
 /* Collection tab panel styles (shared across Assets, STIGs, Labels tabs) */
 .collection-tab-panel {
   height: calc(100% - 1rem);

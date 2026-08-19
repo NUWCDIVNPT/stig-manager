@@ -1,4 +1,6 @@
 <script setup>
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Popover from 'primevue/popover'
 import { computed, ref } from 'vue'
@@ -28,7 +30,7 @@ const route = useRoute()
 const collectionsPopover = ref(null)
 
 const collectionsPopoverPt = {
-  root: { style: 'min-width: 22rem; max-width: 27rem; padding: 0' },
+  root: { class: 'nav-popover', style: 'min-width: 22rem; max-width: 30rem; padding: 0' },
 }
 const collectionSearchTerm = ref('')
 const collectionsExpanded = ref(true)
@@ -138,14 +140,14 @@ function toggleCollectionsPopover(event) {
         <span>{{ label }}</span>
       </div>
       <div class="collections-popover-search">
-        <span class="p-input-icon-left w-full">
-          <i class="pi pi-search" />
+        <IconField class="w-full">
+          <InputIcon class="pi pi-search" />
           <InputText
             v-model="collectionSearchTerm"
             placeholder="Search collections..."
-            class="w-full p-inputtext-sm search-input"
+            class="w-full"
           />
-        </span>
+        </IconField>
       </div>
       <div class="collections-popover-list nav-scroller">
         <div class="collections-group dashboard-group">
@@ -199,7 +201,7 @@ function toggleCollectionsPopover(event) {
 
 .nav-rail-item-chevron {
   margin-left: auto;
-  font-size: 0.8rem;
+  font-size: 1rem;
   color: var(--color-text-dim);
 }
 
@@ -270,11 +272,11 @@ function toggleCollectionsPopover(event) {
 
 .collection-list-icon--dashboard {
   opacity: 0.7;
-  font-size: 0.9em;
+  font-size: 1rem;
 }
 
 .collection-list-name {
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -283,14 +285,14 @@ function toggleCollectionsPopover(event) {
 .collections-loading,
 .collections-empty {
   padding: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--color-text-dim);
   text-align: center;
 }
 
 .collections-popover-header {
   padding: 0.75rem 1.1rem;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--color-text-primary);
   border-bottom: 1px solid var(--color-border-default);
@@ -301,7 +303,7 @@ function toggleCollectionsPopover(event) {
 }
 
 .collections-popover-list {
-  max-height: 25rem;
+  max-height: 36rem;
   overflow-y: auto;
   padding: 0.75rem 0.6rem;
 }
