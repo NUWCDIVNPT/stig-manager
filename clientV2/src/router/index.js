@@ -166,7 +166,7 @@ const routes = [
         path: 'stigs',
         name: 'admin-stigs',
         component: StigManage,
-        meta: { breadcrumbs: [{ label: 'STIGs' }] },
+        meta: { breadcrumbs: [{ label: 'STIG Benchmarks' }] },
       },
       {
         path: 'service-jobs',
@@ -184,7 +184,7 @@ const routes = [
         path: 'transfer',
         name: 'admin-transfer',
         component: ExportImportManage,
-        meta: { isEnabled: isAppDataEnabled, disabledRedirect: 'app-management', breadcrumbs: [{ label: 'Export & Import' }] },
+        meta: { isEnabled: isAppDataEnabled, disabledRedirect: 'app-management', breadcrumbs: [{ label: 'Export/Import Data' }] },
       },
     ],
   },
