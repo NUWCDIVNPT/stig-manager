@@ -175,6 +175,20 @@ describe('buildEventPayload', () => {
     expect(Number.isNaN(new Date(event.starts).getTime())).toBe(false)
   })
 
+  it('returns null when the recurring interval is cleared or invalid', () => {
+    // InputNumber emits null when cleared; :min="1" only clamps typed values.
+    const base = {
+      frequency: 'recurring',
+      intervalField: 'day',
+      startDate: new Date('2026-05-01T00:00:00Z'),
+      startTime: new Date('2026-05-01T09:30:00Z'),
+      enabled: true,
+    }
+    expect(buildEventPayload({ ...base, intervalValue: null })).toBeNull()
+    expect(buildEventPayload({ ...base, intervalValue: 0 })).toBeNull()
+    expect(buildEventPayload({ ...base, intervalValue: 1.5 })).toBeNull()
+  })
+
   it('builds a recurring event, stringifying the interval value', () => {
     const event = buildEventPayload({
       frequency: 'recurring',

@@ -88,9 +88,12 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
 
         <Column style="width: 12%; text-align: center;">
           <template #body="{ data }">
+            <!-- Deleting an in-flight run would strand the still-executing
+                 run_job procedure's output; the API does not enforce this yet. -->
             <ActionButton
               icon="pi pi-trash icon-red"
-              title="Delete run"
+              :title="data.state === 'running' ? 'A running run cannot be deleted' : 'Delete run'"
+              :disabled="data.state === 'running'"
               @click.stop="emit('delete-run', data)"
             />
           </template>

@@ -5,11 +5,16 @@ import { formatDateTimeString } from '../../../../shared/lib.js'
 // Visual treatment for each run state. `severity` drives the state pill color;
 // `icon` is a PrimeVue glyph. Unknown states fall back to `missing`.
 export const RUN_STATE_META = {
+  // TODO: queued/canceled never come from the API today (run_job writes only
+  // running/completed/failed; getRunsByJob synthesizes shutdown) — revisit.
   queued: { label: 'Queued', severity: 'neutral', icon: 'pi pi-clock' },
+  canceled: { label: 'Canceled', severity: 'warn', icon: 'pi pi-ban' },
   running: { label: 'Running', severity: 'info', icon: 'pi pi-spin pi-spinner' },
   completed: { label: 'Completed', severity: 'success', icon: 'pi pi-check-circle' },
   failed: { label: 'Failed', severity: 'danger', icon: 'pi pi-times-circle' },
-  canceled: { label: 'Canceled', severity: 'warn', icon: 'pi pi-ban' },
+  // Synthesized by the API for a run orphaned by a service restart; the legacy
+  // client colors it the same as failed.
+  shutdown: { label: 'Shutdown', severity: 'danger', icon: 'pi pi-power-off' },
   missing: { label: 'Never run', severity: 'muted', icon: 'pi pi-minus-circle' },
 }
 
@@ -149,7 +154,7 @@ export function splitTasks(catalog, job) {
 }
 
 // Serialize the ScheduleForm model into a JobEventCreate (or null for "none"
-// / an incomplete start date-time).
+// / an incomplete start date-time / a cleared interval).
 export function buildEventPayload(schedule) {
   if (!schedule || schedule.frequency === 'none') {
     return null
@@ -160,6 +165,10 @@ export function buildEventPayload(schedule) {
   }
   if (schedule.frequency === 'once') {
     return { type: 'once', starts }
+  }
+  // InputNumber emits null when cleared; its :min only clamps typed values
+  if (!Number.isInteger(schedule.intervalValue) || schedule.intervalValue < 1) {
+    return null
   }
   return {
     type: 'recurring',

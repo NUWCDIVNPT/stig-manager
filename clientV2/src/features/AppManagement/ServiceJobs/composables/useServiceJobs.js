@@ -1,7 +1,6 @@
 import { onMounted, ref } from 'vue'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
-import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import {
   createJob,
   deleteJob,
@@ -14,12 +13,12 @@ import {
 } from '../api/serviceJobsApi.js'
 
 // Orchestrates the master/detail data flow of the Service Jobs page: the jobs
-// list, the selected job's runs, and the selected run's output. Reads run
-// through useAsyncState (loading/error/abort handling, global error modal);
-// mutations resolve to a boolean so callers can decide whether to close a
-// dialog. Every call is elevated with the current user's admin privilege.
+// list, the selected job's runs, and the selected run's output. Reads and
+// mutations both run through useAsyncState (loading/error handling, global
+// error modal); a mutation resolves truthy on success and null on failure so
+// callers can decide whether to close a dialog. Every call is elevated with
+// the current user's admin privilege.
 export function useServiceJobs() {
-  const { triggerError } = useGlobalError()
   const { isAdmin } = useCurrentUser()
   const elevate = () => isAdmin.value
 
@@ -37,12 +36,10 @@ export function useServiceJobs() {
   )
 
   const { state: output, isLoading: outputLoading, execute: executeOutput } = useAsyncState(
-    async (runId, opts) => {
-      const lines = await fetchRunOutput(runId, { elevate: elevate(), signal: opts?.signal })
-      // The API's JobRunOutput has no sequence field; derive one for keying and
-      // display, matching the legacy grid's Seq column.
-      return (lines ?? []).map((line, i) => ({ ...line, seq: i + 1 }))
-    },
+    // Each line carries the API's own seq (ascending emission order; the spec's
+    // JobRunOutput schema omits it but getOutputByRun always sends it) — used
+    // as-is so Seq agrees with the Timestamp order and the legacy grid.
+    async (runId, opts) => (await fetchRunOutput(runId, { elevate: elevate(), signal: opts?.signal })) ?? [],
     { initialState: [], immediate: false },
   )
 
@@ -92,8 +89,8 @@ export function useServiceJobs() {
   }
 
   // payload: { jobId, isSystemJob, name, description, taskIds, event }
-  async function saveJob(payload) {
-    try {
+  const { isLoading: saving, execute: saveJob } = useAsyncState(
+    async (payload) => {
       if (payload.jobId) {
         // System jobs have fixed name/description/tasks; only the schedule is
         // editable, so send just the event.
@@ -110,15 +107,12 @@ export function useServiceJobs() {
       }
       await loadJobs()
       return true
-    }
-    catch (e) {
-      triggerError(e)
-      return false
-    }
-  }
+    },
+    { immediate: false },
+  )
 
-  async function removeJob(job) {
-    try {
+  const { execute: removeJob } = useAsyncState(
+    async (job) => {
       await deleteJob(job.jobId, { elevate: elevate() })
       if (selectedJob.value?.jobId === job.jobId) {
         selectedJob.value = null
@@ -126,45 +120,35 @@ export function useServiceJobs() {
       }
       await loadJobs()
       return true
-    }
-    catch (e) {
-      triggerError(e)
-      return false
-    }
-  }
+    },
+    { immediate: false },
+  )
 
-  async function runNow(job) {
-    try {
+  const { execute: runNow } = useAsyncState(
+    async (job) => {
       await runJobNow(job.jobId, { elevate: elevate() })
-      // A new run appears immediately; refresh both the list (runCount/lastRun)
-      // and the runs panel.
+      // A new run appears immediately; loadJobs refreshes the list
+      // (runCount/lastRun) and, for the tracked selection, the runs panel.
       await loadJobs()
-      if (selectedJob.value?.jobId === job.jobId) {
-        await loadRuns(job.jobId)
-      }
       return true
-    }
-    catch (e) {
-      triggerError(e)
-      return false
-    }
-  }
+    },
+    { immediate: false },
+  )
 
-  async function removeRun(run) {
-    try {
+  const { execute: removeRun } = useAsyncState(
+    async (run) => {
       await deleteRun(run.runId, { elevate: elevate() })
-      runs.value = runs.value.filter(r => r.runId !== run.runId)
       if (selectedRun.value?.runId === run.runId) {
         selectedRun.value = null
         output.value = []
       }
+      // The jobs grid's runCount/lastRun are server-computed; loadJobs refreshes
+      // them and reloads the runs panel for the tracked selection.
+      await loadJobs()
       return true
-    }
-    catch (e) {
-      triggerError(e)
-      return false
-    }
-  }
+    },
+    { immediate: false },
+  )
 
   onMounted(loadJobs)
 
@@ -179,6 +163,7 @@ export function useServiceJobs() {
     loadJobs,
     selectJob,
     selectRun,
+    saving,
     saveJob,
     removeJob,
     runNow,
