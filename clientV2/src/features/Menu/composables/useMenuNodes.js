@@ -15,7 +15,7 @@ export function useMenuNodes() {
     const appManagementNode = {
       key: 'AppManagement',
       label: 'App Management',
-      component: 'AppManagementSelection',
+      component: 'AppManagement',
       icon: 'icon-app-management',
       routeName: 'app-management',
     }

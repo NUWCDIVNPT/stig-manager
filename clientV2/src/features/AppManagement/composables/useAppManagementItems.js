@@ -34,7 +34,7 @@ const items = [
     key: 'ServiceJobs',
     component: 'ServiceJobs',
     label: 'Service Jobs',
-    icon: 'icon-wrench',
+    icon: 'icon-job',
     routeName: 'admin-service-jobs',
   },
   {

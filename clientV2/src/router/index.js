@@ -14,7 +14,7 @@ const ServiceJobs = () => import('../features/AppManagement/ServiceJobs/componen
 const AppInfo = () => import('../features/AppManagement/Appinfo/components/AppInfo.vue')
 const ExportImportManage = () => import('../features/AppManagement/Appdata/components/AppData.vue')
 const StigLibrary = () => import('../features/STIGLibrary/components/StigLibrary.vue')
-const AppManagementSelection = () => import('../features/AppManagement/components/AppManagementSelection.vue')
+const AppManagement = () => import('../features/AppManagement/components/AppManagement.vue')
 const CollectionsAdmin = () => import('../features/AppManagement/Collections/components/Collections.vue')
 const WhatsNewView = () => import('../features/WhatsNew/components/WhatsNewView.vue')
 const AssetReview = () => import('../features/AssetReview/components/AssetReview.vue')
@@ -135,9 +135,58 @@ const routes = [
   },
   {
     path: '/app-management',
-    name: 'app-management',
-    component: AppManagementSelection,
-    meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin' }] },
+    component: AppManagement,
+    meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }] },
+    children: [
+      {
+        path: '',
+        name: 'app-management',
+        // No landing page — send straight to the first section.
+        redirect: { name: 'admin-collections' },
+      },
+      {
+        path: 'collections',
+        name: 'admin-collections',
+        component: CollectionsAdmin,
+        meta: { breadcrumbs: [{ label: 'Collections' }] },
+      },
+      {
+        path: 'users',
+        name: 'admin-users',
+        component: UsersAdmin,
+        meta: { breadcrumbs: [{ label: 'Users' }] },
+      },
+      {
+        path: 'user-groups',
+        name: 'admin-user-groups',
+        component: UserGroupsAdmin,
+        meta: { breadcrumbs: [{ label: 'User Groups' }] },
+      },
+      {
+        path: 'stigs',
+        name: 'admin-stigs',
+        component: StigManage,
+        meta: { breadcrumbs: [{ label: 'STIG Benchmarks' }] },
+      },
+      {
+        path: 'service-jobs',
+        name: 'admin-service-jobs',
+        component: ServiceJobs,
+        meta: { breadcrumbs: [{ label: 'Service Jobs' }] },
+      },
+      {
+        path: 'app-info',
+        name: 'admin-app-info',
+        component: AppInfo,
+        meta: { breadcrumbs: [{ label: 'Application Info' }] },
+      },
+      {
+        path: 'transfer',
+        name: 'admin-transfer',
+        component: ExportImportManage,
+        meta: { isEnabled: isAppDataEnabled, disabledRedirect: 'app-management', breadcrumbs: [{ label: 'Export/Import Data' }] },
+      },
+    ],
   },
   {
     path: '/stig-library',
@@ -167,49 +216,6 @@ const routes = [
     name: 'whats-new',
     component: WhatsNewView,
     meta: { breadcrumbs: [{ label: 'What\'s New' }] },
-  },
-  {
-    path: '/app-management/collections',
-    name: 'admin-collections',
-    component: CollectionsAdmin,
-    props: true,
-    meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Collections' }] },
-  },
-  {
-    path: '/app-management/users',
-    name: 'admin-users',
-    component: UsersAdmin,
-    meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Users' }] },
-  },
-  {
-    path: '/app-management/user-groups',
-    name: 'admin-user-groups',
-    component: UserGroupsAdmin,
-    meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'User Groups' }] },
-  },
-  {
-    path: '/app-management/stigs',
-    name: 'admin-stigs',
-    component: StigManage,
-    meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'STIGs' }] },
-  },
-  {
-    path: '/app-management/service-jobs',
-    name: 'admin-service-jobs',
-    component: ServiceJobs,
-    meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Service Jobs' }] },
-  },
-  {
-    path: '/app-management/app-info',
-    name: 'admin-app-info',
-    component: AppInfo,
-    meta: { requiresAdmin: true, breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Application Info' }] },
-  },
-  {
-    path: '/app-management/transfer',
-    name: 'admin-transfer',
-    component: ExportImportManage,
-    meta: { requiresAdmin: true, isEnabled: isAppDataEnabled, disabledRedirect: 'app-management', breadcrumbs: [{ label: 'Admin', route: { name: 'app-management' } }, { label: 'Export & Import' }] },
   },
   {
     path: '/assets/:assetId',
