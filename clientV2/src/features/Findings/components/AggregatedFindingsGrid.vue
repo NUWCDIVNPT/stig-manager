@@ -432,7 +432,6 @@ const flexCellPt = {
   border-radius: 5px;
   padding: 0.25rem 0.55rem 0.25rem 0.7rem;
   cursor: pointer;
-  font-family: inherit;
   line-height: 1.2;
   max-width: 100%;
   transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
