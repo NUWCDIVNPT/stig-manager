@@ -194,7 +194,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
   gap: 0.25rem;
 }
 
-:deep(.center-header .p-column-header-content) {
+:deep(.center-header .p-datatable-column-header-content) {
   justify-content: center;
 }
 </style>

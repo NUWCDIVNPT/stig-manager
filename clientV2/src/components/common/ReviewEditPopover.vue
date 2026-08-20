@@ -225,7 +225,7 @@ function clampPopoverPosition() {
   container.style.marginLeft = `${offset}px`
 
   const arrowLeftEdge = targetX - (rect.left + offset) - 10
-  container.style.setProperty('--p-popover-arrow-left', `${arrowLeftEdge}px`)
+  container.style.setProperty('--sm-popover-arrow-left', `${arrowLeftEdge}px`)
 }
 
 function alignPopoverAnimated() {
@@ -756,25 +756,25 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 
 :global(.review-popover:not(.p-popover-flipped)::before) {
   border-bottom-color: var(--p-primary-color) !important;
-  left: var(--p-popover-arrow-left, calc(50% - 10px)) !important;
+  left: var(--sm-popover-arrow-left, calc(50% - 10px)) !important;
   transform: none !important;
 }
 
 :global(.review-popover:not(.p-popover-flipped)::after) {
   border-bottom-color: var(--color-background-dark) !important;
-  left: var(--p-popover-arrow-left, calc(50% - 10px)) !important;
+  left: var(--sm-popover-arrow-left, calc(50% - 10px)) !important;
   transform: none !important;
 }
 
 :global(.review-popover.p-popover-flipped::before) {
   border-top-color: var(--p-primary-color) !important;
-  left: var(--p-popover-arrow-left, calc(50% - 10px)) !important;
+  left: var(--sm-popover-arrow-left, calc(50% - 10px)) !important;
   transform: none !important;
 }
 
 :global(.review-popover.p-popover-flipped::after) {
   border-top-color: var(--color-background-dark) !important;
-  left: var(--p-popover-arrow-left, calc(50% - 10px)) !important;
+  left: var(--sm-popover-arrow-left, calc(50% - 10px)) !important;
   transform: none !important;
 }
 

@@ -314,11 +314,11 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
   color: var(--color-action-green);
 }
 
-:deep(.center-header .p-column-header-content) {
+:deep(.center-header .p-datatable-column-header-content) {
   justify-content: center;
 }
 
-:deep(.wrapped-header .p-column-header-content) {
+:deep(.wrapped-header .p-datatable-column-header-content) {
   flex-wrap: wrap;
 }
 </style>

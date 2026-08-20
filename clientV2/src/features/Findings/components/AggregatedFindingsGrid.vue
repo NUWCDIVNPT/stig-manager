@@ -596,11 +596,6 @@ const flexCellPt = {
   border-bottom: 1px solid var(--color-border-default);
 }
 
-:deep(.p-datatable-tbody > tr.p-highlight) {
-  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-background-light)) !important;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 28%, transparent);
-}
-
 :deep(.p-datatable-tbody > tr:hover) {
   background: var(--color-background-light) !important;
 }

@@ -617,22 +617,11 @@ const dataTablePt = {
   background: color-mix(in srgb, var(--color-background-light) 10%, var(--color-background-dark));
 }
 
-:deep(.p-datatable-tbody > tr.p-highlight) {
-  background: color-mix(in srgb, var(--color-primary, #3b82f6) 12%, var(--color-background-light)) !important;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary, #3b82f6) 25%, transparent);
-  outline: 1px inset color-mix(in srgb, var(--color-primary) 20%, transparent);
-}
-
 :deep(.p-datatable-tbody > tr:hover) {
   background: var(--color-background-light) !important;
 }
 
-:deep(.p-datatable-tbody > tr.p-highlight .cell-text) {
-  color: var(--color-text-bright);
-  font-weight: 500;
-}
-
-:deep(.p-column-resizer-helper) {
+:deep(.p-datatable-column-resize-indicator) {
   background: var(--color-primary);
 }
 
@@ -658,32 +647,32 @@ const dataTablePt = {
 }
 
 /* Custom scrollbars for the table */
-:deep(.p-datatable-wrapper::-webkit-scrollbar),
+:deep(.p-datatable-table-container::-webkit-scrollbar),
 :deep(.p-virtualscroller::-webkit-scrollbar) {
   width: 6px;
 }
-:deep(.p-datatable-wrapper::-webkit-scrollbar-track),
+:deep(.p-datatable-table-container::-webkit-scrollbar-track),
 :deep(.p-virtualscroller::-webkit-scrollbar-track) {
   background: transparent;
 }
-:deep(.p-datatable-wrapper::-webkit-scrollbar-button),
+:deep(.p-datatable-table-container::-webkit-scrollbar-button),
 :deep(.p-virtualscroller::-webkit-scrollbar-button) {
   display: none;
   width: 0;
   height: 0;
 }
-:deep(.p-datatable-wrapper::-webkit-scrollbar-thumb),
+:deep(.p-datatable-table-container::-webkit-scrollbar-thumb),
 :deep(.p-virtualscroller::-webkit-scrollbar-thumb) {
   background-color: var(--color-border-default);
   border-radius: 999px;
   border: none;
   min-height: 28px;
 }
-:deep(.p-datatable-wrapper::-webkit-scrollbar-thumb:hover),
+:deep(.p-datatable-table-container::-webkit-scrollbar-thumb:hover),
 :deep(.p-virtualscroller::-webkit-scrollbar-thumb:hover) {
   background-color: var(--color-border-hover);
 }
-:deep(.p-datatable-wrapper),
+:deep(.p-datatable-table-container),
 :deep(.p-virtualscroller) {
   scrollbar-width: thin;
   scrollbar-color: var(--color-border-default) transparent;

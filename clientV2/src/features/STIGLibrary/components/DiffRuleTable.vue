@@ -209,19 +209,8 @@ function onFooterAction(key) {
   border-right: none;
 }
 
-:deep(.p-datatable-tbody > tr.p-highlight) {
-  background: color-mix(in srgb, var(--color-primary, #3b82f6) 12%, var(--color-background-light)) !important;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary, #3b82f6) 25%, transparent);
-  outline: 1px inset color-mix(in srgb, var(--color-primary) 20%, transparent);
-}
-
 :deep(.p-datatable-tbody > tr:hover) {
   background: var(--color-background-light) !important;
-}
-
-:deep(.p-datatable-tbody > tr.p-highlight .cell-text) {
-  color: var(--color-text-bright);
-  font-weight: 500;
 }
 
 :deep(.p-datatable-footer) {
