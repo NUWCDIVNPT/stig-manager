@@ -14,10 +14,11 @@ import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { useTableFooterActions } from '../../../shared/composables/useTableFooterActions.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
+import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
-import StigPillStack from './StigPillStack.vue'
 
 const props = defineProps({
   rows: { type: Array, default: () => [] },
@@ -44,21 +45,12 @@ const router = useRouter()
 
 const dataTableRef = ref(null)
 
-// Row geometry — values derived from CSS, not eyeballed:
-//   sizeMultiplier = 15px ≈ `.cell-text` font-size 1.05rem × line-height 1.3 at the 11px root.
-//                    Each density step adds exactly one rendered line of Detail/Comment.
-//   baseItemSize   = 36px ≈ cell padding (~6px) + 2 baseline lines of detail.
-// Combined with effectiveLineClamp = lineClamp + 2 (below), the floor row at
-// lineClamp=1 is 3 lines × 15 + 6 = 51px — just enough to fit the asset cell
-// with shield (~24px) + labels row (~14px) + padding. The asset cell is the
-// *floor*; Detail/Comment is the only growth driver beyond that.
-const { lineClamp, itemSize } = useGridDensity('findings-individual', 1, 36, 15)
-
-// Bias the user-facing line-clamp by +2 so even the most compact density shows
-// enough Detail/Comment lines to fill the asset-cell-with-labels floor. The
-// composable's lineClamp drives row height; this drives `-webkit-line-clamp`
-// on the clamped cells. Keeping them locked together prevents drift.
-const effectiveLineClamp = computed(() => lineClamp.value + 2)
+// Row geometry (same model as AggregatedFindingsGrid): itemSize = 15px per
+// clamped line × lineClamp + 6px cell chrome. lineClamp both sets the row
+// height and drives the Detail/Comment -webkit-line-clamp, so the two can't
+// drift. Min clamp of 2 keeps the floor row (36px) tall enough for the asset
+// cell's shield + labels.
+const { lineClamp, itemSize } = useGridDensity('findings-individual', 2, 6, 15)
 
 // Decorate each row with:
 //   - labels: resolved {labelId,name,color} objects for LabelsRow (review payload
@@ -84,14 +76,7 @@ const decoratedRows = computed(() => {
   })
 })
 
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-  else if (key === 'refresh') {
-    emit('retry')
-  }
-}
+const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () => emit('retry') })
 
 // Prefer the STIG currently scoped in the parent; otherwise the first one the
 // row reports. Multi-entry rows happen under the cci aggregator + "All STIGs".
@@ -123,218 +108,238 @@ function openAssetReview(row) {
   })
 }
 
-const dataTablePt = {
-  tableContainer: { style: { height: '100%' } },
-  // Use width:100% (not minWidth) — minWidth forces the table to expand past
-  // its container when fixed columns sum past it, producing a horizontal
-  // scrollbar. width:100% sizes the table to the container; flex columns
-  // (Detail / Comment) absorb the remainder.
+// Standard app table PT (compactTablePt) with two density-specific additions:
+// rows are pinned to the density-driven height, and body cells are top-aligned
+// with tight padding so short cells line up with multi-line Detail/Comment and
+// the row-height math stays honest. The bodyCell override keeps compactTablePt's
+// font size (later padding wins over the base's).
+const baseTablePt = compactTablePt({ bodyFontSize: '1rem' })
+const tablePt = {
+  ...baseTablePt,
+  tableContainer: { style: 'background: var(--p-datatable-row-background); height: 100%;' },
   table: { style: { tableLayout: 'fixed', width: '100%' } },
-  // Pin every row to a fixed height driven by `--item-size` so virtual-scroll's
-  // position math (n * itemSize) stays correct. overflow:hidden clips wrapping
-  // labels / long detail text that exceed the budgeted height.
   bodyRow: { style: { height: 'var(--item-size)', overflow: 'hidden' } },
-  footer: { style: { padding: '0', border: 'none' } },
-}
-
-// Flex columns (Detail / Comment / Asset / STIGs) — top-aligned, overflow hidden
-// so multi-line content is clipped by the pinned row height.
-const flexCellPt = {
-  bodyCell: {
-    style: {
-      padding: '0.15rem 0.5rem',
-      verticalAlign: 'top',
-      overflow: 'hidden',
-    },
+  column: {
+    ...baseTablePt.column,
+    bodyCell: { style: `${baseTablePt.column.bodyCell.style} padding: 0.15rem 0.5rem; vertical-align: top;` },
   },
-  headerCell: { style: { padding: '0.4rem 0.5rem' } },
 }
 
-// Asset and STIGs cells reuse flexCellPt — both flex, both clip overflow,
-// labels (asset) and pills (stigs) wrap within the cell.
-const assetCellPt = flexCellPt
-const stigsCellPt = flexCellPt
-
-// Simple text columns (Status, Reviewer) — same padding as the flex cells but
-// no overflow constraint since their content is single-line.
-const textCellPt = {
-  bodyCell: { style: { padding: '0.15rem 0.5rem', verticalAlign: 'top' } },
-  headerCell: { style: { padding: '0.4rem 0.5rem' } },
-}
-
-// Centered + tight-padding cell, shared by the engine icon column and the
-// clock-style "last action" timestamp column. Tight padding keeps these narrow
-// columns from claiming horizontal space they don't need.
-const compactColumnPt = {
-  bodyCell: { style: { padding: '0.15rem 0', textAlign: 'center', verticalAlign: 'top' } },
-  headerCell: { style: { padding: '0.4rem 0', textAlign: 'center' } },
-}
+// The one per-column PT every table in the app uses: a header border-right.
+const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
 </script>
 
 <template>
-  <div class="ind-grid-panel" :style="{ '--line-clamp': effectiveLineClamp, '--item-size': `${itemSize}px` }">
-    <header class="ind-grid-panel__header">
-      <h3 class="ind-grid-panel__title">
-        Individual Findings
-      </h3>
-      <span v-if="selectedAggregated" class="ind-grid-panel__context">
-        for {{ selectedAggregated.groupId ?? selectedAggregated.ruleId ?? selectedAggregated.cci }}
-      </span>
-      <DensityControls grid-key="findings-individual" :default-line-clamp="1" class="ind-grid-panel__density" />
-    </header>
+  <div class="ind-grid-panel" :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }">
+    <!-- Everything scrolls together: below __inner's min-width the whole stack
+         (header, table, footer) scrolls horizontally as one unit. -->
+    <div class="ind-grid-panel__inner">
+      <header class="ind-grid-panel__header">
+        <div class="ind-grid-panel__header-left">
+          <span class="ind-grid-panel__title">
+            <i class="pi pi-list-check ind-grid-panel__title-icon" />
+            Individual Findings
+          </span>
+          <span v-if="selectedAggregated" class="ind-grid-panel__context">
+            for {{ selectedAggregated.groupId ?? selectedAggregated.ruleId ?? selectedAggregated.cci }}
+          </span>
+        </div>
+        <DensityControls grid-key="findings-individual" :default-line-clamp="2" :min="2" />
+      </header>
 
-    <div v-if="error" class="ind-grid-panel__error">
-      <p>Couldn't load reviews.</p>
-      <button type="button" class="ind-grid-panel__retry" @click="emit('retry')">
-        Retry
-      </button>
-    </div>
+      <div v-if="error" class="ind-grid-panel__error">
+        <p>Couldn't load reviews.</p>
+        <button type="button" class="ind-grid-panel__retry" @click="emit('retry')">
+          Retry
+        </button>
+      </div>
 
-    <div v-else-if="!selectedAggregated" class="ind-grid-empty">
-      <i class="pi pi-arrow-left ind-grid-empty__hint-icon" />
-      <span>Select a finding to view assets</span>
-    </div>
+      <div v-else-if="!selectedAggregated" class="ind-grid-empty">
+        <i class="pi pi-arrow-left ind-grid-empty__hint-icon" />
+        <span>Select a finding to view assets</span>
+      </div>
 
-    <DataTable
-      v-else
-      ref="dataTableRef"
-      :value="decoratedRows"
-      :loading="isLoading"
-      data-key="_rowKey"
-      scrollable
-      scroll-height="flex"
-      :virtual-scroller-options="{ itemSize }"
-      striped-rows
-      class="ind-grid-panel__table"
-      :pt="dataTablePt"
-    >
-      <Column field="assetName" header="Asset" sortable :style="{ width: '18rem', minWidth: '12rem' }" :pt="assetCellPt">
-        <template #body="{ data }">
-          <div class="asset-cell">
-            <div class="asset-cell__name-row">
-              <div class="asset-cell__name" :title="data.assetName">
-                {{ data.assetName }}
-              </div>
-              <button
-                type="button"
-                class="shield-action"
-                title="Open Asset Review"
-                @click.stop="openAssetReview(data)"
-              >
-                <img :src="shieldGreenCheck" width="14" height="14" alt="Review">
-              </button>
-            </div>
-            <LabelsRow v-if="data.labels?.length" :labels="data.labels" compact />
-          </div>
-        </template>
-      </Column>
-      <Column header="STIGs" :style="{ width: '10rem', minWidth: '8rem' }" :pt="stigsCellPt">
-        <template #body="{ data }">
-          <StigPillStack :stigs="data.stigs ?? []" :item-size="itemSize" />
-        </template>
-      </Column>
-      <Column field="detail" header="Detail" :style="{ minWidth: '12rem' }" :pt="flexCellPt">
-        <template #body="{ data }">
-          <span class="cell-text cell-text--clamped" :title="data.detail">{{ data.detail || '—' }}</span>
-        </template>
-      </Column>
-      <Column field="comment" header="Comment" :style="{ minWidth: '12rem' }" :pt="flexCellPt">
-        <template #body="{ data }">
-          <span class="cell-text cell-text--clamped" :title="data.comment">{{ data.comment || '—' }}</span>
-        </template>
-      </Column>
-      <Column :pt="compactColumnPt" :style="{ width: '2.25rem', minWidth: '2.25rem' }">
-        <template #header>
-          <img :src="bot2" alt="" class="engine-header-icon" title="Result engine">
-        </template>
-        <template #body="{ data }">
-          <EngineIconCell :display="data._engineDisplay" />
-        </template>
-      </Column>
-      <Column header="Status" :style="{ width: '4.5rem', minWidth: '4rem' }" :pt="textCellPt">
-        <template #body="{ data }">
-          <StatusBadge :status="data._statusLabel" />
-        </template>
-      </Column>
-      <Column field="username" header="Reviewer" sortable :style="{ width: '8rem', minWidth: '7rem' }" :pt="textCellPt">
-        <template #body="{ data }">
-          <span class="cell-text">{{ data.username || '—' }}</span>
-        </template>
-      </Column>
-      <Column field="ts" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="compactColumnPt">
-        <template #header>
-          <i class="pi pi-clock" title="Last action" />
-        </template>
-        <template #body="{ data }">
-          <span class="cell-text cell-text--dim" :title="data._tsFormatted">{{ data._durationLabel }}</span>
-        </template>
-      </Column>
-
-      <template #footer>
-        <StatusFooter
-          :metrics="[]"
-          :total-count="rows.length"
-          total-label="reviews"
-          :show-refresh="true"
-          :show-export="true"
-          @action="onFooterAction"
+      <div v-else class="table-container">
+        <DataTable
+          ref="dataTableRef"
+          :value="decoratedRows"
+          :loading="isLoading"
+          data-key="_rowKey"
+          scrollable
+          scroll-height="flex"
+          resizable-columns
+          column-resize-mode="fit"
+          :virtual-scroller-options="{ itemSize }"
+          striped-rows
+          class="ind-grid-panel__table"
+          :pt="tablePt"
         >
-          <template #right-extra>
-            <span class="status-cluster">
-              <span class="status-cluster__group" title="Engine attribution">
-                <ManualBadge :count="statusCounts.manual" />
-                <EngineBadge :count="statusCounts.engine" />
-                <OverrideBadge :count="statusCounts.override" />
-              </span>
-              <span class="status-cluster__divider">|</span>
-              <span class="status-cluster__group" title="Submission status">
-                <StatusBadge status="saved" :count="statusCounts.saved" />
-                <StatusBadge status="submitted" :count="statusCounts.submitted" />
-                <StatusBadge status="rejected" :count="statusCounts.rejected" />
-                <StatusBadge status="accepted" :count="statusCounts.accepted" />
-              </span>
-            </span>
+          <Column field="assetName" header="Asset" sortable :style="{ width: '18rem', minWidth: '12rem' }" :pt="borderPt">
+            <template #body="{ data }">
+              <div class="asset-cell">
+                <div class="asset-cell__name-row">
+                  <div class="asset-cell__name" :title="data.assetName">
+                    {{ data.assetName }}
+                  </div>
+                  <button
+                    type="button"
+                    class="shield-action"
+                    title="Open Asset Review"
+                    @click.stop="openAssetReview(data)"
+                  >
+                    <img :src="shieldGreenCheck" width="14" height="14" alt="Review">
+                  </button>
+                </div>
+                <LabelsRow v-if="data.labels?.length" :labels="data.labels" compact />
+              </div>
+            </template>
+          </Column>
+          <Column header="STIGs" :style="{ width: '10rem', minWidth: '8rem' }" :pt="borderPt">
+            <template #body="{ data }">
+              <span class="cell-text cell-text--clamped">{{ (data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—' }}</span>
+            </template>
+          </Column>
+          <Column field="detail" header="Detail" :style="{ minWidth: '12rem' }" :pt="borderPt">
+            <template #body="{ data }">
+              <span class="cell-text cell-text--clamped" :title="data.detail">{{ data.detail || '—' }}</span>
+            </template>
+          </Column>
+          <Column field="comment" header="Comment" :style="{ minWidth: '12rem' }" :pt="borderPt">
+            <template #body="{ data }">
+              <span class="cell-text cell-text--clamped" :title="data.comment">{{ data.comment || '—' }}</span>
+            </template>
+          </Column>
+          <Column :pt="borderPt" :style="{ width: '2.8rem', minWidth: '2.8rem', textAlign: 'center' }">
+            <template #header>
+              <img :src="bot2" alt="" class="engine-header-icon" title="Result engine">
+            </template>
+            <template #body="{ data }">
+              <EngineIconCell :display="data._engineDisplay" />
+            </template>
+          </Column>
+          <Column header="Status" :style="{ width: '5.5rem', minWidth: '5.5rem', textAlign: 'center' }" :pt="borderPt">
+            <template #body="{ data }">
+              <StatusBadge :status="data._statusLabel" />
+            </template>
+          </Column>
+          <Column field="username" header="Reviewer" sortable :style="{ width: '8rem', minWidth: '7rem' }" :pt="borderPt">
+            <template #body="{ data }">
+              <span :title="data.username">{{ data.username || '—' }}</span>
+            </template>
+          </Column>
+          <Column field="ts" sortable :style="{ width: '4.5rem', minWidth: '4.5rem', textAlign: 'center' }" :pt="borderPt">
+            <template #header>
+              <i class="pi pi-clock" title="Last action" />
+            </template>
+            <template #body="{ data }">
+              <span class="dim-value" :title="data._tsFormatted">{{ data._durationLabel }}</span>
+            </template>
+          </Column>
+
+          <template #footer>
+            <StatusFooter
+              :metrics="[]"
+              :total-count="rows.length"
+              total-label="reviews"
+              :show-refresh="true"
+              :show-export="true"
+              @action="onFooterAction"
+            >
+              <template #right-extra>
+                <span class="status-cluster">
+                  <span class="status-cluster__group" title="Engine attribution">
+                    <ManualBadge :count="statusCounts.manual" />
+                    <EngineBadge :count="statusCounts.engine" />
+                    <OverrideBadge :count="statusCounts.override" />
+                  </span>
+                  <span class="status-cluster__divider">|</span>
+                  <span class="status-cluster__group" title="Submission status">
+                    <StatusBadge status="saved" :count="statusCounts.saved" />
+                    <StatusBadge status="submitted" :count="statusCounts.submitted" />
+                    <StatusBadge status="rejected" :count="statusCounts.rejected" />
+                    <StatusBadge status="accepted" :count="statusCounts.accepted" />
+                  </span>
+                </span>
+              </template>
+            </StatusFooter>
           </template>
-        </StatusFooter>
-      </template>
-    </DataTable>
+        </DataTable>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .ind-grid-panel {
   height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--color-background-dark);
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+}
+
+/* The scrollable content. It never shrinks below min-width; once the panel is
+   narrower, the panel's overflow-x scrolls this whole stack — header, table,
+   and footer — together as one unit. min-width covers the sum of the columns'
+   min-widths so the table never needs its own horizontal scrollbar. */
+.ind-grid-panel__inner {
+  height: 100%;
+  min-width: 55rem;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--color-background-darkest);
 }
 
 .ind-grid-panel__header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.6rem;
-  background: var(--color-background-dark);
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(180deg, var(--color-background-light), var(--color-background-dark));
   border-bottom: 1px solid var(--color-border-default);
-  min-height: 28px;
+  flex-shrink: 0;
+}
+
+.ind-grid-panel__header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
 }
 
 .ind-grid-panel__title {
+  display: inline-flex;
+  align-items: center;
   margin: 0;
   font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
+  font-weight: 700;
+  color: var(--color-text-bright);
   letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.ind-grid-panel__title-icon {
+  color: var(--color-primary-highlight);
+  margin-right: 0.35rem;
 }
 
 .ind-grid-panel__context {
   font-size: 1.1rem;
   color: var(--color-text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.ind-grid-panel__density {
-  margin-left: auto;
+.table-container {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
 }
 
 .ind-grid-panel__error {
@@ -374,15 +379,16 @@ const compactColumnPt = {
   color: var(--color-primary-highlight);
 }
 
-.cell-text {
-  font-size: 1.05rem;
-  line-height: 1.3;
-  color: var(--color-text-primary);
+.dim-value {
+  color: var(--color-text-dim);
 }
 
-.cell-text--dim {
-  color: var(--color-text-dim);
-  font-size: 1rem;
+/* line-height is load-bearing: font-size × this ≈ the density sizeMultiplier,
+   so N clamped lines fill exactly N rows (see useGridDensity). Only the clamped
+   Detail/Comment cells use it. */
+.cell-text {
+  line-height: 1.3;
+  color: var(--color-text-primary);
 }
 
 .cell-text--clamped {
@@ -483,18 +489,5 @@ const compactColumnPt = {
 
 .status-cluster__divider {
   color: var(--color-border-default);
-}
-
-:deep(.p-datatable-thead > tr > th) {
-  background: var(--color-background-dark);
-  color: var(--color-text-bright);
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-:deep(.p-datatable-tbody > tr:hover) {
-  background: var(--color-background-light) !important;
 }
 </style>

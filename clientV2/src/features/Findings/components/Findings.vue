@@ -174,18 +174,20 @@ function onSelectFinding(row) {
 <template>
   <div class="findings">
     <Splitter
+      class="findings__splitter"
       :pt="{
-        gutter: { style: 'background: var(--color-border-dark)' },
+        gutter: { style: 'background: transparent; width: 0.6rem' },
         root: { style: 'border: none; background: transparent; height: 100%' },
       }"
     >
-      <SplitterPanel :size="40" :min-size="30">
+      <SplitterPanel :size="40" :min-size="30" class="findings__panel">
         <AggregatedFindingsGrid
+          :collection-id="collectionId"
           :rows="findings ?? []"
           :visible-columns="visibleColumns"
           :is-loading="isFindingsLoading"
           :error="findingsError"
-          :selected-stig-id="selectedBenchmarkId"
+          :selected-benchmark-id="selectedBenchmarkId"
           :aggregator="aggregator"
           :selected-row="selectedFinding"
           :total-occurrences="totalOccurrences"
@@ -201,7 +203,7 @@ function onSelectFinding(row) {
         />
       </SplitterPanel>
 
-      <SplitterPanel :size="60" :min-size="42">
+      <SplitterPanel :size="60" :min-size="42" class="findings__panel">
         <IndividualFindingsGrid
           :rows="reviews ?? []"
           :is-loading="isReviewsLoading"
@@ -224,7 +226,20 @@ function onSelectFinding(row) {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  padding: 0.5rem;
   background-color: var(--color-background-darkest);
   color: var(--color-text-primary);
+}
+
+.findings__splitter {
+  flex: 1;
+  min-height: 0;
+}
+
+.findings__panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
 }
 </style>

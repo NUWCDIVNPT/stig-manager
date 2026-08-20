@@ -179,38 +179,39 @@ function onSelect(row) {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--color-background-darkest);
+  background: var(--color-background-dark);
 }
 
 .stig-panel__filter {
   position: relative;
   display: flex;
   align-items: center;
-  padding: 0.5rem 0.5rem 0.4rem;
-  border-bottom: 1px solid var(--color-border-light);
-  background: var(--color-background-dark);
+  padding: 0.6rem 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--color-border-default);
+  background: linear-gradient(180deg, var(--color-background-light), var(--color-background-dark));
 }
 
 .stig-panel__filter-icon {
   position: absolute;
-  left: 0.95rem;
+  left: 1.05rem;
   font-size: 0.9rem;
   color: var(--color-text-dim);
   pointer-events: none;
 }
 
+/* Matches the app's standard search field (see AssetChecklistGridHeader). */
 .stig-panel__filter-input {
   flex: 1;
   width: 100%;
   font: inherit;
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: var(--color-text-primary);
-  background: var(--color-background-darkest);
+  background: color-mix(in srgb, var(--color-background-light) 75%, transparent);
   border: 1px solid var(--color-border-default);
-  border-radius: 4px;
-  padding: 0.35rem 1.8rem 0.35rem 1.9rem;
+  border-radius: 5px;
+  padding: 0.4rem 2rem 0.4rem 2.1rem;
   outline: none;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
 }
 
 .stig-panel__filter-input::placeholder {
@@ -219,12 +220,13 @@ function onSelect(row) {
 
 .stig-panel__filter-input:focus {
   border-color: var(--color-primary-highlight);
-  box-shadow: 0 0 0 1px var(--color-primary-highlight);
+  background-color: var(--color-background-darkest);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-highlight) 25%, transparent);
 }
 
 .stig-panel__filter-clear {
   position: absolute;
-  right: 0.95rem;
+  right: 1.05rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -314,7 +316,8 @@ function onSelect(row) {
 
 .stig-list__id {
   grid-area: id;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   color: var(--color-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -323,7 +326,8 @@ function onSelect(row) {
 
 .stig-list__id--all {
   font-style: italic;
-  font-size: 1.2rem;
+  font-weight: 500;
+  font-size: 1.1rem;
   color: var(--color-text-bright);
 }
 

@@ -37,6 +37,7 @@ const props = defineProps({
    * Structure: {
    *   key: string, (required) used for the action event name
    *   icon: string, (required)
+   *   iconColor?: string, (CSS color applied to just the icon)
    *   label?: string,
    *   title?: string,
    *   disabled?: boolean,
@@ -135,6 +136,7 @@ function onActionClick(action) {
         :class="{ 'status-footer__button--has-label': action.label }"
         :title="action.title"
         :label="action.label"
+        :pt="action.iconColor ? { icon: { style: { color: action.iconColor } } } : undefined"
         @click="onActionClick(action)"
       />
 
@@ -244,6 +246,8 @@ function onActionClick(action) {
   height: 1.5rem;
   width: 1.75rem;
   color: var(--color-text-dim);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .status-footer__button--has-label {

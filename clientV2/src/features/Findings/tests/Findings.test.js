@@ -23,7 +23,7 @@ vi.mock('../../../shared/api/collectionsApi.js', () => ({
 vi.mock('../components/AggregatedFindingsGrid.vue', () => ({
   default: {
     name: 'AggregatedFindingsGrid',
-    props: ['rows', 'selectedRow', 'aggregator', 'selectedStigId'],
+    props: ['rows', 'selectedRow', 'aggregator', 'selectedBenchmarkId'],
     emits: ['select-finding', 'update:aggregator', 'select-stig'],
     template: `
       <div data-testid="agg-grid" :data-aggregator="aggregator">
