@@ -115,6 +115,14 @@ const config = {
         mode: process.env.STIGMAN_LOG_MODE || 'combined',
         optStats: process.env.STIGMAN_DEV_LOG_OPT_STATS === "true"
     },
+    events: {
+        enabled: process.env.STIGMAN_EVENTS_ENABLED !== "false",
+        maxBody: (() => {
+            const val = parseInt(process.env.STIGMAN_EVENTS_MAX_BODY)
+            if (isNaN(val) || val < 0) return 65536
+            return val
+        })()
+    },
     experimental: {
         appData: process.env.STIGMAN_EXPERIMENTAL_APPDATA === "true",
         logStream: process.env.STIGMAN_EXPERIMENTAL_LOGSTREAM !== "false"
