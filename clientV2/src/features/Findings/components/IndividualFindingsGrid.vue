@@ -194,9 +194,9 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               </div>
             </template>
           </Column>
-          <Column header="STIGs" :style="{ width: '10rem', minWidth: '8rem' }" :pt="borderPt">
+          <Column header="STIGs" :style="{ width: '14rem', minWidth: '11rem' }" :pt="borderPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped">{{ (data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—' }}</span>
+              <span class="cell-text cell-text--clamped" :title="(data.stigs ?? []).map(s => s.benchmarkId).join(', ')">{{ (data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—' }}</span>
             </template>
           </Column>
           <Column field="detail" header="Detail" :style="{ minWidth: '12rem' }" :pt="borderPt">

@@ -268,7 +268,7 @@ const flexCellPt = {
               <span class="cell-text">{{ data.apAcronym }}</span>
             </template>
           </Column>
-          <Column v-if="visibleColumns.has('title')" field="title" header="Title" sortable :style="{ minWidth: '12rem' }" :pt="flexCellPt">
+          <Column v-if="visibleColumns.has('title')" field="title" header="Title" sortable :style="{ width: '14rem', minWidth: '5rem' }" :pt="flexCellPt">
             <template #body="{ data }">
               <span class="cell-text cell-text--clamped" :title="data.title">{{ data.title }}</span>
             </template>
@@ -283,9 +283,9 @@ const flexCellPt = {
               <span class="cell-asset-count">{{ data.assetCount }}</span>
             </template>
           </Column>
-          <Column v-if="visibleColumns.has('stigs')" header="STIGs" :style="{ width: '11rem', minWidth: '10rem' }" :pt="flexCellPt">
+          <Column v-if="visibleColumns.has('stigs')" header="STIGs" :style="{ minWidth: '16rem' }" :pt="flexCellPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped">{{ (data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—' }}</span>
+              <span class="cell-text cell-text--clamped" :title="(data.stigs ?? []).map(s => s.benchmarkId).join(', ')">{{ (data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—' }}</span>
             </template>
           </Column>
 
