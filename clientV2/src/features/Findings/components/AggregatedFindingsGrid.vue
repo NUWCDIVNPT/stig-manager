@@ -150,8 +150,6 @@ const flexCellPt = {
 
 <template>
   <div class="agg-grid-panel">
-    <!-- Everything scrolls together: below __inner's min-width the whole stack
-         (header, table, footer) scrolls horizontally as one unit. -->
     <div class="agg-grid-panel__inner">
       <header class="agg-grid-panel__header">
         <div class="agg-grid-panel__header-left">

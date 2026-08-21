@@ -57,7 +57,6 @@ watch(visible, (open) => {
   }
 }, { immediate: true })
 
-// Zero-padded MM/DD/YYYY, the format the endpoint's pattern requires.
 function formatDate(d) {
   if (!(d instanceof Date) || Number.isNaN(d.getTime())) {
     return undefined

@@ -31,7 +31,7 @@ const initialAggregator = FINDINGS_AGGREGATOR_VALUES.includes(route.query.agg)
   ? route.query.agg
   : FINDINGS_AGGREGATORS.GROUP
 const initialBenchmarkId = typeof route.query.stig === 'string' && route.query.stig ? route.query.stig : null
-// One-shot: the dimension value (?sel=...) to re-select once the first findings
+// One-shot: the dimension value (?sel=...) to re-select once the first findingsz
 // fetch lands. Consumed by the restore watcher below; never re-applied after
 // later loads so a scope change can't resurrect a stale selection.
 let pendingSelectionValue = typeof route.query.sel === 'string' && route.query.sel ? route.query.sel : null
