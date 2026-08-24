@@ -567,6 +567,48 @@ module.exports.uuidToSqlString  = function (uuid) {
   }
 }
 
+// Builds the OR'd clause matching Assets by label name, label uuid, or absence of labels.
+// Returns the clause and its binds so callers can place it wherever their query requires.
+module.exports.genLabelPredicates = function ({labelNames, labelIds, labelMatch, collectionLabelTableAlias = 'cl'}) {
+  const clauses = []
+  const binds = []
+
+  // an empty array would render as IN (), which is a syntax error, so require a member
+  if (labelNames?.length) {
+    clauses.push(`${collectionLabelTableAlias}.name IN ?`)
+    binds.push([labelNames])
+  }
+  if (labelIds?.length) {
+    const uuidBinds = labelIds.map( uuid => module.exports.uuidToSqlString(uuid))
+    clauses.push(`${collectionLabelTableAlias}.uuid IN ?`)
+    binds.push([uuidBinds])
+  }
+  if (labelMatch === 'null') {
+    clauses.push(`${collectionLabelTableAlias}.uuid IS NULL`)
+  }
+  const statement = clauses.length ? `(${clauses.join(' OR ')})` : ''
+  return {statement, binds}
+}
+
+// Restricts Assets to those carrying the requested labels, as a subquery on assetId. Confining the
+// collection_label joins here keeps Assets with several labels from multiplying rows in the caller's
+// FROM, which would otherwise inflate aggregates that are not guarded by distinct.
+module.exports.sqlLabelAssetIds = function ({collectionId, labelNames, labelIds, labelMatch, assetTableAlias = 'a'}) {
+  const {statement, binds} = module.exports.genLabelPredicates({
+    labelNames,
+    labelIds,
+    labelMatch,
+    collectionLabelTableAlias: 'clPred'
+  })
+  // nothing to match on, so impose no restriction rather than emit an empty IN ()
+  if (!statement) return 'true'
+  const sql = `select distinct assetId from enabled_asset
+    left join collection_label_asset_map using (assetId)
+    left join collection_label clPred using (clId)
+    where enabled_asset.collectionId = ? and ${statement}`
+  return `${assetTableAlias}.assetId IN (${module.exports.pool.format(sql, [collectionId, ...binds])})`
+}
+
 module.exports.makeQueryString = function ({ctes = [], hints= [], columns, joins, predicates, groupBy, orderBy, format = false}) {
   if (joins instanceof Set) joins = Array.from(joins)
   if (groupBy instanceof Set) groupBy = Array.from(groupBy)
