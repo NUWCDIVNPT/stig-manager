@@ -719,7 +719,7 @@ exports.getCollection = async function(collectionId, projections, elevate, userO
 }
 
 
-exports.getFindingsByCollection = async function( {collectionId, aggregator, benchmarkId, assetId, acceptedOnly, projections = [], grant} ) {
+exports.getFindingsByCollection = async function( {collectionId, aggregator, benchmarkId, assetId, acceptedOnly, labelIds, labelNames, labelMatch, projections = [], grant} ) {
   let columns, groupBy, orderBy
   switch (aggregator) {
     case 'ruleId':
@@ -768,7 +768,12 @@ exports.getFindingsByCollection = async function( {collectionId, aggregator, ben
     'left join rev_group_rule_map rgr on dr.revId = rgr.revId',
     'left join rev_group_rule_cci_map rgrcc using (rgrId)',
     'left join rule_version_check_digest rvcd on rgr.ruleId = rvcd.ruleId',
-    'inner join review rv on (rvcd.version = rv.version and rvcd.checkDigest = rv.checkDigest and a.assetId = rv.assetId and rv.resultId = 4)',
+    // The redundant assetId IN (...) is a no-op semantically -- a.assetId = rv.assetId already
+    // constrains rv to the Collection. It exists to give the optimizer a sargable predicate on
+    // review it can cost before choosing a driver table. Without it, review is estimated at ~1.5K
+    // rows when it yields millions, so the join is driven from idx_vcd (version, checkDigest) across
+    // every Collection and filtered afterward.
+    'inner join review rv on (rvcd.version = rv.version and rvcd.checkDigest = rv.checkDigest and a.assetId = rv.assetId and rv.resultId = 4 and rv.assetId in (select assetId from enabled_asset where collectionId = ?))',
     'inner join cci on rgrcc.cci = cci.cci',
     'inner join cci_reference_map crm on cci.cci = crm.cci'
   ]
@@ -843,7 +848,9 @@ exports.getFindingsByCollection = async function( {collectionId, aggregator, ben
     statements: [
       'c.collectionId = ?'
     ],
-    binds: [collectionId]
+    // binds are positional across the whole rendered query and joins render before predicates,
+    // so the leading bind pairs with the ? in the review join above, not with c.collectionId
+    binds: [collectionId, collectionId]
   }
   if (assetId) {
     predicates.statements.push('a.assetId = ?')
@@ -857,7 +864,11 @@ exports.getFindingsByCollection = async function( {collectionId, aggregator, ben
     predicates.statements.push('dr.benchmarkId = ?')
     predicates.binds.push( benchmarkId )
   }
-  
+  if (labelIds || labelNames || labelMatch) {
+    // the returned clause arrives already formatted, so it contributes no binds of its own
+    predicates.statements.push(dbUtils.sqlLabelAssetIds({collectionId, labelIds, labelNames, labelMatch}))
+  }
+
   const sql = dbUtils.makeQueryString({ctes, columns, joins, predicates, groupBy, orderBy, format: true})
   const [rows] = await dbUtils.pool.query(sql)
   return (rows)
