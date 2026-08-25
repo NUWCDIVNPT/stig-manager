@@ -329,6 +329,15 @@ exports.queryChecklist = async function (inPredicates, projections = []) {
   }
 }
 
+// An explicit cklWebOrDatabase metadata value wins, compared case-insensitively
+// because third-party clients write values like "False". When the key is absent,
+// the presence of cklHostName implies a web/db asset.
+function isWebOrDatabase (metadata) {
+  return metadata.cklWebOrDatabase !== undefined
+    ? /^true$/i.test(metadata.cklWebOrDatabase)
+    : !!metadata.cklHostName
+}
+
 exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
   let connection
   try {
@@ -412,14 +421,15 @@ exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
 
     // ASSET
     const [resultGetAsset] = await connection.query(sqlGetAsset, [assetId])
-    xmlJs.CHECKLIST.ASSET.HOST_NAME = resultGetAsset[0].metadata.cklHostName ? resultGetAsset[0].metadata.cklHostName : resultGetAsset[0].name
+    const webOrDatabase = isWebOrDatabase(resultGetAsset[0].metadata)
+    xmlJs.CHECKLIST.ASSET.HOST_NAME = webOrDatabase && resultGetAsset[0].metadata.cklHostName ? resultGetAsset[0].metadata.cklHostName : resultGetAsset[0].name
     xmlJs.CHECKLIST.ASSET.HOST_FQDN = resultGetAsset[0].fqdn
     xmlJs.CHECKLIST.ASSET.HOST_IP = resultGetAsset[0].ip
     xmlJs.CHECKLIST.ASSET.HOST_MAC = resultGetAsset[0].mac
     xmlJs.CHECKLIST.ASSET.ASSET_TYPE = resultGetAsset[0].noncomputing ? 'Non-Computing' : 'Computing'
     xmlJs.CHECKLIST.ASSET.ROLE = resultGetAsset[0].metadata.cklRole ?? 'None'
     xmlJs.CHECKLIST.ASSET.TECH_AREA = resultGetAsset[0].metadata.cklTechArea ?? null
-    xmlJs.CHECKLIST.ASSET.WEB_OR_DATABASE = resultGetAsset[0].metadata.cklHostName ?  'true' : 'false'
+    xmlJs.CHECKLIST.ASSET.WEB_OR_DATABASE = webOrDatabase ? 'true' : 'false'
     xmlJs.CHECKLIST.ASSET.WEB_DB_SITE = resultGetAsset[0].metadata.cklWebDbSite ?? null
     xmlJs.CHECKLIST.ASSET.WEB_DB_INSTANCE = resultGetAsset[0].metadata.cklWebDbInstance ?? null
     
@@ -667,14 +677,15 @@ exports.cklbFromAssetStigs = async function cklbFromAssetStigs (assetId, stigs) 
 
     // cklb.target_data
     const [resultGetAsset] = await connection.query(sqlGetAsset, [assetId])
-    cklb.target_data.host_name = resultGetAsset[0].metadata.cklHostName ? resultGetAsset[0].metadata.cklHostName : resultGetAsset[0].name
+    const webOrDatabase = isWebOrDatabase(resultGetAsset[0].metadata)
+    cklb.target_data.host_name = webOrDatabase && resultGetAsset[0].metadata.cklHostName ? resultGetAsset[0].metadata.cklHostName : resultGetAsset[0].name
     cklb.target_data.fqdn = resultGetAsset[0].fqdn ?? ''
     cklb.target_data.ip_address = resultGetAsset[0].ip ?? ''
     cklb.target_data.mac_address = resultGetAsset[0].mac ?? ''
     cklb.target_data.target_type = resultGetAsset[0].noncomputing ? 'Non-Computing' : 'Computing'
     cklb.target_data.role = resultGetAsset[0].metadata.cklRole ?? 'None'
     cklb.target_data.technology_area = resultGetAsset[0].metadata.cklTechArea ?? ''
-    cklb.target_data.is_web_database = !!resultGetAsset[0].metadata.cklHostName
+    cklb.target_data.is_web_database = webOrDatabase
     cklb.target_data.web_db_site = resultGetAsset[0].metadata.cklWebDbSite ?? ''
     cklb.target_data.web_db_instance = resultGetAsset[0].metadata.cklWebDbInstance ?? ''
     
