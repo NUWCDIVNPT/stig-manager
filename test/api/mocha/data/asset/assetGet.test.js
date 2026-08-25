@@ -895,6 +895,80 @@ describe(`GET - Asset`, function () {
 
         })
       })
+      describe(`getChecklistByAssetStig - WEB_OR_DATABASE determination (issue 2131)`, function () {
+
+        // Each case creates its own uniquely named asset and deletes it in finally,
+        // so these tests have no effect on the shared appdata assets.
+        const webOrDatabaseCases = [
+          {
+            title: `cklHostName alone exports as Web or Database`,
+            metadata: { cklHostName: `webdb-host` },
+            expected: { webOrDatabase: true, hostName: `webdb-host` }
+          },
+          {
+            title: `explicit cklWebOrDatabase "False" overrides cklHostName presence and exports the Asset name`,
+            metadata: { cklHostName: `webdb-host`, cklWebOrDatabase: `False`, cklWebDbSite: ``, cklWebDbInstance: `` },
+            expected: { webOrDatabase: false }
+          },
+          {
+            title: `explicit cklWebOrDatabase "true" exports site and instance`,
+            metadata: { cklHostName: `webdb-host`, cklWebOrDatabase: `true`, cklWebDbSite: `testSite`, cklWebDbInstance: `testInstance` },
+            expected: { webOrDatabase: true, hostName: `webdb-host`, site: `testSite`, instance: `testInstance` }
+          },
+          {
+            title: `no ckl metadata exports as non Web or Database with the Asset name`,
+            metadata: {},
+            expected: { webOrDatabase: false }
+          }
+        ]
+
+        for (const testCase of webOrDatabaseCases) {
+          it(testCase.title, async function () {
+
+            const assetName = `webOrDbAsset` + utils.getUUIDSubString()
+            const resCreate = await utils.executeRequest(`${config.baseUrl}/assets`, 'POST', iteration.token, {
+              name: assetName,
+              collectionId: reference.testCollection.collectionId,
+              description: `issue 2131`,
+              ip: `1.1.1.1`,
+              noncomputing: false,
+              labelNames: [],
+              metadata: testCase.metadata,
+              stigs: [reference.benchmark]
+            })
+            if(!distinct.canModifyCollection){
+              expect(resCreate.status).to.eql(403)
+              return
+            }
+            expect(resCreate.status).to.eql(201)
+            const assetId = resCreate.body.assetId
+
+            try {
+              const resCkl = await fetch(`${config.baseUrl}/assets/${assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=ckl`, {
+                method: 'GET',
+                headers: {
+                  Authorization: `Bearer ${iteration.token}`,
+                },
+              })
+              expect(resCkl.status).to.eql(200)
+              const parser = new XMLParser({ processEntities: { enabled: true, maxTotalExpansions: 200000 } })
+              const cklAsset = parser.parse(await resCkl.text()).CHECKLIST.ASSET
+              expect(String(cklAsset.WEB_OR_DATABASE)).to.eql(String(testCase.expected.webOrDatabase))
+              expect(String(cklAsset.HOST_NAME)).to.eql(testCase.expected.hostName ?? assetName)
+
+              const resCklb = await utils.executeRequest(`${config.baseUrl}/assets/${assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=cklb`, 'GET', iteration.token)
+              expect(resCklb.status).to.eql(200)
+              expect(resCklb.body.target_data.is_web_database).to.eql(testCase.expected.webOrDatabase)
+              expect(resCklb.body.target_data.host_name).to.eql(testCase.expected.hostName ?? assetName)
+              expect(resCklb.body.target_data.web_db_site).to.eql(testCase.expected.site ?? ``)
+              expect(resCklb.body.target_data.web_db_instance).to.eql(testCase.expected.instance ?? ``)
+            }
+            finally {
+              await utils.deleteAsset(assetId)
+            }
+          })
+        }
+      })
       describe(`getStigsByAsset - /assets/{assetId}/stigs`, function () {
 
         it(`Return the Checklist for the supplied Asset and benchmarkId and revisionStr - rules`, async function () {
