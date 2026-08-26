@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { isAppDataEnabled } from '../../../shared/lib/featureFlags.js'
+import { isAppDataEnabled, isLogStreamEnabled } from '../../../shared/lib/featureFlags.js'
 
 const items = [
   {
@@ -51,6 +51,14 @@ const items = [
     icon: 'icon-database',
     routeName: 'admin-transfer',
     isEnabled: isAppDataEnabled,
+  },
+  {
+    key: 'LogStream',
+    component: 'LogStream',
+    label: 'Log Stream',
+    icon: 'icon-log-stream',
+    routeName: 'admin-log-stream',
+    isEnabled: isLogStreamEnabled,
   },
 ]
 

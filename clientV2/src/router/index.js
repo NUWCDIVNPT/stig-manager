@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { getLastStigLibraryUrl } from '../features/STIGLibrary/lastVisited.js'
-import { isAppDataEnabled } from '../shared/lib/featureFlags.js'
+import { isAppDataEnabled, isLogStreamEnabled } from '../shared/lib/featureFlags.js'
 import { navigationGuard } from './navigationGuards.js'
 
 // Lazy load components
@@ -13,6 +13,7 @@ const StigManage = () => import('../features/AppManagement/STIGManage/components
 const ServiceJobs = () => import('../features/AppManagement/ServiceJobs/components/ServiceJobs.vue')
 const AppInfo = () => import('../features/AppManagement/Appinfo/components/AppInfo.vue')
 const ExportImportManage = () => import('../features/AppManagement/Appdata/components/AppData.vue')
+const LogStream = () => import('../features/AppManagement/LogStream/components/LogStream.vue')
 const StigLibrary = () => import('../features/STIGLibrary/components/StigLibrary.vue')
 const AppManagement = () => import('../features/AppManagement/components/AppManagement.vue')
 const CollectionsAdmin = () => import('../features/AppManagement/Collections/components/Collections.vue')
@@ -185,6 +186,12 @@ const routes = [
         name: 'admin-transfer',
         component: ExportImportManage,
         meta: { isEnabled: isAppDataEnabled, disabledRedirect: 'app-management', breadcrumbs: [{ label: 'Export/Import Data' }] },
+      },
+      {
+        path: 'log-stream',
+        name: 'admin-log-stream',
+        component: LogStream,
+        meta: { isEnabled: isLogStreamEnabled, disabledRedirect: 'app-management', breadcrumbs: [{ label: 'Log Stream' }] },
       },
     ],
   },
