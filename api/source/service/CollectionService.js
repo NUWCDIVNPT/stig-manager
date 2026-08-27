@@ -865,8 +865,9 @@ exports.getFindingsByCollection = async function( {collectionId, aggregator, ben
     predicates.binds.push( benchmarkId )
   }
   if (labelIds || labelNames || labelMatch) {
-    // the returned clause arrives already formatted, so it contributes no binds of its own
-    predicates.statements.push(dbUtils.sqlLabelAssetIds({collectionId, labelIds, labelNames, labelMatch}))
+    const labelFilter = dbUtils.sqlLabelAssetIds({collectionId, labelIds, labelNames, labelMatch})
+    predicates.statements.push(labelFilter.statement)
+    predicates.binds.push(...labelFilter.binds)
   }
 
   const sql = dbUtils.makeQueryString({ctes, columns, joins, predicates, groupBy, orderBy, format: true})
