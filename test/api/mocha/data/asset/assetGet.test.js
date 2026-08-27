@@ -901,24 +901,24 @@ describe(`GET - Asset`, function () {
         // so these tests have no effect on the shared appdata assets.
         const webOrDatabaseCases = [
           {
-            title: `cklHostName alone exports as Web or Database`,
+            title: `cklHostName without cklWebOrDatabase exports false and the Asset name`,
             metadata: { cklHostName: `webdb-host` },
-            expected: { webOrDatabase: true, hostName: `webdb-host` }
+            expected: { ckl: `false`, cklb: false }
           },
           {
-            title: `explicit cklWebOrDatabase "False" overrides cklHostName presence and exports the Asset name`,
+            title: `explicit cklWebOrDatabase "False" exports false and the Asset name`,
             metadata: { cklHostName: `webdb-host`, cklWebOrDatabase: `False`, cklWebDbSite: ``, cklWebDbInstance: `` },
-            expected: { webOrDatabase: false }
+            expected: { ckl: `false`, cklb: false }
           },
           {
-            title: `explicit cklWebOrDatabase "true" exports site and instance`,
+            title: `explicit cklWebOrDatabase "true" exports true with site and instance`,
             metadata: { cklHostName: `webdb-host`, cklWebOrDatabase: `true`, cklWebDbSite: `testSite`, cklWebDbInstance: `testInstance` },
-            expected: { webOrDatabase: true, hostName: `webdb-host`, site: `testSite`, instance: `testInstance` }
+            expected: { ckl: `true`, cklb: true, hostName: `webdb-host`, site: `testSite`, instance: `testInstance` }
           },
           {
-            title: `no ckl metadata exports as non Web or Database with the Asset name`,
+            title: `no ckl metadata exports false and the Asset name`,
             metadata: {},
-            expected: { webOrDatabase: false }
+            expected: { ckl: `false`, cklb: false }
           }
         ]
 
@@ -953,12 +953,12 @@ describe(`GET - Asset`, function () {
               expect(resCkl.status).to.eql(200)
               const parser = new XMLParser({ processEntities: { enabled: true, maxTotalExpansions: 200000 } })
               const cklAsset = parser.parse(await resCkl.text()).CHECKLIST.ASSET
-              expect(String(cklAsset.WEB_OR_DATABASE)).to.eql(String(testCase.expected.webOrDatabase))
+              expect(String(cklAsset.WEB_OR_DATABASE ?? ``)).to.eql(testCase.expected.ckl)
               expect(String(cklAsset.HOST_NAME)).to.eql(testCase.expected.hostName ?? assetName)
 
               const resCklb = await utils.executeRequest(`${config.baseUrl}/assets/${assetId}/checklists/${reference.benchmark}/${reference.revisionStr}?format=cklb`, 'GET', iteration.token)
               expect(resCklb.status).to.eql(200)
-              expect(resCklb.body.target_data.is_web_database).to.eql(testCase.expected.webOrDatabase)
+              expect(resCklb.body.target_data.is_web_database).to.eql(testCase.expected.cklb)
               expect(resCklb.body.target_data.host_name).to.eql(testCase.expected.hostName ?? assetName)
               expect(resCklb.body.target_data.web_db_site).to.eql(testCase.expected.site ?? ``)
               expect(resCklb.body.target_data.web_db_instance).to.eql(testCase.expected.instance ?? ``)

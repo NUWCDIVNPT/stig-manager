@@ -329,13 +329,10 @@ exports.queryChecklist = async function (inPredicates, projections = []) {
   }
 }
 
-// An explicit cklWebOrDatabase metadata value wins, compared case-insensitively
-// because third-party clients write values like "False". When the key is absent,
-// the presence of cklHostName implies a web/db asset.
+// The cklWebOrDatabase metadata value is the sole web/db determination, compared
+// case-insensitively because third-party clients write values like "False".
 function isWebOrDatabase (metadata) {
-  return metadata.cklWebOrDatabase !== undefined
-    ? /^true$/i.test(metadata.cklWebOrDatabase)
-    : !!metadata.cklHostName
+  return /^true$/i.test(metadata.cklWebOrDatabase)
 }
 
 exports.cklFromAssetStigs = async function cklFromAssetStigs (assetId, stigs) {
