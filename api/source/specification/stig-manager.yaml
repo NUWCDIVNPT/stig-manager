@@ -1077,6 +1077,9 @@ paths:
           default: false
       - $ref: '#/components/parameters/BenchmarkIdQuery'
       - $ref: '#/components/parameters/AssetIdQuery'
+      - $ref: '#/components/parameters/LabelIdQuery'
+      - $ref: '#/components/parameters/LabelNameQuery'
+      - $ref: '#/components/parameters/LabelMatchQuery'
       - $ref: '#/components/parameters/FindingProjectionQuery'
     get:
       tags:

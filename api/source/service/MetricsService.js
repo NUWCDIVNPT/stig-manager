@@ -1,25 +1,5 @@
 const dbUtils = require('./utils')
 
-function genLabelPredicates ({labelNames, labelIds, labelMatch, collectionLabelTableAlias = 'cl'}) {
-  const clauses = []
-  const binds = []
-
-  if (labelNames) {
-    clauses.push(`${collectionLabelTableAlias}.name IN ?`)
-    binds.push([labelNames])
-  }
-  if (labelIds) {
-    const uuidBinds = labelIds.map( uuid => dbUtils.uuidToSqlString(uuid))
-    clauses.push(`${collectionLabelTableAlias}.uuid IN ?`)
-    binds.push([uuidBinds])
-  }
-  if (labelMatch === 'null') {
-    clauses.push(`${collectionLabelTableAlias}.uuid IS NULL`)
-  }
-  const statement = `(${clauses.join(' OR ')})`
-  return {statement, binds}
-}
-
 module.exports.queryMetrics = async function ({
   collectionId,
   filter = {},
@@ -53,16 +33,12 @@ module.exports.queryMetrics = async function ({
 
   // FILTERS
   if (filter.labelNames || filter.labelIds || filter.labelMatch) {
-    const {statement, binds} = genLabelPredicates({
+    predicates.statements.push(dbUtils.sqlLabelAssetIds({
+      collectionId,
       labelNames: filter.labelNames,
       labelIds: filter.labelIds,
-      labelMatch: filter.labelMatch,
-      collectionLabelTableAlias: 'clPred'
-    })
-    const innerQueryRaw = `select distinct assetId from enabled_asset left join collection_label_asset_map using (assetId)
-    left join collection_label clPred using(clId) where a.collectionId = ? and ${statement}`
-    const innerQueryFormatted = dbUtils.pool.format(innerQueryRaw, [collectionId, ...binds])
-    predicates.statements.push(`a.assetId IN (${innerQueryFormatted})`)
+      labelMatch: filter.labelMatch
+    }))
   }
   if (filter.assetIds) {
     predicates.statements.push(
