@@ -11,8 +11,6 @@
   cursor: pointer;
   overflow: auto;
   white-space: pre;
-  /* Match the transactions table's body background so the log body, tree body,
-     and grid rows all read as the same surface. */
   background: var(--p-datatable-row-background);
   color: var(--color-text-primary);
 }
@@ -21,6 +19,15 @@
   padding: 0 0.4em;
   display: table;
   min-width: 100%;
+}
+
+
+.sm-log-wrapper.sm-log-wrap {
+  display: block;
+}
+
+.sm-log-wrapper.sm-log-wrap .sm-log-line {
+  overflow-wrap: anywhere;
 }
 
 .sm-log-empty {
@@ -69,8 +76,6 @@
   color: var(--color-action-red);
 }
 
-/* Colored HTTP-status badge in the API Transactions grid. Ported from the old
-   client's dark-mode status colors. */
 .sm-http-status-sprite {
   display: inline-block;
   font: 600 10px/14px 'Open Sans', helvetica, sans-serif;

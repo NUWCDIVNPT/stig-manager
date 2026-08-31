@@ -6,7 +6,7 @@ import { applyResponse, requestRow, transactionRow } from '../lib/transactions.j
 // Module-singleton store for the Log Stream. Because the connection and the
 // captured buffer live here — at module scope, not inside a component — they
 // survive route changes: the socket keeps streaming and lines keep buffering
-// while the user is elsewhere in the app, exactly like the old tab. The route
+// while the user is elsewhere in the app. The route
 // component (LogStream.vue) is just a view that hydrates from this on mount and
 // unsubscribes on unmount, never disconnecting. Modeled on importProgressStore.
 //
@@ -16,6 +16,8 @@ import { applyResponse, requestRow, transactionRow } from '../lib/transactions.j
 
 const SOCKET_PATH = 'socket/log-socket'
 const MAX_TRANSACTIONS = 1000
+// Bounds requestMap so requests that never get a paired response can't leak.
+const MAX_PENDING_REQUESTS = 1000
 
 // Exported factory so tests can build an isolated store with a fake socket. The
 // app uses the single shared instance created below.
@@ -86,6 +88,11 @@ export function createLogStreamStore({ createSocket = useStreamSocket, maxLines 
     }
     else if (logObj.type === 'request') {
       requestMap.set(logObj.data.requestId, requestRow(logObj))
+      // Evict the oldest unpaired request (Map keeps insertion order) so orphaned
+      // requests whose response never arrives can't grow the map without bound.
+      if (requestMap.size > MAX_PENDING_REQUESTS) {
+        requestMap.delete(requestMap.keys().next().value)
+      }
     }
     else if (logObj.type === 'response') {
       const pending = requestMap.get(logObj.data.requestId)

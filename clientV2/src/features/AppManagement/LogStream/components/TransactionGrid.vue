@@ -76,7 +76,9 @@ function onScroll(event) {
   shouldAutoScroll = el.scrollHeight - el.scrollTop - el.clientHeight < 5
 }
 
-watch(() => rows.value.length, () => {
+// Key on the newest row's id, not the length: once the store caps transactions
+// the length stops changing, but each append still swaps in a new last row.
+watch(() => rows.value[rows.value.length - 1]?.requestId, () => {
   if (!shouldAutoScroll) {
     return
   }

@@ -141,6 +141,32 @@ describe('logStreamStore', () => {
     expect(store.state.transactions[0]).toMatchObject({ requestId: 'r2', status: '201', operationId: 'postY' })
   })
 
+  it('evicts the oldest unpaired request so orphaned requests cannot leak', () => {
+    // Exceed the 1000-entry cap by one, all without responses.
+    for (let i = 0; i <= 1000; i++) {
+      fake.deliverLog({
+        component: 'rest',
+        type: 'request',
+        data: { requestId: `req-${i}`, method: 'GET', url: '/api/x', headers: {} },
+      })
+    }
+    // The first request was evicted: its late response no longer pairs into a row.
+    fake.deliverLog({
+      component: 'rest',
+      type: 'response',
+      data: { requestId: 'req-0', status: 200, headers: {}, operationStats: { durationMs: 1, operationId: 'getX' } },
+    })
+    expect(store.state.transactions).toHaveLength(0)
+    // A still-tracked request pairs as normal.
+    fake.deliverLog({
+      component: 'rest',
+      type: 'response',
+      data: { requestId: 'req-1000', status: 200, headers: {}, operationStats: { durationMs: 1, operationId: 'getX' } },
+    })
+    expect(store.state.transactions).toHaveLength(1)
+    expect(store.state.transactions[0]).toMatchObject({ requestId: 'req-1000' })
+  })
+
   it('clears transactions along with the buffer', () => {
     fake.deliverLog({
       date: '2026-08-26T12:00:00.000Z',

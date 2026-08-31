@@ -193,8 +193,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* The darkest app background sits behind everything; each section is a card that
-   floats on it, so the black shows through as the gaps between cards. */
 .logstream-page {
   height: 100%;
   width: 100%;
@@ -207,7 +205,6 @@ onBeforeUnmount(() => {
   color: var(--color-text-primary);
 }
 
-/* Compact title bar, itself a floating card. */
 .page-header {
   display: flex;
   align-items: center;
@@ -251,8 +248,6 @@ onBeforeUnmount(() => {
   min-height: 0;
 }
 
-/* Each SplitterPanel pads its card so adjacent cards don't touch — the padding
-   reveals the darkest page background as a gap. */
 .ls-panel {
   display: flex;
   flex-direction: column;
@@ -261,7 +256,6 @@ onBeforeUnmount(() => {
   padding: 0.25rem;
 }
 
-/* Shared card chrome for the three sections, matching the Service Jobs panels. */
 .ls-card {
   flex: 1;
   min-height: 0;
@@ -272,8 +266,6 @@ onBeforeUnmount(() => {
   border-radius: 6px;
 }
 
-/* The log viewer pane stacks its toolbar over the scrolling viewer, which fills
-   the remaining height (viewer's .sm-log-panel-body is flex: 1). */
 .logstream-log-pane {
   display: flex;
   flex-direction: column;

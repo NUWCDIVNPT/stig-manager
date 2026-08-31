@@ -197,6 +197,6 @@ defineExpose({ append, clear, hydrate, applyEmpty, selectByRequestId })
 
 <template>
   <div ref="scrollEl" class="sm-log-panel-body" @click="onClick">
-    <div ref="wrapperEl" class="sm-log-wrapper" />
+    <div ref="wrapperEl" class="sm-log-wrapper" :class="{ 'sm-log-wrap': wrap }" />
   </div>
 </template>

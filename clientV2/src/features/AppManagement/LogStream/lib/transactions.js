@@ -34,7 +34,7 @@ export function transactionRow(logObj) {
     timestamp: logObj.date,
     source: data.request.source,
     user: data.request.headers?.accessToken?.preferred_username,
-    browser: getBrowser(data.request.headers['user-agent']),
+    browser: getBrowser(data.request.headers?.['user-agent']),
     url: `${data.request.method} ${data.request.url}`,
     status: `${data.response.status}`,
     length: data.response.headers?.['content-length'],
@@ -51,7 +51,7 @@ export function requestRow(logObj) {
     timestamp: logObj.date,
     source: data.source,
     user: data.headers?.accessToken?.preferred_username,
-    browser: getBrowser(data.headers['user-agent']),
+    browser: getBrowser(data.headers?.['user-agent']),
     url: `${data.method} ${data.url}`,
   }
 }
