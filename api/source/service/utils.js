@@ -601,12 +601,14 @@ module.exports.sqlLabelAssetIds = function ({collectionId, labelNames, labelIds,
     collectionLabelTableAlias: 'clPred'
   })
   // nothing to match on, so impose no restriction rather than emit an empty IN ()
-  if (!statement) return 'true'
+  if (!statement) return {statement: 'true', binds: []}
+  // returned unformatted: escaped label values can contain characters the formatter
+  // would treat as placeholders, so the query must be formatted exactly once
   const sql = `select distinct assetId from enabled_asset
     left join collection_label_asset_map using (assetId)
     left join collection_label clPred using (clId)
     where enabled_asset.collectionId = ? and ${statement}`
-  return `${assetTableAlias}.assetId IN (${module.exports.pool.format(sql, [collectionId, ...binds])})`
+  return {statement: `${assetTableAlias}.assetId IN (${sql})`, binds: [collectionId, ...binds]}
 }
 
 module.exports.makeQueryString = function ({ctes = [], hints= [], columns, joins, predicates, groupBy, orderBy, format = false}) {

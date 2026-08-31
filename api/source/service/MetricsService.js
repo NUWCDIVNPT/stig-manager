@@ -33,12 +33,14 @@ module.exports.queryMetrics = async function ({
 
   // FILTERS
   if (filter.labelNames || filter.labelIds || filter.labelMatch) {
-    predicates.statements.push(dbUtils.sqlLabelAssetIds({
+    const labelFilter = dbUtils.sqlLabelAssetIds({
       collectionId,
       labelNames: filter.labelNames,
       labelIds: filter.labelIds,
       labelMatch: filter.labelMatch
-    }))
+    })
+    predicates.statements.push(labelFilter.statement)
+    predicates.binds.push(...labelFilter.binds)
   }
   if (filter.assetIds) {
     predicates.statements.push(
