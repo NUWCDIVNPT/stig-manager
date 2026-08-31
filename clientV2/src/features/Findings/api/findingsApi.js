@@ -1,12 +1,6 @@
 import { saveAs } from 'file-saver-es'
 import { apiCall } from '../../../shared/api/apiClient.js'
-
-// Pull the filename out of a Content-Disposition header (same regex as the
-// legacy client; null-safe so a missing header falls back to a default name).
-function parseContentDispositionFilename(header) {
-  const match = header?.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/)
-  return match ? match[1] : null
-}
+import { filenameFromContentDisposition } from '../../../shared/lib/contentDisposition.js'
 
 export { fetchCollectionStigSummary } from '../../CollectionView/api/collectionApi.js'
 
@@ -51,7 +45,7 @@ export async function downloadPoam(collectionId, params = {}) {
   }
 
   const response = await apiCall('getPoamByCollection', clean, undefined, { responseType: 'response' })
-  const filename = parseContentDispositionFilename(response.headers.get('content-disposition'))
+  const filename = filenameFromContentDisposition(response.headers.get('content-disposition'))
     ?? `poam-${collectionId}.xlsx`
   saveAs(await response.blob(), filename)
 }

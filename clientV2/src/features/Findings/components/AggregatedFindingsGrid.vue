@@ -97,7 +97,7 @@ const footerActions = computed(() => [
   {
     key: 'poam',
     icon: 'pi pi-file-export',
-    iconColor: '#6b9362',
+    iconColor: 'var(--color-action-green)',
     label: 'Generate POA&M…',
     title: poamDisabled.value
       ? 'POA&M export is not available when aggregating by CCI'
@@ -354,10 +354,15 @@ const flexCellPt = {
 
 /* The scrollable content. It never shrinks below min-width; once the panel is
    narrower, the panel's overflow-x scrolls this whole stack — header, table,
-   and footer — together as one unit. No responsive chrome collapsing. */
+   and footer — together as one unit. No responsive chrome collapsing.
+   The floor is set by the widest column set (ruleId + All STIGs: 41rem of
+   fixed-width columns + 16rem for the STIGs column) — the table's fixed
+   layout ignores cell min-width (the columns' minWidths are column-resize
+   floors only), so this is what keeps the flexible Definition/STIGs columns
+   from collapsing to slivers. */
 .agg-grid-panel__inner {
   height: 100%;
-  min-width: 50rem;
+  min-width: 57rem;
   display: flex;
   flex-direction: column;
   overflow: hidden;

@@ -1,4 +1,5 @@
 import { apiCall } from '../../../shared/api/apiClient.js'
+import { filenameFromContentDisposition } from '../../../shared/lib/contentDisposition.js'
 
 export { fetchAsset, fetchAssetStigs } from '../../../shared/api/assetsApi.js'
 export { fetchCollection, fetchCollectionLabels } from '../../../shared/api/collectionsApi.js'
@@ -31,18 +32,6 @@ export const CHECKLIST_EXPORT_FORMATS = Object.freeze({
 })
 
 const ALLOWED_EXPORT_FORMATS = new Set(Object.values(CHECKLIST_EXPORT_FORMATS))
-const FILENAME_RE = /filename\*?=['"]?(?:UTF-\d['"]*)?([^\r\n"']*)['"]?;?/
-
-function filenameFromContentDisposition(contentDisposition) {
-  if (!contentDisposition) {
-    throw new Error('No Content-Disposition header')
-  }
-  const match = contentDisposition.match(FILENAME_RE)
-  if (!match?.[1]) {
-    throw new Error('Could not parse export filename')
-  }
-  return decodeURIComponent(match[1])
-}
 
 export async function exportAssetStigChecklist({ assetId, benchmarkId, revisionStr, format }) {
   if (!assetId || !benchmarkId || !revisionStr) {
@@ -60,6 +49,9 @@ export async function exportAssetStigChecklist({ assetId, benchmarkId, revisionS
   )
 
   const filename = filenameFromContentDisposition(response.headers.get('content-disposition'))
+  if (!filename) {
+    throw new Error('Could not parse export filename')
+  }
   const blob = await response.blob()
 
   return {
