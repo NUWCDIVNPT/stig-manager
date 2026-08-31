@@ -1,19 +1,9 @@
+import { saveAs } from 'file-saver-es'
 import { apiCall } from '../../../shared/api/apiClient.js'
+import { filenameFromContentDisposition } from '../../../shared/lib/contentDisposition.js'
 
-// Per-STIG metrics, used by useCollectionStigSummary to drive the popover
-// STIG list and the "Overall" CAT 1/2/3 totals. Re-exported from the
-// CollectionView API module so this view and the Collection STIGs tab stay
-// in sync on the wire format.
 export { fetchCollectionStigSummary } from '../../CollectionView/api/collectionApi.js'
 
-// GET /collections/{collectionId}/findings
-//   aggregator:  'groupId' | 'ruleId' | 'cci' (required)
-//   benchmarkId: optional — when omitted, returns findings across all STIGs in
-//                the collection ("All Collection STIGs" mode)
-//   projection:  ['stigs'] by default so each row carries its stigs[] for the
-//                All-STIGs view's per-row STIGs column
-// NOTE: this endpoint does not support label filtering server-side; see the
-// TODO in useFindings.
 export function fetchFindings(collectionId, { aggregator, benchmarkId, projection = ['stigs'] } = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch findings.')
@@ -28,11 +18,41 @@ export function fetchFindings(collectionId, { aggregator, benchmarkId, projectio
   return apiCall('getFindingsByCollection', params)
 }
 
-// GET /collections/{collectionId}/reviews?result=fail&<aggregator>=<value>
+// POA&M/eMASS (or MCCAST) spreadsheet; we just stream the response and save it.
+// Only groupId/ruleId aggregators are valid — the endpoint rejects cci.
+//   format:      'EMASS' | 'MCCAST'
+//   date:        scheduled completion date, MM/DD/YYYY
+//   status:      per-format status label
+//   office:      EMASS only  |  mccastPackageId/mccastAuthName: MCCAST only
+export async function downloadPoam(collectionId, params = {}) {
+  if (!collectionId) {
+    throw new Error('A collectionId is required to generate a POA&M.')
+  }
+  // Drop empty values (let the server apply its defaults) and strip the fields
+  // that don't belong to the selected format, matching the legacy client.
+  const clean = { collectionId }
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== '' && value != null) {
+      clean[key] = value
+    }
+  }
+  if (clean.format === 'EMASS') {
+    delete clean.mccastPackageId
+    delete clean.mccastAuthName
+  }
+  else if (clean.format === 'MCCAST') {
+    delete clean.office
+  }
+
+  const response = await apiCall('getPoamByCollection', clean, undefined, { responseType: 'response' })
+  const filename = filenameFromContentDisposition(response.headers.get('content-disposition'))
+    ?? `poam-${collectionId}.xlsx`
+  saveAs(await response.blob(), filename)
+}
+
 // Returns the failed review records that back a single aggregated finding —
 // the user clicks an aggregated row in the middle pane, we fetch the per-asset
 // reviews for that row's dimension value here.
-// NOTE: same label-filter caveat as fetchFindings.
 export function fetchFailedReviews(collectionId, { aggregator, aggregatorValue, projection = ['stigs'] } = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch reviews.')

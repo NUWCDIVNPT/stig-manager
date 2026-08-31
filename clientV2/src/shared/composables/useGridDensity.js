@@ -6,6 +6,9 @@ if (import.meta.hot) {
   import.meta.hot.dispose(() => densityState.clear())
 }
 
+// sizeMultiplier = px height of one rendered text line. It MUST match the cell
+// text's font-size × line-height (see .cell-text), or clamped rows won't fill
+// their itemSize and the virtual scroller's n × itemSize math drifts.
 export function useGridDensity(gridKey, defaultLineClamp = 1, baseItemSize = 12, sizeMultiplier = 24) {
   if (!densityState.has(gridKey)) {
     densityState.set(gridKey, ref(defaultLineClamp))
