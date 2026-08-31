@@ -1321,6 +1321,9 @@ paths:
         - $ref: '#/components/parameters/UserIdQuery'
         - $ref: '#/components/parameters/AssetIdQuery'
         - $ref: '#/components/parameters/BenchmarkIdQuery'
+        - $ref: '#/components/parameters/LabelIdQuery'
+        - $ref: '#/components/parameters/LabelNameQuery'
+        - $ref: '#/components/parameters/LabelMatchQuery'
         - $ref: '#/components/parameters/MetadataQuery'
         - $ref: '#/components/parameters/ReviewsProjectionQuery'
       responses:

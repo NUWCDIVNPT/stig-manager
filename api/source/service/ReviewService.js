@@ -789,6 +789,16 @@ exports.getReviews = async function ({projections = [], filter = {}, grant}) {
       predicates.statements.push(`revision.benchmarkId = ?`)
       predicates.binds.push(filter.benchmarkId)
   }
+  if (filter.labelIds || filter.labelNames || filter.labelMatch) {
+    const labelFilter = dbUtils.sqlLabelAssetIds({
+      collectionId: filter.collectionId,
+      labelIds: filter.labelIds,
+      labelNames: filter.labelNames,
+      labelMatch: filter.labelMatch
+    })
+    predicates.statements.push(labelFilter.statement)
+    predicates.binds.push(...labelFilter.binds)
+  }
   if ( filter.metadata ) {
     for (const pair of filter.metadata) {
       const [key, value] = pair.split(/:(.*)/s)
