@@ -14,6 +14,7 @@ defineProps({
   isRecording: { type: Boolean, default: false },
   recordingName: { type: String, default: '' },
   recordingError: { type: String, default: '' },
+  activeFilter: { type: Object, default: null },
 })
 
 const emit = defineEmits(['toggle-stream', 'apply-filter', 'toggle-record', 'clear'])
@@ -54,7 +55,7 @@ function onApplyFilter(filter) {
       @click="toggleFilter"
     />
     <Popover ref="filterPopover">
-      <LogFilterMenu @apply="onApplyFilter" />
+      <LogFilterMenu :active-filter="activeFilter" @apply="onApplyFilter" />
     </Popover>
 
     <div class="toolbar-divider" />

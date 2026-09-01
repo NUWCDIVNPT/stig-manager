@@ -32,13 +32,18 @@ function computeExpanded(record, topNodes) {
   const keys = {}
   const dataNode = topNodes.find(node => node.label === 'data')
   if (dataNode && !dataNode.leaf) {
+    // Marking a key expanded is not enough: children are built lazily, and the
+    // Tree renders an expanded node's <ul> only when node.children is populated
+    // (a user toggle emits node-expand, a programmatic expandedKey does not).
     keys[dataNode.key] = true
+    const children = buildChildNodes(dataNode)
     // A transaction's data holds request/response/operationStats — the legacy
     // panel opened all of them one level down.
     if (record.type === 'transaction') {
-      for (const child of buildChildNodes(dataNode)) {
+      for (const child of children) {
         if (!child.leaf) {
           keys[child.key] = true
+          buildChildNodes(child)
         }
       }
     }

@@ -31,7 +31,7 @@
 }
 
 .sm-log-empty {
-  padding: 10px;
+  padding: 0.85rem;
   color: var(--color-text-dim);
 }
 
@@ -40,7 +40,7 @@
   padding: 0.2em 0;
   border-bottom: 1px solid var(--color-border-default);
   font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 1rem;
   line-height: 1.4;
 }
 
@@ -53,11 +53,11 @@
 }
 
 .sm-log-line[data-component="logSocket"] {
-  color: #a56cff;
+  color: var(--color-log-socket);
 }
 
 .sm-log-line[data-component="jwksCache"] {
-  color: #d18b3a;
+  color: var(--color-log-jwks);
 }
 
 .sm-log-line[data-component="static"] {
@@ -65,7 +65,7 @@
 }
 
 .sm-log-line[data-component="rest"] {
-  color: #2ec27e;
+  color: var(--color-log-rest);
 }
 
 .sm-log-line[data-level="2"] {
@@ -78,25 +78,25 @@
 
 .sm-http-status-sprite {
   display: inline-block;
-  font: 600 10px/14px 'Open Sans', helvetica, sans-serif;
-  padding: 0 5px;
-  border-radius: 3px;
-  color: #fff;
+  font: 600 0.85rem/1.4 'Open Sans', helvetica, sans-serif;
+  padding: 0 0.4rem;
+  border-radius: 0.25rem;
+  color: var(--color-text-bright);
   white-space: nowrap;
 }
 
 .sm-http-status-200 {
-  background-color: #006017;
+  background-color: var(--color-http-status-200);
 }
 
 .sm-http-status-300 {
-  background-color: #003761;
+  background-color: var(--color-http-status-300);
 }
 
 .sm-http-status-400 {
-  background-color: #984a00;
+  background-color: var(--color-http-status-400);
 }
 
 .sm-http-status-500 {
-  background-color: #980000;
+  background-color: var(--color-http-status-500);
 }

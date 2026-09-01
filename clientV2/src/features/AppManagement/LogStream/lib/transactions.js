@@ -26,6 +26,14 @@ export function getBrowser(userAgent) {
   return 'Unknown/0'
 }
 
+// The server omits status when the client terminated the request before the
+// response finished (logger: res.finished ? res.statusCode : undefined); keep
+// it undefined rather than stringifying to the literal "undefined", so the
+// grid's badge v-if and status filter options skip it.
+function statusString(status) {
+  return status == null ? undefined : `${status}`
+}
+
 // Complete row from a single `transaction` frame (request+response merged).
 export function transactionRow(logObj) {
   const data = logObj.data
@@ -36,7 +44,7 @@ export function transactionRow(logObj) {
     user: data.request.headers?.accessToken?.preferred_username,
     browser: getBrowser(data.request.headers?.['user-agent']),
     url: `${data.request.method} ${data.request.url}`,
-    status: `${data.response.status}`,
+    status: statusString(data.response.status),
     length: data.response.headers?.['content-length'],
     duration: data.operationStats.durationMs,
     operationId: data.operationStats.operationId,
@@ -61,7 +69,7 @@ export function applyResponse(row, logObj) {
   const data = logObj.data
   return {
     ...row,
-    status: `${data.status}`,
+    status: statusString(data.status),
     length: data.headers?.['content-length'],
     duration: data.operationStats.durationMs,
     operationId: data.operationStats.operationId,

@@ -138,6 +138,23 @@ describe('useStreamSocket connection handling', () => {
     expect(socket.lastError.value).toBe('Authorization timed out')
   })
 
+  it('can connect again after a fatal close releases the socket', () => {
+    const socket = makeSocket()
+    socket.connect()
+    const ws = FakeWebSocket.instances[0]
+    ws.fireOpen()
+    // Server rejects the token -> client closes 4001 (terminal, no retry).
+    ws.fireServer({ type: 'authorize', data: { state: 'unauthorized', reason: 'Authorization failed: bad token' } })
+    expect(ws.closeCalls[0]?.code).toBe(4001)
+    expect(socket.status.value).toBe('closed')
+
+    // A later connect() (e.g. remounting the view) must build a fresh socket
+    // rather than early-returning on the dead one.
+    socket.connect()
+    expect(FakeWebSocket.instances).toHaveLength(2)
+    expect(socket.status.value).toBe('connecting')
+  })
+
   it('does not time out once the server authorizes', () => {
     const socket = makeSocket({ authTimeoutMs: 10000 })
     socket.connect()

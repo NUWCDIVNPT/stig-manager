@@ -46,6 +46,20 @@ describe('transactionRow', () => {
       operationId: 'getCollections',
     })
   })
+
+  it('leaves status undefined when the client terminated the request', () => {
+    const frame = {
+      date: '2026-08-26T12:00:00.000Z',
+      data: {
+        request: { requestId: 'r9', source: '::1', method: 'GET', url: '/api/slow', headers: {} },
+        // logger omits status when res.finished is false (client aborted)
+        response: { status: undefined, clientTerminated: true, headers: {} },
+        operationStats: { durationMs: 3, operationId: 'slowOp' },
+      },
+    }
+    expect(transactionRow(frame).status).toBeUndefined()
+    expect(applyResponse({ requestId: 'r9' }, { data: { headers: {}, operationStats: {} } }).status).toBeUndefined()
+  })
 })
 
 describe('request/response pairing', () => {

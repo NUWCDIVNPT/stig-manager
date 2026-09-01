@@ -4,6 +4,13 @@ import Checkbox from 'primevue/checkbox'
 import { computed, ref } from 'vue'
 import { primaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 
+const props = defineProps({
+  // The filter currently applied to the stream (store state.filter, null = no
+  // constraint). The Popover unmounts this menu on every hide, so the checkbox
+  // state must be re-seeded from the durable filter on each open.
+  activeFilter: { type: Object, default: null },
+})
+
 const emit = defineEmits(['apply'])
 
 // Level/component filter matching the old client. A category is only sent when
@@ -16,8 +23,8 @@ const LEVELS = [
 ]
 const COMPONENTS = ['jwksCache', 'mysql', 'logSocket', 'rest', 'static']
 
-const selectedLevels = ref(LEVELS.map(l => l.value))
-const selectedComponents = ref([...COMPONENTS])
+const selectedLevels = ref([...(props.activeFilter?.level ?? LEVELS.map(l => l.value))])
+const selectedComponents = ref([...(props.activeFilter?.component ?? COMPONENTS)])
 
 function buildFilter() {
   const filter = {}
@@ -31,8 +38,6 @@ function buildFilter() {
 }
 
 const anySelected = computed(() => selectedLevels.value.length > 0 && selectedComponents.value.length > 0)
-
-defineExpose({ buildFilter })
 </script>
 
 <template>

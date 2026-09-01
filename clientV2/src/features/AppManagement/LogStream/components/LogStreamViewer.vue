@@ -43,6 +43,9 @@ function makeLineEl(record) {
 }
 
 function flush() {
+  if (!needsFlush) {
+    return // cancelled by clear() while this rAF was pending
+  }
   needsFlush = false
   const scroller = scrollEl.value
   const wrapper = wrapperEl.value
@@ -101,6 +104,9 @@ function append(record) {
 function clear() {
   logDivs = []
   pending = []
+  // Disarm any flush scheduled before the clear — it would replaceChildren()
+  // with the now-empty logDivs and wipe the placeholder just painted below.
+  needsFlush = false
   selectedEl = null
   applyEmpty()
 }

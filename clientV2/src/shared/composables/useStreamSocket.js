@@ -137,12 +137,22 @@ export function useStreamSocket({
     })
   }
 
+  // Releases the dead socket and broadcast channel after a terminal close, so a
+  // later connect() (e.g. remounting the view) can rebuild both — connect() is
+  // deliberately a no-op while `ws` is set.
+  function releaseSocket() {
+    ws = null
+    broadcastChannel?.close()
+    broadcastChannel = null
+  }
+
   function onSocketClose(event) {
     isAuthorized.value = false
     clearAuthTimer()
     // 1000 = normal/manual, >=4000 = our custom auth failures: never reconnect.
     const fatal = manualClose || event.code === 1000 || event.code >= 4000
     if (fatal) {
+      releaseSocket()
       setStatus('closed')
       return
     }
@@ -151,10 +161,12 @@ export function useStreamSocket({
     // instead of silently retrying against a proxy that will keep refusing.
     if (!everOpened) {
       lastError.value = connectErrorMessage
+      releaseSocket()
       setStatus('closed')
       return
     }
     if (!autoReconnect) {
+      releaseSocket()
       setStatus('closed')
       return
     }
@@ -165,6 +177,7 @@ export function useStreamSocket({
     reconnectAttempt += 1
     if (reconnectAttempt > maxReconnectAttempts) {
       lastError.value = `Connection failed after ${maxReconnectAttempts} attempts`
+      releaseSocket()
       setStatus('closed')
       return
     }

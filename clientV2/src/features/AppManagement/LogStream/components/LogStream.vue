@@ -160,6 +160,7 @@ onBeforeUnmount(() => {
                   :is-recording="state.isRecording"
                   :recording-name="state.recordingName"
                   :recording-error="state.recordingError"
+                  :active-filter="state.filter"
                   @toggle-stream="onToggleStream"
                   @apply-filter="onApplyFilter"
                   @toggle-record="onToggleRecord"
