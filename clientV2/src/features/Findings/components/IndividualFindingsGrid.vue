@@ -48,9 +48,8 @@ const dataTableRef = ref(null)
 // Row geometry (same model as AggregatedFindingsGrid): itemSize = 15px per
 // clamped line × lineClamp + 6px cell chrome. lineClamp both sets the row
 // height and drives the Detail/Comment -webkit-line-clamp, so the two can't
-// drift. Min clamp of 2 keeps the floor row (36px) tall enough for the asset
-// cell's shield + labels.
-const { lineClamp, itemSize } = useGridDensity('findings-individual', 2, 6, 15)
+// drift.
+const { lineClamp, itemSize: densityItemSize } = useGridDensity('findings-individual', 2, 6, 15)
 
 // Decorate each row with:
 //   - labels: resolved {labelId,name,color} objects for LabelsRow (review payload
@@ -74,6 +73,18 @@ const decoratedRows = computed(() => {
       _rowKey: `${r.assetId}::${r.ruleId}`,
     }
   })
+})
+
+// itemSize must cover the tallest cell: a <tr>'s height is a minimum, so an
+// over-tall cell grows the row past itemSize and drifts the virtual scroller's
+// n × itemSize positioning. Text cells scale with lineClamp, but a labeled
+// asset cell has a fixed need — 24px shield row + 0.15rem gap + ~17px labels
+// row + 0.3rem cell padding ≈ 46px — so floor the row height when labels are
+// present. Label-free result sets keep the denser 36px floor.
+const LABELED_ROW_MIN_PX = 47
+const itemSize = computed(() => {
+  const hasLabels = decoratedRows.value.some(r => r.labels.length)
+  return hasLabels ? Math.max(densityItemSize.value, LABELED_ROW_MIN_PX) : densityItemSize.value
 })
 
 const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () => emit('retry') })
@@ -113,7 +124,7 @@ function openAssetReview(row) {
 // with tight padding so short cells line up with multi-line Detail/Comment and
 // the row-height math stays honest. The bodyCell override keeps compactTablePt's
 // font size (later padding wins over the base's).
-const baseTablePt = compactTablePt({ bodyFontSize: '1rem' })
+const baseTablePt = compactTablePt({ bodyFontSize: '1rem', headerPadding: '0.4rem 0.5rem' })
 const tablePt = {
   ...baseTablePt,
   tableContainer: { style: 'background: var(--p-datatable-row-background); height: 100%;' },
@@ -121,7 +132,9 @@ const tablePt = {
   bodyRow: { style: { height: 'var(--item-size)', overflow: 'hidden' } },
   column: {
     ...baseTablePt.column,
-    bodyCell: { style: `${baseTablePt.column.bodyCell.style} padding: 0.15rem 0.5rem; vertical-align: top;` },
+    // overflow: hidden clips over-tall cells at the cell level — a <tr> cannot
+    // clip, and rows that outgrow itemSize desync the virtual scroller.
+    bodyCell: { style: `${baseTablePt.column.bodyCell.style} padding: 0.15rem 0.5rem; vertical-align: top; overflow: hidden;` },
   },
 }
 
@@ -281,11 +294,15 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 
 /* The scrollable content. It never shrinks below min-width; once the panel is
    narrower, the panel's overflow-x scrolls this whole stack — header, table,
-   and footer — together as one unit. min-width covers the sum of the columns'
-   min-widths so the table never needs its own horizontal scrollbar. */
+   and footer — together as one unit. The floor has two jobs under the table's
+   fixed layout: stay above the fixed-width columns' 52.8rem sum so the table
+   can never overflow into its own horizontal scrollbar, and reserve ~7rem each
+   for Detail and Comment — fixed layout ignores cell min-width (the columns'
+   minWidths are column-resize floors only), so this is what keeps them from
+   collapsing to slivers. */
 .ind-grid-panel__inner {
   height: 100%;
-  min-width: 55rem;
+  min-width: 67rem;
   display: flex;
   flex-direction: column;
   overflow: hidden;

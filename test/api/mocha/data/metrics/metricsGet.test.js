@@ -67,6 +67,16 @@ describe('GET - Metrics', function () {
                     expect(res.body).to.deep.equalInAnyOrder(expectedData['stigmanadmin'])
                 }
             })
+            it('Return detailed metrics - labelName containing "?" with other bind params', async function () {
+                const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/metrics/detail?labelName=${encodeURIComponent('no?match')}&benchmarkId=${reference.benchmark}`, 'GET', iteration.token)
+                if(iteration.name === "collectioncreator"){
+                    expect(res.status).to.eql(403)
+                    return
+                }
+                // the "?" inside the label value must not be consumed as a bind placeholder; no label matches, so no rows
+                expect(res.status).to.eql(200)
+                expect(res.body).to.eql([])
+            })
             it("test metrics on empty collection", async function () {
 
                 const res = await utils.executeRequest(`${config.baseUrl}/collections/${'84'}/metrics/detail`, 'GET', iteration.token)

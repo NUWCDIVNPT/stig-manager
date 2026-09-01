@@ -334,6 +334,10 @@ describe('GET - Collection', function () {
 
             // ccis projection
             expect(res.body[0].ccis).to.be.an('array').of.length(1)
+            expect(res.body[0].ccis[0]).to.have.property('cci')
+            expect(res.body[0].ccis[0]).to.have.property('definition')
+            expect(res.body[0].ccis[0]).to.have.property('apAcronym')
+            expect(res.body[0].ccis[0]).to.have.property('control')
         })
 
         it('Return the Findings for the specified Collection by groupId',async function () {
@@ -415,6 +419,149 @@ describe('GET - Collection', function () {
               expect(finding.assets[0].assetId).to.equal(reference.testAsset.assetId)
             }
         })
+
+        it('Return the Findings for the specified Collection filtered by labelName',async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/findings?aggregator=groupId&acceptedOnly=false&projection=assets&labelName=${reference.testCollection.fullLabelName}`, 'GET', iteration.token)
+            if (distinct.grant === "none"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+
+            expect(res.body).to.have.lengthOf(distinct.findings.findingsByLabelFullCnt)
+
+            const returnedAssetIds = new Set()
+            for(const finding of res.body){
+              expect(finding.assetCount).to.equal(finding.assets.length)
+              for(const asset of finding.assets){
+                returnedAssetIds.add(asset.assetId)
+              }
+            }
+            expect([...returnedAssetIds].sort()).to.eql([...distinct.findings.labelFullAssetIds].sort())
+        })
+
+        it('Return the Findings for the specified Collection filtered by labelId',async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/findings?aggregator=groupId&acceptedOnly=false&projection=assets&labelId=${reference.testCollection.fullLabel}`, 'GET', iteration.token)
+            if (distinct.grant === "none"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+
+            // labelId and labelName identify the same Label, so they must select the same Assets
+            expect(res.body).to.have.lengthOf(distinct.findings.findingsByLabelFullCnt)
+
+            const returnedAssetIds = new Set()
+            for(const finding of res.body){
+              for(const asset of finding.assets){
+                returnedAssetIds.add(asset.assetId)
+              }
+            }
+            expect([...returnedAssetIds].sort()).to.eql([...distinct.findings.labelFullAssetIds].sort())
+        })
+
+        it('Return the Findings for the specified Collection filtered by a Label on a single Asset',async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/findings?aggregator=groupId&acceptedOnly=false&projection=assets&labelName=${reference.testCollection.lvl1LabelName}`, 'GET', iteration.token)
+            if (distinct.grant === "none"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+
+            expect(res.body).to.have.lengthOf(distinct.findings.findingsByLabelLvl1Cnt)
+
+            const returnedAssetIds = new Set()
+            for(const finding of res.body){
+              for(const asset of finding.assets){
+                returnedAssetIds.add(asset.assetId)
+              }
+            }
+            expect([...returnedAssetIds].sort()).to.eql([...distinct.findings.labelLvl1AssetIds].sort())
+        })
+
+        it('Return the Findings for the specified Collection filtered by multiple labelNames',async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/findings?aggregator=groupId&acceptedOnly=false&projection=assets&labelName=${reference.testCollection.fullLabelName}&labelName=${reference.testCollection.lvl1LabelName}`, 'GET', iteration.token)
+            if (distinct.grant === "none"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+
+            // the Labels are OR'd, and the Asset carrying both must not be counted twice
+            expect(res.body).to.have.lengthOf(distinct.findings.findingsByLabelBothCnt)
+
+            for(const finding of res.body){
+              expect(finding.assetCount).to.equal(finding.assets.length)
+              const assetIds = finding.assets.map(a => a.assetId)
+              expect(assetIds).to.eql([...new Set(assetIds)])
+            }
+        })
+
+        it('Return the Findings for the specified Collection for Assets without Labels',async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/findings?aggregator=groupId&acceptedOnly=false&projection=assets&labelMatch=null`, 'GET', iteration.token)
+            if (distinct.grant === "none"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+
+            expect(res.body).to.have.lengthOf(distinct.findings.findingsByLabelMatchNullCnt)
+
+            const returnedAssetIds = new Set()
+            for(const finding of res.body){
+              for(const asset of finding.assets){
+                returnedAssetIds.add(asset.assetId)
+              }
+            }
+            expect([...returnedAssetIds].sort()).to.eql([...distinct.findings.labelMatchNullAssetIds].sort())
+        })
+
+        it('Return the Findings for the specified Collection by cci filtered by labelName',async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/findings?aggregator=cci&acceptedOnly=false&projection=assets&labelName=${reference.testCollection.fullLabelName}`, 'GET', iteration.token)
+            if (distinct.grant === "none"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+
+            expect(res.body).to.have.lengthOf(distinct.findings.findingsByCciLabelFullCnt)
+
+            for(const finding of res.body){
+              expect(finding.assetCount).to.equal(finding.assets.length)
+              for(const asset of finding.assets){
+                expect(distinct.findings.labelFullAssetIds).to.include(asset.assetId)
+              }
+            }
+        })
+
+        it('Return the Findings for the specified Collection by ruleId filtered by labelName',async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/findings?aggregator=ruleId&acceptedOnly=false&projection=assets&labelName=${reference.testCollection.fullLabelName}`, 'GET', iteration.token)
+            if (distinct.grant === "none"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+
+            expect(res.body).to.have.lengthOf(distinct.findings.findingsByRuleLabelFullCnt)
+
+            for(const finding of res.body){
+              expect(finding.assetCount).to.equal(finding.assets.length)
+              for(const asset of finding.assets){
+                expect(distinct.findings.labelFullAssetIds).to.include(asset.assetId)
+              }
+            }
+        })
+
+        it('Return no Findings for the specified Collection when the labelName matches no Label',async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/findings?aggregator=groupId&acceptedOnly=false&projection=assets&labelName=no-such-label`, 'GET', iteration.token)
+            if (distinct.grant === "none"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+            expect(res.body).to.be.an('array').of.length(0)
+        })
+
         it('should return 403 for deleted collection', async function () {
           const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/findings?aggregator=cci&acceptedOnly=false&projection=assets&projection=groups&projection=rules&projection=stigs&projection=ccis`, 'GET', iteration.token)
           expect(res.status).to.eql(403)

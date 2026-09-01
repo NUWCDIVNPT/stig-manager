@@ -37,7 +37,7 @@ const props = defineProps({
    * Structure: {
    *   key: string, (required) used for the action event name
    *   icon: string, (required)
-   *   iconColor?: string, (CSS color applied to just the icon)
+   *   iconColor?: string, (CSS color applied to just the icon — use a theme variable, never a color literal)
    *   label?: string,
    *   title?: string,
    *   disabled?: boolean,

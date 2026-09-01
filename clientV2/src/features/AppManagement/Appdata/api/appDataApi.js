@@ -1,5 +1,6 @@
 import { saveAs } from 'file-saver-es'
 import { apiCall, apiFetch } from '../../../../shared/api/apiClient.js'
+import { filenameFromContentDisposition } from '../../../../shared/lib/contentDisposition.js'
 import { getDownloadUrl } from '../../../../shared/serviceWorker.js'
 
 function apiBase() {
@@ -58,9 +59,9 @@ export async function downloadAppData({ format = 'gzip', onStreamStart, signal }
     throw new Error(`Export request failed (${response.status}). ${body}`)
   }
 
-  const disposition = response.headers.get('Content-Disposition') || ''
-  const match = /filename="?([^";]+)"?/i.exec(disposition)
-  const filename = match?.[1] || `appdata.jsonl${format === 'gzip' ? '.gz' : ''}`
+  const disposition = response.headers.get('Content-Disposition')
+  const filename = filenameFromContentDisposition(disposition)
+    ?? `appdata.jsonl${format === 'gzip' ? '.gz' : ''}`
 
   const blob = await response.blob()
   saveAs(blob, filename)

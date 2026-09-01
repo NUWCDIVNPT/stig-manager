@@ -164,9 +164,12 @@ module.exports.getFindingsByCollection = async function getFindingsByCollection 
     const benchmarkId = req.query.benchmarkId
     const assetId = req.query.assetId
     const acceptedOnly = req.query.acceptedOnly
+    const labelIds = req.query.labelId
+    const labelNames = req.query.labelName
+    const labelMatch = req.query.labelMatch
     const projections = req.query.projection
     const {collectionId, grant} = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
-    const response = await CollectionService.getFindingsByCollection({collectionId, aggregator, benchmarkId, assetId, acceptedOnly, projections, grant})
+    const response = await CollectionService.getFindingsByCollection({collectionId, aggregator, benchmarkId, assetId, acceptedOnly, labelIds, labelNames, labelMatch, projections, grant})
     res.json(response)
   }
   catch (err) {

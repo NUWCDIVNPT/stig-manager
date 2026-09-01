@@ -112,6 +112,9 @@ module.exports.getReviewsByCollection = async function getReviewsByCollection (r
         userId: req.query.userId,
         assetId: req.query.assetId,
         benchmarkId: req.query.benchmarkId,
+        labelIds: req.query.labelId,
+        labelNames: req.query.labelName,
+        labelMatch: req.query.labelMatch,
         metadata: req.query.metadata
       },
       grant,

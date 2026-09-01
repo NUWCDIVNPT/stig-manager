@@ -5,6 +5,7 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { computed, ref, watch } from 'vue'
+import { readStoredValue, storeValue } from '../../../shared/lib/localStorage.js'
 import { POAM_FORMAT_OPTIONS, POAM_FORMAT_STORAGE_KEY, POAM_FORMATS, POAM_STATUS_OPTIONS } from '../constants.js'
 
 // Pure options form. Collects the POA&M column defaults and emits them; the
@@ -33,6 +34,18 @@ const mccastAuthName = ref(DEFAULT_AUTH_NAME)
 const isMccast = computed(() => format.value === POAM_FORMATS.MCCAST)
 const statusOptions = computed(() => POAM_STATUS_OPTIONS[format.value] ?? [])
 
+// Generate is form-bound (as in the legacy dialog): the server substitutes
+// nothing for a missing field, so e.g. a cleared date would put the literal
+// text "undefined" into the workbook's milestone columns.
+const canGenerate = computed(() => {
+  if (!(date.value instanceof Date) || Number.isNaN(date.value.getTime()) || !status.value) {
+    return false
+  }
+  return isMccast.value
+    ? mccastPackageId.value.trim() !== '' && mccastAuthName.value.trim() !== ''
+    : office.value.trim() !== ''
+})
+
 // Keep the status selection valid for the current format.
 watch(format, () => {
   status.value = statusOptions.value[0]?.value ?? null
@@ -41,7 +54,7 @@ watch(format, () => {
 // Restore every field to its default; format falls back to the last-used value,
 // ignoring any stored value that isn't a known format.
 function resetForm() {
-  const storedFormat = localStorage.getItem(POAM_FORMAT_STORAGE_KEY)
+  const storedFormat = readStoredValue(POAM_FORMAT_STORAGE_KEY, POAM_FORMATS.EMASS)
   format.value = Object.values(POAM_FORMATS).includes(storedFormat) ? storedFormat : POAM_FORMATS.EMASS
   date.value = defaultDate()
   status.value = statusOptions.value[0]?.value ?? null
@@ -67,7 +80,7 @@ function formatDate(d) {
 }
 
 function onGenerate() {
-  localStorage.setItem(POAM_FORMAT_STORAGE_KEY, format.value)
+  storeValue(POAM_FORMAT_STORAGE_KEY, format.value)
   emit('generate', {
     format: format.value,
     date: formatDate(date.value),
@@ -122,7 +135,7 @@ function onGenerate() {
 
     <template #footer>
       <Button label="Cancel" icon="pi pi-times" text @click="visible = false" />
-      <Button label="Generate" icon="pi pi-file-export" @click="onGenerate" />
+      <Button label="Generate" icon="pi pi-file-export" :disabled="!canGenerate" @click="onGenerate" />
     </template>
   </Dialog>
 </template>

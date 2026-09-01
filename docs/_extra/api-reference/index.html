@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <title>STIG Manager API Reference</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        margin: 0;
+        background-color: #1a1a1a;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <!-- scalar.standalone.js and stig-manager.yaml are placed here at build time by conf.py -->
+    <script src="./scalar.standalone.js"></script>
+    <script>
+      Scalar.createApiReference('#app', {
+        url: './stig-manager.yaml',
+        operationTitleSource: 'path',
+        showOperationId: true,
+        darkMode: true,
+        withDefaultFonts: false,
+        telemetry: false,
+        // No hooks into Scalar cloud services: suppress the Ask AI buttons,
+        // the Generate MCP link, and the Open API Client links to
+        // client.scalar.com. The embedded Test Request client remains
+        // available and is fully local. The developer toolbar keeps its
+        // default behavior of appearing on localhost only.
+        showDeveloperTools: 'localhost',
+        agent: { disabled: true },
+        mcp: { disabled: true },
+        hideClientButton: true,
+        modelsSectionLabel: 'Schemas',
+        theme: 'deepSpace',
+        // Preselect the oauth scheme. Do not configure flows here: in Scalar
+        // (verified through 1.65.0) any flows entry makes an openIdConnect
+        // scheme lose its discovery UI (the editable configuration URL and its
+        // Fetch Configuration button) and breaks Authorize. After the discovery
+        // document is fetched, PKCE is enabled automatically when the
+        // provider advertises S256; the client id must be entered manually.
+        authentication: {
+          preferredSecurityScheme: 'oauth'
+        }
+      })
+    </script>
+  </body>
+</html>

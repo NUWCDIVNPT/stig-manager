@@ -20,6 +20,7 @@ These pages describe the STIG Manager project.
 	:caption: Contents:
 
 	project-description
+	api-reference
 	contributing
 	testing
 	documentation
