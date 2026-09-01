@@ -40,12 +40,16 @@ function onApplyFilter(filter) {
 
 <template>
   <ActionToolbar class="log-toolbar">
+    <!-- Always clickable: while disconnected it still stops a nominally-running
+         stream, and clicking Stream revives a dead socket (the page calls
+         ensureConnected before starting). The animated icon shows only when the
+         stream is actually connected. -->
     <ActionButton
-      :disabled="!canStream"
+      :title="isStreaming && !canStream ? 'Stream interrupted — click to stop, then Stream to restart' : undefined"
       @click="emit('toggle-stream', !isStreaming)"
     >
       <!-- Old-client SVGs: static grey when stopped, animated when streaming. -->
-      <img :src="isStreaming ? streamSvg : streamStoppedSvg" class="stream-icon" alt="">
+      <img :src="isStreaming && canStream ? streamSvg : streamStoppedSvg" class="stream-icon" alt="">
       {{ isStreaming ? 'Streaming' : 'Stream' }}
     </ActionButton>
     <ActionButton

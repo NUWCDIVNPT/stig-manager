@@ -58,6 +58,9 @@ watch(emptyMessage, (message) => {
 
 function onToggleStream(shouldStream) {
   if (shouldStream) {
+    // Revive a terminally-closed socket first (no-op when already connected);
+    // startStreaming defers stream-start until authorization completes.
+    store.ensureConnected()
     store.startStreaming()
   }
   else {

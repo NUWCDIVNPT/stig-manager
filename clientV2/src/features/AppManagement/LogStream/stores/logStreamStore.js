@@ -1,4 +1,5 @@
-import { effectScope, reactive, watch } from 'vue'
+import { computed, effectScope, reactive, watch } from 'vue'
+import { useStateWorker } from '../../../../auth/useStateWorker.js'
 import { useStreamSocket } from '../../../../shared/composables/useStreamSocket.js'
 import { createLogBuffer, toLogRecord } from '../lib/logBuffer.js'
 import { applyResponse, requestRow, transactionRow } from '../lib/transactions.js'
@@ -21,7 +22,7 @@ const MAX_PENDING_REQUESTS = 1000
 
 // Exported factory so tests can build an isolated store with a fake socket. The
 // app uses the single shared instance created below.
-export function createLogStreamStore({ createSocket = useStreamSocket, maxLines } = {}) {
+export function createLogStreamStore({ createSocket = useStreamSocket, useApiState = useStateWorker, maxLines } = {}) {
   const buffer = createLogBuffer(maxLines)
 
   const state = reactive({
@@ -128,6 +129,24 @@ export function createLogStreamStore({ createSocket = useStreamSocket, maxLines 
   })
   watch(socket.lastError, (err) => {
     state.lastError = err
+  })
+
+  // Reconnect when the API comes back. The state worker already announces
+  // recovery (it is what lifts the GlobalServiceOverlay mask), so a socket that
+  // exhausted its retries while the API was down is revived by that signal
+  // rather than by polling; the isAuthorized watch above then re-sends
+  // stream-start if streaming was on. The condition mirrors the overlay's
+  // (candidate for a shared useApiAvailability composable if a third consumer
+  // appears).
+  const { state: apiState, error: apiError } = useApiState()
+  const apiDown = computed(() =>
+    !!apiError.value
+    || !(apiState.value?.dependencies?.db ?? true)
+    || !(apiState.value?.dependencies?.oidc ?? true))
+  watch(apiDown, (down) => {
+    if (!down && state.status === 'closed') {
+      ensureConnected()
+    }
   })
 
   function sendStart() {

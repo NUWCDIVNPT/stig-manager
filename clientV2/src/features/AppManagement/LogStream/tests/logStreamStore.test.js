@@ -9,6 +9,7 @@ function makeFakeSocket() {
   const lastError = ref(null)
   const status = ref('idle')
   const sent = []
+  const connect = vi.fn()
   let onMessage
   let onStatusChange
   const factory = (opts) => {
@@ -18,7 +19,7 @@ function makeFakeSocket() {
       isAuthorized,
       lastError,
       status,
-      connect: vi.fn(),
+      connect,
       disconnect: vi.fn(),
       send: vi.fn(),
       sendCommand: (command, extra = {}) => sent.push({ command, ...extra }),
@@ -26,6 +27,7 @@ function makeFakeSocket() {
   }
   return {
     factory,
+    connect,
     isAuthorized,
     lastError,
     status,
@@ -39,13 +41,23 @@ function logFrame(overrides = {}) {
   return { level: 3, component: 'mysql', message: 'hi', ...overrides }
 }
 
+// Fake stand-in for useStateWorker: refs the test can flip to simulate the
+// shared state worker reporting the API down and back up.
+function makeFakeApiState() {
+  const state = ref(null)
+  const error = ref(null)
+  return { state, error, useApiState: () => ({ state, error }) }
+}
+
 describe('logStreamStore', () => {
   let fake
+  let api
   let store
 
   beforeEach(() => {
     fake = makeFakeSocket()
-    store = createLogStreamStore({ createSocket: fake.factory })
+    api = makeFakeApiState()
+    store = createLogStreamStore({ createSocket: fake.factory, useApiState: api.useApiState })
   })
 
   it('buffers inbound log frames and tracks the line count', () => {
@@ -88,6 +100,28 @@ describe('logStreamStore', () => {
     fake.isAuthorized.value = true // e.g. handshake completes / reconnect
     await nextTick() // isAuthorized watch flushes
     expect(fake.sent).toContainEqual({ command: 'stream-start' })
+  })
+
+  it('reconnects a closed socket when the state worker reports the API is back', async () => {
+    // Stream is on, then the connection dies terminally (retries exhausted).
+    store.startStreaming()
+    fake.setStatus('closed')
+    api.state.value = { dependencies: { db: false, oidc: true } } // API down, mask up
+    await nextTick()
+    expect(fake.connect).not.toHaveBeenCalled() // down alone triggers nothing
+
+    api.state.value = { dependencies: { db: true, oidc: true } } // recovery, mask lifts
+    await nextTick()
+    expect(fake.connect).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not reconnect on API recovery while the socket is healthy', async () => {
+    fake.setStatus('open')
+    api.state.value = { dependencies: { db: false, oidc: true } }
+    await nextTick()
+    api.state.value = { dependencies: { db: true, oidc: true } }
+    await nextTick()
+    expect(fake.connect).not.toHaveBeenCalled()
   })
 
   it('clears the buffer and notifies subscribers', () => {
