@@ -20,7 +20,15 @@ export const expectations = {
         reviewsForResultPass: 4,
         reviewsForTestGroup: 3,
         reviewsForRulesAll: 17,
-        reviewsDefaultMapped: 0
+        reviewsDefaultMapped: 0,
+        reviewsByLabelFullCnt: 12,
+        reviewsByLabelLvl1Cnt: 9,
+        reviewsByLabelBothCnt: 12,
+        reviewsByLabelIdFullCnt: 12,
+        reviewsByLabelMatchNullCnt: 5,
+        labelFullAssetIds: ["42", "62"],
+        labelLvl1AssetIds: ["42"],
+        labelMatchNullAssetIds: ["154"],
       },
       postReviews:{
         targetAssetsWholeStig:{
@@ -182,7 +190,15 @@ export const expectations = {
         reviewsForResultPass: 2,
         reviewsForTestGroup: 3,
         reviewsForRulesAll: 14,
-        reviewsDefaultMapped: 0
+        reviewsDefaultMapped: 0,
+        reviewsByLabelFullCnt: 9,
+        reviewsByLabelLvl1Cnt: 6,
+        reviewsByLabelBothCnt: 9,
+        reviewsByLabelIdFullCnt: 9,
+        reviewsByLabelMatchNullCnt: 5,
+        labelFullAssetIds: ["42", "62"],
+        labelLvl1AssetIds: ["42"],
+        labelMatchNullAssetIds: ["154"],
       },
       roleId:1
     },
@@ -279,7 +295,15 @@ export const expectations = {
         reviewsForResultPass: 4,
         reviewsForTestGroup: 3,
         reviewsForRulesAll: 17,
-        reviewsDefaultMapped: 0
+        reviewsDefaultMapped: 0,
+        reviewsByLabelFullCnt: 12,
+        reviewsByLabelLvl1Cnt: 9,
+        reviewsByLabelBothCnt: 12,
+        reviewsByLabelIdFullCnt: 12,
+        reviewsByLabelMatchNullCnt: 5,
+        labelFullAssetIds: ["42", "62"],
+        labelLvl1AssetIds: ["42"],
+        labelMatchNullAssetIds: ["154"],
       },
       roleId:2
     },
@@ -309,7 +333,15 @@ export const expectations = {
         reviewsForResultPass: 4,
         reviewsForTestGroup: 3,
         reviewsForRulesAll: 17,
-        reviewsDefaultMapped: 0
+        reviewsDefaultMapped: 0,
+        reviewsByLabelFullCnt: 12,
+        reviewsByLabelLvl1Cnt: 9,
+        reviewsByLabelBothCnt: 12,
+        reviewsByLabelIdFullCnt: 12,
+        reviewsByLabelMatchNullCnt: 5,
+        labelFullAssetIds: ["42", "62"],
+        labelLvl1AssetIds: ["42"],
+        labelMatchNullAssetIds: ["154"],
       },
       postReviews:{
         targetAssetsWholeStig:{
@@ -404,8 +436,15 @@ export const expectations = {
         reviewsForStigmanadmin: 14,
         reviewsForTestGroup: 3,
         reviewsForRulesAll: 17,
-        reviewsDefaultMapped: 0
-      
+        reviewsDefaultMapped: 0,
+        reviewsByLabelFullCnt: 12,
+        reviewsByLabelLvl1Cnt: 9,
+        reviewsByLabelBothCnt: 12,
+        reviewsByLabelIdFullCnt: 12,
+        reviewsByLabelMatchNullCnt: 5,
+        labelFullAssetIds: ["42", "62"],
+        labelLvl1AssetIds: ["42"],
+        labelMatchNullAssetIds: ["154"],
       },
       postReviews:{
         targetAssetsWholeStig:{

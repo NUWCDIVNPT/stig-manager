@@ -346,13 +346,13 @@ exports.queryBenchmarkRules = async function ( benchmarkId, revisionStr, inProje
             'cci', rgrcc.cci,
             'apAcronym', cci.apAcronym,
             'definition',  cci.definition,
-            'control', cr.indexDisa
+            'control', crm.parentControl
           )
         )
         from
           rev_group_rule_cci_map rgrcc
           inner join cci cci using (cci)
-          left join cci_reference_map cr using (cci)
+          left join cci_reference_map crm using (cci)
         where
           rgrcc.rgrId = rgr.rgrId
         ), 
@@ -440,11 +440,12 @@ exports.queryRules = async function ( ruleId, inProjection ) {
   if ( inProjection?.includes('ccis') ) {
     columns.push(`CASE WHEN count(rgrcc.cci) = 0
     THEN json_array()
-    ELSE CAST(CONCAT('[', GROUP_CONCAT(distinct json_object('cci', rgrcc.cci,'apAcronym',cci.apAcronym,'definition',cci.definition)), ']') as json)
+    ELSE CAST(CONCAT('[', GROUP_CONCAT(distinct json_object('cci', rgrcc.cci,'apAcronym',cci.apAcronym,'definition',cci.definition,'control',crm.parentControl)), ']') as json)
     END as ccis`)
     joins.push(
       'left join rev_group_rule_cci_map rgrcc using (rgrId)',
-      'inner join cci using (cci)'
+      'inner join cci using (cci)',
+      'inner join cci_reference_map crm on cci.cci = crm.cci'
     )
   }
 
