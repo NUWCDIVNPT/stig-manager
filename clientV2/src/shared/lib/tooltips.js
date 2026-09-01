@@ -142,4 +142,9 @@ The claims presented by the authentication provider the last time this User auth
     export: `Exports data as a stream of newline-delimited JSON. This is an administrative migration/restore format, not a general-purpose interchange format, and is not a substitute for a database backup.`,
     import: `Replacing application data truncates and rewrites most database tables from the uploaded file. Migration-owned, reference, configuration, and service-job tables are not affected. The file is analyzed locally in your browser before anything is uploaded.`,
   }),
+
+  // App Management "Log Stream" page.
+  logStream: Object.freeze({
+    experimental: `This feature is experimental and may change or be removed. It is only available when the API's <code>STIGMAN_EXPERIMENTAL_LOGSTREAM</code> setting is enabled. It live-tails the server's structured log over a WebSocket and requires admin privileges.`,
+  }),
 })

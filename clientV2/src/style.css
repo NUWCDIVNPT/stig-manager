@@ -97,6 +97,16 @@
   --color-status-error-border: #f87171;
   --color-status-error-text: #fca5a5;
 
+  /* Log Stream viewer: per-component line colors + HTTP status badges (badge
+     names/values ported from the legacy client's http-status sprites) */
+  --color-log-socket: #a56cff;
+  --color-log-jwks: #d18b3a;
+  --color-log-rest: #2ec27e;
+  --color-http-status-200: #006017;
+  --color-http-status-300: #003761;
+  --color-http-status-400: #984a00;
+  --color-http-status-500: #980000;
+
   /* Result Status Colors */
   --result-pass: hsl(120 84% 42% / 1);
   --result-fail: hsl(19 100% 40% / 1);

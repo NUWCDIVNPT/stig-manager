@@ -102,6 +102,10 @@ const { appManagementItems } = useAppManagementItems()
   background-image: url('/src/assets/database.svg');
 }
 
+.icon-log-stream {
+  background-image: url('/src/assets/log-stream.svg');
+}
+
 .admin-content {
   flex: 1;
   min-width: 0;

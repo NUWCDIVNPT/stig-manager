@@ -1,0 +1,102 @@
+/*
+ * Global (unscoped) styles for the log viewer. The line <div>s are built
+ * imperatively in LogStreamViewer.vue, so they carry no scoped data-v
+ * attribute — these selectors must stay global. Ported from the old client's
+ * stigman.css, using the new client's theme variables.
+ */
+
+.sm-log-panel-body {
+  flex: 1;
+  min-height: 0;
+  cursor: pointer;
+  overflow: auto;
+  white-space: pre;
+  background: var(--p-datatable-row-background);
+  color: var(--color-text-primary);
+}
+
+.sm-log-wrapper {
+  padding: 0 0.4em;
+  display: table;
+  min-width: 100%;
+}
+
+
+.sm-log-wrapper.sm-log-wrap {
+  display: block;
+}
+
+.sm-log-wrapper.sm-log-wrap .sm-log-line {
+  overflow-wrap: anywhere;
+}
+
+.sm-log-empty {
+  padding: 0.85rem;
+  color: var(--color-text-dim);
+}
+
+.sm-log-line {
+  width: 100%;
+  padding: 0.2em 0;
+  border-bottom: 1px solid var(--color-border-default);
+  font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.sm-log-line:hover {
+  background-color: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.sm-log-line.selected {
+  background-color: color-mix(in srgb, currentColor 20%, transparent);
+}
+
+.sm-log-line[data-component="logSocket"] {
+  color: var(--color-log-socket);
+}
+
+.sm-log-line[data-component="jwksCache"] {
+  color: var(--color-log-jwks);
+}
+
+.sm-log-line[data-component="static"] {
+  color: var(--color-text-dim);
+}
+
+.sm-log-line[data-component="rest"] {
+  color: var(--color-log-rest);
+}
+
+.sm-log-line[data-level="2"] {
+  color: var(--color-warning-yellow);
+}
+
+.sm-log-line[data-level="1"] {
+  color: var(--color-action-red);
+}
+
+.sm-http-status-sprite {
+  display: inline-block;
+  font: 600 0.85rem/1.4 'Open Sans', helvetica, sans-serif;
+  padding: 0 0.4rem;
+  border-radius: 0.25rem;
+  color: var(--color-text-bright);
+  white-space: nowrap;
+}
+
+.sm-http-status-200 {
+  background-color: var(--color-http-status-200);
+}
+
+.sm-http-status-300 {
+  background-color: var(--color-http-status-300);
+}
+
+.sm-http-status-400 {
+  background-color: var(--color-http-status-400);
+}
+
+.sm-http-status-500 {
+  background-color: var(--color-http-status-500);
+}

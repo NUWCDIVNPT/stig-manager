@@ -14,3 +14,5 @@ export function isExperimentalEnabled(flag) {
 }
 
 export const isAppDataEnabled = () => isExperimentalEnabled('appData')
+
+export const isLogStreamEnabled = () => isExperimentalEnabled('logStream')
