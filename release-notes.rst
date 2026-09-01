@@ -1,3 +1,19 @@
+1.6.16
+-------
+
+Changes:
+
+  - (API) Added ``labelName``, ``labelId``, and ``labelMatch`` query parameters to the collection findings and collection reviews endpoints (``getFindingsByCollection``, ``getReviewsByCollection``), so the Findings report and its review detail pane can be filtered by label (#2146, #2151)
+  - (API) Improved the collection findings query plan by constraining the review join to the collection's assets; on large review tables the findings report is now roughly an order of magnitude faster (#2146)
+  - (API) Fixed label-filtered queries being formatted twice, which corrupted the query when a label name contained ``?`` and another bind-bearing filter was present (#2147)
+  - (API) Checklist (CKL/CKLB) export now derives ``WEB_OR_DATABASE`` solely from the asset's ``cklWebOrDatabase`` metadata value (compared case-insensitively) instead of from the presence of ``cklHostName``; ``cklHostName`` replaces the asset name in ``HOST_NAME`` only when the asset exports as Web or Database (#2149)
+  - (API) Added the foundation of an API event framework, with new ``STIGMAN_EVENTS_ENABLED`` and ``STIGMAN_EVENTS_MAX_BODY`` environment variables; no API operation emits events yet, so the framework is inert in this release (#2139)
+  - (UI) Fixed the review aging rules grid sending ``updateField`` and ``updateValue`` for non-update rules, which the API rejected (#2137)
+  - (Docs) Added a browseable API Reference, rendered from the OpenAPI specification, and a Log Stream WebSocket API reference, rendered from the AsyncAPI specification, to the documentation (#2138)
+  - (Dependencies) Update ``js-yaml`` to v4.3.1 to resolve CVE-2026-59870
+
+Note: Checklist export behavior has changed for assets whose ``cklHostName`` metadata is set but whose ``cklWebOrDatabase`` metadata is absent or not ``true``. Previously such assets exported with ``WEB_OR_DATABASE`` set to ``true`` and ``HOST_NAME`` set to the ``cklHostName`` value; they now export with ``WEB_OR_DATABASE`` set to ``false`` and ``HOST_NAME`` set to the asset name. Assets imported from checklists by the STIG Manager Client populate ``cklWebOrDatabase`` and are unaffected. Assets whose metadata was set by other means should have ``cklWebOrDatabase`` set to ``true`` if they are intended to export as Web or Database.
+
 1.6.15
 -------
 

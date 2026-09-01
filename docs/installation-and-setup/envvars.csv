@@ -85,6 +85,10 @@
 | The location of the documentation files, relative to the API source directory. Note that if running source from a clone of the GitHub repository, the docs are located at `../../docs/_build/html` relative to the API directory. ","API, Documentation"
 "STIGMAN_DOCS_DISABLED","| **Default** ``false``
 | Whether to *not* serve the project Documentation.  NOTE: If you choose to serve the Client from the API container but not the Documentation, the links do the Docs on the home page will not work. ","Documentation"
+"STIGMAN_EVENTS_ENABLED","| **Default** ``true``
+| Set to ``false`` to disable API event emission entirely. When disabled, no event hooks are registered and no events are emitted; nothing else about request handling changes. Note that no API operation currently emits events. The event framework is in place for future features and is inert until operations are annotated. ","API"
+"STIGMAN_EVENTS_MAX_BODY","| **Default** ``65536``
+| The maximum size in bytes of a serialized request body included in an API event. Bodies larger than this are omitted from the event and replaced by a byte count, rather than truncated. Set to ``0`` to never include request bodies in events. ","API"
 "STIGMAN_EXPERIMENTAL_APPDATA","| **Default**  ``false``
 | Set to ``true`` to enable the experimental AppData import/export API endpoints and User Interface. ","API, Client"
 "STIGMAN_EXPERIMENTAL_LOGSTREAM","| **Default**  ``true``
