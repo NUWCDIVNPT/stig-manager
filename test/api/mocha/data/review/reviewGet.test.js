@@ -99,6 +99,83 @@ describe('GET - Review', () => {
             }        
           }
         })
+        it('Return a list of reviews accessible to the requester, filtered by labelName.', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews?labelName=${reference.testCollection.fullLabelName}`, 'GET', iteration.token)
+
+          expect(res.status).to.eql(200)
+          expect(res.body).to.be.lengthOf(distinct.testCollection.reviewsByLabelFullCnt)
+
+          const returnedAssetIds = [...new Set(res.body.map(review => review.assetId))]
+          expect(returnedAssetIds.sort()).to.eql([...distinct.testCollection.labelFullAssetIds].sort())
+
+          for(const review of res.body){
+            expect(review.assetLabelIds).to.include(reference.testCollection.fullLabel)
+          }
+        })
+
+        it('Return a list of reviews accessible to the requester, filtered by labelId.', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews?labelId=${reference.testCollection.fullLabel}`, 'GET', iteration.token)
+
+          expect(res.status).to.eql(200)
+          // labelId and labelName identify the same Label, so they must select the same Assets
+          expect(res.body).to.be.lengthOf(distinct.testCollection.reviewsByLabelIdFullCnt)
+
+          const returnedAssetIds = [...new Set(res.body.map(review => review.assetId))]
+          expect(returnedAssetIds.sort()).to.eql([...distinct.testCollection.labelFullAssetIds].sort())
+        })
+
+        it('Return a list of reviews accessible to the requester, filtered by a Label on a single Asset.', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews?labelName=${reference.testCollection.lvl1LabelName}`, 'GET', iteration.token)
+
+          expect(res.status).to.eql(200)
+          expect(res.body).to.be.lengthOf(distinct.testCollection.reviewsByLabelLvl1Cnt)
+
+          const returnedAssetIds = [...new Set(res.body.map(review => review.assetId))]
+          expect(returnedAssetIds.sort()).to.eql([...distinct.testCollection.labelLvl1AssetIds].sort())
+        })
+
+        it('Return a list of reviews accessible to the requester, filtered by multiple labelNames.', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews?labelName=${reference.testCollection.fullLabelName}&labelName=${reference.testCollection.lvl1LabelName}`, 'GET', iteration.token)
+
+          expect(res.status).to.eql(200)
+          // the Labels are OR'd, and the Asset carrying both must not be counted twice
+          expect(res.body).to.be.lengthOf(distinct.testCollection.reviewsByLabelBothCnt)
+
+          // a Review is identified by its Asset and Rule, so no pair may repeat
+          const reviewKeys = res.body.map(review => `${review.assetId}:${review.ruleId}`)
+          expect(reviewKeys).to.eql([...new Set(reviewKeys)])
+
+          // every returned Review must belong to an Asset carrying one of the requested Labels
+          for(const review of res.body){
+            expect(review.assetLabelIds).to.include.oneOf([reference.testCollection.fullLabel, reference.testCollection.lvl1Label])
+          }
+        })
+
+        it('Return a list of reviews accessible to the requester, for Assets without Labels.', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews?labelMatch=null`, 'GET', iteration.token)
+
+          expect(res.status).to.eql(200)
+          expect(res.body).to.be.lengthOf(distinct.testCollection.reviewsByLabelMatchNullCnt)
+
+          const returnedAssetIds = [...new Set(res.body.map(review => review.assetId))]
+          expect(returnedAssetIds.sort()).to.eql([...distinct.testCollection.labelMatchNullAssetIds].sort())
+        })
+
+        it('Return no reviews when the labelName matches no Label.', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews?labelName=no-such-label`, 'GET', iteration.token)
+
+          expect(res.status).to.eql(200)
+          expect(res.body).to.be.an('array').of.length(0)
+        })
+
+        it('Return a list of reviews when a labelName contains a "?" alongside another filter.', async () => {
+          // the "?" must not be consumed as a bind placeholder by the query formatter
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews?labelName=${encodeURIComponent('no?match')}&benchmarkId=${reference.benchmark}`, 'GET', iteration.token)
+
+          expect(res.status).to.eql(200)
+          expect(res.body).to.be.an('array').of.length(0)
+        })
+
         it('Return a list of reviews accessible to the requester, metadata Projection.', async () => {
           const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews?projection=rule&projection=stigs&metadata=${reference.reviewMetadataKey}%3A${reference.reviewMetadataValue}&projection=metadata`, 'GET', iteration.token)
          
