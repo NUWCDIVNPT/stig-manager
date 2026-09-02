@@ -281,7 +281,7 @@ function toggleDashboardSidebar() {
                 <CollectionLabelsTab v-if="visitedTabs.has('labels')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
               </TabPanel>
               <TabPanel value="findings" :pt="tabPanelPt">
-                <Findings :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
+                <Findings v-if="visitedTabs.has('findings')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
               </TabPanel>
               <TabPanel v-if="canManage" value="management" :pt="tabPanelPt">
                 <Transition name="management-fade">

@@ -57,6 +57,12 @@ export function useAppBreadcrumb() {
   const assetId = computed(() => route.params.assetId)
   const benchmarkId = computed(() => route.params.benchmarkId)
 
+  // The STIG picker only renders on the review routes. Gate the STIG-list fetch
+  // on this so plain collection tab routes don't pull /stigs for a hidden dropdown.
+  const showsStigPicker = computed(() =>
+    route.name === 'collection-benchmark-review' || route.name === 'collection-asset-review',
+  )
+
   const { state: assetStigOptions, execute: loadAssetStigs } = useAsyncState(
     () => {
       if (assetId.value) {
@@ -80,9 +86,12 @@ export function useAppBreadcrumb() {
     { initialState: [], immediate: false },
   )
 
-  // Load STIGs when asset or collection changes
-  watch([assetId, collectionId], () => {
-    if (assetId.value || collectionId.value) {
+  // Load STIGs only when a route that shows the STIG picker becomes active.
+  // Watching showsStigPicker (not benchmarkId) means switching STIGs within a
+  // review route doesn't refetch the list, and entering a review from the same
+  // collection still triggers the fetch even though collectionId is unchanged.
+  watch([assetId, collectionId, showsStigPicker], () => {
+    if (showsStigPicker.value && (assetId.value || collectionId.value)) {
       loadAssetStigs()
     }
     if (assetId.value) {
