@@ -1,3 +1,5 @@
+import activityHandler from './auth/ActivityHandler.js'
+
 console.log('import.meta.env:', import.meta.env)
 if (import.meta.env.DEV) {
   STIGMAN.Env.apiBase = `${import.meta.env.VITE_API_ORIGIN}/api`
@@ -31,6 +33,9 @@ else {
       const userObj = await getUserObject()
       if (userObj) {
         STIGMAN.curUser = userObj
+        const isAdmin = userObj.privileges.admin
+        activityHandler.reportActivity = (STIGMAN.Env.oauth.idleTimeoutUser && !isAdmin) || (STIGMAN.Env.oauth.idleTimeoutAdmin && isAdmin)
+        activityHandler.add()
         loadApp()
       }
     }
@@ -274,11 +279,13 @@ async function setupOidcWorker() {
       console.log('{init] Received from worker:', event.type, event.data)
       OW.token = event.data.accessToken
       OW.tokenParsed = event.data.accessTokenPayload
+      activityHandler.add()
     }
     else if (event.data.type === 'noToken') {
       console.log('{init] Received from worker:', event.type, event.data)
       OW.token = null
       OW.tokenParsed = null
+      activityHandler.remove()
     }
   }
 }
