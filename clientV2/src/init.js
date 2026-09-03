@@ -1,3 +1,15 @@
+import activityHandler from './auth/ActivityHandler.js'
+
+// Same global console gate as the legacy client (client/src/js/init.js):
+// production deployments are silent unless STIGMAN_CLIENT_CONSOLE_MODE=development
+const consoleEnabled = import.meta.env.DEV || STIGMAN.Env.consoleMode === 'development'
+if (!consoleEnabled) {
+  console.log = function () { }
+  console.warn = function () { }
+  console.error = function () { }
+  console.debug = function () { }
+}
+
 console.log('import.meta.env:', import.meta.env)
 if (import.meta.env.DEV) {
   STIGMAN.Env.apiBase = `${import.meta.env.VITE_API_ORIGIN}/api`
@@ -31,6 +43,9 @@ else {
       const userObj = await getUserObject()
       if (userObj) {
         STIGMAN.curUser = userObj
+        const isAdmin = userObj.privileges.admin
+        activityHandler.reportActivity = (STIGMAN.Env.oauth.idleTimeoutUser && !isAdmin) || (STIGMAN.Env.oauth.idleTimeoutAdmin && isAdmin)
+        activityHandler.add()
         loadApp()
       }
     }
