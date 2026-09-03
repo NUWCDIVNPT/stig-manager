@@ -1,6 +1,6 @@
 import { userEvent } from '@testing-library/user-event'
 import { screen } from '@testing-library/vue'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import StatusFooter from '../StatusFooter.vue'
 
@@ -65,7 +65,7 @@ describe('statusFooter.vue', () => {
     expect(screen.getByTitle('Settings')).toBeInTheDocument()
   })
 
-  it('emits action event when clicked', async () => {
+  it('emits refresh event when refresh is clicked', async () => {
     const { emitted, container } = renderWithProviders(StatusFooter, {
       props: {
         ...defaultProps,
@@ -78,8 +78,55 @@ describe('statusFooter.vue', () => {
     // Click the button containing the icon
     await user.click(refreshIcon)
 
+    expect(emitted().refresh).toBeTruthy()
+    expect(emitted().action).toBeFalsy()
+  })
+
+  it('exports through the dt instance when export is clicked and dt is provided', async () => {
+    // A bare mock has no DataTable internals, so exportDataTableCsv takes its
+    // built-in-exporter fallback — which still proves the dt wiring.
+    const dt = { exportCSV: vi.fn() }
+    const { emitted } = renderWithProviders(StatusFooter, {
+      props: {
+        ...defaultProps,
+        dt,
+      },
+    })
+    const user = userEvent.setup()
+
+    await user.click(screen.getByText('CSV'))
+
+    expect(dt.exportCSV).toHaveBeenCalledOnce()
+    expect(emitted().action).toBeFalsy()
+  })
+
+  it('emits action event for export when no dt is provided', async () => {
+    const { emitted } = renderWithProviders(StatusFooter, {
+      props: defaultProps,
+    })
+    const user = userEvent.setup()
+
+    await user.click(screen.getByText('CSV'))
+
     expect(emitted().action).toBeTruthy()
-    expect(emitted().action[0]).toEqual(['refresh'])
+    expect(emitted().action[0]).toEqual(['export'])
+  })
+
+  it('emits action event for custom actions', async () => {
+    const { emitted } = renderWithProviders(StatusFooter, {
+      props: {
+        ...defaultProps,
+        showRefresh: false,
+        showExport: false,
+        actions: [{ key: 'custom1', icon: 'pi pi-user', label: 'User' }],
+      },
+    })
+    const user = userEvent.setup()
+
+    await user.click(screen.getByText('User'))
+
+    expect(emitted().action).toBeTruthy()
+    expect(emitted().action[0]).toEqual(['custom1'])
   })
 
   it('renders custom metrics with styles and classes', () => {

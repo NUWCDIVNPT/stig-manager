@@ -62,12 +62,6 @@ function onRowClick(event) {
   emit('select', event.data)
 }
 
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-}
-
 function clearFilter() {
   filter.value = ''
 }
@@ -80,6 +74,7 @@ function clearFilter() {
     :selection="selectedRow"
     selection-mode="single"
     data-key="benchmarkId"
+    export-filename="STIG"
     scrollable
     scroll-height="flex"
     :virtual-scroller-options="{ itemSize, showLoader: true }"
@@ -193,10 +188,10 @@ function clearFilter() {
       <StatusFooter
         :total-count="total"
         :filtered-count="filteredCount"
+        :dt="dataTableRef"
         total-label="benchmarks"
         :show-refresh="false"
         :show-export="true"
-        @action="onFooterAction"
       />
     </template>
   </DataTable>

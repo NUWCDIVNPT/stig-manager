@@ -46,10 +46,14 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  // CSV export basename; the parent passes `${assetName}-${benchmarkId}` (legacy convention).
+  exportFilename: {
+    type: String,
+    default: 'Checklist',
+  },
 })
 
 const emit = defineEmits(['update:selectedRow', 'row-click', 'refresh', 'update:visible-rows'])
-
 
 const dsFilterFields = [
   'ruleId',
@@ -276,7 +280,7 @@ const dataTablePt = {
   <DataTable
     ref="dataTableRef"
     v-model:filters="filters" :selection="selectedRow" :global-filter-fields="dsFilterFields" :value="processedGridData"
-    :loading="isLoading" data-key="ruleId" selection-mode="single" scrollable scroll-height="flex"
+    :loading="isLoading" data-key="ruleId" selection-mode="single" :export-filename="exportFilename" scrollable scroll-height="flex"
     :virtual-scroller-options="{ itemSize }" resizable-columns striped-rows :sort-field="defaultSortField"
     :sort-order="1" class="checklist-grid__table" :pt="dataTablePt" @update:selection="(val) => $emit('update:selectedRow', val)"
     @row-click="$emit('row-click', $event)" @filter="onFilter" @pointerdown.stop
@@ -467,8 +471,9 @@ const dataTablePt = {
 
     <template #footer>
       <StatusFooter
+        :dt="dataTableRef"
         :refresh-loading="isLoading" :total-count="gridData.length"
-        :filtered-count="isFiltered ? visibleData.length : null" @action="(key) => emit('refresh', key)"
+        :filtered-count="isFiltered ? visibleData.length : null" @refresh="emit('refresh')"
       >
         <template #right-extra>
           <ResultBadge status="O" :count="stats.results.fail" />

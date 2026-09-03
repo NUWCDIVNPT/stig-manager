@@ -6,7 +6,6 @@ import { computed, ref } from 'vue'
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import LabelChip from '../../../../components/common/Label.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
 
 const props = defineProps({
@@ -67,11 +66,6 @@ const tablePt = {
 }
 
 const dataTableRef = ref(null)
-
-// Export is handled locally; refresh is forwarded to the parent, which owns the load.
-const { onFooterAction } = useTableFooterActions(dataTableRef, {
-  onRefresh: () => emit('footer-action', 'refresh'),
-})
 </script>
 
 <template>
@@ -87,6 +81,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, {
       column-resize-mode="fit"
       selection-mode="multiple"
       :loading="isLoading"
+      export-filename="CollectionLabels"
       class="flex-fill"
       :table-style="{ 'table-layout': 'fixed' }"
       :pt="tablePt"
@@ -158,12 +153,13 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, {
 
       <template #footer>
         <StatusFooter
+          :dt="dataTableRef"
           :refresh-loading="isLoading"
           :total-count="filteredLabels.length"
           :show-selected="selection.length > 0"
           :selected-items="selection"
           total-label="labels"
-          @action="onFooterAction"
+          @refresh="emit('footer-action', 'refresh')"
         />
       </template>
     </DataTable>

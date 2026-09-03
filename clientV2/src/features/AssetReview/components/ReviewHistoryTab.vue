@@ -84,6 +84,7 @@ const ROW_HEIGHT = 40
     :value="processedHistory"
     :loading="isInternalHistoryLoading"
     data-key="touchTs"
+    export-filename="History"
     :row-height="ROW_HEIGHT"
     :stats="historyStats"
     :result-options="resultOptions"

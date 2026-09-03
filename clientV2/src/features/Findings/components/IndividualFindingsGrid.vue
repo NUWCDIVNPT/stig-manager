@@ -14,7 +14,6 @@ import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
-import { useTableFooterActions } from '../../../shared/composables/useTableFooterActions.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
@@ -86,8 +85,6 @@ const itemSize = computed(() => {
   const hasLabels = decoratedRows.value.some(r => r.labels.length)
   return hasLabels ? Math.max(densityItemSize.value, LABELED_ROW_MIN_PX) : densityItemSize.value
 })
-
-const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () => emit('retry') })
 
 // Prefer the STIG currently scoped in the parent; otherwise the first one the
 // row reports. Multi-entry rows happen under the cci aggregator + "All STIGs".
@@ -178,6 +175,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           :value="decoratedRows"
           :loading="isLoading"
           data-key="_rowKey"
+          export-filename="Finding Details"
           scrollable
           scroll-height="flex"
           resizable-columns
@@ -251,12 +249,13 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 
           <template #footer>
             <StatusFooter
+              :dt="dataTableRef"
               :metrics="[]"
               :total-count="rows.length"
               total-label="reviews"
               :show-refresh="true"
               :show-export="true"
-              @action="onFooterAction"
+              @refresh="emit('retry')"
             >
               <template #right-extra>
                 <span class="status-cluster">

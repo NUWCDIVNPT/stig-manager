@@ -1,6 +1,7 @@
 <script setup>
 import Button from 'primevue/button'
 import { computed, useSlots } from 'vue'
+import { exportDataTableCsv } from '../../shared/csv.js'
 
 const props = defineProps({
   // Standard Actions
@@ -15,6 +16,14 @@ const props = defineProps({
   showExport: {
     type: Boolean,
     default: true,
+  },
+  /**
+   * DataTable instance (template ref value). When provided, the export
+   * action runs the shared exportDataTableCsv instead of emitting 'action'.
+   */
+  dt: {
+    type: Object,
+    default: null,
   },
   selectedItems: {
     type: [Array, Object],
@@ -80,7 +89,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['action'])
+const emit = defineEmits(['action', 'refresh'])
 const slots = useSlots()
 
 const resolvedActions = computed(() => {
@@ -118,7 +127,15 @@ const selectedCount = computed(() => {
 })
 
 function onActionClick(action) {
-  emit('action', action.key)
+  if (action.key === 'refresh') {
+    emit('refresh')
+  }
+  else if (action.key === 'export' && props.dt) {
+    exportDataTableCsv(props.dt)
+  }
+  else {
+    emit('action', action.key)
+  }
 }
 </script>
 

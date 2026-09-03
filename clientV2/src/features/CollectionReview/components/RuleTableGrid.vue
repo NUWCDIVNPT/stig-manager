@@ -60,6 +60,11 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  // CSV export basename; the parent passes `${benchmarkId}-Rule` (legacy convention).
+  exportFilename: {
+    type: String,
+    default: 'Reviews',
+  },
 })
 
 const emit = defineEmits(['review-saved', 'update:selection'])
@@ -105,12 +110,6 @@ const getRowClass = (data) => {
     classes.push('row-editing')
   }
   return classes.join(' ')
-}
-
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
 }
 
 // --- Popover wiring ---
@@ -405,6 +404,7 @@ const checkboxPt = {
     :value="filteredData"
     :loading="isLoading"
     data-key="assetId"
+    :export-filename="exportFilename"
     scrollable
     scroll-height="flex"
     :virtual-scroller-options="{ itemSize }"
@@ -576,13 +576,13 @@ const checkboxPt = {
     <template #footer>
       <StatusFooter
         class="rule-table-footer"
+        :dt="dataTableRef"
         :show-refresh="false"
         :show-export="true"
         :total-count="gridData.length"
         :filtered-count="filteredData.length !== gridData.length ? filteredData.length : null"
         total-label="reviews"
         :total-icon-src="assessmentIcon"
-        @action="onFooterAction"
       >
         <template #right-extra>
           <ResultBadge status="O" :count="stats.results.fail" />

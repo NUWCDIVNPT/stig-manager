@@ -9,7 +9,6 @@ import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchCollectionStigSummary } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { useStigTable } from '../../composables/useStigTable.js'
 import StigToolbar from './StigToolbar.vue'
 
@@ -59,8 +58,6 @@ function onStigsChanged() {
   clearSelection()
   loadStigs()
 }
-
-const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: loadStigs })
 </script>
 
 <template>
@@ -86,6 +83,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: load
         column-resize-mode="fit"
         :loading="isLoading"
         :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
+        export-filename="STIGs"
         class="flex-fill clickable-rows"
         :table-style="{ 'table-layout': 'fixed' }"
         :pt="tablePt"
@@ -129,12 +127,13 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: load
 
         <template #footer>
           <StatusFooter
+            :dt="dataTableRef"
             :refresh-loading="isLoading"
             :total-count="filteredData.length"
             :show-selected="selectedStigs.length > 0"
             :selected-items="selectedStigs"
             total-label="STIGs"
-            @action="onFooterAction"
+            @refresh="loadStigs"
           />
         </template>
       </DataTable>

@@ -307,6 +307,7 @@ async function onBatchEditConfirm(payload) {
                 :is-loading="isChecklistLoading"
                 :selected-rule-id="selectedRuleId"
                 :asset-count="assetCount"
+                :export-filename="benchmarkId"
                 @select-rule="onSelectRule"
                 @refresh="loadChecklist"
               />
@@ -322,6 +323,7 @@ async function onBatchEditConfirm(payload) {
                 :can-accept="canAccept"
                 :is-saving="isBulkSaving"
                 :action-states="actionStates"
+                :export-filename="`${benchmarkId}-Rule`"
                 @review-saved="onReviewSaved"
                 @bulk-action="onBulkAction"
               />

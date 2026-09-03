@@ -47,6 +47,11 @@ const props = defineProps({
       batchEdit: false,
     }),
   },
+  // CSV export basename; the parent passes `${benchmarkId}-Rule` (legacy convention).
+  exportFilename: {
+    type: String,
+    default: 'Reviews',
+  },
 })
 
 const emit = defineEmits(['review-saved', 'update:selection', 'bulk-action'])
@@ -87,6 +92,7 @@ const visibleFields = computed(() => new Set(selectedColumns.value.map(c => c.fi
       :field-settings="fieldSettings"
       :can-accept="canAccept"
       :selection="props.selection"
+      :export-filename="exportFilename"
       @review-saved="(r) => emit('review-saved', r)"
       @update:selection="(val) => emit('update:selection', val)"
     />
