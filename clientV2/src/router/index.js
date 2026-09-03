@@ -234,14 +234,6 @@ const routes = [
     redirect: { name: 'stig-library' },
   },
   {
-    path: '/settings',
-    name: 'settings',
-  },
-  {
-    path: '/support',
-    name: 'support',
-  },
-  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: NotFound,

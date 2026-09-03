@@ -50,23 +50,6 @@ const items = computed(() => {
           tooltip: tokenTooltip.value,
         },
         {
-          label: 'Set status',
-          icon: 'pi pi-face-smile',
-        },
-        {
-          separator: true,
-        },
-        {
-          label: 'Settings',
-          icon: 'pi pi-cog',
-          route: '/settings',
-        },
-        {
-          label: 'Support',
-          icon: 'pi pi-info-circle',
-          route: '/support',
-        },
-        {
           separator: true,
         },
         ...(oidcWorker.logoutAvailable ? [{
