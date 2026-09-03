@@ -1,13 +1,10 @@
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { fetchAsset, fetchAssetStigs } from '../../../shared/api/assetsApi.js'
+import { fetchCollectionStigs } from '../../../shared/api/collectionsApi.js'
+import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
-import {
-  fetchAsset,
-  fetchAssetStigs,
-  fetchCollectionStigs,
-  fetchStigRevisions,
-} from '../api/menuBarApi.js'
 
 /**
  * Global breadcrumb composable. Watches the active route and builds
@@ -91,10 +88,18 @@ export function useAppBreadcrumb() {
   // review route doesn't refetch the list, and entering a review from the same
   // collection still triggers the fetch even though collectionId is unchanged.
   watch([assetId, collectionId, showsStigPicker], () => {
-    if (showsStigPicker.value && (assetId.value || collectionId.value)) {
+    if (showsStigPicker.value) {
+      // Clear first: options left over from a prior collection/asset would
+      // render the current benchmarkId as an invalid selection while the fetch
+      // is in flight, whereas empty options get the loading fallback.
+      assetStigOptions.value = []
       loadAssetStigs()
     }
-    if (assetId.value) {
+  }, { immediate: true })
+
+  // Load the asset (for breadcrumb labels) when the asset changes
+  watch(assetId, (id) => {
+    if (id) {
       loadAsset()
     }
   }, { immediate: true })
