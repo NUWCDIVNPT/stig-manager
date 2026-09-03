@@ -458,7 +458,6 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
   
     // Connect to MySQL
     connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = true
     async function transaction () {
       await connection.query('START TRANSACTION');
 
@@ -473,7 +472,7 @@ exports.addOrUpdateCollection = async function(writeAction, collectionId, body, 
             (name, description, settings, metadata)
           VALUES
             (:name, :description, :settings, :metadata)`
-        let [rows] = await connection.execute(sqlInsert, collectionFields)
+        let [rows] = await connection.execute({sql: sqlInsert, namedPlaceholders: true}, collectionFields)
         collectionId = rows.insertId
       }
       else if (writeAction === dbUtils.WRITE_ACTION.UPDATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
@@ -1106,7 +1105,7 @@ exports.deleteReviewHistoryByCollection = async function (collectionId, retentio
     assetId: assetId
   }  
 
-  let [rows] = await dbUtils.pool.query(sql, binds)
+  let [rows] = await dbUtils.pool.query({sql, namedPlaceholders: true}, binds)
   let result = {
     HistoryEntriesDeleted: rows.affectedRows
   }
@@ -1289,7 +1288,7 @@ exports.getReviewHistoryStatsByCollection = async function (collectionId, startD
 
   sql = sql.replace(/additionalPredicates/g, additionalPredicates)
 
-  let [rows] = await dbUtils.pool.query(sql, binds)
+  let [rows] = await dbUtils.pool.query({sql, namedPlaceholders: true}, binds)
   return (rows[0])
 }
 
@@ -1941,7 +1940,6 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
     }
 
     connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = false
     connection.query('set @srcCollectionId = ?, @userId = ?, @name = ?, @description = ?', [
       parseInt(collectionId),
       parseInt(userObject.userId),
@@ -2388,7 +2386,6 @@ exports.exportToCollection = async function ({srcCollectionId, dstCollectionId, 
       }
     }
     connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = false
     connection.query('set @srcCollectionId = ?, @dstCollectionId = ?, @userId = ?, @json = ?',
     [parseInt(srcCollectionId), parseInt(dstCollectionId), parseInt(userObject.userId), JSON.stringify(assetStigArguments)])
     const prepQueries = ['dropArg', 'createArg', 'dropCollectionSetting', 'createCollectionSetting', 'dropSrcReviewId', 'createSrcReviewId']

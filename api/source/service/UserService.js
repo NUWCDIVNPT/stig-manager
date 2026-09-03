@@ -150,7 +150,6 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
     let { collectionGrants, userGroups, ...userFields } = body
 
     connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = true
     async function transaction () {
       await connection.query('START TRANSACTION');
 
@@ -165,7 +164,7 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
               ( username, status )
             VALUES
               (:username, :status )`
-        let [result] = await connection.query(sqlInsert, binds)
+        let [result] = await connection.query({sql: sqlInsert, namedPlaceholders: true}, binds)
         userId = result.insertId
       }
       else if (writeAction === dbUtils.WRITE_ACTION.UPDATE || writeAction === dbUtils.WRITE_ACTION.REPLACE) {
@@ -181,7 +180,7 @@ exports.addOrUpdateUser = async function (writeAction, userId, body, projection,
                 :values
               WHERE
                 userid = :userId`
-          await connection.query(sqlUpdate, binds)
+          await connection.query({sql: sqlUpdate, namedPlaceholders: true}, binds)
         }
       }
       else {
