@@ -556,7 +556,7 @@ Files to delete (not imported by any active code):
 | `src/features/CollectionView/components/StigAssetLabelTable.vue` | Uses old inject/query pattern |
 | `src/features/CollectionView/components/ChecklistTable.vue` | Uses old inject/query pattern |
 
-Additionally, `postContextActiveMessage()` on the OW object (oidcWorker.js main thread) is defined but never called — the idle-timeout reset is unreachable from the UI.
+Additionally, `postContextActiveMessage()` on the OW object is called by `src/auth/ActivityHandler.js`, which throttle-posts `contextActive` to the OIDC worker on user activity (click/keydown/scroll) so the worker's idle timer is reset while the user is present.
 
 ---
 

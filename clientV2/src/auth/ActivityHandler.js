@@ -6,11 +6,15 @@ class ActivityHandler {
   #messageTime = 0
   #messageThrottle = 1000 // 1 second
 
-  #events = ['click', 'keypress', 'scroll']
+  // keydown, not keypress: keypress never fires for arrows/Tab/Delete/modifiers,
+  // so keyboard-only navigation would read as idle
+  #events = ['click', 'keydown', 'scroll']
   #boundHandler = null
 
   #logPrefix = '[ActivityHandler]'
-  reportActivity = true
+  // false until init.js computes the real value from the idle-timeout config;
+  // the worker's accessToken broadcast can call add() before that happens
+  reportActivity = false
 
   add() {
     if (!this.#boundHandler && this.reportActivity) {
@@ -33,6 +37,7 @@ class ActivityHandler {
   }
 
   throttledActiveMessage() {
+    if (!this.reportActivity) return
     this.#messageTime = Date.now()
     if (this.#messageTime - this.#lastMessageTime >= this.#messageThrottle) {
       STIGMAN.oidcWorker.postContextActiveMessage()

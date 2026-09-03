@@ -1,5 +1,15 @@
 import activityHandler from './auth/ActivityHandler.js'
 
+// Same global console gate as the legacy client (client/src/js/init.js):
+// production deployments are silent unless STIGMAN_CLIENT_CONSOLE_MODE=development
+const consoleEnabled = import.meta.env.DEV || STIGMAN.Env.consoleMode === 'development'
+if (!consoleEnabled) {
+  console.log = function () { }
+  console.warn = function () { }
+  console.error = function () { }
+  console.debug = function () { }
+}
+
 console.log('import.meta.env:', import.meta.env)
 if (import.meta.env.DEV) {
   STIGMAN.Env.apiBase = `${import.meta.env.VITE_API_ORIGIN}/api`
@@ -279,13 +289,11 @@ async function setupOidcWorker() {
       console.log('{init] Received from worker:', event.type, event.data)
       OW.token = event.data.accessToken
       OW.tokenParsed = event.data.accessTokenPayload
-      activityHandler.add()
     }
     else if (event.data.type === 'noToken') {
       console.log('{init] Received from worker:', event.type, event.data)
       OW.token = null
       OW.tokenParsed = null
-      activityHandler.remove()
     }
   }
 }
