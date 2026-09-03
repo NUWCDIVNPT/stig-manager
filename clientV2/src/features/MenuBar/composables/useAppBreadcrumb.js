@@ -1,13 +1,10 @@
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { fetchAsset, fetchAssetStigs } from '../../../shared/api/assetsApi.js'
+import { fetchCollectionStigs } from '../../../shared/api/collectionsApi.js'
+import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
-import {
-  fetchAsset,
-  fetchAssetStigs,
-  fetchCollectionStigs,
-  fetchStigRevisions,
-} from '../api/menuBarApi.js'
 
 /**
  * Global breadcrumb composable. Watches the active route and builds
@@ -57,6 +54,12 @@ export function useAppBreadcrumb() {
   const assetId = computed(() => route.params.assetId)
   const benchmarkId = computed(() => route.params.benchmarkId)
 
+  // The STIG picker only renders on the review routes. Gate the STIG-list fetch
+  // on this so plain collection tab routes don't pull /stigs for a hidden dropdown.
+  const showsStigPicker = computed(() =>
+    route.name === 'collection-benchmark-review' || route.name === 'collection-asset-review',
+  )
+
   const { state: assetStigOptions, execute: loadAssetStigs } = useAsyncState(
     () => {
       if (assetId.value) {
@@ -80,12 +83,23 @@ export function useAppBreadcrumb() {
     { initialState: [], immediate: false },
   )
 
-  // Load STIGs when asset or collection changes
-  watch([assetId, collectionId], () => {
-    if (assetId.value || collectionId.value) {
+  // Load STIGs only when a route that shows the STIG picker becomes active.
+  // Watching showsStigPicker (not benchmarkId) means switching STIGs within a
+  // review route doesn't refetch the list, and entering a review from the same
+  // collection still triggers the fetch even though collectionId is unchanged.
+  watch([assetId, collectionId, showsStigPicker], () => {
+    if (showsStigPicker.value) {
+      // Clear first: options left over from a prior collection/asset would
+      // render the current benchmarkId as an invalid selection while the fetch
+      // is in flight, whereas empty options get the loading fallback.
+      assetStigOptions.value = []
       loadAssetStigs()
     }
-    if (assetId.value) {
+  }, { immediate: true })
+
+  // Load the asset (for breadcrumb labels) when the asset changes
+  watch(assetId, (id) => {
+    if (id) {
       loadAsset()
     }
   }, { immediate: true })
