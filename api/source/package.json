@@ -30,7 +30,7 @@
     "jszip": "^3.10.1",
     "jwks-rsa": "^3.1.0",
     "multer": "^2.2.0",
-    "mysql2": "^3.11.2",
+    "mysql2": "^3.24.3",
     "net-keepalive": "^4.0.17",
     "on-finished": "^2.4.1",
     "on-headers": "^1.1.0",
@@ -40,5 +40,8 @@
     "undici": "^6.28.0",
     "ws": "^8.21.0",
     "xlsx-template": "file:utils/xlsx-template-js-zip-upgrade"
+  },
+  "overrides": {
+    "qs": "^6.16.0"
   }
 }
