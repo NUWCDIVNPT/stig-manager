@@ -114,7 +114,9 @@ export function exportDataTableCsv(dt) {
     const cells = exportable.map((col) => {
       const field = dt.columnProp(col, 'field')
       let value = resolveFieldPath(record, field)
-      if (dt.exportFunction) {
+      // Match PrimeVue: only run exportFunction on non-null cells, so consumer
+      // functions that dereference `data` never see null/undefined.
+      if (dt.exportFunction && value != null) {
         value = dt.exportFunction({ data: value, field })
       }
       return escapeCsv(serializeCsvValue(value))

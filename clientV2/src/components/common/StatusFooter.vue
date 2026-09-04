@@ -130,7 +130,7 @@ function onActionClick(action) {
   if (action.key === 'refresh') {
     emit('refresh')
   }
-  else if (action.key === 'export' && props.dt) {
+  else if (action.key === 'export') {
     exportDataTableCsv(props.dt)
   }
   else {

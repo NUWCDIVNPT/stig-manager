@@ -100,7 +100,9 @@ describe('statusFooter.vue', () => {
     expect(emitted().action).toBeFalsy()
   })
 
-  it('emits action event for export when no dt is provided', async () => {
+  it('does not emit an action event for export when no dt is provided', async () => {
+    // Export always routes to exportDataTableCsv (which no-ops gracefully on a
+    // null dt) rather than emitting an unhandled 'action' event.
     const { emitted } = renderWithProviders(StatusFooter, {
       props: defaultProps,
     })
@@ -108,8 +110,7 @@ describe('statusFooter.vue', () => {
 
     await user.click(screen.getByText('CSV'))
 
-    expect(emitted().action).toBeTruthy()
-    expect(emitted().action[0]).toEqual(['export'])
+    expect(emitted().action).toBeFalsy()
   })
 
   it('emits action event for custom actions', async () => {
