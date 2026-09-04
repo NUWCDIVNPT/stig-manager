@@ -72,6 +72,7 @@ function getClientV2Env(){
         Env: {
             version: "${config.version}",
             apiBase: "${config.client.apiBase}",
+            consoleMode: "${config.client.consoleMode}",
             historyBase: "${config.client.historyBase}",
             pathPrefix: "${config.client.pathPrefix}",
             displayAppManagers: ${config.client.displayAppManagers},

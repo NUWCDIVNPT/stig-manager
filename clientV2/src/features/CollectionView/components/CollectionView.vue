@@ -15,9 +15,9 @@ import CollectionManage from '../../CollectionManage/components/CollectionManage
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
 import CollectionImportResults from '../../CollectionMetrics/components/CollectionImportResults.vue'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
+import Findings from '../../Findings/components/Findings.vue'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchCollection } from '../api/collectionApi.js'
-import Findings from '../../Findings/components/Findings.vue'
 import CollectionAssetsTab from './CollectionAssetsTab.vue'
 import CollectionLabelsTab from './CollectionLabelsTab.vue'
 import CollectionStigsTab from './CollectionStigsTab.vue'
@@ -126,12 +126,19 @@ const isManagement = computed(() => route.name === 'collection-management')
 const sidebarTransitioning = ref(false)
 watch(isManagement, () => {
   sidebarTransitioning.value = true
-  setTimeout(() => { sidebarTransitioning.value = false }, 300)
+  setTimeout(() => {
+    sidebarTransitioning.value = false
+  }, 300)
 })
 
-// Lazy-mount tab panels: only render a tab's content after it has been visited
+// Lazy-mount tab panels: only render a tab's content after it has been visited.
+// Reset on collection switch so tabs visited in a prior collection don't mount
+// (and fetch) unvisited in the new one.
 const visitedTabs = ref(new Set([activeTab.value]))
 watch(activeTab, tab => visitedTabs.value.add(tab))
+watch(() => props.collectionId, () => {
+  visitedTabs.value = new Set([activeTab.value])
+})
 
 const tabsPt = {
   root: {
@@ -281,7 +288,7 @@ function toggleDashboardSidebar() {
                 <CollectionLabelsTab v-if="visitedTabs.has('labels')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
               </TabPanel>
               <TabPanel value="findings" :pt="tabPanelPt">
-                <Findings :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
+                <Findings v-if="visitedTabs.has('findings')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
               </TabPanel>
               <TabPanel v-if="canManage" value="management" :pt="tabPanelPt">
                 <Transition name="management-fade">

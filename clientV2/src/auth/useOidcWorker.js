@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import activityHandler from './ActivityHandler.js'
 
 const noTokenMessage = ref(null)
 
@@ -12,9 +13,11 @@ export function setupOidcHandler() {
         ...event.data.clientV2,
       }
       noTokenMessage.value = noTokenData
+      activityHandler.remove()
     }
     else if (event.data?.type === 'accessToken') {
       noTokenMessage.value = null
+      activityHandler.add()
     }
   })
 }
