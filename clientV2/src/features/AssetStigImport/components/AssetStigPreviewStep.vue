@@ -41,12 +41,6 @@ const previewRows = computed(() =>
 
 const dtRef = ref()
 
-function onFooterAction(action) {
-  if (action === 'export') {
-    dtRef.value?.exportCSV()
-  }
-}
-
 function badgeFor(result) {
   return result ? RESULT_TO_STATUS[result] ?? 'NR' : null
 }
@@ -129,9 +123,9 @@ function badgeFor(result) {
         :total-count="previewRows.length"
         :show-refresh="false"
         :show-export="true"
+        :dt="dtRef"
         total-label="rules"
         total-icon="pi pi-list"
-        @action="onFooterAction"
       />
     </div>
 

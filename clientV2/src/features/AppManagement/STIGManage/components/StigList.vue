@@ -10,7 +10,6 @@ import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ClassificationBadge from '../../../../components/common/ClassificationBadge.vue'
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 
 const props = defineProps({
@@ -82,8 +81,6 @@ function formatEarlierRevisions(revs) {
   const overflow = earlier.length - shown.length
   return shown.join(', ') + (overflow > 0 ? ` (+${overflow})` : '')
 }
-
-const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () => emit('refresh') })
 
 // ── Toolbar ───────────────────────────────────────────────────────────────────
 const revMenuRef = ref(null)
@@ -215,7 +212,7 @@ function onRemoveAll() {
         :virtual-scroller-options="{ itemSize: 29 }"
         resizable-columns
         column-resize-mode="fit"
-        export-filename="stig-manager-stigs"
+        export-filename="Installed-STIGs"
         class="flex-fill"
         :table-style="{ 'min-width': '75rem' }"
         :pt="tablePt"
@@ -365,12 +362,13 @@ function onRemoveAll() {
 
         <template #footer>
           <StatusFooter
+            :dt="dataTableRef"
             :refresh-loading="loading"
             :total-count="stigs.length"
             :filtered-count="filtersActive ? filteredData.length : null"
             total-label="STIGs"
             :total-icon-src="shieldGreenCheck"
-            @action="onFooterAction"
+            @refresh="emit('refresh')"
           />
         </template>
       </DataTable>

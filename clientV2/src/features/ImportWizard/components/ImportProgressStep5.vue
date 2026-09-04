@@ -22,14 +22,6 @@ const rejectedRows = computed(() => props.selectedRow?.rejected ?? [])
 
 const statusRef = ref()
 const rejectedRef = ref()
-
-function onStatusFooterAction(action) {
-  if (action === 'export') { statusRef.value.exportCSV() }
-}
-
-function onRejectedFooterAction(action) {
-  if (action === 'export') { rejectedRef.value.exportCSV() }
-}
 </script>
 
 <template>
@@ -99,9 +91,9 @@ function onRejectedFooterAction(action) {
           :total-count="statusRows.length"
           :show-refresh="false"
           :show-export="true"
+          :dt="statusRef"
           total-label="reviews"
           total-icon="pi pi-file"
-          @action="onStatusFooterAction"
         />
       </div>
 
@@ -135,9 +127,9 @@ function onRejectedFooterAction(action) {
             :total-count="rejectedRows.length"
             :show-refresh="false"
             :show-export="true"
+            :dt="rejectedRef"
             total-label="reviews"
             total-icon="pi pi-file"
-            @action="onRejectedFooterAction"
           />
         </div>
       </div>

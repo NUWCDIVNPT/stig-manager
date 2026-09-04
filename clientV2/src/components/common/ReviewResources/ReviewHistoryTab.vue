@@ -137,12 +137,6 @@ const getApplyTooltip = (data) => {
 
 const dataTableRef = ref(null)
 
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-}
-
 const longTextPopover = ref(null)
 const showLongText = (event, label, text) => {
   longTextPopover.value?.show(event, label, text)
@@ -277,6 +271,7 @@ const historyTablePt = {
       :value="processedHistory"
       :loading="isInternalHistoryLoading"
       data-key="touchTs"
+      export-filename="History"
       scrollable
       scroll-height="flex"
       :virtual-scroller-options="{ itemSize: ROW_HEIGHT, showLoader: true }"
@@ -476,10 +471,10 @@ const historyTablePt = {
 
       <template #footer>
         <StatusFooter
+          :dt="dataTableRef"
           :show-refresh="false"
           :show-export="true"
           :total-count="historyStats.total"
-          @action="onFooterAction"
         >
           <template #right-extra>
             <ResultBadge status="O" :count="historyStats.results.fail" />

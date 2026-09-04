@@ -141,6 +141,7 @@ const bodyError = computed(() => (diffMode.value ? props.diffError : props.rules
           v-else
           :rules="rules"
           :selected-rule-id="selectedRuleId"
+          :export-filename="benchmark?.benchmarkId ?? 'Rules'"
           @select-rule="rule => emit('select-rule', rule)"
         />
       </template>

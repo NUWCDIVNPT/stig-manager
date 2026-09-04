@@ -82,12 +82,6 @@ const ROW_HEIGHT = 36
 
 const dataTableRef = ref(null)
 
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-}
-
 const longTextPopover = ref(null)
 const showLongText = (event, label, text) => {
   longTextPopover.value?.show(event, label, text)
@@ -292,6 +286,7 @@ const otherTablePt = {
       :value="processedOtherReviews"
       :loading="isLoading"
       data-key="assetId"
+      export-filename="Other-Reviews"
       scrollable
       scroll-height="flex"
       :virtual-scroller-options="{ itemSize: ROW_HEIGHT, showLoader: true }"
@@ -479,10 +474,10 @@ const otherTablePt = {
 
       <template v-if="otherAssetsStats" #footer>
         <StatusFooter
+          :dt="dataTableRef"
           :show-refresh="false"
           :show-export="true"
           :total-count="otherAssetsStats.total"
-          @action="onFooterAction"
         >
           <template #right-extra>
             <ResultBadge status="O" :count="otherAssetsStats.results.fail" />

@@ -5,7 +5,6 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import ColumnFilter from '../../../../components/common/ColumnFilter.vue'
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { statusClass } from '../lib/transactions.js'
 
@@ -112,10 +111,6 @@ const tablePt = compactTablePt({ bodyFontSize: '1rem', footer: 'divider', header
 
 // Vertical divider between header cells — matches the Service Jobs grids.
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
-
-// Streaming grid: no refresh (rows arrive live), so only wire the export action.
-// TODO: swap to the shared generateCsv helper (see docs/todos/csvexport.md).
-const { onFooterAction } = useTableFooterActions(dataTableRef)
 </script>
 
 <template>
@@ -199,12 +194,12 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
 
       <template #footer>
         <StatusFooter
+          :dt="dataTableRef"
           :show-refresh="false"
           :total-count="transactions.length"
           :filtered-count="filtersActive ? rows.length : null"
           total-label="requests"
           total-icon="pi pi-table"
-          @action="onFooterAction"
         />
       </template>
     </DataTable>

@@ -66,15 +66,6 @@ watch(() => props.collectionId, id => id && loadGrants(), { immediate: true })
 
 const grantsDt = ref()
 
-const onFooterAction = (key) => {
-  if (key === 'refresh') {
-    loadGrants()
-  }
-  else if (key === 'export') {
-    grantsDt.value.exportCSV()
-  }
-}
-
 async function fetchSystemGrantees() {
   const [users, groups] = await Promise.all([
     fetchUsers({ status: 'available' }),
@@ -244,6 +235,7 @@ const tablePt = {
         :loading="grantsLoading"
         sort-field="roleId"
         :sort-order="-1"
+        export-filename="CollectionGrants"
         size="medium"
         scrollable
         scroll-height="flex"
@@ -321,11 +313,12 @@ const tablePt = {
         </Column>
         <template #footer>
           <StatusFooter
+            :dt="grantsDt"
             :refresh-loading="grantsLoading"
             :total-count="grants ? grants.length : 0"
             total-label="grants"
             :total-icon-src="lockSvg"
-            @action="onFooterAction"
+            @refresh="loadGrants"
           />
         </template>
       </DataTable>
