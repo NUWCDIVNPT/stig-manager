@@ -2,81 +2,11 @@
 
 Tracks API gaps blocking — or partially compromising — clientV2 features. Each entry describes the endpoint(s) involved, the feature that needs the change, the current limitation, and a proposed shape for the enhancement. Add to the list as you encounter new gaps.
 
-These are **server-side** changes — the OpenAPI spec, the service layer, and the underlying SQL all need to be updated. The clientV2 code currently has `TODO(label-filter)` (or similar) comments at the call sites that reference this document.
+These are **server-side** changes — the OpenAPI spec, the service layer, and the underlying SQL all need to be updated. The clientV2 code has `TODO`-style comments at the affected call sites that reference this document.
 
 ---
 
-## 1. Label filtering on `GET /collections/{collectionId}/findings`
-
-**Operation:** `getFindingsByCollection`
-**Feature:** Findings report — middle pane (AggregatedFindingsGrid)
-**Consumer:** [`useFindings`](../../src/features/Findings/composables/useFindings.js)
-
-### Current behavior
-
-The endpoint accepts `aggregator`, `acceptedOnly`, `benchmarkId`, `assetId`, `projection`. **No label parameters.** Aggregated findings rows and their `assetCount` always reflect the entire collection, regardless of the orchestrator-level label filter.
-
-### Why it matters
-
-When a user narrows the Findings view with the label filter chip:
-
-- The "Overall" CAT 1/2/3 totals **do** update (driven by `getCollectionStigs`, which accepts labels).
-- The aggregated findings rows and asset counts **do not** — the user sees rules counted against assets that don't carry the selected label.
-- The right pane (individual findings) inherits the same gap because it filters reviews by the aggregator-value the user clicked.
-
-The result is an inconsistency the user notices: the popover summary disagrees with the grid.
-
-### Proposed shape
-
-Accept the same three params used elsewhere in the spec (e.g. `getAssets`, `getMetricsDetailByCollection`):
-
-```
-GET /collections/{collectionId}/findings
-  ?labelId={labelId}        # repeatable
-  &labelName={labelName}    # repeatable
-  &labelMatch=null          # match assets with no labels
-```
-
-Reuse the existing `LabelIdQuery` / `LabelNameQuery` / `LabelMatchQuery` parameter components. Server-side: intersect the asset set with the label filter before computing aggregations.
-
-### Client-side workaround (not yet implemented)
-
-Pre-resolve `labelIds → assetIds` via `GET /assets?collectionId=X&labelId=...` and pass `assetId=[...]` to the findings endpoint. Costs one extra request per filter change and doesn't degrade gracefully for collections with very many assets.
-
----
-
-## 2. Label filtering on `GET /collections/{collectionId}/reviews`
-
-**Operation:** `getReviewsByCollection`
-**Feature:** Findings report — right pane (IndividualFindingsGrid)
-**Consumer:** [`useFindingReviews`](../../src/features/Findings/composables/useFindingReviews.js)
-
-### Current behavior
-
-The endpoint accepts `rules`, `result`, `status`, `ruleId`, `groupId`, `cci`, `userId`, `assetId`, `benchmarkId`, `metadata`, `projection`. **No label parameters.**
-
-### Why it matters
-
-Same root cause as (1) — the individual findings pane shows review records for assets that don't meet the active label filter. Even if (1) is addressed first, the right pane needs the same fix to stay consistent when the user drills in.
-
-### Proposed shape
-
-Identical to (1):
-
-```
-GET /collections/{collectionId}/reviews
-  ?labelId={labelId}        # repeatable
-  &labelName={labelName}    # repeatable
-  &labelMatch=null
-```
-
-### Notes
-
-(1) and (2) should ship together. Implementing only (1) would leave the drill-down inconsistent in a more visible way than the current state.
-
----
-
-## 3. Rule text search
+## 1. Rule text search
 
 **Operations:** (new) — or extension of `getRulesByRevision`
 **Feature:** STIG Library — rule pane filter / cross-revision search
@@ -122,7 +52,7 @@ Option A is the one users actually need. The implementation cost is real (a serv
 
 ---
 
-## 4. Asset search across collections
+## 2. Asset search across collections
 
 **Operation:** (new) — or extension of `getAssets`
 **Feature:** Meta-dashboard — asset lookup across the selected collection set (net-new feature request, not a regression)
@@ -156,7 +86,7 @@ Grant enforcement is the non-trivial part: a caller may hold a grant on only som
 
 ---
 
-## 5. Prior-revision rule content for the "same rule"
+## 3. Prior-revision rule content for the "same rule"
 
 **Operation:** (new) — e.g. `GET /stigs/{benchmarkId}/rules/{ruleId}/revisions`
 **Feature:** Review presentation — diff the current rule's check (or other fields) against the rule content that was in effect when the Review was last touched

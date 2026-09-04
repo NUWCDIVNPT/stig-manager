@@ -1,16 +1,16 @@
 import { computed, watch } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
+import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchFailedReviews } from '../api/findingsApi.js'
 
 // Drives the right pane (IndividualFindingsGrid): per-asset failed review
 // records backing the currently selected aggregated finding. All inputs are
 // Refs so the pane reacts to selection changes in the middle pane.
 //   selectedFinding === null → returns [] without firing a request
-// TODO(label-filter): /collections/{id}/reviews does not accept label params
-// server-side — see docs/todos/pending-api-enhancements.md #2. Review rows currently
-// ignore the orchestrator's label filter.
-export function useFindingReviews({ collectionId, selectedFinding, aggregator }) {
+// getReviewsByCollection accepts labelId/labelMatch server-side, so review rows
+// honor the orchestrator's label filter.
+export function useFindingReviews({ collectionId, selectedFinding, aggregator, labelIds }) {
   // The reviews API expects the aggregator field's value on the matching
   // record (e.g. aggregator=ruleId&ruleId=SV-12345r1_rule).
   const aggregatorValue = computed(() => {
@@ -26,12 +26,13 @@ export function useFindingReviews({ collectionId, selectedFinding, aggregator })
     () => fetchFailedReviews(collectionId.value, {
       aggregator: aggregator.value,
       aggregatorValue: aggregatorValue.value,
+      labelParams: buildLabelFilterParams(labelIds.value),
     }),
     { immediate: false, initialState: [], onError: null },
   )
 
   watch(
-    [collectionId, aggregator, aggregatorValue],
+    [collectionId, aggregator, aggregatorValue, labelIds],
     () => {
       if (!collectionId.value || !aggregator.value || !aggregatorValue.value) {
         // No selection in the middle pane — clear the right pane without fetching.

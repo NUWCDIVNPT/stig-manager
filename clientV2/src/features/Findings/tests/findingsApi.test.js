@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiCall } from '../../../shared/api/apiClient.js'
-import { downloadPoam } from '../api/findingsApi.js'
+import { downloadPoam, fetchFailedReviews, fetchFindings } from '../api/findingsApi.js'
 
 vi.mock('../../../shared/api/apiClient.js', () => ({
   apiCall: vi.fn(),
@@ -77,5 +77,43 @@ describe('downloadPoam', () => {
     apiCall.mockResolvedValue(mockResponse({ disposition: 'attachment; filename="50% Complete POAM.xlsx"' }))
     await downloadPoam('1', { format: 'EMASS' })
     expect(saveAs).toHaveBeenCalledWith(expect.any(Blob), '50% Complete POAM.xlsx')
+  })
+})
+
+describe('fetchFindings', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('spreads label filter params into the request', () => {
+    fetchFindings('42', { aggregator: 'groupId', labelParams: { labelId: ['l1', 'l2'] } })
+    expect(apiCall).toHaveBeenCalledWith('getFindingsByCollection', {
+      collectionId: '42',
+      aggregator: 'groupId',
+      projection: ['stigs'],
+      labelId: ['l1', 'l2'],
+    })
+  })
+
+  it('adds no label keys when the filter is empty', () => {
+    fetchFindings('42', { aggregator: 'groupId' })
+    expect(apiCall).toHaveBeenCalledWith('getFindingsByCollection', {
+      collectionId: '42',
+      aggregator: 'groupId',
+      projection: ['stigs'],
+    })
+  })
+})
+
+describe('fetchFailedReviews', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('spreads label filter params into the request', () => {
+    fetchFailedReviews('42', { aggregator: 'ruleId', aggregatorValue: 'SV-1_rule', labelParams: { labelMatch: 'null' } })
+    expect(apiCall).toHaveBeenCalledWith('getReviewsByCollection', {
+      collectionId: '42',
+      result: 'fail',
+      projection: ['stigs'],
+      ruleId: 'SV-1_rule',
+      labelMatch: 'null',
+    })
   })
 })

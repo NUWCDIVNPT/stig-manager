@@ -6,11 +6,9 @@ import { fetchCollectionStigSummary } from '../api/findingsApi.js'
 // Drives the per-STIG metrics shown in the AggregatedFindingsGrid header
 // dropdown (StigSelectorPanel) and the "Overall" CAT 1/2/3 totals badges.
 // `collectionId` and `labelIds` are Refs so the panel reacts to the
-// orchestrator-level label filter.
-//
-// Unlike useFindings/useFindingReviews, the underlying metrics endpoint
-// (getCollectionStigs) accepts label filter params server-side via
-// labelId/labelMatch, so this view honors the label filter natively.
+// orchestrator-level label filter. The metrics endpoint (getCollectionStigs)
+// accepts label filter params server-side via labelId/labelMatch, so this view
+// honors the label filter natively.
 export function useCollectionStigSummary({ collectionId, labelIds }) {
   const { state: rawStigs, isLoading, error, execute } = useAsyncState(
     () => fetchCollectionStigSummary(

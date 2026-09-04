@@ -1,26 +1,27 @@
 import { computed, watch } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchFindings } from '../api/findingsApi.js'
 
 // Drives the middle pane (AggregatedFindingsGrid): aggregated findings rows,
 // optionally scoped to one STIG. All inputs are Refs so the panel reacts to
 // orchestrator state changes.
 //   benchmarkId === null → "All Collection STIGs" (no benchmarkId query param)
-// TODO(label-filter): /collections/{id}/findings does not accept label params
-// server-side — see docs/todos/pending-api-enhancements.md #1. Aggregated row counts
-// currently ignore the orchestrator's label filter.
-export function useFindings({ collectionId, aggregator, benchmarkId }) {
+// getFindingsByCollection accepts labelId/labelMatch server-side, so aggregated
+// row counts honor the orchestrator's label filter.
+export function useFindings({ collectionId, aggregator, benchmarkId, labelIds }) {
   const { state: findings, isLoading, error, execute } = useAsyncState(
     () => fetchFindings(collectionId.value, {
       aggregator: aggregator.value,
       benchmarkId: benchmarkId.value || undefined,
+      labelParams: buildLabelFilterParams(labelIds.value),
     }),
     { immediate: false, initialState: [], onError: null },
   )
 
-  // Refetch whenever the collection, aggregator, or STIG scope changes.
+  // Refetch whenever the collection, aggregator, STIG scope, or label filter changes.
   watch(
-    [collectionId, aggregator, benchmarkId],
+    [collectionId, aggregator, benchmarkId, labelIds],
     () => {
       if (collectionId.value && aggregator.value) {
         execute()
