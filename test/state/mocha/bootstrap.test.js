@@ -177,7 +177,7 @@ describe('Boot with old mysql', function () {
     this.timeout(60000)
     oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
     await oidc.start({port: oidcPort})
-    mysql = await spawnMySQL({tag:'8.0.23', port:dbPort})
+    mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
     api = await spawnApiPromise({
       resolveOnClose: true,
       env:{
@@ -208,7 +208,7 @@ describe('Boot with old mysql', function () {
     it('db, check message', function () {
       const failures = api.logRecords.filter(r => r.type === 'preflight' && r.component === 'mysql' && r.data.success === false)
       expect(failures).to.have.lengthOf(1)
-      expect(failures[0].data.message).to.equal('MySQL release 8.0.23 is too old. Update to the latest MySQL 8.4.x release.')
+      expect(failures[0].data.message).to.equal('MySQL release 8.0.24 is too old. Update to the latest MySQL 8.4.x release.')
     })
   })
 

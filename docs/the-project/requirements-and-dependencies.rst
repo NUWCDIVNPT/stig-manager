@@ -21,7 +21,7 @@ Tested with:
 
 - Docker 20.10.2
 - NodeJs provided by node:lts-alpine image on Docker Hub
-- MySQL - latest 3 versions of the MySQL 8.4.x series available on Docker Hub.
+- MySQL - 8.4.0 and the latest 2 versions of the MySQL 8.4.x series available on Docker Hub.
 - RedHat Keycloak 19+
 
 .. note::
