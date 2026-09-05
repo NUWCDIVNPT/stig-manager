@@ -32,7 +32,7 @@ export const config = {
   workDir: here('.out/'),
   viewport: { width: 1600, height: 1000 },
   deviceScaleFactor: 1,
-  settleMs: 400,
+  settleMs: 600,
   // Selector that proves the app shell has rendered after login
   readySelector: env.SHOTS_READY_SELECTOR || '#app',
   // Drift tolerance for `check`: fraction of pixels allowed to differ

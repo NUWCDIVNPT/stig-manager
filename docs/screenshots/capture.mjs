@@ -54,7 +54,14 @@ for (const [userKey, userEntries] of byUser) {
       if (e.highlights?.length) await addHighlights(page, e.highlights)
       const outPath = path.join(targetDir, e.file)
       if (e.clip) {
-        await page.locator(e.clip).first().screenshot({ path: outPath, animations: 'disabled' })
+        // Element clip, optionally padded so the element keeps some surrounding context
+        const box = await page.locator(e.clip).first().boundingBox()
+        if (!box) throw new Error(`clip target not visible: ${e.clip}`)
+        const pad = e.clipPad ?? 0
+        const vp = page.viewportSize()
+        const x = Math.max(0, box.x - pad), y = Math.max(0, box.y - pad)
+        const clip = { x, y, width: Math.min(vp.width - x, box.width + pad * 2), height: Math.min(vp.height - y, box.height + pad * 2) }
+        await page.screenshot({ path: outPath, animations: 'disabled', clip })
       }
       else {
         await page.screenshot({ path: outPath, animations: 'disabled', fullPage: !!e.fullPage })

@@ -45,6 +45,8 @@ npm run lint
 
 Steps are `[op, ...args]` with ops `goto`, `click`, `dblclick`, `hover`, `fill`, `press`, `wait`, `waitFor`, `idle`, and `run` (an async function escape hatch). Selectors are Playwright selector strings.
 
+`clip` captures one element; `clipPad` adds pixels of surrounding context. Dashboards animate their charts for about a second after data arrives, so those entries set a longer `settleMs`.
+
 Highlights are anchored to selectors, so they follow the element when the layout changes. Shapes are `ellipse` (default), `box`, and `arrow`; an optional `label` prints text beside the shape.
 
 ## Determinism
