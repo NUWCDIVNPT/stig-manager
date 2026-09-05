@@ -390,7 +390,7 @@ describe('Job endpoint tests', function () {
       await new Promise(resolve => setTimeout(resolve, 1000)) // wait 1 second between runs to ensure different timestamps
       await runImmediateJob(jobId)
 
-      const runsRes = await utils.executeRequest(`${config.baseUrl}/jobs/${jobId}/runs?elevate=true`, 'GET', user.token)
+      const runsRes = await pollUntil(`${config.baseUrl}/jobs/${jobId}/runs?elevate=true`, res => res.body.length >= 2)
       expect(runsRes.status).to.eql(200)
       expect(runsRes.body).to.be.an('array')
       expect(runsRes.body.length).to.be.at.least(2)
@@ -418,7 +418,7 @@ describe('Job endpoint tests', function () {
 
       const runId = await runImmediateJob(jobId)
 
-      const runRes = await utils.executeRequest(`${config.baseUrl}/jobs/runs/${runId}?elevate=true`, 'GET', user.token)
+      const runRes = await pollUntil(`${config.baseUrl}/jobs/runs/${runId}?elevate=true`, res => res.status === 200)
       expect(runRes.status).to.eql(200)
       expect(runRes.body).to.be.an('object')
       expect(runRes.body).to.have.property('runId', runId)
@@ -442,7 +442,7 @@ describe('Job endpoint tests', function () {
       const jobId = createJobRes.body.jobId
 
       const runId = await runImmediateJob(jobId)
-      await new Promise(resolve => setTimeout(resolve, 1000)) // wait a second to ensure run is created before attempting delete
+      await pollUntil(`${config.baseUrl}/jobs/runs/${runId}?elevate=true`, res => res.status === 200)
 
       // Now delete the run
       const deleteRes = await utils.executeRequest(`${config.baseUrl}/jobs/runs/${runId}?elevate=true`, 'DELETE', user.token)
@@ -938,17 +938,20 @@ async function deleteTestJobs() {
   }
 }
 
-async function waitForRunFinish(runId, timeoutSeconds = 30) {
-  let attempts = 0
-  await new Promise(resolve => setTimeout(resolve, 1000)) // wait 1 second before checking again
-  while (attempts < timeoutSeconds) {
-    const runRes = await utils.executeRequest(`${config.baseUrl}/jobs/runs/${runId}?elevate=true`, 'GET', user.token)
-    expect(runRes.status).to.eql(200)
-    if (['completed', 'failed'].includes(runRes.body.state)) {
-      return runRes.body.state
-    }
-    await new Promise(resolve => setTimeout(resolve, 1000)) // wait 1 second before checking again
-    attempts++
+// Job runs are created and advanced asynchronously by the MySQL event scheduler.
+// Polls `url` once per second until `done(res)` is truthy or timeoutSeconds elapses; returns the last response.
+async function pollUntil(url, done, timeoutSeconds = 30) {
+  let res
+  for (let attempts = 0; attempts < timeoutSeconds; attempts++) {
+    res = await utils.executeRequest(url, 'GET', user.token)
+    if (done(res)) break
+    await new Promise(resolve => setTimeout(resolve, 1000))
   }
-  return 'timeout'
+  return res
+}
+
+async function waitForRunFinish(runId, timeoutSeconds = 30) {
+  const isFinished = res => res.status === 200 && ['completed', 'failed'].includes(res.body.state)
+  const runRes = await pollUntil(`${config.baseUrl}/jobs/runs/${runId}?elevate=true`, isFinished, timeoutSeconds)
+  return isFinished(runRes) ? runRes.body.state : 'timeout'
 }

@@ -19,11 +19,13 @@ jobs:
       - name: Fetch MySQL Versions
         id: fetch-versions
         run: |
-          # Fetch latest 3 MySQL 8.4.x versions
-          MYSQL_8_4=$(curl -s "https://registry.hub.docker.com/v2/repositories/library/mysql/tags/?page_size=100" | jq -r '.results[].name | select(test("^8\\.4\\.\\d+$"))' | sort -V | tail -n3)
+          # Fetch latest 2 MySQL 8.4.x versions
+          MYSQL_8_4=$(curl -s "https://registry.hub.docker.com/v2/repositories/library/mysql/tags/?page_size=100" | jq -r '.results[].name | select(test("^8\\.4\\.\\d+$"))' | sort -V | tail -n2)
 
-          # Include 8.0.24 as a canary for the minimum bootstrap release, until support is removed
-          VERSIONS=$(echo "8.0.24" "$MYSQL_8_4" | tr ' ' '\n' | jq -Rnc '[inputs]')
+          if [ -z "$MYSQL_8_4" ]; then echo "No MySQL 8.4.x tags returned from Docker Hub"; exit 1; fi
+
+          # Include 8.4.0 as the minimum supported release (minMySqlVersion in api/source/service/utils.js)
+          VERSIONS=$(echo "8.4.0" "$MYSQL_8_4" | tr ' ' '\n' | jq -Rnc '[inputs]')
           echo "version_array=$VERSIONS" >> $GITHUB_OUTPUT
 
   test_api:
@@ -31,6 +33,7 @@ jobs:
     name: ${{ matrix.container.name }} and MySQL ${{ matrix.mysql_version }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         container:
             - name: "stig-manager-alpine"
