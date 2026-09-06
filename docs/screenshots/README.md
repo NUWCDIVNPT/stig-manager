@@ -47,7 +47,9 @@ Steps are `[op, ...args]` with ops `goto`, `click`, `dblclick`, `hover`, `fill`,
 
 `clip` captures one element; `clipPad` adds pixels of surrounding context. Dashboards animate their charts for about a second after data arrives, so those entries set a longer `settleMs`.
 
-Highlights are anchored to selectors, so they follow the element when the layout changes. Shapes are `ellipse` (default), `box`, and `arrow`; an optional `label` prints text beside the shape.
+The Nav Rail is collapsed for every entry unless it sets `rail: 'expanded'`, so the content stays the focus. Its state persists in the browser, so the tool resets it before each entry.
+
+Highlights are anchored to selectors, so they follow the element when the layout changes. Shapes are `ellipse` (default), `box`, and `arrow`; an optional `label` prints text beside the shape. Every entry with highlights also writes an unannotated copy to `raw/` (git-ignored, regenerated on each run) so indicators can be redone by hand in an image editor.
 
 ## Determinism
 

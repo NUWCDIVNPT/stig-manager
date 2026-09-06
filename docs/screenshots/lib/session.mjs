@@ -40,3 +40,16 @@ async function dismissWhatsNew(page) {
   }
   catch { /* dialog did not appear */ }
 }
+
+// The Nav Rail state persists in localStorage, so it carries across entries in a
+// context. Entries default to collapsed so the content stays the focus.
+export async function setRail(page, expanded) {
+  const toggle = page.locator('button.nav-rail-toggle').first()
+  if (!await toggle.count()) return
+  const label = await toggle.getAttribute('aria-label')
+  const isExpanded = label === 'Collapse navigation'
+  if (isExpanded !== expanded) {
+    await toggle.click()
+    await page.waitForTimeout(400)
+  }
+}

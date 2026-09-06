@@ -6,6 +6,8 @@
 //   steps      [op, ...args] from lib/steps.mjs, run after navigation
 //   clip       selector; capture only that element (clipPad: extra pixels of context around it)
 //   highlights [{ selector, shape: 'ellipse'|'box'|'arrow', label?, pad?, from? }]
+//   rail       'expanded' to show the Nav Rail open; collapsed otherwise (the default)
+//   scale      device scale factor (2 for crisp close-ups)
 //   viewport   override the default viewport for this entry
 // Data names refer to the seed fixture; see README.
 
@@ -21,11 +23,9 @@ const C = 'Collection X' // primary demo collection; overridden once the fixture
 // give those entries a longer settle so the capture shows the finished chart.
 const CHART_SETTLE = 1500
 const NAV_PANEL = 'nav.nav-rail'
-// Expand the nav rail (persisted in localStorage), then open the dashboard so its
-// charts render once at the final layout, and open the rail's Collections list.
-const EXPAND_RAIL = [
-  ['click', 'button.nav-rail-toggle'],
-  ['goto', l => `/collection/${l.collectionId(C)}/stigs`],
+// With `rail: 'expanded'` the Nav Rail is opened before navigation, so dashboard
+// charts render once at the final layout. These steps then open its Collections list.
+const OPEN_RAIL_COLLECTIONS = [
   ['wait', CHART_SETTLE],
   ['hover', 'button.nav-rail-item:has-text("Collections")'],
   ['wait', 300],
@@ -42,8 +42,9 @@ export const manifest = [
     file: 'nav-tree-and-collection-panel.png',
     section: 'user-guide > Overall Organization',
     user: 'admin',
-    route: '/',
-    steps: EXPAND_RAIL,
+    route: l => `/collection/${l.collectionId(C)}/stigs`,
+    rail: 'expanded',
+    steps: OPEN_RAIL_COLLECTIONS,
     highlights: [{ selector: NAV_PANEL, shape: 'box', pad: 2 }],
   },
   {
@@ -54,10 +55,11 @@ export const manifest = [
   },
   {
     file: 'nav-tree.png',
-    section: 'user-guide > Navigation Tree',
+    section: 'user-guide > Navigation Tree (now the Nav Rail)',
     user: 'admin',
-    route: '/',
-    steps: EXPAND_RAIL,
+    route: l => `/collection/${l.collectionId(C)}/stigs`,
+    rail: 'expanded',
+    steps: OPEN_RAIL_COLLECTIONS,
     clip: NAV_PANEL,
     scale: 2,
   },

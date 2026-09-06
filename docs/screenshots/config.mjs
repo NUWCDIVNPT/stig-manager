@@ -30,6 +30,8 @@ export const config = {
   // Capture settings
   outDir: env.SHOTS_OUT_DIR || here('../assets/images/'),
   workDir: here('.out/'),
+  // Unannotated copy of every capture that has highlights, for hand-editing
+  rawDir: env.SHOTS_RAW_DIR || here('raw/'),
   viewport: { width: 1920, height: 1080 },
   // Entries may set `scale: 2` for crisp close-ups; contexts are created per scale.
   deviceScaleFactor: 1,

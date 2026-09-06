@@ -9,7 +9,7 @@ import { PNG } from 'pngjs'
 import { config, routeUrl } from './config.mjs'
 import { manifest, users } from './manifest.mjs'
 import { buildLookup } from './lib/lookup.mjs'
-import { login } from './lib/session.mjs'
+import { login, setRail } from './lib/session.mjs'
 import { runSteps } from './lib/steps.mjs'
 import { addHighlights, removeHighlights } from './lib/annotate.mjs'
 
@@ -25,6 +25,7 @@ if (!entries.length) { console.error(`no manifest entries match "${only}"`); pro
 const targetDir = mode === 'capture' ? config.outDir : path.join(config.workDir, 'shots')
 mkdirSync(targetDir, { recursive: true })
 mkdirSync(path.join(config.workDir, 'diff'), { recursive: true })
+mkdirSync(config.rawDir, { recursive: true })
 
 const lookup = await buildLookup()
 const browser = await chromium.launch({ headless: !headed })
@@ -47,26 +48,19 @@ for (const [key, userEntries] of groups) {
     const t0 = Date.now()
     try {
       if (e.viewport) await page.setViewportSize(e.viewport)
+      await setRail(page, e.rail === 'expanded')
       const route = typeof e.route === 'function' ? await e.route(lookup) : e.route
       if (route) await page.goto(routeUrl(route), { waitUntil: 'load' })
       await runSteps(page, e.steps, lookup)
       await page.waitForLoadState('load')
       await page.waitForTimeout(e.settleMs ?? config.settleMs)
-      if (e.highlights?.length) await addHighlights(page, e.highlights)
       const outPath = path.join(targetDir, e.file)
-      if (e.clip) {
-        // Element clip, optionally padded so the element keeps some surrounding context
-        const box = await page.locator(e.clip).first().boundingBox()
-        if (!box) throw new Error(`clip target not visible: ${e.clip}`)
-        const pad = e.clipPad ?? 0
-        const vp = page.viewportSize()
-        const x = Math.max(0, box.x - pad), y = Math.max(0, box.y - pad)
-        const clip = { x, y, width: Math.min(vp.width - x, box.width + pad * 2), height: Math.min(vp.height - y, box.height + pad * 2) }
-        await page.screenshot({ path: outPath, animations: 'disabled', clip })
+      if (e.highlights?.length) {
+        // keep an unannotated copy so indicators can be redone by hand
+        await shoot(page, e, path.join(config.rawDir, e.file))
+        await addHighlights(page, e.highlights)
       }
-      else {
-        await page.screenshot({ path: outPath, animations: 'disabled', fullPage: !!e.fullPage })
-      }
+      await shoot(page, e, outPath)
       await removeHighlights(page)
       if (e.viewport) await page.setViewportSize(config.viewport)
       const r = { file: e.file, ms: Date.now() - t0 }
@@ -90,6 +84,22 @@ const stale = results.filter(r => r.stale)
 console.log(`\n${results.length - failed.length}/${results.length} captured${mode === 'check' ? `, ${stale.length} stale` : ''}${failed.length ? `, ${failed.length} failed` : ''}`)
 writeFileSync(path.join(config.workDir, 'results.json'), JSON.stringify(results, null, 2))
 process.exit(failed.length || (mode === 'check' && stale.length) ? 1 : 0)
+
+async function shoot(page, e, outPath) {
+  if (e.clip) {
+    // Element clip, optionally padded so the element keeps some surrounding context
+    const box = await page.locator(e.clip).first().boundingBox()
+    if (!box) throw new Error(`clip target not visible: ${e.clip}`)
+    const pad = e.clipPad ?? 0
+    const vp = page.viewportSize()
+    const x = Math.max(0, box.x - pad), y = Math.max(0, box.y - pad)
+    const clip = { x, y, width: Math.min(vp.width - x, box.width + pad * 2), height: Math.min(vp.height - y, box.height + pad * 2) }
+    await page.screenshot({ path: outPath, animations: 'disabled', clip })
+  }
+  else {
+    await page.screenshot({ path: outPath, animations: 'disabled', fullPage: !!e.fullPage })
+  }
+}
 
 function compare(file, freshPath) {
   const committedPath = path.join(config.outDir, file)
