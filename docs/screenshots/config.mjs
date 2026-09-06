@@ -30,8 +30,10 @@ export const config = {
   // Capture settings
   outDir: env.SHOTS_OUT_DIR || here('../assets/images/'),
   workDir: here('.out/'),
-  viewport: { width: 1600, height: 1000 },
+  viewport: { width: 1920, height: 1080 },
+  // Entries may set `scale: 2` for crisp close-ups; contexts are created per scale.
   deviceScaleFactor: 1,
+  highlightColor: '#80d6ff',
   settleMs: 600,
   // Selector that proves the app shell has rendered after login
   readySelector: env.SHOTS_READY_SELECTOR || '#app',

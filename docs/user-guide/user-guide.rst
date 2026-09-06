@@ -43,6 +43,11 @@ Use the Navigation tree to navigate **between** different Collections, as well a
       :show_caption: True
       :title: Navigation Tree and Collection Dashboard
 
+.. thumbnail:: /assets/images/new/nav-tree-and-collection-panel.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Navigation Tree and Collection Dashboard
+
 
 |
 
@@ -69,6 +74,11 @@ The Home Panel also provides information about the STIG Manager Open Source Soft
       :show_caption: True
       :title: Home Tab
 
+.. thumbnail:: /assets/images/new/home-tab.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Home Tab
+
 ====================================
 
 .. index::
@@ -88,6 +98,11 @@ Clicking on a Collection will open up the Collection Dashboard in the Content Pa
       :show_caption: True
       :title: Navigation Tree
 
+.. thumbnail:: /assets/images/new/nav-tree.png
+      :width: 25% 
+      :show_caption: True
+      :title: NEW: Navigation Tree
+
 |
 
 .. index::
@@ -105,6 +120,11 @@ If you have the Collection Creator privilege, this option will appear. Click thi
       :width: 50% 
       :show_caption: True
       :title: Create Collection popup
+
+.. thumbnail:: /assets/images/new/create-collection-popup.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Create Collection popup
 
 | 
 
@@ -134,6 +154,11 @@ Browse the contents of all the Reference STIGs and the various Revisions stored 
       :show_caption: True
       :title: STIG Library
 
+.. thumbnail:: /assets/images/new/stig-library.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: STIG Library
+
 |
 
 
@@ -148,6 +173,11 @@ The "Compare Revisions" feature allows you to compare two Revisions of a STIG, a
       :show_caption: True
       :title: STIG Revision Compare Tool
 
+.. thumbnail:: /assets/images/new/stig-compare-tool.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: STIG Revision Compare Tool
+
 |
 
 
@@ -159,6 +189,11 @@ This Node offers User Interface options, like Dark Mode, and a view of all avail
       :width: 50% 
       :show_caption: True
       :title: User Interface Options
+
+.. thumbnail:: /assets/images/new/nav-tree-interface-options.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: User Interface Options
 
 |
 
@@ -190,6 +225,11 @@ This Panel also allows you to open up individual Asset or STIG Review Workspaces
       :show_caption: True
       :title: The Collection Dashboard
 
+.. thumbnail:: /assets/images/new/collection-panel.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: The Collection Dashboard
+
 |
 
 The components of the Collection Dashboard are described below. 
@@ -206,6 +246,11 @@ The Assets and STIGS presented in the Collection Dashboard can be filtered by cl
       :width: 25% 
       :show_caption: True
       :title: Collection Overview
+
+.. thumbnail:: /assets/images/new/collection-panel-overview.png
+      :width: 25% 
+      :show_caption: True
+      :title: NEW: Collection Overview
 
 |
 
@@ -224,6 +269,11 @@ The Assets and STIGS presented in the Collection Dashboard can be filtered by cl
             :width: 25% 
             :show_caption: True
             :title: Collection Dashboard Filtering
+
+      .. thumbnail:: /assets/images/new/collection-panel-filters.png
+            :width: 25% 
+            :show_caption: True
+            :title: NEW: Collection Dashboard Filtering
 
 |
 

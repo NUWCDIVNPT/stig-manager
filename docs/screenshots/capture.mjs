@@ -30,18 +30,19 @@ const lookup = await buildLookup()
 const browser = await chromium.launch({ headless: !headed })
 const results = []
 
-// One logged-in context per user; entries run in manifest order within it.
-const byUser = new Map()
+// One logged-in context per user and device scale; entries run in manifest order within it.
+const groups = new Map()
 for (const e of entries) {
-  const u = e.user || 'admin'
-  if (!byUser.has(u)) byUser.set(u, [])
-  byUser.get(u).push(e)
+  const key = `${e.user || 'admin'}|${e.scale || config.deviceScaleFactor}`
+  if (!groups.has(key)) groups.set(key, [])
+  groups.get(key).push(e)
 }
 
-for (const [userKey, userEntries] of byUser) {
+for (const [key, userEntries] of groups) {
+  const [userKey, scale] = key.split('|')
   const user = users[userKey]
   if (!user) throw new Error(`manifest user "${userKey}" is not defined in users`)
-  const { context, page } = await login(browser, user)
+  const { context, page } = await login(browser, user, { scale: Number(scale) })
   for (const e of userEntries) {
     const t0 = Date.now()
     try {

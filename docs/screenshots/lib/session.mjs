@@ -9,10 +9,10 @@ const NO_MOTION_CSS = `*, *::before, *::after {
 #vue-devtools-anchor, [id^="vue-devtools"], vue-devtools-container, .vue-devtools__anchor { display: none !important; }`
 
 // Opens a browser context logged in as `user` through the mock OIDC form.
-export async function login(browser, user) {
+export async function login(browser, user, { scale = config.deviceScaleFactor } = {}) {
   const context = await browser.newContext({
     viewport: config.viewport,
-    deviceScaleFactor: config.deviceScaleFactor,
+    deviceScaleFactor: scale,
     colorScheme: user.colorScheme || 'light',
   })
   const page = await context.newPage()

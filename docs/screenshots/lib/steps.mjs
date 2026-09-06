@@ -4,7 +4,8 @@ import { routeUrl } from '../config.mjs'
 // A step is [op, ...args]. Selectors are Playwright selector strings
 // (css, text=, role=button[name="X"], etc.).
 const ops = {
-  goto: (page, route) => page.goto(routeUrl(route), { waitUntil: 'load' }),
+  // route may be a function of the lookup context, like a manifest entry's route
+  goto: (page, route, ctx) => page.goto(routeUrl(typeof route === 'function' ? route(ctx) : route), { waitUntil: 'load' }),
   click: (page, sel, opts) => page.locator(sel).first().click(opts),
   dblclick: (page, sel) => page.locator(sel).first().dblclick(),
   hover: (page, sel) => page.locator(sel).first().hover(),
@@ -22,7 +23,7 @@ export async function runSteps(page, steps = [], ctx) {
     const [op, ...args] = step
     const fn = ops[op]
     if (!fn) throw new Error(`Unknown step op "${op}"`)
-    if (op === 'run') await fn(page, args[0], ctx)
+    if (op === 'run' || op === 'goto') await fn(page, args[0], ctx)
     else await fn(page, ...args)
   }
 }

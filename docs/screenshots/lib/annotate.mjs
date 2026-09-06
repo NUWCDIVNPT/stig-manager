@@ -1,6 +1,8 @@
 // Draws callout overlays in the DOM before capture. Anchored to selectors so they
 // follow the element when layout shifts. Shapes: ellipse (default), box, arrow.
-const STYLE = { color: '#e5322d', width: 4, pad: 8 }
+import { config } from '../config.mjs'
+
+const STYLE = { color: config.highlightColor, width: 4, pad: 8 }
 
 export async function addHighlights(page, highlights = []) {
   const boxes = []
@@ -58,7 +60,9 @@ export async function addHighlights(page, highlights = []) {
       if (label) {
         const t = document.createElement('div')
         t.textContent = label
-        Object.assign(t.style, { position: 'absolute', left: `${box.x - pad}px`, top: `${box.y + box.height + pad + 4}px`, color, font: '600 16px system-ui, sans-serif', whiteSpace: 'nowrap' })
+        // below the shape, or above it when there is no room below
+        const below = box.y + box.height + pad + 24 < innerHeight
+        Object.assign(t.style, { position: 'absolute', left: `${box.x - pad}px`, top: below ? `${box.y + box.height + pad + 4}px` : `${box.y - pad - 24}px`, color, font: '600 16px system-ui, sans-serif', whiteSpace: 'nowrap' })
         root.appendChild(t)
       }
     }
