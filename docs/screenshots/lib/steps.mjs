@@ -1,4 +1,8 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { routeUrl } from '../config.mjs'
+
+const PKG_DIR = fileURLToPath(new URL('..', import.meta.url))
 
 // Small step vocabulary so manifest entries stay declarative.
 // A step is [op, ...args]. Selectors are Playwright selector strings
@@ -14,6 +18,13 @@ const ops = {
   wait: (page, ms) => page.waitForTimeout(ms),
   waitFor: (page, sel, state = 'visible') => page.locator(sel).first().waitFor({ state }),
   idle: page => page.waitForLoadState('load'),
+  scrollTo: (page, sel) => page.locator(sel).first().scrollIntoViewIfNeeded(),
+  check: (page, sel) => page.locator(sel).first().check(),
+  // click a control that opens the file chooser, then supply files (paths relative to docs/screenshots)
+  upload: async (page, sel, ...files) => {
+    const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.locator(sel).first().click()])
+    await chooser.setFiles(files.map(f => path.resolve(PKG_DIR, f)))
+  },
   // escape hatch: async (page, ctx) => {}
   run: (page, fn, ctx) => fn(page, ctx),
 }

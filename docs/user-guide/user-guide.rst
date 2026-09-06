@@ -524,6 +524,11 @@ Each tab and grid of the Collection Dashboard presents the total number of Check
       :show_caption: True
       :title: Checklists in the STIGs tab of the Collection Dashboard
 
+.. thumbnail:: /assets/images/new/collection-panel-checklist-navigation.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Checklists in the STIGs tab of the Collection Dashboard
+
 
 |
 
@@ -554,6 +559,11 @@ The Assets Tab on the right of the Collection Dashboard provides a list of every
       :show_caption: True
       :title: Checklists in the Assets tab of the Collection Dashboard
 
+.. thumbnail:: /assets/images/new/collection-panel-assets.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Checklists in the Assets tab of the Collection Dashboard
+
 
 |
 
@@ -573,6 +583,11 @@ The Labels Tab on the right of the Collection Dashboard provides a list of every
       :width: 50% 
       :show_caption: True
       :title: Checklists in the Labels tab of the Collection Dashboard
+
+.. thumbnail:: /assets/images/new/collection-panel-labels.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Checklists in the Labels tab of the Collection Dashboard
 
 
 |
@@ -618,6 +633,11 @@ Access the Meta Dashboard by clicking on the Report icon in the top-level Collec
       :show_caption: True
       :title: The Meta Dashboard
 
+.. thumbnail:: /assets/images/new/meta-collection-dashboard.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: The Meta Dashboard
+
 
 |      
 
@@ -638,6 +658,11 @@ The Collections presented in the Meta-Collection Dashboard can be filtered by cl
                   :show_caption: True
                   :title: Meta-Collection Overview with Filters
 
+      .. thumbnail:: /assets/images/new/meta-collection-panel-overview-filters.png
+                  :width: 25% 
+                  :show_caption: True
+                  :title: NEW: Meta-Collection Overview with Filters
+
 |
 
 
@@ -651,6 +676,11 @@ The Collections Tab on the right of the Collection Dashboard provides a list of 
       :show_caption: True
       :title: Collections Tab of the Meta-Collection Dashboard
 
+.. thumbnail:: /assets/images/new/meta-collection-dashboard-collections-tab.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Collections Tab of the Meta-Collection Dashboard
+
 |
 
 
@@ -663,6 +693,11 @@ The STIGs tab on the right of the Collection Dashboard provides a list of every 
       :width: 50% 
       :show_caption: True
       :title: Collections Tab of the Meta-Collection Dashboard
+
+.. thumbnail:: /assets/images/new/meta-collection-dashboard-stigs-tab.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Collections Tab of the Meta-Collection Dashboard
 
 |
 
@@ -681,6 +716,11 @@ The Collection Review Workspace allows the user to assess all the Assets they ha
       :width: 50% 
       :show_caption: True
       :title: Collection Review Workspace
+
+.. thumbnail:: /assets/images/new/collection-review.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Collection Review Workspace
 
 
 -------------------------------
@@ -701,6 +741,11 @@ By default, the most current STIG is displayed. The User can also select older r
       :show_caption: True
       :title: STIG Revision Selection
 
+.. thumbnail:: /assets/images/new/collection-review-stig-revisions.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: STIG Revision Selection
+
 |
 
 
@@ -714,6 +759,11 @@ Additional Columns and filtering options are available by clicking the column he
       :width: 50% 
       :show_caption: True
       :title: Column Selection
+
+.. thumbnail:: /assets/images/new/collection-workspace-checklist-ages.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Column Selection
 
 |
 
@@ -750,6 +800,11 @@ Select more than one Review with Shift-Click, Ctrl-Click, or the checkboxes, and
       :show_caption: True
       :title: Edit Multiple Reviews at Once with Batch Editing
 
+.. thumbnail:: /assets/images/new/collection-review-batch-edit.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Edit Multiple Reviews at Once with Batch Editing
+
 |
 
 If a User has Read-Only access to Assets in this Collection, the checkboxes for those Assets will be replaced with a read-only icon, and they will not be able to change those Reviews.
@@ -758,6 +813,11 @@ If a User has Read-Only access to Assets in this Collection, the checkboxes for 
       :width: 50% 
       :show_caption: True
       :title: Assets are Read-Only for this User
+
+.. thumbnail:: /assets/images/new/collection-review-read-only.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Assets are Read-Only for this User
 
 |
 
@@ -792,6 +852,11 @@ This workspace can be accessed by clicking the Shield icon or double-clicking on
       :show_caption: True
       :title: Asset Review Workspace
 
+.. thumbnail:: /assets/images/new/asset-review.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Asset Review Workspace
+
 |
 
 
@@ -815,10 +880,20 @@ The menu bar also supports a variety of status and Title filters, and indicates 
       :show_caption: True
       :title: Reviews can be changed by this User.
 
+.. thumbnail:: /assets/images/new/asset-review-writeable.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Reviews can be changed by this User.
+
 .. thumbnail:: /assets/images/asset-review-read-only.png
       :width: 50% 
       :show_caption: True
       :title: Reviews cannot be changed by this User.
+
+.. thumbnail:: /assets/images/new/asset-review-read-only.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Reviews cannot be changed by this User.
 
 
 
@@ -851,6 +926,11 @@ The Attachments tab allows Reviewers to attach images that support their assessm
       :width: 25% 
       :show_caption: True
       :title: Attachments Tab
+
+.. thumbnail:: /assets/images/new/attachments-hover-crop.png
+      :width: 25% 
+      :show_caption: True
+      :title: NEW: Attachments Tab
 
 |
 
@@ -916,6 +996,11 @@ STIG Manager tracks the actual Evaluation (The Result, Detail, and Comment) port
       :show_caption: True
       :title: Review Evaluation Panel with Attributions
 
+.. thumbnail:: /assets/images/new/review-attributions-panel.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Review Evaluation Panel with Attributions
+
 |
 
 Save, Save/Submit, and Accept Buttons
@@ -961,6 +1046,11 @@ The Findings Report provides a view of all Open Reviews in the Collection that t
       :width: 50% 
       :show_caption: True
       :title: Findings Report
+
+.. thumbnail:: /assets/images/new/findings-report.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Findings Report
 
 
 -------------------------------
@@ -1016,6 +1106,11 @@ From this Workspace, the User can:
       :show_caption: True
       :title: The Manage Collections Workspace
 
+.. thumbnail:: /assets/images/new/manage-collection-workspace.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: The Manage Collections Workspace
+
 
 -------------------------------
 
@@ -1028,6 +1123,11 @@ This Panel allows Collection Managers and Owners to change the name of the Colle
       :width: 50% 
       :show_caption: True
       :title: Collection Properties
+
+.. thumbnail:: /assets/images/new/collection-properties.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Collection Properties
 
 |
 
@@ -1046,6 +1146,11 @@ This feature can be useful for creating a "snapshot" of a Collection at a partic
       :show_caption: True
       :title: The Collection Clone Button
 
+.. thumbnail:: /assets/images/new/collection-manage-clone-button.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: The Collection Clone Button
+
 |
 
 The new Collection can be substantially identical to the original, but must have a different name.
@@ -1060,6 +1165,11 @@ The clone always includes the original Collection's Assets, their core propertie
       :width: 50% 
       :show_caption: True
       :title: Collection Clone Options
+
+.. thumbnail:: /assets/images/new/collection-manage-clone-options.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Collection Clone Options
 
 |
 
@@ -1107,11 +1217,21 @@ See the :ref:`Roles and Access<roles-and-access>` section for more information a
       :show_caption: True
       :title: The User Grants Panel
 
+.. thumbnail:: /assets/images/new/collection-manage-new-grants-popup.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: The User Grants Panel
+
 
 .. thumbnail:: /assets/images/collection-manage-edit-grant.png
       :width: 50% 
       :show_caption: True
       :title: Edit or reassign an existing Grant
+
+.. thumbnail:: /assets/images/new/collection-manage-edit-grant.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Edit or reassign an existing Grant
 
 -------------------------------
 
@@ -1125,6 +1245,11 @@ See the :ref:`Roles and Access<roles-and-access>` section for more information a
       :width: 50% 
       :show_caption: True
       :title: The Access Control List Popup
+
+.. thumbnail:: /assets/images/new/collection-manage-acl-popup.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: The Access Control List Popup
 
 |
 
@@ -1142,6 +1267,11 @@ This tab displays all the Users that have been granted access to this Collection
       :width: 50% 
       :show_caption: True
       :title: Users Effective Access
+
+.. thumbnail:: /assets/images/new/collection-manage-effective-access.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Users Effective Access
 
 |
 
@@ -1184,6 +1314,11 @@ The default Settings for Review Status are:
       :show_caption: True
       :title: Review Requirements
 
+.. thumbnail:: /assets/images/new/collection-manage-review-fields.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Review Requirements
+
 
 |
 
@@ -1218,6 +1353,11 @@ These import setting preferences can be locked for your Collection, or you can a
       :width: 50% 
       :show_caption: True
       :title: Review Import Options Fields
+
+.. thumbnail:: /assets/images/new/collection-manage-review-import-options.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Review Import Options Fields
       
 |
 
@@ -1291,12 +1431,22 @@ Double-click an existing label to edit it.
       :show_caption: True
       :title: Collection Labels Tab
 
+.. thumbnail:: /assets/images/new/collection-manage-labels.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Collection Labels Tab
+
 |      
 
 .. thumbnail:: /assets/images/collection-manage-new-label.png
       :width: 50% 
       :show_caption: True
       :title: Create a New Label
+
+.. thumbnail:: /assets/images/new/collection-manage-new-label.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Create a New Label
 
 -------------------------------
 
@@ -1306,6 +1456,11 @@ When a Label is selected in Label tab of the Collection Properties Panel, the "T
       :width: 50% 
       :show_caption: True
       :title: View and tag Assets with the selected Label
+
+.. thumbnail:: /assets/images/new/collection-manage-tag-assets-modal.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: View and tag Assets with the selected Label
 
 |
 
@@ -1330,6 +1485,11 @@ Access Review Aging configuration from the **Tasks** tab in the Collection Manag
       :show_caption: True
       :title: Review Aging Task
 
+.. thumbnail:: /assets/images/new/collection-manage-tasks.png
+      :width: 35% 
+      :show_caption: True
+      :title: NEW: Review Aging Task
+
 
 .. rubric:: Rules and Ordinal
 
@@ -1341,6 +1501,11 @@ A collection can have multiple rules, processed in ordinal order. Rules are inde
       :width: 35% 
       :show_caption: True
       :title: Review Aging Rule
+
+.. thumbnail:: /assets/images/new/collection-manage-review-aging-rule.png
+      :width: 35% 
+      :show_caption: True
+      :title: NEW: Review Aging Rule
 
 
 Click **New Rule** (Owners only) to open the rule editor. Each rule has three sections:
@@ -1412,6 +1577,11 @@ The :ref:`Collection Builder` option allows the User to create many Assets and t
       :show_caption: True
       :title: Collection -> Manage -> Assets toolbar
 
+.. thumbnail:: /assets/images/new/assets-panel-toolbar.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Collection -> Manage -> Assets toolbar
+
 |
 
 Click on the "Labels" column header, or any other column header, to filter the Asset grid by the data in the selected column(s).
@@ -1420,6 +1590,11 @@ Click on the "Labels" column header, or any other column header, to filter the A
       :width: 50% 
       :show_caption: True
       :title: Asset Panel Label Filtering
+
+.. thumbnail:: /assets/images/new/collection-manage-asset-panel-label-filtering.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Asset Panel Label Filtering
 
 
 -------------------------------
@@ -1433,6 +1608,11 @@ Click the Create Asset button to create an Asset manually. Enter relevant Asset 
       :width: 50% 
       :show_caption: True
       :title: Create an Asset
+
+.. thumbnail:: /assets/images/new/collection-manage-asset-label-edit.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Create an Asset
 
 
 -------------------------------
@@ -1487,6 +1667,11 @@ Click the Import Assets CSV to create an Asset from a CSV File.
       :show_caption: True
       :title: Select 'Import Assets CSV' button
 
+.. thumbnail:: /assets/images/new/collection-manage-csv-batch-create.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Select 'Import Assets CSV' button
+
 
 Begin by selecting a CSV that contains asset data. Once uploaded, the importer parses each row, validating the entries before proceeding. Only rows with valid data are considered for submission — any invalid rows are automatically ignored for submission with the respective errors on that row shown. During validation, the importer checks for non-existing labels referenced in the CSV and automatically marks them to be created upon submission. After validation completes, the user can submit the data. Submission is only enabled if at least one valid asset is detected.
 
@@ -1494,6 +1679,11 @@ Begin by selecting a CSV that contains asset data. Once uploaded, the importer p
       :width: 50% 
       :show_caption: True
       :title: View the Report of the Asset CSV Importer
+
+.. thumbnail:: /assets/images/new/collection-manage-asset-csv-importer.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: View the Report of the Asset CSV Importer
 
 
 -------------------------------------------------------------------------------------------
@@ -1508,6 +1698,11 @@ To Export Assets as CSV, select one or more Assets (no assets selected will impl
       :width: 50% 
       :show_caption: True
       :title: Export Assets CSV Button
+
+.. thumbnail:: /assets/images/new/collection-manage-results-export-assets-csv.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Export Assets CSV Button
 
 |
 
@@ -1543,6 +1738,11 @@ From the Collection Management workspace, click the "Import CKL or XCCDF..." but
       :width: 50% 
       :show_caption: True
       :title: Collection Builder File Select
+
+.. thumbnail:: /assets/images/new/collection-builder-files.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Collection Builder File Select
 
 |
 
@@ -1632,6 +1832,11 @@ If the destination Collection does not have an Asset of the same name as the one
       :show_caption: True
       :title: Checklist Archive Export by Asset
 
+.. thumbnail:: /assets/images/new/collection-manage-results-export-asset-collection.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Checklist Archive Export by Asset
+
 |
 
 
@@ -1677,6 +1882,11 @@ Individual Asset-STIG assignments to Restricted Users are removed when an Asset 
       :show_caption: True
       :title: Transfer Assets to Another Collection
 
+.. thumbnail:: /assets/images/new/transfer-asset.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Transfer Assets to Another Collection
+
 
 -------------------------------
 
@@ -1690,6 +1900,11 @@ To alter an Asset's properties or tag it with Labels, select an Asset and click 
       :show_caption: True
       :title: Asset Properties
 
+.. thumbnail:: /assets/images/new/collection-manage-asset-label-edit.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Asset Properties
+
 
 -------------------------------
 
@@ -1701,6 +1916,11 @@ This panel lists all the STIGs that have been assigned to at least one Asset in 
       :width: 50% 
       :show_caption: True
       :title: STIGs Panel
+
+.. thumbnail:: /assets/images/new/stigs-panel.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: STIGs Panel
 
 
 -------------------------------
@@ -1714,6 +1934,11 @@ Select Assign STIG to add a new STIG to the Collection. A popup will allow you t
       :width: 50% 
       :show_caption: True
       :title: STIG Assignments
+
+.. thumbnail:: /assets/images/new/stig-assignments.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: STIG Assignments
 
 
 -------------------------------
@@ -1745,6 +1970,11 @@ The "pinned" Revision is indicated with a pin icon in the STIGs Panel and Collec
       :width: 50% 
       :show_caption: True
       :title: Pin a STIG Revision
+
+.. thumbnail:: /assets/images/new/collection-manage-revision-pinning.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Pin a STIG Revision
 
 -------------------------------
 
@@ -1787,6 +2017,11 @@ If the destination Collection does not have an Asset of the same name as the one
       :width: 50% 
       :show_caption: True
       :title: Checklist Archive Export by Asset
+
+.. thumbnail:: /assets/images/new/collection-manage-results-export-asset-collection.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Checklist Archive Export by Asset
 
 |
 

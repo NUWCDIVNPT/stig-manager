@@ -14,13 +14,14 @@ import { runSteps } from './lib/steps.mjs'
 import { addHighlights, removeHighlights } from './lib/annotate.mjs'
 
 const [mode = 'capture', ...rest] = process.argv.slice(2)
-const only = rest.includes('--only') ? rest[rest.indexOf('--only') + 1] : null
+// --only accepts a comma-separated list of filename substrings
+const only = rest.includes('--only') ? rest[rest.indexOf('--only') + 1].split(',') : null
 const headed = rest.includes('--headed')
 
 if (mode === 'sheet') { writeSheet(); process.exit(0) }
 if (!['capture', 'check'].includes(mode)) { console.error('mode must be capture | check | sheet'); process.exit(1) }
 
-const entries = manifest.filter(e => !only || e.file.includes(only))
+const entries = manifest.filter(e => !only || only.some(o => e.file.includes(o)))
 if (!entries.length) { console.error(`no manifest entries match "${only}"`); process.exit(1) }
 const targetDir = mode === 'capture' ? config.outDir : path.join(config.workDir, 'shots')
 mkdirSync(targetDir, { recursive: true })
@@ -44,10 +45,17 @@ for (const [key, userEntries] of groups) {
   const user = users[userKey]
   if (!user) throw new Error(`manifest user "${userKey}" is not defined in users`)
   const { context, page } = await login(browser, user, { scale: Number(scale) })
+  page.setDefaultTimeout(10_000)
   for (const e of userEntries) {
     const t0 = Date.now()
     try {
       if (e.viewport) await page.setViewportSize(e.viewport)
+      // Reset between entries: close overlays left open, and leave the previous route so
+      // the next entry's view mounts fresh even when it shares the route.
+      await page.keyboard.press('Escape')
+      await page.keyboard.press('Escape')
+      await page.goto(routeUrl('/'), { waitUntil: 'load' })
+      await page.waitForTimeout(200)
       await setRail(page, e.rail === 'expanded')
       const route = typeof e.route === 'function' ? await e.route(lookup) : e.route
       if (route) await page.goto(routeUrl(route), { waitUntil: 'load' })
