@@ -1,5 +1,4 @@
 <script setup>
-import Button from 'primevue/button'
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { computed, watch } from 'vue'
@@ -13,6 +12,7 @@ import { useRevisionDiff } from '../composables/useRevisionDiff.js'
 import { useRevisionRules } from '../composables/useRevisionRules.js'
 import { useRuleSelection } from '../composables/useRuleSelection.js'
 import { setLastStigLibraryUrl } from '../lastVisited.js'
+import BenchmarkListTable from './BenchmarkListTable.vue'
 import BenchmarksTable from './BenchmarksTable.vue'
 import DiffDetailPanel from './DiffDetailPanel.vue'
 import RulePane from './RulePane.vue'
@@ -82,7 +82,15 @@ const { getRulesForRev, watchCurrent, invalidate: invalidateRules } = useRevisio
 const revState = watchCurrent(benchmarkIdParam, effectiveViewRev)
 
 const bmLineClamp = 2
-const bmItemSize = computed(() => hasSelection.value ? 92 : 50)
+const bmItemSize = 92
+
+// The three panes are self-contained bordered panels, so the gutter is plain
+// page background acting as the gap between them.
+const splitterPt = {
+  root: { style: 'border: none; background: transparent; height: 100%' },
+  gutter: { style: 'background: transparent' },
+  gutterHandle: { style: 'background: var(--color-border-default)' },
+}
 
 const {
   diffRows,
@@ -262,6 +270,13 @@ function replaceQuery(patch) {
   router.replace({ name: route.name, params: route.params, query })
 }
 
+function onRetryRules() {
+  revState.retry()
+  if (benchmarksError.value) {
+    reloadBenchmarks()
+  }
+}
+
 function onRetryDiff() {
   invalidateRules(benchmarkIdParam.value)
   retryDiff()
@@ -270,64 +285,30 @@ function onRetryDiff() {
 
 <template>
   <div class="stig-library">
-    <header class="stig-library__header">
-      <h1
-        class="stig-library__title"
-        :class="{ 'stig-library__title--clickable': hasSelection }"
-        :title="hasSelection ? 'Back to full STIG list' : null"
-        @click="hasSelection && goToList()"
-      >
-        STIG Library
-      </h1>
-    </header>
-
-    <div class="stig-library__bar">
-      <div class="stig-library__bar-spacer" />
-      <Button
-        v-tooltip="'STIG content search — coming soon'"
-        icon="pi pi-search-plus"
-        label="Full search…"
-        severity="secondary"
-        size="small"
-        disabled
-      />
-    </div>
-
-    <div v-if="benchmarksLoading" class="stig-library__state">
-      <i class="pi pi-spin pi-spinner" />
-      <span>Loading benchmarks…</span>
-    </div>
-    <div v-else-if="benchmarksError" class="stig-library__state stig-library__state--error">
-      <i class="pi pi-exclamation-triangle" />
-      <span>{{ benchmarksError.message ?? 'Could not load benchmarks.' }}</span>
-      <button type="button" class="stig-library__retry" @click="reloadBenchmarks">
-        Retry
-      </button>
-    </div>
-
     <Splitter
-      v-else-if="hasSelection"
-      :pt="{
-        gutter: { style: 'background: var(--color-border-default)' },
-        root: { style: 'border: none; background: transparent; height: 100%' },
-      }"
+      v-if="hasSelection"
+      :pt="splitterPt"
       class="stig-library__tri"
     >
       <SplitterPanel :size="16" :min-size="8">
         <BenchmarksTable
           v-model:filter="filter"
           :benchmarks="filtered"
+          :loading="benchmarksLoading"
+          :error="benchmarksError"
           :selected-id="benchmarkIdParam"
-          compact
           :item-size="bmItemSize"
           :line-clamp="bmLineClamp"
           :total-count="totalCount"
           @select="goToBenchmark"
+          @back="goToList"
+          @retry="reloadBenchmarks"
         />
       </SplitterPanel>
       <SplitterPanel :size="40" :min-size="15">
         <RulePane
           :benchmark="selectedBenchmark"
+          :benchmark-id="benchmarkIdParam"
           :view-rev="effectiveViewRev"
           :compare-rev="compareRev"
           :revisions="benchmarkRevisions"
@@ -345,7 +326,7 @@ function onRetryDiff() {
           @select-rule="r => setSelectedRule(r.ruleId)"
           @select-diff-row="r => setSelectedDiffRow(r.key)"
           @close="goToList"
-          @retry-rules="revState.retry"
+          @retry-rules="onRetryRules"
           @retry-diff="onRetryDiff"
         />
       </SplitterPanel>
@@ -372,18 +353,14 @@ function onRetryDiff() {
       </SplitterPanel>
     </Splitter>
 
-    <div v-else class="stig-library__list">
-      <BenchmarksTable
-        v-model:filter="filter"
-        :benchmarks="filtered"
-        :selected-id="null"
-        :compact="false"
-        :item-size="bmItemSize"
-        :line-clamp="bmLineClamp"
-        :total-count="totalCount"
-        @select="goToBenchmark"
-      />
-    </div>
+    <BenchmarkListTable
+      v-else
+      :benchmarks="benchmarks"
+      :loading="benchmarksLoading"
+      :error="benchmarksError"
+      @select="goToBenchmark"
+      @refresh="reloadBenchmarks"
+    />
   </div>
 </template>
 
@@ -393,40 +370,9 @@ function onRetryDiff() {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  padding: 0.5rem;
   background-color: var(--color-background-darkest);
   color: var(--color-text-primary);
-}
-
-.stig-library__header {
-  padding: 0.75rem 1rem 0.25rem;
-}
-
-.stig-library__title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0;
-  color: var(--color-text-primary);
-  display: inline-block;
-}
-
-.stig-library__title--clickable {
-  cursor: pointer;
-}
-
-.stig-library__title--clickable:hover {
-  color: var(--color-primary-highlight);
-}
-
-.stig-library__bar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 1rem 0.75rem;
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.stig-library__bar-spacer {
-  flex: 1;
 }
 
 .stig-library__tri {
@@ -434,55 +380,24 @@ function onRetryDiff() {
   min-height: 0;
 }
 
-.stig-library__list {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  padding: 0.5rem;
-}
-
 .stig-library__detail {
   height: 100%;
-  overflow-y: auto;
-  padding: 0.5rem 1rem 1rem;
-  background-color: var(--color-background-dark);
+  min-height: 0;
+  overflow: hidden;
 }
 
-/* The shared RuleInfo component hard-codes a tall panel header sized for the
-   Asset/Collection Review headers (height: 7.28rem). Inside STIG Library's
-   detail pane it's just a single-row label, so collapse it to a normal
-   panel-header height. */
+/* RuleInfo is shared with Asset/Collection Review and stays untouched; these
+   two rules only align it with its sibling panes here. Its panel header is
+   hard-coded tall (height: 7.28rem) for those workspaces' multi-row headers,
+   and its frame uses a lighter border and a smaller radius. */
 .stig-library__detail :deep(.rule-info__panel-header) {
   height: auto;
-  min-height: 0;
-  padding: 0.5rem 0.9rem;
+  min-height: 2.9rem;
+  padding: 0.5rem 0.75rem;
 }
 
-.stig-library__state {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem;
-  color: var(--color-text-dim);
-  font-style: italic;
-}
-
-.stig-library__state--error {
-  color: var(--color-text-error);
-}
-
-.stig-library__retry {
-  margin-left: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 3px;
-  border: 1px solid var(--color-border-default);
-  background-color: var(--color-background-subtle);
-  color: var(--color-text-primary);
-  cursor: pointer;
-  font-style: normal;
-}
-
-.stig-library__retry:hover {
-  background-color: var(--color-bg-hover);
+.stig-library__detail :deep(.rule-info) {
+  border-color: var(--color-border-default);
+  border-radius: 6px;
 }
 </style>

@@ -1,6 +1,6 @@
 <script setup>
-import Button from 'primevue/button'
 import { computed } from 'vue'
+import ActionButton from '../../../components/common/ActionButton.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
 import RevisionSelect from './RevisionSelect.vue'
 
@@ -41,7 +41,7 @@ function onChangeCompareRev(rev) {
 </script>
 
 <template>
-  <div class="rule-pane-toolbar">
+  <div class="stiglib-subbar">
     <RevisionSelect
       label="Viewing:"
       :options="revisions"
@@ -61,32 +61,20 @@ function onChangeCompareRev(rev) {
         :disabled="revisionsLoading"
         @update:model-value="onChangeCompareRev"
       />
-      <Button
+      <ActionButton
         v-if="diffMode"
-        icon="pi pi-times"
-        label="Exit diff"
-        severity="secondary"
-        size="small"
+        icon="pi pi-times icon-grey"
+        title="Return to single-revision view"
         @click="onChangeCompareRev(null)"
-      />
+      >
+        Exit diff
+      </ActionButton>
     </template>
-    <div class="rule-pane-toolbar__spacer" />
+    <div class="stiglib-panel__spacer" />
     <DensityControls grid-key="stig-library-rules-v2" :default-line-clamp="2" />
   </div>
 </template>
 
 <style scoped>
-.rule-pane-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  padding: 0.55rem 0.9rem;
-  background-color: var(--color-background-subtle);
-  border-bottom: 1px solid var(--color-border-default);
-  flex-wrap: wrap;
-}
-
-.rule-pane-toolbar__spacer {
-  flex: 1;
-}
+@import "../styles/stigLibrary.css";
 </style>
