@@ -16,17 +16,16 @@ Most originated from the Findings feature review (2026-06-10) — see
   result strings, alphabetical) via `:sort-field="r => resultSortValue(r.currentResult)"`.
 
 - [ ] **CSV export gaps.**
-  `exportCSV` only exports columns with a `field`: the STIGs column (both Findings
-  grids), the engine icon column, and asset labels are absent from exports, while
-  decorated internal fields (`_rowKey`, `_engineDisplay`, …) may leak in. Audit actual
-  export output; use `exportable` / `exportHeader` on Column. Likely applies to every
-  grid using the decorate-rows pattern.
+  `shared/csv.js` `exportDataTableCsv` (every StatusFooter export) only exports columns
+  with a `field`: the STIGs column (both Findings grids) and the engine icon column are
+  absent from exports, while decorated internal fields (`_rowKey`, `_engineDisplay`, …)
+  may leak in. Audit actual export output; use `exportable` / `exportHeader` on Column.
+  Likely applies to every grid using the decorate-rows pattern.
 
 - [ ] **CSV exports omit the classification "Marking" column.**
   The legacy client prepends a `Marking` header with `(${apiConfig.classification})`
-  in every row (`client/src/js/ExportButton.js:134`); clientV2 grids use PrimeVue
-  `exportCSV`, which has no such column anywhere. Product decision needed, then a
-  shared fix (all grids), not per-feature.
+  in every row (`client/src/js/ExportButton.js:134`); `exportDataTableCsv` has no such
+  column. Product decision needed, then a single fix in `shared/csv.js`.
 
 ## Hardening (latent — not reachable today)
 

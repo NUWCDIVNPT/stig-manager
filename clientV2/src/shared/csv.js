@@ -50,13 +50,16 @@ export function generateCsv(data, columns, listDelimiter = ',') {
 }
 
 /**
- * Serializes any cell value to text: arrays join with ', ' (object items as
- * JSON), objects become JSON, scalars stringify. Unlike String(), objects
- * never collapse to '[object Object]'.
+ * Serializes any cell value to text: Dates become ISO strings, arrays join
+ * with ', ' (object items as JSON), other objects become JSON, scalars
+ * stringify. Unlike String(), objects never collapse to '[object Object]'.
  */
 export function serializeCsvValue(value) {
   if (value == null) {
     return ''
+  }
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? '' : value.toISOString()
   }
   if (Array.isArray(value)) {
     return value
@@ -93,10 +96,9 @@ export function downloadCsv(content, filename) {
 export function exportDataTableCsv(dt) {
   const columns = dt?.columns
   const rows = dt?.processedData
-  if (!columns || !rows) {
-    // Not a real DataTable instance (or PrimeVue internals changed): fall back
-    // to the built-in exporter rather than silently doing nothing.
-    dt?.exportCSV?.()
+  // PrimeVue's `columns` is null (not []) when no Column is rendered, so a
+  // table with nothing to export is a no-op rather than an empty file.
+  if (!Array.isArray(columns) || !Array.isArray(rows)) {
     return
   }
 

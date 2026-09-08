@@ -25,7 +25,6 @@ Labels, roleId >= 3). Captured during the Manage Labels review (2026-06-24).
   `ManageLabels` integration test would lock in the trickiest logic. Pure helpers
   (`tagAssets.js`, `labelPalette.js`) and the leaf components are already well covered.
 
-See also in [common.md](common.md): the `exportCSV` gaps item — Manage Labels exports
-via PrimeVue's native `exportCSV()` (`Label/LabelsTable.vue`), same decorate/export
-caveats as the other grids, and it does not route through `shared/csv.js`'s
-formula-injection guard.
+See also in [common.md](common.md): the CSV export gaps item — Manage Labels
+(`Label/LabelsTable.vue`) exports through `exportDataTableCsv` like every other grid,
+with the same decorate/export caveats.

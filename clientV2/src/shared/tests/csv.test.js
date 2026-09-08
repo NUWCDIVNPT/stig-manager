@@ -339,9 +339,21 @@ describe('exportDataTableCsv', () => {
     expect(csv.split('\n')[1]).toBe('row1,3,t1')
   })
 
-  it('falls back to the built-in exportCSV when DataTable internals are unavailable', () => {
-    const exportCSV = vi.fn()
-    exportDataTableCsv({ exportCSV })
-    expect(exportCSV).toHaveBeenCalledOnce()
+  it('serializes Date cells as ISO strings without extra quoting', async () => {
+    exportDataTableCsv(fakeDt({
+      columns: [{ field: 'when', header: 'When' }],
+      processedData: [{ when: new Date('2026-09-08T12:00:00Z') }],
+    }))
+
+    const csv = await savedCsvText()
+    expect(csv.split('\n')[1]).toBe('2026-09-08T12:00:00.000Z')
+  })
+
+  it('no-ops when DataTable internals are unavailable or the table has no columns', () => {
+    saveAs.mockClear()
+    exportDataTableCsv(null)
+    exportDataTableCsv({})
+    exportDataTableCsv(fakeDt({ columns: null }))
+    expect(saveAs).not.toHaveBeenCalled()
   })
 })
