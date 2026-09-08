@@ -9,7 +9,7 @@ const semverGte = require('semver/functions/gte')
 const semverCoerce = require('semver/functions/coerce')
 const Importer = require('./migrations/lib/mysql-import.js')
 const state = require('../utils/state')
-const minMySqlVersion = '8.0.24'
+const minMySqlVersion = '8.4.0'
 const testedMySqlSeries = '8.4'
 let _this = this
 let initAttempt = 0
@@ -55,28 +55,6 @@ async function getTableCount () {
  */
 function isMinVersion(version) {
   return semverGte(semverCoerce(version), semverCoerce(minMySqlVersion))
-}
-
-/**
- * Checks if the provided MySQL version is from a release series tested with STIG Manager.
- * @param {string} version - The MySQL version to check.
- * @returns {boolean} True if the version is from a tested series, false otherwise.
- */
-function isTestedSeries(version) {
-  return semverGte(semverCoerce(version), semverCoerce(testedMySqlSeries))
-}
-
-/**
- * Logs a warning if the provided MySQL version is not from a tested release series.
- * @param {string} version - The MySQL version.
- */
-function warnUntestedVersion(version) {
-  if (!isTestedSeries(version)) {
-    logger.writeWarn('mysql', 'version', {
-      version,
-      message: `MySQL release ${version} is not tested with STIG Manager and support will be removed in a future release. Update to the latest MySQL ${testedMySqlSeries}.x release.`
-    })
-  }
 }
 
 /**
@@ -249,7 +227,6 @@ async function poolMonitorRetryFn () {
       connection.connection.destroy()
       throw new Error(`MySQL release ${version} is too old. Update to the latest MySQL ${testedMySqlSeries}.x release.`)
     }
-    warnUntestedVersion(version)
     await setupSchema()
     logger.writeInfo('mysql', 'restore', { success: true, version, message: 'pool connection restored' })
   }
@@ -328,7 +305,6 @@ module.exports.initializeDatabase = async function () {
       throw new Error('MySQL release is too old.')
     }
     logger.writeInfo('mysql', 'preflight', {success: true, version })
-    warnUntestedVersion(version)
 
     // Patch the pool to emit a 'remove' event when a connection is removed
     patchRemoveConnection(_this.pool)

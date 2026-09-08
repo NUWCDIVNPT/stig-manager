@@ -317,9 +317,8 @@ exports.queryChecklist = async function (inPredicates, projections = []) {
 
     const sql = dbUtils.makeQueryString({columns, joins, predicates, groupBy, orderBy}) 
     connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = true
 
-    let [rows] = await connection.query( sql, predicates.binds )
+    let [rows] = await connection.query({sql, namedPlaceholders: true}, predicates.binds)
     return (rows)
   }
   finally {
@@ -1583,7 +1582,6 @@ exports.updateAsset = async function( {assetId, body, currentCollectionId, trans
     }
 
     connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = true
     async function transaction () {
       await connection.query('START TRANSACTION')
 

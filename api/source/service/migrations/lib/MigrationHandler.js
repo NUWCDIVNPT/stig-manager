@@ -15,8 +15,9 @@ module.exports = class MigrationHandler {
         try {
           logger.writeInfo('mysql', 'migration', {status: 'start', direction: 'up', name: migrationName })
           connection = await pool.getConnection()
-          // Pool connections may have namedPlaceholders enabled by prior callers.
-          // Disable it so MySQL label syntax (e.g. main:BEGIN) isn't parsed as placeholders.
+          // Named placeholders must stay off here so MySQL label syntax (e.g. main:BEGIN)
+          // is not rewritten as a placeholder. Since mysql2 3.23.3 each pooled connection
+          // has its own config and services set namedPlaceholders per query, so this is a guard.
           connection.config.namedPlaceholders = false
           for (const statement of this._upCommands) {
             logger.writeInfo('mysql', 'migration', {status: 'running', name: migrationName, statement })
