@@ -178,14 +178,21 @@ declarative, so every exporting table must:
 - Add `export-header` to any column whose visible header is a `#header` slot; the
   `header` prop cannot be used there because PrimeVue renders both.
 - Use a hidden column (`<Column field="labels" header="Labels" hidden />`) to export a
-  value the grid shows inside another cell.
+  value the grid shows inside another cell. Hidden columns render nothing per row.
 
-Cells pass through `shared/lib/exportCells.js` `exportDisplayValue`, the default export
-function: it maps the app's shared field names (`resultEngine`, `result`, `status`,
-`severity`, `labels`, `stigs`, ...) to the text the grid displays, and passes unknown
-fields through to `serializeCsvValue`. Add a rule there when a new object-valued field
-recurs across grids; a table with a one-off need binds `:export-function` on the
-DataTable and wraps `exportDisplayValue`.
+Cell text comes from, in order: the column's `:export-value` function, the DataTable's
+`:export-function`, or `shared/lib/exportCells.js` `exportDisplayValue`. All receive
+`{ data, field, record }` for every cell, null included.
+
+- `exportDisplayValue` maps the field names shared across several grids
+  (`resultEngine`, `result`, `status`, `severity`, `labels`/`assetLabels`, `stigs`) to
+  the text the grid displays and passes everything else to `serializeCsvValue`. Add a
+  rule there only when an object-valued field recurs across grids.
+- A one-off column (a schedule object, a run duration computed from the row, a
+  role id) binds `:export-value` on the Column, usually a one-line arrow in the
+  component's script, e.g. `:export-value="({ record }) => resourceSortKey(record)"`.
+  A column with `export-value` needs no `field`; it is the declarative equivalent of
+  the legacy client's `exportvalue` attribute.
 
 `shared/tests/columnExportConventions.test.js` scans every exporting table for the
 field and header rules above.
