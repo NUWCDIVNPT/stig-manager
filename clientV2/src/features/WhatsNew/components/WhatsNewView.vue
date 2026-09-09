@@ -5,11 +5,13 @@ import { Sources } from '../../../components/global/whatsNewSources.js'
 
 <template>
   <div class="whats-new-page">
-    <div class="header">
-      <h1>What's New</h1>
-    </div>
-    <div class="whats-new-content">
-      <WhatsNewContent :features="Sources" />
+    <div class="page-inner">
+      <div class="header">
+        <h1>What's New</h1>
+      </div>
+      <div class="whats-new-content">
+        <WhatsNewContent :features="Sources" :scrollable="false" />
+      </div>
     </div>
   </div>
 </template>
@@ -17,12 +19,13 @@ import { Sources } from '../../../components/global/whatsNewSources.js'
 <style scoped>
 .whats-new-page {
   height: 100%;
-  overflow: hidden;
-  padding: 2rem;
+  overflow-y: auto;
   background-color: var(--color-background-dark);
   color: var(--color-text-primary);
-  display: flex;
-  flex-direction: column;
+}
+
+.page-inner {
+  padding: 2rem;
 }
 
 .header {
@@ -41,7 +44,5 @@ h1 {
   max-width: 900px;
   margin: 0 auto;
   width: 100%;
-  flex: 1;
-  min-height: 0;
 }
 </style>
