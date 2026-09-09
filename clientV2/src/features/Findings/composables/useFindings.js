@@ -11,11 +11,11 @@ import { fetchFindings } from '../api/findingsApi.js'
 // row counts honor the orchestrator's label filter.
 export function useFindings({ collectionId, aggregator, benchmarkId, labelIds }) {
   const { state: findings, isLoading, error, execute } = useAsyncState(
-    () => fetchFindings(collectionId.value, {
+    ({ signal } = {}) => fetchFindings(collectionId.value, {
       aggregator: aggregator.value,
       benchmarkId: benchmarkId.value || undefined,
       labelParams: buildLabelFilterParams(labelIds.value),
-    }),
+    }, { signal }),
     { immediate: false, initialState: [], onError: null },
   )
 

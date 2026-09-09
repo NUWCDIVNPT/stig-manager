@@ -6,7 +6,9 @@ export { fetchCollectionStigSummary } from '../../CollectionView/api/collectionA
 
 // labelParams: label filter params ({ labelId, labelMatch }) built by
 // buildLabelFilterParams; {} when no filter is active.
-export function fetchFindings(collectionId, { aggregator, benchmarkId, projection = ['stigs'], labelParams = {} } = {}) {
+// opts: fetch options forwarded to apiCall (e.g. { signal } from useAsyncState,
+// so a superseded request is aborted instead of running to completion).
+export function fetchFindings(collectionId, { aggregator, benchmarkId, projection = ['stigs'], labelParams = {} } = {}, opts = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch findings.')
   }
@@ -17,7 +19,7 @@ export function fetchFindings(collectionId, { aggregator, benchmarkId, projectio
   if (benchmarkId) {
     params.benchmarkId = benchmarkId
   }
-  return apiCall('getFindingsByCollection', params)
+  return apiCall('getFindingsByCollection', params, undefined, opts)
 }
 
 // POA&M/eMASS (or MCCAST) spreadsheet; we just stream the response and save it.
@@ -55,7 +57,7 @@ export async function downloadPoam(collectionId, params = {}) {
 // Returns the failed review records that back a single aggregated finding —
 // the user clicks an aggregated row in the middle pane, we fetch the per-asset
 // reviews for that row's dimension value here.
-export function fetchFailedReviews(collectionId, { aggregator, aggregatorValue, projection = ['stigs'], labelParams = {} } = {}) {
+export function fetchFailedReviews(collectionId, { aggregator, aggregatorValue, projection = ['stigs'], labelParams = {} } = {}, opts = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch reviews.')
   }
@@ -69,5 +71,5 @@ export function fetchFailedReviews(collectionId, { aggregator, aggregatorValue, 
     [aggregator]: aggregatorValue,
     ...labelParams,
   }
-  return apiCall('getReviewsByCollection', params)
+  return apiCall('getReviewsByCollection', params, undefined, opts)
 }

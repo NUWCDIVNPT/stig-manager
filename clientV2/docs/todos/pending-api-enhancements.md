@@ -2,7 +2,7 @@
 
 Tracks API gaps blocking — or partially compromising — clientV2 features. Each entry describes the endpoint(s) involved, the feature that needs the change, the current limitation, and a proposed shape for the enhancement. Add to the list as you encounter new gaps.
 
-These are **server-side** changes — the OpenAPI spec, the service layer, and the underlying SQL all need to be updated. The clientV2 code has `TODO`-style comments at the affected call sites that reference this document.
+These are **server-side** changes — the OpenAPI spec, the service layer, and the underlying SQL all need to be updated. When a gap has a client call site, leave a `TODO`-style comment there that references this document so the two can be reconciled when the API catches up.
 
 ---
 
@@ -118,3 +118,22 @@ Keying the path on `ruleId` (not `version`) matches what the client already hold
 ### Notes
 
 The STIG Library's revision diff ([`useRevisionDiff`](../../src/features/STIGLibrary/composables/useRevisionDiff.js)) already joins revisions by `rule.version` client-side — same mapping, so the server and client agree on what "same rule" means. `groupId` alone is not sufficient (DISA's group renumbering makes it less stable than the STIG ID) but could serve as a fallback when `version` is absent. Diff rendering itself stays client-side; the endpoint only needs to supply the per-revision text.
+
+---
+
+## 4. Label filtering on POA&M export (not a priority)
+
+**Operations:** `getPoamByCollection`
+**Feature:** Findings — POA&M export (`PoamExport.vue`)
+
+### Current behavior
+
+The endpoint accepts `aggregator`, `acceptedOnly`, `benchmarkId`, `assetId`, and the format/date/status fields. **No label parameters.** The controller calls `CollectionService.getFindingsByCollection` without `labelIds`/`labelNames`/`labelMatch`, even though the service accepts them (the findings and reviews endpoints already expose them).
+
+### Why it matters
+
+The Findings grid honors the orchestrator-level label filter, but the POA&M generated from that grid is always collection-wide. A user who narrows to a label, sees N rows, and exports gets a workbook covering every asset in the collection, with no hint that the scopes differ. The legacy client has no label filter on its Findings panel, so this is a clientV2-only inconsistency rather than a regression.
+
+### Proposed shape
+
+Add `LabelIdQuery` / `LabelNameQuery` / `LabelMatchQuery` to `getPoamByCollection` and pass them through the controller to `getFindingsByCollection`. Client side, thread the same label params `useFindings` builds into `downloadPoam`. `AssetIdQuery` on this endpoint is single-valued, so a client-side labelIds → assetIds pre-resolution does not generalize.

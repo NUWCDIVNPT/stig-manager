@@ -131,13 +131,20 @@ watch(isManagement, () => {
   }, 300)
 })
 
+// Orchestrator-level label filter shared by the dashboard sidebar and every tab.
+const selectedLabelIds = ref([])
+
 // Lazy-mount tab panels: only render a tab's content after it has been visited.
 // Reset on collection switch so tabs visited in a prior collection don't mount
-// (and fetch) unvisited in the new one.
+// (and fetch) unvisited in the new one. The label filter is reset alongside:
+// label IDs are collection-scoped, and this ref outlives the `v-if="collection"`
+// remount, so without the reset the new collection would be queried with the
+// old collection's labels (empty panes, lingering clear icon in MetricsFilter).
 const visitedTabs = ref(new Set([activeTab.value]))
 watch(activeTab, tab => visitedTabs.value.add(tab))
 watch(() => props.collectionId, () => {
   visitedTabs.value = new Set([activeTab.value])
+  selectedLabelIds.value = []
 })
 
 const tabsPt = {
@@ -175,7 +182,6 @@ const tabPanelPt = {
 // Dashboard sidebar state (collapsed/expanded)
 const DASHBOARD_STORAGE_KEY = 'stigman:collectionDashboardCollapsed'
 const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === 'true')
-const selectedLabelIds = ref([])
 const isAnimating = ref(false)
 const refreshKey = ref(0)
 

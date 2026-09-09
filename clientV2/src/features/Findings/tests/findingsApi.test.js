@@ -90,7 +90,13 @@ describe('fetchFindings', () => {
       aggregator: 'groupId',
       projection: ['stigs'],
       labelId: ['l1', 'l2'],
-    })
+    }, undefined, {})
+  })
+
+  it('forwards fetch options (abort signal) to apiCall', () => {
+    const signal = new AbortController().signal
+    fetchFindings('42', { aggregator: 'groupId' }, { signal })
+    expect(apiCall.mock.calls[0][3]).toEqual({ signal })
   })
 
   it('adds no label keys when the filter is empty', () => {
@@ -99,7 +105,7 @@ describe('fetchFindings', () => {
       collectionId: '42',
       aggregator: 'groupId',
       projection: ['stigs'],
-    })
+    }, undefined, {})
   })
 })
 
@@ -114,6 +120,12 @@ describe('fetchFailedReviews', () => {
       projection: ['stigs'],
       ruleId: 'SV-1_rule',
       labelMatch: 'null',
-    })
+    }, undefined, {})
+  })
+
+  it('forwards fetch options (abort signal) to apiCall', () => {
+    const signal = new AbortController().signal
+    fetchFailedReviews('42', { aggregator: 'ruleId', aggregatorValue: 'SV-1_rule' }, { signal })
+    expect(apiCall.mock.calls[0][3]).toEqual({ signal })
   })
 })
