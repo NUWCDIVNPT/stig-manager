@@ -14,7 +14,7 @@ export function useFindings({ collectionId, aggregator, benchmarkId, labelIds })
     ({ signal } = {}) => fetchFindings(collectionId.value, {
       aggregator: aggregator.value,
       benchmarkId: benchmarkId.value || undefined,
-      labelParams: buildLabelFilterParams(labelIds.value),
+      ...buildLabelFilterParams(labelIds.value),
     }, { signal }),
     { immediate: false, initialState: [], onError: null },
   )

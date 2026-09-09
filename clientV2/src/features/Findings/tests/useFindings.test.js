@@ -33,7 +33,6 @@ describe('useFindings', () => {
     expect(fetchFindings).toHaveBeenCalledWith('17', {
       aggregator: 'groupId',
       benchmarkId: undefined,
-      labelParams: {},
     }, SIGNAL)
   })
 
@@ -57,7 +56,6 @@ describe('useFindings', () => {
     expect(fetchFindings).toHaveBeenLastCalledWith('17', {
       aggregator: 'groupId',
       benchmarkId: 'A_STIG',
-      labelParams: {},
     }, SIGNAL)
   })
 
@@ -69,7 +67,7 @@ describe('useFindings', () => {
     expect(fetchFindings).toHaveBeenLastCalledWith('17', {
       aggregator: 'groupId',
       benchmarkId: undefined,
-      labelParams: { labelId: ['label-a'] },
+      labelId: ['label-a'],
     }, SIGNAL)
 
     fetchFindings.mockClear()
@@ -78,7 +76,7 @@ describe('useFindings', () => {
     expect(fetchFindings).toHaveBeenLastCalledWith('17', {
       aggregator: 'groupId',
       benchmarkId: undefined,
-      labelParams: { labelMatch: 'null' },
+      labelMatch: 'null',
     }, SIGNAL)
   })
 

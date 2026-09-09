@@ -84,7 +84,7 @@ describe('fetchFindings', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('spreads label filter params into the request', () => {
-    fetchFindings('42', { aggregator: 'groupId', labelParams: { labelId: ['l1', 'l2'] } })
+    fetchFindings('42', { aggregator: 'groupId', labelId: ['l1', 'l2'] })
     expect(apiCall).toHaveBeenCalledWith('getFindingsByCollection', {
       collectionId: '42',
       aggregator: 'groupId',
@@ -113,7 +113,7 @@ describe('fetchFailedReviews', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('spreads label filter params into the request', () => {
-    fetchFailedReviews('42', { aggregator: 'ruleId', aggregatorValue: 'SV-1_rule', labelParams: { labelMatch: 'null' } })
+    fetchFailedReviews('42', { aggregator: 'ruleId', aggregatorValue: 'SV-1_rule', labelMatch: 'null' })
     expect(apiCall).toHaveBeenCalledWith('getReviewsByCollection', {
       collectionId: '42',
       result: 'fail',

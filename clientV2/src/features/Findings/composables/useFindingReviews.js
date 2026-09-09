@@ -26,7 +26,7 @@ export function useFindingReviews({ collectionId, selectedFinding, aggregator, l
     ({ signal } = {}) => fetchFailedReviews(collectionId.value, {
       aggregator: aggregator.value,
       aggregatorValue: aggregatorValue.value,
-      labelParams: buildLabelFilterParams(labelIds.value),
+      ...buildLabelFilterParams(labelIds.value),
     }, { signal }),
     { immediate: false, initialState: [], onError: null },
   )

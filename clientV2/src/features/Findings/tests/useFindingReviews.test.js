@@ -39,7 +39,6 @@ describe('useFindingReviews', () => {
     expect(fetchFailedReviews).toHaveBeenCalledWith('17', {
       aggregator: 'groupId',
       aggregatorValue: 'V-219148',
-      labelParams: {},
     }, { signal: expect.any(AbortSignal) })
     expect(reviews.value).toEqual([{ assetId: '1' }])
   })
@@ -53,7 +52,7 @@ describe('useFindingReviews', () => {
     expect(fetchFailedReviews).toHaveBeenLastCalledWith('17', {
       aggregator: 'groupId',
       aggregatorValue: 'V-219148',
-      labelParams: { labelId: ['label-a'] },
+      labelId: ['label-a'],
     }, { signal: expect.any(AbortSignal) })
 
     fetchFailedReviews.mockClear()
@@ -62,7 +61,7 @@ describe('useFindingReviews', () => {
     expect(fetchFailedReviews).toHaveBeenLastCalledWith('17', {
       aggregator: 'groupId',
       aggregatorValue: 'V-219148',
-      labelParams: { labelMatch: 'null' },
+      labelMatch: 'null',
     }, { signal: expect.any(AbortSignal) })
   })
 
