@@ -4,12 +4,14 @@ import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import librarySvg from '../../../assets/library.svg'
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
+import ActionButton from '../../../components/common/ActionButton.vue'
 import ClassificationBadge from '../../../components/common/ClassificationBadge.vue'
 import ColumnSearchFilter from '../../../components/common/ColumnSearchFilter.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useTableFooterActions } from '../../../shared/composables/useTableFooterActions.js'
+import { fieldMatches } from '../../../shared/lib/searchUtils.js'
 import { paneColumnPt, paneTablePt } from '../tablePt.js'
 import EarlierRevisionsPills from './EarlierRevisionsPills.vue'
 
@@ -40,10 +42,10 @@ const filteredData = computed(() => {
   const titleTerm = titleFilter.value.trim().toLowerCase()
   return (props.benchmarks ?? [])
     .filter((b) => {
-      if (idTerm && !b.benchmarkId?.toLowerCase().includes(idTerm)) {
+      if (idTerm && !fieldMatches(b.benchmarkId, idTerm)) {
         return false
       }
-      if (titleTerm && !b.title?.toLowerCase().includes(titleTerm)) {
+      if (titleTerm && !fieldMatches(b.title, titleTerm)) {
         return false
       }
       return true
@@ -83,15 +85,13 @@ function onRowClick(event) {
       </span>
       <span class="stiglib-panel__hint">Select a benchmark to browse its rules and compare revisions</span>
       <div class="stiglib-panel__spacer" />
-      <button
-        type="button"
-        class="stiglib-headerbtn"
+      <ActionButton
+        icon="pi pi-search-plus icon-grey"
         title="STIG content search — coming soon"
         disabled
       >
-        <i class="pi pi-search-plus" />
         Full search…
-      </button>
+      </ActionButton>
       <DensityControls grid-key="stig-library-benchmarks" :default-line-clamp="2" />
     </header>
 

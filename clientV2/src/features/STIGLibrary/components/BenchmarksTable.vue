@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 import ActionButton from '../../../components/common/ActionButton.vue'
 import ClassificationBadge from '../../../components/common/ClassificationBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { useTableFooterActions } from '../../../shared/composables/useTableFooterActions.js'
 import { paneColumnPt, paneTablePt } from '../tablePt.js'
 import EarlierRevisionsPills from './EarlierRevisionsPills.vue'
 
@@ -55,6 +56,8 @@ const dataTablePt = {
 
 const columnPt = paneColumnPt()
 
+const { onFooterAction } = useTableFooterActions(dataTableRef)
+
 const selectedRow = computed(() =>
   props.selectedId ? props.benchmarks.find(b => b.benchmarkId === props.selectedId) ?? null : null,
 )
@@ -66,12 +69,6 @@ const filteredCount = computed(() =>
 
 function onRowClick(event) {
   emit('select', event.data)
-}
-
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
 }
 
 function clearFilter() {

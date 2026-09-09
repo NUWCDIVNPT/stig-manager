@@ -89,7 +89,6 @@ const bmItemSize = 92
 const splitterPt = {
   root: { style: 'border: none; background: transparent; height: 100%' },
   gutter: { style: 'background: transparent' },
-  gutterHandle: { style: 'background: var(--color-border-default)' },
 }
 
 const {
@@ -115,17 +114,6 @@ const {
   benchmarkId: benchmarkIdParam,
   viewRev: effectiveViewRev,
   selectedRuleId,
-})
-
-// RuleInfo (from AssetReview) uses `selectedChecklistItem` both as an empty-state
-// gate and for the "Rule for Group X" crumb. Feed it the matching rule from the
-// loaded revision so the component actually renders its content.
-const selectedRuleStub = computed(() => {
-  const id = selectedRuleId.value
-  if (!id) {
-    return null
-  }
-  return (revState.rules ?? []).find(r => r.ruleId === id) ?? null
 })
 
 const selectedDiffRow = computed(() =>
@@ -305,7 +293,7 @@ function onRetryDiff() {
           @retry="reloadBenchmarks"
         />
       </SplitterPanel>
-      <SplitterPanel :size="40" :min-size="15">
+      <SplitterPanel :size="49" :min-size="15">
         <RulePane
           :benchmark="selectedBenchmark"
           :benchmark-id="benchmarkIdParam"
@@ -330,14 +318,14 @@ function onRetryDiff() {
           @retry-diff="onRetryDiff"
         />
       </SplitterPanel>
-      <SplitterPanel :size="44" :min-size="18">
+      <SplitterPanel :size="35" :min-size="18">
         <div class="stig-library__detail">
           <RuleInfo
             v-if="!diffMode"
             :rule-content="ruleContent"
             :is-loading="isRuleLoading"
             :rule-content-error="ruleContentError"
-            :selected-checklist-item="selectedRuleStub"
+            compact
             @retry="retryRule"
           />
           <DiffDetailPanel
@@ -384,20 +372,5 @@ function onRetryDiff() {
   height: 100%;
   min-height: 0;
   overflow: hidden;
-}
-
-/* RuleInfo is shared with Asset/Collection Review and stays untouched; these
-   two rules only align it with its sibling panes here. Its panel header is
-   hard-coded tall (height: 7.28rem) for those workspaces' multi-row headers,
-   and its frame uses a lighter border and a smaller radius. */
-.stig-library__detail :deep(.rule-info__panel-header) {
-  height: auto;
-  min-height: 2.9rem;
-  padding: 0.5rem 0.75rem;
-}
-
-.stig-library__detail :deep(.rule-info) {
-  border-color: var(--color-border-default);
-  border-radius: 6px;
 }
 </style>

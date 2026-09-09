@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import librarySvg from '../../../assets/library.svg'
+import ActionButton from '../../../components/common/ActionButton.vue'
 import ClassificationBadge from '../../../components/common/ClassificationBadge.vue'
 
 const props = defineProps({
@@ -32,14 +33,11 @@ const id = computed(() => props.benchmark?.benchmarkId ?? props.benchmarkId)
     </span>
     <span v-if="id" class="stiglib-chip">{{ id }}</span>
     <ClassificationBadge v-if="benchmark?.marking" :level="benchmark.marking" />
-    <button
-      type="button"
-      class="stiglib-iconbtn"
+    <ActionButton
+      icon="pi pi-times icon-grey"
       title="Close benchmark"
       @click="$emit('close')"
-    >
-      <i class="pi pi-times" />
-    </button>
+    />
   </header>
 </template>
 

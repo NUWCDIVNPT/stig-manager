@@ -8,6 +8,8 @@ import HelpIcon from '../../../components/common/HelpIcon.vue'
 import RuleIdDiffSpan from '../../../components/common/RuleIdDiffSpan.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { useTableFooterActions } from '../../../shared/composables/useTableFooterActions.js'
+import { severityMap } from '../../../shared/lib/checklistUtils.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { paneColumnPt, paneTablePt } from '../tablePt.js'
 
@@ -31,10 +33,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['select-row'])
 
-const SEVERITY_TO_CAT = { high: 1, medium: 2, low: 3 }
-
 const dataTableRef = ref(null)
-const { itemSize } = useGridDensity('stig-library-rules-v2', 2, 6, 15)
+const { itemSize } = useGridDensity('stig-library-rules', 2, 6, 15)
 
 const selectedRow = computed(() =>
   props.selectedKey ? props.rows.find(r => r.key === props.selectedKey) ?? null : null,
@@ -47,14 +47,10 @@ const columnPt = {
 
 const dataTablePt = paneTablePt()
 
+const { onFooterAction } = useTableFooterActions(dataTableRef)
+
 function onRowClick(event) {
   emit('select-row', event.data)
-}
-
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
 }
 </script>
 
@@ -109,7 +105,7 @@ function onFooterAction(key) {
     </Column>
     <Column header="Cat" :style="{ width: '5rem' }" :pt="columnPt.center">
       <template #body="{ data }">
-        <CatBadge v-if="data.cat" :category="SEVERITY_TO_CAT[data.cat] ?? 3" variant="label" />
+        <CatBadge v-if="data.cat" :category="severityMap[data.cat] ?? 3" variant="label" />
       </template>
     </Column>
     <Column :style="{ minWidth: '16rem' }" :pt="columnPt.left">

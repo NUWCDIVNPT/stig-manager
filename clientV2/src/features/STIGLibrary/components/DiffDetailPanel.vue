@@ -53,7 +53,7 @@ const patches = computed(() => props.diffDetail ?? {})
       </span>
     </header>
 
-    <div class="stiglib-panel__body stiglib-panel__body--scroll">
+    <div class="stiglib-panel__body stiglib-panel__body--scroll sm-scrollbar-thin">
       <RuleDiffPanel
         :patches="patches"
         :status="panelStatus"
