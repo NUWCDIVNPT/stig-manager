@@ -161,9 +161,34 @@ Columns must be:
 ## Table Footer
 
 - Refresh button: `#footer` template
-- CSV export: `#footer` template + export logic
+- CSV export: `#footer` template + `StatusFooter :dt="dataTableRef"`
 - Row count: `#footer` template with `{{ data.length }}`
 - Totals badges: `#footer` template with Tag components
+
+### CSV export
+
+`StatusFooter` exports the bound DataTable through `shared/csv.js` `exportDataTableCsv`,
+which reads only the Column props `field`, `header`, `export-header` and `exportable`.
+The legacy client exported each column's rendered text; the Vue equivalent is
+declarative, so every exporting table must:
+
+- Give each data column a `field`, even when a `#body` slot renders something derived
+  from the row. Add `:exportable="false"` to control columns (actions, apply buttons,
+  custom select-all checkboxes). PrimeVue selection/expander columns need nothing.
+- Add `export-header` to any column whose visible header is a `#header` slot; the
+  `header` prop cannot be used there because PrimeVue renders both.
+- Use a hidden column (`<Column field="labels" header="Labels" hidden />`) to export a
+  value the grid shows inside another cell.
+
+Cells pass through `shared/lib/exportCells.js` `exportDisplayValue`, the default export
+function: it maps the app's shared field names (`resultEngine`, `result`, `status`,
+`severity`, `labels`, `stigs`, ...) to the text the grid displays, and passes unknown
+fields through to `serializeCsvValue`. Add a rule there when a new object-valued field
+recurs across grids; a table with a one-off need binds `:export-function` on the
+DataTable and wraps `exportDisplayValue`.
+
+`shared/tests/columnExportConventions.test.js` scans every exporting table for the
+field and header rules above.
 
 ---
 

@@ -31,6 +31,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:selection', 'preregister', 'unregister', 'set-status', 'refresh'])
 
+const exportLastAccess = ({ data }) => (data ? formatLastAccess(data) : '')
+
 const dataTableRef = ref(null)
 
 const selectedUser = computed({
@@ -159,7 +161,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           No users found.
         </template>
 
-        <Column field="username" sortable :pt="borderPt" style="width: 15%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="username" export-header="Username" sortable :pt="borderPt" style="width: 15%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Username
@@ -168,7 +170,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column field="displayName" sortable :pt="borderPt" style="width: 14%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="displayName" export-header="Name" sortable :pt="borderPt" style="width: 14%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Name
@@ -180,7 +182,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column field="status" sortable class="center-header" :pt="borderPt" style="width: 9%; text-align: center;">
+        <Column field="status" export-header="Status" sortable class="center-header" :pt="borderPt" style="width: 9%; text-align: center;">
           <template #header>
             <div class="column-header-with-filter" style="justify-content: center; width: 100%;">
               Status
@@ -208,13 +210,13 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column field="lastAccess" header="Last Access" sortable :pt="borderPt" style="width: 13%">
+        <Column field="lastAccess" header="Last Access" :export-value="exportLastAccess" sortable :pt="borderPt" style="width: 13%">
           <template #body="{ data }">
             {{ formatLastAccess(data.lastAccess) }}
           </template>
         </Column>
 
-        <Column field="privileges.create_collection" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
+        <Column field="privileges.create_collection" export-header="Create Collection" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
           <template #header>
             <span style="display: inline-block; text-align: center; line-height: 1.1; white-space: normal;">
               Create Collection
@@ -225,7 +227,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column field="privileges.admin" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
+        <Column field="privileges.admin" export-header="Administrator" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
           <template #header>
             <span style="display: inline-block; text-align: center; line-height: 1.1; white-space: normal;">
               Administrator

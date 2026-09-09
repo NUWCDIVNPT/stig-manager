@@ -145,7 +145,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           {{ formatTimestamp(data.timestamp) }}
         </template>
       </Column>
-      <Column field="source" sortable :pt="borderPt" style="width: 9%;">
+      <Column field="source" export-header="Source" sortable :pt="borderPt" style="width: 9%;">
         <template #header>
           <div class="column-header-with-filter">
             Source
@@ -153,7 +153,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </div>
         </template>
       </Column>
-      <Column field="user" sortable :pt="borderPt" style="width: 9%;">
+      <Column field="user" export-header="User" sortable :pt="borderPt" style="width: 9%;">
         <template #header>
           <div class="column-header-with-filter">
             User
@@ -161,7 +161,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </div>
         </template>
       </Column>
-      <Column field="browser" sortable :pt="borderPt" style="width: 9%;">
+      <Column field="browser" export-header="Browser" sortable :pt="borderPt" style="width: 9%;">
         <template #header>
           <div class="column-header-with-filter">
             Browser
@@ -169,7 +169,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </div>
         </template>
       </Column>
-      <Column field="operationId" sortable :pt="borderPt" style="width: 12%;">
+      <Column field="operationId" export-header="Operation ID" sortable :pt="borderPt" style="width: 12%;">
         <template #header>
           <div class="column-header-with-filter">
             Operation ID
@@ -178,7 +178,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
         </template>
       </Column>
       <Column field="url" header="URL" sortable :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
-      <Column field="status" sortable class="center-header" :pt="borderPt" style="width: 7%; text-align: center;">
+      <Column field="status" export-header="Status" sortable class="center-header" :pt="borderPt" style="width: 7%; text-align: center;">
         <template #header>
           <div class="column-header-with-filter">
             Status

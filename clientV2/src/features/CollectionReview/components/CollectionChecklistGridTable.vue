@@ -187,10 +187,10 @@ const dataTablePt = {
     @update:selection="(val) => emit('update:selectedRow', val)"
     @filter="onFilter"
   >
-    <Column field="severity" :sort-field="severitySortValue" filter-field="severity" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column field="severity" export-header="CAT" :sort-field="severitySortValue" filter-field="severity" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
-          Cat
+          CAT
           <ColumnFilter v-model="filters.severity.value" :options="catOptions">
             <template #option="{ option }">
               <CatBadge :category="severityMap[option.value]" variant="label" />
@@ -258,7 +258,7 @@ const dataTablePt = {
     </Column>
 
     <!-- Count Columns -->
-    <Column v-if="visibleFields.has('fail')" field="counts.results.fail" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('fail')" field="counts.results.fail" export-header="O" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
       <template #header>
         <ResultBadge status="O" />
       </template>
@@ -266,7 +266,7 @@ const dataTablePt = {
         <span class="cell-text">{{ data.counts?.results?.fail ?? 0 }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('pass')" field="counts.results.pass" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('pass')" field="counts.results.pass" export-header="NF" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
       <template #header>
         <ResultBadge status="NF" />
       </template>
@@ -274,7 +274,7 @@ const dataTablePt = {
         <span class="cell-text">{{ data.counts?.results?.pass ?? 0 }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('notapplicable')" field="counts.results.notapplicable" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('notapplicable')" field="counts.results.notapplicable" export-header="NA" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
       <template #header>
         <ResultBadge status="NA" />
       </template>
@@ -282,7 +282,7 @@ const dataTablePt = {
         <span class="cell-text">{{ data.counts?.results?.notapplicable ?? 0 }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('other')" field="counts.results.other" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('other')" field="counts.results.other" export-header="NR+" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
       <template #header>
         <ResultBadge status="NR+" />
       </template>
@@ -292,7 +292,7 @@ const dataTablePt = {
     </Column>
 
     <!-- Status Icons -->
-    <Column v-if="visibleFields.has('submitted')" field="counts.statuses.submitted" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('submitted')" field="counts.statuses.submitted" export-header="Submitted" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
       <template #header>
         <StatusBadge status="submitted" />
       </template>
@@ -300,7 +300,7 @@ const dataTablePt = {
         <span class="cell-text">{{ data.counts?.statuses?.submitted ?? 0 }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('rejected')" field="counts.statuses.rejected" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('rejected')" field="counts.statuses.rejected" export-header="Rejected" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
       <template #header>
         <StatusBadge status="rejected" />
       </template>
@@ -308,7 +308,7 @@ const dataTablePt = {
         <span class="cell-text">{{ data.counts?.statuses?.rejected ?? 0 }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('accepted')" field="counts.statuses.accepted" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('accepted')" field="counts.statuses.accepted" export-header="Accepted" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
       <template #header>
         <StatusBadge status="accepted" />
       </template>

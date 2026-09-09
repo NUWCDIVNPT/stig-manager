@@ -111,14 +111,14 @@ defineExpose({ reload })
           </template>
         </Column>
 
-        <Column field="role" sort-field="roleId" sortable>
+        <Column field="role" export-header="Role" sort-field="roleId" sortable>
           <template #header>
             <span class="role-header">Role</span>
             <RolePopover />
           </template>
         </Column>
 
-        <Column style="text-align: right">
+        <Column :exportable="false" style="text-align: right">
           <template #body="{ data }">
             <div class="row-actions">
               <Button

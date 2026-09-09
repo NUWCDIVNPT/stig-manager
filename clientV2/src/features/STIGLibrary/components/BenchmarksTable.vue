@@ -35,6 +35,9 @@ const props = defineProps({
 
 const emit = defineEmits(['select'])
 
+// The first entry is the latest revision, shown in its own column.
+const exportEarlierRevisions = ({ data }) => (data ?? []).slice(1).join(', ')
+
 const filter = defineModel('filter', { type: String, default: '' })
 
 const dataTableRef = ref(null)
@@ -85,7 +88,7 @@ function clearFilter() {
     @row-click="onRowClick"
   >
     <Column
-      field="title"
+      field="title" export-header="Benchmark"
       :sortable="!compact"
       :style="{ width: compact ? undefined : '100rem', minWidth: compact ? '11rem' : '22rem' }"
     >
@@ -171,6 +174,8 @@ function clearFilter() {
     <Column
       v-if="!compact"
       header="Earlier revisions"
+      field="revisionStrs"
+      :export-value="exportEarlierRevisions"
       :style="{ minWidth: '14rem' }"
     >
       <template #body="{ data }">

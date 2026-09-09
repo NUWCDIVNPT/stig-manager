@@ -9,7 +9,7 @@ import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { resourceSortKey } from '../../lib/aclRules.js'
 import AclResourceDisplay from './AclResourceDisplay.vue'
 
-defineProps({
+const props = defineProps({
   // rules is the items in the table
   rules: {
     type: Array,
@@ -27,6 +27,9 @@ defineProps({
 })
 
 const emit = defineEmits(['accessChange'])
+
+const exportResource = ({ record }) => resourceSortKey(record)
+const exportAccess = ({ data }) => props.accessOptions.find(o => o.value === data)?.label ?? data
 
 const selectedRules = defineModel('selection', { type: Array, default: () => [] })
 
@@ -55,12 +58,12 @@ const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
     <template #empty>
       No ACL rules.
     </template>
-    <Column header="Resource" sortable :sort-field="resourceSortKey" :export-field="resourceSortKey">
+    <Column header="Resource" :export-value="exportResource" sortable :sort-field="resourceSortKey">
       <template #body="{ data }">
         <AclResourceDisplay :rule="data" />
       </template>
     </Column>
-    <Column header="Access" field="access" sortable style="width: 140px">
+    <Column header="Access" field="access" :export-value="exportAccess" sortable style="width: 140px">
       <template #body="{ data }">
         <Select
           :model-value="data.access"

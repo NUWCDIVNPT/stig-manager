@@ -15,12 +15,11 @@ Most originated from the Findings feature review (2026-06-10) — see
   Current/New columns in `AssetStigImport/AssetStigPreviewStep.vue` (currently raw
   result strings, alphabetical) via `:sort-field="r => resultSortValue(r.currentResult)"`.
 
-- [ ] **CSV export gaps.**
-  `shared/csv.js` `exportDataTableCsv` (every StatusFooter export) only exports columns
-  with a `field`: the STIGs column (both Findings grids) and the engine icon column are
-  absent from exports, while decorated internal fields (`_rowKey`, `_engineDisplay`, …)
-  may leak in. Audit actual export output; use `exportable` / `exportHeader` on Column.
-  Likely applies to every grid using the decorate-rows pattern.
+- [ ] **CSV export fidelity audit.**
+  Every exporting grid now declares fields/export headers and cells go through
+  `exportDisplayValue` (see reusable-components.md, CSV export). Remaining work is a
+  grid-by-grid comparison of actual output against the legacy client's export for the
+  same screen; `git grep -l ':dt=' -- '*.vue'` lists the tables.
 
 - [ ] **CSV exports omit the classification "Marking" column.**
   The legacy client prepends a `Marking` header with `(${apiConfig.classification})`

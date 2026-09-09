@@ -16,6 +16,8 @@ const props = defineProps({
 
 const emit = defineEmits(['select', 'delete-run'])
 
+const exportDuration = ({ record }) => formatDuration(runDuration(record))
+
 const dataTableRef = ref(null)
 const selectedRun = ref(null)
 
@@ -74,7 +76,7 @@ const tablePt = {
           </template>
         </Column>
 
-        <Column field="duration" :pt="borderPt" style="width: 18%; text-align: right;">
+        <Column export-header="Duration" :export-value="exportDuration" :pt="borderPt" style="width: 18%; text-align: right;">
           <template #header>
             <span class="right-label">Duration</span>
           </template>
@@ -83,7 +85,7 @@ const tablePt = {
           </template>
         </Column>
 
-        <Column style="width: 12%; text-align: center;">
+        <Column :exportable="false" style="width: 12%; text-align: center;">
           <template #body="{ data }">
             <!-- Deleting an in-flight run would strand the still-executing
                  run_job procedure's output; the API does not enforce this yet. -->

@@ -287,7 +287,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="ruleId" :style="{ width: '150px' }">
+      <Column field="ruleId" export-header="Rule" :style="{ width: '150px' }">
         <template #header>
           <div class="column-header-with-filter">
             Rule
@@ -303,7 +303,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="result" :style="{ width: '70px', textAlign: 'center' }">
+      <Column field="result" export-header="Result" :style="{ width: '70px', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             Result
@@ -319,7 +319,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="resultEngine" filter-field="_engineDisplay" :style="{ width: '50px', textAlign: 'center' }">
+      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '50px', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             <img
@@ -356,7 +356,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="detail" :style="{ width: '130px' }">
+      <Column field="detail" export-header="Detail" :style="{ width: '130px' }">
         <template #header>
           <div class="column-header-with-filter">
             Detail
@@ -376,7 +376,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="comment" :style="{ width: '130px' }">
+      <Column field="comment" export-header="Comment" :style="{ width: '130px' }">
         <template #header>
           <div class="column-header-with-filter">
             Comment
@@ -396,7 +396,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="statusText" :style="{ width: '100px' }">
+      <Column field="statusText" export-header="Status Text" :style="{ width: '100px' }">
         <template #header>
           <div class="column-header-with-filter">
             Status Text
@@ -416,7 +416,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column filter-field="_statusLabel" :style="{ width: '70px', textAlign: 'center' }">
+      <Column field="_statusLabel" filter-field="_statusLabel" export-header="Status" :style="{ width: '70px', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             Status
@@ -432,7 +432,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="username" :style="{ width: '100px' }">
+      <Column field="username" export-header="User" :style="{ width: '100px' }">
         <template #header>
           <div class="column-header-with-filter">
             User
@@ -450,7 +450,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column header="Apply" :style="{ width: '40px', textAlign: 'center' }">
+      <Column header="Apply" :exportable="false" :style="{ width: '40px', textAlign: 'center' }">
         <template #body="{ data }">
           <button
             class="apply-review-icon-btn"

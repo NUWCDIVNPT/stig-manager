@@ -8,6 +8,7 @@ import HelpIcon from '../../../components/common/HelpIcon.vue'
 import RuleIdDiffSpan from '../../../components/common/RuleIdDiffSpan.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { catLabel } from '../../../shared/lib/exportCells.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
 const props = defineProps({
@@ -23,6 +24,7 @@ const props = defineProps({
 const emit = defineEmits(['select-row'])
 
 const SEVERITY_TO_CAT = { high: 1, medium: 2, low: 3 }
+const exportCat = ({ data }) => catLabel(data)
 
 const dataTableRef = ref(null)
 const { itemSize } = useGridDensity('stig-library-rules-v2', 2, 6, 15)
@@ -109,7 +111,7 @@ function onRowClick(event) {
         <span class="cell-text">{{ data.stigId }}</span>
       </template>
     </Column>
-    <Column header="Left rule" :style="{ width: '16rem', minWidth: '15rem' }" :pt="columnPt.left">
+    <Column header="Left rule" field="leftRule" :style="{ width: '16rem', minWidth: '15rem' }" :pt="columnPt.left">
       <template #body="{ data }">
         <span class="cell-text">
           <RuleIdDiffSpan v-if="data.leftRule" :id="data.leftRule" side="del" />
@@ -117,7 +119,7 @@ function onRowClick(event) {
         </span>
       </template>
     </Column>
-    <Column header="Right rule" :style="{ width: '16rem', minWidth: '15rem' }" :pt="columnPt.left">
+    <Column header="Right rule" field="rightRule" :style="{ width: '16rem', minWidth: '15rem' }" :pt="columnPt.left">
       <template #body="{ data }">
         <span class="cell-text">
           <RuleIdDiffSpan v-if="data.rightRule" :id="data.rightRule" side="add" />
@@ -125,12 +127,12 @@ function onRowClick(event) {
         </span>
       </template>
     </Column>
-    <Column header="Cat" :style="{ width: '5rem' }" :pt="columnPt.center">
+    <Column header="CAT" field="cat" :export-value="exportCat" :style="{ width: '5rem' }" :pt="columnPt.center">
       <template #body="{ data }">
         <CatBadge v-if="data.cat" :category="SEVERITY_TO_CAT[data.cat] ?? 3" variant="label" />
       </template>
     </Column>
-    <Column :style="{ minWidth: '16rem' }" :pt="columnPt.left">
+    <Column field="changed" export-header="Changed properties" :style="{ minWidth: '16rem' }" :pt="columnPt.left">
       <template #header>
         Changed properties
         <HelpIcon :content="TOOLTIPS.rulePropertyDiffs" />

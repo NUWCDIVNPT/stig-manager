@@ -205,7 +205,11 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               </div>
             </template>
           </Column>
-          <Column header="STIGs" :style="{ width: '14rem', minWidth: '11rem' }" :pt="borderPt">
+          <!-- Export-only columns: labels render inside the Asset cell, and the rule
+               varies per row under the CCI aggregator. -->
+          <Column field="labels" header="Labels" hidden />
+          <Column field="ruleId" header="Rule" hidden />
+          <Column header="STIGs" field="stigs" :style="{ width: '14rem', minWidth: '11rem' }" :pt="borderPt">
             <template #body="{ data }">
               <span class="cell-text cell-text--clamped" :title="(data.stigs ?? []).map(s => s.benchmarkId).join(', ')">{{ (data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—' }}</span>
             </template>
@@ -220,7 +224,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               <span class="cell-text cell-text--clamped" :title="data.comment">{{ data.comment || '—' }}</span>
             </template>
           </Column>
-          <Column :pt="borderPt" :style="{ width: '2.8rem', minWidth: '2.8rem', textAlign: 'center' }">
+          <Column field="resultEngine" export-header="Engine" :pt="borderPt" :style="{ width: '2.8rem', minWidth: '2.8rem', textAlign: 'center' }">
             <template #header>
               <img :src="bot2" alt="" class="engine-header-icon" title="Result engine">
             </template>
@@ -228,7 +232,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               <EngineIconCell :display="data._engineDisplay" />
             </template>
           </Column>
-          <Column header="Status" :style="{ width: '5.5rem', minWidth: '5.5rem', textAlign: 'center' }" :pt="borderPt">
+          <Column header="Status" field="status" :style="{ width: '5.5rem', minWidth: '5.5rem', textAlign: 'center' }" :pt="borderPt">
             <template #body="{ data }">
               <StatusBadge :status="data._statusLabel" />
             </template>
@@ -238,7 +242,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               <span :title="data.username">{{ data.username || '—' }}</span>
             </template>
           </Column>
-          <Column field="ts" sortable :style="{ width: '4.5rem', minWidth: '4.5rem', textAlign: 'center' }" :pt="borderPt">
+          <Column field="ts" export-header="Last Changed" sortable :style="{ width: '4.5rem', minWidth: '4.5rem', textAlign: 'center' }" :pt="borderPt">
             <template #header>
               <i class="pi pi-clock" title="Last action" />
             </template>

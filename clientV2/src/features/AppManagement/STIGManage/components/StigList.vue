@@ -224,7 +224,7 @@ function onRemoveAll() {
         <Column selection-mode="multiple" style="width: 1%;" />
 
         <Column
-          field="benchmarkId"
+          field="benchmarkId" export-header="Benchmark ID"
           sortable
           :pt="borderPt"
           style="width: 17%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"
@@ -244,7 +244,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
-          field="title"
+          field="title" export-header="Title"
           sortable
           :pt="borderPt"
           style="width: 32%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"
@@ -261,7 +261,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
-          field="status"
+          field="status" export-header="Status"
           sortable
           :pt="centerBorderPt"
           style="width: 7%; text-align: center;"
@@ -277,7 +277,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
-          field="lastRevisionStr"
+          field="lastRevisionStr" export-header="Latest Revision"
           sortable
           :pt="centerWrappedBorderPt"
           style="width: 7%; text-align: center;"
@@ -293,7 +293,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
-          field="lastRevisionDate"
+          field="lastRevisionDate" export-header="Revision Date"
           sortable
           :pt="centerWrappedBorderPt"
           style="width: 8%; text-align: center;"
@@ -309,7 +309,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
-          field="earlierRevisions"
+          field="earlierRevisions" export-header="Earlier Revisions"
           sortable
           :pt="centerWrappedBorderPt"
           style="width: 10%; text-align: center;"
@@ -327,7 +327,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
-          field="ruleCount"
+          field="ruleCount" export-header="Rules"
           sortable
           :pt="centerBorderPt"
           style="width: 6%; text-align: center;"
@@ -343,7 +343,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
-          field="collectionCount"
+          field="collectionCount" export-header="Collections"
           sortable
           :pt="centerBorderPt"
           style="width: 7%; text-align: center;"

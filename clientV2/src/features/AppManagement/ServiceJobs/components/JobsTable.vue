@@ -19,6 +19,9 @@ const props = defineProps({
 
 const emit = defineEmits(['update:selection', 'create', 'modify', 'remove', 'run-now', 'refresh'])
 
+const exportTasks = ({ data }) => (data ?? []).map(t => t.name).join(', ')
+const exportSchedule = ({ data }) => (data ? `${scheduleSummary(data)}${data.enabled === false ? ' (disabled)' : ''}` : 'Not scheduled')
+
 const dataTableRef = ref(null)
 const nameFilter = ref('')
 
@@ -99,7 +102,7 @@ const tablePt = {
           No jobs found.
         </template>
 
-        <Column field="name" sortable :pt="borderPt" style="width: 26%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="name" export-header="Name" sortable :pt="borderPt" style="width: 26%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Name
@@ -120,7 +123,7 @@ const tablePt = {
           </template>
         </Column>
 
-        <Column field="tasks" header="Tasks" :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="tasks" header="Tasks" :export-value="exportTasks" :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #body="{ data }">
             <span :title="(data.tasks ?? []).map(t => t.name).join(', ')">
               {{ (data.tasks ?? []).map(t => t.name).join(', ') || '-' }}
@@ -128,7 +131,7 @@ const tablePt = {
           </template>
         </Column>
 
-        <Column field="event" header="Schedule" :pt="borderPt" style="width: 18%;">
+        <Column field="event" header="Schedule" :export-value="exportSchedule" :pt="borderPt" style="width: 18%;">
           <template #body="{ data }">
             <div v-if="data.event" class="schedule-cell" :class="{ 'dim-value': data.event.enabled === false }">
               <span class="schedule-line">{{ scheduleSummary(data.event) }}</span>
@@ -140,7 +143,7 @@ const tablePt = {
           </template>
         </Column>
 
-        <Column field="runCount" sortable :pt="borderPt" style="width: 8%; text-align: center;">
+        <Column field="runCount" export-header="Runs" sortable :pt="borderPt" style="width: 8%; text-align: center;">
           <template #header>
             <span class="center-label">Runs</span>
           </template>

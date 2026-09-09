@@ -89,7 +89,7 @@ const dataTableRef = ref(null)
       <Column selection-mode="multiple" style="width: 2.7rem; height: 32px; padding: 0 0.5rem;" />
 
       <Column
-        field="name"
+        field="name" export-header="Name"
         sortable
         :pt="borderPt"
         style="min-width: 100px; width: 200px;"
@@ -118,7 +118,7 @@ const dataTableRef = ref(null)
       </Column>
 
       <Column
-        field="description"
+        field="description" export-header="Description"
         sortable
         :pt="borderPt"
         style="min-width: 150px;"
@@ -134,7 +134,7 @@ const dataTableRef = ref(null)
       </Column>
 
       <Column
-        field="uses"
+        field="uses" export-header="Uses"
         sortable
         :pt="borderPt"
         style="min-width: 60px; width: 150px;"

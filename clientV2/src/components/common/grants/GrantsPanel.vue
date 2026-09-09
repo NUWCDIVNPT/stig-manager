@@ -201,6 +201,8 @@ const userGroupSortValue = data =>
   data.user
     ? (data.user.displayName || data.user.username || '')
     : (data.userGroup?.name || '')
+const exportRole = ({ data }) => getRoleLabel(data)
+const exportUserGroup = ({ record }) => userGroupSortValue(record)
 // Compact, flush-footer table styling via PassThrough (no scoped ::v-deep).
 // Shared base, with a slightly larger header than the compact default.
 const baseTablePt = compactTablePt({ bodyFontSize: '1.05rem' })
@@ -245,7 +247,7 @@ const tablePt = {
         <template #empty>
           No grants.
         </template>
-        <Column field="roleId" sortable>
+        <Column field="roleId" export-header="Role" :export-value="exportRole" sortable>
           <template #header>
             <div class="role-header-container">
               Role
@@ -256,7 +258,7 @@ const tablePt = {
             {{ getRoleLabel(data.roleId) }}
           </template>
         </Column>
-        <Column header="User or Group" sortable :sort-field="userGroupSortValue">
+        <Column header="User or Group" :export-value="exportUserGroup" sortable :sort-field="userGroupSortValue">
           <template #body="{ data }">
             <div v-if="data.user" class="user-group-cell">
               <i class="pi pi-user" />
@@ -274,7 +276,7 @@ const tablePt = {
             </div>
           </template>
         </Column>
-        <Column style="text-align: right">
+        <Column :exportable="false" style="text-align: right">
           <template #body="{ data }">
             <div class="row-actions">
               <Button

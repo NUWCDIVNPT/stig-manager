@@ -403,7 +403,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
             No matching files.
           </template>
 
-          <Column field="status" :pt="borderPt" style="width: 15%; white-space: nowrap;">
+          <Column field="status" export-header="Status" :pt="borderPt" style="width: 15%; white-space: nowrap;">
             <template #header>
               <div class="column-header-with-filter">
                 Status
@@ -429,7 +429,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
             </template>
           </Column>
 
-          <Column field="filename" :pt="borderPt" style="width: 32%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+          <Column field="filename" export-header="File" :pt="borderPt" style="width: 32%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
             <template #header>
               <div class="column-header-with-filter">
                 File
@@ -441,7 +441,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
             </template>
           </Column>
 
-          <Column field="source" :pt="borderPt" style="width: 20%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+          <Column field="source" export-header="Source" :pt="borderPt" style="width: 20%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
             <template #header>
               <div class="column-header-with-filter">
                 Source
@@ -453,7 +453,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
             </template>
           </Column>
 
-          <Column field="message" :pt="borderPt" style="width: 28%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+          <Column field="message" export-header="Result" :pt="borderPt" style="width: 28%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
             <template #header>
               <div class="column-header-with-filter">
                 Result

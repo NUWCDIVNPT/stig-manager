@@ -160,7 +160,7 @@ function onAssetsTransferred(transferredIds) {
       >
         <Column selection-mode="multiple" style="width: 1rem; height: 27px; padding: 0 0.5rem;" />
 
-        <Column field="assetName" sortable :pt="borderPt" style="width: 60px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="assetName" export-header="Asset" sortable :pt="borderPt" style="width: 60px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Asset
@@ -184,7 +184,7 @@ function onAssetsTransferred(transferredIds) {
           </template>
         </Column>
 
-        <Column field="labels" sortable :pt="borderPt" style="width: 100px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="labels" export-header="Labels" sortable :pt="borderPt" style="width: 100px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Labels
