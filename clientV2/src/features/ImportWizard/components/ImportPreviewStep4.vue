@@ -49,7 +49,7 @@ const dtRef = ref()
             </span>
           </template>
         </Column>
-        <Column field="checklist.stats.informational" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.informational ?? 0">
+        <Column field="checklist.stats.informational" export-header="I" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.informational ?? 0">
           <template #header>
             <ResultBadge status="I" />
           </template>
@@ -57,7 +57,7 @@ const dtRef = ref()
             {{ data.checklist.stats?.informational ?? 0 }}
           </template>
         </Column>
-        <Column field="checklist.stats.notchecked" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notchecked ?? 0">
+        <Column field="checklist.stats.notchecked" export-header="NR" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notchecked ?? 0">
           <template #header>
             <ResultBadge status="NR" />
           </template>
@@ -65,7 +65,7 @@ const dtRef = ref()
             {{ data.checklist.stats?.notchecked ?? 0 }}
           </template>
         </Column>
-        <Column field="checklist.stats.notapplicable" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notapplicable ?? 0">
+        <Column field="checklist.stats.notapplicable" export-header="NA" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notapplicable ?? 0">
           <template #header>
             <ResultBadge status="NA" />
           </template>
@@ -73,7 +73,7 @@ const dtRef = ref()
             {{ data.checklist.stats?.notapplicable ?? 0 }}
           </template>
         </Column>
-        <Column field="checklist.stats.pass" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.pass ?? 0">
+        <Column field="checklist.stats.pass" export-header="NF" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.pass ?? 0">
           <template #header>
             <ResultBadge status="NF" />
           </template>
@@ -81,7 +81,7 @@ const dtRef = ref()
             {{ data.checklist.stats?.pass ?? 0 }}
           </template>
         </Column>
-        <Column field="checklist.stats.fail" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.fail ?? 0">
+        <Column field="checklist.stats.fail" export-header="O" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.fail ?? 0">
           <template #header>
             <ResultBadge status="O" />
           </template>

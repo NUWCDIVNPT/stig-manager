@@ -421,7 +421,7 @@ const checkboxPt = {
     @wheel.capture="onGridWheel"
   >
     <!-- Selection -->
-    <Column header-style="width: 3rem" :pt="columnPt.center">
+    <Column :exportable="false" header-style="width: 3rem" :pt="columnPt.center">
       <template #header>
         <Checkbox
           v-if="filteredData.length > 0"
@@ -451,7 +451,7 @@ const checkboxPt = {
     </Column>
 
     <!-- Engine -->
-    <Column field="resultEngine" sort-field="resultEngine.product" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
+    <Column field="resultEngine" export-header="Engine" sort-field="resultEngine.product" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
           <img src="../../../assets/bot2.svg" alt="Engine" class="engine-header-icon" title="Result engine">
@@ -475,7 +475,7 @@ const checkboxPt = {
     </Column>
 
     <!-- Status -->
-    <Column field="status" sort-field="status.label" sortable :style="{ width: '9rem', minWidth: '9rem' }" :pt="columnPt.center">
+    <Column field="status" export-header="Status" sort-field="status.label" sortable :style="{ width: '9rem', minWidth: '9rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
           Status
@@ -499,7 +499,7 @@ const checkboxPt = {
     </Column>
 
     <!-- Labels -->
-    <Column v-if="visibleFields.has('labels')" field="assetLabels" :style="{ width: '12rem', minWidth: '8rem' }" :pt="columnPt.left">
+    <Column v-if="visibleFields.has('labels')" field="assetLabels" export-header="Labels" :style="{ width: '12rem', minWidth: '8rem' }" :pt="columnPt.left">
       <template #header>
         <div class="column-header-with-filter">
           Labels
@@ -516,7 +516,7 @@ const checkboxPt = {
     </Column>
 
     <!-- Result -->
-    <Column field="result" sortable :style="{ width: '7rem', minWidth: '6rem' }" :pt="columnPt.center">
+    <Column field="result" export-header="Result" sortable :style="{ width: '7rem', minWidth: '6rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
           Result
@@ -558,7 +558,7 @@ const checkboxPt = {
     </Column>
 
     <!-- Time -->
-    <Column v-if="visibleFields.has('time')" field="touchTs" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('time')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
       <template #header>
         <i class="pi pi-clock" title="Last action" />
       </template>

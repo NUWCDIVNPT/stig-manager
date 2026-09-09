@@ -112,7 +112,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           No user groups found.
         </template>
 
-        <Column field="name" sortable :pt="borderPt" style="width: 25%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="name" export-header="Name" sortable :pt="borderPt" style="width: 25%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Name
@@ -121,7 +121,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column field="description" sortable :pt="borderPt" style="width: 30%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="description" export-header="Description" sortable :pt="borderPt" style="width: 30%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Description

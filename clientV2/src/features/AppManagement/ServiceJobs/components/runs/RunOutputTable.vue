@@ -40,7 +40,7 @@ const tablePt = compactTablePt({ bodyFontSize: '1rem', footer: 'divider', header
           No output to display.
         </template>
 
-        <Column field="seq" sortable :pt="borderPt" style="width: 8%; text-align: center;">
+        <Column field="seq" export-header="Seq" sortable :pt="borderPt" style="width: 8%; text-align: center;">
           <template #header>
             <span class="center-label">Seq</span>
           </template>

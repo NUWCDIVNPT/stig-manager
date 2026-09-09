@@ -330,18 +330,75 @@ describe('exportDataTableCsv', () => {
     expect(csv).not.toContain('secret')
   })
 
-  it('honors the table exportFunction when set', async () => {
+  it('honors the table exportFunction when set, passing the whole record and null cells', async () => {
+    const seen = []
     exportDataTableCsv(fakeDt({
-      exportFunction: ({ data, field }) => field === 'tasks' ? data.map(t => t.name).join('|') : data,
+      columns: [{ field: 'name', header: 'Name' }, { field: 'missing', header: 'Missing' }],
+      exportFunction: ({ data, field, record }) => {
+        seen.push([field, data, record.name])
+        return field === 'missing' ? `derived-${record.name}` : data
+      },
     }))
 
     const csv = await savedCsvText()
-    expect(csv.split('\n')[1]).toBe('row1,3,t1')
+    expect(csv.split('\n')[1]).toBe('row1,derived-row1')
+    expect(seen).toContainEqual(['missing', undefined, 'row1'])
   })
 
-  it('falls back to the built-in exportCSV when DataTable internals are unavailable', () => {
-    const exportCSV = vi.fn()
-    exportDataTableCsv({ exportCSV })
-    expect(exportCSV).toHaveBeenCalledOnce()
+  it('prefers a column export-value over the table function and lets it export without a field', async () => {
+    exportDataTableCsv(fakeDt({
+      columns: [
+        { field: 'name', header: 'Name', props: { exportValue: ({ data, record }) => `${data}!${record.stats.count}` } },
+        { header: 'Derived', props: { 'export-value': ({ data, record }) => `${data === undefined}:${record.name}` } },
+        { header: 'Ignored', props: { exportValue: 'not a function' } },
+      ],
+      exportFunction: () => 'table',
+    }))
+
+    const csv = await savedCsvText()
+    expect(csv.split('\n').slice(0, 2)).toEqual(['Name,Derived', 'row1!3,true:row1'])
+  })
+
+  it('applies exportDisplayValue by default so cells export as the grid displays them', async () => {
+    exportDataTableCsv(fakeDt({
+      columns: [
+        { field: 'resultEngine', exportHeader: 'Engine' },
+        { field: 'status', header: 'Status' },
+        { field: 'result', header: 'Result' },
+        { field: 'severity', exportHeader: 'CAT' },
+        { field: 'assetLabels', exportHeader: 'Labels' },
+      ],
+      processedData: [{
+        resultEngine: null,
+        status: { label: 'submitted', ts: 'x' },
+        result: 'pass',
+        severity: 'medium',
+        assetLabels: [{ name: 'label-1', color: 'fff' }, { name: 'label-2' }],
+      }],
+    }))
+
+    const csv = await savedCsvText()
+    expect(csv.split('\n')).toEqual([
+      'Engine,Status,Result,CAT,Labels',
+      'manual,Submitted,NF,CAT 2,"label-1, label-2"',
+    ])
+  })
+
+  it('serializes Date cells as ISO strings without extra quoting', async () => {
+    exportDataTableCsv(fakeDt({
+      columns: [{ field: 'when', header: 'When' }],
+      processedData: [{ when: new Date('2026-09-08T12:00:00Z') }],
+    }))
+
+    const csv = await savedCsvText()
+    expect(csv.split('\n')[1]).toBe('2026-09-08T12:00:00.000Z')
+  })
+
+  it('no-ops when DataTable internals are unavailable or the table has no columns', () => {
+    saveAs.mockClear()
+    exportDataTableCsv(null)
+    exportDataTableCsv({})
+    exportDataTableCsv(fakeDt({ columns: null }))
+    expect(saveAs).not.toHaveBeenCalled()
   })
 })

@@ -106,7 +106,7 @@ function onRowClick(event) {
     :pt="dataTablePt"
     @row-click="onRowClick"
   >
-    <Column header="Cat" :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.center">
+    <Column header="CAT" field="severity" :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.center">
       <template #body="{ data }">
         <CatBadge :category="SEVERITY_TO_CAT[data.severity] ?? 3" variant="label" />
       </template>

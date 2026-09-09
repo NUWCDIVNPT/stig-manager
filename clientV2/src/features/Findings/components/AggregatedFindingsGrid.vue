@@ -278,7 +278,7 @@ const flexCellPt = {
               <span class="cell-asset-count">{{ data.assetCount }}</span>
             </template>
           </Column>
-          <Column v-if="visibleColumns.has('stigs')" header="STIGs" :style="{ minWidth: '16rem' }" :pt="flexCellPt">
+          <Column v-if="visibleColumns.has('stigs')" header="STIGs" field="stigs" :style="{ minWidth: '16rem' }" :pt="flexCellPt">
             <template #body="{ data }">
               <span class="cell-text cell-text--clamped" :title="(data.stigs ?? []).map(s => s.benchmarkId).join(', ')">{{ (data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—' }}</span>
             </template>

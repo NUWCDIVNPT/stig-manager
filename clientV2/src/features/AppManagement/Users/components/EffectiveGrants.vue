@@ -50,7 +50,7 @@ const tablePt = compactTablePt({ bodyFontSize: '1.05rem' })
         </template>
       </Column>
 
-      <Column field="granteeText" sortable>
+      <Column field="granteeText" export-header="Grantee" sortable>
         <template #header>
           <div class="grantee-header-container">
             Grantee
@@ -71,7 +71,7 @@ const tablePt = compactTablePt({ bodyFontSize: '1.05rem' })
         </template>
       </Column>
 
-      <Column field="roleId" sortable>
+      <Column field="roleId" export-header="Role" sortable>
         <template #header>
           <div class="role-header-container">
             Role

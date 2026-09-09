@@ -4,6 +4,10 @@ import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import StatusFooter from '../StatusFooter.vue'
 
+vi.mock('../../../shared/csv.js', () => ({ exportDataTableCsv: vi.fn() }))
+
+const { exportDataTableCsv } = await import('../../../shared/csv.js')
+
 describe('statusFooter.vue', () => {
   const defaultProps = {
     totalCount: 100,
@@ -83,9 +87,7 @@ describe('statusFooter.vue', () => {
   })
 
   it('exports through the dt instance when export is clicked and dt is provided', async () => {
-    // A bare mock has no DataTable internals, so exportDataTableCsv takes its
-    // built-in-exporter fallback — which still proves the dt wiring.
-    const dt = { exportCSV: vi.fn() }
+    const dt = { columns: [], processedData: [] }
     const { emitted } = renderWithProviders(StatusFooter, {
       props: {
         ...defaultProps,
@@ -96,7 +98,7 @@ describe('statusFooter.vue', () => {
 
     await user.click(screen.getByText('CSV'))
 
-    expect(dt.exportCSV).toHaveBeenCalledOnce()
+    expect(exportDataTableCsv).toHaveBeenCalledWith(dt)
     expect(emitted().action).toBeFalsy()
   })
 

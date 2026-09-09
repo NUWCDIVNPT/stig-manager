@@ -71,13 +71,6 @@ const emit = defineEmits(['row-select', 'shield-click', 'collection-icon-click',
 const dataTableRef = ref(null)
 const selectedRow = ref(null)
 
-function formatExportCell({ data, field }) {
-  if (field === 'labels' || field === 'label') {
-    return Array.isArray(data) ? data.map(l => l.name).join(', ') : ''
-  }
-  return data
-}
-
 function onRowSelect(event) {
   emit('row-select', event.data)
 }
@@ -323,7 +316,6 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     sort-field="benchmarkId"
     :sort-order="1"
     :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
-    :export-function="formatExportCell"
     @row-select="onRowSelect"
   >
     <template v-for="col in columns" :key="col.field">

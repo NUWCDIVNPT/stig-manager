@@ -92,7 +92,7 @@ function onStigsChanged() {
         <Column selection-mode="multiple" style="width: 1rem; height: 27px; padding: 0 0.5rem;" />
 
         <Column
-          field="benchmarkId"
+          field="benchmarkId" export-header="Benchmark ID"
           sortable
           :pt="borderPt"
           style="min-width: 100px; width: 140px;"

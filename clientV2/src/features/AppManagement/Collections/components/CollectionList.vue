@@ -25,6 +25,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:selection', 'create', 'delete', 'refresh'])
 
+const exportOwners = ({ data }) => (data ?? []).map(o => o.displayName || o.username).filter(Boolean).join(', ')
+
 const dataTableRef = ref(null)
 
 const selectedCollection = computed({
@@ -93,7 +95,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           No collections found.
         </template>
 
-        <Column field="name" sortable :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="name" export-header="Name" sortable :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Name
@@ -102,7 +104,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column header="Owners" :pt="borderPt" style="width: 13%; vertical-align: top;">
+        <Column header="Owners" field="owners" :export-value="exportOwners" :pt="borderPt" style="width: 13%; vertical-align: top;">
           <template #body="{ data }">
             <div v-if="data.owners && data.owners.length" class="owners-cell">
               <span
