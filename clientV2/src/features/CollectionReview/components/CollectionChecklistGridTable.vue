@@ -45,20 +45,16 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  // CSV export basename; the parent passes the benchmarkId (legacy convention).
+  exportFilename: {
+    type: String,
+    default: 'Checklist',
+  },
 })
 
 const emit = defineEmits(['update:selectedRow', 'refresh'])
 
 const dataTableRef = ref(null)
-
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-  else if (key === 'refresh') {
-    emit('refresh')
-  }
-}
 
 const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -179,6 +175,7 @@ const dataTablePt = {
     :loading="isLoading"
     :selection="selectedRow"
     selection-mode="single"
+    :export-filename="exportFilename"
     data-key="ruleId"
     scrollable
     scroll-height="flex"
@@ -346,9 +343,10 @@ const dataTablePt = {
         :filtered-count="isFiltered ? visibleData.length : null"
         total-label="rules"
         :total-icon-src="shieldGreenCheck"
+        :dt="dataTableRef"
         :show-refresh="true"
         :show-export="true"
-        @action="onFooterAction"
+        @refresh="emit('refresh')"
       >
         <template #right-extra>
           <ResultBadge status="O" :count="footerStats.results.fail" />

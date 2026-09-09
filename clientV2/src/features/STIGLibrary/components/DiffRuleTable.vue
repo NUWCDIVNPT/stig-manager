@@ -84,12 +84,6 @@ const dataTablePt = {
 function onRowClick(event) {
   emit('select-row', event.data)
 }
-
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-}
 </script>
 
 <template>
@@ -99,6 +93,7 @@ function onFooterAction(key) {
     :selection="selectedRow"
     selection-mode="single"
     data-key="key"
+    export-filename="Changed Rules"
     scrollable
     scroll-height="flex"
     :virtual-scroller-options="{ itemSize, showLoader: true }"
@@ -158,10 +153,10 @@ function onFooterAction(key) {
     <template #footer>
       <StatusFooter
         :total-count="rows.length"
+        :dt="dataTableRef"
         total-label="changed rules"
         :show-refresh="false"
         :show-export="true"
-        @action="onFooterAction"
       />
     </template>
   </DataTable>

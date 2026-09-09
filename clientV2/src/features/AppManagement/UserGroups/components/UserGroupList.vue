@@ -6,7 +6,6 @@ import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { formatDateTime } from '../lib/userGroupDisplay.js'
 
@@ -71,8 +70,6 @@ const tablePt = {
   bodyRow: { style: 'cursor: pointer;' },
 }
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
-
-const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () => emit('refresh') })
 </script>
 
 <template>
@@ -106,7 +103,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
         scroll-height="flex"
         resizable-columns
         column-resize-mode="fit"
-        export-filename="stig-manager-user-groups"
+        export-filename="Groups"
         class="flex-fill"
         :table-style="{ 'min-width': '40rem' }"
         :pt="tablePt"
@@ -148,12 +145,13 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
 
         <template #footer>
           <StatusFooter
+            :dt="dataTableRef"
             :refresh-loading="loading"
             :total-count="groups.length"
             :filtered-count="filtersActive ? filteredData.length : null"
             total-label="groups"
             total-icon="pi pi-users"
-            @action="onFooterAction"
+            @refresh="emit('refresh')"
           />
         </template>
       </DataTable>

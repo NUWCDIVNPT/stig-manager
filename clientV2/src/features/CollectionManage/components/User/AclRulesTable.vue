@@ -5,7 +5,6 @@ import Select from 'primevue/select'
 import { ref } from 'vue'
 import AclStateIcon from '../../../../components/common/AclStateIcon.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { resourceSortKey } from '../../lib/aclRules.js'
 import AclResourceDisplay from './AclResourceDisplay.vue'
@@ -32,7 +31,6 @@ const emit = defineEmits(['accessChange'])
 const selectedRules = defineModel('selection', { type: Array, default: () => [] })
 
 const rulesDt = ref()
-const { onFooterAction } = useTableFooterActions(rulesDt)
 const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
 </script>
 
@@ -44,6 +42,7 @@ const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
     :loading="loading"
     selection-mode="multiple"
     :meta-key-selection="false"
+    export-filename="Collection ACL"
     size="small"
     scrollable
     scroll-height="flex"
@@ -84,10 +83,10 @@ const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
     </Column>
     <template #footer>
       <StatusFooter
+        :dt="rulesDt"
         :show-refresh="false"
         :total-count="rules.length"
         total-label="rules"
-        @action="onFooterAction"
       />
     </template>
   </DataTable>

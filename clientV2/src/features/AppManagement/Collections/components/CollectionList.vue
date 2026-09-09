@@ -6,7 +6,6 @@ import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 
 const props = defineProps({
@@ -55,8 +54,6 @@ const formatDate = (dateString) => {
 
 const tablePt = compactTablePt({ bodyFontSize: '1rem' })
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
-
-const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () => emit('refresh') })
 </script>
 
 <template>
@@ -87,6 +84,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
         scroll-height="flex"
         resizable-columns
         column-resize-mode="fit"
+        export-filename="Collections"
         class="flex-fill clickable-rows"
         :table-style="{ 'min-width': '50rem' }"
         :pt="tablePt"
@@ -132,12 +130,13 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
 
         <template #footer>
           <StatusFooter
+            :dt="dataTableRef"
             :refresh-loading="loading"
             :total-count="collections.length"
             :filtered-count="nameFilter.trim() ? filteredData.length : null"
             total-label="collections"
             total-icon="pi pi-folder"
-            @action="onFooterAction"
+            @refresh="emit('refresh')"
           />
         </template>
       </DataTable>

@@ -9,7 +9,6 @@ import { granteeLabel } from '../../../../components/common/grants/granteeDispla
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchEffectiveAclByCollectionUser } from '../../../../shared/api/grantsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { getDefaultAccessForRole } from '../../lib/aclRules.js'
 
@@ -52,8 +51,6 @@ const displayAcl = computed(() => (acl.value ?? []).map(row => ({
   access: row.access,
   sources: (row.aclSources ?? []).map(source => granteeLabel(source.grantee)).join(', '),
 })))
-
-const { onFooterAction } = useTableFooterActions(aclDt, { onRefresh: execute })
 
 const tablePt = compactTablePt({ bodyFontSize: '0.9rem' })
 
@@ -102,6 +99,7 @@ watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
         sort-field="assetName"
         :sort-order="1"
         :virtual-scroller-options="{ itemSize: 41, delay: 0 }"
+        export-filename="EffectiveGrants"
         class="acl-table"
         :pt="tablePt"
       >
@@ -118,10 +116,11 @@ watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
         <Column field="sources" header="ACL Source" />
         <template #footer>
           <StatusFooter
+            :dt="aclDt"
             :refresh-loading="isLoading"
             :total-count="displayAcl.length"
             total-label="rows"
-            @action="onFooterAction"
+            @refresh="execute"
           />
         </template>
       </DataTable>

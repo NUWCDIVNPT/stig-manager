@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/vue'
 import { describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import AssetChecklistGridTable from '../components/AssetChecklistGridTable.vue'
 
@@ -9,11 +10,18 @@ vi.mock('vue-router', () => ({
   useRoute: () => ({ query: {} }),
 }))
 
+const exportCSVFn = vi.fn()
+
 // Mock PrimeVue components to avoid JSDOM virtual scrolling issues
 vi.mock('primevue/datatable', () => ({
   default: {
     name: 'DataTable',
     props: ['value', 'selection', 'filters', 'loading'],
+    methods: {
+      exportCSV() {
+        exportCSVFn()
+      },
+    },
     template: `
       <div data-testid="mock-datatable">
         <slot></slot> <!-- Renders the Column components -->
@@ -34,7 +42,7 @@ vi.mock('primevue/column', () => ({
   },
 }))
 
-describe('AssetChecklistGridTable', () => {
+describe('assetChecklistGridTable', () => {
   const defaultProps = {
     gridData: [],
     isLoading: false,
@@ -122,7 +130,19 @@ describe('AssetChecklistGridTable', () => {
       const refreshBtn = document.querySelector('.pi-refresh').closest('button')
       refreshBtn.click()
 
-      expect(emitted()['refresh']).toBeTruthy()
+      expect(emitted().refresh).toBeTruthy()
+    })
+
+    it('triggers exportCSV on DataTable and does not emit refresh when CSV export action is triggered', async () => {
+      const { emitted } = createWrapper()
+      // The DataTable template ref reaches StatusFooter's dt prop on the tick after mount.
+      await nextTick()
+
+      const exportBtn = document.querySelector('.pi-download').closest('button')
+      exportBtn.click()
+
+      expect(exportCSVFn).toHaveBeenCalled()
+      expect(emitted().refresh).toBeFalsy()
     })
   })
 

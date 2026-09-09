@@ -13,10 +13,6 @@ defineProps({
 })
 
 const dtRef = ref()
-
-function onFooterAction(action) {
-  if (action === 'export') { dtRef.value.exportCSV() }
-}
 </script>
 
 <template>
@@ -109,9 +105,9 @@ function onFooterAction(action) {
         :total-count="rows.length"
         :show-refresh="false"
         :show-export="true"
+        :dt="dtRef"
         total-label="files"
         total-icon="pi pi-file"
-        @action="onFooterAction"
       />
     </div>
   </div>

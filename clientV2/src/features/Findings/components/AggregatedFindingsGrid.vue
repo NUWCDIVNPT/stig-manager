@@ -107,13 +107,7 @@ const footerActions = computed(() => [
 ])
 
 function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-  else if (key === 'refresh') {
-    emit('retry')
-  }
-  else if (key === 'poam') {
+  if (key === 'poam') {
     poamDialogVisible.value = true
   }
 }
@@ -229,6 +223,7 @@ const flexCellPt = {
           :loading="isLoading"
           :selection="selectedRow"
           selection-mode="single"
+          export-filename="Findings"
           :data-key="aggregator"
           sort-field="assetCount"
           :sort-order="-1"
@@ -297,12 +292,14 @@ const flexCellPt = {
 
           <template #footer>
             <StatusFooter
+              :dt="dataTableRef"
               :metrics="[]"
               :total-count="rows.length"
               total-label="findings"
               :show-refresh="true"
               :show-export="true"
               :actions="footerActions"
+              @refresh="emit('retry')"
               @action="onFooterAction"
             >
               <template #right-extra>

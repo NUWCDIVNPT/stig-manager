@@ -15,6 +15,11 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  // CSV export basename; the parent passes the benchmarkId (legacy convention).
+  exportFilename: {
+    type: String,
+    default: 'Rules',
+  },
 })
 
 const emit = defineEmits(['select-rule'])
@@ -81,12 +86,6 @@ const dataTablePt = {
 function onRowClick(event) {
   emit('select-rule', event.data)
 }
-
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-}
 </script>
 
 <template>
@@ -96,6 +95,7 @@ function onFooterAction(key) {
     :selection="selectedRow"
     selection-mode="single"
     data-key="ruleId"
+    :export-filename="exportFilename"
     scrollable
     scroll-height="flex"
     :virtual-scroller-options="{ itemSize, showLoader: true }"
@@ -139,10 +139,10 @@ function onFooterAction(key) {
     <template #footer>
       <StatusFooter
         :total-count="rules.length"
+        :dt="dataTableRef"
         total-label="rules"
         :show-refresh="false"
         :show-export="true"
-        @action="onFooterAction"
       />
     </template>
   </DataTable>

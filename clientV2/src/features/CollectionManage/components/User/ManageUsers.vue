@@ -9,7 +9,6 @@ import RolePopover from '../../../../components/common/grants/RolePopover.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchCollectionUsers } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { getEffectiveUserDisplay } from '../../lib/grantsUsers.js'
 import EffectiveAclModal from './EffectiveAclModal.vue'
@@ -40,8 +39,6 @@ const displayUsers = computed(() => (users.value ?? []).map((row) => {
     granteeText: display.granteeLabels.join(', '),
   }
 }))
-
-const { onFooterAction } = useTableFooterActions(usersDt, { onRefresh: reload })
 
 // compact table pt for footer actions and compact table
 const baseTablePt = compactTablePt({ bodyFontSize: '1.05rem' })
@@ -80,6 +77,7 @@ defineExpose({ reload })
         scrollable
         scroll-height="flex"
         :virtual-scroller-options="{ itemSize: 49, delay: 0 }"
+        export-filename="CollectionUsers"
         :pt="tablePt"
       >
         <template #empty>
@@ -138,11 +136,12 @@ defineExpose({ reload })
 
         <template #footer>
           <StatusFooter
+            :dt="usersDt"
             :refresh-loading="isLoading"
             :total-count="displayUsers.length"
             total-label="users"
             total-icon="pi pi-users"
-            @action="onFooterAction"
+            @refresh="reload"
           />
         </template>
       </DataTable>

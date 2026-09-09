@@ -6,7 +6,6 @@ import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { createdByLabel, formatDateTime, isSystemJob, scheduleSummary } from '../lib/serviceJobsFormat.js'
 import { borderPt } from '../lib/serviceJobsPt.js'
@@ -50,8 +49,6 @@ const tablePt = {
   ...compactTablePt({ bodyFontSize: '1rem', footer: 'divider', headerPadding: '0.3rem 0.6rem' }),
   bodyRow: { style: 'cursor: pointer;' },
 }
-
-const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () => emit('refresh') })
 </script>
 
 <template>
@@ -92,7 +89,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
         scroll-height="flex"
         resizable-columns
         column-resize-mode="fit"
-        export-filename="stig-manager-service-jobs"
+        export-filename="Job-Info"
         class="flex-fill"
         :table-style="{ 'min-width': '60rem' }"
         :row-class="row => row.lastRun?.state === 'failed' ? 'row-error' : ''"
@@ -162,12 +159,13 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
 
         <template #footer>
           <StatusFooter
+            :dt="dataTableRef"
             :refresh-loading="loading"
             :total-count="jobs.length"
             :filtered-count="filtersActive ? filteredJobs.length : null"
             total-label="jobs"
             total-icon="pi pi-wrench"
-            @action="onFooterAction"
+            @refresh="emit('refresh')"
           />
         </template>
       </DataTable>
