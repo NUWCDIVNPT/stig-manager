@@ -40,12 +40,7 @@ const selectedRow = computed(() =>
   props.selectedKey ? props.rows.find(r => r.key === props.selectedKey) ?? null : null,
 )
 
-const columnPt = {
-  center: paneColumnPt('center'),
-  left: paneColumnPt('left'),
-}
-
-const dataTablePt = paneTablePt()
+const dataTablePt = paneTablePt
 
 const { onFooterAction } = useTableFooterActions(dataTableRef)
 
@@ -72,43 +67,43 @@ function onRowClick(event) {
     :pt="dataTablePt"
     @row-click="onRowClick"
   >
-    <Column header="STIG ID" field="stigId" sortable :style="{ width: '15rem' }" :pt="columnPt.left">
+    <Column header="STIG ID" field="stigId" sortable :style="{ width: '15rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
-        <span class="cell-text">{{ data.stigId }}</span>
+        <span class="stiglib-cell-text">{{ data.stigId }}</span>
       </template>
     </Column>
-    <Column :style="{ width: '16rem', minWidth: '15rem' }" :pt="columnPt.left">
+    <Column :style="{ width: '16rem', minWidth: '15rem' }" :pt="paneColumnPt.left">
       <template #header>
         <span class="diff-col-header">
-          Rule in <span class="diff-col-header__rev diff-col-header__rev--del">{{ compareRev ?? 'compared' }}</span>
+          Rule in <span class="stiglib-rev stiglib-rev--del">{{ compareRev ?? 'compared' }}</span>
         </span>
       </template>
       <template #body="{ data }">
-        <span class="cell-text">
+        <span class="stiglib-cell-text">
           <RuleIdDiffSpan v-if="data.leftRule" :id="data.leftRule" side="del" />
-          <span v-else class="cell-text--dim">—</span>
+          <span v-else class="stiglib-cell-text--dim">—</span>
         </span>
       </template>
     </Column>
-    <Column :style="{ width: '16rem', minWidth: '15rem' }" :pt="columnPt.left">
+    <Column :style="{ width: '16rem', minWidth: '15rem' }" :pt="paneColumnPt.left">
       <template #header>
         <span class="diff-col-header">
-          Rule in <span class="diff-col-header__rev diff-col-header__rev--add">{{ viewRev ?? 'viewed' }}</span>
+          Rule in <span class="stiglib-rev stiglib-rev--add">{{ viewRev ?? 'viewed' }}</span>
         </span>
       </template>
       <template #body="{ data }">
-        <span class="cell-text">
+        <span class="stiglib-cell-text">
           <RuleIdDiffSpan v-if="data.rightRule" :id="data.rightRule" side="add" />
-          <span v-else class="cell-text--dim">—</span>
+          <span v-else class="stiglib-cell-text--dim">—</span>
         </span>
       </template>
     </Column>
-    <Column header="Cat" :style="{ width: '5rem' }" :pt="columnPt.center">
+    <Column header="Cat" :style="{ width: '5rem' }" :pt="paneColumnPt.center">
       <template #body="{ data }">
         <CatBadge v-if="data.cat" :category="severityMap[data.cat] ?? 3" variant="label" />
       </template>
     </Column>
-    <Column :style="{ minWidth: '16rem' }" :pt="columnPt.left">
+    <Column :style="{ minWidth: '16rem' }" :pt="paneColumnPt.left">
       <template #header>
         Changed properties
         <HelpIcon :content="TOOLTIPS.rulePropertyDiffs" />
@@ -141,8 +136,6 @@ function onRowClick(event) {
 </template>
 
 <style scoped>
-@import "../styles/stigLibrary.css";
-
 .diff-rule-table {
   flex: 1;
   min-height: 0;
@@ -151,22 +144,6 @@ function onRowClick(event) {
 
 .diff-col-header {
   white-space: nowrap;
-}
-
-.diff-col-header__rev {
-  font-family: monospace;
-  padding: 0 0.25rem;
-  border-radius: 3px;
-}
-
-.diff-col-header__rev--del {
-  background: var(--color-diff-inline-del-bg);
-  color: var(--color-diff-inline-del-text);
-}
-
-.diff-col-header__rev--add {
-  background: var(--color-diff-inline-add-bg);
-  color: var(--color-diff-inline-add-text);
 }
 
 .chip-row {

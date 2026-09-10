@@ -16,6 +16,7 @@ import BenchmarkListTable from './BenchmarkListTable.vue'
 import BenchmarksTable from './BenchmarksTable.vue'
 import DiffDetailPanel from './DiffDetailPanel.vue'
 import RulePane from './RulePane.vue'
+import '../styles/stigLibrary.css'
 
 const route = useRoute()
 const router = useRouter()

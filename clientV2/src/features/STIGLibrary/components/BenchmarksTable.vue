@@ -47,14 +47,8 @@ const filter = defineModel('filter', { type: String, default: '' })
 const dataTableRef = ref(null)
 
 // The pane is too narrow for a column header, and the single column needs no
-// label or sort, so the header row is suppressed and the filter lives in the
-// sub-bar above the table.
-const dataTablePt = {
-  ...paneTablePt(),
-  thead: { style: { display: 'none' } },
-}
-
-const columnPt = paneColumnPt()
+// label or sort, so headers are hidden and the filter lives in the sub-bar.
+const dataTablePt = paneTablePt
 
 const { onFooterAction } = useTableFooterActions(dataTableRef)
 
@@ -122,6 +116,7 @@ function clearFilter() {
         ref="dataTableRef"
         :value="benchmarks"
         :loading="loading"
+        :show-headers="false"
         :selection="selectedRow"
         selection-mode="single"
         data-key="benchmarkId"
@@ -135,7 +130,7 @@ function clearFilter() {
         :pt="dataTablePt"
         @row-click="onRowClick"
       >
-        <Column field="title" :style="{ minWidth: '11rem' }" :pt="columnPt">
+        <Column field="title" :style="{ minWidth: '11rem' }" :pt="paneColumnPt.left">
           <template #body="{ data }">
             <div class="bm-cell">
               <div class="bm-cell__title" :title="data.title">
@@ -177,8 +172,6 @@ function clearFilter() {
 </template>
 
 <style scoped>
-@import "../styles/stigLibrary.css";
-
 /* The header is a single action: the button supplies its own padding. */
 .benchmarks-pane__header {
   padding: 0.15rem 0.35rem;

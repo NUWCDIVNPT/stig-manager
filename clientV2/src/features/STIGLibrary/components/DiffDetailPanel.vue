@@ -47,9 +47,9 @@ const patches = computed(() => props.diffDetail ?? {})
       <span v-if="diffRow" class="stiglib-chip">{{ diffRow.stigId }}</span>
       <div class="stiglib-panel__spacer" />
       <span v-if="compareRev && viewRev" class="diff-detail__revs">
-        <span class="diff-detail__rev diff-detail__rev--del">{{ compareRev }}</span>
+        <span class="stiglib-rev stiglib-rev--del">{{ compareRev }}</span>
         <i class="pi pi-arrow-right diff-detail__arrow" />
-        <span class="diff-detail__rev diff-detail__rev--add">{{ viewRev }}</span>
+        <span class="stiglib-rev stiglib-rev--add">{{ viewRev }}</span>
       </span>
     </header>
 
@@ -64,8 +64,6 @@ const patches = computed(() => props.diffDetail ?? {})
 </template>
 
 <style scoped>
-@import "../styles/stigLibrary.css";
-
 .diff-detail__icon {
   color: var(--color-primary-highlight);
   flex-shrink: 0;
@@ -76,23 +74,6 @@ const patches = computed(() => props.diffDetail ?? {})
   align-items: center;
   gap: 0.35rem;
   flex-shrink: 0;
-}
-
-.diff-detail__rev {
-  padding: 0.1rem 0.4rem;
-  border-radius: 3px;
-  font-family: monospace;
-  font-size: 1.05rem;
-}
-
-.diff-detail__rev--del {
-  background: var(--color-diff-inline-del-bg);
-  color: var(--color-diff-inline-del-text);
-}
-
-.diff-detail__rev--add {
-  background: var(--color-diff-inline-add-bg);
-  color: var(--color-diff-inline-add-text);
 }
 
 .diff-detail__arrow {

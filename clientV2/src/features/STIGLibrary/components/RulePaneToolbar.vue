@@ -74,7 +74,3 @@ function onChangeCompareRev(rev) {
     <DensityControls grid-key="stig-library-rules" :default-line-clamp="2" />
   </div>
 </template>
-
-<style scoped>
-@import "../styles/stigLibrary.css";
-</style>

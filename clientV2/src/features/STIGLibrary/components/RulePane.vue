@@ -153,7 +153,3 @@ const bodyError = computed(() => (diffMode.value ? props.diffError : props.rules
     </div>
   </section>
 </template>
-
-<style scoped>
-@import "../styles/stigLibrary.css";
-</style>

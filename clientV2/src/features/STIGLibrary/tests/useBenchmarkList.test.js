@@ -1,3 +1,4 @@
+import { flushPromises } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { useBenchmarkList } from '../composables/useBenchmarkList.js'
 
@@ -6,8 +7,6 @@ vi.mock('../../../shared/api/stigsApi.js', () => ({
 }))
 
 const { fetchStigs } = await import('../../../shared/api/stigsApi.js')
-
-const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
 
 function bm(benchmarkId, title) {
   return { benchmarkId, title }

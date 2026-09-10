@@ -42,8 +42,6 @@ const id = computed(() => props.benchmark?.benchmarkId ?? props.benchmarkId)
 </template>
 
 <style scoped>
-@import "../styles/stigLibrary.css";
-
 .rule-pane-header__name {
   flex: 1 1 auto;
   min-width: 0;

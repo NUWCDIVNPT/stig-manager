@@ -1,3 +1,4 @@
+import { flushPromises } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { nextTick, ref } from 'vue'
 import { useRuleSelection } from '../composables/useRuleSelection.js'
@@ -7,8 +8,6 @@ vi.mock('../../../shared/api/stigsApi.js', () => ({
 }))
 
 const { fetchRule } = await import('../../../shared/api/stigsApi.js')
-
-const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
 
 function setup({ ruleId = 'SV-1r1_rule' } = {}) {
   const refs = {
