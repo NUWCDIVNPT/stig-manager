@@ -13,10 +13,6 @@ defineProps({
 })
 
 const dtRef = ref()
-
-function onFooterAction(action) {
-  if (action === 'export') { dtRef.value.exportCSV() }
-}
 </script>
 
 <template>
@@ -53,7 +49,7 @@ function onFooterAction(action) {
             </span>
           </template>
         </Column>
-        <Column field="checklist.stats.informational" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.informational ?? 0">
+        <Column field="checklist.stats.informational" export-header="I" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.informational ?? 0">
           <template #header>
             <ResultBadge status="I" />
           </template>
@@ -61,7 +57,7 @@ function onFooterAction(action) {
             {{ data.checklist.stats?.informational ?? 0 }}
           </template>
         </Column>
-        <Column field="checklist.stats.notchecked" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notchecked ?? 0">
+        <Column field="checklist.stats.notchecked" export-header="NR" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notchecked ?? 0">
           <template #header>
             <ResultBadge status="NR" />
           </template>
@@ -69,7 +65,7 @@ function onFooterAction(action) {
             {{ data.checklist.stats?.notchecked ?? 0 }}
           </template>
         </Column>
-        <Column field="checklist.stats.notapplicable" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notapplicable ?? 0">
+        <Column field="checklist.stats.notapplicable" export-header="NA" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notapplicable ?? 0">
           <template #header>
             <ResultBadge status="NA" />
           </template>
@@ -77,7 +73,7 @@ function onFooterAction(action) {
             {{ data.checklist.stats?.notapplicable ?? 0 }}
           </template>
         </Column>
-        <Column field="checklist.stats.pass" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.pass ?? 0">
+        <Column field="checklist.stats.pass" export-header="NF" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.pass ?? 0">
           <template #header>
             <ResultBadge status="NF" />
           </template>
@@ -85,7 +81,7 @@ function onFooterAction(action) {
             {{ data.checklist.stats?.pass ?? 0 }}
           </template>
         </Column>
-        <Column field="checklist.stats.fail" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.fail ?? 0">
+        <Column field="checklist.stats.fail" export-header="O" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.fail ?? 0">
           <template #header>
             <ResultBadge status="O" />
           </template>
@@ -109,9 +105,9 @@ function onFooterAction(action) {
         :total-count="rows.length"
         :show-refresh="false"
         :show-export="true"
+        :dt="dtRef"
         total-label="files"
         total-icon="pi pi-file"
-        @action="onFooterAction"
       />
     </div>
   </div>

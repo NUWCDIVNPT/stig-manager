@@ -82,12 +82,6 @@ const ROW_HEIGHT = 36
 
 const dataTableRef = ref(null)
 
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-}
-
 const longTextPopover = ref(null)
 const showLongText = (event, label, text) => {
   longTextPopover.value?.show(event, label, text)
@@ -292,6 +286,7 @@ const otherTablePt = {
       :value="processedOtherReviews"
       :loading="isLoading"
       data-key="assetId"
+      export-filename="Other-Reviews"
       scrollable
       scroll-height="flex"
       :virtual-scroller-options="{ itemSize: ROW_HEIGHT, showLoader: true }"
@@ -299,7 +294,7 @@ const otherTablePt = {
       class="other-assets-table"
       :pt="otherTablePt"
     >
-      <Column field="assetName" sortable :style="{ width: '100px' }">
+      <Column field="assetName" export-header="Asset" sortable :style="{ width: '100px' }">
         <template #header>
           <div class="column-header-with-filter">
             Asset
@@ -315,7 +310,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="assetLabels" filter-field="assetLabels" :style="{ width: '100px' }">
+      <Column field="assetLabels" export-header="Labels" filter-field="assetLabels" :style="{ width: '100px' }">
         <template #header>
           <div class="column-header-with-filter">
             Labels
@@ -334,7 +329,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="result" :style="{ width: '65px', textAlign: 'center' }">
+      <Column field="result" export-header="Result" :style="{ width: '65px', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             Result
@@ -350,7 +345,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="resultEngine" filter-field="_engineDisplay" :style="{ width: '50px', textAlign: 'center' }">
+      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '50px', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             <img
@@ -387,7 +382,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="detail" :style="{ width: '150px' }">
+      <Column field="detail" export-header="Detail" :style="{ width: '150px' }">
         <template #header>
           <div class="column-header-with-filter">
             Detail
@@ -407,7 +402,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="comment" :style="{ width: '150px' }">
+      <Column field="comment" export-header="Comment" :style="{ width: '150px' }">
         <template #header>
           <div class="column-header-with-filter">
             Comment
@@ -440,7 +435,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="username" :style="{ width: '80px' }">
+      <Column field="username" export-header="User" :style="{ width: '80px' }">
         <template #header>
           <div class="column-header-with-filter">
             User
@@ -458,7 +453,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column header="Apply" :style="{ width: '40px', textAlign: 'center' }">
+      <Column header="Apply" :exportable="false" :style="{ width: '40px', textAlign: 'center' }">
         <template #body="{ data }">
           <button
             class="apply-review-icon-btn"
@@ -479,10 +474,10 @@ const otherTablePt = {
 
       <template v-if="otherAssetsStats" #footer>
         <StatusFooter
+          :dt="dataTableRef"
           :show-refresh="false"
           :show-export="true"
           :total-count="otherAssetsStats.total"
-          @action="onFooterAction"
         >
           <template #right-extra>
             <ResultBadge status="O" :count="otherAssetsStats.results.fail" />

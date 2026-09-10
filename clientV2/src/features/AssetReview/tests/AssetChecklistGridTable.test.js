@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/vue'
 import { describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import AssetChecklistGridTable from '../components/AssetChecklistGridTable.vue'
 
@@ -8,6 +9,10 @@ import AssetChecklistGridTable from '../components/AssetChecklistGridTable.vue'
 vi.mock('vue-router', () => ({
   useRoute: () => ({ query: {} }),
 }))
+
+vi.mock('../../../shared/csv.js', () => ({ exportDataTableCsv: vi.fn() }))
+
+const { exportDataTableCsv } = await import('../../../shared/csv.js')
 
 // Mock PrimeVue components to avoid JSDOM virtual scrolling issues
 vi.mock('primevue/datatable', () => ({
@@ -34,7 +39,7 @@ vi.mock('primevue/column', () => ({
   },
 }))
 
-describe('AssetChecklistGridTable', () => {
+describe('assetChecklistGridTable', () => {
   const defaultProps = {
     gridData: [],
     isLoading: false,
@@ -122,7 +127,20 @@ describe('AssetChecklistGridTable', () => {
       const refreshBtn = document.querySelector('.pi-refresh').closest('button')
       refreshBtn.click()
 
-      expect(emitted()['refresh']).toBeTruthy()
+      expect(emitted().refresh).toBeTruthy()
+    })
+
+    it('exports the DataTable through the shared CSV serializer and does not emit refresh', async () => {
+      const { emitted } = createWrapper()
+      // The DataTable template ref reaches StatusFooter's dt prop on the tick after mount.
+      await nextTick()
+
+      const exportBtn = document.querySelector('.pi-download').closest('button')
+      exportBtn.click()
+
+      expect(exportDataTableCsv).toHaveBeenCalledOnce()
+      expect(exportDataTableCsv.mock.calls[0][0]).toBeTruthy()
+      expect(emitted().refresh).toBeFalsy()
     })
   })
 

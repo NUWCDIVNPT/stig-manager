@@ -107,13 +107,7 @@ const footerActions = computed(() => [
 ])
 
 function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-  else if (key === 'refresh') {
-    emit('retry')
-  }
-  else if (key === 'poam') {
+  if (key === 'poam') {
     poamDialogVisible.value = true
   }
 }
@@ -229,6 +223,7 @@ const flexCellPt = {
           :loading="isLoading"
           :selection="selectedRow"
           selection-mode="single"
+          export-filename="Findings"
           :data-key="aggregator"
           sort-field="assetCount"
           :sort-order="-1"
@@ -283,7 +278,7 @@ const flexCellPt = {
               <span class="cell-asset-count">{{ data.assetCount }}</span>
             </template>
           </Column>
-          <Column v-if="visibleColumns.has('stigs')" header="STIGs" :style="{ minWidth: '16rem' }" :pt="flexCellPt">
+          <Column v-if="visibleColumns.has('stigs')" header="STIGs" field="stigs" :style="{ minWidth: '16rem' }" :pt="flexCellPt">
             <template #body="{ data }">
               <span class="cell-text cell-text--clamped" :title="(data.stigs ?? []).map(s => s.benchmarkId).join(', ')">{{ (data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—' }}</span>
             </template>
@@ -297,12 +292,14 @@ const flexCellPt = {
 
           <template #footer>
             <StatusFooter
+              :dt="dataTableRef"
               :metrics="[]"
               :total-count="rows.length"
               total-label="findings"
               :show-refresh="true"
               :show-export="true"
               :actions="footerActions"
+              @refresh="emit('retry')"
               @action="onFooterAction"
             >
               <template #right-extra>

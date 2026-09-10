@@ -46,10 +46,14 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  // CSV export basename; the parent passes `${assetName}-${benchmarkId}` (legacy convention).
+  exportFilename: {
+    type: String,
+    default: 'Checklist',
+  },
 })
 
 const emit = defineEmits(['update:selectedRow', 'row-click', 'refresh', 'update:visible-rows'])
-
 
 const dsFilterFields = [
   'ruleId',
@@ -276,15 +280,15 @@ const dataTablePt = {
   <DataTable
     ref="dataTableRef"
     v-model:filters="filters" :selection="selectedRow" :global-filter-fields="dsFilterFields" :value="processedGridData"
-    :loading="isLoading" data-key="ruleId" selection-mode="single" scrollable scroll-height="flex"
+    :loading="isLoading" data-key="ruleId" selection-mode="single" :export-filename="exportFilename" scrollable scroll-height="flex"
     :virtual-scroller-options="{ itemSize }" resizable-columns striped-rows :sort-field="defaultSortField"
     :sort-order="1" class="checklist-grid__table" :pt="dataTablePt" @update:selection="(val) => $emit('update:selectedRow', val)"
     @row-click="$emit('row-click', $event)" @filter="onFilter" @pointerdown.stop
   >
-    <Column v-if="visibleFields.has('severity')" field="severity" :sort-field="severitySortValue" filter-field="severity" sortable :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('severity')" field="severity" export-header="CAT" :sort-field="severitySortValue" filter-field="severity" sortable :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
-          Cat
+          CAT
           <ColumnFilter v-model="filters.severity.value" :options="catOptions">
             <template #option="{ option }">
               <CatBadge :category="severityMap[option.value]" variant="label" />
@@ -354,7 +358,7 @@ const dataTablePt = {
       </template>
     </Column>
 
-    <Column v-if="visibleFields.has('result')" field="result" filter-field="result" sortable :style="{ width: '8%', minWidth: '6rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('result')" field="result" export-header="Result" filter-field="result" sortable :style="{ width: '8%', minWidth: '6rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
           Result
@@ -405,7 +409,7 @@ const dataTablePt = {
 
     <Column
       v-if="visibleFields.has('resultEngine')"
-      field="resultEngine" sortable filter-field="_engineDisplay" sort-field="resultEngine.product" :style="{ width: '5.5rem', minWidth: '5.5rem' }"
+      field="resultEngine" export-header="Engine" sortable filter-field="_engineDisplay" sort-field="resultEngine.product" :style="{ width: '5.5rem', minWidth: '5.5rem' }"
       :pt="columnPt.center"
     >
       <template #header>
@@ -432,7 +436,7 @@ const dataTablePt = {
 
     <Column
       v-if="visibleFields.has('status')"
-      field="status" filter-field="_statusText" sortable sort-field="status.label" :style="{ width: '9rem', minWidth: '9rem' }"
+      field="status" export-header="Status" filter-field="_statusText" sortable sort-field="status.label" :style="{ width: '9rem', minWidth: '9rem' }"
       :pt="columnPt.center"
     >
       <template #header>
@@ -450,7 +454,7 @@ const dataTablePt = {
       </template>
     </Column>
 
-    <Column v-if="visibleFields.has('touchTs')" field="touchTs" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('touchTs')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
       <template #header>
         <i class="pi pi-clock" title="Last action" />
       </template>
@@ -467,8 +471,9 @@ const dataTablePt = {
 
     <template #footer>
       <StatusFooter
+        :dt="dataTableRef"
         :refresh-loading="isLoading" :total-count="gridData.length"
-        :filtered-count="isFiltered ? visibleData.length : null" @action="(key) => emit('refresh', key)"
+        :filtered-count="isFiltered ? visibleData.length : null" @refresh="emit('refresh')"
       >
         <template #right-extra>
           <ResultBadge status="O" :count="stats.results.fail" />

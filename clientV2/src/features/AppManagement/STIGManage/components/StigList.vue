@@ -10,7 +10,6 @@ import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ClassificationBadge from '../../../../components/common/ClassificationBadge.vue'
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 
 const props = defineProps({
@@ -82,8 +81,6 @@ function formatEarlierRevisions(revs) {
   const overflow = earlier.length - shown.length
   return shown.join(', ') + (overflow > 0 ? ` (+${overflow})` : '')
 }
-
-const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () => emit('refresh') })
 
 // ── Toolbar ───────────────────────────────────────────────────────────────────
 const revMenuRef = ref(null)
@@ -215,7 +212,7 @@ function onRemoveAll() {
         :virtual-scroller-options="{ itemSize: 29 }"
         resizable-columns
         column-resize-mode="fit"
-        export-filename="stig-manager-stigs"
+        export-filename="Installed-STIGs"
         class="flex-fill"
         :table-style="{ 'min-width': '75rem' }"
         :pt="tablePt"
@@ -227,7 +224,7 @@ function onRemoveAll() {
         <Column selection-mode="multiple" style="width: 1%;" />
 
         <Column
-          field="benchmarkId"
+          field="benchmarkId" export-header="Benchmark ID"
           sortable
           :pt="borderPt"
           style="width: 17%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"
@@ -247,7 +244,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
-          field="title"
+          field="title" export-header="Title"
           sortable
           :pt="borderPt"
           style="width: 32%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"
@@ -264,7 +261,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
-          field="status"
+          field="status" export-header="Status"
           sortable
           :pt="centerBorderPt"
           style="width: 7%; text-align: center;"
@@ -280,7 +277,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
-          field="lastRevisionStr"
+          field="lastRevisionStr" export-header="Latest Revision"
           sortable
           :pt="centerWrappedBorderPt"
           style="width: 7%; text-align: center;"
@@ -296,7 +293,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
-          field="lastRevisionDate"
+          field="lastRevisionDate" export-header="Revision Date"
           sortable
           :pt="centerWrappedBorderPt"
           style="width: 8%; text-align: center;"
@@ -312,7 +309,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
-          field="earlierRevisions"
+          field="earlierRevisions" export-header="Earlier Revisions"
           sortable
           :pt="centerWrappedBorderPt"
           style="width: 10%; text-align: center;"
@@ -330,7 +327,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
-          field="ruleCount"
+          field="ruleCount" export-header="Rules"
           sortable
           :pt="centerBorderPt"
           style="width: 6%; text-align: center;"
@@ -346,7 +343,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
-          field="collectionCount"
+          field="collectionCount" export-header="Collections"
           sortable
           :pt="centerBorderPt"
           style="width: 7%; text-align: center;"
@@ -365,12 +362,13 @@ function onRemoveAll() {
 
         <template #footer>
           <StatusFooter
+            :dt="dataTableRef"
             :refresh-loading="loading"
             :total-count="stigs.length"
             :filtered-count="filtersActive ? filteredData.length : null"
             total-label="STIGs"
             :total-icon-src="shieldGreenCheck"
-            @action="onFooterAction"
+            @refresh="emit('refresh')"
           />
         </template>
       </DataTable>

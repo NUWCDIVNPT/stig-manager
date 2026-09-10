@@ -5,7 +5,6 @@ import { computed, ref } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
-import { useTableFooterActions } from '../../../shared/composables/useTableFooterActions.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
 import { paneColumnPt, paneTablePt } from '../tablePt.js'
 
@@ -17,6 +16,11 @@ const props = defineProps({
   selectedRuleId: {
     type: String,
     default: null,
+  },
+  // CSV export basename; the parent passes the benchmarkId (legacy convention).
+  exportFilename: {
+    type: String,
+    default: 'Rules',
   },
 })
 
@@ -36,8 +40,6 @@ const columnPt = {
 
 const dataTablePt = paneTablePt()
 
-const { onFooterAction } = useTableFooterActions(dataTableRef)
-
 function onRowClick(event) {
   emit('select-rule', event.data)
 }
@@ -50,18 +52,18 @@ function onRowClick(event) {
     :selection="selectedRow"
     selection-mode="single"
     data-key="ruleId"
+    :export-filename="exportFilename"
     scrollable
     scroll-height="flex"
     :virtual-scroller-options="{ itemSize, showLoader: true }"
     striped-rows
     resizable-columns
-    export-filename="stig-library-rules"
     class="view-rule-table"
     :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
     :pt="dataTablePt"
     @row-click="onRowClick"
   >
-    <Column header="Cat" :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.center">
+    <Column header="CAT" field="severity" :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.center">
       <template #body="{ data }">
         <CatBadge :category="severityMap[data.severity] ?? 3" variant="label" />
       </template>
@@ -94,10 +96,10 @@ function onRowClick(event) {
     <template #footer>
       <StatusFooter
         :total-count="rules.length"
+        :dt="dataTableRef"
         total-label="rules"
         :show-refresh="false"
         :show-export="true"
-        @action="onFooterAction"
       />
     </template>
   </DataTable>

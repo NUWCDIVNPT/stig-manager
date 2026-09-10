@@ -5,7 +5,6 @@ import { computed, ref } from 'vue'
 import ActionButton from '../../../components/common/ActionButton.vue'
 import ClassificationBadge from '../../../components/common/ClassificationBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../shared/composables/useTableFooterActions.js'
 import { paneColumnPt, paneTablePt } from '../tablePt.js'
 import EarlierRevisionsPills from './EarlierRevisionsPills.vue'
 
@@ -42,6 +41,9 @@ const props = defineProps({
 
 const emit = defineEmits(['select', 'back', 'retry'])
 
+// The first entry is the latest revision, shown in its own column.
+const exportEarlierRevisions = ({ data }) => (data ?? []).slice(1).join(', ')
+
 const filter = defineModel('filter', { type: String, default: '' })
 
 const dataTableRef = ref(null)
@@ -55,8 +57,6 @@ const dataTablePt = {
 }
 
 const columnPt = paneColumnPt()
-
-const { onFooterAction } = useTableFooterActions(dataTableRef)
 
 const selectedRow = computed(() =>
   props.selectedId ? props.benchmarks.find(b => b.benchmarkId === props.selectedId) ?? null : null,
@@ -129,13 +129,13 @@ function clearFilter() {
         scroll-height="flex"
         :virtual-scroller-options="{ itemSize, showLoader: true }"
         striped-rows
-        export-filename="stig-library-benchmarks"
+        export-filename="STIG"
         class="benchmarks-table"
         :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
         :pt="dataTablePt"
         @row-click="onRowClick"
       >
-        <Column field="title" :style="{ minWidth: '11rem' }" :pt="columnPt">
+        <Column field="title" export-header="Benchmark" :style="{ minWidth: '11rem' }" :pt="columnPt">
           <template #body="{ data }">
             <div class="bm-cell">
               <div class="bm-cell__title" :title="data.title">
@@ -154,6 +154,11 @@ function clearFilter() {
             </div>
           </template>
         </Column>
+        <Column field="benchmarkId" header="Benchmark ID" hidden />
+        <Column field="lastRevisionStr" header="Latest" hidden />
+        <Column field="lastRevisionDate" header="Rev. date" hidden />
+        <Column field="ruleCount" header="Rules" hidden />
+        <Column field="revisionStrs" header="Earlier revisions" :export-value="exportEarlierRevisions" hidden />
 
         <template #empty>
           <div class="stiglib-empty">
@@ -165,10 +170,10 @@ function clearFilter() {
           <StatusFooter
             :total-count="total"
             :filtered-count="filteredCount"
+            :dt="dataTableRef"
             total-label="benchmarks"
             :show-refresh="false"
             :show-export="true"
-            @action="onFooterAction"
           />
         </template>
       </DataTable>

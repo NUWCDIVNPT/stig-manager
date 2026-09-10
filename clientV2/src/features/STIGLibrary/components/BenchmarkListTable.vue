@@ -10,7 +10,6 @@ import ColumnSearchFilter from '../../../components/common/ColumnSearchFilter.vu
 import DensityControls from '../../../components/common/DensityControls.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
-import { useTableFooterActions } from '../../../shared/composables/useTableFooterActions.js'
 import { fieldMatches } from '../../../shared/lib/searchUtils.js'
 import { paneColumnPt, paneTablePt } from '../tablePt.js'
 import EarlierRevisionsPills from './EarlierRevisionsPills.vue'
@@ -69,8 +68,6 @@ const tablePt = {
 const cellPt = paneColumnPt()
 const centerCellPt = paneColumnPt('center')
 
-const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () => emit('refresh') })
-
 function onRowClick(event) {
   emit('select', event.data)
 }
@@ -126,6 +123,7 @@ function onRowClick(event) {
       >
         <Column
           field="benchmarkId"
+          export-header="Benchmark ID"
           sortable
           :pt="cellPt"
           :style="{ width: '24rem', minWidth: '16rem' }"
@@ -146,6 +144,7 @@ function onRowClick(event) {
 
         <Column
           field="title"
+          export-header="Title"
           sortable
           :pt="cellPt"
           :style="{ minWidth: '20rem' }"
@@ -217,12 +216,13 @@ function onRowClick(event) {
 
         <template #footer>
           <StatusFooter
+            :dt="dataTableRef"
             :refresh-loading="loading"
             :total-count="benchmarks.length"
             :filtered-count="filtersActive ? filteredData.length : null"
             total-label="benchmarks"
             :total-icon-src="shieldGreenCheck"
-            @action="onFooterAction"
+            @refresh="emit('refresh')"
           />
         </template>
       </DataTable>

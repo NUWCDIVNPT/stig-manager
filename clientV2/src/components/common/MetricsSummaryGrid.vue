@@ -71,31 +71,6 @@ const emit = defineEmits(['row-select', 'shield-click', 'collection-icon-click',
 const dataTableRef = ref(null)
 const selectedRow = ref(null)
 
-function exportToCsv() {
-  dataTableRef.value?.exportCSV()
-}
-
-function handleFooterAction(actionKey) {
-  if (actionKey === 'refresh') {
-    emit('refresh')
-  }
-  else if (actionKey === 'export') {
-    exportToCsv()
-  }
-}
-
-// Expose for external access if needed
-defineExpose({
-  exportToCsv,
-})
-
-function formatExportCell({ data, field }) {
-  if (field === 'labels' || field === 'label') {
-    return Array.isArray(data) ? data.map(l => l.name).join(', ') : ''
-  }
-  return data
-}
-
 function onRowSelect(event) {
   emit('row-select', event.data)
 }
@@ -301,6 +276,15 @@ const data = computed(() => {
   })
 })
 
+// CSV export basename per aggregation entity — same names the legacy client used.
+const EXPORT_BASENAME_BY_KEY = {
+  assetId: 'Assets',
+  benchmarkId: 'STIGs',
+  labelId: 'Labels',
+  collectionId: 'Collections',
+}
+const exportFilename = computed(() => EXPORT_BASENAME_BY_KEY[props.dataKey] ?? 'Metrics')
+
 // Sync selectedRow when selectedKey or data changes (for programmatic selection)
 watch([() => props.selectedKey, data], ([newKey, newData]) => {
   if (newKey !== null && props.dataKey && newData.length > 0) {
@@ -319,6 +303,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     v-model:selection="selectedRow"
     :value="data"
     :data-key="dataKey"
+    :export-filename="exportFilename"
     :selection-mode="selectable ? 'single' : null"
     :loading="isLoading"
     :pt="{
@@ -331,7 +316,6 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     sort-field="benchmarkId"
     :sort-order="1"
     :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
-    :export-function="formatExportCell"
     @row-select="onRowSelect"
   >
     <template v-for="col in columns" :key="col.field">
@@ -346,9 +330,10 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
       <StatusFooter
         :refresh-loading="isLoading"
         :selected-items="selectedRow"
+        :dt="dataTableRef"
         :total-count="data.length"
         :show-selected="selectable && selectedRow?.length > 0"
-        @action="handleFooterAction"
+        @refresh="emit('refresh')"
       />
     </template>
   </DataTable>

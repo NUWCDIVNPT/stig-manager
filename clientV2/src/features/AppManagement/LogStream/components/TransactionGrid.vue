@@ -5,7 +5,6 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import ColumnFilter from '../../../../components/common/ColumnFilter.vue'
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { statusClass } from '../lib/transactions.js'
 
@@ -112,10 +111,6 @@ const tablePt = compactTablePt({ bodyFontSize: '1rem', footer: 'divider', header
 
 // Vertical divider between header cells — matches the Service Jobs grids.
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
-
-// Streaming grid: no refresh (rows arrive live), so only wire the export action.
-// TODO: swap to the shared generateCsv helper (see docs/todos/csvexport.md).
-const { onFooterAction } = useTableFooterActions(dataTableRef)
 </script>
 
 <template>
@@ -150,7 +145,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
           {{ formatTimestamp(data.timestamp) }}
         </template>
       </Column>
-      <Column field="source" sortable :pt="borderPt" style="width: 9%;">
+      <Column field="source" export-header="Source" sortable :pt="borderPt" style="width: 9%;">
         <template #header>
           <div class="column-header-with-filter">
             Source
@@ -158,7 +153,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
           </div>
         </template>
       </Column>
-      <Column field="user" sortable :pt="borderPt" style="width: 9%;">
+      <Column field="user" export-header="User" sortable :pt="borderPt" style="width: 9%;">
         <template #header>
           <div class="column-header-with-filter">
             User
@@ -166,7 +161,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
           </div>
         </template>
       </Column>
-      <Column field="browser" sortable :pt="borderPt" style="width: 9%;">
+      <Column field="browser" export-header="Browser" sortable :pt="borderPt" style="width: 9%;">
         <template #header>
           <div class="column-header-with-filter">
             Browser
@@ -174,7 +169,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
           </div>
         </template>
       </Column>
-      <Column field="operationId" sortable :pt="borderPt" style="width: 12%;">
+      <Column field="operationId" export-header="Operation ID" sortable :pt="borderPt" style="width: 12%;">
         <template #header>
           <div class="column-header-with-filter">
             Operation ID
@@ -183,7 +178,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
         </template>
       </Column>
       <Column field="url" header="URL" sortable :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
-      <Column field="status" sortable class="center-header" :pt="borderPt" style="width: 7%; text-align: center;">
+      <Column field="status" export-header="Status" sortable class="center-header" :pt="borderPt" style="width: 7%; text-align: center;">
         <template #header>
           <div class="column-header-with-filter">
             Status
@@ -199,12 +194,12 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
 
       <template #footer>
         <StatusFooter
+          :dt="dataTableRef"
           :show-refresh="false"
           :total-count="transactions.length"
           :filtered-count="filtersActive ? rows.length : null"
           total-label="requests"
           total-icon="pi pi-table"
-          @action="onFooterAction"
         />
       </template>
     </DataTable>

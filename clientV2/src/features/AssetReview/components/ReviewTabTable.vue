@@ -28,6 +28,7 @@ const props = defineProps({
   isAlreadyApplied: { type: Function, required: true },
   getApplyTooltip: { type: Function, required: true },
   resizableColumns: { type: Boolean, default: false },
+  exportFilename: { type: String, default: 'Reviews' },
   columnWidths: {
     type: Object,
     default: () => ({ detail: '130px', comment: '130px', username: '100px' }),
@@ -36,6 +37,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:filters', 'apply-review'])
 
+const dataTableRef = ref(null)
 const longTextPopover = ref(null)
 const showLongText = (event, label, text) => {
   longTextPopover.value?.show(event, label, text)
@@ -78,10 +80,12 @@ const sharedPt = {
 <template>
   <div class="review-tab-table-wrapper">
     <DataTable
+      ref="dataTableRef"
       :filters="filters"
       :value="value"
       :loading="loading"
       :data-key="dataKey"
+      :export-filename="exportFilename"
       scrollable
       scroll-height="flex"
       :virtual-scroller-options="{ itemSize: rowHeight, showLoader: true }"
@@ -209,7 +213,7 @@ const sharedPt = {
       </template>
 
       <template #footer>
-        <StatusFooter :show-refresh="false" :total-count="stats.total">
+        <StatusFooter :dt="dataTableRef" :show-refresh="false" :total-count="stats.total">
           <template #right-extra>
             <ResultBadge status="O" :count="stats.results.fail" />
             <ResultBadge status="NF" :count="stats.results.pass" />
