@@ -11,11 +11,12 @@ const { fetchFailedReviews } = await import('../api/findingsApi.js')
 
 const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
 
-function setup({ collectionId = '17', aggregator = 'groupId', selectedFinding = null } = {}) {
+function setup({ collectionId = '17', aggregator = 'groupId', selectedFinding = null, labelIds = [] } = {}) {
   const refs = {
     collectionId: ref(collectionId),
     aggregator: ref(aggregator),
     selectedFinding: ref(selectedFinding),
+    labelIds: ref(labelIds),
   }
   const composable = useFindingReviews(refs)
   return { ...refs, ...composable }
@@ -39,8 +40,31 @@ describe('useFindingReviews', () => {
     expect(fetchFailedReviews).toHaveBeenCalledWith('17', {
       aggregator: 'groupId',
       aggregatorValue: 'V-219148',
+      labelParams: {},
     })
     expect(reviews.value).toEqual([{ assetId: '1' }])
+  })
+
+  it('threads the label filter into the request and refetches when it changes', async () => {
+    fetchFailedReviews.mockClear()
+    fetchFailedReviews.mockResolvedValue([{ assetId: '1' }])
+    const { selectedFinding, labelIds } = setup({ labelIds: ['label-a'] })
+    selectedFinding.value = { groupId: 'V-219148' }
+    await flushPromises()
+    expect(fetchFailedReviews).toHaveBeenLastCalledWith('17', {
+      aggregator: 'groupId',
+      aggregatorValue: 'V-219148',
+      labelParams: { labelId: ['label-a'] },
+    })
+
+    fetchFailedReviews.mockClear()
+    labelIds.value = [null]
+    await flushPromises()
+    expect(fetchFailedReviews).toHaveBeenLastCalledWith('17', {
+      aggregator: 'groupId',
+      aggregatorValue: 'V-219148',
+      labelParams: { labelMatch: 'null' },
+    })
   })
 
   it('clears reviews without fetching when the selection is cleared', async () => {

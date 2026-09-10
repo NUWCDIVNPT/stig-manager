@@ -36,6 +36,10 @@ Most originated from the Findings feature review (2026-06-10) — see
   fix: add a `reset()` to `useAsyncState` that bumps generation / aborts — other
   features clear state manually the same way. Think about this holistically.
 
+- [ ] **`useAsyncState`'s abort signal is positional.** Factories that want the
+  signal must declare it in slot 0, which only holds while `execute()` is called with
+  no arguments — see [async-state-abort-signal.md](async-state-abort-signal.md).
+
 ## Consistency
 
 - [ ] **Consolidate ad-hoc mono fonts onto `var(--font-mono)`.** The token serves

@@ -4,14 +4,16 @@ import { filenameFromContentDisposition } from '../../../shared/lib/contentDispo
 
 export { fetchCollectionStigSummary } from '../../CollectionView/api/collectionApi.js'
 
-export function fetchFindings(collectionId, { aggregator, benchmarkId, projection = ['stigs'] } = {}) {
+// labelParams: label filter params ({ labelId, labelMatch }) built by
+// buildLabelFilterParams; {} when no filter is active.
+export function fetchFindings(collectionId, { aggregator, benchmarkId, projection = ['stigs'], labelParams = {} } = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch findings.')
   }
   if (!aggregator) {
     throw new Error('An aggregator is required to fetch findings.')
   }
-  const params = { collectionId, aggregator, projection }
+  const params = { collectionId, aggregator, projection, ...labelParams }
   if (benchmarkId) {
     params.benchmarkId = benchmarkId
   }
@@ -53,7 +55,7 @@ export async function downloadPoam(collectionId, params = {}) {
 // Returns the failed review records that back a single aggregated finding —
 // the user clicks an aggregated row in the middle pane, we fetch the per-asset
 // reviews for that row's dimension value here.
-export function fetchFailedReviews(collectionId, { aggregator, aggregatorValue, projection = ['stigs'] } = {}) {
+export function fetchFailedReviews(collectionId, { aggregator, aggregatorValue, projection = ['stigs'], labelParams = {} } = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch reviews.')
   }
@@ -65,6 +67,7 @@ export function fetchFailedReviews(collectionId, { aggregator, aggregatorValue, 
     result: 'fail',
     projection,
     [aggregator]: aggregatorValue,
+    ...labelParams,
   }
   return apiCall('getReviewsByCollection', params)
 }

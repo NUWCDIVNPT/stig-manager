@@ -97,6 +97,7 @@ describe('findings URL state', () => {
     expect(fetchFailedReviews).toHaveBeenCalledWith('17', {
       aggregator: 'groupId',
       aggregatorValue: 'V-219150',
+      labelParams: {},
     })
   })
 
@@ -129,6 +130,7 @@ describe('findings URL state', () => {
     expect(fetchFindings).toHaveBeenCalledWith('17', {
       aggregator: 'cci',
       benchmarkId: undefined,
+      labelParams: {},
     })
   })
 })
