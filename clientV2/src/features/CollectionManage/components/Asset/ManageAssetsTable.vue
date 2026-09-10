@@ -14,7 +14,6 @@ import { fetchCollectionAssetSummary } from '../../../../shared/api/collectionsA
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { deleteAssets } from '../../api/assetManageApi.js'
 import { useAssetTable } from '../../composables/useAssetTable.js'
 import AssetFormModal from './AssetFormModal.vue'
@@ -108,8 +107,6 @@ function onAssetsTransferred(transferredIds) {
   applyAssetsTransferred(transferredIds)
   selectedAssets.value = selectedAssets.value.filter(a => !idSet.has(a.assetId))
 }
-
-const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: loadAssets })
 </script>
 
 <template>
@@ -156,13 +153,14 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: load
         selection-mode="multiple"
         :loading="isLoading"
         :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
+        export-filename="Assets"
         class="flex-fill clickable-rows"
         :table-style="{ 'table-layout': 'fixed' }"
         :pt="tablePt"
       >
         <Column selection-mode="multiple" style="width: 1rem; height: 27px; padding: 0 0.5rem;" />
 
-        <Column field="assetName" sortable :pt="borderPt" style="width: 60px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="assetName" export-header="Asset" sortable :pt="borderPt" style="width: 60px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Asset
@@ -186,7 +184,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: load
           </template>
         </Column>
 
-        <Column field="labels" sortable :pt="borderPt" style="width: 100px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="labels" export-header="Labels" sortable :pt="borderPt" style="width: 100px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Labels
@@ -204,12 +202,13 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: load
 
         <template #footer>
           <StatusFooter
+            :dt="dataTableRef"
             :refresh-loading="isLoading"
             :total-count="filteredData.length"
             :show-selected="selectedAssets.length > 0"
             :selected-items="selectedAssets"
             total-label="assets"
-            @action="onFooterAction"
+            @refresh="loadAssets"
           />
         </template>
       </DataTable>

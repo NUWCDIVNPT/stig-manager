@@ -41,15 +41,10 @@ const previewRows = computed(() =>
 
 const dtRef = ref()
 
-function onFooterAction(action) {
-  if (action === 'export') {
-    dtRef.value?.exportCSV()
-  }
-}
-
 function badgeFor(result) {
   return result ? RESULT_TO_STATUS[result] ?? 'NR' : null
 }
+const exportResult = ({ data }) => badgeFor(data) ?? ''
 </script>
 
 <template>
@@ -90,13 +85,13 @@ function badgeFor(result) {
         </Column>
         <Column field="groupId" header="Group" style="width: 110px" sortable />
         <Column field="severity" :sort-field="severitySortValue" header="Severity" style="width: 100px" sortable />
-        <Column header="Current" style="width: 80px; text-align: center" :sort-field="r => r.currentResult ?? ''" sortable>
+        <Column header="Current" field="currentResult" :export-value="exportResult" style="width: 80px; text-align: center" :sort-field="r => r.currentResult ?? ''" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.currentResult)" :status="badgeFor(data.currentResult)" />
             <span v-else>—</span>
           </template>
         </Column>
-        <Column header="New" style="width: 80px; text-align: center" :sort-field="r => r.newResult ?? ''" sortable>
+        <Column header="New" field="newResult" :export-value="exportResult" style="width: 80px; text-align: center" :sort-field="r => r.newResult ?? ''" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.newResult)" :status="badgeFor(data.newResult)" />
             <span v-else>—</span>
@@ -129,9 +124,9 @@ function badgeFor(result) {
         :total-count="previewRows.length"
         :show-refresh="false"
         :show-export="true"
+        :dt="dtRef"
         total-label="rules"
         total-icon="pi pi-list"
-        @action="onFooterAction"
       />
     </div>
 

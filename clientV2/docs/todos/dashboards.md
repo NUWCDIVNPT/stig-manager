@@ -84,4 +84,4 @@ These manifest across the assets/STIGs grids in both dashes and the Collection v
 
 ## See also
 
-- API gap that would back a cross-collection asset search in the meta-dash: `pending-api-enhancements.md` #4.
+- API gap that would back a cross-collection asset search in the meta-dash: `pending-api-enhancements.md` #2.

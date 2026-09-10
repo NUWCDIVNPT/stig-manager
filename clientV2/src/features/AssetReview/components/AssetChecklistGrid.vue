@@ -1,15 +1,15 @@
 <script setup>
-import { computed, inject, onMounted, ref, toRefs, watch } from 'vue'
+import { computed, ref, toRefs, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import ReviewEditPopover from '../../../components/common/ReviewEditPopover.vue'
-import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { patchReview, putReview } from '../../../shared/api/reviewsApi.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
+import { useBulkReviewStatus } from '../composables/useBulkReviewStatus.js'
 import AssetChecklistGridHeader from './AssetChecklistGridHeader.vue'
 import AssetChecklistGridTable from './AssetChecklistGridTable.vue'
-import { useBulkReviewStatus } from '../composables/useBulkReviewStatus.js'
 import BulkStatusConfirmModal from './BulkStatusConfirmModal.vue'
 
 const props = defineProps({
@@ -174,7 +174,7 @@ const { isLoading: isSavingReview, execute: executeSaveReview } = useAsyncState(
 const { isLoading: isSavingStatus, execute: executeSaveStatus } = useAsyncState(
   async ({ ruleId, actionType }) => {
     const status = statusPayloadForAction(actionType)
-    if (status === null) return null
+    if (status === null) { return null }
     const saved = await patchReview(collectionId.value, assetId.value, ruleId, { status })
     emit('review-saved', { ...saved, ruleId })
     return saved
@@ -185,7 +185,7 @@ const { isLoading: isSavingStatus, execute: executeSaveStatus } = useAsyncState(
 const isSaving = computed(() => isSavingReview.value || isSavingStatus.value)
 
 function onPopoverSave(payload) {
-  if (!editingRow.value) return
+  if (!editingRow.value) { return }
   executeSaveReview({
     ruleId: payload.ruleId,
     result: payload.result,
@@ -196,11 +196,16 @@ function onPopoverSave(payload) {
 }
 
 function onPopoverStatusAction(payload) {
-  if (!editingRow.value) return
+  if (!editingRow.value) { return }
   executeSaveStatus({ ruleId: payload.ruleId, actionType: payload.actionType })
 }
 
 const route = useRoute()
+
+// CSV export basename, matching the legacy client's `${assetName}-${benchmarkId}`.
+const exportFilename = computed(() =>
+  `${props.asset?.name ?? 'asset'}-${route.params.benchmarkId ?? 'stig'}`,
+)
 
 const TOGGLEABLE_COLUMNS = [
   { field: 'groupTitle', header: 'Group Title' },
@@ -227,8 +232,8 @@ const displayMode = ref('groupRule')
 
 watch(displayMode, (mode) => {
   const titleField = DISPLAY_MODE_TITLE_FIELD[mode]
-  selectedColumns.value = TOGGLEABLE_COLUMNS.filter(c => {
-    if (c.field === 'groupTitle' || c.field === 'ruleTitle') return c.field === titleField
+  selectedColumns.value = TOGGLEABLE_COLUMNS.filter((c) => {
+    if (c.field === 'groupTitle' || c.field === 'ruleTitle') { return c.field === titleField }
     return selectedColumns.value.some(s => s.field === c.field)
   })
 })
@@ -236,8 +241,8 @@ watch(displayMode, (mode) => {
 const visibleFields = computed(() => {
   const fields = new Set(['severity', 'result', 'resultEngine', 'status'])
   const idField = DISPLAY_MODE_ID_FIELD[displayMode.value]
-  if (idField) fields.add(idField)
-  for (const col of selectedColumns.value) fields.add(col.field)
+  if (idField) { fields.add(idField) }
+  for (const col of selectedColumns.value) { fields.add(col.field) }
   return fields
 })
 
@@ -245,7 +250,7 @@ const { lineClamp, itemSize } = useGridDensity('asset-review-checklist', 3, 6, 1
 
 const localSearchFilter = computed({
   get: () => props.searchFilter,
-  set: (val) => emit('update:searchFilter', val)
+  set: val => emit('update:searchFilter', val),
 })
 
 watch([
@@ -289,7 +294,6 @@ function openRowEditor(event, rowData) {
     reviewEditPopover.value.show(anchorEvent)
   }
 }
-
 
 const scrollLocked = computed(() => !!editingRow.value && !!reviewEditPopover.value?.isDirty)
 
@@ -356,7 +360,6 @@ function onRowClick(event) {
   selectRule(event.data.ruleId)
   openRowEditor(event.originalEvent || event, event.data)
 }
-
 </script>
 
 <template>
@@ -383,6 +386,7 @@ function onRowClick(event) {
       :search-filter="localSearchFilter"
       :visible-fields="visibleFields"
       :item-size="itemSize"
+      :export-filename="exportFilename"
       @update:selected-row="onSelectionChange" @row-click="onRowClick"
       @refresh="emit('refresh')"
       @update:visible-rows="onVisibleRowsChange"

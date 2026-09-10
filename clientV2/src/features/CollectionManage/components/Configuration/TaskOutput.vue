@@ -43,12 +43,6 @@ watch(() => props.visible, (open) => {
   }
 })
 
-function handleFooterAction(action) {
-  if (action === 'refresh') {
-    loadOutput()
-  }
-}
-
 const dialogPt = {
   root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary); display: flex; flex-direction: column; overflow: hidden;' },
   header: { style: 'background: var(--color-background-dark); padding: 0; border-bottom: 1px solid var(--color-border-default); flex-shrink: 0;' },
@@ -128,7 +122,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
             :total-count="output.length"
             :show-export="false"
             total-label="entries"
-            @action="handleFooterAction"
+            @refresh="loadOutput"
           />
         </template>
       </DataTable>

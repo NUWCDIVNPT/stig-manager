@@ -4,7 +4,6 @@ import DataTable from 'primevue/datatable'
 import { ref, watch } from 'vue'
 import ActionButton from '../../../../../components/common/ActionButton.vue'
 import StatusFooter from '../../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../../shared/lib/dataTablePt.js'
 import { formatDateTime, formatDuration, runDuration } from '../../lib/serviceJobsFormat.js'
 import { borderPt } from '../../lib/serviceJobsPt.js'
@@ -16,6 +15,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select', 'delete-run'])
+
+const exportDuration = ({ record }) => formatDuration(runDuration(record))
 
 const dataTableRef = ref(null)
 const selectedRun = ref(null)
@@ -35,8 +36,6 @@ const tablePt = {
   ...compactTablePt({ bodyFontSize: '1rem', footer: 'divider', headerPadding: '0.3rem 0.6rem' }),
   bodyRow: { style: 'cursor: pointer;' },
 }
-
-const { onFooterAction } = useTableFooterActions(dataTableRef)
 </script>
 
 <template>
@@ -56,7 +55,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
         :sort-order="-1"
         scrollable
         scroll-height="flex"
-        export-filename="stig-manager-job-runs"
+        export-filename="runs"
         class="flex-fill"
         :pt="tablePt"
         @row-select="emit('select', selectedRun)"
@@ -77,7 +76,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
           </template>
         </Column>
 
-        <Column field="duration" :pt="borderPt" style="width: 18%; text-align: right;">
+        <Column export-header="Duration" :export-value="exportDuration" :pt="borderPt" style="width: 18%; text-align: right;">
           <template #header>
             <span class="right-label">Duration</span>
           </template>
@@ -86,7 +85,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
           </template>
         </Column>
 
-        <Column style="width: 12%; text-align: center;">
+        <Column :exportable="false" style="width: 12%; text-align: center;">
           <template #body="{ data }">
             <!-- Deleting an in-flight run would strand the still-executing
                  run_job procedure's output; the API does not enforce this yet. -->
@@ -101,11 +100,11 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
 
         <template #footer>
           <StatusFooter
+            :dt="dataTableRef"
             :show-refresh="false"
             :total-count="runs.length"
             total-label="runs"
             total-icon="pi pi-history"
-            @action="onFooterAction"
           />
         </template>
       </DataTable>

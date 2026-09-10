@@ -6,7 +6,6 @@ import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 
 const props = defineProps({
@@ -25,6 +24,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:selection', 'create', 'delete', 'refresh'])
+
+const exportOwners = ({ data }) => (data ?? []).map(o => o.displayName || o.username).filter(Boolean).join(', ')
 
 const dataTableRef = ref(null)
 
@@ -55,8 +56,6 @@ const formatDate = (dateString) => {
 
 const tablePt = compactTablePt({ bodyFontSize: '1rem' })
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
-
-const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () => emit('refresh') })
 </script>
 
 <template>
@@ -87,6 +86,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
         scroll-height="flex"
         resizable-columns
         column-resize-mode="fit"
+        export-filename="Collections"
         class="flex-fill clickable-rows"
         :table-style="{ 'min-width': '50rem' }"
         :pt="tablePt"
@@ -95,7 +95,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
           No collections found.
         </template>
 
-        <Column field="name" sortable :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="name" export-header="Name" sortable :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Name
@@ -104,7 +104,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
           </template>
         </Column>
 
-        <Column header="Owners" :pt="borderPt" style="width: 13%; vertical-align: top;">
+        <Column header="Owners" field="owners" :export-value="exportOwners" :pt="borderPt" style="width: 13%; vertical-align: top;">
           <template #body="{ data }">
             <div v-if="data.owners && data.owners.length" class="owners-cell">
               <span
@@ -132,12 +132,13 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
 
         <template #footer>
           <StatusFooter
+            :dt="dataTableRef"
             :refresh-loading="loading"
             :total-count="collections.length"
             :filtered-count="nameFilter.trim() ? filteredData.length : null"
             total-label="collections"
             total-icon="pi pi-folder"
-            @action="onFooterAction"
+            @refresh="emit('refresh')"
           />
         </template>
       </DataTable>

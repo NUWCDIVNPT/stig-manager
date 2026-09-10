@@ -161,9 +161,41 @@ Columns must be:
 ## Table Footer
 
 - Refresh button: `#footer` template
-- CSV export: `#footer` template + export logic
+- CSV export: `#footer` template + `StatusFooter :dt="dataTableRef"`
 - Row count: `#footer` template with `{{ data.length }}`
 - Totals badges: `#footer` template with Tag components
+
+### CSV export
+
+`StatusFooter` exports the bound DataTable through `shared/csv.js` `exportDataTableCsv`,
+which reads only the Column props `field`, `header`, `export-header` and `exportable`.
+The legacy client exported each column's rendered text; the Vue equivalent is
+declarative, so every exporting table must:
+
+- Give each data column a `field`, even when a `#body` slot renders something derived
+  from the row. Add `:exportable="false"` to control columns (actions, apply buttons,
+  custom select-all checkboxes). PrimeVue selection/expander columns need nothing.
+- Add `export-header` to any column whose visible header is a `#header` slot; the
+  `header` prop cannot be used there because PrimeVue renders both.
+- Use a hidden column (`<Column field="labels" header="Labels" hidden />`) to export a
+  value the grid shows inside another cell. Hidden columns render nothing per row.
+
+Cell text comes from, in order: the column's `:export-value` function, the DataTable's
+`:export-function`, or `shared/lib/exportCells.js` `exportDisplayValue`. All receive
+`{ data, field, record }` for every cell, null included.
+
+- `exportDisplayValue` maps the field names shared across several grids
+  (`resultEngine`, `result`, `status`, `severity`, `labels`/`assetLabels`, `stigs`) to
+  the text the grid displays and passes everything else to `serializeCsvValue`. Add a
+  rule there only when an object-valued field recurs across grids.
+- A one-off column (a schedule object, a run duration computed from the row, a
+  role id) binds `:export-value` on the Column, usually a one-line arrow in the
+  component's script, e.g. `:export-value="({ record }) => resourceSortKey(record)"`.
+  A column with `export-value` needs no `field`; it is the declarative equivalent of
+  the legacy client's `exportvalue` attribute.
+
+`shared/tests/columnExportConventions.test.js` scans every exporting table for the
+field and header rules above.
 
 ---
 

@@ -7,7 +7,6 @@ import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ColumnFilter from '../../../../components/common/ColumnFilter.vue'
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { formatDateTime, formatLastAccess, sortedGroupNames, statusDetail } from '../lib/userDisplay.js'
 
@@ -31,6 +30,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:selection', 'preregister', 'unregister', 'set-status', 'refresh'])
+
+const exportLastAccess = ({ data }) => (data ? formatLastAccess(data) : '')
 
 const dataTableRef = ref(null)
 
@@ -109,8 +110,6 @@ const tablePt = {
   bodyRow: { style: 'cursor: pointer;' },
 }
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
-
-const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () => emit('refresh') })
 </script>
 
 <template>
@@ -153,7 +152,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
         scroll-height="flex"
         resizable-columns
         column-resize-mode="fit"
-        export-filename="stig-manager-users"
+        export-filename="Users"
         class="flex-fill"
         :table-style="{ 'min-width': '60rem' }"
         :pt="tablePt"
@@ -162,7 +161,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
           No users found.
         </template>
 
-        <Column field="username" sortable :pt="borderPt" style="width: 15%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="username" export-header="Username" sortable :pt="borderPt" style="width: 15%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Username
@@ -171,7 +170,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
           </template>
         </Column>
 
-        <Column field="displayName" sortable :pt="borderPt" style="width: 14%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="displayName" export-header="Name" sortable :pt="borderPt" style="width: 14%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Name
@@ -183,7 +182,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
           </template>
         </Column>
 
-        <Column field="status" sortable class="center-header" :pt="borderPt" style="width: 9%; text-align: center;">
+        <Column field="status" export-header="Status" sortable class="center-header" :pt="borderPt" style="width: 9%; text-align: center;">
           <template #header>
             <div class="column-header-with-filter" style="justify-content: center; width: 100%;">
               Status
@@ -211,13 +210,13 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
           </template>
         </Column>
 
-        <Column field="lastAccess" header="Last Access" sortable :pt="borderPt" style="width: 13%">
+        <Column field="lastAccess" header="Last Access" :export-value="exportLastAccess" sortable :pt="borderPt" style="width: 13%">
           <template #body="{ data }">
             {{ formatLastAccess(data.lastAccess) }}
           </template>
         </Column>
 
-        <Column field="privileges.create_collection" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
+        <Column field="privileges.create_collection" export-header="Create Collection" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
           <template #header>
             <span style="display: inline-block; text-align: center; line-height: 1.1; white-space: normal;">
               Create Collection
@@ -228,7 +227,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
           </template>
         </Column>
 
-        <Column field="privileges.admin" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
+        <Column field="privileges.admin" export-header="Administrator" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
           <template #header>
             <span style="display: inline-block; text-align: center; line-height: 1.1; white-space: normal;">
               Administrator
@@ -243,12 +242,13 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
 
         <template #footer>
           <StatusFooter
+            :dt="dataTableRef"
             :refresh-loading="loading"
             :total-count="users.length"
             :filtered-count="filtersActive ? filteredData.length : null"
             total-label="users"
             total-icon="pi pi-users"
-            @action="onFooterAction"
+            @refresh="emit('refresh')"
           />
         </template>
       </DataTable>

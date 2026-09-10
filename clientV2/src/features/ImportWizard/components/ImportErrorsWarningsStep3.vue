@@ -14,14 +14,6 @@ defineProps({
 
 const errorsRef = ref()
 const dupesRef = ref()
-
-function onErrorsFooterAction(action) {
-  if (action === 'export') { errorsRef.value.exportCSV() }
-}
-
-function onDupesFooterAction(action) {
-  if (action === 'export') { dupesRef.value.exportCSV() }
-}
 </script>
 
 <template>
@@ -58,9 +50,9 @@ function onDupesFooterAction(action) {
           :total-count="errors.length"
           :show-refresh="false"
           :show-export="true"
+          :dt="errorsRef"
           total-label="items"
           total-icon="pi pi-exclamation-triangle"
-          @action="onErrorsFooterAction"
         />
       </div>
     </div>
@@ -110,9 +102,9 @@ function onDupesFooterAction(action) {
           :total-count="dupedRows.length"
           :show-refresh="false"
           :show-export="true"
+          :dt="dupesRef"
           total-label="duplicates"
           total-icon="pi pi-copy"
-          @action="onDupesFooterAction"
         />
       </div>
     </div>

@@ -21,6 +21,11 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  // CSV export basename; the parent passes the benchmarkId (legacy convention).
+  exportFilename: {
+    type: String,
+    default: 'Checklist',
+  },
 })
 
 const emit = defineEmits(['select-rule', 'refresh'])
@@ -92,6 +97,7 @@ const { lineClamp, itemSize } = useGridDensity('collection-checklist', 2, 10, 18
       :asset-count="assetCount"
       :visible-fields="visibleFields"
       :item-size="itemSize"
+      :export-filename="exportFilename"
       @update:selected-row="onSelectionChange"
       @refresh="emit('refresh')"
     />

@@ -5,12 +5,11 @@ import Select from 'primevue/select'
 import { ref } from 'vue'
 import AclStateIcon from '../../../../components/common/AclStateIcon.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { resourceSortKey } from '../../lib/aclRules.js'
 import AclResourceDisplay from './AclResourceDisplay.vue'
 
-defineProps({
+const props = defineProps({
   // rules is the items in the table
   rules: {
     type: Array,
@@ -29,10 +28,12 @@ defineProps({
 
 const emit = defineEmits(['accessChange'])
 
+const exportResource = ({ record }) => resourceSortKey(record)
+const exportAccess = ({ data }) => props.accessOptions.find(o => o.value === data)?.label ?? data
+
 const selectedRules = defineModel('selection', { type: Array, default: () => [] })
 
 const rulesDt = ref()
-const { onFooterAction } = useTableFooterActions(rulesDt)
 const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
 </script>
 
@@ -44,6 +45,7 @@ const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
     :loading="loading"
     selection-mode="multiple"
     :meta-key-selection="false"
+    export-filename="Collection ACL"
     size="small"
     scrollable
     scroll-height="flex"
@@ -56,12 +58,12 @@ const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
     <template #empty>
       No ACL rules.
     </template>
-    <Column header="Resource" sortable :sort-field="resourceSortKey" :export-field="resourceSortKey">
+    <Column header="Resource" :export-value="exportResource" sortable :sort-field="resourceSortKey">
       <template #body="{ data }">
         <AclResourceDisplay :rule="data" />
       </template>
     </Column>
-    <Column header="Access" field="access" sortable style="width: 140px">
+    <Column header="Access" field="access" :export-value="exportAccess" sortable style="width: 140px">
       <template #body="{ data }">
         <Select
           :model-value="data.access"
@@ -84,10 +86,10 @@ const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
     </Column>
     <template #footer>
       <StatusFooter
+        :dt="rulesDt"
         :show-refresh="false"
         :total-count="rules.length"
         total-label="rules"
-        @action="onFooterAction"
       />
     </template>
   </DataTable>

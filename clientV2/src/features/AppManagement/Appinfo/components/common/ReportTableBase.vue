@@ -211,9 +211,9 @@ function columnStyle(col) {
 
       <template #footer>
         <ReportTableFooter
+          :dt="dataTableRef"
           :count="filteredRows.length"
           :noun="noun"
-          @export="dataTableRef?.exportCSV()"
         />
       </template>
     </DataTable>

@@ -1,3 +1,4 @@
+import { flushPromises } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
@@ -10,8 +11,6 @@ vi.mock('../api/findingsApi.js', () => ({
 
 const { fetchCollectionStigSummary } = await import('../api/findingsApi.js')
 
-const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
-
 function stig(benchmarkId, { high = 0, medium = 0, low = 0 } = {}) {
   return { benchmarkId, title: `${benchmarkId} title`, metrics: { findings: { high, medium, low } } }
 }
@@ -23,7 +22,7 @@ describe('useCollectionStigSummary', () => {
     const labelIds = ['abc-123']
     useCollectionStigSummary({ collectionId: ref('17'), labelIds: ref(labelIds) })
     await flushPromises()
-    expect(fetchCollectionStigSummary).toHaveBeenCalledWith('17', buildLabelFilterParams(labelIds))
+    expect(fetchCollectionStigSummary).toHaveBeenCalledWith('17', buildLabelFilterParams(labelIds), { signal: expect.any(AbortSignal) })
   })
 
   it('filters out STIGs with no open findings', async () => {

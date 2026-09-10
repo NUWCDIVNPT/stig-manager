@@ -8,8 +8,8 @@ import HelpIcon from '../../../components/common/HelpIcon.vue'
 import RuleIdDiffSpan from '../../../components/common/RuleIdDiffSpan.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
-import { useTableFooterActions } from '../../../shared/composables/useTableFooterActions.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
+import { catLabel } from '../../../shared/lib/exportCells.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { paneColumnPt, paneTablePt } from '../tablePt.js'
 
@@ -33,6 +33,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['select-row'])
 
+const exportCat = ({ data }) => catLabel(data)
+
 const dataTableRef = ref(null)
 const { itemSize } = useGridDensity('stig-library-rules', 2, 6, 15)
 
@@ -41,8 +43,6 @@ const selectedRow = computed(() =>
 )
 
 const dataTablePt = paneTablePt
-
-const { onFooterAction } = useTableFooterActions(dataTableRef)
 
 function onRowClick(event) {
   emit('select-row', event.data)
@@ -56,12 +56,12 @@ function onRowClick(event) {
     :selection="selectedRow"
     selection-mode="single"
     data-key="key"
+    export-filename="Changed Rules"
     scrollable
     scroll-height="flex"
     :virtual-scroller-options="{ itemSize, showLoader: true }"
     striped-rows
     resizable-columns
-    export-filename="stig-library-revision-diff"
     class="diff-rule-table"
     :style="{ '--item-size': `${itemSize}px` }"
     :pt="dataTablePt"
@@ -72,7 +72,12 @@ function onRowClick(event) {
         <span class="stiglib-cell-text">{{ data.stigId }}</span>
       </template>
     </Column>
-    <Column :style="{ width: '16rem', minWidth: '15rem' }" :pt="paneColumnPt.left">
+    <Column
+      field="leftRule"
+      export-header="Left rule"
+      :style="{ width: '16rem', minWidth: '15rem' }"
+      :pt="paneColumnPt.left"
+    >
       <template #header>
         <span class="diff-col-header">
           Rule in <span class="stiglib-rev stiglib-rev--del">{{ compareRev ?? 'compared' }}</span>
@@ -85,7 +90,12 @@ function onRowClick(event) {
         </span>
       </template>
     </Column>
-    <Column :style="{ width: '16rem', minWidth: '15rem' }" :pt="paneColumnPt.left">
+    <Column
+      field="rightRule"
+      export-header="Right rule"
+      :style="{ width: '16rem', minWidth: '15rem' }"
+      :pt="paneColumnPt.left"
+    >
       <template #header>
         <span class="diff-col-header">
           Rule in <span class="stiglib-rev stiglib-rev--add">{{ viewRev ?? 'viewed' }}</span>
@@ -98,12 +108,12 @@ function onRowClick(event) {
         </span>
       </template>
     </Column>
-    <Column header="Cat" :style="{ width: '5rem' }" :pt="paneColumnPt.center">
+    <Column header="CAT" field="cat" :export-value="exportCat" :style="{ width: '5rem' }" :pt="paneColumnPt.center">
       <template #body="{ data }">
         <CatBadge v-if="data.cat" :category="severityMap[data.cat] ?? 3" variant="label" />
       </template>
     </Column>
-    <Column :style="{ minWidth: '16rem' }" :pt="paneColumnPt.left">
+    <Column field="changed" export-header="Changed properties" :style="{ minWidth: '16rem' }" :pt="paneColumnPt.left">
       <template #header>
         Changed properties
         <HelpIcon :content="TOOLTIPS.rulePropertyDiffs" />
@@ -126,10 +136,10 @@ function onRowClick(event) {
     <template #footer>
       <StatusFooter
         :total-count="rows.length"
+        :dt="dataTableRef"
         total-label="changed rules"
         :show-refresh="false"
         :show-export="true"
-        @action="onFooterAction"
       />
     </template>
   </DataTable>

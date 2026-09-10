@@ -102,6 +102,7 @@ const COLUMN_WIDTHS = { detail: '150px', comment: '150px', username: '80px' }
     :value="processedOtherReviews"
     :loading="isLoading"
     data-key="assetId"
+    export-filename="Other-Reviews"
     :row-height="ROW_HEIGHT"
     :stats="otherAssetsStats"
     :result-options="resultOptions"

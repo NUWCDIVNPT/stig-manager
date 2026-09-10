@@ -1,3 +1,4 @@
+import { flushPromises } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import { useFindingReviews } from '../composables/useFindingReviews.js'
@@ -9,13 +10,12 @@ vi.mock('../api/findingsApi.js', () => ({
 
 const { fetchFailedReviews } = await import('../api/findingsApi.js')
 
-const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
-
-function setup({ collectionId = '17', aggregator = 'groupId', selectedFinding = null } = {}) {
+function setup({ collectionId = '17', aggregator = 'groupId', selectedFinding = null, labelIds = [] } = {}) {
   const refs = {
     collectionId: ref(collectionId),
     aggregator: ref(aggregator),
     selectedFinding: ref(selectedFinding),
+    labelIds: ref(labelIds),
   }
   const composable = useFindingReviews(refs)
   return { ...refs, ...composable }
@@ -39,8 +39,30 @@ describe('useFindingReviews', () => {
     expect(fetchFailedReviews).toHaveBeenCalledWith('17', {
       aggregator: 'groupId',
       aggregatorValue: 'V-219148',
-    })
+    }, { signal: expect.any(AbortSignal) })
     expect(reviews.value).toEqual([{ assetId: '1' }])
+  })
+
+  it('threads the label filter into the request and refetches when it changes', async () => {
+    fetchFailedReviews.mockClear()
+    fetchFailedReviews.mockResolvedValue([{ assetId: '1' }])
+    const { selectedFinding, labelIds } = setup({ labelIds: ['label-a'] })
+    selectedFinding.value = { groupId: 'V-219148' }
+    await flushPromises()
+    expect(fetchFailedReviews).toHaveBeenLastCalledWith('17', {
+      aggregator: 'groupId',
+      aggregatorValue: 'V-219148',
+      labelId: ['label-a'],
+    }, { signal: expect.any(AbortSignal) })
+
+    fetchFailedReviews.mockClear()
+    labelIds.value = [null]
+    await flushPromises()
+    expect(fetchFailedReviews).toHaveBeenLastCalledWith('17', {
+      aggregator: 'groupId',
+      aggregatorValue: 'V-219148',
+      labelMatch: 'null',
+    }, { signal: expect.any(AbortSignal) })
   })
 
   it('clears reviews without fetching when the selection is cleared', async () => {

@@ -9,9 +9,9 @@ const props = defineProps({
   noun: { type: String, default: 'row' },
   icon: { type: String, default: null },
   iconSrc: { type: String, default: null },
+  /** DataTable instance forwarded to StatusFooter for the export action. */
+  dt: { type: Object, default: null },
 })
-
-const emit = defineEmits(['export'])
 
 const NOUN_ICON_MAP = {
   operation: 'pi pi-bolt',
@@ -45,18 +45,12 @@ const metrics = computed(() => [{
   iconSrc: computedIconSrc.value || undefined,
   value: `${props.count} ${props.count === 1 ? props.noun : `${props.noun}s`}`,
 }])
-
-function onAction(key) {
-  if (key === 'export') {
-    emit('export')
-  }
-}
 </script>
 
 <template>
   <StatusFooter
+    :dt="dt"
     :show-refresh="false"
     :metrics="metrics"
-    @action="onAction"
   />
 </template>
