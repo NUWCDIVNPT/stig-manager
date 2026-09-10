@@ -1,3 +1,4 @@
+import { flushPromises } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import { useFindingReviews } from '../composables/useFindingReviews.js'
@@ -8,8 +9,6 @@ vi.mock('../api/findingsApi.js', () => ({
 }))
 
 const { fetchFailedReviews } = await import('../api/findingsApi.js')
-
-const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
 
 function setup({ collectionId = '17', aggregator = 'groupId', selectedFinding = null, labelIds = [] } = {}) {
   const refs = {
@@ -40,8 +39,7 @@ describe('useFindingReviews', () => {
     expect(fetchFailedReviews).toHaveBeenCalledWith('17', {
       aggregator: 'groupId',
       aggregatorValue: 'V-219148',
-      labelParams: {},
-    })
+    }, { signal: expect.any(AbortSignal) })
     expect(reviews.value).toEqual([{ assetId: '1' }])
   })
 
@@ -54,8 +52,8 @@ describe('useFindingReviews', () => {
     expect(fetchFailedReviews).toHaveBeenLastCalledWith('17', {
       aggregator: 'groupId',
       aggregatorValue: 'V-219148',
-      labelParams: { labelId: ['label-a'] },
-    })
+      labelId: ['label-a'],
+    }, { signal: expect.any(AbortSignal) })
 
     fetchFailedReviews.mockClear()
     labelIds.value = [null]
@@ -63,8 +61,8 @@ describe('useFindingReviews', () => {
     expect(fetchFailedReviews).toHaveBeenLastCalledWith('17', {
       aggregator: 'groupId',
       aggregatorValue: 'V-219148',
-      labelParams: { labelMatch: 'null' },
-    })
+      labelMatch: 'null',
+    }, { signal: expect.any(AbortSignal) })
   })
 
   it('clears reviews without fetching when the selection is cleared', async () => {

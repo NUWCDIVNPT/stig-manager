@@ -97,8 +97,7 @@ describe('findings URL state', () => {
     expect(fetchFailedReviews).toHaveBeenCalledWith('17', {
       aggregator: 'groupId',
       aggregatorValue: 'V-219150',
-      labelParams: {},
-    })
+    }, { signal: expect.any(AbortSignal) })
   })
 
   it('restores nothing when ?sel= matches no loaded row', async () => {
@@ -130,7 +129,6 @@ describe('findings URL state', () => {
     expect(fetchFindings).toHaveBeenCalledWith('17', {
       aggregator: 'cci',
       benchmarkId: undefined,
-      labelParams: {},
-    })
+    }, { signal: expect.any(AbortSignal) })
   })
 })

@@ -84,13 +84,19 @@ describe('fetchFindings', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('spreads label filter params into the request', () => {
-    fetchFindings('42', { aggregator: 'groupId', labelParams: { labelId: ['l1', 'l2'] } })
+    fetchFindings('42', { aggregator: 'groupId', labelId: ['l1', 'l2'] })
     expect(apiCall).toHaveBeenCalledWith('getFindingsByCollection', {
       collectionId: '42',
       aggregator: 'groupId',
       projection: ['stigs'],
       labelId: ['l1', 'l2'],
-    })
+    }, undefined, {})
+  })
+
+  it('forwards fetch options (abort signal) to apiCall', () => {
+    const signal = new AbortController().signal
+    fetchFindings('42', { aggregator: 'groupId' }, { signal })
+    expect(apiCall.mock.calls[0][3]).toEqual({ signal })
   })
 
   it('adds no label keys when the filter is empty', () => {
@@ -99,7 +105,7 @@ describe('fetchFindings', () => {
       collectionId: '42',
       aggregator: 'groupId',
       projection: ['stigs'],
-    })
+    }, undefined, {})
   })
 })
 
@@ -107,13 +113,19 @@ describe('fetchFailedReviews', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('spreads label filter params into the request', () => {
-    fetchFailedReviews('42', { aggregator: 'ruleId', aggregatorValue: 'SV-1_rule', labelParams: { labelMatch: 'null' } })
+    fetchFailedReviews('42', { aggregator: 'ruleId', aggregatorValue: 'SV-1_rule', labelMatch: 'null' })
     expect(apiCall).toHaveBeenCalledWith('getReviewsByCollection', {
       collectionId: '42',
       result: 'fail',
       projection: ['stigs'],
       ruleId: 'SV-1_rule',
       labelMatch: 'null',
-    })
+    }, undefined, {})
+  })
+
+  it('forwards fetch options (abort signal) to apiCall', () => {
+    const signal = new AbortController().signal
+    fetchFailedReviews('42', { aggregator: 'ruleId', aggregatorValue: 'SV-1_rule' }, { signal })
+    expect(apiCall.mock.calls[0][3]).toEqual({ signal })
   })
 })

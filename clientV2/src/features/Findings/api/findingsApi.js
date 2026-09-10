@@ -4,20 +4,23 @@ import { filenameFromContentDisposition } from '../../../shared/lib/contentDispo
 
 export { fetchCollectionStigSummary } from '../../CollectionView/api/collectionApi.js'
 
-// labelParams: label filter params ({ labelId, labelMatch }) built by
-// buildLabelFilterParams; {} when no filter is active.
-export function fetchFindings(collectionId, { aggregator, benchmarkId, projection = ['stigs'], labelParams = {} } = {}) {
+// Any extra keys (e.g. labelId/labelMatch from buildLabelFilterParams) pass
+// through as query params, matching the flat-params convention of the other
+// API wrappers.
+// opts: fetch options forwarded to apiCall (e.g. { signal } from useAsyncState,
+// so a superseded request is aborted instead of running to completion).
+export function fetchFindings(collectionId, { aggregator, benchmarkId, projection = ['stigs'], ...params } = {}, opts = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch findings.')
   }
   if (!aggregator) {
     throw new Error('An aggregator is required to fetch findings.')
   }
-  const params = { collectionId, aggregator, projection, ...labelParams }
+  const query = { ...params, collectionId, aggregator, projection }
   if (benchmarkId) {
-    params.benchmarkId = benchmarkId
+    query.benchmarkId = benchmarkId
   }
-  return apiCall('getFindingsByCollection', params)
+  return apiCall('getFindingsByCollection', query, undefined, opts)
 }
 
 // POA&M/eMASS (or MCCAST) spreadsheet; we just stream the response and save it.
@@ -55,19 +58,19 @@ export async function downloadPoam(collectionId, params = {}) {
 // Returns the failed review records that back a single aggregated finding —
 // the user clicks an aggregated row in the middle pane, we fetch the per-asset
 // reviews for that row's dimension value here.
-export function fetchFailedReviews(collectionId, { aggregator, aggregatorValue, projection = ['stigs'], labelParams = {} } = {}) {
+export function fetchFailedReviews(collectionId, { aggregator, aggregatorValue, projection = ['stigs'], ...params } = {}, opts = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch reviews.')
   }
   if (!aggregator || !aggregatorValue) {
     throw new Error('An aggregator and aggregatorValue are required to fetch failed reviews.')
   }
-  const params = {
+  const query = {
+    ...params,
     collectionId,
     result: 'fail',
     projection,
     [aggregator]: aggregatorValue,
-    ...labelParams,
   }
-  return apiCall('getReviewsByCollection', params)
+  return apiCall('getReviewsByCollection', query, undefined, opts)
 }

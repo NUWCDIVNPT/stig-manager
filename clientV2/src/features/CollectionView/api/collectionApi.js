@@ -4,11 +4,11 @@ export { fetchAssetStigs } from '../../../shared/api/assetsApi.js'
 export { fetchCollection, fetchCollectionLabels } from '../../../shared/api/collectionsApi.js'
 export { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 
-export function fetchCollectionStigSummary(collectionId, params = {}) {
+export function fetchCollectionStigSummary(collectionId, params = {}, opts = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to fetch STIG metrics.')
   }
-  return apiCall('getMetricsSummaryByCollectionAggStig', { collectionId, ...params })
+  return apiCall('getMetricsSummaryByCollectionAggStig', { collectionId, ...params }, undefined, opts)
 }
 
 export function fetchCollectionLabelSummary(collectionId, params = {}) {

@@ -23,11 +23,11 @@ export function useFindingReviews({ collectionId, selectedFinding, aggregator, l
   })
 
   const { state: reviews, isLoading, error, execute } = useAsyncState(
-    () => fetchFailedReviews(collectionId.value, {
+    ({ signal } = {}) => fetchFailedReviews(collectionId.value, {
       aggregator: aggregator.value,
       aggregatorValue: aggregatorValue.value,
-      labelParams: buildLabelFilterParams(labelIds.value),
-    }),
+      ...buildLabelFilterParams(labelIds.value),
+    }, { signal }),
     { immediate: false, initialState: [], onError: null },
   )
 
