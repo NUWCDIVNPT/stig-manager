@@ -2890,6 +2890,12 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   background-size: 16px;
 }
 
+.sm-preview-icon {
+  background-image: url(../img/browser.svg) !important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px
+}
+
 .sm-nodejs-icon {
   background-image: url(../img/jsIconGreen.svg);
   background-size: 16px;
