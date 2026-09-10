@@ -5,6 +5,7 @@ import GlobalBanner from './components/global/GlobalBanner.vue'
 import GlobalErrorModal from './components/global/GlobalErrorModal.vue'
 import GlobalNotifications from './components/global/GlobalNotifications.vue'
 import GlobalServiceOverlay from './components/global/GlobalServiceOverlay.vue'
+import OrientationTour from './components/global/OrientationTour.vue'
 import WhatsNew from './components/global/WhatsNew.vue'
 import HomePage from './Home/Home.vue'
 
@@ -24,6 +25,7 @@ const oidcWorker = useOidcWorker()
   <WhatsNew />
   <GlobalNotifications />
   <HomePage />
+  <OrientationTour />
 </template>
 
 <style scoped>

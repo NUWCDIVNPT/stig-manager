@@ -78,7 +78,8 @@ const pt = {
     },
   },
   rootList: {
-    style: {
+    'data-tour': 'user-menu',
+    'style': {
       marginLeft: 'auto',
     },
   },

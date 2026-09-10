@@ -40,7 +40,7 @@ function toggleExpanded() {
       :min-size="4"
       :pt="{ root: { class: { 'nav-panel--collapsed': !expanded, 'nav-panel--animating': isAnimating }, style: 'min-width: 12rem; max-width: 35rem;' } }"
     >
-      <nav class="nav-rail">
+      <nav class="nav-rail" data-tour="nav-rail">
         <button
           class="nav-rail-toggle"
           :aria-label="expanded ? 'Collapse navigation' : 'Expand navigation'"
@@ -58,6 +58,7 @@ function toggleExpanded() {
                 :active="item.matchFn()"
                 :label="item.label"
                 :icon-class="item.iconClass"
+                :data-tour="`nav-item-${item.key}`"
               />
 
               <router-link
@@ -66,6 +67,7 @@ function toggleExpanded() {
                 class="nav-rail-item"
                 :class="{ 'nav-rail-item--active': item.matchFn() }"
                 :title="expanded ? undefined : item.label"
+                :data-tour="`nav-item-${item.key}`"
               >
                 <span
                   v-if="item.icon"
@@ -84,7 +86,9 @@ function toggleExpanded() {
 
           <div class="nav-rail-separator" />
 
-          <NavRailRecentViews :expanded="expanded" />
+          <div data-tour="nav-recent">
+            <NavRailRecentViews :expanded="expanded" />
+          </div>
         </div>
       </nav>
     </SplitterPanel>
