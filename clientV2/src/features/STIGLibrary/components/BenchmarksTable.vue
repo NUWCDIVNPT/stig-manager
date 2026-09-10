@@ -2,8 +2,10 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
+import ActionButton from '../../../components/common/ActionButton.vue'
 import ClassificationBadge from '../../../components/common/ClassificationBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { paneColumnPt, paneTablePt } from '../tablePt.js'
 import EarlierRevisionsPills from './EarlierRevisionsPills.vue'
 
 const props = defineProps({
@@ -15,9 +17,13 @@ const props = defineProps({
     type: String,
     default: null,
   },
-  compact: {
+  loading: {
     type: Boolean,
     default: false,
+  },
+  error: {
+    type: Object,
+    default: null,
   },
   itemSize: {
     type: Number,
@@ -33,7 +39,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['select'])
+const emit = defineEmits(['select', 'back', 'retry'])
 
 // The first entry is the latest revision, shown in its own column.
 const exportEarlierRevisions = ({ data }) => (data ?? []).slice(1).join(', ')
@@ -42,15 +48,15 @@ const filter = defineModel('filter', { type: String, default: '' })
 
 const dataTableRef = ref(null)
 
+// The pane is too narrow for a column header, and the single column needs no
+// label or sort, so the header row is suppressed and the filter lives in the
+// sub-bar above the table.
 const dataTablePt = {
-  tableContainer: { style: { height: '100%' } },
-  table: { style: { tableLayout: 'auto', minWidth: '100%' } },
-  bodyRow: {
-    style: { cursor: 'pointer', height: 'var(--item-size, 72px)', overflow: 'hidden' },
-  },
-  footer: { style: { padding: '0', border: 'none' } },
-  emptyMessageCell: { class: 'agg-grid-empty-cell' },
+  ...paneTablePt(),
+  thead: { style: { display: 'none' } },
 }
+
+const columnPt = paneColumnPt()
 
 const selectedRow = computed(() =>
   props.selectedId ? props.benchmarks.find(b => b.benchmarkId === props.selectedId) ?? null : null,
@@ -71,221 +77,122 @@ function clearFilter() {
 </script>
 
 <template>
-  <DataTable
-    ref="dataTableRef"
-    :value="benchmarks"
-    :selection="selectedRow"
-    selection-mode="single"
-    data-key="benchmarkId"
-    export-filename="STIG"
-    scrollable
-    scroll-height="flex"
-    :virtual-scroller-options="{ itemSize, showLoader: true }"
-    striped-rows
-    class="benchmarks-table"
-    :style="{ '--bm-line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
-    :pt="dataTablePt"
-    @row-click="onRowClick"
-  >
-    <Column
-      field="title" export-header="Benchmark"
-      :sortable="!compact"
-      :style="{ width: compact ? undefined : '100rem', minWidth: compact ? '11rem' : '22rem' }"
-    >
-      <template #header>
-        <div class="benchmarks-table__col-header">
-          <span v-if="!compact" class="benchmarks-table__col-header-label">Benchmark</span>
-          <div class="benchmarks-table__filter">
-            <i class="pi pi-search benchmarks-table__filter-icon" />
-            <input
-              v-model="filter"
-              type="text"
-              class="benchmarks-table__filter-input"
-              placeholder="Filter benchmarks by title or ID…"
-              @click.stop
-            >
-            <button
-              v-if="filter"
-              type="button"
-              class="benchmarks-table__filter-clear"
-              aria-label="Clear filter"
-              @click.stop="clearFilter"
-            >
-              <i class="pi pi-times" />
-            </button>
-          </div>
-        </div>
-      </template>
-      <template #body="{ data }">
-        <div class="bm-cell">
-          <div class="bm-cell__title" :title="data.title">
-            {{ data.title }}
-          </div>
-          <div class="bm-cell__id-row">
-            <span class="bm-cell__id">{{ data.benchmarkId }}</span>
-            <ClassificationBadge v-if="data.marking" :level="data.marking" />
-          </div>
-          <div v-if="compact" class="bm-cell__meta-row">
-            <span class="bm-cell__meta">
-              {{ data.lastRevisionStr }} · {{ data.ruleCount }} rules · {{ data.lastRevisionDate }}
-            </span>
-            <EarlierRevisionsPills :revisions="data.revisionStrs" :max="2" />
-          </div>
-        </div>
-      </template>
-    </Column>
+  <div class="stiglib-panel">
+    <header class="stiglib-panel__header benchmarks-pane__header">
+      <ActionButton
+        icon="pi pi-arrow-left icon-grey"
+        title="Back to the full STIG list"
+        @click="emit('back')"
+      >
+        Benchmarks
+      </ActionButton>
+    </header>
 
-    <Column
-      v-if="!compact"
-      header="Latest"
-      field="lastRevisionStr"
-      sortable
-      :style="{ width: '7rem' }"
-    >
-      <template #body="{ data }">
-        <span class="bm-cell__value">{{ data.lastRevisionStr }}</span>
-      </template>
-    </Column>
-
-    <Column
-      v-if="!compact"
-      header="Rev. date"
-      field="lastRevisionDate"
-      sortable
-      :style="{ width: '9rem' }"
-    >
-      <template #body="{ data }">
-        <span class="bm-cell__value bm-cell__value--dim">{{ data.lastRevisionDate }}</span>
-      </template>
-    </Column>
-
-    <Column
-      v-if="!compact"
-      header="Rules"
-      field="ruleCount"
-      sortable
-      :style="{ width: '6rem', textAlign: 'right' }"
-    >
-      <template #body="{ data }">
-        <span class="bm-cell__value">{{ data.ruleCount }}</span>
-      </template>
-    </Column>
-
-    <Column
-      v-if="!compact"
-      header="Earlier revisions"
-      field="revisionStrs"
-      :export-value="exportEarlierRevisions"
-      :style="{ minWidth: '14rem' }"
-    >
-      <template #body="{ data }">
-        <EarlierRevisionsPills :revisions="data.revisionStrs" />
-      </template>
-    </Column>
-
-    <template #empty>
-      <div class="agg-grid-empty-state">
-        {{ filter ? 'No benchmarks match this filter.' : 'No benchmarks available.' }}
+    <div class="stiglib-subbar">
+      <div class="stiglib-search">
+        <i class="pi pi-search stiglib-search__icon" />
+        <input
+          v-model="filter"
+          type="text"
+          class="stiglib-search__input"
+          placeholder="Filter by title or ID…"
+        >
+        <button
+          v-if="filter"
+          type="button"
+          class="stiglib-search__clear"
+          aria-label="Clear filter"
+          @click="clearFilter"
+        >
+          <i class="pi pi-times" />
+        </button>
       </div>
-    </template>
+    </div>
 
-    <template #footer>
-      <StatusFooter
-        :total-count="total"
-        :filtered-count="filteredCount"
-        :dt="dataTableRef"
-        total-label="benchmarks"
-        :show-refresh="false"
-        :show-export="true"
-      />
-    </template>
-  </DataTable>
+    <div v-if="error" class="stiglib-state stiglib-state--error">
+      <i class="pi pi-exclamation-triangle" />
+      <span>{{ error.message ?? 'Could not load benchmarks.' }}</span>
+      <button type="button" class="stiglib-retry" @click="emit('retry')">
+        Retry
+      </button>
+    </div>
+
+    <div v-else class="stiglib-panel__body">
+      <DataTable
+        ref="dataTableRef"
+        :value="benchmarks"
+        :loading="loading"
+        :selection="selectedRow"
+        selection-mode="single"
+        data-key="benchmarkId"
+        scrollable
+        scroll-height="flex"
+        :virtual-scroller-options="{ itemSize, showLoader: true }"
+        striped-rows
+        export-filename="STIG"
+        class="benchmarks-table"
+        :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
+        :pt="dataTablePt"
+        @row-click="onRowClick"
+      >
+        <Column field="title" export-header="Benchmark" :style="{ minWidth: '11rem' }" :pt="columnPt">
+          <template #body="{ data }">
+            <div class="bm-cell">
+              <div class="bm-cell__title" :title="data.title">
+                {{ data.title }}
+              </div>
+              <div class="bm-cell__id-row">
+                <span class="bm-cell__id">{{ data.benchmarkId }}</span>
+                <ClassificationBadge v-if="data.marking" :level="data.marking" />
+              </div>
+              <div class="bm-cell__meta-row">
+                <span class="bm-cell__meta">
+                  {{ data.lastRevisionStr }} · {{ data.ruleCount }} rules · {{ data.lastRevisionDate }}
+                </span>
+                <EarlierRevisionsPills :revisions="data.revisionStrs" :max="2" />
+              </div>
+            </div>
+          </template>
+        </Column>
+        <Column field="benchmarkId" header="Benchmark ID" hidden />
+        <Column field="lastRevisionStr" header="Latest" hidden />
+        <Column field="lastRevisionDate" header="Rev. date" hidden />
+        <Column field="ruleCount" header="Rules" hidden />
+        <Column field="revisionStrs" header="Earlier revisions" :export-value="exportEarlierRevisions" hidden />
+
+        <template #empty>
+          <div class="stiglib-empty">
+            {{ filter ? 'No benchmarks match this filter.' : 'No benchmarks available.' }}
+          </div>
+        </template>
+
+        <template #footer>
+          <StatusFooter
+            :total-count="total"
+            :filtered-count="filteredCount"
+            :dt="dataTableRef"
+            total-label="benchmarks"
+            :show-refresh="false"
+            :show-export="true"
+          />
+        </template>
+      </DataTable>
+    </div>
+  </div>
 </template>
 
 <style scoped>
+@import "../styles/stigLibrary.css";
+
+/* The header is a single action: the button supplies its own padding. */
+.benchmarks-pane__header {
+  padding: 0.15rem 0.35rem;
+}
+
 .benchmarks-table {
+  flex: 1;
+  min-height: 0;
   height: 100%;
-}
-
-.benchmarks-table__col-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  min-width: 0;
-}
-
-.benchmarks-table__col-header-label {
-  flex-shrink: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  color: var(--color-text-dim);
-  text-transform: none;
-}
-
-.benchmarks-table__filter {
-  position: relative;
-  flex: 0 1 24rem;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-}
-
-.benchmarks-table__filter-icon {
-  position: absolute;
-  left: 0.6rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--color-text-dim);
-  font-size: 0.95rem;
-  pointer-events: none;
-}
-
-.benchmarks-table__filter-input {
-  width: 100%;
-  height: 1.7rem;
-  padding: 0.2rem 1.7rem 0.2rem 1.95rem;
-  border: 1px solid var(--color-border-default);
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--color-background-light) 75%, transparent);
-  color: var(--color-text-primary);
-  font-size: 1rem;
-  outline: none;
-  transition: all 0.15s ease;
-}
-
-.benchmarks-table__filter-input:focus {
-  border-color: var(--color-primary-highlight);
-  background-color: var(--color-background-darkest);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-highlight) 25%, transparent);
-}
-
-.benchmarks-table__filter-input::placeholder {
-  color: var(--color-text-dim);
-  opacity: 1;
-}
-
-.benchmarks-table__filter-clear {
-  position: absolute;
-  right: 0.45rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--color-text-dim);
-  cursor: pointer;
-  padding: 0.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.1s;
-}
-
-.benchmarks-table__filter-clear:hover {
-  color: var(--color-text-primary);
-  background: color-mix(in srgb, var(--color-text-dim) 15%, transparent);
 }
 
 .bm-cell {
@@ -293,7 +200,7 @@ function clearFilter() {
   flex-direction: column;
   gap: 0.15rem;
   min-width: 0;
-  padding: 0.15rem 0;
+  padding: 0.25rem 0;
 }
 
 .bm-cell__title {
@@ -302,8 +209,8 @@ function clearFilter() {
   line-height: 1.3;
   color: var(--color-text-primary);
   display: -webkit-box;
-  line-clamp: var(--bm-line-clamp, 2);
-  -webkit-line-clamp: var(--bm-line-clamp, 2);
+  line-clamp: var(--line-clamp, 2);
+  -webkit-line-clamp: var(--line-clamp, 2);
   -webkit-box-orient: vertical;
   overflow: hidden;
   overflow-wrap: anywhere;
@@ -318,6 +225,7 @@ function clearFilter() {
 }
 
 .bm-cell__id {
+  font-family: monospace;
   font-size: 1rem;
   color: var(--color-text-dim);
 }
@@ -333,58 +241,5 @@ function clearFilter() {
 .bm-cell__meta {
   font-size: 1rem;
   color: var(--color-text-dim);
-}
-
-.bm-cell__value {
-  font-size: 1rem;
-  color: var(--color-text-primary);
-}
-
-.bm-cell__value--dim {
-  color: var(--color-text-dim);
-}
-
-:deep(.p-datatable-thead > tr > th) {
-  background: var(--color-background-dark);
-  color: var(--color-text-dim);
-  font-size: 1rem;
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0.03em;
-  border-bottom: 1px solid var(--color-border-default);
-  transition: background 0.15s;
-}
-
-:deep(.p-datatable-thead > tr > th:hover) {
-  background: color-mix(in srgb, var(--color-background-light) 10%, var(--color-background-dark));
-}
-
-:deep(.p-datatable-thead > tr > th:last-child) {
-  border-right: none;
-}
-
-:deep(.p-datatable-tbody > tr:hover) {
-  background: var(--color-background-light) !important;
-}
-
-:deep(.p-datatable-footer) {
-  padding: 0;
-  border: none;
-  background: var(--color-background-dark);
-}
-
-:deep(.agg-grid-empty-cell) {
-  padding: 4rem 1rem !important;
-  text-align: center;
-  background: var(--color-background-soft);
-}
-
-.agg-grid-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--color-text-dim);
-  font-size: 1.1rem;
 }
 </style>

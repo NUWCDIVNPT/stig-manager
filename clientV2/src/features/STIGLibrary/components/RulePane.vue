@@ -10,6 +10,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  benchmarkId: {
+    type: String,
+    default: null,
+  },
   viewRev: {
     type: String,
     default: null,
@@ -101,8 +105,8 @@ const bodyError = computed(() => (diffMode.value ? props.diffError : props.rules
 </script>
 
 <template>
-  <section class="rule-pane">
-    <RulePaneHeader :benchmark="benchmark" @close="emit('close')" />
+  <section class="stiglib-panel">
+    <RulePaneHeader :benchmark="benchmark" :benchmark-id="benchmarkId" @close="emit('close')" />
     <RulePaneToolbar
       :revisions="revisions"
       :revisions-loading="revisionsLoading"
@@ -111,29 +115,31 @@ const bodyError = computed(() => (diffMode.value ? props.diffError : props.rules
       @change-view-rev="rev => emit('change-view-rev', rev)"
       @change-compare-rev="rev => emit('change-compare-rev', rev)"
     />
-    <div class="rule-pane__body">
-      <div v-if="bodyState === 'loading'" class="rule-pane__state">
+    <div class="stiglib-panel__body">
+      <div v-if="bodyState === 'loading'" class="stiglib-state">
         <i class="pi pi-spin pi-spinner" />
         <span>Loading…</span>
       </div>
-      <div v-else-if="bodyState === 'error'" class="rule-pane__state rule-pane__state--error">
+      <div v-else-if="bodyState === 'error'" class="stiglib-state stiglib-state--error">
         <i class="pi pi-exclamation-triangle" />
         <span>{{ bodyError?.message ?? 'Could not load rules.' }}</span>
         <button
           type="button"
-          class="rule-pane__retry"
+          class="stiglib-retry"
           @click="emit(diffMode ? 'retry-diff' : 'retry-rules')"
         >
           Retry
         </button>
       </div>
-      <div v-else-if="bodyState === 'empty'" class="rule-pane__state">
+      <div v-else-if="bodyState === 'empty'" class="stiglib-state">
         <span>No rules in this revision.</span>
       </div>
       <template v-else>
         <DiffRuleTable
           v-if="diffMode"
           :rows="diffRows"
+          :view-rev="viewRev"
+          :compare-rev="compareRev"
           :selected-key="selectedDiffRowKey"
           @select-row="row => emit('select-diff-row', row)"
         />
@@ -150,44 +156,5 @@ const bodyError = computed(() => (diffMode.value ? props.diffError : props.rules
 </template>
 
 <style scoped>
-.rule-pane {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-}
-
-.rule-pane__body {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.rule-pane__state {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem;
-  color: var(--color-text-dim);
-  font-style: italic;
-}
-
-.rule-pane__state--error {
-  color: var(--color-text-error);
-}
-
-.rule-pane__retry {
-  margin-left: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 3px;
-  border: 1px solid var(--color-border-default);
-  background-color: var(--color-background-subtle);
-  color: var(--color-text-primary);
-  cursor: pointer;
-  font-style: normal;
-}
-
-.rule-pane__retry:hover {
-  background-color: var(--color-bg-hover);
-}
+@import "../styles/stigLibrary.css";
 </style>
