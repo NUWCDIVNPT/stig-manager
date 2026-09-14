@@ -2,7 +2,7 @@
 import { severityMap } from '../../shared/lib/checklistUtils.js'
 import CatBadge from './CatBadge.vue'
 
-const props = defineProps({
+defineProps({
   ruleContent: {
     type: Object,
     default: null,
@@ -15,13 +15,18 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  /** Slimmer frame and a single-row header, for panes that sit beside other panels. */
+  compact: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['retry'])
 </script>
 
 <template>
-  <div class="rule-info">
+  <div class="rule-info" :class="{ 'rule-info--compact': compact }">
     <div class="rule-info__panel-header">
       <span v-if="ruleContent" class="rule-info__panel-title">
         Rule for Group {{ ruleContent.groupId }}
@@ -144,6 +149,19 @@ const emit = defineEmits(['retry'])
   transition: background 0.15s ease;
   flex-shrink: 0;
   height: 7.28rem;
+}
+
+/* The default header height is sized for the multi-row headers of the Asset /
+   Collection Review workspaces; compact panes align it with their siblings. */
+.rule-info--compact {
+  border-color: var(--color-border-default);
+  border-radius: 6px;
+}
+
+.rule-info--compact .rule-info__panel-header {
+  height: auto;
+  min-height: 2.9rem;
+  padding: 0.5rem 0.75rem;
 }
 
 .rule-info__panel-title {

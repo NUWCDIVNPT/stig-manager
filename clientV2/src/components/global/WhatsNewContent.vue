@@ -4,6 +4,11 @@ defineProps({
     type: Array,
     required: true,
   },
+  // false lets an outer container own the scrollbar (the page view)
+  scrollable: {
+    type: Boolean,
+    default: true,
+  },
 })
 </script>
 
@@ -21,7 +26,7 @@ defineProps({
       </div>
     </div>
 
-    <div class="features-scroll">
+    <div class="features-scroll" :class="{ scrollable }">
       <div class="whats-new-title">
         New Features in the STIG Manager App
       </div>
@@ -50,8 +55,11 @@ defineProps({
 
 .features-scroll {
   flex: 1;
-  overflow-y: auto;
   min-height: 0;
+}
+
+.features-scroll.scrollable {
+  overflow-y: auto;
 }
 
 .feature-text {
