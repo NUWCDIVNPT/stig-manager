@@ -20,6 +20,11 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  /** Shown when no rule is selected. */
+  emptyText: {
+    type: String,
+    default: 'Select a rule from the checklist to view its content.',
+  },
 })
 
 const emit = defineEmits(['retry'])
@@ -50,7 +55,7 @@ const emit = defineEmits(['retry'])
     </div>
 
     <div v-else-if="!ruleContent" class="rule-info__empty">
-      Select a rule from the checklist to view its content.
+      {{ emptyText }}
     </div>
 
     <div v-else-if="ruleContent" class="rule-info__content">

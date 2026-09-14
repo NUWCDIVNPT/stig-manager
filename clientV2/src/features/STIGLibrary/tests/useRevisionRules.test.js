@@ -1,3 +1,4 @@
+import { flushPromises } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { nextTick, ref } from 'vue'
 import { useRevisionRules } from '../composables/useRevisionRules.js'
@@ -7,8 +8,6 @@ vi.mock('../../../shared/api/stigsApi.js', () => ({
 }))
 
 const { fetchRulesByRevision } = await import('../../../shared/api/stigsApi.js')
-
-const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
 
 function rule(ruleId) {
   return { ruleId, version: ruleId }

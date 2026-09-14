@@ -5,36 +5,31 @@ import { compactTablePt } from '../../shared/lib/dataTablePt.js'
  * itemSize (set as `--item-size` on the table), a flush footer, and an empty
  * cell that lets the slot content do its own padding.
  *
- * @returns {object} A `pt` object for `<DataTable :pt="...">`.
+ * Static; spread it into a per-table `pt` to add or override keys.
  */
-export function paneTablePt() {
-  return {
-    ...compactTablePt({ bodyFontSize: '1rem' }),
-    tableContainer: { style: 'background: var(--p-datatable-row-background); height: 100%;' },
-    table: { style: { tableLayout: 'auto', minWidth: '100%' } },
-    bodyRow: { style: { cursor: 'pointer', height: 'var(--item-size)', overflow: 'hidden' } },
-    emptyMessageCell: {
-      class: 'agg-grid-empty-cell',
-      style: { padding: '0', border: 'none', background: 'transparent' },
-    },
-  }
+export const paneTablePt = {
+  ...compactTablePt({ bodyFontSize: '1rem' }),
+  tableContainer: { style: 'background: var(--p-datatable-row-background); height: 100%;' },
+  table: { style: { tableLayout: 'auto', minWidth: '100%' } },
+  bodyRow: { style: { cursor: 'pointer', height: 'var(--item-size)', overflow: 'hidden' } },
+  emptyMessageCell: {
+    class: 'agg-grid-empty-cell',
+    style: { padding: '0', border: 'none', background: 'transparent' },
+  },
 }
 
 /**
- * Per-`<Column>` `pt`. A Column's own `pt` replaces the table-level `column`
- * pt, so header/body cell styling has to be repeated here.
- *
- * @param {'left'|'center'} [align] - Cell text alignment.
- * @returns {object} A `pt` object for `<Column :pt="...">`.
+ * Per-`<Column>` `pt`, keyed by text alignment. PrimeVue merges a Column's own
+ * `pt` with the table-level `column` pt (from `compactTablePt`), so only the
+ * pane-specific padding, alignment, and border overrides live here; header
+ * typography and body font-size come from the table-level pt.
  */
-export function paneColumnPt(align = 'left') {
+function columnPt(align) {
   const isCenter = align === 'center'
   return {
     headerCell: {
       style: {
         padding: '0.35rem 0.45rem',
-        fontSize: '1rem',
-        fontWeight: '600',
         color: 'var(--color-text-dim)',
         background: 'var(--color-background-dark)',
         borderRight: '1px solid var(--color-border-light)',
@@ -61,4 +56,9 @@ export function paneColumnPt(align = 'left') {
       },
     },
   }
+}
+
+export const paneColumnPt = {
+  left: columnPt('left'),
+  center: columnPt('center'),
 }

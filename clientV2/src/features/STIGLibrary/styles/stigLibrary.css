@@ -1,6 +1,8 @@
-/* Shared chrome for the STIG Library panes. Matches the Findings grid panels
-   and the shared RuleInfo panel: a bordered box with a gradient header, an
-   optional flat control sub-bar, then the scrolling body. */
+/* Shared chrome for the STIG Library panes, imported once (unscoped) by
+   StigLibrary.vue. Matches the Findings grid panels and the shared RuleInfo
+   panel: a bordered box with a gradient header, an optional flat control
+   sub-bar, then the scrolling body. All selectors carry the stiglib- prefix
+   so nothing leaks into other features. */
 
 .stiglib-panel {
   height: 100%;
@@ -197,13 +199,13 @@
 
 /* Row text. line-height is load-bearing: font-size x this ~ the density
    sizeMultiplier (15px/line), so N clamped lines fill exactly N rows. */
-.cell-text {
+.stiglib-cell-text {
   font-size: 1.05rem;
   line-height: 1.3;
   color: var(--color-text-primary);
 }
 
-.cell-text--clamped {
+.stiglib-cell-text--clamped {
   display: -webkit-box;
   line-clamp: var(--line-clamp, 2);
   -webkit-line-clamp: var(--line-clamp, 2);
@@ -216,6 +218,24 @@
   word-break: break-word;
 }
 
-.cell-text--dim {
+.stiglib-cell-text--dim {
   color: var(--color-text-dim);
+}
+
+/* Revision label chip, tinted like the inline diff for the compared (del) and
+   viewed (add) revisions. */
+.stiglib-rev {
+  font-family: monospace;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+}
+
+.stiglib-rev--del {
+  background: var(--color-diff-inline-del-bg);
+  color: var(--color-diff-inline-del-text);
+}
+
+.stiglib-rev--add {
+  background: var(--color-diff-inline-add-bg);
+  color: var(--color-diff-inline-add-text);
 }

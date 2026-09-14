@@ -36,24 +36,24 @@ const dataTableRef = ref(null)
 const benchmarkIdFilter = ref('')
 const titleFilter = ref('')
 
-const filteredData = computed(() => {
-  const idTerm = benchmarkIdFilter.value.trim().toLowerCase()
-  const titleTerm = titleFilter.value.trim().toLowerCase()
-  return (props.benchmarks ?? [])
-    .filter((b) => {
-      if (idTerm && !fieldMatches(b.benchmarkId, idTerm)) {
-        return false
-      }
-      if (titleTerm && !fieldMatches(b.title, titleTerm)) {
-        return false
-      }
-      return true
-    })
-    // materialize earlierRevisions so the column sorts and exports
-    .map(b => ({ ...b, earlierRevisions: b.revisionStrs?.slice(1).join(', ') ?? '' }))
-})
+// materialize earlierRevisions so the column sorts and exports
+const rows = computed(() =>
+  (props.benchmarks ?? []).map(b => ({ ...b, earlierRevisions: b.revisionStrs?.slice(1).join(', ') ?? '' })),
+)
 
-const filtersActive = computed(() => filteredData.value.length !== (props.benchmarks?.length ?? 0))
+const idTerm = computed(() => benchmarkIdFilter.value.trim().toLowerCase())
+const titleTerm = computed(() => titleFilter.value.trim().toLowerCase())
+const filtersActive = computed(() => Boolean(idTerm.value || titleTerm.value))
+
+const filteredData = computed(() => {
+  if (!filtersActive.value) {
+    return rows.value
+  }
+  return rows.value.filter(b =>
+    (!idTerm.value || fieldMatches(b.benchmarkId, idTerm.value))
+    && (!titleTerm.value || fieldMatches(b.title, titleTerm.value)),
+  )
+})
 
 // 15px per rendered line of clamped text (1rem x 1.3 at the 11px root) + 6px
 // cell padding, matching the Findings grids.
@@ -61,12 +61,9 @@ const { lineClamp, itemSize } = useGridDensity('stig-library-benchmarks', 2, 6, 
 
 // Fixed layout so the flexible Title column yields to the sized columns.
 const tablePt = {
-  ...paneTablePt(),
+  ...paneTablePt,
   table: { style: { tableLayout: 'fixed', width: '100%' } },
 }
-
-const cellPt = paneColumnPt()
-const centerCellPt = paneColumnPt('center')
 
 function onRowClick(event) {
   emit('select', event.data)
@@ -125,7 +122,7 @@ function onRowClick(event) {
           field="benchmarkId"
           export-header="Benchmark ID"
           sortable
-          :pt="cellPt"
+          :pt="paneColumnPt.left"
           :style="{ width: '24rem', minWidth: '16rem' }"
         >
           <template #header>
@@ -136,7 +133,7 @@ function onRowClick(event) {
           </template>
           <template #body="{ data }">
             <div class="bm-list__id-cell">
-              <span class="cell-text cell-text--clamped" :title="data.benchmarkId">{{ data.benchmarkId }}</span>
+              <span class="stiglib-cell-text stiglib-cell-text--clamped" :title="data.benchmarkId">{{ data.benchmarkId }}</span>
               <ClassificationBadge v-if="data.marking" :level="data.marking" />
             </div>
           </template>
@@ -146,7 +143,7 @@ function onRowClick(event) {
           field="title"
           export-header="Title"
           sortable
-          :pt="cellPt"
+          :pt="paneColumnPt.left"
           :style="{ minWidth: '20rem' }"
         >
           <template #header>
@@ -156,7 +153,7 @@ function onRowClick(event) {
             </div>
           </template>
           <template #body="{ data }">
-            <span class="cell-text cell-text--clamped" :title="data.title">{{ data.title || '—' }}</span>
+            <span class="stiglib-cell-text stiglib-cell-text--clamped" :title="data.title">{{ data.title || '—' }}</span>
           </template>
         </Column>
 
@@ -164,11 +161,11 @@ function onRowClick(event) {
           field="lastRevisionStr"
           header="Latest"
           sortable
-          :pt="centerCellPt"
+          :pt="paneColumnPt.center"
           :style="{ width: '7rem', minWidth: '6rem', textAlign: 'center' }"
         >
           <template #body="{ data }">
-            <span class="cell-text cell-text--mono">{{ data.lastRevisionStr || '—' }}</span>
+            <span class="stiglib-cell-text stiglib-cell-text--mono">{{ data.lastRevisionStr || '—' }}</span>
           </template>
         </Column>
 
@@ -176,11 +173,11 @@ function onRowClick(event) {
           field="lastRevisionDate"
           header="Revision Date"
           sortable
-          :pt="centerCellPt"
+          :pt="paneColumnPt.center"
           :style="{ width: '10rem', minWidth: '8rem', textAlign: 'center' }"
         >
           <template #body="{ data }">
-            <span class="cell-text cell-text--date">{{ data.lastRevisionDate || '—' }}</span>
+            <span class="stiglib-cell-text stiglib-cell-text--date">{{ data.lastRevisionDate || '—' }}</span>
           </template>
         </Column>
 
@@ -188,7 +185,7 @@ function onRowClick(event) {
           field="ruleCount"
           header="Rules"
           sortable
-          :pt="centerCellPt"
+          :pt="paneColumnPt.center"
           :style="{ width: '7rem', minWidth: '6rem', textAlign: 'center' }"
         >
           <template #body="{ data }">
@@ -200,7 +197,7 @@ function onRowClick(event) {
           field="earlierRevisions"
           header="Earlier Revisions"
           sortable
-          :pt="cellPt"
+          :pt="paneColumnPt.left"
           :style="{ width: '16rem', minWidth: '12rem' }"
         >
           <template #body="{ data }">
@@ -210,7 +207,7 @@ function onRowClick(event) {
 
         <template #empty>
           <div class="stiglib-empty">
-            {{ benchmarkIdFilter || titleFilter ? 'No benchmarks match the current filters.' : 'No benchmarks available.' }}
+            {{ filtersActive ? 'No benchmarks match the current filters.' : 'No benchmarks available.' }}
           </div>
         </template>
 
@@ -231,8 +228,6 @@ function onRowClick(event) {
 </template>
 
 <style scoped>
-@import "../styles/stigLibrary.css";
-
 .bm-list__table {
   flex: 1;
   min-height: 0;
@@ -251,18 +246,18 @@ function onRowClick(event) {
   min-width: 0;
 }
 
-.bm-list__id-cell .cell-text {
+.bm-list__id-cell .stiglib-cell-text {
   flex: 1 1 auto;
 }
 
-.cell-text--mono {
+.stiglib-cell-text--mono {
   display: inline-block;
   width: 100%;
   text-align: center;
   font-family: monospace;
 }
 
-.cell-text--date {
+.stiglib-cell-text--date {
   display: inline-block;
   width: 100%;
   text-align: center;

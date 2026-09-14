@@ -33,12 +33,7 @@ const selectedRow = computed(() =>
   props.selectedRuleId ? props.rules.find(r => r.ruleId === props.selectedRuleId) ?? null : null,
 )
 
-const columnPt = {
-  center: paneColumnPt('center'),
-  left: paneColumnPt('left'),
-}
-
-const dataTablePt = paneTablePt()
+const dataTablePt = paneTablePt
 
 function onRowClick(event) {
   emit('select-rule', event.data)
@@ -63,29 +58,29 @@ function onRowClick(event) {
     :pt="dataTablePt"
     @row-click="onRowClick"
   >
-    <Column header="CAT" field="severity" :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.center">
+    <Column header="CAT" field="severity" :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="paneColumnPt.center">
       <template #body="{ data }">
         <CatBadge :category="severityMap[data.severity] ?? 3" variant="label" />
       </template>
     </Column>
-    <Column header="STIG ID" field="version" sortable :style="{ width: '12rem', minWidth: '10rem' }" :pt="columnPt.left">
+    <Column header="STIG ID" field="version" sortable :style="{ width: '12rem', minWidth: '10rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
-        <span class="cell-text">{{ data.version }}</span>
+        <span class="stiglib-cell-text">{{ data.version }}</span>
       </template>
     </Column>
-    <Column header="Group" field="groupId" sortable :style="{ width: '6rem', minWidth: '6rem' }" :pt="columnPt.left">
+    <Column header="Group" field="groupId" sortable :style="{ width: '6rem', minWidth: '6rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
-        <span class="cell-text">{{ data.groupId }}</span>
+        <span class="stiglib-cell-text">{{ data.groupId }}</span>
       </template>
     </Column>
-    <Column header="Rule Id" field="ruleId" sortable :style="{ width: '15rem', minWidth: '14rem' }" :pt="columnPt.left">
+    <Column header="Rule Id" field="ruleId" sortable :style="{ width: '15rem', minWidth: '14rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
-        <span class="cell-text">{{ data.ruleId }}</span>
+        <span class="stiglib-cell-text">{{ data.ruleId }}</span>
       </template>
     </Column>
-    <Column header="Rule Title" field="title" sortable :style="{ minWidth: '16rem' }" :pt="columnPt.left">
+    <Column header="Rule Title" field="title" sortable :style="{ minWidth: '16rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
-        <span class="cell-text cell-text--clamped" :title="data.title">{{ data.title }}</span>
+        <span class="stiglib-cell-text stiglib-cell-text--clamped" :title="data.title">{{ data.title }}</span>
       </template>
     </Column>
     <template #empty>
@@ -106,8 +101,6 @@ function onRowClick(event) {
 </template>
 
 <style scoped>
-@import "../styles/stigLibrary.css";
-
 .view-rule-table {
   flex: 1;
   min-height: 0;

@@ -1,8 +1,7 @@
+import { flushPromises } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { nextTick, ref } from 'vue'
 import { useRevisionDiff } from '../composables/useRevisionDiff.js'
-
-const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
 
 function rule(version, overrides = {}) {
   return { version, ruleId: `SV-${version}r1_rule`, severity: 'medium', title: `${version} title`, ...overrides }

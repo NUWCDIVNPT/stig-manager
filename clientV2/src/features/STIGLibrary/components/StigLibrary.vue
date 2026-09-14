@@ -16,12 +16,14 @@ import BenchmarkListTable from './BenchmarkListTable.vue'
 import BenchmarksTable from './BenchmarksTable.vue'
 import DiffDetailPanel from './DiffDetailPanel.vue'
 import RulePane from './RulePane.vue'
+import '../styles/stigLibrary.css'
 
 const route = useRoute()
 const router = useRouter()
 
 const benchmarkIdParam = computed(() => route.params.benchmarkId ?? null)
-const revisionStrParam = computed(() => route.params.revisionStr ?? null)
+// vue-router gives an absent optional param as '', not undefined.
+const revisionStrParam = computed(() => route.params.revisionStr || null)
 const compareRev = computed(() => route.query.compareRev ?? null)
 const selectedRuleId = computed(() => route.query.ruleId ?? null)
 const selectedDiffRowKey = computed(() => route.query.diffKey ?? null)
@@ -172,10 +174,28 @@ watch(
   },
 )
 
-// If the current benchmark has only one revision, strip any stale ?compareRev /
-// ?diffKey (a user could land here via an old deep-link from a multi-rev benchmark).
+// Once the revision list is known, reconcile the route against it. A stale
+// deep-link may name a revision that no longer exists (or a ?compareRev from
+// a benchmark that has since lost its other revisions): fall back to the
+// latest revision rather than fetching rules that can only 4xx.
 watch(benchmarkRevisions, (revs) => {
-  if ((revs?.length ?? 0) <= 1 && (compareRev.value || selectedDiffRowKey.value)) {
+  if (!revs?.length) {
+    return
+  }
+  const known = new Set(revs.map(r => r.revisionStr))
+  const viewRev = revisionStrParam.value
+  if (viewRev && !known.has(viewRev)) {
+    const latest = selectedBenchmark.value?.lastRevisionStr ?? null
+    const keepCompare = compareRev.value && known.has(compareRev.value) && compareRev.value !== latest
+    router.replace({
+      name: 'stig-library-benchmark',
+      params: { benchmarkId: benchmarkIdParam.value, ...(latest ? { revisionStr: latest } : {}) },
+      query: keepCompare ? { compareRev: compareRev.value } : {},
+    })
+    return
+  }
+  const compareStale = compareRev.value && (revs.length <= 1 || !known.has(compareRev.value))
+  if (compareStale || (revs.length <= 1 && selectedDiffRowKey.value)) {
     replaceQuery({ compareRev: null, diffKey: null })
   }
 })
@@ -325,6 +345,7 @@ function onRetryDiff() {
             :rule-content="ruleContent"
             :is-loading="isRuleLoading"
             :rule-content-error="ruleContentError"
+            empty-text="Select a rule to view its content."
             compact
             @retry="retryRule"
           />
@@ -335,7 +356,6 @@ function onRetryDiff() {
             :view-rev="effectiveViewRev"
             :compare-rev="compareRev"
             :status="diffStatus"
-            :error="diffError"
           />
         </div>
       </SplitterPanel>
