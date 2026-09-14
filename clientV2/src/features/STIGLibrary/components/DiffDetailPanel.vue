@@ -23,17 +23,15 @@ const props = defineProps({
     type: String,
     default: 'ready',
   },
-  error: {
-    type: Object,
-    default: null,
-  },
 })
 
+// A failed diff is reported (with Retry) by the rule pane body; this panel
+// just goes idle rather than showing a second error.
 const panelStatus = computed(() => {
-  if (props.status === 'loading' || props.status === 'error' || props.status === 'idle') {
-    return props.status
+  if (props.status === 'loading') {
+    return 'loading'
   }
-  return props.diffRow ? 'ready' : 'idle'
+  return props.status === 'ready' && props.diffRow ? 'ready' : 'idle'
 })
 
 const patches = computed(() => props.diffDetail ?? {})
@@ -57,7 +55,6 @@ const patches = computed(() => props.diffDetail ?? {})
       <RuleDiffPanel
         :patches="patches"
         :status="panelStatus"
-        :error="error"
       />
     </div>
   </div>
