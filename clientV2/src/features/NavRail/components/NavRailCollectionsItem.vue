@@ -258,12 +258,21 @@ async function onQuickCreated(created) {
   width: 100%;
 }
 
+/* At narrow rail widths the label gives way first, so the (+) and chevron
+   stay visible instead of the label running underneath them */
+.nav-rail-item-row .nav-rail-item-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
 /* Reserves the (+) footprint inside the toggle so the label truncates before
    it and the chevron keeps its normal place at the right edge */
 .nav-rail-item-add-spacer {
   flex-shrink: 0;
   width: 2.2rem;
-  margin-left: auto;
 }
 
 .nav-rail-item-row .nav-rail-item-chevron {
