@@ -80,8 +80,15 @@ export function putCollectionMetadata(collectionId, metadata) {
   return apiCall('putCollectionMetadata', { collectionId }, metadata)
 }
 
-// Non-elevated create. The API does not add the caller as a grantee, so the
-// caller must include their own Owner grant in `body.grants` to keep access.
-export function createCollection(body) {
-  return apiCall('createCollection', {}, body)
+// The API does not add the caller as a grantee, so a non-elevated caller must
+// include their own Owner grant in `body.grants` to keep access.
+export function createCollection(body, { elevate, projection } = {}) {
+  const params = {}
+  if (elevate) {
+    params.elevate = elevate
+  }
+  if (projection) {
+    params.projection = projection
+  }
+  return apiCall('createCollection', params, body)
 }

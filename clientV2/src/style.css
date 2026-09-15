@@ -271,6 +271,14 @@ textarea:focus {
   background: url('/src/assets/collection-new.svg') center / contain no-repeat;
 }
 
+/* Fixed-size variant for modal headers, where the glyph sits beside a title
+   rather than inline with running text */
+.icon-collection-new--lg {
+  width: 1.4rem;
+  height: 1.4rem;
+  flex-shrink: 0;
+}
+
 /* Nav rail popovers (Collections, Recent Views) share a subtle outline so the
    flyout reads as a distinct surface against the page behind it */
 .p-popover.nav-popover {

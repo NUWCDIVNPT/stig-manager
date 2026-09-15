@@ -4,13 +4,17 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
+import { OWNER_ROLE_ID } from '../../../components/common/grants/roleOptions.js'
 import { isDuplicateEntryError } from '../../../shared/api/apiErrors.js'
 import { createCollection } from '../../../shared/api/collectionsApi.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../shared/lib/dialogPt.js'
-
-const OWNER_ROLE_ID = 4
+import {
+  COLLECTION_DESCRIPTION_MAX_LENGTH,
+  COLLECTION_NAME_MAX_LENGTH,
+  validateCollectionName,
+} from '../../CollectionManage/components/Configuration/collectionValidation.js'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },
@@ -41,13 +45,14 @@ watch(() => props.visible, (open) => {
 
 const nameError = computed(() => {
   const name = form.value.name.trim()
-  if (duplicateName.value && name === duplicateName.value) {
+  if (name === duplicateName.value) {
     return 'A Collection with this name already exists'
   }
-  if (!touched.value) {
+  // Do not flag the empty field until the user has interacted with it
+  if (!touched.value && !name) {
     return null
   }
-  return name ? null : 'Name is required'
+  return validateCollectionName(name)
 })
 
 const isValid = computed(() => !!form.value.name.trim() && !nameError.value)
@@ -68,7 +73,7 @@ async function onSave() {
     // user is always the first Owner of a Collection created this way.
     const body = {
       name,
-      description: form.value.description?.trim() || undefined,
+      description: form.value.description.trim() || undefined,
       grants: [{ userId: user.value.userId, roleId: OWNER_ROLE_ID }],
     }
     const created = await createCollection(body)
@@ -115,7 +120,7 @@ const textareaPt = {
   >
     <template #header>
       <div class="modal-header">
-        <span class="icon-collection-new modal-header-glyph" />
+        <span class="icon-collection-new icon-collection-new--lg" />
         <div class="modal-header-title">
           New Collection
         </div>
@@ -132,7 +137,7 @@ const textareaPt = {
           v-model="form.name"
           :invalid="!!nameError"
           :pt="inputTextPt"
-          maxlength="255"
+          :maxlength="COLLECTION_NAME_MAX_LENGTH"
           placeholder="Collection name"
           autocomplete="off"
           autofocus
@@ -153,7 +158,7 @@ const textareaPt = {
           v-model="form.description"
           :pt="textareaPt"
           rows="3"
-          maxlength="255"
+          :maxlength="COLLECTION_DESCRIPTION_MAX_LENGTH"
           auto-resize
           placeholder="Optional description"
         />
@@ -185,13 +190,6 @@ const textareaPt = {
   align-items: center;
   gap: 0.75rem;
   padding: 1rem 1.1rem;
-}
-
-.modal-header-glyph {
-  width: 1.4rem;
-  height: 1.4rem;
-  vertical-align: 0;
-  flex-shrink: 0;
 }
 
 .modal-header-title {

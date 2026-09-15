@@ -1,4 +1,5 @@
 import { apiCall } from '../../../../shared/api/apiClient.js'
+import { createCollection as createCollectionApi } from '../../../../shared/api/collectionsApi.js'
 
 const ADMIN_PROJECTION = ['owners', 'statistics']
 
@@ -7,7 +8,7 @@ export function fetchCollectionsAdmin() {
 }
 
 export function createCollection(body) {
-  return apiCall('createCollection', { elevate: true, projection: ADMIN_PROJECTION }, body)
+  return createCollectionApi(body, { elevate: true, projection: ADMIN_PROJECTION })
 }
 
 export function deleteCollection(collectionId) {

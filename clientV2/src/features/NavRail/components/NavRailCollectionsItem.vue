@@ -74,7 +74,7 @@ function toggleCollectionsPopover(event) {
 const quickCreateVisible = ref(false)
 
 function openQuickCreate() {
-  collectionsPopover.value?.hide()
+  collectionsPopover.value.hide()
   quickCreateVisible.value = true
 }
 
@@ -88,32 +88,38 @@ async function onQuickCreated(created) {
 
 <template>
   <div class="nav-rail-collection-container">
-    <div v-if="expanded" class="nav-rail-item-row">
+    <!-- The row itself is the accordion toggle so the chevron and the space
+         around the (+) still toggle the list; the (+) opts out with .stop -->
+    <div
+      v-if="expanded"
+      class="nav-rail-item"
+      :class="{ 'nav-rail-item--active': active }"
+      @click="toggleCollectionsList"
+    >
       <button
-        class="nav-rail-item"
-        :class="{ 'nav-rail-item--active': active }"
-        @click="toggleCollectionsList"
+        type="button"
+        class="nav-rail-item-toggle"
+        :aria-expanded="collectionsExpanded"
       >
         <span
           class="nav-rail-item-icon nav-icon"
           :class="iconClass"
         />
         <span class="nav-rail-item-label">{{ label }}</span>
-        <span v-if="canCreateCollection" class="nav-rail-item-add-spacer" />
-        <span class="nav-rail-item-chevron">
-          <i :class="collectionsExpanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
-        </span>
       </button>
       <button
         v-if="canCreateCollection"
         v-tooltip.bottom="'Create New Collection'"
         type="button"
-        class="nav-rail-item-add"
+        class="nav-rail-icon-btn"
         aria-label="Create New Collection"
-        @click="openQuickCreate"
+        @click.stop="openQuickCreate"
       >
-        <span class="nav-rail-item-icon icon-collection-new nav-rail-item-add-icon" />
+        <span class="icon-collection-new nav-rail-item-add-icon" />
       </button>
+      <span class="nav-rail-item-chevron">
+        <i :class="collectionsExpanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
+      </span>
     </div>
 
     <button
@@ -172,11 +178,11 @@ async function onQuickCreated(created) {
           v-if="canCreateCollection"
           v-tooltip.bottom="'Create New Collection'"
           type="button"
-          class="collections-popover-add"
+          class="nav-rail-icon-btn"
           aria-label="Create New Collection"
           @click="openQuickCreate"
         >
-          <span class="nav-rail-item-icon icon-collection-new nav-rail-item-add-icon" />
+          <span class="icon-collection-new nav-rail-item-add-icon" />
         </button>
       </div>
       <div class="collections-popover-search">
@@ -245,80 +251,48 @@ async function onQuickCreated(created) {
 }
 
 .nav-rail-item-chevron {
-  margin-left: auto;
   font-size: 1rem;
   color: var(--color-text-dim);
 }
 
-/* Expanded header: the New Collection button is a DOM sibling of the accordion
-   toggle (a button may not nest inside a button) but is overlaid on the header
-   so it reads as sitting just left of the chevron */
-.nav-rail-item-row {
-  position: relative;
-  width: 100%;
-}
-
-/* At narrow rail widths the label gives way first, so the (+) and chevron
-   stay visible instead of the label running underneath them */
-.nav-rail-item-row .nav-rail-item-label {
+/* Expanded header: the icon + label toggle, the (+) and the chevron are flex
+   siblings of one .nav-rail-item row (a button may not nest inside a button).
+   The toggle takes the free space so the label gives way first at narrow
+   widths and the (+) and chevron keep their place at the right edge */
+.nav-rail-item-toggle {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: left;
-}
-
-/* Reserves the (+) footprint inside the toggle so the label truncates before
-   it and the chevron keeps its normal place at the right edge */
-.nav-rail-item-add-spacer {
-  flex-shrink: 0;
-  width: 2.2rem;
-}
-
-.nav-rail-item-row .nav-rail-item-chevron {
-  margin-left: 0;
-}
-
-.nav-rail-item-add {
-  position: absolute;
-  top: 50%;
-  /* rail padding (1.1rem) + chevron (1rem) + flex gap (0.9rem) */
-  right: 3rem;
-  transform: translateY(-50%);
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 2.2rem;
-  height: 2.2rem;
-  border-radius: 0.45rem;
+  gap: 0.9rem;
+  height: 100%;
+  padding: 0;
   border: none;
   background: none;
-  font-size: 1rem;
-  color: var(--color-text-dim);
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
 }
 
-.nav-rail-item-add:hover {
-  background-color: var(--color-bg-hover-strong);
-  color: var(--color-text-primary);
+.nav-rail-item-toggle .nav-rail-item-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Sized by .nav-rail-item-icon so it always matches the rail's Collections icon */
+/* Same footprint as .nav-rail-item-icon so it matches the rail's Collections icon */
 .nav-rail-item-add-icon {
+  width: 1.6rem;
+  height: 1.6rem;
   opacity: 0.85;
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
-.nav-rail-item-add:hover .nav-rail-item-add-icon,
-.collections-popover-add:hover .nav-rail-item-add-icon {
+.nav-rail-icon-btn:hover .nav-rail-item-add-icon {
+  opacity: 1;
   transform: scale(1.1);
 }
-
-.nav-rail-item-add:hover .nav-rail-item-add-icon,
-.collections-popover-add:hover .nav-rail-item-add-icon {
-  opacity: 1;
-}
-
 
 .nav-rail-collections-list {
   display: flex;
@@ -373,7 +347,6 @@ async function onQuickCreated(created) {
   color: var(--color-text-primary);
 }
 
-
 .collection-list-link--active {
   background-color: var(--color-bg-hover-strong);
   border-radius: 0.35rem;
@@ -419,25 +392,6 @@ async function onQuickCreated(created) {
 
 .collections-popover-search {
   padding: 0.75rem 1.1rem 0;
-}
-
-.collections-popover-add {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 2.2rem;
-  height: 2.2rem;
-  border-radius: 0.45rem;
-  border: none;
-  background: none;
-  color: var(--color-text-dim);
-  cursor: pointer;
-}
-
-.collections-popover-add:hover {
-  background-color: var(--color-button-hover-bg);
-  color: var(--color-text-primary);
 }
 
 .collections-popover-list {

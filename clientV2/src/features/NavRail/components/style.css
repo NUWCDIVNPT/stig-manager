@@ -77,6 +77,28 @@
   font-weight: 500;
 }
 
+/* Small icon-only button that sits in a rail or popover header
+   (e.g. New Collection). Positioning is left to the caller */
+.nav-rail-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 0.45rem;
+  border: none;
+  background: none;
+  color: var(--color-text-dim);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.nav-rail-icon-btn:hover {
+  background-color: var(--color-bg-hover-strong);
+  color: var(--color-text-primary);
+}
+
 .nav-icon {
   background-position: center;
   background-repeat: no-repeat;

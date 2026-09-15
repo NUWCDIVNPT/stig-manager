@@ -119,7 +119,7 @@ const textareaPt = {
   >
     <template #header>
       <div class="modal-header">
-        <span class="icon-collection-new modal-header-glyph" />
+        <span class="icon-collection-new icon-collection-new--lg" />
         <div class="modal-header-title">
           Create Collection
         </div>
@@ -203,13 +203,6 @@ const textareaPt = {
   align-items: center;
   gap: 0.75rem;
   padding: 1rem 1.1rem;
-}
-
-.modal-header-glyph {
-  width: 1.4rem;
-  height: 1.4rem;
-  vertical-align: 0;
-  flex-shrink: 0;
 }
 
 .modal-header-title {
