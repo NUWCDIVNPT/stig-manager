@@ -74,3 +74,36 @@ describe('getGrantedScopes', function () {
     expect(getGrantedScopes({ scope: 'stig-manager' }, [])).to.deep.equal([])
   })
 })
+
+describe('scope claim list parsing', function () {
+  // The parse is a pure expression over the environment variable's value.
+  // config.js reads process.env at module load, so the expression is
+  // reproduced here rather than re-importing config under a mutated
+  // environment, which mocha cannot do cleanly for a CJS singleton.
+  const parseScopeClaims = (value) =>
+    (value || 'scope').split(',').map(s => s.trim()).filter(s => s.length)
+
+  it('defaults to the single claim "scope"', function () {
+    expect(parseScopeClaims(undefined)).to.deep.equal(['scope'])
+  })
+
+  it('parses a single claim name', function () {
+    expect(parseScopeClaims('scp')).to.deep.equal(['scp'])
+  })
+
+  it('parses a comma-separated list', function () {
+    expect(parseScopeClaims('scp,roles')).to.deep.equal(['scp', 'roles'])
+  })
+
+  it('tolerates whitespace around commas', function () {
+    expect(parseScopeClaims('scp, roles')).to.deep.equal(['scp', 'roles'])
+  })
+
+  it('drops empty segments', function () {
+    expect(parseScopeClaims('scp, roles,')).to.deep.equal(['scp', 'roles'])
+  })
+
+  it('falls back to the default for an empty value', function () {
+    expect(parseScopeClaims('')).to.deep.equal(['scope'])
+  })
+})
