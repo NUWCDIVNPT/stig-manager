@@ -23,7 +23,7 @@ The JWT produced by the Identity Provider should provide the claims specified be
     * User Full Name - ``STIGMAN_JWT_NAME_CLAIM`` - (optional) **default:** ``name``
     * User Email - ``STIGMAN_JWT_EMAIL_CLAIM`` - (optional) **default:** ``email``
     * User Privileges - ``STIGMAN_JWT_PRIVILEGES_CLAIM`` - **default:** ``realm_access.roles``
-    * Scope - ``STIGMAN_JWT_SCOPE_CLAIM`` **default:** ``scope``. Some OIDC Providers (Okta, Azure Entra ID) use the claim ``scp`` to enumerate scopes.
+    * Scope - ``STIGMAN_JWT_SCOPE_CLAIM`` **default:** ``scope``. Some OIDC Providers (Okta, Azure Entra ID) use the claim ``scp`` to enumerate scopes. May name more than one claim, as a comma-separated list such as ``scp,roles``, in which case the scopes found in each named claim are combined. See :ref:`service-account-setup`.
     * Assertion ID - ``STIGMAN_JWT_ASSERTION_CLAIM`` **default** ``jti``. Some OIDC Providers (ADFS, Azure Entra ID?) use the claim ``uti`` instead of ``jti`` to protect against replay attacks.
     * Service Name - ``STIGMAN_JWT_SERVICENAME_CLAIM`` - **default:** ``clientId``. Used for service account clients.
     * Audience - ``STIGMAN_JWT_AUD_VALUE`` - (optional) **no default**. If specified, the ``aud`` claim must include this value.
@@ -104,10 +104,33 @@ Alternatively, you could situate your OIDC Provider and the Client server behind
 
 
 
+.. _service-account-setup:
+
 Service Account Client Setup
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you are using a service account to connect to the STIGMan API, the ``STIGMAN_JWT_SERVICENAME_CLAIM`` Environment Variable must specify the claim that will hold the client ID. The default is ``clientId``. There may be other OIDC Provider configuration required. 
+
+Some OIDC Providers convey a service account's permissions in a different claim than they use for interactive users. Azure Entra ID is one: a token issued for a signed-in user carries delegated permissions in the ``scp`` claim, as a space-separated string, while a token issued through the client credentials flow carries the application's own permissions in the ``roles`` claim, as an array of strings, and has no ``scp`` claim. Either claim may be absent entirely — an application with no app roles assigned receives no ``roles`` claim.
+
+To accept both kinds of token, name both claims::
+
+    STIGMAN_JWT_SCOPE_CLAIM=scp,roles
+
+STIG Manager combines the scopes found in each claim, so one deployment can serve interactive users and service accounts at the same time. Naming several claims is not specific to Entra ID and may be used with any provider that splits scopes across claims.
+
+To grant an Entra ID service account access:
+
+1. In the API's app registration, define app roles whose **value** is a STIG Manager scope, such as ``stig-manager:collection``. Allowed member types must include **Application**. App role values may contain colons and must not contain spaces, so STIG Manager's scope strings are valid role values. Entra emits them bare, without the ``api://`` prefix.
+2. Assign those app roles to the calling application and grant admin consent.
+3. Have the client request the scope ``api://<application-id>/.default``. The client credentials flow does not accept individual scopes.
+4. Set ``STIGMAN_JWT_AUD_VALUE`` to the API's client ID, since v2 tokens use it as the audience.
+
+.. note::
+   On Entra ID the ``roles`` claim also carries a *user's* assigned app roles. Naming ``roles`` therefore combines any app roles assigned to a user into that user's scope set. Values that are not STIG Manager scopes cannot match a required scope and are ignored. Privileges remain a separate setting, read from ``STIGMAN_JWT_PRIVILEGES_CLAIM``.
+
+.. note::
+   An Entra ID administrator may alternatively emit a fixed scope string into a custom claim using a claims mapping policy, and point ``STIGMAN_JWT_SCOPE_CLAIM`` at it. This requires no change to STIG Manager, but the value is a constant attached to the API, so every caller receives the same scopes and per-user consent no longer governs the scope set. It also requires either ``acceptMappedClaims`` in the application manifest, which needs a verified-domain Application ID URI and is single-tenant only, or a custom signing key. Assigning app roles as described above is preferred.
 
 
 .. _oidc-scopes:

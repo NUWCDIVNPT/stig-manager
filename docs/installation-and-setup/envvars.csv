@@ -108,7 +108,8 @@
 "STIGMAN_JWT_PRIVILEGES_CLAIM","| **Default** ``realm_access.roles``
 | The access token claim whose value is the user's privileges. The claim MAY be nested but SHOULD avoid invalid ECMAScript identifiers. See :ref:`jwt_requirements` for token value format requirements.","API, Client"
 "STIGMAN_JWT_SCOPE_CLAIM","| **Default** ``scope``
-| The access token claim whose value is the user's scopes. Some OIDC Providers (Okta, Azure AD) use the claim ``scp`` to enumerate scopes. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier. See :ref:`jwt_requirements` for token value format requirements.","API, Client"
+| The access token claim whose value is the user's scopes. Some OIDC Providers (Okta, Azure AD) use the claim ``scp`` to enumerate scopes. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier. See :ref:`jwt_requirements` for token value format requirements.
+| MAY name more than one claim, as a comma-separated list such as ``scp,roles``. The scopes found in each named claim are combined. A named claim that is absent from a token, or whose value is neither a string nor an array of strings, contributes no scopes. Each named claim MAY hold either a space-separated string or an array of strings.","API, Client"
 "STIGMAN_JWT_SERVICENAME_CLAIM","| **Default** ``clientId``
 | The access token claim whose value is the service account's client. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier. See :ref:`jwt_requirements` for token value format requirements.","API, Client"
 "STIGMAN_JWT_USERNAME_CLAIM","| **Default** ``preferred_username``
