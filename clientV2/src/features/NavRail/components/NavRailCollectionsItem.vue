@@ -4,8 +4,9 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Popover from 'primevue/popover'
 import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import CollectionQuickCreateModal from './CollectionQuickCreateModal.vue'
 
 defineProps({
   expanded: {
@@ -27,6 +28,7 @@ defineProps({
 })
 
 const route = useRoute()
+const router = useRouter()
 const collectionsPopover = ref(null)
 
 const collectionsPopoverPt = {
@@ -39,7 +41,7 @@ const collectionsExpanded = ref(true)
 // The grants are the single source of truth and are refreshed (via
 // useCurrentUser().refreshUser) after create/clone/rename/delete, so the nav
 // updates reactively instead of going stale.
-const { user } = useCurrentUser()
+const { user, canCreateCollection, refreshUser } = useCurrentUser()
 
 const collectionsLoading = computed(() => !user.value)
 
@@ -66,25 +68,53 @@ function toggleCollectionsList() {
 function toggleCollectionsPopover(event) {
   collectionsPopover.value.toggle(event)
 }
+
+// Quick create: name + description only; the creator becomes the first Owner
+// and lands on the new Collection's Management page.
+const quickCreateVisible = ref(false)
+
+function openQuickCreate() {
+  collectionsPopover.value?.hide()
+  quickCreateVisible.value = true
+}
+
+async function onQuickCreated(created) {
+  // The nav list is grant-derived, so refresh grants before navigating or the
+  // route guard will not yet see the new Owner grant.
+  await refreshUser()
+  router.push({ name: 'collection-management', params: { collectionId: String(created.collectionId) } })
+}
 </script>
 
 <template>
   <div class="nav-rail-collection-container">
-    <button
-      v-if="expanded"
-      class="nav-rail-item"
-      :class="{ 'nav-rail-item--active': active }"
-      @click="toggleCollectionsList"
-    >
-      <span
-        class="nav-rail-item-icon nav-icon"
-        :class="iconClass"
-      />
-      <span class="nav-rail-item-label">{{ label }}</span>
-      <span class="nav-rail-item-chevron">
-        <i :class="collectionsExpanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
-      </span>
-    </button>
+    <div v-if="expanded" class="nav-rail-item-row">
+      <button
+        class="nav-rail-item"
+        :class="{ 'nav-rail-item--active': active }"
+        @click="toggleCollectionsList"
+      >
+        <span
+          class="nav-rail-item-icon nav-icon"
+          :class="iconClass"
+        />
+        <span class="nav-rail-item-label">{{ label }}</span>
+        <span v-if="canCreateCollection" class="nav-rail-item-add-spacer" />
+        <span class="nav-rail-item-chevron">
+          <i :class="collectionsExpanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
+        </span>
+      </button>
+      <button
+        v-if="canCreateCollection"
+        v-tooltip.bottom="'Create New Collection'"
+        type="button"
+        class="nav-rail-item-add"
+        aria-label="Create New Collection"
+        @click="openQuickCreate"
+      >
+        <span class="nav-rail-item-icon icon-collection-new nav-rail-item-add-icon" />
+      </button>
+    </div>
 
     <button
       v-else
@@ -138,6 +168,16 @@ function toggleCollectionsPopover(event) {
     <Popover ref="collectionsPopover" :pt="collectionsPopoverPt">
       <div class="collections-popover-header">
         <span>{{ label }}</span>
+        <button
+          v-if="canCreateCollection"
+          v-tooltip.bottom="'Create New Collection'"
+          type="button"
+          class="collections-popover-add"
+          aria-label="Create New Collection"
+          @click="openQuickCreate"
+        >
+          <span class="nav-rail-item-icon icon-collection-new nav-rail-item-add-icon" />
+        </button>
       </div>
       <div class="collections-popover-search">
         <IconField class="w-full">
@@ -187,6 +227,11 @@ function toggleCollectionsPopover(event) {
         </div>
       </div>
     </Popover>
+
+    <CollectionQuickCreateModal
+      v-model:visible="quickCreateVisible"
+      @created="onQuickCreated"
+    />
   </div>
 </template>
 
@@ -204,6 +249,67 @@ function toggleCollectionsPopover(event) {
   font-size: 1rem;
   color: var(--color-text-dim);
 }
+
+/* Expanded header: the New Collection button is a DOM sibling of the accordion
+   toggle (a button may not nest inside a button) but is overlaid on the header
+   so it reads as sitting just left of the chevron */
+.nav-rail-item-row {
+  position: relative;
+  width: 100%;
+}
+
+/* Reserves the (+) footprint inside the toggle so the label truncates before
+   it and the chevron keeps its normal place at the right edge */
+.nav-rail-item-add-spacer {
+  flex-shrink: 0;
+  width: 2.2rem;
+  margin-left: auto;
+}
+
+.nav-rail-item-row .nav-rail-item-chevron {
+  margin-left: 0;
+}
+
+.nav-rail-item-add {
+  position: absolute;
+  top: 50%;
+  /* rail padding (1.1rem) + chevron (1rem) + flex gap (0.9rem) */
+  right: 3rem;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 0.45rem;
+  border: none;
+  background: none;
+  font-size: 1rem;
+  color: var(--color-text-dim);
+  cursor: pointer;
+}
+
+.nav-rail-item-add:hover {
+  background-color: var(--color-bg-hover-strong);
+  color: var(--color-text-primary);
+}
+
+/* Sized by .nav-rail-item-icon so it always matches the rail's Collections icon */
+.nav-rail-item-add-icon {
+  opacity: 0.85;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.nav-rail-item-add:hover .nav-rail-item-add-icon,
+.collections-popover-add:hover .nav-rail-item-add-icon {
+  transform: scale(1.1);
+}
+
+.nav-rail-item-add:hover .nav-rail-item-add-icon,
+.collections-popover-add:hover .nav-rail-item-add-icon {
+  opacity: 1;
+}
+
 
 .nav-rail-collections-list {
   display: flex;
@@ -258,6 +364,7 @@ function toggleCollectionsPopover(event) {
   color: var(--color-text-primary);
 }
 
+
 .collection-list-link--active {
   background-color: var(--color-bg-hover-strong);
   border-radius: 0.35rem;
@@ -291,7 +398,10 @@ function toggleCollectionsPopover(event) {
 }
 
 .collections-popover-header {
-  padding: 0.75rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem 0.5rem 1.1rem;
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--color-text-primary);
@@ -300,6 +410,25 @@ function toggleCollectionsPopover(event) {
 
 .collections-popover-search {
   padding: 0.75rem 1.1rem 0;
+}
+
+.collections-popover-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 0.45rem;
+  border: none;
+  background: none;
+  color: var(--color-text-dim);
+  cursor: pointer;
+}
+
+.collections-popover-add:hover {
+  background-color: var(--color-button-hover-bg);
+  color: var(--color-text-primary);
 }
 
 .collections-popover-list {
