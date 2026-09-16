@@ -34,7 +34,7 @@ The JWT produced by the Identity Provider should provide the claims specified be
    The token values found at each claim location must use the following formats:
 
    * **Username**, **Name**, **Email**, **Assertion ID**, **Service Name**: String
-   * **Scope**: A space-separated string per OAuth 2.0 RFC 6749 (e.g., ``"openid stig-manager:collection stig-manager:stig:read"``)
+   * **Scope**: A space-separated string per OAuth 2.0 RFC 6749 (e.g., ``"openid stig-manager:collection stig-manager:stig:read"``), or an array of strings with one scope per element (e.g., ``["stig-manager:collection", "stig-manager:stig:read"]``). Array elements are not split on spaces. When ``STIGMAN_JWT_SCOPE_CLAIM`` names more than one claim, each claim is read independently and may use either format.
    * **Privileges**: An array of strings (e.g., ``["admin", "create_collection"]``) or ``null``. 
    * **Audience**: String or array of strings. If ``STIGMAN_JWT_AUD_VALUE`` is set, it must be present in the ``aud`` claim value.
 

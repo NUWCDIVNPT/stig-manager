@@ -161,6 +161,10 @@ const setupUser = async function (req, res, next) {
 // space-separated string or an array of strings. Claims that are absent or hold
 // an unusable value contribute nothing, so a token missing every configured
 // claim yields an empty list rather than throwing.
+// Claim names are read as flat properties on purpose: the scope claim is
+// documented as non-nested, and the client mirrors this lookup.
+// Mirrored by getGrantedScopes in client/src/js/workers/oidc-worker.js;
+// keep the two in sync.
 function getGrantedScopes(tokenPayload, claimNames) {
     const scopes = new Set()
     for (const claimName of claimNames) {

@@ -100,8 +100,7 @@ const config = {
         cacheMaxAge: Math.min(Math.max(process.env.STIGMAN_JWKS_CACHE_MAX_AGE, 1) || 10, 35791),
         claims: {
             scope: process.env.STIGMAN_JWT_SCOPE_CLAIM || "scope",
-            scopeList: (process.env.STIGMAN_JWT_SCOPE_CLAIM || "scope")
-                .split(',').map(s => s.trim()).filter(s => s.length),
+            scopeList: parseClaimList(process.env.STIGMAN_JWT_SCOPE_CLAIM || "scope"),
             username: process.env.STIGMAN_JWT_USERNAME_CLAIM || "preferred_username",
             servicename: process.env.STIGMAN_JWT_SERVICENAME_CLAIM,
             name: process.env.STIGMAN_JWT_NAME_CLAIM || process.env.STIGMAN_JWT_USERNAME_CLAIM || "name",
@@ -143,5 +142,11 @@ function formatJsChain(path) {
 function formatMySqlJsonPath(path) {
     return path?.split('.').map(p => `"${p}"`).join('.')
 }
-  
+
+// Split a comma-separated list of claim names, trimming whitespace and dropping empty segments
+function parseClaimList(value) {
+    return value.split(',').map(s => s.trim()).filter(s => s.length)
+}
+
 module.exports = config
+module.exports.parseClaimList = parseClaimList
