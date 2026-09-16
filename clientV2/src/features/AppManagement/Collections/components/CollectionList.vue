@@ -61,7 +61,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 <template>
   <div class="collection-list">
     <ActionToolbar>
-      <ActionButton icon="pi pi-plus-circle icon-green" @click="emit('create')">
+      <ActionButton icon="icon-collection-new" @click="emit('create')">
         New Collection
       </ActionButton>
       <div class="toolbar-divider" />

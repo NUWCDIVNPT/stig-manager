@@ -260,6 +260,17 @@ textarea:focus {
   border-color: var(--color-primary-highlight-light) !important;
 }
 
+/* "New Collection" glyph: a rounded tile with the plus knocked out, echoing
+   the gaps in collection-color.svg. Sized in em so it tracks the text it sits
+   beside (ActionButton, list rows) */
+.icon-collection-new {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.2em;
+  background: url('/src/assets/collection-new.svg') center / contain no-repeat;
+}
+
 /* Nav rail popovers (Collections, Recent Views) share a subtle outline so the
    flyout reads as a distinct surface against the page behind it */
 .p-popover.nav-popover {

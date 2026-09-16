@@ -2,8 +2,12 @@ import { userEvent } from '@testing-library/user-event'
 import { screen, waitFor } from '@testing-library/vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
+import { createCollection } from '../../../shared/api/collectionsApi.js'
+import { fetchCurrentUser } from '../../../shared/api/userApi.js'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import NavRailCollectionsItem from '../components/NavRailCollectionsItem.vue'
+
+const routerPush = vi.fn()
 
 // Mock route
 vi.mock('vue-router', () => ({
@@ -11,15 +15,27 @@ vi.mock('vue-router', () => ({
     name: 'home',
     params: {},
   }),
+  useRouter: () => ({ push: routerPush }),
+}))
+
+vi.mock('../../../shared/api/collectionsApi.js', () => ({
+  createCollection: vi.fn(),
+}))
+
+vi.mock('../../../shared/api/userApi.js', () => ({
+  fetchCurrentUser: vi.fn(),
 }))
 
 // The nav list is derived from the current user's collection grants
-const makeUser = collections => ({
+const makeUser = (collections, privileges = {}) => ({
+  userId: '42',
+  privileges,
   collectionGrants: collections.map(c => ({ roleId: 4, collection: c })),
 })
 
 describe('navRailCollectionsItem', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
     useGlobalAppStore().setUser(makeUser([
       { collectionId: '1', name: 'Alpha Collection' },
       { collectionId: '2', name: 'Beta Collection' },
@@ -119,5 +135,59 @@ describe('navRailCollectionsItem', () => {
     expect(screen.queryByText(/Alpha Collection/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/Beta Collection/i)).not.toBeInTheDocument()
     expect(screen.queryAllByText(/No collections found/i).length).toBeGreaterThan(0)
+  })
+
+  describe('new collection button', () => {
+    it('is hidden when the user lacks the create_collection privilege', async () => {
+      const user = userEvent.setup()
+      renderWithProviders(NavRailCollectionsItem, { props: { expanded: false } })
+
+      await user.click(screen.getByTitle('Collections'))
+      await screen.findByPlaceholderText('Search collections...')
+
+      expect(screen.queryByRole('button', { name: 'Create New Collection' })).not.toBeInTheDocument()
+    })
+
+    it('is shown next to the popover search box for users who may create collections', async () => {
+      useGlobalAppStore().setUser(makeUser([], { create_collection: true }))
+      const user = userEvent.setup()
+      renderWithProviders(NavRailCollectionsItem, { props: { expanded: false } })
+
+      await user.click(screen.getByTitle('Collections'))
+      await screen.findByPlaceholderText('Search collections...')
+
+      expect(screen.getByRole('button', { name: 'Create New Collection' })).toBeInTheDocument()
+    })
+
+    it('is shown in the expanded header next to the accordion toggle for users who may create collections', () => {
+      useGlobalAppStore().setUser(makeUser([], { create_collection: true }))
+      renderWithProviders(NavRailCollectionsItem, { props: { expanded: true } })
+
+      expect(screen.getByRole('button', { name: 'Create New Collection' })).toBeInTheDocument()
+    })
+
+    it('creates the collection with the current user as Owner and navigates to its management page', async () => {
+      useGlobalAppStore().setUser(makeUser([], { create_collection: true }))
+      createCollection.mockResolvedValue({ collectionId: 99, name: 'Fresh' })
+      fetchCurrentUser.mockResolvedValue(makeUser([{ collectionId: '99', name: 'Fresh' }], { create_collection: true }))
+      const user = userEvent.setup()
+      renderWithProviders(NavRailCollectionsItem, { props: { expanded: true } })
+
+      await user.click(screen.getByRole('button', { name: 'Create New Collection' }))
+      await user.type(await screen.findByPlaceholderText('Collection name'), '  Fresh  ')
+      await user.click(screen.getByRole('button', { name: 'Create' }))
+
+      await waitFor(() => {
+        expect(routerPush).toHaveBeenCalledWith({ name: 'collection-management', params: { collectionId: '99' } })
+      })
+      expect(createCollection).toHaveBeenCalledWith({
+        name: 'Fresh',
+        description: undefined,
+        grants: [{ userId: '42', roleId: 4 }],
+      })
+      // Grants were refreshed before navigating so the route guard sees the new Owner grant
+      expect(fetchCurrentUser).toHaveBeenCalled()
+      expect(await screen.findByText('Fresh')).toBeInTheDocument()
+    })
   })
 })

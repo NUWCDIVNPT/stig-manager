@@ -4,8 +4,9 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import Popover from 'primevue/popover'
 import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import CollectionQuickCreateModal from './CollectionQuickCreateModal.vue'
 
 defineProps({
   expanded: {
@@ -27,6 +28,7 @@ defineProps({
 })
 
 const route = useRoute()
+const router = useRouter()
 const collectionsPopover = ref(null)
 
 const collectionsPopoverPt = {
@@ -39,7 +41,7 @@ const collectionsExpanded = ref(true)
 // The grants are the single source of truth and are refreshed (via
 // useCurrentUser().refreshUser) after create/clone/rename/delete, so the nav
 // updates reactively instead of going stale.
-const { user } = useCurrentUser()
+const { user, canCreateCollection, refreshUser } = useCurrentUser()
 
 const collectionsLoading = computed(() => !user.value)
 
@@ -66,25 +68,59 @@ function toggleCollectionsList() {
 function toggleCollectionsPopover(event) {
   collectionsPopover.value.toggle(event)
 }
+
+// Quick create: name + description only; the creator becomes the first Owner
+// and lands on the new Collection's Management page.
+const quickCreateVisible = ref(false)
+
+function openQuickCreate() {
+  collectionsPopover.value.hide()
+  quickCreateVisible.value = true
+}
+
+async function onQuickCreated(created) {
+  // The nav list is grant-derived, so refresh grants before navigating or the
+  // route guard will not yet see the new Owner grant.
+  await refreshUser()
+  router.push({ name: 'collection-management', params: { collectionId: String(created.collectionId) } })
+}
 </script>
 
 <template>
   <div class="nav-rail-collection-container">
-    <button
+    <!-- The row itself is the accordion toggle so the chevron and the space
+         around the (+) still toggle the list; the (+) opts out with .stop -->
+    <div
       v-if="expanded"
       class="nav-rail-item"
       :class="{ 'nav-rail-item--active': active }"
       @click="toggleCollectionsList"
     >
-      <span
-        class="nav-rail-item-icon nav-icon"
-        :class="iconClass"
-      />
-      <span class="nav-rail-item-label">{{ label }}</span>
+      <button
+        type="button"
+        class="nav-rail-item-toggle"
+        :aria-expanded="collectionsExpanded"
+      >
+        <span
+          class="nav-rail-item-icon nav-icon"
+          :class="iconClass"
+        />
+        <span class="nav-rail-item-label">{{ label }}</span>
+      </button>
+      <button
+        v-if="canCreateCollection"
+        v-tooltip.bottom="'Create New Collection'"
+        type="button"
+        class="nav-rail-icon-btn"
+        aria-label="Create New Collection"
+        @click.stop="openQuickCreate"
+      >
+        <span class="icon-collection-new nav-rail-item-add-icon" />
+      </button>
       <span class="nav-rail-item-chevron">
         <i :class="collectionsExpanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
       </span>
-    </button>
+    </div>
 
     <button
       v-else
@@ -138,6 +174,16 @@ function toggleCollectionsPopover(event) {
     <Popover ref="collectionsPopover" :pt="collectionsPopoverPt">
       <div class="collections-popover-header">
         <span>{{ label }}</span>
+        <button
+          v-if="canCreateCollection"
+          v-tooltip.bottom="'Create New Collection'"
+          type="button"
+          class="nav-rail-icon-btn"
+          aria-label="Create New Collection"
+          @click="openQuickCreate"
+        >
+          <span class="icon-collection-new nav-rail-item-add-icon" />
+        </button>
       </div>
       <div class="collections-popover-search">
         <IconField class="w-full">
@@ -187,6 +233,11 @@ function toggleCollectionsPopover(event) {
         </div>
       </div>
     </Popover>
+
+    <CollectionQuickCreateModal
+      v-model:visible="quickCreateVisible"
+      @created="onQuickCreated"
+    />
   </div>
 </template>
 
@@ -200,9 +251,46 @@ function toggleCollectionsPopover(event) {
 }
 
 .nav-rail-item-chevron {
-  margin-left: auto;
   font-size: 1rem;
   color: var(--color-text-dim);
+}
+
+/* Expanded header: the icon + label toggle, the (+) and the chevron are flex
+   siblings of one .nav-rail-item row (a button may not nest inside a button).
+   The toggle takes the free space so the label gives way first at narrow
+   widths and the (+) and chevron keep their place at the right edge */
+.nav-rail-item-toggle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nav-rail-item-toggle .nav-rail-item-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Same footprint as .nav-rail-item-icon so it matches the rail's Collections icon */
+.nav-rail-item-add-icon {
+  width: 1.6rem;
+  height: 1.6rem;
+  opacity: 0.85;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.nav-rail-icon-btn:hover .nav-rail-item-add-icon {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .nav-rail-collections-list {
@@ -291,7 +379,10 @@ function toggleCollectionsPopover(event) {
 }
 
 .collections-popover-header {
-  padding: 0.75rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem 0.5rem 1.1rem;
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--color-text-primary);

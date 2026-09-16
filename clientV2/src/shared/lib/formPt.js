@@ -5,6 +5,10 @@ export const inputTextPt = {
   root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%;' },
 }
 
+export const textareaPt = {
+  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%; resize: none;' },
+}
+
 export const tabsPt = {
   root: { style: 'flex: 1; min-height: 0; display: flex; flex-direction: column;' },
 }
