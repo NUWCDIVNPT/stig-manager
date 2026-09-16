@@ -9,7 +9,7 @@ import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchCollectionStigSummary } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
-import { remToPx } from '../../../../shared/lib/remToPx.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { useStigTable } from '../../composables/useStigTable.js'
 import StigToolbar from './StigToolbar.vue'
 
@@ -20,7 +20,7 @@ const props = defineProps({
   },
 })
 
-const ROW_HEIGHT = remToPx(2.45)
+const ROW_HEIGHT = rowHeightPx('dense')
 
 const dataTableRef = ref(null)
 

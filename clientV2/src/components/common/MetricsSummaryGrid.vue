@@ -3,7 +3,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
 import { calculateCora } from '../../shared/lib.js'
-import { remToPx } from '../../shared/lib/remToPx.js'
+import { rowHeightPx } from '../../shared/lib/rowHeights.js'
 import AssetColumn from '../columns/AssetColumn.vue'
 import BenchmarkColumn from '../columns/BenchmarkColumn.vue'
 import CatColumn from '../columns/CatColumn.vue'
@@ -69,7 +69,7 @@ const props = defineProps({
 
 const emit = defineEmits(['row-select', 'shield-click', 'collection-icon-click', 'refresh'])
 
-const ROW_HEIGHT = remToPx(2.45)
+const ROW_HEIGHT = rowHeightPx('dense')
 
 const dataTableRef = ref(null)
 const selectedRow = ref(null)

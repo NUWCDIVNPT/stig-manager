@@ -1,6 +1,8 @@
 <script setup>
 import PickList from '../../../../components/common/PickList.vue'
-import { remToPx } from '../../../../shared/lib/remToPx.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
+
+const ROW_HEIGHT = rowHeightPx('standard')
 
 // User Groups dual-list ([available, assigned] tuple) shared by the User
 // Properties panel and the pre-register modal, so the two render identically.
@@ -17,7 +19,7 @@ const model = defineModel({ type: Array, required: true })
     source-filter-placeholder="Search groups..."
     target-filter-placeholder="Search groups..."
     option-style="padding: 0.4rem 0.75rem;"
-    :virtual-scroller-options="{ itemSize: remToPx(3.09) }"
+    :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
   >
     <template #sourceheader>
       Available Groups

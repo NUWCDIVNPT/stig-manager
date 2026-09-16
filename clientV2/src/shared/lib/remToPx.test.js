@@ -9,9 +9,10 @@ describe('remToPx', () => {
     expect(remToPx(2)).toBe(32)
   })
 
-  it('reads the root font size and rounds to whole pixels', () => {
+  it('reads the root font size and rounds up to whole pixels', () => {
     vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({ fontSize: '12px' })
     expect(rootFontSizePx()).toBe(12)
     expect(remToPx(3.82)).toBe(46)
+    expect(remToPx(2.45)).toBe(30)
   })
 })

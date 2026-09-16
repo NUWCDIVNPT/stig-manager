@@ -5,13 +5,15 @@ import { ref } from 'vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { formatDateTimeString } from '../../../shared/lib.js'
-import { remToPx } from '../../../shared/lib/remToPx.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
 defineOptions({ inheritAttrs: false })
 
 defineProps({
   rows: { type: Array, required: true },
 })
+
+const ROW_HEIGHT = rowHeightPx('spacious')
 
 const dtRef = ref()
 </script>
@@ -33,7 +35,7 @@ const dtRef = ref()
         scroll-height="flex"
         resizable-columns
         striped-rows
-        :virtual-scroller-options="{ itemSize: remToPx(4.18) }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
         :pt="{ table: { style: 'table-layout: fixed; width: 100%' }, tableContainer: { style: 'overflow-x: hidden' } }"
       >
         <Column header="Asset" field="taskAsset.assetProps.name" style="width: 16%" sortable :sort-field="r => r.taskAsset.assetProps.name">

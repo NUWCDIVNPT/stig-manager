@@ -12,7 +12,7 @@ import shieldGreenCheckIcon from '../../../../assets/shield-green-check.svg'
 import targetIcon from '../../../../assets/target.svg'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
-import { remToPx } from '../../../../shared/lib/remToPx.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import {
   fetchAssetStigs,
   fetchCollectionAssets,
@@ -42,6 +42,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'save'])
+
+const ROW_HEIGHT = rowHeightPx('standard')
 
 const localVisible = computed({
   get: () => props.visible,
@@ -340,7 +342,7 @@ const dialogPt = {
               option-label="name"
               filter
               :loading="isLoadingAssets"
-              :virtual-scroller-options="{ itemSize: remToPx(3.09) }"
+              :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
               :disabled="isReadOnly || targetScope !== 'Asset'"
               placeholder="Search for an asset..."
               :pt="collectionSelectPt"

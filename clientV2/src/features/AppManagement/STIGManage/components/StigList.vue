@@ -11,7 +11,7 @@ import ClassificationBadge from '../../../../components/common/ClassificationBad
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
-import { remToPx } from '../../../../shared/lib/remToPx.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 
 const props = defineProps({
   stigs: {
@@ -29,6 +29,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:selection', 'import', 'remove-stig', 'remove-revision', 'open-library', 'refresh'])
+
+const ROW_HEIGHT = rowHeightPx('compact')
 
 const dataTableRef = ref(null)
 
@@ -210,7 +212,7 @@ function onRemoveAll() {
         :sort-order="1"
         scrollable
         scroll-height="flex"
-        :virtual-scroller-options="{ itemSize: remToPx(2.64) }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
         resizable-columns
         column-resize-mode="fit"
         export-filename="Installed-STIGs"

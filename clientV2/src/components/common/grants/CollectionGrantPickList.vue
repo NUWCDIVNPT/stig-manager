@@ -6,7 +6,7 @@ import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import { computed, ref } from 'vue'
-import { remToPx } from '../../../shared/lib/remToPx.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import PickListControls from '../PickListControls.vue'
 import { getAssignableRoleOptions } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
@@ -26,6 +26,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:source', 'update:target'])
+
+const ROW_HEIGHT = rowHeightPx('control')
 
 // Elevated admin context, so every role (including Owner) is assignable.
 const availableRoleOptions = getAssignableRoleOptions(true)
@@ -106,7 +108,7 @@ const roleSelectPt = {
           :options="displaySource"
           option-label="name"
           multiple
-          :virtual-scroller-options="{ itemSize: remToPx(3.64) }"
+          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
           :pt="listboxPt"
         >
           <template #option="slotProps">
@@ -136,7 +138,7 @@ const roleSelectPt = {
           :options="localTarget"
           option-label="name"
           multiple
-          :virtual-scroller-options="{ itemSize: remToPx(3.64) }"
+          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
           :pt="targetListboxPt"
         >
           <template #option="slotProps">

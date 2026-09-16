@@ -10,7 +10,7 @@ import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchCollectionUsers } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
-import { remToPx } from '../../../../shared/lib/remToPx.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { getEffectiveUserDisplay } from '../../lib/grantsUsers.js'
 import EffectiveAclModal from './EffectiveAclModal.vue'
 
@@ -20,6 +20,8 @@ const props = defineProps({
     required: true,
   },
 })
+
+const ROW_HEIGHT = rowHeightPx('twoLine')
 
 const { state: users, isLoading, execute: reload } = useAsyncState(
   () => fetchCollectionUsers(props.collectionId),
@@ -77,7 +79,7 @@ defineExpose({ reload })
         size="medium"
         scrollable
         scroll-height="flex"
-        :virtual-scroller-options="{ itemSize: remToPx(4.45), delay: 0 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
         export-filename="CollectionUsers"
         :pt="tablePt"
       >

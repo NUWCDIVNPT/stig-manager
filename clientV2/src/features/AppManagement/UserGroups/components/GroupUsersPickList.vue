@@ -1,7 +1,9 @@
 <script setup>
 import PickList from '../../../../components/common/PickList.vue'
-import { remToPx } from '../../../../shared/lib/remToPx.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { userLabel } from '../lib/userGroupDisplay.js'
+
+const ROW_HEIGHT = rowHeightPx('twoLine')
 
 // Group membership dual-list ([available, members] tuple) shared by the User
 // Group Properties panel and the create modal, so the two render identically.
@@ -25,7 +27,7 @@ function userFilter(user, searchText) {
     source-filter-placeholder="Search users..."
     target-filter-placeholder="Search users..."
     option-style="padding: 0.4rem 0.75rem;"
-    :virtual-scroller-options="{ itemSize: remToPx(4.36) }"
+    :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
   >
     <template #sourceheader>
       Available Users

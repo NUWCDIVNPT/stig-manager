@@ -13,6 +13,8 @@ export function rootFontSizePx() {
   return Number.isFinite(px) && px > 0 ? px : FALLBACK_ROOT_PX
 }
 
+// Rounds up: rows are pinned to this value with overflow hidden, so a px too
+// tall is invisible while a px too short clips content.
 export function remToPx(rem) {
-  return Math.round(rem * rootFontSizePx())
+  return Math.ceil(rem * rootFontSizePx())
 }

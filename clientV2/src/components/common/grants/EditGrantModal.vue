@@ -7,7 +7,7 @@ import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import Select from 'primevue/select'
 import { computed, ref, toRef, watch } from 'vue'
-import { remToPx } from '../../../shared/lib/remToPx.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { getAssignableRoleOptions } from './roleOptions.js'
 import { useGranteeFilter } from './useGranteeFilter.js'
 
@@ -35,6 +35,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'save'])
+
+const ROW_HEIGHT = rowHeightPx('control')
 
 // Only an Owner (or an elevated caller) may assign the Owner role.
 const availableRoleOptions = computed(() => getAssignableRoleOptions(props.canModifyOwners))
@@ -162,7 +164,7 @@ const onCancel = () => {
             option-group-label="label"
             option-group-children="items"
             option-disabled="collapsed"
-            :virtual-scroller-options="{ itemSize: remToPx(3.82) }"
+            :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
             class="grantee-listbox"
             :pt="{
               root: { style: 'display: flex; flex-direction: column; min-height: 0;' },

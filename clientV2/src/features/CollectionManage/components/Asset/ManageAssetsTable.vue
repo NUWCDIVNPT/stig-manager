@@ -14,7 +14,7 @@ import { fetchCollectionAssetSummary } from '../../../../shared/api/collectionsA
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
-import { remToPx } from '../../../../shared/lib/remToPx.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { deleteAssets } from '../../api/assetManageApi.js'
 import { useAssetTable } from '../../composables/useAssetTable.js'
 import AssetFormModal from './AssetFormModal.vue'
@@ -27,7 +27,7 @@ const props = defineProps({
   },
 })
 
-const ROW_HEIGHT = remToPx(2.45)
+const ROW_HEIGHT = rowHeightPx('dense')
 
 const dataTableRef = ref(null)
 

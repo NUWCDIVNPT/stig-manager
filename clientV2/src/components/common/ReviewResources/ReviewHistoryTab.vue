@@ -13,8 +13,8 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { durationToNow } from '../../../shared/lib.js'
 
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
-import { remToPx } from '../../../shared/lib/remToPx.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import ColumnFilter from '../ColumnFilter.vue'
 import ColumnSearchFilter from '../ColumnSearchFilter.vue'
@@ -118,7 +118,7 @@ const statusOptions = computed(() => {
   })).sort((a, b) => a.label.localeCompare(b.label))
 })
 
-const ROW_HEIGHT = remToPx(3.64)
+const ROW_HEIGHT = rowHeightPx('control')
 
 const isAlreadyApplied = (data) => {
   return data.result === formResult.value

@@ -7,7 +7,7 @@ import RuleInfo from '../../../components/common/RuleInfo.vue'
 import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { remToPx } from '../../../shared/lib/remToPx.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { useBenchmarkList } from '../composables/useBenchmarkList.js'
 import { useRevisionDiff } from '../composables/useRevisionDiff.js'
 import { useRevisionRules } from '../composables/useRevisionRules.js'
@@ -85,7 +85,7 @@ const { getRulesForRev, watchCurrent, invalidate: invalidateRules } = useRevisio
 const revState = watchCurrent(benchmarkIdParam, effectiveViewRev)
 
 const bmLineClamp = 2
-const bmItemSize = remToPx(8.36)
+const bmItemSize = rowHeightPx('card')
 
 // The three panes are self-contained bordered panels, so the gutter is plain
 // page background acting as the gap between them.

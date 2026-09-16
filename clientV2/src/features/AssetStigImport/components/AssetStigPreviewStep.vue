@@ -6,7 +6,7 @@ import { computed, ref } from 'vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
-import { remToPx } from '../../../shared/lib/remToPx.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
 const props = defineProps({
   matched: { type: Array, required: true },
@@ -17,6 +17,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:updatedOnly'])
+
+const ROW_HEIGHT = rowHeightPx('standard')
 
 const RESULT_TO_STATUS = {
   fail: 'O',
@@ -75,7 +77,7 @@ const exportResult = ({ data }) => badgeFor(data) ?? ''
         scroll-height="flex"
         resizable-columns
         striped-rows
-        :virtual-scroller-options="{ itemSize: remToPx(3.45) }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
         :pt="{ table: { style: 'table-layout: fixed; width: 100%' } }"
       >
         <Column field="ruleId" header="Rule" style="min-width: 130px" sortable />

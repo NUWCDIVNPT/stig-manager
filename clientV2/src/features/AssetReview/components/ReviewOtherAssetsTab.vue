@@ -9,8 +9,8 @@ import ColumnSearchFilter from '../../../components/common/ColumnSearchFilter.vu
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { normalizeColor } from '../../../shared/lib/colorUtils.js'
-import { remToPx } from '../../../shared/lib/remToPx.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { fetchOtherReviews } from '../api/assetReviewApi.js'
 import { useReviewTabTable } from '../composables/useReviewTabTable.js'
 import ReviewTabTable from './ReviewTabTable.vue'
@@ -40,7 +40,7 @@ FilterService.register('labelContainsAny', (value, filter) => {
   return value.some(label => filter.includes(label.name))
 })
 
-const ROW_HEIGHT = remToPx(3.27)
+const ROW_HEIGHT = rowHeightPx('standard')
 
 const { state: otherReviews, isLoading, execute: loadOtherReviews } = useAsyncState(
   () => fetchOtherReviews(collectionId.value, ruleId.value),

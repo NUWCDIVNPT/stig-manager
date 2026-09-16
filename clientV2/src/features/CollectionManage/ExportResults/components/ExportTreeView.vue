@@ -4,7 +4,7 @@ import { computed, reactive, watch } from 'vue'
 import shieldIcon from '../../../../assets/shield-green-check.svg'
 import targetIcon from '../../../../assets/target.svg'
 import { formatPercent } from '../../../../shared/lib.js'
-import { remToPx } from '../../../../shared/lib/remToPx.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import {
   toggleBranchSelection,
   toggleLeafSelection,
@@ -36,7 +36,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:selectionKeys', 'node-expand'])
 
-const ROW_HEIGHT = remToPx(2.73)
+const ROW_HEIGHT = rowHeightPx('compact')
 
 const expandedKeys = reactive(new Set())
 

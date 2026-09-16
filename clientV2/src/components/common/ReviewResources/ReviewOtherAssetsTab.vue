@@ -14,8 +14,8 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { normalizeColor } from '../../../shared/lib/colorUtils.js'
-import { remToPx } from '../../../shared/lib/remToPx.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import LabelsRow from '../../columns/LabelsRow.vue'
 import ColumnFilter from '../ColumnFilter.vue'
@@ -79,7 +79,7 @@ FilterService.register('labelContainsAny', (value, filter) => {
   return value.some(label => filter.includes(label.name))
 })
 
-const ROW_HEIGHT = remToPx(3.27)
+const ROW_HEIGHT = rowHeightPx('standard')
 
 const dataTableRef = ref(null)
 

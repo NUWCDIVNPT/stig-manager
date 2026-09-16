@@ -56,7 +56,7 @@ const props = defineProps({
   },
   /**
    * PrimeVue virtual scroller options forwarded to each Listbox (e.g.
-   * `{ itemSize: remToPx(2.82) }`). Pass `false` to disable virtual scrolling.
+   * `{ itemSize: rowHeightPx('compact') }`). Pass `false` to disable virtual scrolling.
    * @type {object | boolean}
    */
   virtualScrollerOptions: {

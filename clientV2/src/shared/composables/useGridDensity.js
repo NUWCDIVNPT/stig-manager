@@ -12,7 +12,7 @@ import { rootFontSizePx } from '../lib/remToPx.js'
 //            controls); rows never shrink below it at low clamps
 // A grid's header and body components both call useGridDensity(gridKey) and get
 // the same geometry, so the two can not fall out of sync.
-const GRID_GEOMETRY = {
+export const GRID_GEOMETRY = {
   'asset-review-checklist': { defaultLineClamp: 3, lineRem: 1.1 * 1.3, padRem: 0.4, minRem: 2.2 },
   'collection-checklist': { defaultLineClamp: 2, lineRem: 1.1 * 1.3, padRem: 1.32, minRem: 2.2 },
   'collection-rule-table': { defaultLineClamp: 1, lineRem: 1.1 * 1.3, padRem: 1.84, minRem: 2.4 },
