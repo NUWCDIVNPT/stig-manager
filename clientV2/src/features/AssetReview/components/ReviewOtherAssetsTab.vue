@@ -115,7 +115,7 @@ const COLUMN_WIDTHS = { detail: '150px', comment: '150px', username: '80px' }
     @apply-review="emit('apply-review', $event)"
   >
     <template #lead-columns="{ showLongText }">
-      <Column field="assetName" sortable :style="{ width: '100px' }">
+      <Column field="assetName" sortable :style="{ width: '9rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Asset
@@ -131,7 +131,7 @@ const COLUMN_WIDTHS = { detail: '150px', comment: '150px', username: '80px' }
         </template>
       </Column>
 
-      <Column field="assetLabels" filter-field="assetLabels" :style="{ width: '100px' }">
+      <Column field="assetLabels" filter-field="assetLabels" :style="{ width: '9rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Labels
@@ -152,13 +152,13 @@ const COLUMN_WIDTHS = { detail: '150px', comment: '150px', username: '80px' }
     </template>
 
     <template #mid-columns>
-      <Column header="Evaluated" field="ts" sortable :style="{ width: '80px' }">
+      <Column header="Evaluated" field="ts" sortable :style="{ width: '7.25rem' }">
         <template #body="{ data }">
           <span class="cell-text--mono" :title="formatReviewDate(data.ts)">{{ durationToNow(data.ts) }}</span>
         </template>
       </Column>
 
-      <Column header="Statused" field="touchTs" sortable :style="{ width: '80px' }">
+      <Column header="Statused" field="touchTs" sortable :style="{ width: '7.25rem' }">
         <template #body="{ data }">
           <span v-if="data.touchTs" class="cell-text--mono" :title="formatReviewDate(data.touchTs)">{{ durationToNow(data.touchTs) }}</span>
           <span v-else class="cell-text--empty">---</span>

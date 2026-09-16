@@ -17,6 +17,7 @@ import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
+import { remToPx } from '../../../shared/lib/remToPx.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 
 const props = defineProps({
@@ -47,7 +48,7 @@ const dataTableRef = ref(null)
 // Row geometry lives in useGridDensity's table (same model as
 // AggregatedFindingsGrid). lineClamp both sets the row height and drives the
 // Detail/Comment -webkit-line-clamp, so the two can't drift.
-const { lineClamp, itemSize: densityItemSize } = useGridDensity('findings-individual')
+const { lineClamp, itemSize: densityItemSize, cellLineHeight } = useGridDensity('findings-individual')
 
 // Decorate each row with:
 //   - labels: resolved {labelId,name,color} objects for LabelsRow (review payload
@@ -76,10 +77,11 @@ const decoratedRows = computed(() => {
 // itemSize must cover the tallest cell: a <tr>'s height is a minimum, so an
 // over-tall cell grows the row past itemSize and drifts the virtual scroller's
 // n × itemSize positioning. Text cells scale with lineClamp, but a labeled
-// asset cell has a fixed need — 24px shield row + 0.15rem gap + ~17px labels
-// row + 0.3rem cell padding ≈ 46px — so floor the row height when labels are
-// present. Label-free result sets keep the denser 36px floor.
-const LABELED_ROW_MIN_PX = 47
+// asset cell has a fixed need (shield row + gap + labels row + cell padding),
+// so floor the row height when labels are present. Label-free result sets
+// keep the denser geometry floor.
+const LABELED_ROW_MIN_REM = 2.2 + 0.15 + 1.55 + 0.3
+const LABELED_ROW_MIN_PX = remToPx(LABELED_ROW_MIN_REM)
 const itemSize = computed(() => {
   const hasLabels = decoratedRows.value.some(r => r.labels.length)
   return hasLabels ? Math.max(densityItemSize.value, LABELED_ROW_MIN_PX) : densityItemSize.value
@@ -139,7 +141,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 </script>
 
 <template>
-  <div class="ind-grid-panel" :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }">
+  <div class="ind-grid-panel" :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px`, '--cell-line-height': cellLineHeight }">
     <!-- Everything scrolls together: below __inner's min-width the whole stack
          (header, table, footer) scrolls horizontally as one unit. -->
     <div class="ind-grid-panel__inner">
@@ -402,11 +404,11 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   color: var(--color-text-dim);
 }
 
-/* line-height is load-bearing: font-size × this must equal the grid's lineRem
-   in useGridDensity, so N clamped lines fill exactly N rows. Only the clamped
-   Detail/Comment cells use it. */
+/* Line height comes from the grid geometry (useGridDensity lineRem), so N
+   clamped lines fill exactly N rows. Only the clamped Detail/Comment cells
+   use it. */
 .cell-text {
-  line-height: 1.3;
+  line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-primary);
 }
 
@@ -452,8 +454,8 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 }
 
 .shield-action {
-  width: 24px;
-  height: 24px;
+  width: 2.2rem;
+  height: 2.2rem;
   flex-shrink: 0;
   display: flex;
   align-items: center;

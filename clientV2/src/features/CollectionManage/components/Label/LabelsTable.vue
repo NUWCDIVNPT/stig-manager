@@ -92,7 +92,7 @@ const dataTableRef = ref(null)
         field="name" export-header="Name"
         sortable
         :pt="borderPt"
-        style="min-width: 100px; width: 200px;"
+        style="min-width: 9rem; width: 18.25rem;"
         :body-style="{ height: '32px', padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
         :header-style="{ padding: '0 0.5rem' }"
       >
@@ -121,7 +121,7 @@ const dataTableRef = ref(null)
         field="description" export-header="Description"
         sortable
         :pt="borderPt"
-        style="min-width: 150px;"
+        style="min-width: 13.75rem;"
         :body-style="{ height: '32px', padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
         :header-style="{ padding: '0 0.5rem' }"
       >
@@ -137,7 +137,7 @@ const dataTableRef = ref(null)
         field="uses" export-header="Uses"
         sortable
         :pt="borderPt"
-        style="min-width: 60px; width: 150px;"
+        style="min-width: 5.5rem; width: 13.75rem;"
         :body-style="{ height: '32px', padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', textAlign: 'center' }"
         :header-style="{ padding: '0 0.5rem', justifyContent: 'center' }"
       >

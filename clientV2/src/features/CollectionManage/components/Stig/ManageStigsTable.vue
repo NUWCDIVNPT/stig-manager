@@ -37,15 +37,15 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 const tablePt = { footer: { style: 'padding: 0; border: none;' } }
 
 const columns = [
-  { field: 'revisionStr', header: 'Revision', component: Column, width: '50px', pt: borderPt },
-  { field: 'ruleCount', header: 'Rules', component: Column, width: '30px', pt: borderPt },
-  { field: 'assets', header: 'Assets', component: Column, width: '30px', pt: borderPt },
-  { field: 'oldest', header: 'Oldest', component: DurationColumn, width: '30px', pt: borderPt },
-  { field: 'newest', header: 'Newest', component: DurationColumn, width: '30px', pt: borderPt },
-  { field: 'assessedPct', header: 'Assessed', component: PercentageColumn, width: '60px', pt: borderPt },
-  { field: 'submittedPct', header: 'Submitted', component: PercentageColumn, width: '60px', pt: borderPt },
-  { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn, width: '60px', pt: borderPt },
-  { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn, width: '60px', pt: borderPt },
+  { field: 'revisionStr', header: 'Revision', component: Column, width: '4.5rem', pt: borderPt },
+  { field: 'ruleCount', header: 'Rules', component: Column, width: '2.75rem', pt: borderPt },
+  { field: 'assets', header: 'Assets', component: Column, width: '2.75rem', pt: borderPt },
+  { field: 'oldest', header: 'Oldest', component: DurationColumn, width: '2.75rem', pt: borderPt },
+  { field: 'newest', header: 'Newest', component: DurationColumn, width: '2.75rem', pt: borderPt },
+  { field: 'assessedPct', header: 'Assessed', component: PercentageColumn, width: '5.5rem', pt: borderPt },
+  { field: 'submittedPct', header: 'Submitted', component: PercentageColumn, width: '5.5rem', pt: borderPt },
+  { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn, width: '5.5rem', pt: borderPt },
+  { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn, width: '5.5rem', pt: borderPt },
 ]
 
 const selectedStigs = ref([])
@@ -98,7 +98,7 @@ function onStigsChanged() {
           field="benchmarkId" export-header="Benchmark ID"
           sortable
           :pt="borderPt"
-          style="min-width: 100px; width: 140px;"
+          style="min-width: 9rem; width: 12.75rem;"
           :body-style="{ height: `${ROW_HEIGHT}px`, padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
           :header-style="{ padding: '0 0.5rem' }"
         >

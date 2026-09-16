@@ -80,37 +80,37 @@ const exportResult = ({ data }) => badgeFor(data) ?? ''
         :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
         :pt="{ table: { style: 'table-layout: fixed; width: 100%' } }"
       >
-        <Column field="ruleId" header="Rule" style="min-width: 130px" sortable />
-        <Column field="title" header="Title" style="min-width: 220px" sortable>
+        <Column field="ruleId" header="Rule" style="min-width: 11.75rem" sortable />
+        <Column field="title" header="Title" style="min-width: 20rem" sortable>
           <template #body="{ data }">
             <span :title="data.title">{{ data.title }}</span>
           </template>
         </Column>
-        <Column field="groupId" header="Group" style="width: 110px" sortable />
-        <Column field="severity" :sort-field="severitySortValue" header="Severity" style="width: 100px" sortable />
-        <Column header="Current" field="currentResult" :export-value="exportResult" style="width: 80px; text-align: center" :sort-field="r => r.currentResult ?? ''" sortable>
+        <Column field="groupId" header="Group" style="width: 10rem" sortable />
+        <Column field="severity" :sort-field="severitySortValue" header="Severity" style="width: 9rem" sortable />
+        <Column header="Current" field="currentResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :sort-field="r => r.currentResult ?? ''" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.currentResult)" :status="badgeFor(data.currentResult)" />
             <span v-else>—</span>
           </template>
         </Column>
-        <Column header="New" field="newResult" :export-value="exportResult" style="width: 80px; text-align: center" :sort-field="r => r.newResult ?? ''" sortable>
+        <Column header="New" field="newResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :sort-field="r => r.newResult ?? ''" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.newResult)" :status="badgeFor(data.newResult)" />
             <span v-else>—</span>
           </template>
         </Column>
-        <Column field="newDetail" header="New Detail" style="min-width: 200px">
+        <Column field="newDetail" header="New Detail" style="min-width: 18.25rem">
           <template #body="{ data }">
             <span class="ellipsis" :title="data.newDetail">{{ data.newDetail }}</span>
           </template>
         </Column>
-        <Column field="newComment" header="New Comment" style="min-width: 200px">
+        <Column field="newComment" header="New Comment" style="min-width: 18.25rem">
           <template #body="{ data }">
             <span class="ellipsis" :title="data.newComment">{{ data.newComment }}</span>
           </template>
         </Column>
-        <Column field="newStatus" header="New Status" style="width: 110px" sortable>
+        <Column field="newStatus" header="New Status" style="width: 10rem" sortable>
           <template #body="{ data }">
             <span v-if="data.newStatus" class="status-pill">{{ data.newStatus }}</span>
             <span v-else class="status-empty">—</span>

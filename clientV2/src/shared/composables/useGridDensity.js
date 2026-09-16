@@ -3,10 +3,11 @@ import { rootFontSizePx } from '../lib/remToPx.js'
 
 // Row geometry per grid, in rem so it follows the root font-size.
 //   defaultLineClamp: lines of clamped cell text shown until the user changes it
-//   lineRem: height of one rendered line of the clamped text, i.e. font-size ×
-//            line-height of that grid's clamped cell rule. It MUST match the CSS
-//            or clamped rows will not fill their itemSize and the virtual
-//            scroller's n × itemSize placement drifts.
+//   lineRem: height of one rendered line of the clamped text. The grid sets it
+//            on its root as --cell-line-height and the clamped cell rule reads
+//            it, so N clamped lines fill exactly N × lineRem and the virtual
+//            scroller's n × itemSize placement holds. The cell font-size is
+//            free as long as it is smaller than lineRem.
 //   padRem:  vertical room around the text (cell padding plus breathing space)
 //   minRem:  natural height of the tallest non-text cell (badges, icons, input
 //            controls); rows never shrink below it at low clamps
@@ -43,6 +44,9 @@ export function useGridDensity(gridKey) {
 
   const lineClamp = densityState.get(gridKey)
 
+  // rem string for the clamped cell's line-height (see lineRem above).
+  const cellLineHeight = `${Number(geometry.lineRem.toFixed(4))}rem`
+
   const itemSize = computed(() => {
     const rem = Math.max(geometry.minRem, geometry.lineRem * lineClamp.value + geometry.padRem)
     return Math.ceil(rem * rootFontSizePx())
@@ -63,6 +67,7 @@ export function useGridDensity(gridKey) {
   return {
     lineClamp,
     itemSize,
+    cellLineHeight,
     increaseRowHeight,
     decreaseRowHeight,
   }

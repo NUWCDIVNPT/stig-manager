@@ -81,10 +81,10 @@ function onPopoverSelectStig(benchmarkId) {
   stigPopover.value?.hide()
 }
 
-// Row geometry lives in useGridDensity's table (lineRem must match .cell-text
-// below). itemSize drives the virtual scroller; rows are pinned to it via
-// --item-size so the scroller's position math (n × itemSize) stays correct.
-const { lineClamp, itemSize } = useGridDensity('findings-aggregated')
+// Row geometry lives in useGridDensity's table. itemSize drives the virtual
+// scroller; rows are pinned to it via --item-size and the clamped text reads
+// --cell-line-height, so the scroller's position math (n × itemSize) holds.
+const { lineClamp, itemSize, cellLineHeight } = useGridDensity('findings-aggregated')
 
 const poamDialogVisible = ref(false)
 
@@ -233,7 +233,7 @@ const flexCellPt = {
           :virtual-scroller-options="{ itemSize }"
           striped-rows
           class="agg-grid-panel__table"
-          :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
+          :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px`, '--cell-line-height': cellLineHeight }"
           :pt="dataTablePt"
           @row-select="onRowSelect"
         >
@@ -605,10 +605,10 @@ const flexCellPt = {
   min-height: 0;
 }
 
-/* line-height is load-bearing: font-size × this must equal the grid's lineRem
-   in useGridDensity, so N clamped lines fill exactly N rows. Retune together. */
+/* Line height comes from the grid geometry (useGridDensity lineRem), so N
+   clamped lines fill exactly N rows. */
 .cell-text {
-  line-height: 1.3;
+  line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-primary);
 }
 

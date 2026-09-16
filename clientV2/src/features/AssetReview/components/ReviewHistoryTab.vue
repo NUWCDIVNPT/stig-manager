@@ -97,13 +97,13 @@ const ROW_HEIGHT = rowHeightPx('control')
     @apply-review="emit('apply-review', $event)"
   >
     <template #lead-columns="{ showLongText }">
-      <Column header="Time" field="touchTs" sortable :style="{ width: '65px' }">
+      <Column header="Time" field="touchTs" sortable :style="{ width: '6rem' }">
         <template #body="{ data }">
           <span class="cell-text--mono" :title="formatReviewDate(data.touchTs)">{{ durationToNow(data.touchTs) }}</span>
         </template>
       </Column>
 
-      <Column field="ruleId" :style="{ width: '150px' }">
+      <Column field="ruleId" :style="{ width: '13.75rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Rule
@@ -121,7 +121,7 @@ const ROW_HEIGHT = rowHeightPx('control')
     </template>
 
     <template #mid-columns="{ showLongText }">
-      <Column field="statusText" :style="{ width: '100px' }">
+      <Column field="statusText" :style="{ width: '9rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Status Text
@@ -141,7 +141,7 @@ const ROW_HEIGHT = rowHeightPx('control')
         </template>
       </Column>
 
-      <Column filter-field="_statusLabel" :style="{ width: '70px', textAlign: 'center' }">
+      <Column filter-field="_statusLabel" :style="{ width: '6.25rem', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             Status

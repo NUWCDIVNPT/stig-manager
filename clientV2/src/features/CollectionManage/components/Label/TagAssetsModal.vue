@@ -179,17 +179,17 @@ const tablePt = {
           </span>
         </template>
         <template #columns>
-          <Column field="name" header="Asset" style="min-width: 120px; width: 35%;" :body-style="{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }">
+          <Column field="name" header="Asset" style="min-width: 11rem; width: 35%;" :body-style="{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }">
             <template #body="{ data }">
               <span class="asset-name" :title="data.name">{{ data.name }}</span>
             </template>
           </Column>
-          <Column header="Labels" style="min-width: 140px;">
+          <Column header="Labels" style="min-width: 12.75rem;">
             <template #body="{ data }">
               <LabelsRow :labels="data.labels" compact />
             </template>
           </Column>
-          <Column header="STIGs" style="width: 70px;" :header-style="{ textAlign: 'center', justifyContent: 'center' }">
+          <Column header="STIGs" style="width: 6.25rem;" :header-style="{ textAlign: 'center', justifyContent: 'center' }">
             <template #body="{ data }">
               <span class="asset-stig-count" style="justify-content: center;">
                 <img :src="shieldIcon" class="asset-stig-icon" alt="">

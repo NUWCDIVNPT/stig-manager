@@ -66,7 +66,7 @@ const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
         <AclResourceDisplay :rule="data" />
       </template>
     </Column>
-    <Column header="Access" field="access" :export-value="exportAccess" sortable style="width: 140px">
+    <Column header="Access" field="access" :export-value="exportAccess" sortable style="width: 12.75rem">
       <template #body="{ data }">
         <Select
           :model-value="data.access"

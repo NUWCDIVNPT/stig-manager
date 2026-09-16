@@ -379,7 +379,7 @@ const dataTablePt = {
 
 .cell-text {
   font-size: 1.1rem;
-  line-height: 1.3;
+  line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-primary);
 }
 

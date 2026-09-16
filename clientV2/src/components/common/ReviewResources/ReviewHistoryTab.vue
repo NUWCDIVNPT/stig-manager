@@ -282,13 +282,13 @@ const historyTablePt = {
       class="history-table"
       :pt="historyTablePt"
     >
-      <Column header="Time" field="touchTs" sortable :style="{ width: '65px' }">
+      <Column header="Time" field="touchTs" sortable :style="{ width: '6rem' }">
         <template #body="{ data }">
           <span class="cell-text--mono" :title="formatReviewDate(data.touchTs)">{{ durationToNow(data.touchTs) }}</span>
         </template>
       </Column>
 
-      <Column field="ruleId" export-header="Rule" :style="{ width: '150px' }">
+      <Column field="ruleId" export-header="Rule" :style="{ width: '13.75rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Rule
@@ -304,7 +304,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="result" export-header="Result" :style="{ width: '70px', textAlign: 'center' }">
+      <Column field="result" export-header="Result" :style="{ width: '6.25rem', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             Result
@@ -320,7 +320,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '50px', textAlign: 'center' }">
+      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '4.5rem', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             <img
@@ -357,7 +357,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="detail" export-header="Detail" :style="{ width: '130px' }">
+      <Column field="detail" export-header="Detail" :style="{ width: '11.75rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Detail
@@ -377,7 +377,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="comment" export-header="Comment" :style="{ width: '130px' }">
+      <Column field="comment" export-header="Comment" :style="{ width: '11.75rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Comment
@@ -397,7 +397,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="statusText" export-header="Status Text" :style="{ width: '100px' }">
+      <Column field="statusText" export-header="Status Text" :style="{ width: '9rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Status Text
@@ -417,7 +417,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="_statusLabel" filter-field="_statusLabel" export-header="Status" :style="{ width: '70px', textAlign: 'center' }">
+      <Column field="_statusLabel" filter-field="_statusLabel" export-header="Status" :style="{ width: '6.25rem', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             Status
@@ -433,7 +433,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="username" export-header="User" :style="{ width: '100px' }">
+      <Column field="username" export-header="User" :style="{ width: '9rem' }">
         <template #header>
           <div class="column-header-with-filter">
             User
@@ -451,7 +451,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column header="Apply" :exportable="false" :style="{ width: '40px', textAlign: 'center' }">
+      <Column header="Apply" :exportable="false" :style="{ width: '3.75rem', textAlign: 'center' }">
         <template #body="{ data }">
           <button
             class="apply-review-icon-btn"

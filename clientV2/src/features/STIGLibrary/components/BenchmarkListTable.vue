@@ -55,9 +55,9 @@ const filteredData = computed(() => {
   )
 })
 
-// Row geometry lives in useGridDensity's table; lineRem must match
-// .stiglib-cell-text in stigLibrary.css.
-const { lineClamp, itemSize } = useGridDensity('stig-library-benchmarks')
+// Row geometry lives in useGridDensity's table; .stiglib-cell-text reads its
+// line height from --cell-line-height.
+const { lineClamp, itemSize, cellLineHeight } = useGridDensity('stig-library-benchmarks')
 
 // Fixed layout so the flexible Title column yields to the sized columns.
 const tablePt = {
@@ -114,7 +114,7 @@ function onRowClick(event) {
         row-hover
         export-filename="stig-library-benchmarks"
         class="bm-list__table"
-        :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
+        :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px`, '--cell-line-height': cellLineHeight }"
         :pt="tablePt"
         @row-click="onRowClick"
       >

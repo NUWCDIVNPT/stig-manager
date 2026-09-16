@@ -246,7 +246,7 @@ const visibleFields = computed(() => {
   return fields
 })
 
-const { lineClamp, itemSize } = useGridDensity('asset-review-checklist')
+const { lineClamp, itemSize, cellLineHeight } = useGridDensity('asset-review-checklist')
 
 const localSearchFilter = computed({
   get: () => props.searchFilter,
@@ -364,7 +364,7 @@ function onRowClick(event) {
 
 <template>
   <div
-    class="checklist-grid" :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
+    class="checklist-grid" :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px`, '--cell-line-height': cellLineHeight }"
     @scroll.capture="onGridScroll" @wheel.capture="onGridWheel"
   >
     <AssetChecklistGridHeader

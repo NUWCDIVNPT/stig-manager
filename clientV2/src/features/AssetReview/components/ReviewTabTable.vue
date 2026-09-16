@@ -98,7 +98,7 @@ const sharedPt = {
     >
       <slot name="lead-columns" :show-long-text="showLongText" />
 
-      <Column field="result" :style="{ width: '70px', textAlign: 'center' }">
+      <Column field="result" :style="{ width: '6.25rem', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             Result
@@ -114,7 +114,7 @@ const sharedPt = {
         </template>
       </Column>
 
-      <Column field="resultEngine" filter-field="_engineDisplay" :style="{ width: '50px', textAlign: 'center' }">
+      <Column field="resultEngine" filter-field="_engineDisplay" :style="{ width: '4.5rem', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             <img
@@ -191,7 +191,7 @@ const sharedPt = {
         </template>
       </Column>
 
-      <Column header="Apply" :style="{ width: '40px', textAlign: 'center' }">
+      <Column header="Apply" :style="{ width: '3.75rem', textAlign: 'center' }">
         <template #body="{ data }">
           <button
             class="apply-review-icon-btn"

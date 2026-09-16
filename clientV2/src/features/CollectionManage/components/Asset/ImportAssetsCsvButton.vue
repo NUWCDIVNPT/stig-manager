@@ -174,30 +174,30 @@ const dataTablePt = {
                 <i class="pi pi-server" /> New Assets To Be Created
               </div>
             </template>
-            <Column field="CSVRow" header="Row" style="width: 60px; height: 27px; padding: 0 0.5rem" />
-            <Column field="name" header="Asset Name" style="width: 160px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis" />
-            <Column field="description" header="Description" style="width: 180px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis" />
-            <Column field="noncomputing" header="Noncomputing" style="width: 110px; height: 27px; padding: 0 0.5rem">
+            <Column field="CSVRow" header="Row" style="width: 5.5rem; height: 27px; padding: 0 0.5rem" />
+            <Column field="name" header="Asset Name" style="width: 14.5rem; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis" />
+            <Column field="description" header="Description" style="width: 16.25rem; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis" />
+            <Column field="noncomputing" header="Noncomputing" style="width: 10rem; height: 27px; padding: 0 0.5rem">
               <template #body="{ data }">
                 {{ data.noncomputing ? 'True' : 'False' }}
               </template>
             </Column>
-            <Column field="ip" header="IP" style="width: 110px; height: 27px; padding: 0 0.5rem" />
-            <Column field="fqdn" header="FQDN" style="width: 140px; height: 27px; padding: 0 0.5rem" />
-            <Column field="mac" header="MAC" style="width: 130px; height: 27px; padding: 0 0.5rem" />
-            <Column field="metadata" header="Metadata" style="width: 160px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis">
+            <Column field="ip" header="IP" style="width: 10rem; height: 27px; padding: 0 0.5rem" />
+            <Column field="fqdn" header="FQDN" style="width: 12.75rem; height: 27px; padding: 0 0.5rem" />
+            <Column field="mac" header="MAC" style="width: 11.75rem; height: 27px; padding: 0 0.5rem" />
+            <Column field="metadata" header="Metadata" style="width: 14.5rem; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis">
               <template #body="{ data }">
                 {{ metadataRenderer(data.metadata) }}
               </template>
             </Column>
-            <Column field="labelNames" header="Labels" style="width: 140px; height: 27px; padding: 0 0.5rem">
+            <Column field="labelNames" header="Labels" style="width: 12.75rem; height: 27px; padding: 0 0.5rem">
               <template #body="{ data }">
                 <div class="multiline">
                   {{ listRenderer(data.labelNames) }}
                 </div>
               </template>
             </Column>
-            <Column field="stigs" header="STIGs" style="width: 220px; height: 27px; padding: 0 0.5rem">
+            <Column field="stigs" header="STIGs" style="width: 20rem; height: 27px; padding: 0 0.5rem">
               <template #body="{ data }">
                 <div class="multiline">
                   {{ listRenderer(data.stigs) }}
@@ -231,7 +231,7 @@ const dataTablePt = {
                 <i class="pi pi-times-circle" /> File Errors
               </div>
             </template>
-            <Column field="row" header="Row" style="width: 80px; height: 27px; padding: 0 0.5rem" />
+            <Column field="row" header="Row" style="width: 7.25rem; height: 27px; padding: 0 0.5rem" />
             <Column field="messages" header="Errors" style="height: 27px; padding: 0 0.5rem">
               <template #body="{ data }">
                 <div class="multiline">
