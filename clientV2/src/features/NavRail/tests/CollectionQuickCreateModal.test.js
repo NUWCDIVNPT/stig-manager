@@ -78,6 +78,12 @@ describe('collectionQuickCreateModal', () => {
     expect(triggerError).not.toHaveBeenCalled()
     expect(emitted().created).toBeUndefined()
 
+    // Changing only the case keeps the error: the unique index is case-insensitive
+    await user.clear(screen.getByPlaceholderText('Collection name'))
+    await user.type(screen.getByPlaceholderText('Collection name'), 'TAKEN')
+    expect(screen.getByText('A Collection with this name already exists')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Create' })).toBeDisabled()
+
     // Editing the name clears the duplicate error
     await user.type(screen.getByPlaceholderText('Collection name'), '2')
     expect(screen.getByRole('button', { name: 'Create' })).toBeEnabled()

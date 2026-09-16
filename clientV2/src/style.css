@@ -1,6 +1,6 @@
 :root {
   font-family: 'Open Sans';
-  font-size: 12px;
+  font-size: 11px;
   color-scheme: dark !important;
   color: rgba(255, 255, 255, 0.87);
   background-color: #000000;
@@ -269,14 +269,6 @@ textarea:focus {
   height: 1.15em;
   vertical-align: -0.2em;
   background: url('/src/assets/collection-new.svg') center / contain no-repeat;
-}
-
-/* Fixed-size variant for modal headers, where the glyph sits beside a title
-   rather than inline with running text */
-.icon-collection-new--lg {
-  width: 1.4rem;
-  height: 1.4rem;
-  flex-shrink: 0;
 }
 
 /* Nav rail popovers (Collections, Recent Views) share a subtle outline so the

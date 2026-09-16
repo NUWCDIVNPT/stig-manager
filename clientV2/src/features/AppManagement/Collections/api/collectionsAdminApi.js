@@ -1,5 +1,5 @@
 import { apiCall } from '../../../../shared/api/apiClient.js'
-import { createCollection as createCollectionApi } from '../../../../shared/api/collectionsApi.js'
+import { createCollection as createCollectionApi, deleteCollection as deleteCollectionApi } from '../../../../shared/api/collectionsApi.js'
 
 const ADMIN_PROJECTION = ['owners', 'statistics']
 
@@ -12,5 +12,5 @@ export function createCollection(body) {
 }
 
 export function deleteCollection(collectionId) {
-  return apiCall('deleteCollection', { collectionId, elevate: true })
+  return deleteCollectionApi(collectionId, { elevate: true })
 }

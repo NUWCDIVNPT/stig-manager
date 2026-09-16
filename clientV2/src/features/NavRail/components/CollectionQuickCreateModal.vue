@@ -10,6 +10,7 @@ import { createCollection } from '../../../shared/api/collectionsApi.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../shared/lib/dialogPt.js'
+import { inputTextPt, textareaPt } from '../../../shared/lib/formPt.js'
 import {
   COLLECTION_DESCRIPTION_MAX_LENGTH,
   COLLECTION_NAME_MAX_LENGTH,
@@ -45,7 +46,8 @@ watch(() => props.visible, (open) => {
 
 const nameError = computed(() => {
   const name = form.value.name.trim()
-  if (name === duplicateName.value) {
+  // Case-insensitive to match the collation of the unique index on name
+  if (name.toLowerCase() === duplicateName.value) {
     return 'A Collection with this name already exists'
   }
   // Do not flag the empty field until the user has interacted with it
@@ -82,7 +84,7 @@ async function onSave() {
   }
   catch (err) {
     if (isDuplicateEntryError(err)) {
-      duplicateName.value = name
+      duplicateName.value = name.toLowerCase()
     }
     else {
       triggerError(err)
@@ -99,14 +101,6 @@ const dialogPt = {
   content: { style: 'background: var(--color-background-dark); padding: 0; flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column;' },
   footer: { style: 'flex-shrink: 0; padding: 0; border: none;' },
   closeButton: { style: 'color: var(--color-text-dim);' },
-}
-
-const inputTextPt = {
-  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%;' },
-}
-
-const textareaPt = {
-  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%; resize: none;' },
 }
 </script>
 

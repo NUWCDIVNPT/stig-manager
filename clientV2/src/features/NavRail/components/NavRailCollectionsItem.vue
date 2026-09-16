@@ -265,7 +265,6 @@ async function onQuickCreated(created) {
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  height: 100%;
   padding: 0;
   border: none;
   background: none;
