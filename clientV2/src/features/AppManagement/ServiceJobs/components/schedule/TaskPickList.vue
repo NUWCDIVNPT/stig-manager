@@ -1,5 +1,6 @@
 <script setup>
 import PickList from '../../../../../components/common/PickList.vue'
+import { remToPx } from '../../../../../shared/lib/remToPx.js'
 
 // Dual-list of job tasks: [available, selected]. Selected order is the run
 // order, matching the legacy "run in order shown" grid.
@@ -22,7 +23,7 @@ function taskFilter(task, searchText) {
     source-filter-placeholder="Search tasks..."
     target-filter-placeholder="Search tasks..."
     option-style="padding: 0.4rem 0.75rem;"
-    :virtual-scroller-options="{ itemSize: 52 }"
+    :virtual-scroller-options="{ itemSize: remToPx(4.73) }"
   >
     <template #sourceheader>
       Available Tasks

@@ -121,7 +121,7 @@ async function exportChecklist(format) {
 const displayMode = defineModel('displayMode', { type: String, required: true })
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
 
-const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity('asset-review-checklist', 3, 6, 15)
+const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity('asset-review-checklist')
 
 const searchFilter = defineModel('searchFilter', { type: String, default: '' })
 

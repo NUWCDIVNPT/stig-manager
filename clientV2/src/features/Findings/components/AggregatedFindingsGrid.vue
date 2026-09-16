@@ -81,11 +81,10 @@ function onPopoverSelectStig(benchmarkId) {
   stigPopover.value?.hide()
 }
 
-// Same geometry as AssetChecklistGrid: 15px per rendered line of clamped text
-// (1.05rem × 1.3 line-height at the 11px root) + 6px cell padding. itemSize
-// drives the virtual scroller; rows are pinned to it via --item-size below so
-// the scroller's position math (n × itemSize) stays correct.
-const { lineClamp, itemSize } = useGridDensity('findings-aggregated', 2, 6, 15)
+// Row geometry lives in useGridDensity's table (lineRem must match .cell-text
+// below). itemSize drives the virtual scroller; rows are pinned to it via
+// --item-size so the scroller's position math (n × itemSize) stays correct.
+const { lineClamp, itemSize } = useGridDensity('findings-aggregated')
 
 const poamDialogVisible = ref(false)
 
@@ -191,7 +190,7 @@ const flexCellPt = {
           />
         </label>
 
-        <DensityControls grid-key="findings-aggregated" :default-line-clamp="2" :min="2" class="agg-grid-panel__density" />
+        <DensityControls grid-key="findings-aggregated" :min="2" class="agg-grid-panel__density" />
       </header>
 
       <Popover ref="stigPopover" :pt="stigPopoverPt" @show="onPopoverShow">
@@ -606,9 +605,8 @@ const flexCellPt = {
   min-height: 0;
 }
 
-/* line-height is load-bearing: font-size (bodyFontSize) × this ≈ the density
-   sizeMultiplier (15px/line), so N clamped lines fill exactly N rows. Retune
-   all three together (see useGridDensity). */
+/* line-height is load-bearing: font-size × this must equal the grid's lineRem
+   in useGridDensity, so N clamped lines fill exactly N rows. Retune together. */
 .cell-text {
   line-height: 1.3;
   color: var(--color-text-primary);

@@ -13,6 +13,7 @@ import { useGlobalError } from '../../../../shared/composables/useGlobalError.js
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
 
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { remToPx } from '../../../../shared/lib/remToPx.js'
 import {
   fetchAssetsByLabel,
   fetchCollectionAssetsBasic,
@@ -35,7 +36,7 @@ const localVisible = computed({
 
 const { triggerError } = useGlobalError()
 
-const VIRTUAL_SCROLLER_OPTIONS = { itemSize: 28 }
+const VIRTUAL_SCROLLER_OPTIONS = { itemSize: remToPx(2.55) }
 
 const isLoading = ref(false)
 const saving = ref(false)

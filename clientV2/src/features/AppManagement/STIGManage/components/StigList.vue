@@ -11,6 +11,7 @@ import ClassificationBadge from '../../../../components/common/ClassificationBad
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { remToPx } from '../../../../shared/lib/remToPx.js'
 
 const props = defineProps({
   stigs: {
@@ -209,7 +210,7 @@ function onRemoveAll() {
         :sort-order="1"
         scrollable
         scroll-height="flex"
-        :virtual-scroller-options="{ itemSize: 29 }"
+        :virtual-scroller-options="{ itemSize: remToPx(2.64) }"
         resizable-columns
         column-resize-mode="fit"
         export-filename="Installed-STIGs"

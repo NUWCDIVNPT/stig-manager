@@ -5,6 +5,7 @@ import { ref } from 'vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { formatDateTimeString } from '../../../shared/lib.js'
+import { remToPx } from '../../../shared/lib/remToPx.js'
 
 defineOptions({ inheritAttrs: false })
 
@@ -32,7 +33,7 @@ const dtRef = ref()
         scroll-height="flex"
         resizable-columns
         striped-rows
-        :virtual-scroller-options="{ itemSize: 46 }"
+        :virtual-scroller-options="{ itemSize: remToPx(4.18) }"
         :pt="{ table: { style: 'table-layout: fixed; width: 100%' }, tableContainer: { style: 'overflow-x: hidden' } }"
       >
         <Column header="Asset" field="taskAsset.assetProps.name" style="width: 16%" sortable :sort-field="r => r.taskAsset.assetProps.name">

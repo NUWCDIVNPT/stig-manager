@@ -9,6 +9,7 @@ import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchCollectionStigSummary } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+import { remToPx } from '../../../../shared/lib/remToPx.js'
 import { useStigTable } from '../../composables/useStigTable.js'
 import StigToolbar from './StigToolbar.vue'
 
@@ -18,6 +19,8 @@ const props = defineProps({
     required: true,
   },
 })
+
+const ROW_HEIGHT = remToPx(2.45)
 
 const dataTableRef = ref(null)
 
@@ -82,21 +85,21 @@ function onStigsChanged() {
         resizable-columns
         column-resize-mode="fit"
         :loading="isLoading"
-        :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
         export-filename="STIGs"
         class="flex-fill clickable-rows"
         :table-style="{ 'table-layout': 'fixed' }"
         :pt="tablePt"
         selection-mode="multiple"
       >
-        <Column selection-mode="multiple" style="width: 1rem; height: 27px; padding: 0 0.5rem;" />
+        <Column selection-mode="multiple" :style="`width: 1rem; height: ${ROW_HEIGHT}px; padding: 0 0.5rem;`" />
 
         <Column
           field="benchmarkId" export-header="Benchmark ID"
           sortable
           :pt="borderPt"
           style="min-width: 100px; width: 140px;"
-          :body-style="{ height: '27px', padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
+          :body-style="{ height: `${ROW_HEIGHT}px`, padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
           :header-style="{ padding: '0 0.5rem' }"
         >
           <template #header>
@@ -120,7 +123,7 @@ function onStigsChanged() {
             v-bind="col"
             sortable
             :style="`width: ${col.width}; min-width: ${col.width};`"
-            :body-style="{ height: '27px', padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
+            :body-style="{ height: `${ROW_HEIGHT}px`, padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
             :header-style="{ padding: '0 0.5rem' }"
           />
         </template>

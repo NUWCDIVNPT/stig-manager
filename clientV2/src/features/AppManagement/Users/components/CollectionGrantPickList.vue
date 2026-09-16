@@ -9,6 +9,7 @@ import { getAssignableRoleOptions, roleMap } from '../../../../components/common
 import RolePopover from '../../../../components/common/grants/RolePopover.vue'
 import { useRolePickList } from '../../../../components/common/grants/useRolePickList.js'
 import PickListControls from '../../../../components/common/PickListControls.vue'
+import { remToPx } from '../../../../shared/lib/remToPx.js'
 
 const props = defineProps({
   // Collections available for a direct grant: { collectionId, name }
@@ -90,7 +91,7 @@ const listboxPt = {
           :options="displaySource"
           option-label="name"
           multiple
-          :virtual-scroller-options="{ itemSize: 40 }"
+          :virtual-scroller-options="{ itemSize: remToPx(3.64) }"
           :pt="listboxPt"
         >
           <template #option="slotProps">
@@ -120,7 +121,7 @@ const listboxPt = {
           :options="localTarget"
           option-label="name"
           multiple
-          :virtual-scroller-options="{ itemSize: 40 }"
+          :virtual-scroller-options="{ itemSize: remToPx(3.64) }"
           :pt="listboxPt"
         >
           <template #option="slotProps">

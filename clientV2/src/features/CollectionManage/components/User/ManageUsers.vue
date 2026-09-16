@@ -10,6 +10,7 @@ import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchCollectionUsers } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { remToPx } from '../../../../shared/lib/remToPx.js'
 import { getEffectiveUserDisplay } from '../../lib/grantsUsers.js'
 import EffectiveAclModal from './EffectiveAclModal.vue'
 
@@ -76,7 +77,7 @@ defineExpose({ reload })
         size="medium"
         scrollable
         scroll-height="flex"
-        :virtual-scroller-options="{ itemSize: 49, delay: 0 }"
+        :virtual-scroller-options="{ itemSize: remToPx(4.45), delay: 0 }"
         export-filename="CollectionUsers"
         :pt="tablePt"
       >

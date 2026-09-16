@@ -36,7 +36,7 @@ function onAction(actionType) {
   emit('bulk-action', actionType)
 }
 
-const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity('collection-rule-table', 1, 12, 24)
+const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity('collection-rule-table')
 </script>
 
 <template>

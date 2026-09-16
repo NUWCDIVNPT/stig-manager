@@ -6,6 +6,7 @@ import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import { computed, ref } from 'vue'
+import { remToPx } from '../../../shared/lib/remToPx.js'
 import PickListControls from '../PickListControls.vue'
 import { getAssignableRoleOptions } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
@@ -105,7 +106,7 @@ const roleSelectPt = {
           :options="displaySource"
           option-label="name"
           multiple
-          :virtual-scroller-options="{ itemSize: 40 }"
+          :virtual-scroller-options="{ itemSize: remToPx(3.64) }"
           :pt="listboxPt"
         >
           <template #option="slotProps">
@@ -135,7 +136,7 @@ const roleSelectPt = {
           :options="localTarget"
           option-label="name"
           multiple
-          :virtual-scroller-options="{ itemSize: 40 }"
+          :virtual-scroller-options="{ itemSize: remToPx(3.64) }"
           :pt="targetListboxPt"
         >
           <template #option="slotProps">

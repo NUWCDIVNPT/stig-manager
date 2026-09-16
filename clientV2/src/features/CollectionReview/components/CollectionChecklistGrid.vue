@@ -75,7 +75,7 @@ function onSelectionChange(row) {
   }
 }
 
-const { lineClamp, itemSize } = useGridDensity('collection-checklist', 2, 10, 18)
+const { lineClamp, itemSize } = useGridDensity('collection-checklist')
 </script>
 
 <template>

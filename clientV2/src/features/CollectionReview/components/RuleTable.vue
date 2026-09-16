@@ -56,7 +56,7 @@ const props = defineProps({
 
 const emit = defineEmits(['review-saved', 'update:selection', 'bulk-action'])
 
-const { lineClamp, itemSize } = useGridDensity('collection-rule-table', 1, 12, 24)
+const { lineClamp, itemSize } = useGridDensity('collection-rule-table')
 
 const TOGGLEABLE_COLUMNS = [
   { field: 'labels', header: 'Labels' },

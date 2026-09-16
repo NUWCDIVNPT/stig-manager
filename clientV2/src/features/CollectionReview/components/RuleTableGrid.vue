@@ -71,7 +71,7 @@ const emit = defineEmits(['review-saved', 'update:selection'])
 
 const dataTableRef = ref(null)
 
-const { itemSize } = useGridDensity('collection-rule-table', 1, 12, 24)
+const { itemSize } = useGridDensity('collection-rule-table')
 
 const isDataSelectable = (data) => {
   return data?.access === 'rw'

@@ -4,6 +4,7 @@ import DataTable from 'primevue/datatable'
 import { ref } from 'vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { formatDateTimeString } from '../../../shared/lib.js'
+import { remToPx } from '../../../shared/lib/remToPx.js'
 
 defineProps({
   errors: { type: Array, required: true },
@@ -36,7 +37,7 @@ const dupesRef = ref()
             scroll-height="flex"
             resizable-columns
             striped-rows
-            :virtual-scroller-options="{ itemSize: 46 }"
+            :virtual-scroller-options="{ itemSize: remToPx(4.18) }"
           >
             <Column header="File" field="file.name" sortable :sort-field="r => r.file?.name ?? ''">
               <template #body="{ data }">
@@ -74,7 +75,7 @@ const dupesRef = ref()
             scroll-height="flex"
             resizable-columns
             striped-rows
-            :virtual-scroller-options="{ itemSize: 46 }"
+            :virtual-scroller-options="{ itemSize: remToPx(4.18) }"
           >
             <Column header="Asset" field="taskAsset.assetProps.name" sortable :sort-field="r => r.taskAsset.assetProps.name">
               <template #body="{ data }">

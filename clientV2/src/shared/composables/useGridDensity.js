@@ -1,4 +1,29 @@
 import { computed, ref } from 'vue'
+import { rootFontSizePx } from '../lib/remToPx.js'
+
+// Row geometry per grid, in rem so it follows the root font-size.
+//   defaultLineClamp: lines of clamped cell text shown until the user changes it
+//   lineRem: height of one rendered line of the clamped text, i.e. font-size ×
+//            line-height of that grid's clamped cell rule. It MUST match the CSS
+//            or clamped rows will not fill their itemSize and the virtual
+//            scroller's n × itemSize placement drifts.
+//   padRem:  vertical room around the text (cell padding plus breathing space)
+//   minRem:  natural height of the tallest non-text cell (badges, icons, input
+//            controls); rows never shrink below it at low clamps
+// A grid's header and body components both call useGridDensity(gridKey) and get
+// the same geometry, so the two can not fall out of sync.
+const GRID_GEOMETRY = {
+  'asset-review-checklist': { defaultLineClamp: 3, lineRem: 1.1 * 1.3, padRem: 0.4, minRem: 2.2 },
+  'collection-checklist': { defaultLineClamp: 2, lineRem: 1.1 * 1.3, padRem: 1.32, minRem: 2.2 },
+  'collection-rule-table': { defaultLineClamp: 1, lineRem: 1.1 * 1.3, padRem: 1.84, minRem: 2.4 },
+  'findings-aggregated': { defaultLineClamp: 2, lineRem: 1 * 1.3, padRem: 0.67, minRem: 2.2 },
+  'findings-individual': { defaultLineClamp: 2, lineRem: 1 * 1.3, padRem: 0.67, minRem: 2.4 },
+  'stig-library-benchmarks': { defaultLineClamp: 2, lineRem: 1.05 * 1.3, padRem: 0.54, minRem: 1.9 },
+  'stig-library-rules': { defaultLineClamp: 2, lineRem: 1.05 * 1.3, padRem: 0.54, minRem: 2.2 },
+}
+
+const MIN_LINE_CLAMP = 1
+const MAX_LINE_CLAMP = 10
 
 const densityState = new Map()
 
@@ -6,26 +31,31 @@ if (import.meta.hot) {
   import.meta.hot.dispose(() => densityState.clear())
 }
 
-// sizeMultiplier = px height of one rendered text line. It MUST match the cell
-// text's font-size × line-height (see .cell-text), or clamped rows won't fill
-// their itemSize and the virtual scroller's n × itemSize math drifts.
-export function useGridDensity(gridKey, defaultLineClamp = 1, baseItemSize = 12, sizeMultiplier = 24) {
+export function useGridDensity(gridKey) {
+  const geometry = GRID_GEOMETRY[gridKey]
+  if (!geometry) {
+    throw new Error(`useGridDensity: no geometry registered for grid "${gridKey}"`)
+  }
+
   if (!densityState.has(gridKey)) {
-    densityState.set(gridKey, ref(defaultLineClamp))
+    densityState.set(gridKey, ref(geometry.defaultLineClamp))
   }
 
   const lineClamp = densityState.get(gridKey)
 
-  const itemSize = computed(() => (sizeMultiplier * lineClamp.value) + baseItemSize)
+  const itemSize = computed(() => {
+    const rem = Math.max(geometry.minRem, geometry.lineRem * lineClamp.value + geometry.padRem)
+    return Math.ceil(rem * rootFontSizePx())
+  })
 
   function increaseRowHeight() {
-    if (lineClamp.value < 10) {
+    if (lineClamp.value < MAX_LINE_CLAMP) {
       lineClamp.value++
     }
   }
 
   function decreaseRowHeight() {
-    if (lineClamp.value > 1) {
+    if (lineClamp.value > MIN_LINE_CLAMP) {
       lineClamp.value--
     }
   }

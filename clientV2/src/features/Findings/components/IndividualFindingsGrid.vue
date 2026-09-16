@@ -44,11 +44,10 @@ const router = useRouter()
 
 const dataTableRef = ref(null)
 
-// Row geometry (same model as AggregatedFindingsGrid): itemSize = 15px per
-// clamped line × lineClamp + 6px cell chrome. lineClamp both sets the row
-// height and drives the Detail/Comment -webkit-line-clamp, so the two can't
-// drift.
-const { lineClamp, itemSize: densityItemSize } = useGridDensity('findings-individual', 2, 6, 15)
+// Row geometry lives in useGridDensity's table (same model as
+// AggregatedFindingsGrid). lineClamp both sets the row height and drives the
+// Detail/Comment -webkit-line-clamp, so the two can't drift.
+const { lineClamp, itemSize: densityItemSize } = useGridDensity('findings-individual')
 
 // Decorate each row with:
 //   - labels: resolved {labelId,name,color} objects for LabelsRow (review payload
@@ -154,7 +153,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
             for {{ selectedAggregated.groupId ?? selectedAggregated.ruleId ?? selectedAggregated.cci }}
           </span>
         </div>
-        <DensityControls grid-key="findings-individual" :default-line-clamp="2" :min="2" />
+        <DensityControls grid-key="findings-individual" :min="2" />
       </header>
 
       <div v-if="error" class="ind-grid-panel__error">
@@ -403,8 +402,8 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   color: var(--color-text-dim);
 }
 
-/* line-height is load-bearing: font-size × this ≈ the density sizeMultiplier,
-   so N clamped lines fill exactly N rows (see useGridDensity). Only the clamped
+/* line-height is load-bearing: font-size × this must equal the grid's lineRem
+   in useGridDensity, so N clamped lines fill exactly N rows. Only the clamped
    Detail/Comment cells use it. */
 .cell-text {
   line-height: 1.3;

@@ -7,6 +7,7 @@ import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import Select from 'primevue/select'
 import { computed, ref, toRef, watch } from 'vue'
+import { remToPx } from '../../../shared/lib/remToPx.js'
 import { getAssignableRoleOptions } from './roleOptions.js'
 import { useGranteeFilter } from './useGranteeFilter.js'
 
@@ -161,7 +162,7 @@ const onCancel = () => {
             option-group-label="label"
             option-group-children="items"
             option-disabled="collapsed"
-            :virtual-scroller-options="{ itemSize: 42 }"
+            :virtual-scroller-options="{ itemSize: remToPx(3.82) }"
             class="grantee-listbox"
             :pt="{
               root: { style: 'display: flex; flex-direction: column; min-height: 0;' },

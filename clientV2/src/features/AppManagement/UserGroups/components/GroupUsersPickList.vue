@@ -1,5 +1,6 @@
 <script setup>
 import PickList from '../../../../components/common/PickList.vue'
+import { remToPx } from '../../../../shared/lib/remToPx.js'
 import { userLabel } from '../lib/userGroupDisplay.js'
 
 // Group membership dual-list ([available, members] tuple) shared by the User
@@ -24,7 +25,7 @@ function userFilter(user, searchText) {
     source-filter-placeholder="Search users..."
     target-filter-placeholder="Search users..."
     option-style="padding: 0.4rem 0.75rem;"
-    :virtual-scroller-options="{ itemSize: 48 }"
+    :virtual-scroller-options="{ itemSize: remToPx(4.36) }"
   >
     <template #sourceheader>
       Available Users

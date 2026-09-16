@@ -1,5 +1,6 @@
 <script setup>
 import PickList from '../../../../components/common/PickList.vue'
+import { remToPx } from '../../../../shared/lib/remToPx.js'
 
 // User Groups dual-list ([available, assigned] tuple) shared by the User
 // Properties panel and the pre-register modal, so the two render identically.
@@ -16,7 +17,7 @@ const model = defineModel({ type: Array, required: true })
     source-filter-placeholder="Search groups..."
     target-filter-placeholder="Search groups..."
     option-style="padding: 0.4rem 0.75rem;"
-    :virtual-scroller-options="{ itemSize: 34 }"
+    :virtual-scroller-options="{ itemSize: remToPx(3.09) }"
   >
     <template #sourceheader>
       Available Groups

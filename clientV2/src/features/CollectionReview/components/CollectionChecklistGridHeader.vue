@@ -65,7 +65,7 @@ onBeforeUnmount(() => {
   clearTimeout(debounceTimer)
 })
 
-const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity('collection-checklist', 1, 12, 24)
+const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity('collection-checklist')
 
 const headerTitle = computed(() => {
   if (benchmarkId.value && revisionInfo.value?.display) {

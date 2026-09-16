@@ -246,7 +246,7 @@ const visibleFields = computed(() => {
   return fields
 })
 
-const { lineClamp, itemSize } = useGridDensity('asset-review-checklist', 3, 6, 15)
+const { lineClamp, itemSize } = useGridDensity('asset-review-checklist')
 
 const localSearchFilter = computed({
   get: () => props.searchFilter,

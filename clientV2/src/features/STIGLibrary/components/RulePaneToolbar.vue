@@ -71,6 +71,6 @@ function onChangeCompareRev(rev) {
       </ActionButton>
     </template>
     <div class="stiglib-panel__spacer" />
-    <DensityControls grid-key="stig-library-rules" :default-line-clamp="2" />
+    <DensityControls grid-key="stig-library-rules" />
   </div>
 </template>

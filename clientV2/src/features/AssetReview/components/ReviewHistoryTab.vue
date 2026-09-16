@@ -8,6 +8,7 @@ import ColumnSearchFilter from '../../../components/common/ColumnSearchFilter.vu
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { durationToNow } from '../../../shared/lib.js'
+import { remToPx } from '../../../shared/lib/remToPx.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { fetchReview } from '../api/assetReviewApi.js'
 import { useReviewTabTable } from '../composables/useReviewTabTable.js'
@@ -75,7 +76,7 @@ const statusOptions = computed(() => {
   })).sort((a, b) => a.label.localeCompare(b.label))
 })
 
-const ROW_HEIGHT = 40
+const ROW_HEIGHT = remToPx(3.64)
 </script>
 
 <template>

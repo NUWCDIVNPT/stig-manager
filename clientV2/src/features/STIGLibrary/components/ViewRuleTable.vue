@@ -27,7 +27,7 @@ const props = defineProps({
 const emit = defineEmits(['select-rule'])
 
 const dataTableRef = ref(null)
-const { lineClamp, itemSize } = useGridDensity('stig-library-rules', 2, 6, 15)
+const { lineClamp, itemSize } = useGridDensity('stig-library-rules')
 
 const selectedRow = computed(() =>
   props.selectedRuleId ? props.rules.find(r => r.ruleId === props.selectedRuleId) ?? null : null,

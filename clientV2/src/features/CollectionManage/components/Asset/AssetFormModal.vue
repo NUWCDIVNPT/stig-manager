@@ -13,6 +13,7 @@ import CommonPickList from '../../../../components/common/PickList.vue'
 
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { remToPx } from '../../../../shared/lib/remToPx.js'
 import { useAssetForm } from '../../composables/useAssetForm.js'
 
 const props = defineProps({
@@ -262,7 +263,7 @@ const pickListPt = {
           filter-by="benchmarkId"
           source-filter-placeholder="Search STIGs..."
           target-filter-placeholder="Search assigned..."
-          :virtual-scroller-options="{ itemSize: 30 }"
+          :virtual-scroller-options="{ itemSize: remToPx(2.73) }"
           :pt="pickListPt"
         >
           <template #sourceheader>

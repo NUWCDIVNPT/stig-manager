@@ -12,6 +12,7 @@ import shieldGreenCheckIcon from '../../../../assets/shield-green-check.svg'
 import targetIcon from '../../../../assets/target.svg'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { remToPx } from '../../../../shared/lib/remToPx.js'
 import {
   fetchAssetStigs,
   fetchCollectionAssets,
@@ -339,7 +340,7 @@ const dialogPt = {
               option-label="name"
               filter
               :loading="isLoadingAssets"
-              :virtual-scroller-options="{ itemSize: 34 }"
+              :virtual-scroller-options="{ itemSize: remToPx(3.09) }"
               :disabled="isReadOnly || targetScope !== 'Asset'"
               placeholder="Search for an asset..."
               :pt="collectionSelectPt"

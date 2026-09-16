@@ -6,6 +6,7 @@ import { ref } from 'vue'
 import AclStateIcon from '../../../../components/common/AclStateIcon.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { remToPx } from '../../../../shared/lib/remToPx.js'
 import { resourceSortKey } from '../../lib/aclRules.js'
 import AclResourceDisplay from './AclResourceDisplay.vue'
 
@@ -51,7 +52,7 @@ const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
     scroll-height="flex"
     :sort-field="resourceSortKey"
     :sort-order="1"
-    :virtual-scroller-options="{ itemSize: 41, delay: 0 }"
+    :virtual-scroller-options="{ itemSize: remToPx(3.73), delay: 0 }"
     class="rules-table"
     :pt="tablePt"
   >

@@ -14,13 +14,14 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { normalizeColor } from '../../../shared/lib/colorUtils.js'
+import { remToPx } from '../../../shared/lib/remToPx.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import LabelsRow from '../../columns/LabelsRow.vue'
 import ColumnFilter from '../ColumnFilter.vue'
 import ColumnSearchFilter from '../ColumnSearchFilter.vue'
-import EngineBadge from '../EngineBadge.vue'
 
+import EngineBadge from '../EngineBadge.vue'
 import LongTextPopover from '../LongTextPopover.vue'
 import ManualBadge from '../ManualBadge.vue'
 import OverrideBadge from '../OverrideBadge.vue'
@@ -78,7 +79,7 @@ FilterService.register('labelContainsAny', (value, filter) => {
   return value.some(label => filter.includes(label.name))
 })
 
-const ROW_HEIGHT = 36
+const ROW_HEIGHT = remToPx(3.27)
 
 const dataTableRef = ref(null)
 

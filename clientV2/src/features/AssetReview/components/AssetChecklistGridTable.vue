@@ -347,14 +347,16 @@ const dataTablePt = {
       :pt="columnPt.left"
     >
       <template #body="{ data }">
-        <span
-          class="cell-text cell-text--clamped"
-          :class="{ 'cell--match': searchFilter && fieldMatches(data.groupTitle, searchFilter) }"
-          :title="data.groupTitle"
-        >
-          <span v-if="searchFilter" v-html="highlightText(data.groupTitle, searchFilter)" />
-          <template v-else>{{ data.groupTitle }}</template>
-        </span>
+        <div class="cell-text-field">
+          <span
+            class="cell-text cell-text--clamped"
+            :class="{ 'cell--match': searchFilter && fieldMatches(data.groupTitle, searchFilter) }"
+            :title="data.groupTitle"
+          >
+            <span v-if="searchFilter" v-html="highlightText(data.groupTitle, searchFilter)" />
+            <template v-else>{{ data.groupTitle }}</template>
+          </span>
+        </div>
       </template>
     </Column>
 

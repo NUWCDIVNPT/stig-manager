@@ -80,7 +80,7 @@ Several pure formatters with off-by-one risk. Most are easy wins.
 - Per-`gridKey` state isolation (two calls with the same key share state; two
   with different keys do not).
 - `increaseRowHeight` caps at 10; `decreaseRowHeight` floors at 1.
-- `itemSize` reflects the multiplier formula.
+- `itemSize` reflects the geometry table (`lineRem × clamp + padRem`, floored at `minRem`, scaled by the root font size).
 - **Why P0:** trivial to test, used in multiple grids, the clamp boundaries are
   easy to get wrong.
 
