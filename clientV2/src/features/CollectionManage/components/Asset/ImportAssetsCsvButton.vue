@@ -106,11 +106,14 @@ const dataTablePt = {
   header: {
     style: 'background: var(--color-background-dark); border-bottom: 1px solid var(--color-border-default); padding: 0.3rem 0.5rem;',
   },
-  headerCell: {
-    style: 'color: var(--color-text-bright); font-size: 0.95rem; text-transform: none;',
+  // Cell sections resolve through the Column: DataTable only reads them under `column`.
+  column: {
+    headerCell: {
+      style: 'color: var(--color-text-bright); font-size: 0.95rem; text-transform: none;',
+    },
   },
   bodyRow: {
-    style: 'height: 27px; overflow: hidden; background: var(--color-background-dark);',
+    style: 'height: 2.5rem; overflow: hidden; background: var(--color-background-dark);',
   },
   footer: {
     style: 'padding: 0; border: none; background: var(--color-background-dark);',

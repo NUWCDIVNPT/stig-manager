@@ -55,16 +55,19 @@ const sharedPt = {
       zIndex: '1',
     },
   },
-  headerCell: {
-    style: {
-      background: 'var(--color-background-dark)',
-      borderBottom: '1px solid var(--color-border-default)',
-      color: 'var(--color-text-dim)',
-      fontWeight: '700',
-      fontSize: '0.9rem',
-      textTransform: 'uppercase',
-      letterSpacing: '0.04em',
-      padding: '0.3rem 0.4rem',
+  // Cell sections resolve through the Column: DataTable only reads them under `column`.
+  column: {
+    headerCell: {
+      style: {
+        background: 'var(--color-background-dark)',
+        borderBottom: '1px solid var(--color-border-default)',
+        color: 'var(--color-text-dim)',
+        fontWeight: '700',
+        fontSize: '0.9rem',
+        textTransform: 'uppercase',
+        letterSpacing: '0.04em',
+        padding: '0.3rem 0.4rem',
+      },
     },
   },
   bodyRow: {

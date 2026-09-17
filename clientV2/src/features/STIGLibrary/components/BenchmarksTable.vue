@@ -188,12 +188,22 @@ function clearFilter() {
   height: 100%;
 }
 
+/* Pinned to the row slot: a <tr> height is only a minimum, so the card must
+   clip itself or a wrapped meta row grows the row past itemSize and the
+   virtual scroller drifts. 0.3rem is the bodyCell vertical padding. */
 .bm-cell {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
   min-width: 0;
   padding: 0.25rem 0;
+  height: calc(var(--item-size) - 0.3rem - 1px);
+  overflow: hidden;
+}
+
+/* Never squeeze the rows to fit; overflow clips at the bottom (meta row). */
+.bm-cell > * {
+  flex-shrink: 0;
 }
 
 .bm-cell__title {
