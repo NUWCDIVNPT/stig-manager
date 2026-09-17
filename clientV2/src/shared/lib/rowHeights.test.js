@@ -1,15 +1,12 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { resetRootFontSizeCache } from './remToPx.js'
+import { afterEach, describe, expect, it } from 'vitest'
+import { mockRootFontSize, restoreRootFontSize } from '../../testUtils/rootFontSize.js'
 import { ROW_HEIGHT_REM, rowHeightPx } from './rowHeights.js'
 
 describe('rowHeightPx', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-    resetRootFontSizeCache()
-  })
+  afterEach(restoreRootFontSize)
 
   it('converts the token to px at the current root font size, rounding up', () => {
-    vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({ fontSize: '12px' })
+    mockRootFontSize(12)
     expect(rowHeightPx('dense')).toBe(30)
     expect(rowHeightPx('control')).toBe(45)
   })

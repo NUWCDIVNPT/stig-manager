@@ -13,6 +13,7 @@ vi.mock('../../../shared/composables/useGridDensity.js', () => ({
   useGridDensity: () => ({
     lineClamp: 3,
     itemSize: 30,
+    gridStyle: {},
     increaseRowHeight: vi.fn(),
     decreaseRowHeight: vi.fn(),
   }),

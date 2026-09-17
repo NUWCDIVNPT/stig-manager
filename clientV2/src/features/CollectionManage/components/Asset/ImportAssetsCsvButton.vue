@@ -8,6 +8,7 @@ import ActionButton from '../../../../components/common/ActionButton.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { importDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { ROW_HEIGHT_REM } from '../../../../shared/lib/rowHeights.js'
 import { useAssetCsvImport } from '../../composables/useAssetCsvImport.js'
 
 const props = defineProps({
@@ -100,20 +101,22 @@ function statusIcon(kind) {
   }
 }
 
+// Header and body rows share one pinned height; cells clip rather than grow.
+const ROW_HEIGHT = `${ROW_HEIGHT_REM.dense}rem`
+
 const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
   table: { style: { tableLayout: 'auto', minWidth: '100%' } },
   header: {
     style: 'background: var(--color-background-dark); border-bottom: 1px solid var(--color-border-default); padding: 0.3rem 0.5rem;',
   },
-  // Header and body rows share one pinned height; cells clip rather than grow.
   column: {
     headerCell: {
-      style: 'height: 2.5rem; color: var(--color-text-bright); font-size: 0.95rem; text-transform: none;',
+      style: `height: ${ROW_HEIGHT}; color: var(--color-text-bright); font-size: 0.95rem; text-transform: none;`,
     },
   },
   bodyRow: {
-    style: 'height: 2.5rem; overflow: hidden; background: var(--color-background-dark);',
+    style: `height: ${ROW_HEIGHT}; overflow: hidden; background: var(--color-background-dark);`,
   },
   footer: {
     style: 'padding: 0; border: none; background: var(--color-background-dark);',

@@ -84,7 +84,7 @@ function onPopoverSelectStig(benchmarkId) {
 // Row geometry lives in useGridDensity's table. itemSize drives the virtual
 // scroller; rows are pinned to it via --item-size and the clamped text reads
 // --cell-line-height, so the scroller's position math (n × itemSize) holds.
-const { lineClamp, itemSize, cellLineHeight } = useGridDensity('findings-aggregated')
+const { itemSize, gridStyle } = useGridDensity('findings-aggregated')
 
 const poamDialogVisible = ref(false)
 
@@ -233,7 +233,7 @@ const flexCellPt = {
           :virtual-scroller-options="{ itemSize }"
           striped-rows
           class="agg-grid-panel__table"
-          :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px`, '--cell-line-height': cellLineHeight }"
+          :style="gridStyle"
           :pt="dataTablePt"
           @row-select="onRowSelect"
         >

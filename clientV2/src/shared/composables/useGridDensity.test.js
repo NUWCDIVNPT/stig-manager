@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
+import { mockRootFontSize, restoreRootFontSize } from '../../testUtils/rootFontSize.js'
 import { vueSourceFiles } from '../../testUtils/sourceFiles.js'
-import { resetRootFontSizeCache } from '../lib/remToPx.js'
-import { GRID_GEOMETRY, useGridDensity } from './useGridDensity.js'
+import { GRID_GEOMETRY, resetDensityState, useGridDensity } from './useGridDensity.js'
 
 // Every grid key used in a component must be registered, or the component
 // throws at mount. Scan the source so a new grid can not ship unregistered.
@@ -17,14 +17,10 @@ function usedGridKeys() {
   return keys
 }
 
-function mockRootFontSize(px) {
-  vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({ fontSize: `${px}px` })
-}
-
 describe('useGridDensity', () => {
   afterEach(() => {
-    vi.restoreAllMocks()
-    resetRootFontSizeCache()
+    restoreRootFontSize()
+    resetDensityState()
   })
 
   it('shares lineClamp between callers with the same key and isolates different keys', () => {
@@ -34,7 +30,6 @@ describe('useGridDensity', () => {
     a.increaseRowHeight()
     expect(b.lineClamp.value).toBe(a.lineClamp.value)
     expect(c.lineClamp.value).toBe(2)
-    a.decreaseRowHeight()
   })
 
   it('clamps lineClamp to [1, 10] and reports the bounds', () => {
@@ -50,9 +45,6 @@ describe('useGridDensity', () => {
     }
     expect(lineClamp.value).toBe(10)
     expect(canIncrease.value).toBe(false)
-    while (lineClamp.value > 1) {
-      decreaseRowHeight()
-    }
   })
 
   it('floors at the grid minLineClamp', () => {
@@ -66,26 +58,35 @@ describe('useGridDensity', () => {
 
   it('derives itemSize from the root font size, the line clamp and the grid geometry', () => {
     mockRootFontSize(10)
-    const { lineClamp, itemSize, increaseRowHeight, decreaseRowHeight } = useGridDensity('findings-aggregated')
+    const { lineClamp, itemSize, increaseRowHeight } = useGridDensity('findings-aggregated')
     expect(lineClamp.value).toBe(2)
-    // ceil(10 × (1.3 × 2 + 0.67))
+    // ceil(10 × (1 × 1.3 × 2 + 0.67))
     expect(itemSize.value).toBe(33)
     increaseRowHeight()
     expect(itemSize.value).toBe(46)
-    decreaseRowHeight()
   })
 
   it('never returns less than the minimum row height', () => {
     mockRootFontSize(10)
-    const { lineClamp, itemSize, decreaseRowHeight, increaseRowHeight } = useGridDensity('asset-review-checklist')
+    const { lineClamp, itemSize, decreaseRowHeight } = useGridDensity('asset-review-checklist')
     while (lineClamp.value > 1) {
       decreaseRowHeight()
     }
-    // 1.43 + 0.4 = 1.83rem is below minRem 2.2
+    // 1.1 × 1.3 + 0.4 = 1.83rem is below minRem 2.2
     expect(itemSize.value).toBe(22)
-    while (lineClamp.value < 3) {
-      increaseRowHeight()
-    }
+  })
+
+  it('exposes the grid CSS variables as one style object', () => {
+    mockRootFontSize(10)
+    const { gridStyle, increaseRowHeight } = useGridDensity('stig-library-rules')
+    expect(gridStyle.value).toEqual({
+      '--line-clamp': 2,
+      '--item-size': '33px',
+      '--cell-line-height': '1.365rem',
+    })
+    increaseRowHeight()
+    expect(gridStyle.value['--line-clamp']).toBe(3)
+    expect(gridStyle.value['--item-size']).toBe('47px')
   })
 
   it('throws for an unregistered grid key', () => {

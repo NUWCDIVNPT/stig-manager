@@ -27,7 +27,7 @@ const props = defineProps({
 const emit = defineEmits(['select-rule'])
 
 const dataTableRef = ref(null)
-const { lineClamp, itemSize, cellLineHeight } = useGridDensity('stig-library-rules')
+const { itemSize, gridStyle } = useGridDensity('stig-library-rules')
 
 const selectedRow = computed(() =>
   props.selectedRuleId ? props.rules.find(r => r.ruleId === props.selectedRuleId) ?? null : null,
@@ -54,7 +54,7 @@ function onRowClick(event) {
     striped-rows
     resizable-columns
     class="view-rule-table"
-    :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px`, '--cell-line-height': cellLineHeight }"
+    :style="gridStyle"
     :pt="dataTablePt"
     @row-click="onRowClick"
   >

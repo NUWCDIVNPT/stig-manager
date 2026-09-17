@@ -17,8 +17,8 @@ import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
+import { remToPx } from '../../../shared/lib/remToPx.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
-import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
 const props = defineProps({
   rows: { type: Array, default: () => [] },
@@ -48,7 +48,7 @@ const dataTableRef = ref(null)
 // Row geometry lives in useGridDensity's table (same model as
 // AggregatedFindingsGrid). lineClamp both sets the row height and drives the
 // Detail/Comment -webkit-line-clamp, so the two can't drift.
-const { lineClamp, itemSize: densityItemSize, cellLineHeight } = useGridDensity('findings-individual')
+const { itemSize: densityItemSize, gridStyle } = useGridDensity('findings-individual')
 
 // Decorate each row with:
 //   - labels: resolved {labelId,name,color} objects for LabelsRow (review payload
@@ -80,7 +80,7 @@ const decoratedRows = computed(() => {
 // asset cell has a fixed need (2.2rem shield row + 0.15rem gap + labels row +
 // cell padding), so floor the row height when labels are present. Label-free
 // result sets keep the denser geometry floor.
-const LABELED_ROW_MIN_PX = rowHeightPx('spacious')
+const LABELED_ROW_MIN_PX = remToPx(4.25)
 const itemSize = computed(() => {
   const hasLabels = decoratedRows.value.some(r => r.labels.length)
   return hasLabels ? Math.max(densityItemSize.value, LABELED_ROW_MIN_PX) : densityItemSize.value
@@ -140,7 +140,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 </script>
 
 <template>
-  <div class="ind-grid-panel" :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px`, '--cell-line-height': cellLineHeight }">
+  <div class="ind-grid-panel" :style="{ ...gridStyle, '--item-size': `${itemSize}px` }">
     <!-- Everything scrolls together: below __inner's min-width the whole stack
          (header, table, footer) scrolls horizontally as one unit. -->
     <div class="ind-grid-panel__inner">

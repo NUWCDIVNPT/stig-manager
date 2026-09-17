@@ -50,7 +50,7 @@ const { canIncrease, canDecrease, increaseRowHeight, decreaseRowHeight } = useGr
   border: 1px solid color-mix(in srgb, var(--color-border-default) 85%, transparent);
   border-radius: 5px;
   background: color-mix(in srgb, var(--color-background-light) 45%, transparent);
-  height: 2.42rem;
+  height: var(--checklist-control-height, 2.42rem);
 }
 
 .density-controls__label {

@@ -2,14 +2,12 @@
 import TieredMenu from 'primevue/tieredmenu'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import lineHeightDown from '../../../assets/line-height-down.svg'
-import lineHeightUp from '../../../assets/line-height-up.svg'
 
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import ColumnToggle from '../../../components/common/ColumnToggle.vue'
+import DensityControls from '../../../components/common/DensityControls.vue'
 import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 
 const props = defineProps({
@@ -64,8 +62,6 @@ watch(localSearch, (newVal) => {
 onBeforeUnmount(() => {
   clearTimeout(debounceTimer)
 })
-
-const { canIncrease, canDecrease, increaseRowHeight, decreaseRowHeight } = useGridDensity('collection-checklist')
 
 const headerTitle = computed(() => {
   if (benchmarkId.value && revisionInfo.value?.display) {
@@ -163,21 +159,7 @@ function clearSearch() {
           <i class="pi pi-chevron-down checklist-grid__menu-caret" />
         </button>
 
-        <div class="checklist-grid__density-controls">
-          <span class="checklist-grid__density-label">Density</span>
-          <button
-            class="checklist-grid__icon-btn" title="Decrease row height" :disabled="!canDecrease"
-            @click="decreaseRowHeight"
-          >
-            <img :src="lineHeightDown" alt="Decrease row height">
-          </button>
-          <button
-            class="checklist-grid__icon-btn" title="Increase row height" :disabled="!canIncrease"
-            @click="increaseRowHeight"
-          >
-            <img :src="lineHeightUp" alt="Increase row height">
-          </button>
-        </div>
+        <DensityControls grid-key="collection-checklist" />
       </div>
     </div>
   </div>
@@ -323,54 +305,5 @@ function clearSearch() {
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
-}
-
-.checklist-grid__density-controls {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.2rem 0.3rem 0.2rem 0.65rem;
-  border: 1px solid color-mix(in srgb, var(--color-border-default) 85%, transparent);
-  border-radius: 5px;
-  background: color-mix(in srgb, var(--color-background-light) 45%, transparent);
-  height: var(--checklist-control-height);
-}
-
-.checklist-grid__density-label {
-  font-size: 0.98rem;
-  font-weight: 600;
-  color: var(--color-text-bright);
-  margin-right: 0.2rem;
-}
-
-.checklist-grid__icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: color-mix(in srgb, var(--color-background-light) 25%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-border-light) 40%, transparent);
-  border-radius: 5px;
-  margin: 0 0.1rem;
-  width: 2.1rem;
-  height: 2.1rem;
-  padding: 0;
-  cursor: pointer;
-  opacity: 0.9;
-}
-
-.checklist-grid__icon-btn:hover:not(:disabled) {
-  opacity: 1;
-  border-color: var(--color-border-default);
-  background: color-mix(in srgb, var(--color-background-light) 75%, transparent);
-}
-
-.checklist-grid__icon-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.checklist-grid__icon-btn img {
-  width: 17px;
-  height: 17px;
 }
 </style>

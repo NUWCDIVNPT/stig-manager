@@ -75,13 +75,13 @@ function onSelectionChange(row) {
   }
 }
 
-const { lineClamp, itemSize, cellLineHeight } = useGridDensity('collection-checklist')
+const { itemSize, gridStyle } = useGridDensity('collection-checklist')
 </script>
 
 <template>
   <div
     class="checklist-grid relative flex h-full flex-col bg-[var(--color-background-dark)]"
-    :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px`, '--cell-line-height': cellLineHeight }"
+    :style="gridStyle"
   >
     <CollectionChecklistGridHeader
       v-model:search-filter="searchFilter"

@@ -26,10 +26,6 @@ const props = defineProps({
     type: Object,
     default: null,
   },
-  lineClamp: {
-    type: Number,
-    default: 2,
-  },
   totalCount: {
     type: Number,
     default: null,
@@ -126,7 +122,7 @@ function clearFilter() {
         striped-rows
         export-filename="STIG"
         class="benchmarks-table"
-        :style="{ '--line-clamp': lineClamp, '--item-size': `${ROW_HEIGHT}px` }"
+        :style="{ '--item-size': `${ROW_HEIGHT}px` }"
         :pt="dataTablePt"
         @row-click="onRowClick"
       >

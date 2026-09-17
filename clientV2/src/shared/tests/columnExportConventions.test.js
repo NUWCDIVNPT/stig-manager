@@ -10,8 +10,6 @@ import { SRC_ROOT, vueSourceFiles } from '../../testUtils/sourceFiles.js'
 // the dotted field path and a column without field/export-value silently
 // disappears from the file.
 
-const IGNORED = [/\/tests\//]
-
 // Quote-aware scan for the end of an opening tag (attribute values such as
 // `:sort-field="r => r.x"` contain `>`).
 function openingTagEnd(src, from) {
@@ -52,7 +50,6 @@ function columnsOf(src) {
 }
 
 const exportingFiles = [...vueSourceFiles()]
-  .filter(p => !IGNORED.some(rx => rx.test(p)))
   .map(p => ({ path: relative(SRC_ROOT, p), src: readFileSync(p, 'utf8') }))
   .filter(f => f.src.includes('<Column') && /:dt="/.test(f.src))
 
