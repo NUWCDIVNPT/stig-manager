@@ -5,12 +5,27 @@
 
 const FALLBACK_ROOT_PX = 16 // browser default; jsdom has no computed font-size
 
-export function rootFontSizePx() {
+// The root font-size is fixed for the life of the page (browser zoom scales CSS
+// px uniformly), so read it once. Row cell components call this per mount on
+// the scroll path, where a CSSOM read can force a style recalc.
+let cachedRootPx
+
+function readRootFontSizePx() {
   if (typeof document === 'undefined') {
     return FALLBACK_ROOT_PX
   }
   const px = Number.parseFloat(getComputedStyle(document.documentElement).fontSize)
   return Number.isFinite(px) && px > 0 ? px : FALLBACK_ROOT_PX
+}
+
+export function rootFontSizePx() {
+  cachedRootPx ??= readRootFontSizePx()
+  return cachedRootPx
+}
+
+// Test seam: tests mock getComputedStyle per case, so the memo must not carry over.
+export function resetRootFontSizeCache() {
+  cachedRootPx = undefined
 }
 
 // Rounds up: rows are pinned to this value with overflow hidden, so a px too

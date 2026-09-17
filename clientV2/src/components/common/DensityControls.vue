@@ -8,21 +8,13 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  min: {
-    type: Number,
-    default: 1,
-  },
-  max: {
-    type: Number,
-    default: 10,
-  },
   label: {
     type: String,
     default: 'Density',
   },
 })
 
-const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity(props.gridKey)
+const { canIncrease, canDecrease, increaseRowHeight, decreaseRowHeight } = useGridDensity(props.gridKey)
 </script>
 
 <template>
@@ -31,7 +23,7 @@ const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity(props
     <button
       type="button"
       class="density-controls__btn"
-      :disabled="lineClamp <= min"
+      :disabled="!canDecrease"
       title="Decrease row height"
       @click="decreaseRowHeight"
     >
@@ -40,7 +32,7 @@ const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity(props
     <button
       type="button"
       class="density-controls__btn"
-      :disabled="lineClamp >= max"
+      :disabled="!canIncrease"
       title="Increase row height"
       @click="increaseRowHeight"
     >

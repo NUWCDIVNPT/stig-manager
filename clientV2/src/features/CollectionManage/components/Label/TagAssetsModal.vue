@@ -120,9 +120,7 @@ const dialogPt = {
   closeButton: { style: 'color: var(--color-text-dim);' },
 }
 
-// Rows are pinned to the scroller's itemSize so its n × itemSize placement
-// holds. Cell passthrough must sit under `column`; DataTable resolves cell
-// sections through the Column, and top-level bodyCell/headerCell are ignored.
+// Rows are pinned to the scroller's itemSize so its n × itemSize placement holds.
 const tablePt = {
   bodyRow: { style: `font-size: 0.85rem; height: ${VIRTUAL_SCROLLER_OPTIONS.itemSize}px;` },
   column: {

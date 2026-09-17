@@ -121,7 +121,7 @@ async function exportChecklist(format) {
 const displayMode = defineModel('displayMode', { type: String, required: true })
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
 
-const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity('asset-review-checklist')
+const { canIncrease, canDecrease, increaseRowHeight, decreaseRowHeight } = useGridDensity('asset-review-checklist')
 
 const searchFilter = defineModel('searchFilter', { type: String, default: '' })
 
@@ -284,13 +284,13 @@ function toggleChecklistMenu(event) {
         <div class="checklist-grid__density-controls">
           <span class="checklist-grid__density-label">Density</span>
           <button
-            class="checklist-grid__icon-btn" title="Decrease row height" :disabled="lineClamp <= 1"
+            class="checklist-grid__icon-btn" title="Decrease row height" :disabled="!canDecrease"
             @click="decreaseRowHeight"
           >
             <img :src="lineHeightDown" alt="Decrease row height">
           </button>
           <button
-            class="checklist-grid__icon-btn" title="Increase row height" :disabled="lineClamp >= 10"
+            class="checklist-grid__icon-btn" title="Increase row height" :disabled="!canIncrease"
             @click="increaseRowHeight"
           >
             <img :src="lineHeightUp" alt="Increase row height">

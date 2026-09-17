@@ -20,7 +20,6 @@ import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import LabelsRow from '../../columns/LabelsRow.vue'
 import ColumnFilter from '../ColumnFilter.vue'
 import ColumnSearchFilter from '../ColumnSearchFilter.vue'
-
 import EngineBadge from '../EngineBadge.vue'
 import LongTextPopover from '../LongTextPopover.vue'
 import ManualBadge from '../ManualBadge.vue'
@@ -28,6 +27,7 @@ import OverrideBadge from '../OverrideBadge.vue'
 import ResultBadge from '../ResultBadge.vue'
 import StatusBadge from '../StatusBadge.vue'
 import StatusFooter from '../StatusFooter.vue'
+import { reviewResourcesTablePt } from './tablePt.js'
 
 const props = defineProps({
   active: {
@@ -244,42 +244,6 @@ watch([
 ], () => {
   resetFilters()
 })
-
-const otherTablePt = {
-  root: { class: 'sm-scrollbar-thin', style: { backgroundColor: 'var(--color-background-dark)' } },
-  header: { style: { background: 'transparent', border: 'none', padding: '0' } },
-  table: { style: { borderCollapse: 'separate', borderSpacing: '0', background: 'var(--color-background-darkest)' } },
-  thead: {
-    style: {
-      background: 'var(--color-background-dark)',
-      position: 'sticky',
-      top: '0',
-      zIndex: '1',
-    },
-  },
-  // Cell sections resolve through the Column: DataTable only reads them under `column`.
-  column: {
-    headerCell: {
-      style: {
-        background: 'var(--color-background-dark)',
-        borderBottom: '1px solid var(--color-border-default)',
-        color: 'var(--color-text-dim)',
-        fontWeight: '700',
-        fontSize: '0.9rem',
-        textTransform: 'uppercase',
-        letterSpacing: '0.04em',
-        padding: '0.3rem 0.4rem',
-      },
-    },
-  },
-  bodyRow: {
-    style: {
-      background: 'var(--color-background-dark)',
-      transition: 'background-color 0.1s ease',
-    },
-  },
-  footer: { style: { padding: '0', border: 'none', background: 'transparent' } },
-}
 </script>
 
 <template>
@@ -296,7 +260,7 @@ const otherTablePt = {
       :virtual-scroller-options="{ itemSize: ROW_HEIGHT, showLoader: true }"
       striped-rows
       class="other-assets-table"
-      :pt="otherTablePt"
+      :pt="reviewResourcesTablePt"
     >
       <Column field="assetName" export-header="Asset" sortable :style="{ width: '9rem' }">
         <template #header>

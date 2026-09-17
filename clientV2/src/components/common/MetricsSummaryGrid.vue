@@ -319,10 +319,11 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     sort-field="benchmarkId"
     :sort-order="1"
     :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
+    :style="{ '--item-size': `${ROW_HEIGHT}px` }"
     @row-select="onRowSelect"
   >
     <template v-for="col in columns" :key="col.field">
-      <component :is="col.component" v-bind="col" sortable :style="`height: ${ROW_HEIGHT}px; max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;`" />
+      <component :is="col.component" v-bind="col" sortable style="height: var(--item-size); max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
     </template>
     <template #empty>
       <div class="agg-grid-empty-state">

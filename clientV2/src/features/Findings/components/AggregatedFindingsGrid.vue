@@ -190,7 +190,7 @@ const flexCellPt = {
           />
         </label>
 
-        <DensityControls grid-key="findings-aggregated" :min="2" class="agg-grid-panel__density" />
+        <DensityControls grid-key="findings-aggregated" class="agg-grid-panel__density" />
       </header>
 
       <Popover ref="stigPopover" :pt="stigPopoverPt" @show="onPopoverShow">

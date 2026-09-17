@@ -36,7 +36,7 @@ function onAction(actionType) {
   emit('bulk-action', actionType)
 }
 
-const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity('collection-rule-table')
+const { canIncrease, canDecrease, increaseRowHeight, decreaseRowHeight } = useGridDensity('collection-rule-table')
 </script>
 
 <template>
@@ -104,13 +104,13 @@ const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity('coll
         <div class="rule-table__density-controls">
           <span class="rule-table__density-label">Density</span>
           <button
-            class="rule-table__icon-btn" title="Decrease row height" :disabled="lineClamp <= 1"
+            class="rule-table__icon-btn" title="Decrease row height" :disabled="!canDecrease"
             @click="decreaseRowHeight"
           >
             <img :src="lineHeightDown" alt="Decrease row height">
           </button>
           <button
-            class="rule-table__icon-btn" title="Increase row height" :disabled="lineClamp >= 10"
+            class="rule-table__icon-btn" title="Increase row height" :disabled="!canIncrease"
             @click="increaseRowHeight"
           >
             <img :src="lineHeightUp" alt="Increase row height">

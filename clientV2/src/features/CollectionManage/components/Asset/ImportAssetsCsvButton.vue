@@ -106,10 +106,10 @@ const dataTablePt = {
   header: {
     style: 'background: var(--color-background-dark); border-bottom: 1px solid var(--color-border-default); padding: 0.3rem 0.5rem;',
   },
-  // Cell sections resolve through the Column: DataTable only reads them under `column`.
+  // Header and body rows share one pinned height; cells clip rather than grow.
   column: {
     headerCell: {
-      style: 'color: var(--color-text-bright); font-size: 0.95rem; text-transform: none;',
+      style: 'height: 2.5rem; color: var(--color-text-bright); font-size: 0.95rem; text-transform: none;',
     },
   },
   bodyRow: {
@@ -177,30 +177,30 @@ const dataTablePt = {
                 <i class="pi pi-server" /> New Assets To Be Created
               </div>
             </template>
-            <Column field="CSVRow" header="Row" style="width: 5.5rem; height: 27px; padding: 0 0.5rem" />
-            <Column field="name" header="Asset Name" style="width: 14.5rem; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis" />
-            <Column field="description" header="Description" style="width: 16.25rem; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis" />
-            <Column field="noncomputing" header="Noncomputing" style="width: 10rem; height: 27px; padding: 0 0.5rem">
+            <Column field="CSVRow" header="Row" style="width: 5.5rem; padding: 0 0.5rem" />
+            <Column field="name" header="Asset Name" style="width: 14.5rem; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis" />
+            <Column field="description" header="Description" style="width: 16.25rem; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis" />
+            <Column field="noncomputing" header="Noncomputing" style="width: 10rem; padding: 0 0.5rem">
               <template #body="{ data }">
                 {{ data.noncomputing ? 'True' : 'False' }}
               </template>
             </Column>
-            <Column field="ip" header="IP" style="width: 10rem; height: 27px; padding: 0 0.5rem" />
-            <Column field="fqdn" header="FQDN" style="width: 12.75rem; height: 27px; padding: 0 0.5rem" />
-            <Column field="mac" header="MAC" style="width: 11.75rem; height: 27px; padding: 0 0.5rem" />
-            <Column field="metadata" header="Metadata" style="width: 14.5rem; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis">
+            <Column field="ip" header="IP" style="width: 10rem; padding: 0 0.5rem" />
+            <Column field="fqdn" header="FQDN" style="width: 12.75rem; padding: 0 0.5rem" />
+            <Column field="mac" header="MAC" style="width: 11.75rem; padding: 0 0.5rem" />
+            <Column field="metadata" header="Metadata" style="width: 14.5rem; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis">
               <template #body="{ data }">
                 {{ metadataRenderer(data.metadata) }}
               </template>
             </Column>
-            <Column field="labelNames" header="Labels" style="width: 12.75rem; height: 27px; padding: 0 0.5rem">
+            <Column field="labelNames" header="Labels" style="width: 12.75rem; padding: 0 0.5rem">
               <template #body="{ data }">
                 <div class="multiline">
                   {{ listRenderer(data.labelNames) }}
                 </div>
               </template>
             </Column>
-            <Column field="stigs" header="STIGs" style="width: 20rem; height: 27px; padding: 0 0.5rem">
+            <Column field="stigs" header="STIGs" style="width: 20rem; padding: 0 0.5rem">
               <template #body="{ data }">
                 <div class="multiline">
                   {{ listRenderer(data.stigs) }}
@@ -234,8 +234,8 @@ const dataTablePt = {
                 <i class="pi pi-times-circle" /> File Errors
               </div>
             </template>
-            <Column field="row" header="Row" style="width: 7.25rem; height: 27px; padding: 0 0.5rem" />
-            <Column field="messages" header="Errors" style="height: 27px; padding: 0 0.5rem">
+            <Column field="row" header="Row" style="width: 7.25rem; padding: 0 0.5rem" />
+            <Column field="messages" header="Errors" style="padding: 0 0.5rem">
               <template #body="{ data }">
                 <div class="multiline">
                   {{ data.messages }}
@@ -267,7 +267,7 @@ const dataTablePt = {
                 <i class="pi pi-tag" /> New Labels To Be Created
               </div>
             </template>
-            <Column field="labelName" header="Label Name" style="height: 27px; padding: 0 0.5rem" />
+            <Column field="labelName" header="Label Name" style="padding: 0 0.5rem" />
             <template #footer>
               <StatusFooter
                 :total-count="newLabels.length"

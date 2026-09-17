@@ -1,28 +1,14 @@
-import { readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import * as remToPx from '../lib/remToPx.js'
+import { vueSourceFiles } from '../../testUtils/sourceFiles.js'
+import { resetRootFontSizeCache } from '../lib/remToPx.js'
 import { GRID_GEOMETRY, useGridDensity } from './useGridDensity.js'
-
-const SRC_ROOT = join(import.meta.dirname, '..', '..')
-
-function* vueFiles(dir) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name)
-    if (entry.isDirectory()) {
-      yield* vueFiles(full)
-    }
-    else if (entry.name.endsWith('.vue')) {
-      yield full
-    }
-  }
-}
 
 // Every grid key used in a component must be registered, or the component
 // throws at mount. Scan the source so a new grid can not ship unregistered.
 function usedGridKeys() {
   const keys = new Map()
-  for (const file of vueFiles(SRC_ROOT)) {
+  for (const file of vueSourceFiles()) {
     const text = readFileSync(file, 'utf8')
     for (const m of text.matchAll(/useGridDensity\('([^']+)'\)|grid-key="([^"]+)"/g)) {
       keys.set(m[1] ?? m[2], file)
@@ -31,8 +17,15 @@ function usedGridKeys() {
   return keys
 }
 
+function mockRootFontSize(px) {
+  vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({ fontSize: `${px}px` })
+}
+
 describe('useGridDensity', () => {
-  afterEach(() => vi.restoreAllMocks())
+  afterEach(() => {
+    vi.restoreAllMocks()
+    resetRootFontSizeCache()
+  })
 
   it('shares lineClamp between callers with the same key and isolates different keys', () => {
     const a = useGridDensity('asset-review-checklist')
@@ -44,23 +37,35 @@ describe('useGridDensity', () => {
     a.decreaseRowHeight()
   })
 
-  it('clamps lineClamp to [1, 10]', () => {
-    const { lineClamp, increaseRowHeight, decreaseRowHeight } = useGridDensity('collection-rule-table')
+  it('clamps lineClamp to [1, 10] and reports the bounds', () => {
+    const { lineClamp, canIncrease, canDecrease, increaseRowHeight, decreaseRowHeight } = useGridDensity('collection-rule-table')
     for (let i = 0; i < 20; i++) {
       decreaseRowHeight()
     }
     expect(lineClamp.value).toBe(1)
+    expect(canDecrease.value).toBe(false)
+    expect(canIncrease.value).toBe(true)
     for (let i = 0; i < 20; i++) {
       increaseRowHeight()
     }
     expect(lineClamp.value).toBe(10)
+    expect(canIncrease.value).toBe(false)
     while (lineClamp.value > 1) {
       decreaseRowHeight()
     }
   })
 
+  it('floors at the grid minLineClamp', () => {
+    const { lineClamp, canDecrease, decreaseRowHeight } = useGridDensity('findings-aggregated')
+    for (let i = 0; i < 5; i++) {
+      decreaseRowHeight()
+    }
+    expect(lineClamp.value).toBe(2)
+    expect(canDecrease.value).toBe(false)
+  })
+
   it('derives itemSize from the root font size, the line clamp and the grid geometry', () => {
-    vi.spyOn(remToPx, 'rootFontSizePx').mockReturnValue(10)
+    mockRootFontSize(10)
     const { lineClamp, itemSize, increaseRowHeight, decreaseRowHeight } = useGridDensity('findings-aggregated')
     expect(lineClamp.value).toBe(2)
     // ceil(10 × (1.3 × 2 + 0.67))
@@ -71,7 +76,7 @@ describe('useGridDensity', () => {
   })
 
   it('never returns less than the minimum row height', () => {
-    vi.spyOn(remToPx, 'rootFontSizePx').mockReturnValue(10)
+    mockRootFontSize(10)
     const { lineClamp, itemSize, decreaseRowHeight, increaseRowHeight } = useGridDensity('asset-review-checklist')
     while (lineClamp.value > 1) {
       decreaseRowHeight()

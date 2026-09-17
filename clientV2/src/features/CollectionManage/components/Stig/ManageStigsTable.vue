@@ -86,20 +86,21 @@ function onStigsChanged() {
         column-resize-mode="fit"
         :loading="isLoading"
         :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
+        :style="{ '--item-size': `${ROW_HEIGHT}px` }"
         export-filename="STIGs"
         class="flex-fill clickable-rows"
         :table-style="{ 'table-layout': 'fixed' }"
         :pt="tablePt"
         selection-mode="multiple"
       >
-        <Column selection-mode="multiple" :style="`width: 1rem; height: ${ROW_HEIGHT}px; padding: 0 0.5rem;`" />
+        <Column selection-mode="multiple" style="width: 1rem; height: var(--item-size); padding: 0 0.5rem;" />
 
         <Column
           field="benchmarkId" export-header="Benchmark ID"
           sortable
           :pt="borderPt"
           style="min-width: 9rem; width: 12.75rem;"
-          :body-style="{ height: `${ROW_HEIGHT}px`, padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
+          :body-style="{ height: 'var(--item-size)', padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
           :header-style="{ padding: '0 0.5rem' }"
         >
           <template #header>
@@ -123,7 +124,7 @@ function onStigsChanged() {
             v-bind="col"
             sortable
             :style="`width: ${col.width}; min-width: ${col.width};`"
-            :body-style="{ height: `${ROW_HEIGHT}px`, padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
+            :body-style="{ height: 'var(--item-size)', padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
             :header-style="{ padding: '0 0.5rem' }"
           />
         </template>

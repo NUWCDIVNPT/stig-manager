@@ -130,7 +130,7 @@ function toggleExpand(branch) {
   <VirtualScroller
     :items="flatRows"
     :item-size="ROW_HEIGHT"
-    :style="{ 'height': '100%', 'width': '100%', '--row-height': `${ROW_HEIGHT}px` }"
+    :style="{ 'height': '100%', 'width': '100%', '--item-size': `${ROW_HEIGHT}px` }"
   >
     <template #item="{ item: row }">
       <!-- Root row -->
@@ -202,7 +202,7 @@ function toggleExpand(branch) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  height: var(--row-height);
+  height: var(--item-size);
   padding: 0 0.5rem;
   box-sizing: border-box;
   cursor: default;

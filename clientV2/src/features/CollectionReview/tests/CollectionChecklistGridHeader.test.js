@@ -50,7 +50,8 @@ describe('checklistGridHeader.vue', () => {
 
   beforeEach(() => {
     mockDensityState = {
-      lineClamp: 2,
+      canIncrease: true,
+      canDecrease: true,
       increaseRowHeight: vi.fn(),
       decreaseRowHeight: vi.fn(),
     }
@@ -196,16 +197,16 @@ describe('checklistGridHeader.vue', () => {
       expect(mockDensityState.increaseRowHeight).toHaveBeenCalledOnce()
     })
 
-    it('disables decrease button when lineClamp is <= 1', () => {
-      mockDensityState.lineClamp = 1
+    it('disables decrease button at the grid minimum', () => {
+      mockDensityState.canDecrease = false
       useGridDensity.mockReturnValue(mockDensityState)
       createWrapper()
       const decreaseBtn = screen.getByTitle('Decrease row height')
       expect(decreaseBtn).toBeDisabled()
     })
 
-    it('disables increase button when lineClamp is >= 10', () => {
-      mockDensityState.lineClamp = 10
+    it('disables increase button at the maximum', () => {
+      mockDensityState.canIncrease = false
       useGridDensity.mockReturnValue(mockDensityState)
       createWrapper()
       const increaseBtn = screen.getByTitle('Increase row height')

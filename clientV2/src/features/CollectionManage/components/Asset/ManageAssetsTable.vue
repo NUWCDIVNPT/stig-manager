@@ -156,14 +156,15 @@ function onAssetsTransferred(transferredIds) {
         selection-mode="multiple"
         :loading="isLoading"
         :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
+        :style="{ '--item-size': `${ROW_HEIGHT}px` }"
         export-filename="Assets"
         class="flex-fill clickable-rows"
         :table-style="{ 'table-layout': 'fixed' }"
         :pt="tablePt"
       >
-        <Column selection-mode="multiple" :style="`width: 1rem; height: ${ROW_HEIGHT}px; padding: 0 0.5rem;`" />
+        <Column selection-mode="multiple" style="width: 1rem; height: var(--item-size); padding: 0 0.5rem;" />
 
-        <Column field="assetName" export-header="Asset" sortable :pt="borderPt" :style="`width: 5.5rem; height: ${ROW_HEIGHT}px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;`">
+        <Column field="assetName" export-header="Asset" sortable :pt="borderPt" style="width: 5.5rem; height: var(--item-size); padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Asset
@@ -187,7 +188,7 @@ function onAssetsTransferred(transferredIds) {
           </template>
         </Column>
 
-        <Column field="labels" export-header="Labels" sortable :pt="borderPt" :style="`width: 9rem; height: ${ROW_HEIGHT}px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;`">
+        <Column field="labels" export-header="Labels" sortable :pt="borderPt" style="width: 9rem; height: var(--item-size); padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Labels
@@ -200,7 +201,7 @@ function onAssetsTransferred(transferredIds) {
         </Column>
 
         <template v-for="col in columns" :key="col.field">
-          <component :is="col.component" v-bind="col" sortable :style="`width: ${col.width}; height: ${ROW_HEIGHT}px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;`" />
+          <component :is="col.component" v-bind="col" sortable :style="`width: ${col.width}; height: var(--item-size); padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;`" />
         </template>
 
         <template #footer>
