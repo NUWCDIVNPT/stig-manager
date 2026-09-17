@@ -422,6 +422,32 @@ function validateTokensResponse(tokensResponse) {
   return true
 }
 
+// The scope claim setting may name several claims, separated by commas.
+// Collect the scopes held by each named claim. A claim may hold a
+// space-separated string or an array of strings; absent or unusable claims
+// contribute nothing. Mirrors getGrantedScopes in the API.
+function getGrantedScopes(payload, claimNames) {
+  const scopes = new Set()
+  for (const claimName of claimNames) {
+    const value = payload[claimName]
+    if (typeof value === 'string') {
+      for (const scope of value.split(' ')) {
+        if (scope.length) scopes.add(scope)
+      }
+    }
+    else if (Array.isArray(value)) {
+      for (const scope of value) {
+        if (typeof scope === 'string' && scope.length) scopes.add(scope)
+      }
+    }
+  }
+  return [...scopes]
+}
+
+function getScopeClaimNames() {
+  return ENV.claims.scope.split(',').map(s => s.trim()).filter(s => s.length)
+}
+
 function validateScope(scopeValue, isAdmin = false) {
   // Depending on OIDC provider, scopeValue can be a space-separated string (the standard) or an array of scopes. If a string, split it on spaces into an array.
   const scopes = typeof scopeValue === 'string' ? scopeValue.split(' ')
@@ -455,7 +481,8 @@ function validateScope(scopeValue, isAdmin = false) {
 }
 
 function validateClaims(payload) {
-  if (!payload[ENV.claims.scope]) {
+  const grantedScopes = getGrantedScopes(payload, getScopeClaimNames())
+  if (grantedScopes.length === 0) {
     throw new Error(`Missing scope claim (${ENV.claims.scope}) in access token payload`)
   }
   if (!payload[ENV.claims.username]) {
@@ -475,7 +502,7 @@ function validateClaims(payload) {
     idleTimeoutM = ENV.idleTimeoutUser
   }
 
-  validateScope(payload[ENV.claims.scope], privileges.includes('admin'))
+  validateScope(grantedScopes, privileges.includes('admin'))
 
   return true
 }

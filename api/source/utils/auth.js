@@ -157,6 +157,28 @@ const setupUser = async function (req, res, next) {
     }
 }
 
+// Collect granted scopes from one or more token claims. A claim may hold a
+// space-separated string or an array of strings. Claims that are absent or hold
+// an unusable value contribute nothing, so a token missing every configured
+// claim yields an empty list rather than throwing.
+function getGrantedScopes(tokenPayload, claimNames) {
+    const scopes = new Set()
+    for (const claimName of claimNames) {
+        const value = tokenPayload[claimName]
+        if (typeof value === 'string') {
+            for (const scope of value.split(' ')) {
+                if (scope.length) scopes.add(scope)
+            }
+        }
+        else if (Array.isArray(value)) {
+            for (const scope of value) {
+                if (typeof scope === 'string' && scope.length) scopes.add(scope)
+            }
+        }
+    }
+    return [...scopes]
+}
+
 // express-openapi-validator security handler
 const validateOauthSecurity = function (req, requiredScopes) {
     if (!req.access_token) {
@@ -166,9 +188,7 @@ const validateOauthSecurity = function (req, requiredScopes) {
     const tokenPayload = req.access_token
 
     // Check scopes
-    const grantedScopes = typeof tokenPayload[config.oauth.claims.scope] === 'string' ? 
-        tokenPayload[config.oauth.claims.scope].split(' ') : 
-        tokenPayload[config.oauth.claims.scope]
+    const grantedScopes = getGrantedScopes(tokenPayload, config.oauth.claims.scopeList)
     const commonScopes = grantedScopes.filter(gs =>
         requiredScopes.some(rs => {
             if (gs === rs) return true
@@ -296,6 +316,7 @@ module.exports = {
     validateOauthSecurity, 
     initializeAuth, 
     getClaimByPath,
+    getGrantedScopes,
     checkInsecureKid,
     decodeToken,
     getSigningKey,
