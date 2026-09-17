@@ -198,5 +198,108 @@ describe('Token validation', function () {
       expect(res.status).to.equal(403)
       expect(res.body.error).to.equal('Required scopes were not found in token.')
     })
+    it('should reject token without a scope claim', async function () {
+      const res = await bearerRequest({
+        url: `${apiOrigin}/api/user`,
+        method: 'GET',
+        token: oidc.getToken({username: 'user01', scope: ''})
+      })
+      expect(res.status).to.equal(403)
+      expect(res.body.error).to.equal('Required scopes were not found in token.')
+    })
+    it('should accept an array-valued scope claim', async function () {
+      const res = await bearerRequest({
+        url: `${apiOrigin}/api/user`,
+        method: 'GET',
+        token: oidc.getToken({username: 'user01', scope: ['stig-manager:user:read']})
+      })
+      expect(res.status).to.equal(200)
+    })
+  })
+
+  describe('Token scope claim list validation', function () {
+    const {apiPort, dbPort, oidcPort, apiOrigin, oidcOrigin} = getPorts(54120)
+
+    before(async function () {
+      this.timeout(60000)
+      oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
+      await oidc.start({port: oidcPort})
+      console.log('    ✔ oidc started')
+      console.log('    try mysql start')
+      mysql = await spawnMySQL({port: dbPort})
+      console.log('    ✔ mysql started')
+      console.log('    try api start')
+      api = await spawnApiPromise({
+        resolveOnType: 'started',
+        resolveOnClose: false,
+        env: {
+          STIGMAN_API_PORT: apiPort,
+          STIGMAN_DEPENDENCY_RETRIES: 2,
+          STIGMAN_DB_PASSWORD: 'stigman',
+          STIGMAN_DB_HOST: '127.0.0.1',
+          STIGMAN_DB_PORT: dbPort,
+          STIGMAN_OIDC_PROVIDER: oidcOrigin,
+          STIGMAN_LOG_LEVEL: '4',
+          STIGMAN_JWT_SCOPE_CLAIM: 'scp, roles'
+        }
+      })
+      console.log('    ✔ api started')
+    })
+
+    after(async function () {
+      this.timeout(60000)
+      if (api) await api.stop().catch(() => {})
+      if (mysql) await mysql.stop().catch(() => {})
+      if (oidc) await oidc.stop().catch(() => {})
+      if (api) addContext(this, {title: 'api-log', value: api.logRecords})
+    })
+
+    it('should accept scopes in the first named claim as a string', async function () {
+      const res = await bearerRequest({
+        url: `${apiOrigin}/api/user`,
+        method: 'GET',
+        token: oidc.getToken({username: 'user01', scopeClaim: 'scp', scope: 'stig-manager:user:read'})
+      })
+      expect(res.status).to.equal(200)
+    })
+    it('should accept scopes in the second named claim as an array', async function () {
+      const res = await bearerRequest({
+        url: `${apiOrigin}/api/user`,
+        method: 'GET',
+        token: oidc.getToken({username: 'user01', scopeClaim: 'roles', scope: ['stig-manager:user:read']})
+      })
+      expect(res.status).to.equal(200)
+    })
+    it('should combine scopes from both named claims', async function () {
+      const res = await bearerRequest({
+        url: `${apiOrigin}/api/user`,
+        method: 'GET',
+        token: oidc.getToken({
+          username: 'user01',
+          scopeClaim: 'scp',
+          scope: 'openid profile',
+          extraClaims: {roles: ['stig-manager:user:read']}
+        })
+      })
+      expect(res.status).to.equal(200)
+    })
+    it('should reject token with neither named claim', async function () {
+      const res = await bearerRequest({
+        url: `${apiOrigin}/api/user`,
+        method: 'GET',
+        token: oidc.getToken({username: 'user01', scope: ''})
+      })
+      expect(res.status).to.equal(403)
+      expect(res.body.error).to.equal('Required scopes were not found in token.')
+    })
+    it('should ignore the default "scope" claim when it is not named', async function () {
+      const res = await bearerRequest({
+        url: `${apiOrigin}/api/user`,
+        method: 'GET',
+        token: oidc.getToken({username: 'user01', scopeClaim: 'scope', scope: 'stig-manager'})
+      })
+      expect(res.status).to.equal(403)
+      expect(res.body.error).to.equal('Required scopes were not found in token.')
+    })
   })
 })

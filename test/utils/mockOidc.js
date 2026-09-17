@@ -119,7 +119,8 @@ class MockOidc {
     nameClaim = 'name',
     scopeClaim = 'scope',
     emailClaim = 'email',
-    assertionClaim = 'jti'
+    assertionClaim = 'jti',
+    extraClaims = {}
   }) {
     let privateKey
     if (kid) {
@@ -154,8 +155,8 @@ class MockOidc {
       current[keys[keys.length - 1]] = value
     }
 
-    // Create the payload for the JWT
-    const payload = {}
+    // Create the payload for the JWT. Extra claims are set first so the named claims above win on conflict.
+    const payload = { ...extraClaims }
     setDynamicClaim(payload, assertionClaim, crypto.randomBytes(16).toString('hex'))
     setDynamicClaim(payload, privilegesClaim, privileges)
     setDynamicClaim(payload, usernameClaim, username)

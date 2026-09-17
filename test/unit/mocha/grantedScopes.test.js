@@ -1,7 +1,9 @@
 import { expect } from 'chai'
 import auth from '../../../api/source/utils/auth.js'
+import config from '../../../api/source/utils/config.js'
 
 const { getGrantedScopes } = auth
+const { parseClaimList } = config
 
 describe('getGrantedScopes', function () {
   it('parses a space-separated string claim', function () {
@@ -75,35 +77,32 @@ describe('getGrantedScopes', function () {
   })
 })
 
-describe('scope claim list parsing', function () {
-  // The parse is a pure expression over the environment variable's value.
-  // config.js reads process.env at module load, so the expression is
-  // reproduced here rather than re-importing config under a mutated
-  // environment, which mocha cannot do cleanly for a CJS singleton.
-  const parseScopeClaims = (value) =>
-    (value || 'scope').split(',').map(s => s.trim()).filter(s => s.length)
-
-  it('defaults to the single claim "scope"', function () {
-    expect(parseScopeClaims(undefined)).to.deep.equal(['scope'])
-  })
-
+describe('parseClaimList', function () {
   it('parses a single claim name', function () {
-    expect(parseScopeClaims('scp')).to.deep.equal(['scp'])
+    expect(parseClaimList('scp')).to.deep.equal(['scp'])
   })
 
   it('parses a comma-separated list', function () {
-    expect(parseScopeClaims('scp,roles')).to.deep.equal(['scp', 'roles'])
+    expect(parseClaimList('scp,roles')).to.deep.equal(['scp', 'roles'])
   })
 
   it('tolerates whitespace around commas', function () {
-    expect(parseScopeClaims('scp, roles')).to.deep.equal(['scp', 'roles'])
+    expect(parseClaimList('scp, roles')).to.deep.equal(['scp', 'roles'])
   })
 
   it('drops empty segments', function () {
-    expect(parseScopeClaims('scp, roles,')).to.deep.equal(['scp', 'roles'])
+    expect(parseClaimList('scp, roles,')).to.deep.equal(['scp', 'roles'])
   })
 
-  it('falls back to the default for an empty value', function () {
-    expect(parseScopeClaims('')).to.deep.equal(['scope'])
+  it('returns an empty list for a value with no claim names', function () {
+    expect(parseClaimList(' , ')).to.deep.equal([])
+  })
+})
+
+describe('config.oauth.claims.scopeList', function () {
+  it('defaults to the single claim "scope" when the setting is unset', function () {
+    expect(process.env.STIGMAN_JWT_SCOPE_CLAIM).to.be.undefined
+    expect(config.oauth.claims.scope).to.equal('scope')
+    expect(config.oauth.claims.scopeList).to.deep.equal(['scope'])
   })
 })
