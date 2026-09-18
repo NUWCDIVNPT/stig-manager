@@ -116,8 +116,8 @@ function onRowSelect(event) {
 }
 
 const dataTablePt = {
-  // Body font size is the single source of truth for row text (cells inherit
-  // it); the itemSize geometry below is derived from this 1.05rem × 1.3.
+  // Body font size for the unclamped cells; the clamped .cell-text cells take
+  // theirs from the grid geometry via --cell-font-size.
   ...compactTablePt({ bodyFontSize: '1rem' }),
   tableContainer: { style: 'background: var(--p-datatable-row-background); height: 100%;' },
   table: { style: { tableLayout: 'fixed', width: '100%' } },
@@ -605,9 +605,10 @@ const flexCellPt = {
   min-height: 0;
 }
 
-/* Line height comes from the grid geometry (useGridDensity lineRem), so N
-   clamped lines fill exactly N rows. */
+/* Size and line height come from the grid geometry (useGridDensity fontRem),
+   so N clamped lines fill exactly N rows. */
 .cell-text {
+  font-size: var(--cell-font-size);
   line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-primary);
 }

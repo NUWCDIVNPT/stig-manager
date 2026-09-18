@@ -9,11 +9,10 @@ const LINE_HEIGHT = 1.3
 //   minLineClamp: lowest clamp the density control allows (default 1); a grid
 //            whose rows hold more than the clamped text (badges, label rows)
 //            floors higher so one line of text never leaves the row half empty
-//   fontRem: font-size of the clamped cell text (the grid's .cell-text rule
-//            must match). One rendered line is fontRem × LINE_HEIGHT; the grid
-//            binds it as --cell-line-height and the clamped cell rule reads it,
-//            so N clamped lines fill exactly N lines and the virtual scroller's
-//            n × itemSize placement holds.
+//   fontRem: font-size of the clamped cell text. The grid binds it as
+//            --cell-font-size and fontRem × LINE_HEIGHT as --cell-line-height;
+//            the clamped cell rule reads both, so N clamped lines fill exactly
+//            N lines and the virtual scroller's n × itemSize placement holds.
 //   padRem:  vertical room around the text (cell padding plus breathing space)
 //   minRem:  natural height of the tallest non-text cell (badges, icons, input
 //            controls); rows never shrink below it at low clamps
@@ -64,6 +63,7 @@ export function useGridDensity(gridKey) {
   const gridStyle = computed(() => ({
     '--line-clamp': lineClamp.value,
     '--item-size': `${itemSize.value}px`,
+    '--cell-font-size': `${geometry.fontRem}rem`,
     '--cell-line-height': `${lineRem}rem`,
   }))
 

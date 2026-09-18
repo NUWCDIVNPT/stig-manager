@@ -1,20 +1,33 @@
 import { readFileSync } from 'node:fs'
+import { relative } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { mockRootFontSize, restoreRootFontSize } from '../../testUtils/rootFontSize.js'
-import { vueSourceFiles } from '../../testUtils/sourceFiles.js'
+import { SRC_ROOT, vueSourceFiles } from '../../testUtils/sourceFiles.js'
 import { GRID_GEOMETRY, resetDensityState, useGridDensity } from './useGridDensity.js'
 
 // Every grid key used in a component must be registered, or the component
 // throws at mount. Scan the source so a new grid can not ship unregistered.
+// The scan only sees static keys, so a bound `:grid-key` or a non-literal
+// useGridDensity() argument is itself a failure. DensityControls is the one
+// pass-through: it forwards its grid-key prop, which its callers set statically.
+const KEY_FORWARDERS = new Set(['components/common/DensityControls.vue'])
+
 function usedGridKeys() {
   const keys = new Map()
+  const dynamic = []
   for (const file of vueSourceFiles()) {
+    if (KEY_FORWARDERS.has(relative(SRC_ROOT, file))) {
+      continue
+    }
     const text = readFileSync(file, 'utf8')
-    for (const m of text.matchAll(/useGridDensity\('([^']+)'\)|grid-key="([^"]+)"/g)) {
+    for (const m of text.matchAll(/useGridDensity\('([^']+)'\)|(?<![:\w-])grid-key="([^"]+)"/g)) {
       keys.set(m[1] ?? m[2], file)
     }
+    for (const m of text.matchAll(/useGridDensity\((?!'[^']+'\))[^)]*\)|(?::|v-bind:)grid-key=/g)) {
+      dynamic.push(`${m[0]} in ${file}`)
+    }
   }
-  return keys
+  return { keys, dynamic }
 }
 
 describe('useGridDensity', () => {
@@ -82,6 +95,7 @@ describe('useGridDensity', () => {
     expect(gridStyle.value).toEqual({
       '--line-clamp': 2,
       '--item-size': '33px',
+      '--cell-font-size': '1.05rem',
       '--cell-line-height': '1.365rem',
     })
     increaseRowHeight()
@@ -94,9 +108,10 @@ describe('useGridDensity', () => {
   })
 
   it('has geometry for every grid key used in a component', () => {
-    const used = usedGridKeys()
-    expect(used.size).toBeGreaterThan(0)
-    for (const [key, file] of used) {
+    const { keys, dynamic } = usedGridKeys()
+    expect(dynamic, 'grid keys must be static strings so this scan can check them').toEqual([])
+    expect(keys.size).toBeGreaterThan(0)
+    for (const [key, file] of keys) {
       expect(GRID_GEOMETRY, `${key} used in ${file}`).toHaveProperty(key)
     }
   })

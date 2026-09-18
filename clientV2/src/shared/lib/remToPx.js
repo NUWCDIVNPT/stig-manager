@@ -28,6 +28,13 @@ export function resetRootFontSizeCache() {
   cachedRootPx = undefined
 }
 
+// A hot-swapped stylesheet can change the root font-size, so drop the memo on
+// every Vite update (CSS ones included) and let the next mount re-read it.
+// Already-mounted scrollers keep the itemSize they computed until they remount.
+if (import.meta.hot) {
+  import.meta.hot.on('vite:afterUpdate', resetRootFontSizeCache)
+}
+
 // Rounds up: rows are pinned to this value with overflow hidden, so a px too
 // tall is invisible while a px too short clips content.
 export function remToPx(rem) {

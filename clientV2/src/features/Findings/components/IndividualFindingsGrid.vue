@@ -17,8 +17,8 @@ import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
-import { remToPx } from '../../../shared/lib/remToPx.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
 const props = defineProps({
   rows: { type: Array, default: () => [] },
@@ -80,7 +80,7 @@ const decoratedRows = computed(() => {
 // asset cell has a fixed need (2.2rem shield row + 0.15rem gap + labels row +
 // cell padding), so floor the row height when labels are present. Label-free
 // result sets keep the denser geometry floor.
-const LABELED_ROW_MIN_PX = remToPx(4.25)
+const LABELED_ROW_MIN_PX = rowHeightPx('spacious')
 const itemSize = computed(() => {
   const hasLabels = decoratedRows.value.some(r => r.labels.length)
   return hasLabels ? Math.max(densityItemSize.value, LABELED_ROW_MIN_PX) : densityItemSize.value
@@ -403,10 +403,11 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   color: var(--color-text-dim);
 }
 
-/* Line height comes from the grid geometry (useGridDensity lineRem), so N
-   clamped lines fill exactly N rows. Only the clamped Detail/Comment cells
-   use it. */
+/* Size and line height come from the grid geometry (useGridDensity fontRem),
+   so N clamped lines fill exactly N rows. Only the clamped Detail/Comment
+   cells use it. */
 .cell-text {
+  font-size: var(--cell-font-size);
   line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-primary);
 }

@@ -56,7 +56,7 @@ const filteredData = computed(() => {
 })
 
 // Row geometry lives in useGridDensity's table; .stiglib-cell-text reads its
-// line height from --cell-line-height.
+// font size and line height from --cell-font-size / --cell-line-height.
 const { itemSize, gridStyle } = useGridDensity('stig-library-benchmarks')
 
 // Fixed layout so the flexible Title column yields to the sized columns.

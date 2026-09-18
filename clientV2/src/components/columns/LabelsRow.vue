@@ -20,13 +20,15 @@ const popoverRef = ref()
 let hideTimeout = null
 
 // Label width estimate, in px derived from rem so it tracks the root font-size
-// along with the chip CSS below (0.9rem text, 0.45rem side padding, 0.25rem
-// gap). Tighter values when compact.
+// along with the chip CSS below. Padding and gap mirror .label-tag / .labels-row
+// exactly; the per-character width is a generous 0.6rem for 0.9rem 600-weight
+// text, so the estimate errs toward hiding a label that would fit over
+// clipping one that would not. The +N badge is a chip too and is sized by the
+// same formula. `compact` only drops the trailing margin.
 const root = rootFontSizePx()
-const CHAR_WIDTH = computed(() => (props.compact ? 0.5 : 0.6) * root)
-const LABEL_PADDING = computed(() => (props.compact ? 0.9 : 1.1) * root)
+const CHAR_WIDTH = 0.6 * root
+const LABEL_PADDING = 0.9 * root
 const LABEL_GAP = 0.25 * root
-const OVERFLOW_BADGE_WIDTH = 0.75 * root
 const RIGHT_MARGIN = computed(() => props.compact ? 0 : 0.75 * root)
 
 // Container ref and width
@@ -60,7 +62,7 @@ onBeforeUnmount(() => {
 
 // Estimate the width of a label based on its text
 function estimateLabelWidth(text) {
-  return (String(text).length * CHAR_WIDTH.value) + LABEL_PADDING.value
+  return (String(text).length * CHAR_WIDTH) + LABEL_PADDING
 }
 
 // Computed: which labels to show based on container width
@@ -88,7 +90,7 @@ const visibleLabelsData = computed(() => {
     // Check if we need room for overflow badge
     const remainingLabels = labels.length - i - 1
     const needsOverflowBadge = remainingLabels > 0
-    const reservedWidth = needsOverflowBadge ? OVERFLOW_BADGE_WIDTH + LABEL_GAP : 0
+    const reservedWidth = needsOverflowBadge ? estimateLabelWidth(`+${remainingLabels}`) + LABEL_GAP : 0
 
     if (usedWidth + labelWidth + reservedWidth <= availableWidth) {
       visible.push(label)
