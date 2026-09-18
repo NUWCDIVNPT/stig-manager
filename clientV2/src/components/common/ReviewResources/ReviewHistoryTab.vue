@@ -14,6 +14,7 @@ import { durationToNow } from '../../../shared/lib.js'
 
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import ColumnFilter from '../ColumnFilter.vue'
 import ColumnSearchFilter from '../ColumnSearchFilter.vue'
@@ -24,6 +25,7 @@ import OverrideBadge from '../OverrideBadge.vue'
 import ResultBadge from '../ResultBadge.vue'
 import StatusBadge from '../StatusBadge.vue'
 import StatusFooter from '../StatusFooter.vue'
+import { reviewResourcesTablePt } from './tablePt.js'
 
 const props = defineProps({
   active: {
@@ -117,7 +119,7 @@ const statusOptions = computed(() => {
   })).sort((a, b) => a.label.localeCompare(b.label))
 })
 
-const ROW_HEIGHT = 40
+const ROW_HEIGHT = rowHeightPx('control')
 
 const isAlreadyApplied = (data) => {
   return data.result === formResult.value
@@ -228,39 +230,6 @@ const historyStats = computed(() => {
 
   return stats
 })
-
-const historyTablePt = {
-  root: { class: 'sm-scrollbar-thin', style: { backgroundColor: 'var(--color-background-dark)' } },
-  header: { style: { background: 'transparent', border: 'none', padding: '0' } },
-  table: { style: { borderCollapse: 'separate', borderSpacing: '0', background: 'var(--color-background-darkest)' } },
-  thead: {
-    style: {
-      background: 'var(--color-background-dark)',
-      position: 'sticky',
-      top: '0',
-      zIndex: '1',
-    },
-  },
-  headerCell: {
-    style: {
-      background: 'var(--color-background-dark)',
-      borderBottom: '1px solid var(--color-border-default)',
-      color: 'var(--color-text-dim)',
-      fontWeight: '700',
-      fontSize: '0.9rem',
-      textTransform: 'uppercase',
-      letterSpacing: '0.04em',
-      padding: '0.3rem 0.4rem',
-    },
-  },
-  bodyRow: {
-    style: {
-      background: 'var(--color-background-dark)',
-      transition: 'background-color 0.1s ease',
-    },
-  },
-  footer: { style: { padding: '0', border: 'none', background: 'transparent' } },
-}
 </script>
 
 <template>
@@ -279,15 +248,15 @@ const historyTablePt = {
       :resizable-columns="true"
       column-resize-mode="fit"
       class="history-table"
-      :pt="historyTablePt"
+      :pt="reviewResourcesTablePt"
     >
-      <Column header="Time" field="touchTs" sortable :style="{ width: '65px' }">
+      <Column header="Time" field="touchTs" sortable :style="{ width: '6rem' }">
         <template #body="{ data }">
           <span class="cell-text--mono" :title="formatReviewDate(data.touchTs)">{{ durationToNow(data.touchTs) }}</span>
         </template>
       </Column>
 
-      <Column field="ruleId" export-header="Rule" :style="{ width: '150px' }">
+      <Column field="ruleId" export-header="Rule" :style="{ width: '13.75rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Rule
@@ -303,7 +272,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="result" export-header="Result" :style="{ width: '70px', textAlign: 'center' }">
+      <Column field="result" export-header="Result" :style="{ width: '6.25rem', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             Result
@@ -319,7 +288,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '50px', textAlign: 'center' }">
+      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '4.5rem', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             <img
@@ -356,7 +325,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="detail" export-header="Detail" :style="{ width: '130px' }">
+      <Column field="detail" export-header="Detail" :style="{ width: '11.75rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Detail
@@ -376,7 +345,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="comment" export-header="Comment" :style="{ width: '130px' }">
+      <Column field="comment" export-header="Comment" :style="{ width: '11.75rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Comment
@@ -396,7 +365,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="statusText" export-header="Status Text" :style="{ width: '100px' }">
+      <Column field="statusText" export-header="Status Text" :style="{ width: '9rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Status Text
@@ -416,7 +385,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="_statusLabel" filter-field="_statusLabel" export-header="Status" :style="{ width: '70px', textAlign: 'center' }">
+      <Column field="_statusLabel" filter-field="_statusLabel" export-header="Status" :style="{ width: '6.25rem', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             Status
@@ -432,7 +401,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="username" export-header="User" :style="{ width: '100px' }">
+      <Column field="username" export-header="User" :style="{ width: '9rem' }">
         <template #header>
           <div class="column-header-with-filter">
             User
@@ -450,7 +419,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column header="Apply" :exportable="false" :style="{ width: '40px', textAlign: 'center' }">
+      <Column header="Apply" :exportable="false" :style="{ width: '3.75rem', textAlign: 'center' }">
         <template #body="{ data }">
           <button
             class="apply-review-icon-btn"

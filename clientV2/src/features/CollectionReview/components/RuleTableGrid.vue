@@ -71,7 +71,7 @@ const emit = defineEmits(['review-saved', 'update:selection'])
 
 const dataTableRef = ref(null)
 
-const { itemSize } = useGridDensity('collection-rule-table', 1, 12, 24)
+const { itemSize } = useGridDensity('collection-rule-table')
 
 const isDataSelectable = (data) => {
   return data?.access === 'rw'
@@ -662,9 +662,11 @@ const checkboxPt = {
   min-height: 0;
 }
 
+/* Size and line height come from the grid geometry (useGridDensity fontRem),
+   so N clamped lines fill exactly N rows. */
 .cell-text {
-  font-size: 1.1rem;
-  line-height: 1.3;
+  font-size: var(--cell-font-size);
+  line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-primary);
 }
 

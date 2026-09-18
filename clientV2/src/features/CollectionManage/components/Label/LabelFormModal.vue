@@ -140,7 +140,7 @@ const textareaPt = {
     v-model:visible="localVisible"
     modal
     :draggable="false"
-    :style="{ width: '540px', height: '310px', maxWidth: '95vw', maxHeight: '90vh' }"
+    :style="{ width: '49rem', maxWidth: '95vw', maxHeight: '90vh' }"
     :pt="dialogPt"
   >
     <template #header>
@@ -305,7 +305,7 @@ const textareaPt = {
 }
 
 .preview-chip-container {
-  width: 150px;
+  width: 13.5rem;
   display: flex;
   justify-content: flex-end;
   align-items: center;

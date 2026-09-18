@@ -83,9 +83,6 @@ watch(
 const { getRulesForRev, watchCurrent, invalidate: invalidateRules } = useRevisionRules()
 const revState = watchCurrent(benchmarkIdParam, effectiveViewRev)
 
-const bmLineClamp = 2
-const bmItemSize = 92
-
 // The three panes are self-contained bordered panels, so the gutter is plain
 // page background acting as the gap between them.
 const splitterPt = {
@@ -305,8 +302,6 @@ function onRetryDiff() {
           :loading="benchmarksLoading"
           :error="benchmarksError"
           :selected-id="benchmarkIdParam"
-          :item-size="bmItemSize"
-          :line-clamp="bmLineClamp"
           :total-count="totalCount"
           @select="goToBenchmark"
           @back="goToList"

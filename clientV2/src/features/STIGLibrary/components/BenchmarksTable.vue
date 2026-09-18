@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 import ActionButton from '../../../components/common/ActionButton.vue'
 import ClassificationBadge from '../../../components/common/ClassificationBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { paneColumnPt, paneTablePt } from '../tablePt.js'
 import EarlierRevisionsPills from './EarlierRevisionsPills.vue'
 
@@ -25,14 +26,6 @@ const props = defineProps({
     type: Object,
     default: null,
   },
-  itemSize: {
-    type: Number,
-    default: 72,
-  },
-  lineClamp: {
-    type: Number,
-    default: 2,
-  },
   totalCount: {
     type: Number,
     default: null,
@@ -47,6 +40,9 @@ const exportEarlierRevisions = ({ data }) => (data ?? []).slice(1).join(', ')
 const filter = defineModel('filter', { type: String, default: '' })
 
 const dataTableRef = ref(null)
+
+// Fixed card row: clamped title, id row and meta row (no density control here).
+const ROW_HEIGHT = rowHeightPx('card')
 
 // The pane is too narrow for a column header, and the single column needs no
 // label or sort, so headers are hidden and the filter lives in the sub-bar.
@@ -122,11 +118,11 @@ function clearFilter() {
         data-key="benchmarkId"
         scrollable
         scroll-height="flex"
-        :virtual-scroller-options="{ itemSize, showLoader: true }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT, showLoader: true }"
         striped-rows
         export-filename="STIG"
         class="benchmarks-table"
-        :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
+        :style="{ '--item-size': `${ROW_HEIGHT}px` }"
         :pt="dataTablePt"
         @row-click="onRowClick"
       >
@@ -188,12 +184,22 @@ function clearFilter() {
   height: 100%;
 }
 
+/* Pinned to the row slot: a <tr> height is only a minimum, so the card must
+   clip itself or a wrapped meta row grows the row past itemSize and the
+   virtual scroller drifts. 0.3rem is the bodyCell vertical padding. */
 .bm-cell {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
   min-width: 0;
   padding: 0.25rem 0;
+  height: calc(var(--item-size) - 0.3rem - 1px);
+  overflow: hidden;
+}
+
+/* Never squeeze the rows to fit; overflow clips at the bottom (meta row). */
+.bm-cell > * {
+  flex-shrink: 0;
 }
 
 .bm-cell__title {

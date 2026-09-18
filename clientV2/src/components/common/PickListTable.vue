@@ -57,7 +57,7 @@ const props = defineProps({
   },
   /**
    * PrimeVue virtual scroller options forwarded to each DataTable (e.g.
-   * `{ itemSize: 31 }`). Pass `false` to disable virtual scrolling.
+   * `{ itemSize: rowHeightPx('compact') }`). Pass `false` to disable virtual scrolling.
    * @type {object | boolean}
    */
   virtualScrollerOptions: {

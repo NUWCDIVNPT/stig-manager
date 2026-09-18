@@ -94,19 +94,19 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
         class="flex-fill"
         :pt="tablePt"
       >
-        <Column field="seq" header="Seq" sortable :pt="borderPt" style="width: 56px;" />
-        <Column field="ts" header="Timestamp" sortable :pt="borderPt" style="width: 170px;">
+        <Column field="seq" header="Seq" sortable :pt="borderPt" style="width: 5rem;" />
+        <Column field="ts" header="Timestamp" sortable :pt="borderPt" style="width: 15.5rem;">
           <template #body="{ data }">
             {{ formatDateTimeString(data.ts) }}
           </template>
         </Column>
-        <Column field="task" header="Task" sortable :pt="borderPt" style="width: 140px;" />
-        <Column field="type" header="Type" sortable :pt="borderPt" style="width: 90px;">
+        <Column field="task" header="Task" sortable :pt="borderPt" style="width: 12.75rem;" />
+        <Column field="type" header="Type" sortable :pt="borderPt" style="width: 8.25rem;">
           <template #body="{ data }">
             {{ data.type }}
           </template>
         </Column>
-        <Column field="message" header="Message" :pt="borderPt" style="min-width: 320px;">
+        <Column field="message" header="Message" :pt="borderPt" style="min-width: 29rem;">
           <template #body="{ data }">
             <span class="message-cell" :title="data.message">{{ data.message }}</span>
           </template>

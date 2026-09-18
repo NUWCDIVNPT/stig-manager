@@ -56,7 +56,7 @@ const props = defineProps({
 
 const emit = defineEmits(['review-saved', 'update:selection', 'bulk-action'])
 
-const { lineClamp, itemSize } = useGridDensity('collection-rule-table', 1, 12, 24)
+const { gridStyle } = useGridDensity('collection-rule-table')
 
 const TOGGLEABLE_COLUMNS = [
   { field: 'labels', header: 'Labels' },
@@ -73,7 +73,7 @@ const visibleFields = computed(() => new Set(selectedColumns.value.map(c => c.fi
 <template>
   <div
     class="rule-table"
-    :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
+    :style="gridStyle"
   >
     <RuleTableHeader
       v-model:selected-columns="selectedColumns"

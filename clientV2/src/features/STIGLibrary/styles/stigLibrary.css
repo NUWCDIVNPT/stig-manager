@@ -197,11 +197,12 @@
   color: var(--color-text-dim);
 }
 
-/* Row text. line-height is load-bearing: font-size x this ~ the density
-   sizeMultiplier (15px/line), so N clamped lines fill exactly N rows. */
+/* Row text. Size and line height come from the stig-library-* geometry in
+   useGridDensity via --cell-font-size / --cell-line-height, so N clamped lines
+   fill N rows. */
 .stiglib-cell-text {
-  font-size: 1.05rem;
-  line-height: 1.3;
+  font-size: var(--cell-font-size);
+  line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-primary);
 }
 

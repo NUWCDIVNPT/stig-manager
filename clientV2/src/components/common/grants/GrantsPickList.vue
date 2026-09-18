@@ -7,6 +7,7 @@ import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import { computed } from 'vue'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { getAssignableRoleOptions, roleMap } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 import { useGranteeFilter } from './useGranteeFilter.js'
@@ -32,6 +33,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['save', 'cancel', 'update:source', 'update:target'])
+
+const ROW_HEIGHT = rowHeightPx('control')
 
 // Only an Owner (or an elevated caller) may grant the Owner role.
 const availableRoleOptions = computed(() => getAssignableRoleOptions(props.canModifyOwners))
@@ -118,7 +121,7 @@ const onCancel = () => {
           option-group-children="items"
           option-disabled="collapsed"
           multiple
-          :virtual-scroller-options="{ itemSize: 42 }"
+          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
           :pt="{
             root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background: transparent; border: none;' },
             item: { style: 'font-size: 1.15rem;' },
@@ -188,7 +191,7 @@ const onCancel = () => {
           :options="localTarget"
           :option-label="itemLabel"
           multiple
-          :virtual-scroller-options="{ itemSize: 42 }"
+          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
           :pt="{
             root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background: transparent; border: none;' },
             item: { style: 'font-size: 1.15rem;' },
