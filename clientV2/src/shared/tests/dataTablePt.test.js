@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { compactTablePt } from '../lib/dataTablePt.js'
+import { compactTablePt, iconHeaderPt } from '../lib/dataTablePt.js'
 
 describe('compactTablePt', () => {
   it('defaults to a flush (borderless) footer and no body font size', () => {
@@ -33,5 +33,24 @@ describe('compactTablePt', () => {
   it('appends a header-cell padding when provided', () => {
     const pt = compactTablePt({ headerPadding: '0.25rem 0.6rem' })
     expect(pt.column.headerCell.style).toContain('padding: 0.25rem 0.6rem;')
+  })
+})
+
+describe('iconHeaderPt', () => {
+  it('adds the icon-header class and keeps the existing header class and style', () => {
+    const pt = iconHeaderPt({ headerCell: { class: 'column-header-center', style: { color: 'red' } }, bodyCell: { class: 'b' } })
+    expect(pt.headerCell.class).toBe('column-header-center column-header-icon')
+    expect(pt.headerCell.style).toEqual({ color: 'red' })
+    expect(pt.bodyCell).toEqual({ class: 'b' })
+  })
+
+  it('works on a column pt without a header cell', () => {
+    expect(iconHeaderPt({}).headerCell.class).toBe('column-header-icon')
+  })
+
+  it('does not mutate its input', () => {
+    const input = { headerCell: { class: 'x' } }
+    iconHeaderPt(input)
+    expect(input.headerCell.class).toBe('x')
   })
 })

@@ -26,3 +26,25 @@ export function compactTablePt({ bodyFontSize, footer = 'flush', headerPadding }
     },
   }
 }
+
+/**
+ * Marks a column's header as icon-only: a badge or icon with sorting as its
+ * one action. The sort indicator is hidden until the column is sorted and is
+ * then overlaid at the cell edge, so the badge stays centered and the column
+ * width never changes. Pairs with the global `th.column-header-icon` rules in
+ * style.css.
+ *
+ * @param {object} columnPt - A column `pt` object with a `headerCell` section.
+ * @returns {object} A copy of `columnPt` with the icon-header class added.
+ */
+export function iconHeaderPt(columnPt) {
+  const headerCell = columnPt.headerCell ?? {}
+  const existing = [headerCell.class].flat().filter(Boolean)
+  return {
+    ...columnPt,
+    headerCell: {
+      ...headerCell,
+      class: [...existing, 'column-header-icon'].join(' '),
+    },
+  }
+}
