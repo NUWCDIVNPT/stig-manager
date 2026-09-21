@@ -1,4 +1,5 @@
 <script setup>
+import Checkbox from 'primevue/checkbox'
 import MultiSelect from 'primevue/multiselect'
 import { computed } from 'vue'
 
@@ -19,6 +20,16 @@ const isActive = computed(() => {
   return Array.isArray(props.modelValue) && props.modelValue.length > 0
 })
 
+// PrimeVue's own toggle-all checkbox has no partial state, so the header is
+// rendered here with a Checkbox that reports indeterminate for a subset.
+const allSelected = computed(() => {
+  return isActive.value && props.options.every(o => props.modelValue.includes(o.value))
+})
+
+function onToggleAll(checked) {
+  emit('update:modelValue', checked ? props.options.map(o => o.value) : [])
+}
+
 function onToggle(val) {
   emit('update:modelValue', val)
 }
@@ -26,7 +37,7 @@ function onToggle(val) {
 const columnFilterPT = {
   root: { class: 'column-filter-select' },
   label: { style: 'display: none;' },
-  trigger: { style: 'width: auto; padding: 0.2rem 0.2rem;' },
+  dropdown: { style: 'width: auto; padding: 0.2rem 0.2rem;' },
   panel: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.6); min-width: 100px;' },
   header: { style: 'background: var(--color-background-dark); border-bottom: 1px solid var(--color-border-light); padding: 0.25rem 0.5rem;' },
   item: ({ context }) => ({
@@ -53,11 +64,22 @@ const columnFilterPT = {
     option-value="value"
     :pt="columnFilterPT"
     display="chip"
-    :show-toggle-all="true"
+    :show-toggle-all="false"
     @update:model-value="onToggle"
   >
     <template #dropdownicon>
       <i class="pi pi-filter" :class="{ 'filter-active': isActive }" />
+    </template>
+    <template #header>
+      <label class="column-filter__toggle-all">
+        <Checkbox
+          :model-value="allSelected"
+          :indeterminate="isActive && !allSelected"
+          :binary="true"
+          @update:model-value="onToggleAll"
+        />
+        <span>Select All</span>
+      </label>
     </template>
     <template #option="slotProps">
       <div class="column-filter__option">
@@ -135,17 +157,18 @@ const columnFilterPT = {
   display: none !important; /* Hide the selected value chips so it acts just like a button */
 }
 
-/* Append native text to PrimeVue's internal toggle all checkbox */
-:deep(.p-multiselect-header .p-checkbox::after) {
-  content: "Select All";
-  font-family: inherit;
+/* Header row with the toggle-all checkbox; styled like PrimeVue's header
+   since show-toggle-all is off and PrimeVue renders no header of its own. */
+.column-filter__toggle-all {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--color-background-dark);
+  border-bottom: 1px solid var(--color-border-light);
   font-size: 0.85rem;
-  margin-left: 0.5rem;
   color: var(--color-text-dim);
   white-space: nowrap;
-}
-
-:deep(.p-multiselect-header .p-checkbox) {
-  margin-right: 0.5rem;
+  cursor: pointer;
 }
 </style>

@@ -51,7 +51,10 @@ const DISPLAY_MODE_FIELDS = {
   ruleRule: ['ruleId', 'ruleTitle'],
 }
 
-const selectedColumns = ref(TOGGLEABLE_COLUMNS.filter(c => c.field !== 'version'))
+// Hidden by default; the rule title gets the room instead.
+const DEFAULT_HIDDEN_COLUMNS = new Set(['version', 'oldest', 'newest'])
+
+const selectedColumns = ref(TOGGLEABLE_COLUMNS.filter(c => !DEFAULT_HIDDEN_COLUMNS.has(c.field)))
 const displayMode = ref('groupRule')
 
 const visibleFields = computed(() => {

@@ -196,6 +196,11 @@ function onRowClick(event) {
   if (!rowData || rowData.access !== 'rw') {
     return
   }
+  // The selection cell belongs to the checkbox: a click anywhere in it toggles
+  // the row (see .selection-hit) and never opens the editor.
+  if (event.originalEvent?.target?.closest?.('.selection-cell')) {
+    return
+  }
   openRowEditor(event.originalEvent || event, rowData)
 }
 
@@ -313,6 +318,14 @@ const isAllSelected = computed(() => {
   return hasSelectable
 })
 
+const isSomeSelected = computed(() => {
+  const ids = selectedIdSet.value
+  if (!ids.size) {
+    return false
+  }
+  return filteredData.value.some(row => isDataSelectable(row) && ids.has(row.assetId))
+})
+
 function onSelectAllChange(event) {
   if (event.checked) {
     const selectable = []
@@ -336,15 +349,21 @@ const stats = computed(() => calculateChecklistStats(filteredData.value) ?? {
 function getColumnPt(alignment = 'left') {
   const isCenter = alignment === 'center'
   return {
+    // Centered columns are icon-sized and fixed: their headers keep the body
+    // cell side padding so the column's minimum stays small, and fall back to
+    // start alignment rather than clipping on both sides.
     headerCell: {
-      style: { borderRight: '1px solid var(--color-border-light)' },
+      style: {
+        borderRight: '1px solid var(--color-border-light)',
+        ...(isCenter ? { paddingLeft: '0.35rem', paddingRight: '0.35rem' } : {}),
+      },
       class: isCenter ? 'column-header-center' : 'column-header-left',
     },
     columnHeaderContent: {
       style: {
         fontSize: '1rem',
         color: 'var(--color-text-primary)',
-        justifyContent: isCenter ? 'center' : 'flex-start',
+        justifyContent: isCenter ? 'safe center' : 'flex-start',
         textAlign: isCenter ? 'center' : 'left',
       },
     },
@@ -373,6 +392,16 @@ const columnPt = {
   left: getColumnPt('left'),
 }
 
+const selectionColumnPt = {
+  ...columnPt.center,
+  bodyCell: {
+    style: { ...columnPt.center.bodyCell.style, padding: 0, position: 'relative' },
+    class: `${columnPt.center.bodyCell.class} selection-cell`,
+  },
+}
+
+// Auto layout: icon columns declare a fixed width, Detail/Comment a share,
+// and Asset/Labels only a minimum so spare width flows to them.
 const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
   table: { style: { tableLayout: 'auto', minWidth: '100%' } },
@@ -386,13 +415,6 @@ const dataTablePt = {
   },
   footer: { style: { padding: '0', border: 'none' } },
   emptyMessageCell: { class: 'agg-grid-empty-cell' },
-}
-
-const checkboxPt = {
-  root: { style: { width: '2rem', height: '2rem' } },
-  box: { style: { width: '1.75rem', height: '1.75rem' } },
-  input: { style: { width: '1.75rem', height: '1.75rem' } },
-  icon: { style: { fontSize: '1.5rem' } },
 }
 </script>
 
@@ -421,13 +443,13 @@ const checkboxPt = {
     @wheel.capture="onGridWheel"
   >
     <!-- Selection -->
-    <Column :exportable="false" header-style="width: 3rem" :pt="columnPt.center">
+    <Column :exportable="false" header-style="width: 3rem; min-width: 3rem" :pt="selectionColumnPt">
       <template #header>
         <Checkbox
           v-if="filteredData.length > 0"
           :model-value="isAllSelected"
+          :indeterminate="isSomeSelected && !isAllSelected"
           :binary="true"
-          :pt="checkboxPt"
           @update:model-value="onSelectAllChange({ checked: $event })"
         />
       </template>
@@ -439,19 +461,18 @@ const checkboxPt = {
           alt="Read only"
           title="Read only"
         >
-        <Checkbox
-          v-else
-          :model-value="selectedIdSet.has(data.assetId)"
-          :binary="true"
-          :pt="checkboxPt"
-          @update:model-value="onToggleSelectRow(data)"
-          @click.stop
-        />
+        <label v-else class="selection-hit">
+          <Checkbox
+            :model-value="selectedIdSet.has(data.assetId)"
+            :binary="true"
+            @update:model-value="onToggleSelectRow(data)"
+          />
+        </label>
       </template>
     </Column>
 
     <!-- Engine -->
-    <Column field="resultEngine" export-header="Engine" sort-field="resultEngine.product" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
+    <Column field="resultEngine" export-header="Engine" sort-field="resultEngine.product" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
           <img src="../../../assets/bot2.svg" alt="Engine" class="engine-header-icon" title="Result engine">
@@ -492,14 +513,14 @@ const checkboxPt = {
     </Column>
 
     <!-- Asset -->
-    <Column field="assetName" header="Asset" sortable :style="{ width: '14rem', minWidth: '10rem' }" :pt="columnPt.left">
+    <Column field="assetName" header="Asset" sortable :style="{ minWidth: '10rem' }" :pt="columnPt.left">
       <template #body="{ data }">
         <span class="cell-text">{{ data.assetName }}</span>
       </template>
     </Column>
 
     <!-- Labels -->
-    <Column v-if="visibleFields.has('labels')" field="assetLabels" export-header="Labels" :style="{ width: '12rem', minWidth: '8rem' }" :pt="columnPt.left">
+    <Column v-if="visibleFields.has('labels')" field="assetLabels" export-header="Labels" :style="{ minWidth: '8rem' }" :pt="columnPt.left">
       <template #header>
         <div class="column-header-with-filter">
           Labels
@@ -649,12 +670,13 @@ const checkboxPt = {
   color: var(--color-text-bright);
 }
 
+/* Grows into spare header width but never claims the sort icon's room. */
 .column-header-with-filter {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.1rem;
-  width: 100%;
+  flex: 1 1 auto;
 }
 
 .rule-table-grid {
@@ -789,5 +811,16 @@ const checkboxPt = {
 
 :deep(.row-non-writable .p-checkbox-input) {
   pointer-events: none;
+}
+
+/* Fills the selection cell so the whole cell is the checkbox hit area
+   (a label click toggles the input natively). */
+.selection-hit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 </style>

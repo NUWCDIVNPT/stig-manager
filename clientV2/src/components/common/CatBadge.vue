@@ -46,6 +46,7 @@ const title = computed(() => `CAT ${props.category}`)
 <style scoped>
 .cat-badge {
   border-radius: 5px;
+  color: var(--color-text-dark);
   width: fit-content;
   min-width: 4.1rem;
   font-size: 1.1rem;

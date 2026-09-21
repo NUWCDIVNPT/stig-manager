@@ -19,17 +19,45 @@ const props = defineProps({
 const popoverRef = ref()
 let hideTimeout = null
 
-// Label width estimate, in px derived from rem so it tracks the root font-size
-// along with the chip CSS below. Padding and gap mirror .label-tag / .labels-row
-// exactly; the per-character width is a generous 0.6rem for 0.9rem 600-weight
-// text, so the estimate errs toward hiding a label that would fit over
-// clipping one that would not. The +N badge is a chip too and is sized by the
-// same formula. `compact` only drops the trailing margin.
+// Chip geometry in px derived from rem so it tracks the root font-size along
+// with the chip CSS below. Padding, gap and font mirror .label-tag /
+// .labels-row exactly. Text is measured with a canvas in that font; the +N
+// badge is a chip too and is measured the same way. `compact` only drops the
+// trailing margin.
 const root = rootFontSizePx()
-const CHAR_WIDTH = 0.6 * root
+const LABEL_FONT_PX = 0.9 * root
 const LABEL_PADDING = 0.9 * root
 const LABEL_GAP = 0.25 * root
 const RIGHT_MARGIN = computed(() => props.compact ? 0 : 0.75 * root)
+
+// Fallback per-character width when canvas text measurement is unavailable.
+const CHAR_WIDTH = 0.6 * root
+const measureCtx = typeof document === 'undefined' ? null : document.createElement('canvas').getContext?.('2d') ?? null
+const textWidthCache = new Map()
+
+// Widths measured before the web font has loaded reflect the fallback font,
+// so they are not cached, and rows recompute once loading settles.
+const fontsReady = ref(typeof document === 'undefined' || !document.fonts)
+document.fonts?.ready.then(() => {
+  fontsReady.value = true
+})
+
+function measureTextWidth(text) {
+  if (!measureCtx) {
+    return text.length * CHAR_WIDTH
+  }
+  let width = textWidthCache.get(text)
+  if (width === undefined) {
+    const family = getComputedStyle(document.body).fontFamily || 'sans-serif'
+    const font = `600 ${LABEL_FONT_PX}px ${family}`
+    measureCtx.font = font
+    width = measureCtx.measureText(text).width
+    if (fontsReady.value && document.fonts?.check(font)) {
+      textWidthCache.set(text, width)
+    }
+  }
+  return width
+}
 
 // Container ref and width
 const containerRef = ref(null)
@@ -60,23 +88,25 @@ onBeforeUnmount(() => {
   }
 })
 
-// Estimate the width of a label based on its text
+// Rendered width of a chip for the given text
 function estimateLabelWidth(text) {
-  return (String(text).length * CHAR_WIDTH) + LABEL_PADDING
+  return measureTextWidth(String(text)) + LABEL_PADDING
 }
 
 // Computed: which labels to show based on container width
 const visibleLabelsData = computed(() => {
   const labels = props.labels
   const width = containerWidth.value
+  void fontsReady.value // recompute once the web font is available
 
   if (!labels || labels.length === 0) {
     return { visible: [], overflow: [], overflowCount: 0 }
   }
 
-  // If we don't have width yet, show all (will recalculate after mount)
+  // Render nothing until the container is measured. Rendering every label
+  // first would widen an auto-layout column and flash before collapsing.
   if (!width || width <= 0) {
-    return { visible: labels, overflow: [], overflowCount: 0 }
+    return { visible: [], overflow: [], overflowCount: 0 }
   }
 
   const availableWidth = width - RIGHT_MARGIN.value
@@ -183,11 +213,15 @@ function hidePopover() {
 </template>
 
 <style scoped>
+/* inline-size containment keeps the rendered chips from feeding back into an
+   auto-layout column's width, so the row is sized by its cell, not the
+   reverse. */
 .labels-row {
   display: flex;
   flex-wrap: nowrap;
   gap: 0.25rem;
   align-items: center;
+  contain: inline-size;
 }
 
 .label-tag {

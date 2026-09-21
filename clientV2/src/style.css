@@ -401,6 +401,25 @@ textarea:focus {
 }
 
 
+/* PrimeVue Checkbox: the Material preset draws the check mark as a CSS box but
+   leaves the indeterminate dash as an SVG, which blurs off-center whenever the
+   checkbox lands on a fractional pixel. Draw the dash as a whole-pixel box too. */
+.p-checkbox[data-p-indeterminate="true"] .p-checkbox-icon {
+  display: none;
+}
+.p-checkbox[data-p-indeterminate="true"] .p-checkbox-box::before {
+  content: "";
+  width: 10px;
+  height: 2px;
+  background: var(--p-checkbox-icon-color);
+}
+.p-checkbox-sm[data-p-indeterminate="true"] .p-checkbox-box::before {
+  width: 8px;
+}
+.p-checkbox-lg[data-p-indeterminate="true"] .p-checkbox-box::before {
+  width: 12px;
+}
+
 /* PrimeVue Splitter global hover style */
 .p-splitter .p-splitter-gutter {
   transition: background-color 0.2s ease !important;

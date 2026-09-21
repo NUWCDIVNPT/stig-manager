@@ -120,15 +120,22 @@ const catOptions = computed(() => {
 function getColumnPt(alignment = 'left') {
   const isCenter = alignment === 'center'
   return {
+    // The table uses fixed layout, so narrow columns shrink below their
+    // declared minimum when the panel narrows. Centered headers keep the body
+    // cell side padding and fall back to start alignment so the label stays
+    // visible instead of clipping on both sides.
     headerCell: {
-      style: { borderRight: '1px solid var(--color-border-light)' },
+      style: {
+        borderRight: '1px solid var(--color-border-light)',
+        ...(isCenter ? { paddingLeft: '0.35rem', paddingRight: '0.35rem' } : {}),
+      },
       class: isCenter ? 'column-header-center' : 'column-header-left',
     },
     columnHeaderContent: {
       style: {
         fontSize: '1rem',
         color: 'var(--color-text-primary)',
-        justifyContent: isCenter ? 'center' : 'flex-start',
+        justifyContent: isCenter ? 'safe center' : 'flex-start',
         textAlign: isCenter ? 'center' : 'left',
       },
     },
@@ -157,6 +164,8 @@ const columnPt = {
   left: getColumnPt('left'),
 }
 
+// Fixed layout: every column declares a width except Rule Title, which as
+// the only auto column takes all spare table width.
 const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
   table: { style: { tableLayout: 'fixed', minWidth: '100%' } },
@@ -187,7 +196,7 @@ const dataTablePt = {
     @update:selection="(val) => emit('update:selectedRow', val)"
     @filter="onFilter"
   >
-    <Column field="severity" export-header="CAT" :sort-field="severitySortValue" filter-field="severity" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column field="severity" export-header="CAT" :sort-field="severitySortValue" filter-field="severity" sortable :style="{ width: '5.5rem', minWidth: '5.5rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
           CAT
@@ -204,7 +213,7 @@ const dataTablePt = {
         </div>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('groupId')" field="groupId" header="Group" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.left">
+    <Column v-if="visibleFields.has('groupId')" field="groupId" header="Group" sortable :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.left">
       <template #body="{ data }">
         <span class="cell-text" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupId, searchFilter) }">
           <span v-if="searchFilter" v-html="highlightText(data.groupId, searchFilter)" />
@@ -242,7 +251,7 @@ const dataTablePt = {
         </span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('ruleTitle')" field="ruleTitle" header="Rule Title" sortable :style="{ width: '40%', minWidth: '18rem' }" :pt="columnPt.left">
+    <Column v-if="visibleFields.has('ruleTitle')" field="ruleTitle" header="Rule Title" sortable :style="{ minWidth: '18rem' }" :pt="columnPt.left">
       <template #body="{ data }">
         <div class="cell-text-field">
           <span
@@ -258,7 +267,7 @@ const dataTablePt = {
     </Column>
 
     <!-- Count Columns -->
-    <Column v-if="visibleFields.has('fail')" field="counts.results.fail" export-header="O" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('fail')" field="counts.results.fail" export-header="O" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
       <template #header>
         <ResultBadge status="O" />
       </template>
@@ -266,7 +275,7 @@ const dataTablePt = {
         <span class="cell-text">{{ data.counts?.results?.fail ?? 0 }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('pass')" field="counts.results.pass" export-header="NF" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('pass')" field="counts.results.pass" export-header="NF" sortable :style="{ width: '4.5rem', minWidth: '4.5rem' }" :pt="columnPt.center">
       <template #header>
         <ResultBadge status="NF" />
       </template>
@@ -274,7 +283,7 @@ const dataTablePt = {
         <span class="cell-text">{{ data.counts?.results?.pass ?? 0 }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('notapplicable')" field="counts.results.notapplicable" export-header="NA" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('notapplicable')" field="counts.results.notapplicable" export-header="NA" sortable :style="{ width: '4.5rem', minWidth: '4.5rem' }" :pt="columnPt.center">
       <template #header>
         <ResultBadge status="NA" />
       </template>
@@ -282,7 +291,7 @@ const dataTablePt = {
         <span class="cell-text">{{ data.counts?.results?.notapplicable ?? 0 }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('other')" field="counts.results.other" export-header="NR+" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('other')" field="counts.results.other" export-header="NR+" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
       <template #header>
         <ResultBadge status="NR+" />
       </template>
@@ -292,7 +301,7 @@ const dataTablePt = {
     </Column>
 
     <!-- Status Icons -->
-    <Column v-if="visibleFields.has('submitted')" field="counts.statuses.submitted" export-header="Submitted" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('submitted')" field="counts.statuses.submitted" export-header="Submitted" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
       <template #header>
         <StatusBadge status="submitted" />
       </template>
@@ -300,7 +309,7 @@ const dataTablePt = {
         <span class="cell-text">{{ data.counts?.statuses?.submitted ?? 0 }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('rejected')" field="counts.statuses.rejected" export-header="Rejected" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('rejected')" field="counts.statuses.rejected" export-header="Rejected" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
       <template #header>
         <StatusBadge status="rejected" />
       </template>
@@ -308,7 +317,7 @@ const dataTablePt = {
         <span class="cell-text">{{ data.counts?.statuses?.rejected ?? 0 }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('accepted')" field="counts.statuses.accepted" export-header="Accepted" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('accepted')" field="counts.statuses.accepted" export-header="Accepted" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
       <template #header>
         <StatusBadge status="accepted" />
       </template>
@@ -318,12 +327,12 @@ const dataTablePt = {
     </Column>
 
     <!-- Timestamp Columns -->
-    <Column v-if="visibleFields.has('oldest')" field="timestamps.ts.min" header="Oldest" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('oldest')" field="timestamps.ts.min" header="Oldest" sortable :style="{ width: '5.5rem', minWidth: '5.5rem' }" :pt="columnPt.center">
       <template #body="{ data }">
         <span v-if="data.timestamps?.ts?.min" class="cell-text" :title="data.timestamps.ts.min">{{ durationToNow(data.timestamps.ts.min) }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('newest')" field="timestamps.ts.max" header="Newest" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('newest')" field="timestamps.ts.max" header="Newest" sortable :style="{ width: '5.5rem', minWidth: '5.5rem' }" :pt="columnPt.center">
       <template #body="{ data }">
         <span v-if="data.timestamps?.ts?.max" class="cell-text" :title="data.timestamps.ts.max">{{ durationToNow(data.timestamps.ts.max) }}</span>
       </template>
@@ -364,12 +373,13 @@ const dataTablePt = {
 </template>
 
 <style scoped>
+/* Grows into spare header width but never claims the sort icon's room. */
 .column-header-with-filter {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.1rem;
-  width: 100%;
+  flex: 1 1 auto;
 }
 
 .checklist-grid__table {
