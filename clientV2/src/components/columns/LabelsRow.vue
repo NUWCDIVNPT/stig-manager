@@ -3,6 +3,7 @@ import Popover from 'primevue/popover'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getContrastColor, normalizeColor } from '../../shared/lib/colorUtils.js'
 import { rootFontSizePx } from '../../shared/lib/remToPx.js'
+import { bodyFontFamily, measureTextWidth } from '../../shared/lib/textWidth.js'
 
 const props = defineProps({
   labels: {
@@ -21,43 +22,13 @@ let hideTimeout = null
 
 // Chip geometry in px derived from rem so it tracks the root font-size along
 // with the chip CSS below. Padding, gap and font mirror .label-tag /
-// .labels-row exactly. Text is measured with a canvas in that font; the +N
-// badge is a chip too and is measured the same way. `compact` only drops the
-// trailing margin.
+// .labels-row exactly; the +N badge is a chip too and is measured the same
+// way. `compact` only drops the trailing margin.
 const root = rootFontSizePx()
-const LABEL_FONT_PX = 0.9 * root
+const LABEL_FONT = `600 ${0.9 * root}px ${bodyFontFamily()}`
 const LABEL_PADDING = 0.9 * root
 const LABEL_GAP = 0.25 * root
 const RIGHT_MARGIN = computed(() => props.compact ? 0 : 0.75 * root)
-
-// Fallback per-character width when canvas text measurement is unavailable.
-const CHAR_WIDTH = 0.6 * root
-const measureCtx = typeof document === 'undefined' ? null : document.createElement('canvas').getContext?.('2d') ?? null
-const textWidthCache = new Map()
-
-// Widths measured before the web font has loaded reflect the fallback font,
-// so they are not cached, and rows recompute once loading settles.
-const fontsReady = ref(typeof document === 'undefined' || !document.fonts)
-document.fonts?.ready.then(() => {
-  fontsReady.value = true
-})
-
-function measureTextWidth(text) {
-  if (!measureCtx) {
-    return text.length * CHAR_WIDTH
-  }
-  let width = textWidthCache.get(text)
-  if (width === undefined) {
-    const family = getComputedStyle(document.body).fontFamily || 'sans-serif'
-    const font = `600 ${LABEL_FONT_PX}px ${family}`
-    measureCtx.font = font
-    width = measureCtx.measureText(text).width
-    if (fontsReady.value && document.fonts?.check(font)) {
-      textWidthCache.set(text, width)
-    }
-  }
-  return width
-}
 
 // Container ref and width
 const containerRef = ref(null)
@@ -90,14 +61,13 @@ onBeforeUnmount(() => {
 
 // Rendered width of a chip for the given text
 function estimateLabelWidth(text) {
-  return measureTextWidth(String(text)) + LABEL_PADDING
+  return measureTextWidth(String(text), LABEL_FONT) + LABEL_PADDING
 }
 
 // Computed: which labels to show based on container width
 const visibleLabelsData = computed(() => {
   const labels = props.labels
   const width = containerWidth.value
-  void fontsReady.value // recompute once the web font is available
 
   if (!labels || labels.length === 0) {
     return { visible: [], overflow: [], overflowCount: 0 }

@@ -33,7 +33,7 @@ const emit = defineEmits(['select-rule', 'refresh'])
 const searchFilter = ref('')
 
 const TOGGLEABLE_COLUMNS = [
-  { field: 'version', header: 'STIG Id' },
+  { field: 'version', header: 'STIG Id', hidden: true },
   { field: 'fail', header: 'O' },
   { field: 'pass', header: 'NF' },
   { field: 'notapplicable', header: 'NA' },
@@ -41,8 +41,8 @@ const TOGGLEABLE_COLUMNS = [
   { field: 'submitted', header: 'Submitted' },
   { field: 'rejected', header: 'Rejected' },
   { field: 'accepted', header: 'Accepted' },
-  { field: 'oldest', header: 'Oldest' },
-  { field: 'newest', header: 'Newest' },
+  { field: 'oldest', header: 'Oldest', hidden: true },
+  { field: 'newest', header: 'Newest', hidden: true },
 ]
 
 const DISPLAY_MODE_FIELDS = {
@@ -52,9 +52,7 @@ const DISPLAY_MODE_FIELDS = {
 }
 
 // Hidden by default; the rule title gets the room instead.
-const DEFAULT_HIDDEN_COLUMNS = new Set(['version', 'oldest', 'newest'])
-
-const selectedColumns = ref(TOGGLEABLE_COLUMNS.filter(c => !DEFAULT_HIDDEN_COLUMNS.has(c.field)))
+const selectedColumns = ref(TOGGLEABLE_COLUMNS.filter(c => !c.hidden))
 const displayMode = ref('groupRule')
 
 const visibleFields = computed(() => {

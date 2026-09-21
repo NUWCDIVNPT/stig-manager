@@ -24,6 +24,7 @@ import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { normalizeColor } from '../../../shared/lib/colorUtils.js'
+import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
 import { formatReviewDate, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { patchReview, putReview } from '../../AssetReview/api/assetReviewApi.js'
 
@@ -196,11 +197,6 @@ function onRowClick(event) {
   if (!rowData || rowData.access !== 'rw') {
     return
   }
-  // The selection cell belongs to the checkbox: a click anywhere in it toggles
-  // the row (see .selection-hit) and never opens the editor.
-  if (event.originalEvent?.target?.closest?.('.selection-cell')) {
-    return
-  }
   openRowEditor(event.originalEvent || event, rowData)
 }
 
@@ -305,26 +301,24 @@ const filteredData = computed(() => {
   return data
 })
 
-const isAllSelected = computed(() => {
-  const data = filteredData.value
-  if (!data.length) { return false }
+// One pass over the filtered rows: `all` drives the header checkbox, `some`
+// its indeterminate state.
+const selectionState = computed(() => {
   const ids = selectedIdSet.value
-  let hasSelectable = false
-  for (const row of data) {
-    if (!isDataSelectable(row)) { continue }
-    hasSelectable = true
-    if (!ids.has(row.assetId)) { return false }
+  let selectable = 0
+  let selected = 0
+  for (const row of filteredData.value) {
+    if (!isDataSelectable(row)) {
+      continue
+    }
+    selectable++
+    if (ids.has(row.assetId)) {
+      selected++
+    }
   }
-  return hasSelectable
+  return { all: selectable > 0 && selected === selectable, some: selected > 0 && selected < selectable }
 })
-
-const isSomeSelected = computed(() => {
-  const ids = selectedIdSet.value
-  if (!ids.size) {
-    return false
-  }
-  return filteredData.value.some(row => isDataSelectable(row) && ids.has(row.assetId))
-})
+const isAllSelected = computed(() => selectionState.value.all)
 
 function onSelectAllChange(event) {
   if (event.checked) {
@@ -346,57 +340,19 @@ const stats = computed(() => calculateChecklistStats(filteredData.value) ?? {
   total: 0,
 })
 
-function getColumnPt(alignment = 'left') {
-  const isCenter = alignment === 'center'
-  return {
-    // Centered columns are icon-sized and fixed: their headers keep the body
-    // cell side padding so the column's minimum stays small, and fall back to
-    // start alignment rather than clipping on both sides.
-    headerCell: {
-      style: {
-        borderRight: '1px solid var(--color-border-light)',
-        ...(isCenter ? { paddingLeft: '0.35rem', paddingRight: '0.35rem' } : {}),
-      },
-      class: isCenter ? 'column-header-center' : 'column-header-left',
-    },
-    columnHeaderContent: {
-      style: {
-        fontSize: '1rem',
-        color: 'var(--color-text-primary)',
-        justifyContent: isCenter ? 'safe center' : 'flex-start',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-    },
-    bodyCell: {
-      style: {
-        verticalAlign: 'top',
-        padding: '0.15rem 0.35rem',
-        overflow: 'hidden',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-      class: isCenter ? 'column-body-center' : 'column-body-left',
-    },
-    bodyCellContent: {
-      style: {
-        display: 'flex',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        alignItems: 'flex-start',
-        width: '100%',
-      },
-    },
-  }
-}
-
 const columnPt = {
-  center: getColumnPt('center'),
-  left: getColumnPt('left'),
+  center: gridColumnPt('center'),
+  left: gridColumnPt('left'),
+  // Icon-only headers whose one action is sorting
+  icon: iconHeaderPt(gridColumnPt('center')),
 }
 
+// Unpadded so .selection-hit can fill the whole cell
 const selectionColumnPt = {
   ...columnPt.center,
   bodyCell: {
+    ...columnPt.center.bodyCell,
     style: { ...columnPt.center.bodyCell.style, padding: 0, position: 'relative' },
-    class: `${columnPt.center.bodyCell.class} selection-cell`,
   },
 }
 
@@ -448,7 +404,7 @@ const dataTablePt = {
         <Checkbox
           v-if="filteredData.length > 0"
           :model-value="isAllSelected"
-          :indeterminate="isSomeSelected && !isAllSelected"
+          :indeterminate="selectionState.some"
           :binary="true"
           @update:model-value="onSelectAllChange({ checked: $event })"
         />
@@ -461,7 +417,7 @@ const dataTablePt = {
           alt="Read only"
           title="Read only"
         >
-        <label v-else class="selection-hit">
+        <label v-else class="selection-hit" @click.stop>
           <Checkbox
             :model-value="selectedIdSet.has(data.assetId)"
             :binary="true"
@@ -579,7 +535,7 @@ const dataTablePt = {
     </Column>
 
     <!-- Time -->
-    <Column v-if="visibleFields.has('time')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('time')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.icon">
       <template #header>
         <i class="pi pi-clock" title="Last action" />
       </template>
@@ -814,7 +770,8 @@ const dataTablePt = {
 }
 
 /* Fills the selection cell so the whole cell is the checkbox hit area
-   (a label click toggles the input natively). */
+   (a label click toggles the input natively, and stops there so it never
+   reaches the row-click editor). */
 .selection-hit {
   position: absolute;
   inset: 0;

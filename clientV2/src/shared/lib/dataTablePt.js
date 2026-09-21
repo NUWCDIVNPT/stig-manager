@@ -28,6 +28,54 @@ export function compactTablePt({ bodyFontSize, footer = 'flush', headerPadding }
 }
 
 /**
+ * Per-`<Column>` `pt` for the review grids (Asset Review, Collection Review),
+ * keyed by text alignment. Centered columns are narrow icon or badge columns:
+ * their headers keep the body cell side padding so the column minimum stays
+ * small, and fall back to start alignment (`safe center`) rather than clipping
+ * on both sides when the panel narrows.
+ *
+ * @param {'left'|'center'} [alignment]
+ * @returns {object} A `pt` object for `<Column :pt="...">`.
+ */
+export function gridColumnPt(alignment = 'left') {
+  const isCenter = alignment === 'center'
+  return {
+    headerCell: {
+      style: {
+        borderRight: '1px solid var(--color-border-light)',
+        ...(isCenter ? { paddingLeft: '0.35rem', paddingRight: '0.35rem' } : {}),
+      },
+      class: isCenter ? 'column-header-center' : 'column-header-left',
+    },
+    columnHeaderContent: {
+      style: {
+        fontSize: '1rem',
+        color: 'var(--color-text-primary)',
+        justifyContent: isCenter ? 'safe center' : 'flex-start',
+        textAlign: isCenter ? 'center' : 'left',
+      },
+    },
+    bodyCell: {
+      style: {
+        verticalAlign: 'top',
+        padding: '0.15rem 0.35rem',
+        overflow: 'hidden',
+        textAlign: isCenter ? 'center' : 'left',
+      },
+      class: isCenter ? 'column-body-center' : 'column-body-left',
+    },
+    bodyCellContent: {
+      style: {
+        display: 'flex',
+        justifyContent: isCenter ? 'center' : 'flex-start',
+        alignItems: 'flex-start',
+        width: '100%',
+      },
+    },
+  }
+}
+
+/**
  * Marks a column's header as icon-only: a badge or icon with sorting as its
  * one action. The sort indicator is hidden until the column is sorted and is
  * then overlaid at the cell edge, so the badge stays centered and the column

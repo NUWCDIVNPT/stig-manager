@@ -23,7 +23,11 @@ const isActive = computed(() => {
 // PrimeVue's own toggle-all checkbox has no partial state, so the header is
 // rendered here with a Checkbox that reports indeterminate for a subset.
 const allSelected = computed(() => {
-  return isActive.value && props.options.every(o => props.modelValue.includes(o.value))
+  if (!isActive.value) {
+    return false
+  }
+  const selected = new Set(props.modelValue)
+  return props.options.every(o => selected.has(o.value))
 })
 
 function onToggleAll(checked) {
@@ -39,7 +43,6 @@ const columnFilterPT = {
   label: { style: 'display: none;' },
   dropdown: { style: 'width: auto; padding: 0.2rem 0.2rem;' },
   panel: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.6); min-width: 100px;' },
-  header: { style: 'background: var(--color-background-dark); border-bottom: 1px solid var(--color-border-light); padding: 0.25rem 0.5rem;' },
   item: ({ context }) => ({
     style: {
       color: context.selected ? 'var(--color-text-bright)' : 'var(--color-text-primary)',
@@ -49,7 +52,6 @@ const columnFilterPT = {
       background: context.focused ? 'var(--color-background-light)' : 'transparent',
     },
   }),
-  headerCheckboxContainer: { style: 'margin-right: 0.4rem;' },
   itemCheckboxContainer: { style: 'margin-right: 0.4rem;' },
   filterInput: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border: 1px solid var(--color-border-default); padding: 0.2rem; font-size: 0.85rem;' },
   filterIcon: { style: 'color: var(--color-text-dim); width: 0.8rem; height: 0.8rem;' },

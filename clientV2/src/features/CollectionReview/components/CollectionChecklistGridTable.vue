@@ -13,7 +13,7 @@ import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
-import { iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
+import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { fieldMatches, highlightText } from '../../../shared/lib/searchUtils.js'
 
@@ -118,53 +118,11 @@ const catOptions = computed(() => {
   })).sort((a, b) => a.label.localeCompare(b.label))
 })
 
-function getColumnPt(alignment = 'left') {
-  const isCenter = alignment === 'center'
-  return {
-    // The table uses fixed layout, so narrow columns shrink below their
-    // declared minimum when the panel narrows. Centered headers keep the body
-    // cell side padding and fall back to start alignment so the label stays
-    // visible instead of clipping on both sides.
-    headerCell: {
-      style: {
-        borderRight: '1px solid var(--color-border-light)',
-        ...(isCenter ? { paddingLeft: '0.35rem', paddingRight: '0.35rem' } : {}),
-      },
-      class: isCenter ? 'column-header-center' : 'column-header-left',
-    },
-    columnHeaderContent: {
-      style: {
-        fontSize: '1rem',
-        color: 'var(--color-text-primary)',
-        justifyContent: isCenter ? 'safe center' : 'flex-start',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-    },
-    bodyCell: {
-      style: {
-        verticalAlign: 'top',
-        padding: '0.15rem 0.35rem',
-        overflow: 'hidden',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-      class: isCenter ? 'column-body-center' : 'column-body-left',
-    },
-    bodyCellContent: {
-      style: {
-        display: 'flex',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        alignItems: 'flex-start',
-        width: '100%',
-      },
-    },
-  }
-}
-
 const columnPt = {
-  center: getColumnPt('center'),
-  left: getColumnPt('left'),
+  center: gridColumnPt('center'),
+  left: gridColumnPt('left'),
   // Badge-only headers whose one action is sorting
-  icon: iconHeaderPt(getColumnPt('center')),
+  icon: iconHeaderPt(gridColumnPt('center')),
 }
 
 // Fixed layout: every column declares a width except Rule Title, which as

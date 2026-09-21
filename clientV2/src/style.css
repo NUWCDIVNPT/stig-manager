@@ -413,12 +413,6 @@ textarea:focus {
   height: 2px;
   background: var(--p-checkbox-icon-color);
 }
-.p-checkbox-sm[data-p-indeterminate="true"] .p-checkbox-box::before {
-  width: 8px;
-}
-.p-checkbox-lg[data-p-indeterminate="true"] .p-checkbox-box::before {
-  width: 12px;
-}
 
 /* PrimeVue DataTable icon-only headers (see iconHeaderPt in dataTablePt.js):
    the sort indicator wrapper leaves the flex flow, hides until the column is
