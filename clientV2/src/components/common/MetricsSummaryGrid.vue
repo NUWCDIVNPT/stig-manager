@@ -71,6 +71,34 @@ const emit = defineEmits(['row-select', 'shield-click', 'collection-icon-click',
 
 const ROW_HEIGHT = rowHeightPx('dense')
 
+// Column widths in rem. The table lays out fixed, so these are honoured as
+// given: name and label columns get the room (benchmark IDs run long), and any spare width is shared
+// out proportionally. Count, duration and badge columns hold a few digits or
+// one badge; their floor is the header text plus the sort icon at the md
+// header size (about 6rem for "Checks", 6.75rem for "Updated", 7.5rem for
+// "Submitted"), which is what sets these numbers. Resize mode "expand" widens
+// the table and scrolls instead of squeezing the neighbouring column.
+const WIDTH = {
+  name: 14,
+  benchmark: 20,
+  labels: 18,
+  label: 12,
+  count: 6,
+  revision: 6.5,
+  checklists: 7,
+  duration: 6.75,
+  bar: 7.5,
+  badge: 5.5,
+}
+
+function columnAttrs({ width, ...attrs }) {
+  return attrs
+}
+
+function columnStyle({ width }) {
+  return `width: ${width}rem; min-width: ${width}rem; height: var(--item-size); padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;`
+}
+
 const dataTableRef = ref(null)
 const selectedRow = ref(null)
 
@@ -123,68 +151,68 @@ const columns = computed(() => {
   console.log('Computing columns for aggregation type:', aggregationType.value)
   // Common columns
   const commonColumns = [
-    { field: 'checks', header: 'Checks', component: Column },
-    { field: 'oldest', header: 'Oldest', component: DurationColumn },
-    { field: 'newest', header: 'Newest', component: DurationColumn },
-    { field: 'updated', header: 'Updated', component: DurationColumn },
-    { field: 'assessedPct', header: 'Assessed', component: PercentageColumn },
-    { field: 'submittedPct', header: 'Submitted', component: PercentageColumn },
-    { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn },
-    { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn },
-    { field: 'cora', header: 'CORA', component: CoraColumn },
-    { field: 'cat3', header: 'CAT 3', component: CatColumn, category: 3 },
-    { field: 'cat2', header: 'CAT 2', component: CatColumn, category: 2 },
-    { field: 'cat1', header: 'CAT 1', component: CatColumn, category: 1 },
+    { field: 'checks', header: 'Checks', component: Column, width: WIDTH.count },
+    { field: 'oldest', header: 'Oldest', component: DurationColumn, width: WIDTH.duration },
+    { field: 'newest', header: 'Newest', component: DurationColumn, width: WIDTH.duration },
+    { field: 'updated', header: 'Updated', component: DurationColumn, width: WIDTH.duration },
+    { field: 'assessedPct', header: 'Assessed', component: PercentageColumn, width: WIDTH.bar },
+    { field: 'submittedPct', header: 'Submitted', component: PercentageColumn, width: WIDTH.bar },
+    { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn, width: WIDTH.bar },
+    { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn, width: WIDTH.bar },
+    { field: 'cora', header: 'CORA', component: CoraColumn, width: WIDTH.badge },
+    { field: 'cat3', header: 'CAT 3', component: CatColumn, category: 3, width: WIDTH.badge },
+    { field: 'cat2', header: 'CAT 2', component: CatColumn, category: 2, width: WIDTH.badge },
+    { field: 'cat1', header: 'CAT 1', component: CatColumn, category: 1, width: WIDTH.badge },
   ]
   switch (aggregationType.value) {
     case 'collection':
       return [
-        { field: 'collectionName', header: 'Collection', component: CollectionColumn, showShield: props.showShield, onShieldClick, showCollectionIcon: props.showCollectionIcon, onCollectionIconClick },
-        { field: 'assetCnt', header: 'Assets', component: Column },
-        { field: 'stigCnt', header: 'STIGs', component: Column },
-        { field: 'checklistCnt', header: 'Checklists', component: Column },
+        { field: 'collectionName', header: 'Collection', component: CollectionColumn, showShield: props.showShield, onShieldClick, showCollectionIcon: props.showCollectionIcon, onCollectionIconClick, width: WIDTH.benchmark },
+        { field: 'assetCnt', header: 'Assets', component: Column, width: WIDTH.count },
+        { field: 'stigCnt', header: 'STIGs', component: Column, width: WIDTH.count },
+        { field: 'checklistCnt', header: 'Checklists', component: Column, width: WIDTH.checklists },
         ...commonColumns,
       ]
     case 'asset':
       return [
-        { field: 'assetName', header: 'Asset', component: AssetColumn, showShield: props.showShield, onShieldClick },
-        { field: 'labels', header: 'Labels', component: LabelsColumn },
-        { field: 'stigCnt', header: 'Stigs', component: Column },
+        { field: 'assetName', header: 'Asset', component: AssetColumn, showShield: props.showShield, onShieldClick, width: WIDTH.name },
+        { field: 'labels', header: 'Labels', component: LabelsColumn, width: WIDTH.labels },
+        { field: 'stigCnt', header: 'Stigs', component: Column, width: WIDTH.count },
         ...commonColumns,
       ]
     case 'stig':
       return [
-        { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, showShield: props.showShield, onShieldClick },
+        { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, showShield: props.showShield, onShieldClick, width: WIDTH.benchmark },
         // { field: 'title', header: 'Title', component: Column },
-        { field: 'revisionStr', header: 'Revision', component: Column },
-        { field: 'assetCnt', header: 'Assets', component: Column },
+        { field: 'revisionStr', header: 'Revision', component: Column, width: WIDTH.revision },
+        { field: 'assetCnt', header: 'Assets', component: Column, width: WIDTH.count },
         ...commonColumns,
       ]
     case 'label':
       return [
-        { field: 'label', header: 'Label', component: LabelsColumn },
-        { field: 'assetCnt', header: 'Assets', component: Column },
+        { field: 'label', header: 'Label', component: LabelsColumn, width: WIDTH.label },
+        { field: 'assetCnt', header: 'Assets', component: Column, width: WIDTH.count },
         ...commonColumns,
       ]
     case 'unagg':
       if (props.parentAggType === 'asset') {
         return [
-          { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, showShield: props.showShield, onShieldClick },
-          { field: 'revisionStr', header: 'Revision', component: Column },
+          { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, showShield: props.showShield, onShieldClick, width: WIDTH.benchmark },
+          { field: 'revisionStr', header: 'Revision', component: Column, width: WIDTH.revision },
           ...commonColumns,
         ]
       }
       if (props.parentAggType === 'stig') {
         return [
-          { field: 'assetName', header: 'Asset', component: AssetColumn, showShield: props.showShield, onShieldClick },
-          { field: 'labels', header: 'Labels', component: LabelsColumn },
+          { field: 'assetName', header: 'Asset', component: AssetColumn, showShield: props.showShield, onShieldClick, width: WIDTH.name },
+          { field: 'labels', header: 'Labels', component: LabelsColumn, width: WIDTH.labels },
           ...commonColumns,
         ]
       }
       return [
-        { field: 'assetName', header: 'Asset', component: AssetColumn, showShield: props.showShield, onShieldClick },
-        { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, showShield: props.showShield, onShieldClick },
-        { field: 'labels', header: 'Labels', component: LabelsColumn },
+        { field: 'assetName', header: 'Asset', component: AssetColumn, showShield: props.showShield, onShieldClick, width: WIDTH.name },
+        { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, showShield: props.showShield, onShieldClick, width: WIDTH.benchmark },
+        { field: 'labels', header: 'Labels', component: LabelsColumn, width: WIDTH.labels },
         ...commonColumns,
       ]
     default:
@@ -315,7 +343,8 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     scrollable
     scroll-height="flex"
     resizable-columns
-    column-resize-mode="fit"
+    column-resize-mode="expand"
+    table-style="table-layout: fixed"
     sort-field="benchmarkId"
     :sort-order="1"
     :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
@@ -323,7 +352,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     @row-select="onRowSelect"
   >
     <template v-for="col in columns" :key="col.field">
-      <component :is="col.component" v-bind="col" sortable style="height: var(--item-size); max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
+      <component :is="col.component" v-bind="columnAttrs(col)" sortable :style="columnStyle(col)" />
     </template>
     <template #empty>
       <div class="agg-grid-empty-state">
@@ -359,14 +388,6 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
 
 :deep(.p-datatable-thead > tr > th:last-child) {
   border-right: none;
-}
-
-.agg-grid-row {
-  height: 45px;
-  width: 100px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 .agg-grid-empty-state {
