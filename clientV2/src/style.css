@@ -199,7 +199,7 @@
   background-color: var(--color-background-subtle);
   padding: 2px 4px;
   border-radius: 4px;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 .sm-cora-tip .formula {
   display: inline-block;
@@ -338,7 +338,7 @@ textarea:focus {
   padding: 0.15rem 0.4rem;
   border-radius: 3px;
   color: var(--color-text-dim);
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 
 .collection-tab-panel .empty-state,

@@ -68,7 +68,7 @@ const treePt = {
   flex-direction: column;
   overflow: hidden;
   padding: 0.25rem 0.5rem;
-  font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
 }
 
 .json-tree-empty {

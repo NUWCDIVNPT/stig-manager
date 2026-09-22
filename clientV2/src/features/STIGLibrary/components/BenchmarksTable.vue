@@ -224,7 +224,7 @@ function clearFilter() {
 }
 
 .bm-cell__id {
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-size: 1rem;
   color: var(--color-text-dim);
 }

@@ -280,7 +280,7 @@ const exportResult = ({ data }) => badgeFor(data) ?? ''
   background: var(--color-background-darkest);
   color: var(--color-text-dim);
   border: 1px solid var(--color-border-default);
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
 }
 
 .status-pill {

@@ -99,7 +99,7 @@
   border-radius: 4px;
   background: var(--color-background-darkest);
   color: var(--color-text-dim);
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-size: 1.05rem;
   white-space: nowrap;
 }
@@ -226,7 +226,7 @@
 /* Revision label chip, tinted like the inline diff for the compared (del) and
    viewed (add) revisions. */
 .stiglib-rev {
-  font-family: monospace;
+  font-family: var(--font-mono);
   padding: 0.1rem 0.35rem;
   border-radius: 3px;
 }

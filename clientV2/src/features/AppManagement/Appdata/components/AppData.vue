@@ -470,7 +470,7 @@ const filePickerBtnPt = {
   border: 1px solid var(--color-border-default);
   border-radius: 8px;
   padding: 1rem 1.15rem;
-  font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 1.1rem;
   line-height: 1.6;
   color: var(--color-text-primary);

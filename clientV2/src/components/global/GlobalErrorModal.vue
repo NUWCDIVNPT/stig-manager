@@ -121,7 +121,7 @@ const buttonPt = {
 
 pre {
   margin: 0;
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-size: 0.85rem;
   color: var(--color-text-primary);
   white-space: pre-wrap;

@@ -519,7 +519,7 @@ watch([
 }
 
 .cell-text--mono {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   color: var(--color-text-dim);
   font-size: 1rem;
 }

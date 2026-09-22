@@ -104,7 +104,6 @@ const treePt = {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
 }
 
 /* Matches the Service Jobs feature's .panel-title header bars; the taller
@@ -130,6 +129,7 @@ const treePt = {
   flex-direction: column;
   overflow: hidden;
   background: var(--p-datatable-row-background);
+  font-family: var(--font-mono);
 }
 
 .log-record-empty {

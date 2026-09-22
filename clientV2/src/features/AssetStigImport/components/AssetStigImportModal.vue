@@ -228,7 +228,7 @@ const dialogTitle = computed(() => {
 .error-callout__detail {
   margin: 0.5rem 0 0;
   white-space: pre-wrap;
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 1rem;
   color: var(--color-text-dim);
 }

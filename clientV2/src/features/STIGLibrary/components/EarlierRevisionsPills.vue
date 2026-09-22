@@ -47,14 +47,13 @@ const overflowTitle = computed(() => earlier.value.slice(props.max).join(', '))
   background-color: var(--color-background-darkest);
   border: 1px solid var(--color-border-default);
   color: var(--color-text-dim);
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-size: 1.1rem;
   line-height: 1.4;
 }
 
 .earlier-revisions__pill--more {
   background-color: transparent;
-  font-weight: 600;
   cursor: help;
 }
 

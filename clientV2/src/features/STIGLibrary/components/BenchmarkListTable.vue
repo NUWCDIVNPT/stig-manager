@@ -254,7 +254,7 @@ function onRowClick(event) {
   display: inline-block;
   width: 100%;
   text-align: center;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 
 .stiglib-cell-text--date {
