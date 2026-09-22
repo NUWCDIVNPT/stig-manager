@@ -60,9 +60,12 @@ const dialogPt = {
 </template>
 ```
 
+Sizes come from the type scale and the rem row-height tokens; see [Typography and Sizing](TypographyAndSizing.md). In short: `font-size: var(--text-md)` (never a literal), `var(--font-mono)` for identifiers and code, `rowHeightPx(kind)` or `useGridDensity(gridKey)` for virtual scroller rows, and rem for column widths.
+
 ### ❌ What NOT To Do:
 *   **Deep Selectors:** Avoid `::v-deep` or `>>>` to hack external component styles. It is brittle and breaks easily with library updates. Use the exposed `pt` API instead.
 *   **Global Styles:** Never write styles without `scoped` in a component file.
+*   **Literal Sizes:** No `font-size: 0.9rem`, no px row heights, no named font stacks. The convention tests reject them.
 
 ## 4. Dialogs & v-model
 For modal components, use a computed property with a getter/setter to handle the `v-model` cleanly.
