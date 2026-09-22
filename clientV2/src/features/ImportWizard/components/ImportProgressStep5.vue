@@ -144,7 +144,7 @@ const rejectedRef = ref()
       <div class="running-text">
         Processing {{ statusRows.length }} of {{ totalCount }}
       </div>
-      <div class="running-hint">
+      <div>
         Full results appear here when the import finishes.
       </div>
     </div>
@@ -303,8 +303,5 @@ const rejectedRef = ref()
   font-size: var(--text-md);
   color: var(--color-text-primary);
   font-variant-numeric: tabular-nums;
-}
-.running-hint {
-  font-size: var(--text-md);
 }
 </style>

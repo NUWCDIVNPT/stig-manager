@@ -55,23 +55,17 @@
      Ubuntu Mono is bundled (matches the legacy client); system stack as fallback. */
   --font-mono: 'Ubuntu Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
 
-  /* Type scale. Every font-size in a component is one of these tokens
-     (shared/tests/typographyConventions.test.js enforces it; shared/lib/textScale.js
-     mirrors the rem values for code that needs numbers).
-     sm is the only text size below the root: badges, pills, counts, metadata
-     lines, kicker labels. Anything the user reads to act on (cells, inputs,
-     labels, hints, validation messages, logs) is md or larger. */
+  /* Type scale; see docs/components/TypographyAndSizing.md for what each
+     step is for. shared/lib/textScale.js mirrors the values and
+     shared/tests/typographyConventions.test.js enforces both. */
   --text-sm: 0.85rem;
   --text-md: 1rem;
   --text-lg: 1.1rem;
   --text-xl: 1.25rem;
   --text-2xl: 1.5rem;
-  /* Display: empty states, 404, bootstrap art, large standalone icons. */
   --text-display: 2rem;
   --text-display-lg: 3rem;
   --text-display-xl: 5rem;
-  /* Standalone glyphs only (carets, clear and dismiss buttons, row pencils);
-     icons inline with text inherit the text size. */
   --icon-xs: 0.75rem;
 
   /* CAT Rating Colors */

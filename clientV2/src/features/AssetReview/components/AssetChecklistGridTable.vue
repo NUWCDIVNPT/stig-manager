@@ -504,7 +504,7 @@ const dataTablePt = {
   opacity: 0.9;
 }
 
-/* Size and line height come from the grid geometry (useGridDensity fontRem),
+/* Size and line height come from the grid geometry (useGridDensity textSize),
    so N clamped lines fill exactly N rows. */
 .cell-text {
   font-size: var(--cell-font-size);

@@ -403,7 +403,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   color: var(--color-text-dim);
 }
 
-/* Size and line height come from the grid geometry (useGridDensity fontRem),
+/* Size and line height come from the grid geometry (useGridDensity textSize),
    so N clamped lines fill exactly N rows. Only the clamped Detail/Comment
    cells use it. */
 .cell-text {

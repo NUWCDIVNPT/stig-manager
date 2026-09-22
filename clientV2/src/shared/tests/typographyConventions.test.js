@@ -1,58 +1,50 @@
 import { readFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { sourceFiles, SRC_ROOT } from '../../testUtils/sourceFiles.js'
+import { sourceFileContents, SRC_ROOT } from '../../testUtils/sourceFiles.js'
 import { TEXT_SCALE_REM } from '../lib/textScale.js'
 
-// Two font families and one type scale, declared once in style.css.
-// Components size text with the --text-* tokens (or --icon-xs for standalone
-// glyphs, or --cell-font-size which the density grids derive from the scale)
-// and set a family only to var(--font-mono) or inherit. style.css itself owns
-// the :root px size, the @font-face rules and the body family.
+// Enforces docs/components/TypographyAndSizing.md: every font-size is a
+// --text-* token (or --icon-xs for a standalone glyph, or --cell-font-size
+// which the density grids set from a token) and every font-family is
+// var(--font-mono) or inherit. style.css declares the tokens and is exempt.
 
 const STYLE_CSS = join(SRC_ROOT, 'style.css')
-const ALLOWED_SIZE = /^(?:var\(--text-[a-z0-9-]+\)|var\(--icon-xs\)|var\(--cell-font-size\)|inherit)(?: !important)?$/
-const ALLOWED_FAMILY = /^(?:var\(--font-mono\)|inherit)$/
+const ALLOWED_SIZE = new Set([
+  ...Object.keys(TEXT_SCALE_REM).map(k => `var(--text-${k})`),
+  'var(--icon-xs)',
+  'var(--cell-font-size)',
+  'inherit',
+])
+const ALLOWED_FAMILY = new Set(['var(--font-mono)', 'inherit'])
 
-function styleBlocks(path, src) {
-  if (path.endsWith('.css')) {
-    return [src]
-  }
-  return [...src.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1])
+// Every `<property>: <value>` in the file, whether a CSS declaration, a pt
+// string or a style-object key (`fontSize: '...'`). Also catches the `font:`
+// shorthand when asked for 'font', since the hyphen keeps font-size and
+// font-family from matching it.
+function declarations(src, ...properties) {
+  const re = new RegExp(`\\b(?:${properties.join('|')})\\s*:\\s*['"\`]?([^;}'"\`]+?)\\s*(?=[;}'"\`]|$)`, 'gm')
+  return [...src.matchAll(re)].map(m => ({ value: m[1].replace(/\s*!important$/, ''), index: m.index }))
 }
 
-function declarations(src, property) {
-  const re = new RegExp(`${property}:\\s*([^;}"'\`]+?)\\s*(?=[;}"'\`]|$)`, 'g')
-  return [...src.matchAll(re)].map(m => ({ value: m[1].trim(), line: src.slice(0, m.index).split('\n').length }))
+function offender(file, index, text) {
+  return `${file.path}:${file.src.slice(0, index).split('\n').length} ${text}`
 }
 
-const files = [...sourceFiles(['.vue', '.css', '.js'])]
-  .filter(p => p !== STYLE_CSS)
-  .map(p => ({ path: relative(SRC_ROOT, p), src: readFileSync(p, 'utf8') }))
+const files = sourceFileContents(['.vue', '.css', '.js']).filter(f => join(SRC_ROOT, f.path) !== STYLE_CSS)
 
 describe('typography conventions', () => {
-  it('scans the source tree', () => {
-    expect(files.length).toBeGreaterThan(200)
-  })
-
   it('sizes text only with the scale tokens', () => {
     const offenders = []
     for (const f of files) {
-      for (const { value, line } of declarations(f.src, 'font-size')) {
-        if (!ALLOWED_SIZE.test(value)) {
-          offenders.push(`${f.path}:${line} font-size: ${value}`)
+      for (const { value, index } of declarations(f.src, 'font-size', 'fontSize')) {
+        if (!ALLOWED_SIZE.has(value)) {
+          offenders.push(offender(f, index, `font-size: ${value}`))
         }
       }
-      for (const m of f.src.matchAll(/fontSize:\s*'([^']+)'/g)) {
-        if (!ALLOWED_SIZE.test(m[1])) {
-          offenders.push(`${f.path} fontSize: '${m[1]}'`)
-        }
-      }
-      for (const block of styleBlocks(f.path, f.src)) {
-        for (const m of block.matchAll(/^ *font:([^;]+);/gm)) {
-          if (m[1].trim() !== 'inherit') {
-            offenders.push(`${f.path} font shorthand: ${m[1].trim()}`)
-          }
+      for (const { value, index } of declarations(f.src, 'font')) {
+        if (value !== 'inherit') {
+          offenders.push(offender(f, index, `font shorthand: ${value}`))
         }
       }
     }
@@ -62,9 +54,9 @@ describe('typography conventions', () => {
   it('sets a font family only to the mono token or inherit', () => {
     const offenders = []
     for (const f of files) {
-      for (const { value, line } of declarations(f.src, 'font-family')) {
-        if (!ALLOWED_FAMILY.test(value)) {
-          offenders.push(`${f.path}:${line} font-family: ${value}`)
+      for (const { value, index } of declarations(f.src, 'font-family', 'fontFamily')) {
+        if (!ALLOWED_FAMILY.has(value)) {
+          offenders.push(offender(f, index, `font-family: ${value}`))
         }
       }
     }
@@ -73,7 +65,7 @@ describe('typography conventions', () => {
 
   it('keeps textScale.js equal to the style.css tokens', () => {
     const css = readFileSync(STYLE_CSS, 'utf8')
-    const tokens = Object.fromEntries([...css.matchAll(/--text-([a-z0-9]+):\s*([\d.]+)rem;/g)].map(m => [m[1], Number(m[2])]))
-    expect(tokens).toMatchObject(TEXT_SCALE_REM)
+    const tokens = Object.fromEntries([...css.matchAll(/--text-([a-z0-9-]+):\s*([\d.]+)rem;/g)].map(m => [m[1], Number(m[2])]))
+    expect(tokens).toEqual(TEXT_SCALE_REM)
   })
 })

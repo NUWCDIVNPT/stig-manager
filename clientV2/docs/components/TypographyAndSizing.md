@@ -9,7 +9,7 @@ Every `font-size` in a component, stylesheet or PrimeVue `pt` string is one of t
 | token | rem | at 12px | use for |
 |---|---|---|---|
 | `--text-sm` | 0.85 | 10.2px | badges, pills, counts, author/timestamp lines, uppercase kicker labels, character counters |
-| `--text-md` | 1 | 12px | everything the user reads to act on: body, table cells, inputs, form labels, hints, validation messages, buttons, log and `pre` output, modal content, table headers |
+| `--text-md` | 1 | 12px | everything the user reads to act on: body, table cells, inputs, form labels, hints, validation messages, buttons, log and `pre` output, modal content, table headers (dense review-grid headers use `sm`) |
 | `--text-lg` | 1.1 | 13.2px | Review checklist cell text, Rule titles, nav rail labels, in-page panel titles |
 | `--text-xl` | 1.25 | 15px | section headings, modal titles, breadcrumb, large stat values |
 | `--text-2xl` | 1.5 | 18px | page titles, wizard step titles, empty-state headlines, the CORA score |
@@ -21,7 +21,7 @@ Rules:
 - **One text size below the root.** `sm` is for things that are scanned, not read. Text the user must read to act on (a validation message, a form label, a hint, an error detail) is `md` even when it is secondary; use `--color-text-dim` for hierarchy, not a smaller size.
 - **Icons inline with text inherit** the text size. Only a standalone glyph takes `--icon-xs`; larger standalone icons take `xl`, `2xl` or a display token.
 - **No literal sizes anywhere**: not in `<style>`, not in a `pt` string (`style: 'font-size: var(--text-md);'`), not in a style object (`fontSize: 'var(--text-md)'`), and no `font:` shorthand. `inherit` is allowed.
-- **Code that needs the number** (grid geometry, text measurement) reads `TEXT_SCALE_REM` from `src/shared/lib/textScale.js`, which mirrors the tokens. The convention test fails if the two drift.
+- **Code that needs the number** (grid geometry, text measurement) reads `TEXT_SCALE_REM` from `src/shared/lib/textScale.js`, which mirrors every `--text-*` token. The convention test fails if the two drift.
 
 If a design needs a size that is not on the scale, the answer is almost always a neighbouring token plus weight or color. Adding a token is a deliberate change: add it to `style.css`, to `textScale.js` if code needs it, and to this table.
 
@@ -57,7 +57,7 @@ Two families ship with the app; nothing else is named in source.
 Virtual scrollers need a pixel `itemSize`, and rows are pinned to it (`height: var(--item-size); overflow: hidden`). A row that renders taller than its slot drifts as the list scrolls; a row that renders shorter leaves a gap at the end. Because the rows themselves are sized in rem, the pixel value must derive from the root:
 
 - **Fixed-height lists** pick a token from `ROW_HEIGHT_REM` in `src/shared/lib/rowHeights.js` and convert it once at setup with `rowHeightPx(kind)`. Choose the smallest token whose height fits the tallest thing in the row (a badge, a Select, a two-line cell). Bind it as `--item-size` on the table root and pin the row height in CSS from that variable. `rowHeights.test.js` fails if a component converts a row height any other way.
-- **Density grids** (the Review checklists, Findings, STIG Library) call `useGridDensity(gridKey)`. Geometry lives in one table, `GRID_GEOMETRY`, keyed by grid: the cell font size as a `TEXT_SCALE_REM` step, the padding around the text, and the natural height of the tallest non-text cell. The composable returns `gridStyle`, which binds `--line-clamp`, `--item-size`, `--cell-font-size` and `--cell-line-height` on the grid root; the clamped cell rule reads the last two, so `N` clamped lines fill exactly `N` lines and the scroller's `n × itemSize` placement holds. A header and body that share a key share the same geometry and the same density state. `useGridDensity.test.js` fails on a grid key that is used but not registered.
+- **Density grids** (the Review checklists, Findings, STIG Library) call `useGridDensity(gridKey)`. Geometry lives in one table, `GRID_GEOMETRY`, keyed by grid: the cell text size as a `--text-*` token name, the padding around the text, and the natural height of the tallest non-text cell. The composable returns `gridStyle`, which binds `--line-clamp`, `--item-size`, `--cell-font-size` and `--cell-line-height` on the grid root; the clamped cell rule reads the last two, so `N` clamped lines fill exactly `N` lines and the scroller's `n × itemSize` placement holds. A header and body that share a key share the same geometry and the same density state. `useGridDensity.test.js` fails on a grid key that is used but not registered.
 
 ```js
 // Fixed-height list

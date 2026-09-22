@@ -60,7 +60,7 @@ const columnTogglePT = {
   >
     <template #value>
       <div class="column-toggle__value">
-        <i class="pi pi-cog column-toggle__icon" />
+        <i class="pi pi-cog" />
         <span>Columns</span>
       </div>
     </template>
@@ -100,10 +100,6 @@ const columnTogglePT = {
   font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-bright);
-}
-
-.column-toggle__icon {
-  font-size: var(--text-md);
 }
 
 .column-toggle__option {

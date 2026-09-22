@@ -77,12 +77,7 @@ const rendered = computed(() => {
   font-family: var(--font-mono);
 }
 
-.d2h-wrapper :deep(.d2h-code-line),
-.d2h-wrapper :deep(.d2h-code-line-prefix),
-.d2h-wrapper :deep(.d2h-code-line-ctn),
-.d2h-wrapper :deep(.d2h-code-linenumber),
-.d2h-wrapper :deep(.line-num1),
-.d2h-wrapper :deep(.line-num2) {
+.d2h-wrapper :deep(.d2h-diff-table) {
   font-family: var(--font-mono);
 }
 

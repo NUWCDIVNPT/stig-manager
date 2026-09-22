@@ -9,14 +9,14 @@
  * @returns {object} A `pt` object for `<DataTable :pt="...">`.
  */
 export function compactTablePt({ footer = 'flush', headerPadding } = {}) {
-  const bodyCellStyle = 'padding: 0.4rem 0.6rem; font-size: var(--text-md);'
+  const bodyCellStyle = 'padding: 0.4rem 0.6rem;'
   const footerStyle = footer === 'divider'
     ? 'padding: 0; border-top: 1px solid var(--color-border-default); background: transparent;'
     : 'padding: 0; border: none;'
   const headerCellStyle = `font-size: var(--text-md); font-weight: 600;${headerPadding ? ` padding: ${headerPadding};` : ''}`
 
   return {
-    root: { style: 'background: var(--p-datatable-row-background);' },
+    root: { style: 'background: var(--p-datatable-row-background); font-size: var(--text-md);' },
     tableContainer: { style: 'background: var(--p-datatable-row-background);' },
     footer: { style: footerStyle },
     column: {

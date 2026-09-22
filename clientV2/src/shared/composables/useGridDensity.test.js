@@ -96,7 +96,7 @@ describe('useGridDensity', () => {
     expect(gridStyle.value).toEqual({
       '--line-clamp': 2,
       '--item-size': '32px',
-      '--cell-font-size': '1rem',
+      '--cell-font-size': 'var(--text-md)',
       '--cell-line-height': '1.3rem',
     })
     increaseRowHeight()

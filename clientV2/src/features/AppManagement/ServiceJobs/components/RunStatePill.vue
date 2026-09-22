@@ -29,10 +29,6 @@ const meta = computed(() => runStateMeta(props.state))
   white-space: nowrap;
 }
 
-.run-pill i {
-  font-size: var(--text-md);
-}
-
 .run-pill--success {
   color: var(--color-success);
   background: color-mix(in srgb, var(--color-success) 12%, transparent);

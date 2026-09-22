@@ -1,7 +1,5 @@
-import { readFileSync } from 'node:fs'
-import { relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { SRC_ROOT, vueSourceFiles } from '../../testUtils/sourceFiles.js'
+import { sourceFileContents } from '../../testUtils/sourceFiles.js'
 
 // Every DataTable wired to the footer CSV export (`:dt=`) must declare an
 // export title for columns whose visible header is a slot, and must give each
@@ -49,8 +47,7 @@ function columnsOf(src) {
   return cols
 }
 
-const exportingFiles = [...vueSourceFiles()]
-  .map(p => ({ path: relative(SRC_ROOT, p), src: readFileSync(p, 'utf8') }))
+const exportingFiles = sourceFileContents(['.vue'])
   .filter(f => f.src.includes('<Column') && /:dt="/.test(f.src))
 
 describe('dataTable CSV export conventions', () => {
