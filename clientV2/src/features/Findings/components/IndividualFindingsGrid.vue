@@ -80,7 +80,7 @@ const decoratedRows = computed(() => {
 // asset cell has a fixed need (2.2rem shield row + 0.15rem gap + labels row +
 // cell padding), so floor the row height when labels are present. Label-free
 // result sets keep the denser geometry floor.
-const LABELED_ROW_MIN_PX = rowHeightPx('spacious')
+const LABELED_ROW_MIN_PX = rowHeightPx('twoLine')
 const itemSize = computed(() => {
   const hasLabels = decoratedRows.value.some(r => r.labels.length)
   return hasLabels ? Math.max(densityItemSize.value, LABELED_ROW_MIN_PX) : densityItemSize.value
@@ -121,7 +121,7 @@ function openAssetReview(row) {
 // with tight padding so short cells line up with multi-line Detail/Comment and
 // the row-height math stays honest. The bodyCell override keeps compactTablePt's
 // font size (later padding wins over the base's).
-const baseTablePt = compactTablePt({ bodyFontSize: '1rem', headerPadding: '0.4rem 0.5rem' })
+const baseTablePt = compactTablePt({ headerPadding: '0.4rem 0.5rem' })
 const tablePt = {
   ...baseTablePt,
   tableContainer: { style: 'background: var(--p-datatable-row-background); height: 100%;' },
@@ -333,7 +333,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   display: inline-flex;
   align-items: center;
   margin: 0;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   color: var(--color-text-bright);
   letter-spacing: 0.02em;
@@ -346,7 +346,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 }
 
 .ind-grid-panel__context {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-dim);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -366,7 +366,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   padding: 1rem;
   text-align: center;
   color: var(--color-text-error);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .ind-grid-panel__retry {
@@ -391,7 +391,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   justify-content: center;
   gap: 0.5rem;
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
   padding: 2rem;
 }
 
@@ -403,7 +403,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   color: var(--color-text-dim);
 }
 
-/* Size and line height come from the grid geometry (useGridDensity fontRem),
+/* Size and line height come from the grid geometry (useGridDensity textSize),
    so N clamped lines fill exactly N rows. Only the clamped Detail/Comment
    cells use it. */
 .cell-text {
@@ -444,7 +444,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   min-width: 0;
   color: var(--color-text-bright);
   font-weight: 500;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   /* Pin to 1 line so the asset cell is constant-height regardless of density.
      Detail / Comment are the only growth driver — keeps the linear itemSize
      math honest. Long names truncate; full name in the title attribute. */

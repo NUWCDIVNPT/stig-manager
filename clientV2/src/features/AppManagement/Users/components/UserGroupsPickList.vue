@@ -41,10 +41,10 @@ const model = defineModel({ type: Array, required: true })
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .group-item i {
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
 }
 </style>

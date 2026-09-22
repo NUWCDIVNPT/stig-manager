@@ -496,7 +496,7 @@ const historyStats = computed(() => {
 :deep(.p-datatable-tbody > tr > td) {
   padding: 0.4rem 0.4rem;
   vertical-align: middle;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-primary);
   overflow: hidden;
@@ -518,7 +518,7 @@ const historyStats = computed(() => {
 
 .cell-text--mono {
   color: var(--color-text-primary);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .cell-text--ellipsis {
@@ -526,7 +526,7 @@ const historyStats = computed(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   line-height: 1.3;
   color: var(--color-text-primary);
   cursor: pointer;
@@ -543,7 +543,7 @@ const historyStats = computed(() => {
   color: var(--color-text-dim);
   opacity: 0.5;
   font-style: italic;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .engine-header-icon {
@@ -587,7 +587,7 @@ const historyStats = computed(() => {
 }
 
 .apply-review-icon-btn i {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .footer-divider {
@@ -600,7 +600,7 @@ const historyStats = computed(() => {
   padding: 3rem 1rem;
   text-align: center;
   color: var(--color-text-dim);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-style: italic;
 }
 </style>

@@ -66,7 +66,7 @@ const filteredData = computed(() => {
 const filtersActive = computed(() => filteredData.value.length !== props.groups.length)
 
 const tablePt = {
-  ...compactTablePt({ bodyFontSize: '1rem' }),
+  ...compactTablePt(),
   bodyRow: { style: 'cursor: pointer;' },
 }
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }

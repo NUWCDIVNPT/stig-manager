@@ -504,7 +504,7 @@ watch([
 :deep(.p-datatable-tbody > tr > td) {
   padding: 0.2rem 0.4rem;
   vertical-align: middle;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-primary);
   overflow: hidden;
@@ -519,9 +519,9 @@ watch([
 }
 
 .cell-text--mono {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .cell-text--ellipsis {
@@ -529,7 +529,7 @@ watch([
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   line-height: 1.3;
   color: var(--color-text-primary);
   cursor: pointer;
@@ -546,7 +546,7 @@ watch([
   color: var(--color-text-dim);
   opacity: 0.5;
   font-style: italic;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .engine-header-icon {
@@ -568,7 +568,7 @@ watch([
 
 .label-filter-chip {
   display: inline-block;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   padding: 1px 6px;
   border-radius: 6px;
@@ -604,12 +604,12 @@ watch([
 }
 
 .apply-review-icon-btn i {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .footer-divider {
   color: var(--color-text-dim);
   opacity: 0.4;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 </style>

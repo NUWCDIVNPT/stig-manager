@@ -253,7 +253,7 @@ const onMoveAllLeft = () => {
 }
 
 const OPTION_BASE_STYLE
-  = 'padding:0.2rem 0.5rem; font-size:0.9rem; border-radius:3px; margin-bottom:1px; user-select:none;'
+  = 'padding:0.2rem 0.5rem; font-size:var(--text-md); border-radius:3px; margin-bottom:1px; user-select:none;'
 const OPTION_SELECTED_STYLE
   = 'background:color-mix(in srgb, var(--color-action-blue-dark) 18%, transparent); color:var(--color-text-bright);'
 
@@ -389,7 +389,7 @@ const listboxPt = {
 .list-header {
   margin: 0;
   padding: 0.75rem 1rem;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   flex: 0 0 auto;
   color: var(--color-text-bright);

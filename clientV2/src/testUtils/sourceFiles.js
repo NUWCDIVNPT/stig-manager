@@ -1,5 +1,5 @@
-import { readdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join, relative } from 'node:path'
 
 export const SRC_ROOT = join(import.meta.dirname, '..')
 
@@ -26,4 +26,16 @@ export function* sourceFiles(extensions, dir = SRC_ROOT) {
 // Every component .vue file under src/.
 export function vueSourceFiles() {
   return sourceFiles(['.vue'])
+}
+
+// Every source file with one of the given extensions, read into
+// { path (relative to src/), src }. Throws rather than returning an empty
+// list so a convention test can not pass vacuously.
+export function sourceFileContents(extensions) {
+  const files = [...sourceFiles(extensions)]
+    .map(p => ({ path: relative(SRC_ROOT, p), src: readFileSync(p, 'utf8') }))
+  if (files.length === 0) {
+    throw new Error(`sourceFileContents: no ${extensions.join('/')} files under ${SRC_ROOT}`)
+  }
+  return files
 }

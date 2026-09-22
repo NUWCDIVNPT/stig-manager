@@ -58,7 +58,7 @@ function onNodeExpand(node) {
 const treePt = {
   root: { style: 'background: transparent; border: none; padding: 0.25rem 0; color: var(--color-text-primary); overflow: auto; flex: 1 1 auto; min-height: 0;' },
   nodeContent: { style: 'padding: 0.1rem 0.25rem; background: transparent; color: var(--color-text-primary);' },
-  nodeLabel: { style: 'font-size: 1rem;' },
+  nodeLabel: { style: 'font-size: var(--text-md);' },
   nodeToggleButton: { style: 'width: 1.5rem; height: 1.5rem; color: var(--color-text-dim);' },
 }
 </script>
@@ -104,7 +104,6 @@ const treePt = {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
 }
 
 /* Matches the Service Jobs feature's .panel-title header bars; the taller
@@ -114,7 +113,7 @@ const treePt = {
   align-items: center;
   gap: 0.4rem;
   padding: 0.85rem 0.75rem;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-text-bright);
   background: var(--color-background-subtle);
@@ -130,6 +129,7 @@ const treePt = {
   flex-direction: column;
   overflow: hidden;
   background: var(--p-datatable-row-background);
+  font-family: var(--font-mono);
 }
 
 .log-record-empty {
@@ -138,7 +138,7 @@ const treePt = {
   gap: 0.5rem;
   padding: 0.85rem 1rem;
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .json-line {
@@ -154,7 +154,7 @@ const treePt = {
 
 .json-size {
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .json-separator {

@@ -281,12 +281,12 @@ const searchFilter = useDebouncedRef('', 220)
   background-color: color-mix(in srgb, var(--color-text-error, #e74c3c) 12%, var(--color-background-dark));
   border-bottom: 1px solid color-mix(in srgb, var(--color-text-error, #e74c3c) 40%, transparent);
   color: var(--color-text-error, #e74c3c);
-  font-size: 1rem;
+  font-size: var(--text-md);
   flex-shrink: 0;
 }
 
 .asset-review__checklist-error .pi {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   flex-shrink: 0;
 }
 
@@ -298,7 +298,7 @@ const searchFilter = useDebouncedRef('', 220)
   border-radius: 4px;
   padding: 0.15rem 0.6rem;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--text-md);
   flex-shrink: 0;
   opacity: 0.85;
   transition: opacity 0.15s;

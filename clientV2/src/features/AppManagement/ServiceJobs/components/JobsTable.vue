@@ -49,7 +49,7 @@ const filteredJobs = computed(() => {
 const filtersActive = computed(() => filteredJobs.value.length !== props.jobs.length)
 
 const tablePt = {
-  ...compactTablePt({ bodyFontSize: '1rem', footer: 'divider', headerPadding: '0.3rem 0.6rem' }),
+  ...compactTablePt({ footer: 'divider', headerPadding: '0.3rem 0.6rem' }),
   bodyRow: { style: 'cursor: pointer;' },
 }
 </script>
@@ -237,12 +237,12 @@ const tablePt = {
 }
 
 .schedule-sub {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
 .disabled-tag {
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 700;
   letter-spacing: 0.03em;
   color: var(--color-action-red);

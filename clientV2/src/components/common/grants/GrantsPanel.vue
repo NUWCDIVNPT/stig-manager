@@ -208,12 +208,12 @@ const exportRole = ({ data }) => getRoleLabel(data)
 const exportUserGroup = ({ record }) => userGroupSortValue(record)
 // Compact, flush-footer table styling via PassThrough (no scoped ::v-deep).
 // Shared base, with a slightly larger header than the compact default.
-const baseTablePt = compactTablePt({ bodyFontSize: '1.05rem' })
+const baseTablePt = compactTablePt()
 const tablePt = {
   ...baseTablePt,
   column: {
     ...baseTablePt.column,
-    headerCell: { style: 'font-size: 1.1rem; font-weight: 600;' },
+    headerCell: { style: 'font-size: var(--text-lg); font-weight: 600;' },
   },
 }
 </script>
@@ -382,7 +382,7 @@ const tablePt = {
 }
 
 .section-title {
-  font-size: 0.99rem;
+  font-size: var(--text-md);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -416,7 +416,7 @@ const tablePt = {
   background: transparent;
   border: none;
   color: var(--color-text-default);
-  font-size: 0.98rem;
+  font-size: var(--text-md);
   font-weight: 500;
   cursor: pointer;
   padding: 0.45rem 0.7rem;
@@ -451,12 +451,12 @@ const tablePt = {
 
 .primary-text {
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
 }
 
 .secondary-text {
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .row-actions {

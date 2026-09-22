@@ -621,7 +621,7 @@ const dataTablePt = {
 }
 
 .rule-table-grid__mask-spinner {
-  font-size: 2rem;
+  font-size: var(--text-display);
   color: var(--color-text-bright);
 }
 
@@ -639,7 +639,7 @@ const dataTablePt = {
   min-height: 0;
 }
 
-/* Size and line height come from the grid geometry (useGridDensity fontRem),
+/* Size and line height come from the grid geometry (useGridDensity textSize),
    so N clamped lines fill exactly N rows. */
 .cell-text {
   font-size: var(--cell-font-size);
@@ -679,7 +679,7 @@ const dataTablePt = {
 
 .cell-result__empty {
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
   opacity: 0.9;
 }
 
@@ -702,7 +702,7 @@ const dataTablePt = {
 :deep(.p-datatable-thead > tr > th) {
   background: var(--color-background-dark);
   color: var(--color-text-dim);
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   border-bottom: 1px solid var(--color-border-default);
 }

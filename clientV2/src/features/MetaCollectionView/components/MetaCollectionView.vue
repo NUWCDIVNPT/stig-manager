@@ -268,7 +268,7 @@ const tabPanelPt = {
 }
 
 .filter-label {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   font-weight: 600;
   letter-spacing: 0.05em;
   color: var(--color-text-dim);

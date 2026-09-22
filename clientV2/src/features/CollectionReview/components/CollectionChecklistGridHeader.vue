@@ -109,10 +109,10 @@ const checklistMenuPT = {
   menu: { style: 'background: transparent; outline: none;' },
   menuitem: { style: 'margin: 0;' },
   content: { style: 'padding: 0.4rem 0.8rem; color: var(--color-text-primary); border-radius: 0; transition: background-color 0.1s; display: flex; align-items: center;' },
-  icon: { style: 'color: var(--color-text-dim); margin-right: 0.5rem; font-size: 0.95rem;' },
-  label: { style: 'font-size: 0.95rem;' },
+  icon: { style: 'color: var(--color-text-dim); margin-right: 0.5rem; font-size: var(--text-md);' },
+  label: { style: 'font-size: var(--text-md);' },
   separator: { style: 'border-top: 1px solid var(--color-border-light); margin: 0.25rem 0;' },
-  submenuIcon: { style: 'color: var(--color-text-dim); font-size: 0.75rem; margin-left: auto;' },
+  submenuIcon: { style: 'color: var(--color-text-dim); font-size: var(--icon-xs); margin-left: auto;' },
 }
 
 function toggleChecklistMenu(event) {
@@ -210,7 +210,7 @@ function clearSearch() {
   top: 50%;
   transform: translateY(-50%);
   color: var(--color-text-dim);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   pointer-events: none;
 }
 
@@ -222,7 +222,7 @@ function clearSearch() {
   border-radius: 4px;
   background: color-mix(in srgb, var(--color-background-light) 75%, transparent);
   color: var(--color-text-primary);
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   outline: none;
   transition: all 0.15s ease;
 }
@@ -268,7 +268,7 @@ function clearSearch() {
   align-items: center;
   gap: 0.5rem;
   padding: 0.45rem 1.15rem;
-  font-size: 1.02rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-bright);
   flex-shrink: 0;
@@ -293,13 +293,13 @@ function clearSearch() {
 }
 
 .checklist-grid__menu-caret {
-  font-size: 0.75rem;
+  font-size: var(--icon-xs);
   margin-left: 0.1rem;
 }
 
 .checklist-grid__title {
   font-weight: 600;
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
   white-space: nowrap;
   overflow: hidden;

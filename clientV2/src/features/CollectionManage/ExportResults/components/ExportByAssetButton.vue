@@ -200,8 +200,8 @@ function onCollectionError(err) {
 }
 
 .archive-log {
-  font-family: monospace;
-  font-size: 0.82rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   background: var(--color-background-light);
   border: 1px solid var(--color-border-default);

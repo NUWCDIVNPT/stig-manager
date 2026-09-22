@@ -93,7 +93,7 @@ const pt = {
     style: {
       right: '0.45rem',
       left: 'auto',
-      fontSize: '1.25rem',
+      fontSize: 'var(--text-xl)',
       minWidth: '16.5rem',
       width: 'auto',
       zIndex: '1000',
@@ -240,7 +240,7 @@ const pt = {
   align-items: center;
   color: var(--color-text-primary);
   text-decoration: none;
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   gap: 0.75rem;
 }
@@ -263,7 +263,7 @@ const pt = {
 
 .badge {
   padding: 0.2rem 0.25rem;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 600;
   border-radius: 0.45rem;
   text-transform: uppercase;
@@ -293,13 +293,13 @@ const pt = {
 .breadcrumb-separator {
   color: var(--color-text-dim);
   margin: 0 0.4rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
 }
 
 .breadcrumb-link {
   color: var(--color-primary-highlight);
   text-decoration: none;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
 }
 
 .breadcrumb-link:hover {
@@ -308,7 +308,7 @@ const pt = {
 
 .breadcrumb-current {
   color: var(--color-text-primary);
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 600;
 }
 
@@ -342,12 +342,12 @@ const pt = {
 
 .profile-username {
   font-weight: 600;
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
   color: var(--color-text-primary);
 }
 
 .profile-name {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-dim);
 }
 </style>

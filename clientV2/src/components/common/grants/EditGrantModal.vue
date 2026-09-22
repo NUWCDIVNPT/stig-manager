@@ -251,7 +251,7 @@ const onCancel = () => {
 .col-header {
   margin: 0;
   padding: 0.75rem 1rem;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   color: var(--color-text-bright);
   background: var(--p-datatable-row-background);
@@ -294,7 +294,7 @@ const onCancel = () => {
 }
 
 .filter-label {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   white-space: nowrap;
 }
@@ -340,7 +340,7 @@ const onCancel = () => {
   cursor: pointer;
   padding: 0 0.4rem;
   gap: 0.3rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
 }
 
@@ -352,12 +352,12 @@ const onCancel = () => {
   padding: 0 0.5rem;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   transition: background-color 0.12s ease;
 }
 
 .option-item i {
-  font-size: 1.3rem;
+  font-size: var(--text-xl);
 }
 
 .option-item:hover {
@@ -386,7 +386,7 @@ const onCancel = () => {
 
 .field-row label {
   width: 64px;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
@@ -405,17 +405,17 @@ const onCancel = () => {
 }
 
 .grantee-details i {
-  font-size: 1.4rem;
+  font-size: var(--text-2xl);
   color: var(--color-text-dim);
 }
 
 .grantee-details--empty {
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .grantee-details--empty i {
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .grantee-text {
@@ -425,11 +425,11 @@ const onCancel = () => {
 
 .grantee-name {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
 }
 
 .grantee-sub {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 

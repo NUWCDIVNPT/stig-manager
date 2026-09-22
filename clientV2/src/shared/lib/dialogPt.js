@@ -4,7 +4,7 @@ export const importDialogPt = {
   content: { style: 'background-color: var(--color-background-dark); color: var(--color-text-primary); padding: 1.5rem; flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;' },
   footer: { style: 'flex-shrink: 0;' },
   closeButton: { style: 'color: var(--color-text-dim);' },
-  title: { style: 'font-size: 1.5rem; font-weight: 600;' },
+  title: { style: 'font-size: var(--text-xl); font-weight: 600;' },
 }
 
 export const primaryBtnPt = {

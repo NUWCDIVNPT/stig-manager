@@ -14,10 +14,10 @@ export const ROW_HEIGHT_REM = {
   standard: 3.5,
   // One line holding an inline Select or a 32px action button.
   control: 3.75,
-  // One text line in an unstyled Material DataTable (0.75rem cell padding), or
-  // a 2.2rem shield row over a labels row with tight cell padding.
+  // One text line in an unstyled Material DataTable (0.75rem cell padding).
   spacious: 4.25,
-  // Primary text over secondary text.
+  // Primary text over secondary text, or a 2.2rem shield row over a labels row
+  // with tight cell padding.
   twoLine: 4.5,
   // Benchmark card: clamped title, id row and meta row.
   card: 8.5,

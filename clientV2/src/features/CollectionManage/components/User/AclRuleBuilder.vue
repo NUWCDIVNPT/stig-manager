@@ -196,7 +196,7 @@ defineExpose({ clear })
         scroll-height="min(40vh, 320px)"
         placeholder="Select an asset"
         class="builder-input"
-        :pt="{ label: { style: 'font-size: 1.15rem;' }, item: { style: 'font-size: 1.15rem;' } }"
+        :pt="{ label: { style: 'font-size: var(--text-lg);' }, item: { style: 'font-size: var(--text-lg);' } }"
       >
         <template #value="{ value, placeholder }">
           <span v-if="value" class="builder-option">
@@ -228,7 +228,7 @@ defineExpose({ clear })
         scroll-height="min(40vh, 320px)"
         placeholder="Select a label"
         class="builder-input"
-        :pt="{ label: { style: 'font-size: 1.15rem;' }, item: { style: 'font-size: 1.15rem;' } }"
+        :pt="{ label: { style: 'font-size: var(--text-lg);' }, item: { style: 'font-size: var(--text-lg);' } }"
       >
         <template #value="{ value, placeholder }">
           <LabelChip v-if="value" :value="value.name" :color="normalizeColor(value.color)" />
@@ -257,7 +257,7 @@ defineExpose({ clear })
         scroll-height="min(40vh, 320px)"
         placeholder="Any STIG"
         class="builder-input"
-        :pt="{ label: { style: 'font-size: 1.15rem;' }, item: { style: 'font-size: 1.15rem;' } }"
+        :pt="{ label: { style: 'font-size: var(--text-lg);' }, item: { style: 'font-size: var(--text-lg);' } }"
       >
         <template #option="{ option }">
           <span class="builder-option">
@@ -294,7 +294,7 @@ defineExpose({ clear })
 
 .builder-intro {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   line-height: 1.45;
   color: var(--color-text-dim);
 }
@@ -309,13 +309,13 @@ defineExpose({ clear })
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 400;
   color: var(--color-text-bright);
 }
 
 .field-optional {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   font-weight: 600;
   letter-spacing: 0.04em;
   padding: 0.15rem 0.55rem;
@@ -337,12 +337,12 @@ defineExpose({ clear })
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
 }
 
 .builder-placeholder {
   color: var(--color-text-dim);
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
 }
 
 .builder-spacer {
@@ -361,7 +361,7 @@ defineExpose({ clear })
 }
 
 .rule-preview-label {
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -369,7 +369,7 @@ defineExpose({ clear })
 }
 
 .rule-preview-hint {
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
   font-style: italic;
   color: var(--color-text-dim);
 }
@@ -378,7 +378,7 @@ defineExpose({ clear })
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-warning-orange);
 }
 

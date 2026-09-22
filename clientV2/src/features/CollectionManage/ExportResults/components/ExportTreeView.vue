@@ -241,7 +241,7 @@ function toggleExpand(branch) {
   justify-content: center;
   color: var(--color-text-dim);
   flex-shrink: 0;
-  font-size: 0.75rem;
+  font-size: var(--icon-xs);
   border-radius: 3px;
 }
 
@@ -263,7 +263,7 @@ function toggleExpand(branch) {
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  font-size: 0.8rem;
+  font-size: var(--icon-xs);
   color: var(--color-text-bright);
   transition: background-color 0.1s, border-color 0.1s;
   user-select: none;
@@ -299,17 +299,17 @@ function toggleExpand(branch) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .node-label--bold {
   font-weight: 600;
-  font-size: 1.02rem;
+  font-size: var(--text-md);
   flex: 1;
 }
 
 .child-count {
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   color: var(--color-text-dim);
   flex-shrink: 0;
   white-space: nowrap;
@@ -317,12 +317,12 @@ function toggleExpand(branch) {
 
 .node-loading {
   color: var(--color-text-dim);
-  font-size: 0.75rem;
+  font-size: var(--icon-xs);
   flex-shrink: 0;
 }
 
 .badge {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 600;
   padding: 0.15rem 0.55rem;
   border-radius: 3px;

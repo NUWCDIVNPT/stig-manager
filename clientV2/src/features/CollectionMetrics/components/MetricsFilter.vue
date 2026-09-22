@@ -47,7 +47,7 @@ watch(() => props.collectionId, () => {
 
 const multiSelectPt = {
   root: { style: 'background-color: var(--color-background-light); border-color: var(--color-border-default)' },
-  label: { style: 'padding: 6px 10px; font-size: 0.92rem; color: var(--color-text-primary)' },
+  label: { style: 'padding: 6px 10px; font-size: var(--text-md); color: var(--color-text-primary)' },
   labelContainer: { style: { display: 'flex', alignItems: 'center' } },
   overlay: { style: { width: '235px' } },
   listContainer: { style: { maxHeight: '300px' } },
@@ -260,7 +260,7 @@ function formatLabelName(name) {
   display: inline-block;
   padding: 0.125rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.8125rem;
+  font-size: var(--text-sm);
   font-weight: 500;
 }
 
@@ -286,7 +286,7 @@ function formatLabelName(name) {
   background: var(--color-bg-elevated);
   color: var(--color-text-primary);
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   font-weight: 600;
 }
 

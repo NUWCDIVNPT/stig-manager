@@ -57,7 +57,7 @@ const COLUMNS = [
 
 .grantee-icon {
   color: var(--color-text-dim);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   flex-shrink: 0;
 }
 </style>

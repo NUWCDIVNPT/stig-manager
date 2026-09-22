@@ -54,7 +54,7 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString()
 }
 
-const tablePt = compactTablePt({ bodyFontSize: '1rem' })
+const tablePt = compactTablePt()
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
 </script>
 

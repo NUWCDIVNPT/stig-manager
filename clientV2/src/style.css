@@ -55,6 +55,19 @@
      Ubuntu Mono is bundled (matches the legacy client); system stack as fallback. */
   --font-mono: 'Ubuntu Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
 
+  /* Type scale; see docs/components/TypographyAndSizing.md for what each
+     step is for. shared/lib/textScale.js mirrors the values and
+     shared/tests/typographyConventions.test.js enforces both. */
+  --text-sm: 0.85rem;
+  --text-md: 1rem;
+  --text-lg: 1.1rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-display: 2rem;
+  --text-display-lg: 3rem;
+  --text-display-xl: 5rem;
+  --icon-xs: 0.75rem;
+
   /* CAT Rating Colors */
   --color-cat1: #c68c8c;
   --color-cat2: #d4b056;
@@ -199,7 +212,7 @@
   background-color: var(--color-background-subtle);
   padding: 2px 4px;
   border-radius: 4px;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 .sm-cora-tip .formula {
   display: inline-block;
@@ -210,7 +223,7 @@
   border-radius: 4px;
   color: var(--color-text-bright);
   margin-right: 4px;
-  font-size: 0.9em;
+  font-size: var(--text-md);
   display: inline-block;
   line-height: normal;
 }
@@ -222,7 +235,7 @@ body {
   height: 100vh;
   overflow: hidden;
   font-family: 'Open Sans';
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 400;
 }
 
@@ -321,7 +334,7 @@ textarea:focus {
 .collection-tab-panel .panel-header h3 {
   margin: 0;
   color: var(--color-text-primary);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 600;
 }
 
@@ -333,12 +346,12 @@ textarea:focus {
 }
 
 .collection-tab-panel .badge {
-  font-size: 0.75rem;
+  font-size: var(--text-sm);
   background-color: var(--color-background-dark);
   padding: 0.15rem 0.4rem;
   border-radius: 3px;
   color: var(--color-text-dim);
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 
 .collection-tab-panel .empty-state,

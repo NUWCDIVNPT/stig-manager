@@ -2,15 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { compactTablePt, gridColumnPt, iconHeaderPt } from '../lib/dataTablePt.js'
 
 describe('compactTablePt', () => {
-  it('defaults to a flush (borderless) footer and no body font size', () => {
+  it('defaults to a flush (borderless) footer and md text on the table root', () => {
     const pt = compactTablePt()
     expect(pt.footer.style).toBe('padding: 0; border: none;')
+    expect(pt.root.style).toBe('background: var(--p-datatable-row-background); font-size: var(--text-md);')
     expect(pt.column.bodyCell.style).toBe('padding: 0.4rem 0.6rem;')
-  })
-
-  it('appends a body-cell font size when provided', () => {
-    const pt = compactTablePt({ bodyFontSize: '0.9rem' })
-    expect(pt.column.bodyCell.style).toContain('font-size: 0.9rem;')
   })
 
   it('uses a divider footer when requested', () => {
@@ -27,7 +23,7 @@ describe('compactTablePt', () => {
 
   it('defaults the header cell to font styling with no padding override', () => {
     const pt = compactTablePt()
-    expect(pt.column.headerCell.style).toBe('font-size: 1rem; font-weight: 600;')
+    expect(pt.column.headerCell.style).toBe('font-size: var(--text-md); font-weight: 600;')
   })
 
   it('appends a header-cell padding when provided', () => {

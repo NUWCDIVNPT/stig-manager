@@ -46,6 +46,6 @@ const emit = defineEmits(['create-label', 'edit-label', 'tag-assets', 'delete-la
 }
 
 .clear-x {
-  font-size: 0.65rem;
+  font-size: var(--icon-xs);
 }
 </style>

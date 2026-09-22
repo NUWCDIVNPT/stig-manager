@@ -3,6 +3,7 @@ import Popover from 'primevue/popover'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getContrastColor, normalizeColor } from '../../shared/lib/colorUtils.js'
 import { rootFontSizePx } from '../../shared/lib/remToPx.js'
+import { TEXT_SCALE_REM } from '../../shared/lib/textScale.js'
 import { bodyFontFamily, measureTextWidth } from '../../shared/lib/textWidth.js'
 
 const props = defineProps({
@@ -21,11 +22,11 @@ const popoverRef = ref()
 let hideTimeout = null
 
 // Chip geometry in px derived from rem so it tracks the root font-size along
-// with the chip CSS below. Padding, gap and font mirror .label-tag /
+// with the chip CSS below. Padding, gap and font (--text-md) mirror .label-tag /
 // .labels-row exactly; the +N badge is a chip too and is measured the same
 // way. `compact` only drops the trailing margin.
 const root = rootFontSizePx()
-const LABEL_FONT = `600 ${0.9 * root}px ${bodyFontFamily()}`
+const LABEL_FONT = `600 ${TEXT_SCALE_REM.md * root}px ${bodyFontFamily()}`
 const LABEL_PADDING = 0.9 * root
 const LABEL_GAP = 0.25 * root
 const RIGHT_MARGIN = computed(() => props.compact ? 0 : 0.75 * root)
@@ -196,7 +197,7 @@ function hidePopover() {
 
 .label-tag {
   display: inline-block;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 600;
   padding: 0.1rem 0.45rem;
   border-radius: 6px;

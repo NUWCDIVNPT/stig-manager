@@ -37,7 +37,7 @@ const exportAccess = ({ data }) => props.accessOptions.find(o => o.value === dat
 const selectedRules = defineModel('selection', { type: Array, default: () => [] })
 
 const rulesDt = ref()
-const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
+const tablePt = compactTablePt({ footer: 'divider' })
 </script>
 
 <template>

@@ -38,8 +38,8 @@ const emit = defineEmits(['update:modelValue'])
 const NONE_SENTINEL = '__none__'
 
 const selectPt = {
-  label: { style: { fontSize: '1.1rem' } },
-  option: { style: { fontSize: '1.1rem' } },
+  label: { style: { fontSize: 'var(--text-lg)' } },
+  option: { style: { fontSize: 'var(--text-lg)' } },
 }
 
 const selectOptions = computed(() => {
@@ -88,7 +88,7 @@ const selected = computed({
 }
 
 .revision-select__label {
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;

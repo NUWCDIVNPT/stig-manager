@@ -75,6 +75,6 @@ const patches = computed(() => props.diffDetail ?? {})
 
 .diff-detail__arrow {
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 </style>

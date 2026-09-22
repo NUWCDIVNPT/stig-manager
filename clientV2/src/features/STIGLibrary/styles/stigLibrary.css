@@ -31,7 +31,7 @@
   align-items: center;
   gap: 0.4rem;
   min-width: 0;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   letter-spacing: 0.02em;
   color: var(--color-text-bright);
@@ -99,8 +99,8 @@
   border-radius: 4px;
   background: var(--color-background-darkest);
   color: var(--color-text-dim);
-  font-family: monospace;
-  font-size: 1.05rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
   white-space: nowrap;
 }
 
@@ -119,7 +119,7 @@
   top: 50%;
   transform: translateY(-50%);
   color: var(--color-text-dim);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   pointer-events: none;
 }
 
@@ -131,7 +131,7 @@
   border-radius: 4px;
   background: var(--color-background-light);
   color: var(--color-text-primary);
-  font-size: 1rem;
+  font-size: var(--text-md);
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -226,7 +226,7 @@
 /* Revision label chip, tinted like the inline diff for the compared (del) and
    viewed (add) revisions. */
 .stiglib-rev {
-  font-family: monospace;
+  font-family: var(--font-mono);
   padding: 0.1rem 0.35rem;
   border-radius: 3px;
 }

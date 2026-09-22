@@ -69,11 +69,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: var(--text-2xl);
 }
 
 .nav-rail-item-label {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 500;
 }
 
@@ -90,7 +90,7 @@
   border: none;
   background: none;
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
   cursor: pointer;
 }
 

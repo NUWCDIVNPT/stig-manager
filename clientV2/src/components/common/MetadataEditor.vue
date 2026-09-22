@@ -67,7 +67,7 @@ function onDeleteConfirmed() {
             <i class="pi pi-times" />
           </button>
         </template>
-        <div v-if="modelValue.length === 0" style="grid-column: 1 / -1; padding: 1.5rem; color: var(--color-text-dim); text-align: center; font-size: 0.85rem; opacity: 0.7;">
+        <div v-if="modelValue.length === 0" style="grid-column: 1 / -1; padding: 1.5rem; color: var(--color-text-dim); text-align: center; font-size: var(--text-sm); opacity: 0.7;">
           No metadata assigned.
         </div>
       </div>
@@ -98,7 +98,7 @@ function onDeleteConfirmed() {
 }
 
 .flabel {
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
   text-transform: none;
@@ -128,7 +128,7 @@ function onDeleteConfirmed() {
 
 .meta-input {
   width: 100%;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   background: var(--color-background-light);
   color: var(--color-text-primary);
   border-color: var(--color-border-default);
@@ -146,7 +146,7 @@ function onDeleteConfirmed() {
   cursor: pointer;
   padding: 0.2rem;
   border-radius: 3px;
-  font-size: 0.72rem;
+  font-size: var(--icon-xs);
   transition: color 0.15s;
   display: flex;
   align-items: center;
@@ -164,7 +164,7 @@ function onDeleteConfirmed() {
   border: 1px solid var(--color-border-default);
   border-radius: 4px;
   color: var(--color-text-primary);
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 550;
   padding: 0.35rem 0.75rem;
   cursor: pointer;
@@ -172,7 +172,7 @@ function onDeleteConfirmed() {
 }
 
 .meta-add-btn i {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 

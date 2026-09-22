@@ -102,7 +102,7 @@ function clear() {
 }
 
 .pi-filter {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   opacity: 0.8;
   margin-top: 3px;
   transition: opacity 0.2s, color 0.2s;
@@ -128,7 +128,7 @@ function clear() {
 .column-search-popover__input {
   width: 100%;
   padding: 0.4rem 0.6rem !important;
-  font-size: 0.9rem !important;
+  font-size: var(--text-md) !important;
   background: var(--color-background-light) !important;
   color: var(--color-text-primary) !important;
   border: 1px solid var(--color-border-default) !important;
@@ -149,7 +149,7 @@ function clear() {
 .column-search-popover__btn {
   flex: 1;
   padding: 0.3rem;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   border-radius: 4px;
   cursor: pointer;
   border: 1px solid transparent;

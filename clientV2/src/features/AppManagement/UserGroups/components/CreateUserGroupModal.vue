@@ -278,7 +278,7 @@ const dialogPt = {
 }
 
 .modal-header-title {
-  font-size: 1.05rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-bright);
 }
@@ -306,7 +306,7 @@ const dialogPt = {
 }
 
 .flabel {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -316,7 +316,7 @@ const dialogPt = {
 }
 
 .field-error {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   line-height: 1.2;
   min-height: 1.2em;
   color: var(--color-text-error);
@@ -339,7 +339,7 @@ const dialogPt = {
   justify-content: center;
   gap: 0.5rem;
   flex: 1;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-dim);
 }
 
@@ -349,13 +349,13 @@ const dialogPt = {
   justify-content: center;
   gap: 0.7rem;
   flex: 1;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
 }
 
 .tab-error .pi-exclamation-triangle {
   color: var(--color-text-error);
-  font-size: 1.3rem;
+  font-size: var(--text-xl);
 }
 
 .modal-footer {

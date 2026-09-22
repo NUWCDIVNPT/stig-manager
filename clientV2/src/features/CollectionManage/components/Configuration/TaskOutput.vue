@@ -158,7 +158,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 }
 
 .modal-header-title {
-  font-size: 1.05rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-bright);
   line-height: 1.25;

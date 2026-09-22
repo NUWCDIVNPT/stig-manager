@@ -50,12 +50,12 @@ function taskFilter(task, searchText) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   min-width: 0;
 }
 
 .task-item i {
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   flex-shrink: 0;
 }
 
@@ -73,7 +73,7 @@ function taskFilter(task, searchText) {
 }
 
 .task-desc {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   white-space: nowrap;
   overflow: hidden;

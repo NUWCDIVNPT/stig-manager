@@ -188,14 +188,14 @@ const radioButtonPt = {
 }
 
 .modal-header-title {
-  font-size: 1.05rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-bright);
   line-height: 1.25;
 }
 
 .modal-header-sub {
-  font-size: 1.025rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   margin-top: 2px;
 }
@@ -244,7 +244,7 @@ const radioButtonPt = {
 }
 
 .opt-label {
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
   white-space: nowrap;
@@ -268,7 +268,7 @@ const radioButtonPt = {
 
 .radio-option label {
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
 }
 
@@ -283,7 +283,7 @@ const radioButtonPt = {
 
 /* ── Badges (header legend) ── */
 .badge {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 600;
   padding: 0.15rem 0.55rem;
   border-radius: 3px;
@@ -312,12 +312,12 @@ const radioButtonPt = {
   background: color-mix(in srgb, var(--color-warning-yellow) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-warning-yellow) 35%, transparent);
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-warning-yellow);
 }
 
 .validation-warning .pi {
   flex-shrink: 0;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 </style>

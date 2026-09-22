@@ -333,7 +333,7 @@ function isTallCard(content) {
 }
 
 .card-title {
-  font-size: 1.5rem;
+  font-size: var(--text-2xl);
   font-weight: 600;
   color: var(--color-primary-highlight);
   margin: 0 0 1rem 0;
@@ -350,7 +350,7 @@ function isTallCard(content) {
 }
 
 .card-date {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   font-weight: 400;
 }
@@ -378,7 +378,7 @@ function isTallCard(content) {
 }
 
 .card-text {
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
   line-height: 1.7;
   margin: 0;
   overflow-wrap: anywhere;
@@ -395,7 +395,7 @@ function isTallCard(content) {
 }
 
 .section-subtitle {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0 0 0.5rem 0;
@@ -454,12 +454,12 @@ function isTallCard(content) {
 
 .manager-item strong {
   color: var(--color-text-primary);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
 }
 
 .manager-detail {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
@@ -477,7 +477,7 @@ function isTallCard(content) {
 
 .edit-btn,
 .delete-btn {
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
   width: 28px;
   height: 28px;
   border-radius: 0.25rem;
@@ -502,7 +502,7 @@ transform: scale(1.05);
   background: rgba(59, 130, 246, 0.1);
   border-color: rgba(59, 130, 246, 0.3);
   color: #3b82f6;
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .edit-btn:hover {

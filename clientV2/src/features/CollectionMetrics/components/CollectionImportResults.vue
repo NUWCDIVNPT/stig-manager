@@ -79,7 +79,7 @@ function onImported() {
 .hint {
   margin: 0;
   color: var(--color-text-dim);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   line-height: 1.35;
 }
 

@@ -101,7 +101,7 @@ const updateCollection = async (field) => {
 }
 
 .section-title {
-  font-size: 0.99rem;
+  font-size: var(--text-md);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;

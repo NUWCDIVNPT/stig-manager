@@ -122,10 +122,10 @@ const dialogPt = {
 
 // Rows are pinned to the scroller's itemSize so its n × itemSize placement holds.
 const tablePt = {
-  bodyRow: { style: `font-size: 0.85rem; height: ${VIRTUAL_SCROLLER_OPTIONS.itemSize}px;` },
+  bodyRow: { style: `font-size: var(--text-md); height: ${VIRTUAL_SCROLLER_OPTIONS.itemSize}px;` },
   column: {
     bodyCell: { style: 'padding: 0.15rem 0.5rem;' },
-    headerCell: { style: 'padding: 0.3rem 0.5rem; font-size: 0.85rem;' },
+    headerCell: { style: 'padding: 0.3rem 0.5rem; font-size: var(--text-md);' },
   },
 }
 </script>
@@ -235,7 +235,7 @@ const tablePt = {
 }
 
 .modal-header-title {
-  font-size: 1.05rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-bright);
   line-height: 1.25;
@@ -266,12 +266,12 @@ const tablePt = {
 .header-count {
   font-weight: 500;
   color: var(--color-text-dim);
-  font-size: 0.9em;
+  font-size: var(--text-sm);
 }
 
 .header-spinner {
   color: var(--color-text-dim);
-  font-size: 0.85rem;
+  font-size: var(--text-md);
 }
 
 .asset-name {
@@ -279,7 +279,7 @@ const tablePt = {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .asset-stig-count {
@@ -287,7 +287,7 @@ const tablePt = {
   align-items: center;
   justify-content: center;
   gap: 0.3rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-text-primary);
 }

@@ -13,7 +13,7 @@ defineProps({
 })
 
 const dataTableRef = ref(null)
-const tablePt = compactTablePt({ bodyFontSize: '1rem', footer: 'divider', headerPadding: '0.3rem 0.6rem' })
+const tablePt = compactTablePt({ footer: 'divider', headerPadding: '0.3rem 0.6rem' })
 </script>
 
 <template>
@@ -94,7 +94,7 @@ const tablePt = compactTablePt({ bodyFontSize: '1rem', footer: 'divider', header
   align-items: center;
   gap: 0.4rem;
   padding: 0.45rem 0.75rem;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-text-bright);
   background: var(--color-background-subtle);

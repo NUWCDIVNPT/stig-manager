@@ -217,7 +217,7 @@ const dataTableRef = ref(null)
   border-radius: 3px;
   cursor: pointer;
   color: var(--color-text-dim);
-  font-size: 0.7rem;
+  font-size: var(--icon-xs);
   opacity: 0;
   transition: opacity 0.15s, color 0.15s, background 0.15s;
   flex-shrink: 0;

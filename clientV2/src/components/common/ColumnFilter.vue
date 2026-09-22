@@ -51,7 +51,7 @@ const columnFilterPT = {
     style: {
       color: context.selected ? 'var(--color-text-bright)' : 'var(--color-text-primary)',
       padding: '0.2rem 0.5rem',
-      fontSize: '0.85rem',
+      fontSize: 'var(--text-sm)',
       transition: 'background 0.12s',
       background: context.focused ? 'var(--color-background-light)' : 'transparent',
     },
@@ -117,7 +117,7 @@ const columnFilterPT = {
 }
 
 .pi-filter {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   opacity: 0.8;
   transition: opacity 0.2s, color 0.2s;
@@ -147,12 +147,12 @@ const columnFilterPT = {
 }
 
 .column-filter__option-icon {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
 .column-filter__option-text {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 /* Override primevue multiselect internal padding for value area which pushes it out */
@@ -169,7 +169,7 @@ const columnFilterPT = {
   padding: 0.25rem 0.5rem;
   background: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-light);
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   white-space: nowrap;
   cursor: pointer;

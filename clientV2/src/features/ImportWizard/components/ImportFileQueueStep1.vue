@@ -146,7 +146,7 @@ function onFilePicked(event) {
 }
 
 .queue-single-badge {
-  font-size: 0.75rem;
+  font-size: var(--text-sm);
   color: var(--color-text-dim);
   background: var(--color-background-dark);
   border: 1px solid var(--color-border-default);
@@ -175,6 +175,6 @@ function onFilePicked(event) {
 .queue-empty-hint {
   color: var(--color-text-dim);
   font-style: italic;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 </style>
