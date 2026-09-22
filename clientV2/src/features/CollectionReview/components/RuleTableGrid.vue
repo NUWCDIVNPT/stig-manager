@@ -301,8 +301,8 @@ const filteredData = computed(() => {
   return data
 })
 
-// One pass over the filtered rows: `all` drives the header checkbox, `some`
-// its indeterminate state.
+// One pass over the filtered rows: `all` drives the header checkbox and the
+// table's select-all, `some` the header's indeterminate state.
 const selectionState = computed(() => {
   const ids = selectedIdSet.value
   let selectable = 0
@@ -318,7 +318,6 @@ const selectionState = computed(() => {
   }
   return { all: selectable > 0 && selected === selectable, some: selected > 0 && selected < selectable }
 })
-const isAllSelected = computed(() => selectionState.value.all)
 
 function onSelectAllChange(event) {
   if (event.checked) {
@@ -378,7 +377,7 @@ const dataTablePt = {
   <DataTable
     ref="dataTableRef"
     :selection="props.selection"
-    :select-all="isAllSelected"
+    :select-all="selectionState.all"
     :value="filteredData"
     :loading="isLoading"
     data-key="assetId"
@@ -403,7 +402,7 @@ const dataTablePt = {
       <template #header>
         <Checkbox
           v-if="filteredData.length > 0"
-          :model-value="isAllSelected"
+          :model-value="selectionState.all"
           :indeterminate="selectionState.some"
           :binary="true"
           @update:model-value="onSelectAllChange({ checked: $event })"
@@ -757,16 +756,6 @@ const dataTablePt = {
 
 :deep(.p-datatable-tbody > tr.row-editing .cell-text) {
   color: var(--color-text-bright, var(--color-text-primary)) !important;
-}
-
-:deep(.row-non-writable .p-checkbox) {
-  opacity: 0.25;
-  cursor: not-allowed;
-  filter: grayscale(1);
-}
-
-:deep(.row-non-writable .p-checkbox-input) {
-  pointer-events: none;
 }
 
 /* Fills the selection cell so the whole cell is the checkbox hit area

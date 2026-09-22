@@ -22,13 +22,17 @@ const isActive = computed(() => {
 
 // PrimeVue's own toggle-all checkbox has no partial state, so the header is
 // rendered here with a Checkbox that reports indeterminate for a subset.
-const allSelected = computed(() => {
+// Counted against the current options so values that no longer match one
+// (a stale persisted filter) do not light the header.
+const selectedCount = computed(() => {
   if (!isActive.value) {
-    return false
+    return 0
   }
   const selected = new Set(props.modelValue)
-  return props.options.every(o => selected.has(o.value))
+  return props.options.filter(o => selected.has(o.value)).length
 })
+const allSelected = computed(() => selectedCount.value > 0 && selectedCount.value === props.options.length)
+const someSelected = computed(() => selectedCount.value > 0 && !allSelected.value)
 
 function onToggleAll(checked) {
   emit('update:modelValue', checked ? props.options.map(o => o.value) : [])
@@ -42,8 +46,8 @@ const columnFilterPT = {
   root: { class: 'column-filter-select' },
   label: { style: 'display: none;' },
   dropdown: { style: 'width: auto; padding: 0.2rem 0.2rem;' },
-  panel: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.6); min-width: 100px;' },
-  item: ({ context }) => ({
+  overlay: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.6); min-width: 100px;' },
+  option: ({ context }) => ({
     style: {
       color: context.selected ? 'var(--color-text-bright)' : 'var(--color-text-primary)',
       padding: '0.2rem 0.5rem',
@@ -52,9 +56,6 @@ const columnFilterPT = {
       background: context.focused ? 'var(--color-background-light)' : 'transparent',
     },
   }),
-  itemCheckboxContainer: { style: 'margin-right: 0.4rem;' },
-  filterInput: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border: 1px solid var(--color-border-default); padding: 0.2rem; font-size: 0.85rem;' },
-  filterIcon: { style: 'color: var(--color-text-dim); width: 0.8rem; height: 0.8rem;' },
 }
 </script>
 
@@ -76,7 +77,7 @@ const columnFilterPT = {
       <label class="column-filter__toggle-all">
         <Checkbox
           :model-value="allSelected"
-          :indeterminate="isActive && !allSelected"
+          :indeterminate="someSelected"
           :binary="true"
           @update:model-value="onToggleAll"
         />

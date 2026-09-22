@@ -64,14 +64,6 @@ export function gridColumnPt(alignment = 'left') {
       },
       class: isCenter ? 'column-body-center' : 'column-body-left',
     },
-    bodyCellContent: {
-      style: {
-        display: 'flex',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        alignItems: 'flex-start',
-        width: '100%',
-      },
-    },
   }
 }
 
@@ -87,12 +79,12 @@ export function gridColumnPt(alignment = 'left') {
  */
 export function iconHeaderPt(columnPt) {
   const headerCell = columnPt.headerCell ?? {}
-  const existing = [headerCell.class].flat().filter(Boolean)
   return {
     ...columnPt,
     headerCell: {
       ...headerCell,
-      class: [...existing, 'column-header-icon'].join(' '),
+      // Array form so Vue merges whatever class shape the input used
+      class: [headerCell.class, 'column-header-icon'],
     },
   }
 }
