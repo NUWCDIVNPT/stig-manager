@@ -211,7 +211,7 @@ const chartOptions = {
 }
 
 .overall-pct {
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   font-weight: 600;
 }
 
@@ -243,7 +243,8 @@ const chartOptions = {
 .legend-item {
   display: flex;
   align-items: center;
-  font-size: 0.95rem;
+  gap: 0.5rem;
+  font-size: var(--text-md);
   border-radius: 5px;
   padding: 3px 10px;
   background-color: var(--color-background-subtle);
@@ -258,7 +259,7 @@ const chartOptions = {
 
 .label {
   flex: 1;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
 }
 
 .count {
@@ -297,13 +298,13 @@ const chartOptions = {
 }
 
 .stat-label {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: uppercase;
 }
 
 .stat-value {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
 }
 
@@ -316,13 +317,13 @@ const chartOptions = {
 }
 
 .total-label {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   color: var(--color-text-dim);
   margin-bottom: 0.15rem;
 }
 
 .total-value {
-  font-size: 1.35rem;
+  font-size: var(--text-xl);
   font-weight: 600;
 }
 </style>

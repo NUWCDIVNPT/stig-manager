@@ -18,7 +18,7 @@ defineProps({
       <div class="feedback-box-title">
         Have a Feature Request?
       </div>
-      <div style="font-size: 1.1rem;">
+      <div style="font-size: var(--text-lg);">
         New features in STIG Manager are primarily driven by user requests.
         Have an idea or feature request? We'd love to hear from you!
         Please submit your suggestions by opening an issue on our
@@ -64,12 +64,12 @@ defineProps({
 
 .feature-text {
   padding: 10px;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   word-wrap: break-word;
 }
 
 .whats-new-title {
-  font-size: 2rem;
+  font-size: var(--text-display);
   font-weight: bold;
   color: var(--color-primary-highlight);
 }
@@ -77,7 +77,7 @@ defineProps({
 .feature-subtitle {
   padding-top: 3px;
   padding-bottom: 3px;
-  font-size: 1.4rem;
+  font-size: var(--text-2xl);
   font-weight: bold;
   color: var(--color-primary-highlight);
 }
@@ -124,7 +124,7 @@ defineProps({
 }
 
 .feature-date {
-  font-size: 70%;
+  font-size: var(--text-sm);
   font-style: italic;
   font-weight: normal;
 }

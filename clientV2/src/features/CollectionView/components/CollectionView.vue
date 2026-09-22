@@ -426,7 +426,7 @@ function toggleDashboardSidebar() {
 }
 
 .tab-icon {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   opacity: 0.6;
   margin-right: 0.25rem;
 }

@@ -91,7 +91,7 @@ defineExpose({ show, hide })
 }
 
 .long-text-popover__label {
-  font-size: 0.75rem;
+  font-size: var(--text-sm);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -103,7 +103,7 @@ defineExpose({ show, hide })
   align-items: center;
   gap: 0.4rem;
   padding: 0.3rem 0.75rem;
-  font-size: 0.8rem;
+  font-size: var(--icon-xs);
   font-weight: 600;
   background-color: var(--color-background-dark);
   color: var(--color-text-primary);
@@ -127,7 +127,7 @@ defineExpose({ show, hide })
 }
 
 .long-text-popover__copy-btn i {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .long-text-popover__body {
@@ -136,7 +136,7 @@ defineExpose({ show, hide })
   overflow-y: auto;
   white-space: pre-wrap;
   word-break: break-word;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   line-height: 1.5;
   color: var(--color-text-primary);
   background-color: var(--color-background-darkest);

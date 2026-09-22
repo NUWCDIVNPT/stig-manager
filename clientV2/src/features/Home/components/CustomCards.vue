@@ -131,7 +131,7 @@ const createCardDialogPt = {
     style: 'color: #a1a1aa;',
   },
   title: {
-    style: 'font-size: 1.5rem; font-weight: 600;',
+    style: 'font-size: var(--text-xl); font-weight: 600;',
   },
 }
 
@@ -149,7 +149,7 @@ const deleteDialogPt = {
     style: 'color: #a1a1aa;',
   },
   title: {
-    style: 'font-size: 1.5rem; font-weight: 600;',
+    style: 'font-size: var(--text-xl); font-weight: 600;',
   },
 }
 
@@ -243,7 +243,7 @@ defineExpose({
       title="Add custom card"
       @click="openCreateDialog"
     >
-      <i class="pi pi-plus" style="font-size: 1.5rem" />
+      <i class="pi pi-plus" style="font-size: var(--text-2xl)" />
     </button>
     <button
       class="floating-btn reorder-btn"
@@ -251,7 +251,7 @@ defineExpose({
       :title="reorderMode ? 'Done editing' : 'Edit cards'"
       @click="reorderMode = !reorderMode"
     >
-      <i :class="reorderMode ? 'pi pi-check' : 'pi pi-pencil'" style="font-size: 1.5rem" />
+      <i :class="reorderMode ? 'pi pi-check' : 'pi pi-pencil'" style="font-size: var(--text-2xl)" />
     </button>
   </div>
 
@@ -452,7 +452,7 @@ defineExpose({
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: #ef4444;
-  font-size: 1.5rem;
+  font-size: var(--text-2xl);
   width: 28px;
   height: 28px;
   border-radius: 0.25rem;
@@ -491,7 +491,7 @@ defineExpose({
   background: none;
   border: none;
   color: var(--color-text-primary);
-  font-size: 3rem;
+  font-size: var(--text-display-lg);
   font-weight: 300;
   cursor: pointer;
   padding: 0;
@@ -511,7 +511,7 @@ defineExpose({
 }
 
 .form-group label {
-  font-size: 0.875rem;
+  font-size: var(--text-md);
   font-weight: 500;
 }
 

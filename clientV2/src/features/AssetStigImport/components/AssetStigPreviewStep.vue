@@ -192,7 +192,7 @@ const exportResult = ({ data }) => badgeFor(data) ?? ''
   align-items: center;
   gap: 0.45rem;
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   flex-shrink: 0;
 }
 
@@ -261,7 +261,7 @@ const exportResult = ({ data }) => badgeFor(data) ?? ''
 .excluded-desc {
   margin: 0;
   color: var(--color-text-dim);
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   line-height: 1.4;
 }
 
@@ -274,7 +274,7 @@ const exportResult = ({ data }) => badgeFor(data) ?? ''
 }
 
 .excluded-chip {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   padding: 0.1rem 0.45rem;
   border-radius: 999px;
   background: var(--color-background-darkest);
@@ -290,7 +290,7 @@ const exportResult = ({ data }) => badgeFor(data) ?? ''
   background: var(--color-background-darkest);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-default);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   text-transform: capitalize;
 }
 

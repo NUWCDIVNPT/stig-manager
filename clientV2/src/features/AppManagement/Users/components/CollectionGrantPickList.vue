@@ -171,7 +171,7 @@ const listboxPt = {
 .col-header {
   margin: 0;
   padding: 0.75rem 1rem;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   color: var(--color-text-bright);
   background: var(--p-datatable-row-background);
@@ -191,7 +191,7 @@ const listboxPt = {
 }
 
 .option-item {
-  font-size: 1rem;
+  font-size: var(--text-md);
   line-height: 1.4;
   white-space: nowrap;
   overflow: hidden;
@@ -208,7 +208,7 @@ const listboxPt = {
 }
 
 .target-option-name {
-  font-size: 1rem;
+  font-size: var(--text-md);
   line-height: 1.4;
   flex: 1;
   min-width: 0;
@@ -218,7 +218,7 @@ const listboxPt = {
 }
 
 .target-option-role {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-bright);
   white-space: nowrap;

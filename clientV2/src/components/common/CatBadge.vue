@@ -49,7 +49,7 @@ const title = computed(() => `CAT ${props.category}`)
   color: var(--color-text-dark);
   width: fit-content;
   min-width: 4.1rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -73,7 +73,7 @@ const title = computed(() => `CAT ${props.category}`)
 .cat-badge--label {
   background-color: transparent;
   padding: 0 0.4rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 700;
 }
 

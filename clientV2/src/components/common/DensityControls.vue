@@ -54,7 +54,7 @@ const { canIncrease, canDecrease, increaseRowHeight, decreaseRowHeight } = useGr
 }
 
 .density-controls__label {
-  font-size: 0.98rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-bright);
   margin-right: 0.2rem;

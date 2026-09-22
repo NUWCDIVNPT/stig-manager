@@ -22,7 +22,7 @@
 }
 
 .metric-title {
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   margin: 0;
   flex: 1;
@@ -34,7 +34,7 @@
 }
 
 .metric-action-link {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   cursor: pointer;
   font-weight: 500;
@@ -62,13 +62,13 @@
 }
 
 .metric-badge-label {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-dark);
 }
 
 .metric-badge-value {
-  font-size: 1.35rem;
+  font-size: var(--text-xl);
   color: var(--color-text-dark);
   line-height: 1.1;
   font-weight: 700;

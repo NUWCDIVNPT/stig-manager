@@ -48,7 +48,7 @@ const overflowTitle = computed(() => earlier.value.slice(props.max).join(', '))
   border: 1px solid var(--color-border-default);
   color: var(--color-text-dim);
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   line-height: 1.4;
 }
 

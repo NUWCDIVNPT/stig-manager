@@ -99,12 +99,12 @@ async function handleExport() {
 }
 
 .spinner-icon {
-  font-size: 1.6rem;
+  font-size: var(--text-2xl);
   color: var(--color-action-blue-dark);
 }
 
 .progress-text {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 500;
   color: var(--color-text-primary);
 }

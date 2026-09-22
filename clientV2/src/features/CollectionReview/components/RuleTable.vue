@@ -128,7 +128,7 @@ const visibleFields = computed(() => new Set(selectedColumns.value.map(c => c.fi
 }
 
 .rule-table__mask-spinner {
-  font-size: 2rem;
+  font-size: var(--text-display);
   color: var(--color-text-bright);
 }
 </style>

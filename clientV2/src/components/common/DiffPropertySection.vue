@@ -65,7 +65,7 @@ const rendered = computed(() => {
   background-color: var(--color-background-subtle);
   border-bottom: 1px solid var(--color-border-default);
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
 }
 

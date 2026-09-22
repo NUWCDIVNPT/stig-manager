@@ -118,7 +118,7 @@ function onRowSelect(event) {
 const dataTablePt = {
   // Body font size for the unclamped cells; the clamped .cell-text cells take
   // theirs from the grid geometry via --cell-font-size.
-  ...compactTablePt({ bodyFontSize: '1rem' }),
+  ...compactTablePt(),
   tableContainer: { style: 'background: var(--p-datatable-row-background); height: 100%;' },
   table: { style: { tableLayout: 'fixed', width: '100%' } },
   bodyRow: { style: { cursor: 'pointer', height: 'var(--item-size)', overflow: 'hidden' } },
@@ -396,7 +396,7 @@ const flexCellPt = {
 
 .agg-grid-panel__title-icon {
   color: var(--color-primary-highlight);
-  font-size: 0.9em;
+  font-size: var(--text-md);
   margin-right: 0.35rem;
 }
 
@@ -416,7 +416,7 @@ const flexCellPt = {
   min-width: 1.7rem;
   padding: 0.1rem 0.4rem;
   border-radius: 3px;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-dark);
@@ -458,7 +458,7 @@ const flexCellPt = {
 .cat-total--3 { border-color: var(--color-cat3); }
 
 .cat-total__label {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 700;
   letter-spacing: 0.03em;
 }
@@ -468,7 +468,7 @@ const flexCellPt = {
 .cat-total--3 .cat-total__label { color: var(--color-cat3); }
 
 .cat-total__value {
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-bright);
@@ -485,7 +485,7 @@ const flexCellPt = {
   display: inline-flex;
   align-items: center;
   margin: 0;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   color: var(--color-text-bright);
   letter-spacing: 0.02em;
@@ -497,7 +497,7 @@ const flexCellPt = {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
   background: var(--color-background-light);
   border: 1px solid var(--color-border-default);
@@ -540,7 +540,7 @@ const flexCellPt = {
 }
 
 .agg-grid-panel__scope-caret {
-  font-size: 0.75em;
+  font-size: var(--icon-xs);
   color: var(--color-text-dim);
   flex-shrink: 0;
   margin-left: 0.1rem;
@@ -557,7 +557,7 @@ const flexCellPt = {
   padding: 1rem;
   text-align: center;
   color: var(--color-text-error);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .agg-grid-panel__retry {
@@ -582,7 +582,7 @@ const flexCellPt = {
 .toolbar-field__label {
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -630,7 +630,7 @@ const flexCellPt = {
   display: inline-block;
   width: 100%;
   text-align: center;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   color: var(--color-text-bright);
@@ -644,7 +644,7 @@ const flexCellPt = {
   background: color-mix(in srgb, var(--color-primary-highlight) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-primary-highlight) 14%, transparent);
   border-radius: 2px;
-  font-size: 1rem;
+  font-size: var(--text-md);
   flex-shrink: 0;
   white-space: nowrap;
 }

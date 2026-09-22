@@ -229,11 +229,11 @@ async function onSave() {
 
 .title-main {
   font-weight: 700;
-  font-size: 1.6rem;
+  font-size: var(--text-2xl);
 }
 
 .title-sub {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-dim);
 }
 
@@ -270,7 +270,7 @@ async function onSave() {
 .control-btn {
   min-width: 7rem;
   padding: 0.6rem 1rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
 }
 
 .rules-col {
@@ -280,7 +280,7 @@ async function onSave() {
 .col-header {
   margin: 0;
   padding: 0.75rem 1rem;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   color: var(--color-text-bright);
   background: var(--p-datatable-row-background);

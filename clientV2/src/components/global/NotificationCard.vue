@@ -42,7 +42,7 @@ defineEmits(['dismiss'])
   border: none;
   cursor: pointer;
   color: var(--color-text-dim);
-  font-size: 0.75rem;
+  font-size: var(--icon-xs);
   padding: 0.125rem;
   line-height: 1;
   display: flex;

@@ -85,7 +85,7 @@ defineProps({
   border-radius: 8px;
 }
 .bw-header__icon {
-  font-size: 2.47rem;
+  font-size: var(--text-display);
   color: var(--color-warning-yellow);
   flex-shrink: 0;
   margin-top: 0.15rem;
@@ -93,7 +93,7 @@ defineProps({
 }
 .bw-header__text { display: flex; flex-direction: column; gap: 0.4rem; }
 .bw-header__headline {
-  font-size: 1.5rem;
+  font-size: var(--text-2xl);
   font-weight: 700;
   color: var(--color-text-bright);
   margin: 0;
@@ -101,19 +101,19 @@ defineProps({
 }
 .bw-header__count {
   color: var(--color-warning-yellow);
-  font-size: 1.69rem;
+  font-size: var(--text-2xl);
   font-variant-numeric: tabular-nums;
 }
 .bw-header__sub {
   margin: 0;
-  font-size: 1.17rem;
+  font-size: var(--text-xl);
   color: var(--color-text-dim);
   line-height: 1.5;
 }
 
 .bw-section-label {
   margin: 0;
-  font-size: 0.91rem;
+  font-size: var(--text-md);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -140,7 +140,7 @@ defineProps({
   border-color: color-mix(in srgb, var(--color-action-blue-dark) 30%, transparent);
 }
 .bw-card__icon {
-  font-size: 1.56rem;
+  font-size: var(--text-2xl);
   color: var(--color-text-dim);
   flex-shrink: 0;
   margin-top: 0.1rem;
@@ -149,12 +149,12 @@ defineProps({
 .bw-card__title {
   margin: 0 0 0.35rem;
   font-weight: 600;
-  font-size: 1.24rem;
+  font-size: var(--text-xl);
   color: var(--color-text-bright);
 }
 .bw-card__desc {
   margin: 0;
-  font-size: 1.14rem;
+  font-size: var(--text-lg);
   color: var(--color-text-dim);
   line-height: 1.55;
 }
@@ -164,7 +164,7 @@ defineProps({
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 1.04rem;
+  font-size: var(--text-md);
   color: var(--color-action-blue);
   text-decoration: none;
   font-weight: 500;
@@ -173,7 +173,7 @@ defineProps({
 .bw-watcher-link:hover { color: var(--color-primary-highlight); text-decoration: underline; }
 .bw-watcher-badge {
   display: inline-block;
-  font-size: 0.91rem;
+  font-size: var(--text-sm);
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-action-blue-dark) 12%, transparent);
@@ -185,7 +185,7 @@ defineProps({
 
 .bw-continue-hint {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-dim);
 }
 </style>

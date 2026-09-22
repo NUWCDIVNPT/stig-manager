@@ -110,7 +110,7 @@ function getRiskClass(riskRating) {
 }
 
 .subsection-title {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   text-transform: uppercase;
   color: var(--color-text-dim);
   margin: 0 0 3px 0;
@@ -160,12 +160,12 @@ function getRiskClass(riskRating) {
 
 .cora-cat-label {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
 }
 
 .cora-cat-count {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-bright);
 }
 .cora-risk-card {
@@ -179,7 +179,7 @@ function getRiskClass(riskRating) {
 }
 
 .risk-label {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: uppercase;
   color: var(--color-text-bright);
@@ -187,7 +187,7 @@ function getRiskClass(riskRating) {
 }
 
 .risk-score {
-  font-size: 1.9rem;
+  font-size: var(--text-display);
   font-weight: 800;
   color: var(--color-text-bright);
   line-height: 1;
@@ -195,7 +195,7 @@ function getRiskClass(riskRating) {
 }
 
 .risk-rating {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: uppercase;
   color: var(--color-text-bright);

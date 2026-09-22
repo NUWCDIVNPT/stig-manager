@@ -56,8 +56,8 @@ const menuPt = {
   menu: { style: 'background: transparent; outline: none;' },
   menuitem: { style: 'margin: 0;' },
   content: { style: 'padding: 0.4rem 0.8rem; color: var(--color-text-primary); border-radius: 0; transition: background-color 0.1s; display: flex; align-items: center;' },
-  icon: { style: 'color: var(--color-text-dim); margin-right: 0.5rem; font-size: 0.92rem;' },
-  label: { style: 'font-size: 0.92rem;' },
+  icon: { style: 'color: var(--color-text-dim); margin-right: 0.5rem; font-size: var(--text-md);' },
+  label: { style: 'font-size: var(--text-md);' },
   separator: { style: 'border-top: 1px solid var(--color-border-light); margin: 0.25rem 0;' },
 }
 
@@ -143,7 +143,7 @@ async function onTransferConfirmed() {
   border: none;
   background: transparent;
   color: var(--color-text-default);
-  font-size: 0.92rem;
+  font-size: var(--text-md);
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.1s, color 0.1s;
@@ -161,12 +161,12 @@ async function onTransferConfirmed() {
 
 .icon-grey {
   color: var(--color-text-dim);
-  font-size: 0.92rem;
+  font-size: var(--text-md);
 }
 
 .trigger-caret {
   color: var(--color-text-dim);
-  font-size: 0.7rem;
+  font-size: var(--icon-xs);
   margin-left: 0.1rem;
 }
 
@@ -187,7 +187,7 @@ async function onTransferConfirmed() {
 }
 
 .warning-icon {
-  font-size: 2rem;
+  font-size: var(--text-display);
   color: var(--color-text-warning, #f59e0b);
   flex-shrink: 0;
 }

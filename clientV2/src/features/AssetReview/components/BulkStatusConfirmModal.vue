@@ -56,7 +56,7 @@ const dialogPt = {
     style: 'color: var(--color-text-dim);',
   },
   title: {
-    style: 'font-size: 1.5rem; font-weight: 600;',
+    style: 'font-size: var(--text-xl); font-weight: 600;',
   },
 }
 
@@ -134,13 +134,13 @@ function onCancel() {
 
 .bulk-confirm__summary {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
 }
 
 .bulk-confirm__skipped {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 

@@ -112,7 +112,7 @@ const dataTablePt = {
   },
   column: {
     headerCell: {
-      style: `height: ${ROW_HEIGHT}; color: var(--color-text-bright); font-size: 0.95rem; text-transform: none;`,
+      style: `height: ${ROW_HEIGHT}; color: var(--color-text-bright); font-size: var(--text-md); text-transform: none;`,
     },
   },
   bodyRow: {
@@ -122,7 +122,7 @@ const dataTablePt = {
     style: 'padding: 0; border: none; background: var(--color-background-dark);',
   },
   emptyMessageCell: {
-    style: 'padding: 2rem 1rem; text-align: center; background: var(--color-background-soft); color: var(--color-text-dim); font-size: 0.9rem;',
+    style: 'padding: 2rem 1rem; text-align: center; background: var(--color-background-soft); color: var(--color-text-dim); font-size: var(--text-md);',
   },
 }
 </script>
@@ -325,7 +325,7 @@ const dataTablePt = {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  font-size: var(--text-2xl);
   flex-shrink: 0;
   transition: color 0.2s ease;
 }
@@ -342,7 +342,7 @@ const dataTablePt = {
 }
 
 .status-banner__pill {
-  font-size: 0.72rem;
+  font-size: var(--text-sm);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -424,7 +424,7 @@ const dataTablePt = {
   align-items: center;
   gap: 0.4rem;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   color: var(--color-text-bright);
   letter-spacing: 0.03em;
   padding: 0.35rem 0.25rem;

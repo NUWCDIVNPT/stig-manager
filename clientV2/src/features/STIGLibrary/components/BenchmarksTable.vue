@@ -203,7 +203,7 @@ function clearFilter() {
 }
 
 .bm-cell__title {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   line-height: 1.3;
   color: var(--color-text-primary);
@@ -225,7 +225,7 @@ function clearFilter() {
 
 .bm-cell__id {
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
@@ -238,7 +238,7 @@ function clearFilter() {
 }
 
 .bm-cell__meta {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 </style>

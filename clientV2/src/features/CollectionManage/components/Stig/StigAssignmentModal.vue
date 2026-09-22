@@ -500,14 +500,14 @@ const selectPt = {
 }
 
 .modal-header-title {
-  font-size: 1.05rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-bright);
   line-height: 1.25;
 }
 
 .modal-header-sub {
-  font-size: 1.025rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   margin-top: 2px;
 }
@@ -528,7 +528,7 @@ const selectPt = {
 }
 
 .selection-label {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
   width: 9rem;
@@ -577,7 +577,7 @@ const selectPt = {
 .header-count {
   font-weight: 500;
   color: var(--color-text-dim);
-  font-size: 0.9em;
+  font-size: var(--text-sm);
 }
 
 .header-row {
@@ -590,7 +590,7 @@ const selectPt = {
 
 .header-spinner {
   color: var(--color-text-dim);
-  font-size: 0.85rem;
+  font-size: var(--text-md);
 }
 
 .asset-row {
@@ -621,7 +621,7 @@ const selectPt = {
 
 .label-chip {
   display: inline-block;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 600;
   padding: 1px 5px;
   border-radius: 6px;
@@ -648,7 +648,7 @@ const selectPt = {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-text-primary);
   flex-shrink: 0;

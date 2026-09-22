@@ -230,7 +230,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 }
 
 .rule-target-icon {
-  font-size: 0.8rem;
+  font-size: var(--icon-xs);
   color: var(--color-text-dim);
 }
 
@@ -245,7 +245,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 .rule-summary {
   padding-left: 1.2rem;
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .rule-actions {

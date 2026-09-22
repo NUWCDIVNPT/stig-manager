@@ -35,7 +35,7 @@ const columnTogglePT = {
       color: context.selected ? 'var(--color-text-bright)' : 'var(--color-text-primary)',
       padding: '0.2rem 0.6rem',
       gap: '0.5rem',
-      fontSize: '1rem',
+      fontSize: 'var(--text-md)',
       transition: 'background 0.12s',
       background: context.focused ? 'var(--color-background-light)' : 'transparent',
     },
@@ -97,13 +97,13 @@ const columnTogglePT = {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.02rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-bright);
 }
 
 .column-toggle__icon {
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .column-toggle__option {
@@ -119,11 +119,11 @@ const columnTogglePT = {
 }
 
 .column-toggle__option-icon {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
 .column-toggle__option-text {
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 </style>

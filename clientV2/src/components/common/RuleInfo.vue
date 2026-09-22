@@ -171,7 +171,7 @@ const emit = defineEmits(['retry'])
 
 .rule-info__panel-title {
   font-weight: 600;
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
 }
 
@@ -226,7 +226,7 @@ const emit = defineEmits(['retry'])
 }
 
 .rule-info__fetch-error .pi {
-  font-size: 1.5rem;
+  font-size: var(--text-2xl);
   opacity: 0.8;
 }
 
@@ -237,7 +237,7 @@ const emit = defineEmits(['retry'])
   border-radius: 4px;
   padding: 0.2rem 0.8rem;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--text-md);
   opacity: 0.85;
   transition: opacity 0.15s;
 }
@@ -260,7 +260,7 @@ const emit = defineEmits(['retry'])
 }
 
 .rule-info__rule-id {
-  font-size: 2rem;
+  font-size: var(--text-display);
   font-weight: 700;
   color: var(--color-text-primary);
 }
@@ -275,7 +275,7 @@ const emit = defineEmits(['retry'])
 }
 
 .rule-info__title {
-  font-size: 1.45rem;
+  font-size: var(--text-2xl);
   font-weight: 600;
   color: var(--color-text-primary);
   line-height: 1.4;
@@ -300,7 +300,7 @@ const emit = defineEmits(['retry'])
 
 .rule-info__section-title {
   margin: 0 0 0.35rem 0;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-action-blue);
 }
@@ -319,7 +319,7 @@ const emit = defineEmits(['retry'])
   word-break: break-word;
   line-height: 1.4;
   font-family: inherit;
-  font-size: 1.08rem;
+  font-size: var(--text-lg);
   margin: 0;
   padding: 0 1.25rem;
 }

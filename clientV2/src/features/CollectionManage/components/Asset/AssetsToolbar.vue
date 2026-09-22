@@ -86,7 +86,7 @@ const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify
 }
 
 .clear-x {
-  font-size: 0.65rem;
+  font-size: var(--icon-xs);
 }
 
 .btn-icon {

@@ -4,17 +4,16 @@
  * that was previously copy-pasted into each table component.
  *
  * @param {object} [options]
- * @param {string} [options.bodyFontSize] - Optional body-cell font size (e.g. '0.9rem').
  * @param {'flush'|'divider'} [options.footer] - 'flush' (borderless) or 'divider' (top border, transparent bg).
  * @param {string} [options.headerPadding] - Optional header-cell padding override (e.g. '0.25rem 0.6rem'), for denser tables like AppInfo's report grids.
  * @returns {object} A `pt` object for `<DataTable :pt="...">`.
  */
-export function compactTablePt({ bodyFontSize, footer = 'flush', headerPadding } = {}) {
-  const bodyCellStyle = `padding: 0.4rem 0.6rem;${bodyFontSize ? ` font-size: ${bodyFontSize};` : ''}`
+export function compactTablePt({ footer = 'flush', headerPadding } = {}) {
+  const bodyCellStyle = 'padding: 0.4rem 0.6rem; font-size: var(--text-md);'
   const footerStyle = footer === 'divider'
     ? 'padding: 0; border-top: 1px solid var(--color-border-default); background: transparent;'
     : 'padding: 0; border: none;'
-  const headerCellStyle = `font-size: 1rem; font-weight: 600;${headerPadding ? ` padding: ${headerPadding};` : ''}`
+  const headerCellStyle = `font-size: var(--text-md); font-weight: 600;${headerPadding ? ` padding: ${headerPadding};` : ''}`
 
   return {
     root: { style: 'background: var(--p-datatable-row-background);' },
@@ -49,7 +48,7 @@ export function gridColumnPt(alignment = 'left') {
     },
     columnHeaderContent: {
       style: {
-        fontSize: '1rem',
+        fontSize: 'var(--text-md)',
         color: 'var(--color-text-primary)',
         justifyContent: isCenter ? 'safe center' : 'flex-start',
         textAlign: isCenter ? 'center' : 'left',

@@ -84,8 +84,8 @@ const targetListboxPt = {
 
 const roleSelectPt = {
   root: { style: 'background-color: var(--color-background-light); border-color: var(--color-border-default); width: 8.5rem; flex-shrink: 0;' },
-  label: { style: 'padding: 0.25rem 0.5rem; font-size: 0.95rem;' },
-  option: { style: 'font-size: 0.95rem;' },
+  label: { style: 'padding: 0.25rem 0.5rem; font-size: var(--text-md);' },
+  option: { style: 'font-size: var(--text-md);' },
 }
 </script>
 
@@ -194,7 +194,7 @@ const roleSelectPt = {
 .col-header {
   margin: 0;
   padding: 0.75rem 1rem;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   color: var(--color-text-bright);
   background: var(--p-datatable-row-background);
@@ -214,7 +214,7 @@ const roleSelectPt = {
 }
 
 .option-item {
-  font-size: 1rem;
+  font-size: var(--text-md);
   line-height: 1.4;
   white-space: nowrap;
   overflow: hidden;
@@ -231,7 +231,7 @@ const roleSelectPt = {
 }
 
 .target-option-name {
-  font-size: 1rem;
+  font-size: var(--text-md);
   line-height: 1.4;
   flex: 1;
   min-width: 0;

@@ -573,7 +573,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 }
 
 .review-edit-popover__close .pi {
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
 }
 
 .review-edit-popover__main {
@@ -601,7 +601,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 .review-edit-popover__label {
   display: block;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   margin-bottom: 0.2rem;
   text-transform: uppercase;
@@ -642,7 +642,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   cursor: pointer;
   border-radius: 3px;
   white-space: nowrap;
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .review-edit-popover__result-item:hover:not(.review-edit-popover__result-item--disabled) {
@@ -705,7 +705,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   border: 1px solid color-mix(in srgb, var(--color-text-primary) 30%, transparent);
   border-radius: 4px;
   padding: 0.45rem 0.5rem;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 600;
   cursor: pointer;
   margin-top: auto;
@@ -731,7 +731,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   border: 1px solid color-mix(in srgb, var(--color-warning, #f39c12) 50%, transparent);
   border-radius: 4px;
   color: var(--color-warning, #f1c40f);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   animation: warning-slide-down 0.2s cubic-bezier(0, 0, 0.2, 1);
 }
 
@@ -799,7 +799,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 
 .review-edit-popover__attr-label {
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
   opacity: 0.8;
   white-space: nowrap;
@@ -810,7 +810,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   align-items: center;
   gap: 0.3rem;
   padding: 0.15rem 0.5rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-light);
   border-radius: 4px;
@@ -818,7 +818,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 }
 
 .review-edit-popover__attr-pill .pi {
-  font-size: 1rem;
+  font-size: var(--text-md);
   opacity: 0.9;
 }
 
@@ -835,7 +835,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   background-color: color-mix(in srgb, var(--color-background-light) 20%, transparent);
   border-top: 1px solid var(--color-border-light);
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-primary);
   transition: background-color 0.15s ease;
@@ -847,7 +847,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 }
 
 .review-edit-popover__resources-toggle .pi {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   transition: transform 0.2s ease;
 }

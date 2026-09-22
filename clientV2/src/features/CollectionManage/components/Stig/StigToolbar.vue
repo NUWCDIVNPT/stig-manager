@@ -71,6 +71,6 @@ const emit = defineEmits(['clear-selection', 'stigs-changed'])
 }
 
 .clear-x {
-  font-size: 0.65rem;
+  font-size: var(--icon-xs);
 }
 </style>

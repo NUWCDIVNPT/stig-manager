@@ -84,7 +84,7 @@ async function onConfirm() {
 }
 
 .question-icon {
-  font-size: 2rem;
+  font-size: var(--text-display);
   color: var(--color-text-dim);
   flex-shrink: 0;
 }

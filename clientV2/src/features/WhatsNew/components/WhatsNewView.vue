@@ -34,7 +34,7 @@ import { Sources } from '../../../components/global/whatsNewSources.js'
 }
 
 h1 {
-  font-size: 1.8rem;
+  font-size: var(--text-2xl);
   font-weight: 600;
   margin: 0;
   color: var(--color-text-primary);

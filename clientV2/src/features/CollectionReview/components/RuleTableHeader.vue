@@ -144,7 +144,7 @@ function onAction(actionType) {
 
 .rule-table__title {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
   white-space: nowrap;
@@ -166,7 +166,7 @@ function onAction(actionType) {
 }
 
 .toolbar-btn__label {
-  font-size: 1.02rem;
+  font-size: var(--text-md);
   font-weight: 600;
 }
 
@@ -178,7 +178,7 @@ function onAction(actionType) {
 }
 
 .toolbar-btn__icon-font {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   margin-right: 0.3rem;
 }
 

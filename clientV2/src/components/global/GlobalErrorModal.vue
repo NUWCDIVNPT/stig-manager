@@ -36,7 +36,7 @@ const dialogPt = {
     style: 'color: var(--color-text-dim);',
   },
   title: {
-    style: 'font-size: 1.5rem; font-weight: 600;',
+    style: 'font-size: var(--text-xl); font-weight: 600;',
   },
 }
 
@@ -88,7 +88,7 @@ const buttonPt = {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
 }
 
 .description {
@@ -110,7 +110,7 @@ const buttonPt = {
   top: -12px;
   background-color: var(--color-background-dark);
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 500;
 }
 
@@ -122,7 +122,7 @@ const buttonPt = {
 pre {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   white-space: pre-wrap;
   word-break: break-all;

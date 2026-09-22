@@ -500,7 +500,7 @@ const dataTablePt = {
 
 .cell-result__empty {
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
   opacity: 0.9;
 }
 
@@ -514,7 +514,7 @@ const dataTablePt = {
 
 /* Group and Rule identifiers read larger than the clamped text columns. */
 .cell-text--id {
-  font-size: 1.3rem;
+  font-size: var(--text-xl);
   line-height: 1.3;
 }
 
@@ -581,7 +581,7 @@ const dataTablePt = {
 :deep(.p-datatable-thead > tr > th) {
   background: var(--color-background-dark);
   color: var(--color-text-dim);
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: none;
   letter-spacing: 0.03em;
@@ -619,7 +619,7 @@ const dataTablePt = {
   align-items: center;
   gap: 0.75rem;
   color: var(--color-text-dim);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
 }
 
 /* Custom scrollbars for the table */

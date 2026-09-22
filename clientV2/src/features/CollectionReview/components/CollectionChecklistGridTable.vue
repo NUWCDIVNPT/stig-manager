@@ -401,7 +401,7 @@ const dataTablePt = {
 :deep(.p-datatable-thead > tr > th) {
   background: var(--color-background-dark);
   color: var(--color-text-dim);
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: none;
   border-bottom: 1px solid var(--color-border-default);

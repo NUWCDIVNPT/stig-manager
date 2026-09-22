@@ -110,7 +110,7 @@ const tabPt = {
   root: ({ context }) => ({
     style: {
       padding: '0.75rem 1.15rem',
-      fontSize: '0.95rem',
+      fontSize: 'var(--text-md)',
       fontWeight: context.active ? '700' : '600',
       color: context.active ? 'var(--color-text-bright)' : 'var(--color-text-dim)',
       background: 'transparent',

@@ -55,7 +55,7 @@ const displayAcl = computed(() => (acl.value ?? []).map(row => ({
   sources: (row.aclSources ?? []).map(source => granteeLabel(source.grantee)).join(', '),
 })))
 
-const tablePt = compactTablePt({ bodyFontSize: '0.9rem' })
+const tablePt = compactTablePt()
 
 // Clear prior results on every open/user change so a reopened drawer never flashes the previous user's access before the new fetch resolves.
 watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
@@ -143,7 +143,7 @@ watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
 }
 
 .modal-title i {
-  font-size: 2rem;
+  font-size: var(--text-display);
   color: var(--color-text-dim);
 }
 
@@ -155,11 +155,11 @@ watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
 
 .title-main {
   font-weight: 700;
-  font-size: 1.6rem;
+  font-size: var(--text-2xl);
 }
 
 .title-sub {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-dim);
 }
 

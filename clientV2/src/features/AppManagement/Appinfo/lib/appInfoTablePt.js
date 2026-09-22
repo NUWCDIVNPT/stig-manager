@@ -12,7 +12,7 @@ import '../styles/appInfo.css'
  * @param {boolean} [options.selectable] - Adds a pointer cursor to body rows.
  */
 export function reportTablePt({ selectable = false } = {}) {
-  const pt = compactTablePt({ bodyFontSize: '1rem', footer: 'divider', headerPadding: '0.25rem 0.6rem' })
+  const pt = compactTablePt({ footer: 'divider', headerPadding: '0.25rem 0.6rem' })
   if (selectable) {
     pt.bodyRow = { style: 'cursor: pointer;' }
   }

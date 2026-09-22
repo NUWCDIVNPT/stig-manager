@@ -127,11 +127,11 @@ const dialogPt = {
 }
 
 const inputTextPt = {
-  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%;' },
+  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: var(--text-md); padding: 0.6rem 0.8rem; width: 100%;' },
 }
 
 const textareaPt = {
-  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%; resize: none;' },
+  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: var(--text-md); padding: 0.6rem 0.8rem; width: 100%; resize: none;' },
 }
 </script>
 
@@ -251,7 +251,7 @@ const textareaPt = {
 }
 
 .modal-header-title {
-  font-size: 1.05rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-bright);
 }
@@ -276,7 +276,7 @@ const textareaPt = {
 }
 
 .flabel {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -286,12 +286,12 @@ const textareaPt = {
 }
 
 .char-count {
-  font-size: 0.8rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
 .field-error {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   line-height: 1.2;
   min-height: 1.2em;
   color: var(--color-text-error);
@@ -330,7 +330,7 @@ const textareaPt = {
   align-items: center;
   justify-content: center;
   color: #080808;
-  font-size: 0.8rem;
+  font-size: var(--icon-xs);
   transition: transform 0.1s, box-shadow 0.1s;
 }
 

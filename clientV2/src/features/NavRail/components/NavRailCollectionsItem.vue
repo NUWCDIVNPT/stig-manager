@@ -251,7 +251,7 @@ async function onQuickCreated(created) {
 }
 
 .nav-rail-item-chevron {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
@@ -360,11 +360,11 @@ async function onQuickCreated(created) {
 
 .collection-list-icon--dashboard {
   opacity: 0.7;
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .collection-list-name {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -373,7 +373,7 @@ async function onQuickCreated(created) {
 .collections-loading,
 .collections-empty {
   padding: 0.5rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   text-align: center;
 }
@@ -383,7 +383,7 @@ async function onQuickCreated(created) {
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0.75rem 0.5rem 1.1rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-text-primary);
   border-bottom: 1px solid var(--color-border-default);

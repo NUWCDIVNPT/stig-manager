@@ -8,7 +8,7 @@ import { compactTablePt } from '../../shared/lib/dataTablePt.js'
  * Static; spread it into a per-table `pt` to add or override keys.
  */
 export const paneTablePt = {
-  ...compactTablePt({ bodyFontSize: '1rem' }),
+  ...compactTablePt(),
   tableContainer: { style: 'background: var(--p-datatable-row-background); height: 100%;' },
   table: { style: { tableLayout: 'auto', minWidth: '100%' } },
   bodyRow: { style: { cursor: 'pointer', height: 'var(--item-size)', overflow: 'hidden' } },

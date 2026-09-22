@@ -46,7 +46,7 @@ const dialogPt = {
     style: 'color: var(--color-text-dim);',
   },
   title: {
-    style: 'font-size: 1.5rem; font-weight: 600;',
+    style: 'font-size: var(--text-xl); font-weight: 600;',
   },
 }
 

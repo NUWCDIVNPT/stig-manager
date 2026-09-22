@@ -123,7 +123,7 @@ const dtRef = ref()
 }
 
 .step-title {
-  font-size: 1.6rem;
+  font-size: var(--text-2xl);
   font-weight: 600;
   margin: 0 0 0.5rem;
   color: var(--color-primary-highlight);

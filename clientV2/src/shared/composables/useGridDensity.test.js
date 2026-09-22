@@ -92,15 +92,16 @@ describe('useGridDensity', () => {
   it('exposes the grid CSS variables as one style object', () => {
     mockRootFontSize(10)
     const { gridStyle, increaseRowHeight } = useGridDensity('stig-library-rules')
+    // md cell text: 1 × 1.3 × 2 + 0.54 = 3.14rem at a 10px root
     expect(gridStyle.value).toEqual({
       '--line-clamp': 2,
-      '--item-size': '33px',
-      '--cell-font-size': '1.05rem',
-      '--cell-line-height': '1.365rem',
+      '--item-size': '32px',
+      '--cell-font-size': '1rem',
+      '--cell-line-height': '1.3rem',
     })
     increaseRowHeight()
     expect(gridStyle.value['--line-clamp']).toBe(3)
-    expect(gridStyle.value['--item-size']).toBe('47px')
+    expect(gridStyle.value['--item-size']).toBe('45px')
   })
 
   it('throws for an unregistered grid key', () => {

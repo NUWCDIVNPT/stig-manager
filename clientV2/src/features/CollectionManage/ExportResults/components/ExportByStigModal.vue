@@ -113,11 +113,11 @@ watch(() => props.visible, (open) => {
   gap: 0.6rem;
   padding: 1rem;
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .empty {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   padding: 1rem;
   text-align: center;

@@ -20,7 +20,7 @@ export const reviewResourcesTablePt = {
         borderBottom: '1px solid var(--color-border-default)',
         color: 'var(--color-text-dim)',
         fontWeight: '700',
-        fontSize: '0.9rem',
+        fontSize: 'var(--text-md)',
         textTransform: 'uppercase',
         letterSpacing: '0.04em',
         padding: '0.3rem 0.4rem',

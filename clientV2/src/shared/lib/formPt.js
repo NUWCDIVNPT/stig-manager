@@ -2,11 +2,11 @@
 // App Management detail panels and create modals so they render identically.
 
 export const inputTextPt = {
-  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%;' },
+  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: var(--text-md); padding: 0.6rem 0.8rem; width: 100%;' },
 }
 
 export const textareaPt = {
-  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%; resize: none;' },
+  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: var(--text-md); padding: 0.6rem 0.8rem; width: 100%; resize: none;' },
 }
 
 export const tabsPt = {
@@ -23,7 +23,7 @@ export const tabPt = {
   root: ({ context }) => ({
     style: {
       padding: '0.6rem 1.1rem',
-      fontSize: '0.95rem',
+      fontSize: 'var(--text-md)',
       fontWeight: context.active ? '700' : '600',
       color: context.active ? 'var(--color-text-bright)' : 'var(--color-text-dim)',
       background: 'transparent',
