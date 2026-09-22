@@ -122,10 +122,10 @@ const dialogPt = {
 
 // Rows are pinned to the scroller's itemSize so its n × itemSize placement holds.
 const tablePt = {
-  bodyRow: { style: `font-size: var(--text-sm); height: ${VIRTUAL_SCROLLER_OPTIONS.itemSize}px;` },
+  bodyRow: { style: `font-size: var(--text-md); height: ${VIRTUAL_SCROLLER_OPTIONS.itemSize}px;` },
   column: {
     bodyCell: { style: 'padding: 0.15rem 0.5rem;' },
-    headerCell: { style: 'padding: 0.3rem 0.5rem; font-size: var(--text-sm);' },
+    headerCell: { style: 'padding: 0.3rem 0.5rem; font-size: var(--text-md);' },
   },
 }
 </script>

@@ -23,7 +23,7 @@ const ALLOWED_FAMILY = new Set(['var(--font-mono)', 'inherit'])
 // shorthand when asked for 'font', since the hyphen keeps font-size and
 // font-family from matching it.
 function declarations(src, ...properties) {
-  const re = new RegExp(`\\b(?:${properties.join('|')})\\s*:\\s*['"\`]?([^;}'"\`]+?)\\s*(?=[;}'"\`]|$)`, 'gm')
+  const re = new RegExp(`(?<![-\\w])(?:${properties.join('|')})['"]?\\s*:\\s*['"\`]?([^;}'"\`]+?)\\s*(?=[;}'"\`]|$)`, 'gm')
   return [...src.matchAll(re)].map(m => ({ value: m[1].replace(/\s*!important$/, ''), index: m.index }))
 }
 

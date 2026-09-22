@@ -80,7 +80,7 @@ const decoratedRows = computed(() => {
 // asset cell has a fixed need (2.2rem shield row + 0.15rem gap + labels row +
 // cell padding), so floor the row height when labels are present. Label-free
 // result sets keep the denser geometry floor.
-const LABELED_ROW_MIN_PX = rowHeightPx('spacious')
+const LABELED_ROW_MIN_PX = rowHeightPx('twoLine')
 const itemSize = computed(() => {
   const hasLabels = decoratedRows.value.some(r => r.labels.length)
   return hasLabels ? Math.max(densityItemSize.value, LABELED_ROW_MIN_PX) : densityItemSize.value

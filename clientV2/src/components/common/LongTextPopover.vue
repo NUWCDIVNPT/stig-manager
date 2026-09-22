@@ -103,7 +103,7 @@ defineExpose({ show, hide })
   align-items: center;
   gap: 0.4rem;
   padding: 0.3rem 0.75rem;
-  font-size: var(--icon-xs);
+  font-size: var(--text-md);
   font-weight: 600;
   background-color: var(--color-background-dark);
   color: var(--color-text-primary);

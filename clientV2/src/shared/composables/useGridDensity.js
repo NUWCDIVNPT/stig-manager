@@ -47,6 +47,9 @@ export function useGridDensity(gridKey) {
   if (!geometry) {
     throw new Error(`useGridDensity: no geometry registered for grid "${gridKey}"`)
   }
+  if (!(geometry.textSize in TEXT_SCALE_REM)) {
+    throw new Error(`useGridDensity: unknown textSize "${geometry.textSize}" for grid "${gridKey}"`)
+  }
   const minLineClamp = geometry.minLineClamp ?? 1
   const lineRem = Number((TEXT_SCALE_REM[geometry.textSize] * LINE_HEIGHT).toFixed(3))
 
