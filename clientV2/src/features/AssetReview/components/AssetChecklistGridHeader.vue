@@ -389,6 +389,7 @@ function toggleChecklistMenu(event) {
   align-items: center;
   gap: 0.55rem;
   flex-wrap: nowrap;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -439,6 +440,8 @@ function toggleChecklistMenu(event) {
 .checklist-grid__asset-info {
   display: flex;
   align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
   gap: 0.5rem;
   margin-left: 0.5rem;
   padding-left: 0.5rem;
@@ -456,9 +459,10 @@ function toggleChecklistMenu(event) {
   color: var(--color-text-dim);
 }
 
+/* Block, not flex: LabelsRow sizes itself to this box (it has no intrinsic
+   width), and the box takes whatever the header row has left. */
 .asset-info__labels {
-  display: flex;
-  align-items: center;
+  flex: 1 1 auto;
   margin-left: 0.25rem;
   min-width: 0;
 }

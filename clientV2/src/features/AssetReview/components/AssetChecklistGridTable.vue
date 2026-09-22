@@ -17,6 +17,7 @@ import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay, severityMap } from '../../../shared/lib/checklistUtils.js'
+import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { fieldMatches, highlightText } from '../../../shared/lib/searchUtils.js'
@@ -225,46 +226,11 @@ watch(() => props.gridData, (data) => {
 
 const defaultSortField = computed(() => props.visibleFields.has('groupId') ? 'groupId' : 'ruleId')
 
-function getColumnPt(alignment = 'left') {
-  const isCenter = alignment === 'center'
-  return {
-    headerCell: {
-      style: {
-        borderRight: '1px solid var(--color-border-light)',
-      },
-      class: isCenter ? 'column-header-center' : 'column-header-left',
-    },
-    columnHeaderContent: {
-      style: {
-        fontSize: '1rem',
-        color: 'var(--color-text-primary)',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-    },
-    bodyCell: {
-      style: {
-        verticalAlign: 'top',
-        padding: '0.15rem 0.35rem',
-        overflow: 'hidden',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-      class: isCenter ? 'column-body-center' : 'column-body-left',
-    },
-    bodyCellContent: {
-      style: {
-        display: 'flex',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        alignItems: 'flex-start',
-        width: '100%',
-      },
-    },
-  }
-}
-
 const columnPt = {
-  center: getColumnPt('center'),
-  left: getColumnPt('left'),
+  center: gridColumnPt('center'),
+  left: gridColumnPt('left'),
+  // Icon-only headers whose one action is sorting
+  icon: iconHeaderPt(gridColumnPt('center')),
 }
 
 const dataTablePt = {
@@ -456,7 +422,7 @@ const dataTablePt = {
       </template>
     </Column>
 
-    <Column v-if="visibleFields.has('touchTs')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('touchTs')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.icon">
       <template #header>
         <i class="pi pi-clock" title="Last action" />
       </template>
@@ -503,7 +469,7 @@ const dataTablePt = {
   align-items: center;
   justify-content: center;
   gap: 0.1rem;
-  width: 100%;
+  flex: 1 1 auto;
 }
 
 /* Table Styles */

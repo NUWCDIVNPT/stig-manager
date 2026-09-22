@@ -24,6 +24,7 @@ import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { normalizeColor } from '../../../shared/lib/colorUtils.js'
+import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
 import { formatReviewDate, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { patchReview, putReview } from '../../AssetReview/api/assetReviewApi.js'
 
@@ -300,17 +301,22 @@ const filteredData = computed(() => {
   return data
 })
 
-const isAllSelected = computed(() => {
-  const data = filteredData.value
-  if (!data.length) { return false }
+// One pass over the filtered rows: `all` drives the header checkbox and the
+// table's select-all, `some` the header's indeterminate state.
+const selectionState = computed(() => {
   const ids = selectedIdSet.value
-  let hasSelectable = false
-  for (const row of data) {
-    if (!isDataSelectable(row)) { continue }
-    hasSelectable = true
-    if (!ids.has(row.assetId)) { return false }
+  let selectable = 0
+  let selected = 0
+  for (const row of filteredData.value) {
+    if (!isDataSelectable(row)) {
+      continue
+    }
+    selectable++
+    if (ids.has(row.assetId)) {
+      selected++
+    }
   }
-  return hasSelectable
+  return { all: selectable > 0 && selected === selectable, some: selected > 0 && selected < selectable }
 })
 
 function onSelectAllChange(event) {
@@ -333,46 +339,24 @@ const stats = computed(() => calculateChecklistStats(filteredData.value) ?? {
   total: 0,
 })
 
-function getColumnPt(alignment = 'left') {
-  const isCenter = alignment === 'center'
-  return {
-    headerCell: {
-      style: { borderRight: '1px solid var(--color-border-light)' },
-      class: isCenter ? 'column-header-center' : 'column-header-left',
-    },
-    columnHeaderContent: {
-      style: {
-        fontSize: '1rem',
-        color: 'var(--color-text-primary)',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-    },
-    bodyCell: {
-      style: {
-        verticalAlign: 'top',
-        padding: '0.15rem 0.35rem',
-        overflow: 'hidden',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-      class: isCenter ? 'column-body-center' : 'column-body-left',
-    },
-    bodyCellContent: {
-      style: {
-        display: 'flex',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        alignItems: 'flex-start',
-        width: '100%',
-      },
-    },
-  }
-}
-
 const columnPt = {
-  center: getColumnPt('center'),
-  left: getColumnPt('left'),
+  center: gridColumnPt('center'),
+  left: gridColumnPt('left'),
+  // Icon-only headers whose one action is sorting
+  icon: iconHeaderPt(gridColumnPt('center')),
 }
 
+// Unpadded so .selection-hit can fill the whole cell
+const selectionColumnPt = {
+  ...columnPt.center,
+  bodyCell: {
+    ...columnPt.center.bodyCell,
+    style: { ...columnPt.center.bodyCell.style, padding: 0, position: 'relative' },
+  },
+}
+
+// Auto layout: icon columns declare a fixed width, Detail/Comment a share,
+// and Asset/Labels only a minimum so spare width flows to them.
 const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
   table: { style: { tableLayout: 'auto', minWidth: '100%' } },
@@ -387,20 +371,13 @@ const dataTablePt = {
   footer: { style: { padding: '0', border: 'none' } },
   emptyMessageCell: { class: 'agg-grid-empty-cell' },
 }
-
-const checkboxPt = {
-  root: { style: { width: '2rem', height: '2rem' } },
-  box: { style: { width: '1.75rem', height: '1.75rem' } },
-  input: { style: { width: '1.75rem', height: '1.75rem' } },
-  icon: { style: { fontSize: '1.5rem' } },
-}
 </script>
 
 <template>
   <DataTable
     ref="dataTableRef"
     :selection="props.selection"
-    :select-all="isAllSelected"
+    :select-all="selectionState.all"
     :value="filteredData"
     :loading="isLoading"
     data-key="assetId"
@@ -421,13 +398,13 @@ const checkboxPt = {
     @wheel.capture="onGridWheel"
   >
     <!-- Selection -->
-    <Column :exportable="false" header-style="width: 3rem" :pt="columnPt.center">
+    <Column :exportable="false" header-style="width: 3rem; min-width: 3rem" :pt="selectionColumnPt">
       <template #header>
         <Checkbox
           v-if="filteredData.length > 0"
-          :model-value="isAllSelected"
+          :model-value="selectionState.all"
+          :indeterminate="selectionState.some"
           :binary="true"
-          :pt="checkboxPt"
           @update:model-value="onSelectAllChange({ checked: $event })"
         />
       </template>
@@ -439,19 +416,18 @@ const checkboxPt = {
           alt="Read only"
           title="Read only"
         >
-        <Checkbox
-          v-else
-          :model-value="selectedIdSet.has(data.assetId)"
-          :binary="true"
-          :pt="checkboxPt"
-          @update:model-value="onToggleSelectRow(data)"
-          @click.stop
-        />
+        <label v-else class="selection-hit" @click.stop>
+          <Checkbox
+            :model-value="selectedIdSet.has(data.assetId)"
+            :binary="true"
+            @update:model-value="onToggleSelectRow(data)"
+          />
+        </label>
       </template>
     </Column>
 
     <!-- Engine -->
-    <Column field="resultEngine" export-header="Engine" sort-field="resultEngine.product" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
+    <Column field="resultEngine" export-header="Engine" sort-field="resultEngine.product" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
           <img src="../../../assets/bot2.svg" alt="Engine" class="engine-header-icon" title="Result engine">
@@ -492,14 +468,14 @@ const checkboxPt = {
     </Column>
 
     <!-- Asset -->
-    <Column field="assetName" header="Asset" sortable :style="{ width: '14rem', minWidth: '10rem' }" :pt="columnPt.left">
+    <Column field="assetName" header="Asset" sortable :style="{ minWidth: '10rem' }" :pt="columnPt.left">
       <template #body="{ data }">
         <span class="cell-text">{{ data.assetName }}</span>
       </template>
     </Column>
 
     <!-- Labels -->
-    <Column v-if="visibleFields.has('labels')" field="assetLabels" export-header="Labels" :style="{ width: '12rem', minWidth: '8rem' }" :pt="columnPt.left">
+    <Column v-if="visibleFields.has('labels')" field="assetLabels" export-header="Labels" :style="{ minWidth: '8rem' }" :pt="columnPt.left">
       <template #header>
         <div class="column-header-with-filter">
           Labels
@@ -558,7 +534,7 @@ const checkboxPt = {
     </Column>
 
     <!-- Time -->
-    <Column v-if="visibleFields.has('time')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('time')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.icon">
       <template #header>
         <i class="pi pi-clock" title="Last action" />
       </template>
@@ -649,12 +625,13 @@ const checkboxPt = {
   color: var(--color-text-bright);
 }
 
+/* Grows into spare header width but never claims the sort icon's room. */
 .column-header-with-filter {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.1rem;
-  width: 100%;
+  flex: 1 1 auto;
 }
 
 .rule-table-grid {
@@ -781,13 +758,15 @@ const checkboxPt = {
   color: var(--color-text-bright, var(--color-text-primary)) !important;
 }
 
-:deep(.row-non-writable .p-checkbox) {
-  opacity: 0.25;
-  cursor: not-allowed;
-  filter: grayscale(1);
-}
-
-:deep(.row-non-writable .p-checkbox-input) {
-  pointer-events: none;
+/* Fills the selection cell so the whole cell is the checkbox hit area
+   (a label click toggles the input natively, and stops there so it never
+   reaches the row-click editor). */
+.selection-hit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 </style>

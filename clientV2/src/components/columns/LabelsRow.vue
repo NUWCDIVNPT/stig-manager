@@ -3,6 +3,7 @@ import Popover from 'primevue/popover'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getContrastColor, normalizeColor } from '../../shared/lib/colorUtils.js'
 import { rootFontSizePx } from '../../shared/lib/remToPx.js'
+import { bodyFontFamily, measureTextWidth } from '../../shared/lib/textWidth.js'
 
 const props = defineProps({
   labels: {
@@ -19,14 +20,12 @@ const props = defineProps({
 const popoverRef = ref()
 let hideTimeout = null
 
-// Label width estimate, in px derived from rem so it tracks the root font-size
-// along with the chip CSS below. Padding and gap mirror .label-tag / .labels-row
-// exactly; the per-character width is a generous 0.6rem for 0.9rem 600-weight
-// text, so the estimate errs toward hiding a label that would fit over
-// clipping one that would not. The +N badge is a chip too and is sized by the
-// same formula. `compact` only drops the trailing margin.
+// Chip geometry in px derived from rem so it tracks the root font-size along
+// with the chip CSS below. Padding, gap and font mirror .label-tag /
+// .labels-row exactly; the +N badge is a chip too and is measured the same
+// way. `compact` only drops the trailing margin.
 const root = rootFontSizePx()
-const CHAR_WIDTH = 0.6 * root
+const LABEL_FONT = `600 ${0.9 * root}px ${bodyFontFamily()}`
 const LABEL_PADDING = 0.9 * root
 const LABEL_GAP = 0.25 * root
 const RIGHT_MARGIN = computed(() => props.compact ? 0 : 0.75 * root)
@@ -60,9 +59,9 @@ onBeforeUnmount(() => {
   }
 })
 
-// Estimate the width of a label based on its text
+// Rendered width of a chip for the given text
 function estimateLabelWidth(text) {
-  return (String(text).length * CHAR_WIDTH) + LABEL_PADDING
+  return measureTextWidth(String(text), LABEL_FONT) + LABEL_PADDING
 }
 
 // Computed: which labels to show based on container width
@@ -74,9 +73,10 @@ const visibleLabelsData = computed(() => {
     return { visible: [], overflow: [], overflowCount: 0 }
   }
 
-  // If we don't have width yet, show all (will recalculate after mount)
+  // Render nothing until the container is measured. Rendering every label
+  // first would widen an auto-layout column and flash before collapsing.
   if (!width || width <= 0) {
-    return { visible: labels, overflow: [], overflowCount: 0 }
+    return { visible: [], overflow: [], overflowCount: 0 }
   }
 
   const availableWidth = width - RIGHT_MARGIN.value
@@ -183,11 +183,15 @@ function hidePopover() {
 </template>
 
 <style scoped>
+/* inline-size containment keeps the rendered chips from feeding back into an
+   auto-layout column's width, so the row is sized by its cell, not the
+   reverse. */
 .labels-row {
   display: flex;
   flex-wrap: nowrap;
   gap: 0.25rem;
   align-items: center;
+  contain: inline-size;
 }
 
 .label-tag {
