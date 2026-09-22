@@ -36,7 +36,7 @@ const emit = defineEmits(['select-row'])
 const exportCat = ({ data }) => catLabel(data)
 
 const dataTableRef = ref(null)
-const { itemSize } = useGridDensity('stig-library-rules', 2, 6, 15)
+const { itemSize, gridStyle } = useGridDensity('stig-library-rules')
 
 const selectedRow = computed(() =>
   props.selectedKey ? props.rows.find(r => r.key === props.selectedKey) ?? null : null,
@@ -63,7 +63,7 @@ function onRowClick(event) {
     striped-rows
     resizable-columns
     class="diff-rule-table"
-    :style="{ '--item-size': `${itemSize}px` }"
+    :style="gridStyle"
     :pt="dataTablePt"
     @row-click="onRowClick"
   >

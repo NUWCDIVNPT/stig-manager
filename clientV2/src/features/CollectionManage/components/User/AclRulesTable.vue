@@ -6,6 +6,7 @@ import { ref } from 'vue'
 import AclStateIcon from '../../../../components/common/AclStateIcon.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { resourceSortKey } from '../../lib/aclRules.js'
 import AclResourceDisplay from './AclResourceDisplay.vue'
 
@@ -27,6 +28,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['accessChange'])
+
+const ROW_HEIGHT = rowHeightPx('control')
 
 const exportResource = ({ record }) => resourceSortKey(record)
 const exportAccess = ({ data }) => props.accessOptions.find(o => o.value === data)?.label ?? data
@@ -51,7 +54,7 @@ const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
     scroll-height="flex"
     :sort-field="resourceSortKey"
     :sort-order="1"
-    :virtual-scroller-options="{ itemSize: 41, delay: 0 }"
+    :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
     class="rules-table"
     :pt="tablePt"
   >
@@ -63,7 +66,7 @@ const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
         <AclResourceDisplay :rule="data" />
       </template>
     </Column>
-    <Column header="Access" field="access" :export-value="exportAccess" sortable style="width: 140px">
+    <Column header="Access" field="access" :export-value="exportAccess" sortable style="width: 12.75rem">
       <template #body="{ data }">
         <Select
           :model-value="data.access"

@@ -10,6 +10,7 @@ import { formatSize } from '../../../../shared/lib.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { dangerBtnPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { readStoredValue, storeValue } from '../../../../shared/lib/localStorage.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { useFileDropZone } from '../composables/useFileDropZone.js'
 import { useFollowRow } from '../composables/useFollowRow.js'
 import { useStigImportStore } from '../stores/stigImportStore.js'
@@ -21,7 +22,7 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'imported'])
 
 const CLOBBER_KEY = 'stigImportClobber'
-const ROW_HEIGHT = 29
+const ROW_HEIGHT = rowHeightPx('compact')
 
 const localVisible = computed({
   get: () => props.visible,

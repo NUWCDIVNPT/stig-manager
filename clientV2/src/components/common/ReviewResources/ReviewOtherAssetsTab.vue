@@ -15,18 +15,19 @@ import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { normalizeColor } from '../../../shared/lib/colorUtils.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import LabelsRow from '../../columns/LabelsRow.vue'
 import ColumnFilter from '../ColumnFilter.vue'
 import ColumnSearchFilter from '../ColumnSearchFilter.vue'
 import EngineBadge from '../EngineBadge.vue'
-
 import LongTextPopover from '../LongTextPopover.vue'
 import ManualBadge from '../ManualBadge.vue'
 import OverrideBadge from '../OverrideBadge.vue'
 import ResultBadge from '../ResultBadge.vue'
 import StatusBadge from '../StatusBadge.vue'
 import StatusFooter from '../StatusFooter.vue'
+import { reviewResourcesTablePt } from './tablePt.js'
 
 const props = defineProps({
   active: {
@@ -78,7 +79,7 @@ FilterService.register('labelContainsAny', (value, filter) => {
   return value.some(label => filter.includes(label.name))
 })
 
-const ROW_HEIGHT = 36
+const ROW_HEIGHT = rowHeightPx('standard')
 
 const dataTableRef = ref(null)
 
@@ -243,39 +244,6 @@ watch([
 ], () => {
   resetFilters()
 })
-
-const otherTablePt = {
-  root: { class: 'sm-scrollbar-thin', style: { backgroundColor: 'var(--color-background-dark)' } },
-  header: { style: { background: 'transparent', border: 'none', padding: '0' } },
-  table: { style: { borderCollapse: 'separate', borderSpacing: '0', background: 'var(--color-background-darkest)' } },
-  thead: {
-    style: {
-      background: 'var(--color-background-dark)',
-      position: 'sticky',
-      top: '0',
-      zIndex: '1',
-    },
-  },
-  headerCell: {
-    style: {
-      background: 'var(--color-background-dark)',
-      borderBottom: '1px solid var(--color-border-default)',
-      color: 'var(--color-text-dim)',
-      fontWeight: '700',
-      fontSize: '0.9rem',
-      textTransform: 'uppercase',
-      letterSpacing: '0.04em',
-      padding: '0.3rem 0.4rem',
-    },
-  },
-  bodyRow: {
-    style: {
-      background: 'var(--color-background-dark)',
-      transition: 'background-color 0.1s ease',
-    },
-  },
-  footer: { style: { padding: '0', border: 'none', background: 'transparent' } },
-}
 </script>
 
 <template>
@@ -292,9 +260,9 @@ const otherTablePt = {
       :virtual-scroller-options="{ itemSize: ROW_HEIGHT, showLoader: true }"
       striped-rows
       class="other-assets-table"
-      :pt="otherTablePt"
+      :pt="reviewResourcesTablePt"
     >
-      <Column field="assetName" export-header="Asset" sortable :style="{ width: '100px' }">
+      <Column field="assetName" export-header="Asset" sortable :style="{ width: '9rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Asset
@@ -310,7 +278,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="assetLabels" export-header="Labels" filter-field="assetLabels" :style="{ width: '100px' }">
+      <Column field="assetLabels" export-header="Labels" filter-field="assetLabels" :style="{ width: '9rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Labels
@@ -329,7 +297,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="result" export-header="Result" :style="{ width: '65px', textAlign: 'center' }">
+      <Column field="result" export-header="Result" :style="{ width: '6rem', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             Result
@@ -345,7 +313,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '50px', textAlign: 'center' }">
+      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '4.5rem', textAlign: 'center' }">
         <template #header>
           <div class="column-header-with-filter">
             <img
@@ -382,7 +350,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="detail" export-header="Detail" :style="{ width: '150px' }">
+      <Column field="detail" export-header="Detail" :style="{ width: '13.75rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Detail
@@ -402,7 +370,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="comment" export-header="Comment" :style="{ width: '150px' }">
+      <Column field="comment" export-header="Comment" :style="{ width: '13.75rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Comment
@@ -422,20 +390,20 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column header="Evaluated" field="ts" sortable :style="{ width: '80px' }">
+      <Column header="Evaluated" field="ts" sortable :style="{ width: '7.25rem' }">
         <template #body="{ data }">
           <span class="cell-text--mono" :title="formatReviewDate(data.ts)">{{ durationToNow(data.ts) }}</span>
         </template>
       </Column>
 
-      <Column header="Statused" field="touchTs" sortable :style="{ width: '80px' }">
+      <Column header="Statused" field="touchTs" sortable :style="{ width: '7.25rem' }">
         <template #body="{ data }">
           <span v-if="data.touchTs" class="cell-text--mono" :title="formatReviewDate(data.touchTs)">{{ durationToNow(data.touchTs) }}</span>
           <span v-else class="cell-text--empty">---</span>
         </template>
       </Column>
 
-      <Column field="username" export-header="User" :style="{ width: '80px' }">
+      <Column field="username" export-header="User" :style="{ width: '7.25rem' }">
         <template #header>
           <div class="column-header-with-filter">
             User
@@ -453,7 +421,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column header="Apply" :exportable="false" :style="{ width: '40px', textAlign: 'center' }">
+      <Column header="Apply" :exportable="false" :style="{ width: '3.75rem', textAlign: 'center' }">
         <template #body="{ data }">
           <button
             class="apply-review-icon-btn"

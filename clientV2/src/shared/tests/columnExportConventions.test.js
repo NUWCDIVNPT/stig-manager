@@ -1,6 +1,7 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { SRC_ROOT, vueSourceFiles } from '../../testUtils/sourceFiles.js'
 
 // Every DataTable wired to the footer CSV export (`:dt=`) must declare an
 // export title for columns whose visible header is a slot, and must give each
@@ -8,24 +9,6 @@ import { describe, expect, it } from 'vitest'
 // exportDataTableCsv reads only those props, so a slot-only header exports as
 // the dotted field path and a column without field/export-value silently
 // disappears from the file.
-
-const SRC = join(import.meta.dirname, '../..')
-
-// Unreferenced leftovers from the AssetReview tab move; excluded until deleted.
-const IGNORED = [/\/tests\//, /AssetReview\/components\/Review(HistoryTab|OtherAssetsTab|TabTable)\.vue$/]
-
-function walk(dir, out = []) {
-  for (const name of readdirSync(dir)) {
-    const p = join(dir, name)
-    if (statSync(p).isDirectory()) {
-      walk(p, out)
-    }
-    else if (name.endsWith('.vue')) {
-      out.push(p)
-    }
-  }
-  return out
-}
 
 // Quote-aware scan for the end of an opening tag (attribute values such as
 // `:sort-field="r => r.x"` contain `>`).
@@ -66,9 +49,8 @@ function columnsOf(src) {
   return cols
 }
 
-const exportingFiles = walk(SRC)
-  .filter(p => !IGNORED.some(rx => rx.test(p)))
-  .map(p => ({ path: relative(SRC, p), src: readFileSync(p, 'utf8') }))
+const exportingFiles = [...vueSourceFiles()]
+  .map(p => ({ path: relative(SRC_ROOT, p), src: readFileSync(p, 'utf8') }))
   .filter(f => f.src.includes('<Column') && /:dt="/.test(f.src))
 
 describe('dataTable CSV export conventions', () => {

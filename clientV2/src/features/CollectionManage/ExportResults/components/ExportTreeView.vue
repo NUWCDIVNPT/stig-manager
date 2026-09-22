@@ -4,6 +4,7 @@ import { computed, reactive, watch } from 'vue'
 import shieldIcon from '../../../../assets/shield-green-check.svg'
 import targetIcon from '../../../../assets/target.svg'
 import { formatPercent } from '../../../../shared/lib.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import {
   toggleBranchSelection,
   toggleLeafSelection,
@@ -34,6 +35,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:selectionKeys', 'node-expand'])
+
+const ROW_HEIGHT = rowHeightPx('compact')
 
 const expandedKeys = reactive(new Set())
 
@@ -126,8 +129,8 @@ function toggleExpand(branch) {
 <template>
   <VirtualScroller
     :items="flatRows"
-    :item-size="30"
-    style="height: 100%; width: 100%;"
+    :item-size="ROW_HEIGHT"
+    :style="{ 'height': '100%', 'width': '100%', '--item-size': `${ROW_HEIGHT}px` }"
   >
     <template #item="{ item: row }">
       <!-- Root row -->
@@ -199,7 +202,7 @@ function toggleExpand(branch) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  height: 30px;
+  height: var(--item-size);
   padding: 0 0.5rem;
   box-sizing: border-box;
   cursor: default;

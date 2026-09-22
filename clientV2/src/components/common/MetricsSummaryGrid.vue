@@ -3,6 +3,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
 import { calculateCora } from '../../shared/lib.js'
+import { rowHeightPx } from '../../shared/lib/rowHeights.js'
 import AssetColumn from '../columns/AssetColumn.vue'
 import BenchmarkColumn from '../columns/BenchmarkColumn.vue'
 import CatColumn from '../columns/CatColumn.vue'
@@ -67,6 +68,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['row-select', 'shield-click', 'collection-icon-click', 'refresh'])
+
+const ROW_HEIGHT = rowHeightPx('dense')
 
 const dataTableRef = ref(null)
 const selectedRow = ref(null)
@@ -315,11 +318,12 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
     column-resize-mode="fit"
     sort-field="benchmarkId"
     :sort-order="1"
-    :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
+    :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
+    :style="{ '--item-size': `${ROW_HEIGHT}px` }"
     @row-select="onRowSelect"
   >
     <template v-for="col in columns" :key="col.field">
-      <component :is="col.component" v-bind="col" sortable style="height: 27px; max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
+      <component :is="col.component" v-bind="col" sortable style="height: var(--item-size); max-width: 250px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
     </template>
     <template #empty>
       <div class="agg-grid-empty-state">

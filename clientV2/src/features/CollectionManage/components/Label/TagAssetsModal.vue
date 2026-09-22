@@ -13,6 +13,7 @@ import { useGlobalError } from '../../../../shared/composables/useGlobalError.js
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
 
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import {
   fetchAssetsByLabel,
   fetchCollectionAssetsBasic,
@@ -35,7 +36,7 @@ const localVisible = computed({
 
 const { triggerError } = useGlobalError()
 
-const VIRTUAL_SCROLLER_OPTIONS = { itemSize: 28 }
+const VIRTUAL_SCROLLER_OPTIONS = { itemSize: rowHeightPx('compact') }
 
 const isLoading = ref(false)
 const saving = ref(false)
@@ -119,10 +120,13 @@ const dialogPt = {
   closeButton: { style: 'color: var(--color-text-dim);' },
 }
 
+// Rows are pinned to the scroller's itemSize so its n × itemSize placement holds.
 const tablePt = {
-  bodyRow: { style: 'font-size: 0.85rem;' },
-  bodyCell: { style: 'padding: 0.15rem 0.5rem;' },
-  headerCell: { style: 'padding: 0.3rem 0.5rem; font-size: 0.85rem;' },
+  bodyRow: { style: `font-size: 0.85rem; height: ${VIRTUAL_SCROLLER_OPTIONS.itemSize}px;` },
+  column: {
+    bodyCell: { style: 'padding: 0.15rem 0.5rem;' },
+    headerCell: { style: 'padding: 0.3rem 0.5rem; font-size: 0.85rem;' },
+  },
 }
 </script>
 
@@ -178,17 +182,17 @@ const tablePt = {
           </span>
         </template>
         <template #columns>
-          <Column field="name" header="Asset" style="min-width: 120px; width: 35%;" :body-style="{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }">
+          <Column field="name" header="Asset" style="min-width: 11rem; width: 35%;" :body-style="{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }">
             <template #body="{ data }">
               <span class="asset-name" :title="data.name">{{ data.name }}</span>
             </template>
           </Column>
-          <Column header="Labels" style="min-width: 140px;">
+          <Column header="Labels" style="min-width: 12.75rem;">
             <template #body="{ data }">
               <LabelsRow :labels="data.labels" compact />
             </template>
           </Column>
-          <Column header="STIGs" style="width: 70px;" :header-style="{ textAlign: 'center', justifyContent: 'center' }">
+          <Column header="STIGs" style="width: 6.25rem;" :header-style="{ textAlign: 'center', justifyContent: 'center' }">
             <template #body="{ data }">
               <span class="asset-stig-count" style="justify-content: center;">
                 <img :src="shieldIcon" class="asset-stig-icon" alt="">

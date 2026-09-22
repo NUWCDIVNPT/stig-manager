@@ -4,6 +4,7 @@ import DataTable from 'primevue/datatable'
 import { ref } from 'vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { formatDateTimeString } from '../../../shared/lib.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
 defineProps({
   errors: { type: Array, required: true },
@@ -11,6 +12,8 @@ defineProps({
   hasDuplicates: { type: Boolean, required: true },
   stopWizard: { type: Boolean, required: true },
 })
+
+const ROW_HEIGHT = rowHeightPx('spacious')
 
 const errorsRef = ref()
 const dupesRef = ref()
@@ -36,7 +39,7 @@ const dupesRef = ref()
             scroll-height="flex"
             resizable-columns
             striped-rows
-            :virtual-scroller-options="{ itemSize: 46 }"
+            :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
           >
             <Column header="File" field="file.name" sortable :sort-field="r => r.file?.name ?? ''">
               <template #body="{ data }">
@@ -74,7 +77,7 @@ const dupesRef = ref()
             scroll-height="flex"
             resizable-columns
             striped-rows
-            :virtual-scroller-options="{ itemSize: 46 }"
+            :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
           >
             <Column header="Asset" field="taskAsset.assetProps.name" sortable :sort-field="r => r.taskAsset.assetProps.name">
               <template #body="{ data }">

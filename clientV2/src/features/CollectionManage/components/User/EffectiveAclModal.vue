@@ -10,6 +10,7 @@ import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchEffectiveAclByCollectionUser } from '../../../../shared/api/grantsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { getDefaultAccessForRole } from '../../lib/aclRules.js'
 
 const props = defineProps({
@@ -28,6 +29,8 @@ const props = defineProps({
     default: null,
   },
 })
+
+const ROW_HEIGHT = rowHeightPx('control')
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 
@@ -98,7 +101,7 @@ watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
         scroll-height="flex"
         sort-field="assetName"
         :sort-order="1"
-        :virtual-scroller-options="{ itemSize: 41, delay: 0 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
         export-filename="EffectiveGrants"
         class="acl-table"
         :pt="tablePt"

@@ -81,11 +81,10 @@ function onPopoverSelectStig(benchmarkId) {
   stigPopover.value?.hide()
 }
 
-// Same geometry as AssetChecklistGrid: 15px per rendered line of clamped text
-// (1.05rem × 1.3 line-height at the 11px root) + 6px cell padding. itemSize
-// drives the virtual scroller; rows are pinned to it via --item-size below so
-// the scroller's position math (n × itemSize) stays correct.
-const { lineClamp, itemSize } = useGridDensity('findings-aggregated', 2, 6, 15)
+// Row geometry lives in useGridDensity's table. itemSize drives the virtual
+// scroller; rows are pinned to it via --item-size and the clamped text reads
+// --cell-line-height, so the scroller's position math (n × itemSize) holds.
+const { itemSize, gridStyle } = useGridDensity('findings-aggregated')
 
 const poamDialogVisible = ref(false)
 
@@ -117,8 +116,8 @@ function onRowSelect(event) {
 }
 
 const dataTablePt = {
-  // Body font size is the single source of truth for row text (cells inherit
-  // it); the itemSize geometry below is derived from this 1.05rem × 1.3.
+  // Body font size for the unclamped cells; the clamped .cell-text cells take
+  // theirs from the grid geometry via --cell-font-size.
   ...compactTablePt({ bodyFontSize: '1rem' }),
   tableContainer: { style: 'background: var(--p-datatable-row-background); height: 100%;' },
   table: { style: { tableLayout: 'fixed', width: '100%' } },
@@ -191,7 +190,7 @@ const flexCellPt = {
           />
         </label>
 
-        <DensityControls grid-key="findings-aggregated" :default-line-clamp="2" :min="2" class="agg-grid-panel__density" />
+        <DensityControls grid-key="findings-aggregated" class="agg-grid-panel__density" />
       </header>
 
       <Popover ref="stigPopover" :pt="stigPopoverPt" @show="onPopoverShow">
@@ -234,7 +233,7 @@ const flexCellPt = {
           :virtual-scroller-options="{ itemSize }"
           striped-rows
           class="agg-grid-panel__table"
-          :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
+          :style="gridStyle"
           :pt="dataTablePt"
           @row-select="onRowSelect"
         >
@@ -606,11 +605,11 @@ const flexCellPt = {
   min-height: 0;
 }
 
-/* line-height is load-bearing: font-size (bodyFontSize) × this ≈ the density
-   sizeMultiplier (15px/line), so N clamped lines fill exactly N rows. Retune
-   all three together (see useGridDensity). */
+/* Size and line height come from the grid geometry (useGridDensity fontRem),
+   so N clamped lines fill exactly N rows. */
 .cell-text {
-  line-height: 1.3;
+  font-size: var(--cell-font-size);
+  line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-primary);
 }
 

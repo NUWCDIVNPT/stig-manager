@@ -305,7 +305,7 @@ const dataTablePt = {
 
     <Column v-if="visibleFields.has('groupId')" header="Group" field="groupId" sortable :style="{ width: '7rem', minWidth: '7rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <span class="cell-text" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupId, searchFilter) }">
+        <span class="cell-text cell-text--id" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupId, searchFilter) }">
           <span v-if="searchFilter" v-html="highlightText(data.groupId, searchFilter)" />
           <template v-else>{{ data.groupId }}</template>
         </span>
@@ -317,7 +317,7 @@ const dataTablePt = {
       :pt="columnPt.left"
     >
       <template #body="{ data }">
-        <span class="cell-text" :class="{ 'cell--match': searchFilter && fieldMatches(data.ruleId, searchFilter) }">
+        <span class="cell-text cell-text--id" :class="{ 'cell--match': searchFilter && fieldMatches(data.ruleId, searchFilter) }">
           <span v-if="searchFilter" v-html="highlightText(data.ruleId, searchFilter)" />
           <template v-else>{{ data.ruleId }}</template>
         </span>
@@ -347,14 +347,16 @@ const dataTablePt = {
       :pt="columnPt.left"
     >
       <template #body="{ data }">
-        <span
-          class="cell-text cell-text--clamped"
-          :class="{ 'cell--match': searchFilter && fieldMatches(data.groupTitle, searchFilter) }"
-          :title="data.groupTitle"
-        >
-          <span v-if="searchFilter" v-html="highlightText(data.groupTitle, searchFilter)" />
-          <template v-else>{{ data.groupTitle }}</template>
-        </span>
+        <div class="cell-text-field">
+          <span
+            class="cell-text cell-text--clamped"
+            :class="{ 'cell--match': searchFilter && fieldMatches(data.groupTitle, searchFilter) }"
+            :title="data.groupTitle"
+          >
+            <span v-if="searchFilter" v-html="highlightText(data.groupTitle, searchFilter)" />
+            <template v-else>{{ data.groupTitle }}</template>
+          </span>
+        </div>
       </template>
     </Column>
 
@@ -536,10 +538,18 @@ const dataTablePt = {
   opacity: 0.9;
 }
 
+/* Size and line height come from the grid geometry (useGridDensity fontRem),
+   so N clamped lines fill exactly N rows. */
 .cell-text {
+  font-size: var(--cell-font-size);
+  line-height: var(--cell-line-height, 1.3);
+  color: var(--color-text-primary);
+}
+
+/* Group and Rule identifiers read larger than the clamped text columns. */
+.cell-text--id {
   font-size: 1.3rem;
   line-height: 1.3;
-  color: var(--color-text-primary);
 }
 
 .cell-text--clamped {
@@ -571,11 +581,6 @@ const dataTablePt = {
   display: flex;
   align-items: flex-start;
   gap: 0.25rem;
-}
-
-.cell-text-field .cell-text {
-  font-size: 1.1rem;
-  line-height: 1.3;
 }
 
 .cell-text-field .cell-text--clamped {

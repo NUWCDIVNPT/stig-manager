@@ -59,28 +59,28 @@ const rejectedRef = ref()
             @row-select="e => emit('update:selectedRow', e.data)"
             @row-unselect="emit('update:selectedRow', null)"
           >
-            <Column field="assetName" header="Asset" style="min-width: 180px" sortable />
-            <Column field="created" header="Created" style="width: 90px" sortable>
+            <Column field="assetName" header="Asset" style="min-width: 16.25rem" sortable />
+            <Column field="created" header="Created" style="width: 8.25rem" sortable>
               <template #body="{ data }">
                 {{ data.created ? 'true' : 'false' }}
               </template>
             </Column>
-            <Column field="addedStigs" header="Added STIGs" style="width: 110px" sortable>
+            <Column field="addedStigs" header="Added STIGs" style="width: 10rem" sortable>
               <template #body="{ data }">
                 {{ data.addedStigs ? 'true' : 'false' }}
               </template>
             </Column>
-            <Column field="inserted" header="Inserted" style="width: 90px" sortable>
+            <Column field="inserted" header="Inserted" style="width: 8.25rem" sortable>
               <template #body="{ data }">
                 {{ data.error ? '-' : (data.inserted ?? 0) }}
               </template>
             </Column>
-            <Column field="updated" header="Updated" style="width: 90px" sortable>
+            <Column field="updated" header="Updated" style="width: 8.25rem" sortable>
               <template #body="{ data }">
                 {{ data.error ? '-' : (data.updated ?? 0) }}
               </template>
             </Column>
-            <Column header="Rejected" :exportable="false" style="width: 90px" sortable :sort-field="r => r.error ? -1 : (r.rejected?.length ?? 0)">
+            <Column header="Rejected" :exportable="false" style="width: 8.25rem" sortable :sort-field="r => r.error ? -1 : (r.rejected?.length ?? 0)">
               <template #body="{ data }">
                 {{ data.error ? '!' : (data.rejected?.length ?? 0) }}
               </template>
@@ -113,7 +113,7 @@ const rejectedRef = ref()
               striped-rows
               class="rejected-table"
             >
-              <Column field="ruleId" header="Rule" style="min-width: 160px" sortable />
+              <Column field="ruleId" header="Rule" style="min-width: 14.5rem" sortable />
               <Column field="reason" header="Reason" sortable />
               <template #empty>
                 <div class="rejected-empty">

@@ -9,6 +9,7 @@ import { apiCall } from '../../../../shared/api/apiClient.js'
 import { fetchCollectionLabels, fetchCollectionStigs } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { useLazyResource } from '../../composables/useLazyResource.js'
 import { isDuplicateAclRule } from '../../lib/aclRules.js'
 import AclResourceDisplay from './AclResourceDisplay.vue'
@@ -31,6 +32,8 @@ const props = defineProps({
 
 // this emmites preview so the parent has the data disable buttons and actually adding
 const emit = defineEmits(['preview'])
+
+const ROW_HEIGHT = rowHeightPx('standard')
 
 // select options for the scope tabs
 const SCOPE_OPTIONS = [
@@ -189,7 +192,7 @@ defineExpose({ clear })
         data-key="assetId"
         filter
         reset-filter-on-hide
-        :virtual-scroller-options="{ itemSize: 38 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
         scroll-height="min(40vh, 320px)"
         placeholder="Select an asset"
         class="builder-input"
@@ -221,7 +224,7 @@ defineExpose({ clear })
         data-key="labelId"
         filter
         reset-filter-on-hide
-        :virtual-scroller-options="{ itemSize: 38 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
         scroll-height="min(40vh, 320px)"
         placeholder="Select a label"
         class="builder-input"
@@ -250,7 +253,7 @@ defineExpose({ clear })
         filter
         show-clear
         reset-filter-on-hide
-        :virtual-scroller-options="{ itemSize: 38 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
         scroll-height="min(40vh, 320px)"
         placeholder="Any STIG"
         class="builder-input"

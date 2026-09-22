@@ -55,9 +55,9 @@ const filteredData = computed(() => {
   )
 })
 
-// 15px per rendered line of clamped text (1rem x 1.3 at the 11px root) + 6px
-// cell padding, matching the Findings grids.
-const { lineClamp, itemSize } = useGridDensity('stig-library-benchmarks', 2, 6, 15)
+// Row geometry lives in useGridDensity's table; .stiglib-cell-text reads its
+// font size and line height from --cell-font-size / --cell-line-height.
+const { itemSize, gridStyle } = useGridDensity('stig-library-benchmarks')
 
 // Fixed layout so the flexible Title column yields to the sized columns.
 const tablePt = {
@@ -86,7 +86,7 @@ function onRowClick(event) {
       >
         Full search…
       </ActionButton>
-      <DensityControls grid-key="stig-library-benchmarks" :default-line-clamp="2" />
+      <DensityControls grid-key="stig-library-benchmarks" />
     </header>
 
     <div v-if="error" class="stiglib-state stiglib-state--error">
@@ -114,7 +114,7 @@ function onRowClick(event) {
         row-hover
         export-filename="stig-library-benchmarks"
         class="bm-list__table"
-        :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
+        :style="gridStyle"
         :pt="tablePt"
         @row-click="onRowClick"
       >

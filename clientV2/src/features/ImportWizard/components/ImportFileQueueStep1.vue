@@ -87,12 +87,12 @@ function onFilePicked(event) {
       >
         <Column selection-mode="multiple" style="width: 3rem; flex-shrink: 0" />
         <Column field="name" header="Filename" sortable />
-        <Column field="size" header="Size" style="width: 90px" sortable>
+        <Column field="size" header="Size" style="width: 8.25rem" sortable>
           <template #body="{ data }">
             {{ (data.size / 1024).toFixed(1) }} KB
           </template>
         </Column>
-        <Column field="lastModifiedDate" header="Last Modified" style="min-width: 120px" sortable>
+        <Column field="lastModifiedDate" header="Last Modified" style="min-width: 11rem" sortable>
           <template #body="{ data }">
             {{ formatDateTimeString(data.lastModifiedDate) }}
           </template>

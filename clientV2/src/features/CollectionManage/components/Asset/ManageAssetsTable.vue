@@ -14,6 +14,7 @@ import { fetchCollectionAssetSummary } from '../../../../shared/api/collectionsA
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { deleteAssets } from '../../api/assetManageApi.js'
 import { useAssetTable } from '../../composables/useAssetTable.js'
 import AssetFormModal from './AssetFormModal.vue'
@@ -25,6 +26,8 @@ const props = defineProps({
     required: true,
   },
 })
+
+const ROW_HEIGHT = rowHeightPx('dense')
 
 const dataTableRef = ref(null)
 
@@ -55,14 +58,14 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 const tablePt = { footer: { style: 'padding: 0; border: none;' } }
 
 const columns = [
-  { field: 'stigCnt', header: 'STIGs', component: Column, width: '30px', pt: borderPt },
-  { field: 'checks', header: 'Rules', component: Column, width: '30px', pt: borderPt },
-  { field: 'oldest', header: 'Oldest', component: DurationColumn, width: '30px', pt: borderPt },
-  { field: 'newest', header: 'Newest', component: DurationColumn, width: '30px', pt: borderPt },
-  { field: 'assessedPct', header: 'Assessed', component: PercentageColumn, width: '60px', pt: borderPt },
-  { field: 'submittedPct', header: 'Submitted', component: PercentageColumn, width: '60px', pt: borderPt },
-  { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn, width: '60px', pt: borderPt },
-  { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn, width: '60px', pt: borderPt },
+  { field: 'stigCnt', header: 'STIGs', component: Column, width: '2.75rem', pt: borderPt },
+  { field: 'checks', header: 'Rules', component: Column, width: '2.75rem', pt: borderPt },
+  { field: 'oldest', header: 'Oldest', component: DurationColumn, width: '2.75rem', pt: borderPt },
+  { field: 'newest', header: 'Newest', component: DurationColumn, width: '2.75rem', pt: borderPt },
+  { field: 'assessedPct', header: 'Assessed', component: PercentageColumn, width: '5.5rem', pt: borderPt },
+  { field: 'submittedPct', header: 'Submitted', component: PercentageColumn, width: '5.5rem', pt: borderPt },
+  { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn, width: '5.5rem', pt: borderPt },
+  { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn, width: '5.5rem', pt: borderPt },
 ]
 
 const selectedAssets = ref([])
@@ -152,15 +155,16 @@ function onAssetsTransferred(transferredIds) {
         column-resize-mode="fit"
         selection-mode="multiple"
         :loading="isLoading"
-        :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
+        :style="{ '--item-size': `${ROW_HEIGHT}px` }"
         export-filename="Assets"
         class="flex-fill clickable-rows"
         :table-style="{ 'table-layout': 'fixed' }"
         :pt="tablePt"
       >
-        <Column selection-mode="multiple" style="width: 1rem; height: 27px; padding: 0 0.5rem;" />
+        <Column selection-mode="multiple" style="width: 1rem; height: var(--item-size); padding: 0 0.5rem;" />
 
-        <Column field="assetName" export-header="Asset" sortable :pt="borderPt" style="width: 60px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="assetName" export-header="Asset" sortable :pt="borderPt" style="width: 5.5rem; height: var(--item-size); padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Asset
@@ -184,7 +188,7 @@ function onAssetsTransferred(transferredIds) {
           </template>
         </Column>
 
-        <Column field="labels" export-header="Labels" sortable :pt="borderPt" style="width: 100px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column field="labels" export-header="Labels" sortable :pt="borderPt" style="width: 9rem; height: var(--item-size); padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #header>
             <div class="column-header-with-filter">
               Labels
@@ -197,7 +201,7 @@ function onAssetsTransferred(transferredIds) {
         </Column>
 
         <template v-for="col in columns" :key="col.field">
-          <component :is="col.component" v-bind="col" sortable :style="`width: ${col.width}; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;`" />
+          <component :is="col.component" v-bind="col" sortable :style="`width: ${col.width}; height: var(--item-size); padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;`" />
         </template>
 
         <template #footer>

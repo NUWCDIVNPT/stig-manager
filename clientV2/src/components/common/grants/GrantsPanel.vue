@@ -14,6 +14,7 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import DeleteModal from '../DeleteModal.vue'
 import StatusFooter from '../StatusFooter.vue'
 import EditGrantModal from './EditGrantModal.vue'
@@ -37,6 +38,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['updated', 'open-acl'])
+
+const ROW_HEIGHT = rowHeightPx('twoLine')
 
 const { triggerError } = useGlobalError()
 const { user: currentUser, getCollectionRoleId, refreshUser } = useCurrentUser()
@@ -241,7 +244,7 @@ const tablePt = {
         size="medium"
         scrollable
         scroll-height="flex"
-        :virtual-scroller-options="{ itemSize: 49, delay: 0 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
         :pt="tablePt"
       >
         <template #empty>
