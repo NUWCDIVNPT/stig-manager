@@ -45,7 +45,6 @@ AssetReview.vue  (maintains feature state)
 │           ├── ReviewHistoryTab.vue
 │           ├── ReviewOtherAssetsTab.vue
 │           ├── ReviewStatusTextTab.vue
-│           └── ReviewAttachmentsTab.vue
 └── RuleInfo.vue                   (props: ruleContent, selectedChecklistItem)
 ```
 

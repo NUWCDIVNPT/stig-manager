@@ -118,7 +118,7 @@ const reviewEditPopover = ref(null)
 const popoverAnchor = ref(null)
 const editingRow = ref(null)
 const editingAssetId = computed(() => editingRow.value?.assetId ?? null)
-const enabledTabs = ['history', 'attachments', 'statusText']
+const enabledTabs = ['history', 'statusText']
 
 const currentReview = computed(() => props.gridData.find(r => r.assetId === editingRow.value?.assetId) ?? null)
 

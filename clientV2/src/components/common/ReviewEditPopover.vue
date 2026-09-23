@@ -49,7 +49,7 @@ const props = defineProps({
   // Tab config
   enabledTabs: {
     type: Array,
-    default: () => ['history', 'statusText', 'otherAssets', 'attachments'],
+    default: () => ['history', 'statusText', 'otherAssets'],
   },
   // Optional label identifying what is being edited (e.g. asset or rule name).
   // When provided, shown in a header strip so the user knows which row the
@@ -69,7 +69,14 @@ const popover = ref()
 const lastAnchorEvent = ref(null)
 const closing = ref(false)
 const showUnsavedWarning = ref(false)
+// Whether Review Resources is expanded. Deliberately not reset when the popover
+// closes or moves to another row: once a user unfolds it, it stays unfolded for
+// every review they open from this grid until they fold it again.
 const showResources = ref(false)
+
+function toggleResources() {
+  showResources.value = !showResources.value
+}
 
 // Form state and business logic from composable
 const reviewEditForm = useReviewEditForm({
@@ -141,7 +148,6 @@ function onButtonClick(actionType) {
 function onPopoverHide() {
   unbindOutsideHandler()
   unbindResizeHandler()
-  showResources.value = false
   if (closing.value) {
     closing.value = false
     emit('close')
@@ -170,7 +176,6 @@ function dismiss() {
 
 function openAt(event, method) {
   lastAnchorEvent.value = event
-  showResources.value = false
   showUnsavedWarning.value = false
   popover.value[method](event)
 }
@@ -186,7 +191,6 @@ function show(event) {
 function hide() {
   closing.value = true
   showUnsavedWarning.value = false
-  showResources.value = false
   popover.value.hide()
 }
 
@@ -517,7 +521,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
         </div>
       </div>
 
-      <div class="review-edit-popover__resources-toggle" @click="showResources = !showResources">
+      <div class="review-edit-popover__resources-toggle" @click="toggleResources">
         <i class="pi" :class="showResources ? 'pi-angle-up' : 'pi-angle-down'" />
         <span>Review Resources</span>
         <div class="review-edit-popover__resources-toggle-line" />

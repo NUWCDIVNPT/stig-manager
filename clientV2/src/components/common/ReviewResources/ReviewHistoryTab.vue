@@ -10,10 +10,9 @@ import overrideIcon from '../../../assets/override2.svg'
 import manualIcon from '../../../assets/user.svg'
 import { fetchReview } from '../../../shared/api/reviewsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { durationToNow } from '../../../shared/lib.js'
+import { durationToNow, formatDateTimeString } from '../../../shared/lib.js'
 
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
-import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import ColumnFilter from '../ColumnFilter.vue'
@@ -250,13 +249,13 @@ const historyStats = computed(() => {
       class="history-table"
       :pt="reviewResourcesTablePt"
     >
-      <Column header="Time" field="touchTs" sortable :style="{ width: '6rem' }">
+      <Column header="Timestamp" field="touchTs" sortable :style="{ width: '12.5rem' }">
         <template #body="{ data }">
-          <span class="cell-text--mono" :title="formatReviewDate(data.touchTs)">{{ durationToNow(data.touchTs) }}</span>
+          <span class="cell-text--mono" :title="durationToNow(data.touchTs)">{{ formatDateTimeString(data.touchTs) }}</span>
         </template>
       </Column>
 
-      <Column field="ruleId" export-header="Rule" :style="{ width: '13.75rem' }">
+      <Column field="ruleId" export-header="Rule" :style="{ width: '12rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Rule
@@ -325,7 +324,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="detail" export-header="Detail" :style="{ width: '11.75rem' }">
+      <Column field="detail" export-header="Detail" :style="{ width: '10.25rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Detail
@@ -345,7 +344,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="comment" export-header="Comment" :style="{ width: '11.75rem' }">
+      <Column field="comment" export-header="Comment" :style="{ width: '10.25rem' }">
         <template #header>
           <div class="column-header-with-filter">
             Comment
@@ -401,7 +400,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="username" export-header="User" :style="{ width: '9rem' }">
+      <Column field="username" export-header="User" :style="{ width: '7.25rem' }">
         <template #header>
           <div class="column-header-with-filter">
             User
@@ -502,18 +501,18 @@ const historyStats = computed(() => {
   overflow: hidden;
 }
 
-:deep(.p-datatable-thead > tr > th) {
-  border-right: 1px solid var(--color-border-light) !important;
-}
-
 :deep(.p-datatable-thead > tr > th:last-child) {
   border-right: none !important;
 }
 
+/* Fills the header content so its justify-content (set per column by the
+   table pass-through) decides where the caption and filter sit. */
 .column-header-with-filter {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: inherit;
+  gap: 0.1rem;
+  flex: 1 1 auto;
 }
 
 .cell-text--mono {

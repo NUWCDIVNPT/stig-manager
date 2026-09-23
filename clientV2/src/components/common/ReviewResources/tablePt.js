@@ -1,6 +1,7 @@
 // PassThrough for the History and Other Assets review tables: dark sticky
-// header with dim uppercase captions, flush footer. Cell sections sit under
-// `column` because DataTable resolves them through the Column.
+// header styled like the main review grids (see gridColumnPt), flush footer.
+// Cell sections sit under `column` because DataTable resolves them through
+// the Column; header content follows the column's own textAlign.
 export const reviewResourcesTablePt = {
   root: { class: 'sm-scrollbar-thin', style: { backgroundColor: 'var(--color-background-dark)' } },
   header: { style: { background: 'transparent', border: 'none', padding: '0' } },
@@ -18,13 +19,21 @@ export const reviewResourcesTablePt = {
       style: {
         background: 'var(--color-background-dark)',
         borderBottom: '1px solid var(--color-border-default)',
-        color: 'var(--color-text-dim)',
-        fontWeight: '700',
-        fontSize: 'var(--text-md)',
-        textTransform: 'uppercase',
-        letterSpacing: '0.04em',
-        padding: '0.3rem 0.4rem',
+        borderRight: '1px solid var(--color-border-light)',
+        fontWeight: '600',
+        padding: '0.3rem 0.35rem',
       },
+    },
+    columnHeaderContent: ({ props }) => {
+      const isCenter = props.style?.textAlign === 'center'
+      return {
+        style: {
+          fontSize: 'var(--text-md)',
+          color: 'var(--color-text-primary)',
+          justifyContent: isCenter ? 'safe center' : 'flex-start',
+          textAlign: isCenter ? 'center' : 'left',
+        },
+      }
     },
   },
   bodyRow: {

@@ -390,13 +390,10 @@ watch([
         </template>
       </Column>
 
-      <Column header="Evaluated" field="ts" sortable :style="{ width: '7.25rem' }">
-        <template #body="{ data }">
-          <span class="cell-text--mono" :title="formatReviewDate(data.ts)">{{ durationToNow(data.ts) }}</span>
+      <Column field="touchTs" export-header="Last action" sortable :style="{ width: '4.5rem' }">
+        <template #header>
+          <i class="pi pi-clock last-action-header-icon" title="Last action" />
         </template>
-      </Column>
-
-      <Column header="Statused" field="touchTs" sortable :style="{ width: '7.25rem' }">
         <template #body="{ data }">
           <span v-if="data.touchTs" class="cell-text--mono" :title="formatReviewDate(data.touchTs)">{{ durationToNow(data.touchTs) }}</span>
           <span v-else class="cell-text--empty">---</span>
@@ -485,10 +482,14 @@ watch([
   border-top: none;
 }
 
+/* Fills the header content so its justify-content (set per column by the
+   table pass-through) decides where the caption and filter sit. */
 .column-header-with-filter {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: inherit;
+  gap: 0.1rem;
+  flex: 1 1 auto;
 }
 
 /* Allow table to expand and scroll horizontally if needed. */
@@ -508,10 +509,6 @@ watch([
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-primary);
   overflow: hidden;
-}
-
-:deep(.p-datatable-thead > tr > th) {
-  border-right: 1px solid var(--color-border-light) !important;
 }
 
 :deep(.p-datatable-thead > tr > th:last-child) {
@@ -552,6 +549,11 @@ watch([
 .engine-header-icon {
   width: 14px;
   height: 14px;
+  opacity: 0.7;
+}
+
+.last-action-header-icon {
+  font-size: var(--text-md);
   opacity: 0.7;
 }
 
