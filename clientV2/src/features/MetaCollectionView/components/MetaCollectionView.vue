@@ -108,7 +108,7 @@ const tabPanelPt = {
       <SplitterPanel
         :size="28"
         :min-size="4"
-        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating }, style: 'min-width: 330px; max-width: 600px;' } }"
+        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating }, style: 'min-width: 380px; max-width: 460px;' } }"
       >
         <aside class="dashboard-sidebar">
           <button

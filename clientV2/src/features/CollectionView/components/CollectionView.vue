@@ -216,9 +216,9 @@ function toggleDashboardSidebar() {
     >
       <!-- Dashboard Sidebar -->
       <SplitterPanel
-        :size="14"
+        :size="18"
         :min-size="4"
-        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating || sidebarTransitioning, 'sidebar-panel--hidden': isManagement }, style: isManagement ? '' : 'min-width: 330px; max-width: 600px;' } }"
+        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating || sidebarTransitioning, 'sidebar-panel--hidden': isManagement }, style: isManagement ? '' : 'min-width: 380px; max-width: 460px;' } }"
       >
         <aside class="dashboard-sidebar">
           <button
@@ -258,7 +258,7 @@ function toggleDashboardSidebar() {
       </SplitterPanel>
 
       <!-- Right Panel: Tabs + Content -->
-      <SplitterPanel :size="86">
+      <SplitterPanel :size="82">
         <div class="right-panel">
           <Tabs v-model:value="activeTab" :pt="tabsPt">
             <TabList>

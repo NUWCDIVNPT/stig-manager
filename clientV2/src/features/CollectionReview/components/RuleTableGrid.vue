@@ -118,7 +118,7 @@ const reviewEditPopover = ref(null)
 const popoverAnchor = ref(null)
 const editingRow = ref(null)
 const editingAssetId = computed(() => editingRow.value?.assetId ?? null)
-const enabledTabs = ['history', 'attachments', 'statusText']
+const enabledTabs = ['history', 'statusText']
 
 const currentReview = computed(() => props.gridData.find(r => r.assetId === editingRow.value?.assetId) ?? null)
 
@@ -396,6 +396,7 @@ const dataTablePt = {
     @update:selection="onSelectionChange"
     @scroll.capture="onGridScroll"
     @wheel.capture="onGridWheel"
+    @pointerdown.stop
   >
     <!-- Selection -->
     <Column :exportable="false" header-style="width: 3rem; min-width: 3rem" :pt="selectionColumnPt">

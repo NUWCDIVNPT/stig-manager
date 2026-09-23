@@ -1,7 +1,7 @@
 <script setup>
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
-import { nextTick, onBeforeUnmount, provide, ref, toRefs, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, provide, ref, toRefs, watch } from 'vue'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
 import { REVIEW_STATUS } from '../../shared/lib/reviewConstants.js'
 import { formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
@@ -49,7 +49,7 @@ const props = defineProps({
   // Tab config
   enabledTabs: {
     type: Array,
-    default: () => ['history', 'statusText', 'otherAssets', 'attachments'],
+    default: () => ['history', 'statusText', 'otherAssets'],
   },
   // Optional label identifying what is being edited (e.g. asset or rule name).
   // When provided, shown in a header strip so the user knows which row the
@@ -69,7 +69,14 @@ const popover = ref()
 const lastAnchorEvent = ref(null)
 const closing = ref(false)
 const showUnsavedWarning = ref(false)
+// Whether Review Resources is expanded. Deliberately not reset when the popover
+// closes or moves to another row: once a user unfolds it, it stays unfolded for
+// every review they open from this grid until they fold it again.
 const showResources = ref(false)
+
+function toggleResources() {
+  showResources.value = !showResources.value
+}
 
 // Form state and business logic from composable
 const reviewEditForm = useReviewEditForm({
@@ -99,6 +106,10 @@ const {
 } = reviewEditForm
 
 provide('reviewEditForm', reviewEditForm)
+
+// Checklist rows carry the status timestamp as `statusTs` beside a string
+// status; full review objects nest it under `status.ts`.
+const statusTs = computed(() => currentReview.value?.status?.ts ?? currentReview.value?.statusTs ?? null)
 
 function onButtonClick(actionType) {
   const ruleId = selectedRuleId.value
@@ -137,7 +148,6 @@ function onButtonClick(actionType) {
 function onPopoverHide() {
   unbindOutsideHandler()
   unbindResizeHandler()
-  showResources.value = false
   if (closing.value) {
     closing.value = false
     emit('close')
@@ -166,7 +176,6 @@ function dismiss() {
 
 function openAt(event, method) {
   lastAnchorEvent.value = event
-  showResources.value = false
   showUnsavedWarning.value = false
   popover.value[method](event)
 }
@@ -182,7 +191,6 @@ function show(event) {
 function hide() {
   closing.value = true
   showUnsavedWarning.value = false
-  showResources.value = false
   popover.value.hide()
 }
 
@@ -499,9 +507,9 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
         <div class="review-edit-popover__attr-section">
           <span class="review-edit-popover__attr-label">Statused: </span>
           <template v-if="currentReview?.status && statusLabel">
-            <span v-if="currentReview.status?.ts" class="review-edit-popover__attr-pill">
+            <span v-if="statusTs" class="review-edit-popover__attr-pill">
               <i class="pi pi-clock" />
-              {{ formatReviewDate(currentReview.status.ts) }}
+              {{ formatReviewDate(statusTs) }}
             </span>
             <StatusBadge :status="statusLabel" />
             <span v-if="currentReview.status?.user?.username" class="review-edit-popover__attr-pill">
@@ -513,7 +521,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
         </div>
       </div>
 
-      <div class="review-edit-popover__resources-toggle" @click="showResources = !showResources">
+      <div class="review-edit-popover__resources-toggle" @click="toggleResources">
         <i class="pi" :class="showResources ? 'pi-angle-up' : 'pi-angle-down'" />
         <span>Review Resources</span>
         <div class="review-edit-popover__resources-toggle-line" />
@@ -547,8 +555,13 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  min-width: 650px;
-  max-width: 850px;
+  /* Fixed width so the popover is the same size in every grid, rather than
+     sized by the attribution row (engine badges plus up to five Evaluated and
+     Statused pills, fewer for an unstatused review). Wide enough for that row
+     and for the Review Resources tables (history, other assets) to show their
+     columns without a horizontal scroller. */
+  width: 1000px;
+  max-width: calc(100vw - 24px);
   position: relative;
 }
 
@@ -742,8 +755,8 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 
 .review-edit-popover__attributions {
   display: flex;
-  column-gap: 3rem;
-  row-gap: 0.5rem;
+  align-items: center;
+  gap: 1.2rem;
   flex-wrap: wrap;
   border-top: 1px solid var(--color-border-light);
   padding-top: 0.4rem;

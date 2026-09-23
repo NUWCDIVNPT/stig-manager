@@ -27,6 +27,7 @@ import OverrideBadge from '../OverrideBadge.vue'
 import ResultBadge from '../ResultBadge.vue'
 import StatusBadge from '../StatusBadge.vue'
 import StatusFooter from '../StatusFooter.vue'
+import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
 import { reviewResourcesTablePt } from './tablePt.js'
 
 const props = defineProps({
@@ -78,6 +79,14 @@ FilterService.register('labelContainsAny', (value, filter) => {
   }
   return value.some(label => filter.includes(label.name))
 })
+
+// Single-line rows at a fixed height, so cells centre vertically.
+const cellOptions = { verticalAlign: 'middle' }
+const columnPt = {
+  center: gridColumnPt('center', cellOptions),
+  left: gridColumnPt('left', cellOptions),
+  icon: iconHeaderPt(gridColumnPt('center', cellOptions)),
+}
 
 const ROW_HEIGHT = rowHeightPx('standard')
 
@@ -262,7 +271,7 @@ watch([
       class="other-assets-table"
       :pt="reviewResourcesTablePt"
     >
-      <Column field="assetName" export-header="Asset" sortable :style="{ width: '9rem' }">
+      <Column field="assetName" export-header="Asset" sortable :style="{ width: '9rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             Asset
@@ -278,7 +287,7 @@ watch([
         </template>
       </Column>
 
-      <Column field="assetLabels" export-header="Labels" filter-field="assetLabels" :style="{ width: '9rem' }">
+      <Column field="assetLabels" export-header="Labels" filter-field="assetLabels" :style="{ width: '9rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             Labels
@@ -297,7 +306,7 @@ watch([
         </template>
       </Column>
 
-      <Column field="result" export-header="Result" :style="{ width: '6rem', textAlign: 'center' }">
+      <Column field="result" export-header="Result" :style="{ width: '6rem' }" :pt="columnPt.center">
         <template #header>
           <div class="column-header-with-filter">
             Result
@@ -313,7 +322,7 @@ watch([
         </template>
       </Column>
 
-      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '4.5rem', textAlign: 'center' }">
+      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '4.5rem' }" :pt="columnPt.center">
         <template #header>
           <div class="column-header-with-filter">
             <img
@@ -350,7 +359,7 @@ watch([
         </template>
       </Column>
 
-      <Column field="detail" export-header="Detail" :style="{ width: '13.75rem' }">
+      <Column field="detail" export-header="Detail" :style="{ width: '13.75rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             Detail
@@ -370,7 +379,7 @@ watch([
         </template>
       </Column>
 
-      <Column field="comment" export-header="Comment" :style="{ width: '13.75rem' }">
+      <Column field="comment" export-header="Comment" :style="{ width: '13.75rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             Comment
@@ -390,20 +399,17 @@ watch([
         </template>
       </Column>
 
-      <Column header="Evaluated" field="ts" sortable :style="{ width: '7.25rem' }">
-        <template #body="{ data }">
-          <span class="cell-text--mono" :title="formatReviewDate(data.ts)">{{ durationToNow(data.ts) }}</span>
+      <Column field="touchTs" export-header="Last action" sortable :style="{ width: '4.5rem' }" :pt="columnPt.icon">
+        <template #header>
+          <i class="pi pi-clock last-action-header-icon" title="Last action" />
         </template>
-      </Column>
-
-      <Column header="Statused" field="touchTs" sortable :style="{ width: '7.25rem' }">
         <template #body="{ data }">
           <span v-if="data.touchTs" class="cell-text--mono" :title="formatReviewDate(data.touchTs)">{{ durationToNow(data.touchTs) }}</span>
           <span v-else class="cell-text--empty">---</span>
         </template>
       </Column>
 
-      <Column field="username" export-header="User" :style="{ width: '7.25rem' }">
+      <Column field="username" export-header="User" :style="{ width: '7.25rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             User
@@ -421,7 +427,7 @@ watch([
         </template>
       </Column>
 
-      <Column header="Apply" :exportable="false" :style="{ width: '3.75rem', textAlign: 'center' }">
+      <Column header="Apply" :exportable="false" :style="{ width: '3.75rem' }" :pt="columnPt.center">
         <template #body="{ data }">
           <button
             class="apply-review-icon-btn"
@@ -485,11 +491,16 @@ watch([
   border-top: none;
 }
 
+/* Fills the header content so its justify-content (set per column by the
+   table pass-through) decides where the caption and filter sit. */
 .column-header-with-filter {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: inherit;
+  gap: 0.1rem;
+  flex: 1 1 auto;
 }
+
 
 /* Allow table to expand and scroll horizontally if needed. */
 :deep(.p-datatable-table) {
@@ -502,16 +513,9 @@ watch([
 }
 
 :deep(.p-datatable-tbody > tr > td) {
-  padding: 0.2rem 0.4rem;
-  vertical-align: middle;
   font-size: var(--text-lg);
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-primary);
-  overflow: hidden;
-}
-
-:deep(.p-datatable-thead > tr > th) {
-  border-right: 1px solid var(--color-border-light) !important;
 }
 
 :deep(.p-datatable-thead > tr > th:last-child) {
@@ -552,6 +556,11 @@ watch([
 .engine-header-icon {
   width: 14px;
   height: 14px;
+  opacity: 0.7;
+}
+
+.last-action-header-icon {
+  font-size: var(--text-md);
   opacity: 0.7;
 }
 

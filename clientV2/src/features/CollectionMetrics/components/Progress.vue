@@ -38,6 +38,34 @@ const getPct = (val) => {
   return (val / props.stats.counts.total) * 100
 }
 
+const legendRows = computed(() => {
+  if (!props.stats) {
+    return []
+  }
+  const c = props.stats.counts
+  return [
+    { label: 'Unassessed', value: c.unassessed, color: colors.unassessed },
+    { label: 'Assessed', value: c.assessed, color: colors.assessed },
+    { label: 'Submitted', value: c.submitted, color: colors.submitted },
+    { label: 'Accepted', value: c.accepted, color: colors.accepted },
+    { label: 'Rejected', value: c.rejected, color: colors.rejected },
+  ]
+})
+
+const statRows = computed(() => {
+  if (!props.stats) {
+    return []
+  }
+  const c = props.stats.counts
+  const f = props.stats.formatted
+  return [
+    { label: 'ASSESSED', value: c.assessed, formatted: f.assessed, color: colors.assessed },
+    { label: 'SUBMITTED', value: c.submitted, formatted: f.submitted, color: colors.submitted },
+    { label: 'ACCEPTED', value: c.accepted, formatted: f.accepted, color: colors.accepted },
+    { label: 'REJECTED', value: c.rejected, formatted: f.rejected, color: colors.rejected },
+  ]
+})
+
 const chartData = computed(() => {
   if (!props.stats) {
     return null
@@ -89,7 +117,6 @@ const chartOptions = {
       <h2 class="metric-title">
         Progress
       </h2>
-      <span class="overall-pct">{{ stats.formatted.overall }}% Assessed</span>
     </div>
 
     <div class="main-content">
@@ -97,100 +124,37 @@ const chartOptions = {
         <Chart type="doughnut" :data="chartData" :options="chartOptions" class="chart" />
       </div>
 
-      <div class="legend-list">
-        <div class="legend-item">
-          <div class="indicator" :style="{ backgroundColor: colors.unassessed }" />
-          <span class="label">Unassessed</span>
-          <span class="count">{{ stats.counts.unassessed }}</span>
+      <div class="summary">
+        <div class="overall-pct">
+          {{ stats.formatted.overall }}% Assessed
         </div>
-        <div class="legend-item">
-          <div class="indicator" :style="{ backgroundColor: colors.assessed }" />
-          <span class="label">Assessed</span>
-          <span class="count">{{ stats.counts.assessed }}</span>
-        </div>
-        <div class="legend-item">
-          <div class="indicator" :style="{ backgroundColor: colors.submitted }" />
-          <span class="label">Submitted</span>
-          <span class="count">{{ stats.counts.submitted }}</span>
-        </div>
-        <div class="legend-item">
-          <div class="indicator" :style="{ backgroundColor: colors.accepted }" />
-          <span class="label">Accepted</span>
-          <span class="count">{{ stats.counts.accepted }}</span>
-        </div>
-        <div class="legend-item">
-          <div class="indicator" :style="{ backgroundColor: colors.rejected }" />
-          <span class="label">Rejected</span>
-          <span class="count">{{ stats.counts.rejected }}</span>
+        <div class="legend-list">
+          <div v-for="row in legendRows" :key="row.label" class="legend-item">
+            <span class="legend-chip" :style="{ backgroundColor: row.color }">{{ row.label }}</span>
+            <span class="count">{{ row.value }}</span>
+          </div>
+          <div class="legend-item legend-item--total">
+            <span class="legend-chip legend-chip--total">Total Checks</span>
+            <span class="count">{{ stats.counts.total }}</span>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="stats-grid">
-      <div class="stat-box">
-        <div
-          class="stat-bar"
-          :style="{ width: `${getPct(stats.counts.assessed)}%`, backgroundColor: colors.assessed }"
-        />
-        <div class="stat-content">
-          <div class="stat-label">
-            ASSESSED
-          </div>
+      <div v-for="row in statRows" :key="row.label" class="stat-item">
+        <div class="stat-label">
+          {{ row.label }}
+        </div>
+        <div class="stat-box">
+          <div
+            class="stat-bar"
+            :style="{ width: `${getPct(row.value)}%`, backgroundColor: row.color }"
+          />
           <div class="stat-value">
-            {{ stats.formatted.assessed }}
+            {{ row.formatted }}
           </div>
         </div>
-      </div>
-      <div class="stat-box">
-        <div
-          class="stat-bar"
-          :style="{ width: `${getPct(stats.counts.submitted)}%`, backgroundColor: colors.submitted }"
-        />
-        <div class="stat-content">
-          <div class="stat-label">
-            SUBMITTED
-          </div>
-          <div class="stat-value">
-            {{ stats.formatted.submitted }}
-          </div>
-        </div>
-      </div>
-      <div class="stat-box">
-        <div
-          class="stat-bar"
-          :style="{ width: `${getPct(stats.counts.accepted)}%`, backgroundColor: colors.accepted }"
-        />
-        <div class="stat-content">
-          <div class="stat-label">
-            ACCEPTED
-          </div>
-          <div class="stat-value">
-            {{ stats.formatted.accepted }}
-          </div>
-        </div>
-      </div>
-      <div class="stat-box">
-        <div
-          class="stat-bar"
-          :style="{ width: `${getPct(stats.counts.rejected)}%`, backgroundColor: colors.rejected }"
-        />
-        <div class="stat-content">
-          <div class="stat-label">
-            REJECTED
-          </div>
-          <div class="stat-value">
-            {{ stats.formatted.rejected }}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="total-footer">
-      <div class="total-label">
-        Total Checks
-      </div>
-      <div class="total-value">
-        {{ stats.counts.total }}
       </div>
     </div>
   </div>
@@ -207,24 +171,19 @@ const chartOptions = {
 @import './metrics.css';
 
 .metric-header {
-  margin-bottom: 8px;
-}
-
-.overall-pct {
-  font-size: var(--text-lg);
-  font-weight: 600;
+  margin-bottom: 4px;
 }
 
 .main-content {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   margin-bottom: 10px;
 }
 
 .chart-container {
-  width: 120px;
-  height: 120px;
+  width: 160px;
+  height: 160px;
   flex-shrink: 0;
 }
 
@@ -233,68 +192,67 @@ const chartOptions = {
   height: 100%;
 }
 
-.legend-list {
+.summary {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
 }
 
-.legend-item {
+.overall-pct {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  text-align: center;
+}
+
+.legend-list {
   display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* Filled label chip on the left, count in the open on the right */
+.legend-item {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
+}
+
+.legend-chip {
   font-size: var(--text-md);
-  border-radius: 5px;
-  padding: 3px 10px;
-  background-color: var(--color-background-subtle);
+  font-weight: 600;
+  color: var(--color-text-bright);
+  border: 1px solid var(--color-border-default);
+  border-radius: 3px;
+  padding: 1px 6px;
+  white-space: nowrap;
 }
 
-.indicator {
-  width: 4px;
-  height: 14px;
-  border-radius: 2px;
-  margin-right: 9px;
-}
-
-.label {
-  flex: 1;
-  font-size: var(--text-lg);
+.legend-chip--total {
+  background-color: transparent;
+  border-color: transparent;
+  padding-left: 0;
 }
 
 .count {
   font-weight: 600;
+  text-align: right;
 }
 
+/* Compact status bars, laid out as label-over-bar columns like the legacy panel */
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  justify-content: space-around;
   gap: 6px;
-  margin-bottom: 6px;
-  text-align: center;
 }
 
-.stat-box {
-  background-color: var(--color-background-subtle);
-  border-radius: 6px;
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  opacity: 0.;
-  transition: width 0.5s ease;
-  z-index: 0;
-}
-
-.stat-content {
-  position: relative;
-  z-index: 1;
-  padding: 8px 6px;
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
 }
 
 .stat-label {
@@ -303,27 +261,35 @@ const chartOptions = {
   text-transform: uppercase;
 }
 
-.stat-value {
-  font-size: var(--text-lg);
-  font-weight: 600;
-}
-
-.total-footer {
-  background-color: var(--color-background-light);
+.stat-box {
+  width: 5.5rem;
+  height: 1.6rem;
   border: 1px solid var(--color-border-default);
-  border-radius: 6px;
-  padding: 8px;
-  text-align: center;
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  /* Own stacking context so the animated bar is clipped by the rounded corners */
+  isolation: isolate;
 }
 
-.total-label {
-  font-size: var(--text-sm);
-  color: var(--color-text-dim);
-  margin-bottom: 0.15rem;
+.stat-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  transition: width 0.5s ease;
+  z-index: 0;
 }
 
-.total-value {
-  font-size: var(--text-xl);
+.stat-value {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  font-size: var(--text-md);
+  font-style: italic;
   font-weight: 600;
 }
 </style>
