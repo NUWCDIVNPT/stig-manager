@@ -1,7 +1,7 @@
 <script setup>
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
-import { nextTick, onBeforeUnmount, provide, ref, toRefs, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, provide, ref, toRefs, watch } from 'vue'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
 import { REVIEW_STATUS } from '../../shared/lib/reviewConstants.js'
 import { formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
@@ -99,6 +99,10 @@ const {
 } = reviewEditForm
 
 provide('reviewEditForm', reviewEditForm)
+
+// Checklist rows carry the status timestamp as `statusTs` beside a string
+// status; full review objects nest it under `status.ts`.
+const statusTs = computed(() => currentReview.value?.status?.ts ?? currentReview.value?.statusTs ?? null)
 
 function onButtonClick(actionType) {
   const ruleId = selectedRuleId.value
@@ -499,9 +503,9 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
         <div class="review-edit-popover__attr-section">
           <span class="review-edit-popover__attr-label">Statused: </span>
           <template v-if="currentReview?.status && statusLabel">
-            <span v-if="currentReview.status?.ts" class="review-edit-popover__attr-pill">
+            <span v-if="statusTs" class="review-edit-popover__attr-pill">
               <i class="pi pi-clock" />
-              {{ formatReviewDate(currentReview.status.ts) }}
+              {{ formatReviewDate(statusTs) }}
             </span>
             <StatusBadge :status="statusLabel" />
             <span v-if="currentReview.status?.user?.username" class="review-edit-popover__attr-pill">
@@ -547,8 +551,13 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  min-width: 650px;
-  max-width: 850px;
+  /* Fixed width so the popover is the same size in every grid, rather than
+     sized by the attribution row (engine badges plus up to five Evaluated and
+     Statused pills, fewer for an unstatused review). Wide enough for that row
+     and for the Review Resources tables (history, other assets) to show their
+     columns without a horizontal scroller. */
+  width: 1000px;
+  max-width: calc(100vw - 24px);
   position: relative;
 }
 
@@ -742,8 +751,8 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 
 .review-edit-popover__attributions {
   display: flex;
-  column-gap: 3rem;
-  row-gap: 0.5rem;
+  align-items: center;
+  gap: 1.2rem;
   flex-wrap: wrap;
   border-top: 1px solid var(--color-border-light);
   padding-top: 0.4rem;

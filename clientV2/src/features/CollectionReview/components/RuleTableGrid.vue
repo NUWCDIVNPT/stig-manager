@@ -396,6 +396,7 @@ const dataTablePt = {
     @update:selection="onSelectionChange"
     @scroll.capture="onGridScroll"
     @wheel.capture="onGridWheel"
+    @pointerdown.stop
   >
     <!-- Selection -->
     <Column :exportable="false" header-style="width: 3rem; min-width: 3rem" :pt="selectionColumnPt">

@@ -172,7 +172,7 @@ watch(checklistError, (err) => {
   }
 })
 
-function onReviewSaved(review) {
+function mergeReview(review) {
   upsertReview(review.ruleId, review)
 }
 
@@ -224,7 +224,8 @@ const searchFilter = useDebouncedRef('', 220)
             :collection-id="collectionId"
             :asset-id="assetId"
             @update:search-filter="searchFilter = $event"
-            @review-saved="onReviewSaved"
+            @review-saved="mergeReview"
+            @review-loaded="mergeReview"
             @refresh="onGridRefresh"
           />
         </SplitterPanel>
