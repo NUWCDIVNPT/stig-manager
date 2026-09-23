@@ -33,7 +33,7 @@ const isLabelSelected = ref(false)
 
 const router = useRouter()
 
-const { state: assets, isLoading: assetsLoading, error: assetsError, execute: loadAssets } = useAsyncState(
+const { state: assets, isLoading: assetsLoading, execute: loadAssets } = useAsyncState(
   () => {
     if (selectedLabelId.value === null) {
       return fetchCollectionAssetSummary(props.collectionId, { labelMatch: 'null' })
@@ -45,7 +45,7 @@ const { state: assets, isLoading: assetsLoading, error: assetsError, execute: lo
 
 const selectedAssetId = ref(null)
 
-const { state: assetStigs, isLoading: assetStigsLoading, error: assetStigsError, execute: loadAssetStigs } = useAsyncState(
+const { state: assetStigs, isLoading: assetStigsLoading, execute: loadAssetStigs } = useAsyncState(
   () => fetchCollectionAssetStigs(props.collectionId, selectedAssetId.value),
   { initialState: [], immediate: false },
 )
@@ -122,15 +122,9 @@ function handleAssetStigAction(rowData) {
 
       <SplitterPanel :size="33" :min-size="10">
         <div class="panel-content">
-          <div class="panel-header">
-            <h3>Assets</h3>
-          </div>
           <div class="grid-container">
-            <div v-if="assetsError" class="error-state">
-              {{ assetsError?.message || assetsError }}
-            </div>
             <MetricsSummaryGrid
-              v-else
+              title="Assets"
               :api-metrics-summary="assets"
               agg-type="asset"
               :is-loading="assetsLoading"
@@ -147,16 +141,10 @@ function handleAssetStigAction(rowData) {
 
       <SplitterPanel :size="34" :min-size="10">
         <div class="panel-content">
-          <div class="panel-header">
-            <h3>Checklists</h3>
-            <span v-if="selectedAssetId" class="badge">Asset ID: {{ selectedAssetId }}</span>
-          </div>
           <div class="grid-container">
-            <div v-if="assetStigsError" class="error-state">
-              {{ assetStigsError?.message || assetStigsError }}
-            </div>
             <MetricsSummaryGrid
-              v-else
+              title="Checklists"
+              :badge="selectedAssetId ? `Asset ${selectedAssetId}` : ''"
               :api-metrics-summary="assetStigs"
               agg-type="unagg"
               :is-loading="assetStigsLoading"

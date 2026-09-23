@@ -34,14 +34,14 @@ const fetchAssets = () => {
   )
 }
 
-const { state: assets, isLoading: assetsLoading, error: assetsError, execute: loadAssets } = useAsyncState(
+const { state: assets, isLoading: assetsLoading, execute: loadAssets } = useAsyncState(
   fetchAssets,
   { initialState: [], immediate: false },
 )
 
 const selectedAssetId = ref(null)
 
-const { state: selectedAssetStigs, isLoading: selectedAssetStigsLoading, error: selectedAssetStigsError, execute: loadSelectedAssetStigs } = useAsyncState(
+const { state: selectedAssetStigs, isLoading: selectedAssetStigsLoading, execute: loadSelectedAssetStigs } = useAsyncState(
   () => fetchCollectionAssetStigs(props.collectionId, selectedAssetId.value),
   { initialState: [], immediate: false },
 )
@@ -103,7 +103,6 @@ function handleShieldClick(rowData) {
               :api-metrics-summary="assets"
               agg-type="asset"
               :is-loading="assetsLoading"
-              :error-message="assetsError?.message || assetsError"
               :selected-key="selectedAssetId"
               selectable
               data-key="assetId"
@@ -116,16 +115,10 @@ function handleShieldClick(rowData) {
 
       <SplitterPanel :size="50" :min-size="15">
         <div class="panel-content">
-          <div class="panel-header">
-            <h3>Checklists</h3>
-            <span v-if="selectedAssetId" class="badge">Asset {{ selectedAssetId }}</span>
-          </div>
           <div class="grid-container">
-            <div v-if="selectedAssetStigsError" class="error-state">
-              {{ selectedAssetStigsError?.message || selectedAssetStigsError }}
-            </div>
             <MetricsSummaryGrid
-              v-else
+              title="Checklists"
+              :badge="selectedAssetId ? `Asset ${selectedAssetId}` : ''"
               :api-metrics-summary="selectedAssetStigs"
               agg-type="unagg"
               :is-loading="selectedAssetStigsLoading"

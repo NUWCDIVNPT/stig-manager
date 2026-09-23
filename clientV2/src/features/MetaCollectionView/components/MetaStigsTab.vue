@@ -36,7 +36,7 @@ watch(() => props.selectedCollectionIds, () => {
 
 const selectedStig = ref(null)
 
-const { state: collections, isLoading: collectionsLoading, error: collectionsError, execute: loadCollections } = useAsyncState(
+const { state: collections, isLoading: collectionsLoading, execute: loadCollections } = useAsyncState(
   () => {
     if (!selectedStig.value) {
       return []
@@ -57,7 +57,7 @@ const { state: collections, isLoading: collectionsLoading, error: collectionsErr
 
 const selectedCollectionId = ref(null)
 
-const { state: assets, isLoading: assetsLoading, error: assetsError, execute: loadAssets } = useAsyncState(
+const { state: assets, isLoading: assetsLoading, execute: loadAssets } = useAsyncState(
   () => {
     if (!selectedStig.value || !selectedCollectionId.value) {
       return []
@@ -148,15 +148,9 @@ function handleAssetStigAction(rowData) {
 
       <SplitterPanel :size="33" :min-size="10">
         <div class="panel-content">
-          <div class="panel-header">
-            <h3>Collections</h3>
-          </div>
           <div class="grid-container">
-            <div v-if="collectionsError" class="error-state">
-              {{ collectionsError?.message || collectionsError }}
-            </div>
             <MetricsSummaryGrid
-              v-else
+              title="Collections"
               :api-metrics-summary="collections"
               agg-type="collection"
               :is-loading="collectionsLoading"
@@ -175,16 +169,10 @@ function handleAssetStigAction(rowData) {
 
       <SplitterPanel :size="34" :min-size="10">
         <div class="panel-content">
-          <div class="panel-header">
-            <h3>Assets</h3>
-            <span v-if="selectedCollectionId" class="badge">Collection: {{ selectedCollectionId }}</span>
-          </div>
           <div class="grid-container">
-            <div v-if="assetsError" class="error-state">
-              {{ assetsError?.message || assetsError }}
-            </div>
             <MetricsSummaryGrid
-              v-else
+              title="Assets"
+              :badge="selectedCollectionId ? `Collection ${selectedCollectionId}` : ''"
               :api-metrics-summary="assets"
               agg-type="unagg"
               :is-loading="assetsLoading"
