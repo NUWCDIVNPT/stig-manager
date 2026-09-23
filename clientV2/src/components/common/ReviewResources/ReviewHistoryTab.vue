@@ -24,6 +24,7 @@ import OverrideBadge from '../OverrideBadge.vue'
 import ResultBadge from '../ResultBadge.vue'
 import StatusBadge from '../StatusBadge.vue'
 import StatusFooter from '../StatusFooter.vue'
+import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
 import { reviewResourcesTablePt } from './tablePt.js'
 
 const props = defineProps({
@@ -117,6 +118,14 @@ const statusOptions = computed(() => {
     label: val,
   })).sort((a, b) => a.label.localeCompare(b.label))
 })
+
+// Single-line rows at a fixed height, so cells centre vertically.
+const cellOptions = { verticalAlign: 'middle' }
+const columnPt = {
+  center: gridColumnPt('center', cellOptions),
+  left: gridColumnPt('left', cellOptions),
+  icon: iconHeaderPt(gridColumnPt('center', cellOptions)),
+}
 
 const ROW_HEIGHT = rowHeightPx('control')
 
@@ -249,13 +258,13 @@ const historyStats = computed(() => {
       class="history-table"
       :pt="reviewResourcesTablePt"
     >
-      <Column header="Timestamp" field="touchTs" sortable :style="{ width: '12.5rem' }">
+      <Column header="Timestamp" field="touchTs" sortable :style="{ width: '12.5rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span class="cell-text--mono" :title="durationToNow(data.touchTs)">{{ formatDateTimeString(data.touchTs) }}</span>
         </template>
       </Column>
 
-      <Column field="ruleId" export-header="Rule" :style="{ width: '12rem' }">
+      <Column field="ruleId" export-header="Rule" :style="{ width: '12rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             Rule
@@ -271,7 +280,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="result" export-header="Result" :style="{ width: '6.25rem', textAlign: 'center' }">
+      <Column field="result" export-header="Result" :style="{ width: '6.25rem' }" :pt="columnPt.center">
         <template #header>
           <div class="column-header-with-filter">
             Result
@@ -287,7 +296,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '4.5rem', textAlign: 'center' }">
+      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '4.5rem' }" :pt="columnPt.center">
         <template #header>
           <div class="column-header-with-filter">
             <img
@@ -324,7 +333,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="detail" export-header="Detail" :style="{ width: '10.25rem' }">
+      <Column field="detail" export-header="Detail" :style="{ width: '10.25rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             Detail
@@ -344,7 +353,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="comment" export-header="Comment" :style="{ width: '10.25rem' }">
+      <Column field="comment" export-header="Comment" :style="{ width: '10.25rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             Comment
@@ -364,7 +373,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="statusText" export-header="Status Text" :style="{ width: '9rem' }">
+      <Column field="statusText" export-header="Status Text" :style="{ width: '9rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             Status Text
@@ -384,7 +393,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="_statusLabel" filter-field="_statusLabel" export-header="Status" :style="{ width: '6.25rem', textAlign: 'center' }">
+      <Column field="_statusLabel" filter-field="_statusLabel" export-header="Status" :style="{ width: '6.25rem' }" :pt="columnPt.center">
         <template #header>
           <div class="column-header-with-filter">
             Status
@@ -400,7 +409,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="username" export-header="User" :style="{ width: '7.25rem' }">
+      <Column field="username" export-header="User" :style="{ width: '7.25rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             User
@@ -418,7 +427,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column header="Apply" :exportable="false" :style="{ width: '3.75rem', textAlign: 'center' }">
+      <Column header="Apply" :exportable="false" :style="{ width: '3.75rem' }" :pt="columnPt.center">
         <template #body="{ data }">
           <button
             class="apply-review-icon-btn"
@@ -493,12 +502,9 @@ const historyStats = computed(() => {
 }
 
 :deep(.p-datatable-tbody > tr > td) {
-  padding: 0.4rem 0.4rem;
-  vertical-align: middle;
   font-size: var(--text-lg);
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-primary);
-  overflow: hidden;
 }
 
 :deep(.p-datatable-thead > tr > th:last-child) {
@@ -514,6 +520,7 @@ const historyStats = computed(() => {
   gap: 0.1rem;
   flex: 1 1 auto;
 }
+
 
 .cell-text--mono {
   color: var(--color-text-primary);

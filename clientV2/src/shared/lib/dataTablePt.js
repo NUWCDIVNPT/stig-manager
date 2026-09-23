@@ -34,9 +34,13 @@ export function compactTablePt({ footer = 'flush', headerPadding } = {}) {
  * on both sides when the panel narrows.
  *
  * @param {'left'|'center'} [alignment]
+ * @param {object} [options]
+ * @param {'top'|'middle'} [options.verticalAlign] - Body cell alignment. 'top'
+ *   suits grids whose rows wrap (rule titles); 'middle' suits fixed single-line
+ *   rows such as the Review Resources tables.
  * @returns {object} A `pt` object for `<Column :pt="...">`.
  */
-export function gridColumnPt(alignment = 'left') {
+export function gridColumnPt(alignment = 'left', { verticalAlign = 'top' } = {}) {
   const isCenter = alignment === 'center'
   return {
     headerCell: {
@@ -56,7 +60,7 @@ export function gridColumnPt(alignment = 'left') {
     },
     bodyCell: {
       style: {
-        verticalAlign: 'top',
+        verticalAlign,
         padding: '0.15rem 0.35rem',
         overflow: 'hidden',
         textAlign: isCenter ? 'center' : 'left',
