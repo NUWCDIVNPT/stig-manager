@@ -49,14 +49,14 @@ describe('cora component', () => {
     expect(screen.getByText('VERY HIGH')).toBeInTheDocument()
   })
 
-  it('renders the help icon and CAT brackets when coraData is provided', () => {
+  it('renders the help icon and CAT rows when coraData is provided', () => {
     const { container } = renderWithProviders(Cora, {
       props: { coraData: mockCoraData },
     })
     expect(container.querySelector('.sm-help-icon')).toBeInTheDocument()
-    expect(container.querySelector('.sm-cat1-bracket')).toBeInTheDocument()
-    expect(container.querySelector('.sm-cat2-bracket')).toBeInTheDocument()
-    expect(container.querySelector('.sm-cat3-bracket')).toBeInTheDocument()
+    expect(container.querySelector('.sm-cat1-row')).toBeInTheDocument()
+    expect(container.querySelector('.sm-cat2-row')).toBeInTheDocument()
+    expect(container.querySelector('.sm-cat3-row')).toBeInTheDocument()
   })
 
   it.each([

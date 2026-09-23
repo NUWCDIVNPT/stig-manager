@@ -72,6 +72,13 @@
   --color-cat1: #c68c8c;
   --color-cat2: #d4b056;
   --color-cat3: #a3acd6;
+
+  /* CORA Risk Colors (flat fills, read with --color-text-dark) */
+  --color-risk-very-high: var(--color-cat1);
+  --color-risk-high: var(--color-cat2);
+  --color-risk-moderate: rgb(230, 210, 0);
+  --color-risk-low: var(--color-cat3);
+  --color-risk-very-low: rgb(100, 167, 90);
   
   /* Collection Stats Colors */
   --color-inventory: #c4a484;
@@ -175,21 +182,29 @@
   box-sizing: border-box;
 }
 
-/* CORA Risk Gradients */
+/* CORA Risk fills. Shared by the metrics risk card, the CORA % column badge
+   and the risk-rating labels in the CORA help tooltip. */
+.sm-cora-risk-very-high,
+.sm-cora-risk-high,
+.sm-cora-risk-moderate,
+.sm-cora-risk-low,
+.sm-cora-risk-very-low {
+  color: var(--color-text-dark);
+}
 .sm-cora-risk-very-high {
-  background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+  background-color: var(--color-risk-very-high);
 }
 .sm-cora-risk-high {
-  background: linear-gradient(135deg, #c2410c 0%, #7c2d12 100%); 
+  background-color: var(--color-risk-high);
 }
 .sm-cora-risk-moderate {
-  background: linear-gradient(135deg, #ca8a04 0%, #713f12 100%);
+  background-color: var(--color-risk-moderate);
 }
 .sm-cora-risk-low {
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+  background-color: var(--color-risk-low);
 }
 .sm-cora-risk-very-low {
-  background: linear-gradient(135deg, #15803d 0%, #14532d 100%);
+  background-color: var(--color-risk-very-low);
 }
 
 /* Rich help-tooltip content rendered via the v-tooltip directive (escape:false).
@@ -221,7 +236,6 @@
 .sm-cora-tip .tooltip-label {
   padding: 1px 6px;
   border-radius: 4px;
-  color: var(--color-text-bright);
   margin-right: 4px;
   font-size: var(--text-md);
   display: inline-block;

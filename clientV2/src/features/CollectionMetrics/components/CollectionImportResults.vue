@@ -16,7 +16,7 @@ const showImportModal = ref(false)
 
 const buttonPt = {
   root: {
-    style: 'color: var(--color-text-primary); border-color: var(--color-border-default); width: 100%; margin-top: 5px',
+    style: 'color: var(--color-text-primary); border-color: var(--color-border-default); width: 100%',
     class: 'import-button',
   },
 }
@@ -35,18 +35,13 @@ function onImported() {
     </div>
 
     <div class="content">
-      <p class="hint">
-        Bulk import CKL, CKLB, or SCAP results into this collection. Note: This will not create new assets or update STIG assignments.
-      </p>
-
-      <div class="actions">
-        <Button
-          label="Import CKL(B) or SCAP..."
-          icon="pi pi-upload"
-          :pt="buttonPt"
-          @click="showImportModal = true"
-        />
-      </div>
+      <Button
+        v-tooltip.bottom="'Bulk import CKL, CKLB, or SCAP results. Does not create Assets or change STIG assignments.'"
+        label="Import CKL(B) or SCAP..."
+        icon="pi pi-upload"
+        :pt="buttonPt"
+        @click="showImportModal = true"
+      />
     </div>
 
     <ImportResultsModal
@@ -67,24 +62,7 @@ function onImported() {
 }
 
 .metric-header {
-  margin-bottom: 15px;
-}
-
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.hint {
-  margin: 0;
-  color: var(--color-text-dim);
-  font-size: var(--text-md);
-  line-height: 1.35;
-}
-
-.actions {
-  margin-top: 5px;
+  margin-bottom: 4px;
 }
 
 .import-button:hover,
