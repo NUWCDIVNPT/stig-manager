@@ -14,7 +14,7 @@ vi.mock('primevue/datatable', () => ({
       <div data-testid="mock-datatable">
         <table>
           <thead><tr><slot /></tr></thead>
-          <tbody><tr v-for="row in value" :key="row.benchmarkId ?? row.assetId"><td>{{ row.benchmarkId ?? row.assetName }}</td></tr></tbody>
+          <tbody><tr v-for="row in value" :key="row.benchmarkId ?? row.assetId"><td>{{ row.benchmarkId ?? row.assetName }}</td><td data-cell="stigCnt">{{ row.stigCnt }}</td></tr></tbody>
         </table>
       </div>
     `,
@@ -56,7 +56,8 @@ const metrics = {
   minTs: '2026-01-01T00:00:00Z',
   maxTs: '2026-02-01T00:00:00Z',
   maxTouchTs: '2026-02-01T00:00:00Z',
-  statuses: { submitted: 1, accepted: 1, rejected: 0 },
+  statuses: { saved: 2, submitted: 1, accepted: 1, rejected: 0 },
+  results: { pass: 3, fail: 1, notapplicable: 1, other: 5 },
   findings: { low: 1, medium: 1, high: 1 },
   assessmentsBySeverity: { low: 3, medium: 4, high: 3 },
   assessedBySeverity: { low: 2, medium: 2, high: 1 },
@@ -67,9 +68,13 @@ const stigRows = [
   { benchmarkId: 'MS_Windows_11_STIG', title: 'Microsoft Windows 11', revisionStr: 'V2R8', assets: 3, metrics },
 ]
 const checklistRows = [{ assetId: '1', name: 'host-1', labels: [], benchmarkId: 'RHEL_9_STIG', revisionStr: 'V1R2', metrics }]
+const assetRows = [
+  { assetId: '1', name: 'host-1', labels: [], benchmarkIds: ['RHEL_9_STIG', 'MS_Windows_11_STIG'], metrics },
+  { assetId: '2', name: 'host-2', labels: [], benchmarkIds: [], metrics },
+]
 
 function bodyRows(container) {
-  return [...container.querySelectorAll('tbody td')].map(td => td.textContent)
+  return [...container.querySelectorAll('tbody td:first-child')].map(td => td.textContent)
 }
 
 function headerFields(container) {
@@ -85,14 +90,45 @@ describe('metricsSummaryGrid column toggle', () => {
     localStorage.clear()
   })
 
-  it('offers every column except the identity column', () => {
+  it('offers every column except the identity column, default-hidden ones included', () => {
     const { container } = renderWithProviders(MetricsSummaryGrid, {
       props: { apiMetricsSummary: stigRows, aggType: 'stig', dataKey: 'benchmarkId' },
     })
 
-    expect(headerFields(container)[0]).toBe('benchmarkId')
+    const headers = headerFields(container)
+    expect(headers[0]).toBe('benchmarkId')
     expect(toggleOptions()).not.toContain('benchmarkId')
-    expect(toggleOptions()).toEqual(headerFields(container).slice(1))
+    // Shown columns keep their grid order in the toggle
+    expect(toggleOptions().filter(f => headers.includes(f))).toEqual(headers.slice(1))
+    // Extra endpoint data is offered but starts off
+    for (const field of ['title', 'ruleCount', 'assessedCnt', 'saved', 'pass', 'notapplicable', 'checksCat1', 'assessedCat3']) {
+      expect(toggleOptions()).toContain(field)
+      expect(headers).not.toContain(field)
+    }
+  })
+
+  it('shows a default-hidden column once turned on and stores only that change', async () => {
+    const { container } = renderWithProviders(MetricsSummaryGrid, {
+      props: { apiMetricsSummary: stigRows, aggType: 'stig', dataKey: 'benchmarkId' },
+    })
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Pass' }))
+
+    expect(headerFields(container)).toContain('pass')
+    expect(JSON.parse(localStorage.getItem('metricsGrid.columns.stig'))).toEqual({ pass: true })
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Pass' }))
+
+    expect(headerFields(container)).not.toContain('pass')
+    expect(JSON.parse(localStorage.getItem('metricsGrid.columns.stig'))).toEqual({})
+  })
+
+  it('counts the assigned STIGs for an asset row', () => {
+    const { container } = renderWithProviders(MetricsSummaryGrid, {
+      props: { apiMetricsSummary: assetRows, aggType: 'asset', dataKey: 'assetId' },
+    })
+
+    expect([...container.querySelectorAll('td[data-cell="stigCnt"]')].map(td => td.textContent)).toEqual(['2', '0'])
   })
 
   it('hides a deselected column and remembers it per column set', async () => {
@@ -104,16 +140,16 @@ describe('metricsSummaryGrid column toggle', () => {
 
     expect(headerFields(container)).not.toContain('oldest')
     expect(headerFields(container)).toContain('newest')
-    expect(JSON.parse(localStorage.getItem('metricsGrid.hiddenColumns.stig'))).toEqual(['oldest'])
+    expect(JSON.parse(localStorage.getItem('metricsGrid.columns.stig'))).toEqual({ oldest: false })
 
     await fireEvent.click(screen.getByRole('button', { name: 'Oldest' }))
 
     expect(headerFields(container)).toContain('oldest')
-    expect(JSON.parse(localStorage.getItem('metricsGrid.hiddenColumns.stig'))).toEqual([])
+    expect(JSON.parse(localStorage.getItem('metricsGrid.columns.stig'))).toEqual({})
   })
 
-  it('applies stored hidden columns on mount', () => {
-    localStorage.setItem('metricsGrid.hiddenColumns.stig', JSON.stringify(['cat3', 'cat2']))
+  it('applies stored column choices on mount', () => {
+    localStorage.setItem('metricsGrid.columns.stig', JSON.stringify({ cat3: false, cat2: false, fail: true }))
 
     const { container } = renderWithProviders(MetricsSummaryGrid, {
       props: { apiMetricsSummary: stigRows, aggType: 'stig', dataKey: 'benchmarkId' },
@@ -122,10 +158,22 @@ describe('metricsSummaryGrid column toggle', () => {
     expect(headerFields(container)).not.toContain('cat3')
     expect(headerFields(container)).not.toContain('cat2')
     expect(headerFields(container)).toContain('cat1')
+    expect(headerFields(container)).toContain('fail')
+  })
+
+  it('reads the earlier hidden-list format', () => {
+    localStorage.setItem('metricsGrid.columns.stig', JSON.stringify(['oldest']))
+
+    const { container } = renderWithProviders(MetricsSummaryGrid, {
+      props: { apiMetricsSummary: stigRows, aggType: 'stig', dataKey: 'benchmarkId' },
+    })
+
+    expect(headerFields(container)).not.toContain('oldest')
+    expect(headerFields(container)).toContain('newest')
   })
 
   it('never hides the identity column even if stored as hidden', () => {
-    localStorage.setItem('metricsGrid.hiddenColumns.stig', JSON.stringify(['benchmarkId']))
+    localStorage.setItem('metricsGrid.columns.stig', JSON.stringify({ benchmarkId: false }))
 
     const { container } = renderWithProviders(MetricsSummaryGrid, {
       props: { apiMetricsSummary: stigRows, aggType: 'stig', dataKey: 'benchmarkId' },
@@ -135,7 +183,7 @@ describe('metricsSummaryGrid column toggle', () => {
   })
 
   it('keys the checklist grid under its parent so it does not share the parent grid choices', () => {
-    localStorage.setItem('metricsGrid.hiddenColumns.stig', JSON.stringify(['oldest']))
+    localStorage.setItem('metricsGrid.columns.stig', JSON.stringify({ oldest: false }))
 
     const { container } = renderWithProviders(MetricsSummaryGrid, {
       props: { apiMetricsSummary: checklistRows, aggType: 'unagg', parentAggType: 'stig', dataKey: 'assetId' },
@@ -183,7 +231,7 @@ describe('metricsSummaryGrid column toggle', () => {
   })
 
   it('ignores unreadable stored values', () => {
-    localStorage.setItem('metricsGrid.hiddenColumns.stig', '{not json')
+    localStorage.setItem('metricsGrid.columns.stig', '{not json')
 
     const { container } = renderWithProviders(MetricsSummaryGrid, {
       props: { apiMetricsSummary: stigRows, aggType: 'stig', dataKey: 'benchmarkId' },

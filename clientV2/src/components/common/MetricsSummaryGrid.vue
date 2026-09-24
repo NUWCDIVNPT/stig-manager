@@ -85,14 +85,19 @@ const ROW_HEIGHT = rowHeightPx('dense')
 const WIDTH = {
   name: 14,
   benchmark: 20,
+  title: 20,
   labels: 18,
   label: 12,
   count: 6,
+  wideCount: 7.5,
+  severity: 8.75,
   revision: 6.5,
   checklists: 7,
   duration: 6.75,
   bar: 7.5,
   badge: 5.5,
+  ip: 9,
+  mac: 10,
 }
 
 function cellStyle(widthRem) {
@@ -149,70 +154,104 @@ const aggregationType = computed(() => {
 
 const columns = computed(() => {
   console.log('Computing columns for aggregation type:', aggregationType.value)
-  // Common columns
+  // Column groups name the sections of the column toggle. `defaultHidden`
+  // columns are offered there but start off; the plain count, result and
+  // per-severity breakdowns are for users who want the numbers behind the
+  // bars and badges.
+  const AGE = 'Age'
+  const PROGRESS = 'Progress'
+  const COUNTS = 'Counts'
+  const RESULTS = 'Results'
+  const FINDINGS = 'Findings'
+  const SEVERITY = 'By severity'
   const commonColumns = [
-    { field: 'checks', header: 'Checks', component: Column, style: cellStyle(WIDTH.count) },
-    { field: 'oldest', header: 'Oldest', component: DurationColumn, style: cellStyle(WIDTH.duration) },
-    { field: 'newest', header: 'Newest', component: DurationColumn, style: cellStyle(WIDTH.duration) },
-    { field: 'updated', header: 'Updated', component: DurationColumn, style: cellStyle(WIDTH.duration) },
-    { field: 'assessedPct', header: 'Assessed', component: PercentageColumn, style: cellStyle(WIDTH.bar) },
-    { field: 'submittedPct', header: 'Submitted', component: PercentageColumn, style: cellStyle(WIDTH.bar) },
-    { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn, style: cellStyle(WIDTH.bar) },
-    { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn, style: cellStyle(WIDTH.bar) },
-    { field: 'cora', header: 'CORA', component: CoraColumn, style: cellStyle(WIDTH.badge) },
-    { field: 'cat3', header: 'CAT 3', component: CatColumn, category: 3, style: cellStyle(WIDTH.badge) },
-    { field: 'cat2', header: 'CAT 2', component: CatColumn, category: 2, style: cellStyle(WIDTH.badge) },
-    { field: 'cat1', header: 'CAT 1', component: CatColumn, category: 1, style: cellStyle(WIDTH.badge) },
+    { field: 'checks', header: 'Checks', group: COUNTS, component: Column, style: cellStyle(WIDTH.count) },
+    { field: 'assessedCnt', header: 'Assessed #', group: COUNTS, defaultHidden: true, component: Column, style: cellStyle(WIDTH.wideCount) },
+    { field: 'oldest', header: 'Oldest', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration) },
+    { field: 'newest', header: 'Newest', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration) },
+    { field: 'updated', header: 'Updated', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration) },
+    { field: 'assessedPct', header: 'Assessed', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar) },
+    { field: 'submittedPct', header: 'Submitted', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar) },
+    { field: 'acceptedPct', header: 'Accepted', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar) },
+    { field: 'rejectedPct', header: 'Rejected', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar) },
+    { field: 'saved', header: 'Saved', group: COUNTS, defaultHidden: true, component: Column, style: cellStyle(WIDTH.count) },
+    { field: 'submitted', header: 'Submitted #', group: COUNTS, defaultHidden: true, component: Column, style: cellStyle(WIDTH.wideCount) },
+    { field: 'accepted', header: 'Accepted #', group: COUNTS, defaultHidden: true, component: Column, style: cellStyle(WIDTH.wideCount) },
+    { field: 'rejected', header: 'Rejected #', group: COUNTS, defaultHidden: true, component: Column, style: cellStyle(WIDTH.wideCount) },
+    { field: 'pass', header: 'Pass', group: RESULTS, defaultHidden: true, component: Column, style: cellStyle(WIDTH.count) },
+    { field: 'fail', header: 'Fail', group: RESULTS, defaultHidden: true, component: Column, style: cellStyle(WIDTH.count) },
+    { field: 'notapplicable', header: 'N/A', group: RESULTS, defaultHidden: true, component: Column, style: cellStyle(WIDTH.count) },
+    { field: 'other', header: 'Other', group: RESULTS, defaultHidden: true, component: Column, style: cellStyle(WIDTH.count) },
+    { field: 'cora', header: 'CORA', group: FINDINGS, component: CoraColumn, style: cellStyle(WIDTH.badge) },
+    { field: 'cat3', header: 'CAT 3', group: FINDINGS, component: CatColumn, category: 3, style: cellStyle(WIDTH.badge) },
+    { field: 'cat2', header: 'CAT 2', group: FINDINGS, component: CatColumn, category: 2, style: cellStyle(WIDTH.badge) },
+    { field: 'cat1', header: 'CAT 1', group: FINDINGS, component: CatColumn, category: 1, style: cellStyle(WIDTH.badge) },
+    { field: 'checksCat3', header: 'CAT 3 Checks', group: SEVERITY, defaultHidden: true, component: Column, style: cellStyle(WIDTH.severity) },
+    { field: 'checksCat2', header: 'CAT 2 Checks', group: SEVERITY, defaultHidden: true, component: Column, style: cellStyle(WIDTH.severity) },
+    { field: 'checksCat1', header: 'CAT 1 Checks', group: SEVERITY, defaultHidden: true, component: Column, style: cellStyle(WIDTH.severity) },
+    { field: 'assessedCat3', header: 'CAT 3 Assessed', group: SEVERITY, defaultHidden: true, component: Column, style: cellStyle(WIDTH.severity) },
+    { field: 'assessedCat2', header: 'CAT 2 Assessed', group: SEVERITY, defaultHidden: true, component: Column, style: cellStyle(WIDTH.severity) },
+    { field: 'assessedCat1', header: 'CAT 1 Assessed', group: SEVERITY, defaultHidden: true, component: Column, style: cellStyle(WIDTH.severity) },
   ]
+  const benchmarkColumn = { field: 'benchmarkId', header: 'Benchmark', group: 'STIG', component: BenchmarkColumn, locked: true, searchText: r => `${r.benchmarkId} ${r.title ?? ''}`, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.benchmark) }
+  const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: Column, searchText: r => r.title, style: cellStyle(WIDTH.title) }
+  const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: Column, searchText: r => r.revisionStr, style: cellStyle(WIDTH.revision) }
+  const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchText: r => r.assetName, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name) }
+  const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, searchText: r => labelNames(r.labels), style: cellStyle(WIDTH.labels) }
   switch (aggregationType.value) {
     case 'collection':
       return [
-        { field: 'collectionName', header: 'Collection', component: CollectionColumn, locked: true, searchText: r => r.collectionName, showShield: props.showShield, onShieldClick, showCollectionIcon: props.showCollectionIcon, onCollectionIconClick, style: cellStyle(WIDTH.benchmark) },
-        { field: 'assetCnt', header: 'Assets', component: Column, style: cellStyle(WIDTH.count) },
-        { field: 'stigCnt', header: 'STIGs', component: Column, style: cellStyle(WIDTH.count) },
-        { field: 'checklistCnt', header: 'Checklists', component: Column, style: cellStyle(WIDTH.checklists) },
+        { field: 'collectionName', header: 'Collection', group: 'Collection', component: CollectionColumn, locked: true, searchText: r => r.collectionName, showShield: props.showShield, onShieldClick, showCollectionIcon: props.showCollectionIcon, onCollectionIconClick, style: cellStyle(WIDTH.benchmark) },
+        { field: 'assetCnt', header: 'Assets', group: 'Collection', component: Column, style: cellStyle(WIDTH.count) },
+        { field: 'stigCnt', header: 'STIGs', group: 'Collection', component: Column, style: cellStyle(WIDTH.count) },
+        { field: 'checklistCnt', header: 'Checklists', group: 'Collection', component: Column, style: cellStyle(WIDTH.checklists) },
         ...commonColumns,
       ]
     case 'asset':
       return [
-        { field: 'assetName', header: 'Asset', component: AssetColumn, locked: true, searchText: r => r.assetName, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name) },
-        { field: 'labels', header: 'Labels', component: LabelsColumn, searchText: r => labelNames(r.labels), style: cellStyle(WIDTH.labels) },
-        { field: 'stigCnt', header: 'Stigs', component: Column, style: cellStyle(WIDTH.count) },
+        assetColumn,
+        labelsColumn,
+        { field: 'stigCnt', header: 'STIGs', group: 'Asset', component: Column, style: cellStyle(WIDTH.count) },
+        { field: 'fqdn', header: 'FQDN', group: 'Asset', defaultHidden: true, component: Column, searchText: r => r.fqdn, style: cellStyle(WIDTH.name) },
+        { field: 'ip', header: 'IP', group: 'Asset', defaultHidden: true, component: Column, searchText: r => r.ip, style: cellStyle(WIDTH.ip) },
+        { field: 'mac', header: 'MAC', group: 'Asset', defaultHidden: true, component: Column, searchText: r => r.mac, style: cellStyle(WIDTH.mac) },
         ...commonColumns,
       ]
     case 'stig':
       return [
-        { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, locked: true, searchText: r => `${r.benchmarkId} ${r.title ?? ''}`, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.benchmark) },
-        // { field: 'title', header: 'Title', component: Column },
-        { field: 'revisionStr', header: 'Revision', component: Column, searchText: r => r.revisionStr, style: cellStyle(WIDTH.revision) },
-        { field: 'assetCnt', header: 'Assets', component: Column, style: cellStyle(WIDTH.count) },
+        benchmarkColumn,
+        titleColumn,
+        revisionColumn,
+        { field: 'ruleCount', header: 'Rules', group: 'STIG', defaultHidden: true, component: Column, style: cellStyle(WIDTH.count) },
+        { field: 'assetCnt', header: 'Assets', group: 'STIG', component: Column, style: cellStyle(WIDTH.count) },
         ...commonColumns,
       ]
     case 'label':
       return [
-        { field: 'label', header: 'Label', component: LabelsColumn, locked: true, searchText: r => labelNames(r.label), style: cellStyle(WIDTH.label) },
-        { field: 'assetCnt', header: 'Assets', component: Column, style: cellStyle(WIDTH.count) },
+        { field: 'label', header: 'Label', group: 'Label', component: LabelsColumn, locked: true, searchText: r => labelNames(r.label), style: cellStyle(WIDTH.label) },
+        { field: 'assetCnt', header: 'Assets', group: 'Label', component: Column, style: cellStyle(WIDTH.count) },
         ...commonColumns,
       ]
     case 'unagg':
       if (props.parentAggType === 'asset') {
         return [
-          { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, locked: true, searchText: r => `${r.benchmarkId} ${r.title ?? ''}`, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.benchmark) },
-          { field: 'revisionStr', header: 'Revision', component: Column, searchText: r => r.revisionStr, style: cellStyle(WIDTH.revision) },
+          benchmarkColumn,
+          titleColumn,
+          revisionColumn,
           ...commonColumns,
         ]
       }
       if (props.parentAggType === 'stig') {
         return [
-          { field: 'assetName', header: 'Asset', component: AssetColumn, locked: true, searchText: r => r.assetName, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name) },
-          { field: 'labels', header: 'Labels', component: LabelsColumn, searchText: r => labelNames(r.labels), style: cellStyle(WIDTH.labels) },
+          assetColumn,
+          labelsColumn,
           ...commonColumns,
         ]
       }
       return [
-        { field: 'assetName', header: 'Asset', component: AssetColumn, locked: true, searchText: r => r.assetName, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name) },
-        { field: 'benchmarkId', header: 'Benchmark', component: BenchmarkColumn, locked: true, searchText: r => `${r.benchmarkId} ${r.title ?? ''}`, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.benchmark) },
-        { field: 'labels', header: 'Labels', component: LabelsColumn, searchText: r => labelNames(r.labels), style: cellStyle(WIDTH.labels) },
+        assetColumn,
+        benchmarkColumn,
+        labelsColumn,
         ...commonColumns,
       ]
     default:
@@ -221,9 +260,11 @@ const columns = computed(() => {
 })
 
 // Column visibility. Identity columns (`locked`) always show; the rest can be
-// hidden from the footer toggle. Hidden fields persist per column set, so the
-// STIG grid keeps its own choices apart from the checklist grid beneath it,
-// and a grid with the same column set on another tab shares them.
+// toggled, and `defaultHidden` columns start off. Only departures from the
+// defaults are stored, as { field: shown }, so a column added later still
+// arrives with its default. Overrides persist per column set: the STIG grid
+// keeps its own choices apart from the checklist grid beneath it, and a grid
+// with the same column set on another tab shares them.
 const toggleableColumns = computed(() => columns.value.filter(c => !c.locked))
 
 const columnSetKey = computed(() => {
@@ -231,36 +272,54 @@ const columnSetKey = computed(() => {
     return null
   }
   const variant = aggregationType.value === 'unagg' && props.parentAggType ? `.${props.parentAggType}` : ''
-  return `metricsGrid.hiddenColumns.${aggregationType.value}${variant}`
+  return `metricsGrid.columns.${aggregationType.value}${variant}`
 })
 
-function readHiddenFields(key) {
+function readOverrides(key) {
   if (!key) {
-    return []
+    return {}
   }
   try {
-    const parsed = JSON.parse(readStoredValue(key, '[]'))
-    return Array.isArray(parsed) ? parsed.filter(f => typeof f === 'string') : []
+    const parsed = JSON.parse(readStoredValue(key, '{}'))
+    if (Array.isArray(parsed)) {
+      // Earlier format: a list of hidden fields
+      return Object.fromEntries(parsed.filter(f => typeof f === 'string').map(f => [f, false]))
+    }
+    if (!parsed || typeof parsed !== 'object') {
+      return {}
+    }
+    return Object.fromEntries(Object.entries(parsed).filter(([, v]) => typeof v === 'boolean'))
   }
   catch {
-    return []
+    return {}
   }
 }
 
-const hiddenFields = ref(readHiddenFields(columnSetKey.value))
+const overrides = ref(readOverrides(columnSetKey.value))
 
 watch(columnSetKey, (key) => {
-  hiddenFields.value = readHiddenFields(key)
+  overrides.value = readOverrides(key)
 })
 
-const selectedColumns = computed(() => toggleableColumns.value.filter(c => !hiddenFields.value.includes(c.field)))
-const visibleColumns = computed(() => columns.value.filter(c => c.locked || !hiddenFields.value.includes(c.field)))
+function isShown(col) {
+  return overrides.value[col.field] ?? !col.defaultHidden
+}
+
+const selectedColumns = computed(() => toggleableColumns.value.filter(isShown))
+const visibleColumns = computed(() => columns.value.filter(c => c.locked || isShown(c)))
 
 function onSelectedColumnsChange(selected) {
   const shown = new Set(selected.map(c => c.field))
-  hiddenFields.value = toggleableColumns.value.filter(c => !shown.has(c.field)).map(c => c.field)
+  const next = {}
+  for (const col of toggleableColumns.value) {
+    const isOn = shown.has(col.field)
+    if (isOn === Boolean(col.defaultHidden)) {
+      next[col.field] = isOn
+    }
+  }
+  overrides.value = next
   if (columnSetKey.value) {
-    storeValue(columnSetKey.value, JSON.stringify(hiddenFields.value))
+    storeValue(columnSetKey.value, JSON.stringify(next))
   }
 }
 
@@ -290,22 +349,38 @@ const data = computed(() => {
     return []
   }
   return props.apiMetricsSummary.map((r) => {
-    const cora = calculateCora(r.metrics)
+    const m = r.metrics
+    const cora = calculateCora(m)
     const commonData = {
-      checks: r.metrics.assessments,
-      assessed: r.metrics.assessed,
-      oldest: r.metrics.minTs,
-      newest: r.metrics.maxTs,
-      updated: r.metrics.maxTouchTs,
-      assessedPct: r.metrics.assessments ? r.metrics.assessed / r.metrics.assessments * 100 : 0,
-      submittedPct: r.metrics.assessments ? ((r.metrics.statuses.submitted + r.metrics.statuses.accepted + r.metrics.statuses.rejected) / r.metrics.assessments) * 100 : 0,
-      acceptedPct: r.metrics.assessments ? (r.metrics.statuses.accepted / r.metrics.assessments) * 100 : 0,
-      rejectedPct: r.metrics.assessments ? (r.metrics.statuses.rejected / r.metrics.assessments) * 100 : 0,
+      checks: m.assessments,
+      assessed: m.assessed,
+      assessedCnt: m.assessed,
+      oldest: m.minTs,
+      newest: m.maxTs,
+      updated: m.maxTouchTs,
+      assessedPct: m.assessments ? m.assessed / m.assessments * 100 : 0,
+      submittedPct: m.assessments ? ((m.statuses.submitted + m.statuses.accepted + m.statuses.rejected) / m.assessments) * 100 : 0,
+      acceptedPct: m.assessments ? (m.statuses.accepted / m.assessments) * 100 : 0,
+      rejectedPct: m.assessments ? (m.statuses.rejected / m.assessments) * 100 : 0,
+      saved: m.statuses.saved,
+      submitted: m.statuses.submitted,
+      accepted: m.statuses.accepted,
+      rejected: m.statuses.rejected,
+      pass: m.results.pass,
+      fail: m.results.fail,
+      notapplicable: m.results.notapplicable,
+      other: m.results.other,
       cora: cora.weightedAvg.toFixed(1),
       coraFull: cora,
-      cat3: r.metrics.findings.low,
-      cat2: r.metrics.findings.medium,
-      cat1: r.metrics.findings.high,
+      cat3: m.findings.low,
+      cat2: m.findings.medium,
+      cat1: m.findings.high,
+      checksCat3: m.assessmentsBySeverity.low,
+      checksCat2: m.assessmentsBySeverity.medium,
+      checksCat1: m.assessmentsBySeverity.high,
+      assessedCat3: m.assessedBySeverity.low,
+      assessedCat2: m.assessedBySeverity.medium,
+      assessedCat1: m.assessedBySeverity.high,
     }
     switch (aggregationType.value) {
       case 'collection':
@@ -323,6 +398,10 @@ const data = computed(() => {
           assetName: r.name,
           labels: r.labels,
           stigs: r.benchmarkIds,
+          stigCnt: Array.isArray(r.benchmarkIds) ? r.benchmarkIds.length : 0,
+          fqdn: r.fqdn,
+          ip: r.ip,
+          mac: r.mac,
           ...commonData,
         }
       case 'stig':
@@ -336,6 +415,7 @@ const data = computed(() => {
             isPinned: r.revisionPinned,
           },
           assetCnt: r.assets,
+          ruleCount: r.ruleCount,
           ...commonData,
         }
       case 'label':

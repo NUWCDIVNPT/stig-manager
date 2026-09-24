@@ -1,8 +1,8 @@
 <script setup>
 import MultiSelect from 'primevue/multiselect'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
-defineProps({
+const props = defineProps({
   columns: {
     type: Array,
     required: true,
@@ -14,6 +14,25 @@ defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
+
+// Columns that carry a `group` are listed under that heading, in order of
+// first appearance; the selection stays a flat list of column objects.
+const isGrouped = computed(() => props.columns.some(c => c.group))
+
+const options = computed(() => {
+  if (!isGrouped.value) {
+    return props.columns
+  }
+  const groups = new Map()
+  for (const column of props.columns) {
+    const name = column.group ?? 'Other'
+    if (!groups.has(name)) {
+      groups.set(name, { group: name, items: [] })
+    }
+    groups.get(name).items.push(column)
+  }
+  return [...groups.values()]
+})
 
 function onToggle(val) {
   emit('update:modelValue', val)
@@ -48,6 +67,7 @@ const columnTogglePT = {
   dropdown: { style: 'width: auto; padding-right: 0.75rem; color: var(--color-text-bright);' },
   overlay: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,0.6);' },
   header: { style: 'background: var(--color-background-dark); border-bottom: 1px solid var(--color-border-light); padding: 0.35rem 0.6rem; gap: 0.5rem;' },
+  optionGroup: { style: 'background: var(--color-background-dark); color: var(--color-text-dim); padding: 0.45rem 0.6rem 0.15rem; font-size: var(--text-md); font-weight: 600;' },
   option: ({ context }) => ({
     style: {
       color: context.selected ? 'var(--color-text-bright)' : 'var(--color-text-primary)',
@@ -69,8 +89,10 @@ const columnTogglePT = {
   <MultiSelect
     ref="multiSelectRef"
     :model-value="modelValue"
-    :options="columns"
+    :options="options"
     option-label="header"
+    :option-group-label="isGrouped ? 'group' : undefined"
+    :option-group-children="isGrouped ? 'items' : undefined"
     data-key="field"
     placeholder="Columns"
     :pt="columnTogglePT"
