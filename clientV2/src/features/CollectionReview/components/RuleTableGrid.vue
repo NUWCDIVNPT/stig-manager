@@ -169,16 +169,15 @@ function openRowEditor(event, rowData) {
   editingRow.value = rowData
 
   const row = event.target?.closest ? event.target.closest('tr') : null
-  const rowRect = row ? row.getBoundingClientRect() : { top: 0, bottom: 0 }
+  const rowRect = row ? row.getBoundingClientRect() : { top: 0, bottom: 0, height: 0 }
   const clickX = event.clientX ?? 0
-  const openAbove = rowRect.top > window.innerHeight / 2
 
+  // The anchor spans the full row so the popover flips above or below it
+  // and its arrow lands on the row edge instead of the row body.
   if (popoverAnchor.value) {
     popoverAnchor.value.style.left = `${clickX}px`
-    popoverAnchor.value.style.height = '0px'
-    popoverAnchor.value.style.top = openAbove
-      ? `${rowRect.top + 6}px`
-      : `${rowRect.bottom + 4}px`
+    popoverAnchor.value.style.top = `${rowRect.top}px`
+    popoverAnchor.value.style.height = `${rowRect.height}px`
   }
 
   const anchorEvent = {

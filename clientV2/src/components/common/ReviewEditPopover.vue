@@ -74,6 +74,13 @@ const showUnsavedWarning = ref(false)
 // every review they open from this grid until they fold it again.
 const showResources = ref(false)
 
+// Height of the Review Resources panel, in px. Lives here rather than in the
+// stylesheet so the flip decision can reserve the space before the panel
+// exists; the panel CSS reads it back via --sm-resources-height.
+function resourcesHeightPx() {
+  return Math.min(350, Math.max(200, window.innerHeight * 0.45))
+}
+
 function toggleResources() {
   showResources.value = !showResources.value
 }
@@ -148,6 +155,7 @@ function onButtonClick(actionType) {
 function onPopoverHide() {
   unbindOutsideHandler()
   unbindResizeHandler()
+  unbindContentObserver()
   if (closing.value) {
     closing.value = false
     emit('close')
@@ -236,50 +244,62 @@ function clampPopoverPosition() {
   container.style.setProperty('--sm-popover-arrow-left', `${arrowLeftEdge}px`)
 }
 
-function alignPopoverAnimated() {
+// PrimeVue flips the popover above the anchor only when the box as it is now
+// would not fit below. Decide instead from the height it can reach with Review
+// Resources open, so opening the panel never moves the box to the other side
+// of the row.
+function alignToAnchor() {
   const pv = popover.value
-  if (!pv?.container || !lastAnchorEvent.value) { return }
-  const el = pv.container
-  const prevTop = el.style.top
+  const el = pv?.container
+  const anchor = lastAnchorEvent.value?.currentTarget
+  if (!el || !anchor) {
+    return
+  }
+  const reserve = resourcesHeightPx()
+  el.style.setProperty('--sm-resources-height', `${reserve}px`)
 
   pv.alignOverlay()
-  nextTick(clampPopoverPosition)
 
-  const newTop = el.style.top
-  if (!prevTop || !newTop || prevTop === newTop) { return }
+  const anchorRect = anchor.getBoundingClientRect()
+  const height = el.offsetHeight
+  // Measure the panel rather than trusting showResources: while it animates
+  // open or closed the flag has already changed but the box has not.
+  const panel = el.querySelector('.review-edit-popover__resources-container')
+  const panelHeight = panel ? panel.getBoundingClientRect().height : 0
+  const reachable = height - panelHeight + reserve
+  const flip = anchorRect.bottom + reachable > window.innerHeight
+  const top = flip ? Math.max(0, anchorRect.top - height) : anchorRect.bottom
 
-  // Slide transition: snap back to old top, then animate to new top
-  el.style.transition = 'none'
-  el.style.top = prevTop
-  void el.offsetHeight // flush
-  el.style.transition = 'top 0.3s ease'
-  requestAnimationFrame(() => {
-    el.style.top = newTop
-    el.addEventListener('transitionend', () => { el.style.transition = '' }, { once: true })
-  })
+  el.classList.toggle('p-popover-flipped', flip)
+  el.setAttribute('data-p-popover-flipped', String(flip))
+  el.style.top = `${top + window.scrollY}px`
+  el.style.transformOrigin = flip ? 'bottom' : 'top'
+
+  clampPopoverPosition()
 }
 
-function onResourceTransitionStart() {
-  const el = popover.value?.container
-  if (!el || !el.classList.contains('p-popover-flipped')) { return }
+let contentObserver = null
 
-  // Anchor to bottom so expansion pushes the box UP naturally
-  const rect = el.getBoundingClientRect()
-  el.style.bottom = `${window.innerHeight - rect.bottom}px`
-  el.style.top = 'auto'
-}
-
-function onResourceTransitionEnd() {
-  const el = popover.value?.container
-  if (!el) { return }
-
-  // Reset to top-based positioning for PrimeVue
-  el.style.top = `${el.getBoundingClientRect().top}px`
-  el.style.bottom = 'auto'
-
-  if (showResources.value) {
-    alignPopoverAnimated()
+// PrimeVue re-aligns on every container resize with its own flip rule; swap
+// its observer for one that applies ours.
+function bindContentObserver() {
+  unbindContentObserver()
+  const pv = popover.value
+  pv?.unbindContentResizeListener?.()
+  if (typeof ResizeObserver === 'undefined' || !pv?.container) {
+    return
   }
+  contentObserver = new ResizeObserver(() => {
+    if (pv.visible) {
+      alignToAnchor()
+    }
+  })
+  contentObserver.observe(pv.container)
+}
+
+function unbindContentObserver() {
+  contentObserver?.disconnect()
+  contentObserver = null
 }
 
 function reposition(event) {
@@ -287,11 +307,7 @@ function reposition(event) {
   const pv = popover.value
   pv.target = event.currentTarget
   pv.eventTarget = event.currentTarget
-  pv.container?.classList.remove('p-popover-flipped')
-  nextTick(() => {
-    pv.alignOverlay()
-    clampPopoverPosition()
-  })
+  nextTick(alignToAnchor)
 }
 
 let outsideHandler = null
@@ -306,8 +322,7 @@ function bindResizeHandler() {
     resizeTimer = setTimeout(() => {
       const pv = popover.value
       if (pv && pv.container) {
-        pv.alignOverlay()
-        clampPopoverPosition()
+        alignToAnchor()
       }
     }, 60)
   }
@@ -360,12 +375,14 @@ function unbindOutsideHandler() {
 
 function onPopoverShow() {
   bindOutsideHandler()
-  nextTick(clampPopoverPosition)
+  bindContentObserver()
+  nextTick(alignToAnchor)
 }
 
 onBeforeUnmount(() => {
   unbindResizeHandler()
   unbindOutsideHandler()
+  unbindContentObserver()
 })
 
 defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
@@ -527,13 +544,9 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
         <div class="review-edit-popover__resources-toggle-line" />
       </div>
 
-      <Transition
-        name="expand"
-        @before-enter="onResourceTransitionStart"
-        @after-enter="onResourceTransitionEnd"
-        @before-leave="onResourceTransitionStart"
-        @after-leave="onResourceTransitionEnd"
-      >
+      <!-- alignToAnchor runs on every container resize, so the popover stays
+           pinned to the row while this grows or shrinks -->
+      <Transition name="expand">
         <div v-if="showResources" class="review-edit-popover__resources-container">
           <ReviewResources
             :rule-id="selectedRuleId"
@@ -791,8 +804,15 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   transform: none !important;
 }
 
-:global(.review-popover.p-popover-flipped) {
-  margin-block-start: 5px;
+/* Sit the box just off the anchored row edge so the 10px arrow tip enters the
+   row by a few px while the body stays clear of it, in both flip directions */
+:global(.p-popover.review-popover) {
+  margin-block-start: 4px;
+}
+
+:global(.p-popover.review-popover.p-popover-flipped) {
+  margin-block-start: -3px;
+  margin-block-end: 3px;
 }
 
 :global(.review-popover-leave) {
@@ -874,7 +894,8 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 .review-edit-popover__resources-container {
   margin: 0 -0.8rem -0.8rem -0.8rem;
   border-top: 1px solid var(--color-border-light);
-  height: clamp(200px, 45vh, 350px);
+  /* set by alignToAnchor from resourcesHeightPx() */
+  height: var(--sm-resources-height);
   display: flex;
   flex-direction: column;
   overflow: hidden;
