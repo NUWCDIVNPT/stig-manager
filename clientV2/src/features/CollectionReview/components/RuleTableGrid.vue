@@ -12,6 +12,7 @@ import manualIcon from '../../../assets/user.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
 import ColumnFilter from '../../../components/common/ColumnFilter.vue'
 import EngineBadge from '../../../components/common/EngineBadge.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
 import Label from '../../../components/common/Label.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
@@ -25,6 +26,7 @@ import { durationToNow } from '../../../shared/lib.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { normalizeColor } from '../../../shared/lib/colorUtils.js'
 import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
+import { filterRows, labelNames } from '../../../shared/lib/gridSearch.js'
 import { formatReviewDate, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { patchReview, putReview } from '../../AssetReview/api/assetReviewApi.js'
 
@@ -40,6 +42,10 @@ const props = defineProps({
   visibleFields: {
     type: Set,
     required: true,
+  },
+  searchFilter: {
+    type: String,
+    default: '',
   },
   collectionId: {
     type: String,
@@ -279,8 +285,20 @@ const labelOptions = computed(() => {
     .map(([name, color]) => ({ value: name, label: name, color }))
 })
 
+// Text search covers the identifying and free-text columns. Asset is always
+// shown; the rest only count while their column is visible.
+const SEARCH_COLUMNS = [
+  { field: 'assetName', searchText: r => r.assetName },
+  { field: 'labels', searchText: r => labelNames(r.assetLabels) },
+  { field: 'detail', searchText: r => r.detail },
+  { field: 'comment', searchText: r => r.comment },
+  { field: 'user', searchText: r => r.username },
+]
+
+const searchColumns = computed(() => SEARCH_COLUMNS.filter(c => c.field === 'assetName' || props.visibleFields.has(c.field)))
+
 const filteredData = computed(() => {
-  let data = props.gridData
+  let data = filterRows(props.gridData, searchColumns.value, props.searchFilter)
   const ef = filters.value.engine.value
   const sf = filters.value.status.value
   const rf = filters.value.result.value
@@ -471,7 +489,7 @@ const dataTablePt = {
     <!-- Asset -->
     <Column field="assetName" header="Asset" sortable :style="{ minWidth: '10rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <span class="cell-text">{{ data.assetName }}</span>
+        <span class="cell-text"><HighlightText :text="data.assetName" :term="searchFilter" /></span>
       </template>
     </Column>
 
@@ -488,7 +506,7 @@ const dataTablePt = {
         </div>
       </template>
       <template #body="{ data }">
-        <LabelsRow :labels="data.assetLabels" compact />
+        <LabelsRow :labels="data.assetLabels" :search-term="searchFilter" compact />
       </template>
     </Column>
 
@@ -514,7 +532,7 @@ const dataTablePt = {
     <Column v-if="visibleFields.has('detail')" field="detail" header="Detail" sortable :style="{ width: '20%', minWidth: '12rem' }" :pt="columnPt.left">
       <template #body="{ data }">
         <div class="cell-text-field">
-          <span v-if="data.detail" class="cell-text cell-text--clamped" :title="data.detail">{{ data.detail }}</span>
+          <span v-if="data.detail" class="cell-text cell-text--clamped" :title="data.detail"><HighlightText :text="data.detail" :term="searchFilter" /></span>
           <span v-else class="cell-text cell-text--placeholder">—</span>
         </div>
       </template>
@@ -523,14 +541,14 @@ const dataTablePt = {
     <!-- Comment -->
     <Column v-if="visibleFields.has('comment')" field="comment" header="Comment" sortable :style="{ width: '20%', minWidth: '12rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <span class="cell-text cell-text--clamped" :title="data.comment">{{ data.comment }}</span>
+        <span class="cell-text cell-text--clamped" :title="data.comment"><HighlightText :text="data.comment" :term="searchFilter" /></span>
       </template>
     </Column>
 
     <!-- User -->
     <Column v-if="visibleFields.has('user')" field="username" header="User" sortable :style="{ width: '10rem', minWidth: '8rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <span class="cell-text">{{ data.username }}</span>
+        <span class="cell-text"><HighlightText :text="data.username" :term="searchFilter" /></span>
       </template>
     </Column>
 
@@ -546,7 +564,7 @@ const dataTablePt = {
 
     <template #empty>
       <div class="agg-grid-empty-state">
-        Select a rule above to see reviews.
+        {{ gridData.length > 0 ? 'No reviews match the current search or filters.' : 'Select a rule above to see reviews.' }}
       </div>
     </template>
 

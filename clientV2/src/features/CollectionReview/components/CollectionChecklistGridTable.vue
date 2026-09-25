@@ -414,18 +414,6 @@ const dataTablePt = {
   background: var(--color-background-light) !important;
 }
 
-.cell--match {
-  background-color: color-mix(in srgb, var(--color-warning-yellow, #f59e0b) 8%, transparent);
-  border-radius: 2px;
-}
-
-:deep(.search-highlight) {
-  background-color: color-mix(in srgb, var(--color-warning-yellow, #f59e0b) 40%, transparent);
-  color: inherit;
-  border-radius: 1px;
-  padding: 0 1px;
-}
-
 .agg-grid-empty-state {
   display: flex;
   flex-direction: column;

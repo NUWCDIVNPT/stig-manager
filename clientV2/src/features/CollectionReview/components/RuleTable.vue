@@ -68,6 +68,7 @@ const TOGGLEABLE_COLUMNS = [
 
 const selectedColumns = ref([...TOGGLEABLE_COLUMNS])
 const visibleFields = computed(() => new Set(selectedColumns.value.map(c => c.field)))
+const searchFilter = ref('')
 </script>
 
 <template>
@@ -76,6 +77,7 @@ const visibleFields = computed(() => new Set(selectedColumns.value.map(c => c.fi
     :style="gridStyle"
   >
     <RuleTableHeader
+      v-model:search-filter="searchFilter"
       v-model:selected-columns="selectedColumns"
       :selected-rule-id="selectedRuleId"
       :toggleable-columns="TOGGLEABLE_COLUMNS"
@@ -87,6 +89,7 @@ const visibleFields = computed(() => new Set(selectedColumns.value.map(c => c.fi
       :grid-data="gridData"
       :is-loading="isLoading"
       :visible-fields="visibleFields"
+      :search-filter="searchFilter"
       :collection-id="collectionId"
       :selected-rule-id="selectedRuleId"
       :field-settings="fieldSettings"

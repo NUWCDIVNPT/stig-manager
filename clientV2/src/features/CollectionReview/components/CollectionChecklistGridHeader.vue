@@ -1,28 +1,24 @@
 <script setup>
 import TieredMenu from 'primevue/tieredmenu'
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
+import GridSearch from '../../../components/common/GridSearch.vue'
 import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 
-const props = defineProps({
-  searchFilter: {
-    type: String,
-    default: '',
-  },
+defineProps({
   toggleableColumns: {
     type: Array,
     required: true,
   },
 })
 
-const emit = defineEmits(['update:searchFilter'])
-
+const searchFilter = defineModel('searchFilter', { type: String, default: '' })
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
 const displayMode = defineModel('displayMode', { type: String, required: true })
 
@@ -42,26 +38,6 @@ onMounted(() => {
 })
 
 const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, stigRevisions.value))
-
-const localSearch = ref(props.searchFilter)
-let debounceTimer = null
-
-watch(() => props.searchFilter, (newVal) => {
-  if (newVal !== localSearch.value) {
-    localSearch.value = newVal
-  }
-})
-
-watch(localSearch, (newVal) => {
-  clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => {
-    emit('update:searchFilter', newVal)
-  }, 250)
-})
-
-onBeforeUnmount(() => {
-  clearTimeout(debounceTimer)
-})
 
 const headerTitle = computed(() => {
   if (benchmarkId.value && revisionInfo.value?.display) {
@@ -118,10 +94,6 @@ const checklistMenuPT = {
 function toggleChecklistMenu(event) {
   checklistMenu.value.toggle(event)
 }
-
-function clearSearch() {
-  localSearch.value = ''
-}
 </script>
 
 <template>
@@ -134,22 +106,9 @@ function clearSearch() {
 
     <div class="checklist-grid__header-bottom">
       <TieredMenu ref="checklistMenu" :model="checklistMenuItems" :popup="true" :pt="checklistMenuPT" />
-      <div class="checklist-grid__header-search">
-        <i class="pi pi-search checklist-grid__search-icon" />
-        <input
-          v-model="localSearch" type="text" class="checklist-grid__search-input"
-          placeholder="Search..."
-        >
-        <button
-          v-if="localSearch" type="button" class="checklist-grid__search-clear"
-          aria-label="Clear review search" @click="clearSearch"
-        >
-          <i class="pi pi-times" />
-        </button>
-      </div>
+      <GridSearch v-model="searchFilter" class="checklist-grid__header-search" label="Search rules" />
 
       <div class="checklist-grid__header-controls">
-        <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
         <button
           type="button" class="checklist-grid__menu-btn checklist-grid__menu-btn--checklist"
           aria-haspopup="true" aria-controls="checklist_menu" @click="toggleChecklistMenu"
@@ -158,6 +117,8 @@ function clearSearch() {
           <span>Checklist</span>
           <i class="pi pi-chevron-down checklist-grid__menu-caret" />
         </button>
+
+        <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
 
         <DensityControls grid-key="collection-checklist" />
       </div>
@@ -197,62 +158,8 @@ function clearSearch() {
 }
 
 .checklist-grid__header-search {
-  position: relative;
   flex: 1 1 24rem;
-  min-width: 0;
   max-width: 42rem;
-  height: var(--checklist-control-height);
-}
-
-.checklist-grid__search-icon {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--color-text-dim);
-  font-size: var(--text-md);
-  pointer-events: none;
-}
-
-.checklist-grid__search-input {
-  width: 100%;
-  height: 100%;
-  padding: 0.32rem 2rem 0.32rem 2.35rem;
-  border: 1px solid var(--color-border-default);
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--color-background-light) 75%, transparent);
-  color: var(--color-text-primary);
-  font-size: var(--text-xl);
-  outline: none;
-  transition: all 0.15s ease;
-}
-
-.checklist-grid__search-input:focus {
-  border-color: var(--color-primary-highlight);
-  background-color: var(--color-background-darkest);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-highlight) 25%, transparent);
-}
-
-.checklist-grid__search-clear {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--color-text-dim);
-  cursor: pointer;
-  padding: 0.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.1s;
-}
-
-.checklist-grid__search-clear:hover {
-  color: var(--color-text-primary);
-  background: color-mix(in srgb, var(--color-text-dim) 15%, transparent);
 }
 
 .checklist-grid__title-row {

@@ -5,6 +5,7 @@ import { getContrastColor, normalizeColor } from '../../shared/lib/colorUtils.js
 import { rootFontSizePx } from '../../shared/lib/remToPx.js'
 import { TEXT_SCALE_REM } from '../../shared/lib/textScale.js'
 import { bodyFontFamily, measureTextWidth } from '../../shared/lib/textWidth.js'
+import HighlightText from '../common/HighlightText.vue'
 
 const props = defineProps({
   labels: {
@@ -15,6 +16,10 @@ const props = defineProps({
   compact: {
     type: Boolean,
     default: false,
+  },
+  searchTerm: {
+    type: String,
+    default: '',
   },
 })
 
@@ -153,7 +158,7 @@ function hidePopover() {
       :style="{ backgroundColor: normalizeColor(label.color, '#cccccc'), color: getContrastColor(label.color, '#000000', 'var(--color-text-primary)') }"
       class="label-tag"
     >
-      {{ label.name }}
+      <HighlightText :text="label.name" :term="searchTerm" />
     </span>
     <span
       v-if="visibleLabelsData.overflowCount > 0"
@@ -176,7 +181,7 @@ function hidePopover() {
           :style="{ backgroundColor: normalizeColor(label.color, '#cccccc'), color: getContrastColor(label.color, '#000000', 'var(--color-text-primary)') }"
           class="label-tag"
         >
-          {{ label.name }}
+          <HighlightText :text="label.name" :term="searchTerm" />
         </span>
       </div>
     </Popover>

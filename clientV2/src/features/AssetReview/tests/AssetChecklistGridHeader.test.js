@@ -98,14 +98,17 @@ describe('checklistGridHeader.vue', () => {
   })
 
   describe('search Functionality', () => {
-    it('emits update:searchFilter immediately on input', async () => {
+    it('emits update:searchFilter after the debounce', async () => {
       const { emitted } = createWrapper()
       const input = screen.getByPlaceholderText('Search reviews...')
 
       await fireEvent.update(input, 'test')
 
       expect(input).toHaveValue('test')
-      expect(emitted()['update:searchFilter']).toBeTruthy()
+      expect(emitted()['update:searchFilter']).toBeFalsy()
+
+      vi.advanceTimersByTime(250)
+
       const emits = emitted()['update:searchFilter']
       expect(emits[emits.length - 1]).toEqual(['test'])
     })
@@ -114,17 +117,18 @@ describe('checklistGridHeader.vue', () => {
       const { emitted } = createWrapper()
       const input = screen.getByPlaceholderText('Search reviews...')
 
-      expect(screen.queryByLabelText('Clear review search')).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
 
       await fireEvent.update(input, 'test')
+      await vi.advanceTimersByTimeAsync(250)
 
-      const clearBtn = screen.getByLabelText('Clear review search')
+      const clearBtn = screen.getByLabelText('Clear search')
       expect(clearBtn).toBeInTheDocument()
 
       await fireEvent.click(clearBtn)
 
-      // Vue Test Utils update cycle might need flushPromises or vi.advanceTimersByTime(0) for DOM updates if it's asynchronous, but typically click triggers it right away.
-      expect(emitted()['update:searchFilter']).toBeTruthy()
+      expect(input).toHaveValue('')
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
       const emits = emitted()['update:searchFilter']
       expect(emits[emits.length - 1]).toEqual([''])
     })

@@ -10,6 +10,7 @@ import submitIcon from '../../../assets/submit.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
 import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
+import GridSearch from '../../../components/common/GridSearch.vue'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import AssetStigImportModal from '../../AssetStigImport/components/AssetStigImportModal.vue'
 import { CHECKLIST_EXPORT_FORMATS, exportAssetStigChecklist } from '../api/assetReviewApi.js'
@@ -121,10 +122,6 @@ const selectedColumns = defineModel('selectedColumns', { type: Array, required: 
 
 const searchFilter = defineModel('searchFilter', { type: String, default: '' })
 
-function clearSearch() {
-  searchFilter.value = ''
-}
-
 const checklistMenu = ref()
 
 const headerTitle = computed(() => {
@@ -232,19 +229,10 @@ function toggleChecklistMenu(event) {
     </div>
     <div class="checklist-grid__header-bottom">
       <TieredMenu ref="checklistMenu" :model="checklistMenuItems" :popup="true" :pt="checklistMenuPT" />
-      <div class="checklist-grid__header-search">
-        <i class="pi pi-search checklist-grid__search-icon" />
-        <input
-          v-model="searchFilter" type="text" class="checklist-grid__search-input"
-          placeholder="Search reviews..."
-        >
-        <button
-          v-if="searchFilter" type="button" class="checklist-grid__search-clear"
-          aria-label="Clear review search" @click="clearSearch"
-        >
-          <i class="pi pi-times" />
-        </button>
-      </div>
+      <GridSearch
+        v-model="searchFilter" class="checklist-grid__header-search"
+        placeholder="Search reviews..." label="Search reviews"
+      />
       <div class="checklist-grid__header-controls">
         <button
           v-if="accessMode === 'rw'"
@@ -268,7 +256,6 @@ function toggleChecklistMenu(event) {
           <img :src="starIcon" alt="" class="checklist-grid__bulk-icon">
           <span>Accept All</span>
         </button>
-        <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
         <button
           type="button" class="checklist-grid__menu-btn checklist-grid__menu-btn--checklist"
           aria-haspopup="true" aria-controls="checklist_menu" @click="toggleChecklistMenu"
@@ -277,6 +264,7 @@ function toggleChecklistMenu(event) {
           <span>Checklist</span>
           <i class="pi pi-chevron-down checklist-grid__menu-caret" />
         </button>
+        <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
         <DensityControls grid-key="asset-review-checklist" />
       </div>
     </div>
@@ -326,62 +314,8 @@ function toggleChecklistMenu(event) {
 }
 
 .checklist-grid__header-search {
-  position: relative;
   flex: 1 1 24rem;
-  min-width: 0;
   max-width: 42rem;
-  height: var(--checklist-control-height);
-}
-
-.checklist-grid__search-icon {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--color-text-dim);
-  font-size: var(--text-md);
-  pointer-events: none;
-}
-
-.checklist-grid__search-input {
-  width: 100%;
-  height: 100%;
-  padding: 0.32rem 2rem 0.32rem 2.35rem;
-  border: 1px solid var(--color-border-default);
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--color-background-light) 75%, transparent);
-  color: var(--color-text-primary);
-  font-size: var(--text-xl);
-  outline: none;
-  transition: all 0.15s ease;
-}
-
-.checklist-grid__search-input:focus {
-  border-color: var(--color-primary-highlight);
-  background-color: var(--color-background-darkest);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-highlight) 25%, transparent);
-}
-
-.checklist-grid__search-clear {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--color-text-dim);
-  cursor: pointer;
-  padding: 0.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.1s;
-}
-
-.checklist-grid__search-clear:hover {
-  color: var(--color-text-primary);
-  background: color-mix(in srgb, var(--color-text-dim) 15%, transparent);
 }
 
 .checklist-grid__title-row {

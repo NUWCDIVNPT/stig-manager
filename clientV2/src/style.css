@@ -427,6 +427,27 @@ textarea:focus {
   background: var(--color-background-dark) !important;
 }
 
+/* Grid search: a cell whose text matched the term, and the matched text. */
+.cell--match {
+  background-color: color-mix(in srgb, var(--color-warning-yellow, #f59e0b) 8%, transparent);
+  border-radius: 2px;
+}
+
+mark.search-highlight {
+  background-color: color-mix(in srgb, var(--color-warning-yellow, #f59e0b) 40%, transparent);
+  color: inherit;
+  border-radius: 1px;
+  padding: 0 1px;
+}
+
+/* Label chips already carry a color, so mark the match with the chip's own
+   text color instead of the yellow wash. */
+.label-tag mark.search-highlight {
+  background-color: color-mix(in srgb, currentColor 28%, transparent);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
 
 /* PrimeVue Checkbox: the Material preset draws the check mark as a CSS box but
    leaves the indeterminate dash as an SVG, which blurs off-center whenever the

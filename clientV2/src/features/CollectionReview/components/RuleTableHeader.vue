@@ -6,6 +6,7 @@ import acceptedIcon from '../../../assets/star.svg'
 import submitIcon from '../../../assets/submit.svg'
 import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
+import GridSearch from '../../../components/common/GridSearch.vue'
 
 defineProps({
   selectedRuleId: {
@@ -29,6 +30,7 @@ defineProps({
 const emit = defineEmits(['bulk-action'])
 
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
+const searchFilter = defineModel('searchFilter', { type: String, default: '' })
 
 function onAction(actionType) {
   emit('bulk-action', actionType)
@@ -44,6 +46,8 @@ function onAction(actionType) {
           Reviews of {{ selectedRuleId ?? '—' }}
         </h2>
       </div>
+
+      <GridSearch v-model="searchFilter" class="rule-table__search" label="Search reviews" />
 
       <div class="rule-table__right-controls">
         <!-- Toolbar actions -->
@@ -126,6 +130,13 @@ function onAction(actionType) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.rule-table__search {
+  flex: 0 1 16rem;
+  min-width: 8rem;
 }
 
 .rule-table__action-controls {
@@ -138,7 +149,7 @@ function onAction(actionType) {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  flex: 1;
+  flex: 0 0 auto;
   min-width: 0;
 }
 

@@ -1,7 +1,7 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { calculateCora } from '../../shared/lib.js'
 import { filterRows, labelNames } from '../../shared/lib/gridSearch.js'
 import { readStoredValue, storeValue } from '../../shared/lib/localStorage.js'
@@ -14,7 +14,9 @@ import CoraColumn from '../columns/CoraColumn.vue'
 import DurationColumn from '../columns/DurationColumn.vue'
 import LabelsColumn from '../columns/LabelsColumn.vue'
 import PercentageColumn from '../columns/PercentageColumn.vue'
+import TextColumn from '../columns/TextColumn.vue'
 import ColumnToggle from '../common/ColumnToggle.vue'
+import GridSearch from '../common/GridSearch.vue'
 import StatusFooter from '../common/StatusFooter.vue'
 
 const props = defineProps({
@@ -39,7 +41,8 @@ const props = defineProps({
     default: '',
     validator: value => ['', 'collection', 'asset', 'stig', 'label', 'unagg'].includes(value),
   },
-  // Header bar text: a title on the left and a mono badge beside the column toggle
+  // Header bar text: a title on the left, followed by a mono badge naming
+  // what the rows belong to ("Checklists for <badge>")
   title: {
     type: String,
     default: '',
@@ -76,6 +79,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['row-select', 'shield-click', 'collection-icon-click', 'refresh'])
+
+const hasBadge = computed(() => props.badge !== '' && props.badge !== null)
 
 const ROW_HEIGHT = rowHeightPx('dense')
 
@@ -167,6 +172,7 @@ const columns = computed(() => {
   const commonColumns = [
     { field: 'checks', header: 'Checks', group: COUNTS, component: Column, style: cellStyle(WIDTH.count) },
     { field: 'assessedCnt', header: 'Assessed #', group: COUNTS, defaultHidden: true, component: Column, style: cellStyle(WIDTH.wideCount) },
+    { field: 'notReviewed', header: 'Not Reviewed', group: COUNTS, defaultHidden: true, component: Column, style: cellStyle(WIDTH.severity) },
     { field: 'oldest', header: 'Oldest', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration) },
     { field: 'newest', header: 'Newest', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration) },
     { field: 'updated', header: 'Updated', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration) },
@@ -193,9 +199,9 @@ const columns = computed(() => {
     { field: 'assessedCat2', header: 'CAT 2 Assessed', group: SEVERITY, defaultHidden: true, component: Column, style: cellStyle(WIDTH.severity) },
     { field: 'assessedCat1', header: 'CAT 1 Assessed', group: SEVERITY, defaultHidden: true, component: Column, style: cellStyle(WIDTH.severity) },
   ]
-  const benchmarkColumn = { field: 'benchmarkId', header: 'Benchmark', group: 'STIG', component: BenchmarkColumn, locked: true, searchText: r => `${r.benchmarkId} ${r.title ?? ''}`, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.benchmark) }
-  const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: Column, searchText: r => r.title, style: cellStyle(WIDTH.title) }
-  const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: Column, searchText: r => r.revisionStr, style: cellStyle(WIDTH.revision) }
+  const benchmarkColumn = { field: 'benchmarkId', header: 'Benchmark', group: 'STIG', component: BenchmarkColumn, locked: true, searchText: r => r.benchmarkId, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.benchmark) }
+  const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: TextColumn, searchText: r => r.title, style: cellStyle(WIDTH.title) }
+  const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: TextColumn, searchText: r => r.revisionStr, style: cellStyle(WIDTH.revision) }
   const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchText: r => r.assetName, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name) }
   const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, searchText: r => labelNames(r.labels), style: cellStyle(WIDTH.labels) }
   switch (aggregationType.value) {
@@ -212,9 +218,9 @@ const columns = computed(() => {
         assetColumn,
         labelsColumn,
         { field: 'stigCnt', header: 'STIGs', group: 'Asset', component: Column, style: cellStyle(WIDTH.count) },
-        { field: 'fqdn', header: 'FQDN', group: 'Asset', defaultHidden: true, component: Column, searchText: r => r.fqdn, style: cellStyle(WIDTH.name) },
-        { field: 'ip', header: 'IP', group: 'Asset', defaultHidden: true, component: Column, searchText: r => r.ip, style: cellStyle(WIDTH.ip) },
-        { field: 'mac', header: 'MAC', group: 'Asset', defaultHidden: true, component: Column, searchText: r => r.mac, style: cellStyle(WIDTH.mac) },
+        { field: 'fqdn', header: 'FQDN', group: 'Asset', defaultHidden: true, component: TextColumn, searchText: r => r.fqdn, style: cellStyle(WIDTH.name) },
+        { field: 'ip', header: 'IP', group: 'Asset', defaultHidden: true, component: TextColumn, searchText: r => r.ip, style: cellStyle(WIDTH.ip) },
+        { field: 'mac', header: 'MAC', group: 'Asset', defaultHidden: true, component: TextColumn, searchText: r => r.mac, style: cellStyle(WIDTH.mac) },
         ...commonColumns,
       ]
     case 'stig':
@@ -323,26 +329,9 @@ function onSelectedColumnsChange(selected) {
   }
 }
 
-// Row search. The input is debounced into searchTerm so typing does not
-// re-filter on every keystroke; the filter covers the visible searchable
-// columns (see gridSearch.js for the extension points).
-const searchInput = ref('')
+// Row search over the visible searchable columns (see gridSearch.js for the
+// extension points). GridSearch debounces the typing.
 const searchTerm = ref('')
-let searchDebounce = null
-
-watch(searchInput, (value) => {
-  clearTimeout(searchDebounce)
-  searchDebounce = setTimeout(() => {
-    searchTerm.value = value
-  }, 150)
-})
-
-onBeforeUnmount(() => clearTimeout(searchDebounce))
-
-function clearSearch() {
-  searchInput.value = ''
-  searchTerm.value = ''
-}
 
 const data = computed(() => {
   if (!Array.isArray(props.apiMetricsSummary)) {
@@ -355,6 +344,7 @@ const data = computed(() => {
       checks: m.assessments,
       assessed: m.assessed,
       assessedCnt: m.assessed,
+      notReviewed: m.assessments - m.assessed,
       oldest: m.minTs,
       newest: m.maxTs,
       updated: m.maxTouchTs,
@@ -483,28 +473,13 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
         <h3 v-if="title" class="agg-grid-title">
           {{ title }}
         </h3>
-        <div class="agg-grid-search">
-          <i class="pi pi-search agg-grid-search-icon" />
-          <input
-            v-model="searchInput"
-            type="text"
-            class="agg-grid-search-input"
-            placeholder="Search..."
-            aria-label="Search rows"
-          >
-          <button
-            v-if="searchInput"
-            type="button"
-            class="agg-grid-search-clear"
-            aria-label="Clear row search"
-            @click="clearSearch"
-          >
-            <i class="pi pi-times" />
-          </button>
-        </div>
+        <template v-if="hasBadge">
+          <span v-if="title" class="agg-grid-badge-for">for</span>
+          <span class="agg-grid-badge">{{ badge }}</span>
+        </template>
+        <GridSearch v-model="searchTerm" class="agg-grid-search" label="Search rows" />
       </div>
       <div class="agg-grid-header-controls">
-        <span v-if="badge !== '' && badge !== null" class="agg-grid-badge">{{ badge }}</span>
         <ColumnToggle
           class="agg-grid-column-toggle"
           :model-value="selectedColumns"
@@ -537,7 +512,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
       @row-select="onRowSelect"
     >
       <template v-for="col in visibleColumns" :key="col.field">
-        <component :is="col.component" v-bind="col" sortable />
+        <component :is="col.component" v-bind="col" :search-term="searchTerm" sortable />
       </template>
       <template #empty>
         <div class="agg-grid-empty-state">
@@ -595,60 +570,16 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
   flex-shrink: 0;
 }
 
+.agg-grid-badge-for {
+  margin-left: -0.25rem;
+  color: var(--color-text-dim);
+  font-size: var(--text-md);
+  flex-shrink: 0;
+}
+
 .agg-grid-search {
-  position: relative;
   flex: 0 1 18rem;
   min-width: 8rem;
-  height: var(--checklist-control-height);
-}
-
-.agg-grid-search-icon {
-  position: absolute;
-  left: 0.6rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--color-text-dim);
-  font-size: var(--text-md);
-  pointer-events: none;
-}
-
-.agg-grid-search-input {
-  width: 100%;
-  height: 100%;
-  padding: 0 1.8rem 0 1.9rem;
-  border: 1px solid var(--color-border-default);
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--color-background-light) 45%, transparent);
-  color: var(--color-text-primary);
-  font-size: var(--text-md);
-  outline: none;
-}
-
-.agg-grid-search-input:focus {
-  border-color: var(--color-primary-highlight);
-  background-color: var(--color-background-darkest);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-highlight) 25%, transparent);
-}
-
-.agg-grid-search-clear {
-  position: absolute;
-  right: 0.4rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--color-text-dim);
-  cursor: pointer;
-  padding: 0.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-}
-
-.agg-grid-search-clear:hover {
-  color: var(--color-text-primary);
-  background: color-mix(in srgb, var(--color-text-dim) 15%, transparent);
 }
 
 .agg-grid-header-controls {
@@ -665,6 +596,8 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
   border-radius: 3px;
   color: var(--color-text-dim);
   font-family: var(--font-mono);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .agg-grid-table {

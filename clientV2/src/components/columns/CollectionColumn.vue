@@ -3,10 +3,15 @@ import Column from 'primevue/column'
 import collectionColorIcon from '../../assets/collection-color.svg'
 import collectionIcon from '../../assets/collection.svg'
 import shieldGreenCheck from '../../assets/shield-green-check.svg'
+import HighlightText from '../common/HighlightText.vue'
 
 const props = defineProps({
   field: String,
   header: String,
+  searchTerm: {
+    type: String,
+    default: '',
+  },
   showShield: {
     type: Boolean,
     default: false,
@@ -43,7 +48,7 @@ function handleCollectionIconClick(rowData) {
     <template #body="slotProps">
       <div class="sm-grid-cell-with-toolbar">
         <div class="sm-info">
-          {{ slotProps.data.collectionName }}
+          <HighlightText :text="slotProps.data.collectionName" :term="searchTerm" />
         </div>
         <button
           v-if="showCollectionIcon"

@@ -1,13 +1,13 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
+import { fetchCollectionAssetSummary } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionAssetStigs } from '../api/collectionApi.js'
-import { fetchCollectionAssetSummary } from '../../../shared/api/collectionsApi.js'
 
 const props = defineProps({
   collectionId: {
@@ -40,6 +40,7 @@ const { state: assets, isLoading: assetsLoading, execute: loadAssets } = useAsyn
 )
 
 const selectedAssetId = ref(null)
+const selectedAssetName = computed(() => assets.value?.find(a => a.assetId === selectedAssetId.value)?.name ?? '')
 
 const { state: selectedAssetStigs, isLoading: selectedAssetStigsLoading, execute: loadSelectedAssetStigs } = useAsyncState(
   () => fetchCollectionAssetStigs(props.collectionId, selectedAssetId.value),
@@ -118,7 +119,7 @@ function handleShieldClick(rowData) {
           <div class="grid-container">
             <MetricsSummaryGrid
               title="Checklists"
-              :badge="selectedAssetId ? `Asset ${selectedAssetId}` : ''"
+              :badge="selectedAssetName"
               :api-metrics-summary="selectedAssetStigs"
               agg-type="unagg"
               :is-loading="selectedAssetStigsLoading"

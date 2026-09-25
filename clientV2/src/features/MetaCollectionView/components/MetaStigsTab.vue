@@ -1,7 +1,7 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
@@ -56,6 +56,7 @@ const { state: collections, isLoading: collectionsLoading, execute: loadCollecti
 )
 
 const selectedCollectionId = ref(null)
+const selectedCollectionName = computed(() => collections.value?.find(c => c.collectionId === selectedCollectionId.value)?.name ?? '')
 
 const { state: assets, isLoading: assetsLoading, execute: loadAssets } = useAsyncState(
   () => {
@@ -172,7 +173,7 @@ function handleAssetStigAction(rowData) {
           <div class="grid-container">
             <MetricsSummaryGrid
               title="Assets"
-              :badge="selectedCollectionId ? `Collection ${selectedCollectionId}` : ''"
+              :badge="selectedCollectionName"
               :api-metrics-summary="assets"
               agg-type="unagg"
               :is-loading="assetsLoading"

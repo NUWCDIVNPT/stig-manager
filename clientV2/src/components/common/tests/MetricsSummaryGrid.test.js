@@ -14,7 +14,7 @@ vi.mock('primevue/datatable', () => ({
       <div data-testid="mock-datatable">
         <table>
           <thead><tr><slot /></tr></thead>
-          <tbody><tr v-for="row in value" :key="row.benchmarkId ?? row.assetId"><td>{{ row.benchmarkId ?? row.assetName }}</td><td data-cell="stigCnt">{{ row.stigCnt }}</td></tr></tbody>
+          <tbody><tr v-for="row in value" :key="row.benchmarkId ?? row.assetId"><td>{{ row.benchmarkId ?? row.assetName }}</td><td data-cell="stigCnt">{{ row.stigCnt }}</td><td data-cell="notReviewed">{{ row.notReviewed }}</td></tr></tbody>
         </table>
       </div>
     `,
@@ -101,7 +101,7 @@ describe('metricsSummaryGrid column toggle', () => {
     // Shown columns keep their grid order in the toggle
     expect(toggleOptions().filter(f => headers.includes(f))).toEqual(headers.slice(1))
     // Extra endpoint data is offered but starts off
-    for (const field of ['title', 'ruleCount', 'assessedCnt', 'saved', 'pass', 'notapplicable', 'checksCat1', 'assessedCat3']) {
+    for (const field of ['title', 'ruleCount', 'assessedCnt', 'notReviewed', 'saved', 'pass', 'notapplicable', 'checksCat1', 'assessedCat3']) {
       expect(toggleOptions()).toContain(field)
       expect(headers).not.toContain(field)
     }
@@ -121,6 +121,14 @@ describe('metricsSummaryGrid column toggle', () => {
 
     expect(headerFields(container)).not.toContain('pass')
     expect(JSON.parse(localStorage.getItem('metricsGrid.columns.stig'))).toEqual({})
+  })
+
+  it('derives not reviewed from checks minus assessed', () => {
+    const { container } = renderWithProviders(MetricsSummaryGrid, {
+      props: { apiMetricsSummary: stigRows, aggType: 'stig', dataKey: 'benchmarkId' },
+    })
+
+    expect([...container.querySelectorAll('td[data-cell="notReviewed"]')].map(td => td.textContent)).toEqual(['5', '5'])
   })
 
   it('counts the assigned STIGs for an asset row', () => {
@@ -213,16 +221,19 @@ describe('metricsSummaryGrid column toggle', () => {
       await fireEvent.update(screen.getByRole('textbox', { name: 'Search rows' }), 'windows')
       expect(bodyRows(container)).toHaveLength(2)
 
-      await vi.advanceTimersByTimeAsync(200)
+      await vi.advanceTimersByTimeAsync(250)
       expect(bodyRows(container)).toEqual(['MS_Windows_11_STIG'])
 
-      // Title text is searchable through the Benchmark column
+      // Title text only counts once the Title column is shown
       await fireEvent.update(screen.getByRole('textbox', { name: 'Search rows' }), 'red hat')
-      await vi.advanceTimersByTimeAsync(200)
+      await vi.advanceTimersByTimeAsync(250)
+      expect(bodyRows(container)).toEqual([])
+
+      await fireEvent.click(screen.getByRole('button', { name: 'Title' }))
       expect(bodyRows(container)).toEqual(['RHEL_9_STIG'])
 
-      await fireEvent.click(screen.getByRole('button', { name: 'Clear row search' }))
-      await vi.advanceTimersByTimeAsync(200)
+      await fireEvent.click(screen.getByRole('button', { name: 'Clear search' }))
+      await vi.advanceTimersByTimeAsync(250)
       expect(bodyRows(container)).toHaveLength(2)
     }
     finally {
