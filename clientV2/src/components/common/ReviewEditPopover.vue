@@ -153,9 +153,7 @@ function onButtonClick(actionType) {
 }
 
 function onPopoverHide() {
-  unbindOutsideHandler()
-  unbindResizeHandler()
-  unbindContentObserver()
+  unbindListeners()
   if (closing.value) {
     closing.value = false
     emit('close')
@@ -202,98 +200,70 @@ function hide() {
   popover.value.hide()
 }
 
-function clampPopoverPosition() {
-  const pv = popover.value
-  if (!pv || !pv.container || !lastAnchorEvent.value) {
-    return
-  }
-  const container = pv.container
-  const anchor = lastAnchorEvent.value.currentTarget
-  if (!anchor) {
-    return
-  }
+// Hidden fixed element the popover is anchored to. It is sized to the clicked
+// row so PrimeVue's target tracking has a stable, non-scrolling element.
+const anchorEl = ref(null)
+let flippedAbove = false
 
-  container.style.marginLeft = '0px'
-
-  const rect = container.getBoundingClientRect()
-  const anchorRect = anchor.getBoundingClientRect()
-  const targetX = lastAnchorEvent.value.clientX ?? (anchorRect.left + anchorRect.width / 2)
-
-  const gutter = 12
-  const viewportW = document.documentElement.clientWidth
-
-  let offset = targetX - (rect.left + rect.width / 2)
-
-  const projectedLeft = rect.left + offset
-  const projectedRight = projectedLeft + rect.width
-
-  if (projectedLeft < gutter) {
-    offset += (gutter - projectedLeft)
-  }
-  else if (projectedRight > viewportW - gutter) {
-    offset -= (projectedRight - (viewportW - gutter))
-  }
-
-  if (rect.width > viewportW - gutter * 2) {
-    offset = gutter - rect.left
-  }
-
-  container.style.marginLeft = `${offset}px`
-
-  const arrowLeftEdge = targetX - (rect.left + offset) - 10
-  container.style.setProperty('--sm-popover-arrow-left', `${arrowLeftEdge}px`)
-}
-
-// PrimeVue flips the popover above the anchor only when the box as it is now
-// would not fit below. Decide instead from the height it can reach with Review
-// Resources open, so opening the panel never moves the box to the other side
-// of the row.
-function alignToAnchor() {
-  const pv = popover.value
-  const el = pv?.container
-  const anchor = lastAnchorEvent.value?.currentTarget
+// Place the box against the anchored row. PrimeVue only flips above the row
+// when the box as it is now would not fit below; decide instead from the
+// height it can reach with Review Resources open, so opening the panel never
+// moves the box to the other side of the row. The decision is made here, on
+// show, reposition and window resize, and pinToAnchor only keeps it.
+function placePopover() {
+  const el = popover.value?.container
+  const anchorEvent = lastAnchorEvent.value
+  const anchor = anchorEvent?.currentTarget
   if (!el || !anchor) {
     return
   }
   const reserve = resourcesHeightPx()
   el.style.setProperty('--sm-resources-height', `${reserve}px`)
 
-  pv.alignOverlay()
-
   const anchorRect = anchor.getBoundingClientRect()
-  const height = el.offsetHeight
-  // Measure the panel rather than trusting showResources: while it animates
-  // open or closed the flag has already changed but the box has not.
-  const panel = el.querySelector('.review-edit-popover__resources-container')
-  const panelHeight = panel ? panel.getBoundingClientRect().height : 0
-  const reachable = height - panelHeight + reserve
-  const flip = anchorRect.bottom + reachable > window.innerHeight
-  const top = flip ? Math.max(0, anchorRect.top - height) : anchorRect.bottom
+  const reachable = el.offsetHeight + (showResources.value ? 0 : reserve)
+  flippedAbove = anchorRect.bottom + reachable > window.innerHeight
+  el.classList.toggle('p-popover-flipped', flippedAbove)
+  el.style.transformOrigin = flippedAbove ? 'bottom' : 'top'
+  pinToAnchor()
 
-  el.classList.toggle('p-popover-flipped', flip)
-  el.setAttribute('data-p-popover-flipped', String(flip))
+  // Centre on the click, kept inside the viewport, with the arrow on the click
+  const gutter = 12
+  const viewportW = document.documentElement.clientWidth
+  const width = el.offsetWidth
+  const targetX = anchorEvent.clientX ?? (anchorRect.left + anchorRect.width / 2)
+  let left = targetX - width / 2
+  left = Math.max(gutter, Math.min(left, viewportW - gutter - width))
+  if (width > viewportW - gutter * 2) {
+    left = gutter
+  }
+  el.style.insetInlineStart = `${left + window.scrollX}px`
+  el.style.setProperty('--sm-popover-arrow-left', `${targetX - left - 10}px`)
+}
+
+// Keep the box on its side of the row as its height changes: a flipped box
+// grows upward, one below the row grows downward on its own.
+function pinToAnchor() {
+  const el = popover.value?.container
+  const anchor = lastAnchorEvent.value?.currentTarget
+  if (!el || !anchor) {
+    return
+  }
+  const anchorRect = anchor.getBoundingClientRect()
+  const top = flippedAbove ? Math.max(0, anchorRect.top - el.offsetHeight) : anchorRect.bottom
   el.style.top = `${top + window.scrollY}px`
-  el.style.transformOrigin = flip ? 'bottom' : 'top'
-
-  clampPopoverPosition()
 }
 
 let contentObserver = null
 
 // PrimeVue re-aligns on every container resize with its own flip rule; swap
-// its observer for one that applies ours.
+// its observer for one that keeps ours. unbindContentResizeListener is a
+// private method (PrimeVue 4.5.5).
 function bindContentObserver() {
   unbindContentObserver()
   const pv = popover.value
-  pv?.unbindContentResizeListener?.()
-  if (typeof ResizeObserver === 'undefined' || !pv?.container) {
-    return
-  }
-  contentObserver = new ResizeObserver(() => {
-    if (pv.visible) {
-      alignToAnchor()
-    }
-  })
+  pv.unbindContentResizeListener?.()
+  contentObserver = new ResizeObserver(pinToAnchor)
   contentObserver.observe(pv.container)
 }
 
@@ -304,10 +274,30 @@ function unbindContentObserver() {
 
 function reposition(event) {
   lastAnchorEvent.value = event
-  const pv = popover.value
-  pv.target = event.currentTarget
-  pv.eventTarget = event.currentTarget
-  nextTick(alignToAnchor)
+  nextTick(placePopover)
+}
+
+// Open, move or toggle the popover for the row under a click. The anchor is
+// sized to the row so the arrow lands on the row edge and the flip decision
+// sees the row's full extent.
+function openForRow(event, isSameRow) {
+  const row = event.target?.closest ? event.target.closest('tr') : null
+  const rowRect = row ? row.getBoundingClientRect() : { top: 0, height: 0 }
+  const clickX = event.clientX ?? 0
+  anchorEl.value.style.left = `${clickX}px`
+  anchorEl.value.style.top = `${rowRect.top}px`
+  anchorEl.value.style.height = `${rowRect.height}px`
+
+  const anchorEvent = { currentTarget: anchorEl.value, target: anchorEl.value, clientX: clickX }
+  if (isSameRow) {
+    toggle(anchorEvent)
+  }
+  else if (popover.value.visible) {
+    reposition(anchorEvent)
+  }
+  else {
+    show(anchorEvent)
+  }
 }
 
 let outsideHandler = null
@@ -319,12 +309,7 @@ function bindResizeHandler() {
   unbindResizeHandler()
   resizeHandler = () => {
     clearTimeout(resizeTimer)
-    resizeTimer = setTimeout(() => {
-      const pv = popover.value
-      if (pv && pv.container) {
-        alignToAnchor()
-      }
-    }, 60)
+    resizeTimer = setTimeout(placePopover, 60)
   }
   window.addEventListener('resize', resizeHandler)
 }
@@ -338,7 +323,6 @@ function unbindResizeHandler() {
 }
 
 function bindOutsideHandler() {
-  bindResizeHandler()
   unbindOutsideHandler()
   outsideBindTimer = setTimeout(() => {
     outsideBindTimer = null
@@ -373,19 +357,22 @@ function unbindOutsideHandler() {
   }
 }
 
-function onPopoverShow() {
-  bindOutsideHandler()
-  bindContentObserver()
-  nextTick(alignToAnchor)
+function unbindListeners() {
+  unbindOutsideHandler()
+  unbindResizeHandler()
+  unbindContentObserver()
 }
 
-onBeforeUnmount(() => {
-  unbindResizeHandler()
-  unbindOutsideHandler()
-  unbindContentObserver()
-})
+function onPopoverShow() {
+  bindOutsideHandler()
+  bindResizeHandler()
+  bindContentObserver()
+  placePopover()
+}
 
-defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
+onBeforeUnmount(unbindListeners)
+
+defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
 </script>
 
 <template>
@@ -544,8 +531,8 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
         <div class="review-edit-popover__resources-toggle-line" />
       </div>
 
-      <!-- alignToAnchor runs on every container resize, so the popover stays
-           pinned to the row while this grows or shrinks -->
+      <!-- pinToAnchor runs on every container resize, so the popover stays
+           on its side of the row while this grows or shrinks -->
       <Transition name="expand">
         <div v-if="showResources" class="review-edit-popover__resources-container">
           <ReviewResources
@@ -561,6 +548,10 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
       </Transition>
     </div>
   </Popover>
+  <div
+    ref="anchorEl"
+    style="position: fixed; width: 0px; pointer-events: none; visibility: hidden; z-index: -1;"
+  />
 </template>
 
 <style scoped>
@@ -812,7 +803,6 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 
 :global(.p-popover.review-popover.p-popover-flipped) {
   margin-block-start: -3px;
-  margin-block-end: 3px;
 }
 
 :global(.review-popover-leave) {
@@ -894,7 +884,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 .review-edit-popover__resources-container {
   margin: 0 -0.8rem -0.8rem -0.8rem;
   border-top: 1px solid var(--color-border-light);
-  /* set by alignToAnchor from resourcesHeightPx() */
+  /* set by placePopover from resourcesHeightPx() */
   height: var(--sm-resources-height);
   display: flex;
   flex-direction: column;

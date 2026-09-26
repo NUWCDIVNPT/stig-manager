@@ -145,11 +145,11 @@ All saves flow: `ReviewEditPopover` → emits `save`/`status-action` → `assetC
 
 ## The Popover Anchoring System
 
-The `ReviewEditPopover` is anchored to a hidden `<div class="popover-anchor">` inside `assetChecklistGrid`. When a row is clicked:
+`ReviewEditPopover` owns a hidden fixed anchor `div` and exposes `openForRow(event, isSameRow)`. When a row is clicked, `assetChecklistGrid` passes the click event and the popover:
 
-1. The anchor `div` is repositioned to `{ left: clickX, top: rowTop, height: rowHeight }` using inline styles.
-2. A synthetic event object (`{ currentTarget: anchor, clientX }`) is passed to the popover's `show` / `reposition` method.
-3. `clampPopoverPosition()` then runs post-render to ensure the popover stays within the viewport and repositions the arrow to point to the exact click X coordinate.
+1. Sizes the anchor to `{ left: clickX, top: rowTop, height: rowHeight }` from the clicked `<tr>`.
+2. Shows, repositions or toggles itself against that anchor.
+3. `placePopover()` decides whether to open above or below the row from the height the popover reaches with Review Resources open, keeps the box inside the viewport, and points the arrow at the click X coordinate. A resize observer keeps the box on that side of the row while the panel animates.
 
 This approach avoids conflicts with PrimeVue's internal scroll/target tracking by providing a stable, non-scrolling anchor element.
 

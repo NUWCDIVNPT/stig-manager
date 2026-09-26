@@ -121,7 +121,6 @@ const getRowClass = (data) => {
 
 // --- Popover wiring ---
 const reviewEditPopover = ref(null)
-const popoverAnchor = ref(null)
 const editingRow = ref(null)
 const editingAssetId = computed(() => editingRow.value?.assetId ?? null)
 const enabledTabs = ['history', 'statusText']
@@ -164,37 +163,8 @@ function openRowEditor(event, rowData) {
     return
   }
   const isSameRow = editingRow.value?.assetId === rowData.assetId
-  const wasOpen = !!editingRow.value
-
   editingRow.value = rowData
-
-  const row = event.target?.closest ? event.target.closest('tr') : null
-  const rowRect = row ? row.getBoundingClientRect() : { top: 0, bottom: 0, height: 0 }
-  const clickX = event.clientX ?? 0
-
-  // The anchor spans the full row so the popover flips above or below it
-  // and its arrow lands on the row edge instead of the row body.
-  if (popoverAnchor.value) {
-    popoverAnchor.value.style.left = `${clickX}px`
-    popoverAnchor.value.style.top = `${rowRect.top}px`
-    popoverAnchor.value.style.height = `${rowRect.height}px`
-  }
-
-  const anchorEvent = {
-    currentTarget: popoverAnchor.value,
-    target: popoverAnchor.value,
-    clientX: clickX,
-  }
-
-  if (isSameRow) {
-    reviewEditPopover.value?.toggle(anchorEvent)
-  }
-  else if (wasOpen) {
-    reviewEditPopover.value?.reposition(anchorEvent)
-  }
-  else {
-    reviewEditPopover.value?.show(anchorEvent)
-  }
+  reviewEditPopover.value?.openForRow(event, isSameRow)
 }
 
 function onRowClick(event) {
@@ -617,12 +587,6 @@ const dataTablePt = {
   <div v-if="isSaving" class="rule-table-grid__mask" aria-busy="true">
     <i class="pi pi-spin pi-spinner rule-table-grid__mask-spinner" />
   </div>
-
-  <div
-    ref="popoverAnchor"
-    class="popover-anchor"
-    style="position: fixed; width: 0px; pointer-events: none; visibility: hidden; z-index: -1;"
-  />
 </template>
 
 <style scoped>
