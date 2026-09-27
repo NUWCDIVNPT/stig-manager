@@ -209,7 +209,8 @@ let flippedAbove = false
 // when the box as it is now would not fit below; decide instead from the
 // height it can reach with Review Resources open, so opening the panel never
 // moves the box to the other side of the row. The decision is made here, on
-// show, reposition and window resize, and pinToAnchor only keeps it.
+// show and reposition, and pinToAnchor only keeps it. (PrimeVue closes the
+// popover on window resize, so there is nothing to re-place then.)
 function placePopover() {
   const el = popover.value?.container
   const anchorEvent = lastAnchorEvent.value
@@ -302,26 +303,6 @@ function openForRow(event, isSameRow) {
 
 let outsideHandler = null
 let outsideBindTimer = null
-let resizeHandler = null
-let resizeTimer = null
-
-function bindResizeHandler() {
-  unbindResizeHandler()
-  resizeHandler = () => {
-    clearTimeout(resizeTimer)
-    resizeTimer = setTimeout(placePopover, 60)
-  }
-  window.addEventListener('resize', resizeHandler)
-}
-
-function unbindResizeHandler() {
-  if (resizeHandler) {
-    window.removeEventListener('resize', resizeHandler)
-    resizeHandler = null
-  }
-  clearTimeout(resizeTimer)
-}
-
 function bindOutsideHandler() {
   unbindOutsideHandler()
   outsideBindTimer = setTimeout(() => {
@@ -359,13 +340,11 @@ function unbindOutsideHandler() {
 
 function unbindListeners() {
   unbindOutsideHandler()
-  unbindResizeHandler()
   unbindContentObserver()
 }
 
 function onPopoverShow() {
   bindOutsideHandler()
-  bindResizeHandler()
   bindContentObserver()
   placePopover()
 }

@@ -572,11 +572,6 @@ const dataTablePt = {
   flex-shrink: 0;
 }
 
-.cell--match {
-  background-color: color-mix(in srgb, var(--color-warning-yellow, #f59e0b) 8%, transparent);
-  border-radius: 2px;
-}
-
 /* Deep overrides for PrimeVue DataTable */
 :deep(.p-datatable-thead > tr > th) {
   background: var(--color-background-dark);
@@ -652,13 +647,5 @@ const dataTablePt = {
 :deep(.p-virtualscroller) {
   scrollbar-width: thin;
   scrollbar-color: var(--color-border-default) transparent;
-}
-
-/* Search highlighting stays in sync with v-html content */
-:deep(.search-highlight) {
-  background-color: color-mix(in srgb, var(--color-warning-yellow, #f59e0b) 40%, transparent);
-  color: inherit;
-  border-radius: 1px;
-  padding: 0 1px;
 }
 </style>

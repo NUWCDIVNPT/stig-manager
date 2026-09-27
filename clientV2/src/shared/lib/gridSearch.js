@@ -1,3 +1,5 @@
+import { fieldMatches } from './searchUtils.js'
+
 /**
  * Free-text row filter for grids whose column definitions carry a
  * `searchText(row)` extractor. Columns without one (counts, percentages,
@@ -22,7 +24,7 @@ export function filterRows(rows, columns, term) {
   if (extractors.length === 0) {
     return []
   }
-  return rows.filter(row => extractors.some(get => String(get(row) ?? '').toLowerCase().includes(query)))
+  return rows.filter(row => extractors.some(get => fieldMatches(String(get(row) ?? ''), query)))
 }
 
 /** Space-joined label names, for label chip columns. */

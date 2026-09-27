@@ -287,11 +287,7 @@ function readOverrides(key) {
   }
   try {
     const parsed = JSON.parse(readStoredValue(key, '{}'))
-    if (Array.isArray(parsed)) {
-      // Earlier format: a list of hidden fields
-      return Object.fromEntries(parsed.filter(f => typeof f === 'string').map(f => [f, false]))
-    }
-    if (!parsed || typeof parsed !== 'object') {
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
       return {}
     }
     return Object.fromEntries(Object.entries(parsed).filter(([, v]) => typeof v === 'boolean'))
@@ -516,7 +512,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
       </template>
       <template #empty>
         <div class="agg-grid-empty-state">
-          {{ emptyMessage }}
+          {{ isSearching && data.length > 0 ? 'No rows match the current search.' : emptyMessage }}
         </div>
       </template>
       <template v-if="showFooter" #footer>

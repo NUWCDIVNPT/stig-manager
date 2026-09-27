@@ -16,6 +16,7 @@ vi.mock('primevue/datatable', () => ({
           <thead><tr><slot /></tr></thead>
           <tbody><tr v-for="row in value" :key="row.benchmarkId ?? row.assetId"><td>{{ row.benchmarkId ?? row.assetName }}</td><td data-cell="stigCnt">{{ row.stigCnt }}</td><td data-cell="notReviewed">{{ row.notReviewed }}</td></tr></tbody>
         </table>
+        <slot v-if="!value.length" name="empty" />
       </div>
     `,
   },
@@ -169,17 +170,6 @@ describe('metricsSummaryGrid column toggle', () => {
     expect(headerFields(container)).toContain('fail')
   })
 
-  it('reads the earlier hidden-list format', () => {
-    localStorage.setItem('metricsGrid.columns.stig', JSON.stringify(['oldest']))
-
-    const { container } = renderWithProviders(MetricsSummaryGrid, {
-      props: { apiMetricsSummary: stigRows, aggType: 'stig', dataKey: 'benchmarkId' },
-    })
-
-    expect(headerFields(container)).not.toContain('oldest')
-    expect(headerFields(container)).toContain('newest')
-  })
-
   it('never hides the identity column even if stored as hidden', () => {
     localStorage.setItem('metricsGrid.columns.stig', JSON.stringify({ benchmarkId: false }))
 
@@ -228,6 +218,7 @@ describe('metricsSummaryGrid column toggle', () => {
       await fireEvent.update(screen.getByRole('textbox', { name: 'Search rows' }), 'red hat')
       await vi.advanceTimersByTimeAsync(250)
       expect(bodyRows(container)).toEqual([])
+      expect(container.querySelector('.agg-grid-empty-state').textContent).toContain('No rows match the current search.')
 
       await fireEvent.click(screen.getByRole('button', { name: 'Title' }))
       expect(bodyRows(container)).toEqual(['RHEL_9_STIG'])
