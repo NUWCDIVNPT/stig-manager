@@ -141,18 +141,18 @@ describe('checklistGridHeader.vue', () => {
       const { emitted } = createWrapper()
       const input = screen.getByPlaceholderText('Search...')
 
-      expect(screen.queryByLabelText('Clear review search')).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
 
       await fireEvent.update(input, 'test')
+      await vi.advanceTimersByTimeAsync(250)
 
-      const clearBtn = screen.getByLabelText('Clear review search')
+      const clearBtn = screen.getByLabelText('Clear search')
       expect(clearBtn).toBeInTheDocument()
 
       await fireEvent.click(clearBtn)
 
       expect(input).toHaveValue('')
-
-      vi.advanceTimersByTime(250)
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
       const emits = emitted()['update:searchFilter']
       expect(emits[emits.length - 1]).toEqual([''])
     })

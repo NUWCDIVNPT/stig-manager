@@ -148,7 +148,6 @@ const selectedRow = computed(() => {
   return ruleLookupMap.value.get(selectedRuleId.value) ?? null
 })
 const reviewEditPopover = ref()
-const popoverAnchor = ref(null)
 const editingRow = ref(null)
 
 const currentReview = computed(() => gridData.value.find(r => r.ruleId === editingRow.value?.ruleId) ?? null)
@@ -279,38 +278,11 @@ async function hydrateReview(rowData) {
 
 function openRowEditor(event, rowData) {
   const isSameRow = editingRow.value?.ruleId === rowData.ruleId
-  const wasOpen = !!editingRow.value
-
   editingRow.value = rowData
   if (!isSameRow) {
     hydrateReview(rowData)
   }
-
-  const row = event.target?.closest ? event.target.closest('tr') : null
-  const rowRect = row ? row.getBoundingClientRect() : { top: 0, bottom: 0, height: 0 }
-  const clickX = event.clientX
-
-  if (popoverAnchor.value) {
-    popoverAnchor.value.style.left = `${clickX}px`
-    popoverAnchor.value.style.top = `${rowRect.top}px`
-    popoverAnchor.value.style.height = `${rowRect.height}px`
-  }
-
-  const anchorEvent = {
-    currentTarget: popoverAnchor.value,
-    target: popoverAnchor.value,
-    clientX: clickX,
-  }
-
-  if (isSameRow) {
-    reviewEditPopover.value.toggle(anchorEvent)
-  }
-  else if (wasOpen) {
-    reviewEditPopover.value.reposition(anchorEvent)
-  }
-  else {
-    reviewEditPopover.value.show(anchorEvent)
-  }
+  reviewEditPopover.value.openForRow(event, isSameRow)
 }
 
 const scrollLocked = computed(() => !!editingRow.value && !!reviewEditPopover.value?.isDirty)
@@ -423,12 +395,6 @@ function onRowClick(event) {
       @save="onPopoverSave"
       @status-action="onPopoverStatusAction"
       @close="editingRow = null"
-    />
-
-    <div
-      ref="popoverAnchor"
-      class="popover-anchor"
-      style="position: fixed; width: 0px; pointer-events: none; visibility: hidden; z-index: -1;"
     />
 
     <BulkStatusConfirmModal

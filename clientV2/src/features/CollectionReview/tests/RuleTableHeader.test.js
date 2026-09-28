@@ -1,6 +1,6 @@
 import { userEvent } from '@testing-library/user-event'
-import { screen } from '@testing-library/vue'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, screen } from '@testing-library/vue'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import RuleTableHeader from '../components/RuleTableHeader.vue'
@@ -134,6 +134,55 @@ describe('ruleTableHeader.vue', () => {
       await user.click(screen.getByText('Batch edit').closest('button'))
       expect(emitted()['bulk-action']).toBeTruthy()
       expect(emitted()['bulk-action'][0]).toEqual(['batchEdit'])
+    })
+  })
+
+  describe('search (Debounce & Clear)', () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('emits update:searchFilter only after the 250ms debounce', async () => {
+      const { emitted } = createWrapper()
+      const input = screen.getByPlaceholderText('Search...')
+
+      await fireEvent.update(input, 'asset')
+
+      expect(input).toHaveValue('asset')
+      expect(emitted()['update:searchFilter']).toBeFalsy()
+
+      vi.advanceTimersByTime(250)
+
+      const emits = emitted()['update:searchFilter']
+      expect(emits[emits.length - 1]).toEqual(['asset'])
+    })
+
+    it('shows the clear button only while there is a term and clears on click', async () => {
+      const { emitted } = createWrapper()
+      const input = screen.getByPlaceholderText('Search...')
+
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
+
+      await fireEvent.update(input, 'asset')
+      await vi.advanceTimersByTimeAsync(250)
+      await fireEvent.click(screen.getByLabelText('Clear search'))
+
+      expect(input).toHaveValue('')
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
+      const emits = emitted()['update:searchFilter']
+      expect(emits[emits.length - 1]).toEqual([''])
+    })
+
+    it('reflects an externally changed searchFilter prop', async () => {
+      const { rerender } = createWrapper({ searchFilter: 'one' })
+      expect(screen.getByPlaceholderText('Search...')).toHaveValue('one')
+
+      await rerender({ ...defaultProps, searchFilter: 'two' })
+      expect(screen.getByPlaceholderText('Search...')).toHaveValue('two')
     })
   })
 

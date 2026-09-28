@@ -76,6 +76,16 @@ const mockGridData = [
   { assetId: 'asset-3', assetName: 'Asset 3', access: 'rw', ruleId: 'V-123', result: 'pass', status: 'saved' },
 ]
 
+const searchGridData = [
+  { assetId: 'asset-1', assetName: 'web-01', access: 'rw', ruleId: 'V-123', result: 'fail', status: 'saved', assetLabels: [{ name: 'prod', color: '#fff' }], detail: 'Port 22 open', comment: 'ticket 4711', username: 'alice' },
+  { assetId: 'asset-2', assetName: 'db-01', access: 'rw', ruleId: 'V-123', result: 'pass', status: 'saved', assetLabels: [{ name: 'test', color: '#fff' }], detail: 'Compliant', comment: '', username: 'bob' },
+  { assetId: 'asset-3', assetName: 'web-02', access: 'rw', ruleId: 'V-123', result: 'pass', status: 'saved', assetLabels: [], detail: '', comment: 'see web-01', username: 'alice' },
+]
+
+function renderedAssetNames() {
+  return screen.getAllByRole('row').slice(1).map(tr => tr.querySelector('td').textContent.trim())
+}
+
 describe('ruleTableGrid.vue', () => {
   let mockDensityState
 
@@ -148,6 +158,40 @@ describe('ruleTableGrid.vue', () => {
       const checkboxes = screen.getAllByRole('checkbox', { name: 'select-row' })
       expect(checkboxes[0]).toBeChecked()
       expect(checkboxes[1]).not.toBeChecked()
+    })
+  })
+
+  describe('text search', () => {
+    it('shows every row when the term is blank', () => {
+      createWrapper({ gridData: searchGridData, searchFilter: '' })
+      expect(renderedAssetNames()).toEqual(['web-01', 'db-01', 'web-02'])
+    })
+
+    it('matches asset name, labels, detail, comment and user, ignoring case', async () => {
+      const { rerender } = createWrapper({ gridData: searchGridData, searchFilter: 'WEB' })
+      expect(renderedAssetNames()).toEqual(['web-01', 'web-02'])
+
+      await rerender({ ...defaultProps, gridData: searchGridData, searchFilter: 'prod' })
+      expect(renderedAssetNames()).toEqual(['web-01'])
+
+      await rerender({ ...defaultProps, gridData: searchGridData, searchFilter: 'compliant' })
+      expect(renderedAssetNames()).toEqual(['db-01'])
+
+      await rerender({ ...defaultProps, gridData: searchGridData, searchFilter: '4711' })
+      expect(renderedAssetNames()).toEqual(['web-01'])
+
+      await rerender({ ...defaultProps, gridData: searchGridData, searchFilter: 'bob' })
+      expect(renderedAssetNames()).toEqual(['db-01'])
+    })
+
+    it('does not search columns that are hidden', () => {
+      createWrapper({ gridData: searchGridData, searchFilter: 'alice', visibleFields: new Set(['labels', 'detail', 'comment', 'time']) })
+      expect(renderedAssetNames()).toEqual([])
+    })
+
+    it('still searches the asset name when every optional column is hidden', () => {
+      createWrapper({ gridData: searchGridData, searchFilter: 'db-', visibleFields: new Set() })
+      expect(renderedAssetNames()).toEqual(['db-01'])
     })
   })
 

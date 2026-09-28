@@ -1,7 +1,8 @@
 <script setup>
 import MultiSelect from 'primevue/multiselect'
+import { computed, ref } from 'vue'
 
-defineProps({
+const props = defineProps({
   columns: {
     type: Array,
     required: true,
@@ -14,8 +15,44 @@ defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+// Columns that carry a `group` are listed under that heading, in order of
+// first appearance; the selection stays a flat list of column objects.
+const isGrouped = computed(() => props.columns.some(c => c.group))
+
+const options = computed(() => {
+  if (!isGrouped.value) {
+    return props.columns
+  }
+  const groups = new Map()
+  for (const column of props.columns) {
+    const name = column.group ?? 'Other'
+    if (!groups.has(name)) {
+      groups.set(name, { group: name, items: [] })
+    }
+    groups.get(name).items.push(column)
+  }
+  return [...groups.values()]
+})
+
 function onToggle(val) {
   emit('update:modelValue', val)
+}
+
+const multiSelectRef = ref(null)
+const filterText = ref('')
+
+function onFilter(event) {
+  filterText.value = event.value ?? ''
+}
+
+// MultiSelect keeps its filter text private and only resets it on hide, so
+// clearing goes through the same handler its input uses. That keeps the
+// list, the focused option and the filter event in step, as if the user had
+// emptied the box themselves.
+function clearFilter() {
+  const ms = multiSelectRef.value
+  ms?.onFilterChange({ target: { value: '' } })
+  ms?.$refs.filterInput?.$el?.focus()
 }
 
 // The theme's small variant sizes root/box/icon from matched tokens,
@@ -30,6 +67,7 @@ const columnTogglePT = {
   dropdown: { style: 'width: auto; padding-right: 0.75rem; color: var(--color-text-bright);' },
   overlay: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,0.6);' },
   header: { style: 'background: var(--color-background-dark); border-bottom: 1px solid var(--color-border-light); padding: 0.35rem 0.6rem; gap: 0.5rem;' },
+  optionGroup: { style: 'background: var(--color-background-dark); color: var(--color-text-dim); padding: 0.45rem 0.6rem 0.15rem; font-size: var(--text-md); font-weight: 600;' },
   option: ({ context }) => ({
     style: {
       color: context.selected ? 'var(--color-text-bright)' : 'var(--color-text-primary)',
@@ -49,14 +87,19 @@ const columnTogglePT = {
 
 <template>
   <MultiSelect
+    ref="multiSelectRef"
     :model-value="modelValue"
-    :options="columns"
+    :options="options"
     option-label="header"
+    :option-group-label="isGrouped ? 'group' : undefined"
+    :option-group-children="isGrouped ? 'items' : undefined"
+    data-key="field"
     placeholder="Columns"
     :pt="columnTogglePT"
     scroll-height="22rem"
     filter
     @update:model-value="onToggle"
+    @filter="onFilter"
   >
     <template #value>
       <div class="column-toggle__value">
@@ -73,6 +116,18 @@ const columnTogglePT = {
     </template>
     <template #dropdownicon>
       <i class="pi pi-chevron-down" />
+    </template>
+    <template #filtericon>
+      <button
+        v-if="filterText"
+        type="button"
+        class="column-toggle__filter-clear"
+        aria-label="Clear column filter"
+        @click.stop="clearFilter"
+      >
+        <i class="pi pi-times" />
+      </button>
+      <i v-else class="pi pi-search" />
     </template>
   </MultiSelect>
 </template>
@@ -121,5 +176,24 @@ const columnTogglePT = {
 
 .column-toggle__option-text {
   font-size: var(--text-md);
+}
+
+/* The icon slot sits in an InputIcon, which ignores pointer events so the
+   input underneath stays clickable; the clear button has to opt back in. */
+.column-toggle__filter-clear {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-dim);
+  cursor: pointer;
+  font-size: inherit;
+}
+
+.column-toggle__filter-clear:hover {
+  color: var(--color-text-bright);
 }
 </style>

@@ -49,8 +49,8 @@ We use PrimeVue `pt` props to style the internals of complex components (like Di
 ```javascript
 // Example PT object for a Dialog
 const dialogPt = {
-  root: { style: 'background-color: #18181b; border: 1px solid #3f3f46;' },
-  header: { style: 'background-color: #18181b;' }
+  root: { style: 'background-color: var(--color-background-dark); border: 1px solid var(--color-border-default);' },
+  header: { style: 'background-color: var(--color-background-dark);' }
 }
 ```
 
@@ -66,6 +66,7 @@ Sizes come from the type scale and the rem row-height tokens; see [Typography an
 *   **Deep Selectors:** Avoid `::v-deep` or `>>>` to hack external component styles. It is brittle and breaks easily with library updates. Use the exposed `pt` API instead.
 *   **Global Styles:** Never write styles without `scoped` in a component file.
 *   **Literal Sizes:** No `font-size: 0.9rem`, no px row heights, no named font stacks. The convention tests reject them.
+*   **Literal Colors:** Every color is a theme token from `style.css` (`var(--color-warning-yellow)`, `var(--color-border-default)`, ...), in scoped CSS, PT objects and `color-mix()` alike. No hex, rgb or named colors, and no fallback value in `var()`: a fallback is a second, unthemed color that hides a missing token instead of failing visibly. If no token fits, add one to `style.css` (with its dark-theme value) rather than writing the color inline.
 
 ## 4. Dialogs & v-model
 For modal components, use a computed property with a getter/setter to handle the `v-model` cleanly.

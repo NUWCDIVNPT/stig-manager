@@ -33,14 +33,14 @@ const fetchStigs = () => {
   )
 }
 
-const { state: stigs, isLoading: stigsLoading, error: stigsError, execute: loadStigs } = useAsyncState(
+const { state: stigs, isLoading: stigsLoading, execute: loadStigs } = useAsyncState(
   fetchStigs,
   { initialState: [], immediate: false },
 )
 
 const selectedBenchmarkId = ref(null)
 
-const { state: checklistAssets, isLoading: checklistAssetsLoading, error: checklistAssetsError, execute: loadChecklistAssets } = useAsyncState(
+const { state: checklistAssets, isLoading: checklistAssetsLoading, execute: loadChecklistAssets } = useAsyncState(
   () => {
     if (!selectedBenchmarkId.value) {
       return []
@@ -122,7 +122,6 @@ function handleStigShieldClick(rowData) {
               :api-metrics-summary="stigs"
               agg-type="stig"
               :is-loading="stigsLoading"
-              :error-message="stigsError?.message || stigsError"
               :selected-key="selectedBenchmarkId"
               selectable
               data-key="benchmarkId"
@@ -137,16 +136,10 @@ function handleStigShieldClick(rowData) {
 
       <SplitterPanel :size="50" :min-size="15">
         <div class="panel-content">
-          <div class="panel-header">
-            <h3>Checklists</h3>
-            <span v-if="selectedBenchmarkId" class="badge">{{ selectedBenchmarkId }}</span>
-          </div>
           <div class="grid-container">
-            <div v-if="checklistAssetsError" class="error-state">
-              {{ checklistAssetsError?.message || checklistAssetsError }}
-            </div>
             <MetricsSummaryGrid
-              v-else
+              title="Checklists"
+              :badge="selectedBenchmarkId"
               :api-metrics-summary="checklistAssets"
               agg-type="unagg"
               :is-loading="checklistAssetsLoading"
