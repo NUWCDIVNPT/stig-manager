@@ -52,10 +52,10 @@ vi.mock('../../../components/common/ReviewEditPopover.vue', () => ({
     props: ['currentReview', 'selectedRuleId', 'collectionId', 'assetId', 'fieldSettings', 'accessMode', 'canAccept', 'isSaving', 'saveError', 'clearSaveError', 'enabledTabs', 'subjectLabel'],
     setup(props, { expose }) {
       expose({
-        show: vi.fn(),
+        openForRow: vi.fn(),
         hide: vi.fn(),
-        toggle: vi.fn(),
-        reposition: vi.fn(),
+        isDirty: false,
+        triggerUnsavedWarning: vi.fn(),
       })
       return {}
     },
