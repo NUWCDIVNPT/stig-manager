@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
-import { severityMap } from '../../../shared/lib/checklistUtils.js'
+import { catLabel } from '../../../shared/lib/exportCells.js'
 import CollectionChecklistGridHeader from './CollectionChecklistGridHeader.vue'
 import CollectionChecklistGridTable from './CollectionChecklistGridTable.vue'
 
@@ -33,10 +33,8 @@ const props = defineProps({
 
 const emit = defineEmits(['select-rule', 'refresh'])
 
-const catLabel = r => (severityMap[r.severity] ? `CAT ${severityMap[r.severity]}` : '')
-
 const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
-  { field: 'severity', header: 'CAT', filterValues: catLabel, quickSearch: false },
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
   { field: 'groupId', header: 'Group' },
   { field: 'groupTitle', header: 'Group Title' },
   { field: 'version', header: 'STIG Id' },

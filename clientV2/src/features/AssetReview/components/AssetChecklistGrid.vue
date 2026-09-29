@@ -7,6 +7,9 @@ import { fetchReview, patchReview, putReview } from '../../../shared/api/reviews
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
+import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
+import { capitalize, catLabel, statusText } from '../../../shared/lib/exportCells.js'
 import { statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { useBulkReviewStatus } from '../composables/useBulkReviewStatus.js'
 import AssetChecklistGridHeader from './AssetChecklistGridHeader.vue'
@@ -14,10 +17,6 @@ import AssetChecklistGridTable from './AssetChecklistGridTable.vue'
 import BulkStatusConfirmModal from './BulkStatusConfirmModal.vue'
 
 const props = defineProps({
-  searchFilter: {
-    type: String,
-    default: '',
-  },
   gridData: {
     type: Array,
     default: () => [],
@@ -68,7 +67,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:searchFilter', 'review-saved', 'review-loaded', 'refresh'])
+const emit = defineEmits(['review-saved', 'review-loaded', 'refresh'])
 
 const { selectRule } = props
 
@@ -100,9 +99,26 @@ const {
   onApplied: () => emit('refresh'),
 })
 
-function onVisibleRowsChange(rows) {
-  visibleRows.value = rows ?? []
-}
+// Quick search covers the text columns whether shown or not, as before
+const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
+  { field: 'groupId', header: 'Group' },
+  { field: 'ruleId', header: 'Rule Id' },
+  { field: 'ruleTitle', header: 'Rule Title' },
+  { field: 'groupTitle', header: 'Group Title' },
+  { field: 'detail', header: 'Detail' },
+  { field: 'comment', header: 'Comment' },
+  { field: 'username', header: 'User', searchText: r => r.username ?? r.status?.user?.username },
+  { field: 'engineInfo', header: 'Engine product', searchText: r => [r.resultEngine?.product, r.resultEngine?.type, r.resultEngine?.version].filter(Boolean).join(' ') },
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
+  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result), quickSearch: false },
+  { field: 'resultEngine', header: 'Engine', filterValues: r => capitalize(getEngineDisplay(r)), quickSearch: false },
+  { field: 'status', header: 'Status', filterValues: r => statusText(r.status), quickSearch: false },
+])
+
+// Bulk submit/accept act on the rows left after search and filters
+watch(filteredRows, (rows) => {
+  visibleRows.value = rows
+}, { immediate: true })
 
 const pendingAction = ref(null)
 
@@ -246,18 +262,13 @@ const visibleFields = computed(() => {
 
 const { itemSize, gridStyle } = useGridDensity('asset-review-checklist')
 
-const localSearchFilter = computed({
-  get: () => props.searchFilter,
-  set: val => emit('update:searchFilter', val),
-})
-
 watch([
   () => route.params.collectionId,
   () => route.params.assetId,
   () => route.params.benchmarkId,
   () => route.params.revisionStr,
 ], () => {
-  localSearchFilter.value = ''
+  searchFilter.value = ''
 })
 
 // The checklist endpoint carries no reviewer or status user, so the first time
@@ -357,10 +368,13 @@ function onRowClick(event) {
     @scroll.capture="onGridScroll" @wheel.capture="onGridWheel"
   >
     <AssetChecklistGridHeader
-      v-model:search-filter="localSearchFilter"
+      v-model:search-filter="searchFilter"
+      v-model:filters="gridFilters"
       v-model:display-mode="displayMode"
       v-model:selected-columns="selectedColumns"
       :toggleable-columns="TOGGLEABLE_COLUMNS"
+      :filter-columns="filterColumns"
+      :filter-value-options="valueOptions"
       :asset="asset" :revision-info="revisionInfo" :is-loading="isLoading"
       :access-mode="accessMode"
       :can-accept="canAccept"
@@ -371,14 +385,15 @@ function onRowClick(event) {
     />
 
     <AssetChecklistGridTable
-      :selected-row="selectedRow" :grid-data="gridData" :is-loading="isLoading"
-      :search-filter="localSearchFilter"
+      :selected-row="selectedRow" :grid-data="filteredRows" :is-loading="isLoading"
+      :total-count="gridData.length"
+      :is-filtered="isFiltered"
+      :highlight-term="highlightTerm"
       :visible-fields="visibleFields"
       :item-size="itemSize"
       :export-filename="exportFilename"
       @update:selected-row="onSelectionChange" @row-click="onRowClick"
       @refresh="emit('refresh')"
-      @update:visible-rows="onVisibleRowsChange"
     />
 
     <ReviewEditPopover

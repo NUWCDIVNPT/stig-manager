@@ -3,7 +3,7 @@ import MultiSelect from 'primevue/multiselect'
 import SelectButton from 'primevue/selectbutton'
 import { computed, ref, watch } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { applyColumnFilters, isActive as isFilterActive, valuesFilter } from '../../../shared/lib/columnFilters.js'
+import { isActive as isFilterActive, valuesFilter } from '../../../shared/lib/columnFilters.js'
 import { fetchMetaCollections } from '../../MetaCollectionView/api/metaApi.js'
 
 const props = defineProps({
@@ -99,8 +99,8 @@ const effectiveCollectionIds = computed(() => {
   if (!appliedExclude.value) {
     return appliedIds.value
   }
-  const filters = { collectionId: { ...props.modelValue, kind: 'values' } }
-  return applyColumnFilters(options.value || [], filters).map(opt => opt.collectionId)
+  const excluded = new Set(appliedIds.value)
+  return (options.value || []).map(opt => opt.collectionId).filter(id => !excluded.has(id))
 })
 
 watch(effectiveCollectionIds, (ids) => {

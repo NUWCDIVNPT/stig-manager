@@ -44,14 +44,13 @@ describe('assetChecklistGridTable', () => {
     gridData: [],
     isLoading: false,
     selectedRow: null,
-    searchFilter: '',
     visibleFields: new Set(['groupId', 'ruleId', 'result', 'status', 'severity']),
     itemSize: 30,
   }
 
   function createWrapper(props = {}) {
     return renderWithProviders(AssetChecklistGridTable, {
-      props: { ...defaultProps, ...props },
+      props: { ...defaultProps, totalCount: props.gridData?.length ?? 0, ...props },
     })
   }
 
@@ -144,20 +143,15 @@ describe('assetChecklistGridTable', () => {
     })
   })
 
-  describe('visible rows', () => {
-    it('emits update:visible-rows with all rows on mount', () => {
-      const gridData = [{ ruleId: 'V-1' }, { ruleId: 'V-2' }]
-      const { emitted } = createWrapper({ gridData })
-      const events = emitted()['update:visible-rows']
-      expect(events).toBeTruthy()
-      expect(events[events.length - 1][0].map(r => r.ruleId)).toEqual(['V-1', 'V-2'])
+  describe('filtered rows', () => {
+    it('counts the filtered rows against the unfiltered total', () => {
+      createWrapper({ gridData: [{ ruleId: 'V-1' }], totalCount: 3, isFiltered: true })
+      expect(document.querySelector('.status-footer').textContent).toMatch(/1\D+3/)
     })
 
-    it('re-emits update:visible-rows when gridData changes', async () => {
-      const { emitted, rerender } = createWrapper({ gridData: [{ ruleId: 'V-1' }] })
-      await rerender({ ...defaultProps, gridData: [{ ruleId: 'V-1' }, { ruleId: 'V-2' }] })
-      const events = emitted()['update:visible-rows']
-      expect(events[events.length - 1][0].map(r => r.ruleId)).toEqual(['V-1', 'V-2'])
+    it('says so when search and filters hide every row', () => {
+      createWrapper({ gridData: [], totalCount: 3, isFiltered: true })
+      expect(screen.getByText('No rules match the current search and filters.')).toBeTruthy()
     })
   })
 })

@@ -24,6 +24,7 @@ import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
+import { capitalize, statusText } from '../../../shared/lib/exportCells.js'
 import { labelNames } from '../../../shared/lib/gridSearch.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
@@ -94,17 +95,16 @@ const TOGGLE_COLUMNS = [
 ]
 const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility(TOGGLE_COLUMNS, 'findingsIndividual.columns')
 
-const capitalize = v => (v ? v[0].toUpperCase() + v.slice(1) : '')
 const stigIds = r => (r.stigs ?? []).map(s => s.benchmarkId)
 // Labels show inside the asset cell, so they search whenever Asset is visible
 const { term: searchTerm, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(decoratedRows, [
   { field: 'assetName', header: 'Asset' },
-  { field: 'labels', header: 'Labels', searchText: r => labelNames(r.labels), filterValues: r => r.labels, shownWith: 'assetName' },
-  { field: 'stigs', header: 'STIGs', searchText: r => stigIds(r).join(' '), filterValues: stigIds },
+  { field: 'labels', header: 'Labels', searchText: r => labelNames(r.labels), filterValues: r => r.labels, multiple: true, shownWith: 'assetName' },
+  { field: 'stigs', header: 'STIGs', searchText: r => stigIds(r).join(' '), filterValues: stigIds, multiple: true },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
   { field: 'resultEngine', header: 'Engine', searchText: r => capitalize(r._engineDisplay), filterValues: r => capitalize(r._engineDisplay) },
-  { field: 'status', header: 'Status', searchText: r => capitalize(r._statusLabel), filterValues: r => capitalize(r._statusLabel) },
+  { field: 'status', header: 'Status', searchText: r => statusText(r.status), filterValues: r => statusText(r.status) },
   { field: 'username', header: 'Reviewer', filterValues: r => r.username },
 ], { visibleFields })
 

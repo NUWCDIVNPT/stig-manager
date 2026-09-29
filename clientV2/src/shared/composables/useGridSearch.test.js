@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 import { searchFilter } from '../lib/gridSearch.js'
 import { useGridSearch } from './useGridSearch.js'
 
@@ -83,10 +83,19 @@ describe('useGridSearch', () => {
       { field: 'name', header: 'Name' },
       { field: 'os', header: 'OS', filterValues: r => r.os },
     ])
-    expect(s.filterColumns.value).toEqual([
-      { field: 'name', header: 'Name', kind: 'text' },
-      { field: 'os', header: 'OS', kind: 'values' },
+    expect(s.filterColumns.value.map(c => [c.field, c.header, c.kind])).toEqual([
+      ['name', 'Name', 'text'],
+      ['os', 'OS', 'values'],
     ])
     expect(s.valueOptions.value.os.map(o => o.value)).toEqual(['linux', 'windows'])
+  })
+
+  it('drops rules whose column goes away', async () => {
+    const cols = ref(columns)
+    const s = useGridSearch(rows, cols)
+    s.filters.value = [searchFilter('os', 'text', { value: 'linux' }), searchFilter('all', 'text', { value: 'web' })]
+    cols.value = columns.slice(0, 1)
+    await nextTick()
+    expect(s.filters.value.map(f => f.key)).toEqual(['all'])
   })
 })

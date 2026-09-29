@@ -10,6 +10,7 @@ import submitIcon from '../../../assets/submit.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
 import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import AssetStigImportModal from '../../AssetStigImport/components/AssetStigImportModal.vue'
@@ -31,6 +32,14 @@ const props = defineProps({
   toggleableColumns: {
     type: Array,
     required: true,
+  },
+  filterColumns: {
+    type: Array,
+    default: () => [],
+  },
+  filterValueOptions: {
+    type: Object,
+    default: () => ({}),
   },
   canAccept: {
     type: Boolean,
@@ -121,6 +130,7 @@ const displayMode = defineModel('displayMode', { type: String, required: true })
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
 
 const searchFilter = defineModel('searchFilter', { type: String, default: '' })
+const filters = defineModel('filters', { type: Array, default: () => [] })
 
 const checklistMenu = ref()
 
@@ -229,10 +239,13 @@ function toggleChecklistMenu(event) {
     </div>
     <div class="checklist-grid__header-bottom">
       <TieredMenu ref="checklistMenu" :model="checklistMenuItems" :popup="true" :pt="checklistMenuPT" />
-      <GridSearch
-        v-model="searchFilter" class="checklist-grid__header-search"
-        placeholder="Search reviews..." label="Search reviews"
-      />
+      <div class="checklist-grid__header-search">
+        <GridSearch
+          v-model="searchFilter" class="checklist-grid__header-search-input"
+          placeholder="Search reviews..." label="Search reviews"
+        />
+        <GridFilterButton v-model="filters" :columns="filterColumns" :value-options="filterValueOptions" />
+      </div>
       <div class="checklist-grid__header-controls">
         <button
           v-if="accessMode === 'rw'"
@@ -314,8 +327,16 @@ function toggleChecklistMenu(event) {
 }
 
 .checklist-grid__header-search {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   flex: 1 1 24rem;
-  max-width: 42rem;
+  max-width: 48rem;
+  min-width: 0;
+}
+
+.checklist-grid__header-search-input {
+  flex: 1;
 }
 
 .checklist-grid__title-row {

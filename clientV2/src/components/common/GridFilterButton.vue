@@ -4,14 +4,13 @@ import Popover from 'primevue/popover'
 import Select from 'primevue/select'
 import { computed, ref } from 'vue'
 import { normalizeColor } from '../../shared/lib/colorUtils.js'
-import { isActive } from '../../shared/lib/columnFilters.js'
+import { isActive, TEXT_MODES } from '../../shared/lib/columnFilters.js'
 import {
   ALL_COLUMNS,
   describeFilter,
   filterOperator,
   isNegated,
   searchFilter,
-  TEXT_OPERATORS,
   VALUE_OPERATORS,
   withColumn,
   withOperator,
@@ -20,7 +19,7 @@ import LabelChip from './Label.vue'
 
 // Filter button for grid headers. Opens a rule builder; rules apply on Apply and AND together.
 const props = defineProps({
-  // [{ field, header, kind: 'text' | 'values' }] from searchableColumns()
+  // [{ field, header, kind: 'text' | 'values' }], filterColumns from useGridSearch
   columns: {
     type: Array,
     default: () => [],
@@ -43,18 +42,22 @@ const columnOptions = computed(() => [
 ])
 
 const applied = computed(() => model.value.filter(isActive))
-const summary = computed(() => applied.value
-  .map((f) => {
-    const d = describeFilter(f, props.columns)
-    return `${d.column} ${d.op} ${d.value}`
-  })
-  .join('\n'))
+const summary = computed(() => applied.value.map(f => describeFilter(f, props.columns)).join('\n'))
 
 const MAX_VALUE_CHIPS = 2
 
 function selectedOptions(rule) {
   const options = props.valueOptions[rule.key] ?? []
   return rule.value.map(v => options.find(o => o.value === v) ?? { value: v, name: v, color: null })
+}
+
+// "Has all of" only for columns whose rows hold several values
+function operatorOptions(rule) {
+  if (rule.kind !== 'values') {
+    return TEXT_MODES
+  }
+  const multiple = props.columns.find(c => c.field === rule.key)?.multiple
+  return multiple ? VALUE_OPERATORS : VALUE_OPERATORS.filter(o => o.value !== 'all')
 }
 
 function newRule() {
@@ -101,13 +104,11 @@ const selectPt = {
 }
 
 const valuesPt = {
-  root: { style: 'width: 100%; height: 2.1rem; background: var(--color-background-light); border-color: var(--color-border-default);' },
+  ...selectPt,
   label: { style: 'padding: 0 0.6rem; display: flex; align-items: center; height: 100%; font-size: var(--text-md); color: var(--color-text-bright);' },
-  dropdown: { style: 'width: 1.75rem; color: var(--color-text-primary);' },
   overlay: { style: { width: '280px' } },
   listContainer: { style: { maxHeight: '270px' } },
   list: { style: { padding: '0.25rem' } },
-  option: { style: { padding: '0.4rem 0.7rem', fontSize: 'var(--text-md)' } },
   header: { style: { padding: '0.5rem 0.6rem' } },
   pcFilter: { root: { style: { padding: '0.35rem 0.6rem', fontSize: 'var(--text-md)' } } },
 }
@@ -154,7 +155,7 @@ const popoverPt = {
           />
           <Select
             :model-value="filterOperator(rule)"
-            :options="rule.kind === 'values' ? VALUE_OPERATORS : TEXT_OPERATORS"
+            :options="operatorOptions(rule)"
             option-label="label"
             option-value="value"
             aria-label="Operator"
@@ -168,8 +169,6 @@ const popoverPt = {
             option-value="value"
             option-label="name"
             placeholder="Pick values"
-            :max-selected-labels="2"
-            selected-items-label="{0} selected"
             filter
             aria-label="Values"
             :pt="valuesPt"
@@ -180,7 +179,7 @@ const popoverPt = {
               <span v-else class="grid-filter__chips">
                 <template v-for="opt in selectedOptions(rule).slice(0, MAX_VALUE_CHIPS)" :key="opt.value">
                   <LabelChip v-if="opt.color" :value="opt.name" :color="normalizeColor(opt.color)" />
-                  <span v-else class="grid-filter__empty-option">{{ opt.name }}</span>
+                  <span v-else :class="{ 'grid-filter__empty-option': opt.value === '' }">{{ opt.name }}</span>
                 </template>
                 <span v-if="rule.value.length > MAX_VALUE_CHIPS" class="grid-filter__more">+{{ rule.value.length - MAX_VALUE_CHIPS }}</span>
               </span>
@@ -200,15 +199,6 @@ const popoverPt = {
               @input="setRule(i, { ...rule, value: $event.target.value })"
               @keydown.enter.prevent="apply"
             >
-            <button
-              type="button"
-              class="grid-filter__toggle"
-              :aria-pressed="rule.matchCase"
-              title="Match case"
-              @click="setRule(i, { ...rule, matchCase: !rule.matchCase })"
-            >
-              Aa
-            </button>
             <button
               type="button"
               class="grid-filter__toggle"
@@ -297,12 +287,12 @@ const popoverPt = {
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.6rem 0.8rem;
+  background: var(--color-background-light);
 }
 
 .grid-filter__head {
   border-bottom: 1px solid var(--color-border-default);
   border-radius: 6px 6px 0 0;
-  background: var(--color-background-light);
   font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-text-bright);
@@ -430,7 +420,6 @@ const popoverPt = {
 .grid-filter__foot {
   border-top: 1px solid var(--color-border-default);
   border-radius: 0 0 6px 6px;
-  background: var(--color-background-light);
 }
 
 .grid-filter__actions {

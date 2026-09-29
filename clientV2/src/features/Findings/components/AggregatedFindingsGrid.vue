@@ -3,7 +3,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Popover from 'primevue/popover'
 import Select from 'primevue/select'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
@@ -15,7 +15,7 @@ import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
-import { ALL_COLUMNS } from '../../../shared/lib/gridSearch.js'
+import { catLabel } from '../../../shared/lib/exportCells.js'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { FINDINGS_AGGREGATOR_OPTIONS, FINDINGS_AGGREGATORS } from '../constants.js'
 import PoamExport from './PoamExport.vue'
@@ -118,32 +118,22 @@ function onFooterAction(key) {
 }
 
 // Keyed like visibleColumns so the searchable columns follow the aggregator
-const catLabel = r => (severityMap[r.severity] ? `CAT ${severityMap[r.severity]}` : '')
 const stigIds = r => (r.stigs ?? []).map(s => s.benchmarkId)
 const SEARCH_COLUMNS = {
-  cat: { field: 'severity', header: 'CAT', filterValues: catLabel, quickSearch: false },
+  cat: { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
   group: { field: 'groupId', header: 'Group' },
   rule: { field: 'ruleId', header: 'Rule' },
   cci: { field: 'cci', header: 'CCI' },
   apAcronym: { field: 'apAcronym', header: 'AP Acronym', filterValues: r => r.apAcronym },
   title: { field: 'title', header: 'Title' },
   definition: { field: 'definition', header: 'Definition' },
-  stigs: { field: 'stigs', header: 'STIGs', searchText: r => stigIds(r).join(' '), filterValues: stigIds },
+  stigs: { field: 'stigs', header: 'STIGs', searchText: r => stigIds(r).join(' '), filterValues: stigIds, multiple: true },
 }
 const searchColumns = computed(() => Object.entries(SEARCH_COLUMNS)
   .filter(([key]) => props.visibleColumns.has(key))
   .map(([, col]) => col))
 
 const { term: searchTerm, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.rows, searchColumns)
-
-// A new aggregator drops the rules whose column went away
-watch(searchColumns, (cols) => {
-  const fields = new Set(cols.map(c => c.field))
-  const kept = gridFilters.value.filter(f => f.key === ALL_COLUMNS || fields.has(f.key))
-  if (kept.length !== gridFilters.value.length) {
-    gridFilters.value = kept
-  }
-})
 
 function onRowSelect(event) {
   emit('select-finding', event.data)

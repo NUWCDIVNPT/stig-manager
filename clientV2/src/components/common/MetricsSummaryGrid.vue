@@ -205,7 +205,7 @@ const columns = computed(() => {
   const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: TextColumn, searchText: r => r.title, style: cellStyle(WIDTH.title) }
   const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: TextColumn, searchText: r => r.revisionStr, style: cellStyle(WIDTH.revision) }
   const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchText: r => r.assetName, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name) }
-  const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, searchText: r => labelNames(r.labels), filterValues: r => r.labels, style: cellStyle(WIDTH.labels) }
+  const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, searchText: r => labelNames(r.labels), filterValues: r => r.labels, multiple: true, style: cellStyle(WIDTH.labels) }
   switch (aggregationType.value) {
     case 'collection':
       return [

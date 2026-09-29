@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { ALL_COLUMNS, applyGridSearch, columnValueOptions, describeFilter, filterOperator, filterRows, isNegated, labelNames, searchableColumns, searchFilter, withColumn, withOperator } from '../lib/gridSearch.js'
-
-const columns = [
-  { field: 'name', searchText: r => r.name },
-  { field: 'labels', searchText: r => labelNames(r.labels) },
-  { field: 'checks' },
-]
+import {
+  ALL_COLUMNS,
+  applyGridSearch,
+  columnValueOptions,
+  describeFilter,
+  filterOperator,
+  isNegated,
+  labelNames,
+  searchFilter,
+  withColumn,
+  withOperator,
+} from '../lib/gridSearch.js'
 
 const rows = [
   { name: 'host-01', labels: [{ name: 'web' }, { name: 'prod' }], checks: 180 },
@@ -13,36 +18,12 @@ const rows = [
   { name: 'db-01', labels: [{ name: 'prod' }], checks: 180 },
 ]
 
-describe('filterRows', () => {
-  it('returns the same array for a blank term', () => {
-    expect(filterRows(rows, columns, '')).toBe(rows)
-    expect(filterRows(rows, columns, '   ')).toBe(rows)
-    expect(filterRows(rows, columns, undefined)).toBe(rows)
-  })
-
-  it('matches case-insensitively on any searchable column', () => {
-    expect(filterRows(rows, columns, 'HOST').map(r => r.name)).toEqual(['host-01', 'host-02'])
-    expect(filterRows(rows, columns, 'prod').map(r => r.name)).toEqual(['host-01', 'db-01'])
-  })
-
-  it('ignores columns without an extractor', () => {
-    expect(filterRows(rows, columns, '180')).toEqual([])
-  })
-
-  it('searches only the columns it is given', () => {
-    const nameOnly = columns.filter(c => c.field === 'name')
-    expect(filterRows(rows, nameOnly, 'prod')).toEqual([])
-  })
-
-  it('returns nothing when no column is searchable', () => {
-    expect(filterRows(rows, [{ field: 'checks' }], 'host')).toEqual([])
-  })
-
-  it('tolerates extractors that return null', () => {
-    const cols = [{ field: 'x', searchText: () => null }]
-    expect(filterRows(rows, cols, 'a')).toEqual([])
-  })
-})
+const cols = [
+  { field: 'name', header: 'Asset', searchText: r => r.name },
+  { field: 'labels', header: 'Labels', searchText: r => labelNames(r.labels), filterValues: r => r.labels },
+]
+const names = list => list.map(r => r.name)
+const run = (filters, visibleColumns = cols) => names(applyGridSearch(rows, filters, { columns: cols, visibleColumns }))
 
 describe('labelNames', () => {
   it('joins names and copes with missing input', () => {
@@ -52,29 +33,14 @@ describe('labelNames', () => {
   })
 })
 
-describe('scoped grid search', () => {
-  const cols = [
-    { field: 'name', header: 'Asset', searchText: r => r.name },
-    { field: 'labels', header: 'Labels', searchText: r => labelNames(r.labels), filterValues: r => r.labels },
-    { field: 'checks', header: 'Checks' },
-  ]
-  const names = list => list.map(r => r.name)
-  const run = (filters, visibleColumns = cols) => names(applyGridSearch(rows, filters, { columns: cols, visibleColumns }))
-
-  it('lists searchable columns with their kind', () => {
-    expect(searchableColumns(cols)).toEqual([
-      { field: 'name', header: 'Asset', kind: 'text' },
-      { field: 'labels', header: 'Labels', kind: 'values' },
-    ])
-  })
-
+describe('applyGridSearch', () => {
   it('returns the same array when nothing is active', () => {
     expect(applyGridSearch(rows, [searchFilter()], { columns: cols })).toBe(rows)
   })
 
-  it('searches all visible columns, and excludes rows where any matches', () => {
+  it('searches all visible columns, case-insensitively', () => {
+    expect(run([searchFilter(ALL_COLUMNS, 'text', { value: 'HOST' })])).toEqual(['host-01', 'host-02'])
     expect(run([searchFilter(ALL_COLUMNS, 'text', { value: 'prod' })])).toEqual(['host-01', 'db-01'])
-    expect(run([searchFilter(ALL_COLUMNS, 'text', { value: 'prod', exclude: true })])).toEqual(['host-02'])
     expect(run([searchFilter(ALL_COLUMNS, 'text', { value: 'prod' })], cols.slice(0, 1))).toEqual([])
   })
 
@@ -83,30 +49,20 @@ describe('scoped grid search', () => {
     expect(run([searchFilter(ALL_COLUMNS, 'text', { value: 'db-01', mode: 'notEquals' })])).toEqual(['host-01', 'host-02'])
   })
 
-  it('describes filters and knows when they negate', () => {
-    const t = searchFilter('name', 'text', { value: ' web ', mode: 'notContains', matchCase: true })
-    expect(describeFilter(t, cols)).toEqual({ column: 'Asset', op: 'does not contain', value: '"web" (match case)' })
-    expect(isNegated(t)).toBe(true)
-    const v = searchFilter('labels', 'values', { value: ['prod', ''], exclude: true })
-    expect(describeFilter(v, cols)).toEqual({ column: 'Labels', op: 'is none of', value: 'prod, (none)' })
-    expect(isNegated(v)).toBe(true)
-    expect(describeFilter(searchFilter(ALL_COLUMNS, 'text', { value: 'x' })).column).toBe('Any column')
+  it('scopes text rules to one column with modes', () => {
+    expect(run([searchFilter('name', 'text', { value: 'host' })])).toEqual(['host-01', 'host-02'])
+    expect(run([searchFilter('name', 'text', { value: 'db-01', mode: 'equals' })])).toEqual(['db-01'])
+    expect(run([searchFilter('name', 'text', { value: 'host', mode: 'notContains' })])).toEqual(['db-01'])
   })
 
-  it('scopes text filters to one column with modes and exclude', () => {
-    expect(run([searchFilter('name', 'text', { value: 'host', mode: 'startsWith' })])).toEqual(['host-01', 'host-02'])
-    expect(run([searchFilter('name', 'text', { value: '01', mode: 'endsWith', exclude: true })])).toEqual(['host-02'])
-  })
-
-  it('matches list columns by value with any, all, exact and none', () => {
+  it('matches list columns by value with any, all and none', () => {
     expect(run([searchFilter('labels', 'values', { value: ['prod'] })])).toEqual(['host-01', 'db-01'])
     expect(run([searchFilter('labels', 'values', { value: ['web', 'prod'], match: 'all' })])).toEqual(['host-01'])
-    expect(run([searchFilter('labels', 'values', { value: ['prod'], match: 'exact' })])).toEqual(['db-01'])
     expect(run([searchFilter('labels', 'values', { value: [''] })])).toEqual(['host-02'])
     expect(run([searchFilter('labels', 'values', { value: ['web'], exclude: true })])).toEqual(['host-02', 'db-01'])
   })
 
-  it('aNDs filters and keeps keyed filters when their column is hidden', () => {
+  it('aNDs rules and keeps keyed rules when their column is hidden', () => {
     const filters = [
       searchFilter('labels', 'values', { value: ['prod'] }),
       searchFilter('name', 'text', { value: 'db' }),
@@ -120,41 +76,63 @@ describe('scoped grid search', () => {
       { id: 1, label: [{ labelId: 'a', name: 'prod', color: '00ff00' }] },
       { id: 2, label: [{ labelId: null, name: null, color: null }] },
     ]
-    expect(columnValueOptions(labelRows, labelCol)).toEqual([
-      { value: '', name: '(no label)', color: null },
-      { value: 'prod', name: 'prod', color: '00ff00' },
-    ])
     const matched = applyGridSearch(labelRows, [searchFilter('label', 'values', { value: [''] })], { columns: [labelCol] })
     expect(matched.map(r => r.id)).toEqual([2])
   })
+})
 
-  it('collects distinct list values, with a none option', () => {
+describe('columnValueOptions', () => {
+  const labelCol = { field: 'labels', header: 'Labels', filterValues: r => r.labels }
+
+  it('collects distinct values with colors, and a none option', () => {
     const labelRows = [
       { labels: [{ name: 'prod', color: '00ff00' }, { name: 'app', color: 'ff0000' }] },
       { labels: [{ name: 'prod', color: '00ff00' }] },
       { labels: [] },
     ]
-    expect(columnValueOptions(labelRows, cols[1])).toEqual([
+    expect(columnValueOptions(labelRows, labelCol)).toEqual([
       { value: '', name: '(no labels)', color: null },
       { value: 'app', name: 'app', color: 'ff0000' },
       { value: 'prod', name: 'prod', color: '00ff00' },
     ])
-    expect(columnValueOptions(labelRows, cols[0])).toEqual([])
+  })
+
+  it('treats a nameless label as none and handles plain values', () => {
+    expect(columnValueOptions([{ labels: [{ name: null }] }, { labels: [{ name: 'prod' }] }], labelCol).map(o => o.value)).toEqual(['', 'prod'])
+    const osCol = { field: 'os', header: 'OS', filterValues: r => r.os }
+    expect(columnValueOptions([{ os: 'linux' }, { os: 'aix' }, { os: 'linux' }], osCol).map(o => o.value)).toEqual(['aix', 'linux'])
+  })
+})
+
+describe('rule helpers', () => {
+  it('describes rules in one line', () => {
+    expect(describeFilter(searchFilter('name', 'text', { value: ' web ', mode: 'notContains', matchWord: true }), cols))
+      .toBe('Asset does not contain "web" (whole word)')
+    expect(describeFilter(searchFilter('labels', 'values', { value: ['prod', ''], exclude: true }), cols))
+      .toBe('Labels is none of prod, (none)')
+    expect(describeFilter(searchFilter(ALL_COLUMNS, 'text', { value: 'x' }))).toBe('Any column contains "x"')
+  })
+
+  it('knows when a rule negates', () => {
+    expect(isNegated(searchFilter('name', 'text', { mode: 'notEquals' }))).toBe(true)
+    expect(isNegated(searchFilter('name', 'text'))).toBe(false)
+    expect(isNegated(searchFilter('labels', 'values', { exclude: true }))).toBe(true)
   })
 
   it('maps operators onto text modes and list match plus exclude', () => {
-    const t = withOperator(searchFilter('name', 'text', { exclude: true }), 'notEquals')
-    expect(t).toMatchObject({ mode: 'notEquals', exclude: false })
+    const t = withOperator(searchFilter('name', 'text'), 'notEquals')
     expect(filterOperator(t)).toBe('notEquals')
     const v = withOperator(searchFilter('labels', 'values'), 'none')
     expect(v).toMatchObject({ match: 'any', exclude: true })
     expect(filterOperator(v)).toBe('none')
-    expect(filterOperator(withOperator(v, 'exact'))).toBe('exact')
+    expect(filterOperator(withOperator(v, 'all'))).toBe('all')
   })
 
-  it('keeps settings when the column kind matches, and resets otherwise', () => {
-    const t = searchFilter('name', 'text', { value: 'x', matchCase: true })
-    expect(withColumn(t, ALL_COLUMNS, 'text')).toMatchObject({ key: ALL_COLUMNS, value: 'x', matchCase: true })
+  it('keeps a text rule across text columns, and resets list rules', () => {
+    const t = searchFilter('name', 'text', { value: 'x', matchWord: true })
+    expect(withColumn(t, ALL_COLUMNS, 'text')).toMatchObject({ key: ALL_COLUMNS, value: 'x', matchWord: true })
     expect(withColumn(t, 'labels', 'values')).toEqual(searchFilter('labels', 'values'))
+    const v = searchFilter('labels', 'values', { value: ['prod'] })
+    expect(withColumn(v, 'os', 'values')).toEqual(searchFilter('os', 'values'))
   })
 })

@@ -3,6 +3,7 @@ import { useColumnVisibility } from '../../../shared/composables/useColumnVisibi
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
+import { capitalize, statusText } from '../../../shared/lib/exportCells.js'
 import { labelNames } from '../../../shared/lib/gridSearch.js'
 import RuleTableGrid from './RuleTableGrid.vue'
 import RuleTableHeader from './RuleTableHeader.vue'
@@ -62,6 +63,7 @@ const emit = defineEmits(['review-saved', 'update:selection', 'bulk-action'])
 const { gridStyle } = useGridDensity('collection-rule-table')
 
 const TOGGLEABLE_COLUMNS = [
+  { field: 'assetName', header: 'Asset', locked: true },
   { field: 'labels', header: 'Labels' },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
@@ -69,22 +71,19 @@ const TOGGLEABLE_COLUMNS = [
   { field: 'time', header: 'Time' },
 ]
 
-const { selectedColumns, visibleFields } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'ruleTable.columns')
+const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'ruleTable.columns')
 
-const capitalize = v => (v ? v[0].toUpperCase() + v.slice(1) : '')
-const statusLabel = r => capitalize(r.status?.label ?? r.status)
-
-// Asset is always shown; the other text columns search while visible
+// Text columns search while visible; Asset is locked on
 const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
   { field: 'assetName', header: 'Asset' },
-  { field: 'labels', header: 'Labels', searchText: r => labelNames(r.assetLabels), filterValues: r => r.assetLabels },
+  { field: 'labels', header: 'Labels', searchText: r => labelNames(r.assetLabels), filterValues: r => r.assetLabels, multiple: true },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
   { field: 'user', header: 'User', searchText: r => r.username, filterValues: r => r.username },
   { field: 'engine', header: 'Engine', filterValues: r => capitalize(getEngineDisplay(r)), quickSearch: false },
-  { field: 'status', header: 'Status', filterValues: statusLabel, quickSearch: false },
+  { field: 'status', header: 'Status', filterValues: r => statusText(r.status), quickSearch: false },
   { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result), quickSearch: false },
-], { visibleFields: () => new Set(['assetName', ...visibleFields.value]) })
+], { visibleFields })
 </script>
 
 <template>
@@ -99,7 +98,7 @@ const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filt
       :filter-columns="filterColumns"
       :filter-value-options="valueOptions"
       :selected-rule-id="selectedRuleId"
-      :toggleable-columns="TOGGLEABLE_COLUMNS"
+      :toggleable-columns="toggleableColumns"
       :action-states="actionStates"
       :can-accept="canAccept"
       @bulk-action="(action) => emit('bulk-action', action)"
