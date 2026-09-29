@@ -27,11 +27,11 @@ function rowClass(data) {
 
 <template>
   <ReportTableBase
+    searchable
     :title="title"
     :rows="rows"
     :columns="columns"
-    :key-column="{ field: 'name', header: 'Collection', searchPlaceholder: 'Search name...', width: '14rem', frozen: frozenName }"
-    :category-filter="{ field: 'state' }"
+    :key-column="{ field: 'name', header: 'Collection', width: '14rem', frozen: frozenName }"
     data-key="collectionId"
     sort-field="name"
     :export-filename="exportFilename"

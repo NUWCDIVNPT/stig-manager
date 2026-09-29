@@ -70,16 +70,16 @@ Reuse that row for any grid whose header is already full.
 
 | Grid | Today | Status |
 | --- | --- | --- |
-| `features/AppManagement/Users/components/UserList.vue` | Old header filters | To do |
+| `features/AppManagement/Users/components/UserList.vue` | Search, Columns (no Filter) | Done |
 | `features/CollectionManage/components/Asset/ManageAssetsTable.vue` | Old header filters | To do |
 | `features/AppManagement/LogStream/components/TransactionGrid.vue` | Old header filters | To do |
-| `features/AppManagement/Appinfo/components/common/ReportTableBase.vue` | Column toggle, filter | To do |
+| `features/AppManagement/Appinfo/components/common/ReportTableBase.vue` | Search, Columns where enabled (no Filter) | Done |
 | `features/STIGLibrary/components/BenchmarksTable.vue` | Custom search | To do |
 | `features/STIGLibrary/components/BenchmarkListTable.vue` | Custom search | To do |
-| `features/AppManagement/Collections/components/CollectionList.vue` | Nothing | To do |
-| `features/AppManagement/STIGManage/components/StigList.vue` | Nothing | To do |
-| `features/AppManagement/UserGroups/components/UserGroupList.vue` | Nothing | To do |
-| `features/AppManagement/ServiceJobs/components/JobsTable.vue` | Nothing | To do |
+| `features/AppManagement/Collections/components/CollectionList.vue` | Search, Columns (no Filter) | Done |
+| `features/AppManagement/STIGManage/components/StigList.vue` | Search, Columns (no Filter) | Done |
+| `features/AppManagement/UserGroups/components/UserGroupList.vue` | Search, Columns (no Filter) | Done |
+| `features/AppManagement/ServiceJobs/components/JobsTable.vue` | Search, Columns (no Filter) | Done |
 | `features/CollectionManage/components/Stig/ManageStigsTable.vue` | Nothing | To do |
 | `features/CollectionManage/components/Label/LabelsTable.vue` | Nothing | To do |
 | `features/CollectionManage/components/User/ManageUsers.vue` | Nothing | To do |

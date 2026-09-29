@@ -4,8 +4,12 @@ import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
-import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
+import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
+import GridSearch from '../../../../components/common/GridSearch.vue'
+import HighlightText from '../../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
+import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { formatDateTime } from '../lib/userGroupDisplay.js'
 
@@ -36,9 +40,6 @@ const selectedGroup = computed({
   set: value => value && emit('update:selection', value),
 })
 
-const nameFilter = ref('')
-const descriptionFilter = ref('')
-
 // Rows carry derived flat fields (created, userCount, collectionCount) so
 // sorting, display, and DataTable CSV export all work from plain `field`
 // bindings.
@@ -49,21 +50,18 @@ const rows = computed(() => props.groups.map(g => ({
   collectionCount: g.collectionGrants?.length ?? 0,
 })))
 
-const filteredData = computed(() => {
-  const nameTerm = nameFilter.value.trim().toLowerCase()
-  const descriptionTerm = descriptionFilter.value.trim().toLowerCase()
-  return rows.value.filter((g) => {
-    if (nameTerm && !g.name?.toLowerCase().includes(nameTerm)) {
-      return false
-    }
-    if (descriptionTerm && !g.description?.toLowerCase().includes(descriptionTerm)) {
-      return false
-    }
-    return true
-  })
-})
+const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility([
+  { field: 'name', header: 'Name', locked: true },
+  { field: 'description', header: 'Description' },
+  { field: 'created', header: 'Created' },
+  { field: 'userCount', header: '# Users' },
+  { field: 'collectionCount', header: '# Collections' },
+], 'adminUserGroups.columns')
 
-const filtersActive = computed(() => filteredData.value.length !== props.groups.length)
+const { term: searchTerm, filteredRows, isFiltered, highlightTerm } = useGridSearch(rows, [
+  { field: 'name', header: 'Name' },
+  { field: 'description', header: 'Description' },
+], { visibleFields })
 
 const tablePt = {
   ...compactTablePt(),
@@ -87,13 +85,16 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
       >
         Delete Group
       </ActionButton>
+      <div class="toolbar-spacer" />
+      <GridSearch v-model="searchTerm" class="list-search" label="Search groups" placeholder="Search groups..." />
+      <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
     </ActionToolbar>
 
     <div class="table-container">
       <DataTable
         ref="dataTableRef"
         v-model:selection="selectedGroup"
-        :value="filteredData"
+        :value="filteredRows"
         selection-mode="single"
         data-key="userGroupId"
         :loading="loading"
@@ -109,46 +110,37 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
         :pt="tablePt"
       >
         <template #empty>
-          No user groups found.
+          {{ isFiltered && groups.length ? 'No groups match the search.' : 'No user groups found.' }}
         </template>
 
-        <Column field="name" export-header="Name" sortable :pt="borderPt" style="width: 25%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
-          <template #header>
-            <div class="column-header-with-filter">
-              Name
-              <ColumnSearchFilter v-model="nameFilter" placeholder="Search name..." />
-            </div>
-          </template>
-        </Column>
-
-        <Column field="description" export-header="Description" sortable :pt="borderPt" style="width: 30%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
-          <template #header>
-            <div class="column-header-with-filter">
-              Description
-              <ColumnSearchFilter v-model="descriptionFilter" placeholder="Search description..." />
-            </div>
-          </template>
+        <Column field="name" header="Name" sortable :pt="borderPt" style="width: 25%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #body="{ data }">
-            <span :title="data.description">{{ data.description || '-' }}</span>
+            <HighlightText :text="data.name" :term="highlightTerm('name')" />
           </template>
         </Column>
 
-        <Column field="created" header="Created" sortable :pt="borderPt" style="width: 17%">
+        <Column v-if="visibleFields.has('description')" field="description" header="Description" sortable :pt="borderPt" style="width: 30%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+          <template #body="{ data }">
+            <span :title="data.description"><HighlightText :text="data.description || '-'" :term="highlightTerm('description')" /></span>
+          </template>
+        </Column>
+
+        <Column v-if="visibleFields.has('created')" field="created" header="Created" sortable :pt="borderPt" style="width: 17%">
           <template #body="{ data }">
             {{ formatDateTime(data.created) }}
           </template>
         </Column>
 
-        <Column field="userCount" header="# Users" sortable class="center-header" :pt="borderPt" style="width: 12%; text-align: center;" />
+        <Column v-if="visibleFields.has('userCount')" field="userCount" header="# Users" sortable class="center-header" :pt="borderPt" style="width: 12%; text-align: center;" />
 
-        <Column field="collectionCount" header="# Collections" sortable class="center-header" style="width: 15%; text-align: center;" />
+        <Column v-if="visibleFields.has('collectionCount')" field="collectionCount" header="# Collections" sortable class="center-header" style="width: 15%; text-align: center;" />
 
         <template #footer>
           <StatusFooter
             :dt="dataTableRef"
             :refresh-loading="loading"
             :total-count="groups.length"
-            :filtered-count="filtersActive ? filteredData.length : null"
+            :filtered-count="isFiltered ? filteredRows.length : null"
             total-label="groups"
             total-icon="pi pi-users"
             @refresh="emit('refresh')"
@@ -161,6 +153,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 
 <style scoped>
 .group-list {
+  --checklist-control-height: 2rem;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -186,10 +179,9 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   flex-direction: column;
 }
 
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+.list-search {
+  flex: 0 1 18rem;
+  min-width: 10rem;
 }
 
 :deep(.center-header .p-datatable-column-header-content) {

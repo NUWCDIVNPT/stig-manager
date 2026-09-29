@@ -2,12 +2,12 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
-import ColumnFilter from '../../../../../components/common/ColumnFilter.vue'
-import ColumnSearchFilter from '../../../../../components/common/ColumnSearchFilter.vue'
 import ColumnToggle from '../../../../../components/common/ColumnToggle.vue'
+import GridSearch from '../../../../../components/common/GridSearch.vue'
+import HighlightText from '../../../../../components/common/HighlightText.vue'
 import { useColumnVisibility } from '../../../../../shared/composables/useColumnVisibility.js'
+import { useGridSearch } from '../../../../../shared/composables/useGridSearch.js'
 import { formatNumber } from '../../../../../shared/lib.js'
-import { fieldMatches } from '../../../../../shared/lib/searchUtils.js'
 import { reportTableBorderPt, reportTablePt } from '../../lib/appInfoTablePt.js'
 import ReportTableFooter from './ReportTableFooter.vue'
 
@@ -16,16 +16,16 @@ const props = defineProps({
   rows: { type: Array, default: () => [] },
   /** [{ field, header, type: 'number'|'string'|'boolean', align?, width?, hidden? }] */
   columns: { type: Array, default: () => [] },
-  /** Searchable lead column: { field, header, searchPlaceholder?, width?, frozen?, ellipsis? } */
+  /** Lead column: { field, header, width?, frozen?, ellipsis? } */
   keyColumn: { type: Object, required: true },
-  /** Optional multi-select filter rendered in this column's header: { field } */
-  categoryFilter: { type: Object, default: null },
   dataKey: { type: String, default: null },
   sortField: { type: String, default: null },
   exportFilename: { type: String, default: 'appinfo-report' },
   noun: { type: String, default: 'row' },
   tableMinWidth: { type: String, default: null },
   columnToggle: { type: Boolean, default: false },
+  // Top-level reports only; small detail tables stay plain
+  searchable: { type: Boolean, default: false },
   selectable: { type: Boolean, default: false },
   selection: { type: Object, default: null },
   rowClass: { type: Function, default: null },
@@ -34,15 +34,6 @@ const props = defineProps({
 const emit = defineEmits(['update:selection'])
 
 const dataTableRef = ref(null)
-const searchFilter = ref('')
-const categoryValues = ref([])
-
-// props.rows is only recomputed when a new report is loaded, so a filter
-// left over from the previous report would otherwise hide all of its rows.
-watch(() => props.rows, () => {
-  searchFilter.value = ''
-  categoryValues.value = []
-})
 
 // Callers mark default-off columns with `hidden`; choices are saved per report
 const toggleColumns = computed(() => props.columns.map(c => ({ ...c, defaultHidden: Boolean(c.hidden) })))
@@ -54,34 +45,17 @@ const shownColumns = computed(() =>
   props.columnToggle ? props.columns.filter(c => visibleFields.value.has(c.field)) : props.columns,
 )
 
-// Hiding the category column also hides its filter control, so a leftover
-// filter would keep rows hidden with no way left to clear it.
-watch(shownColumns, (columns) => {
-  if (props.categoryFilter && !columns.some(c => c.field === props.categoryFilter.field)) {
-    categoryValues.value = []
-  }
-})
+// Search covers the lead column and the shown text columns
+const { term: searchTerm, filteredRows, highlightTerm } = useGridSearch(
+  () => props.rows,
+  () => [props.keyColumn, ...shownColumns.value.filter(c => c.type !== 'number' && c.type !== 'boolean')]
+    .map(c => ({ field: c.field, header: c.header })),
+)
 
-const categoryOptions = computed(() => {
-  if (!props.categoryFilter) {
-    return []
-  }
-  const values = [...new Set(props.rows.map(r => r[props.categoryFilter.field]).filter(Boolean))].sort()
-  return values.map(v => ({ label: v, value: v }))
-})
-
-const filteredRows = computed(() => {
-  const term = searchFilter.value.trim().toLowerCase()
-  const categories = categoryValues.value
-  return props.rows.filter((r) => {
-    if (term && !fieldMatches(String(r[props.keyColumn.field] ?? ''), term)) {
-      return false
-    }
-    if (props.categoryFilter && categories.length && !categories.includes(r[props.categoryFilter.field])) {
-      return false
-    }
-    return true
-  })
+// props.rows is only recomputed when a new report is loaded, so a search
+// left over from the previous report would otherwise hide all of its rows.
+watch(() => props.rows, () => {
+  searchTerm.value = ''
 })
 
 const selectedRow = computed({
@@ -120,13 +94,12 @@ function columnStyle(col) {
 
 <template>
   <div class="report-table-panel">
-    <div class="report-table-title" :class="{ 'report-table-title--compact': columnToggle }">
+    <div class="report-table-title" :class="{ 'report-table-title--compact': searchable || columnToggle }">
       <span v-if="title">{{ title }}</span>
       <slot name="title-extra" />
-      <template v-if="columnToggle">
-        <div class="title-spacer" />
-        <ColumnToggle v-model="selectedColumns" :columns="toggleColumns" />
-      </template>
+      <div class="title-spacer" />
+      <GridSearch v-if="searchable" v-model="searchTerm" class="report-table-search" :label="`Search ${noun}s`" />
+      <ColumnToggle v-if="columnToggle" v-model="selectedColumns" :columns="toggleColumns" />
     </div>
     <DataTable
       ref="dataTableRef"
@@ -162,14 +135,11 @@ function columnStyle(col) {
         :style="keyColumnStyle"
       >
         <template #header>
-          <div class="column-header-with-filter">
-            {{ keyColumn.header }}
-            <ColumnSearchFilter v-model="searchFilter" :placeholder="keyColumn.searchPlaceholder ?? 'Search...'" />
-          </div>
+          {{ keyColumn.header }}
         </template>
         <template #body="{ data }">
           <slot name="key-cell" :data="data">
-            <span :title="data[keyColumn.field]">{{ data[keyColumn.field] }}</span>
+            <span :title="data[keyColumn.field]"><HighlightText :text="data[keyColumn.field]" :term="highlightTerm(keyColumn.field)" /></span>
           </slot>
         </template>
       </Column>
@@ -184,11 +154,7 @@ function columnStyle(col) {
         :style="columnStyle(col)"
       >
         <template #header>
-          <div v-if="categoryFilter && col.field === categoryFilter.field" class="column-header-with-filter">
-            {{ col.header }}
-            <ColumnFilter v-model="categoryValues" :options="categoryOptions" />
-          </div>
-          <span v-else-if="isRightAligned(col)" class="numeric-header">{{ col.header }}</span>
+          <span v-if="isRightAligned(col)" class="numeric-header">{{ col.header }}</span>
           <template v-else>
             {{ col.header }}
           </template>
@@ -204,7 +170,7 @@ function columnStyle(col) {
               <span v-else class="dim-value">—</span>
             </template>
             <span v-else :class="{ 'dim-value': data[col.field] == null }">
-              {{ data[col.field] ?? '—' }}
+              <HighlightText :text="data[col.field] ?? '—'" :term="highlightTerm(col.field)" />
             </span>
           </slot>
         </template>
