@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue'
 import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
+import { severityMap } from '../../../shared/lib/checklistUtils.js'
 import CollectionChecklistGridHeader from './CollectionChecklistGridHeader.vue'
 import CollectionChecklistGridTable from './CollectionChecklistGridTable.vue'
 
@@ -31,7 +33,16 @@ const props = defineProps({
 
 const emit = defineEmits(['select-rule', 'refresh'])
 
-const searchFilter = ref('')
+const catLabel = r => (severityMap[r.severity] ? `CAT ${severityMap[r.severity]}` : '')
+
+const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
+  { field: 'severity', header: 'CAT', filterValues: catLabel, quickSearch: false },
+  { field: 'groupId', header: 'Group' },
+  { field: 'groupTitle', header: 'Group Title' },
+  { field: 'version', header: 'STIG Id' },
+  { field: 'ruleId', header: 'Rule Id' },
+  { field: 'ruleTitle', header: 'Rule Title' },
+])
 
 const TOGGLEABLE_COLUMNS = [
   { field: 'version', header: 'STIG Id', defaultHidden: true },
@@ -89,13 +100,18 @@ const { itemSize, gridStyle } = useGridDensity('collection-checklist')
       v-model:search-filter="searchFilter"
       v-model:selected-columns="selectedColumns"
       v-model:display-mode="displayMode"
+      v-model:filters="gridFilters"
       :toggleable-columns="TOGGLEABLE_COLUMNS"
+      :filter-columns="filterColumns"
+      :filter-value-options="valueOptions"
     />
     <CollectionChecklistGridTable
-      :grid-data="gridData"
+      :grid-data="filteredRows"
+      :total-count="gridData.length"
+      :is-filtered="isFiltered"
+      :highlight-term="highlightTerm"
       :is-loading="isLoading"
       :selected-row="selectedRow"
-      :search-filter="searchFilter"
       :asset-count="assetCount"
       :visible-fields="visibleFields"
       :item-size="itemSize"

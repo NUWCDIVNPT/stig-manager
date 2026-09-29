@@ -5,7 +5,7 @@ import { computed, ref, watch } from 'vue'
 import { useColumnVisibility } from '../../shared/composables/useColumnVisibility.js'
 import { useGridSearch } from '../../shared/composables/useGridSearch.js'
 import { calculateCora } from '../../shared/lib.js'
-import { columnValueOptions, labelNames, searchableColumns } from '../../shared/lib/gridSearch.js'
+import { labelNames } from '../../shared/lib/gridSearch.js'
 import { rowHeightPx } from '../../shared/lib/rowHeights.js'
 import AssetColumn from '../columns/AssetColumn.vue'
 import BenchmarkColumn from '../columns/BenchmarkColumn.vue'
@@ -277,7 +277,7 @@ const columnSetKey = computed(() => {
   return `metricsGrid.columns.${aggregationType.value}${variant}`
 })
 
-const { toggleableColumns, selectedColumns, visibleColumns } = useColumnVisibility(columns, columnSetKey)
+const { toggleableColumns, selectedColumns, visibleColumns, visibleFields } = useColumnVisibility(columns, columnSetKey)
 
 const data = computed(() => {
   if (!Array.isArray(props.apiMetricsSummary)) {
@@ -389,12 +389,15 @@ const data = computed(() => {
 })
 
 // Quick search over the visible searchable columns, ANDed with the Filter button's rules
-const search = useGridSearch(data, columns, visibleColumns)
-const { term: searchTerm, filters: gridFilters, filteredRows: filteredData, isFiltered: isSearching } = search
-const filterColumns = computed(() => searchableColumns(columns.value))
-const searchValueOptions = computed(() => Object.fromEntries(
-  columns.value.filter(c => c.filterValues).map(c => [c.field, columnValueOptions(data.value, c)]),
-))
+const {
+  term: searchTerm,
+  filters: gridFilters,
+  filteredRows: filteredData,
+  isFiltered: isSearching,
+  filterColumns,
+  valueOptions,
+  highlightTerm,
+} = useGridSearch(data, () => columns.value.filter(c => c.searchText), { visibleFields })
 
 // CSV export basename per aggregation entity — same names the legacy client used.
 const EXPORT_BASENAME_BY_KEY = {
@@ -432,7 +435,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
         <GridFilterButton
           v-model="gridFilters"
           :columns="filterColumns"
-          :value-options="searchValueOptions"
+          :value-options="valueOptions"
         />
       </div>
       <div class="agg-grid-header-controls">
@@ -467,7 +470,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
       @row-select="onRowSelect"
     >
       <template v-for="col in visibleColumns" :key="col.field">
-        <component :is="col.component" v-bind="col" :search-term="search.highlightTerm(col.field)" sortable />
+        <component :is="col.component" v-bind="col" :search-term="highlightTerm(col.field)" sortable />
       </template>
       <template #empty>
         <div class="agg-grid-empty-state">

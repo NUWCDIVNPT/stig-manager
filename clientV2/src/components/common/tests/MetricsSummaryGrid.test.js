@@ -245,7 +245,7 @@ describe('metricsSummaryGrid column toggle', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
     expect(bodyRows(container)).toEqual(['MS_Windows_11_STIG'])
     const trigger = screen.getByRole('button', { name: 'Filters, 1 applied' })
-    expect(trigger.getAttribute('title')).toBe('Benchmark contains "windows"')
+    expect(trigger.getAttribute('title')).toBe('Any column contains "windows"')
   })
 
   it('ignores unreadable stored values', () => {

@@ -15,7 +15,7 @@ import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
-import { ALL_COLUMNS, columnValueOptions, searchableColumns } from '../../../shared/lib/gridSearch.js'
+import { ALL_COLUMNS } from '../../../shared/lib/gridSearch.js'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { FINDINGS_AGGREGATOR_OPTIONS, FINDINGS_AGGREGATORS } from '../constants.js'
 import PoamExport from './PoamExport.vue'
@@ -117,29 +117,24 @@ function onFooterAction(key) {
   }
 }
 
-// Search and filter columns, keyed like visibleColumns so they follow the aggregator
+// Keyed like visibleColumns so the searchable columns follow the aggregator
 const catLabel = r => (severityMap[r.severity] ? `CAT ${severityMap[r.severity]}` : '')
 const stigIds = r => (r.stigs ?? []).map(s => s.benchmarkId)
 const SEARCH_COLUMNS = {
-  cat: { field: 'severity', header: 'CAT', searchText: catLabel, filterValues: catLabel },
-  group: { field: 'groupId', header: 'Group', searchText: r => r.groupId },
-  rule: { field: 'ruleId', header: 'Rule', searchText: r => r.ruleId },
-  cci: { field: 'cci', header: 'CCI', searchText: r => r.cci },
-  apAcronym: { field: 'apAcronym', header: 'AP Acronym', searchText: r => r.apAcronym, filterValues: r => r.apAcronym },
-  title: { field: 'title', header: 'Title', searchText: r => r.title },
-  definition: { field: 'definition', header: 'Definition', searchText: r => r.definition },
+  cat: { field: 'severity', header: 'CAT', filterValues: catLabel, quickSearch: false },
+  group: { field: 'groupId', header: 'Group' },
+  rule: { field: 'ruleId', header: 'Rule' },
+  cci: { field: 'cci', header: 'CCI' },
+  apAcronym: { field: 'apAcronym', header: 'AP Acronym', filterValues: r => r.apAcronym },
+  title: { field: 'title', header: 'Title' },
+  definition: { field: 'definition', header: 'Definition' },
   stigs: { field: 'stigs', header: 'STIGs', searchText: r => stigIds(r).join(' '), filterValues: stigIds },
 }
-
 const searchColumns = computed(() => Object.entries(SEARCH_COLUMNS)
   .filter(([key]) => props.visibleColumns.has(key))
   .map(([, col]) => col))
 
-const { term: searchTerm, filters: gridFilters, filteredRows, isFiltered, highlightTerm } = useGridSearch(() => props.rows, searchColumns)
-const filterColumns = computed(() => searchableColumns(searchColumns.value))
-const filterValueOptions = computed(() => Object.fromEntries(
-  searchColumns.value.filter(c => c.filterValues).map(c => [c.field, columnValueOptions(props.rows, c)]),
-))
+const { term: searchTerm, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.rows, searchColumns)
 
 // A new aggregator drops the rules whose column went away
 watch(searchColumns, (cols) => {
@@ -235,7 +230,7 @@ const flexCellPt = {
       <GridToolbar>
         <GridSearch v-model="searchTerm" label="Search findings" placeholder="Search findings..." />
         <template #end>
-          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="filterValueOptions" />
+          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
         </template>
       </GridToolbar>
 

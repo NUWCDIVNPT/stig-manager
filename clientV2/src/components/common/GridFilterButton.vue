@@ -58,8 +58,7 @@ function selectedOptions(rule) {
 }
 
 function newRule() {
-  const col = props.columns[0] ?? columnOptions.value[0]
-  return searchFilter(col.field, col.kind)
+  return searchFilter(ALL_COLUMNS, 'text')
 }
 
 function toggle(event) {

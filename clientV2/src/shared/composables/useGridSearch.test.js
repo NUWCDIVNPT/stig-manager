@@ -53,4 +53,40 @@ describe('useGridSearch', () => {
     s.clear()
     expect(names(s.filteredRows.value)).toHaveLength(3)
   })
+
+  it('reads row[field] by default and keeps quickSearch: false columns out of the search box', () => {
+    const s = useGridSearch(rows, [
+      { field: 'name', header: 'Name' },
+      { field: 'os', header: 'OS', filterValues: r => r.os, quickSearch: false },
+    ])
+    s.term.value = 'linux'
+    expect(names(s.filteredRows.value)).toEqual([])
+    s.term.value = 'web'
+    expect(names(s.filteredRows.value)).toEqual(['web-01', 'web-02'])
+
+    s.term.value = ''
+    s.filters.value = [searchFilter('os', 'values', { value: ['linux'] })]
+    expect(names(s.filteredRows.value)).toEqual(['web-01', 'db-01'])
+  })
+
+  it('drops hidden columns from the search box', () => {
+    const visibleFields = ref(new Set(['name']))
+    const s = useGridSearch(rows, columns, { visibleFields })
+    s.term.value = 'linux'
+    expect(names(s.filteredRows.value)).toEqual([])
+    visibleFields.value = new Set(['name', 'os'])
+    expect(names(s.filteredRows.value)).toEqual(['web-01', 'db-01'])
+  })
+
+  it('returns the Filter button columns and list values', () => {
+    const s = useGridSearch(rows, [
+      { field: 'name', header: 'Name' },
+      { field: 'os', header: 'OS', filterValues: r => r.os },
+    ])
+    expect(s.filterColumns.value).toEqual([
+      { field: 'name', header: 'Name', kind: 'text' },
+      { field: 'os', header: 'OS', kind: 'values' },
+    ])
+    expect(s.valueOptions.value.os.map(o => o.value)).toEqual(['linux', 'windows'])
+  })
 })

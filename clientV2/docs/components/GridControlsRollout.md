@@ -34,12 +34,16 @@ it picks columns from the aggregation, and the user cannot toggle them.
 
 After that, each grid needs:
 
-1. `searchText(row)` on searchable columns, plus `filterValues(row)` on list columns such as labels.
-2. `useGridSearch(rows, columns, visibleColumns)`, with `:value="filteredRows"` on the `DataTable`.
-3. Text cells wrapped in `<HighlightText :text="..." :term="highlightTerm('field')" />` so matches are
-   marked. Label chips take `:search-term` on `LabelsRow`. Skip badges, icons and numbers.
-4. The header controls it needs: `GridSearch`, `GridFilterButton`, `ColumnToggle`. If the header is
-   already full, put them in a `GridToolbar` row under it.
+1. One `useGridSearch(rows, columns, { visibleFields })` call listing its searchable columns as
+   `{ field, header }`. Add `searchText(row)` only when the cell shows something other than `row[field]`,
+   `filterValues(row)` for pick-from-list columns (labels, CAT), and `quickSearch: false` to keep a
+   column out of the search box.
+2. Its results wired up: `filteredRows` to the `DataTable`, `filterColumns` and `valueOptions` to
+   `GridFilterButton`, `term` to `GridSearch`.
+3. Text cells wrapped in `<HighlightText :text="..." :term="highlightTerm('field')" />`. Label chips take
+   `:search-term` on `LabelsRow`. Skip badges, icons and numbers.
+4. `GridSearch` with `GridFilterButton` right next to it, plus `ColumnToggle` if the grid has columns to hide.
+   If the header is already full, put them in a `GridToolbar` row under it.
 5. `StatusFooter` getting `:filtered-count` when filtered, and an empty message for "no matches".
 
 ---

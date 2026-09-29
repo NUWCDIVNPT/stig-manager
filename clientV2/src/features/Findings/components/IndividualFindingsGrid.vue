@@ -24,7 +24,7 @@ import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
-import { columnValueOptions, labelNames, searchableColumns } from '../../../shared/lib/gridSearch.js'
+import { labelNames } from '../../../shared/lib/gridSearch.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
@@ -96,23 +96,17 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
 
 const capitalize = v => (v ? v[0].toUpperCase() + v.slice(1) : '')
 const stigIds = r => (r.stigs ?? []).map(s => s.benchmarkId)
-// Labels show inside the asset cell, so they search whenever Asset does
-const SEARCH_COLUMNS = [
-  { field: 'assetName', header: 'Asset', searchText: r => r.assetName },
+// Labels show inside the asset cell, so they search whenever Asset is visible
+const { term: searchTerm, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(decoratedRows, [
+  { field: 'assetName', header: 'Asset' },
   { field: 'labels', header: 'Labels', searchText: r => labelNames(r.labels), filterValues: r => r.labels, shownWith: 'assetName' },
   { field: 'stigs', header: 'STIGs', searchText: r => stigIds(r).join(' '), filterValues: stigIds },
-  { field: 'detail', header: 'Detail', searchText: r => r.detail },
-  { field: 'comment', header: 'Comment', searchText: r => r.comment },
+  { field: 'detail', header: 'Detail' },
+  { field: 'comment', header: 'Comment' },
   { field: 'resultEngine', header: 'Engine', searchText: r => capitalize(r._engineDisplay), filterValues: r => capitalize(r._engineDisplay) },
   { field: 'status', header: 'Status', searchText: r => capitalize(r._statusLabel), filterValues: r => capitalize(r._statusLabel) },
-  { field: 'username', header: 'Reviewer', searchText: r => r.username, filterValues: r => r.username },
-]
-const visibleSearchColumns = computed(() => SEARCH_COLUMNS.filter(c => visibleFields.value.has(c.shownWith ?? c.field)))
-const { term: searchTerm, filters: gridFilters, filteredRows, isFiltered, highlightTerm } = useGridSearch(decoratedRows, SEARCH_COLUMNS, visibleSearchColumns)
-const filterColumns = searchableColumns(SEARCH_COLUMNS)
-const filterValueOptions = computed(() => Object.fromEntries(
-  SEARCH_COLUMNS.filter(c => c.filterValues).map(c => [c.field, columnValueOptions(decoratedRows.value, c)]),
-))
+  { field: 'username', header: 'Reviewer', filterValues: r => r.username },
+], { visibleFields })
 
 // itemSize must cover the tallest cell: a <tr>'s height is a minimum, so an
 // over-tall cell grows the row past itemSize and drifts the virtual scroller's
@@ -199,7 +193,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
       <GridToolbar v-if="selectedAggregated && !error">
         <GridSearch v-model="searchTerm" label="Search reviews" placeholder="Search reviews..." />
         <template #end>
-          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="filterValueOptions" />
+          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
           <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
         </template>
       </GridToolbar>
