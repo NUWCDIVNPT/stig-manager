@@ -53,9 +53,9 @@ After that, each grid needs:
 | Grid | Today | Status |
 | --- | --- | --- |
 | `components/common/MetricsSummaryGrid.vue` | Search, Filter, Columns | Done |
-| `features/CollectionReview/components/CollectionChecklistGridTable.vue` | Search, Columns, old header filters | To do |
+| `features/CollectionReview/components/CollectionChecklistGridTable.vue` | Search, Filter, Columns | Done |
 | `features/AssetReview/components/AssetChecklistGridTable.vue` | Search, Columns, old header filters | To do |
-| `features/CollectionReview/components/RuleTableGrid.vue` | Search, Columns, old header filters | To do |
+| `features/CollectionReview/components/RuleTableGrid.vue` | Search, Filter, Columns | Done |
 | `features/Findings/components/AggregatedFindingsGrid.vue` | Search, Filter (columns follow the aggregator) | Done |
 | `features/Findings/components/IndividualFindingsGrid.vue` | Search, Filter, Columns | Done |
 

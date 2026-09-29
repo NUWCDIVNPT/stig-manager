@@ -1,7 +1,9 @@
 <script setup>
-import { ref } from 'vue'
 import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
+import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
+import { labelNames } from '../../../shared/lib/gridSearch.js'
 import RuleTableGrid from './RuleTableGrid.vue'
 import RuleTableHeader from './RuleTableHeader.vue'
 
@@ -68,7 +70,21 @@ const TOGGLEABLE_COLUMNS = [
 ]
 
 const { selectedColumns, visibleFields } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'ruleTable.columns')
-const searchFilter = ref('')
+
+const capitalize = v => (v ? v[0].toUpperCase() + v.slice(1) : '')
+const statusLabel = r => capitalize(r.status?.label ?? r.status)
+
+// Asset is always shown; the other text columns search while visible
+const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
+  { field: 'assetName', header: 'Asset' },
+  { field: 'labels', header: 'Labels', searchText: r => labelNames(r.assetLabels), filterValues: r => r.assetLabels },
+  { field: 'detail', header: 'Detail' },
+  { field: 'comment', header: 'Comment' },
+  { field: 'user', header: 'User', searchText: r => r.username, filterValues: r => r.username },
+  { field: 'engine', header: 'Engine', filterValues: r => capitalize(getEngineDisplay(r)), quickSearch: false },
+  { field: 'status', header: 'Status', filterValues: statusLabel, quickSearch: false },
+  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result), quickSearch: false },
+], { visibleFields: () => new Set(['assetName', ...visibleFields.value]) })
 </script>
 
 <template>
@@ -79,6 +95,9 @@ const searchFilter = ref('')
     <RuleTableHeader
       v-model:search-filter="searchFilter"
       v-model:selected-columns="selectedColumns"
+      v-model:filters="gridFilters"
+      :filter-columns="filterColumns"
+      :filter-value-options="valueOptions"
       :selected-rule-id="selectedRuleId"
       :toggleable-columns="TOGGLEABLE_COLUMNS"
       :action-states="actionStates"
@@ -88,8 +107,10 @@ const searchFilter = ref('')
     <RuleTableGrid
       :grid-data="gridData"
       :is-loading="isLoading"
+      :rows="filteredRows"
+      :is-filtered="isFiltered"
+      :highlight-term="highlightTerm"
       :visible-fields="visibleFields"
-      :search-filter="searchFilter"
       :collection-id="collectionId"
       :selected-rule-id="selectedRuleId"
       :field-settings="fieldSettings"
