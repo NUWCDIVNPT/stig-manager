@@ -17,7 +17,7 @@ export const VALUE_MATCHES = Object.freeze([
 ])
 
 export function textFilter(overrides = {}) {
-  return { kind: 'text', mode: 'contains', value: '', matchCase: false, matchWord: false, ...overrides }
+  return { kind: 'text', mode: 'contains', value: '', matchCase: false, matchWord: false, exclude: false, ...overrides }
 }
 
 // '' in `value` selects rows whose cell is empty.
@@ -78,14 +78,7 @@ function findWord(text, needle, { atStart = false, atEnd = false } = {}) {
   return false
 }
 
-export function matchText(cell, f) {
-  const raw = term(f)
-  if (raw === '') {
-    return true
-  }
-  const text = f.matchCase ? toText(cell) : toText(cell).toLowerCase()
-  const needle = f.matchCase ? raw : raw.toLowerCase()
-  const contains = () => (f.matchWord ? findWord(text, needle) : text.includes(needle))
+function matchMode(text, needle, f, contains) {
   switch (f.mode) {
     case 'notContains': return !contains()
     case 'startsWith': return f.matchWord ? findWord(text, needle, { atStart: true }) : text.startsWith(needle)
@@ -96,10 +89,23 @@ export function matchText(cell, f) {
   }
 }
 
+export function matchText(cell, f) {
+  const raw = term(f)
+  if (raw === '') {
+    return true
+  }
+  const text = f.matchCase ? toText(cell) : toText(cell).toLowerCase()
+  const needle = f.matchCase ? raw : raw.toLowerCase()
+  const contains = () => (f.matchWord ? findWord(text, needle) : text.includes(needle))
+  const found = matchMode(text, needle, f, contains)
+  return f.exclude ? !found : found
+}
+
 // Cells hold a scalar, an array, or an array of labels; a label compares by its name.
+// A nameless label (the "no label" row) counts as an empty cell.
 function toValues(cell) {
   const raw = Array.isArray(cell) ? cell : (cell == null || cell === '' ? [] : [cell])
-  return raw.map(v => (v !== null && typeof v === 'object' ? v.name : v))
+  return raw.map(v => (v !== null && typeof v === 'object' ? v.name : v)).filter(v => v != null && v !== '')
 }
 
 export function matchValues(cell, f) {

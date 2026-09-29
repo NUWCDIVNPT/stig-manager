@@ -89,6 +89,11 @@ describe('matchText', () => {
     expect(matchText('Web Server', text({ value: 'Web', matchWord: true, matchCase: true }))).toBe(true)
   })
 
+  it('inverts the match with exclude', () => {
+    expect(matchText('Web Server', text({ value: 'web', exclude: true }))).toBe(false)
+    expect(matchText('Web Server', text({ mode: 'startsWith', value: 'db', exclude: true }))).toBe(true)
+  })
+
   it('trims the term', () => {
     expect(matchText('Web Server', text({ mode: 'equals', value: '  web server ' }))).toBe(true)
   })

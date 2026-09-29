@@ -2,8 +2,9 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
+import { useGridSearch } from '../../shared/composables/useGridSearch.js'
 import { calculateCora } from '../../shared/lib.js'
-import { filterRows, labelNames } from '../../shared/lib/gridSearch.js'
+import { columnValueOptions, labelNames, searchableColumns } from '../../shared/lib/gridSearch.js'
 import { readStoredValue, storeValue } from '../../shared/lib/localStorage.js'
 import { rowHeightPx } from '../../shared/lib/rowHeights.js'
 import AssetColumn from '../columns/AssetColumn.vue'
@@ -16,6 +17,7 @@ import LabelsColumn from '../columns/LabelsColumn.vue'
 import PercentageColumn from '../columns/PercentageColumn.vue'
 import TextColumn from '../columns/TextColumn.vue'
 import ColumnToggle from '../common/ColumnToggle.vue'
+import GridFilterButton from '../common/GridFilterButton.vue'
 import GridSearch from '../common/GridSearch.vue'
 import StatusFooter from '../common/StatusFooter.vue'
 
@@ -203,7 +205,7 @@ const columns = computed(() => {
   const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: TextColumn, searchText: r => r.title, style: cellStyle(WIDTH.title) }
   const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: TextColumn, searchText: r => r.revisionStr, style: cellStyle(WIDTH.revision) }
   const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchText: r => r.assetName, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name) }
-  const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, searchText: r => labelNames(r.labels), style: cellStyle(WIDTH.labels) }
+  const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, searchText: r => labelNames(r.labels), filterValues: r => r.labels, style: cellStyle(WIDTH.labels) }
   switch (aggregationType.value) {
     case 'collection':
       return [
@@ -234,7 +236,7 @@ const columns = computed(() => {
       ]
     case 'label':
       return [
-        { field: 'label', header: 'Label', group: 'Label', component: LabelsColumn, locked: true, searchText: r => labelNames(r.label), style: cellStyle(WIDTH.label) },
+        { field: 'label', header: 'Label', group: 'Label', component: LabelsColumn, locked: true, searchText: r => labelNames(r.label), filterValues: r => r.label, style: cellStyle(WIDTH.label) },
         { field: 'assetCnt', header: 'Assets', group: 'Label', component: Column, style: cellStyle(WIDTH.count) },
         ...commonColumns,
       ]
@@ -324,10 +326,6 @@ function onSelectedColumnsChange(selected) {
     storeValue(columnSetKey.value, JSON.stringify(next))
   }
 }
-
-// Row search over the visible searchable columns (see gridSearch.js for the
-// extension points). GridSearch debounces the typing.
-const searchTerm = ref('')
 
 const data = computed(() => {
   if (!Array.isArray(props.apiMetricsSummary)) {
@@ -438,8 +436,13 @@ const data = computed(() => {
   })
 })
 
-const filteredData = computed(() => filterRows(data.value, visibleColumns.value, searchTerm.value))
-const isSearching = computed(() => searchTerm.value.trim() !== '')
+// Quick search over the visible searchable columns, ANDed with the Filter button's rules
+const search = useGridSearch(data, columns, visibleColumns)
+const { term: searchTerm, filters: gridFilters, filteredRows: filteredData, isFiltered: isSearching } = search
+const filterColumns = computed(() => searchableColumns(columns.value))
+const searchValueOptions = computed(() => Object.fromEntries(
+  columns.value.filter(c => c.filterValues).map(c => [c.field, columnValueOptions(data.value, c)]),
+))
 
 // CSV export basename per aggregation entity — same names the legacy client used.
 const EXPORT_BASENAME_BY_KEY = {
@@ -474,6 +477,11 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
           <span class="agg-grid-badge">{{ badge }}</span>
         </template>
         <GridSearch v-model="searchTerm" class="agg-grid-search" label="Search rows" />
+        <GridFilterButton
+          v-model="gridFilters"
+          :columns="filterColumns"
+          :value-options="searchValueOptions"
+        />
       </div>
       <div class="agg-grid-header-controls">
         <ColumnToggle
@@ -508,11 +516,11 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
       @row-select="onRowSelect"
     >
       <template v-for="col in visibleColumns" :key="col.field">
-        <component :is="col.component" v-bind="col" :search-term="searchTerm" sortable />
+        <component :is="col.component" v-bind="col" :search-term="search.highlightTerm(col.field)" sortable />
       </template>
       <template #empty>
         <div class="agg-grid-empty-state">
-          {{ isSearching && data.length > 0 ? 'No rows match the current search.' : emptyMessage }}
+          {{ isSearching && data.length > 0 ? 'No rows match the current search and filters.' : emptyMessage }}
         </div>
       </template>
       <template v-if="showFooter" #footer>

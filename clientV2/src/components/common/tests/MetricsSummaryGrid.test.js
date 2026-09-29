@@ -218,7 +218,7 @@ describe('metricsSummaryGrid column toggle', () => {
       await fireEvent.update(screen.getByRole('textbox', { name: 'Search rows' }), 'red hat')
       await vi.advanceTimersByTimeAsync(250)
       expect(bodyRows(container)).toEqual([])
-      expect(container.querySelector('.agg-grid-empty-state').textContent).toContain('No rows match the current search.')
+      expect(container.querySelector('.agg-grid-empty-state').textContent).toContain('No rows match the current search and filters.')
 
       await fireEvent.click(screen.getByRole('button', { name: 'Title' }))
       expect(bodyRows(container)).toEqual(['RHEL_9_STIG'])
@@ -230,6 +230,22 @@ describe('metricsSummaryGrid column toggle', () => {
     finally {
       vi.useRealTimers()
     }
+  })
+
+  it('applies filter rules from the Filter button', async () => {
+    const { container } = renderWithProviders(MetricsSummaryGrid, {
+      props: { apiMetricsSummary: stigRows, aggType: 'stig', dataKey: 'benchmarkId' },
+    })
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Filters' }))
+    const value = await screen.findByRole('textbox', { name: 'Value' })
+    await fireEvent.update(value, 'windows')
+    expect(bodyRows(container)).toHaveLength(2)
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+    expect(bodyRows(container)).toEqual(['MS_Windows_11_STIG'])
+    const trigger = screen.getByRole('button', { name: 'Filters, 1 applied' })
+    expect(trigger.getAttribute('title')).toBe('Benchmark contains "windows"')
   })
 
   it('ignores unreadable stored values', () => {
