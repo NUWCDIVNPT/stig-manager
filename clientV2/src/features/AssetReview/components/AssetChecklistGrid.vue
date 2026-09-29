@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router'
 import ReviewEditPopover from '../../../components/common/ReviewEditPopover.vue'
 import { fetchReview, patchReview, putReview } from '../../../shared/api/reviewsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { useBulkReviewStatus } from '../composables/useBulkReviewStatus.js'
@@ -207,7 +208,7 @@ const exportFilename = computed(() =>
 )
 
 const TOGGLEABLE_COLUMNS = [
-  { field: 'groupTitle', header: 'Group Title' },
+  { field: 'groupTitle', header: 'Group Title', defaultHidden: true },
   { field: 'ruleTitle', header: 'Rule Title' },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
@@ -226,16 +227,14 @@ const DISPLAY_MODE_TITLE_FIELD = {
   ruleRule: 'ruleTitle',
 }
 
-const selectedColumns = ref(TOGGLEABLE_COLUMNS.filter(c => c.field !== 'groupTitle'))
+const { selectedColumns, setShown } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'assetChecklistGrid.columns')
 const displayMode = ref('groupRule')
 
+// Each display mode shows its own title column
 watch(displayMode, (mode) => {
   const titleField = DISPLAY_MODE_TITLE_FIELD[mode]
-  selectedColumns.value = TOGGLEABLE_COLUMNS.filter((c) => {
-    if (c.field === 'groupTitle' || c.field === 'ruleTitle') { return c.field === titleField }
-    return selectedColumns.value.some(s => s.field === c.field)
-  })
-})
+  setShown({ groupTitle: titleField === 'groupTitle', ruleTitle: titleField === 'ruleTitle' })
+}, { immediate: true })
 
 const visibleFields = computed(() => {
   const fields = new Set(['severity', 'result', 'resultEngine', 'status'])

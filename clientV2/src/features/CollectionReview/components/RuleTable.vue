@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
+import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import RuleTableGrid from './RuleTableGrid.vue'
 import RuleTableHeader from './RuleTableHeader.vue'
@@ -66,8 +67,7 @@ const TOGGLEABLE_COLUMNS = [
   { field: 'time', header: 'Time' },
 ]
 
-const selectedColumns = ref([...TOGGLEABLE_COLUMNS])
-const visibleFields = computed(() => new Set(selectedColumns.value.map(c => c.field)))
+const { selectedColumns, visibleFields } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'ruleTable.columns')
 const searchFilter = ref('')
 </script>
 

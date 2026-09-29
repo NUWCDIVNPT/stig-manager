@@ -2,10 +2,10 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
+import { useColumnVisibility } from '../../shared/composables/useColumnVisibility.js'
 import { useGridSearch } from '../../shared/composables/useGridSearch.js'
 import { calculateCora } from '../../shared/lib.js'
 import { columnValueOptions, labelNames, searchableColumns } from '../../shared/lib/gridSearch.js'
-import { readStoredValue, storeValue } from '../../shared/lib/localStorage.js'
 import { rowHeightPx } from '../../shared/lib/rowHeights.js'
 import AssetColumn from '../columns/AssetColumn.vue'
 import BenchmarkColumn from '../columns/BenchmarkColumn.vue'
@@ -267,14 +267,8 @@ const columns = computed(() => {
   }
 })
 
-// Column visibility. Identity columns (`locked`) always show; the rest can be
-// toggled, and `defaultHidden` columns start off. Only departures from the
-// defaults are stored, as { field: shown }, so a column added later still
-// arrives with its default. Overrides persist per column set: the STIG grid
-// keeps its own choices apart from the checklist grid beneath it, and a grid
-// with the same column set on another tab shares them.
-const toggleableColumns = computed(() => columns.value.filter(c => !c.locked))
-
+// Column visibility; overrides persist per column set, so the STIG grid keeps its own choices
+// apart from the checklist grid beneath it, and the same column set on another tab shares them.
 const columnSetKey = computed(() => {
   if (!aggregationType.value) {
     return null
@@ -283,49 +277,7 @@ const columnSetKey = computed(() => {
   return `metricsGrid.columns.${aggregationType.value}${variant}`
 })
 
-function readOverrides(key) {
-  if (!key) {
-    return {}
-  }
-  try {
-    const parsed = JSON.parse(readStoredValue(key, '{}'))
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return {}
-    }
-    return Object.fromEntries(Object.entries(parsed).filter(([, v]) => typeof v === 'boolean'))
-  }
-  catch {
-    return {}
-  }
-}
-
-const overrides = ref(readOverrides(columnSetKey.value))
-
-watch(columnSetKey, (key) => {
-  overrides.value = readOverrides(key)
-})
-
-function isShown(col) {
-  return overrides.value[col.field] ?? !col.defaultHidden
-}
-
-const selectedColumns = computed(() => toggleableColumns.value.filter(isShown))
-const visibleColumns = computed(() => columns.value.filter(c => c.locked || isShown(c)))
-
-function onSelectedColumnsChange(selected) {
-  const shown = new Set(selected.map(c => c.field))
-  const next = {}
-  for (const col of toggleableColumns.value) {
-    const isOn = shown.has(col.field)
-    if (isOn === Boolean(col.defaultHidden)) {
-      next[col.field] = isOn
-    }
-  }
-  overrides.value = next
-  if (columnSetKey.value) {
-    storeValue(columnSetKey.value, JSON.stringify(next))
-  }
-}
+const { toggleableColumns, selectedColumns, visibleColumns } = useColumnVisibility(columns, columnSetKey)
 
 const data = computed(() => {
   if (!Array.isArray(props.apiMetricsSummary)) {
@@ -485,10 +437,9 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
       </div>
       <div class="agg-grid-header-controls">
         <ColumnToggle
+          v-model="selectedColumns"
           class="agg-grid-column-toggle"
-          :model-value="selectedColumns"
           :columns="toggleableColumns"
-          @update:model-value="onSelectedColumnsChange"
         />
       </div>
     </div>

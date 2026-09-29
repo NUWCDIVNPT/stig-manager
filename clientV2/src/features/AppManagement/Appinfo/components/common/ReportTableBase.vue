@@ -5,6 +5,7 @@ import { computed, ref, watch } from 'vue'
 import ColumnFilter from '../../../../../components/common/ColumnFilter.vue'
 import ColumnSearchFilter from '../../../../../components/common/ColumnSearchFilter.vue'
 import ColumnToggle from '../../../../../components/common/ColumnToggle.vue'
+import { useColumnVisibility } from '../../../../../shared/composables/useColumnVisibility.js'
 import { formatNumber } from '../../../../../shared/lib.js'
 import { fieldMatches } from '../../../../../shared/lib/searchUtils.js'
 import { reportTableBorderPt, reportTablePt } from '../../lib/appInfoTablePt.js'
@@ -43,14 +44,14 @@ watch(() => props.rows, () => {
   categoryValues.value = []
 })
 
-const selectedColumns = ref(props.columns.filter(c => !c.hidden))
-// PrimeVue's MultiSelect doesn't emit the same object references it was given
-// as `options`, so matching by identity (.includes) drops every column; match
-// on `field` instead, as the other ColumnToggle usages in the app do.
+// Callers mark default-off columns with `hidden`; choices are saved per report
+const toggleColumns = computed(() => props.columns.map(c => ({ ...c, defaultHidden: Boolean(c.hidden) })))
+const { selectedColumns, visibleFields } = useColumnVisibility(
+  toggleColumns,
+  () => (props.columnToggle ? `appinfoReport.columns.${props.exportFilename}` : null),
+)
 const shownColumns = computed(() =>
-  props.columnToggle
-    ? props.columns.filter(c => selectedColumns.value.some(s => s.field === c.field))
-    : props.columns,
+  props.columnToggle ? props.columns.filter(c => visibleFields.value.has(c.field)) : props.columns,
 )
 
 // Hiding the category column also hides its filter control, so a leftover
@@ -124,7 +125,7 @@ function columnStyle(col) {
       <slot name="title-extra" />
       <template v-if="columnToggle">
         <div class="title-spacer" />
-        <ColumnToggle v-model="selectedColumns" :columns="columns" />
+        <ColumnToggle v-model="selectedColumns" :columns="toggleColumns" />
       </template>
     </div>
     <DataTable

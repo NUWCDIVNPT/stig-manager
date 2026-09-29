@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
+import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import CollectionChecklistGridHeader from './CollectionChecklistGridHeader.vue'
 import CollectionChecklistGridTable from './CollectionChecklistGridTable.vue'
@@ -33,7 +34,7 @@ const emit = defineEmits(['select-rule', 'refresh'])
 const searchFilter = ref('')
 
 const TOGGLEABLE_COLUMNS = [
-  { field: 'version', header: 'STIG Id', hidden: true },
+  { field: 'version', header: 'STIG Id', defaultHidden: true },
   { field: 'fail', header: 'O' },
   { field: 'pass', header: 'NF' },
   { field: 'notapplicable', header: 'NA' },
@@ -41,8 +42,8 @@ const TOGGLEABLE_COLUMNS = [
   { field: 'submitted', header: 'Submitted' },
   { field: 'rejected', header: 'Rejected' },
   { field: 'accepted', header: 'Accepted' },
-  { field: 'oldest', header: 'Oldest', hidden: true },
-  { field: 'newest', header: 'Newest', hidden: true },
+  { field: 'oldest', header: 'Oldest', defaultHidden: true },
+  { field: 'newest', header: 'Newest', defaultHidden: true },
 ]
 
 const DISPLAY_MODE_FIELDS = {
@@ -52,7 +53,7 @@ const DISPLAY_MODE_FIELDS = {
 }
 
 // Hidden by default; the rule title gets the room instead.
-const selectedColumns = ref(TOGGLEABLE_COLUMNS.filter(c => !c.hidden))
+const { selectedColumns } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'collectionChecklistGrid.columns')
 const displayMode = ref('groupRule')
 
 const visibleFields = computed(() => {
