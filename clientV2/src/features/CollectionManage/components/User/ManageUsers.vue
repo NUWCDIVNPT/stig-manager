@@ -6,9 +6,11 @@ import { computed, ref, watch } from 'vue'
 import targetSvg from '../../../../assets/target.svg'
 import { roleMap } from '../../../../components/common/grants/roleOptions.js'
 import RolePopover from '../../../../components/common/grants/RolePopover.vue'
+import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchCollectionUsers } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { getEffectiveUserDisplay } from '../../lib/grantsUsers.js'
@@ -43,6 +45,12 @@ const displayUsers = computed(() => (users.value ?? []).map((row) => {
   }
 }))
 
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions } = useGridSearch(displayUsers, [
+  { field: 'displayName', header: 'User', searchText: r => `${r.displayName ?? ''} ${r.username ?? ''}` },
+  { field: 'granteeText', header: 'Grantee', filterValues: r => r.granteeLabels, multiple: true },
+  { field: 'role', header: 'Role', filterValues: r => r.role },
+])
+
 // compact table pt for footer actions and compact table
 const baseTablePt = compactTablePt()
 const tablePt = {
@@ -70,9 +78,16 @@ defineExpose({ reload })
 <template>
   <div class="manage-users">
     <div class="users-table-wrapper">
+      <div class="panel-title">
+        <i class="pi pi-users" />
+        <span>Effective Users</span>
+        <span class="panel-title__end">
+          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+        </span>
+      </div>
       <DataTable
         ref="usersDt"
-        :value="displayUsers"
+        :value="filteredRows"
         :loading="isLoading"
         sort-field="displayName"
         :sort-order="1"
@@ -84,7 +99,7 @@ defineExpose({ reload })
         :pt="tablePt"
       >
         <template #empty>
-          No effective users.
+          {{ isFiltered && displayUsers.length ? 'No users match the filters.' : 'No effective users.' }}
         </template>
 
         <Column field="displayName" header="User" sortable>
@@ -142,6 +157,7 @@ defineExpose({ reload })
             :dt="usersDt"
             :refresh-loading="isLoading"
             :total-count="displayUsers.length"
+            :filtered-count="isFiltered ? filteredRows.length : null"
             total-label="users"
             total-icon="pi pi-users"
             @refresh="reload"
@@ -175,6 +191,26 @@ defineExpose({ reload })
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+/* Matches the Service Jobs / Log Stream panel title bars; the Filter rides the right. */
+.panel-title {
+  --checklist-control-height: 1.9rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--color-text-bright);
+  background: var(--color-background-subtle);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.panel-title__end {
+  margin-left: auto;
+  font-weight: 400;
 }
 
 .user-cell {

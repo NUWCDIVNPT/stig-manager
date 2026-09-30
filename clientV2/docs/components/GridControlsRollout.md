@@ -72,7 +72,7 @@ Reuse that row for any grid whose header is already full.
 | --- | --- | --- |
 | `features/AppManagement/Users/components/UserList.vue` | Search, Columns (no Filter) | Done |
 | `features/CollectionManage/components/Asset/ManageAssetsTable.vue` | Search, Filter, Columns | Done |
-| `features/AppManagement/LogStream/components/TransactionGrid.vue` | Old header filters | To do |
+| `features/AppManagement/LogStream/components/TransactionGrid.vue` | Search, Filter, Columns (in the title bar) | Done |
 | `features/AppManagement/Appinfo/components/common/ReportTableBase.vue` | Search, Columns where enabled (no Filter) | Done |
 | `features/STIGLibrary/components/BenchmarksTable.vue` | Custom search | To do |
 | `features/STIGLibrary/components/BenchmarkListTable.vue` | Search, Filter, Columns (in the panel header) | Done |
@@ -82,14 +82,18 @@ Reuse that row for any grid whose header is already full.
 | `features/AppManagement/ServiceJobs/components/JobsTable.vue` | Search, Columns (no Filter) | Done |
 | `features/CollectionManage/components/Stig/ManageStigsTable.vue` | Search, Filter, Columns | Done |
 | `features/CollectionManage/components/Label/LabelsTable.vue` | Search, Filter, Columns | Done |
-| `features/CollectionManage/components/User/ManageUsers.vue` | Nothing | To do |
-| `features/CollectionManage/components/User/AclRulesTable.vue` | Nothing | To do |
+| `features/CollectionManage/components/User/ManageUsers.vue` | Filter only (in its panel title bar) | Done |
+| `features/CollectionManage/components/User/AclRulesTable.vue` | Filter only (in `GrantAclModal`'s rules header) | Done |
 
 The three Collection Manage tabs (Assets, STIGs, Labels) put their controls in a `GridToolbar` row
 above the table, because their action toolbars are already full. Their old header filters are gone,
 and so is the filtering that `useAssetTable` and `useStigTable` used to do. Assets can also be filtered
 by assigned STIG, which is filter-only and not shown as a column. Storage keys: `manageAssets.columns`,
 `manageStigs.columns`, `manageLabels.columns`.
+
+The Collection Manage Users tab and its ACL tables get the Filter button only, with no search box or column toggle.
+`GrantAclModal` owns the ACL filter. It clears on open and deselects rules the filter hides, so Remove never acts
+on rows you can't see.
 
 The STIG Library list (`BenchmarkListTable`) puts its controls in its panel header, next to the
 "Full search…" button, which is a placeholder for content search and stays. Storage key: `stigLibrary.columns`.
@@ -127,7 +131,7 @@ The Tier B and C placements come from each grid's purpose. Confirm row and colum
 - `features/AppManagement/STIGManage/components/ImportStigModal.vue`
 - `features/AssetStigImport/components/AssetStigPreviewStep.vue`
 - `features/CollectionManage/components/Asset/ImportAssetsCsvButton.vue`
-- `features/CollectionManage/components/User/EffectiveAclModal.vue`
+- `features/CollectionManage/components/User/EffectiveAclModal.vue` (has a Filter in its header anyway)
 - `components/common/PickListTable.vue` (has its own search)
 
 ---
@@ -135,5 +139,5 @@ The Tier B and C placements come from each grid's purpose. Confirm row and colum
 ## Open decisions
 
 1. **Old header filters** (`ColumnFilter.vue`, `ColumnSearchFilter.vue`). **Decided:** replace them with the Filter button.
-   They remain in `TransactionGrid`, `ReviewHistoryTab`, `ReviewOtherAssetsTab` and `ImportStigModal`.
+   They remain in `ReviewHistoryTab`, `ReviewOtherAssetsTab` and `ImportStigModal`.
 2. **Order.** Step 0, then Tier A, then Tier B and C in batches.
