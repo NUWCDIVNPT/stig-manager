@@ -75,7 +75,7 @@ const panelDt = {
 <template>
   <div class="home-component">
     <div class="home-grid">
-      <Panel class="home-panel" :dt="panelDt">
+      <Panel class="home-panel home-panel--scroll" :dt="panelDt">
         <template #header>
           <h2 class="card-title">
             Welcome
@@ -196,7 +196,7 @@ const panelDt = {
         </div>
       </Panel>
 
-      <Panel v-if="env.displayAppManagers" class="home-panel" :dt="panelDt">
+      <Panel v-if="env.displayAppManagers" class="home-panel home-panel--scroll" :dt="panelDt">
         <template #header>
           <h2 class="card-title">
             Application Managers
@@ -238,6 +238,31 @@ const panelDt = {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+/* Welcome and Application Managers hold deployment-defined content of any
+   length. Their bodies scroll at the row height set by the fixed-content
+   cards instead of growing the row: size containment keeps the body from
+   contributing its own height to the grid row, the flex chain then fills
+   whatever height the row settles on, and min-height covers the case where
+   the card is alone in its row. */
+.home-panel--scroll,
+.home-panel--scroll :deep(.p-panel-content-container),
+.home-panel--scroll :deep(.p-panel-content-wrapper) {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-panel--scroll :deep(.p-panel-content-container),
+.home-panel--scroll :deep(.p-panel-content-wrapper),
+.home-panel--scroll :deep(.p-panel-content) {
+  flex-grow: 1;
+}
+
+.home-panel--scroll :deep(.p-panel-content) {
+  contain: size;
+  min-height: 18rem;
+  overflow-y: auto;
 }
 
 .card-title {
