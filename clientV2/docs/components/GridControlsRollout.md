@@ -75,7 +75,7 @@ Reuse that row for any grid whose header is already full.
 | `features/AppManagement/LogStream/components/TransactionGrid.vue` | Old header filters | To do |
 | `features/AppManagement/Appinfo/components/common/ReportTableBase.vue` | Search, Columns where enabled (no Filter) | Done |
 | `features/STIGLibrary/components/BenchmarksTable.vue` | Custom search | To do |
-| `features/STIGLibrary/components/BenchmarkListTable.vue` | Custom search | To do |
+| `features/STIGLibrary/components/BenchmarkListTable.vue` | Search, Filter, Columns (in the panel header) | Done |
 | `features/AppManagement/Collections/components/CollectionList.vue` | Search, Columns (no Filter) | Done |
 | `features/AppManagement/STIGManage/components/StigList.vue` | Search, Columns (no Filter) | Done |
 | `features/AppManagement/UserGroups/components/UserGroupList.vue` | Search, Columns (no Filter) | Done |
@@ -91,6 +91,9 @@ and so is the filtering that `useAssetTable` and `useStigTable` used to do. Asse
 by assigned STIG, which is filter-only and not shown as a column. Storage keys: `manageAssets.columns`,
 `manageStigs.columns`, `manageLabels.columns`.
 
+The STIG Library list (`BenchmarkListTable`) puts its controls in its panel header, next to the
+"Full search…" button, which is a placeholder for content search and stays. Storage key: `stigLibrary.columns`.
+
 ---
 
 ## Tier C: Detail panels and tabs, Search only (or nothing if small)
@@ -105,8 +108,11 @@ by assigned STIG, which is filter-only and not shown as a column. Storage keys: 
 | `features/AppManagement/ServiceJobs/components/runs/RunOutputTable.vue` | Nothing | To do |
 | `features/CollectionManage/components/Configuration/TaskOutput.vue` | Nothing | To do |
 | `features/CollectionManage/components/Configuration/ReviewAgingRulesTable.vue` | Nothing | To do |
-| `features/STIGLibrary/components/DiffRuleTable.vue` | Nothing | To do |
-| `features/STIGLibrary/components/ViewRuleTable.vue` | Nothing | To do |
+| `features/STIGLibrary/components/DiffRuleTable.vue` | Search, Filter (in `RulePaneToolbar`) | Done |
+| `features/STIGLibrary/components/ViewRuleTable.vue` | Search, Filter (in `RulePaneToolbar`) | Done |
+
+The two STIG Library rule tables share one `useGridSearch` in `RulePane`. It follows the view or
+diff mode, and its Search and Filter sit in `RulePaneToolbar` next to density. They have no column toggle.
 
 The Tier B and C placements come from each grid's purpose. Confirm row and column counts per grid as each one is done.
 
@@ -129,5 +135,5 @@ The Tier B and C placements come from each grid's purpose. Confirm row and colum
 ## Open decisions
 
 1. **Old header filters** (`ColumnFilter.vue`, `ColumnSearchFilter.vue`). **Decided:** replace them with the Filter button.
-   They remain in `TransactionGrid`, `BenchmarkListTable`, `ReviewHistoryTab`, `ReviewOtherAssetsTab` and `ImportStigModal`.
+   They remain in `TransactionGrid`, `ReviewHistoryTab`, `ReviewOtherAssetsTab` and `ImportStigModal`.
 2. **Order.** Step 0, then Tier A, then Tier B and C in batches.

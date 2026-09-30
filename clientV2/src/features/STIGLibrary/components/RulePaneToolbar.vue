@@ -2,6 +2,8 @@
 import { computed } from 'vue'
 import ActionButton from '../../../components/common/ActionButton.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../components/common/GridSearch.vue'
 import RevisionSelect from './RevisionSelect.vue'
 
 const props = defineProps({
@@ -21,12 +23,23 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  // filterColumns and valueOptions from the pane's useGridSearch
+  filterColumns: {
+    type: Array,
+    default: () => [],
+  },
+  valueOptions: {
+    type: Object,
+    default: () => ({}),
+  },
 })
 
 const emit = defineEmits([
   'change-view-rev',
   'change-compare-rev',
 ])
+const search = defineModel('search', { type: String, default: '' })
+const filters = defineModel('filters', { type: Array, default: () => [] })
 
 const diffMode = computed(() => !!props.compareRev)
 const hasOtherRevisions = computed(() => (props.revisions ?? []).length > 1)
@@ -71,6 +84,26 @@ function onChangeCompareRev(rev) {
       </ActionButton>
     </template>
     <div class="stiglib-panel__spacer" />
+    <div class="rule-pane-toolbar__search">
+      <GridSearch v-model="search" class="rule-pane-toolbar__input" label="Search rules" placeholder="Search rules..." />
+      <GridFilterButton v-model="filters" :columns="filterColumns" :value-options="valueOptions" />
+    </div>
     <DensityControls grid-key="stig-library-rules" />
   </div>
 </template>
+
+<style scoped>
+.rule-pane-toolbar__search {
+  --checklist-control-height: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 1 20rem;
+  min-width: 12rem;
+}
+
+.rule-pane-toolbar__input {
+  flex: 1;
+  min-width: 0;
+}
+</style>
