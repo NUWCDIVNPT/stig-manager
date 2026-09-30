@@ -93,6 +93,7 @@ function onFilePicked(event) {
 
     <div class="queue-table-flex">
       <DataTable
+        v-model:selection="selectedRowsModel"
         :value="filteredRows"
         data-key="_queueId"
         scrollable
@@ -101,7 +102,6 @@ function onFilePicked(event) {
         striped-rows
         selection-mode="multiple"
         class="queue-table clickable-rows"
-        v-model:selection="selectedRowsModel"
       >
         <Column selection-mode="multiple" style="width: 3rem; flex-shrink: 0" />
         <Column field="name" header="Filename" sortable />
