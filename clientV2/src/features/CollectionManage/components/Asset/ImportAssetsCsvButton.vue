@@ -5,8 +5,12 @@ import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
 import { ref } from 'vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
+import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../../components/common/GridSearch.vue'
+import HighlightText from '../../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { importDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { ROW_HEIGHT_REM } from '../../../../shared/lib/rowHeights.js'
 import { useAssetCsvImport } from '../../composables/useAssetCsvImport.js'
@@ -42,7 +46,9 @@ function openFilePicker() {
 
 async function onFileSelected(event) {
   const file = event.target.files?.[0]
-  if (!file) { return }
+  if (!file) {
+    return
+  }
 
   reset()
 
@@ -67,7 +73,9 @@ async function onFileSelected(event) {
 }
 
 async function onSubmit() {
-  if (!canSubmit.value) { return }
+  if (!canSubmit.value) {
+    return
+  }
   try {
     await submit()
     emit('imported')
@@ -83,7 +91,9 @@ function closeModal() {
 }
 
 function metadataRenderer(value) {
-  if (!value || (typeof value === 'object' && Object.keys(value).length === 0)) { return '' }
+  if (!value || (typeof value === 'object' && Object.keys(value).length === 0)) {
+    return ''
+  }
   return JSON.stringify(value)
 }
 
@@ -101,15 +111,54 @@ function statusIcon(kind) {
   }
 }
 
+const {
+  term: assetSearchTerm,
+  filters: assetFilters,
+  filteredRows: filteredAssets,
+  isFiltered: assetsFiltered,
+  filterColumns: assetFilterColumns,
+  valueOptions: assetValueOptions,
+  highlightTerm,
+} = useGridSearch(validAssets, [
+  { field: 'CSVRow', header: 'Row', searchText: r => String(r.CSVRow ?? ''), quickSearch: false },
+  { field: 'name', header: 'Asset Name' },
+  { field: 'description', header: 'Description' },
+  { field: 'noncomputing', header: 'Noncomputing', filterValues: r => (r.noncomputing ? 'True' : 'False'), quickSearch: false },
+  { field: 'ip', header: 'IP' },
+  { field: 'fqdn', header: 'FQDN' },
+  { field: 'mac', header: 'MAC' },
+  { field: 'metadata', header: 'Metadata', searchText: r => metadataRenderer(r.metadata) },
+  { field: 'labelNames', header: 'Labels', searchText: r => (r.labelNames ?? []).join(' '), filterValues: r => r.labelNames ?? [], multiple: true },
+  { field: 'stigs', header: 'STIGs', searchText: r => (r.stigs ?? []).join(' '), filterValues: r => r.stigs ?? [], multiple: true },
+])
+
+const {
+  filters: errorFilters,
+  filteredRows: filteredErrors,
+  isFiltered: errorsFiltered,
+  filterColumns: errorFilterColumns,
+  valueOptions: errorValueOptions,
+} = useGridSearch(allErrors, [
+  { field: 'row', header: 'Row', searchText: r => String(r.row ?? '') },
+  { field: 'messages', header: 'Errors' },
+])
+
+const {
+  filters: labelFilters,
+  filteredRows: filteredLabels,
+  isFiltered: labelsFiltered,
+  filterColumns: labelFilterColumns,
+  valueOptions: labelValueOptions,
+} = useGridSearch(newLabels, [
+  { field: 'labelName', header: 'Label Name' },
+])
+
 // Header and body rows share one pinned height; cells clip rather than grow.
 const ROW_HEIGHT = `${ROW_HEIGHT_REM.dense}rem`
 
 const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
   table: { style: { tableLayout: 'auto', minWidth: '100%' } },
-  header: {
-    style: 'background: var(--color-background-dark); border-bottom: 1px solid var(--color-border-default); padding: 0.3rem 0.5rem;',
-  },
   column: {
     headerCell: {
       style: `height: ${ROW_HEIGHT}; color: var(--color-text-bright); font-size: var(--text-md); text-transform: none;`,
@@ -167,30 +216,55 @@ const dataTablePt = {
 
       <div class="grid-row grid-row--top">
         <div class="grid-table-container grid-fill">
+          <div class="panel-title">
+            <span>New Assets To Be Created</span>
+            <div class="panel-title__end">
+              <GridSearch v-model="assetSearchTerm" class="panel-title__search" label="Search new assets" placeholder="Search assets..." />
+              <GridFilterButton v-model="assetFilters" :columns="assetFilterColumns" :value-options="assetValueOptions" />
+            </div>
+          </div>
           <DataTable
-            :value="validAssets"
+            :value="filteredAssets"
             class="flex-fill"
             scrollable
             scroll-height="flex"
             :loading="isValidating"
             :pt="dataTablePt"
           >
-            <template #header>
-              <div class="grid-title">
-                <i class="pi pi-server" /> New Assets To Be Created
-              </div>
+            <template v-if="assetsFiltered && validAssets.length" #empty>
+              No assets match the search.
             </template>
             <Column field="CSVRow" header="Row" style="width: 5.5rem; padding: 0 0.5rem" />
-            <Column field="name" header="Asset Name" style="width: 14.5rem; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis" />
-            <Column field="description" header="Description" style="width: 16.25rem; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis" />
+            <Column field="name" header="Asset Name" style="width: 14.5rem; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis">
+              <template #body="{ data }">
+                <HighlightText :text="data.name" :term="highlightTerm('name')" />
+              </template>
+            </Column>
+            <Column field="description" header="Description" style="width: 16.25rem; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis">
+              <template #body="{ data }">
+                <HighlightText :text="data.description" :term="highlightTerm('description')" />
+              </template>
+            </Column>
             <Column field="noncomputing" header="Noncomputing" style="width: 10rem; padding: 0 0.5rem">
               <template #body="{ data }">
                 {{ data.noncomputing ? 'True' : 'False' }}
               </template>
             </Column>
-            <Column field="ip" header="IP" style="width: 10rem; padding: 0 0.5rem" />
-            <Column field="fqdn" header="FQDN" style="width: 12.75rem; padding: 0 0.5rem" />
-            <Column field="mac" header="MAC" style="width: 11.75rem; padding: 0 0.5rem" />
+            <Column field="ip" header="IP" style="width: 10rem; padding: 0 0.5rem">
+              <template #body="{ data }">
+                <HighlightText :text="data.ip" :term="highlightTerm('ip')" />
+              </template>
+            </Column>
+            <Column field="fqdn" header="FQDN" style="width: 12.75rem; padding: 0 0.5rem">
+              <template #body="{ data }">
+                <HighlightText :text="data.fqdn" :term="highlightTerm('fqdn')" />
+              </template>
+            </Column>
+            <Column field="mac" header="MAC" style="width: 11.75rem; padding: 0 0.5rem">
+              <template #body="{ data }">
+                <HighlightText :text="data.mac" :term="highlightTerm('mac')" />
+              </template>
+            </Column>
             <Column field="metadata" header="Metadata" style="width: 14.5rem; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis">
               <template #body="{ data }">
                 {{ metadataRenderer(data.metadata) }}
@@ -213,6 +287,7 @@ const dataTablePt = {
             <template #footer>
               <StatusFooter
                 :total-count="validAssets.length"
+                :filtered-count="assetsFiltered ? filteredAssets.length : null"
                 :show-refresh="false"
                 :show-export="false"
                 :total-label="validAssets.length === 1 ? 'asset' : 'assets'"
@@ -225,17 +300,21 @@ const dataTablePt = {
 
       <div class="grid-row grid-row--bottom">
         <div class="grid-table-container grid-fill grid-errors">
+          <div class="panel-title">
+            <span>File Errors</span>
+            <span class="panel-title__end">
+              <GridFilterButton v-model="errorFilters" :columns="errorFilterColumns" :value-options="errorValueOptions" />
+            </span>
+          </div>
           <DataTable
-            :value="allErrors"
+            :value="filteredErrors"
             class="flex-fill"
             scrollable
             scroll-height="flex"
             :pt="dataTablePt"
           >
-            <template #header>
-              <div class="grid-title grid-title--errors">
-                <i class="pi pi-times-circle" /> File Errors
-              </div>
+            <template v-if="errorsFiltered && allErrors.length" #empty>
+              No errors match the filters.
             </template>
             <Column field="row" header="Row" style="width: 7.25rem; padding: 0 0.5rem" />
             <Column field="messages" header="Errors" style="padding: 0 0.5rem">
@@ -248,6 +327,7 @@ const dataTablePt = {
             <template #footer>
               <StatusFooter
                 :total-count="allErrors.length"
+                :filtered-count="errorsFiltered ? filteredErrors.length : null"
                 :show-refresh="false"
                 :show-export="false"
                 :total-label="allErrors.length === 1 ? 'error' : 'errors'"
@@ -258,22 +338,27 @@ const dataTablePt = {
         </div>
 
         <div class="grid-table-container grid-fill grid-labels">
+          <div class="panel-title">
+            <span>New Labels To Be Created</span>
+            <span class="panel-title__end">
+              <GridFilterButton v-model="labelFilters" :columns="labelFilterColumns" :value-options="labelValueOptions" />
+            </span>
+          </div>
           <DataTable
-            :value="newLabels"
+            :value="filteredLabels"
             class="flex-fill"
             scrollable
             scroll-height="flex"
             :pt="dataTablePt"
           >
-            <template #header>
-              <div class="grid-title">
-                <i class="pi pi-tag" /> New Labels To Be Created
-              </div>
+            <template v-if="labelsFiltered && newLabels.length" #empty>
+              No labels match the filters.
             </template>
             <Column field="labelName" header="Label Name" style="padding: 0 0.5rem" />
             <template #footer>
               <StatusFooter
                 :total-count="newLabels.length"
+                :filtered-count="labelsFiltered ? filteredLabels.length : null"
                 :show-refresh="false"
                 :show-export="false"
                 :total-label="newLabels.length === 1 ? 'label' : 'labels'"
@@ -419,18 +504,34 @@ const dataTablePt = {
 .grid-labels { flex: 1; }
 .grid-errors { flex: 2; }
 
-.grid-title {
+/* Matches the app's panel title bars; controls ride the right. */
+.panel-title {
+  --checklist-control-height: 1.9rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.6rem;
+  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--color-text-bright);
+  background: var(--color-background-subtle);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.panel-title__end {
+  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-weight: 600;
-  font-size: var(--text-md);
-  color: var(--color-text-bright);
-  letter-spacing: 0.03em;
-  padding: 0.35rem 0.25rem;
+  font-weight: 400;
 }
 
-.grid-title--errors i { color: var(--color-status-error-border); }
+.panel-title__search {
+  width: 20rem;
+  max-width: 40vw;
+}
 
 /* DataTable deep rules — pseudo-class states that can't be expressed via PT */
 :deep(.p-datatable-thead > tr > th) {
