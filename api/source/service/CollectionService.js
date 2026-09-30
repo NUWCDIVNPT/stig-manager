@@ -608,9 +608,10 @@ exports.deleteCollection = async function(collectionId, userId) {
  * collectionId Integer A path parameter that identifies a Collection
  * benchmarkId String A path parameter that identifies a STIG
  * revisionStr String A path parameter that identifies a STIG revision [ V{version_num}R{release_num} | 'latest' ]
+ * labelIds, labelNames, labelMatch Optional label filters; counts include only Assets matching the filter
  * returns CollectionChecklist
  **/
-exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId, revisionStr, userObject ) {
+exports.getChecklistByCollectionStig = async function ({collectionId, benchmarkId, revisionStr, labelIds, labelNames, labelMatch, userObject}) {
   const ctes = []
   const groupBy = ['rgr.rgrId']
   const orderBy = ['rgr.ruleId']
@@ -678,6 +679,13 @@ exports.getChecklistByCollectionStig = async function (collectionId, benchmarkId
     const {version, release} = dbUtils.parseRevisionStr(revisionStr)
     predicates.statements.push('rev.version = ?', 'rev.release = ?')
     predicates.binds.push(version, release)
+  }
+
+  // Label filter
+  if (labelIds || labelNames || labelMatch) {
+    const labelFilter = dbUtils.sqlLabelAssetIds({collectionId, labelIds, labelNames, labelMatch})
+    predicates.statements.push(labelFilter.statement)
+    predicates.binds.push(...labelFilter.binds)
   }
 
   // Access control
