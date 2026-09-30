@@ -71,7 +71,7 @@ Reuse that row for any grid whose header is already full.
 | Grid | Today | Status |
 | --- | --- | --- |
 | `features/AppManagement/Users/components/UserList.vue` | Search, Columns (no Filter) | Done |
-| `features/CollectionManage/components/Asset/ManageAssetsTable.vue` | Old header filters | To do |
+| `features/CollectionManage/components/Asset/ManageAssetsTable.vue` | Search, Filter, Columns | Done |
 | `features/AppManagement/LogStream/components/TransactionGrid.vue` | Old header filters | To do |
 | `features/AppManagement/Appinfo/components/common/ReportTableBase.vue` | Search, Columns where enabled (no Filter) | Done |
 | `features/STIGLibrary/components/BenchmarksTable.vue` | Custom search | To do |
@@ -80,10 +80,16 @@ Reuse that row for any grid whose header is already full.
 | `features/AppManagement/STIGManage/components/StigList.vue` | Search, Columns (no Filter) | Done |
 | `features/AppManagement/UserGroups/components/UserGroupList.vue` | Search, Columns (no Filter) | Done |
 | `features/AppManagement/ServiceJobs/components/JobsTable.vue` | Search, Columns (no Filter) | Done |
-| `features/CollectionManage/components/Stig/ManageStigsTable.vue` | Nothing | To do |
-| `features/CollectionManage/components/Label/LabelsTable.vue` | Nothing | To do |
+| `features/CollectionManage/components/Stig/ManageStigsTable.vue` | Search, Filter, Columns | Done |
+| `features/CollectionManage/components/Label/LabelsTable.vue` | Search, Filter, Columns | Done |
 | `features/CollectionManage/components/User/ManageUsers.vue` | Nothing | To do |
 | `features/CollectionManage/components/User/AclRulesTable.vue` | Nothing | To do |
+
+The three Collection Manage tabs (Assets, STIGs, Labels) put their controls in a `GridToolbar` row
+above the table, because their action toolbars are already full. Their old header filters are gone,
+and so is the filtering that `useAssetTable` and `useStigTable` used to do. Assets can also be filtered
+by assigned STIG, which is filter-only and not shown as a column. Storage keys: `manageAssets.columns`,
+`manageStigs.columns`, `manageLabels.columns`.
 
 ---
 
@@ -122,6 +128,6 @@ The Tier B and C placements come from each grid's purpose. Confirm row and colum
 
 ## Open decisions
 
-1. **Old header filters** (`ColumnFilter.vue`) on seven grids. Replace them with the Filter button, or keep both?
-   Recommendation: replace them, so there is one filtering model everywhere.
+1. **Old header filters** (`ColumnFilter.vue`, `ColumnSearchFilter.vue`). **Decided:** replace them with the Filter button.
+   They remain in `TransactionGrid`, `BenchmarkListTable`, `ReviewHistoryTab`, `ReviewOtherAssetsTab` and `ImportStigModal`.
 2. **Order.** Step 0, then Tier A, then Tier B and C in batches.
