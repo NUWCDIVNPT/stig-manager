@@ -1,7 +1,7 @@
 import { apiCall } from '../../../shared/api/apiClient.js'
 
 // labelParams: output of buildLabelFilterParams ({ labelId: [...] } and/or { labelMatch: 'null' });
-// when present, checklist counts and the asset list cover only the matching Assets.
+// when present, checklist counts, the asset list and rule reviews cover only the matching Assets.
 export function fetchCollectionChecklist(collectionId, benchmarkId, revisionStr, labelParams = {}) {
   return apiCall('getChecklistByCollectionStig', {
     collectionId,
@@ -28,11 +28,12 @@ export function fetchRule(benchmarkId, revisionStr, ruleId) {
   })
 }
 
-export function fetchReviewsByRule(collectionId, ruleId) {
+export function fetchReviewsByRule(collectionId, ruleId, labelParams = {}) {
   return apiCall('getReviewsByCollection', {
     collectionId,
     rules: 'all',
     ruleId,
+    ...labelParams,
   })
 }
 

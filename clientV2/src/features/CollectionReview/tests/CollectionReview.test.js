@@ -187,6 +187,7 @@ describe('collectionReview.vue', () => {
       const expected = { labelId: ['label-a'], labelMatch: 'null' }
       expect(fetchCollectionChecklist).toHaveBeenCalledWith('coll-1', 'bench-1', 'rev-1', expected)
       expect(fetchAssetsByCollectionStig).toHaveBeenCalledWith('coll-1', 'bench-1', expected)
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', expected)
     })
 
     it('writes a changed label selection to the route query', async () => {
@@ -239,7 +240,7 @@ describe('collectionReview.vue', () => {
       // When the grid loads, V-123 should be selected.
       // This will trigger fetchRule and fetchReviewsByRule.
       expect(fetchRule).toHaveBeenCalledWith('bench-1', 'rev-1', 'V-123')
-      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123')
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', {})
     })
 
     it('updates selectedRuleId and fetches new data on select-rule event', async () => {
@@ -253,7 +254,7 @@ describe('collectionReview.vue', () => {
       await flushPromises()
 
       expect(fetchRule).toHaveBeenCalledWith('bench-1', 'rev-1', 'V-456')
-      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-456')
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-456', {})
     })
   })
 
@@ -276,7 +277,7 @@ describe('collectionReview.vue', () => {
         rules: { ruleIds: ['V-123'] },
       })
       // Should reload reviews after bulk save
-      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123')
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', {})
     })
 
     it('opens RejectReasonModal on reject, then calls postReviewBatch on confirm', async () => {

@@ -48,8 +48,9 @@ watch(() => props.collectionId, () => {
 
 const multiSelectPt = {
   root: { style: 'background-color: var(--color-background-light); border-color: var(--color-border-default)' },
-  label: { style: 'padding: 6px 10px; font-size: var(--text-md); color: var(--color-text-primary); flex: 1 1 auto; min-width: 0' },
-  labelContainer: { style: { display: 'flex', alignItems: 'center', flex: '1 1 auto', minWidth: 0 } },
+  // flex on label: LabelsRow has no intrinsic width (contain: inline-size), so the label must grow to give it room
+  label: { style: 'padding: 6px 10px; font-size: var(--text-md); color: var(--color-text-primary); flex: 1 1 auto' },
+  labelContainer: { style: { display: 'flex', alignItems: 'center' } },
   overlay: { style: { width: '235px' } },
   listContainer: { style: { maxHeight: '300px' } },
   header: { style: { padding: '0.5rem' } },

@@ -46,11 +46,7 @@ vi.mock('vue-router', () => ({
 }))
 
 vi.mock('../../../components/common/MetricsFilter.vue', () => ({
-  default: {
-    name: 'MetricsFilter',
-    props: ['modelValue', 'type', 'collectionId'],
-    template: '<div data-testid="mock-label-filter" :data-collection-id="collectionId" />',
-  },
+  default: { name: 'MetricsFilter', template: '<div data-testid="mock-label-filter" />' },
 }))
 
 describe('checklistGridHeader.vue', () => {

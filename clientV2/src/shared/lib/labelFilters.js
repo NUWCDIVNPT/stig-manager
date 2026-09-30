@@ -17,3 +17,15 @@ export function buildLabelFilterParams(selectedLabelIds = []) {
   // Allow mixed filtering: unlabeled OR one of selected labels.
   return { labelMatch: 'null', labelId: labelIds }
 }
+
+// Inverse of buildLabelFilterParams for values read back from a route query,
+// where a repeated key may arrive as a string or an array. `null` in the
+// result means "assets with no label".
+export function parseLabelFilterParams(query = {}) {
+  const raw = query.labelId === undefined ? [] : [].concat(query.labelId)
+  const ids = raw.filter(id => typeof id === 'string' && id)
+  if (query.labelMatch === 'null') {
+    ids.push(null)
+  }
+  return ids
+}

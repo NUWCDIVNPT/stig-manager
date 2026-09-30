@@ -108,12 +108,7 @@ function toggleChecklistMenu(event) {
       <div class="checklist-grid__title-row">
         <span class="checklist-grid__title">{{ headerTitle }}</span>
         <div class="checklist-grid__label-filter">
-          <MetricsFilter
-            :model-value="selectedLabelIds"
-            type="label"
-            :collection-id="collectionId"
-            @update:model-value="selectedLabelIds = $event"
-          />
+          <MetricsFilter v-model="selectedLabelIds" type="label" :collection-id="collectionId" />
         </div>
       </div>
     </div>

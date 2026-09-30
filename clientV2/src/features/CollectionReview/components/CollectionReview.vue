@@ -8,7 +8,7 @@ import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { fetchCollection } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
-import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
+import { buildLabelFilterParams, parseLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { defaultFieldSettings, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchAssetsByCollectionStig, fetchCollectionChecklist, fetchReviewsByRule, fetchRule, postReviewBatch } from '../api/collectionReviewApi.js'
@@ -28,23 +28,15 @@ const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
 
 // Label filter lives in the route query (labelId=<uuid>&labelMatch=null) so a
-// label-scoped view is bookmarkable. `null` in the array means "assets with no label".
-const selectedLabelIds = computed(() => {
-  const query = route.query ?? {}
-  const raw = query.labelId === undefined ? [] : [].concat(query.labelId)
-  const ids = raw.filter(id => typeof id === 'string' && id)
-  if (query.labelMatch === 'null') {
-    ids.push(null)
-  }
-  return ids
-})
+// label-scoped view is bookmarkable.
+const selectedLabelIds = computed(() => parseLabelFilterParams(route.query))
 const labelFilterParams = computed(() => buildLabelFilterParams(selectedLabelIds.value))
+// Stable watch source: the computeds above return fresh objects on every route change.
+const labelFilterKey = computed(() => JSON.stringify(labelFilterParams.value))
 
 function onUpdateSelectedLabelIds(ids) {
-  const next = { ...(route.query ?? {}) }
-  delete next.labelId
-  delete next.labelMatch
-  router.replace({ query: { ...next, ...buildLabelFilterParams(ids) } })
+  const { labelId, labelMatch, ...rest } = route.query
+  router.replace({ query: { ...rest, ...buildLabelFilterParams(ids) } })
 }
 
 function recentViewKey(cId = collectionId.value, bId = benchmarkId.value) {
@@ -103,7 +95,7 @@ const {
   isLoading: isReviewsLoading,
   execute: loadReviews,
 } = useAsyncState(
-  ruleId => fetchReviewsByRule(collectionId.value, ruleId),
+  ruleId => fetchReviewsByRule(collectionId.value, ruleId, labelFilterParams.value),
   { immediate: false, initialState: [], onError: null },
 )
 
@@ -131,14 +123,24 @@ watch(collectionId, () => {
   }
 }, { immediate: true })
 
-// Reviews for the selected rule are not label-filtered: the bottom grid is built
-// from the (filtered) asset list, so extra reviews are simply unused.
-watch([collectionId, benchmarkId, revisionStr, labelFilterParams], () => {
+watch([collectionId, benchmarkId, revisionStr], () => {
   if (collectionId.value && benchmarkId.value && revisionStr.value) {
     loadChecklist()
     loadAssets()
   }
 }, { immediate: true })
+
+// A label change rescopes everything already loaded, including the selected
+// rule's reviews (fetched label-scoped so rule clicks stay small).
+watch(labelFilterKey, () => {
+  if (collectionId.value && benchmarkId.value && revisionStr.value) {
+    loadChecklist()
+    loadAssets()
+    if (selectedRuleId.value) {
+      loadReviews(selectedRuleId.value)
+    }
+  }
+})
 
 watch(
   [collection, () => route.params.benchmarkId, () => route.params.revisionStr],
