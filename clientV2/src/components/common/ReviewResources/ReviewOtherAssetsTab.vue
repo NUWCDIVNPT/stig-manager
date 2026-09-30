@@ -5,14 +5,18 @@ import { computed, inject, ref, toRefs, watch } from 'vue'
 import { fetchOtherReviews } from '../../../shared/api/reviewsApi.js'
 
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
+import { capitalize } from '../../../shared/lib/exportCells.js'
+import { labelNames } from '../../../shared/lib/gridSearch.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import LabelsRow from '../../columns/LabelsRow.vue'
 import EngineBadge from '../EngineBadge.vue'
+import GridFilterButton from '../GridFilterButton.vue'
 import LongTextPopover from '../LongTextPopover.vue'
 import ManualBadge from '../ManualBadge.vue'
 import OverrideBadge from '../OverrideBadge.vue'
@@ -106,6 +110,21 @@ const filteredOtherReviews = computed(() => {
   return otherReviews.value.filter(review => review.assetId !== assetId.value)
 })
 
+const tabBarEnd = inject('reviewTabBarEnd', null)
+
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, clear: clearFilters } = useGridSearch(filteredOtherReviews, [
+  { field: 'assetName', header: 'Asset' },
+  { field: 'assetLabels', header: 'Labels', searchText: r => labelNames(r.assetLabels), filterValues: r => r.assetLabels, multiple: true },
+  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result) ?? '' },
+  { field: 'engine', header: 'Engine', filterValues: r => capitalize(getEngineDisplay(r)) },
+  { field: 'detail', header: 'Detail' },
+  { field: 'comment', header: 'Comment' },
+  { field: 'status', header: 'Status', filterValues: r => capitalize(r.status?.label ?? '') },
+  { field: 'username', header: 'User', filterValues: r => r.username },
+])
+
+watch([() => ruleId.value, () => collectionId.value], clearFilters)
+
 const otherAssetsStats = computed(() => {
   const reviews = filteredOtherReviews.value || []
   const stats = {
@@ -167,9 +186,12 @@ watch([() => ruleId.value, () => collectionId.value], () => {
 
 <template>
   <div class="other-assets-wrapper">
+    <Teleport v-if="tabBarEnd" :to="tabBarEnd">
+      <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+    </Teleport>
     <DataTable
       ref="dataTableRef"
-      :value="filteredOtherReviews"
+      :value="filteredRows"
       :loading="isLoading"
       data-key="assetId"
       export-filename="Other-Reviews"
@@ -301,7 +323,7 @@ watch([() => ruleId.value, () => collectionId.value], () => {
 
       <template #empty>
         <div class="other-table__empty">
-          {{ isLoading ? 'Loading...' : 'No reviews found for this rule on other assets.' }}
+          {{ isLoading ? 'Loading...' : isFiltered && filteredOtherReviews.length ? 'No reviews match the filters.' : 'No reviews found for this rule on other assets.' }}
         </div>
       </template>
 
@@ -311,6 +333,7 @@ watch([() => ruleId.value, () => collectionId.value], () => {
           :show-refresh="false"
           :show-export="true"
           :total-count="otherAssetsStats.total"
+          :filtered-count="isFiltered ? filteredRows.length : null"
         >
           <template #right-extra>
             <ResultBadge status="O" :count="otherAssetsStats.results.fail" />

@@ -4,13 +4,16 @@ import DataTable from 'primevue/datatable'
 import { computed, inject, ref, toRefs, watch } from 'vue'
 import { fetchReview } from '../../../shared/api/reviewsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { durationToNow, formatDateTimeString } from '../../../shared/lib.js'
 
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
+import { capitalize } from '../../../shared/lib/exportCells.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import EngineBadge from '../EngineBadge.vue'
+import GridFilterButton from '../GridFilterButton.vue'
 import LongTextPopover from '../LongTextPopover.vue'
 import ManualBadge from '../ManualBadge.vue'
 import OverrideBadge from '../OverrideBadge.vue'
@@ -85,6 +88,21 @@ const processedHistory = computed(() => {
     _statusLabel: item.status?.label ?? '',
   }))
 })
+
+const tabBarEnd = inject('reviewTabBarEnd', null)
+
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, clear: clearFilters } = useGridSearch(processedHistory, [
+  { field: 'ruleId', header: 'Rule' },
+  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result) ?? '' },
+  { field: '_engineDisplay', header: 'Engine', filterValues: r => capitalize(r._engineDisplay) },
+  { field: 'detail', header: 'Detail' },
+  { field: 'comment', header: 'Comment' },
+  { field: 'statusText', header: 'Status Text', searchText: r => r.status?.text },
+  { field: '_statusLabel', header: 'Status', filterValues: r => capitalize(r._statusLabel) },
+  { field: 'username', header: 'User', filterValues: r => r.username },
+])
+
+watch([() => ruleId.value, () => assetId.value], clearFilters)
 
 // Single-line rows at a fixed height, so cells centre vertically.
 const cellOptions = { verticalAlign: 'middle' }
@@ -174,9 +192,12 @@ const historyStats = computed(() => {
 
 <template>
   <div class="history-wrapper">
+    <Teleport v-if="active && tabBarEnd" :to="tabBarEnd">
+      <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+    </Teleport>
     <DataTable
       ref="dataTableRef"
-      :value="processedHistory"
+      :value="filteredRows"
       :loading="isInternalHistoryLoading"
       data-key="touchTs"
       export-filename="History"
@@ -320,7 +341,7 @@ const historyStats = computed(() => {
 
       <template #empty>
         <div class="history-table__empty">
-          No review history found for this rule.
+          {{ isFiltered && processedHistory.length ? 'No history matches the filters.' : 'No review history found for this rule.' }}
         </div>
       </template>
 
@@ -330,6 +351,7 @@ const historyStats = computed(() => {
           :show-refresh="false"
           :show-export="true"
           :total-count="historyStats.total"
+          :filtered-count="isFiltered ? filteredRows.length : null"
         >
           <template #right-extra>
             <ResultBadge status="O" :count="historyStats.results.fail" />
