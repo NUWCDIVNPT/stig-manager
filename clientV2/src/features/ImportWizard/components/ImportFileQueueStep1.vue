@@ -1,8 +1,10 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { formatDateTimeString } from '../../../shared/lib.js'
 import './style.css'
 
@@ -27,6 +29,21 @@ const fileInputRef = ref(null)
 const selectedRowsModel = computed({
   get: () => props.selectedRows,
   set: next => emit('update:selectedRows', next),
+})
+
+const fileType = name => name?.split('.').pop()?.toUpperCase() ?? ''
+
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions } = useGridSearch(() => props.sourceFiles, [
+  { field: 'name', header: 'Filename' },
+  { field: 'type', header: 'Type', filterValues: r => fileType(r.name) },
+])
+
+// Remove acts on the selection, so never keep files the filter hid
+watch(filteredRows, (visible) => {
+  const kept = props.selectedRows.filter(r => visible.includes(r))
+  if (kept.length !== props.selectedRows.length) {
+    emit('update:selectedRows', kept)
+  }
 })
 
 function onFilePicked(event) {
@@ -62,6 +79,7 @@ function onFilePicked(event) {
         @change="onFilePicked"
       >
       <span class="queue-toolbar-spacer" />
+      <GridFilterButton v-if="!singleFile" v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
       <button
         type="button"
         class="toolbar-btn"
@@ -75,7 +93,7 @@ function onFilePicked(event) {
 
     <div class="queue-table-flex">
       <DataTable
-        :value="sourceFiles"
+        :value="filteredRows"
         data-key="_queueId"
         scrollable
         scroll-height="flex"
@@ -98,13 +116,14 @@ function onFilePicked(event) {
           </template>
         </Column>
         <template #empty>
-          <span class="queue-empty-hint">You may drop files here</span>
+          <span class="queue-empty-hint">{{ isFiltered && sourceFiles.length ? 'No files match the filters.' : 'You may drop files here' }}</span>
         </template>
       </DataTable>
     </div>
 
     <StatusFooter
       :total-count="sourceFiles.length"
+      :filtered-count="isFiltered ? filteredRows.length : null"
       :show-refresh="false"
       :show-export="false"
       total-label="files"
@@ -131,6 +150,7 @@ function onFilePicked(event) {
 }
 
 .queue-toolbar {
+  --checklist-control-height: 32px;
   display: flex;
   align-items: center;
   gap: 0.5rem;

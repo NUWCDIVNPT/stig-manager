@@ -104,14 +104,14 @@ The STIG Library list (`BenchmarkListTable`) puts its controls in its panel head
 
 | Grid | Today | Status |
 | --- | --- | --- |
-| `components/common/ReviewResources/ReviewHistoryTab.vue` | Old filters removed, no controls by choice | Done |
-| `components/common/ReviewResources/ReviewOtherAssetsTab.vue` | Old filters removed, no controls by choice | Done |
-| `features/AppManagement/Users/components/EffectiveGrants.vue` | Nothing | To do |
+| `components/common/ReviewResources/ReviewHistoryTab.vue` | Filter only (right end of the tab bar) | Done |
+| `components/common/ReviewResources/ReviewOtherAssetsTab.vue` | Filter only (right end of the tab bar) | Done |
+| `features/AppManagement/Users/components/EffectiveGrants.vue` | Filter only (in a new panel title bar) | Done |
 | `components/common/grants/GrantsPanel.vue` | Filter only (right of Add Grants in its toolbar) | Done |
-| `features/AppManagement/ServiceJobs/components/runs/RunsTable.vue` | Nothing | To do |
-| `features/AppManagement/ServiceJobs/components/runs/RunOutputTable.vue` | Nothing | To do |
-| `features/CollectionManage/components/Configuration/TaskOutput.vue` | Nothing | To do |
-| `features/CollectionManage/components/Configuration/ReviewAgingRulesTable.vue` | Nothing | To do |
+| `features/AppManagement/ServiceJobs/components/runs/RunsTable.vue` | No controls by choice | Done |
+| `features/AppManagement/ServiceJobs/components/runs/RunOutputTable.vue` | No controls by choice | Done |
+| `features/CollectionManage/components/Configuration/TaskOutput.vue` | No controls by choice | Done |
+| `features/CollectionManage/components/Configuration/ReviewAgingRulesTable.vue` | Filter only (toolbar; reorder off while filtered) | Done |
 | `features/STIGLibrary/components/DiffRuleTable.vue` | Search, Filter (in `RulePaneToolbar`) | Done |
 | `features/STIGLibrary/components/ViewRuleTable.vue` | Search, Filter (in `RulePaneToolbar`) | Done |
 
@@ -124,12 +124,12 @@ The Tier B and C placements come from each grid's purpose. Confirm row and colum
 
 ## Tier D: Skip (wizards, modals, short-lived lists)
 
-- `features/ImportWizard/components/ImportFileQueueStep1.vue`
-- `features/ImportWizard/components/ImportErrorsWarningsStep3.vue`
-- `features/ImportWizard/components/ImportPreviewStep4.vue`
-- `features/ImportWizard/components/ImportProgressStep5.vue`
-- `features/AppManagement/STIGManage/components/ImportStigModal.vue`
-- `features/AssetStigImport/components/AssetStigPreviewStep.vue`
+- `features/ImportWizard/components/ImportFileQueueStep1.vue` (has a Filter in its queue toolbar anyway)
+- `features/ImportWizard/components/ImportErrorsWarningsStep3.vue` (has a Filter on each section title anyway)
+- `features/ImportWizard/components/ImportPreviewStep4.vue` (has a Filter in its panel title bar anyway)
+- `features/ImportWizard/components/ImportProgressStep5.vue` (has Search and Filter in a results header anyway)
+- `features/AppManagement/STIGManage/components/ImportStigModal.vue` (has a Filter in its Files header anyway)
+- `features/AssetStigImport/components/AssetStigPreviewStep.vue` (has Search and Filter in a panel title bar anyway)
 - `features/CollectionManage/components/Asset/ImportAssetsCsvButton.vue`
 - `features/CollectionManage/components/User/EffectiveAclModal.vue` (has a Filter in its header anyway)
 - `components/common/PickListTable.vue` (has its own search)
@@ -139,5 +139,5 @@ The Tier B and C placements come from each grid's purpose. Confirm row and colum
 ## Open decisions
 
 1. **Old header filters** (`ColumnFilter.vue`, `ColumnSearchFilter.vue`). **Decided:** replace them with the Filter button.
-   They remain only in `ImportStigModal`.
+   No grid uses them anymore; `ImportStigModal` was the last.
 2. **Order.** Step 0, then Tier A, then Tier B and C in batches.

@@ -2,16 +2,26 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { ref } from 'vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { formatDateTimeString } from '../../../shared/lib.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
 defineOptions({ inheritAttrs: false })
 
-defineProps({
+const props = defineProps({
   rows: { type: Array, required: true },
 })
+
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions } = useGridSearch(() => props.rows, [
+  { field: 'asset', header: 'Asset', searchText: r => r.taskAsset.assetProps.name },
+  { field: 'assetState', header: 'Asset is', filterValues: r => (r.taskAsset.assetProps.assetId ? 'Existing' : 'New') },
+  { field: 'stig', header: 'STIG', filterValues: r => r.checklist.benchmarkId },
+  { field: 'stigState', header: 'STIG assignment is', filterValues: r => (r.checklist.newAssignment ? 'New' : 'Existing') },
+  { field: 'file', header: 'File', searchText: r => r.checklist.sourceRef.fullPath ?? r.checklist.sourceRef.name },
+])
 
 const ROW_HEIGHT = rowHeightPx('spacious')
 
@@ -27,9 +37,15 @@ const dtRef = ref()
     </div>
 
     <div class="preview-table-wrapper">
+      <div class="panel-title">
+        <span>Results to import</span>
+        <span class="panel-title__end">
+          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+        </span>
+      </div>
       <DataTable
         ref="dtRef"
-        :value="rows"
+        :value="filteredRows"
         export-filename="import-preview"
         scrollable
         scroll-height="flex"
@@ -38,6 +54,9 @@ const dtRef = ref()
         :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
         :pt="{ table: { style: 'table-layout: fixed; width: 100%' }, tableContainer: { style: 'overflow-x: hidden' } }"
       >
+        <template #empty>
+          {{ isFiltered && rows.length ? 'No results match the filters.' : 'Nothing to import.' }}
+        </template>
         <Column header="Asset" field="taskAsset.assetProps.name" style="width: 16%" sortable :sort-field="r => r.taskAsset.assetProps.name">
           <template #body="{ data }">
             <span :class="{ 'new-item': !data.taskAsset.assetProps.assetId }">
@@ -106,6 +125,7 @@ const dtRef = ref()
 
       <StatusFooter
         :total-count="rows.length"
+        :filtered-count="isFiltered ? filteredRows.length : null"
         :show-refresh="false"
         :show-export="true"
         :dt="dtRef"
@@ -144,6 +164,26 @@ const dtRef = ref()
   flex: 1;
   min-height: 0;
   user-select: none;
+}
+
+/* Matches the other panel title bars; the Filter rides the right. */
+.panel-title {
+  --checklist-control-height: 1.9rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--color-text-bright);
+  background: var(--color-background-subtle);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.panel-title__end {
+  margin-left: auto;
+  font-weight: 400;
 }
 
 .new-item {

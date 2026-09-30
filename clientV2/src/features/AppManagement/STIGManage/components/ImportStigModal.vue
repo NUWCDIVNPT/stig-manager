@@ -5,8 +5,9 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
-import { formatSize } from '../../../../shared/lib.js'
+import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
+import StatusFooter from '../../../../components/common/StatusFooter.vue'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { dangerBtnPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { readStoredValue, storeValue } from '../../../../shared/lib/localStorage.js'
@@ -170,9 +171,6 @@ function onBodyDrop(event) {
   }
 }
 
-const totalSize = computed(() =>
-  formatSize(selectedFiles.value.reduce((sum, f) => sum + f.size, 0)))
-
 const importLabel = computed(() =>
   importState.rows.length > 1 ? `Import ${importState.rows.length} files` : 'Import')
 
@@ -185,11 +183,6 @@ function removeRow(row) {
 }
 
 // ── filtering ────────────────────────────────────────────────────────────────
-const statusFilter = ref('')
-const fileFilter = ref('')
-const sourceFilter = ref('')
-const messageFilter = ref('')
-
 function statusLabel(row) {
   if (row.status === 'pending') {
     return 'not processed'
@@ -203,20 +196,12 @@ function statusLabel(row) {
   return row.action ?? 'done'
 }
 
-const filteredRows = computed(() => {
-  const s = statusFilter.value.trim().toLowerCase()
-  const f = fileFilter.value.trim().toLowerCase()
-  const src = sourceFilter.value.trim().toLowerCase()
-  const m = messageFilter.value.trim().toLowerCase()
-  if (!s && !f && !src && !m) {
-    return importState.rows
-  }
-  return importState.rows.filter(r =>
-    (!s || statusLabel(r).includes(s))
-    && (!f || r.filename.toLowerCase().includes(f))
-    && (!src || r.source.toLowerCase().includes(src))
-    && (!m || r.message.toLowerCase().includes(m)))
-})
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions } = useGridSearch(() => importState.rows, [
+  { field: 'status', header: 'Status', filterValues: statusLabel },
+  { field: 'filename', header: 'File' },
+  { field: 'source', header: 'Source', filterValues: r => r.source || '' },
+  { field: 'message', header: 'Result' },
+])
 
 // ── auto-scroll: follow the processing frontier ──────────────────────────────
 const dataTableRef = ref(null)
@@ -382,13 +367,14 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 
       <!-- ── unified file table ── -->
       <div v-if="importState.rows.length" class="table-container">
-        <div v-if="phase === 'pick'" class="table-toolbar">
-          <span class="table-toolbar__summary">
-            {{ importState.rows.length }} file{{ importState.rows.length === 1 ? '' : 's' }} · {{ totalSize }}
+        <div class="table-toolbar">
+          <span class="table-toolbar__title">Files</span>
+          <span class="table-toolbar__end">
+            <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+            <button v-if="phase === 'pick'" class="table-toolbar__clear" type="button" @click="clearFiles">
+              Clear all
+            </button>
           </span>
-          <button class="table-toolbar__clear" type="button" @click="clearFiles">
-            Clear all
-          </button>
         </div>
         <DataTable
           ref="dataTableRef"
@@ -404,13 +390,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
             No matching files.
           </template>
 
-          <Column field="status" export-header="Status" :pt="borderPt" style="width: 15%; white-space: nowrap;">
-            <template #header>
-              <div class="column-header-with-filter">
-                Status
-                <ColumnSearchFilter v-model="statusFilter" placeholder="Search status..." />
-              </div>
-            </template>
+          <Column field="status" header="Status" :pt="borderPt" style="width: 15%; white-space: nowrap;">
             <template #body="{ data }">
               <span
                 class="status-cell"
@@ -430,37 +410,19 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
             </template>
           </Column>
 
-          <Column field="filename" export-header="File" :pt="borderPt" style="width: 32%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
-            <template #header>
-              <div class="column-header-with-filter">
-                File
-                <ColumnSearchFilter v-model="fileFilter" placeholder="Search file..." />
-              </div>
-            </template>
+          <Column field="filename" header="File" :pt="borderPt" style="width: 32%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
             <template #body="{ data }">
               <span :title="data.filename">{{ data.filename }}</span>
             </template>
           </Column>
 
-          <Column field="source" export-header="Source" :pt="borderPt" style="width: 20%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
-            <template #header>
-              <div class="column-header-with-filter">
-                Source
-                <ColumnSearchFilter v-model="sourceFilter" placeholder="Search source..." />
-              </div>
-            </template>
+          <Column field="source" header="Source" :pt="borderPt" style="width: 20%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
             <template #body="{ data }">
               <span class="dim-value" :title="data.source">{{ data.source || '—' }}</span>
             </template>
           </Column>
 
-          <Column field="message" export-header="Result" :pt="borderPt" style="width: 28%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
-            <template #header>
-              <div class="column-header-with-filter">
-                Result
-                <ColumnSearchFilter v-model="messageFilter" placeholder="Search result..." />
-              </div>
-            </template>
+          <Column field="message" header="Result" :pt="borderPt" style="width: 28%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
             <template #body="{ data }">
               <span
                 :class="{ 'result-error': data.status === 'error', 'dim-value': data.status !== 'error' }"
@@ -469,7 +431,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
             </template>
           </Column>
 
-          <Column v-if="phase === 'pick'" style="width: 5%; text-align: center;">
+          <Column v-if="phase === 'pick'" :exportable="false" style="width: 5%; text-align: center;">
             <template #body="{ data }">
               <button
                 class="row-remove"
@@ -481,6 +443,18 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               </button>
             </template>
           </Column>
+
+          <template #footer>
+            <StatusFooter
+              :dt="dataTableRef"
+              :show-refresh="false"
+              :show-export="false"
+              :total-count="importState.rows.length"
+              :filtered-count="isFiltered ? filteredRows.length : null"
+              total-label="files"
+              total-icon="pi pi-file"
+            />
+          </template>
         </DataTable>
       </div>
 
@@ -730,24 +704,29 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   flex-direction: column;
 }
 
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
+/* Header over the file table; Filter and Clear all ride the right. */
 .table-toolbar {
+  --checklist-control-height: 1.9rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 1rem;
+  gap: 0.6rem;
+  padding: 0.35rem 0.5rem 0.35rem 1rem;
+  background: var(--color-background-subtle);
   border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
 }
 
-.table-toolbar__summary {
+.table-toolbar__title {
   font-size: var(--text-md);
-  color: var(--color-text-dim);
+  font-weight: 700;
+  color: var(--color-text-bright);
+}
+
+.table-toolbar__end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .table-toolbar__clear {
