@@ -13,7 +13,7 @@ import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay, severityMap } from '../../../shared/lib/checklistUtils.js'
-import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
+import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 
@@ -161,7 +161,7 @@ const columnPt = {
   center: gridColumnPt('center'),
   left: gridColumnPt('left'),
   // Icon-only headers whose one action is sorting
-  icon: iconHeaderPt(gridColumnPt('center')),
+  icon: gridColumnPt('center'),
 }
 
 const dataTablePt = {

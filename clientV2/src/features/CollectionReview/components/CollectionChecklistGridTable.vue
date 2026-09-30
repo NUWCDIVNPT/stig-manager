@@ -12,7 +12,7 @@ import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
-import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
+import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 
 const props = defineProps({
@@ -101,7 +101,7 @@ const columnPt = {
   center: gridColumnPt('center'),
   left: gridColumnPt('left'),
   // Badge-only headers whose one action is sorting
-  icon: iconHeaderPt(gridColumnPt('center')),
+  icon: gridColumnPt('center'),
 }
 
 // Fixed layout: every column declares a width except Rule Title, which as

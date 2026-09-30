@@ -464,22 +464,9 @@ mark.search-highlight {
   background: var(--p-checkbox-icon-color);
 }
 
-/* PrimeVue DataTable icon-only headers (see iconHeaderPt in dataTablePt.js):
-   the sort indicator wrapper leaves the flex flow, hides until the column is
-   sorted, then overlays the cell edge so the badge stays centered. */
-th.column-header-icon {
-  position: relative;
-}
-th.column-header-icon [data-pc-section="sort"] {
+/* PrimeVue DataTable: show the sort indicator only on the sorted column. */
+th.p-datatable-sortable-column:not(.p-datatable-column-sorted) [data-pc-section="sort"] {
   display: none;
-  position: absolute;
-  right: 0.15rem;
-  top: 50%;
-  transform: translateY(-50%);
-  line-height: 0;
-}
-th.column-header-icon.p-datatable-column-sorted [data-pc-section="sort"] {
-  display: block;
 }
 
 /* PrimeVue Splitter global hover style */

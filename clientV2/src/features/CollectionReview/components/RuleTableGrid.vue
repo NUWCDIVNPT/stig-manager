@@ -19,7 +19,7 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
-import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
+import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
 import { formatReviewDate, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { patchReview, putReview } from '../../AssetReview/api/assetReviewApi.js'
 
@@ -261,7 +261,7 @@ const columnPt = {
   center: gridColumnPt('center'),
   left: gridColumnPt('left'),
   // Icon-only headers whose one action is sorting
-  icon: iconHeaderPt(gridColumnPt('center')),
+  icon: gridColumnPt('center'),
 }
 
 // Unpadded so .selection-hit can fill the whole cell

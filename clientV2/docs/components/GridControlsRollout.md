@@ -13,6 +13,43 @@ Inventory taken 2026-09-29: 39 `DataTable` grids.
 
 ---
 
+## Placement convention
+
+Every grid places its controls the same way:
+
+- **Where:** at the right end of the bar directly above the table. That bar can be an action toolbar, a panel
+  title bar or a tab bar.
+- **Order:** Search, Filter, Columns, Density, left to right. A grid shows only the controls it has.
+- **Left side:** the title or the action buttons (Create, Delete, Submit All…). Actions never sit to the right of
+  the controls.
+- **Fixed width:** the search box has a set width (about 16–20rem). It doesn't stretch to fill the bar.
+- **No bar:** if the table has no bar above it, give it a panel title bar with the title on the left and the
+  controls on the right. Never add a bare row that holds only controls.
+- **One row:** a grid's controls all sit in the same bar, including Density. They are never split across rows.
+
+### Grids that don't follow it yet
+
+| Grid | What's off |
+| --- | --- |
+| `features/CollectionReview/components/CollectionChecklistGridHeader.vue` | Search and Filter on the left; the Checklist menu sits between them and Columns + Density on the right |
+| `features/AssetReview/components/AssetChecklistGridHeader.vue` | Search and Filter on the left; Submit All, Accept All and the Checklist menu sit between them and Columns + Density |
+| `features/CollectionReview/components/RuleTableHeader.vue` | Search and Filter on the left; Accept, Reject, Submit, Unsubmit and Batch edit sit between them and Columns + Density |
+| `features/Findings/components/AggregatedFindingsGrid.vue` | Search stretches from the left of a separate `GridToolbar` row; Density is in the header row above |
+| `features/Findings/components/IndividualFindingsGrid.vue` | Same as Aggregated: controls in a `GridToolbar` row, Density in the header above |
+| `features/CollectionManage/components/Asset/ManageAssetsTable.vue` | `GridToolbar` row with no title; the search stretches from the left |
+| `features/CollectionManage/components/Stig/ManageStigsTable.vue` | Same as Assets |
+| `features/CollectionManage/components/Label/LabelsTable.vue` | Same as Assets |
+| `features/STIGLibrary/components/BenchmarkListTable.vue` | "Full search…" sits between Columns and Density |
+| `features/ImportWizard/components/ImportFileQueueStep1.vue` | "Remove from queue" (an action) sits to the right of Filter |
+| `features/AppManagement/STIGManage/components/ImportStigModal.vue` | "Clear all" (an action) sits to the right of Filter |
+
+The last three are small order fixes. The five `GridToolbar` grids can be fixed together by giving `GridToolbar`
+a title on the left and moving the search to the right at a fixed width. The two Findings grids then also need
+Density moved into that row. The three checklist and rule headers need their search and Filter moved right,
+after the action buttons.
+
+---
+
 ## Step 0: Make the controls cheap to add
 
 `ColumnToggle.vue` is already shared, but the show and hide state behind it is not. Five grids each
@@ -42,8 +79,7 @@ After that, each grid needs:
    `GridFilterButton`, `term` to `GridSearch`.
 3. Text cells wrapped in `<HighlightText :text="..." :term="highlightTerm('field')" />`. Label chips take
    `:search-term` on `LabelsRow`. Skip badges, icons and numbers.
-4. `GridSearch` with `GridFilterButton` right next to it, plus `ColumnToggle` if the grid has columns to hide.
-   If the header is already full, put them in a `GridToolbar` row under it.
+4. The controls placed per the [placement convention](#placement-convention).
 5. `StatusFooter` getting `:filtered-count` when filtered, and an empty message for "no matches".
 
 ---
@@ -61,8 +97,7 @@ After that, each grid needs:
 
 The three checklist and rule grids keep their search and column toggle in separate header components
 (`CollectionChecklistGridHeader`, `AssetChecklistGridHeader`, `RuleTableHeader`). They only need the Filter
-button, which replaces their old header filters. Findings has tight headers, so its controls sit in a slim `GridToolbar.vue` row under the header.
-Reuse that row for any grid whose header is already full.
+button, which replaces their old header filters.
 
 ---
 
@@ -85,8 +120,8 @@ Reuse that row for any grid whose header is already full.
 | `features/CollectionManage/components/User/ManageUsers.vue` | Filter only (in its panel title bar) | Done |
 | `features/CollectionManage/components/User/AclRulesTable.vue` | Filter only (in `GrantAclModal`'s rules header) | Done |
 
-The three Collection Manage tabs (Assets, STIGs, Labels) put their controls in a `GridToolbar` row
-above the table, because their action toolbars are already full. Their old header filters are gone,
+The three Collection Manage tabs (Assets, STIGs, Labels) have their controls in a `GridToolbar` row
+above the table. Their old header filters are gone,
 and so is the filtering that `useAssetTable` and `useStigTable` used to do. Assets can also be filtered
 by assigned STIG, which is filter-only and not shown as a column. Storage keys: `manageAssets.columns`,
 `manageStigs.columns`, `manageLabels.columns`.
@@ -130,7 +165,7 @@ The Tier B and C placements come from each grid's purpose. Confirm row and colum
 - `features/ImportWizard/components/ImportProgressStep5.vue` (has Search and Filter in a results header anyway)
 - `features/AppManagement/STIGManage/components/ImportStigModal.vue` (has a Filter in its Files header anyway)
 - `features/AssetStigImport/components/AssetStigPreviewStep.vue` (has Search and Filter in a panel title bar anyway)
-- `features/CollectionManage/components/Asset/ImportAssetsCsvButton.vue`
+- `features/CollectionManage/components/Asset/ImportAssetsCsvButton.vue` (Search + Filter on New Assets, Filter on Errors and Labels, in panel title bars)
 - `features/CollectionManage/components/User/EffectiveAclModal.vue` (has a Filter in its header anyway)
 - `components/common/PickListTable.vue` (has its own search)
 

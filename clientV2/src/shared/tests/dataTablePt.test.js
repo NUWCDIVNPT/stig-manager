@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { compactTablePt, gridColumnPt, iconHeaderPt } from '../lib/dataTablePt.js'
+import { compactTablePt, gridColumnPt } from '../lib/dataTablePt.js'
 
 describe('compactTablePt', () => {
   it('defaults to a flush (borderless) footer and md text on the table root', () => {
@@ -47,29 +47,5 @@ describe('gridColumnPt', () => {
     expect(pt.headerCell.style).not.toHaveProperty('paddingLeft')
     expect(pt.columnHeaderContent.style.justifyContent).toBe('flex-start')
     expect(pt.bodyCell.class).toBe('column-body-left')
-  })
-})
-
-describe('iconHeaderPt', () => {
-  it('adds the icon-header class and keeps the existing header class and style', () => {
-    const pt = iconHeaderPt({ headerCell: { class: 'column-header-center', style: { color: 'red' } }, bodyCell: { class: 'b' } })
-    expect(pt.headerCell.class).toEqual(['column-header-center', 'column-header-icon'])
-    expect(pt.headerCell.style).toEqual({ color: 'red' })
-    expect(pt.bodyCell).toEqual({ class: 'b' })
-  })
-
-  it('keeps an object-form class binding intact', () => {
-    const pt = iconHeaderPt({ headerCell: { class: { sorted: true } } })
-    expect(pt.headerCell.class).toEqual([{ sorted: true }, 'column-header-icon'])
-  })
-
-  it('works on a column pt without a header cell', () => {
-    expect(iconHeaderPt({}).headerCell.class).toEqual([undefined, 'column-header-icon'])
-  })
-
-  it('does not mutate its input', () => {
-    const input = { headerCell: { class: 'x' } }
-    iconHeaderPt(input)
-    expect(input.headerCell.class).toBe('x')
   })
 })

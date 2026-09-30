@@ -8,7 +8,7 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
-import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
+import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
 import { capitalize } from '../../../shared/lib/exportCells.js'
 import { labelNames } from '../../../shared/lib/gridSearch.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
@@ -70,7 +70,7 @@ const cellOptions = { verticalAlign: 'middle' }
 const columnPt = {
   center: gridColumnPt('center', cellOptions),
   left: gridColumnPt('left', cellOptions),
-  icon: iconHeaderPt(gridColumnPt('center', cellOptions)),
+  icon: gridColumnPt('center', cellOptions),
 }
 
 const ROW_HEIGHT = rowHeightPx('standard')
