@@ -70,7 +70,6 @@ const cellOptions = { verticalAlign: 'middle' }
 const columnPt = {
   center: gridColumnPt('center', cellOptions),
   left: gridColumnPt('left', cellOptions),
-  icon: gridColumnPt('center', cellOptions),
 }
 
 const ROW_HEIGHT = rowHeightPx('standard')
@@ -286,7 +285,7 @@ watch([() => ruleId.value, () => collectionId.value], () => {
         </template>
       </Column>
 
-      <Column field="touchTs" export-header="Last action" sortable :style="{ width: '4.5rem' }" :pt="columnPt.icon">
+      <Column field="touchTs" export-header="Last action" sortable :style="{ width: '4.5rem' }" :pt="columnPt.center">
         <template #header>
           <i class="pi pi-clock last-action-header-icon" title="Last action" />
         </template>

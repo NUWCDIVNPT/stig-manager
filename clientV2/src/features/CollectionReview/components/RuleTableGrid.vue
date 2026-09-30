@@ -261,7 +261,6 @@ const columnPt = {
   center: gridColumnPt('center'),
   left: gridColumnPt('left'),
   // Icon-only headers whose one action is sorting
-  icon: gridColumnPt('center'),
 }
 
 // Unpadded so .selection-hit can fill the whole cell
@@ -420,7 +419,7 @@ const dataTablePt = {
     </Column>
 
     <!-- Time -->
-    <Column v-if="visibleFields.has('time')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.icon">
+    <Column v-if="visibleFields.has('time')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
       <template #header>
         <i class="pi pi-clock" title="Last action" />
       </template>

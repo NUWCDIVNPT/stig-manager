@@ -109,7 +109,6 @@ const cellOptions = { verticalAlign: 'middle' }
 const columnPt = {
   center: gridColumnPt('center', cellOptions),
   left: gridColumnPt('left', cellOptions),
-  icon: gridColumnPt('center', cellOptions),
 }
 
 const ROW_HEIGHT = rowHeightPx('control')

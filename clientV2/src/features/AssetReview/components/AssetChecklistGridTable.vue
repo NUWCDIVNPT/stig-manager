@@ -161,7 +161,6 @@ const columnPt = {
   center: gridColumnPt('center'),
   left: gridColumnPt('left'),
   // Icon-only headers whose one action is sorting
-  icon: gridColumnPt('center'),
 }
 
 const dataTablePt = {
@@ -295,7 +294,7 @@ const dataTablePt = {
       </template>
     </Column>
 
-    <Column v-if="visibleFields.has('touchTs')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.icon">
+    <Column v-if="visibleFields.has('touchTs')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
       <template #header>
         <i class="pi pi-clock" title="Last action" />
       </template>
