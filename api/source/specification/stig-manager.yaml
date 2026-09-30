@@ -975,6 +975,10 @@ paths:
         - Collection
       summary: Return the Checklist for the supplied Collection and STIG
       operationId: getChecklistByCollectionStig
+      parameters:
+        - $ref: '#/components/parameters/LabelIdQuery'
+        - $ref: '#/components/parameters/LabelNameQuery'
+        - $ref: '#/components/parameters/LabelMatchQuery'
       responses:
         '200':
           description: ChecklistCollectionStig response
