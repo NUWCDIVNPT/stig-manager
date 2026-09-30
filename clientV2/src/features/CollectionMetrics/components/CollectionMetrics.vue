@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue'
+import MetricsFilter from '../../../components/common/MetricsFilter.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionMetricsSummary } from '../api/metricsApi.js'
@@ -11,7 +12,6 @@ import Cora from './Cora.vue'
 import ExportMetricsModal from './ExportMetricsModal.vue'
 import FindingsStats from './FindingsStats.vue'
 import InventoryStats from './InventoryStats.vue'
-import MetricsFilter from './MetricsFilter.vue'
 import Progress from './Progress.vue'
 import ReviewAgesStats from './ReviewAgesStats.vue'
 

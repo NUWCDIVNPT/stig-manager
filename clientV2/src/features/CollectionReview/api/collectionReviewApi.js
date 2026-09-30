@@ -1,17 +1,21 @@
 import { apiCall } from '../../../shared/api/apiClient.js'
 
-export function fetchCollectionChecklist(collectionId, benchmarkId, revisionStr) {
+// labelParams: output of buildLabelFilterParams ({ labelId: [...] } and/or { labelMatch: 'null' });
+// when present, checklist counts and the asset list cover only the matching Assets.
+export function fetchCollectionChecklist(collectionId, benchmarkId, revisionStr, labelParams = {}) {
   return apiCall('getChecklistByCollectionStig', {
     collectionId,
     benchmarkId,
     revisionStr,
+    ...labelParams,
   })
 }
 
-export function fetchAssetsByCollectionStig(collectionId, benchmarkId) {
+export function fetchAssetsByCollectionStig(collectionId, benchmarkId, labelParams = {}) {
   return apiCall('getAssetsByStig', {
     collectionId,
     benchmarkId,
+    ...labelParams,
   })
 }
 

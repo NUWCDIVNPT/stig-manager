@@ -7,6 +7,7 @@ import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
+import MetricsFilter from '../../../components/common/MetricsFilter.vue'
 import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
@@ -16,11 +17,16 @@ defineProps({
     type: Array,
     required: true,
   },
+  collectionId: {
+    type: String,
+    default: null,
+  },
 })
 
 const searchFilter = defineModel('searchFilter', { type: String, default: '' })
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
 const displayMode = defineModel('displayMode', { type: String, required: true })
+const selectedLabelIds = defineModel('selectedLabelIds', { type: Array, default: () => [] })
 
 const route = useRoute()
 const benchmarkId = computed(() => route.params.benchmarkId)
@@ -101,6 +107,14 @@ function toggleChecklistMenu(event) {
     <div class="checklist-grid__header-top">
       <div class="checklist-grid__title-row">
         <span class="checklist-grid__title">{{ headerTitle }}</span>
+        <div class="checklist-grid__label-filter">
+          <MetricsFilter
+            :model-value="selectedLabelIds"
+            type="label"
+            :collection-id="collectionId"
+            @update:model-value="selectedLabelIds = $event"
+          />
+        </div>
       </div>
     </div>
 
@@ -168,6 +182,11 @@ function toggleChecklistMenu(event) {
   gap: 0.55rem;
   flex-wrap: nowrap;
   min-width: 0;
+}
+
+.checklist-grid__label-filter {
+  flex-shrink: 0;
+  margin-left: 0.5rem;
 }
 
 .checklist-grid__menu-btn {

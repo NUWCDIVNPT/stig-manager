@@ -8,6 +8,7 @@ import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { fetchCollection } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { defaultFieldSettings, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchAssetsByCollectionStig, fetchCollectionChecklist, fetchReviewsByRule, fetchRule, postReviewBatch } from '../api/collectionReviewApi.js'
@@ -25,6 +26,26 @@ const { getCollectionRoleId } = useCurrentUser()
 const collectionId = computed(() => route.params.collectionId)
 const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
+
+// Label filter lives in the route query (labelId=<uuid>&labelMatch=null) so a
+// label-scoped view is bookmarkable. `null` in the array means "assets with no label".
+const selectedLabelIds = computed(() => {
+  const query = route.query ?? {}
+  const raw = query.labelId === undefined ? [] : [].concat(query.labelId)
+  const ids = raw.filter(id => typeof id === 'string' && id)
+  if (query.labelMatch === 'null') {
+    ids.push(null)
+  }
+  return ids
+})
+const labelFilterParams = computed(() => buildLabelFilterParams(selectedLabelIds.value))
+
+function onUpdateSelectedLabelIds(ids) {
+  const next = { ...(route.query ?? {}) }
+  delete next.labelId
+  delete next.labelMatch
+  router.replace({ query: { ...next, ...buildLabelFilterParams(ids) } })
+}
 
 function recentViewKey(cId = collectionId.value, bId = benchmarkId.value) {
   return `collection-review:${cId}:${bId}`
@@ -54,12 +75,12 @@ const canAccept = computed(() =>
 )
 
 const { state: gridData, isLoading: isChecklistLoading, error: checklistError, execute: loadChecklist } = useAsyncState(
-  () => fetchCollectionChecklist(collectionId.value, benchmarkId.value, revisionStr.value),
+  () => fetchCollectionChecklist(collectionId.value, benchmarkId.value, revisionStr.value, labelFilterParams.value),
   { immediate: false, initialState: [] },
 )
 
 const { state: assets, execute: loadAssets } = useAsyncState(
-  () => fetchAssetsByCollectionStig(collectionId.value, benchmarkId.value),
+  () => fetchAssetsByCollectionStig(collectionId.value, benchmarkId.value, labelFilterParams.value),
   { immediate: false, initialState: [] },
 )
 
@@ -110,7 +131,9 @@ watch(collectionId, () => {
   }
 }, { immediate: true })
 
-watch([collectionId, benchmarkId, revisionStr], () => {
+// Reviews for the selected rule are not label-filtered: the bottom grid is built
+// from the (filtered) asset list, so extra reviews are simply unused.
+watch([collectionId, benchmarkId, revisionStr, labelFilterParams], () => {
   if (collectionId.value && benchmarkId.value && revisionStr.value) {
     loadChecklist()
     loadAssets()
@@ -307,8 +330,11 @@ async function onBatchEditConfirm(payload) {
                 :is-loading="isChecklistLoading"
                 :selected-rule-id="selectedRuleId"
                 :asset-count="assetCount"
+                :collection-id="collectionId"
+                :selected-label-ids="selectedLabelIds"
                 :export-filename="benchmarkId"
                 @select-rule="onSelectRule"
+                @update:selected-label-ids="onUpdateSelectedLabelIds"
                 @refresh="loadChecklist"
               />
             </SplitterPanel>

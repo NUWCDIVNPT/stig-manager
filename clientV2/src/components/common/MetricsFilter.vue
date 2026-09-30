@@ -1,10 +1,11 @@
 <script setup>
 import MultiSelect from 'primevue/multiselect'
 import { computed, ref, watch } from 'vue'
-import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { getContrastColor, normalizeColor } from '../../../shared/lib/colorUtils.js'
-import { fetchCollectionLabels } from '../../CollectionView/api/collectionApi.js'
-import { fetchMetaCollections } from '../../MetaCollectionView/api/metaApi.js'
+import { fetchCollectionLabels } from '../../features/CollectionView/api/collectionApi.js'
+import { fetchMetaCollections } from '../../features/MetaCollectionView/api/metaApi.js'
+import { useAsyncState } from '../../shared/composables/useAsyncState.js'
+import { getContrastColor, normalizeColor } from '../../shared/lib/colorUtils.js'
+import LabelsRow from '../columns/LabelsRow.vue'
 
 const props = defineProps({
   modelValue: {
@@ -47,8 +48,8 @@ watch(() => props.collectionId, () => {
 
 const multiSelectPt = {
   root: { style: 'background-color: var(--color-background-light); border-color: var(--color-border-default)' },
-  label: { style: 'padding: 6px 10px; font-size: var(--text-md); color: var(--color-text-primary)' },
-  labelContainer: { style: { display: 'flex', alignItems: 'center' } },
+  label: { style: 'padding: 6px 10px; font-size: var(--text-md); color: var(--color-text-primary); flex: 1 1 auto; min-width: 0' },
+  labelContainer: { style: { display: 'flex', alignItems: 'center', flex: '1 1 auto', minWidth: 0 } },
   overlay: { style: { width: '235px' } },
   listContainer: { style: { maxHeight: '300px' } },
   header: { style: { padding: '0.5rem' } },
@@ -104,6 +105,10 @@ const selectedNames = computed(() => {
 const visibleSelectedNames = computed(() => selectedNames.value.slice(0, MAX_VISIBLE_SELECTED))
 const hiddenSelectedCount = computed(() => Math.max(0, selectedNames.value.length - visibleSelectedNames.value.length))
 const fullSelectedListText = computed(() => selectedNames.value.join(', '))
+
+// Selected labels render through LabelsRow so the trigger shows the same chips
+// and "+N" overflow as label cells elsewhere; collections stay text.
+const showSelectedChips = computed(() => props.type === 'label' && !isLoading.value && appliedOptions.value.length > 0)
 
 const displayText = computed(() => {
   if (isLoading.value) {
@@ -185,7 +190,10 @@ function formatLabelName(name) {
       <template #value>
         <div class="trigger-left" :title="appliedOptions.length > 0 ? fullSelectedListText : ''">
           <i class="pi" :class="appliedOptions.length > 0 ? 'pi-filter-fill' : 'pi-filter'" />
-          <span class="placeholder-text">{{ displayText }}</span>
+          <div v-if="showSelectedChips" class="trigger-chips">
+            <LabelsRow :labels="appliedOptions" compact />
+          </div>
+          <span v-else class="placeholder-text">{{ displayText }}</span>
         </div>
       </template>
 
@@ -245,9 +253,14 @@ function formatLabelName(name) {
 .trigger-left {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
   flex: 1;
   overflow: hidden;
+}
+
+.trigger-chips {
+  flex: 1;
+  min-width: 0;
 }
 
 .placeholder-text {

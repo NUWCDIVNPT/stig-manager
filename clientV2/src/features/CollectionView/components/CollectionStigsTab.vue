@@ -93,6 +93,8 @@ function handleChecklistAssetAction(rowData) {
   })
 }
 
+// Carries the dashboard label filter along so Collection Review opens scoped
+// to the same Assets the grid was showing.
 function handleStigShieldClick(rowData) {
   router.push({
     name: 'collection-benchmark-review',
@@ -101,6 +103,7 @@ function handleStigShieldClick(rowData) {
       benchmarkId: rowData.benchmarkId,
       revisionStr: rowData.revisionStr,
     },
+    query: buildLabelFilterParams(props.selectedLabelIds),
   })
 }
 </script>
