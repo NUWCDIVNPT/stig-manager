@@ -431,14 +431,14 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
           <span v-if="title" class="agg-grid-badge-for">for</span>
           <span class="agg-grid-badge">{{ badge }}</span>
         </template>
+      </div>
+      <div class="agg-grid-header-controls">
         <GridSearch v-model="searchTerm" class="agg-grid-search" label="Search rows" />
         <GridFilterButton
           v-model="gridFilters"
           :columns="filterColumns"
           :value-options="valueOptions"
         />
-      </div>
-      <div class="agg-grid-header-controls">
         <ColumnToggle
           v-model="selectedColumns"
           class="agg-grid-column-toggle"
@@ -536,8 +536,9 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
 }
 
 .agg-grid-search {
-  flex: 0 1 18rem;
+  width: 18rem;
   min-width: 8rem;
+  flex-shrink: 1;
 }
 
 .agg-grid-header-controls {
@@ -545,6 +546,8 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
   align-items: center;
   gap: 0.5rem;
   margin-left: auto;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .agg-grid-badge {
