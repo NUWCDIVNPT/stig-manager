@@ -136,8 +136,8 @@ The Tier B and C placements come from each grid's purpose. Confirm row and colum
 
 ---
 
-## Open decisions
+## Decisions
 
-1. **Old header filters** (`ColumnFilter.vue`, `ColumnSearchFilter.vue`). **Decided:** replace them with the Filter button.
-   No grid uses them anymore; `ImportStigModal` was the last.
+1. **Old header filters** (`ColumnFilter.vue`, `ColumnSearchFilter.vue`). **Done:** replaced by the Filter button everywhere they were used,
+   and both components are deleted.
 2. **Order.** Step 0, then Tier A, then Tier B and C in batches.
