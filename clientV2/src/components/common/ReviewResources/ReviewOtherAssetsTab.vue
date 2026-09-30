@@ -1,25 +1,17 @@
 <script setup>
-import { FilterMatchMode, FilterService } from '@primevue/core/api'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, inject, ref, toRefs, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import engineIcon from '../../../assets/bot2.svg'
-
-import overrideIcon from '../../../assets/override2.svg'
-import manualIcon from '../../../assets/user.svg'
 import { fetchOtherReviews } from '../../../shared/api/reviewsApi.js'
 
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
-import { normalizeColor } from '../../../shared/lib/colorUtils.js'
+import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import LabelsRow from '../../columns/LabelsRow.vue'
-import ColumnFilter from '../ColumnFilter.vue'
-import ColumnSearchFilter from '../ColumnSearchFilter.vue'
 import EngineBadge from '../EngineBadge.vue'
 import LongTextPopover from '../LongTextPopover.vue'
 import ManualBadge from '../ManualBadge.vue'
@@ -27,7 +19,6 @@ import OverrideBadge from '../OverrideBadge.vue'
 import ResultBadge from '../ResultBadge.vue'
 import StatusBadge from '../StatusBadge.vue'
 import StatusFooter from '../StatusFooter.vue'
-import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
 import { reviewResourcesTablePt } from './tablePt.js'
 
 const props = defineProps({
@@ -70,16 +61,6 @@ const {
 } = reviewEditForm
 const editable = computed(() => accessMode.value === 'rw' && (!currentReview.value?.status?.label || currentReview.value.status.label === 'saved' || currentReview.value.status.label === 'rejected'))
 
-FilterService.register('labelContainsAny', (value, filter) => {
-  if (!filter || filter.length === 0) {
-    return true
-  }
-  if (!value || value.length === 0) {
-    return false
-  }
-  return value.some(label => filter.includes(label.name))
-})
-
 // Single-line rows at a fixed height, so cells centre vertically.
 const cellOptions = { verticalAlign: 'middle' }
 const columnPt = {
@@ -96,17 +77,6 @@ const longTextPopover = ref(null)
 const showLongText = (event, label, text) => {
   longTextPopover.value?.show(event, label, text)
 }
-
-const filters = ref({
-  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  assetName: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  detail: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  comment: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  username: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  result: { value: null, matchMode: FilterMatchMode.IN },
-  _engineDisplay: { value: null, matchMode: FilterMatchMode.IN },
-  assetLabels: { value: null, matchMode: 'labelContainsAny' },
-})
 
 const isAlreadyApplied = (data) => {
   return data.result === formResult.value
@@ -134,44 +104,6 @@ const filteredOtherReviews = computed(() => {
     return otherReviews.value
   }
   return otherReviews.value.filter(review => review.assetId !== assetId.value)
-})
-
-const processedOtherReviews = computed(() => {
-  return filteredOtherReviews.value.map(item => ({
-    ...item,
-    _engineDisplay: getEngineDisplay(item),
-  }))
-})
-
-const resultOptions = computed(() => {
-  const results = new Set(filteredOtherReviews.value.map(item => item.result).filter(Boolean))
-  return Array.from(results).map(val => ({
-    value: val,
-    label: getResultDisplay(val),
-  })).sort((a, b) => a.label.localeCompare(b.label))
-})
-
-const engineOptions = computed(() => {
-  const engines = new Set(filteredOtherReviews.value.map(item => getEngineDisplay(item)).filter(Boolean))
-  return Array.from(engines).map(val => ({
-    value: val,
-    label: val === 'engine' ? 'Engine' : val === 'override' ? 'Override' : 'Manual',
-    image: val === 'engine' ? engineIcon : val === 'override' ? overrideIcon : manualIcon,
-  }))
-})
-
-const labelOptions = computed(() => {
-  const seen = new Map()
-  for (const item of filteredOtherReviews.value) {
-    for (const label of (item.assetLabels || [])) {
-      if (!seen.has(label.name)) {
-        seen.set(label.name, label)
-      }
-    }
-  }
-  return Array.from(seen.values())
-    .map(label => ({ value: label.name, label: label.name, color: label.color }))
-    .sort((a, b) => a.label.localeCompare(b.label))
 })
 
 const otherAssetsStats = computed(() => {
@@ -231,36 +163,13 @@ watch([() => ruleId.value, () => collectionId.value], () => {
     loadOtherReviews()
   }
 }, { immediate: true })
-
-const route = useRoute()
-
-const resetFilters = () => {
-  filters.value.global.value = null
-  filters.value.assetName.value = null
-  filters.value.detail.value = null
-  filters.value.comment.value = null
-  filters.value.username.value = null
-  filters.value.result.value = null
-  filters.value._engineDisplay.value = null
-  filters.value.assetLabels.value = null
-}
-
-watch([
-  () => route.params.collectionId,
-  () => route.params.assetId,
-  () => route.params.benchmarkId,
-  () => route.params.revisionStr,
-], () => {
-  resetFilters()
-})
 </script>
 
 <template>
   <div class="other-assets-wrapper">
     <DataTable
       ref="dataTableRef"
-      v-model:filters="filters"
-      :value="processedOtherReviews"
+      :value="filteredOtherReviews"
       :loading="isLoading"
       data-key="assetId"
       export-filename="Other-Reviews"
@@ -271,13 +180,7 @@ watch([
       class="other-assets-table"
       :pt="reviewResourcesTablePt"
     >
-      <Column field="assetName" export-header="Asset" sortable :style="{ width: '9rem' }" :pt="columnPt.left">
-        <template #header>
-          <div class="column-header-with-filter">
-            Asset
-            <ColumnSearchFilter v-model="filters.assetName.value" placeholder="Search asset..." />
-          </div>
-        </template>
+      <Column field="assetName" header="Asset" sortable :style="{ width: '9rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             class="cell-text--ellipsis"
@@ -287,52 +190,26 @@ watch([
         </template>
       </Column>
 
-      <Column field="assetLabels" export-header="Labels" filter-field="assetLabels" :style="{ width: '9rem' }" :pt="columnPt.left">
-        <template #header>
-          <div class="column-header-with-filter">
-            Labels
-            <ColumnFilter v-model="filters.assetLabels.value" :options="labelOptions">
-              <template #option="{ option }">
-                <span
-                  class="label-filter-chip"
-                  :style="{ backgroundColor: normalizeColor(option.color, '#cccccc') }"
-                >{{ option.label }}</span>
-              </template>
-            </ColumnFilter>
-          </div>
-        </template>
+      <Column field="assetLabels" header="Labels" :style="{ width: '9rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <LabelsRow :labels="data.assetLabels" compact />
         </template>
       </Column>
 
-      <Column field="result" export-header="Result" :style="{ width: '6rem' }" :pt="columnPt.center">
-        <template #header>
-          <div class="column-header-with-filter">
-            Result
-            <ColumnFilter v-model="filters.result.value" :options="resultOptions">
-              <template #option="{ option }">
-                <ResultBadge :status="option.label" />
-              </template>
-            </ColumnFilter>
-          </div>
-        </template>
+      <Column field="result" header="Result" :style="{ width: '6rem' }" :pt="columnPt.center">
         <template #body="{ data }">
           <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
         </template>
       </Column>
 
-      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '4.5rem' }" :pt="columnPt.center">
+      <Column field="resultEngine" export-header="Engine" :style="{ width: '4.5rem' }" :pt="columnPt.center">
         <template #header>
-          <div class="column-header-with-filter">
-            <img
-              src="../../../assets/bot2.svg"
-              alt="Engine"
-              class="engine-header-icon"
-              title="Result engine"
-            >
-            <ColumnFilter v-model="filters._engineDisplay.value" :options="engineOptions" />
-          </div>
+          <img
+            src="../../../assets/bot2.svg"
+            alt="Engine"
+            class="engine-header-icon"
+            title="Result engine"
+          >
         </template>
         <template #body="{ data }">
           <img
@@ -359,13 +236,7 @@ watch([
         </template>
       </Column>
 
-      <Column field="detail" export-header="Detail" :style="{ width: '13.75rem' }" :pt="columnPt.left">
-        <template #header>
-          <div class="column-header-with-filter">
-            Detail
-            <ColumnSearchFilter v-model="filters.detail.value" placeholder="Search detail..." />
-          </div>
-        </template>
+      <Column field="detail" header="Detail" :style="{ width: '13.75rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.detail"
@@ -379,13 +250,7 @@ watch([
         </template>
       </Column>
 
-      <Column field="comment" export-header="Comment" :style="{ width: '13.75rem' }" :pt="columnPt.left">
-        <template #header>
-          <div class="column-header-with-filter">
-            Comment
-            <ColumnSearchFilter v-model="filters.comment.value" placeholder="Search comment..." />
-          </div>
-        </template>
+      <Column field="comment" header="Comment" :style="{ width: '13.75rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.comment"
@@ -409,13 +274,7 @@ watch([
         </template>
       </Column>
 
-      <Column field="username" export-header="User" :style="{ width: '7.25rem' }" :pt="columnPt.left">
-        <template #header>
-          <div class="column-header-with-filter">
-            User
-            <ColumnSearchFilter v-model="filters.username.value" placeholder="Search user..." />
-          </div>
-        </template>
+      <Column field="username" header="User" :style="{ width: '7.25rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.username"
@@ -491,17 +350,6 @@ watch([
   border-top: none;
 }
 
-/* Fills the header content so its justify-content (set per column by the
-   table pass-through) decides where the caption and filter sit. */
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  justify-content: inherit;
-  gap: 0.1rem;
-  flex: 1 1 auto;
-}
-
-
 /* Allow table to expand and scroll horizontally if needed. */
 :deep(.p-datatable-table) {
   table-layout: fixed;
@@ -573,15 +421,6 @@ watch([
 .other-table__empty {
   font-style: italic;
   color: var(--color-text-dim);
-}
-
-.label-filter-chip {
-  display: inline-block;
-  font-size: var(--text-sm);
-  font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 6px;
-  white-space: nowrap;
 }
 
 .apply-review-icon-btn {

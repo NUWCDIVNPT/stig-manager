@@ -74,7 +74,7 @@ Reuse that row for any grid whose header is already full.
 | `features/CollectionManage/components/Asset/ManageAssetsTable.vue` | Search, Filter, Columns | Done |
 | `features/AppManagement/LogStream/components/TransactionGrid.vue` | Search, Filter, Columns (in the title bar) | Done |
 | `features/AppManagement/Appinfo/components/common/ReportTableBase.vue` | Search, Columns where enabled (no Filter) | Done |
-| `features/STIGLibrary/components/BenchmarksTable.vue` | Custom search | To do |
+| `features/STIGLibrary/components/BenchmarksTable.vue` | Own title/ID filter box | Done |
 | `features/STIGLibrary/components/BenchmarkListTable.vue` | Search, Filter, Columns (in the panel header) | Done |
 | `features/AppManagement/Collections/components/CollectionList.vue` | Search, Columns (no Filter) | Done |
 | `features/AppManagement/STIGManage/components/StigList.vue` | Search, Columns (no Filter) | Done |
@@ -104,10 +104,10 @@ The STIG Library list (`BenchmarkListTable`) puts its controls in its panel head
 
 | Grid | Today | Status |
 | --- | --- | --- |
-| `components/common/ReviewResources/ReviewHistoryTab.vue` | Old header filters | To do |
-| `components/common/ReviewResources/ReviewOtherAssetsTab.vue` | Old header filters | To do |
+| `components/common/ReviewResources/ReviewHistoryTab.vue` | Old filters removed, no controls by choice | Done |
+| `components/common/ReviewResources/ReviewOtherAssetsTab.vue` | Old filters removed, no controls by choice | Done |
 | `features/AppManagement/Users/components/EffectiveGrants.vue` | Nothing | To do |
-| `components/common/grants/GrantsPanel.vue` | Nothing | To do |
+| `components/common/grants/GrantsPanel.vue` | Filter only (right of Add Grants in its toolbar) | Done |
 | `features/AppManagement/ServiceJobs/components/runs/RunsTable.vue` | Nothing | To do |
 | `features/AppManagement/ServiceJobs/components/runs/RunOutputTable.vue` | Nothing | To do |
 | `features/CollectionManage/components/Configuration/TaskOutput.vue` | Nothing | To do |
@@ -139,5 +139,5 @@ The Tier B and C placements come from each grid's purpose. Confirm row and colum
 ## Open decisions
 
 1. **Old header filters** (`ColumnFilter.vue`, `ColumnSearchFilter.vue`). **Decided:** replace them with the Filter button.
-   They remain in `ReviewHistoryTab`, `ReviewOtherAssetsTab` and `ImportStigModal`.
+   They remain only in `ImportStigModal`.
 2. **Order.** Step 0, then Tier A, then Tier B and C in batches.

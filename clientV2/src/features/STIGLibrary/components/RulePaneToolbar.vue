@@ -98,8 +98,8 @@ function onChangeCompareRev(rev) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex: 0 1 20rem;
-  min-width: 12rem;
+  flex: 0 1 32rem;
+  min-width: 18rem;
 }
 
 .rule-pane-toolbar__input {

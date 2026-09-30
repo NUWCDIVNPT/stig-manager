@@ -13,9 +13,11 @@ import { fetchUserGroups, fetchUsers } from '../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import DeleteModal from '../DeleteModal.vue'
+import GridFilterButton from '../GridFilterButton.vue'
 import StatusFooter from '../StatusFooter.vue'
 import EditGrantModal from './EditGrantModal.vue'
 import GrantsPickList from './GrantsPickList.vue'
@@ -204,6 +206,12 @@ const userGroupSortValue = data =>
   data.user
     ? (data.user.displayName || data.user.username || '')
     : (data.userGroup?.name || '')
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions } = useGridSearch(() => grants.value ?? [], [
+  { field: 'roleId', header: 'Role', filterValues: r => getRoleLabel(r.roleId) },
+  { field: 'grantee', header: 'User or Group', searchText: r => r.user ? `${r.user.displayName ?? ''} ${r.user.username ?? ''}` : `${r.userGroup?.name ?? ''} ${r.userGroup?.description ?? ''}` },
+  { field: 'granteeType', header: 'Grantee type', filterValues: r => (r.user ? 'User' : 'Group') },
+])
+
 const exportRole = ({ data }) => getRoleLabel(data)
 const exportUserGroup = ({ record }) => userGroupSortValue(record)
 // Compact, flush-footer table styling via PassThrough (no scoped ::v-deep).
@@ -233,10 +241,13 @@ const tablePt = {
             <i class="pi pi-plus-circle icon-green" /> Add Grants...
           </button>
         </template>
+        <template #end>
+          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+        </template>
       </Toolbar>
       <DataTable
         ref="grantsDt"
-        :value="grants"
+        :value="filteredRows"
         :loading="grantsLoading"
         sort-field="roleId"
         :sort-order="-1"
@@ -248,7 +259,7 @@ const tablePt = {
         :pt="tablePt"
       >
         <template #empty>
-          No grants.
+          {{ isFiltered && grants?.length ? 'No grants match the filters.' : 'No grants.' }}
         </template>
         <Column field="roleId" export-header="Role" :export-value="exportRole" sortable>
           <template #header>
@@ -321,6 +332,7 @@ const tablePt = {
             :dt="grantsDt"
             :refresh-loading="grantsLoading"
             :total-count="grants ? grants.length : 0"
+            :filtered-count="isFiltered ? filteredRows.length : null"
             total-label="grants"
             :total-icon-src="lockSvg"
             @refresh="loadGrants"
@@ -400,6 +412,7 @@ const tablePt = {
 }
 
 .grants-toolbar {
+  --checklist-control-height: 2rem;
   padding: 0.5rem;
   border-bottom: 1px solid var(--color-border-default);
   background: transparent;
