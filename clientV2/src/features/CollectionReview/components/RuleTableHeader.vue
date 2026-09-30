@@ -151,7 +151,7 @@ function onAction(actionType) {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  flex: 0 1 22rem;
+  flex: 0 1 26rem;
   min-width: 12rem;
 }
 
