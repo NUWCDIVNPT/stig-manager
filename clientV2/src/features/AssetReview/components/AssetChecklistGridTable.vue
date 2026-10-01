@@ -160,7 +160,6 @@ const defaultSortField = computed(() => props.visibleFields.has('groupId') ? 'gr
 const columnPt = {
   center: gridColumnPt('center'),
   left: gridColumnPt('left'),
-  // Icon-only headers whose one action is sorting
 }
 
 const dataTablePt = {

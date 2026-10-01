@@ -42,7 +42,7 @@ export function isNegated(f) {
   return f.kind === 'values' ? Boolean(f.exclude) : f.mode in NEGATED_MODES
 }
 
-/** One-line summary, e.g. `Title contains "audit" (match case)` */
+/** One-line summary, e.g. `Title contains "audit" (whole word)` */
 export function describeFilter(f, columns = []) {
   const column = f.key === ALL_COLUMNS ? 'Any column' : (columns.find(c => c.field === f.key)?.header ?? f.key)
   if (f.kind === 'values') {

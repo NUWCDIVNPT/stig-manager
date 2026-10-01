@@ -260,7 +260,6 @@ const stats = computed(() => calculateChecklistStats(filteredData.value) ?? {
 const columnPt = {
   center: gridColumnPt('center'),
   left: gridColumnPt('left'),
-  // Icon-only headers whose one action is sorting
 }
 
 // Unpadded so .selection-hit can fill the whole cell
