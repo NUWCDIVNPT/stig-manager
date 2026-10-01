@@ -2,7 +2,7 @@
 import MultiSelect from 'primevue/multiselect'
 import Popover from 'primevue/popover'
 import Select from 'primevue/select'
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { normalizeColor } from '../../shared/lib/colorUtils.js'
 import { isActive, TEXT_MODES } from '../../shared/lib/columnFilters.js'
 import {
@@ -34,7 +34,22 @@ const props = defineProps({
 const model = defineModel({ type: Array, default: () => [] })
 
 const popover = ref()
+const trigger = ref()
+const panel = ref()
 const draft = ref([])
+
+// Close on outside mousedown. Not PrimeVue's dismissable: a select picks on mousedown and
+// removes its overlay, so the following click lands on a detached node and reads as outside.
+function onDocumentMousedown(event) {
+  const target = event.target
+  if (!popover.value?.visible || panel.value?.contains(target) || trigger.value?.contains(target) || target.closest?.('[data-pc-section="overlay"]')) {
+    return
+  }
+  popover.value.hide()
+}
+
+onMounted(() => document.addEventListener('mousedown', onDocumentMousedown, true))
+onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentMousedown, true))
 
 const columnOptions = computed(() => [
   { field: ALL_COLUMNS, header: 'Any column', kind: 'text' },
@@ -122,6 +137,7 @@ const popoverPt = {
 
 <template>
   <button
+    ref="trigger"
     type="button"
     class="grid-filter-btn"
     :class="{ 'is-active': applied.length > 0 }"
@@ -134,9 +150,8 @@ const popoverPt = {
     <span v-if="applied.length" class="grid-filter-btn__count">{{ applied.length }}</span>
   </button>
 
-  <!-- Not dismissable: the selects render outside the panel, so their clicks read as outside clicks -->
   <Popover ref="popover" :dismissable="false" :pt="popoverPt">
-    <div class="grid-filter">
+    <div ref="panel" class="grid-filter">
       <div class="grid-filter__head">
         <span>Filters</span>
         <span class="grid-filter__hint">Rows must match every rule</span>
