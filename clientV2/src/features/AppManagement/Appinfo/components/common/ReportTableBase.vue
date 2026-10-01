@@ -3,6 +3,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
 import ColumnToggle from '../../../../../components/common/ColumnToggle.vue'
+import GridFilterButton from '../../../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../../../components/common/GridSearch.vue'
 import HighlightText from '../../../../../components/common/HighlightText.vue'
 import { useColumnVisibility } from '../../../../../shared/composables/useColumnVisibility.js'
@@ -45,18 +46,31 @@ const shownColumns = computed(() =>
   props.columnToggle ? props.columns.filter(c => visibleFields.value.has(c.field)) : props.columns,
 )
 
-// Search covers the lead column and the shown text columns
-const { term: searchTerm, filteredRows, highlightTerm } = useGridSearch(
+const yesNo = v => (v == null ? '' : v ? 'Yes' : 'No')
+
+// Search covers the lead column and the shown text columns; Filter offers every column
+const {
+  term: searchTerm,
+  filters: gridFilters,
+  filteredRows,
+  filterColumns,
+  valueOptions,
+  highlightTerm,
+  clear: clearSearch,
+} = useGridSearch(
   () => props.rows,
-  () => [props.keyColumn, ...shownColumns.value.filter(c => c.type !== 'number' && c.type !== 'boolean')]
-    .map(c => ({ field: c.field, header: c.header })),
+  () => [props.keyColumn, ...props.columns].map((c) => {
+    if (c.type === 'boolean') {
+      return { field: c.field, header: c.header, filterValues: r => yesNo(r[c.field]), quickSearch: false }
+    }
+    return { field: c.field, header: c.header, quickSearch: c.type !== 'number' }
+  }),
+  { visibleFields: () => (props.columnToggle ? new Set([props.keyColumn.field, ...visibleFields.value]) : null) },
 )
 
 // props.rows is only recomputed when a new report is loaded, so a search
 // left over from the previous report would otherwise hide all of its rows.
-watch(() => props.rows, () => {
-  searchTerm.value = ''
-})
+watch(() => props.rows, clearSearch)
 
 const selectedRow = computed({
   get: () => props.selection,
@@ -99,6 +113,7 @@ function columnStyle(col) {
       <slot name="title-extra" />
       <div class="title-spacer" />
       <GridSearch v-if="searchable" v-model="searchTerm" class="report-table-search" :label="`Search ${noun}s`" />
+      <GridFilterButton v-if="searchable" v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
       <ColumnToggle v-if="columnToggle" v-model="selectedColumns" :columns="toggleColumns" />
     </div>
     <DataTable

@@ -113,6 +113,10 @@
   font-weight: 400;
 }
 
+.report-table-title .grid-filter-btn {
+  margin-right: 0.4rem;
+}
+
 .report-table-panel .flex-fill {
   flex: 1;
   min-height: 0;
