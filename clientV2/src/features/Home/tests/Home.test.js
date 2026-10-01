@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/vue'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import { fetchAppManagers } from '../api/api'
 import Home from '../components/Home.vue'
@@ -8,11 +8,10 @@ vi.mock('../api/api', () => ({
   fetchAppManagers: vi.fn(),
 }))
 
-// Mirrors the STIGMAN.Env block the API writes into Env.js
+// Mirrors the STIGMAN.Env block the API writes into Env.js plus the URLs init.js derives
 const defaultEnv = () => ({
   displayAppManagers: true,
-  pathPrefix: '',
-  apiUrl: 'http://api.example.test/api',
+  docsUrl: 'http://api.example.test/docs/',
   welcome: { image: '', title: '', message: '', link: '' },
 })
 let mockEnv = defaultEnv()
@@ -32,9 +31,9 @@ function welcomeImg() {
   return screen.getByRole('heading', { name: 'Welcome' }).closest('.p-panel').querySelector('img')
 }
 
-afterEach(() => {
+beforeEach(() => {
   mockEnv = defaultEnv()
-  fetchAppManagers.mockReset()
+  fetchAppManagers.mockReset().mockResolvedValue([])
   triggerErrorMock.mockReset()
 })
 
@@ -80,14 +79,12 @@ describe('home feature', () => {
 
   describe('welcome customization (STIGMAN_CLIENT_WELCOME_*)', () => {
     it('shows no support section when nothing is configured', () => {
-      fetchAppManagers.mockResolvedValue([])
       renderWithProviders(Home)
 
       expect(screen.queryByRole('heading', { name: 'Support' })).not.toBeInTheDocument()
     })
 
     it('titles a configured message "Support" by default', () => {
-      fetchAppManagers.mockResolvedValue([])
       mockEnv.welcome.message = 'Call the help desk'
       renderWithProviders(Home)
 
@@ -96,7 +93,6 @@ describe('home feature', () => {
     })
 
     it('uses the configured title and renders the link as an anchor', () => {
-      fetchAppManagers.mockResolvedValue([])
       mockEnv.welcome.title = 'Contact Us'
       mockEnv.welcome.link = 'https://help.example.test/'
       renderWithProviders(Home)
@@ -107,14 +103,12 @@ describe('home feature', () => {
     })
 
     it('shows the sponsor seal when no image is configured', () => {
-      fetchAppManagers.mockResolvedValue([])
       renderWithProviders(Home)
 
       expect(welcomeImg().getAttribute('src')).toMatch(/navy\.svg$/)
     })
 
     it('shows the configured image and falls back to the seal when it fails to load', async () => {
-      fetchAppManagers.mockResolvedValue([])
       mockEnv.welcome.image = 'https://cdn.example.test/logo.png'
       renderWithProviders(Home)
 
@@ -126,22 +120,12 @@ describe('home feature', () => {
     })
   })
 
-  describe('documentation links', () => {
-    it('point at the API origin docs path', () => {
-      fetchAppManagers.mockResolvedValue([])
-      renderWithProviders(Home)
+  it('links documentation under the docs base derived at bootstrap', () => {
+    renderWithProviders(Home)
 
-      expect(screen.getByRole('link', { name: 'Documentation' }))
-        .toHaveAttribute('href', 'http://api.example.test/docs/index.html')
-    })
-
-    it('honor STIGMAN_CLIENT_PATH_PREFIX', () => {
-      fetchAppManagers.mockResolvedValue([])
-      mockEnv.pathPrefix = '/stigman/'
-      renderWithProviders(Home)
-
-      expect(screen.getByRole('link', { name: 'User Guide' }))
-        .toHaveAttribute('href', 'http://api.example.test/stigman/docs/user-guide/user-guide.html')
-    })
+    expect(screen.getByRole('link', { name: 'Documentation' }))
+      .toHaveAttribute('href', 'http://api.example.test/docs/index.html')
+    expect(screen.getByRole('link', { name: 'User Guide' }))
+      .toHaveAttribute('href', 'http://api.example.test/docs/user-guide/user-guide.html')
   })
 })
