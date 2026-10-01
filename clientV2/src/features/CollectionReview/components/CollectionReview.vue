@@ -123,16 +123,9 @@ watch(collectionId, () => {
   }
 }, { immediate: true })
 
-watch([collectionId, benchmarkId, revisionStr], () => {
-  if (collectionId.value && benchmarkId.value && revisionStr.value) {
-    loadChecklist()
-    loadAssets()
-  }
-}, { immediate: true })
-
-// A label change rescopes everything already loaded, including the selected
-// rule's reviews (fetched label-scoped so rule clicks stay small).
-watch(labelFilterKey, () => {
+// Reviews are fetched label-scoped (rule clicks stay small), so a label change
+// reloads the selected rule's reviews along with the checklist and assets.
+watch([collectionId, benchmarkId, revisionStr, labelFilterKey], () => {
   if (collectionId.value && benchmarkId.value && revisionStr.value) {
     loadChecklist()
     loadAssets()
@@ -140,10 +133,10 @@ watch(labelFilterKey, () => {
       loadReviews(selectedRuleId.value)
     }
   }
-})
+}, { immediate: true })
 
 watch(
-  [collection, () => route.params.benchmarkId, () => route.params.revisionStr],
+  [collection, () => route.params.benchmarkId, () => route.params.revisionStr, labelFilterKey],
   ([c]) => {
     if (c?.name && route.params.benchmarkId) {
       addView({
@@ -178,6 +171,8 @@ watch(gridData, (data) => {
 // load data when we have a selected rule and collection/benchmarkid/revisionstr
 watch(selectedRuleId, (ruleId) => {
   if (!ruleId) {
+    ruleContent.value = null
+    reviewsData.value = []
     return
   }
   if (benchmarkId.value && revisionStr.value) {

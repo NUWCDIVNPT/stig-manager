@@ -175,6 +175,7 @@ export function useAppBreadcrumb() {
           benchmarkId: newBenchmarkId,
           revisionStr: stigData?.revisionStr || route.params.revisionStr,
         },
+        query: route.query, // keeps the label filter
       })
     }
     else {
@@ -207,6 +208,7 @@ export function useAppBreadcrumb() {
           benchmarkId: route.params.benchmarkId,
           revisionStr: newRevisionStr,
         },
+        query: route.query, // keeps the label filter
       })
     }
     else {

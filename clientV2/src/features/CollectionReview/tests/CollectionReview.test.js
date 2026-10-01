@@ -1,6 +1,7 @@
 import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 // API Mocks
 import { fetchCollection } from '../../../shared/api/collectionsApi.js'
@@ -76,7 +77,11 @@ vi.mock('../components/RuleTable.vue', () => ({
 }))
 
 vi.mock('../../../components/common/RuleInfo.vue', () => ({
-  default: { name: 'RuleInfo', template: '<div data-testid="mock-rule-info"></div>' },
+  default: {
+    name: 'RuleInfo',
+    props: ['ruleContent'],
+    template: '<div data-testid="mock-rule-info" :data-has-rule="String(!!ruleContent)"></div>',
+  },
 }))
 
 vi.mock('../components/RejectReasonModal.vue', () => ({
@@ -109,7 +114,7 @@ vi.mock('primevue/splitter', () => ({ default: { name: 'Splitter', template: '<d
 vi.mock('primevue/splitterpanel', () => ({ default: { name: 'SplitterPanel', template: '<div><slot></slot></div>' } }))
 
 describe('collectionReview.vue', () => {
-  let mockRouterPush, mockRouterReplace, mockAddView, mockRemoveView
+  let mockRouterPush, mockRouterReplace, mockAddView, mockRemoveView, routeState
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -120,7 +125,8 @@ describe('collectionReview.vue', () => {
     mockRemoveView = vi.fn()
 
     useRouter.mockReturnValue({ push: mockRouterPush, replace: mockRouterReplace })
-    useRoute.mockReturnValue({
+    // reactive so tests can change the query in place, as router.replace would
+    routeState = reactive({
       params: {
         collectionId: 'coll-1',
         benchmarkId: 'bench-1',
@@ -130,6 +136,7 @@ describe('collectionReview.vue', () => {
       fullPath: '/collections/coll-1/bench-1/rev-1',
       path: '/collections/coll-1/bench-1/rev-1',
     })
+    useRoute.mockReturnValue(routeState)
 
     useCurrentUser.mockReturnValue({
       getCollectionRoleId: vi.fn().mockReturnValue(3),
@@ -197,6 +204,49 @@ describe('collectionReview.vue', () => {
       await fireEvent.click(screen.getByTestId('set-labels'))
 
       expect(mockRouterReplace).toHaveBeenCalledWith({ query: { labelId: ['label-b'], labelMatch: 'null' } })
+    })
+
+    it('keeps unrelated query keys when writing the label selection', async () => {
+      routeState.query = { foo: 'bar', labelId: 'label-a' }
+      createWrapper()
+      await flushPromises()
+
+      await fireEvent.click(screen.getByTestId('set-labels'))
+
+      expect(mockRouterReplace).toHaveBeenCalledWith({ query: { foo: 'bar', labelId: ['label-b'], labelMatch: 'null' } })
+    })
+
+    it('reloads checklist, assets and the selected rule reviews on a label change, and refreshes the recent view', async () => {
+      createWrapper()
+      await flushPromises()
+      vi.clearAllMocks()
+
+      routeState.query = { labelId: 'label-a' }
+      routeState.fullPath = '/collections/coll-1/bench-1/rev-1?labelId=label-a'
+      await flushPromises()
+
+      const expected = { labelId: ['label-a'] }
+      expect(fetchCollectionChecklist).toHaveBeenCalledTimes(1)
+      expect(fetchCollectionChecklist).toHaveBeenCalledWith('coll-1', 'bench-1', 'rev-1', expected)
+      expect(fetchAssetsByCollectionStig).toHaveBeenCalledTimes(1)
+      expect(fetchAssetsByCollectionStig).toHaveBeenCalledWith('coll-1', 'bench-1', expected)
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', expected)
+      expect(mockAddView).toHaveBeenLastCalledWith(expect.objectContaining({
+        key: 'collection-review:coll-1:bench-1',
+        url: '/collections/coll-1/bench-1/rev-1?labelId=label-a',
+      }))
+    })
+
+    it('clears the rule panel when the filtered checklist comes back empty', async () => {
+      createWrapper()
+      await flushPromises()
+      expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('true')
+
+      fetchCollectionChecklist.mockResolvedValue([])
+      routeState.query = { labelId: 'label-with-no-assets' }
+      await flushPromises()
+
+      expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('false')
     })
 
     it('adds recent view entry when collection metadata loads', async () => {
