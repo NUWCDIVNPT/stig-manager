@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
+import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../../components/common/GridSearch.vue'
 import HighlightText from '../../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
@@ -67,10 +68,18 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
   { field: 'userId', header: 'ID' },
 ], 'adminUsers.columns')
 
-const { term: searchTerm, filteredRows, isFiltered, highlightTerm } = useGridSearch(rows, [
+const {
+  term: searchTerm,
+  filters: gridFilters,
+  filteredRows,
+  isFiltered,
+  filterColumns,
+  valueOptions,
+  highlightTerm,
+} = useGridSearch(rows, [
   { field: 'username', header: 'Username' },
   { field: 'displayName', header: 'Name' },
-  { field: 'status', header: 'Status' },
+  { field: 'status', header: 'Status', filterValues: r => r.status },
   { field: 'groupNames', header: 'Groups' },
   { field: 'userId', header: 'ID' },
 ], { visibleFields })
@@ -132,6 +141,11 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
       </ActionButton>
       <div class="toolbar-spacer" />
       <GridSearch v-model="searchTerm" class="list-search" label="Search users" placeholder="Search users..." />
+      <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions">
+        <template #option="{ option }">
+          <span class="status-pill" :class="option.value">{{ option.name }}</span>
+        </template>
+      </GridFilterButton>
       <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
     </ActionToolbar>
 
@@ -155,7 +169,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
         :pt="tablePt"
       >
         <template #empty>
-          {{ isFiltered && users.length ? 'No users match the search.' : 'No users found.' }}
+          {{ isFiltered && users.length ? 'No users match the filters.' : 'No users found.' }}
         </template>
 
         <Column field="username" header="Username" sortable :pt="borderPt" style="width: 15%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">

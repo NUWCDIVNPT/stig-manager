@@ -178,15 +178,20 @@ const popoverPt = {
               <span v-if="!rule.value.length" class="grid-filter__placeholder">Pick values</span>
               <span v-else class="grid-filter__chips">
                 <template v-for="opt in selectedOptions(rule).slice(0, MAX_VALUE_CHIPS)" :key="opt.value">
-                  <LabelChip v-if="opt.color" :value="opt.name" :color="normalizeColor(opt.color)" />
-                  <span v-else :class="{ 'grid-filter__empty-option': opt.value === '' }">{{ opt.name }}</span>
+                  <slot name="option" :option="opt" :field="rule.key">
+                    <LabelChip v-if="opt.color" :value="opt.name" :color="normalizeColor(opt.color)" />
+                    <span v-else :class="{ 'grid-filter__empty-option': opt.value === '' }">{{ opt.name }}</span>
+                  </slot>
                 </template>
                 <span v-if="rule.value.length > MAX_VALUE_CHIPS" class="grid-filter__more">+{{ rule.value.length - MAX_VALUE_CHIPS }}</span>
               </span>
             </template>
             <template #option="{ option }">
-              <LabelChip v-if="option.color" :value="option.name" :color="normalizeColor(option.color)" />
-              <span v-else :class="{ 'grid-filter__empty-option': option.value === '' }">{{ option.name }}</span>
+              <!-- Lets a grid render its own chip for a value (e.g. user status pills) -->
+              <slot name="option" :option="option" :field="rule.key">
+                <LabelChip v-if="option.color" :value="option.name" :color="normalizeColor(option.color)" />
+                <span v-else :class="{ 'grid-filter__empty-option': option.value === '' }">{{ option.name }}</span>
+              </slot>
             </template>
           </MultiSelect>
           <div v-else class="grid-filter__text">
