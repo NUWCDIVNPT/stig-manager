@@ -4,6 +4,7 @@ import {
   matchText,
   matchValues,
   textFilter,
+  toValues,
   valuesFilter,
 } from './columnFilters.js'
 
@@ -23,6 +24,12 @@ describe('isActive', () => {
 
   it('treats a missing filter as inactive', () => {
     expect(isActive(undefined)).toBe(false)
+  })
+
+  it('treats an unknown kind or missing values list as inactive, and a 0 term as active', () => {
+    expect(isActive({ kind: 'other', value: 'x' })).toBe(false)
+    expect(isActive({ kind: 'values' })).toBe(false)
+    expect(isActive(text({ value: 0 }))).toBe(true)
   })
 })
 
@@ -73,6 +80,42 @@ describe('matchText', () => {
   it('matches numbers as text', () => {
     expect(matchText(404, text({ value: '40' }))).toBe(true)
   })
+
+  it('joins array cells before matching', () => {
+    expect(matchText(['web', 'prod'], text({ value: 'prod' }))).toBe(true)
+    expect(matchText(['web', 'prod'], text({ mode: 'equals', value: 'web, prod' }))).toBe(true)
+  })
+
+  it('finds whole words at the edges and next to punctuation', () => {
+    expect(matchText('web', text({ value: 'web', matchWord: true }))).toBe(true)
+    expect(matchText('my server.', text({ value: 'server', matchWord: true }))).toBe(true)
+    expect(matchText('(prod)', text({ value: 'prod', matchWord: true }))).toBe(true)
+    expect(matchText('prod1', text({ value: 'prod', matchWord: true }))).toBe(false)
+  })
+
+  it('falls back to contains for an unknown mode', () => {
+    expect(matchText('Web Server', text({ mode: 'bogus', value: 'serv' }))).toBe(true)
+  })
+})
+
+describe('toValues', () => {
+  it('treats missing and blank cells as no values', () => {
+    expect(toValues(null)).toEqual([])
+    expect(toValues(undefined)).toEqual([])
+    expect(toValues('')).toEqual([])
+    expect(toValues([])).toEqual([])
+  })
+
+  it('returns strings, keeping 0 and false', () => {
+    expect(toValues(0)).toEqual(['0'])
+    expect(toValues(false)).toEqual(['false'])
+    expect(toValues(404)).toEqual(['404'])
+  })
+
+  it('reads label names and drops blanks and nameless labels', () => {
+    expect(toValues([1, 'a', null, '', { name: 'x' }, { name: null }])).toEqual(['1', 'a', 'x'])
+    expect(toValues({ name: 'prod', color: '#0f0' })).toEqual(['prod'])
+  })
 })
 
 describe('matchValues', () => {
@@ -81,6 +124,20 @@ describe('matchValues', () => {
   it('is a no-op while nothing is selected', () => {
     expect(matchValues([], values())).toBe(true)
     expect(matchValues(['a'], values())).toBe(true)
+    expect(matchValues('a', undefined)).toBe(true)
+  })
+
+  it('mixes the empty pick with real values in any mode', () => {
+    const f = values({ value: ['', 'a'] })
+    expect(matchValues([], f)).toBe(true)
+    expect(matchValues(['a'], f)).toBe(true)
+    expect(matchValues(['b'], f)).toBe(false)
+  })
+
+  it('inverts all-matching when exclude is set', () => {
+    const f = values({ value: ['a', 'b'], match: 'all', exclude: true })
+    expect(matchValues(['a', 'b'], f)).toBe(false)
+    expect(matchValues(['a'], f)).toBe(true)
   })
 
   it('any matches a cell holding at least one selected value', () => {

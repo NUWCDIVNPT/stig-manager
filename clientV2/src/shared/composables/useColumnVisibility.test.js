@@ -49,6 +49,27 @@ describe('useColumnVisibility', () => {
     expect(fields(v.selectedColumns.value)).toEqual([])
   })
 
+  it('always shows locked columns and ignores a saved array', () => {
+    localStorage.setItem('grid', JSON.stringify({ name: false }))
+    expect(fields(useColumnVisibility(columns, 'grid').visibleColumns.value)).toEqual(['name', 'ip'])
+    localStorage.setItem('grid', JSON.stringify([true]))
+    expect(fields(useColumnVisibility(columns, 'grid').selectedColumns.value)).toEqual(['ip'])
+  })
+
+  it('ignores locked and unknown fields and skips saving when nothing changes', () => {
+    const v = useColumnVisibility(columns, 'grid')
+    v.setShown({ name: false, nope: true, ip: true })
+    expect(localStorage.getItem('grid')).toBeNull()
+    expect(fields(v.visibleColumns.value)).toEqual(['name', 'ip'])
+  })
+
+  it('shows a column added later with its default', () => {
+    const cols = ref(columns)
+    const v = useColumnVisibility(cols, 'grid')
+    cols.value = [...columns, { field: 'os', header: 'OS' }, { field: 'fqdn', header: 'FQDN', defaultHidden: true }]
+    expect(fields(v.selectedColumns.value)).toEqual(['ip', 'os'])
+  })
+
   it('sets fields directly and keeps choices in memory without a key', () => {
     const v = useColumnVisibility(columns)
     v.setShown({ ip: false, mac: true })
