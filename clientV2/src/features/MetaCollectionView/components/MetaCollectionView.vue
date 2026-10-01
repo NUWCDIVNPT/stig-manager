@@ -6,27 +6,21 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { valuesFilter } from '../../../shared/lib/columnFilters.js'
 import MetaCollectionMetrics from '../../CollectionMetrics/components/MetaCollectionMetrics.vue'
 import MetaExportMetrics from '../../CollectionMetrics/components/MetaExportMetrics.vue'
 import MetaCollectionsTab from './MetaCollectionsTab.vue'
 import MetaStigsTab from './MetaStigsTab.vue'
 
-const STORAGE_KEY = 'metaCollectionFilter'
-const LEGACY_STORAGE_KEY = 'metaCollectionIds'
-
 const activeTab = ref('collections')
 const DASHBOARD_STORAGE_KEY = 'stigman:metaDashboardCollapsed'
 const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === 'true')
-const collectionFilter = ref(loadCollectionFilter())
-// Resolved by MetaMetricsFilter; exclude mode needs the collection list first
-const selectedCollectionIds = ref(collectionFilter.value.exclude ? [] : collectionFilter.value.value)
+// Not persisted: a saved exclude filter would load every collection first
+const collectionFilter = ref(valuesFilter())
+// Resolved by MetaMetricsFilter
+const selectedCollectionIds = ref([])
 const isAnimating = ref(false)
-
-watch(collectionFilter, (filter) => {
-  persistCollectionFilter(filter)
-}, { deep: true })
 
 function toggleDashboardSidebar() {
   isAnimating.value = true
@@ -38,33 +32,6 @@ function toggleDashboardSidebar() {
 
   try {
     localStorage.setItem(DASHBOARD_STORAGE_KEY, String(dashboardCollapsed.value))
-  }
-  catch {
-    // localStorage unavailable
-  }
-}
-
-function loadCollectionFilter() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      return valuesFilter({
-        value: Array.isArray(parsed?.value) ? parsed.value : [],
-        exclude: Boolean(parsed?.exclude),
-      })
-    }
-    const legacy = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY) || '[]')
-    return valuesFilter({ value: Array.isArray(legacy) ? legacy : [] })
-  }
-  catch {
-    return valuesFilter()
-  }
-}
-
-function persistCollectionFilter(filter) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(filter))
   }
   catch {
     // localStorage unavailable
