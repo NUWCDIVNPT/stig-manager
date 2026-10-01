@@ -6,6 +6,7 @@ import { roleMap } from '../../../../components/common/grants/roleOptions.js'
 import RolePopover from '../../../../components/common/grants/RolePopover.vue'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import HelpIcon from '../../../../components/common/HelpIcon.vue'
+import PanelTitle from '../../../../components/common/PanelTitle.vue'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
@@ -37,14 +38,12 @@ const tablePt = compactTablePt()
 
 <template>
   <div class="effective-grants-wrapper">
-    <div class="panel-title">
-      <i class="pi pi-folder" />
-      <span>Collections</span>
-      <span class="panel-title__count">{{ isFiltered ? `${filteredRows.length} of ${rows.length}` : rows.length }}</span>
-      <span class="panel-title__end">
+    <PanelTitle title="Collections" icon="pi pi-folder">
+      <span class="title-count">{{ isFiltered ? `${filteredRows.length} of ${rows.length}` : rows.length }}</span>
+      <template #end>
         <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
-      </span>
-    </div>
+      </template>
+    </PanelTitle>
     <DataTable
       :value="filteredRows"
       sort-field="name"
@@ -113,29 +112,9 @@ const tablePt = compactTablePt()
   min-height: 0;
 }
 
-/* Matches the Effective Users / Service Jobs panel title bars; the Filter rides the right. */
-.panel-title {
-  --checklist-control-height: 1.9rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
-  font-size: var(--text-md);
-  font-weight: 700;
-  color: var(--color-text-bright);
-  background: var(--color-background-subtle);
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.panel-title__count {
+.title-count {
   font-weight: 400;
   color: var(--color-text-dim);
-}
-
-.panel-title__end {
-  margin-left: auto;
-  font-weight: 400;
 }
 
 .collection-cell {

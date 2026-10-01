@@ -7,6 +7,7 @@ import { computed, ref, watch } from 'vue'
 import AclStateIcon from '../../../../components/common/AclStateIcon.vue'
 import { granteeLabel } from '../../../../components/common/grants/granteeDisplay.js'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
+import PanelTitle from '../../../../components/common/PanelTitle.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchEffectiveAclByCollectionUser } from '../../../../shared/api/grantsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
@@ -106,13 +107,11 @@ watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
       </div>
 
       <div v-else class="acl-panel">
-        <div class="panel-title">
-          <i class="pi pi-shield" />
-          <span>Effective Access</span>
-          <span class="panel-title__end">
+        <PanelTitle title="Effective Access" icon="pi pi-shield">
+          <template #end>
             <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
-          </span>
-        </div>
+          </template>
+        </PanelTitle>
         <DataTable
           ref="aclDt"
           :value="filteredRows"
@@ -206,26 +205,6 @@ watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
 .acl-table {
   flex: 1 1 auto;
   min-height: 0;
-}
-
-/* Matches the Service Jobs / Log Stream panel title bars; the Filter rides the right. */
-.panel-title {
-  --checklist-control-height: 1.9rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
-  font-size: var(--text-md);
-  font-weight: 700;
-  color: var(--color-text-bright);
-  background: var(--color-background-subtle);
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.panel-title__end {
-  margin-left: auto;
-  font-weight: 400;
 }
 
 .acl-message {

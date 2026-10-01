@@ -8,6 +8,7 @@ import ActionButton from '../../../../components/common/ActionButton.vue'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../../components/common/GridSearch.vue'
 import HighlightText from '../../../../components/common/HighlightText.vue'
+import PanelTitle from '../../../../components/common/PanelTitle.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
@@ -216,13 +217,12 @@ const dataTablePt = {
 
       <div class="grid-row grid-row--top">
         <div class="grid-table-container grid-fill">
-          <div class="panel-title">
-            <span>New Assets To Be Created</span>
-            <div class="panel-title__end">
-              <GridSearch v-model="assetSearchTerm" class="panel-title__search" label="Search new assets" placeholder="Search assets..." />
+          <PanelTitle title="New Assets To Be Created">
+            <template #end>
+              <GridSearch v-model="assetSearchTerm" class="assets-search" label="Search new assets" placeholder="Search assets..." />
               <GridFilterButton v-model="assetFilters" :columns="assetFilterColumns" :value-options="assetValueOptions" />
-            </div>
-          </div>
+            </template>
+          </PanelTitle>
           <DataTable
             :value="filteredAssets"
             class="flex-fill"
@@ -300,12 +300,11 @@ const dataTablePt = {
 
       <div class="grid-row grid-row--bottom">
         <div class="grid-table-container grid-fill grid-errors">
-          <div class="panel-title">
-            <span>File Errors</span>
-            <span class="panel-title__end">
+          <PanelTitle title="File Errors">
+            <template #end>
               <GridFilterButton v-model="errorFilters" :columns="errorFilterColumns" :value-options="errorValueOptions" />
-            </span>
-          </div>
+            </template>
+          </PanelTitle>
           <DataTable
             :value="filteredErrors"
             class="flex-fill"
@@ -338,12 +337,11 @@ const dataTablePt = {
         </div>
 
         <div class="grid-table-container grid-fill grid-labels">
-          <div class="panel-title">
-            <span>New Labels To Be Created</span>
-            <span class="panel-title__end">
+          <PanelTitle title="New Labels To Be Created">
+            <template #end>
               <GridFilterButton v-model="labelFilters" :columns="labelFilterColumns" :value-options="labelValueOptions" />
-            </span>
-          </div>
+            </template>
+          </PanelTitle>
           <DataTable
             :value="filteredLabels"
             class="flex-fill"
@@ -504,31 +502,7 @@ const dataTablePt = {
 .grid-labels { flex: 1; }
 .grid-errors { flex: 2; }
 
-/* Matches the app's panel title bars; controls ride the right. */
-.panel-title {
-  --checklist-control-height: 1.9rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  min-height: 2.6rem;
-  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
-  font-size: var(--text-md);
-  font-weight: 700;
-  color: var(--color-text-bright);
-  background: var(--color-background-subtle);
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.panel-title__end {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-weight: 400;
-}
-
-.panel-title__search {
+.assets-search {
   width: 20rem;
   max-width: 40vw;
 }

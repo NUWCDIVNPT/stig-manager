@@ -3,6 +3,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { ref } from 'vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
+import PanelTitle from '../../../components/common/PanelTitle.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
@@ -37,12 +38,11 @@ const dtRef = ref()
     </div>
 
     <div class="preview-table-wrapper">
-      <div class="panel-title">
-        <span>Results to import</span>
-        <span class="panel-title__end">
+      <PanelTitle title="Results to import">
+        <template #end>
           <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
-        </span>
-      </div>
+        </template>
+      </PanelTitle>
       <DataTable
         ref="dtRef"
         :value="filteredRows"
@@ -164,26 +164,6 @@ const dtRef = ref()
   flex: 1;
   min-height: 0;
   user-select: none;
-}
-
-/* Matches the other panel title bars; the Filter rides the right. */
-.panel-title {
-  --checklist-control-height: 1.9rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
-  font-size: var(--text-md);
-  font-weight: 700;
-  color: var(--color-text-bright);
-  background: var(--color-background-subtle);
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.panel-title__end {
-  margin-left: auto;
-  font-weight: 400;
 }
 
 .new-item {

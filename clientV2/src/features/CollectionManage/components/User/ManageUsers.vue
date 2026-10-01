@@ -7,6 +7,7 @@ import targetSvg from '../../../../assets/target.svg'
 import { roleMap } from '../../../../components/common/grants/roleOptions.js'
 import RolePopover from '../../../../components/common/grants/RolePopover.vue'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
+import PanelTitle from '../../../../components/common/PanelTitle.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchCollectionUsers } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
@@ -78,13 +79,11 @@ defineExpose({ reload })
 <template>
   <div class="manage-users">
     <div class="users-table-wrapper">
-      <div class="panel-title">
-        <i class="pi pi-users" />
-        <span>Effective Users</span>
-        <span class="panel-title__end">
+      <PanelTitle title="Effective Users" icon="pi pi-users">
+        <template #end>
           <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
-        </span>
-      </div>
+        </template>
+      </PanelTitle>
       <DataTable
         ref="usersDt"
         :value="filteredRows"
@@ -191,26 +190,6 @@ defineExpose({ reload })
   display: flex;
   flex-direction: column;
   min-height: 0;
-}
-
-/* Matches the Service Jobs / Log Stream panel title bars; the Filter rides the right. */
-.panel-title {
-  --checklist-control-height: 1.9rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
-  font-size: var(--text-md);
-  font-weight: 700;
-  color: var(--color-text-bright);
-  background: var(--color-background-subtle);
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.panel-title__end {
-  margin-left: auto;
-  font-weight: 400;
 }
 
 .user-cell {
