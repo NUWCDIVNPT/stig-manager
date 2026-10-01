@@ -118,7 +118,7 @@ const diffColumns = computed(() => [
   { field: 'leftRule', header: `Rule in ${props.compareRev ?? 'compared'}` },
   { field: 'rightRule', header: `Rule in ${props.viewRev ?? 'viewed'}` },
   { field: 'cat', header: 'CAT', filterValues: r => catLabel(r.cat) ?? '', quickSearch: false },
-  { field: 'changed', header: 'Changed properties', searchText: r => r.changed?.join(' '), filterValues: r => r.changed, multiple: true },
+  { field: 'changed', header: 'Changed properties', filterValues: r => r.changed, multiple: true },
 ])
 
 const tableRows = computed(() => (diffMode.value ? props.diffRows : props.rules) ?? [])

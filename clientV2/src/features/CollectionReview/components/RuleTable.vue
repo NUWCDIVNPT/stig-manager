@@ -78,7 +78,7 @@ const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filt
   { field: 'labels', header: 'Labels', filterValues: r => r.assetLabels, multiple: true },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
-  { field: 'user', header: 'User', searchText: r => r.username, filterValues: r => r.username },
+  { field: 'user', header: 'User', filterValues: r => r.username },
   { field: 'engine', header: 'Engine', filterValues: r => capitalize(getEngineDisplay(r)), quickSearch: false },
   { field: 'status', header: 'Status', filterValues: r => statusText(r.status), quickSearch: false },
   { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result), quickSearch: false },

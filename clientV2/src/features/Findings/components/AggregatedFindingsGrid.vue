@@ -127,7 +127,7 @@ const SEARCH_COLUMNS = {
   apAcronym: { field: 'apAcronym', header: 'AP Acronym', filterValues: r => r.apAcronym },
   title: { field: 'title', header: 'Title' },
   definition: { field: 'definition', header: 'Definition' },
-  stigs: { field: 'stigs', header: 'STIGs', searchText: r => stigIds(r).join(' '), filterValues: stigIds, multiple: true },
+  stigs: { field: 'stigs', header: 'STIGs', filterValues: stigIds, multiple: true },
 }
 const searchColumns = computed(() => Object.entries(SEARCH_COLUMNS)
   .filter(([key]) => props.visibleColumns.has(key))

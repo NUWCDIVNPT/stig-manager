@@ -125,18 +125,12 @@ function onCollectionIconClick(rowData) {
   emit('collection-icon-click', rowData)
 }
 
-watch(() => props.apiMetricsSummary, () => {
-  console.log('apiMetricsSummary changed')
-  console.log(props.apiMetricsSummary)
-})
-
 const aggregationType = computed(() => {
   if (props.aggType) {
     return props.aggType
   }
 
   const m = props.apiMetricsSummary
-  console.log('apiMetricsSummary', m)
   if (!Array.isArray(m) || m.length === 0 || !m[0]) {
     return null
   }
@@ -159,7 +153,6 @@ const aggregationType = computed(() => {
 })
 
 const columns = computed(() => {
-  console.log('Computing columns for aggregation type:', aggregationType.value)
   // Column groups name the sections of the column toggle. `defaultHidden`
   // columns are offered there but start off; the plain count, result and
   // per-severity breakdowns are for users who want the numbers behind the
@@ -200,15 +193,15 @@ const columns = computed(() => {
     { field: 'assessedCat2', header: 'CAT 2 Assessed', group: SEVERITY, defaultHidden: true, component: Column, style: cellStyle(WIDTH.severity) },
     { field: 'assessedCat1', header: 'CAT 1 Assessed', group: SEVERITY, defaultHidden: true, component: Column, style: cellStyle(WIDTH.severity) },
   ]
-  const benchmarkColumn = { field: 'benchmarkId', header: 'Benchmark', group: 'STIG', component: BenchmarkColumn, locked: true, searchText: r => r.benchmarkId, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.benchmark) }
-  const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: TextColumn, searchText: r => r.title, style: cellStyle(WIDTH.title) }
-  const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: TextColumn, searchText: r => r.revisionStr, style: cellStyle(WIDTH.revision) }
-  const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchText: r => r.assetName, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name) }
-  const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, filterValues: r => r.labels, multiple: true, style: cellStyle(WIDTH.labels) }
+  const benchmarkColumn = { field: 'benchmarkId', header: 'Benchmark', group: 'STIG', component: BenchmarkColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.benchmark) }
+  const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.title) }
+  const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: TextColumn, searchable: true, style: cellStyle(WIDTH.revision) }
+  const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name) }
+  const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, searchable: true, filterValues: r => r.labels, multiple: true, style: cellStyle(WIDTH.labels) }
   switch (aggregationType.value) {
     case 'collection':
       return [
-        { field: 'collectionName', header: 'Collection', group: 'Collection', component: CollectionColumn, locked: true, searchText: r => r.collectionName, showShield: props.showShield, onShieldClick, showCollectionIcon: props.showCollectionIcon, onCollectionIconClick, style: cellStyle(WIDTH.benchmark) },
+        { field: 'collectionName', header: 'Collection', group: 'Collection', component: CollectionColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, showCollectionIcon: props.showCollectionIcon, onCollectionIconClick, style: cellStyle(WIDTH.benchmark) },
         { field: 'assetCnt', header: 'Assets', group: 'Collection', component: Column, style: cellStyle(WIDTH.count) },
         { field: 'stigCnt', header: 'STIGs', group: 'Collection', component: Column, style: cellStyle(WIDTH.count) },
         { field: 'checklistCnt', header: 'Checklists', group: 'Collection', component: Column, style: cellStyle(WIDTH.checklists) },
@@ -219,9 +212,9 @@ const columns = computed(() => {
         assetColumn,
         labelsColumn,
         { field: 'stigCnt', header: 'STIGs', group: 'Asset', component: Column, style: cellStyle(WIDTH.count) },
-        { field: 'fqdn', header: 'FQDN', group: 'Asset', defaultHidden: true, component: TextColumn, searchText: r => r.fqdn, style: cellStyle(WIDTH.name) },
-        { field: 'ip', header: 'IP', group: 'Asset', defaultHidden: true, component: TextColumn, searchText: r => r.ip, style: cellStyle(WIDTH.ip) },
-        { field: 'mac', header: 'MAC', group: 'Asset', defaultHidden: true, component: TextColumn, searchText: r => r.mac, style: cellStyle(WIDTH.mac) },
+        { field: 'fqdn', header: 'FQDN', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.name) },
+        { field: 'ip', header: 'IP', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.ip) },
+        { field: 'mac', header: 'MAC', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.mac) },
         ...commonColumns,
       ]
     case 'stig':
@@ -235,7 +228,7 @@ const columns = computed(() => {
       ]
     case 'label':
       return [
-        { field: 'label', header: 'Label', group: 'Label', component: LabelsColumn, locked: true, filterValues: r => r.label, style: cellStyle(WIDTH.label) },
+        { field: 'label', header: 'Label', group: 'Label', component: LabelsColumn, locked: true, searchable: true, filterValues: r => r.label, style: cellStyle(WIDTH.label) },
         { field: 'assetCnt', header: 'Assets', group: 'Label', component: Column, style: cellStyle(WIDTH.count) },
         ...commonColumns,
       ]
@@ -396,7 +389,7 @@ const {
   filterColumns,
   valueOptions,
   highlightTerm,
-} = useGridSearch(data, () => columns.value.filter(c => c.searchText), { visibleFields })
+} = useGridSearch(data, () => columns.value.filter(c => c.searchable), { visibleFields })
 
 // CSV export basename per aggregation entity — same names the legacy client used.
 const EXPORT_BASENAME_BY_KEY = {

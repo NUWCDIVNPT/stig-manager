@@ -99,11 +99,11 @@ const stigIds = r => (r.stigs ?? []).map(s => s.benchmarkId)
 const { term: searchTerm, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(decoratedRows, [
   { field: 'assetName', header: 'Asset' },
   { field: 'labels', header: 'Labels', filterValues: r => r.labels, multiple: true, shownWith: 'assetName' },
-  { field: 'stigs', header: 'STIGs', searchText: r => stigIds(r).join(' '), filterValues: stigIds, multiple: true },
+  { field: 'stigs', header: 'STIGs', filterValues: stigIds, multiple: true },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
-  { field: 'resultEngine', header: 'Engine', searchText: r => capitalize(r._engineDisplay), filterValues: r => capitalize(r._engineDisplay) },
-  { field: 'status', header: 'Status', searchText: r => statusText(r.status), filterValues: r => statusText(r.status) },
+  { field: 'resultEngine', header: 'Engine', filterValues: r => capitalize(r._engineDisplay) },
+  { field: 'status', header: 'Status', filterValues: r => statusText(r.status) },
   { field: 'username', header: 'Reviewer', filterValues: r => r.username },
 ], { visibleFields })
 
