@@ -23,17 +23,18 @@ const scrollPt = { content: { class: 'sm-scrollbar-thin' } }
 </template>
 
 <style scoped>
-/* Legacy home widgets have a header band a shade lighter than the body; the
+/* The body sits a shade lighter than the app's dark surfaces and, as in the
+   legacy home widgets, the header band a shade lighter than the body; the
    Material Panel header is transparent by default. Panel reads these tokens. */
 .home-panel {
-  --p-panel-background: var(--color-background-dark);
+  --p-panel-background: var(--color-background-light);
   --p-panel-border-color: var(--color-border-default);
-  --p-panel-header-background: var(--color-background-light);
-  --p-panel-header-padding: 0.6rem 1.25rem;
+  --p-panel-header-background: color-mix(in srgb, var(--color-background-light), var(--color-border-default));
+  --p-panel-header-padding: 0.75rem 1.6rem;
   --p-panel-header-border-width: 0 0 1px 0;
   --p-panel-header-border-color: var(--color-border-default);
   --p-panel-header-border-radius: var(--p-panel-border-radius) var(--p-panel-border-radius) 0 0;
-  --p-panel-content-padding: 1rem 1.25rem 1.25rem;
+  --p-panel-content-padding: 1.35rem 1.6rem 1.6rem;
 }
 
 .card-title {
@@ -64,11 +65,10 @@ const scrollPt = { content: { class: 'sm-scrollbar-thin' } }
 }
 
 /* Size containment keeps the body from contributing its content height to
-   the grid row; min-height keeps some of it visible when nothing else in the
-   row is taller. */
+   the grid row; the row's minimum height in Home.vue keeps it visible when
+   nothing else in the row is taller. */
 .home-panel--scroll :deep(.p-panel-content) {
   contain: size;
-  min-height: 18rem;
   overflow-y: auto;
 }
 </style>
