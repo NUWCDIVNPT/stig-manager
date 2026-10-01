@@ -5,7 +5,6 @@ import { computed, ref, watch } from 'vue'
 import { useColumnVisibility } from '../../shared/composables/useColumnVisibility.js'
 import { useGridSearch } from '../../shared/composables/useGridSearch.js'
 import { calculateCora } from '../../shared/lib.js'
-import { labelNames } from '../../shared/lib/gridSearch.js'
 import { rowHeightPx } from '../../shared/lib/rowHeights.js'
 import AssetColumn from '../columns/AssetColumn.vue'
 import BenchmarkColumn from '../columns/BenchmarkColumn.vue'
@@ -205,7 +204,7 @@ const columns = computed(() => {
   const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: TextColumn, searchText: r => r.title, style: cellStyle(WIDTH.title) }
   const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: TextColumn, searchText: r => r.revisionStr, style: cellStyle(WIDTH.revision) }
   const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchText: r => r.assetName, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name) }
-  const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, searchText: r => labelNames(r.labels), filterValues: r => r.labels, multiple: true, style: cellStyle(WIDTH.labels) }
+  const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, filterValues: r => r.labels, multiple: true, style: cellStyle(WIDTH.labels) }
   switch (aggregationType.value) {
     case 'collection':
       return [
@@ -236,7 +235,7 @@ const columns = computed(() => {
       ]
     case 'label':
       return [
-        { field: 'label', header: 'Label', group: 'Label', component: LabelsColumn, locked: true, searchText: r => labelNames(r.label), filterValues: r => r.label, style: cellStyle(WIDTH.label) },
+        { field: 'label', header: 'Label', group: 'Label', component: LabelsColumn, locked: true, filterValues: r => r.label, style: cellStyle(WIDTH.label) },
         { field: 'assetCnt', header: 'Assets', group: 'Label', component: Column, style: cellStyle(WIDTH.count) },
         ...commonColumns,
       ]

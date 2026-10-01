@@ -77,5 +77,5 @@ export function useColumnVisibility(columns, storageKey = null) {
   const visibleColumns = computed(() => allColumns.value.filter(isShown))
   const visibleFields = computed(() => new Set(visibleColumns.value.map(c => c.field)))
 
-  return { toggleableColumns, selectedColumns, visibleColumns, visibleFields, isShown, setShown }
+  return { toggleableColumns, selectedColumns, visibleColumns, visibleFields, setShown }
 }

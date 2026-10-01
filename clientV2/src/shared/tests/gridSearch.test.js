@@ -6,7 +6,6 @@ import {
   describeFilter,
   filterOperator,
   isNegated,
-  labelNames,
   searchFilter,
   withColumn,
   withOperator,
@@ -20,18 +19,10 @@ const rows = [
 
 const cols = [
   { field: 'name', header: 'Asset', searchText: r => r.name },
-  { field: 'labels', header: 'Labels', searchText: r => labelNames(r.labels), filterValues: r => r.labels },
+  { field: 'labels', header: 'Labels', searchText: r => r.labels.map(l => l.name).join(' '), filterValues: r => r.labels },
 ]
 const names = list => list.map(r => r.name)
 const run = (filters, visibleColumns = cols) => names(applyGridSearch(rows, filters, { columns: cols, visibleColumns }))
-
-describe('labelNames', () => {
-  it('joins names and copes with missing input', () => {
-    expect(labelNames([{ name: 'a' }, { name: 'b' }])).toBe('a b')
-    expect(labelNames(undefined)).toBe('')
-    expect(labelNames([{}])).toBe('')
-  })
-})
 
 describe('applyGridSearch', () => {
   it('returns the same array when nothing is active', () => {
@@ -71,7 +62,7 @@ describe('applyGridSearch', () => {
   })
 
   it('treats a nameless label row as no label', () => {
-    const labelCol = { field: 'label', header: 'Label', searchText: r => labelNames(r.label), filterValues: r => r.label }
+    const labelCol = { field: 'label', header: 'Label', filterValues: r => r.label }
     const labelRows = [
       { id: 1, label: [{ labelId: 'a', name: 'prod', color: '00ff00' }] },
       { id: 2, label: [{ labelId: null, name: null, color: null }] },

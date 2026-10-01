@@ -10,7 +10,6 @@ import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
 import { capitalize } from '../../../shared/lib/exportCells.js'
-import { labelNames } from '../../../shared/lib/gridSearch.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
@@ -113,7 +112,7 @@ const tabBarEnd = inject('reviewTabBarEnd', null)
 
 const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, clear: clearFilters } = useGridSearch(filteredOtherReviews, [
   { field: 'assetName', header: 'Asset' },
-  { field: 'assetLabels', header: 'Labels', searchText: r => labelNames(r.assetLabels), filterValues: r => r.assetLabels, multiple: true },
+  { field: 'assetLabels', header: 'Labels', filterValues: r => r.assetLabels, multiple: true },
   { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result) ?? '' },
   { field: 'engine', header: 'Engine', filterValues: r => capitalize(getEngineDisplay(r)) },
   { field: 'detail', header: 'Detail' },

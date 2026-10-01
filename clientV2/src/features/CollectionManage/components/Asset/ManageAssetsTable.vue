@@ -19,7 +19,6 @@ import { useColumnVisibility } from '../../../../shared/composables/useColumnVis
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
-import { labelNames } from '../../../../shared/lib/gridSearch.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { deleteAssets } from '../../api/assetManageApi.js'
 import { useAssetTable } from '../../composables/useAssetTable.js'
@@ -89,7 +88,7 @@ const {
   highlightTerm,
 } = useGridSearch(tableData, [
   { field: 'assetName', header: 'Asset' },
-  { field: 'labels', header: 'Labels', searchText: r => labelNames(r.labels), filterValues: r => r.labels, multiple: true },
+  { field: 'labels', header: 'Labels', filterValues: r => r.labels, multiple: true },
   { field: 'benchmarkIds', header: 'STIG', filterValues: r => r.benchmarkIds, multiple: true, quickSearch: false },
 ], { visibleFields })
 

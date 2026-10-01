@@ -25,7 +25,6 @@ import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
 import { capitalize, statusText } from '../../../shared/lib/exportCells.js'
-import { labelNames } from '../../../shared/lib/gridSearch.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
@@ -99,7 +98,7 @@ const stigIds = r => (r.stigs ?? []).map(s => s.benchmarkId)
 // Labels show inside the asset cell, so they search whenever Asset is visible
 const { term: searchTerm, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(decoratedRows, [
   { field: 'assetName', header: 'Asset' },
-  { field: 'labels', header: 'Labels', searchText: r => labelNames(r.labels), filterValues: r => r.labels, multiple: true, shownWith: 'assetName' },
+  { field: 'labels', header: 'Labels', filterValues: r => r.labels, multiple: true, shownWith: 'assetName' },
   { field: 'stigs', header: 'STIGs', searchText: r => stigIds(r).join(' '), filterValues: stigIds, multiple: true },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },

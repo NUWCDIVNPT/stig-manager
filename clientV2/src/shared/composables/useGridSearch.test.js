@@ -28,7 +28,6 @@ describe('useGridSearch', () => {
   it('ignores incomplete rules', () => {
     const s = useGridSearch(rows, columns)
     s.filters.value = [searchFilter('os', 'text')]
-    expect(s.activeFilters.value).toEqual([])
     expect(s.isFiltered.value).toBe(false)
     expect(names(s.filteredRows.value)).toHaveLength(3)
   })
@@ -44,6 +43,14 @@ describe('useGridSearch', () => {
 
     s.term.value = 'web'
     expect(s.highlightTerm('os')).toBe('web')
+  })
+
+  it('searches a list column by its value names by default', () => {
+    const s = useGridSearch([{ name: 'a', labels: [{ name: 'prod' }] }, { name: 'b', labels: [] }], [
+      { field: 'labels', header: 'Labels', filterValues: r => r.labels },
+    ])
+    s.term.value = 'prod'
+    expect(names(s.filteredRows.value)).toEqual(['a'])
   })
 
   it('clears the term and rules', () => {

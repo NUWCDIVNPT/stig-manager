@@ -4,7 +4,6 @@ import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { capitalize, statusText } from '../../../shared/lib/exportCells.js'
-import { labelNames } from '../../../shared/lib/gridSearch.js'
 import RuleTableGrid from './RuleTableGrid.vue'
 import RuleTableHeader from './RuleTableHeader.vue'
 
@@ -76,7 +75,7 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
 // Text columns search while visible; Asset is locked on
 const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
   { field: 'assetName', header: 'Asset' },
-  { field: 'labels', header: 'Labels', searchText: r => labelNames(r.assetLabels), filterValues: r => r.assetLabels, multiple: true },
+  { field: 'labels', header: 'Labels', filterValues: r => r.assetLabels, multiple: true },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
   { field: 'user', header: 'User', searchText: r => r.username, filterValues: r => r.username },

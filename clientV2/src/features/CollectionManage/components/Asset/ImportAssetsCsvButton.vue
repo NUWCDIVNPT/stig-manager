@@ -120,7 +120,7 @@ const {
   valueOptions: assetValueOptions,
   highlightTerm,
 } = useGridSearch(validAssets, [
-  { field: 'CSVRow', header: 'Row', searchText: r => String(r.CSVRow ?? ''), quickSearch: false },
+  { field: 'CSVRow', header: 'Row', quickSearch: false },
   { field: 'name', header: 'Asset Name' },
   { field: 'description', header: 'Description' },
   { field: 'noncomputing', header: 'Noncomputing', filterValues: r => (r.noncomputing ? 'True' : 'False'), quickSearch: false },
@@ -128,8 +128,8 @@ const {
   { field: 'fqdn', header: 'FQDN' },
   { field: 'mac', header: 'MAC' },
   { field: 'metadata', header: 'Metadata', searchText: r => metadataRenderer(r.metadata) },
-  { field: 'labelNames', header: 'Labels', searchText: r => (r.labelNames ?? []).join(' '), filterValues: r => r.labelNames ?? [], multiple: true },
-  { field: 'stigs', header: 'STIGs', searchText: r => (r.stigs ?? []).join(' '), filterValues: r => r.stigs ?? [], multiple: true },
+  { field: 'labelNames', header: 'Labels', filterValues: r => r.labelNames ?? [], multiple: true },
+  { field: 'stigs', header: 'STIGs', filterValues: r => r.stigs ?? [], multiple: true },
 ])
 
 const {
@@ -139,7 +139,7 @@ const {
   filterColumns: errorFilterColumns,
   valueOptions: errorValueOptions,
 } = useGridSearch(allErrors, [
-  { field: 'row', header: 'Row', searchText: r => String(r.row ?? '') },
+  { field: 'row', header: 'Row' },
   { field: 'messages', header: 'Errors' },
 ])
 

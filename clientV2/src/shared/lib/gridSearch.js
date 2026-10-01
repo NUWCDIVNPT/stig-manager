@@ -1,4 +1,4 @@
-import { isActive, matchText, matchValues, TEXT_MODES, textFilter, toValues, valuesFilter } from './columnFilters.js'
+import { isActive, matchText, matchValues, TEXT_MODES, textFilter, valuesFilter } from './columnFilters.js'
 
 // Grid search rules: a columnFilters rule plus `key`, a column field or ALL_COLUMNS.
 export const ALL_COLUMNS = 'all'
@@ -12,11 +12,6 @@ export const VALUE_OPERATORS = Object.freeze([
 ])
 
 const NEGATED_MODES = { notContains: 'contains', notEquals: 'equals' }
-
-/** Space-joined label names, for label chip columns. */
-export function labelNames(labels) {
-  return Array.isArray(labels) ? labels.map(l => l?.name ?? '').join(' ') : ''
-}
 
 export function searchFilter(key = ALL_COLUMNS, kind = 'text', overrides = {}) {
   const base = kind === 'values' ? valuesFilter(overrides) : textFilter(overrides)
@@ -95,16 +90,18 @@ export function columnValueOptions(rows, col) {
   let hasEmpty = false
   for (const row of rows ?? []) {
     const raw = col.filterValues(row)
-    const names = toValues(raw)
-    if (names.length === 0) {
-      hasEmpty = true
-    }
+    let empty = true
     for (const item of Array.isArray(raw) ? raw : [raw]) {
       const name = item !== null && typeof item === 'object' ? item.name : item
-      if (names.includes(name) && !colors.has(String(name))) {
+      if (name == null || name === '') {
+        continue
+      }
+      empty = false
+      if (!colors.has(String(name))) {
         colors.set(String(name), item?.color ?? null)
       }
     }
+    hasEmpty ||= empty
   }
   const options = [...colors].map(([name, color]) => ({ value: name, name, color })).sort((a, b) => a.name.localeCompare(b.name))
   return hasEmpty ? [{ value: '', name: `(no ${col.header.toLowerCase()})`, color: null }, ...options] : options
