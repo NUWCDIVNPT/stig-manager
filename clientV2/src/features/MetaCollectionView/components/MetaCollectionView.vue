@@ -6,8 +6,9 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { ref } from 'vue'
-import { valuesFilter } from '../../../shared/lib/columnFilters.js'
+import { computed, ref } from 'vue'
+import SidebarFilterIndicator from '../../../components/common/SidebarFilterIndicator.vue'
+import { isActive, valuesFilter } from '../../../shared/lib/columnFilters.js'
 import MetaCollectionMetrics from '../../CollectionMetrics/components/MetaCollectionMetrics.vue'
 import MetaExportMetrics from '../../CollectionMetrics/components/MetaExportMetrics.vue'
 import MetaCollectionsTab from './MetaCollectionsTab.vue'
@@ -21,6 +22,16 @@ const collectionFilter = ref(valuesFilter())
 // Resolved by MetaMetricsFilter
 const selectedCollectionIds = ref([])
 const isAnimating = ref(false)
+
+// The filter lives in the sidebar, so flag it on the collapsed rail
+const filterHint = computed(() => {
+  const f = collectionFilter.value
+  if (!isActive(f)) {
+    return ''
+  }
+  const n = f.value.length
+  return `${f.exclude ? 'Excluding' : 'Including'} ${n} collection${n === 1 ? '' : 's'}`
+})
 
 function toggleDashboardSidebar() {
   isAnimating.value = true
@@ -93,6 +104,7 @@ const tabPanelPt = {
           >
             <i :class="dashboardCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'" />
           </button>
+          <SidebarFilterIndicator v-if="dashboardCollapsed && filterHint" :hint="filterHint" @expand="toggleDashboardSidebar" />
           <div v-if="dashboardCollapsed" class="sidebar-dots">
             <span class="dot dot--unassessed" title="Unassessed" />
             <span class="dot dot--assessed" title="Assessed" />

@@ -8,6 +8,7 @@ import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import SidebarFilterIndicator from '../../../components/common/SidebarFilterIndicator.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
@@ -133,6 +134,10 @@ watch(isManagement, () => {
 
 // Orchestrator-level label filter shared by the dashboard sidebar and every tab.
 const selectedLabelIds = ref([])
+const labelFilterHint = computed(() => {
+  const n = selectedLabelIds.value.length
+  return n ? `Filtering by ${n} label${n === 1 ? '' : 's'}` : ''
+})
 
 // Lazy-mount tab panels: only render a tab's content after it has been visited.
 // Reset on collection switch so tabs visited in a prior collection don't mount
@@ -228,6 +233,7 @@ function toggleDashboardSidebar() {
           >
             <i :class="dashboardCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'" />
           </button>
+          <SidebarFilterIndicator v-if="dashboardCollapsed && labelFilterHint" :hint="labelFilterHint" @expand="toggleDashboardSidebar" />
           <div v-if="dashboardCollapsed" class="sidebar-dots">
             <span class="dot dot--unassessed" title="Unassessed" />
             <span class="dot dot--assessed" title="Assessed" />
