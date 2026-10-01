@@ -21,6 +21,8 @@ const MODE_OPTIONS = [
   { label: 'Exclude', value: true },
 ]
 const MAX_VISIBLE_SELECTED = 3
+// Every id goes in the request URL, so keep it well under proxy URL limits
+const MAX_SENT_IDS = 250
 
 const { state: options, isLoading } = useAsyncState(
   fetchMetaCollections,
@@ -67,6 +69,11 @@ const excludesEverything = computed(() =>
   && options.value?.length > 0
   && draftIds.value.length >= options.value.length,
 )
+
+const tooManyIds = computed(() => {
+  const sent = draftExclude.value ? (options.value?.length ?? 0) - draftIds.value.length : draftIds.value.length
+  return sent > MAX_SENT_IDS
+})
 
 const selectedNames = computed(() => appliedOptions.value.map(opt => opt.name || 'unnamed collection'))
 
@@ -180,11 +187,12 @@ function clearFilters() {
       <template #footer>
         <div class="panel-footer">
           <span v-if="excludesEverything" class="footer-warning">Leave at least one collection unexcluded</span>
+          <span v-else-if="tooManyIds" class="footer-warning">Filter can cover at most {{ MAX_SENT_IDS }} collections</span>
           <div class="footer-buttons">
             <button type="button" class="footer-btn" @click="cancelFilters">
               <span>Cancel</span>
             </button>
-            <button type="button" class="footer-btn footer-btn--primary" :disabled="excludesEverything" @click="applyFilters">
+            <button type="button" class="footer-btn footer-btn--primary" :disabled="excludesEverything || tooManyIds" @click="applyFilters">
               <i class="pi pi-check" />
               <span>Apply</span>
             </button>
