@@ -13,8 +13,8 @@ const scrollPt = { content: { class: 'sm-scrollbar-thin' } }
 
 <template>
   <Panel class="home-panel" :class="{ 'home-panel--scroll': scroll }" :pt="scroll ? scrollPt : undefined">
-    <template #header>
-      <h2 class="card-title">
+    <template #header="{ id }">
+      <h2 :id="id" class="card-title">
         {{ title }}
       </h2>
     </template>
@@ -43,25 +43,30 @@ const scrollPt = { content: { class: 'sm-scrollbar-thin' } }
   color: var(--color-primary-highlight);
 }
 
+/* The grid stretches every panel to its row height. This flex chain passes
+   that height down through Panel's wrappers so a scrolling body can fill it. */
+.home-panel,
+.home-panel :deep(.p-panel-content-container),
+.home-panel :deep(.p-panel-content-wrapper),
 .home-panel :deep(.p-panel-content) {
   display: flex;
   flex-direction: column;
+}
+
+.home-panel :deep(.p-panel-content-container),
+.home-panel :deep(.p-panel-content-wrapper),
+.home-panel :deep(.p-panel-content) {
+  flex-grow: 1;
+}
+
+.home-panel :deep(.p-panel-content) {
   gap: 1.25rem;
 }
 
-/* Size containment keeps the body from contributing its own height to the
-   grid row, the flex chain then fills whatever height the row settles on, and
-   min-height covers the case where the panel is alone in its row. */
-.home-panel--scroll,
-.home-panel--scroll :deep(.p-panel-content-container),
-.home-panel--scroll :deep(.p-panel-content-wrapper) {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
+/* Size containment keeps the body from contributing its content height to
+   the grid row; min-height keeps some of it visible when nothing else in the
+   row is taller. */
 .home-panel--scroll :deep(.p-panel-content) {
-  flex-grow: 1;
   contain: size;
   min-height: 18rem;
   overflow-y: auto;

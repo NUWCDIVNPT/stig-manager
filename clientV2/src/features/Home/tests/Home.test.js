@@ -56,7 +56,7 @@ describe('home feature', () => {
       })
     })
 
-    it('reports a fetch error through the global error handler', async () => {
+    it('reports a fetch error through the global error handler and in the panel', async () => {
       const error = new Error('Fetch failed')
       fetchAppManagers.mockRejectedValue(error)
 
@@ -64,6 +64,15 @@ describe('home feature', () => {
 
       await waitFor(() => {
         expect(triggerErrorMock).toHaveBeenCalledWith(error)
+        expect(screen.getByText(/Unable to load the Application Managers list/)).toBeInTheDocument()
+      })
+    })
+
+    it('says so when no managers are returned', async () => {
+      renderWithProviders(Home)
+
+      await waitFor(() => {
+        expect(screen.getByText(/No Application Managers are listed/)).toBeInTheDocument()
       })
     })
 

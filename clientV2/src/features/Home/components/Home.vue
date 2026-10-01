@@ -12,6 +12,8 @@ const docsUrl = env.docsUrl
 
 const {
   state: appManagers,
+  isLoading: managersLoading,
+  error: managersError,
   execute,
 } = useAsyncState(fetchAppManagers, {
   immediate: false,
@@ -146,7 +148,13 @@ const supportTitle = welcome.title || (welcome.message || welcome.link ? 'Suppor
       </HomePanel>
 
       <HomePanel v-if="env.displayAppManagers" title="Application Managers" scroll>
-        <ul class="manager-list">
+        <p v-if="managersError" class="card-text status-text">
+          Unable to load the Application Managers list.
+        </p>
+        <p v-else-if="!managersLoading && !appManagers.length" class="card-text status-text">
+          No Application Managers are listed.
+        </p>
+        <ul v-else class="manager-list">
           <li
             v-for="manager in appManagers"
             :key="manager.userId"
@@ -245,8 +253,8 @@ const supportTitle = welcome.title || (welcome.message || welcome.link ? 'Suppor
   color: var(--color-text-primary);
 }
 
-.manager-email {
-  font-size: var(--text-sm);
+.manager-email,
+.status-text {
   font-style: italic;
   color: var(--color-text-dim);
 }
