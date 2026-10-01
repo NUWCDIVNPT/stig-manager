@@ -91,6 +91,11 @@
   --color-text-dim: #a1a1aa; 
   --color-text-bright: rgba(255, 255, 255, 0.95);
   --color-text-dark: #18181b;
+  /* Underlined inline links in prose. Currently used by the Home page only,
+     matching the legacy dark-mode home widget link color; What's New and other
+     prose still use --color-primary-highlight without underline. */
+  --color-link: hsl(36deg 23% 55%);
+  --color-link-hover: hsl(36deg 30% 68%);
 
   /* Surface Colors */
   --color-background-darkest: #000000;

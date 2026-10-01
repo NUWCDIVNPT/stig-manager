@@ -1,27 +1,25 @@
-import { screen, waitFor } from '@testing-library/vue'
-import { describe, expect, it, vi } from 'vitest'
+import { fireEvent, screen, waitFor } from '@testing-library/vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import { fetchAppManagers } from '../api/api'
 import Home from '../components/Home.vue'
 
-// Mock the API
 vi.mock('../api/api', () => ({
   fetchAppManagers: vi.fn(),
 }))
 
-// Mock env store
-const mockEnv = {
+// Mirrors the STIGMAN.Env block the API writes into Env.js plus the URLs init.js derives
+const defaultEnv = () => ({
   displayAppManagers: true,
-  welcome: {
-    message: 'Welcome message',
-  },
-}
+  docsUrl: 'http://api.example.test/docs/',
+  welcome: { image: '', title: '', message: '', link: '' },
+})
+let mockEnv = defaultEnv()
 
 vi.mock('../../../shared/stores/useEnv.js', () => ({
   useEnv: () => mockEnv,
 }))
 
-// Mock useGlobalError
 const triggerErrorMock = vi.fn()
 vi.mock('../../../shared/composables/useGlobalError.js', () => ({
   useGlobalError: () => ({
@@ -29,45 +27,114 @@ vi.mock('../../../shared/composables/useGlobalError.js', () => ({
   }),
 }))
 
+function welcomeImg() {
+  return screen.getByRole('heading', { name: 'Welcome' }).closest('.p-panel').querySelector('img')
+}
+
+beforeEach(() => {
+  mockEnv = defaultEnv()
+  fetchAppManagers.mockReset().mockResolvedValue([])
+  triggerErrorMock.mockReset()
+})
+
 describe('home feature', () => {
-  it('fetches and displays app managers on mount when enabled', async () => {
-    const managers = [
-      { userId: '1', username: 'user1', display: 'User One', email: 'user1@example.com' },
-      { userId: '2', username: 'user2', display: null, email: null },
-    ]
-    fetchAppManagers.mockResolvedValue(managers)
+  describe('application managers', () => {
+    it('fetches and displays app managers on mount when enabled', async () => {
+      fetchAppManagers.mockResolvedValue([
+        { userId: '1', username: 'user1', displayName: 'User One', email: 'user1@example.com' },
+        { userId: '2', username: 'user2', displayName: 'user2', email: null },
+      ])
 
-    renderWithProviders(Home)
+      renderWithProviders(Home)
 
-    // Verify loading state (might be too fast to catch, but we check if api is called)
-    expect(fetchAppManagers).toHaveBeenCalled()
+      expect(fetchAppManagers).toHaveBeenCalled()
+      await waitFor(() => {
+        expect(screen.getByText('User One')).toBeInTheDocument()
+        expect(screen.getByText('user1@example.com')).toBeInTheDocument()
+        expect(screen.getByText('user2')).toBeInTheDocument()
+        expect(screen.getByText('No Email Available')).toBeInTheDocument()
+      })
+    })
 
-    // check if managers are displayed
-    await waitFor(() => {
-      expect(screen.getByText('User One')).toBeInTheDocument()
-      expect(screen.getByText('user2')).toBeInTheDocument()
+    it('reports a fetch error through the global error handler and in the panel', async () => {
+      const error = new Error('Fetch failed')
+      fetchAppManagers.mockRejectedValue(error)
+
+      renderWithProviders(Home)
+
+      await waitFor(() => {
+        expect(triggerErrorMock).toHaveBeenCalledWith(error)
+        expect(screen.getByText(/Unable to load the Application Managers list/)).toBeInTheDocument()
+      })
+    })
+
+    it('says so when no managers are returned', async () => {
+      renderWithProviders(Home)
+
+      await waitFor(() => {
+        expect(screen.getByText(/No Application Managers are listed/)).toBeInTheDocument()
+      })
+    })
+
+    it('hides the card and skips the fetch when displayAppManagers is false', () => {
+      mockEnv.displayAppManagers = false
+
+      renderWithProviders(Home)
+
+      expect(fetchAppManagers).not.toHaveBeenCalled()
+      expect(screen.queryByRole('heading', { name: 'Application Managers' })).not.toBeInTheDocument()
     })
   })
 
-  it('handles fetch error correctly', async () => {
-    const error = new Error('Fetch failed')
-    fetchAppManagers.mockRejectedValue(error)
+  describe('welcome customization (STIGMAN_CLIENT_WELCOME_*)', () => {
+    it('shows no support section when nothing is configured', () => {
+      renderWithProviders(Home)
 
-    renderWithProviders(Home)
+      expect(screen.queryByRole('heading', { name: 'Support' })).not.toBeInTheDocument()
+    })
 
-    await waitFor(() => {
-      expect(triggerErrorMock).toHaveBeenCalledWith(error)
+    it('titles a configured message "Support" by default', () => {
+      mockEnv.welcome.message = 'Call the help desk'
+      renderWithProviders(Home)
+
+      expect(screen.getByRole('heading', { name: 'Support' })).toBeInTheDocument()
+      expect(screen.getByText('Call the help desk')).toBeInTheDocument()
+    })
+
+    it('uses the configured title and renders the link as an anchor', () => {
+      mockEnv.welcome.title = 'Contact Us'
+      mockEnv.welcome.link = 'https://help.example.test/'
+      renderWithProviders(Home)
+
+      expect(screen.getByRole('heading', { name: 'Contact Us' })).toBeInTheDocument()
+      const link = screen.getByRole('link', { name: 'https://help.example.test/' })
+      expect(link).toHaveAttribute('href', 'https://help.example.test/')
+    })
+
+    it('shows the sponsor seal when no image is configured', () => {
+      renderWithProviders(Home)
+
+      expect(welcomeImg().getAttribute('src')).toMatch(/navy\.svg$/)
+    })
+
+    it('shows the configured image and falls back to the seal when it fails to load', async () => {
+      mockEnv.welcome.image = 'https://cdn.example.test/logo.png'
+      renderWithProviders(Home)
+
+      const img = welcomeImg()
+      expect(img).toHaveAttribute('src', 'https://cdn.example.test/logo.png')
+
+      await fireEvent.error(img)
+      expect(img.getAttribute('src')).toMatch(/navy\.svg$/)
     })
   })
 
-  it('does not fetch app managers if displayAppManagers is false', async () => {
-    mockEnv.displayAppManagers = false
-    fetchAppManagers.mockClear()
-
+  it('links documentation under the docs base derived at bootstrap', () => {
     renderWithProviders(Home)
 
-    expect(fetchAppManagers).not.toHaveBeenCalled()
-    // Reset for other tests
-    mockEnv.displayAppManagers = true
+    expect(screen.getByRole('link', { name: 'Documentation' }))
+      .toHaveAttribute('href', 'http://api.example.test/docs/index.html')
+    expect(screen.getByRole('link', { name: 'User Guide' }))
+      .toHaveAttribute('href', 'http://api.example.test/docs/user-guide/user-guide.html')
   })
 })

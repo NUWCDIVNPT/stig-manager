@@ -21,6 +21,10 @@ else {
   STIGMAN.Env.apiBase = new URL(`../api`, window.location.href).toString() // change when nextgen client is served from root instead of /client-v2
 }
 STIGMAN.Env.apiUrl = STIGMAN.Env.apiBase
+// The API serves the documentation at docs/ beside its api mount. The client
+// itself lives under client-v2/, so features link to docs from here rather
+// than with relative hrefs.
+STIGMAN.Env.docsUrl = new URL('../docs/', `${STIGMAN.Env.apiUrl}/`).href
 
 const statusEl = document.getElementById('loading-text')
 let OW // aka STIGMAN.oidcWorker, created in setupOidcWorker()
