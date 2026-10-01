@@ -67,7 +67,7 @@ const {
   { field: 'browser', header: 'Browser' },
   { field: 'operationId', header: 'Operation ID' },
   { field: 'url', header: 'URL' },
-  { field: 'status', header: 'Status', filterValues: r => r.status ? String(r.status) : '' },
+  { field: 'status', header: 'Status', filterValues: r => r.status || '' },
 ], { visibleFields })
 
 // Auto-scroll to the newest row, but only while the user is already parked at

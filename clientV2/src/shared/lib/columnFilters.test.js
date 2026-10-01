@@ -88,6 +88,12 @@ describe('matchValues', () => {
     expect(matchValues(['a'], values({ value: ['b', 'c'] }))).toBe(false)
   })
 
+  it('matches number and boolean cells against the string options', () => {
+    expect(matchValues(404, values({ value: ['404'] }))).toBe(true)
+    expect(matchValues(false, values({ value: ['false'] }))).toBe(true)
+    expect(matchValues(404, values({ value: ['404'], exclude: true }))).toBe(false)
+  })
+
   it('all requires every selected value to be present', () => {
     expect(matchValues(['a', 'b', 'c'], values({ value: ['a', 'b'], match: 'all' }))).toBe(true)
     expect(matchValues(['a'], values({ value: ['a', 'b'], match: 'all' }))).toBe(false)

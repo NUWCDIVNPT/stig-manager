@@ -74,10 +74,11 @@ export function matchText(cell, f) {
 }
 
 // Cells hold a scalar, an array, or an array of labels; a label compares by its name.
-// A nameless label (the "no label" row) counts as an empty cell.
+// A nameless label (the "no label" row) counts as an empty cell. Values come back as
+// strings to match the Filter button's options (404 and '404' are the same pick).
 export function toValues(cell) {
   const raw = Array.isArray(cell) ? cell : (cell == null || cell === '' ? [] : [cell])
-  return raw.map(v => (v !== null && typeof v === 'object' ? v.name : v)).filter(v => v != null && v !== '')
+  return raw.map(v => (v !== null && typeof v === 'object' ? v.name : v)).filter(v => v != null && v !== '').map(String)
 }
 
 export function matchValues(cell, f) {

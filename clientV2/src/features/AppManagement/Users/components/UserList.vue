@@ -169,7 +169,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
         :pt="tablePt"
       >
         <template #empty>
-          {{ isFiltered && users.length ? 'No users match the filters.' : 'No users found.' }}
+          {{ isFiltered && users.length ? 'No users match the search.' : 'No users found.' }}
         </template>
 
         <Column field="username" header="Username" sortable :pt="borderPt" style="width: 15%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
