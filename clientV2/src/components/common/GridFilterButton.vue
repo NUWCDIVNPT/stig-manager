@@ -165,6 +165,15 @@ const popoverPt = {
       <div class="grid-filter__head">
         <span>Filters</span>
         <span class="grid-filter__hint">Rows must match every rule</span>
+        <!-- Up here so an open value list never covers them -->
+        <div class="grid-filter__actions">
+          <button type="button" class="grid-filter__btn" @click="cancel">
+            Cancel
+          </button>
+          <button type="button" class="grid-filter__btn grid-filter__btn--primary" @click="apply">
+            Apply
+          </button>
+        </div>
       </div>
 
       <div class="grid-filter__rules">
@@ -253,17 +262,9 @@ const popoverPt = {
           <i class="pi pi-plus" />
           <span>Add rule</span>
         </button>
-        <div class="grid-filter__actions">
-          <button type="button" class="grid-filter__btn" :disabled="!applied.length && !draft.some(isActive)" @click="clearAll">
-            Clear all
-          </button>
-          <button type="button" class="grid-filter__btn" @click="cancel">
-            Cancel
-          </button>
-          <button type="button" class="grid-filter__btn grid-filter__btn--primary" @click="apply">
-            Apply
-          </button>
-        </div>
+        <button type="button" class="grid-filter__btn" :disabled="!applied.length && !draft.some(isActive)" @click="clearAll">
+          Clear all
+        </button>
       </div>
     </div>
   </Popover>
@@ -368,6 +369,10 @@ const popoverPt = {
   font-size: var(--text-md);
   font-weight: 400;
   color: var(--color-text-dim);
+}
+
+.grid-filter__head .grid-filter__actions {
+  margin-left: auto;
 }
 
 .grid-filter__rules {
@@ -503,6 +508,7 @@ const popoverPt = {
   background: var(--color-background-light);
   color: var(--color-text-bright);
   font-size: var(--text-md);
+  font-weight: 400;
   cursor: pointer;
 }
 
