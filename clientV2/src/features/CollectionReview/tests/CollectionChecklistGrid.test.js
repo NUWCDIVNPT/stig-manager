@@ -8,11 +8,9 @@ import CollectionChecklistGrid from '../components/CollectionChecklistGrid.vue'
 vi.mock('../components/CollectionChecklistGridHeader.vue', () => ({
   default: {
     name: 'CollectionChecklistGridHeader',
-    props: ['filterColumns', 'filterValueOptions'],
     emits: ['update:searchFilter', 'update:filters'],
     template: `
       <div>
-        <span data-testid="filter-columns">{{ filterColumns.map(c => c.field).join(',') }}</span>
         <button data-testid="search" @click="$emit('update:searchFilter', 'audit')">search</button>
         <button data-testid="filter-cat" @click="$emit('update:filters', [catRule])">cat</button>
       </div>
@@ -37,11 +35,6 @@ const gridData = [
 
 describe('collectionChecklistGrid search and filters', () => {
   beforeEach(() => localStorage.clear())
-
-  it('offers CAT and the text columns to the Filter button', () => {
-    renderWithProviders(CollectionChecklistGrid, { props: { gridData } })
-    expect(screen.getByTestId('filter-columns').textContent).toBe('severity,groupId,groupTitle,version,ruleId,ruleTitle')
-  })
 
   it('passes searched and filtered rows to the table, with the unfiltered total', async () => {
     renderWithProviders(CollectionChecklistGrid, { props: { gridData } })

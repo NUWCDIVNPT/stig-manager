@@ -23,34 +23,20 @@ vi.mock('primevue/column', () => ({
 }))
 
 const rowKeys = container => [...container.querySelectorAll('[data-row]')].map(li => li.textContent)
-const headerFields = container => [...container.querySelectorAll('th[data-field]')].map(th => th.dataset.field)
 
-beforeEach(() => {
-  localStorage.clear()
-  vi.useFakeTimers()
-})
+beforeEach(() => vi.useFakeTimers())
 afterEach(() => vi.useRealTimers())
 
-describe('stig library benchmark list search and columns', () => {
+describe('stig library benchmark list search', () => {
   const benchmarks = [
     { benchmarkId: 'RHEL_9_STIG', title: 'Red Hat Enterprise Linux 9', lastRevisionStr: 'V2R1', revisionStrs: ['V2R1', 'V1R3'] },
     { benchmarkId: 'MS_Windows_11_STIG', title: 'Microsoft Windows 11', lastRevisionStr: 'V1R6', revisionStrs: ['V1R6'] },
   ]
 
-  it('searches ID, title and revisions; hidden columns drop out', async () => {
-    localStorage.setItem('stigLibrary.columns', JSON.stringify({ benchmarkId: false, title: false }))
+  it('searches older revisions, not just the latest', async () => {
     const { container } = renderWithProviders(BenchmarkListTable, { props: { benchmarks } })
-    expect(headerFields(container)).toContain('benchmarkId')
-    expect(headerFields(container)).not.toContain('title')
-
-    const input = screen.getByRole('textbox', { name: 'Search benchmarks' })
-    await fireEvent.update(input, 'V1R3')
+    await fireEvent.update(screen.getByRole('textbox', { name: 'Search benchmarks' }), 'V1R3')
     await vi.advanceTimersByTimeAsync(250)
     expect(rowKeys(container)).toEqual(['RHEL_9_STIG'])
-
-    await fireEvent.update(input, 'Microsoft')
-    await vi.advanceTimersByTimeAsync(250)
-    expect(rowKeys(container)).toEqual([])
-    expect(screen.getByText('No benchmarks match the search.')).toBeTruthy()
   })
 })

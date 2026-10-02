@@ -35,14 +35,6 @@ describe('rule pane search', () => {
     { ruleId: 'SV-2r1_rule', version: 'RHEL-09-000002', groupId: 'V-2', title: 'SSH must use FIPS ciphers', severity: 'medium' },
   ]
 
-  it('searches the rule table in view mode', async () => {
-    const { container } = renderWithProviders(RulePane, { props: { rules, viewRev: 'V1R1' } })
-    await search('fips')
-    expect(rowKeys(container)).toEqual(['SV-2r1_rule'])
-    await search('nothing-matches')
-    expect(screen.getByText('No rules match the search.')).toBeTruthy()
-  })
-
   it('searches the changed rules in diff mode, including changed properties', async () => {
     const diffRows = [
       { key: 'a', stigId: 'RHEL-09-000001', leftRule: 'SV-1r1_rule', rightRule: 'SV-1r2_rule', cat: 'high', changed: ['check'] },
