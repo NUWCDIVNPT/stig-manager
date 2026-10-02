@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/vue'
 import { describe, expect, it } from 'vitest'
+import { searchFilter } from '../../../shared/lib/gridSearch.js'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import GridFilterButton from '../GridFilterButton.vue'
 
@@ -44,5 +45,14 @@ describe('gridFilterButton.vue', () => {
     await fireEvent.click(await screen.findByText('Pick values'))
     await fireEvent.mouseDown(await screen.findByRole('option', { name: 'linux' }))
     expect(screen.getByText('Rows must match every rule')).toBeTruthy()
+  })
+
+  it('clears applied filters from the X without opening the panel', async () => {
+    const { emitted } = renderWithProviders(GridFilterButton, {
+      props: { modelValue: [searchFilter('name', 'text', { value: 'web' })], columns },
+    })
+    await fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
+    expect(emitted()['update:modelValue'].at(-1)).toEqual([[]])
+    expect(screen.queryByText('Rows must match every rule')).toBeNull()
   })
 })

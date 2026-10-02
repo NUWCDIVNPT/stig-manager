@@ -103,7 +103,7 @@ function onStigsChanged() {
     />
 
     <div class="table-container">
-      <GridToolbar>
+      <GridToolbar compact>
         <GridSearch v-model="searchTerm" label="Search STIGs" placeholder="Search STIGs..." />
         <template #end>
           <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />

@@ -170,6 +170,8 @@ describe('rule helpers', () => {
     expect(v).toMatchObject({ match: 'any', exclude: true })
     expect(filterOperator(v)).toBe('none')
     expect(filterOperator(withOperator(v, 'all'))).toBe('all')
+    expect(withOperator(v, 'exact')).toMatchObject({ match: 'exact', exclude: false })
+    expect(filterOperator(withOperator(v, 'exact'))).toBe('exact')
     expect(withOperator(v, 'bogus')).toMatchObject({ match: 'any', exclude: false })
     expect(withOperator(searchFilter('name', 'text', { value: 'x' }), 'equals')).toMatchObject({ mode: 'equals', value: 'x' })
   })

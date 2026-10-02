@@ -89,6 +89,8 @@ export function matchValues(cell, f) {
   const values = toValues(cell)
   const isEmptyCell = values.length === 0
   const has = v => (v === '' ? isEmptyCell : values.includes(v))
-  const found = f.match === 'all' ? selected.every(has) : selected.some(has)
+  const found = f.match === 'exact'
+    ? selected.every(has) && values.every(v => selected.includes(v))
+    : f.match === 'all' ? selected.every(has) : selected.some(has)
   return f.exclude ? !found : found
 }

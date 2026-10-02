@@ -4,11 +4,12 @@ import { isActive, matchText, matchValues, TEXT_MODES, textFilter, valuesFilter 
 export const ALL_COLUMNS = 'all'
 
 // List columns fold include/exclude into the operator: 'none' is any-match excluded.
-// 'all' only makes sense for columns holding several values per row (`multiple`).
+// 'all' and 'exact' only make sense for columns holding several values per row (`multiple`).
 export const VALUE_OPERATORS = Object.freeze([
   { value: 'any', label: 'Is any of', match: 'any', exclude: false },
   { value: 'none', label: 'Is none of', match: 'any', exclude: true },
   { value: 'all', label: 'Has all of', match: 'all', exclude: false },
+  { value: 'exact', label: 'Is exactly', match: 'exact', exclude: false },
 ])
 
 const NEGATED_MODES = { notContains: 'contains', notEquals: 'equals' }

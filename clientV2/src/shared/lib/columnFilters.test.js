@@ -156,6 +156,15 @@ describe('matchValues', () => {
     expect(matchValues(['a'], values({ value: ['a', 'b'], match: 'all' }))).toBe(false)
   })
 
+  it('exact keeps rows holding the picked values and nothing else', () => {
+    const f = values({ value: ['a', 'b'], match: 'exact' })
+    expect(matchValues(['b', 'a'], f)).toBe(true)
+    expect(matchValues(['a', 'b', 'c'], f)).toBe(false)
+    expect(matchValues(['a'], f)).toBe(false)
+    expect(matchValues([], values({ value: [''], match: 'exact' }))).toBe(true)
+    expect(matchValues(['a'], values({ value: ['', 'a'], match: 'exact' }))).toBe(false)
+  })
+
   it('uses an empty string to mean an empty cell in every match mode', () => {
     expect(matchValues([], values({ value: [''] }))).toBe(true)
     expect(matchValues(['a'], values({ value: [''] }))).toBe(false)

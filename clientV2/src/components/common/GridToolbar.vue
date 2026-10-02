@@ -1,10 +1,17 @@
 <script setup>
 // Row for a grid's Search/Filter/Columns controls, used when its header or action bar has no room
 // (Findings, Collection Manage tabs). The default slot stretches (search); #end holds the buttons.
+defineProps({
+  // Push everything right with a capped search instead of stretching it across the row
+  compact: {
+    type: Boolean,
+    default: false,
+  },
+})
 </script>
 
 <template>
-  <div class="grid-toolbar">
+  <div class="grid-toolbar" :class="{ 'grid-toolbar--compact': compact }">
     <div class="grid-toolbar__main">
       <slot />
     </div>
@@ -37,6 +44,14 @@
 .grid-toolbar__main > * {
   flex: 1;
   min-width: 0;
+}
+
+.grid-toolbar--compact {
+  justify-content: flex-end;
+}
+
+.grid-toolbar--compact .grid-toolbar__main {
+  flex: 0 1 clamp(14rem, 25%, 22rem);
 }
 
 .grid-toolbar__end {

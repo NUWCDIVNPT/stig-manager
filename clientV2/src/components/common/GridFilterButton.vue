@@ -66,13 +66,13 @@ function selectedOptions(rule) {
   return rule.value.map(v => options.find(o => o.value === v) ?? { value: v, name: v, color: null })
 }
 
-// "Has all of" only for columns whose rows hold several values
+// "Has all of" and "Is exactly" only for columns whose rows hold several values
 function operatorOptions(rule) {
   if (rule.kind !== 'values') {
     return TEXT_MODES
   }
   const multiple = props.columns.find(c => c.field === rule.key)?.multiple
-  return multiple ? VALUE_OPERATORS : VALUE_OPERATORS.filter(o => o.value !== 'all')
+  return multiple ? VALUE_OPERATORS : VALUE_OPERATORS.filter(o => o.match === 'any')
 }
 
 function newRule() {
@@ -112,7 +112,7 @@ function clearAll() {
 }
 
 const selectPt = {
-  root: { style: 'width: 100%; height: 2.1rem; background: var(--color-background-light); border-color: var(--color-border-default);' },
+  root: { style: 'width: 100%; height: 1.85rem; background: var(--color-background-light); border-color: var(--color-border-default);' },
   label: { style: 'padding: 0 0.6rem; display: flex; align-items: center; font-size: var(--text-md); color: var(--color-text-bright);' },
   dropdown: { style: 'width: 1.75rem; color: var(--color-text-primary);' },
   option: { style: { padding: '0.4rem 0.7rem', fontSize: 'var(--text-md)' } },
@@ -130,25 +130,35 @@ const valuesPt = {
 
 const popoverPt = {
   // The arrow reads the theme vars; match it to the header/footer band it touches
-  root: { style: '--p-popover-background: var(--color-background-light); --p-popover-border-color: var(--color-background-light); width: min(46rem, calc(100vw - 2rem)); background: var(--color-background-dark); border: none; border-radius: 6px; box-shadow: 0 10px 32px rgba(0, 0, 0, 0.65);' },
+  root: { style: '--p-popover-background: var(--color-background-light); --p-popover-border-color: var(--color-background-light); width: min(42rem, calc(100vw - 2rem)); background: var(--color-background-dark); border: none; border-radius: 6px; box-shadow: 0 10px 32px rgba(0, 0, 0, 0.65);' },
   content: { style: 'padding: 0;' },
 }
 </script>
 
 <template>
-  <button
-    ref="trigger"
-    type="button"
-    class="grid-filter-btn"
-    :class="{ 'is-active': applied.length > 0 }"
-    :title="summary"
-    :aria-label="applied.length ? `Filters, ${applied.length} applied` : 'Filters'"
-    @click="toggle"
-  >
-    <i class="pi" :class="applied.length ? 'pi-filter-fill' : 'pi-filter'" />
-    <span>Filter</span>
-    <span v-if="applied.length" class="grid-filter-btn__count">{{ applied.length }}</span>
-  </button>
+  <span ref="trigger" class="grid-filter-group" :class="{ 'is-active': applied.length > 0 }">
+    <button
+      type="button"
+      class="grid-filter-btn"
+      :title="summary"
+      :aria-label="applied.length ? `Filters, ${applied.length} applied` : 'Filters'"
+      @click="toggle"
+    >
+      <i class="pi" :class="applied.length ? 'pi-filter-fill' : 'pi-filter'" />
+      <span>Filter</span>
+      <span v-if="applied.length" class="grid-filter-btn__count">{{ applied.length }}</span>
+    </button>
+    <button
+      v-if="applied.length"
+      type="button"
+      class="grid-filter-btn grid-filter-btn__clear"
+      title="Clear filters"
+      aria-label="Clear filters"
+      @click="clearAll"
+    >
+      <i class="pi pi-times" />
+    </button>
+  </span>
 
   <Popover ref="popover" :dismissable="false" :pt="popoverPt">
     <div ref="panel" class="grid-filter">
@@ -280,13 +290,49 @@ const popoverPt = {
   background: color-mix(in srgb, var(--color-background-light) 85%, transparent);
 }
 
-.grid-filter-btn.is-active {
+.grid-filter-group {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 9.5rem;
+}
+
+.grid-filter-group > .grid-filter-btn:first-child {
+  flex: 1;
+  justify-content: center;
+}
+
+.is-active .grid-filter-btn {
   border-color: var(--color-primary-highlight);
   background: color-mix(in srgb, var(--color-primary-highlight) 15%, var(--color-background-dark));
 }
 
-.grid-filter-btn.is-active .pi {
+.is-active .grid-filter-btn:hover {
+  background: color-mix(in srgb, var(--color-primary-highlight) 28%, var(--color-background-dark));
+}
+
+.is-active .grid-filter-btn .pi {
   color: var(--color-primary-highlight);
+}
+
+.is-active .grid-filter-btn:first-child {
+  border-right: none;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.grid-filter-btn__clear {
+  padding: 0 0.6rem;
+  border-left: none;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.grid-filter-btn__clear .pi {
+  font-size: var(--icon-xs);
+}
+
+.is-active .grid-filter-btn__clear:hover .pi {
+  color: var(--color-text-bright);
 }
 
 .grid-filter-btn__count {
@@ -306,7 +352,7 @@ const popoverPt = {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.6rem 0.8rem;
+  padding: 0.4rem 0.65rem;
   background: var(--color-background-light);
 }
 
@@ -319,7 +365,7 @@ const popoverPt = {
 }
 
 .grid-filter__hint {
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: 400;
   color: var(--color-text-dim);
 }
@@ -327,17 +373,17 @@ const popoverPt = {
 .grid-filter__rules {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.35rem;
   max-height: 22rem;
   overflow-y: auto;
-  padding: 0.75rem 0.8rem;
+  padding: 0.5rem 0.65rem;
 }
 
 .grid-filter__rule {
   display: grid;
-  grid-template-columns: 10rem 10rem minmax(0, 1fr) auto;
+  grid-template-columns: 9rem 9rem minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   padding-left: 0.5rem;
   border-left: 3px solid var(--color-primary-highlight);
 }
@@ -356,7 +402,7 @@ const popoverPt = {
 .grid-filter__input {
   flex: 1;
   min-width: 0;
-  height: 2.1rem;
+  height: 1.85rem;
   padding: 0 0.6rem;
   border: 1px solid var(--color-border-default);
   border-radius: 4px;
@@ -375,8 +421,8 @@ const popoverPt = {
   flex-shrink: 0;
   display: inline-grid;
   place-items: center;
-  height: 2.1rem;
-  min-width: 2.1rem;
+  height: 1.85rem;
+  min-width: 1.85rem;
   border: 1px solid var(--color-border-default);
   border-radius: 4px;
   background: var(--color-background-light);
@@ -451,7 +497,7 @@ const popoverPt = {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.4rem 0.9rem;
+  padding: 0.3rem 0.75rem;
   border: 1px solid var(--color-border-default);
   border-radius: 4px;
   background: var(--color-background-light);

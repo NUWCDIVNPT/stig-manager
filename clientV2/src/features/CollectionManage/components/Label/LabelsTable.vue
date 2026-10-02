@@ -81,7 +81,7 @@ const dataTableRef = ref(null)
 
 <template>
   <div class="table-container">
-    <GridToolbar>
+    <GridToolbar compact>
       <GridSearch v-model="searchTerm" label="Search labels" placeholder="Search labels..." />
       <template #end>
         <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
