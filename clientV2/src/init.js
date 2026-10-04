@@ -1,4 +1,5 @@
 import activityHandler from './auth/ActivityHandler.js'
+import { resolveDocsUrl } from './shared/lib/docsUrl.js'
 
 // Same global console gate as the legacy client (client/src/js/init.js):
 // production deployments are silent unless STIGMAN_CLIENT_CONSOLE_MODE=development
@@ -21,10 +22,7 @@ else {
   STIGMAN.Env.apiBase = new URL(`../api`, window.location.href).toString() // change when nextgen client is served from root instead of /client-v2
 }
 STIGMAN.Env.apiUrl = STIGMAN.Env.apiBase
-// The API serves the documentation at docs/ beside its api mount. The client
-// itself lives under client-v2/, so features link to docs from here rather
-// than with relative hrefs.
-STIGMAN.Env.docsUrl = new URL('../docs/', `${STIGMAN.Env.apiUrl}/`).href
+STIGMAN.Env.docsUrl = resolveDocsUrl(STIGMAN.Env.apiUrl, STIGMAN.Env.docsDisabled)
 
 const statusEl = document.getElementById('loading-text')
 let OW // aka STIGMAN.oidcWorker, created in setupOidcWorker()

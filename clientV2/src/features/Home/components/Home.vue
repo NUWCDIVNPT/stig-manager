@@ -18,6 +18,7 @@ const {
 } = useAsyncState(fetchAppManagers, {
   immediate: false,
   initialState: [],
+  onError: null, // the panel reports the failure itself
 })
 
 onMounted(async () => {
@@ -63,7 +64,7 @@ const supportTitle = welcome.title || (welcome.message || welcome.link ? 'Suppor
             {{ welcome.message }}
           </p>
           <p v-if="welcome.link" class="card-text">
-            <a :href="welcome.link" target="_blank" rel="noopener">{{ welcome.link }}</a>
+            <a :href="welcome.link">{{ welcome.link }}</a>
           </p>
         </div>
       </HomePanel>
@@ -151,7 +152,10 @@ const supportTitle = welcome.title || (welcome.message || welcome.link ? 'Suppor
         <p v-if="managersError" class="card-text status-text">
           Unable to load the Application Managers list.
         </p>
-        <p v-else-if="!managersLoading && !appManagers.length" class="card-text status-text">
+        <p v-else-if="managersLoading" class="card-text status-text">
+          Loading Application Managers…
+        </p>
+        <p v-else-if="!appManagers.length" class="card-text status-text">
           No Application Managers are listed.
         </p>
         <ul v-else class="manager-list">
@@ -178,10 +182,9 @@ const supportTitle = welcome.title || (welcome.message || welcome.link ? 'Suppor
 
 .home-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  grid-auto-rows: minmax(34rem, auto);
+  grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr));
   gap: 1rem;
-  max-width: 1600px;
+  max-width: 133rem;
   margin: 0 auto;
 }
 
@@ -226,8 +229,8 @@ const supportTitle = welcome.title || (welcome.message || welcome.link ? 'Suppor
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 125px;
-  height: 125px;
+  width: 10.5rem;
+  height: 10.5rem;
   margin: 0 1rem 0.5rem 0;
 }
 

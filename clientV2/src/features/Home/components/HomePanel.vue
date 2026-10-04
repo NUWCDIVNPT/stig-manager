@@ -8,7 +8,8 @@ defineProps({
   scroll: { type: Boolean, default: false },
 })
 
-const scrollPt = { content: { class: 'sm-scrollbar-thin' } }
+// tabindex makes the scrolling body reachable and scrollable by keyboard
+const scrollPt = { content: { class: 'sm-scrollbar-thin', tabindex: 0 } }
 </script>
 
 <template>
@@ -36,6 +37,7 @@ const scrollPt = { content: { class: 'sm-scrollbar-thin' } }
   --p-panel-header-border-color: var(--color-border-default);
   --p-panel-header-border-radius: var(--p-panel-border-radius) var(--p-panel-border-radius) 0 0;
   --p-panel-content-padding: 1.35rem 1.6rem 1.6rem;
+  min-height: 34rem;
 }
 
 .card-title {
@@ -66,8 +68,8 @@ const scrollPt = { content: { class: 'sm-scrollbar-thin' } }
 }
 
 /* Size containment keeps the body from contributing its content height to
-   the grid row; the row's minimum height in Home.vue keeps it visible when
-   nothing else in the row is taller. */
+   the grid row; the panel's min-height keeps it visible when nothing else in
+   the row is taller. */
 .home-panel--scroll :deep(.p-panel-content) {
   contain: size;
   overflow-y: auto;

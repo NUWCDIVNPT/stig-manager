@@ -28,7 +28,7 @@ vi.mock('../../../shared/composables/useGlobalError.js', () => ({
 }))
 
 function welcomeImg() {
-  return screen.getByRole('heading', { name: 'Welcome' }).closest('.p-panel').querySelector('img')
+  return document.querySelector('.welcome-image img')
 }
 
 beforeEach(() => {
@@ -56,16 +56,26 @@ describe('home feature', () => {
       })
     })
 
-    it('reports a fetch error through the global error handler and in the panel', async () => {
-      const error = new Error('Fetch failed')
-      fetchAppManagers.mockRejectedValue(error)
+    it('reports a fetch error in the panel without the global error modal', async () => {
+      fetchAppManagers.mockRejectedValue(new Error('Fetch failed'))
 
       renderWithProviders(Home)
 
       await waitFor(() => {
-        expect(triggerErrorMock).toHaveBeenCalledWith(error)
         expect(screen.getByText(/Unable to load the Application Managers list/)).toBeInTheDocument()
       })
+      expect(triggerErrorMock).not.toHaveBeenCalled()
+    })
+
+    it('shows a loading message while the fetch is in flight', async () => {
+      fetchAppManagers.mockReturnValue(new Promise(() => {}))
+
+      renderWithProviders(Home)
+
+      await waitFor(() => {
+        expect(screen.getByText(/Loading Application Managers/)).toBeInTheDocument()
+      })
+      expect(screen.queryByText(/No Application Managers are listed/)).not.toBeInTheDocument()
     })
 
     it('says so when no managers are returned', async () => {
@@ -109,6 +119,8 @@ describe('home feature', () => {
       expect(screen.getByRole('heading', { name: 'Contact Us' })).toBeInTheDocument()
       const link = screen.getByRole('link', { name: 'https://help.example.test/' })
       expect(link).toHaveAttribute('href', 'https://help.example.test/')
+      // may be a mailto: address, which must not open a blank tab
+      expect(link).not.toHaveAttribute('target')
     })
 
     it('shows the sponsor seal when no image is configured', () => {
