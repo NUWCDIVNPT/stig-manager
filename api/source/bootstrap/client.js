@@ -75,6 +75,7 @@ function getClientV2Env(){
             consoleMode: "${config.client.consoleMode}",
             historyBase: "${config.client.historyBase}",
             pathPrefix: "${config.client.pathPrefix}",
+            docsDisabled: ${config.docs.disabled},
             displayAppManagers: ${config.client.displayAppManagers},
             stateEvents: ${config.client.stateEvents},
             welcome: {
