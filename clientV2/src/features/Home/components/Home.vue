@@ -179,7 +179,7 @@ const supportTitle = welcome.title || (welcome.message || welcome.link ? 'Suppor
 .home-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  grid-auto-rows: minmax(33rem, auto);
+  grid-auto-rows: minmax(34rem, auto);
   gap: 1rem;
   max-width: 1600px;
   margin: 0 auto;

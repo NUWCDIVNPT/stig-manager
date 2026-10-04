@@ -29,6 +29,7 @@ const scrollPt = { content: { class: 'sm-scrollbar-thin' } }
 .home-panel {
   --p-panel-background: var(--color-background-light);
   --p-panel-border-color: var(--color-border-default);
+  --p-panel-border-radius: 1rem;
   --p-panel-header-background: color-mix(in srgb, var(--color-background-light), var(--color-border-default));
   --p-panel-header-padding: 0.75rem 1.6rem;
   --p-panel-header-border-width: 0 0 1px 0;
