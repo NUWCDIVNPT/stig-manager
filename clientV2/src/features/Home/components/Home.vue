@@ -1,33 +1,25 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { VueDraggable } from 'vue-draggable-plus'
+import { onMounted, ref } from 'vue'
+import navyLogo from '../../../assets/navy.svg'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 import { fetchAppManagers } from '../api/api'
-import CustomCards from './CustomCards.vue'
+import HomePanel from './HomePanel.vue'
 
 const env = useEnv()
+const welcome = env.welcome ?? {}
+const docsUrl = env.docsUrl
 
 const {
   state: appManagers,
+  isLoading: managersLoading,
+  error: managersError,
   execute,
 } = useAsyncState(fetchAppManagers, {
   immediate: false,
   initialState: [],
+  onError: null, // the panel reports the failure itself
 })
-
-const customCardsRef = ref(null)
-
-const cards = computed({
-  get: () => customCardsRef.value?.customCards || [],
-  set: (val) => {
-    if (customCardsRef.value) {
-      customCardsRef.value.customCards = val
-    }
-  },
-})
-
-const isReorderMode = computed(() => customCardsRef.value?.reorderMode || false)
 
 onMounted(async () => {
   if (env.displayAppManagers) {
@@ -35,509 +27,239 @@ onMounted(async () => {
   }
 })
 
-function isTallCard(content) {
-  if (!content) {
-    return false
-  }
-
-  // content length > 600 chars
-  const textLength = content.replace(/<[^>]*>/g, '').length
-  const isLong = textLength > 600
-
-  // more than 10 breaks
-  const breakCount = (content.match(/<\/p>|<\/li>|<br>/g) || []).length
-  const hasManyBreaks = breakCount > 10
-
-  const hasImage = content.includes('<img')
-
-  return isLong || hasManyBreaks || hasImage
+// STIGMAN_CLIENT_WELCOME_IMAGE points at an image hosted elsewhere; fall back
+// to the sponsor seal when it is unset or fails to load.
+const welcomeImage = ref(welcome.image || navyLogo)
+function onWelcomeImageError() {
+  welcomeImage.value = navyLogo
 }
+
+// STIGMAN_CLIENT_WELCOME_TITLE defaults to "Support" when a message or link is
+// configured. With none of the three set there is no support section.
+const supportTitle = welcome.title || (welcome.message || welcome.link ? 'Support' : '')
 </script>
 
 <template>
   <div class="home-component">
-    <CustomCards ref="customCardsRef" />
-    <div class="home-content">
-      <div class="home-grid">
-        <div class="home-card">
-          <h2 class="card-title">
-            Welcome
-          </h2>
-          <div class="card-content">
-            <div class="welcome-section">
-              <div>
-                <span class="navy-logo" />
-              </div>
-              <p class="card-text">
-                <strong>STIG Manager</strong> is an API and Web client for managing the assessment of
-                Information Systems for compliance with
-                <a href="https://public.cyber.mil/stigs/" target="_blank" rel="noopener" class="link">security checklists</a>
-                published by the
-                United States Defense Information Systems Agency (DISA). The software is
-                <a href="https://github.com/NUWCDIVNPT/stig-manager" target="_blank" rel="noopener" class="link">open source</a>
-                and maintained by the Naval Sea Systems Command (NAVSEA) at the United States Navy.
-              </p>
-            </div>
-            <div class="support-section">
-              <p class="card-text">
-                {{ env.welcome.message }}
-              </p>
-            </div>
-          </div>
+    <div class="home-grid">
+      <HomePanel title="Welcome" scroll>
+        <div class="welcome-section">
+          <span class="welcome-image">
+            <img :src="welcomeImage" alt="" @error="onWelcomeImageError">
+          </span>
+          <p class="card-text">
+            <strong>STIG Manager</strong> is an API and Web client for managing the assessment of
+            Information Systems for compliance with
+            <a href="https://public.cyber.mil/stigs/" target="_blank" rel="noopener">security checklists</a>
+            published by the United States Defense Information Systems Agency (DISA). The software is
+            <a href="https://github.com/NUWCDIVNPT/stig-manager" target="_blank" rel="noopener">an open source project</a>
+            maintained by the Naval Sea Systems Command (NAVSEA) of the United States Navy.
+          </p>
         </div>
-
-        <div class="home-card">
-          <h2 class="card-title">
-            Documentation
-          </h2>
-          <div class="card-content">
-            <div class="doc-section">
-              <h3 class="section-subtitle">
-                Need help?
-              </h3>
-              <p class="card-text">
-                Check out our
-                <a target="_blank" rel="noopener" class="link" href="docs/index.html">Documentation</a>,
-              </p>
-            </div>
-
-            <div class="doc-section">
-              <h3 class="section-subtitle">
-                Just Getting Started?
-              </h3>
-              <p class="card-text">
-                `Check out our <a target="_blank" rel="noopener" class="link" href="docs/user-guide/user-quickstart.html">User Walkthrough</a> or the <a target="_blank" rel="noopener" class="link" href="docs/user-guide/user-guide.html">User Guide</a>,
-              </p>
-            </div>
-
-            <div class="doc-section">
-              <h3 class="section-subtitle">
-                Common Tasks
-              </h3>
-              <p class="card-text">
-                Not sure how to do something in STIG Manager? Check out these links to <a target="_blank" rel="noopener" class="link" href="docs/features/common-tasks.html">Common Tasks</a>,
-              </p>
-            </div>
-
-            <div class="doc-section">
-              <h3 class="section-subtitle">
-                Issues, Feature Requests, and Contributions
-              </h3>
-              <p class="card-text">
-                Want to report a bug, request a feature, or help out the project?
-                Want to report a bug, request a feature, or help out the project? <a target="_blank" rel="noopener" class="link" href="docs/the-project/contributing.html">Check out our Contribution Guide</a>,
-              </p>
-            </div>
-          </div>
+        <div v-if="supportTitle">
+          <h3 class="section-subtitle">
+            {{ supportTitle }}
+          </h3>
+          <p v-if="welcome.message" class="card-text">
+            {{ welcome.message }}
+          </p>
+          <p v-if="welcome.link" class="card-text">
+            <a :href="welcome.link">{{ welcome.link }}</a>
+          </p>
         </div>
+      </HomePanel>
 
-        <div class="home-card">
-          <h2 class="card-title">
-            Resources
-          </h2>
-          <div class="card-content">
-            <div class="resource-section">
-              <h3 class="section-subtitle">
-                GitHub
-              </h3>
-              <div class="resource-links">
-                <a href="https://github.com/NUWCDIVNPT/stig-manager" target="_blank" rel="noopener" class="link">STIG Manager</a>
-                <a href="https://github.com/NUWCDIVNPT/stigman-watcher" target="_blank" rel="noopener" class="link">STIG Manager Watcher</a>
-              </div>
-            </div>
-
-            <div class="resource-section">
-              <h3 class="section-subtitle">
-                DISA STIGs
-              </h3>
-              <p class="card-text">
-                Get the latest STIGs at
-                <a href="https://www.cyber.mil/stigs/downloads/" target="_blank" rel="noopener" class="link">cyber.mil</a>
-              </p>
-            </div>
-
-            <div class="resource-section">
-              <h3 class="section-subtitle">
-                RMF Reference
-              </h3>
-              <p class="card-text">
-                STIG Manager assists with STEP 4 of the
-                <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-37r2.pdf" class="link" target="_blank" rel="noopener">RMF Implementation Lifecycle Process</a>
-              </p>
-            </div>
-
-            <div class="resource-section">
-              <h3 class="section-subtitle">
-                DevSecOps
-              </h3>
-              <p class="card-text">
-                STIG Manager is being developed as part of the
-                <a href="https://software.af.mil/team/devsecops/" target="_blank" rel="noopener" class="link">DoD Enterprise DevSecOps</a>
-                and
-                <a href="https://code.mil/" target="_blank" rel="noopener" class="link">code.mil Open Source</a>
-                initiatives.
-              </p>
-            </div>
-          </div>
+      <HomePanel title="Documentation">
+        <div>
+          <h3 class="section-subtitle">
+            Need help?
+          </h3>
+          <p class="card-text">
+            Check out our <a :href="`${docsUrl}index.html`" target="_blank" rel="noopener">Documentation</a>
+          </p>
         </div>
-
-        <div v-if="env.displayAppManagers && appManagers?.length" class="home-card">
-          <h2 class="card-title">
-            Application Managers
-          </h2>
-          <div class="card-content">
-            <ul class="manager-list">
-              <li
-                v-for="manager in appManagers"
-                :key="manager.userId"
-                class="manager-item"
-              >
-                <strong>{{ manager.display || manager.username }}</strong>
-                <span class="manager-detail">{{ manager.email || 'No Email Available' }}</span>
-              </li>
-            </ul>
-          </div>
+        <div>
+          <h3 class="section-subtitle">
+            Just Getting Started?
+          </h3>
+          <p class="card-text">
+            Check out our <a :href="`${docsUrl}user-guide/user-quickstart.html`" target="_blank" rel="noopener">User Walkthrough</a>
+            or the <a :href="`${docsUrl}user-guide/user-guide.html`" target="_blank" rel="noopener">User Guide</a>
+          </p>
         </div>
-      </div>
-
-      <VueDraggable
-        v-if="customCardsRef"
-        v-model="cards"
-        class="custom-grid"
-        :disabled="!isReorderMode"
-        ghost-class="ghost-card"
-        drag-class="drag-card"
-        :animation="200"
-        :force-fallback="true"
-        :scroll-sensitivity="150"
-        :scroll-speed="20"
-      >
-        <div
-          v-for="card in cards"
-          :key="card.id"
-          class="home-card custom-card"
-          :class="{ 'full-width': isTallCard(card.content), 'reorder-mode': isReorderMode }"
-        >
-          <h2 class="card-title">
-            <span class="title-text">
-              <i v-if="isReorderMode" class="pi pi-bars handle" style="cursor: grab; margin-right: 0.5rem; color: rgba(255,255,255,0.5)" />
-              {{ card.title }}
-              <span v-if="card.date" class="card-date">{{ customCardsRef.formatDate(card.date) }}</span>
-            </span>
-            <div v-if="isReorderMode" class="card-actions">
-              <button
-                class="edit-btn"
-                title="Edit card"
-                @click="customCardsRef.openEditDialog(card)"
-              >
-                ✎
-              </button>
-              <button
-                class="delete-btn"
-                title="Delete card"
-                @click="customCardsRef.deleteCard(card.id)"
-              >
-                ×
-              </button>
-            </div>
-          </h2>
-          <div class="card-content">
-            <div class="custom-card-section">
-              <div class="card-text" v-html="card.content" />
-            </div>
-          </div>
+        <div>
+          <h3 class="section-subtitle">
+            Common Tasks
+          </h3>
+          <p class="card-text">
+            Not sure how to do something in STIG Manager? Check out these links to
+            <a :href="`${docsUrl}features/common-tasks.html`" target="_blank" rel="noopener">Common Tasks</a>
+          </p>
         </div>
-      </VueDraggable>
+        <div>
+          <h3 class="section-subtitle">
+            Issues, Feature Requests, and Contributions
+          </h3>
+          <p class="card-text">
+            Want to report a bug, request a feature, or help out the project?
+            <a :href="`${docsUrl}the-project/contributing.html`" target="_blank" rel="noopener">Check out our Contribution Guide</a>
+          </p>
+        </div>
+      </HomePanel>
+
+      <HomePanel title="Resources">
+        <div>
+          <h3 class="section-subtitle">
+            GitHub
+          </h3>
+          <p class="card-text">
+            <a href="https://github.com/NUWCDIVNPT/stig-manager" target="_blank" rel="noopener">STIG Manager</a>
+          </p>
+          <p class="card-text">
+            <a href="https://github.com/NUWCDIVNPT/stigman-watcher" target="_blank" rel="noopener">STIG Manager Watcher</a>
+          </p>
+        </div>
+        <div>
+          <h3 class="section-subtitle">
+            DISA STIGs
+          </h3>
+          <p class="card-text">
+            Get the latest STIGs at <a href="https://public.cyber.mil/stigs/downloads/" target="_blank" rel="noopener">cyber.mil</a>.
+          </p>
+        </div>
+        <div>
+          <h3 class="section-subtitle">
+            RMF Reference
+          </h3>
+          <p class="card-text">
+            STIG Manager assists with STEP 4 of the
+            <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-37r2.pdf" target="_blank" rel="noopener">Risk Management Framework Process</a>.
+          </p>
+        </div>
+        <div>
+          <h3 class="section-subtitle">
+            DevSecOps
+          </h3>
+          <p class="card-text">
+            STIG Manager is being developed as part of the
+            <a href="https://software.af.mil/dsop/documents/" target="_blank" rel="noopener">DoD Enterprise DevSecOps</a>
+            and <a href="https://code.mil" target="_blank" rel="noopener">Code.mil Open Source</a> initiatives.
+          </p>
+        </div>
+      </HomePanel>
+
+      <HomePanel v-if="env.displayAppManagers" title="Application Managers" scroll>
+        <p v-if="managersError" class="card-text status-text">
+          Unable to load the Application Managers list.
+        </p>
+        <p v-else-if="managersLoading" class="card-text status-text">
+          Loading Application Managers…
+        </p>
+        <p v-else-if="!appManagers.length" class="card-text status-text">
+          No Application Managers are listed.
+        </p>
+        <ul v-else class="manager-list">
+          <li
+            v-for="manager in appManagers"
+            :key="manager.userId"
+            class="manager-item"
+          >
+            <span class="manager-name">{{ manager.displayName || manager.username }}</span>
+            <span class="manager-email">{{ manager.email || 'No Email Available' }}</span>
+          </li>
+        </ul>
+      </HomePanel>
     </div>
   </div>
 </template>
 
 <style scoped>
-:deep(*) {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
-}
-
-:deep(*::-webkit-scrollbar) {
-  width: 8px;
-  height: 8px;
-}
-
-:deep(*::-webkit-scrollbar-track) {
-  background: transparent;
-}
-
-:deep(*::-webkit-scrollbar-thumb) {
-  background-color: rgba(16, 185, 129, 0.3);
-  border-radius: 4px;
-}
-
-:deep(*::-webkit-scrollbar-thumb:hover) {
-  background-color: rgba(16, 185, 129, 0.5);
-}
 .home-component {
+  height: 100%;
   overflow-y: auto;
   padding: 1rem;
-  height: 100%;
-}
-
-.home-content {
-  animation: fadeIn 0.8s ease-out;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .home-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr));
+  gap: 1rem;
+  max-width: 133rem;
+  margin: 0 auto;
 }
 
-.custom-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-}
-
-.home-card {
-  break-inside: avoid;
-  margin-bottom: 0;
-  background: var(--color-background-subtle);
-  border: 1px solid var(--color-border-default);
-  border-radius: 0.5rem;
-  padding: 1.25rem;
-  transition: all 0.6s ease;
-  display: flex;
-  flex-direction: column;
-}
-
-.full-width {
-  grid-column: 1 / -1;
-}
-
-.home-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
-
-.card-title {
-  font-size: var(--text-2xl);
+.section-subtitle {
+  margin: 0 0 0.35rem 0;
+  font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-primary-highlight);
-  margin: 0 0 1rem 0;
-  letter-spacing: -0.01em;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.title-text {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-}
-
-.card-date {
-  font-size: var(--text-md);
-  color: var(--color-text-dim);
-  font-weight: 400;
-}
-
-.card-content {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.welcome-section {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-}
-
-.navy-logo {
-  display: block;
-  width: 100px;
-  height: 100px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: left center;
-  background-image: url('/src/assets/navy.svg');
 }
 
 .card-text {
-  font-size: var(--text-xl);
-  line-height: 1.7;
   margin: 0;
+  font-size: var(--text-md);
+  line-height: 1.6;
   overflow-wrap: anywhere;
-  word-break: break-word;
 }
 
-.card-text :deep(img) {
-  max-width: 100%;
-  height: auto;
+.card-text + .card-text {
+  margin-top: 0.35rem;
 }
 
 .card-text strong {
   font-weight: 600;
 }
 
-.section-subtitle {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 0.5rem 0;
-}
-
-.link {
-  color: var(--color-primary-highlight);
-  text-decoration: none;
-  transition: all 0.15s ease;
-  position: relative;
-  font-weight: 500;
-}
-
-.link:hover {
-  color: var(--color-primary-highlight-light);
+.home-grid a {
+  color: var(--color-link);
   text-decoration: underline;
-  text-decoration-color: rgba(16, 185, 129, 0.4);
-  text-underline-offset: 2px;
+  text-underline-offset: 0.15em;
 }
 
-.support-section,
-.doc-section,
-.resource-section {
-  padding: 0.875rem;
-  background: var(--color-background-subtle);
-  border-radius: 0.375rem;
-  border-left: 3px solid rgba(131, 131, 131, 0.4);
+.home-grid a:hover {
+  color: var(--color-link-hover);
 }
 
-.resource-links {
+.welcome-section {
+  display: flow-root;
+}
+
+.welcome-image {
+  float: left;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  width: 10.5rem;
+  height: 10.5rem;
+  margin: 0 1rem 0.5rem 0;
+}
+
+.welcome-image img {
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .manager-list {
-  list-style: none;
-  padding: 0;
   margin: 0;
+  padding-left: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 0.6rem;
 }
 
 .manager-item {
-  padding: 0.875rem;
-  background: var(--color-background-subtle);
-  border-radius: 0.375rem;
-  border: 1px solid var(--color-border-light);
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  transition: all 0.15s ease;
 }
 
-.manager-item strong {
-  color: var(--color-text-primary);
-  font-size: var(--text-lg);
+.manager-name {
   font-weight: 600;
+  color: var(--color-text-primary);
 }
 
-.manager-detail {
-  font-size: var(--text-md);
+.manager-email,
+.status-text {
+  font-style: italic;
   color: var(--color-text-dim);
-}
-
-.custom-card .card-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-left: auto;
-}
-
-.edit-btn,
-.delete-btn {
-  font-size: var(--text-xl);
-  width: 28px;
-  height: 28px;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  padding: 0;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
-  border: 1px solid transparent;
-}
-
-.delete-btn:hover {
-background: var(--color-bg-hover-strong);
-border-color: var(--color-border-light);
-transform: scale(1.05);
-}
-
-.edit-btn {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: #3b82f6;
-  font-size: var(--text-md);
-}
-
-.edit-btn:hover {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.5);
-  transform: scale(1.05);
-}
-
-.custom-card-section {
-  padding: 0.875rem;
-  background: var(--color-background-subtle);
-  border-radius: 0.375rem;
-  border-left: 3px solid var(--color-border-light);
-}
-
-.reorder-mode {
-  cursor: grab;
-  border-style: dashed;
-}
-
-.reorder-mode:active {
-  cursor: grabbing;
-}
-
-.ghost-card {
-  opacity: 0.5;
-  background: rgba(59, 130, 246, 0.1);
-  border: 3px dashed rgba(59, 130, 246, 1);
-}
-
-.drag-card {
-  opacity: 1;
-  background: var(--color-background-dark);
-  transform: rotate(2deg);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-  cursor: grabbing;
 }
 </style>
