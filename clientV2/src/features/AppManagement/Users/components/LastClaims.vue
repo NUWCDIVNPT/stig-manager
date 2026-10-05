@@ -3,6 +3,7 @@ import Tree from 'primevue/tree'
 import { computed, ref, watch } from 'vue'
 import HelpIcon from '../../../../components/common/HelpIcon.vue'
 import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
+import { useEnv } from '../../../../shared/stores/useEnv.js'
 import { formatDateTime, transformLastClaims } from '../lib/userDisplay.js'
 // TODO get a real tree json tools
 // Read-only diagnostic view of statistics.lastClaims — the claims presented
@@ -14,7 +15,8 @@ const props = defineProps({
   },
 })
 
-const claims = computed(() => transformLastClaims(props.lastClaims))
+const scopeClaims = useEnv()?.oauth?.claims?.scopeList
+const claims = computed(() => transformLastClaims(props.lastClaims, scopeClaims))
 const hasClaims = computed(() => Object.keys(claims.value).length > 0)
 
 function leafText(value) {

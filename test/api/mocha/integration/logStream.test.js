@@ -2,6 +2,7 @@
 import MockOidc from '../../../utils/mockOidc.js'
 import WebSocket from 'ws';
 import { expect } from 'chai'
+import { config } from '../testConfig.js'
 
 const oidc = new MockOidc({ keyCount: 0, includeInsecureKid: true })
 
@@ -118,19 +119,24 @@ describe('LogStream authorization', async function () {
   });
 
   it('should error when token expires', async function () {
+    this.timeout(10000);
     const socket = await openSocket()
     await new Promise(r => setTimeout(r, 500)); // wait for socket to be ready
     expect(socket.messages).to.have.lengthOf(1);
     expect(socket.messages[0]).to.have.property('type', 'authorize');
 
-    const token = oidc.getToken({ sub: 'test-user', privileges: ['admin'], expiresIn: 1 })
+    // exp has one-second resolution (exp = floor(now) + expiresIn), so expiresIn: 2 guarantees at least 1s of validity
+    const token = oidc.getToken({ sub: 'test-user', privileges: ['admin'], expiresIn: 2 })
     socket.ws.send(JSON.stringify({ type: 'authorize', data: { token } }));
     await new Promise(r => setTimeout(r, 500));
     expect(socket.messages).to.have.lengthOf(2);
     expect(socket.messages[1]).to.have.property('type', 'authorize');
     expect(socket.messages[1].data).to.have.property('state', 'authorized');
 
-    await new Promise(r => setTimeout(r, 2000)); // wait for token to expire
+    // wait for token to expire
+    for (let i = 0; i < 30 && socket.messages.length < 3; i++) {
+      await new Promise(r => setTimeout(r, 100));
+    }
     expect(socket.messages).to.have.lengthOf(3);
     expect(socket.messages[2]).to.have.property('type', 'authorize');
     expect(socket.messages[2].data).to.have.property('state', 'unauthorized');
@@ -193,7 +199,7 @@ describe('LogStream authorization', async function () {
 
 async function openSocket() {
   return new Promise((resolve, reject) => {
-    const ws = new WebSocket('ws://localhost:64001/socket/log-socket')
+    const ws = new WebSocket(`ws://${new URL(config.baseUrl).host}/socket/log-socket`)
     const resolution = {
       ws,
       messages: [],

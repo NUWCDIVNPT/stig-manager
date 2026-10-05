@@ -54,6 +54,18 @@ describe('transformLastClaims', () => {
     expect(claims.scope).toEqual(['stig-manager:collection', 'stig-manager:user:read'])
   })
 
+  it('splits each configured scope claim', () => {
+    const claims = transformLastClaims({
+      scp: 'stig-manager:collection  stig-manager:user:read',
+      roles: ['stig-manager:op'],
+      scope: 'openid profile',
+    }, ['scp', 'roles'])
+
+    expect(claims.scp).toEqual(['stig-manager:collection', 'stig-manager:user:read'])
+    expect(claims.roles).toEqual(['stig-manager:op'])
+    expect(claims.scope).toBe('openid profile')
+  })
+
   it('converts an epoch value of 0', () => {
     expect(transformLastClaims({ iat: 0 }).iat).toEqual(new Date(0))
   })

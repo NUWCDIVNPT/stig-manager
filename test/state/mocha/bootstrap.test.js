@@ -97,7 +97,7 @@ describe('Boot with both dependencies', function () {
     await oidc.start({port: oidcPort})
     console.log('    ✔ oidc started')
     console.log('    try mysql start')
-    mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
+    mysql = await spawnMySQL({tag:'8.4', port:dbPort})
     console.log('    ✔ mysql started')
     console.log('    try api start')
     api = await spawnApiPromise({
@@ -177,7 +177,7 @@ describe('Boot with old mysql', function () {
     this.timeout(60000)
     oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
     await oidc.start({port: oidcPort})
-    mysql = await spawnMySQL({tag:'8.0.23', port:dbPort})
+    mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
     api = await spawnApiPromise({
       resolveOnClose: true,
       env:{
@@ -208,7 +208,7 @@ describe('Boot with old mysql', function () {
     it('db, check message', function () {
       const failures = api.logRecords.filter(r => r.type === 'preflight' && r.component === 'mysql' && r.data.success === false)
       expect(failures).to.have.lengthOf(1)
-      expect(failures[0].data.message).to.equal('MySQL release 8.0.23 is too old. Update to the latest MySQL 8.4.x release.')
+      expect(failures[0].data.message).to.equal('MySQL release 8.0.24 is too old. Update to the latest MySQL 8.4.x release.')
     })
   })
 
@@ -228,7 +228,7 @@ describe('Boot with old mysql', function () {
   })
 })
 
-describe('Boot with untested mysql', function () {
+describe('Boot with minimum supported mysql', function () {
   let api
   let mysql
   let oidc
@@ -237,7 +237,7 @@ describe('Boot with untested mysql', function () {
     this.timeout(60000)
     oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
     await oidc.start({port: oidcPort})
-    mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
+    mysql = await spawnMySQL({tag:'8.4.0', port:dbPort})
     api = await spawnApiPromise({
       resolveOnType: 'started',
       env:{
@@ -256,14 +256,6 @@ describe('Boot with untested mysql', function () {
     if (mysql) await mysql.stop().catch(() => {})
     if (oidc) await oidc.stop().catch(() => {})
     if (api) addContext(this, {title: 'api-log', value: api.logRecords})
-  })
-
-  describe('untested version warning', function () {
-    it('db, check message', function () {
-      const warnings = api.logRecords.filter(r => r.type === 'version' && r.component === 'mysql')
-      expect(warnings).to.have.lengthOf(1)
-      expect(warnings[0].data.message).to.equal('MySQL release 8.0.24 is not tested with STIG Manager and support will be removed in a future release. Update to the latest MySQL 8.4.x release.')
-    })
   })
 
   describe('dependency success count', function () {
@@ -291,7 +283,7 @@ describe('Boot with insecure kid - allow insecure tokens false', function () {
     this.timeout(60000)
     oidc = new MockOidc({keyCount: 0, includeInsecureKid: true})
     await oidc.start({port: oidcPort})
-    mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
+    mysql = await spawnMySQL({tag:'8.4', port:dbPort})
     api = await spawnApiPromise({
       resolveOnClose: true,
       env: {
@@ -355,7 +347,7 @@ describe('Boot without insecure kid - request with insecure token' , function ()
     insecureToken = oidc.getToken({username: 'insecure'})
     oidc.rotateKeys({keyCount: 1, includeInsecureKid: false})
     await oidc.start({port: oidcPort})
-    mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
+    mysql = await spawnMySQL({tag:'8.4', port:dbPort})
     api = await spawnApiPromise({
       resolveOnType: 'started',
       env: {
@@ -416,7 +408,7 @@ describe('Boot with STIGMAN_JWKS_CACHE_MAX_AGE out of range', function () {
     this.timeout(60000)
     oidc = new MockOidc({keyCount: 1, includeInsecureKid: false})
     await oidc.start({port: oidcPort})
-    mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
+    mysql = await spawnMySQL({tag:'8.4', port:dbPort})
   })
 
   after(async function () {
