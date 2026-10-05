@@ -1,14 +1,19 @@
 <script setup>
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import { computed, onMounted, ref } from 'vue'
-import { api } from '../../shared/api/apiClient.js'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useGlobalError } from '../../shared/composables/useGlobalError.js'
+import { useWebPreferences } from '../../shared/composables/useWebPreferences.js'
 import { useGlobalAppStore } from '../../shared/stores/globalAppStore.js'
 import WhatsNewContent from './WhatsNewContent.vue'
 import { Sources } from './whatsNewSources.js'
 
+// 'settled' fires once the dialog has been dismissed or was never needed, so
+// the app can hold other first-load overlays until then.
+const emit = defineEmits(['settled'])
+
 const globalAppStore = useGlobalAppStore()
+const { patchPreferences } = useWebPreferences()
 const { triggerError } = useGlobalError()
 const visible = ref(false)
 const lastShownDate = ref('')
@@ -55,11 +60,7 @@ function checkAndShow() {
 async function handleDontShowAgain() {
   const latestDate = Sources[0].date
   try {
-    await api.patch('/user/web-preferences', { lastWhatsNew: latestDate })
-    // update shallowly even though it might not be needed...
-    if (globalAppStore.user && globalAppStore.user.webPreferences) {
-      globalAppStore.user.webPreferences.lastWhatsNew = latestDate
-    }
+    await patchPreferences({ lastWhatsNew: latestDate })
     visible.value = false
   }
   catch (error) {
@@ -71,6 +72,15 @@ async function handleDontShowAgain() {
 onMounted(() => {
   if (globalAppStore.user) {
     checkAndShow()
+  }
+  if (!visible.value) {
+    emit('settled')
+  }
+})
+
+watch(visible, (isVisible) => {
+  if (!isVisible) {
+    emit('settled')
   }
 })
 </script>

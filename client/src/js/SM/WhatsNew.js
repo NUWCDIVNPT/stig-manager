@@ -2,6 +2,18 @@ Ext.ns('SM.WhatsNew')
 
 SM.WhatsNew.Sources = [
   {
+    date: '2026-10-04',
+    header: 'Preview the New STIG Manager Interface',
+    body: `
+    <p>A preview of the next STIG Manager web interface is now available. It is a redesigned client built on the same API, so your Collections, Assets, and Reviews are the same in both interfaces and work done in one appears in the other.</p>
+
+    <p><a target="_blank" href="client-v2/"><b>Open the new interface preview</b></a> in a new tab, or use the <b>Try the new UI</b> node at the bottom of the Navigation Tree at any time.</p>
+
+    <p>This interface remains fully available, and your existing links and bookmarks continue to open it.</p>
+
+    <p>Your input on the new interface is welcome. Please share feedback, problems, or suggestions by opening an issue on our <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager/issues">GitHub Issues page</a>.</p>`
+  },
+  {
     date: '2026-05-15',
     header: 'Review Aging: Automatically Act on Stale Reviews',
     body: `

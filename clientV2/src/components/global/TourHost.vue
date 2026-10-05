@@ -4,11 +4,14 @@
 // shows a card beside it. Steps whose target is absent (Admin for non-admins,
 // Recent Views when the rail is collapsed) are skipped automatically.
 //
-// The tour currently shows on every load. Persisting "seen" state belongs in
-// the user's webPreferences alongside lastWhatsNew; `finish()` is where that
-// PATCH goes when the preference exists.
+// The tour opens by itself until the user has seen the current TOUR_DATE
+// (webPreferences.lastTour), and on request through useOrientationTour.
 import Button from 'primevue/button'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useGlobalError } from '../../shared/composables/useGlobalError.js'
+import { TOUR_DATE, useOrientationTour } from '../../shared/composables/useOrientationTour.js'
+import { useWebPreferences } from '../../shared/composables/useWebPreferences.js'
+import { useGlobalAppStore } from '../../shared/stores/globalAppStore.js'
 
 const STEPS = [
   {
@@ -53,6 +56,11 @@ const STEPS = [
     placement: 'below-end',
   },
 ]
+
+const globalAppStore = useGlobalAppStore()
+const { triggerError } = useGlobalError()
+const { preferences, patchPreferences } = useWebPreferences()
+const { startRequests } = useOrientationTour()
 
 const SPOTLIGHT_PAD = 6
 const CARD_GAP = 14
@@ -145,8 +153,22 @@ function back() {
   }
 }
 
-function finish() {
+function hasSeenTour() {
+  return (preferences.value.lastTour ?? '') >= TOUR_DATE
+}
+
+async function finish() {
   visible.value = false
+  stopTracking()
+  if (hasSeenTour()) {
+    return
+  }
+  try {
+    await patchPreferences({ lastTour: TOUR_DATE })
+  }
+  catch (error) {
+    triggerError(error)
+  }
 }
 
 function onKeydown(e) {
@@ -174,6 +196,7 @@ async function start() {
   visible.value = true
   await nextTick()
   measure()
+  stopTracking()
   frameId = requestAnimationFrame(trackFrame)
 }
 
@@ -186,16 +209,18 @@ function stopTracking() {
 
 onMounted(() => {
   window.addEventListener('keydown', onKeydown)
-  // Let the shell finish its first paint so the rail and menu bar are measurable.
-  setTimeout(start, 400)
+  if (globalAppStore.user && !hasSeenTour()) {
+    // Let the shell finish its first paint so the rail and menu bar are measurable.
+    setTimeout(start, 400)
+  }
 })
+
+watch(startRequests, start)
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onKeydown)
   stopTracking()
 })
-
-defineExpose({ start })
 </script>
 
 <template>

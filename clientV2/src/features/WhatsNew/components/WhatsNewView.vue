@@ -1,6 +1,10 @@
 <script setup>
+import Button from 'primevue/button'
 import WhatsNewContent from '../../../components/global/WhatsNewContent.vue'
 import { Sources } from '../../../components/global/whatsNewSources.js'
+import { useOrientationTour } from '../../../shared/composables/useOrientationTour.js'
+
+const { requestStart } = useOrientationTour()
 </script>
 
 <template>
@@ -8,6 +12,13 @@ import { Sources } from '../../../components/global/whatsNewSources.js'
     <div class="page-inner">
       <div class="header">
         <h1>What's New</h1>
+        <Button
+          label="Start tour"
+          icon="pi pi-compass"
+          outlined
+          size="small"
+          @click="requestStart"
+        />
       </div>
       <div class="whats-new-content">
         <WhatsNewContent :features="Sources" :scrollable="false" />
@@ -29,6 +40,9 @@ import { Sources } from '../../../components/global/whatsNewSources.js'
 }
 
 .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 2rem;
   flex-shrink: 0;
 }

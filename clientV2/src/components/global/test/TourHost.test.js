@@ -1,7 +1,16 @@
 import { fireEvent, screen } from '@testing-library/vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { api } from '../../../shared/api/apiClient.js'
+import { TOUR_DATE, useOrientationTour } from '../../../shared/composables/useOrientationTour.js'
+import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import OrientationTour from '../OrientationTour.vue'
+
+vi.mock('../../../shared/api/apiClient.js', () => ({
+  api: {
+    patch: vi.fn(),
+  },
+}))
 
 // jsdom lays nothing out, so anchors get an explicit non-zero rect.
 function addAnchor(name) {
@@ -23,6 +32,8 @@ describe('orientationTour', () => {
     vi.useFakeTimers()
     vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1))
     vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    vi.clearAllMocks()
+    useGlobalAppStore().setUser({ webPreferences: { lastWhatsNew: '2000-01-01' } })
   })
 
   afterEach(() => {
@@ -78,10 +89,36 @@ describe('orientationTour', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
 
     document.body.innerHTML = ''
+    useGlobalAppStore().setUser({ webPreferences: { lastWhatsNew: '2000-01-01' } })
     addAnchor('nav-rail')
     await renderAndStart()
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     await fireEvent.keyDown(window, { key: 'Escape' })
     expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('records the tour as seen when it closes', async () => {
+    addAnchor('nav-rail')
+    await renderAndStart()
+    await fireEvent.click(screen.getByRole('button', { name: 'Skip' }))
+
+    expect(api.patch).toHaveBeenCalledWith('/user/web-preferences', { lastTour: TOUR_DATE })
+    await vi.waitFor(() => {
+      expect(useGlobalAppStore().user.webPreferences.lastTour).toBe(TOUR_DATE)
+    })
+  })
+
+  it('does not open by itself once seen, but opens on request without saving again', async () => {
+    useGlobalAppStore().setUser({ webPreferences: { lastTour: TOUR_DATE } })
+    addAnchor('nav-rail')
+    await renderAndStart()
+    expect(screen.queryByRole('dialog')).toBeNull()
+
+    useOrientationTour().requestStart()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Skip' }))
+    expect(api.patch).not.toHaveBeenCalled()
   })
 })

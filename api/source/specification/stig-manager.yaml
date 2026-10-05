@@ -10182,6 +10182,9 @@ components:
         lastWhatsNew:
           type: string
           format: date
+        lastTour:
+          type: string
+          format: date
       additionalProperties: false
       required:
         - darkMode
@@ -10192,6 +10195,9 @@ components:
         darkMode:
           type: boolean
         lastWhatsNew:
+          type: string
+          format: date
+        lastTour:
           type: string
           format: date
       additionalProperties: false

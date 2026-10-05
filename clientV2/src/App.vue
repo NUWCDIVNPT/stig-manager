@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue'
 import ReauthPrompt from './auth/ReauthPrompt.vue'
 import { useOidcWorker } from './auth/useOidcWorker.js'
 import GlobalBanner from './components/global/GlobalBanner.vue'
@@ -10,6 +11,9 @@ import WhatsNew from './components/global/WhatsNew.vue'
 import HomePage from './Home/Home.vue'
 
 const oidcWorker = useOidcWorker()
+
+// The orientation tour waits for What's New so the two never open together.
+const whatsNewSettled = ref(false)
 </script>
 
 <template>
@@ -22,10 +26,10 @@ const oidcWorker = useOidcWorker()
     :state="oidcWorker.noTokenMessage.value?.state"
   />
   <GlobalServiceOverlay />
-  <WhatsNew />
+  <WhatsNew @settled="whatsNewSettled = true" />
   <GlobalNotifications />
   <HomePage />
-  <OrientationTour />
+  <OrientationTour v-if="whatsNewSettled" />
 </template>
 
 <style scoped>
