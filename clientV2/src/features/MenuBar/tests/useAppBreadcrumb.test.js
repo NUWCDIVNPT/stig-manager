@@ -37,7 +37,7 @@ describe('useAppBreadcrumb', () => {
     useRoute.mockReturnValue({
       name: 'collection-benchmark-review',
       params: { collectionId: 'coll-1', benchmarkId: 'bench-1', revisionStr: 'V1R1' },
-      query: { labelId: 'label-a' },
+      query: { labelName: 'label-a' },
       matched: [],
     })
   })
@@ -50,7 +50,7 @@ describe('useAppBreadcrumb', () => {
     expect(mockPush).toHaveBeenCalledWith({
       name: 'collection-benchmark-review',
       params: { collectionId: 'coll-1', benchmarkId: 'bench-1', revisionStr: 'V2R1' },
-      query: { labelId: 'label-a' },
+      query: { labelName: 'label-a' },
     })
   })
 
@@ -62,7 +62,7 @@ describe('useAppBreadcrumb', () => {
     expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({
       name: 'collection-benchmark-review',
       params: expect.objectContaining({ benchmarkId: 'bench-2' }),
-      query: { labelId: 'label-a' },
+      query: { labelName: 'label-a' },
     }))
   })
 })

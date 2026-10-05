@@ -84,12 +84,12 @@ describe('fetchFindings', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('spreads label filter params into the request', () => {
-    fetchFindings('42', { aggregator: 'groupId', labelId: ['l1', 'l2'] })
+    fetchFindings('42', { aggregator: 'groupId', labelName: ['l1', 'l2'] })
     expect(apiCall).toHaveBeenCalledWith('getFindingsByCollection', {
       collectionId: '42',
       aggregator: 'groupId',
       projection: ['stigs'],
-      labelId: ['l1', 'l2'],
+      labelName: ['l1', 'l2'],
     }, undefined, {})
   })
 

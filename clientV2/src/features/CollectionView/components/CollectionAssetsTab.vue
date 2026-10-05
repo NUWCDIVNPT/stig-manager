@@ -14,7 +14,7 @@ const props = defineProps({
     type: [String, Number],
     required: true,
   },
-  selectedLabelIds: {
+  selectedLabelNames: {
     type: Array,
     default: () => [],
   },
@@ -30,7 +30,7 @@ const router = useRouter()
 const fetchAssets = () => {
   return fetchCollectionAssetSummary(
     props.collectionId,
-    buildLabelFilterParams(props.selectedLabelIds),
+    buildLabelFilterParams(props.selectedLabelNames),
   )
 }
 
@@ -48,7 +48,7 @@ const { state: selectedAssetStigs, isLoading: selectedAssetStigsLoading, execute
 )
 
 // Initial Load
-watch([() => props.collectionId, () => props.selectedLabelIds, () => props.refreshKey], () => {
+watch([() => props.collectionId, () => props.selectedLabelNames, () => props.refreshKey], () => {
   loadAssets()
   selectedAssetId.value = null
 }, { immediate: true, deep: true })

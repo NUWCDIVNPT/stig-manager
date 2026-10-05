@@ -34,8 +34,8 @@ const props = defineProps({
 
 const emit = defineEmits(['select-rule', 'refresh'])
 
-// Label filter selection; `null` entries mean "assets with no label".
-const selectedLabelIds = defineModel('selectedLabelIds', { type: Array, default: () => [] })
+// Label filter selection (label names); `null` entries mean "assets with no label".
+const selectedLabelNames = defineModel('selectedLabelNames', { type: Array, default: () => [] })
 
 const searchFilter = ref('')
 
@@ -95,7 +95,7 @@ const { itemSize, gridStyle } = useGridDensity('collection-checklist')
       v-model:search-filter="searchFilter"
       v-model:selected-columns="selectedColumns"
       v-model:display-mode="displayMode"
-      v-model:selected-label-ids="selectedLabelIds"
+      v-model:selected-label-names="selectedLabelNames"
       :toggleable-columns="TOGGLEABLE_COLUMNS"
       :collection-id="collectionId"
     />

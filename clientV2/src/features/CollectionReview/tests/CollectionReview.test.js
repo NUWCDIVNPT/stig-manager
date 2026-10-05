@@ -49,12 +49,12 @@ vi.mock('vue-router', () => ({
 vi.mock('../components/CollectionChecklistGrid.vue', () => ({
   default: {
     name: 'CollectionChecklistGrid',
-    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount', 'collectionId', 'selectedLabelIds'],
+    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount', 'collectionId', 'selectedLabelNames'],
     template: `
       <div data-testid="mock-checklist-grid">
         <button data-testid="emit-select-rule" @click="$emit('select-rule', 'V-456')">Select Rule</button>
         <button data-testid="emit-refresh" @click="$emit('refresh')">Refresh</button>
-        <button data-testid="set-labels" @click="$emit('update:selectedLabelIds', ['label-b', null])">Set Labels</button>
+        <button data-testid="set-labels" @click="$emit('update:selectedLabelNames', ['label-b', null])">Set Labels</button>
       </div>
     `,
   },
@@ -184,14 +184,14 @@ describe('collectionReview.vue', () => {
     it('passes the label filter from the route query to the checklist and asset fetches', async () => {
       useRoute.mockReturnValue({
         params: { collectionId: 'coll-1', benchmarkId: 'bench-1', revisionStr: 'rev-1' },
-        query: { labelId: 'label-a', labelMatch: 'null' },
-        fullPath: '/collections/coll-1/bench-1/rev-1?labelId=label-a&labelMatch=null',
+        query: { labelName: 'label-a', labelMatch: 'null' },
+        fullPath: '/collections/coll-1/bench-1/rev-1?labelName=label-a&labelMatch=null',
         path: '/collections/coll-1/bench-1/rev-1',
       })
       createWrapper()
       await flushPromises()
 
-      const expected = { labelId: ['label-a'], labelMatch: 'null' }
+      const expected = { labelName: ['label-a'], labelMatch: 'null' }
       expect(fetchCollectionChecklist).toHaveBeenCalledWith('coll-1', 'bench-1', 'rev-1', expected)
       expect(fetchAssetsByCollectionStig).toHaveBeenCalledWith('coll-1', 'bench-1', expected)
       expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', expected)
@@ -203,17 +203,17 @@ describe('collectionReview.vue', () => {
 
       await fireEvent.click(screen.getByTestId('set-labels'))
 
-      expect(mockRouterReplace).toHaveBeenCalledWith({ query: { labelId: ['label-b'], labelMatch: 'null' } })
+      expect(mockRouterReplace).toHaveBeenCalledWith({ query: { labelName: ['label-b'], labelMatch: 'null' } })
     })
 
     it('keeps unrelated query keys when writing the label selection', async () => {
-      routeState.query = { foo: 'bar', labelId: 'label-a' }
+      routeState.query = { foo: 'bar', labelName: 'label-a' }
       createWrapper()
       await flushPromises()
 
       await fireEvent.click(screen.getByTestId('set-labels'))
 
-      expect(mockRouterReplace).toHaveBeenCalledWith({ query: { foo: 'bar', labelId: ['label-b'], labelMatch: 'null' } })
+      expect(mockRouterReplace).toHaveBeenCalledWith({ query: { foo: 'bar', labelName: ['label-b'], labelMatch: 'null' } })
     })
 
     it('reloads checklist, assets and the selected rule reviews on a label change, and refreshes the recent view', async () => {
@@ -221,11 +221,11 @@ describe('collectionReview.vue', () => {
       await flushPromises()
       vi.clearAllMocks()
 
-      routeState.query = { labelId: 'label-a' }
-      routeState.fullPath = '/collections/coll-1/bench-1/rev-1?labelId=label-a'
+      routeState.query = { labelName: 'label-a' }
+      routeState.fullPath = '/collections/coll-1/bench-1/rev-1?labelName=label-a'
       await flushPromises()
 
-      const expected = { labelId: ['label-a'] }
+      const expected = { labelName: ['label-a'] }
       expect(fetchCollectionChecklist).toHaveBeenCalledTimes(1)
       expect(fetchCollectionChecklist).toHaveBeenCalledWith('coll-1', 'bench-1', 'rev-1', expected)
       expect(fetchAssetsByCollectionStig).toHaveBeenCalledTimes(1)
@@ -233,7 +233,7 @@ describe('collectionReview.vue', () => {
       expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', expected)
       expect(mockAddView).toHaveBeenLastCalledWith(expect.objectContaining({
         key: 'collection-review:coll-1:bench-1',
-        url: '/collections/coll-1/bench-1/rev-1?labelId=label-a',
+        url: '/collections/coll-1/bench-1/rev-1?labelName=label-a',
       }))
     })
 
@@ -243,7 +243,7 @@ describe('collectionReview.vue', () => {
       expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('true')
 
       fetchCollectionChecklist.mockResolvedValue([])
-      routeState.query = { labelId: 'label-with-no-assets' }
+      routeState.query = { labelName: 'label-with-no-assets' }
       await flushPromises()
 
       expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('false')

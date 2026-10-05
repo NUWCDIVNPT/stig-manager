@@ -58,14 +58,16 @@ const multiSelectPt = {
 
 const multiSelectRef = ref()
 const draftValues = ref([])
-const NO_LABEL_SENTINEL = '__no_label__' // ai suggestion because the value of null cannot be used in the multiselect options, we use a sentinel value to represent "no label"
+// Label selections are label names (collections: collectionIds). The sentinel is longer than a label name can be, so it never collides with one.
+const NO_LABEL_SENTINEL = '__no_label_sentinel__' // ai suggestion because the value of null cannot be used in the multiselect options, we use a sentinel value to represent "no label"
 const MAX_VISIBLE_SELECTED = 3
 
-const optionValue = computed(() => props.type === 'collection' ? 'collectionId' : 'labelId')
+const optionValue = computed(() => props.type === 'collection' ? 'collectionId' : 'filterValue')
 const placeholder = computed(() => props.type === 'collection' ? 'Select Collections to Filter...' : 'Select Labels to Filter ...')
 
 const noLabelOption = Object.freeze({
   labelId: NO_LABEL_SENTINEL,
+  filterValue: NO_LABEL_SENTINEL,
   name: 'No label',
   color: '777777',
 })
@@ -74,7 +76,9 @@ const renderedOptions = computed(() => {
   if (props.type !== 'label') {
     return options.value || []
   }
-  const labelOptions = (options.value || []).filter(opt => opt.labelId !== null && opt.labelId !== 'null')
+  const labelOptions = (options.value || [])
+    .filter(opt => opt.labelId !== null && opt.labelId !== 'null')
+    .map(opt => ({ ...opt, filterValue: opt.name }))
   return [noLabelOption, ...labelOptions]
 })
 

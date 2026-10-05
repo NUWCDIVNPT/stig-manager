@@ -27,16 +27,16 @@ const collectionId = computed(() => route.params.collectionId)
 const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
 
-// Label filter lives in the route query (labelId=<uuid>&labelMatch=null) so a
-// label-scoped view is bookmarkable.
-const selectedLabelIds = computed(() => parseLabelFilterParams(route.query))
-const labelFilterParams = computed(() => buildLabelFilterParams(selectedLabelIds.value))
+// Label filter lives in the route query (labelName=<name>&labelMatch=null) so a
+// label-scoped view is bookmarkable and readable; the API takes the names as is.
+const selectedLabelNames = computed(() => parseLabelFilterParams(route.query))
+const labelFilterParams = computed(() => buildLabelFilterParams(selectedLabelNames.value))
 // Stable watch source: the computeds above return fresh objects on every route change.
 const labelFilterKey = computed(() => JSON.stringify(labelFilterParams.value))
 
-function onUpdateSelectedLabelIds(ids) {
-  const { labelId, labelMatch, ...rest } = route.query
-  router.replace({ query: { ...rest, ...buildLabelFilterParams(ids) } })
+function onUpdateSelectedLabelNames(names) {
+  const { labelName, labelMatch, ...rest } = route.query
+  router.replace({ query: { ...rest, ...buildLabelFilterParams(names) } })
 }
 
 function recentViewKey(cId = collectionId.value, bId = benchmarkId.value) {
@@ -328,10 +328,10 @@ async function onBatchEditConfirm(payload) {
                 :selected-rule-id="selectedRuleId"
                 :asset-count="assetCount"
                 :collection-id="collectionId"
-                :selected-label-ids="selectedLabelIds"
+                :selected-label-names="selectedLabelNames"
                 :export-filename="benchmarkId"
                 @select-rule="onSelectRule"
-                @update:selected-label-ids="onUpdateSelectedLabelIds"
+                @update:selected-label-names="onUpdateSelectedLabelNames"
                 @refresh="loadChecklist"
               />
             </SplitterPanel>

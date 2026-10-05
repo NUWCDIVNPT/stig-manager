@@ -26,7 +26,7 @@ defineProps({
 const searchFilter = defineModel('searchFilter', { type: String, default: '' })
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
 const displayMode = defineModel('displayMode', { type: String, required: true })
-const selectedLabelIds = defineModel('selectedLabelIds', { type: Array, default: () => [] })
+const selectedLabelNames = defineModel('selectedLabelNames', { type: Array, default: () => [] })
 
 const route = useRoute()
 const benchmarkId = computed(() => route.params.benchmarkId)
@@ -108,7 +108,7 @@ function toggleChecklistMenu(event) {
       <div class="checklist-grid__title-row">
         <span class="checklist-grid__title">{{ headerTitle }}</span>
         <div class="checklist-grid__label-filter">
-          <MetricsFilter v-model="selectedLabelIds" type="label" :collection-id="collectionId" />
+          <MetricsFilter v-model="selectedLabelNames" type="label" :collection-id="collectionId" />
         </div>
       </div>
     </div>

@@ -42,7 +42,7 @@ describe('collectionStigsTab.vue', () => {
   })
 
   it('opens Collection Review scoped to the dashboard label filter on STIG shield click', async () => {
-    renderWithProviders(CollectionStigsTab, { props: { collectionId: 'coll-1', selectedLabelIds: ['label-a', null] } })
+    renderWithProviders(CollectionStigsTab, { props: { collectionId: 'coll-1', selectedLabelNames: ['Alpha', null] } })
     await flushPromises()
 
     await fireEvent.click(screen.getByTestId('shield-stig'))
@@ -50,7 +50,7 @@ describe('collectionStigsTab.vue', () => {
     expect(mockPush).toHaveBeenCalledWith({
       name: 'collection-benchmark-review',
       params: { collectionId: 'coll-1', benchmarkId: 'bench-1', revisionStr: 'V1R1' },
-      query: { labelId: ['label-a'], labelMatch: 'null' },
+      query: { labelName: ['Alpha'], labelMatch: 'null' },
     })
   })
 
