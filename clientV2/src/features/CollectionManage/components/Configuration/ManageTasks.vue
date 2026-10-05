@@ -251,7 +251,7 @@ const showTaskOutput = () => {
 
 .action-icon {
   color: var(--color-text-dim);
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
 }
 
 .task-meta {
@@ -263,7 +263,7 @@ const showTaskOutput = () => {
 .task-meta-row {
   display: flex;
   gap: 1rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .task-meta-label {
@@ -295,7 +295,7 @@ const showTaskOutput = () => {
 
 .rules-empty {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 

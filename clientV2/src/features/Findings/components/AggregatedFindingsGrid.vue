@@ -81,11 +81,10 @@ function onPopoverSelectStig(benchmarkId) {
   stigPopover.value?.hide()
 }
 
-// Same geometry as AssetChecklistGrid: 15px per rendered line of clamped text
-// (1.05rem × 1.3 line-height at the 11px root) + 6px cell padding. itemSize
-// drives the virtual scroller; rows are pinned to it via --item-size below so
-// the scroller's position math (n × itemSize) stays correct.
-const { lineClamp, itemSize } = useGridDensity('findings-aggregated', 2, 6, 15)
+// Row geometry lives in useGridDensity's table. itemSize drives the virtual
+// scroller; rows are pinned to it via --item-size and the clamped text reads
+// --cell-line-height, so the scroller's position math (n × itemSize) holds.
+const { itemSize, gridStyle } = useGridDensity('findings-aggregated')
 
 const poamDialogVisible = ref(false)
 
@@ -117,9 +116,9 @@ function onRowSelect(event) {
 }
 
 const dataTablePt = {
-  // Body font size is the single source of truth for row text (cells inherit
-  // it); the itemSize geometry below is derived from this 1.05rem × 1.3.
-  ...compactTablePt({ bodyFontSize: '1rem' }),
+  // Body font size for the unclamped cells; the clamped .cell-text cells take
+  // theirs from the grid geometry via --cell-font-size.
+  ...compactTablePt(),
   tableContainer: { style: 'background: var(--p-datatable-row-background); height: 100%;' },
   table: { style: { tableLayout: 'fixed', width: '100%' } },
   bodyRow: { style: { cursor: 'pointer', height: 'var(--item-size)', overflow: 'hidden' } },
@@ -191,7 +190,7 @@ const flexCellPt = {
           />
         </label>
 
-        <DensityControls grid-key="findings-aggregated" :default-line-clamp="2" :min="2" class="agg-grid-panel__density" />
+        <DensityControls grid-key="findings-aggregated" class="agg-grid-panel__density" />
       </header>
 
       <Popover ref="stigPopover" :pt="stigPopoverPt" @show="onPopoverShow">
@@ -234,7 +233,7 @@ const flexCellPt = {
           :virtual-scroller-options="{ itemSize }"
           striped-rows
           class="agg-grid-panel__table"
-          :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
+          :style="gridStyle"
           :pt="dataTablePt"
           @row-select="onRowSelect"
         >
@@ -397,7 +396,7 @@ const flexCellPt = {
 
 .agg-grid-panel__title-icon {
   color: var(--color-primary-highlight);
-  font-size: 0.9em;
+  font-size: var(--text-md);
   margin-right: 0.35rem;
 }
 
@@ -417,7 +416,7 @@ const flexCellPt = {
   min-width: 1.7rem;
   padding: 0.1rem 0.4rem;
   border-radius: 3px;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-dark);
@@ -459,7 +458,7 @@ const flexCellPt = {
 .cat-total--3 { border-color: var(--color-cat3); }
 
 .cat-total__label {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 700;
   letter-spacing: 0.03em;
 }
@@ -469,7 +468,7 @@ const flexCellPt = {
 .cat-total--3 .cat-total__label { color: var(--color-cat3); }
 
 .cat-total__value {
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-bright);
@@ -486,7 +485,7 @@ const flexCellPt = {
   display: inline-flex;
   align-items: center;
   margin: 0;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   color: var(--color-text-bright);
   letter-spacing: 0.02em;
@@ -498,7 +497,7 @@ const flexCellPt = {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
   background: var(--color-background-light);
   border: 1px solid var(--color-border-default);
@@ -541,7 +540,7 @@ const flexCellPt = {
 }
 
 .agg-grid-panel__scope-caret {
-  font-size: 0.75em;
+  font-size: var(--icon-xs);
   color: var(--color-text-dim);
   flex-shrink: 0;
   margin-left: 0.1rem;
@@ -558,7 +557,7 @@ const flexCellPt = {
   padding: 1rem;
   text-align: center;
   color: var(--color-text-error);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .agg-grid-panel__retry {
@@ -583,7 +582,7 @@ const flexCellPt = {
 .toolbar-field__label {
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -606,11 +605,11 @@ const flexCellPt = {
   min-height: 0;
 }
 
-/* line-height is load-bearing: font-size (bodyFontSize) × this ≈ the density
-   sizeMultiplier (15px/line), so N clamped lines fill exactly N rows. Retune
-   all three together (see useGridDensity). */
+/* Size and line height come from the grid geometry (useGridDensity textSize),
+   so N clamped lines fill exactly N rows. */
 .cell-text {
-  line-height: 1.3;
+  font-size: var(--cell-font-size);
+  line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-primary);
 }
 
@@ -631,7 +630,7 @@ const flexCellPt = {
   display: inline-block;
   width: 100%;
   text-align: center;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   color: var(--color-text-bright);
@@ -645,7 +644,7 @@ const flexCellPt = {
   background: color-mix(in srgb, var(--color-primary-highlight) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-primary-highlight) 14%, transparent);
   border-radius: 2px;
-  font-size: 1rem;
+  font-size: var(--text-md);
   flex-shrink: 0;
   white-space: nowrap;
 }

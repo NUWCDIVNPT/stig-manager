@@ -44,14 +44,14 @@ function goHome() {
 }
 
 .not-found__code {
-  font-size: 5rem;
+  font-size: var(--text-display-xl);
   font-weight: 700;
   line-height: 1;
   opacity: 0.3;
 }
 
 .not-found__title {
-  font-size: 1.5rem;
+  font-size: var(--text-2xl);
   font-weight: 600;
   margin: 0;
 }
@@ -73,7 +73,7 @@ function goHome() {
   border: none;
   border-radius: 0.375rem;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: var(--text-md);
   font-weight: 500;
   transition: background 0.15s ease;
 }

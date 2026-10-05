@@ -108,7 +108,7 @@ const tabPanelPt = {
       <SplitterPanel
         :size="28"
         :min-size="4"
-        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating }, style: 'min-width: 330px; max-width: 600px;' } }"
+        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating }, style: 'min-width: 380px; max-width: 460px;' } }"
       >
         <aside class="dashboard-sidebar">
           <button
@@ -268,7 +268,7 @@ const tabPanelPt = {
 }
 
 .filter-label {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   font-weight: 600;
   letter-spacing: 0.05em;
   color: var(--color-text-dim);

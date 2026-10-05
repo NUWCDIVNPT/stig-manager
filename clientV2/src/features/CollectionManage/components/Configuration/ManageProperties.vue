@@ -184,7 +184,7 @@ const textareaPt = collectionTextareaPt
 @import "../collection-manage.css";
 
 .field-error {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   line-height: 1.2;
   min-height: 1.2em;
   color: var(--color-text-error);

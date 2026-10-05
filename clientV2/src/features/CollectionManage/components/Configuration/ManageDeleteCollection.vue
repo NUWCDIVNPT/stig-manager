@@ -173,7 +173,7 @@ const performDelete = async () => {
 
 .danger-zone-header h3 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
   color: var(--color-text-bright);
 }
 
@@ -184,7 +184,7 @@ const performDelete = async () => {
 
 .danger-icon {
   color: var(--color-text-error);
-  font-size: 1.35rem;
+  font-size: var(--text-xl);
 }
 
 .modal-content {
@@ -192,7 +192,7 @@ const performDelete = async () => {
   flex-direction: column;
   gap: 1.25rem;
   color: var(--color-text-primary);
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   line-height: 1.5;
 }
 

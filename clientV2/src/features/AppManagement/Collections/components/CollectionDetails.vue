@@ -68,11 +68,11 @@ const emit = defineEmits(['updated', 'grants-updated'])
 
 .details-icon {
   color: var(--color-primary-highlight);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .details-title {
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-text-bright);
   margin: 0;

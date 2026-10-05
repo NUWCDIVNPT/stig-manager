@@ -86,7 +86,7 @@ const anySelected = computed(() => selectedLevels.value.length > 0 && selectedCo
 }
 
 .log-filter-set legend {
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-dim);
   padding: 0 0.35rem;
@@ -97,7 +97,7 @@ const anySelected = computed(() => selectedLevels.value.length > 0 && selectedCo
   align-items: center;
   gap: 0.5rem;
   padding: 0.25rem 0;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
   cursor: pointer;
 }

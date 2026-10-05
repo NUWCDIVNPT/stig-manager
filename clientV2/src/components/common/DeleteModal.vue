@@ -70,7 +70,7 @@ const onCancel = () => {
 }
 
 .warning-icon {
-  font-size: 2rem;
+  font-size: var(--text-display);
   color: var(--color-text-error);
   margin-right: 1rem;
 }

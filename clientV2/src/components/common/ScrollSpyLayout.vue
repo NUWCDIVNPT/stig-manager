@@ -191,7 +191,7 @@ onUnmounted(() => {
   background: none;
   border: none;
   color: var(--color-text-dim);
-  font-size: 1.075rem;
+  font-size: var(--text-lg);
   font-weight: 500;
   text-align: left;
   cursor: pointer;
@@ -211,7 +211,7 @@ onUnmounted(() => {
 }
 
 .scrollspy-nav-icon {
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   opacity: 0.85;
 }
 
@@ -291,7 +291,7 @@ onUnmounted(() => {
 }
 
 .scrollspy-card-icon {
-  font-size: 1.45rem;
+  font-size: var(--text-2xl);
   color: var(--color-primary-highlight-light);
 }
 
@@ -302,7 +302,7 @@ onUnmounted(() => {
 }
 
 .scrollspy-card-title {
-  font-size: 1.35rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   color: var(--color-text-bright);
   margin: 0;
@@ -310,7 +310,7 @@ onUnmounted(() => {
 
 .scrollspy-card-desc {
   color: var(--color-text-dim);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   margin: 0;
 }
 

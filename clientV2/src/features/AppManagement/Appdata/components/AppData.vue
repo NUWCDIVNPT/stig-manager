@@ -89,9 +89,9 @@ watch(() => importState.log.length, () => {
 
 const selectPt = {
   root: { style: 'background-color: var(--color-background-light); border: 1px solid var(--color-border-default); border-radius: 6px; color: var(--color-text-primary); width: 100%;' },
-  label: { style: 'padding: 0.6rem 0.85rem; font-size: 1.1rem; color: var(--color-text-primary);' },
+  label: { style: 'padding: 0.6rem 0.85rem; font-size: var(--text-lg); color: var(--color-text-primary);' },
   overlay: { style: 'background-color: var(--color-background-light) !important; border: 1px solid var(--color-border-default) !important;' },
-  option: { style: 'color: var(--color-text-primary); font-size: 1.1rem; padding: 0.6rem 0.85rem;' },
+  option: { style: 'color: var(--color-text-primary); font-size: var(--text-lg); padding: 0.6rem 0.85rem;' },
 }
 
 const splitterPt = {
@@ -100,8 +100,8 @@ const splitterPt = {
 }
 
 const filePickerBtnPt = {
-  label: { style: 'font-size: 1.25rem;' },
-  icon: { style: 'font-size: 1.25rem;' },
+  label: { style: 'font-size: var(--text-xl);' },
+  icon: { style: 'font-size: var(--text-xl);' },
 }
 </script>
 
@@ -298,7 +298,7 @@ const filePickerBtnPt = {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 1.4rem;
+  font-size: var(--text-2xl);
   color: var(--color-primary-highlight);
   background: color-mix(in srgb, var(--color-action-blue-dark) 18%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-action-blue-dark) 35%, transparent);
@@ -316,7 +316,7 @@ const filePickerBtnPt = {
 
 .page-header h2 {
   margin: 0;
-  font-size: 2rem;
+  font-size: var(--text-2xl);
   font-weight: 700;
   color: var(--color-text-bright);
 }
@@ -324,11 +324,11 @@ const filePickerBtnPt = {
 .page-header p {
   margin: 0.35rem 0 0;
   color: var(--color-text-dim);
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
 }
 
 .experimental-badge {
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -380,7 +380,7 @@ const filePickerBtnPt = {
 
 .action-title-row h3 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: var(--text-2xl);
   font-weight: 700;
   color: var(--color-text-bright);
 }
@@ -389,7 +389,7 @@ const filePickerBtnPt = {
   display: block;
   margin-top: 0.2rem;
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -402,7 +402,7 @@ const filePickerBtnPt = {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
 }
 
 .action-icon--export {
@@ -436,7 +436,7 @@ const filePickerBtnPt = {
 }
 
 .flabel {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -449,7 +449,7 @@ const filePickerBtnPt = {
 }
 
 .picked-filename {
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -470,8 +470,8 @@ const filePickerBtnPt = {
   border: 1px solid var(--color-border-default);
   border-radius: 8px;
   padding: 1rem 1.15rem;
-  font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 1.1rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
   line-height: 1.6;
   color: var(--color-text-primary);
   white-space: pre-wrap;
@@ -488,7 +488,7 @@ const filePickerBtnPt = {
 .progress-header {
   display: flex;
   justify-content: space-between;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-dim);
 }
 
@@ -520,7 +520,7 @@ const filePickerBtnPt = {
   border-left: 4px solid var(--color-action-red);
   border-radius: 8px;
   padding: 1rem 1.15rem;
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   line-height: 1.6;
   flex-shrink: 0;
 }
@@ -537,14 +537,14 @@ const filePickerBtnPt = {
   border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
   border-radius: 8px;
   padding: 1rem 1.15rem;
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   line-height: 1.5;
   flex-shrink: 0;
 }
 
 .success-icon {
   color: var(--color-success);
-  font-size: 1.4rem;
+  font-size: var(--text-2xl);
   flex-shrink: 0;
 }
 
@@ -562,7 +562,7 @@ const filePickerBtnPt = {
 .busy-indicator {
   margin-right: auto;
   color: var(--color-text-dim);
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -571,7 +571,7 @@ const filePickerBtnPt = {
 .uploading-hint {
   margin-right: auto;
   color: var(--color-text-dim);
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -580,6 +580,6 @@ const filePickerBtnPt = {
 .field-error {
   margin-right: auto;
   color: var(--color-text-error);
-  font-size: 1.05rem;
+  font-size: var(--text-md);
 }
 </style>

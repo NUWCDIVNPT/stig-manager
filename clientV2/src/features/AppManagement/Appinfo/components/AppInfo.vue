@@ -248,12 +248,12 @@ const tabPanelPt = {
   background: color-mix(in srgb, var(--color-background-subtle) 60%, transparent);
   backdrop-filter: blur(1px);
   cursor: wait;
-  font-size: 1.6rem;
+  font-size: var(--text-2xl);
   color: var(--color-text-dim);
 }
 
 .tab-icon {
-  font-size: 0.92rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
@@ -271,7 +271,7 @@ const tabPanelPt = {
   gap: 0.6rem;
   border-radius: 6px;
   padding: 0.7rem 1rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   flex-shrink: 0;
 }
 

@@ -6,6 +6,7 @@ import { computed, ref } from 'vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
 const props = defineProps({
   matched: { type: Array, required: true },
@@ -16,6 +17,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:updatedOnly'])
+
+const ROW_HEIGHT = rowHeightPx('standard')
 
 const RESULT_TO_STATUS = {
   fail: 'O',
@@ -74,40 +77,40 @@ const exportResult = ({ data }) => badgeFor(data) ?? ''
         scroll-height="flex"
         resizable-columns
         striped-rows
-        :virtual-scroller-options="{ itemSize: 38 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
         :pt="{ table: { style: 'table-layout: fixed; width: 100%' } }"
       >
-        <Column field="ruleId" header="Rule" style="min-width: 130px" sortable />
-        <Column field="title" header="Title" style="min-width: 220px" sortable>
+        <Column field="ruleId" header="Rule" style="min-width: 11.75rem" sortable />
+        <Column field="title" header="Title" style="min-width: 20rem" sortable>
           <template #body="{ data }">
             <span :title="data.title">{{ data.title }}</span>
           </template>
         </Column>
-        <Column field="groupId" header="Group" style="width: 110px" sortable />
-        <Column field="severity" :sort-field="severitySortValue" header="Severity" style="width: 100px" sortable />
-        <Column header="Current" field="currentResult" :export-value="exportResult" style="width: 80px; text-align: center" :sort-field="r => r.currentResult ?? ''" sortable>
+        <Column field="groupId" header="Group" style="width: 10rem" sortable />
+        <Column field="severity" :sort-field="severitySortValue" header="Severity" style="width: 9rem" sortable />
+        <Column header="Current" field="currentResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :sort-field="r => r.currentResult ?? ''" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.currentResult)" :status="badgeFor(data.currentResult)" />
             <span v-else>—</span>
           </template>
         </Column>
-        <Column header="New" field="newResult" :export-value="exportResult" style="width: 80px; text-align: center" :sort-field="r => r.newResult ?? ''" sortable>
+        <Column header="New" field="newResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :sort-field="r => r.newResult ?? ''" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.newResult)" :status="badgeFor(data.newResult)" />
             <span v-else>—</span>
           </template>
         </Column>
-        <Column field="newDetail" header="New Detail" style="min-width: 200px">
+        <Column field="newDetail" header="New Detail" style="min-width: 18.25rem">
           <template #body="{ data }">
             <span class="ellipsis" :title="data.newDetail">{{ data.newDetail }}</span>
           </template>
         </Column>
-        <Column field="newComment" header="New Comment" style="min-width: 200px">
+        <Column field="newComment" header="New Comment" style="min-width: 18.25rem">
           <template #body="{ data }">
             <span class="ellipsis" :title="data.newComment">{{ data.newComment }}</span>
           </template>
         </Column>
-        <Column field="newStatus" header="New Status" style="width: 110px" sortable>
+        <Column field="newStatus" header="New Status" style="width: 10rem" sortable>
           <template #body="{ data }">
             <span v-if="data.newStatus" class="status-pill">{{ data.newStatus }}</span>
             <span v-else class="status-empty">—</span>
@@ -189,7 +192,7 @@ const exportResult = ({ data }) => badgeFor(data) ?? ''
   align-items: center;
   gap: 0.45rem;
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   flex-shrink: 0;
 }
 
@@ -258,7 +261,7 @@ const exportResult = ({ data }) => badgeFor(data) ?? ''
 .excluded-desc {
   margin: 0;
   color: var(--color-text-dim);
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   line-height: 1.4;
 }
 
@@ -271,13 +274,13 @@ const exportResult = ({ data }) => badgeFor(data) ?? ''
 }
 
 .excluded-chip {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   padding: 0.1rem 0.45rem;
   border-radius: 999px;
   background: var(--color-background-darkest);
   color: var(--color-text-dim);
   border: 1px solid var(--color-border-default);
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
 }
 
 .status-pill {
@@ -287,7 +290,7 @@ const exportResult = ({ data }) => badgeFor(data) ?? ''
   background: var(--color-background-darkest);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-default);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   text-transform: capitalize;
 }
 

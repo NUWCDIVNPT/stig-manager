@@ -77,6 +77,6 @@ const removeIconPt = { icon: ({ context }) => ({ style: context?.disabled ? {} :
 .control-btn {
   min-width: 8rem;
   padding: 0.6rem 1rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
 }
 </style>

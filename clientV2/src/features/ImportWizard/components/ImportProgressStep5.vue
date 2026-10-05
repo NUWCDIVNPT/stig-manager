@@ -59,28 +59,28 @@ const rejectedRef = ref()
             @row-select="e => emit('update:selectedRow', e.data)"
             @row-unselect="emit('update:selectedRow', null)"
           >
-            <Column field="assetName" header="Asset" style="min-width: 180px" sortable />
-            <Column field="created" header="Created" style="width: 90px" sortable>
+            <Column field="assetName" header="Asset" style="min-width: 16.25rem" sortable />
+            <Column field="created" header="Created" style="width: 8.25rem" sortable>
               <template #body="{ data }">
                 {{ data.created ? 'true' : 'false' }}
               </template>
             </Column>
-            <Column field="addedStigs" header="Added STIGs" style="width: 110px" sortable>
+            <Column field="addedStigs" header="Added STIGs" style="width: 10rem" sortable>
               <template #body="{ data }">
                 {{ data.addedStigs ? 'true' : 'false' }}
               </template>
             </Column>
-            <Column field="inserted" header="Inserted" style="width: 90px" sortable>
+            <Column field="inserted" header="Inserted" style="width: 8.25rem" sortable>
               <template #body="{ data }">
                 {{ data.error ? '-' : (data.inserted ?? 0) }}
               </template>
             </Column>
-            <Column field="updated" header="Updated" style="width: 90px" sortable>
+            <Column field="updated" header="Updated" style="width: 8.25rem" sortable>
               <template #body="{ data }">
                 {{ data.error ? '-' : (data.updated ?? 0) }}
               </template>
             </Column>
-            <Column header="Rejected" :exportable="false" style="width: 90px" sortable :sort-field="r => r.error ? -1 : (r.rejected?.length ?? 0)">
+            <Column header="Rejected" :exportable="false" style="width: 8.25rem" sortable :sort-field="r => r.error ? -1 : (r.rejected?.length ?? 0)">
               <template #body="{ data }">
                 {{ data.error ? '!' : (data.rejected?.length ?? 0) }}
               </template>
@@ -113,11 +113,11 @@ const rejectedRef = ref()
               striped-rows
               class="rejected-table"
             >
-              <Column field="ruleId" header="Rule" style="min-width: 160px" sortable />
+              <Column field="ruleId" header="Rule" style="min-width: 14.5rem" sortable />
               <Column field="reason" header="Reason" sortable />
               <template #empty>
                 <div class="rejected-empty">
-                  <span class="pi pi-info-circle" style="color: var(--color-primary-highlight); font-size: 1.2rem;" />
+                  <span class="pi pi-info-circle" style="color: var(--color-primary-highlight); font-size: var(--text-xl);" />
                   <span>{{ selectedRow ? 'No rejected reviews for this asset.' : 'Select a row above with rejected reviews to inspect them here.' }}</span>
                 </div>
               </template>
@@ -144,7 +144,7 @@ const rejectedRef = ref()
       <div class="running-text">
         Processing {{ statusRows.length }} of {{ totalCount }}
       </div>
-      <div class="running-hint">
+      <div>
         Full results appear here when the import finishes.
       </div>
     </div>
@@ -165,7 +165,7 @@ const rejectedRef = ref()
 }
 
 .step-title {
-  font-size: 1.6rem;
+  font-size: var(--text-2xl);
   font-weight: 600;
   margin: 0;
   color: var(--color-primary-highlight);
@@ -187,18 +187,18 @@ const rejectedRef = ref()
   align-items: center;
   gap: 0.5rem;
 }
-.isp-icon { font-size: 0.8rem; color: var(--color-action-blue); flex-shrink: 0; }
+.isp-icon { font-size: var(--text-md); color: var(--color-action-blue); flex-shrink: 0; }
 .isp-icon--done { color: var(--color-success); }
 .isp-text {
   flex: 1;
-  font-size: 0.875rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .isp-pct {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--color-text-primary);
   font-variant-numeric: tabular-nums;
@@ -252,7 +252,7 @@ const rejectedRef = ref()
   justify-content: center;
   gap: 0.5rem;
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
   padding: 0.75rem 1rem;
   text-align: center;
 }
@@ -262,7 +262,7 @@ const rejectedRef = ref()
   background-color: var(--color-background-light);
   border-bottom: 1px solid var(--color-border-default);
   font-weight: 600;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-bright);
   flex-shrink: 0;
   display: flex;
@@ -296,15 +296,12 @@ const rejectedRef = ref()
   color: var(--color-text-dim);
 }
 .running-icon {
-  font-size: 1.4rem;
+  font-size: var(--text-2xl);
   color: var(--color-action-blue);
 }
 .running-text {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   font-variant-numeric: tabular-nums;
-}
-.running-hint {
-  font-size: 0.85rem;
 }
 </style>

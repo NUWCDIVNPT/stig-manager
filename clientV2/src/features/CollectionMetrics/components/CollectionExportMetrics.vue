@@ -141,7 +141,7 @@ async function download() {
 
 label {
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 500;
 }
 

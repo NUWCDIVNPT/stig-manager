@@ -2,6 +2,10 @@
 import Popover from 'primevue/popover'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getContrastColor, normalizeColor } from '../../shared/lib/colorUtils.js'
+import { rootFontSizePx } from '../../shared/lib/remToPx.js'
+import { TEXT_SCALE_REM } from '../../shared/lib/textScale.js'
+import { bodyFontFamily, measureTextWidth } from '../../shared/lib/textWidth.js'
+import HighlightText from '../common/HighlightText.vue'
 
 const props = defineProps({
   labels: {
@@ -13,17 +17,24 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  searchTerm: {
+    type: String,
+    default: '',
+  },
 })
 
 const popoverRef = ref()
 let hideTimeout = null
 
-// Constants for label size estimation - use tighter values when compact
-const CHAR_WIDTH = computed(() => props.compact ? 5.5 : 6.5)
-const LABEL_PADDING = computed(() => props.compact ? 10 : 12)
-const LABEL_GAP = 3
-const OVERFLOW_BADGE_WIDTH = 8
-const RIGHT_MARGIN = computed(() => props.compact ? 0 : 8)
+// Chip geometry in px derived from rem so it tracks the root font-size along
+// with the chip CSS below. Padding, gap and font (--text-md) mirror .label-tag /
+// .labels-row exactly; the +N badge is a chip too and is measured the same
+// way. `compact` only drops the trailing margin.
+const root = rootFontSizePx()
+const LABEL_FONT = `600 ${TEXT_SCALE_REM.md * root}px ${bodyFontFamily()}`
+const LABEL_PADDING = 0.9 * root
+const LABEL_GAP = 0.25 * root
+const RIGHT_MARGIN = computed(() => props.compact ? 0 : 0.75 * root)
 
 // Container ref and width
 const containerRef = ref(null)
@@ -54,11 +65,9 @@ onBeforeUnmount(() => {
   }
 })
 
-
-
-// Estimate the width of a label based on its text
+// Rendered width of a chip for the given text
 function estimateLabelWidth(text) {
-  return (String(text).length * CHAR_WIDTH.value) + LABEL_PADDING.value
+  return measureTextWidth(String(text), LABEL_FONT) + LABEL_PADDING
 }
 
 // Computed: which labels to show based on container width
@@ -70,9 +79,10 @@ const visibleLabelsData = computed(() => {
     return { visible: [], overflow: [], overflowCount: 0 }
   }
 
-  // If we don't have width yet, show all (will recalculate after mount)
+  // Render nothing until the container is measured. Rendering every label
+  // first would widen an auto-layout column and flash before collapsing.
   if (!width || width <= 0) {
-    return { visible: labels, overflow: [], overflowCount: 0 }
+    return { visible: [], overflow: [], overflowCount: 0 }
   }
 
   const availableWidth = width - RIGHT_MARGIN.value
@@ -86,7 +96,7 @@ const visibleLabelsData = computed(() => {
     // Check if we need room for overflow badge
     const remainingLabels = labels.length - i - 1
     const needsOverflowBadge = remainingLabels > 0
-    const reservedWidth = needsOverflowBadge ? OVERFLOW_BADGE_WIDTH + LABEL_GAP : 0
+    const reservedWidth = needsOverflowBadge ? estimateLabelWidth(`+${remainingLabels}`) + LABEL_GAP : 0
 
     if (usedWidth + labelWidth + reservedWidth <= availableWidth) {
       visible.push(label)
@@ -148,7 +158,7 @@ function hidePopover() {
       :style="{ backgroundColor: normalizeColor(label.color, '#cccccc'), color: getContrastColor(label.color, '#000000', 'var(--color-text-primary)') }"
       class="label-tag"
     >
-      {{ label.name }}
+      <HighlightText :text="label.name" :term="searchTerm" />
     </span>
     <span
       v-if="visibleLabelsData.overflowCount > 0"
@@ -171,7 +181,7 @@ function hidePopover() {
           :style="{ backgroundColor: normalizeColor(label.color, '#cccccc'), color: getContrastColor(label.color, '#000000', 'var(--color-text-primary)') }"
           class="label-tag"
         >
-          {{ label.name }}
+          <HighlightText :text="label.name" :term="searchTerm" />
         </span>
       </div>
     </Popover>
@@ -179,18 +189,22 @@ function hidePopover() {
 </template>
 
 <style scoped>
+/* inline-size containment keeps the rendered chips from feeding back into an
+   auto-layout column's width, so the row is sized by its cell, not the
+   reverse. */
 .labels-row {
   display: flex;
   flex-wrap: nowrap;
-  gap: 3px;
+  gap: 0.25rem;
   align-items: center;
+  contain: inline-size;
 }
 
 .label-tag {
   display: inline-block;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 600;
-  padding: 1px 5px;
+  padding: 0.1rem 0.45rem;
   border-radius: 6px;
   white-space: nowrap;
 }

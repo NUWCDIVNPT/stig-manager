@@ -3,7 +3,7 @@ import { computed, ref, toRefs, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import ReviewEditPopover from '../../../components/common/ReviewEditPopover.vue'
-import { patchReview, putReview } from '../../../shared/api/reviewsApi.js'
+import { fetchReview, patchReview, putReview } from '../../../shared/api/reviewsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
@@ -67,7 +67,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:searchFilter', 'review-saved', 'refresh'])
+const emit = defineEmits(['update:searchFilter', 'review-saved', 'review-loaded', 'refresh'])
 
 const { selectRule } = props
 
@@ -148,7 +148,6 @@ const selectedRow = computed(() => {
   return ruleLookupMap.value.get(selectedRuleId.value) ?? null
 })
 const reviewEditPopover = ref()
-const popoverAnchor = ref(null)
 const editingRow = ref(null)
 
 const currentReview = computed(() => gridData.value.find(r => r.ruleId === editingRow.value?.ruleId) ?? null)
@@ -246,7 +245,7 @@ const visibleFields = computed(() => {
   return fields
 })
 
-const { lineClamp, itemSize } = useGridDensity('asset-review-checklist', 3, 6, 15)
+const { itemSize, gridStyle } = useGridDensity('asset-review-checklist')
 
 const localSearchFilter = computed({
   get: () => props.searchFilter,
@@ -262,37 +261,28 @@ watch([
   localSearchFilter.value = ''
 })
 
+// The checklist endpoint carries no reviewer or status user, so the first time
+// a reviewed row is opened, fetch the full review and merge it into the row.
+async function hydrateReview(rowData) {
+  if (!rowData.result || rowData.username) {
+    return
+  }
+  try {
+    const review = await fetchReview(collectionId.value, assetId.value, rowData.ruleId)
+    emit('review-loaded', { ...review, ruleId: rowData.ruleId })
+  }
+  catch {
+    // Attribution is informational; the popover still works from checklist data.
+  }
+}
+
 function openRowEditor(event, rowData) {
   const isSameRow = editingRow.value?.ruleId === rowData.ruleId
-  const wasOpen = !!editingRow.value
-
   editingRow.value = rowData
-
-  const row = event.target?.closest ? event.target.closest('tr') : null
-  const rowRect = row ? row.getBoundingClientRect() : { top: 0, bottom: 0, height: 0 }
-  const clickX = event.clientX
-
-  if (popoverAnchor.value) {
-    popoverAnchor.value.style.left = `${clickX}px`
-    popoverAnchor.value.style.top = `${rowRect.top}px`
-    popoverAnchor.value.style.height = `${rowRect.height}px`
+  if (!isSameRow) {
+    hydrateReview(rowData)
   }
-
-  const anchorEvent = {
-    currentTarget: popoverAnchor.value,
-    target: popoverAnchor.value,
-    clientX: clickX,
-  }
-
-  if (isSameRow) {
-    reviewEditPopover.value.toggle(anchorEvent)
-  }
-  else if (wasOpen) {
-    reviewEditPopover.value.reposition(anchorEvent)
-  }
-  else {
-    reviewEditPopover.value.show(anchorEvent)
-  }
+  reviewEditPopover.value.openForRow(event, isSameRow)
 }
 
 const scrollLocked = computed(() => !!editingRow.value && !!reviewEditPopover.value?.isDirty)
@@ -364,7 +354,7 @@ function onRowClick(event) {
 
 <template>
   <div
-    class="checklist-grid" :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
+    class="checklist-grid" :style="gridStyle"
     @scroll.capture="onGridScroll" @wheel.capture="onGridWheel"
   >
     <AssetChecklistGridHeader
@@ -405,12 +395,6 @@ function onRowClick(event) {
       @save="onPopoverSave"
       @status-action="onPopoverStatusAction"
       @close="editingRow = null"
-    />
-
-    <div
-      ref="popoverAnchor"
-      class="popover-anchor"
-      style="position: fixed; width: 0px; pointer-events: none; visibility: hidden; z-index: -1;"
     />
 
     <BulkStatusConfirmModal

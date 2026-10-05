@@ -151,7 +151,7 @@ watch(() => props.visible, (open) => {
 
 <style scoped>
 .empty {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   padding: 1rem;
   text-align: center;

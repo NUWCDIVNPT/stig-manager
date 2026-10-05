@@ -106,7 +106,7 @@ const statusToggle = computed(() => {
 })
 
 const tablePt = {
-  ...compactTablePt({ bodyFontSize: '1rem' }),
+  ...compactTablePt(),
   bodyRow: { style: 'cursor: pointer;' },
 }
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
@@ -293,7 +293,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   display: inline-block;
   padding: 0.1rem 0.5rem;
   border-radius: 999px;
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: capitalize;
 }

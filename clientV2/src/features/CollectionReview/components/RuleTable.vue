@@ -56,7 +56,7 @@ const props = defineProps({
 
 const emit = defineEmits(['review-saved', 'update:selection', 'bulk-action'])
 
-const { lineClamp, itemSize } = useGridDensity('collection-rule-table', 1, 12, 24)
+const { gridStyle } = useGridDensity('collection-rule-table')
 
 const TOGGLEABLE_COLUMNS = [
   { field: 'labels', header: 'Labels' },
@@ -68,14 +68,16 @@ const TOGGLEABLE_COLUMNS = [
 
 const selectedColumns = ref([...TOGGLEABLE_COLUMNS])
 const visibleFields = computed(() => new Set(selectedColumns.value.map(c => c.field)))
+const searchFilter = ref('')
 </script>
 
 <template>
   <div
     class="rule-table"
-    :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
+    :style="gridStyle"
   >
     <RuleTableHeader
+      v-model:search-filter="searchFilter"
       v-model:selected-columns="selectedColumns"
       :selected-rule-id="selectedRuleId"
       :toggleable-columns="TOGGLEABLE_COLUMNS"
@@ -87,6 +89,7 @@ const visibleFields = computed(() => new Set(selectedColumns.value.map(c => c.fi
       :grid-data="gridData"
       :is-loading="isLoading"
       :visible-fields="visibleFields"
+      :search-filter="searchFilter"
       :collection-id="collectionId"
       :selected-rule-id="selectedRuleId"
       :field-settings="fieldSettings"
@@ -128,7 +131,7 @@ const visibleFields = computed(() => new Set(selectedColumns.value.map(c => c.fi
 }
 
 .rule-table__mask-spinner {
-  font-size: 2rem;
+  font-size: var(--text-display);
   color: var(--color-text-bright);
 }
 </style>

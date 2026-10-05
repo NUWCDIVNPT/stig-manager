@@ -7,6 +7,7 @@ import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import { computed } from 'vue'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { getAssignableRoleOptions, roleMap } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 import { useGranteeFilter } from './useGranteeFilter.js'
@@ -32,6 +33,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['save', 'cancel', 'update:source', 'update:target'])
+
+const ROW_HEIGHT = rowHeightPx('control')
 
 // Only an Owner (or an elevated caller) may grant the Owner role.
 const availableRoleOptions = computed(() => getAssignableRoleOptions(props.canModifyOwners))
@@ -105,7 +108,7 @@ const onCancel = () => {
               v-model="selectedFilter"
               :options="filterOptions"
               option-label="label"
-              :pt="{ label: { style: 'font-size: 1.15rem;' }, item: { style: 'font-size: 1.15rem;' } }"
+              :pt="{ label: { style: 'font-size: var(--text-lg);' }, item: { style: 'font-size: var(--text-lg);' } }"
             />
           </div>
         </div>
@@ -118,10 +121,10 @@ const onCancel = () => {
           option-group-children="items"
           option-disabled="collapsed"
           multiple
-          :virtual-scroller-options="{ itemSize: 42 }"
+          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
           :pt="{
             root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background: transparent; border: none;' },
-            item: { style: 'font-size: 1.15rem;' },
+            item: { style: 'font-size: var(--text-lg);' },
           }"
         >
           <template #optiongroup="slotProps">
@@ -188,10 +191,10 @@ const onCancel = () => {
           :options="localTarget"
           :option-label="itemLabel"
           multiple
-          :virtual-scroller-options="{ itemSize: 42 }"
+          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
           :pt="{
             root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background: transparent; border: none;' },
-            item: { style: 'font-size: 1.15rem;' },
+            item: { style: 'font-size: var(--text-lg);' },
           }"
         >
           <template #option="slotProps">
@@ -255,7 +258,7 @@ const onCancel = () => {
 .col-header {
   margin: 0;
   padding: 0.75rem 1rem;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   color: var(--color-text-bright);
   background: var(--p-datatable-row-background);
@@ -277,7 +280,7 @@ const onCancel = () => {
 }
 
 .filter-label {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 400;
   color: var(--color-text-bright);
 }
@@ -294,7 +297,7 @@ const onCancel = () => {
 .control-btn {
   min-width: 8rem;
   padding: 0.6rem 1rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
 }
 
 /* Fixed-height single-line rows (virtual scroller requirement); the full
@@ -303,12 +306,12 @@ const onCancel = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   min-width: 0;
 }
 
 .option-item i {
-  font-size: 1.3rem;
+  font-size: var(--text-xl);
   flex-shrink: 0;
 }
 
@@ -327,7 +330,7 @@ const onCancel = () => {
   align-items: center;
   cursor: pointer;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   padding: 0.25rem 0rem;
   gap: 0.3rem;
 }
@@ -356,13 +359,13 @@ const onCancel = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   flex: 1;
   min-width: 0;
 }
 
 .target-option-name i {
-  font-size: 1.3rem;
+  font-size: var(--text-xl);
   flex-shrink: 0;
 }
 
@@ -373,7 +376,7 @@ const onCancel = () => {
 }
 
 .target-option-role {
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   color: var(--color-text-bright);
 }
 </style>

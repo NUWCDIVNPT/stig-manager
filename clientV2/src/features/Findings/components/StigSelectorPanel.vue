@@ -194,7 +194,7 @@ function onSelect(row) {
 .stig-panel__filter-icon {
   position: absolute;
   left: 1.05rem;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   pointer-events: none;
 }
@@ -204,7 +204,7 @@ function onSelect(row) {
   flex: 1;
   width: 100%;
   font: inherit;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
   background: color-mix(in srgb, var(--color-background-light) 75%, transparent);
   border: 1px solid var(--color-border-default);
@@ -237,7 +237,7 @@ function onSelect(row) {
   border-radius: 3px;
   color: var(--color-text-dim);
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
 }
 
 .stig-panel__filter-clear:hover {
@@ -249,7 +249,7 @@ function onSelect(row) {
   padding: 1rem;
   text-align: center;
   color: var(--color-text-error);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
 }
 
 .stig-panel__retry {
@@ -316,7 +316,7 @@ function onSelect(row) {
 
 .stig-list__id {
   grid-area: id;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-text-primary);
   overflow: hidden;
@@ -327,7 +327,7 @@ function onSelect(row) {
 .stig-list__id--all {
   font-style: italic;
   font-weight: 500;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-bright);
 }
 
@@ -337,7 +337,7 @@ function onSelect(row) {
 
 .stig-list__name {
   grid-area: name;
-  font-size: .95rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -364,7 +364,7 @@ function onSelect(row) {
   min-width: 1.6rem;
   padding: 0.05rem 0.3rem;
   border-radius: 3px;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-dark);

@@ -9,6 +9,7 @@ import { getAssignableRoleOptions, roleMap } from '../../../../components/common
 import RolePopover from '../../../../components/common/grants/RolePopover.vue'
 import { useRolePickList } from '../../../../components/common/grants/useRolePickList.js'
 import PickListControls from '../../../../components/common/PickListControls.vue'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 
 const props = defineProps({
   // Collections available for a direct grant: { collectionId, name }
@@ -24,6 +25,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:source', 'update:target'])
+
+const ROW_HEIGHT = rowHeightPx('control')
 
 // Elevated admin context, so every role (including Owner) is assignable.
 const availableRoleOptions = getAssignableRoleOptions(true)
@@ -90,7 +93,7 @@ const listboxPt = {
           :options="displaySource"
           option-label="name"
           multiple
-          :virtual-scroller-options="{ itemSize: 40 }"
+          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
           :pt="listboxPt"
         >
           <template #option="slotProps">
@@ -120,7 +123,7 @@ const listboxPt = {
           :options="localTarget"
           option-label="name"
           multiple
-          :virtual-scroller-options="{ itemSize: 40 }"
+          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
           :pt="listboxPt"
         >
           <template #option="slotProps">
@@ -168,7 +171,7 @@ const listboxPt = {
 .col-header {
   margin: 0;
   padding: 0.75rem 1rem;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   color: var(--color-text-bright);
   background: var(--p-datatable-row-background);
@@ -188,7 +191,7 @@ const listboxPt = {
 }
 
 .option-item {
-  font-size: 1rem;
+  font-size: var(--text-md);
   line-height: 1.4;
   white-space: nowrap;
   overflow: hidden;
@@ -205,7 +208,7 @@ const listboxPt = {
 }
 
 .target-option-name {
-  font-size: 1rem;
+  font-size: var(--text-md);
   line-height: 1.4;
   flex: 1;
   min-width: 0;
@@ -215,7 +218,7 @@ const listboxPt = {
 }
 
 .target-option-role {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-bright);
   white-space: nowrap;

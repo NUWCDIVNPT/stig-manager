@@ -34,8 +34,8 @@ const menuPt = {
   menu: { style: 'background: transparent; outline: none;' },
   menuitem: { style: 'margin: 0;' },
   content: { style: 'padding: 0.4rem 0.8rem; color: var(--color-text-primary); border-radius: 0; transition: background-color 0.1s; display: flex; align-items: center;' },
-  icon: { style: 'color: var(--color-text-dim); margin-right: 0.5rem; font-size: 0.92rem;' },
-  label: { style: 'font-size: 0.92rem;' },
+  icon: { style: 'color: var(--color-text-dim); margin-right: 0.5rem; font-size: var(--text-md);' },
+  label: { style: 'font-size: var(--text-md);' },
 }
 
 function onFileChange(event) {
@@ -126,7 +126,7 @@ function toggleFetchMenu(event) {
 }
 
 .trigger-caret {
-  font-size: 0.75rem;
+  font-size: var(--icon-xs);
   color: var(--color-text-dim);
   margin-left: 0.15rem;
 }

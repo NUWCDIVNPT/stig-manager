@@ -10,6 +10,7 @@ import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchEffectiveAclByCollectionUser } from '../../../../shared/api/grantsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { getDefaultAccessForRole } from '../../lib/aclRules.js'
 
 const props = defineProps({
@@ -28,6 +29,8 @@ const props = defineProps({
     default: null,
   },
 })
+
+const ROW_HEIGHT = rowHeightPx('control')
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 
@@ -52,7 +55,7 @@ const displayAcl = computed(() => (acl.value ?? []).map(row => ({
   sources: (row.aclSources ?? []).map(source => granteeLabel(source.grantee)).join(', '),
 })))
 
-const tablePt = compactTablePt({ bodyFontSize: '0.9rem' })
+const tablePt = compactTablePt()
 
 // Clear prior results on every open/user change so a reopened drawer never flashes the previous user's access before the new fetch resolves.
 watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
@@ -98,7 +101,7 @@ watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
         scroll-height="flex"
         sort-field="assetName"
         :sort-order="1"
-        :virtual-scroller-options="{ itemSize: 41, delay: 0 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
         export-filename="EffectiveGrants"
         class="acl-table"
         :pt="tablePt"
@@ -140,7 +143,7 @@ watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
 }
 
 .modal-title i {
-  font-size: 2rem;
+  font-size: var(--text-display);
   color: var(--color-text-dim);
 }
 
@@ -152,11 +155,11 @@ watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
 
 .title-main {
   font-weight: 700;
-  font-size: 1.6rem;
+  font-size: var(--text-2xl);
 }
 
 .title-sub {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-dim);
 }
 

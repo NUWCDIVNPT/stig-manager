@@ -107,7 +107,7 @@ function onRowDblClick(event) {
   emit('row-dblclick', event.data.requestId)
 }
 
-const tablePt = compactTablePt({ bodyFontSize: '1rem', footer: 'divider', headerPadding: '0.3rem 0.6rem' })
+const tablePt = compactTablePt({ footer: 'divider', headerPadding: '0.3rem 0.6rem' })
 
 // Vertical divider between header cells — matches the Service Jobs grids.
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
@@ -222,7 +222,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   align-items: center;
   gap: 0.4rem;
   padding: 0.45rem 0.75rem;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-text-bright);
   background: var(--color-background-subtle);

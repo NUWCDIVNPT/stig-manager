@@ -157,7 +157,7 @@ const selectButtonPt = {
 }
 
 .page-title {
-  font-size: 1.4rem;
+  font-size: var(--text-2xl);
   font-weight: 600;
   color: var(--color-text-bright);
   margin: 0;
@@ -166,7 +166,7 @@ const selectButtonPt = {
 .page-desc {
   color: var(--color-text-dim);
   font-weight: 500;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   margin: 0;
 }
 
@@ -174,12 +174,12 @@ const selectButtonPt = {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   font-weight: 600;
 }
 
 .option-icon {
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   opacity: 0.8;
 }
 
@@ -196,7 +196,7 @@ const selectButtonPt = {
   border: none;
   color: var(--color-text-dim);
   padding: 0.65rem 1.2rem;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   border-radius: 0;
   transition: all 0.15s ease;
   box-shadow: none;

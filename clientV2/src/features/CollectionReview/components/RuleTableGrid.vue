@@ -12,6 +12,7 @@ import manualIcon from '../../../assets/user.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
 import ColumnFilter from '../../../components/common/ColumnFilter.vue'
 import EngineBadge from '../../../components/common/EngineBadge.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
 import Label from '../../../components/common/Label.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
@@ -24,6 +25,8 @@ import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { normalizeColor } from '../../../shared/lib/colorUtils.js'
+import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
+import { filterRows, labelNames } from '../../../shared/lib/gridSearch.js'
 import { formatReviewDate, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { patchReview, putReview } from '../../AssetReview/api/assetReviewApi.js'
 
@@ -39,6 +42,10 @@ const props = defineProps({
   visibleFields: {
     type: Set,
     required: true,
+  },
+  searchFilter: {
+    type: String,
+    default: '',
   },
   collectionId: {
     type: String,
@@ -71,7 +78,7 @@ const emit = defineEmits(['review-saved', 'update:selection'])
 
 const dataTableRef = ref(null)
 
-const { itemSize } = useGridDensity('collection-rule-table', 1, 12, 24)
+const { itemSize } = useGridDensity('collection-rule-table')
 
 const isDataSelectable = (data) => {
   return data?.access === 'rw'
@@ -114,10 +121,9 @@ const getRowClass = (data) => {
 
 // --- Popover wiring ---
 const reviewEditPopover = ref(null)
-const popoverAnchor = ref(null)
 const editingRow = ref(null)
 const editingAssetId = computed(() => editingRow.value?.assetId ?? null)
-const enabledTabs = ['history', 'attachments', 'statusText']
+const enabledTabs = ['history', 'statusText']
 
 const currentReview = computed(() => props.gridData.find(r => r.assetId === editingRow.value?.assetId) ?? null)
 
@@ -157,38 +163,8 @@ function openRowEditor(event, rowData) {
     return
   }
   const isSameRow = editingRow.value?.assetId === rowData.assetId
-  const wasOpen = !!editingRow.value
-
   editingRow.value = rowData
-
-  const row = event.target?.closest ? event.target.closest('tr') : null
-  const rowRect = row ? row.getBoundingClientRect() : { top: 0, bottom: 0 }
-  const clickX = event.clientX ?? 0
-  const openAbove = rowRect.top > window.innerHeight / 2
-
-  if (popoverAnchor.value) {
-    popoverAnchor.value.style.left = `${clickX}px`
-    popoverAnchor.value.style.height = '0px'
-    popoverAnchor.value.style.top = openAbove
-      ? `${rowRect.top + 6}px`
-      : `${rowRect.bottom + 4}px`
-  }
-
-  const anchorEvent = {
-    currentTarget: popoverAnchor.value,
-    target: popoverAnchor.value,
-    clientX: clickX,
-  }
-
-  if (isSameRow) {
-    reviewEditPopover.value?.toggle(anchorEvent)
-  }
-  else if (wasOpen) {
-    reviewEditPopover.value?.reposition(anchorEvent)
-  }
-  else {
-    reviewEditPopover.value?.show(anchorEvent)
-  }
+  reviewEditPopover.value?.openForRow(event, isSameRow)
 }
 
 function onRowClick(event) {
@@ -278,8 +254,20 @@ const labelOptions = computed(() => {
     .map(([name, color]) => ({ value: name, label: name, color }))
 })
 
+// Text search covers the identifying and free-text columns. Asset is always
+// shown; the rest only count while their column is visible.
+const SEARCH_COLUMNS = [
+  { field: 'assetName', searchText: r => r.assetName },
+  { field: 'labels', searchText: r => labelNames(r.assetLabels) },
+  { field: 'detail', searchText: r => r.detail },
+  { field: 'comment', searchText: r => r.comment },
+  { field: 'user', searchText: r => r.username },
+]
+
+const searchColumns = computed(() => SEARCH_COLUMNS.filter(c => c.field === 'assetName' || props.visibleFields.has(c.field)))
+
 const filteredData = computed(() => {
-  let data = props.gridData
+  let data = filterRows(props.gridData, searchColumns.value, props.searchFilter)
   const ef = filters.value.engine.value
   const sf = filters.value.status.value
   const rf = filters.value.result.value
@@ -300,17 +288,22 @@ const filteredData = computed(() => {
   return data
 })
 
-const isAllSelected = computed(() => {
-  const data = filteredData.value
-  if (!data.length) { return false }
+// One pass over the filtered rows: `all` drives the header checkbox and the
+// table's select-all, `some` the header's indeterminate state.
+const selectionState = computed(() => {
   const ids = selectedIdSet.value
-  let hasSelectable = false
-  for (const row of data) {
-    if (!isDataSelectable(row)) { continue }
-    hasSelectable = true
-    if (!ids.has(row.assetId)) { return false }
+  let selectable = 0
+  let selected = 0
+  for (const row of filteredData.value) {
+    if (!isDataSelectable(row)) {
+      continue
+    }
+    selectable++
+    if (ids.has(row.assetId)) {
+      selected++
+    }
   }
-  return hasSelectable
+  return { all: selectable > 0 && selected === selectable, some: selected > 0 && selected < selectable }
 })
 
 function onSelectAllChange(event) {
@@ -333,46 +326,24 @@ const stats = computed(() => calculateChecklistStats(filteredData.value) ?? {
   total: 0,
 })
 
-function getColumnPt(alignment = 'left') {
-  const isCenter = alignment === 'center'
-  return {
-    headerCell: {
-      style: { borderRight: '1px solid var(--color-border-light)' },
-      class: isCenter ? 'column-header-center' : 'column-header-left',
-    },
-    columnHeaderContent: {
-      style: {
-        fontSize: '1rem',
-        color: 'var(--color-text-primary)',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-    },
-    bodyCell: {
-      style: {
-        verticalAlign: 'top',
-        padding: '0.15rem 0.35rem',
-        overflow: 'hidden',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-      class: isCenter ? 'column-body-center' : 'column-body-left',
-    },
-    bodyCellContent: {
-      style: {
-        display: 'flex',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        alignItems: 'flex-start',
-        width: '100%',
-      },
-    },
-  }
-}
-
 const columnPt = {
-  center: getColumnPt('center'),
-  left: getColumnPt('left'),
+  center: gridColumnPt('center'),
+  left: gridColumnPt('left'),
+  // Icon-only headers whose one action is sorting
+  icon: iconHeaderPt(gridColumnPt('center')),
 }
 
+// Unpadded so .selection-hit can fill the whole cell
+const selectionColumnPt = {
+  ...columnPt.center,
+  bodyCell: {
+    ...columnPt.center.bodyCell,
+    style: { ...columnPt.center.bodyCell.style, padding: 0, position: 'relative' },
+  },
+}
+
+// Auto layout: icon columns declare a fixed width, Detail/Comment a share,
+// and Asset/Labels only a minimum so spare width flows to them.
 const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
   table: { style: { tableLayout: 'auto', minWidth: '100%' } },
@@ -387,20 +358,13 @@ const dataTablePt = {
   footer: { style: { padding: '0', border: 'none' } },
   emptyMessageCell: { class: 'agg-grid-empty-cell' },
 }
-
-const checkboxPt = {
-  root: { style: { width: '2rem', height: '2rem' } },
-  box: { style: { width: '1.75rem', height: '1.75rem' } },
-  input: { style: { width: '1.75rem', height: '1.75rem' } },
-  icon: { style: { fontSize: '1.5rem' } },
-}
 </script>
 
 <template>
   <DataTable
     ref="dataTableRef"
     :selection="props.selection"
-    :select-all="isAllSelected"
+    :select-all="selectionState.all"
     :value="filteredData"
     :loading="isLoading"
     data-key="assetId"
@@ -419,15 +383,16 @@ const checkboxPt = {
     @update:selection="onSelectionChange"
     @scroll.capture="onGridScroll"
     @wheel.capture="onGridWheel"
+    @pointerdown.stop
   >
     <!-- Selection -->
-    <Column :exportable="false" header-style="width: 3rem" :pt="columnPt.center">
+    <Column :exportable="false" header-style="width: 3rem; min-width: 3rem" :pt="selectionColumnPt">
       <template #header>
         <Checkbox
           v-if="filteredData.length > 0"
-          :model-value="isAllSelected"
+          :model-value="selectionState.all"
+          :indeterminate="selectionState.some"
           :binary="true"
-          :pt="checkboxPt"
           @update:model-value="onSelectAllChange({ checked: $event })"
         />
       </template>
@@ -439,19 +404,18 @@ const checkboxPt = {
           alt="Read only"
           title="Read only"
         >
-        <Checkbox
-          v-else
-          :model-value="selectedIdSet.has(data.assetId)"
-          :binary="true"
-          :pt="checkboxPt"
-          @update:model-value="onToggleSelectRow(data)"
-          @click.stop
-        />
+        <label v-else class="selection-hit" @click.stop>
+          <Checkbox
+            :model-value="selectedIdSet.has(data.assetId)"
+            :binary="true"
+            @update:model-value="onToggleSelectRow(data)"
+          />
+        </label>
       </template>
     </Column>
 
     <!-- Engine -->
-    <Column field="resultEngine" export-header="Engine" sort-field="resultEngine.product" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
+    <Column field="resultEngine" export-header="Engine" sort-field="resultEngine.product" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
       <template #header>
         <div class="column-header-with-filter">
           <img src="../../../assets/bot2.svg" alt="Engine" class="engine-header-icon" title="Result engine">
@@ -492,14 +456,14 @@ const checkboxPt = {
     </Column>
 
     <!-- Asset -->
-    <Column field="assetName" header="Asset" sortable :style="{ width: '14rem', minWidth: '10rem' }" :pt="columnPt.left">
+    <Column field="assetName" header="Asset" sortable :style="{ minWidth: '10rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <span class="cell-text">{{ data.assetName }}</span>
+        <span class="cell-text"><HighlightText :text="data.assetName" :term="searchFilter" /></span>
       </template>
     </Column>
 
     <!-- Labels -->
-    <Column v-if="visibleFields.has('labels')" field="assetLabels" export-header="Labels" :style="{ width: '12rem', minWidth: '8rem' }" :pt="columnPt.left">
+    <Column v-if="visibleFields.has('labels')" field="assetLabels" export-header="Labels" :style="{ minWidth: '8rem' }" :pt="columnPt.left">
       <template #header>
         <div class="column-header-with-filter">
           Labels
@@ -511,7 +475,7 @@ const checkboxPt = {
         </div>
       </template>
       <template #body="{ data }">
-        <LabelsRow :labels="data.assetLabels" compact />
+        <LabelsRow :labels="data.assetLabels" :search-term="searchFilter" compact />
       </template>
     </Column>
 
@@ -537,7 +501,7 @@ const checkboxPt = {
     <Column v-if="visibleFields.has('detail')" field="detail" header="Detail" sortable :style="{ width: '20%', minWidth: '12rem' }" :pt="columnPt.left">
       <template #body="{ data }">
         <div class="cell-text-field">
-          <span v-if="data.detail" class="cell-text cell-text--clamped" :title="data.detail">{{ data.detail }}</span>
+          <span v-if="data.detail" class="cell-text cell-text--clamped" :title="data.detail"><HighlightText :text="data.detail" :term="searchFilter" /></span>
           <span v-else class="cell-text cell-text--placeholder">—</span>
         </div>
       </template>
@@ -546,19 +510,19 @@ const checkboxPt = {
     <!-- Comment -->
     <Column v-if="visibleFields.has('comment')" field="comment" header="Comment" sortable :style="{ width: '20%', minWidth: '12rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <span class="cell-text cell-text--clamped" :title="data.comment">{{ data.comment }}</span>
+        <span class="cell-text cell-text--clamped" :title="data.comment"><HighlightText :text="data.comment" :term="searchFilter" /></span>
       </template>
     </Column>
 
     <!-- User -->
     <Column v-if="visibleFields.has('user')" field="username" header="User" sortable :style="{ width: '10rem', minWidth: '8rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <span class="cell-text">{{ data.username }}</span>
+        <span class="cell-text"><HighlightText :text="data.username" :term="searchFilter" /></span>
       </template>
     </Column>
 
     <!-- Time -->
-    <Column v-if="visibleFields.has('time')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('time')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.icon">
       <template #header>
         <i class="pi pi-clock" title="Last action" />
       </template>
@@ -569,7 +533,7 @@ const checkboxPt = {
 
     <template #empty>
       <div class="agg-grid-empty-state">
-        Select a rule above to see reviews.
+        {{ gridData.length > 0 ? 'No reviews match the current search or filters.' : 'Select a rule above to see reviews.' }}
       </div>
     </template>
 
@@ -623,12 +587,6 @@ const checkboxPt = {
   <div v-if="isSaving" class="rule-table-grid__mask" aria-busy="true">
     <i class="pi pi-spin pi-spinner rule-table-grid__mask-spinner" />
   </div>
-
-  <div
-    ref="popoverAnchor"
-    class="popover-anchor"
-    style="position: fixed; width: 0px; pointer-events: none; visibility: hidden; z-index: -1;"
-  />
 </template>
 
 <style scoped>
@@ -645,16 +603,17 @@ const checkboxPt = {
 }
 
 .rule-table-grid__mask-spinner {
-  font-size: 2rem;
+  font-size: var(--text-display);
   color: var(--color-text-bright);
 }
 
+/* Grows into spare header width but never claims the sort icon's room. */
 .column-header-with-filter {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.1rem;
-  width: 100%;
+  flex: 1 1 auto;
 }
 
 .rule-table-grid {
@@ -662,9 +621,11 @@ const checkboxPt = {
   min-height: 0;
 }
 
+/* Size and line height come from the grid geometry (useGridDensity textSize),
+   so N clamped lines fill exactly N rows. */
 .cell-text {
-  font-size: 1.1rem;
-  line-height: 1.3;
+  font-size: var(--cell-font-size);
+  line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-primary);
 }
 
@@ -700,7 +661,7 @@ const checkboxPt = {
 
 .cell-result__empty {
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
   opacity: 0.9;
 }
 
@@ -723,7 +684,7 @@ const checkboxPt = {
 :deep(.p-datatable-thead > tr > th) {
   background: var(--color-background-dark);
   color: var(--color-text-dim);
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   border-bottom: 1px solid var(--color-border-default);
 }
@@ -779,13 +740,15 @@ const checkboxPt = {
   color: var(--color-text-bright, var(--color-text-primary)) !important;
 }
 
-:deep(.row-non-writable .p-checkbox) {
-  opacity: 0.25;
-  cursor: not-allowed;
-  filter: grayscale(1);
-}
-
-:deep(.row-non-writable .p-checkbox-input) {
-  pointer-events: none;
+/* Fills the selection cell so the whole cell is the checkbox hit area
+   (a label click toggles the input natively, and stops there so it never
+   reaches the row-click editor). */
+.selection-hit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 </style>

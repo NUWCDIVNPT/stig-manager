@@ -1,6 +1,6 @@
 :root {
   font-family: 'Open Sans';
-  font-size: 11px;
+  font-size: 12px;
   color-scheme: dark !important;
   color: rgba(255, 255, 255, 0.87);
   background-color: #000000;
@@ -55,10 +55,30 @@
      Ubuntu Mono is bundled (matches the legacy client); system stack as fallback. */
   --font-mono: 'Ubuntu Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
 
+  /* Type scale; see docs/components/TypographyAndSizing.md for what each
+     step is for. shared/lib/textScale.js mirrors the values and
+     shared/tests/typographyConventions.test.js enforces both. */
+  --text-sm: 0.85rem;
+  --text-md: 1rem;
+  --text-lg: 1.1rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-display: 2rem;
+  --text-display-lg: 3rem;
+  --text-display-xl: 5rem;
+  --icon-xs: 0.75rem;
+
   /* CAT Rating Colors */
   --color-cat1: #c68c8c;
   --color-cat2: #d4b056;
   --color-cat3: #a3acd6;
+
+  /* CORA Risk Colors (flat fills, read with --color-text-dark) */
+  --color-risk-very-high: var(--color-cat1);
+  --color-risk-high: var(--color-cat2);
+  --color-risk-moderate: rgb(230, 210, 0);
+  --color-risk-low: var(--color-cat3);
+  --color-risk-very-low: rgb(100, 167, 90);
   
   /* Collection Stats Colors */
   --color-inventory: #c4a484;
@@ -71,6 +91,10 @@
   --color-text-dim: #a1a1aa; 
   --color-text-bright: rgba(255, 255, 255, 0.95);
   --color-text-dark: #18181b;
+  /* Underlined inline links in prose; matches the legacy dark-mode home
+     widget link color. */
+  --color-link: hsl(36deg 23% 55%);
+  --color-link-hover: hsl(36deg 30% 68%);
 
   /* Surface Colors */
   --color-background-darkest: #000000;
@@ -162,21 +186,29 @@
   box-sizing: border-box;
 }
 
-/* CORA Risk Gradients */
+/* CORA Risk fills. Shared by the metrics risk card, the CORA % column badge
+   and the risk-rating labels in the CORA help tooltip. */
+.sm-cora-risk-very-high,
+.sm-cora-risk-high,
+.sm-cora-risk-moderate,
+.sm-cora-risk-low,
+.sm-cora-risk-very-low {
+  color: var(--color-text-dark);
+}
 .sm-cora-risk-very-high {
-  background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+  background-color: var(--color-risk-very-high);
 }
 .sm-cora-risk-high {
-  background: linear-gradient(135deg, #c2410c 0%, #7c2d12 100%); 
+  background-color: var(--color-risk-high);
 }
 .sm-cora-risk-moderate {
-  background: linear-gradient(135deg, #ca8a04 0%, #713f12 100%);
+  background-color: var(--color-risk-moderate);
 }
 .sm-cora-risk-low {
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+  background-color: var(--color-risk-low);
 }
 .sm-cora-risk-very-low {
-  background: linear-gradient(135deg, #15803d 0%, #14532d 100%);
+  background-color: var(--color-risk-very-low);
 }
 
 /* Rich help-tooltip content rendered via the v-tooltip directive (escape:false).
@@ -199,7 +231,7 @@
   background-color: var(--color-background-subtle);
   padding: 2px 4px;
   border-radius: 4px;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 .sm-cora-tip .formula {
   display: inline-block;
@@ -208,9 +240,8 @@
 .sm-cora-tip .tooltip-label {
   padding: 1px 6px;
   border-radius: 4px;
-  color: var(--color-text-bright);
   margin-right: 4px;
-  font-size: 0.9em;
+  font-size: var(--text-md);
   display: inline-block;
   line-height: normal;
 }
@@ -222,7 +253,7 @@ body {
   height: 100vh;
   overflow: hidden;
   font-family: 'Open Sans';
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 400;
 }
 
@@ -258,6 +289,17 @@ textarea:focus {
 .p-inputtext:enabled:focus{
   outline: none !important;
   border-color: var(--color-primary-highlight-light) !important;
+}
+
+/* "New Collection" glyph: a rounded tile with the plus knocked out, echoing
+   the gaps in collection-color.svg. Sized in em so it tracks the text it sits
+   beside (ActionButton, list rows) */
+.icon-collection-new {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.2em;
+  background: url('/src/assets/collection-new.svg') center / contain no-repeat;
 }
 
 /* Nav rail popovers (Collections, Recent Views) share a subtle outline so the
@@ -310,7 +352,7 @@ textarea:focus {
 .collection-tab-panel .panel-header h3 {
   margin: 0;
   color: var(--color-text-primary);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 600;
 }
 
@@ -322,12 +364,12 @@ textarea:focus {
 }
 
 .collection-tab-panel .badge {
-  font-size: 0.75rem;
+  font-size: var(--text-sm);
   background-color: var(--color-background-dark);
   padding: 0.15rem 0.4rem;
   border-radius: 3px;
   color: var(--color-text-dim);
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 
 .collection-tab-panel .empty-state,
@@ -389,6 +431,60 @@ textarea:focus {
   background: var(--color-background-dark) !important;
 }
 
+/* Grid search: a cell whose text matched the term, and the matched text. */
+.cell--match {
+  background-color: color-mix(in srgb, var(--color-warning-yellow) 8%, transparent);
+  border-radius: 2px;
+}
+
+mark.search-highlight {
+  background-color: color-mix(in srgb, var(--color-warning-yellow) 40%, transparent);
+  color: inherit;
+  border-radius: 1px;
+  padding: 0 1px;
+}
+
+/* Label chips already carry a color, so mark the match with the chip's own
+   text color instead of the yellow wash. No padding: LabelsRow budgets each
+   chip from its text width, so the mark must not widen it. */
+.label-tag mark.search-highlight {
+  padding: 0;
+  background-color: color-mix(in srgb, currentColor 28%, transparent);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+
+/* PrimeVue Checkbox: the Material preset draws the check mark as a CSS box but
+   leaves the indeterminate dash as an SVG, which blurs off-center whenever the
+   checkbox lands on a fractional pixel. Draw the dash as a whole-pixel box too. */
+.p-checkbox[data-p-indeterminate="true"] .p-checkbox-icon {
+  display: none;
+}
+.p-checkbox[data-p-indeterminate="true"] .p-checkbox-box::before {
+  content: "";
+  width: 10px;
+  height: 2px;
+  background: var(--p-checkbox-icon-color);
+}
+
+/* PrimeVue DataTable icon-only headers (see iconHeaderPt in dataTablePt.js):
+   the sort indicator wrapper leaves the flex flow, hides until the column is
+   sorted, then overlays the cell edge so the badge stays centered. */
+th.column-header-icon {
+  position: relative;
+}
+th.column-header-icon [data-pc-section="sort"] {
+  display: none;
+  position: absolute;
+  right: 0.15rem;
+  top: 50%;
+  transform: translateY(-50%);
+  line-height: 0;
+}
+th.column-header-icon.p-datatable-column-sorted [data-pc-section="sort"] {
+  display: block;
+}
 
 /* PrimeVue Splitter global hover style */
 .p-splitter .p-splitter-gutter {

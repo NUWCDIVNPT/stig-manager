@@ -115,7 +115,7 @@ const dialogPt = {
     style: 'color: var(--color-text-dim);',
   },
   title: {
-    style: 'font-size: 1.5rem; font-weight: 600;',
+    style: 'font-size: var(--text-xl); font-weight: 600;',
   },
 }
 
@@ -298,12 +298,12 @@ function onCancel() {
   display: flex;
   align-items: center;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
 }
 
 .batch-modal__help-icon {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   margin-left: 0.4rem;
   cursor: pointer;
@@ -311,7 +311,7 @@ function onCancel() {
 
 .batch-modal__muted {
   font-weight: 400;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   margin-left: 0.35rem;
 }

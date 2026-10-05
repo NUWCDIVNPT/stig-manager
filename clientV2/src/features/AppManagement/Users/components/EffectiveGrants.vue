@@ -24,7 +24,7 @@ const rows = computed(() => effectiveGrantRows(props.grants).map(row => ({
   granteeText: row.granteeLabels.join(', '),
 })))
 
-const tablePt = compactTablePt({ bodyFontSize: '1.05rem' })
+const tablePt = compactTablePt()
 </script>
 
 <template>

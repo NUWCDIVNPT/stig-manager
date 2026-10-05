@@ -68,7 +68,7 @@ const reportVersion = computed(() => props.report?.version ?? '—')
 }
 
 .source-panel-header {
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-bright);
 }
@@ -94,13 +94,13 @@ const reportVersion = computed(() => props.report?.version ?? '—')
 
 .source-meta dt {
   color: var(--color-text-dim);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
 }
 
 .source-meta dd {
   margin: 0;
   color: var(--color-text-primary);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
@@ -118,7 +118,7 @@ const reportVersion = computed(() => props.report?.version ?? '—')
 }
 
 .share-callout-title {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-text-bright);
   text-align: center;
@@ -128,7 +128,7 @@ const reportVersion = computed(() => props.report?.version ?? '—')
 .share-callout p {
   margin: 0;
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   line-height: 1.35;
 }
 

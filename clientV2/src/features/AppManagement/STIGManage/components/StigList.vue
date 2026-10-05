@@ -11,6 +11,7 @@ import ClassificationBadge from '../../../../components/common/ClassificationBad
 import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 
 const props = defineProps({
   stigs: {
@@ -28,6 +29,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:selection', 'import', 'remove-stig', 'remove-revision', 'open-library', 'refresh'])
+
+const ROW_HEIGHT = rowHeightPx('compact')
 
 const dataTableRef = ref(null)
 
@@ -65,7 +68,7 @@ const filteredData = computed(() => {
 const filtersActive = computed(() => filteredData.value.length !== props.stigs.length)
 
 const tablePt = {
-  ...compactTablePt({ bodyFontSize: '1rem' }),
+  ...compactTablePt(),
   bodyRow: { style: 'cursor: pointer;' },
 }
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
@@ -209,7 +212,7 @@ function onRemoveAll() {
         :sort-order="1"
         scrollable
         scroll-height="flex"
-        :virtual-scroller-options="{ itemSize: 29 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
         resizable-columns
         column-resize-mode="fit"
         export-filename="Installed-STIGs"
@@ -446,7 +449,7 @@ function onRemoveAll() {
   border: none;
   border-radius: 4px;
   color: var(--color-text-default);
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.1s;
@@ -457,7 +460,7 @@ function onRemoveAll() {
 }
 
 .rev-dropdown__chevron {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 </style>
@@ -488,7 +491,7 @@ function onRemoveAll() {
   border-radius: 6px;
   cursor: pointer;
   color: var(--color-text-primary);
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   transition: background 0.1s;
   user-select: none;
 }
@@ -499,7 +502,7 @@ function onRemoveAll() {
 
 .rev-menu__icon {
   color: var(--color-action-red);
-  font-size: 1rem;
+  font-size: var(--text-md);
   flex-shrink: 0;
 }
 
@@ -514,7 +517,7 @@ function onRemoveAll() {
   gap: 0.25rem;
   padding: 2px 7px;
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: var(--text-md);
   white-space: nowrap;
   flex-shrink: 0;
 }

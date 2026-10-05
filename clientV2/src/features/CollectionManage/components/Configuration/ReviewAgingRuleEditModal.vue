@@ -12,6 +12,7 @@ import shieldGreenCheckIcon from '../../../../assets/shield-green-check.svg'
 import targetIcon from '../../../../assets/target.svg'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import {
   fetchAssetStigs,
   fetchCollectionAssets,
@@ -41,6 +42,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'save'])
+
+const ROW_HEIGHT = rowHeightPx('standard')
 
 const localVisible = computed({
   get: () => props.visible,
@@ -339,7 +342,7 @@ const dialogPt = {
               option-label="name"
               filter
               :loading="isLoadingAssets"
-              :virtual-scroller-options="{ itemSize: 34 }"
+              :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
               :disabled="isReadOnly || targetScope !== 'Asset'"
               placeholder="Search for an asset..."
               :pt="collectionSelectPt"
@@ -510,7 +513,7 @@ const dialogPt = {
 }
 
 .modal-header-title {
-  font-size: 1.05rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-bright);
 }
@@ -554,7 +557,7 @@ const dialogPt = {
 }
 
 .flabel {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
   display: flex;
@@ -580,12 +583,12 @@ const dialogPt = {
 }
 
 .char-count {
-  font-size: 0.8rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
 .field-error {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   line-height: 1.2;
   min-height: 1.2em;
   color: var(--color-text-error);
@@ -610,7 +613,7 @@ const dialogPt = {
 
 .ra-group-title {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: var(--text-md);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;

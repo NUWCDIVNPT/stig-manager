@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { fetchStigs } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { fieldMatches } from '../../../shared/lib/searchUtils.js'
 
 export function useBenchmarkList({ onRouteError } = {}) {
   const filter = ref('')
@@ -23,11 +24,7 @@ export function useBenchmarkList({ onRouteError } = {}) {
     if (!q) {
       return list
     }
-    return list.filter((b) => {
-      const title = (b.title ?? '').toLowerCase()
-      const id = (b.benchmarkId ?? '').toLowerCase()
-      return title.includes(q) || id.includes(q)
-    })
+    return list.filter(b => fieldMatches(b.title, q) || fieldMatches(b.benchmarkId, q))
   })
 
   const totalCount = computed(() => (benchmarks.value ?? []).length)

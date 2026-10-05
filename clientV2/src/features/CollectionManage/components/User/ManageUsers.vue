@@ -10,6 +10,7 @@ import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchCollectionUsers } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { getEffectiveUserDisplay } from '../../lib/grantsUsers.js'
 import EffectiveAclModal from './EffectiveAclModal.vue'
 
@@ -19,6 +20,8 @@ const props = defineProps({
     required: true,
   },
 })
+
+const ROW_HEIGHT = rowHeightPx('twoLine')
 
 const { state: users, isLoading, execute: reload } = useAsyncState(
   () => fetchCollectionUsers(props.collectionId),
@@ -41,12 +44,12 @@ const displayUsers = computed(() => (users.value ?? []).map((row) => {
 }))
 
 // compact table pt for footer actions and compact table
-const baseTablePt = compactTablePt({ bodyFontSize: '1.05rem' })
+const baseTablePt = compactTablePt()
 const tablePt = {
   ...baseTablePt,
   column: {
     ...baseTablePt.column,
-    headerCell: { style: 'font-size: 1.1rem; font-weight: 600;' },
+    headerCell: { style: 'font-size: var(--text-lg); font-weight: 600;' },
   },
 }
 
@@ -76,7 +79,7 @@ defineExpose({ reload })
         size="medium"
         scrollable
         scroll-height="flex"
-        :virtual-scroller-options="{ itemSize: 49, delay: 0 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
         export-filename="CollectionUsers"
         :pt="tablePt"
       >
@@ -187,12 +190,12 @@ defineExpose({ reload })
 
 .primary-text {
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
 }
 
 .secondary-text {
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .grantee-list {
@@ -206,7 +209,7 @@ defineExpose({ reload })
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
 }
 
 .role-header {

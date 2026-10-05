@@ -1,7 +1,7 @@
 <script setup>
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
-import { nextTick, onBeforeUnmount, provide, ref, toRefs, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, provide, ref, toRefs, watch } from 'vue'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
 import { REVIEW_STATUS } from '../../shared/lib/reviewConstants.js'
 import { formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
@@ -49,7 +49,7 @@ const props = defineProps({
   // Tab config
   enabledTabs: {
     type: Array,
-    default: () => ['history', 'statusText', 'otherAssets', 'attachments'],
+    default: () => ['history', 'statusText', 'otherAssets'],
   },
   // Optional label identifying what is being edited (e.g. asset or rule name).
   // When provided, shown in a header strip so the user knows which row the
@@ -69,7 +69,21 @@ const popover = ref()
 const lastAnchorEvent = ref(null)
 const closing = ref(false)
 const showUnsavedWarning = ref(false)
+// Whether Review Resources is expanded. Deliberately not reset when the popover
+// closes or moves to another row: once a user unfolds it, it stays unfolded for
+// every review they open from this grid until they fold it again.
 const showResources = ref(false)
+
+// Height of the Review Resources panel, in px. Lives here rather than in the
+// stylesheet so the flip decision can reserve the space before the panel
+// exists; the panel CSS reads it back via --sm-resources-height.
+function resourcesHeightPx() {
+  return Math.min(350, Math.max(200, window.innerHeight * 0.45))
+}
+
+function toggleResources() {
+  showResources.value = !showResources.value
+}
 
 // Form state and business logic from composable
 const reviewEditForm = useReviewEditForm({
@@ -99,6 +113,10 @@ const {
 } = reviewEditForm
 
 provide('reviewEditForm', reviewEditForm)
+
+// Checklist rows carry the status timestamp as `statusTs` beside a string
+// status; full review objects nest it under `status.ts`.
+const statusTs = computed(() => currentReview.value?.status?.ts ?? currentReview.value?.statusTs ?? null)
 
 function onButtonClick(actionType) {
   const ruleId = selectedRuleId.value
@@ -135,9 +153,7 @@ function onButtonClick(actionType) {
 }
 
 function onPopoverHide() {
-  unbindOutsideHandler()
-  unbindResizeHandler()
-  showResources.value = false
+  unbindListeners()
   if (closing.value) {
     closing.value = false
     emit('close')
@@ -166,7 +182,6 @@ function dismiss() {
 
 function openAt(event, method) {
   lastAnchorEvent.value = event
-  showResources.value = false
   showUnsavedWarning.value = false
   popover.value[method](event)
 }
@@ -182,140 +197,113 @@ function show(event) {
 function hide() {
   closing.value = true
   showUnsavedWarning.value = false
-  showResources.value = false
   popover.value.hide()
 }
 
-function clampPopoverPosition() {
-  const pv = popover.value
-  if (!pv || !pv.container || !lastAnchorEvent.value) {
+// Hidden fixed element the popover is anchored to. It is sized to the clicked
+// row so PrimeVue's target tracking has a stable, non-scrolling element.
+const anchorEl = ref(null)
+let flippedAbove = false
+
+// Place the box against the anchored row. PrimeVue only flips above the row
+// when the box as it is now would not fit below; decide instead from the
+// height it can reach with Review Resources open, so opening the panel never
+// moves the box to the other side of the row. The decision is made here, on
+// show and reposition, and pinToAnchor only keeps it. (PrimeVue closes the
+// popover on window resize, so there is nothing to re-place then.)
+function placePopover() {
+  const el = popover.value?.container
+  const anchorEvent = lastAnchorEvent.value
+  const anchor = anchorEvent?.currentTarget
+  if (!el || !anchor) {
     return
   }
-  const container = pv.container
-  const anchor = lastAnchorEvent.value.currentTarget
-  if (!anchor) {
-    return
-  }
+  const reserve = resourcesHeightPx()
+  el.style.setProperty('--sm-resources-height', `${reserve}px`)
 
-  container.style.marginLeft = '0px'
-
-  const rect = container.getBoundingClientRect()
   const anchorRect = anchor.getBoundingClientRect()
-  const targetX = lastAnchorEvent.value.clientX ?? (anchorRect.left + anchorRect.width / 2)
+  const reachable = el.offsetHeight + (showResources.value ? 0 : reserve)
+  flippedAbove = anchorRect.bottom + reachable > window.innerHeight
+  el.classList.toggle('p-popover-flipped', flippedAbove)
+  el.style.transformOrigin = flippedAbove ? 'bottom' : 'top'
+  pinToAnchor()
 
+  // Centre on the click, kept inside the viewport, with the arrow on the click
   const gutter = 12
   const viewportW = document.documentElement.clientWidth
-
-  let offset = targetX - (rect.left + rect.width / 2)
-
-  const projectedLeft = rect.left + offset
-  const projectedRight = projectedLeft + rect.width
-
-  if (projectedLeft < gutter) {
-    offset += (gutter - projectedLeft)
+  const width = el.offsetWidth
+  const targetX = anchorEvent.clientX ?? (anchorRect.left + anchorRect.width / 2)
+  let left = targetX - width / 2
+  left = Math.max(gutter, Math.min(left, viewportW - gutter - width))
+  if (width > viewportW - gutter * 2) {
+    left = gutter
   }
-  else if (projectedRight > viewportW - gutter) {
-    offset -= (projectedRight - (viewportW - gutter))
-  }
-
-  if (rect.width > viewportW - gutter * 2) {
-    offset = gutter - rect.left
-  }
-
-  container.style.marginLeft = `${offset}px`
-
-  const arrowLeftEdge = targetX - (rect.left + offset) - 10
-  container.style.setProperty('--sm-popover-arrow-left', `${arrowLeftEdge}px`)
+  el.style.insetInlineStart = `${left + window.scrollX}px`
+  el.style.setProperty('--sm-popover-arrow-left', `${targetX - left - 10}px`)
 }
 
-function alignPopoverAnimated() {
+// Keep the box on its side of the row as its height changes: a flipped box
+// grows upward, one below the row grows downward on its own.
+function pinToAnchor() {
+  const el = popover.value?.container
+  const anchor = lastAnchorEvent.value?.currentTarget
+  if (!el || !anchor) {
+    return
+  }
+  const anchorRect = anchor.getBoundingClientRect()
+  const top = flippedAbove ? Math.max(0, anchorRect.top - el.offsetHeight) : anchorRect.bottom
+  el.style.top = `${top + window.scrollY}px`
+}
+
+let contentObserver = null
+
+// PrimeVue re-aligns on every container resize with its own flip rule; swap
+// its observer for one that keeps ours. unbindContentResizeListener is a
+// private method (PrimeVue 4.5.5).
+function bindContentObserver() {
+  unbindContentObserver()
   const pv = popover.value
-  if (!pv?.container || !lastAnchorEvent.value) { return }
-  const el = pv.container
-  const prevTop = el.style.top
-
-  pv.alignOverlay()
-  nextTick(clampPopoverPosition)
-
-  const newTop = el.style.top
-  if (!prevTop || !newTop || prevTop === newTop) { return }
-
-  // Slide transition: snap back to old top, then animate to new top
-  el.style.transition = 'none'
-  el.style.top = prevTop
-  void el.offsetHeight // flush
-  el.style.transition = 'top 0.3s ease'
-  requestAnimationFrame(() => {
-    el.style.top = newTop
-    el.addEventListener('transitionend', () => { el.style.transition = '' }, { once: true })
-  })
+  pv.unbindContentResizeListener?.()
+  contentObserver = new ResizeObserver(pinToAnchor)
+  contentObserver.observe(pv.container)
 }
 
-function onResourceTransitionStart() {
-  const el = popover.value?.container
-  if (!el || !el.classList.contains('p-popover-flipped')) { return }
-
-  // Anchor to bottom so expansion pushes the box UP naturally
-  const rect = el.getBoundingClientRect()
-  el.style.bottom = `${window.innerHeight - rect.bottom}px`
-  el.style.top = 'auto'
-}
-
-function onResourceTransitionEnd() {
-  const el = popover.value?.container
-  if (!el) { return }
-
-  // Reset to top-based positioning for PrimeVue
-  el.style.top = `${el.getBoundingClientRect().top}px`
-  el.style.bottom = 'auto'
-
-  if (showResources.value) {
-    alignPopoverAnimated()
-  }
+function unbindContentObserver() {
+  contentObserver?.disconnect()
+  contentObserver = null
 }
 
 function reposition(event) {
   lastAnchorEvent.value = event
-  const pv = popover.value
-  pv.target = event.currentTarget
-  pv.eventTarget = event.currentTarget
-  pv.container?.classList.remove('p-popover-flipped')
-  nextTick(() => {
-    pv.alignOverlay()
-    clampPopoverPosition()
-  })
+  nextTick(placePopover)
+}
+
+// Open, move or toggle the popover for the row under a click. The anchor is
+// sized to the row so the arrow lands on the row edge and the flip decision
+// sees the row's full extent.
+function openForRow(event, isSameRow) {
+  const row = event.target?.closest ? event.target.closest('tr') : null
+  const rowRect = row ? row.getBoundingClientRect() : { top: 0, height: 0 }
+  const clickX = event.clientX ?? 0
+  anchorEl.value.style.left = `${clickX}px`
+  anchorEl.value.style.top = `${rowRect.top}px`
+  anchorEl.value.style.height = `${rowRect.height}px`
+
+  const anchorEvent = { currentTarget: anchorEl.value, target: anchorEl.value, clientX: clickX }
+  if (isSameRow) {
+    toggle(anchorEvent)
+  }
+  else if (popover.value.visible) {
+    reposition(anchorEvent)
+  }
+  else {
+    show(anchorEvent)
+  }
 }
 
 let outsideHandler = null
 let outsideBindTimer = null
-let resizeHandler = null
-let resizeTimer = null
-
-function bindResizeHandler() {
-  unbindResizeHandler()
-  resizeHandler = () => {
-    clearTimeout(resizeTimer)
-    resizeTimer = setTimeout(() => {
-      const pv = popover.value
-      if (pv && pv.container) {
-        pv.alignOverlay()
-        clampPopoverPosition()
-      }
-    }, 60)
-  }
-  window.addEventListener('resize', resizeHandler)
-}
-
-function unbindResizeHandler() {
-  if (resizeHandler) {
-    window.removeEventListener('resize', resizeHandler)
-    resizeHandler = null
-  }
-  clearTimeout(resizeTimer)
-}
-
 function bindOutsideHandler() {
-  bindResizeHandler()
   unbindOutsideHandler()
   outsideBindTimer = setTimeout(() => {
     outsideBindTimer = null
@@ -350,17 +338,20 @@ function unbindOutsideHandler() {
   }
 }
 
-function onPopoverShow() {
-  bindOutsideHandler()
-  nextTick(clampPopoverPosition)
+function unbindListeners() {
+  unbindOutsideHandler()
+  unbindContentObserver()
 }
 
-onBeforeUnmount(() => {
-  unbindResizeHandler()
-  unbindOutsideHandler()
-})
+function onPopoverShow() {
+  bindOutsideHandler()
+  bindContentObserver()
+  placePopover()
+}
 
-defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
+onBeforeUnmount(unbindListeners)
+
+defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
 </script>
 
 <template>
@@ -499,9 +490,9 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
         <div class="review-edit-popover__attr-section">
           <span class="review-edit-popover__attr-label">Statused: </span>
           <template v-if="currentReview?.status && statusLabel">
-            <span v-if="currentReview.status?.ts" class="review-edit-popover__attr-pill">
+            <span v-if="statusTs" class="review-edit-popover__attr-pill">
               <i class="pi pi-clock" />
-              {{ formatReviewDate(currentReview.status.ts) }}
+              {{ formatReviewDate(statusTs) }}
             </span>
             <StatusBadge :status="statusLabel" />
             <span v-if="currentReview.status?.user?.username" class="review-edit-popover__attr-pill">
@@ -513,19 +504,15 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
         </div>
       </div>
 
-      <div class="review-edit-popover__resources-toggle" @click="showResources = !showResources">
+      <div class="review-edit-popover__resources-toggle" @click="toggleResources">
         <i class="pi" :class="showResources ? 'pi-angle-up' : 'pi-angle-down'" />
         <span>Review Resources</span>
         <div class="review-edit-popover__resources-toggle-line" />
       </div>
 
-      <Transition
-        name="expand"
-        @before-enter="onResourceTransitionStart"
-        @after-enter="onResourceTransitionEnd"
-        @before-leave="onResourceTransitionStart"
-        @after-leave="onResourceTransitionEnd"
-      >
+      <!-- pinToAnchor runs on every container resize, so the popover stays
+           on its side of the row while this grows or shrinks -->
+      <Transition name="expand">
         <div v-if="showResources" class="review-edit-popover__resources-container">
           <ReviewResources
             :rule-id="selectedRuleId"
@@ -540,6 +527,10 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
       </Transition>
     </div>
   </Popover>
+  <div
+    ref="anchorEl"
+    style="position: fixed; width: 0px; pointer-events: none; visibility: hidden; z-index: -1;"
+  />
 </template>
 
 <style scoped>
@@ -547,8 +538,13 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  min-width: 650px;
-  max-width: 850px;
+  /* Fixed width so the popover is the same size in every grid, rather than
+     sized by the attribution row (engine badges plus up to five Evaluated and
+     Statused pills, fewer for an unstatused review). Wide enough for that row
+     and for the Review Resources tables (history, other assets) to show their
+     columns without a horizontal scroller. */
+  width: 1000px;
+  max-width: calc(100vw - 24px);
   position: relative;
 }
 
@@ -573,7 +569,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 }
 
 .review-edit-popover__close .pi {
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
 }
 
 .review-edit-popover__main {
@@ -601,7 +597,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 .review-edit-popover__label {
   display: block;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   margin-bottom: 0.2rem;
   text-transform: uppercase;
@@ -642,7 +638,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   cursor: pointer;
   border-radius: 3px;
   white-space: nowrap;
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .review-edit-popover__result-item:hover:not(.review-edit-popover__result-item--disabled) {
@@ -705,7 +701,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   border: 1px solid color-mix(in srgb, var(--color-text-primary) 30%, transparent);
   border-radius: 4px;
   padding: 0.45rem 0.5rem;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 600;
   cursor: pointer;
   margin-top: auto;
@@ -731,7 +727,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   border: 1px solid color-mix(in srgb, var(--color-warning, #f39c12) 50%, transparent);
   border-radius: 4px;
   color: var(--color-warning, #f1c40f);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   animation: warning-slide-down 0.2s cubic-bezier(0, 0, 0.2, 1);
 }
 
@@ -742,8 +738,8 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 
 .review-edit-popover__attributions {
   display: flex;
-  column-gap: 3rem;
-  row-gap: 0.5rem;
+  align-items: center;
+  gap: 1.2rem;
   flex-wrap: wrap;
   border-top: 1px solid var(--color-border-light);
   padding-top: 0.4rem;
@@ -778,8 +774,14 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   transform: none !important;
 }
 
-:global(.review-popover.p-popover-flipped) {
-  margin-block-start: 5px;
+/* Sit the box just off the anchored row edge so the 10px arrow tip enters the
+   row by a few px while the body stays clear of it, in both flip directions */
+:global(.p-popover.review-popover) {
+  margin-block-start: 4px;
+}
+
+:global(.p-popover.review-popover.p-popover-flipped) {
+  margin-block-start: -3px;
 }
 
 :global(.review-popover-leave) {
@@ -799,7 +801,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 
 .review-edit-popover__attr-label {
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
   opacity: 0.8;
   white-space: nowrap;
@@ -810,7 +812,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   align-items: center;
   gap: 0.3rem;
   padding: 0.15rem 0.5rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-light);
   border-radius: 4px;
@@ -818,7 +820,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 }
 
 .review-edit-popover__attr-pill .pi {
-  font-size: 1rem;
+  font-size: var(--text-md);
   opacity: 0.9;
 }
 
@@ -835,7 +837,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
   background-color: color-mix(in srgb, var(--color-background-light) 20%, transparent);
   border-top: 1px solid var(--color-border-light);
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-primary);
   transition: background-color 0.15s ease;
@@ -847,7 +849,7 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 }
 
 .review-edit-popover__resources-toggle .pi {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   transition: transform 0.2s ease;
 }
@@ -861,7 +863,8 @@ defineExpose({ toggle, show, hide, reposition, isDirty, triggerUnsavedWarning })
 .review-edit-popover__resources-container {
   margin: 0 -0.8rem -0.8rem -0.8rem;
   border-top: 1px solid var(--color-border-light);
-  height: clamp(200px, 45vh, 350px);
+  /* set by placePopover from resourcesHeightPx() */
+  height: var(--sm-resources-height);
   display: flex;
   flex-direction: column;
   overflow: hidden;

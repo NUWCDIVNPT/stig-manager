@@ -62,7 +62,7 @@ async function onGenerate(formParams) {
 }
 
 .poam-progress__label {
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   color: var(--color-text-bright);
 }

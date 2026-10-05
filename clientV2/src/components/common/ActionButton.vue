@@ -33,7 +33,7 @@ defineProps({
   background: transparent;
   border: none;
   color: var(--color-text-default);
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   font-weight: 500;
   cursor: pointer;
   padding: 0.45rem 0.7rem;

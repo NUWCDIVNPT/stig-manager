@@ -13,6 +13,7 @@ vi.mock('../../../shared/composables/useGridDensity.js', () => ({
   useGridDensity: () => ({
     lineClamp: 3,
     itemSize: 30,
+    gridStyle: {},
     increaseRowHeight: vi.fn(),
     decreaseRowHeight: vi.fn(),
   }),
@@ -43,7 +44,7 @@ vi.mock('../../../components/common/ReviewEditPopover.vue', () => ({
     name: 'ReviewEditPopover',
     template: '<div data-testid="review-popover" />',
     setup(_, { expose }) {
-      expose({ toggle: vi.fn(), show: vi.fn(), hide: vi.fn(), reposition: vi.fn(), isDirty: false })
+      expose({ openForRow: vi.fn(), hide: vi.fn(), isDirty: false, triggerUnsavedWarning: vi.fn() })
       return {}
     },
   },

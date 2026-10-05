@@ -77,7 +77,7 @@ const selectPt = computed(() => {
     label: {
       style: {
         padding: '0',
-        fontSize: '1.2rem',
+        fontSize: 'var(--text-xl)',
         color: textColor,
         background: 'transparent',
         ...(props.pickerOnly ? { display: 'none' } : {}),
@@ -120,7 +120,7 @@ const selectPt = computed(() => {
 }
 
 :deep(.p-select-label) {
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
 }
 
 :deep(.p-select-label:hover) {

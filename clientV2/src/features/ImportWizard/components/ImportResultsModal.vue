@@ -258,10 +258,10 @@ function doneImport() { visible.value = false }
 
 .pp-label { font-weight: 600; margin: 0; }
 .pp-label__icon--warn { color: var(--color-warning-yellow); }
-.pp-count { margin: 0; color: var(--color-text-dim); font-size: 0.9rem; }
+.pp-count { margin: 0; color: var(--color-text-dim); font-size: var(--text-md); }
 .pp-track { height: 8px; background: var(--color-border-default); border-radius: 4px; overflow: hidden; }
 .pp-fill { height: 100%; background: var(--color-action-blue-dark); border-radius: 4px; transition: width 0.2s ease; }
-.pp-filename { margin: 0; color: var(--color-text-dim); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp-filename { margin: 0; color: var(--color-text-dim); font-size: var(--text-md); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; }
 

@@ -127,7 +127,7 @@ function goView() {
 
 <style scoped>
 .header-icon {
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
   color: var(--color-text-dim);
   flex-shrink: 0;
 }
@@ -141,14 +141,14 @@ function goView() {
 }
 
 .header-title {
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   color: var(--color-text-primary);
   flex: 1;
 }
 
 .dst-name {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
@@ -158,13 +158,13 @@ function goView() {
 }
 
 .current-step {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
 }
 
 .error-detail {
-  font-family: monospace;
-  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
   color: var(--color-text-error);
   background: var(--color-background-light);
   border: 1px solid var(--color-border-default);
@@ -177,12 +177,12 @@ function goView() {
 }
 
 .dst-name--done {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   line-height: 1.4;
   margin-bottom: 0.25rem;
 }
 .dst-name--done strong {
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   color: var(--color-text-bright);
 }
 
@@ -200,7 +200,7 @@ function goView() {
   justify-content: center;
   gap: 0.4rem;
   padding: 0.45rem 0.75rem;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 500;
   border-radius: 4px;
   cursor: pointer;

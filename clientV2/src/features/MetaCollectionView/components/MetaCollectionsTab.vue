@@ -35,7 +35,7 @@ watch(() => props.selectedCollectionIds, () => {
 
 const selectedCollectionId = ref(null)
 
-const { state: stigs, isLoading: stigsLoading, error: stigsError, execute: loadStigs } = useAsyncState(
+const { state: stigs, isLoading: stigsLoading, execute: loadStigs } = useAsyncState(
   () => {
     if (!selectedCollectionId.value) {
       return []
@@ -47,7 +47,7 @@ const { state: stigs, isLoading: stigsLoading, error: stigsError, execute: loadS
 
 const selectedBenchmarkId = ref(null)
 
-const { state: assets, isLoading: assetsLoading, error: assetsError, execute: loadAssets } = useAsyncState(
+const { state: assets, isLoading: assetsLoading, execute: loadAssets } = useAsyncState(
   () => {
     if (!selectedCollectionId.value || !selectedBenchmarkId.value) {
       return []
@@ -145,15 +145,9 @@ function handleCollectionIconClick(rowData) {
 
       <SplitterPanel :size="33" :min-size="10">
         <div class="panel-content">
-          <div class="panel-header">
-            <h3>STIGs</h3>
-          </div>
           <div class="grid-container">
-            <div v-if="stigsError" class="error-state">
-              {{ stigsError?.message || stigsError }}
-            </div>
             <MetricsSummaryGrid
-              v-else
+              title="STIGs"
               :api-metrics-summary="stigs"
               agg-type="stig"
               :is-loading="stigsLoading"
@@ -172,16 +166,10 @@ function handleCollectionIconClick(rowData) {
 
       <SplitterPanel :size="34" :min-size="10">
         <div class="panel-content">
-          <div class="panel-header">
-            <h3>Assets</h3>
-            <span v-if="selectedBenchmarkId" class="badge">STIG: {{ selectedBenchmarkId }}</span>
-          </div>
           <div class="grid-container">
-            <div v-if="assetsError" class="error-state">
-              {{ assetsError?.message || assetsError }}
-            </div>
             <MetricsSummaryGrid
-              v-else
+              title="Assets"
+              :badge="selectedBenchmarkId"
               :api-metrics-summary="assets"
               agg-type="unagg"
               :is-loading="assetsLoading"

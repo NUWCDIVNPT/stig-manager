@@ -41,13 +41,10 @@ const formattedScore = computed(() => props.weightedAvg.toFixed(1))
 <style scoped>
 .cora-pct-badge {
   border-radius: 5px;
-  outline: #bbb solid 1px;
-  outline-offset: -1px;
   width: fit-content;
   min-width: 3.2rem;
-  font-weight: 400;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  font-size: var(--text-lg);
+  font-weight: 700;
   margin: 0 auto;
   display: flex;
   align-items: center;

@@ -15,18 +15,20 @@ import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { normalizeColor } from '../../../shared/lib/colorUtils.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import LabelsRow from '../../columns/LabelsRow.vue'
 import ColumnFilter from '../ColumnFilter.vue'
 import ColumnSearchFilter from '../ColumnSearchFilter.vue'
 import EngineBadge from '../EngineBadge.vue'
-
 import LongTextPopover from '../LongTextPopover.vue'
 import ManualBadge from '../ManualBadge.vue'
 import OverrideBadge from '../OverrideBadge.vue'
 import ResultBadge from '../ResultBadge.vue'
 import StatusBadge from '../StatusBadge.vue'
 import StatusFooter from '../StatusFooter.vue'
+import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
+import { reviewResourcesTablePt } from './tablePt.js'
 
 const props = defineProps({
   active: {
@@ -78,7 +80,15 @@ FilterService.register('labelContainsAny', (value, filter) => {
   return value.some(label => filter.includes(label.name))
 })
 
-const ROW_HEIGHT = 36
+// Single-line rows at a fixed height, so cells centre vertically.
+const cellOptions = { verticalAlign: 'middle' }
+const columnPt = {
+  center: gridColumnPt('center', cellOptions),
+  left: gridColumnPt('left', cellOptions),
+  icon: iconHeaderPt(gridColumnPt('center', cellOptions)),
+}
+
+const ROW_HEIGHT = rowHeightPx('standard')
 
 const dataTableRef = ref(null)
 
@@ -243,39 +253,6 @@ watch([
 ], () => {
   resetFilters()
 })
-
-const otherTablePt = {
-  root: { class: 'sm-scrollbar-thin', style: { backgroundColor: 'var(--color-background-dark)' } },
-  header: { style: { background: 'transparent', border: 'none', padding: '0' } },
-  table: { style: { borderCollapse: 'separate', borderSpacing: '0', background: 'var(--color-background-darkest)' } },
-  thead: {
-    style: {
-      background: 'var(--color-background-dark)',
-      position: 'sticky',
-      top: '0',
-      zIndex: '1',
-    },
-  },
-  headerCell: {
-    style: {
-      background: 'var(--color-background-dark)',
-      borderBottom: '1px solid var(--color-border-default)',
-      color: 'var(--color-text-dim)',
-      fontWeight: '700',
-      fontSize: '0.9rem',
-      textTransform: 'uppercase',
-      letterSpacing: '0.04em',
-      padding: '0.3rem 0.4rem',
-    },
-  },
-  bodyRow: {
-    style: {
-      background: 'var(--color-background-dark)',
-      transition: 'background-color 0.1s ease',
-    },
-  },
-  footer: { style: { padding: '0', border: 'none', background: 'transparent' } },
-}
 </script>
 
 <template>
@@ -292,9 +269,9 @@ const otherTablePt = {
       :virtual-scroller-options="{ itemSize: ROW_HEIGHT, showLoader: true }"
       striped-rows
       class="other-assets-table"
-      :pt="otherTablePt"
+      :pt="reviewResourcesTablePt"
     >
-      <Column field="assetName" export-header="Asset" sortable :style="{ width: '100px' }">
+      <Column field="assetName" export-header="Asset" sortable :style="{ width: '9rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             Asset
@@ -310,7 +287,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="assetLabels" export-header="Labels" filter-field="assetLabels" :style="{ width: '100px' }">
+      <Column field="assetLabels" export-header="Labels" filter-field="assetLabels" :style="{ width: '9rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             Labels
@@ -329,7 +306,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="result" export-header="Result" :style="{ width: '65px', textAlign: 'center' }">
+      <Column field="result" export-header="Result" :style="{ width: '6rem' }" :pt="columnPt.center">
         <template #header>
           <div class="column-header-with-filter">
             Result
@@ -345,7 +322,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '50px', textAlign: 'center' }">
+      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '4.5rem' }" :pt="columnPt.center">
         <template #header>
           <div class="column-header-with-filter">
             <img
@@ -382,7 +359,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="detail" export-header="Detail" :style="{ width: '150px' }">
+      <Column field="detail" export-header="Detail" :style="{ width: '13.75rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             Detail
@@ -402,7 +379,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="comment" export-header="Comment" :style="{ width: '150px' }">
+      <Column field="comment" export-header="Comment" :style="{ width: '13.75rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             Comment
@@ -422,20 +399,17 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column header="Evaluated" field="ts" sortable :style="{ width: '80px' }">
-        <template #body="{ data }">
-          <span class="cell-text--mono" :title="formatReviewDate(data.ts)">{{ durationToNow(data.ts) }}</span>
+      <Column field="touchTs" export-header="Last action" sortable :style="{ width: '4.5rem' }" :pt="columnPt.icon">
+        <template #header>
+          <i class="pi pi-clock last-action-header-icon" title="Last action" />
         </template>
-      </Column>
-
-      <Column header="Statused" field="touchTs" sortable :style="{ width: '80px' }">
         <template #body="{ data }">
           <span v-if="data.touchTs" class="cell-text--mono" :title="formatReviewDate(data.touchTs)">{{ durationToNow(data.touchTs) }}</span>
           <span v-else class="cell-text--empty">---</span>
         </template>
       </Column>
 
-      <Column field="username" export-header="User" :style="{ width: '80px' }">
+      <Column field="username" export-header="User" :style="{ width: '7.25rem' }" :pt="columnPt.left">
         <template #header>
           <div class="column-header-with-filter">
             User
@@ -453,7 +427,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column header="Apply" :exportable="false" :style="{ width: '40px', textAlign: 'center' }">
+      <Column header="Apply" :exportable="false" :style="{ width: '3.75rem' }" :pt="columnPt.center">
         <template #body="{ data }">
           <button
             class="apply-review-icon-btn"
@@ -517,11 +491,16 @@ const otherTablePt = {
   border-top: none;
 }
 
+/* Fills the header content so its justify-content (set per column by the
+   table pass-through) decides where the caption and filter sit. */
 .column-header-with-filter {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: inherit;
+  gap: 0.1rem;
+  flex: 1 1 auto;
 }
+
 
 /* Allow table to expand and scroll horizontally if needed. */
 :deep(.p-datatable-table) {
@@ -534,16 +513,9 @@ const otherTablePt = {
 }
 
 :deep(.p-datatable-tbody > tr > td) {
-  padding: 0.2rem 0.4rem;
-  vertical-align: middle;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-primary);
-  overflow: hidden;
-}
-
-:deep(.p-datatable-thead > tr > th) {
-  border-right: 1px solid var(--color-border-light) !important;
 }
 
 :deep(.p-datatable-thead > tr > th:last-child) {
@@ -551,9 +523,9 @@ const otherTablePt = {
 }
 
 .cell-text--mono {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .cell-text--ellipsis {
@@ -561,7 +533,7 @@ const otherTablePt = {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   line-height: 1.3;
   color: var(--color-text-primary);
   cursor: pointer;
@@ -578,12 +550,17 @@ const otherTablePt = {
   color: var(--color-text-dim);
   opacity: 0.5;
   font-style: italic;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .engine-header-icon {
   width: 14px;
   height: 14px;
+  opacity: 0.7;
+}
+
+.last-action-header-icon {
+  font-size: var(--text-md);
   opacity: 0.7;
 }
 
@@ -600,7 +577,7 @@ const otherTablePt = {
 
 .label-filter-chip {
   display: inline-block;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   padding: 1px 6px;
   border-radius: 6px;
@@ -636,12 +613,12 @@ const otherTablePt = {
 }
 
 .apply-review-icon-btn i {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .footer-divider {
   color: var(--color-text-dim);
   opacity: 0.4;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 </style>

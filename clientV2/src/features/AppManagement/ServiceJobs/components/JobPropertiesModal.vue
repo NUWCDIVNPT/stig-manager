@@ -241,7 +241,7 @@ const dialogPt = {
 }
 
 .modal-header-title {
-  font-size: 1.05rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-bright);
 }
@@ -269,7 +269,7 @@ const dialogPt = {
 }
 
 .flabel {
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -288,7 +288,7 @@ const dialogPt = {
   justify-content: center;
   gap: 0.6rem;
   flex: 1;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
@@ -298,7 +298,7 @@ const dialogPt = {
 
 .tab-status--error .pi-exclamation-triangle {
   color: var(--color-text-error);
-  font-size: 1.3rem;
+  font-size: var(--text-xl);
 }
 
 .readonly-tasks {
@@ -313,7 +313,7 @@ const dialogPt = {
   align-items: center;
   gap: 0.5rem;
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   font-style: italic;
 }
@@ -338,7 +338,7 @@ const dialogPt = {
 }
 
 .task-readonly-item i {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-dim);
   flex-shrink: 0;
 }
@@ -355,7 +355,7 @@ const dialogPt = {
 }
 
 .task-readonly-desc {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 

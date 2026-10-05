@@ -1,6 +1,9 @@
 <script setup>
 import PickList from '../../../../components/common/PickList.vue'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { userLabel } from '../lib/userGroupDisplay.js'
+
+const ROW_HEIGHT = rowHeightPx('twoLine')
 
 // Group membership dual-list ([available, members] tuple) shared by the User
 // Group Properties panel and the create modal, so the two render identically.
@@ -24,7 +27,7 @@ function userFilter(user, searchText) {
     source-filter-placeholder="Search users..."
     target-filter-placeholder="Search users..."
     option-style="padding: 0.4rem 0.75rem;"
-    :virtual-scroller-options="{ itemSize: 48 }"
+    :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
   >
     <template #sourceheader>
       Available Users
@@ -49,12 +52,12 @@ function userFilter(user, searchText) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   min-width: 0;
 }
 
 .user-item i {
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   flex-shrink: 0;
 }
 
@@ -72,7 +75,7 @@ function userFilter(user, searchText) {
 }
 
 .user-username {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   color: var(--color-text-dim);
   white-space: nowrap;
   overflow: hidden;

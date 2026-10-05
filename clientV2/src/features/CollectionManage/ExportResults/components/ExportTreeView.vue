@@ -4,6 +4,7 @@ import { computed, reactive, watch } from 'vue'
 import shieldIcon from '../../../../assets/shield-green-check.svg'
 import targetIcon from '../../../../assets/target.svg'
 import { formatPercent } from '../../../../shared/lib.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import {
   toggleBranchSelection,
   toggleLeafSelection,
@@ -34,6 +35,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:selectionKeys', 'node-expand'])
+
+const ROW_HEIGHT = rowHeightPx('compact')
 
 const expandedKeys = reactive(new Set())
 
@@ -126,8 +129,8 @@ function toggleExpand(branch) {
 <template>
   <VirtualScroller
     :items="flatRows"
-    :item-size="30"
-    style="height: 100%; width: 100%;"
+    :item-size="ROW_HEIGHT"
+    :style="{ 'height': '100%', 'width': '100%', '--item-size': `${ROW_HEIGHT}px` }"
   >
     <template #item="{ item: row }">
       <!-- Root row -->
@@ -199,7 +202,7 @@ function toggleExpand(branch) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  height: 30px;
+  height: var(--item-size);
   padding: 0 0.5rem;
   box-sizing: border-box;
   cursor: default;
@@ -238,7 +241,7 @@ function toggleExpand(branch) {
   justify-content: center;
   color: var(--color-text-dim);
   flex-shrink: 0;
-  font-size: 0.75rem;
+  font-size: var(--icon-xs);
   border-radius: 3px;
 }
 
@@ -260,7 +263,7 @@ function toggleExpand(branch) {
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  font-size: 0.8rem;
+  font-size: var(--icon-xs);
   color: var(--color-text-bright);
   transition: background-color 0.1s, border-color 0.1s;
   user-select: none;
@@ -296,17 +299,17 @@ function toggleExpand(branch) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .node-label--bold {
   font-weight: 600;
-  font-size: 1.02rem;
+  font-size: var(--text-md);
   flex: 1;
 }
 
 .child-count {
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   color: var(--color-text-dim);
   flex-shrink: 0;
   white-space: nowrap;
@@ -314,12 +317,12 @@ function toggleExpand(branch) {
 
 .node-loading {
   color: var(--color-text-dim);
-  font-size: 0.75rem;
+  font-size: var(--icon-xs);
   flex-shrink: 0;
 }
 
 .badge {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 600;
   padding: 0.15rem 0.55rem;
   border-radius: 3px;

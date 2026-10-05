@@ -193,7 +193,7 @@ const dialogTitle = computed(() => {
   gap: 0.5rem;
   margin: 0;
   color: var(--color-text-primary);
-  font-size: 1.05rem;
+  font-size: var(--text-md);
 }
 
 .error-step {
@@ -213,7 +213,7 @@ const dialogTitle = computed(() => {
 }
 
 .error-callout__icon {
-  font-size: 2rem;
+  font-size: var(--text-display);
   color: var(--color-text-error);
   flex-shrink: 0;
 }
@@ -222,14 +222,14 @@ const dialogTitle = computed(() => {
   margin: 0;
   font-weight: 600;
   color: var(--color-text-error);
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
 }
 
 .error-callout__detail {
   margin: 0.5rem 0 0;
   white-space: pre-wrap;
-  font-family: ui-monospace, monospace;
-  font-size: 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 

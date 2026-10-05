@@ -84,9 +84,8 @@ watch([selectedBenchmarkId, aggregator, selectedFinding], ([stig, agg, sel]) => 
 })
 
 // Per-STIG metrics + collection totals. Drives both the popover STIG list and
-// the "Overall" CAT 1/2/3 totals in the AggregatedFindingsGrid header. The
-// metrics endpoint accepts label filters server-side, so this view is the only
-// one that currently honors `labelIds` (see useFindings/useFindingReviews).
+// the "Overall" CAT 1/2/3 totals in the AggregatedFindingsGrid header. Like
+// useFindings/useFindingReviews below, honors `labelIds` server-side.
 const {
   stigs,
   totals,
@@ -96,15 +95,13 @@ const {
 } = useCollectionStigSummary({ collectionId, labelIds })
 
 // Middle pane: aggregated findings, optionally scoped to one STIG.
-// TODO(label-filter): /collections/{id}/findings does not accept label params
-// server-side — see docs/todos/pending-api-enhancements.md #1.
 const {
   findings,
   isLoading: isFindingsLoading,
   error: findingsError,
   retry: retryFindings,
   totalOccurrences,
-} = useFindings({ collectionId, aggregator, benchmarkId: selectedBenchmarkId })
+} = useFindings({ collectionId, aggregator, benchmarkId: selectedBenchmarkId, labelIds })
 
 // Restore the ?sel= selection once the first findings load completes. One-shot:
 // pending is consumed on the first load regardless of outcome, so subsequent
@@ -126,15 +123,13 @@ const visibleColumns = useFindingsColumns(aggregator, isAllStigsMode)
 
 // Right pane: per-asset failed reviews backing the currently selected
 // aggregated row. selectedFinding === null → returns [] without fetching.
-// TODO(label-filter): same caveat as useFindings — see
-// docs/todos/pending-api-enhancements.md #2.
 const {
   reviews,
   isLoading: isReviewsLoading,
   error: reviewsError,
   retry: retryReviews,
   statusCounts,
-} = useFindingReviews({ collectionId, selectedFinding, aggregator })
+} = useFindingReviews({ collectionId, selectedFinding, aggregator, labelIds })
 
 // Labels for decorating review rows. The reviews payload includes assetLabelIds
 // only; this endpoint supplies the full {name, color} objects LabelsRow needs.

@@ -113,7 +113,7 @@ function toggleRecentViewsPopover(event) {
 
 .nav-rail-section-label {
   padding: 0.75rem 1.1rem 0.35rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-dim);
   text-transform: uppercase;
@@ -132,7 +132,7 @@ function toggleRecentViewsPopover(event) {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: var(--text-md);
   transition: all 0.2s ease;
 }
 
@@ -155,7 +155,7 @@ function toggleRecentViewsPopover(event) {
   border-radius: 0.35rem;
   color: var(--color-text-dim);
   text-decoration: none;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   white-space: nowrap;
   overflow: hidden;
 }
@@ -172,7 +172,7 @@ function toggleRecentViewsPopover(event) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -185,7 +185,7 @@ function toggleRecentViewsPopover(event) {
 
 .nav-rail-recent-empty {
   padding: 0.75rem 1.1rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   font-style: italic;
 }
@@ -195,7 +195,7 @@ function toggleRecentViewsPopover(event) {
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1.1rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-text-primary);
   border-bottom: 1px solid var(--color-border-default);
@@ -215,7 +215,7 @@ function toggleRecentViewsPopover(event) {
   border-radius: 0.35rem;
   color: var(--color-text-dim);
   text-decoration: none;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   white-space: nowrap;
   overflow: hidden;
 }

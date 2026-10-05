@@ -10,6 +10,7 @@ import { formatSize } from '../../../../shared/lib.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { dangerBtnPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { readStoredValue, storeValue } from '../../../../shared/lib/localStorage.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { useFileDropZone } from '../composables/useFileDropZone.js'
 import { useFollowRow } from '../composables/useFollowRow.js'
 import { useStigImportStore } from '../stores/stigImportStore.js'
@@ -21,7 +22,7 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'imported'])
 
 const CLOBBER_KEY = 'stigImportClobber'
-const ROW_HEIGHT = 29
+const ROW_HEIGHT = rowHeightPx('compact')
 
 const localVisible = computed({
   get: () => props.visible,
@@ -281,7 +282,7 @@ const dialogPt = {
   closeButton: { style: 'color: var(--color-text-dim);' },
 }
 
-const tablePt = compactTablePt({ bodyFontSize: '1rem' })
+const tablePt = compactTablePt()
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
 </script>
 
@@ -594,7 +595,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 }
 
 .modal-header-title {
-  font-size: 1.05rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-bright);
 }
@@ -627,14 +628,14 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 
 .instructions-box__icon {
   color: var(--color-action-blue-dark);
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   margin-top: 0.15rem;
   flex-shrink: 0;
 }
 
 .instructions-box__text {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   line-height: 1.6;
 }
@@ -675,7 +676,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 }
 
 .drop-zone--compact .drop-zone__upload-icon {
-  font-size: 1.75rem;
+  font-size: var(--text-2xl);
 }
 
 .drop-zone__input {
@@ -683,19 +684,19 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 }
 
 .drop-zone__upload-icon {
-  font-size: 2.75rem;
+  font-size: var(--text-display-lg);
   color: var(--color-text-dim);
   pointer-events: none;
 }
 
 .drop-zone__prompt {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
   pointer-events: none;
 }
 
 .drop-zone__hint {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   pointer-events: none;
 }
@@ -705,7 +706,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-warning-yellow);
   flex-shrink: 0;
 }
@@ -745,7 +746,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 }
 
 .table-toolbar__summary {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
@@ -754,7 +755,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   border: none;
   cursor: pointer;
   padding: 0.15rem 0.4rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   border-radius: 4px;
   transition: color 0.1s, background 0.1s;
@@ -831,7 +832,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   align-items: baseline;
   flex-wrap: wrap;
   gap: 0.35rem 1rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
@@ -864,7 +865,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 }
 
 .checkbox-label {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   cursor: pointer;
   user-select: none;

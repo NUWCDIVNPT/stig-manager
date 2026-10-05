@@ -17,6 +17,7 @@ import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay, severityMap } from '../../../shared/lib/checklistUtils.js'
+import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { fieldMatches, highlightText } from '../../../shared/lib/searchUtils.js'
@@ -225,46 +226,11 @@ watch(() => props.gridData, (data) => {
 
 const defaultSortField = computed(() => props.visibleFields.has('groupId') ? 'groupId' : 'ruleId')
 
-function getColumnPt(alignment = 'left') {
-  const isCenter = alignment === 'center'
-  return {
-    headerCell: {
-      style: {
-        borderRight: '1px solid var(--color-border-light)',
-      },
-      class: isCenter ? 'column-header-center' : 'column-header-left',
-    },
-    columnHeaderContent: {
-      style: {
-        fontSize: '1rem',
-        color: 'var(--color-text-primary)',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-    },
-    bodyCell: {
-      style: {
-        verticalAlign: 'top',
-        padding: '0.15rem 0.35rem',
-        overflow: 'hidden',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-      class: isCenter ? 'column-body-center' : 'column-body-left',
-    },
-    bodyCellContent: {
-      style: {
-        display: 'flex',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        alignItems: 'flex-start',
-        width: '100%',
-      },
-    },
-  }
-}
-
 const columnPt = {
-  center: getColumnPt('center'),
-  left: getColumnPt('left'),
+  center: gridColumnPt('center'),
+  left: gridColumnPt('left'),
+  // Icon-only headers whose one action is sorting
+  icon: iconHeaderPt(gridColumnPt('center')),
 }
 
 const dataTablePt = {
@@ -305,7 +271,7 @@ const dataTablePt = {
 
     <Column v-if="visibleFields.has('groupId')" header="Group" field="groupId" sortable :style="{ width: '7rem', minWidth: '7rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <span class="cell-text" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupId, searchFilter) }">
+        <span class="cell-text cell-text--id" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupId, searchFilter) }">
           <span v-if="searchFilter" v-html="highlightText(data.groupId, searchFilter)" />
           <template v-else>{{ data.groupId }}</template>
         </span>
@@ -317,7 +283,7 @@ const dataTablePt = {
       :pt="columnPt.left"
     >
       <template #body="{ data }">
-        <span class="cell-text" :class="{ 'cell--match': searchFilter && fieldMatches(data.ruleId, searchFilter) }">
+        <span class="cell-text cell-text--id" :class="{ 'cell--match': searchFilter && fieldMatches(data.ruleId, searchFilter) }">
           <span v-if="searchFilter" v-html="highlightText(data.ruleId, searchFilter)" />
           <template v-else>{{ data.ruleId }}</template>
         </span>
@@ -347,14 +313,16 @@ const dataTablePt = {
       :pt="columnPt.left"
     >
       <template #body="{ data }">
-        <span
-          class="cell-text cell-text--clamped"
-          :class="{ 'cell--match': searchFilter && fieldMatches(data.groupTitle, searchFilter) }"
-          :title="data.groupTitle"
-        >
-          <span v-if="searchFilter" v-html="highlightText(data.groupTitle, searchFilter)" />
-          <template v-else>{{ data.groupTitle }}</template>
-        </span>
+        <div class="cell-text-field">
+          <span
+            class="cell-text cell-text--clamped"
+            :class="{ 'cell--match': searchFilter && fieldMatches(data.groupTitle, searchFilter) }"
+            :title="data.groupTitle"
+          >
+            <span v-if="searchFilter" v-html="highlightText(data.groupTitle, searchFilter)" />
+            <template v-else>{{ data.groupTitle }}</template>
+          </span>
+        </div>
       </template>
     </Column>
 
@@ -454,7 +422,7 @@ const dataTablePt = {
       </template>
     </Column>
 
-    <Column v-if="visibleFields.has('touchTs')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('touchTs')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.icon">
       <template #header>
         <i class="pi pi-clock" title="Last action" />
       </template>
@@ -501,7 +469,7 @@ const dataTablePt = {
   align-items: center;
   justify-content: center;
   gap: 0.1rem;
-  width: 100%;
+  flex: 1 1 auto;
 }
 
 /* Table Styles */
@@ -532,14 +500,22 @@ const dataTablePt = {
 
 .cell-result__empty {
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
   opacity: 0.9;
 }
 
+/* Size and line height come from the grid geometry (useGridDensity textSize),
+   so N clamped lines fill exactly N rows. */
 .cell-text {
-  font-size: 1.3rem;
-  line-height: 1.3;
+  font-size: var(--cell-font-size);
+  line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-primary);
+}
+
+/* Group and Rule identifiers read larger than the clamped text columns. */
+.cell-text--id {
+  font-size: var(--text-xl);
+  line-height: 1.3;
 }
 
 .cell-text--clamped {
@@ -573,11 +549,6 @@ const dataTablePt = {
   gap: 0.25rem;
 }
 
-.cell-text-field .cell-text {
-  font-size: 1.1rem;
-  line-height: 1.3;
-}
-
 .cell-text-field .cell-text--clamped {
   flex: 1;
   min-width: 0;
@@ -601,16 +572,11 @@ const dataTablePt = {
   flex-shrink: 0;
 }
 
-.cell--match {
-  background-color: color-mix(in srgb, var(--color-warning-yellow, #f59e0b) 8%, transparent);
-  border-radius: 2px;
-}
-
 /* Deep overrides for PrimeVue DataTable */
 :deep(.p-datatable-thead > tr > th) {
   background: var(--color-background-dark);
   color: var(--color-text-dim);
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: none;
   letter-spacing: 0.03em;
@@ -648,7 +614,7 @@ const dataTablePt = {
   align-items: center;
   gap: 0.75rem;
   color: var(--color-text-dim);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
 }
 
 /* Custom scrollbars for the table */
@@ -681,13 +647,5 @@ const dataTablePt = {
 :deep(.p-virtualscroller) {
   scrollbar-width: thin;
   scrollbar-color: var(--color-border-default) transparent;
-}
-
-/* Search highlighting stays in sync with v-html content */
-:deep(.search-highlight) {
-  background-color: color-mix(in srgb, var(--color-warning-yellow, #f59e0b) 40%, transparent);
-  color: inherit;
-  border-radius: 1px;
-  padding: 0 1px;
 }
 </style>
