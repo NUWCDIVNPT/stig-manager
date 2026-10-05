@@ -2,9 +2,9 @@
 import Button from 'primevue/button'
 import WhatsNewContent from '../../../components/global/WhatsNewContent.vue'
 import { Sources } from '../../../components/global/whatsNewSources.js'
-import { useOrientationTour } from '../../../shared/composables/useOrientationTour.js'
+import { useTours } from '../../../shared/composables/useTours.js'
 
-const { requestStart } = useOrientationTour()
+const { startTour } = useTours()
 </script>
 
 <template>
@@ -17,7 +17,7 @@ const { requestStart } = useOrientationTour()
           icon="pi pi-compass"
           outlined
           size="small"
-          @click="requestStart"
+          @click="startTour('shell')"
         />
       </div>
       <div class="whats-new-content">

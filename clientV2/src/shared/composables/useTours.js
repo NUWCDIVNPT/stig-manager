@@ -1,19 +1,39 @@
 import { readonly, ref } from 'vue'
 
-// Bumped whenever the tour content changes enough that users who have already
-// seen it should be shown it again. Compared against webPreferences.lastTour.
-export const TOUR_DATE = '2026-10-04'
+const request = ref(null)
+const navRailExpanded = ref(false)
 
-const startRequests = ref(0)
+// Lets any view ask the app-level TourHost to run a tour from
+// components/global/tours.js.
+export function useTours() {
+  // Runs the tour whether or not the user has seen it.
+  function startTour(id) {
+    request.value = { id, onlyIfUnseen: false }
+  }
 
-// Lets any view ask the app-level OrientationTour to run.
-export function useOrientationTour() {
-  function requestStart() {
-    startRequests.value += 1
+  // Runs the tour only if the user has not seen its current version. Views
+  // call this once they have rendered the elements their tour points at.
+  function offerTour(id) {
+    request.value = { id, onlyIfUnseen: true }
+  }
+
+  function takeRequest() {
+    const pending = request.value
+    request.value = null
+    return pending
+  }
+
+  function setNavRailExpanded(value) {
+    navRailExpanded.value = value
   }
 
   return {
-    startRequests: readonly(startRequests),
-    requestStart,
+    request: readonly(request),
+    // True while a tour step needs the nav rail open, whatever the user's own setting.
+    navRailExpanded: readonly(navRailExpanded),
+    startTour,
+    offerTour,
+    takeRequest,
+    setNavRailExpanded,
   }
 }

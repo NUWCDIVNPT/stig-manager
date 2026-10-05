@@ -6,13 +6,13 @@ import GlobalBanner from './components/global/GlobalBanner.vue'
 import GlobalErrorModal from './components/global/GlobalErrorModal.vue'
 import GlobalNotifications from './components/global/GlobalNotifications.vue'
 import GlobalServiceOverlay from './components/global/GlobalServiceOverlay.vue'
-import OrientationTour from './components/global/OrientationTour.vue'
+import TourHost from './components/global/TourHost.vue'
 import WhatsNew from './components/global/WhatsNew.vue'
 import HomePage from './Home/Home.vue'
 
 const oidcWorker = useOidcWorker()
 
-// The orientation tour waits for What's New so the two never open together.
+// Tours wait for What's New so the two never open together.
 const whatsNewSettled = ref(false)
 </script>
 
@@ -29,7 +29,7 @@ const whatsNewSettled = ref(false)
   <WhatsNew @settled="whatsNewSettled = true" />
   <GlobalNotifications />
   <HomePage />
-  <OrientationTour v-if="whatsNewSettled" />
+  <TourHost v-if="whatsNewSettled" />
 </template>
 
 <style scoped>

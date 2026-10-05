@@ -1,71 +1,33 @@
 <script setup>
-// Step-through orientation overlay for users arriving from the legacy client.
-// Each step spotlights an element tagged with a `data-tour` attribute and
-// shows a card beside it. Steps whose target is absent (Admin for non-admins,
-// Recent Views when the rail is collapsed) are skipped automatically.
+// Step-through overlay that runs the tours defined in tours.js. Each step
+// spotlights an element tagged with a `data-tour` attribute and shows a card
+// beside it. Steps whose target is absent (Admin for non-admins, for example)
+// are skipped automatically.
 //
-// The tour opens by itself until the user has seen the current TOUR_DATE
-// (webPreferences.lastTour), and on request through useOrientationTour.
+// The shell tour opens by itself until the user has seen its current date
+// (webPreferences.tours.shell). Views offer their own tours through useTours;
+// an offered tour opens once the shell tour has been seen, and only while no
+// other tour is open.
 import Button from 'primevue/button'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useGlobalError } from '../../shared/composables/useGlobalError.js'
-import { TOUR_DATE, useOrientationTour } from '../../shared/composables/useOrientationTour.js'
+import { useTours } from '../../shared/composables/useTours.js'
 import { useWebPreferences } from '../../shared/composables/useWebPreferences.js'
 import { useGlobalAppStore } from '../../shared/stores/globalAppStore.js'
+import { TOURS } from './tours.js'
 
-const STEPS = [
-  {
-    target: 'nav-rail',
-    title: 'Navigation moved to the left rail',
-    body: 'The navigation tree from the previous interface is now this rail. Use the arrow at the top to expand it for labels and your Collection list, or collapse it to icons.',
-  },
-  {
-    target: 'nav-item-home',
-    title: 'Home',
-    body: 'Returns to the landing page from anywhere in the app.',
-  },
-  {
-    target: 'nav-item-collections',
-    title: 'Collections',
-    body: 'Your Collections live here. With the rail expanded they list inline; collapsed, this opens a searchable popover.',
-  },
-  {
-    target: 'nav-item-library',
-    title: 'STIG Library',
-    body: 'Browse every STIG installed on this server and compare revisions.',
-  },
-  {
-    target: 'nav-item-whats-new',
-    title: 'What\'s New',
-    body: 'Release notes and feature announcements, formerly under Interface in the navigation tree.',
-  },
-  {
-    target: 'nav-item-admin',
-    title: 'Admin',
-    body: 'Application Management workspaces: Users, User Groups, STIG Benchmarks, Service Jobs, and more.',
-  },
-  {
-    target: 'nav-recent',
-    title: 'Recent Views',
-    body: 'Quick links back to workspaces you have opened recently.',
-  },
-  {
-    target: 'user-menu',
-    title: 'Your account moved to the top right',
-    body: 'Your username and Sign out are under the user icon here, instead of at the top of the navigation tree.',
-    placement: 'below-end',
-  },
-]
+const SHELL_TOUR = 'shell'
 
 const globalAppStore = useGlobalAppStore()
 const { triggerError } = useGlobalError()
 const { preferences, patchPreferences } = useWebPreferences()
-const { startRequests } = useOrientationTour()
+const { request, takeRequest, setNavRailExpanded } = useTours()
 
 const SPOTLIGHT_PAD = 6
 const CARD_GAP = 14
 
 const visible = ref(false)
+const tourId = ref(null)
 const stepIndex = ref(0)
 const targetRect = ref(null)
 const cardEl = ref(null)
@@ -126,13 +88,26 @@ const cardStyle = computed(() => {
   const vh = window.innerHeight
   const clamp = (v, max) => Math.max(CARD_GAP, Math.min(v, max - CARD_GAP))
 
-  if (step.value?.placement === 'below-end') {
+  const placement = step.value?.placement
+  if (placement === 'below-end') {
     return {
       top: `${clamp(r.bottom + CARD_GAP, vh - height)}px`,
       left: `${clamp(r.right - width, vw - width)}px`,
     }
   }
-  // Default: to the right of the target, vertically centred on it.
+  if (placement === 'center') {
+    return {
+      top: `${clamp(r.top + r.height / 2 - height / 2, vh - height)}px`,
+      left: `${clamp(r.left + r.width / 2 - width / 2, vw - width)}px`,
+    }
+  }
+  if (placement === 'left') {
+    return {
+      top: `${clamp(r.top + r.height / 2 - height / 2, vh - height)}px`,
+      left: `${clamp(r.left - SPOTLIGHT_PAD - CARD_GAP - width, vw - width)}px`,
+    }
+  }
+  // 'right': beside the target, vertically centred on it.
   return {
     top: `${clamp(r.top + r.height / 2 - height / 2, vh - height)}px`,
     left: `${clamp(r.right + SPOTLIGHT_PAD + CARD_GAP, vw - width)}px`,
@@ -153,18 +128,20 @@ function back() {
   }
 }
 
-function hasSeenTour() {
-  return (preferences.value.lastTour ?? '') >= TOUR_DATE
+function hasSeen(id) {
+  return (preferences.value.tours?.[id] ?? '') >= TOURS[id].date
 }
 
 async function finish() {
+  const id = tourId.value
   visible.value = false
+  setNavRailExpanded(false)
   stopTracking()
-  if (hasSeenTour()) {
+  if (hasSeen(id)) {
     return
   }
   try {
-    await patchPreferences({ lastTour: TOUR_DATE })
+    await patchPreferences({ tours: { [id]: TOURS[id].date } })
   }
   catch (error) {
     triggerError(error)
@@ -186,18 +163,38 @@ function onKeydown(e) {
   }
 }
 
-async function start() {
+async function start(id) {
+  const steps = TOURS[id].steps
+  // Targets inside the rail only have a size once it is open, so open it
+  // before deciding which steps are available.
+  setNavRailExpanded(steps.some(s => s.expandRail))
   await nextTick()
-  availableSteps.value = STEPS.filter(s => findTarget(s.target))
+  availableSteps.value = steps.filter(s => findTarget(s.target))
   if (availableSteps.value.length === 0) {
+    setNavRailExpanded(false)
     return
   }
+  tourId.value = id
   stepIndex.value = 0
   visible.value = true
   await nextTick()
   measure()
   stopTracking()
   frameId = requestAnimationFrame(trackFrame)
+}
+
+function handleRequest() {
+  const pending = takeRequest()
+  if (!pending || visible.value || !TOURS[pending.id]) {
+    return
+  }
+  if (pending.onlyIfUnseen) {
+    const waitsForShell = pending.id !== SHELL_TOUR && !hasSeen(SHELL_TOUR)
+    if (waitsForShell || hasSeen(pending.id)) {
+      return
+    }
+  }
+  start(pending.id)
 }
 
 function stopTracking() {
@@ -207,18 +204,33 @@ function stopTracking() {
   }
 }
 
-onMounted(() => {
-  window.addEventListener('keydown', onKeydown)
-  if (globalAppStore.user && !hasSeenTour()) {
-    // Let the shell finish its first paint so the rail and menu bar are measurable.
-    setTimeout(start, 400)
+// The rail stays open only for the steps that point into it.
+watch(step, (current) => {
+  if (visible.value) {
+    setNavRailExpanded(Boolean(current?.expandRail))
   }
 })
 
-watch(startRequests, start)
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown)
+  if (globalAppStore.user && !hasSeen(SHELL_TOUR)) {
+    // Let the shell finish its first paint so the rail and menu bar are measurable.
+    setTimeout(() => {
+      if (!visible.value) {
+        start(SHELL_TOUR)
+      }
+    }, 400)
+  }
+  else {
+    handleRequest()
+  }
+})
+
+watch(request, handleRequest)
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onKeydown)
+  setNavRailExpanded(false)
   stopTracking()
 })
 </script>

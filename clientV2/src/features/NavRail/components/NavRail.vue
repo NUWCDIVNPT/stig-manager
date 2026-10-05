@@ -1,7 +1,8 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useTours } from '../../../shared/composables/useTours.js'
 import { readStoredValue, storeValue } from '../../../shared/lib/localStorage.js'
 import { useNavItems } from '../composables/useNavItems.js'
 import { useRouteTracking } from '../composables/useRouteTracking.js'
@@ -13,18 +14,27 @@ const STORAGE_KEY = 'stigman:navRailExpanded'
 useRouteTracking()
 const { navItems } = useNavItems()
 
-const expanded = ref(readStoredValue(STORAGE_KEY, 'false') === 'true')
+const { navRailExpanded: expandedByTour } = useTours()
+
+const userExpanded = ref(readStoredValue(STORAGE_KEY, 'false') === 'true')
+// A tour can hold the rail open without changing the user's stored setting.
+const expanded = computed(() => userExpanded.value || expandedByTour.value)
 const isAnimating = ref(false)
 
-function toggleExpanded() {
+function animate() {
   isAnimating.value = true
-  expanded.value = !expanded.value
-  storeValue(STORAGE_KEY, String(expanded.value))
-
   setTimeout(() => {
     isAnimating.value = false
   }, 200)
 }
+
+function toggleExpanded() {
+  animate()
+  userExpanded.value = !userExpanded.value
+  storeValue(STORAGE_KEY, String(userExpanded.value))
+}
+
+watch(expandedByTour, animate)
 </script>
 
 <template>
