@@ -329,6 +329,60 @@ describe('GET - Collection', function () {
             expect(res.status).to.eql(200)
             expect(res.body).to.be.an('array').of.length(0)
         })
+        it('Return the Checklist for the supplied Collection and STIG - multiple labelIds count an asset with both labels once',async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/checklists/${reference.benchmark}/latest?labelId=${reference.testCollection.fullLabel}&labelId=${reference.testCollection.lvl1Label}`, 'GET', iteration.token)
+            if (distinct.grant === "none"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+            expect(res.body).to.be.an('array').of.length(reference.checklistLength)
+            // the Labels are OR'd, and the Asset carrying both must not be counted twice
+            const labeledAssetIds = new Set([...distinct.findings.labelFullAssetIds, ...distinct.findings.labelLvl1AssetIds])
+            for (const rule of res.body) {
+              const { pass, fail, notapplicable, other } = rule.counts.results
+              expect(pass + fail + notapplicable + other).to.equal(labeledAssetIds.size)
+            }
+        })
+        it('Return the Checklist for the supplied Collection and STIG - labelId with labelMatch=null counts labeled and unlabeled assets',async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/checklists/${reference.benchmark}/latest?labelId=${reference.testCollection.lvl1Label}&labelMatch=null`, 'GET', iteration.token)
+            if (distinct.grant === "none"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+            expect(res.body).to.be.an('array').of.length(reference.checklistLength)
+            for (const rule of res.body) {
+              const { pass, fail, notapplicable, other } = rule.counts.results
+              expect(pass + fail + notapplicable + other).to.equal(distinct.findings.labelLvl1AssetIds.length + distinct.findings.labelMatchNullAssetIds.length)
+            }
+        })
+        it('Return the Checklist for the supplied Collection and STIG - labelName filter counts only labeled assets',async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/checklists/${reference.benchmark}/latest?labelName=${reference.testCollection.lvl1LabelName}`, 'GET', iteration.token)
+            if (distinct.grant === "none"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+            expect(res.body).to.be.an('array').of.length(reference.checklistLength)
+            for (const rule of res.body) {
+              const { pass, fail, notapplicable, other } = rule.counts.results
+              expect(pass + fail + notapplicable + other).to.equal(distinct.findings.labelLvl1AssetIds.length)
+            }
+        })
+        it('Return the Checklist for the supplied Collection and STIG-revStr - label filter counts only labeled assets',async function () {
+          const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/checklists/${reference.benchmark}/${reference.revisionStr}?labelId=${reference.testCollection.lvl1Label}`, 'GET', iteration.token)
+            if (distinct.grant === "none"){
+              expect(res.status).to.eql(403)
+              return
+            }
+            expect(res.status).to.eql(200)
+            expect(res.body).to.be.an('array').of.length(reference.checklistLength)
+            for (const rule of res.body) {
+              const { pass, fail, notapplicable, other } = rule.counts.results
+              expect(pass + fail + notapplicable + other).to.equal(distinct.findings.labelLvl1AssetIds.length)
+            }
+        })
         it('should return 403 for deleted collection', async function () {
           const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.deletedCollection.collectionId}/checklists/${reference.benchmark}/latest`, 'GET', iteration.token)
           expect(res.status).to.eql(403)
