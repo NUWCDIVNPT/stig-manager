@@ -53,7 +53,7 @@ const {
 } = useGridSearch(() => props.labels ?? [], [
   { field: 'name', header: 'Name' },
   { field: 'description', header: 'Description' },
-], { visibleFields })
+], { visibleFields, selection, dataKey: 'labelId' })
 
 function chipColor(label) {
   return normalizeColor(label.color, '#cccccc')

@@ -16,8 +16,10 @@ import { ALL_COLUMNS, applyGridSearch, columnValueOptions, searchFilter } from '
  * @param {import('vue').MaybeRefOrGetter<object[]>} columns the searchable columns
  * @param {object} [options]
  * @param {import('vue').MaybeRefOrGetter<Set<string>|null>} [options.visibleFields] hidden columns drop out of the search box
+ * @param {import('vue').Ref<object[]>} [options.selection] writable selection; rows the filter hides are dropped from it
+ * @param {string} [options.dataKey] row id field for matching selection; compares objects when omitted
  */
-export function useGridSearch(rows, columns, { visibleFields = null } = {}) {
+export function useGridSearch(rows, columns, { visibleFields = null, selection = null, dataKey = null } = {}) {
   const term = ref('')
   const filters = ref([])
 
@@ -55,6 +57,18 @@ export function useGridSearch(rows, columns, { visibleFields = null } = {}) {
     applyGridSearch(toValue(rows) ?? [], rules.value, { columns: allColumns.value, visibleColumns: quickColumns.value }))
 
   const isFiltered = computed(() => rules.value.length > 0)
+
+  // Delete/Remove act on the selection, so drop rows the filter hid
+  if (selection) {
+    const keyOf = dataKey ? r => r[dataKey] : r => r
+    watch(filteredRows, (visible) => {
+      const ids = new Set(visible.map(keyOf))
+      const kept = selection.value.filter(r => ids.has(keyOf(r)))
+      if (kept.length !== selection.value.length) {
+        selection.value = kept
+      }
+    })
+  }
 
   // Props for GridFilterButton
   const valueOptions = computed(() => Object.fromEntries(

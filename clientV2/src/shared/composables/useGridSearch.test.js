@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { nextTick, ref } from 'vue'
+import { computed, nextTick, ref, shallowRef } from 'vue'
 import { searchFilter } from '../lib/gridSearch.js'
 import { useGridSearch } from './useGridSearch.js'
 
@@ -159,5 +159,84 @@ describe('useGridSearch', () => {
     cols.value = columns.slice(0, 1)
     await nextTick()
     expect(s.filters.value.map(f => f.key)).toEqual(['all'])
+  })
+
+  describe('selection', () => {
+    const keyed = () => ref([
+      { id: 1, name: 'web-01', os: 'linux' },
+      { id: 2, name: 'web-02', os: 'windows' },
+      { id: 3, name: 'db-01', os: 'linux' },
+    ])
+
+    it('drops selected rows the search term hides', async () => {
+      const data = keyed()
+      const selection = ref([...data.value])
+      const s = useGridSearch(data, columns, { selection, dataKey: 'id' })
+      s.term.value = 'web-01'
+      await nextTick()
+      expect(names(selection.value)).toEqual(['web-01'])
+    })
+
+    it('drops selected rows a filter rule hides', async () => {
+      const data = keyed()
+      const selection = ref([...data.value])
+      const s = useGridSearch(data, columns, { selection, dataKey: 'id' })
+      s.filters.value = [searchFilter('os', 'text', { value: 'linux' })]
+      await nextTick()
+      expect(names(selection.value)).toEqual(['web-01', 'db-01'])
+    })
+
+    it('matches rows by dataKey, not object identity', async () => {
+      const data = keyed()
+      const selection = ref(data.value.map(r => ({ ...r })))
+      const s = useGridSearch(data, columns, { selection, dataKey: 'id' })
+      s.term.value = 'web'
+      await nextTick()
+      expect(names(selection.value)).toEqual(['web-01', 'web-02'])
+    })
+
+    it('does not rewrite the selection when every selected row is still visible', async () => {
+      const data = keyed()
+      const original = [data.value[0]]
+      const selection = shallowRef(original)
+      const s = useGridSearch(data, columns, { selection, dataKey: 'id' })
+      s.term.value = 'web'
+      await nextTick()
+      expect(selection.value).toBe(original)
+    })
+
+    it('drops selected rows that leave the data', async () => {
+      const data = keyed()
+      const selection = ref([...data.value])
+      useGridSearch(data, columns, { selection, dataKey: 'id' })
+      data.value = data.value.slice(1)
+      await nextTick()
+      expect(names(selection.value)).toEqual(['web-02', 'db-01'])
+    })
+
+    it('writes through a computed selection model', async () => {
+      const data = keyed()
+      let emitted = null
+      const selectedProp = ref([...data.value])
+      const selection = computed({
+        get: () => selectedProp.value,
+        set: (v) => { emitted = v },
+      })
+      const s = useGridSearch(data, columns, { selection, dataKey: 'id' })
+      s.term.value = 'db'
+      await nextTick()
+      expect(names(emitted)).toEqual(['db-01'])
+    })
+
+    it('leaves the selection alone when the search clears', async () => {
+      const data = keyed()
+      const selection = ref([data.value[0]])
+      const s = useGridSearch(data, columns, { selection, dataKey: 'id' })
+      s.term.value = 'web'
+      await nextTick()
+      s.term.value = ''
+      await nextTick()
+      expect(names(selection.value)).toEqual(['web-01'])
+    })
   })
 })

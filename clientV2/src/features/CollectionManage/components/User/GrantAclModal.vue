@@ -87,15 +87,7 @@ const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOpti
   { field: 'resource', header: 'Resource', searchText: resourceSortKey },
   { field: 'resourceType', header: 'Resource type', filterValues: resourceTypes, multiple: true },
   { field: 'access', header: 'Access', filterValues: r => accessLabel(r.access) },
-])
-
-// Remove acts on the selection, so never keep rules the filter hid
-watch(filteredRows, (visibleRules) => {
-  const kept = selectedRules.value.filter(r => visibleRules.includes(r))
-  if (kept.length !== selectedRules.value.length) {
-    selectedRules.value = kept
-  }
-})
+], { selection: selectedRules })
 
 function removeSelected() {
   if (!selectedRules.value.length) {
