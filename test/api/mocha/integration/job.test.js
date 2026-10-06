@@ -664,6 +664,64 @@ describe('Task tests', function () {
       }
     })
 
+    it('should refresh metrics for every checklist when a review maps to more than one STIG', async function () {
+      this.timeout(60_000)
+      // VPN_SRG_SHARED carries the same rule versions and check content as VPN_SRG_TEST under
+      // different rule IDs, so once both are assigned to asset 42 each VPN review belongs to two checklists
+      const assetId = '42'
+      const sharedBenchmarkId = 'VPN_SRG_SHARED'
+      const metricsUrl = `${config.baseUrl}/collections/${collectionId}/metrics/detail?assetId=${assetId}`
+
+      await utils.uploadTestStig('U_VPN_SRG-SHARED_V1R1_Manual-xccdf.xml')
+      const assetRes = await utils.executeRequest(`${config.baseUrl}/assets/${assetId}?projection=stigs`, 'GET', user.token)
+      expect(assetRes.status).to.eql(200)
+      const originalStigs = assetRes.body.stigs.map(s => s.benchmarkId)
+      const patchRes = await utils.executeRequest(`${config.baseUrl}/assets/${assetId}`, 'PATCH', user.token, {
+        stigs: [...originalStigs, sharedBenchmarkId]
+      })
+      expect(patchRes.status).to.eql(200)
+
+      const beforeRes = await utils.executeRequest(metricsUrl, 'GET', user.token)
+      expect(beforeRes.status).to.eql(200)
+      const before = Object.fromEntries(beforeRes.body.map(r => [r.benchmarkId, r.metrics.statuses]))
+      expect(before).to.have.property('VPN_SRG_TEST')
+      expect(before).to.have.property(sharedBenchmarkId)
+      expect(before[sharedBenchmarkId].submitted.total).to.be.greaterThan(0)
+
+      const runId = await runAgingWithConfig([{
+        triggerField: 'ts',
+        triggerInterval: 0,
+        triggerAction: 'update',
+        updateField: 'status',
+        updateValue: 'saved',
+        enabled: true
+      }])
+
+      const outputRes = await utils.executeRequest(`${config.baseUrl}/jobs/runs/${runId}/output?elevate=true`, 'GET', user.token)
+      expect(outputRes.status).to.eql(200)
+      const errors = outputRes.body.filter(o => o.type === 'error').map(o => o.message)
+      expect(errors, 'run output errors').to.eql([])
+
+      const afterRes = await utils.executeRequest(metricsUrl, 'GET', user.token)
+      expect(afterRes.status).to.eql(200)
+      expect(afterRes.body.length).to.eql(beforeRes.body.length)
+      for (const row of afterRes.body) {
+        const b = before[row.benchmarkId]
+        const s = row.metrics.statuses
+        const reviewed = b.saved.total + b.submitted.total + b.accepted.total + b.rejected.total
+        expect(s.submitted.total, `${row.benchmarkId} submitted`).to.eql(0)
+        expect(s.accepted.total, `${row.benchmarkId} accepted`).to.eql(0)
+        expect(s.rejected.total, `${row.benchmarkId} rejected`).to.eql(0)
+        expect(s.saved.total, `${row.benchmarkId} saved`).to.eql(reviewed)
+      }
+
+      // Restore the asset and remove the extra STIG for the tests that follow
+      const restoreRes = await utils.executeRequest(`${config.baseUrl}/assets/${assetId}`, 'PATCH', user.token, { stigs: originalStigs })
+      expect(restoreRes.status).to.eql(200)
+      const removeRes = await utils.executeRequest(`${config.baseUrl}/stigs/${sharedBenchmarkId}?elevate=true&force=true`, 'DELETE', user.token)
+      expect(removeRes.status).to.eql(200)
+    })
+
     it('should delete matching reviews (triggerAction:delete, triggerInterval:0)', async function () {
       this.timeout(60_000)
       const reviewsBefore = await utils.executeRequest(
