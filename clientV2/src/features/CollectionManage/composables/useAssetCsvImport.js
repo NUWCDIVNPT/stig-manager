@@ -97,16 +97,10 @@ export function useAssetCsvImport(getCollectionId) {
           if (item.detail?.benchmarkId) { lines.push(`• STIG Unknown: ${item.detail.benchmarkId}`) }
           if (item.detail?.benchmarkIdIndex != null) { lines.push(`• STIG Unknown Index: ${item.detail.benchmarkIdIndex}`) }
 
-          let csvRow = null
-          if (item.detail?.assetIndex != null) {
-            const matched = parsedAssets.value[item.detail.assetIndex]
-            if (matched) { csvRow = matched.CSVRow ?? null }
-          }
-          else if (item.detail?.name) {
-            const matched = parsedAssets.value.find(a => a.name === item.detail.name)
-            if (matched) { csvRow = matched.CSVRow ?? null }
-          }
-          blocking.push({ row: csvRow, messages: lines.join('\n') })
+          // assetIndex is 1-based (JSON_TABLE FOR ORDINALITY)
+          const matched = (item.detail?.assetIndex != null && parsedAssets.value[item.detail.assetIndex - 1])
+            || (item.detail?.name && parsedAssets.value.find(a => a.name === item.detail.name))
+          blocking.push({ row: matched?.CSVRow ?? null, messages: lines.join('\n') })
         }
 
         serverErrors.value = blocking

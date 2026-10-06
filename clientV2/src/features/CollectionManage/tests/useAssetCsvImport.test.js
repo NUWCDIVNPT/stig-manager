@@ -256,6 +256,21 @@ describe('useAssetCsvImport — runDryRun (server failure shapes)', () => {
     expect(c.validAssets.value).toEqual([{ name: 'goodAsset', CSVRow: 1 }])
   })
 
+  it('treats assetIndex as 1-based and blocks the matching asset', async () => {
+    apiCall.mockResolvedValue({
+      error: 'X',
+      detail: [{
+        failure: 'unknown benchmarkId',
+        detail: { assetIndex: 1, name: 'only', benchmarkIdIndex: 1, benchmarkId: 'NOPE' },
+      }],
+    })
+    const c = useAssetCsvImport(getCollectionId)
+    c.parsedAssets.value = [{ name: 'only', CSVRow: 2 }]
+    await c.runDryRun()
+    expect(c.serverErrors.value[0].row).toBe(2)
+    expect(c.validAssets.value).toEqual([])
+  })
+
   it('includes benchmarkId and benchmarkIdIndex lines when present', async () => {
     apiCall.mockResolvedValue({
       error: 'X',
