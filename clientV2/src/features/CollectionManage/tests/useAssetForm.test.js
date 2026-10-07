@@ -111,6 +111,7 @@ describe('useAssetForm — initialize / loadFormData', () => {
     ])
     fetchAssetWithStigs.mockResolvedValue({
       name: 'existing',
+      description: 'lab box',
       noncomputing: true,
       fqdn: 'host.example',
       ip: '10.0.0.1',
@@ -124,6 +125,7 @@ describe('useAssetForm — initialize / loadFormData', () => {
     await f.initialize()
 
     expect(f.form.name).toBe('existing')
+    expect(f.form.description).toBe('lab box')
     expect(f.form.noncomputing).toBe(true)
     expect(f.form.fqdn).toBe('host.example')
     expect(f.form.ip).toBe('10.0.0.1')
@@ -144,6 +146,7 @@ describe('useAssetForm — initialize / loadFormData', () => {
     const f = setupEdit('a1')
     await f.initialize()
     expect(f.form.name).toBe('')
+    expect(f.form.description).toBe('')
     expect(f.form.noncomputing).toBe(false)
     expect(f.form.labelIds).toEqual([])
     expect(f.metadataRows.value).toEqual([])
@@ -173,6 +176,7 @@ describe('useAssetForm — buildPayload', () => {
     const f = setupCreate()
     f.collectionLabels.value = [{ labelId: '1', name: 'prod' }, { labelId: '2', name: 'staging' }]
     f.form.name = '  asset-x  '
+    f.form.description = 'lab box'
     f.form.noncomputing = true
     f.form.fqdn = 'h'
     f.form.ip = '1.2.3.4'
@@ -183,7 +187,7 @@ describe('useAssetForm — buildPayload', () => {
 
     expect(f.buildPayload()).toEqual({
       name: 'asset-x',
-      description: null,
+      description: 'lab box',
       noncomputing: true,
       fqdn: 'h',
       ip: '1.2.3.4',
@@ -207,6 +211,7 @@ describe('useAssetForm — buildPayload', () => {
     const f = setupCreate()
     f.form.name = 'x'
     const p = f.buildPayload()
+    expect(p.description).toBeNull()
     expect(p.fqdn).toBeNull()
     expect(p.ip).toBeNull()
     expect(p.mac).toBeNull()
