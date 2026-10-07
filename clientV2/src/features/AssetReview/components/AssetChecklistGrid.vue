@@ -224,41 +224,29 @@ const exportFilename = computed(() =>
 )
 
 const TOGGLEABLE_COLUMNS = [
-  { field: 'groupTitle', header: 'Group Title', defaultHidden: true },
+  { field: 'groupId', header: 'Group' },
+  { field: 'ruleId', header: 'Rule Id', defaultHidden: true },
   { field: 'ruleTitle', header: 'Rule Title' },
+  { field: 'groupTitle', header: 'Group Title', defaultHidden: true },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
   { field: 'touchTs', icon: 'pi pi-clock' },
 ]
 
-const DISPLAY_MODE_ID_FIELD = {
-  groupRule: 'groupId',
-  groupGroup: 'groupId',
-  ruleRule: 'ruleId',
+// Group/Rule Display menu presets; each sets only these four columns
+const DISPLAY_PRESETS = {
+  groupRule: { groupId: true, ruleId: false, ruleTitle: true, groupTitle: false },
+  groupGroup: { groupId: true, ruleId: false, ruleTitle: false, groupTitle: true },
+  ruleRule: { groupId: false, ruleId: true, ruleTitle: true, groupTitle: false },
 }
 
-const DISPLAY_MODE_TITLE_FIELD = {
-  groupRule: 'ruleTitle',
-  groupGroup: 'groupTitle',
-  ruleRule: 'ruleTitle',
-}
+const { selectedColumns, visibleFields: shownFields, setShown } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'assetChecklistGrid.columns')
 
-const { selectedColumns, setShown } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'assetChecklistGrid.columns')
-const displayMode = ref('groupRule')
+const activePreset = computed(() => Object.keys(DISPLAY_PRESETS).find(key =>
+  Object.entries(DISPLAY_PRESETS[key]).every(([field, shown]) => shownFields.value.has(field) === shown),
+) ?? null)
 
-// Each display mode shows its own title column
-watch(displayMode, (mode) => {
-  const titleField = DISPLAY_MODE_TITLE_FIELD[mode]
-  setShown({ groupTitle: titleField === 'groupTitle', ruleTitle: titleField === 'ruleTitle' })
-}, { immediate: true })
-
-const visibleFields = computed(() => {
-  const fields = new Set(['severity', 'result', 'resultEngine', 'status'])
-  const idField = DISPLAY_MODE_ID_FIELD[displayMode.value]
-  if (idField) { fields.add(idField) }
-  for (const col of selectedColumns.value) { fields.add(col.field) }
-  return fields
-})
+const visibleFields = computed(() => new Set(['severity', 'result', 'resultEngine', 'status', ...shownFields.value]))
 
 const { itemSize, gridStyle } = useGridDensity('asset-review-checklist')
 
@@ -370,8 +358,8 @@ function onRowClick(event) {
     <AssetChecklistGridHeader
       v-model:search-filter="searchFilter"
       v-model:filters="gridFilters"
-      v-model:display-mode="displayMode"
       v-model:selected-columns="selectedColumns"
+      :active-preset="activePreset"
       :toggleable-columns="TOGGLEABLE_COLUMNS"
       :filter-columns="filterColumns"
       :filter-value-options="valueOptions"
@@ -382,6 +370,7 @@ function onRowClick(event) {
       :accept-count="acceptPlan.eligible.length"
       @refresh="emit('refresh')"
       @bulk-action="onBulkAction"
+      @apply-preset="key => setShown(DISPLAY_PRESETS[key])"
     />
 
     <AssetChecklistGridTable
