@@ -6,24 +6,32 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { ref, watch } from 'vue'
+import { computed, ref } from 'vue'
+import SidebarFilterIndicator from '../../../components/common/SidebarFilterIndicator.vue'
+import { isActive, valuesFilter } from '../../../shared/lib/columnFilters.js'
 import MetaCollectionMetrics from '../../CollectionMetrics/components/MetaCollectionMetrics.vue'
 import MetaExportMetrics from '../../CollectionMetrics/components/MetaExportMetrics.vue'
-import MetricsFilter from '../../CollectionMetrics/components/MetricsFilter.vue'
 import MetaCollectionsTab from './MetaCollectionsTab.vue'
 import MetaStigsTab from './MetaStigsTab.vue'
-
-const STORAGE_KEY = 'metaCollectionIds'
 
 const activeTab = ref('collections')
 const DASHBOARD_STORAGE_KEY = 'stigman:metaDashboardCollapsed'
 const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === 'true')
-const selectedCollectionIds = ref(loadSelectedCollectionIds())
+// Not persisted: a saved exclude filter would load every collection first
+const collectionFilter = ref(valuesFilter())
+// Resolved by MetaMetricsFilter
+const selectedCollectionIds = ref([])
 const isAnimating = ref(false)
 
-watch(selectedCollectionIds, (newIds) => {
-  persistSelectedCollectionIds(newIds)
-}, { deep: true })
+// The filter lives in the sidebar, so flag it on the collapsed rail
+const filterHint = computed(() => {
+  const f = collectionFilter.value
+  if (!isActive(f)) {
+    return ''
+  }
+  const n = f.value.length
+  return `${f.exclude ? 'Excluding' : 'Including'} ${n} collection${n === 1 ? '' : 's'}`
+})
 
 function toggleDashboardSidebar() {
   isAnimating.value = true
@@ -35,28 +43,6 @@ function toggleDashboardSidebar() {
 
   try {
     localStorage.setItem(DASHBOARD_STORAGE_KEY, String(dashboardCollapsed.value))
-  }
-  catch {
-    // localStorage unavailable
-  }
-}
-
-function loadSelectedCollectionIds() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (!stored) {
-      return []
-    }
-    return JSON.parse(stored)
-  }
-  catch {
-    return []
-  }
-}
-
-function persistSelectedCollectionIds(ids) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(ids))
   }
   catch {
     // localStorage unavailable
@@ -118,6 +104,7 @@ const tabPanelPt = {
           >
             <i :class="dashboardCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'" />
           </button>
+          <SidebarFilterIndicator v-if="dashboardCollapsed && filterHint" :hint="filterHint" @expand="toggleDashboardSidebar" />
           <div v-if="dashboardCollapsed" class="sidebar-dots">
             <span class="dot dot--unassessed" title="Unassessed" />
             <span class="dot dot--assessed" title="Assessed" />
@@ -126,7 +113,11 @@ const tabPanelPt = {
             <span class="dot dot--rejected" title="Rejected" />
           </div>
           <div v-show="!dashboardCollapsed" class="sidebar-content">
-            <MetaCollectionMetrics vertical :selected-collection-ids="selectedCollectionIds" />
+            <MetaCollectionMetrics
+              v-model:collection-filter="collectionFilter"
+              v-model:selected-collection-ids="selectedCollectionIds"
+              vertical
+            />
             <div class="sidebar-export">
               <MetaExportMetrics :selected-collection-ids="selectedCollectionIds" />
             </div>
@@ -145,11 +136,6 @@ const tabPanelPt = {
               <Tab value="stigs">
                 STIGs
               </Tab>
-
-              <div class="tab-filter-container">
-                <span class="filter-label">FILTER:</span>
-                <MetricsFilter v-model="selectedCollectionIds" type="collection" />
-              </div>
             </TabList>
 
             <TabPanels :pt="tabPanelsPt">
@@ -257,20 +243,5 @@ const tabPanelPt = {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-}
-
-.tab-filter-container {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-left: auto;
-  padding-right: 1rem;
-}
-
-.filter-label {
-  font-size: var(--text-md);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: var(--color-text-dim);
 }
 </style>

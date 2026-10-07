@@ -7,13 +7,9 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-  modelValue: {
-    type: Array,
-    required: true,
-  },
 })
 
-const emit = defineEmits(['update:modelValue'])
+const model = defineModel({ type: Array, required: true })
 
 // Columns that carry a `group` are listed under that heading, in order of
 // first appearance; the selection stays a flat list of column objects.
@@ -33,10 +29,6 @@ const options = computed(() => {
   }
   return [...groups.values()]
 })
-
-function onToggle(val) {
-  emit('update:modelValue', val)
-}
 
 const multiSelectRef = ref(null)
 const filterText = ref('')
@@ -88,7 +80,7 @@ const columnTogglePT = {
 <template>
   <MultiSelect
     ref="multiSelectRef"
-    :model-value="modelValue"
+    v-model="model"
     :options="options"
     option-label="header"
     :option-group-label="isGrouped ? 'group' : undefined"
@@ -98,7 +90,6 @@ const columnTogglePT = {
     :pt="columnTogglePT"
     scroll-height="22rem"
     filter
-    @update:model-value="onToggle"
     @filter="onFilter"
   >
     <template #value>

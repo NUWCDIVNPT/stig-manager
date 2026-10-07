@@ -6,11 +6,15 @@ import librarySvg from '../../../assets/library.svg'
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import ActionButton from '../../../components/common/ActionButton.vue'
 import ClassificationBadge from '../../../components/common/ClassificationBadge.vue'
-import ColumnSearchFilter from '../../../components/common/ColumnSearchFilter.vue'
+import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../components/common/GridSearch.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
-import { fieldMatches } from '../../../shared/lib/searchUtils.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { paneColumnPt, paneTablePt } from '../tablePt.js'
 import EarlierRevisionsPills from './EarlierRevisionsPills.vue'
 
@@ -33,27 +37,34 @@ const emit = defineEmits(['select', 'refresh'])
 
 const dataTableRef = ref(null)
 
-const benchmarkIdFilter = ref('')
-const titleFilter = ref('')
-
 // materialize earlierRevisions so the column sorts and exports
 const rows = computed(() =>
   (props.benchmarks ?? []).map(b => ({ ...b, earlierRevisions: b.revisionStrs?.slice(1).join(', ') ?? '' })),
 )
 
-const idTerm = computed(() => benchmarkIdFilter.value.trim().toLowerCase())
-const titleTerm = computed(() => titleFilter.value.trim().toLowerCase())
-const filtersActive = computed(() => Boolean(idTerm.value || titleTerm.value))
+const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility([
+  { field: 'benchmarkId', header: 'Benchmark ID', locked: true },
+  { field: 'title', header: 'Title' },
+  { field: 'lastRevisionStr', header: 'Latest' },
+  { field: 'lastRevisionDate', header: 'Revision Date' },
+  { field: 'ruleCount', header: 'Rules' },
+  { field: 'earlierRevisions', header: 'Earlier Revisions' },
+], 'stigLibrary.columns')
 
-const filteredData = computed(() => {
-  if (!filtersActive.value) {
-    return rows.value
-  }
-  return rows.value.filter(b =>
-    (!idTerm.value || fieldMatches(b.benchmarkId, idTerm.value))
-    && (!titleTerm.value || fieldMatches(b.title, titleTerm.value)),
-  )
-})
+const {
+  term: searchTerm,
+  filters: gridFilters,
+  filteredRows,
+  isFiltered,
+  filterColumns,
+  valueOptions,
+  highlightTerm,
+} = useGridSearch(rows, [
+  { field: 'benchmarkId', header: 'Benchmark ID' },
+  { field: 'title', header: 'Title' },
+  { field: 'lastRevisionStr', header: 'Latest' },
+  { field: 'earlierRevisions', header: 'Earlier Revisions' },
+], { visibleFields })
 
 // Row geometry lives in useGridDensity's table; .stiglib-cell-text reads its
 // font size and line height from --cell-font-size / --cell-line-height.
@@ -72,13 +83,16 @@ function onRowClick(event) {
 
 <template>
   <div class="stiglib-panel">
-    <header class="stiglib-panel__header">
+    <header class="stiglib-panel__header bm-list__header">
       <span class="stiglib-panel__title">
         <img :src="librarySvg" class="stiglib-panel__title-icon" alt="">
         <span>STIG Library</span>
       </span>
       <span class="stiglib-panel__hint">Select a benchmark to browse its rules and compare revisions</span>
       <div class="stiglib-panel__spacer" />
+      <GridSearch v-model="searchTerm" class="bm-list__search" label="Search benchmarks" placeholder="Search benchmarks..." />
+      <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+      <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
       <ActionButton
         icon="pi pi-search-plus icon-grey"
         title="STIG content search — coming soon"
@@ -100,7 +114,7 @@ function onRowClick(event) {
     <div v-else class="stiglib-panel__body">
       <DataTable
         ref="dataTableRef"
-        :value="filteredData"
+        :value="filteredRows"
         :loading="loading"
         data-key="benchmarkId"
         sort-field="benchmarkId"
@@ -120,44 +134,34 @@ function onRowClick(event) {
       >
         <Column
           field="benchmarkId"
-          export-header="Benchmark ID"
+          header="Benchmark ID"
           sortable
           :pt="paneColumnPt.left"
           :style="{ width: '24rem', minWidth: '16rem' }"
         >
-          <template #header>
-            <div class="column-header-with-filter">
-              Benchmark ID
-              <ColumnSearchFilter v-model="benchmarkIdFilter" placeholder="Search ID..." />
-            </div>
-          </template>
           <template #body="{ data }">
             <div class="bm-list__id-cell">
-              <span class="stiglib-cell-text stiglib-cell-text--clamped" :title="data.benchmarkId">{{ data.benchmarkId }}</span>
+              <span class="stiglib-cell-text stiglib-cell-text--clamped" :title="data.benchmarkId"><HighlightText :text="data.benchmarkId" :term="highlightTerm('benchmarkId')" /></span>
               <ClassificationBadge v-if="data.marking" :level="data.marking" />
             </div>
           </template>
         </Column>
 
         <Column
+          v-if="visibleFields.has('title')"
           field="title"
-          export-header="Title"
+          header="Title"
           sortable
           :pt="paneColumnPt.left"
           :style="{ minWidth: '20rem' }"
         >
-          <template #header>
-            <div class="column-header-with-filter">
-              Title
-              <ColumnSearchFilter v-model="titleFilter" placeholder="Search title..." />
-            </div>
-          </template>
           <template #body="{ data }">
-            <span class="stiglib-cell-text stiglib-cell-text--clamped" :title="data.title">{{ data.title || '—' }}</span>
+            <span class="stiglib-cell-text stiglib-cell-text--clamped" :title="data.title"><HighlightText :text="data.title || '—'" :term="highlightTerm('title')" /></span>
           </template>
         </Column>
 
         <Column
+          v-if="visibleFields.has('lastRevisionStr')"
           field="lastRevisionStr"
           header="Latest"
           sortable
@@ -165,11 +169,12 @@ function onRowClick(event) {
           :style="{ width: '7rem', minWidth: '6rem', textAlign: 'center' }"
         >
           <template #body="{ data }">
-            <span class="stiglib-cell-text stiglib-cell-text--mono">{{ data.lastRevisionStr || '—' }}</span>
+            <span class="stiglib-cell-text stiglib-cell-text--mono"><HighlightText :text="data.lastRevisionStr || '—'" :term="highlightTerm('lastRevisionStr')" /></span>
           </template>
         </Column>
 
         <Column
+          v-if="visibleFields.has('lastRevisionDate')"
           field="lastRevisionDate"
           header="Revision Date"
           sortable
@@ -182,6 +187,7 @@ function onRowClick(event) {
         </Column>
 
         <Column
+          v-if="visibleFields.has('ruleCount')"
           field="ruleCount"
           header="Rules"
           sortable
@@ -194,6 +200,7 @@ function onRowClick(event) {
         </Column>
 
         <Column
+          v-if="visibleFields.has('earlierRevisions')"
           field="earlierRevisions"
           header="Earlier Revisions"
           sortable
@@ -207,7 +214,7 @@ function onRowClick(event) {
 
         <template #empty>
           <div class="stiglib-empty">
-            {{ filtersActive ? 'No benchmarks match the current filters.' : 'No benchmarks available.' }}
+            {{ isFiltered && rows.length ? 'No benchmarks match the search.' : 'No benchmarks available.' }}
           </div>
         </template>
 
@@ -216,7 +223,7 @@ function onRowClick(event) {
             :dt="dataTableRef"
             :refresh-loading="loading"
             :total-count="benchmarks.length"
-            :filtered-count="filtersActive ? filteredData.length : null"
+            :filtered-count="isFiltered ? filteredRows.length : null"
             total-label="benchmarks"
             :total-icon-src="shieldGreenCheck"
             @refresh="emit('refresh')"
@@ -233,10 +240,13 @@ function onRowClick(event) {
   min-height: 0;
 }
 
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+.bm-list__header {
+  --checklist-control-height: 2rem;
+}
+
+.bm-list__search {
+  flex: 0 1 18rem;
+  min-width: 10rem;
 }
 
 .bm-list__id-cell {

@@ -8,8 +8,10 @@ import collectionIcon from '../../../../assets/collection.svg'
 import shieldGreenCheckIcon from '../../../../assets/shield-green-check.svg'
 import targetIcon from '../../../../assets/target.svg'
 import ActionButton from '../../../../components/common/ActionButton.vue'
+import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import LabelChip from '../../../../components/common/Label.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
 import {
   ruleSummary,
@@ -17,7 +19,7 @@ import {
   ruleTitle,
 } from './reviewAgingLogic.js'
 
-defineProps({
+const props = defineProps({
   rules: {
     type: Array,
     default: () => [],
@@ -41,6 +43,15 @@ const iconMap = {
   stig: shieldGreenCheckIcon,
 }
 
+const targetText = rule => ruleTargetLines(rule).map(line => line.label?.name ?? line.text).join(' ')
+
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions } = useGridSearch(() => props.rules, [
+  { field: 'title', header: 'Rule', searchText: ruleTitle },
+  { field: 'enabled', header: 'Status', filterValues: r => (r.enabled ? 'Enabled' : 'Disabled') },
+  { field: 'target', header: 'Target', searchText: targetText },
+  { field: 'summary', header: 'Action', searchText: ruleSummary },
+])
+
 const tablePt = {
   root: { style: 'background-color: var(--color-background-dark); flex: 1 1 auto; display: flex; flex-direction: column;' },
   wrapper: { style: 'background-color: var(--color-background-dark); flex: 1 1 auto; display: flex; flex-direction: column;' },
@@ -53,16 +64,19 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 
 <template>
   <div class="rules-panel">
-    <Toolbar v-if="canEdit" class="rules-toolbar">
+    <Toolbar class="rules-toolbar">
       <template #start>
-        <ActionButton icon="pi pi-plus-circle icon-green" @click="emit('new')">
+        <ActionButton v-if="canEdit" icon="pi pi-plus-circle icon-green" @click="emit('new')">
           New Rule
         </ActionButton>
+      </template>
+      <template #end>
+        <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
       </template>
     </Toolbar>
 
     <DataTable
-      :value="rules"
+      :value="filteredRows"
       data-key="_clientId"
       :loading="loading"
       scrollable
@@ -118,8 +132,8 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               text
               rounded
               size="small"
-              title="Move up"
-              :disabled="index === 0"
+              :title="isFiltered ? 'Clear filters to reorder' : 'Move up'"
+              :disabled="isFiltered || index === 0"
               @click="emit('move', data, -1)"
             />
             <Button
@@ -128,8 +142,8 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               text
               rounded
               size="small"
-              title="Move down"
-              :disabled="index === rules.length - 1"
+              :title="isFiltered ? 'Clear filters to reorder' : 'Move down'"
+              :disabled="isFiltered || index === rules.length - 1"
               @click="emit('move', data, 1)"
             />
             <Button
@@ -155,7 +169,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
       </Column>
 
       <template #empty>
-        No rules configured. Click "New Rule" to add one.
+        {{ isFiltered && rules.length ? 'No rules match the filters.' : 'No rules configured. Click "New Rule" to add one.' }}
       </template>
 
       <template #footer>
@@ -163,6 +177,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           :show-refresh="false"
           :show-export="false"
           :total-count="rules.length"
+          :filtered-count="isFiltered ? filteredRows.length : null"
           total-label="rules"
           total-icon="pi pi-cog"
         />
@@ -183,6 +198,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 }
 
 .rules-toolbar {
+  --checklist-control-height: 1.9rem;
   padding: 0.25rem 0.5rem;
   border: none;
   border-bottom: 1px solid var(--color-border-default);

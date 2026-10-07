@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import ChangedPropertyChip from '../../../components/common/ChangedPropertyChip.vue'
 import HelpIcon from '../../../components/common/HelpIcon.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
 import RuleIdDiffSpan from '../../../components/common/RuleIdDiffSpan.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
@@ -29,6 +30,19 @@ const props = defineProps({
   selectedKey: {
     type: String,
     default: null,
+  },
+  // Unfiltered count and search state from RulePane, for the footer and highlighting
+  totalCount: {
+    type: Number,
+    default: null,
+  },
+  filtered: {
+    type: Boolean,
+    default: false,
+  },
+  highlightTerm: {
+    type: Function,
+    default: () => '',
   },
 })
 const emit = defineEmits(['select-row'])
@@ -69,7 +83,7 @@ function onRowClick(event) {
   >
     <Column header="STIG ID" field="stigId" sortable :style="{ width: '15rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
-        <span class="stiglib-cell-text">{{ data.stigId }}</span>
+        <span class="stiglib-cell-text"><HighlightText :text="data.stigId" :term="highlightTerm('stigId')" /></span>
       </template>
     </Column>
     <Column
@@ -130,12 +144,13 @@ function onRowClick(event) {
     </Column>
     <template #empty>
       <div class="stiglib-empty">
-        No changed rules between these revisions.
+        {{ filtered ? 'No changed rules match the search.' : 'No changed rules between these revisions.' }}
       </div>
     </template>
     <template #footer>
       <StatusFooter
-        :total-count="rows.length"
+        :total-count="totalCount ?? rows.length"
+        :filtered-count="filtered ? rows.length : null"
         :dt="dataTableRef"
         total-label="changed rules"
         :show-refresh="false"

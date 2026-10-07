@@ -4,7 +4,10 @@ import DataTable from 'primevue/datatable'
 import { computed } from 'vue'
 import { roleMap } from '../../../../components/common/grants/roleOptions.js'
 import RolePopover from '../../../../components/common/grants/RolePopover.vue'
+import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import HelpIcon from '../../../../components/common/HelpIcon.vue'
+import PanelTitle from '../../../../components/common/PanelTitle.vue'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
 import { effectiveGrantRows } from '../lib/userDisplay.js'
@@ -24,13 +27,25 @@ const rows = computed(() => effectiveGrantRows(props.grants).map(row => ({
   granteeText: row.granteeLabels.join(', '),
 })))
 
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions } = useGridSearch(rows, [
+  { field: 'name', header: 'Collection' },
+  { field: 'granteeText', header: 'Grantee', filterValues: r => r.granteeLabels, multiple: true },
+  { field: 'roleId', header: 'Role', filterValues: r => roleMap[r.roleId] || 'Unknown' },
+])
+
 const tablePt = compactTablePt()
 </script>
 
 <template>
   <div class="effective-grants-wrapper">
+    <PanelTitle title="Collections" icon="pi pi-folder">
+      <span class="title-count">{{ isFiltered ? `${filteredRows.length} of ${rows.length}` : rows.length }}</span>
+      <template #end>
+        <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+      </template>
+    </PanelTitle>
     <DataTable
-      :value="rows"
+      :value="filteredRows"
       sort-field="name"
       :sort-order="1"
       scrollable
@@ -38,7 +53,7 @@ const tablePt = compactTablePt()
       :pt="tablePt"
     >
       <template #empty>
-        No effective grants.
+        {{ isFiltered && rows.length ? 'No grants match the filters.' : 'No effective grants.' }}
       </template>
 
       <Column field="name" header="Collection" sortable>
@@ -95,6 +110,11 @@ const tablePt = compactTablePt()
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+.title-count {
+  font-weight: 400;
+  color: var(--color-text-dim);
 }
 
 .collection-cell {

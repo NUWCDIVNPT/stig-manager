@@ -4,8 +4,12 @@ import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
-import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
+import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
+import GridSearch from '../../../../components/common/GridSearch.vue'
+import HighlightText from '../../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
+import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { createdByLabel, formatDateTime, isSystemJob, scheduleSummary } from '../lib/serviceJobsFormat.js'
 import { borderPt } from '../lib/serviceJobsPt.js'
@@ -23,7 +27,6 @@ const exportTasks = ({ data }) => (data ?? []).map(t => t.name).join(', ')
 const exportSchedule = ({ data }) => (data ? `${scheduleSummary(data)}${data.enabled === false ? ' (disabled)' : ''}` : 'Not scheduled')
 
 const dataTableRef = ref(null)
-const nameFilter = ref('')
 
 const selectedJob = computed({
   get: () => props.selection,
@@ -38,15 +41,25 @@ const canRemove = computed(() => hasSelection.value && !isSystemJob(props.select
 
 // Attach a display label for the owner so the Created By column can sort on the
 // same value it renders ('system' for null createdBy) rather than empty.
-const filteredJobs = computed(() => {
-  const term = nameFilter.value.trim().toLowerCase()
-  const rows = term
-    ? props.jobs.filter(j => j.name?.toLowerCase().includes(term))
-    : props.jobs
-  return rows.map(j => ({ ...j, createdByLabel: createdByLabel(j) }))
-})
+const rows = computed(() => props.jobs.map(j => ({ ...j, createdByLabel: createdByLabel(j) })))
 
-const filtersActive = computed(() => filteredJobs.value.length !== props.jobs.length)
+const taskNames = j => (j.tasks ?? []).map(t => t.name).join(', ')
+
+const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility([
+  { field: 'name', header: 'Name', locked: true },
+  { field: 'createdByLabel', header: 'Created By' },
+  { field: 'tasks', header: 'Tasks' },
+  { field: 'event', header: 'Schedule' },
+  { field: 'runCount', header: 'Runs' },
+  { field: 'lastRun.updated', header: 'Last Run' },
+], 'serviceJobs.columns')
+
+const { term: searchTerm, filteredRows, isFiltered, highlightTerm } = useGridSearch(rows, [
+  { field: 'name', header: 'Name' },
+  { field: 'createdByLabel', header: 'Created By' },
+  { field: 'tasks', header: 'Tasks', searchText: taskNames },
+  { field: 'event', header: 'Schedule', searchText: j => (j.event ? scheduleSummary(j.event) : 'Not scheduled') },
+], { visibleFields })
 
 const tablePt = {
   ...compactTablePt({ footer: 'divider', headerPadding: '0.3rem 0.6rem' }),
@@ -76,13 +89,16 @@ const tablePt = {
       <ActionButton icon="pi pi-play icon-green" :disabled="!hasSelection" @click="emit('run-now', selection)">
         Run Now
       </ActionButton>
+      <div class="toolbar-spacer" />
+      <GridSearch v-model="searchTerm" class="list-search" label="Search jobs" placeholder="Search jobs..." />
+      <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
     </ActionToolbar>
 
     <div class="table-container">
       <DataTable
         ref="dataTableRef"
         v-model:selection="selectedJob"
-        :value="filteredJobs"
+        :value="filteredRows"
         :loading="loading"
         selection-mode="single"
         data-key="jobId"
@@ -99,42 +115,36 @@ const tablePt = {
         :pt="tablePt"
       >
         <template #empty>
-          No jobs found.
+          {{ isFiltered && jobs.length ? 'No jobs match the search.' : 'No jobs found.' }}
         </template>
 
-        <Column field="name" export-header="Name" sortable :pt="borderPt" style="width: 26%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
-          <template #header>
-            <div class="column-header-with-filter">
-              Name
-              <ColumnSearchFilter v-model="nameFilter" placeholder="Search name..." />
-            </div>
-          </template>
+        <Column field="name" header="Name" sortable :pt="borderPt" style="width: 26%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #body="{ data }">
             <div class="name-cell">
               <RunStatePill :state="data.lastRun?.state ?? 'missing'" />
-              <span class="job-name" :title="data.name">{{ data.name }}</span>
+              <span class="job-name" :title="data.name"><HighlightText :text="data.name" :term="highlightTerm('name')" /></span>
             </div>
           </template>
         </Column>
 
-        <Column field="createdByLabel" header="Created By" sortable :pt="borderPt" style="width: 12%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column v-if="visibleFields.has('createdByLabel')" field="createdByLabel" header="Created By" sortable :pt="borderPt" style="width: 12%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #body="{ data }">
-            <span :class="{ 'dim-value': !data.createdBy }">{{ data.createdByLabel }}</span>
+            <span :class="{ 'dim-value': !data.createdBy }"><HighlightText :text="data.createdByLabel" :term="highlightTerm('createdByLabel')" /></span>
           </template>
         </Column>
 
-        <Column field="tasks" header="Tasks" :export-value="exportTasks" :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column v-if="visibleFields.has('tasks')" field="tasks" header="Tasks" :export-value="exportTasks" :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #body="{ data }">
-            <span :title="(data.tasks ?? []).map(t => t.name).join(', ')">
-              {{ (data.tasks ?? []).map(t => t.name).join(', ') || '-' }}
+            <span :title="taskNames(data)">
+              <HighlightText :text="taskNames(data) || '-'" :term="highlightTerm('tasks')" />
             </span>
           </template>
         </Column>
 
-        <Column field="event" header="Schedule" :export-value="exportSchedule" :pt="borderPt" style="width: 18%;">
+        <Column v-if="visibleFields.has('event')" field="event" header="Schedule" :export-value="exportSchedule" :pt="borderPt" style="width: 18%;">
           <template #body="{ data }">
             <div v-if="data.event" class="schedule-cell" :class="{ 'dim-value': data.event.enabled === false }">
-              <span class="schedule-line">{{ scheduleSummary(data.event) }}</span>
+              <span class="schedule-line"><HighlightText :text="scheduleSummary(data.event)" :term="highlightTerm('event')" /></span>
               <span v-if="data.event.type === 'recurring'" class="schedule-sub">Starting {{ formatDateTime(data.event.starts) }}</span>
               <span v-else-if="data.event.type === 'once'" class="schedule-sub">at {{ formatDateTime(data.event.starts) }}</span>
               <span v-if="data.event.enabled === false" class="disabled-tag">DISABLED</span>
@@ -143,7 +153,7 @@ const tablePt = {
           </template>
         </Column>
 
-        <Column field="runCount" export-header="Runs" sortable :pt="borderPt" style="width: 8%; text-align: center;">
+        <Column v-if="visibleFields.has('runCount')" field="runCount" export-header="Runs" sortable :pt="borderPt" style="width: 8%; text-align: center;">
           <template #header>
             <span class="center-label">Runs</span>
           </template>
@@ -152,7 +162,7 @@ const tablePt = {
           </template>
         </Column>
 
-        <Column field="lastRun.updated" header="Last Run" sortable style="width: 14%;">
+        <Column v-if="visibleFields.has('lastRun.updated')" field="lastRun.updated" header="Last Run" sortable style="width: 14%;">
           <template #body="{ data }">
             <span :class="{ 'dim-value': !data.lastRun }">
               {{ formatDateTime(data.lastRun?.updated ?? data.lastRun?.created) }}
@@ -165,7 +175,7 @@ const tablePt = {
             :dt="dataTableRef"
             :refresh-loading="loading"
             :total-count="jobs.length"
-            :filtered-count="filtersActive ? filteredJobs.length : null"
+            :filtered-count="isFiltered ? filteredRows.length : null"
             total-label="jobs"
             total-icon="pi pi-wrench"
             @refresh="emit('refresh')"
@@ -178,6 +188,7 @@ const tablePt = {
 
 <style scoped>
 .jobs-table {
+  --checklist-control-height: 2rem;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -203,10 +214,9 @@ const tablePt = {
   flex-direction: column;
 }
 
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+.list-search {
+  flex: 0 1 18rem;
+  min-width: 10rem;
 }
 
 .center-label {

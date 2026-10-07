@@ -2,9 +2,13 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import ColumnFilter from '../../../../components/common/ColumnFilter.vue'
-import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
+import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
+import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../../components/common/GridSearch.vue'
+import HighlightText from '../../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
+import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { statusClass } from '../lib/transactions.js'
 
@@ -28,31 +32,6 @@ const selectedRow = computed({
   set: value => value && emit('update:selection', value),
 })
 
-const sourceFilter = ref('')
-const userFilter = ref('')
-const browserFilter = ref('')
-const operationFilter = ref('')
-const statusFilter = ref([])
-
-const statusOptions = computed(() => {
-  const codes = new Set(props.transactions.map(t => t.status).filter(Boolean))
-  return [...codes].sort().map(code => ({ label: code, value: code }))
-})
-
-function includes(haystack, needle) {
-  return !needle || String(haystack ?? '').toLowerCase().includes(needle.toLowerCase())
-}
-
-const rows = computed(() => props.transactions.filter(t =>
-  includes(t.source, sourceFilter.value)
-  && includes(t.user, userFilter.value)
-  && includes(t.browser, browserFilter.value)
-  && includes(t.operationId, operationFilter.value)
-  && (statusFilter.value.length === 0 || statusFilter.value.includes(t.status)),
-))
-
-const filtersActive = computed(() => rows.value.length !== props.transactions.length)
-
 function formatTimestamp(iso) {
   if (!iso) {
     return ''
@@ -60,6 +39,36 @@ function formatTimestamp(iso) {
   // Mirror the legacy 'Y-m-d H:i:s.u' column: date, time, milliseconds.
   return String(iso).replace('T', ' ').replace('Z', '')
 }
+
+const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility([
+  { field: 'timestamp', header: 'Timestamp', locked: true },
+  { field: 'source', header: 'Source' },
+  { field: 'user', header: 'User' },
+  { field: 'browser', header: 'Browser' },
+  { field: 'operationId', header: 'Operation ID' },
+  { field: 'url', header: 'URL' },
+  { field: 'status', header: 'Status' },
+  { field: 'length', header: 'Length (b)' },
+  { field: 'duration', header: 'Duration (ms)' },
+], 'logStreamTransactions.columns')
+
+const {
+  term: searchTerm,
+  filters: gridFilters,
+  filteredRows: rows,
+  isFiltered,
+  filterColumns,
+  valueOptions,
+  highlightTerm,
+} = useGridSearch(() => props.transactions, [
+  { field: 'timestamp', header: 'Timestamp', searchText: r => formatTimestamp(r.timestamp) },
+  { field: 'source', header: 'Source' },
+  { field: 'user', header: 'User' },
+  { field: 'browser', header: 'Browser' },
+  { field: 'operationId', header: 'Operation ID' },
+  { field: 'url', header: 'URL' },
+  { field: 'status', header: 'Status', filterValues: r => r.status || '' },
+], { visibleFields })
 
 // Auto-scroll to the newest row, but only while the user is already parked at
 // the bottom — matches the log viewer's behavior so inspecting older rows isn't
@@ -118,6 +127,11 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
     <div class="transaction-grid-header">
       <i class="pi pi-table" />
       <span>API Transactions</span>
+      <div class="transaction-grid-controls">
+        <GridSearch v-model="searchTerm" class="transaction-grid-search" label="Search transactions" placeholder="Search transactions..." />
+        <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+        <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
+      </div>
     </div>
     <DataTable
       ref="dataTableRef"
@@ -137,67 +151,53 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
       @row-dblclick="onRowDblClick"
     >
       <template #empty>
-        No transactions to display.
+        {{ isFiltered && transactions.length ? 'No transactions match the search.' : 'No transactions to display.' }}
       </template>
 
       <Column field="timestamp" header="Timestamp" sortable :pt="borderPt" style="width: 15%; white-space: nowrap;">
         <template #body="{ data }">
-          {{ formatTimestamp(data.timestamp) }}
+          <HighlightText :text="formatTimestamp(data.timestamp)" :term="highlightTerm('timestamp')" />
         </template>
       </Column>
-      <Column field="source" export-header="Source" sortable :pt="borderPt" style="width: 9%;">
-        <template #header>
-          <div class="column-header-with-filter">
-            Source
-            <ColumnSearchFilter v-model="sourceFilter" placeholder="Search source..." />
-          </div>
+      <Column v-if="visibleFields.has('source')" field="source" header="Source" sortable :pt="borderPt" style="width: 9%;">
+        <template #body="{ data }">
+          <HighlightText :text="data.source" :term="highlightTerm('source')" />
         </template>
       </Column>
-      <Column field="user" export-header="User" sortable :pt="borderPt" style="width: 9%;">
-        <template #header>
-          <div class="column-header-with-filter">
-            User
-            <ColumnSearchFilter v-model="userFilter" placeholder="Search user..." />
-          </div>
+      <Column v-if="visibleFields.has('user')" field="user" header="User" sortable :pt="borderPt" style="width: 9%;">
+        <template #body="{ data }">
+          <HighlightText :text="data.user" :term="highlightTerm('user')" />
         </template>
       </Column>
-      <Column field="browser" export-header="Browser" sortable :pt="borderPt" style="width: 9%;">
-        <template #header>
-          <div class="column-header-with-filter">
-            Browser
-            <ColumnSearchFilter v-model="browserFilter" placeholder="Search browser..." />
-          </div>
+      <Column v-if="visibleFields.has('browser')" field="browser" header="Browser" sortable :pt="borderPt" style="width: 9%;">
+        <template #body="{ data }">
+          <HighlightText :text="data.browser" :term="highlightTerm('browser')" />
         </template>
       </Column>
-      <Column field="operationId" export-header="Operation ID" sortable :pt="borderPt" style="width: 12%;">
-        <template #header>
-          <div class="column-header-with-filter">
-            Operation ID
-            <ColumnSearchFilter v-model="operationFilter" placeholder="Search operation..." />
-          </div>
+      <Column v-if="visibleFields.has('operationId')" field="operationId" header="Operation ID" sortable :pt="borderPt" style="width: 12%;">
+        <template #body="{ data }">
+          <HighlightText :text="data.operationId" :term="highlightTerm('operationId')" />
         </template>
       </Column>
-      <Column field="url" header="URL" sortable :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" />
-      <Column field="status" export-header="Status" sortable class="center-header" :pt="borderPt" style="width: 7%; text-align: center;">
-        <template #header>
-          <div class="column-header-with-filter">
-            Status
-            <ColumnFilter v-model="statusFilter" :options="statusOptions" />
-          </div>
+      <Column v-if="visibleFields.has('url')" field="url" header="URL" sortable :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <template #body="{ data }">
+          <span :title="data.url"><HighlightText :text="data.url" :term="highlightTerm('url')" /></span>
         </template>
+      </Column>
+      <Column v-if="visibleFields.has('status')" field="status" header="Status" sortable class="center-header" :pt="borderPt" style="width: 7%; text-align: center;">
         <template #body="{ data }">
           <span v-if="data.status" class="sm-http-status-sprite" :class="statusClass(data.status)">{{ data.status }}</span>
         </template>
       </Column>
-      <Column field="length" header="Length (b)" sortable :pt="borderPt" style="width: 8%; text-align: right;" body-style="text-align: right;" />
-      <Column field="duration" header="Duration (ms)" sortable style="width: 8%; text-align: right;" body-style="text-align: right;" />
+      <Column v-if="visibleFields.has('length')" field="length" header="Length (b)" sortable :pt="borderPt" style="width: 8%; text-align: right;" body-style="text-align: right;" />
+      <Column v-if="visibleFields.has('duration')" field="duration" header="Duration (ms)" sortable style="width: 8%; text-align: right;" body-style="text-align: right;" />
 
       <template #footer>
         <StatusFooter
           :dt="dataTableRef"
           :show-refresh="false"
           :total-count="transactions.length"
-          :filtered-count="filtersActive ? rows.length : null"
+          :filtered-count="isFiltered ? rows.length : null"
           total-label="requests"
           total-icon="pi pi-table"
         />
@@ -221,7 +221,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.45rem 0.75rem;
+  padding: 0.35rem 0.5rem 0.35rem 0.75rem;
   font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-text-bright);
@@ -235,10 +235,20 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   min-height: 0;
 }
 
-.column-header-with-filter {
+/* Controls ride the right of the title bar; sized to keep the bar slim. */
+.transaction-grid-controls {
+  --checklist-control-height: 2.1rem;
+  margin-left: auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.35rem;
+  gap: 0.4rem;
+  flex: 0 1 36rem;
+  min-width: 22rem;
+  font-weight: 400;
+}
+
+.transaction-grid-search {
+  flex: 1;
+  min-width: 12rem;
 }
 </style>

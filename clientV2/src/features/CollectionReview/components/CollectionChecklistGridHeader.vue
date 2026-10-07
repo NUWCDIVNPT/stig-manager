@@ -6,6 +6,7 @@ import { useRoute } from 'vue-router'
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
@@ -16,11 +17,20 @@ defineProps({
     type: Array,
     required: true,
   },
+  filterColumns: {
+    type: Array,
+    default: () => [],
+  },
+  filterValueOptions: {
+    type: Object,
+    default: () => ({}),
+  },
 })
 
 const searchFilter = defineModel('searchFilter', { type: String, default: '' })
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
 const displayMode = defineModel('displayMode', { type: String, required: true })
+const filters = defineModel('filters', { type: Array, default: () => [] })
 
 const route = useRoute()
 const benchmarkId = computed(() => route.params.benchmarkId)
@@ -106,7 +116,10 @@ function toggleChecklistMenu(event) {
 
     <div class="checklist-grid__header-bottom">
       <TieredMenu ref="checklistMenu" :model="checklistMenuItems" :popup="true" :pt="checklistMenuPT" />
-      <GridSearch v-model="searchFilter" class="checklist-grid__header-search" label="Search rules" />
+      <div class="checklist-grid__header-search">
+        <GridSearch v-model="searchFilter" class="checklist-grid__header-search-input" label="Search rules" />
+        <GridFilterButton v-model="filters" :columns="filterColumns" :value-options="filterValueOptions" />
+      </div>
 
       <div class="checklist-grid__header-controls">
         <button
@@ -158,8 +171,16 @@ function toggleChecklistMenu(event) {
 }
 
 .checklist-grid__header-search {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   flex: 1 1 24rem;
-  max-width: 42rem;
+  max-width: 48rem;
+  min-width: 0;
+}
+
+.checklist-grid__header-search-input {
+  flex: 1;
 }
 
 .checklist-grid__title-row {

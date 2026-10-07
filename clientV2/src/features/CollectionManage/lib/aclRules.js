@@ -17,6 +17,12 @@ export function getAllowedAclAccessOptions(roleId) {
   return options
 }
 
+const ACCESS_LABELS = { rw: 'Read/Write', r: 'Read Only', none: 'No Access' }
+
+export function accessLabel(access) {
+  return ACCESS_LABELS[access] ?? access
+}
+
 export function normalizeAclRule(rule) {
   return {
     benchmarkId: rule.benchmarkId,
@@ -69,6 +75,12 @@ export function resourceParts(rule) {
     parts.push({ type: 'stig', text: rule.benchmarkId })
   }
   return parts
+}
+
+const RESOURCE_TYPE_LABELS = { collection: 'Collection', asset: 'Asset', label: 'Label', stig: 'STIG' }
+
+export function resourceTypes(rule) {
+  return resourceParts(rule).map(part => RESOURCE_TYPE_LABELS[part.type])
 }
 
 export function resourceSortKey(rule) {

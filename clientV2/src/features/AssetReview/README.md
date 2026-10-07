@@ -20,8 +20,7 @@ src/features/AssetReview/
 │   ├── useChecklistData.js        # Fetches and caches the checklist array
 │   ├── useChecklistDisplayMode.js # Controls column visibility and row height
 │   ├── useReviewActions.js        # PUT/PATCH API + optimistic grid updates
-│   ├── useRuleDetail.js           # Fetches rule content and current review on selection
-│   └── useSearch.js               # Shared grid filter/search state
+│   └── useRuleDetail.js           # Fetches rule content and current review on selection
 ├── lib/
 │   ├── checklistUtils.js          # Pure helpers: getResultDisplay, getEngineDisplay, severityMap
 │   └── labels.js                  # Label color utilities

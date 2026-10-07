@@ -6,10 +6,16 @@ import Select from 'primevue/select'
 import { computed, nextTick, ref } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../components/common/GridSearch.vue'
+import GridToolbar from '../../../components/common/GridToolbar.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
+import { catLabel } from '../../../shared/lib/exportCells.js'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { FINDINGS_AGGREGATOR_OPTIONS, FINDINGS_AGGREGATORS } from '../constants.js'
 import PoamExport from './PoamExport.vue'
@@ -111,6 +117,24 @@ function onFooterAction(key) {
   }
 }
 
+// Keyed like visibleColumns so the searchable columns follow the aggregator
+const stigIds = r => (r.stigs ?? []).map(s => s.benchmarkId)
+const SEARCH_COLUMNS = {
+  cat: { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
+  group: { field: 'groupId', header: 'Group' },
+  rule: { field: 'ruleId', header: 'Rule' },
+  cci: { field: 'cci', header: 'CCI' },
+  apAcronym: { field: 'apAcronym', header: 'AP Acronym', filterValues: r => r.apAcronym },
+  title: { field: 'title', header: 'Title' },
+  definition: { field: 'definition', header: 'Definition' },
+  stigs: { field: 'stigs', header: 'STIGs', filterValues: stigIds, multiple: true },
+}
+const searchColumns = computed(() => Object.entries(SEARCH_COLUMNS)
+  .filter(([key]) => props.visibleColumns.has(key))
+  .map(([, col]) => col))
+
+const { term: searchTerm, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.rows, searchColumns)
+
 function onRowSelect(event) {
   emit('select-finding', event.data)
 }
@@ -193,6 +217,13 @@ const flexCellPt = {
         <DensityControls grid-key="findings-aggregated" class="agg-grid-panel__density" />
       </header>
 
+      <GridToolbar>
+        <GridSearch v-model="searchTerm" label="Search findings" placeholder="Search findings..." />
+        <template #end>
+          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+        </template>
+      </GridToolbar>
+
       <Popover ref="stigPopover" :pt="stigPopoverPt" @show="onPopoverShow">
         <div class="stig-dropdown-content">
           <StigSelectorPanel
@@ -218,7 +249,7 @@ const flexCellPt = {
       <div v-else class="table-container">
         <DataTable
           ref="dataTableRef"
-          :value="rows"
+          :value="filteredRows"
           :loading="isLoading"
           :selection="selectedRow"
           selection-mode="single"
@@ -244,32 +275,32 @@ const flexCellPt = {
           </Column>
           <Column v-if="visibleColumns.has('group')" field="groupId" header="Group" sortable :style="{ width: '8rem', minWidth: '6rem' }" :pt="cellPt">
             <template #body="{ data }">
-              <span class="cell-text">{{ data.groupId }}</span>
+              <span class="cell-text"><HighlightText :text="data.groupId" :term="highlightTerm('groupId')" /></span>
             </template>
           </Column>
           <Column v-if="visibleColumns.has('rule')" field="ruleId" header="Rule" sortable :style="{ width: '15rem', minWidth: '13rem' }" :pt="cellPt">
             <template #body="{ data }">
-              <span class="cell-text">{{ data.ruleId }}</span>
+              <span class="cell-text"><HighlightText :text="data.ruleId" :term="highlightTerm('ruleId')" /></span>
             </template>
           </Column>
           <Column v-if="visibleColumns.has('cci')" field="cci" header="CCI" sortable :style="{ width: '8rem', minWidth: '7rem' }" :pt="cellPt">
             <template #body="{ data }">
-              <span class="cell-text">{{ data.cci }}</span>
+              <span class="cell-text"><HighlightText :text="data.cci" :term="highlightTerm('cci')" /></span>
             </template>
           </Column>
           <Column v-if="visibleColumns.has('apAcronym')" field="apAcronym" header="AP Acronym" sortable :style="{ width: '11rem', minWidth: '9rem' }" :pt="cellPt">
             <template #body="{ data }">
-              <span class="cell-text">{{ data.apAcronym }}</span>
+              <span class="cell-text"><HighlightText :text="data.apAcronym" :term="highlightTerm('apAcronym')" /></span>
             </template>
           </Column>
           <Column v-if="visibleColumns.has('title')" field="title" header="Title" sortable :style="{ width: '14rem', minWidth: '5rem' }" :pt="flexCellPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped" :title="data.title">{{ data.title }}</span>
+              <span class="cell-text cell-text--clamped" :title="data.title"><HighlightText :text="data.title" :term="highlightTerm('title')" /></span>
             </template>
           </Column>
           <Column v-if="visibleColumns.has('definition')" field="definition" header="Definition" sortable :style="{ minWidth: '12rem' }" :pt="flexCellPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped" :title="data.definition">{{ data.definition }}</span>
+              <span class="cell-text cell-text--clamped" :title="data.definition"><HighlightText :text="data.definition" :term="highlightTerm('definition')" /></span>
             </template>
           </Column>
           <Column field="assetCount" header="Assets" sortable :style="{ width: '7rem', minWidth: '6.5rem' }" :pt="cellPt">
@@ -279,13 +310,13 @@ const flexCellPt = {
           </Column>
           <Column v-if="visibleColumns.has('stigs')" header="STIGs" field="stigs" :style="{ minWidth: '16rem' }" :pt="flexCellPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped" :title="(data.stigs ?? []).map(s => s.benchmarkId).join(', ')">{{ (data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—' }}</span>
+              <span class="cell-text cell-text--clamped" :title="(data.stigs ?? []).map(s => s.benchmarkId).join(', ')"><HighlightText :text="(data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—'" :term="highlightTerm('stigs')" /></span>
             </template>
           </Column>
 
           <template #empty>
             <div class="agg-grid-empty">
-              No findings match the current scope.
+              {{ isFiltered && rows.length ? 'No findings match the current search and filters.' : 'No findings match the current scope.' }}
             </div>
           </template>
 
@@ -294,6 +325,7 @@ const flexCellPt = {
               :dt="dataTableRef"
               :metrics="[]"
               :total-count="rows.length"
+              :filtered-count="isFiltered ? filteredRows.length : null"
               total-label="findings"
               :show-refresh="true"
               :show-export="true"

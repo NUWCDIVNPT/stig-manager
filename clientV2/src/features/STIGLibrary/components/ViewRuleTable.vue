@@ -3,6 +3,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
@@ -21,6 +22,19 @@ const props = defineProps({
   exportFilename: {
     type: String,
     default: 'Rules',
+  },
+  // Unfiltered count and search state from RulePane, for the footer and highlighting
+  totalCount: {
+    type: Number,
+    default: null,
+  },
+  filtered: {
+    type: Boolean,
+    default: false,
+  },
+  highlightTerm: {
+    type: Function,
+    default: () => '',
   },
 })
 
@@ -65,32 +79,33 @@ function onRowClick(event) {
     </Column>
     <Column header="STIG ID" field="version" sortable :style="{ width: '12rem', minWidth: '10rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
-        <span class="stiglib-cell-text">{{ data.version }}</span>
+        <span class="stiglib-cell-text"><HighlightText :text="data.version" :term="highlightTerm('version')" /></span>
       </template>
     </Column>
     <Column header="Group" field="groupId" sortable :style="{ width: '6rem', minWidth: '6rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
-        <span class="stiglib-cell-text">{{ data.groupId }}</span>
+        <span class="stiglib-cell-text"><HighlightText :text="data.groupId" :term="highlightTerm('groupId')" /></span>
       </template>
     </Column>
     <Column header="Rule Id" field="ruleId" sortable :style="{ width: '15rem', minWidth: '14rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
-        <span class="stiglib-cell-text">{{ data.ruleId }}</span>
+        <span class="stiglib-cell-text"><HighlightText :text="data.ruleId" :term="highlightTerm('ruleId')" /></span>
       </template>
     </Column>
     <Column header="Rule Title" field="title" sortable :style="{ minWidth: '16rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
-        <span class="stiglib-cell-text stiglib-cell-text--clamped" :title="data.title">{{ data.title }}</span>
+        <span class="stiglib-cell-text stiglib-cell-text--clamped" :title="data.title"><HighlightText :text="data.title" :term="highlightTerm('title')" /></span>
       </template>
     </Column>
     <template #empty>
       <div class="stiglib-empty">
-        No rules in this revision.
+        {{ filtered ? 'No rules match the search.' : 'No rules in this revision.' }}
       </div>
     </template>
     <template #footer>
       <StatusFooter
-        :total-count="rules.length"
+        :total-count="totalCount ?? rules.length"
+        :filtered-count="filtered ? rules.length : null"
         :dt="dataTableRef"
         total-label="rules"
         :show-refresh="false"

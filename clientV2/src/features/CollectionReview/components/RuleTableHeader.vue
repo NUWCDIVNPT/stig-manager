@@ -6,6 +6,7 @@ import acceptedIcon from '../../../assets/star.svg'
 import submitIcon from '../../../assets/submit.svg'
 import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 
 defineProps({
@@ -25,12 +26,21 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  filterColumns: {
+    type: Array,
+    default: () => [],
+  },
+  filterValueOptions: {
+    type: Object,
+    default: () => ({}),
+  },
 })
 
 const emit = defineEmits(['bulk-action'])
 
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
 const searchFilter = defineModel('searchFilter', { type: String, default: '' })
+const filters = defineModel('filters', { type: Array, default: () => [] })
 
 function onAction(actionType) {
   emit('bulk-action', actionType)
@@ -47,7 +57,10 @@ function onAction(actionType) {
         </h2>
       </div>
 
-      <GridSearch v-model="searchFilter" class="rule-table__search" label="Search reviews" />
+      <div class="rule-table__search">
+        <GridSearch v-model="searchFilter" class="rule-table__search-input" label="Search reviews" />
+        <GridFilterButton v-model="filters" :columns="filterColumns" :value-options="filterValueOptions" />
+      </div>
 
       <div class="rule-table__right-controls">
         <!-- Toolbar actions -->
@@ -135,8 +148,16 @@ function onAction(actionType) {
 }
 
 .rule-table__search {
-  flex: 0 1 16rem;
-  min-width: 8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 1 26rem;
+  min-width: 12rem;
+}
+
+.rule-table__search-input {
+  flex: 1;
+  min-width: 6rem;
 }
 
 .rule-table__action-controls {
