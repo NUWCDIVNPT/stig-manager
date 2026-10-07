@@ -33,6 +33,10 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  activePreset: {
+    type: String,
+    default: null,
+  },
   filterColumns: {
     type: Array,
     default: () => [],
@@ -55,7 +59,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['refresh', 'bulk-action'])
+const emit = defineEmits(['refresh', 'bulk-action', 'apply-preset'])
 
 const {
   asset,
@@ -126,7 +130,6 @@ async function exportChecklist(format) {
   }
 }
 
-const displayMode = defineModel('displayMode', { type: String, required: true })
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
 
 const searchFilter = defineModel('searchFilter', { type: String, default: '' })
@@ -149,18 +152,18 @@ const checklistMenuItems = computed(() => {
       items: [
         {
           label: 'Group ID and Rule Title',
-          icon: displayMode.value === 'groupRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
-          command: () => { displayMode.value = 'groupRule' },
+          icon: props.activePreset === 'groupRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
+          command: () => emit('apply-preset', 'groupRule'),
         },
         {
           label: 'Group ID and Group Title',
-          icon: displayMode.value === 'groupGroup' ? 'pi pi-circle-fill' : 'pi pi-circle',
-          command: () => { displayMode.value = 'groupGroup' },
+          icon: props.activePreset === 'groupGroup' ? 'pi pi-circle-fill' : 'pi pi-circle',
+          command: () => emit('apply-preset', 'groupGroup'),
         },
         {
           label: 'Rule ID and Rule Title',
-          icon: displayMode.value === 'ruleRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
-          command: () => { displayMode.value = 'ruleRule' },
+          icon: props.activePreset === 'ruleRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
+          command: () => emit('apply-preset', 'ruleRule'),
         },
       ],
     },

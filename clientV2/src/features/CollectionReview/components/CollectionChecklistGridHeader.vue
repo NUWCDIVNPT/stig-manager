@@ -12,10 +12,14 @@ import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 
-defineProps({
+const props = defineProps({
   toggleableColumns: {
     type: Array,
     required: true,
+  },
+  activePreset: {
+    type: String,
+    default: null,
   },
   filterColumns: {
     type: Array,
@@ -27,9 +31,10 @@ defineProps({
   },
 })
 
+const emit = defineEmits(['apply-preset'])
+
 const searchFilter = defineModel('searchFilter', { type: String, default: '' })
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
-const displayMode = defineModel('displayMode', { type: String, required: true })
 const filters = defineModel('filters', { type: Array, default: () => [] })
 
 const route = useRoute()
@@ -64,18 +69,18 @@ const checklistMenuItems = computed(() => [
     items: [
       {
         label: 'Group ID and Rule Title',
-        icon: displayMode.value === 'groupRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
-        command: () => { displayMode.value = 'groupRule' },
+        icon: props.activePreset === 'groupRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
+        command: () => emit('apply-preset', 'groupRule'),
       },
       {
         label: 'Group ID and Group Title',
-        icon: displayMode.value === 'groupGroup' ? 'pi pi-circle-fill' : 'pi pi-circle',
-        command: () => { displayMode.value = 'groupGroup' },
+        icon: props.activePreset === 'groupGroup' ? 'pi pi-circle-fill' : 'pi pi-circle',
+        command: () => emit('apply-preset', 'groupGroup'),
       },
       {
         label: 'Rule ID and Rule Title',
-        icon: displayMode.value === 'ruleRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
-        command: () => { displayMode.value = 'ruleRule' },
+        icon: props.activePreset === 'ruleRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
+        command: () => emit('apply-preset', 'ruleRule'),
       },
     ],
   },
