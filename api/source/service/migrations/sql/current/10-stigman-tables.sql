@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.46, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.4.10, for Linux (x86_64)
 --
--- Host: 127.0.0.1    Database: stigman
+-- Host: localhost    Database: stigman
 -- ------------------------------------------------------
--- Server version	8.4.9
+-- Server version	8.4.10
 
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
@@ -1305,28 +1305,34 @@ BEGIN
         CALL task_output_collection('info', concat('processing collectionId ', v_collectionId));
 
         BEGIN  -- collection-scoped error handling (no transaction at this scope)
+          -- The rule cursor is declared here, in the handler's own block, so the
+          -- handler can close it: a cursor left open by an abandoned inner block
+          -- makes the next collection fail with 1325 (Cursor is already open).
+          DECLARE v_rule_done INT DEFAULT FALSE;
+          DECLARE cur_rules CURSOR FOR
+            SELECT ruleId, ordinal, enabled, triggerField, triggerInterval,
+                   triggerAction, updateField, updateValue, assetId, clId, benchmarkId
+            FROM review_aging_rule
+            WHERE collectionId = v_collectionId
+            ORDER BY ordinal;
+          DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_rule_done = TRUE;
           DECLARE EXIT HANDLER FOR SQLEXCEPTION
           BEGIN
             DECLARE err_code INT;
             DECLARE err_msg TEXT;
             GET STACKED DIAGNOSTICS CONDITION 1 err_code = MYSQL_ERRNO, err_msg = MESSAGE_TEXT;
+            ROLLBACK;
+            BEGIN
+              DECLARE CONTINUE HANDLER FOR 1326 BEGIN END;  -- cursor is not open
+              CLOSE cur_rules;
+            END;
             DROP TEMPORARY TABLE IF EXISTS t_pre_approved;
             DROP TEMPORARY TABLE IF EXISTS t_reviewIds;
             CALL task_output_collection('error', concat('code: ', err_code, ' message: ', err_msg));
             CALL task_output('error', concat('error processing collectionId ', v_collectionId, ': code: ', err_code, ' message: ', err_msg));
           END;
 
-          -- Use a cursor for task rules within the collection
           BEGIN
-            DECLARE v_rule_done INT DEFAULT FALSE;
-            DECLARE cur_rules CURSOR FOR
-              SELECT ruleId, ordinal, enabled, triggerField, triggerInterval,
-                     triggerAction, updateField, updateValue, assetId, clId, benchmarkId
-              FROM review_aging_rule
-              WHERE collectionId = v_collectionId
-              ORDER BY ordinal;
-            DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_rule_done = TRUE;
-
             OPEN cur_rules;
             rule_loop: LOOP
               FETCH cur_rules INTO
@@ -1414,7 +1420,7 @@ BEGIN
               EXECUTE stmt_aging;
               DEALLOCATE PREPARE stmt_aging;
 
-              SELECT COUNT(*) INTO v_numReviews FROM t_pre_approved;
+              SELECT COUNT(DISTINCT reviewId) INTO v_numReviews FROM t_pre_approved;
               CALL task_output_collection('info',
                 CONCAT('rule ordinal ', v_ordinal, ': found ', IFNULL(v_numReviews, 0), ' reviews to ', v_triggerAction));
 
@@ -1449,7 +1455,7 @@ BEGIN
 
                   SET @v_verify_sql = CONCAT(
                     'INSERT INTO t_reviewIds (reviewId) ',
-                    'SELECT pa.reviewId ',
+                    'SELECT DISTINCT pa.reviewId ',
                     'FROM t_pre_approved pa ',
                     'JOIN review r ON r.reviewId = pa.reviewId ',
                     'WHERE pa.seq BETWEEN ', v_batchSeqMin, ' AND ', v_batchSeqMax,
@@ -1474,23 +1480,20 @@ BEGIN
                   SELECT MAX(seq) INTO v_numVerified FROM t_reviewIds;
 
                   IF IFNULL(v_numVerified, 0) > 0 THEN
+                    -- Capture affected saIds before changing anything (a review can belong to several STIG-asset pairs)
+                    SET @v_saIds = (
+                      SELECT JSON_ARRAYAGG(saId) FROM (
+                        SELECT DISTINCT sa.saId
+                        FROM t_reviewIds tri
+                        INNER JOIN review r ON tri.reviewId = r.reviewId
+                        INNER JOIN rule_version_check_digest rvcd ON (rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)
+                        INNER JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId
+                        INNER JOIN revision rev ON rev.revId = rgr.revId
+                        INNER JOIN stig_asset_map sa ON (sa.assetId = r.assetId AND sa.benchmarkId = rev.benchmarkId)
+                      ) AS distinct_saIds
+                    );
                     IF v_triggerAction = 'delete' THEN
-                      -- Capture affected saIds before deleting
-                      SET @v_deleteSaIds = (
-                        SELECT JSON_ARRAYAGG(saId) FROM (
-                          SELECT DISTINCT sa.saId
-                          FROM t_reviewIds tri
-                          INNER JOIN review r ON tri.reviewId = r.reviewId
-                          INNER JOIN rule_version_check_digest rvcd ON (rvcd.version = r.version AND rvcd.checkDigest = r.checkDigest)
-                          INNER JOIN rev_group_rule_map rgr ON rgr.ruleId = rvcd.ruleId
-                          INNER JOIN revision rev ON rev.revId = rgr.revId
-                          INNER JOIN stig_asset_map sa ON (sa.assetId = r.assetId AND sa.benchmarkId = rev.benchmarkId)
-                        ) AS distinct_saIds
-                      );
                       CALL delete_review_batch();
-                      IF @v_deleteSaIds IS NOT NULL THEN
-                        CALL update_stats_asset_stig(JSON_OBJECT('saIds', CAST(@v_deleteSaIds AS JSON)));
-                      END IF;
                     ELSEIF v_triggerAction = 'update' THEN
                       SELECT CAST(c.settings->>"$.history.maxReviews" AS UNSIGNED)
                         INTO v_maxReviews
@@ -1501,7 +1504,9 @@ BEGIN
                       ELSEIF v_updateField = 'result' THEN
                         CALL update_review_result_batch(v_updateValue);
                       END IF;
-                      CALL update_stats_asset_stig(JSON_OBJECT('reviewIds', (SELECT JSON_ARRAYAGG(reviewId) FROM t_reviewIds)));
+                    END IF;
+                    IF @v_saIds IS NOT NULL THEN
+                      CALL update_stats_asset_stig(JSON_OBJECT('saIds', CAST(@v_saIds AS JSON)));
                     END IF;
                   END IF;
 
@@ -2029,4 +2034,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-03 18:34:06
+-- Dump completed on 2026-10-06 23:19:04
