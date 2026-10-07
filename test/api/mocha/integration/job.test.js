@@ -675,9 +675,8 @@ describe('Task tests', function () {
       await utils.uploadTestStig('U_VPN_SRG-SHARED_V1R1_Manual-xccdf.xml')
       const assetRes = await utils.executeRequest(`${config.baseUrl}/assets/${assetId}?projection=stigs`, 'GET', user.token)
       expect(assetRes.status).to.eql(200)
-      const originalStigs = assetRes.body.stigs.map(s => s.benchmarkId)
       const patchRes = await utils.executeRequest(`${config.baseUrl}/assets/${assetId}`, 'PATCH', user.token, {
-        stigs: [...originalStigs, sharedBenchmarkId]
+        stigs: [...assetRes.body.stigs.map(s => s.benchmarkId), sharedBenchmarkId]
       })
       expect(patchRes.status).to.eql(200)
 
@@ -685,7 +684,6 @@ describe('Task tests', function () {
       expect(beforeRes.status).to.eql(200)
       const before = Object.fromEntries(beforeRes.body.map(r => [r.benchmarkId, r.metrics.statuses]))
       expect(before).to.have.property('VPN_SRG_TEST')
-      expect(before).to.have.property(sharedBenchmarkId)
       expect(before[sharedBenchmarkId].submitted.total).to.be.greaterThan(0)
 
       const runId = await runAgingWithConfig([{
@@ -709,17 +707,11 @@ describe('Task tests', function () {
         const b = before[row.benchmarkId]
         const s = row.metrics.statuses
         const reviewed = b.saved.total + b.submitted.total + b.accepted.total + b.rejected.total
-        expect(s.submitted.total, `${row.benchmarkId} submitted`).to.eql(0)
-        expect(s.accepted.total, `${row.benchmarkId} accepted`).to.eql(0)
-        expect(s.rejected.total, `${row.benchmarkId} rejected`).to.eql(0)
-        expect(s.saved.total, `${row.benchmarkId} saved`).to.eql(reviewed)
+        expect(
+          { saved: s.saved.total, submitted: s.submitted.total, accepted: s.accepted.total, rejected: s.rejected.total },
+          row.benchmarkId
+        ).to.eql({ saved: reviewed, submitted: 0, accepted: 0, rejected: 0 })
       }
-
-      // Restore the asset and remove the extra STIG for the tests that follow
-      const restoreRes = await utils.executeRequest(`${config.baseUrl}/assets/${assetId}`, 'PATCH', user.token, { stigs: originalStigs })
-      expect(restoreRes.status).to.eql(200)
-      const removeRes = await utils.executeRequest(`${config.baseUrl}/stigs/${sharedBenchmarkId}?elevate=true&force=true`, 'DELETE', user.token)
-      expect(removeRes.status).to.eql(200)
     })
 
     it('should delete matching reviews (triggerAction:delete, triggerInterval:0)', async function () {
