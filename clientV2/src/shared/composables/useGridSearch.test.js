@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { nextTick, ref } from 'vue'
+import { computed, nextTick, ref, shallowRef } from 'vue'
 import { searchFilter } from '../lib/gridSearch.js'
 import { useGridSearch } from './useGridSearch.js'
 
@@ -159,5 +159,116 @@ describe('useGridSearch', () => {
     cols.value = columns.slice(0, 1)
     await nextTick()
     expect(s.filters.value.map(f => f.key)).toEqual(['all'])
+  })
+
+  describe('selection', () => {
+    const keyed = () => ref([
+      { id: 1, name: 'web-01', os: 'linux' },
+      { id: 2, name: 'web-02', os: 'windows' },
+      { id: 3, name: 'db-01', os: 'linux' },
+    ])
+    // Grid over keyed() with the given rows selected (all by default)
+    const setup = (pick = d => [...d], { dataKey = 'id', ...options } = {}) => {
+      const data = keyed()
+      const selection = ref(pick(data.value))
+      return { data, selection, s: useGridSearch(data, columns, { selection, dataKey, ...options }) }
+    }
+
+    it.each([
+      ['the search term', (s) => { s.term.value = 'web-01' }, ['web-01']],
+      ['a filter rule', (s) => { s.filters.value = [searchFilter('os', 'text', { value: 'linux' })] }, ['web-01', 'db-01']],
+    ])('drops selected rows %s hides', async (_, hide, kept) => {
+      const { selection, s } = setup()
+      hide(s)
+      await nextTick()
+      expect(names(selection.value)).toEqual(kept)
+    })
+
+    it('matches rows by dataKey, not object identity', async () => {
+      const { selection, s } = setup(d => d.map(r => ({ ...r })))
+      s.term.value = 'web'
+      await nextTick()
+      expect(names(selection.value)).toEqual(['web-01', 'web-02'])
+    })
+
+    it('does not rewrite the selection when every selected row is still visible', async () => {
+      const data = keyed()
+      const original = [data.value[0]]
+      const selection = shallowRef(original)
+      const s = useGridSearch(data, columns, { selection, dataKey: 'id' })
+      s.term.value = 'web'
+      await nextTick()
+      expect(selection.value).toBe(original)
+    })
+
+    it.each([
+      ['reassignment', (d) => { d.value = d.value.slice(1) }, false],
+      ['an in-place splice', (d) => { d.value.splice(0, 1) }, false],
+      ['an in-place splice while a rule is active', (d) => { d.value.splice(0, 1) }, true],
+    ])('drops selected rows removed from the data by %s', async (_, remove, ruleActive) => {
+      const { data, selection, s } = setup()
+      if (ruleActive) {
+        s.term.value = '-0'
+      }
+      remove(data)
+      await nextTick()
+      expect(names(selection.value)).toEqual(['web-02', 'db-01'])
+    })
+
+    it.each([
+      ['immutably', (d) => { d.value = d.value.with(0, { ...d.value[0], os: 'bsd' }) }],
+      ['in place', (d) => { d.value[0] = { ...d.value[0], os: 'bsd' } }],
+    ])('keeps a selected row replaced %s, swapping in the new object', async (_, replace) => {
+      const { data, selection } = setup(d => [d[0]])
+      replace(data)
+      await nextTick()
+      expect(selection.value).toHaveLength(1)
+      expect(selection.value[0]).toBe(data.value[0])
+      expect(selection.value[0].os).toBe('bsd')
+    })
+
+    it('matches by a key function when dataKey is one', async () => {
+      const data = ref([
+        { assetId: 1, labelId: null, access: 'r' },
+        { assetId: null, labelId: 7, access: 'rw' },
+      ])
+      const keyOf = r => `${r.assetId ?? ''}:${r.labelId ?? ''}`
+      const selection = ref([data.value[1]])
+      useGridSearch(data, [{ field: 'access', header: 'Access' }], { selection, dataKey: keyOf })
+      data.value = data.value.with(1, { ...data.value[1], access: 'none' })
+      await nextTick()
+      expect(selection.value).toHaveLength(1)
+      expect(selection.value[0].access).toBe('none')
+    })
+
+    it('compares object identity when dataKey is omitted', async () => {
+      const { data, selection } = setup(d => [d[0], d[1]], { dataKey: null })
+      data.value = [data.value[0], { ...data.value[1] }, data.value[2]]
+      await nextTick()
+      expect(names(selection.value)).toEqual(['web-01'])
+    })
+
+    it('writes through a computed selection model', async () => {
+      const data = keyed()
+      let emitted = null
+      const selectedProp = ref([...data.value])
+      const selection = computed({
+        get: () => selectedProp.value,
+        set: (v) => { emitted = v },
+      })
+      const s = useGridSearch(data, columns, { selection, dataKey: 'id' })
+      s.term.value = 'db'
+      await nextTick()
+      expect(names(emitted)).toEqual(['db-01'])
+    })
+
+    it('leaves the selection alone when the search clears', async () => {
+      const { selection, s } = setup(d => [d[0]])
+      s.term.value = 'web'
+      await nextTick()
+      s.term.value = ''
+      await nextTick()
+      expect(names(selection.value)).toEqual(['web-01'])
+    })
   })
 })

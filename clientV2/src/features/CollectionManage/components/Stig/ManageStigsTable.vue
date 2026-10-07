@@ -61,6 +61,8 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
 
 const visibleMetricColumns = computed(() => metricColumns.filter(c => visibleFields.value.has(c.field)))
 
+const selectedStigs = ref([])
+
 // Title isn't a column; it shows as the Benchmark ID tooltip
 const {
   term: searchTerm,
@@ -74,9 +76,7 @@ const {
   { field: 'benchmarkId', header: 'Benchmark ID' },
   { field: 'title', header: 'Title', shownWith: 'benchmarkId' },
   { field: 'revisionStr', header: 'Revision' },
-], { visibleFields })
-
-const selectedStigs = ref([])
+], { visibleFields, selection: selectedStigs, dataKey: 'benchmarkId' })
 
 const hasSelection = computed(() => selectedStigs.value.length > 0)
 const singleSelection = computed(() => selectedStigs.value.length === 1)

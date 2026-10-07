@@ -76,6 +76,8 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
   ...metricColumns.map(({ field, header }) => ({ field, header })),
 ], 'manageAssets.columns')
 
+const selectedAssets = ref([])
+
 const visibleMetricColumns = computed(() => metricColumns.filter(c => visibleFields.value.has(c.field)))
 
 const {
@@ -90,9 +92,7 @@ const {
   { field: 'assetName', header: 'Asset' },
   { field: 'labels', header: 'Labels', filterValues: r => r.labels, multiple: true },
   { field: 'benchmarkIds', header: 'STIG', filterValues: r => r.benchmarkIds, multiple: true, quickSearch: false },
-], { visibleFields })
-
-const selectedAssets = ref([])
+], { visibleFields, selection: selectedAssets, dataKey: 'assetId' })
 
 function clearSelection() {
   selectedAssets.value = []
@@ -128,12 +128,6 @@ async function onDeleteConfirmed() {
     triggerError(err)
   }
 }
-
-function onAssetsTransferred(transferredIds) {
-  const idSet = new Set(transferredIds)
-  applyAssetsTransferred(transferredIds)
-  selectedAssets.value = selectedAssets.value.filter(a => !idSet.has(a.assetId))
-}
 </script>
 
 <template>
@@ -149,7 +143,7 @@ function onAssetsTransferred(transferredIds) {
       @create-asset="openCreateModal"
       @modify-asset="openEditModal(selectedAssets[0].assetId)"
       @delete-assets="onDeleteAssets"
-      @assets-transferred="onAssetsTransferred"
+      @assets-transferred="applyAssetsTransferred"
     />
 
     <AssetFormModal

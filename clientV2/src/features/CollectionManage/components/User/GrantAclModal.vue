@@ -87,17 +87,7 @@ const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOpti
   { field: 'resource', header: 'Resource', searchText: resourceSortKey },
   { field: 'resourceType', header: 'Resource type', filterValues: resourceTypes, multiple: true },
   { field: 'access', header: 'Access', filterValues: r => accessLabel(r.access) },
-])
-
-// Remove acts on the selection, so never keep rules the filter hid. Matched by key, not
-// identity: updateRuleAccess replaces the edited rule, and the selection must follow it.
-watch(filteredRows, (visibleRules) => {
-  const byKey = new Map(visibleRules.map(r => [getAclRuleKey(r), r]))
-  const kept = selectedRules.value.map(r => byKey.get(getAclRuleKey(r))).filter(Boolean)
-  if (kept.length !== selectedRules.value.length || kept.some((r, i) => r !== selectedRules.value[i])) {
-    selectedRules.value = kept
-  }
-})
+], { selection: selectedRules, dataKey: getAclRuleKey })
 
 function removeSelected() {
   if (!selectedRules.value.length) {

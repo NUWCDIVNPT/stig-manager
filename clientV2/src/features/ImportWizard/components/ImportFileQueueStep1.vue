@@ -1,7 +1,7 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
@@ -36,15 +36,7 @@ const fileType = name => name?.split('.').pop()?.toUpperCase() ?? ''
 const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions } = useGridSearch(() => props.sourceFiles, [
   { field: 'name', header: 'Filename' },
   { field: 'type', header: 'Type', filterValues: r => fileType(r.name) },
-])
-
-// Remove acts on the selection, so never keep files the filter hid
-watch(filteredRows, (visible) => {
-  const kept = props.selectedRows.filter(r => visible.includes(r))
-  if (kept.length !== props.selectedRows.length) {
-    emit('update:selectedRows', kept)
-  }
-})
+], { selection: selectedRowsModel, dataKey: '_queueId' })
 
 function onFilePicked(event) {
   const files = Array.from(event.target.files)

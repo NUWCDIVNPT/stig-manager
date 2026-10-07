@@ -68,7 +68,7 @@ const { term: searchTerm, filteredRows, isFiltered, highlightTerm } = useGridSea
   { field: 'title', header: 'Title' },
   { field: 'status', header: 'Status' },
   { field: 'lastRevisionStr', header: 'Latest Revision' },
-], { visibleFields })
+], { visibleFields, selection: selectedStigs, dataKey: 'benchmarkId' })
 
 const tablePt = {
   ...compactTablePt(),
