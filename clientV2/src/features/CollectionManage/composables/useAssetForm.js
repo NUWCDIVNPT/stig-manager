@@ -22,6 +22,7 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
 
   const form = reactive({
     name: '',
+    description: '',
     noncomputing: false,
     fqdn: '',
     ip: '',
@@ -63,6 +64,7 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
       if (isEditMode.value) {
         const asset = await fetchAssetWithStigs(unref(assetId))
         form.name = asset.name ?? ''
+        form.description = asset.description ?? ''
         form.noncomputing = asset.noncomputing ?? false
         form.fqdn = asset.fqdn ?? ''
         form.ip = asset.ip ?? ''
@@ -83,6 +85,7 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
   async function initialize() {
     nameError.value = null
     form.name = ''
+    form.description = ''
     form.noncomputing = false
     form.fqdn = ''
     form.ip = ''
@@ -110,7 +113,7 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
     )
     return {
       name: form.name.trim(),
-      description: null,
+      description: form.description || null,
       noncomputing: form.noncomputing,
       fqdn: form.fqdn || null,
       ip: form.ip || null,
