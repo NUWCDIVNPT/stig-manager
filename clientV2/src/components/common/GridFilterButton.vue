@@ -75,12 +75,18 @@ function operatorOptions(rule) {
   return multiple ? VALUE_OPERATORS : VALUE_OPERATORS.filter(o => o.match === 'any')
 }
 
+// Draft rules carry an id so removing one never hands its Select instances to the next rule
+let nextRuleId = 0
+function withId(rule) {
+  return { ...rule, id: ++nextRuleId }
+}
+
 function newRule() {
-  return searchFilter(ALL_COLUMNS, 'text')
+  return withId(searchFilter(ALL_COLUMNS, 'text'))
 }
 
 function toggle(event) {
-  draft.value = applied.value.length ? applied.value.map(f => ({ ...f })) : [newRule()]
+  draft.value = applied.value.length ? applied.value.map(withId) : [newRule()]
   popover.value?.toggle(event)
 }
 
@@ -90,7 +96,8 @@ function setRule(index, next) {
 
 function setColumn(index, field) {
   const col = columnOptions.value.find(c => c.field === field)
-  setRule(index, withColumn(draft.value[index], field, col.kind))
+  const rule = draft.value[index]
+  setRule(index, { ...withColumn(rule, field, col.kind), id: rule.id })
 }
 
 function removeRule(index) {
@@ -98,7 +105,7 @@ function removeRule(index) {
 }
 
 function apply() {
-  model.value = draft.value.filter(isActive)
+  model.value = draft.value.filter(isActive).map(({ id, ...rule }) => rule)
   popover.value?.hide()
 }
 
@@ -177,7 +184,7 @@ const popoverPt = {
       </div>
 
       <div class="grid-filter__rules">
-        <div v-for="(rule, i) in draft" :key="i" class="grid-filter__rule" :class="{ 'is-negated': isNegated(rule) }">
+        <div v-for="(rule, i) in draft" :key="rule.id" class="grid-filter__rule" :class="{ 'is-negated': isNegated(rule) }">
           <Select
             :model-value="rule.key"
             :options="columnOptions"

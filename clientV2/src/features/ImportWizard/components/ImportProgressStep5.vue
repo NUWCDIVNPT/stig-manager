@@ -1,7 +1,7 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
@@ -39,6 +39,14 @@ const {
   { field: 'outcome', header: 'Outcome', filterValues: r => (r.error ? 'Error' : r.rejected?.length ? 'Has rejected reviews' : 'OK'), quickSearch: false },
   { field: 'error', header: 'Error' },
 ])
+
+// The Rejected panel reads the selection, so drop it once the filter hides that row
+watch(filteredRows, (rows) => {
+  const selectedId = props.selectedRow?.assetId
+  if (selectedId != null && !rows.some(r => r.assetId === selectedId)) {
+    emit('update:selectedRow', null)
+  }
+})
 
 const rejectedRows = computed(() => props.selectedRow?.rejected ?? [])
 
