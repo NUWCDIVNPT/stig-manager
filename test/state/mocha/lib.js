@@ -217,13 +217,13 @@ export async function bearerRequest({url, method, token}) {
  * Spawns a MySQL container.
  * Returns a promise that resolves when the MySQL container is ready for connections.
  * @param {Object} options - Options for spawning the MySQL container.
- * @param {string} [options.tag='8.0.24'] - The MySQL image tag to use.
+ * @param {string} [options.tag='8.4'] - The MySQL image tag to use.
  * @param {string} [options.port='3306'] - The port to map to the MySQL container.
  * @param {number} [options.readyCount=2] - The number of "ready for connections" messages to wait for.
  * @returns {Promise<ChildProcess>} A promise that resolves with the MySQL container process.
  */
 export function spawnMySQL ({
-  tag = '8.0.24', 
+  tag = '8.4', 
   port = '3306',
   readyCount = 2
 } = {}) {

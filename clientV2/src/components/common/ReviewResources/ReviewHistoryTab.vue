@@ -1,30 +1,25 @@
 <script setup>
-import { FilterMatchMode } from '@primevue/core/api'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, inject, ref, toRefs, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import engineIcon from '../../../assets/bot2.svg'
-
-import overrideIcon from '../../../assets/override2.svg'
-import manualIcon from '../../../assets/user.svg'
 import { fetchReview } from '../../../shared/api/reviewsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { durationToNow, formatDateTimeString } from '../../../shared/lib.js'
 
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
+import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
+import { capitalize } from '../../../shared/lib/exportCells.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
-import ColumnFilter from '../ColumnFilter.vue'
-import ColumnSearchFilter from '../ColumnSearchFilter.vue'
 import EngineBadge from '../EngineBadge.vue'
+import GridFilterButton from '../GridFilterButton.vue'
 import LongTextPopover from '../LongTextPopover.vue'
 import ManualBadge from '../ManualBadge.vue'
 import OverrideBadge from '../OverrideBadge.vue'
 import ResultBadge from '../ResultBadge.vue'
 import StatusBadge from '../StatusBadge.vue'
 import StatusFooter from '../StatusFooter.vue'
-import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
 import { reviewResourcesTablePt } from './tablePt.js'
 
 const props = defineProps({
@@ -94,37 +89,26 @@ const processedHistory = computed(() => {
   }))
 })
 
-const resultOptions = computed(() => {
-  const results = new Set((fullReviewHistory.value || []).map(item => item.result).filter(Boolean))
-  return Array.from(results).map(val => ({
-    value: val,
-    label: getResultDisplay(val),
-  })).sort((a, b) => a.label.localeCompare(b.label))
-})
+const tabBarEnd = inject('reviewTabBarEnd', null)
 
-const engineOptions = computed(() => {
-  const engines = new Set((fullReviewHistory.value || []).map(item => getEngineDisplay(item)).filter(Boolean))
-  return Array.from(engines).map(val => ({
-    value: val,
-    label: val === 'engine' ? 'Engine' : val === 'override' ? 'Override' : 'Manual',
-    image: val === 'engine' ? engineIcon : val === 'override' ? overrideIcon : manualIcon,
-  }))
-})
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, clear: clearFilters } = useGridSearch(processedHistory, [
+  { field: 'ruleId', header: 'Rule' },
+  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result) ?? '' },
+  { field: '_engineDisplay', header: 'Engine', filterValues: r => capitalize(r._engineDisplay) },
+  { field: 'detail', header: 'Detail' },
+  { field: 'comment', header: 'Comment' },
+  { field: 'statusText', header: 'Status Text', searchText: r => r.status?.text },
+  { field: '_statusLabel', header: 'Status', filterValues: r => capitalize(r._statusLabel) },
+  { field: 'username', header: 'User', filterValues: r => r.username },
+])
 
-const statusOptions = computed(() => {
-  const statuses = new Set((fullReviewHistory.value || []).map(item => item.status?.label).filter(Boolean))
-  return Array.from(statuses).map(val => ({
-    value: val,
-    label: val,
-  })).sort((a, b) => a.label.localeCompare(b.label))
-})
+watch([() => ruleId.value, () => assetId.value], clearFilters)
 
 // Single-line rows at a fixed height, so cells centre vertically.
 const cellOptions = { verticalAlign: 'middle' }
 const columnPt = {
   center: gridColumnPt('center', cellOptions),
   left: gridColumnPt('left', cellOptions),
-  icon: iconHeaderPt(gridColumnPt('center', cellOptions)),
 }
 
 const ROW_HEIGHT = rowHeightPx('control')
@@ -151,41 +135,6 @@ const longTextPopover = ref(null)
 const showLongText = (event, label, text) => {
   longTextPopover.value?.show(event, label, text)
 }
-
-const filters = ref({
-  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  ruleId: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  detail: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  comment: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  statusText: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  username: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  result: { value: null, matchMode: FilterMatchMode.IN },
-  _engineDisplay: { value: null, matchMode: FilterMatchMode.IN },
-  _statusLabel: { value: null, matchMode: FilterMatchMode.IN },
-})
-
-const route = useRoute()
-
-const resetFilters = () => {
-  filters.value.global.value = null
-  filters.value.ruleId.value = null
-  filters.value.detail.value = null
-  filters.value.comment.value = null
-  filters.value.statusText.value = null
-  filters.value.username.value = null
-  filters.value.result.value = null
-  filters.value._engineDisplay.value = null
-  filters.value._statusLabel.value = null
-}
-
-watch([
-  () => route.params.collectionId,
-  () => route.params.assetId,
-  () => route.params.benchmarkId,
-  () => route.params.revisionStr,
-], () => {
-  resetFilters()
-})
 
 const historyStats = computed(() => {
   const reviews = fullReviewHistory.value || []
@@ -242,10 +191,12 @@ const historyStats = computed(() => {
 
 <template>
   <div class="history-wrapper">
+    <Teleport v-if="active && tabBarEnd" :to="tabBarEnd">
+      <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+    </Teleport>
     <DataTable
       ref="dataTableRef"
-      v-model:filters="filters"
-      :value="processedHistory"
+      :value="filteredRows"
       :loading="isInternalHistoryLoading"
       data-key="touchTs"
       export-filename="History"
@@ -264,13 +215,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="ruleId" export-header="Rule" :style="{ width: '12rem' }" :pt="columnPt.left">
-        <template #header>
-          <div class="column-header-with-filter">
-            Rule
-            <ColumnSearchFilter v-model="filters.ruleId.value" placeholder="Search rule..." />
-          </div>
-        </template>
+      <Column field="ruleId" header="Rule" :style="{ width: '12rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             class="cell-text--mono cell-text--ellipsis"
@@ -280,33 +225,20 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="result" export-header="Result" :style="{ width: '6.25rem' }" :pt="columnPt.center">
-        <template #header>
-          <div class="column-header-with-filter">
-            Result
-            <ColumnFilter v-model="filters.result.value" :options="resultOptions">
-              <template #option="{ option }">
-                <ResultBadge :status="option.label" />
-              </template>
-            </ColumnFilter>
-          </div>
-        </template>
+      <Column field="result" header="Result" :style="{ width: '6.25rem' }" :pt="columnPt.center">
         <template #body="{ data }">
           <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
         </template>
       </Column>
 
-      <Column field="resultEngine" export-header="Engine" filter-field="_engineDisplay" :style="{ width: '4.5rem' }" :pt="columnPt.center">
+      <Column field="resultEngine" export-header="Engine" :style="{ width: '4.5rem' }" :pt="columnPt.center">
         <template #header>
-          <div class="column-header-with-filter">
-            <img
-              src="../../../assets/bot2.svg"
-              alt="Engine"
-              class="engine-header-icon"
-              title="Result engine"
-            >
-            <ColumnFilter v-model="filters._engineDisplay.value" :options="engineOptions" />
-          </div>
+          <img
+            src="../../../assets/bot2.svg"
+            alt="Engine"
+            class="engine-header-icon"
+            title="Result engine"
+          >
         </template>
         <template #body="{ data }">
           <img
@@ -333,13 +265,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="detail" export-header="Detail" :style="{ width: '10.25rem' }" :pt="columnPt.left">
-        <template #header>
-          <div class="column-header-with-filter">
-            Detail
-            <ColumnSearchFilter v-model="filters.detail.value" placeholder="Search detail..." />
-          </div>
-        </template>
+      <Column field="detail" header="Detail" :style="{ width: '10.25rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.detail"
@@ -353,13 +279,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="comment" export-header="Comment" :style="{ width: '10.25rem' }" :pt="columnPt.left">
-        <template #header>
-          <div class="column-header-with-filter">
-            Comment
-            <ColumnSearchFilter v-model="filters.comment.value" placeholder="Search comment..." />
-          </div>
-        </template>
+      <Column field="comment" header="Comment" :style="{ width: '10.25rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.comment"
@@ -373,13 +293,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="statusText" export-header="Status Text" :style="{ width: '9rem' }" :pt="columnPt.left">
-        <template #header>
-          <div class="column-header-with-filter">
-            Status Text
-            <ColumnSearchFilter v-model="filters.statusText.value" placeholder="Search status text..." />
-          </div>
-        </template>
+      <Column field="statusText" header="Status Text" :style="{ width: '9rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.status?.text"
@@ -393,29 +307,13 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="_statusLabel" filter-field="_statusLabel" export-header="Status" :style="{ width: '6.25rem' }" :pt="columnPt.center">
-        <template #header>
-          <div class="column-header-with-filter">
-            Status
-            <ColumnFilter v-model="filters._statusLabel.value" :options="statusOptions">
-              <template #option="{ option }">
-                <StatusBadge :status="option.value" />
-              </template>
-            </ColumnFilter>
-          </div>
-        </template>
+      <Column field="_statusLabel" header="Status" :style="{ width: '6.25rem' }" :pt="columnPt.center">
         <template #body="{ data }">
           <StatusBadge v-if="data.status?.label" :status="data.status.label" />
         </template>
       </Column>
 
-      <Column field="username" export-header="User" :style="{ width: '7.25rem' }" :pt="columnPt.left">
-        <template #header>
-          <div class="column-header-with-filter">
-            User
-            <ColumnSearchFilter v-model="filters.username.value" placeholder="Search user..." />
-          </div>
-        </template>
+      <Column field="username" header="User" :style="{ width: '7.25rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.username"
@@ -442,7 +340,7 @@ const historyStats = computed(() => {
 
       <template #empty>
         <div class="history-table__empty">
-          No review history found for this rule.
+          {{ isFiltered && processedHistory.length ? 'No history matches the filters.' : 'No review history found for this rule.' }}
         </div>
       </template>
 
@@ -452,6 +350,7 @@ const historyStats = computed(() => {
           :show-refresh="false"
           :show-export="true"
           :total-count="historyStats.total"
+          :filtered-count="isFiltered ? filteredRows.length : null"
         >
           <template #right-extra>
             <ResultBadge status="O" :count="historyStats.results.fail" />
@@ -510,17 +409,6 @@ const historyStats = computed(() => {
 :deep(.p-datatable-thead > tr > th:last-child) {
   border-right: none !important;
 }
-
-/* Fills the header content so its justify-content (set per column by the
-   table pass-through) decides where the caption and filter sit. */
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  justify-content: inherit;
-  gap: 0.1rem;
-  flex: 1 1 auto;
-}
-
 
 .cell-text--mono {
   color: var(--color-text-primary);

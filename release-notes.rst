@@ -1,3 +1,20 @@
+1.6.17
+-------
+
+Changes:
+
+  - (API) Raised the minimum supported MySQL release to 8.4.0. The API no longer starts when connected to a MySQL release older than 8.4.0, and the startup warning for untested 8.0.x releases was removed.
+  - (API) Named placeholders are now enabled per query instead of on the pooled connection, following the ``mysql2`` update in which each pooled connection has its own configuration.
+  - (API/UI) ``STIGMAN_JWT_SCOPE_CLAIM`` now accepts a comma-separated list of claim names, such as ``scp,roles``. The scopes found in each named claim are combined, and each claim may hold either a space-separated string or an array of strings. This allows one deployment to accept both interactive user tokens and service account tokens from providers that convey application permissions in a different claim, such as Azure Entra ID tokens issued through the client credentials flow.
+  - (UI) When an access token yields no scopes, the client error now lists each checked claim and describes the value found, instead of reporting only the first claim name.
+  - (Tests) Stabilized the job and log stream integration tests, which depend on asynchronous server behavior, and raised the default test timeout.
+  - (Tests) Added unit tests for scope claim parsing and state tests for token validation with multiple scope claims.
+  - (Docs) Updated the MySQL requirements to reflect the 8.4.0 minimum.
+  - (Docs) Documented the scope claim list
+  - (Dependencies) Updated ``mysql2`` to v3.24.3, ``multer`` to v2.3.0, ``js-yaml`` to v4.3.2, and ``qs`` to v6.16.0. Various security and maintenance updates.
+
+Note: MySQL 8.4.0 or later is now required. The API will not start when provided with a MySQL release older than 8.4.0. The MySQL 8.0.x series has reached end of life and is no longer supported; update to the latest MySQL 8.4.x release before upgrading to this version of STIG Manager.
+
 1.6.16
 -------
 

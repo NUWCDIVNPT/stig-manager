@@ -2,11 +2,13 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { ref } from 'vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { formatDateTimeString } from '../../../shared/lib.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
-defineProps({
+const props = defineProps({
   errors: { type: Array, required: true },
   dupedRows: { type: Array, required: true },
   hasDuplicates: { type: Boolean, required: true },
@@ -14,6 +16,29 @@ defineProps({
 })
 
 const ROW_HEIGHT = rowHeightPx('spacious')
+
+const {
+  filters: errorFilters,
+  filteredRows: filteredErrors,
+  isFiltered: errorsFiltered,
+  filterColumns: errorFilterColumns,
+  valueOptions: errorValueOptions,
+} = useGridSearch(() => props.errors, [
+  { field: 'file', header: 'File', filterValues: r => r.file?.name ?? '' },
+  { field: 'error', header: 'Error / Warning' },
+])
+
+const {
+  filters: dupeFilters,
+  filteredRows: filteredDupes,
+  isFiltered: dupesFiltered,
+  filterColumns: dupeFilterColumns,
+  valueOptions: dupeValueOptions,
+} = useGridSearch(() => props.dupedRows, [
+  { field: 'asset', header: 'Asset', searchText: r => r.taskAsset.assetProps.name },
+  { field: 'stig', header: 'STIG', filterValues: r => r.checklist.benchmarkId },
+  { field: 'file', header: 'File', searchText: r => r.checklist.sourceRef.name },
+])
 
 const errorsRef = ref()
 const dupesRef = ref()
@@ -26,14 +51,15 @@ const dupesRef = ref()
     </div>
 
     <div v-if="errors.length > 0" class="er-section">
-      <p class="section-title">
-        Errors and warnings ({{ errors.length }})
-      </p>
+      <div class="section-title">
+        <span>Errors and warnings ({{ errors.length }})</span>
+        <GridFilterButton v-model="errorFilters" :columns="errorFilterColumns" :value-options="errorValueOptions" />
+      </div>
       <div class="table-wrapper">
         <div class="table-flex">
           <DataTable
             ref="errorsRef"
-            :value="errors"
+            :value="filteredErrors"
             export-filename="import-errors"
             scrollable
             scroll-height="flex"
@@ -41,6 +67,9 @@ const dupesRef = ref()
             striped-rows
             :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
           >
+            <template #empty>
+              No errors or warnings match the filters.
+            </template>
             <Column header="File" field="file.name" sortable :sort-field="r => r.file?.name ?? ''">
               <template #body="{ data }">
                 {{ data.file?.name ?? '(unknown)' }}
@@ -51,6 +80,7 @@ const dupesRef = ref()
         </div>
         <StatusFooter
           :total-count="errors.length"
+          :filtered-count="errorsFiltered ? filteredErrors.length : null"
           :show-refresh="false"
           :show-export="true"
           :dt="errorsRef"
@@ -61,9 +91,10 @@ const dupesRef = ref()
     </div>
 
     <div v-if="hasDuplicates" class="er-section">
-      <p class="section-title">
-        Duplicates excluded
-      </p>
+      <div class="section-title">
+        <span>Duplicates excluded</span>
+        <GridFilterButton v-model="dupeFilters" :columns="dupeFilterColumns" :value-options="dupeValueOptions" />
+      </div>
       <p class="section-desc">
         Multiple result files were found for some Asset/STIG pairs. The rows below will NOT be imported because a more recently modified file was used for the same Asset/STIG.
       </p>
@@ -71,7 +102,7 @@ const dupesRef = ref()
         <div class="table-flex">
           <DataTable
             ref="dupesRef"
-            :value="dupedRows"
+            :value="filteredDupes"
             export-filename="import-duplicates"
             scrollable
             scroll-height="flex"
@@ -79,6 +110,9 @@ const dupesRef = ref()
             striped-rows
             :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
           >
+            <template #empty>
+              No duplicates match the filters.
+            </template>
             <Column header="Asset" field="taskAsset.assetProps.name" sortable :sort-field="r => r.taskAsset.assetProps.name">
               <template #body="{ data }">
                 {{ data.taskAsset.assetProps.name }}
@@ -103,6 +137,7 @@ const dupesRef = ref()
         </div>
         <StatusFooter
           :total-count="dupedRows.length"
+          :filtered-count="dupesFiltered ? filteredDupes.length : null"
           :show-refresh="false"
           :show-export="true"
           :dt="dupesRef"
@@ -141,6 +176,11 @@ const dupesRef = ref()
 }
 
 .section-title {
+  --checklist-control-height: 1.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   font-weight: 600;
   margin: 0;
   flex-shrink: 0;

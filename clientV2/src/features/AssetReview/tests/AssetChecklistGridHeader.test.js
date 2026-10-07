@@ -21,7 +21,7 @@ vi.mock('primevue/tieredmenu', () => ({
     template: `
       <div>
         <div v-for="group in model" :key="group.label">
-          <button v-for="item in group.items" :key="item.label" @click="item.command && item.command()">
+          <button v-for="item in group.items" :key="item.label" :data-icon="item.icon" @click="item.command && item.command()">
             {{ item.label }}
           </button>
         </div>
@@ -53,7 +53,7 @@ describe('checklistGridHeader.vue', () => {
     searchFilter: '',
     toggleableColumns: [{ field: 'col1', header: 'Col 1' }],
     selectedColumns: [{ field: 'col1', header: 'Col 1' }],
-    displayMode: 'groupRule',
+    activePreset: 'groupRule',
   }
 
   function createWrapper(props = {}) {
@@ -77,13 +77,44 @@ describe('checklistGridHeader.vue', () => {
       expect(screen.getByText('V1R2')).toBeInTheDocument()
     })
 
-    it('renders asset info when provided', () => {
-      createWrapper({
-        asset: { name: 'Test Asset', assetId: 'A123', ip: '10.0.0.1' },
-      })
+    it('renders the asset name in the title row', () => {
+      createWrapper({ asset: { name: 'Test Asset', assetId: 'A123' } })
       expect(screen.getByText('Test Asset')).toBeInTheDocument()
-      expect(screen.getByText('ID: A123')).toBeInTheDocument()
-      expect(screen.getByText('IP: 10.0.0.1')).toBeInTheDocument()
+    })
+
+    it('shows asset properties in the details popover', async () => {
+      createWrapper({
+        asset: {
+          name: 'Test Asset',
+          assetId: 'A123',
+          ip: '10.0.0.1',
+          fqdn: 'host.example.com',
+          mac: 'AB-12-AB-12-AB-12',
+          noncomputing: true,
+          description: 'Lab box',
+        },
+      })
+      expect(screen.queryByText('host.example.com')).not.toBeInTheDocument()
+      await fireEvent.click(screen.getByRole('button', { name: /Test Asset/ }))
+      for (const [label, value] of [['ID', 'A123'], ['IP', '10.0.0.1'], ['FQDN', 'host.example.com'], ['MAC', 'AB-12-AB-12-AB-12'], ['Non-computing', 'Yes'], ['Description', 'Lab box']]) {
+        expect(screen.getByText(label)).toBeInTheDocument()
+        expect(screen.getByText(value)).toBeInTheDocument()
+      }
+    })
+
+    it('leaves metadata out of the details popover', async () => {
+      createWrapper({ asset: { name: 'Test Asset', assetId: 'A123', metadata: { owner: 'ops' } } })
+      await fireEvent.click(screen.getByRole('button', { name: /Test Asset/ }))
+      expect(screen.queryByText('owner')).not.toBeInTheDocument()
+    })
+
+    it('skips empty asset properties in the details popover', async () => {
+      createWrapper({ asset: { name: 'Test Asset', assetId: 'A123', ip: '', fqdn: null, mac: '' } })
+      await fireEvent.click(screen.getByRole('button', { name: /Test Asset/ }))
+      expect(screen.getByText('A123')).toBeInTheDocument()
+      for (const label of ['IP', 'FQDN', 'MAC', 'Non-computing', 'Description']) {
+        expect(screen.queryByText(label)).not.toBeInTheDocument()
+      }
     })
 
     it('renders Writable access mode', () => {
@@ -134,23 +165,31 @@ describe('checklistGridHeader.vue', () => {
     })
   })
 
-  describe('checklist Menu (Display Mode)', () => {
-    it('updates displayMode when menu items are clicked', async () => {
+  describe('checklist Menu (Display presets)', () => {
+    it('emits apply-preset when menu items are clicked', async () => {
       const { emitted } = createWrapper()
 
       const menuBtn = screen.getByRole('button', { name: /Checklist/i })
       await fireEvent.click(menuBtn)
 
-      const groupGroupItem = screen.getByText('Group ID and Group Title')
-      await fireEvent.click(groupGroupItem)
+      await fireEvent.click(screen.getByText('Group ID and Group Title'))
+      expect(emitted()['apply-preset'][0]).toEqual(['groupGroup'])
 
-      expect(emitted()['update:displayMode']).toBeTruthy()
-      expect(emitted()['update:displayMode'][0]).toEqual(['groupGroup'])
+      await fireEvent.click(screen.getByText('Rule ID and Rule Title'))
+      expect(emitted()['apply-preset'][1]).toEqual(['ruleRule'])
+    })
 
-      const ruleRuleItem = screen.getByText('Rule ID and Rule Title')
-      await fireEvent.click(ruleRuleItem)
+    it('fills the circle only for the active preset', () => {
+      createWrapper({ activePreset: 'ruleRule' })
+      expect(screen.getByText('Rule ID and Rule Title').dataset.icon).toBe('pi pi-circle-fill')
+      expect(screen.getByText('Group ID and Rule Title').dataset.icon).toBe('pi pi-circle')
+    })
 
-      expect(emitted()['update:displayMode'][1]).toEqual(['ruleRule'])
+    it('fills no circle when the columns match no preset', () => {
+      createWrapper({ activePreset: null })
+      for (const label of ['Group ID and Rule Title', 'Group ID and Group Title', 'Rule ID and Rule Title']) {
+        expect(screen.getByText(label).dataset.icon).toBe('pi pi-circle')
+      }
     })
   })
 

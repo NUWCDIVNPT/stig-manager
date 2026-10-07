@@ -974,6 +974,12 @@ paths:
       tags:
         - Collection
       summary: Return the Checklist for the supplied Collection and STIG
+      description: |
+        Returns each Rule of the STIG revision with Review counts and timestamps aggregated across the Collection's
+        Assets that are assigned the STIG. The optional label parameters restrict the aggregation to the matching
+        Assets; multiple label parameters are OR'd and an Asset that matches more than one is counted once. If no
+        Assets match, including when a labelId or labelName does not exist in the Collection, the response is an
+        empty array.
       operationId: getChecklistByCollectionStig
       parameters:
         - $ref: '#/components/parameters/LabelIdQuery'

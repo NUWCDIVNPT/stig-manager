@@ -7,7 +7,6 @@ import RuleInfo from '../../../components/common/RuleInfo.vue'
 import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
-import { useDebouncedRef } from '../../../shared/composables/useDebouncedRef.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 import { defaultFieldSettings } from '../../../shared/lib/reviewFormUtils.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
@@ -179,8 +178,6 @@ function mergeReview(review) {
 function onGridRefresh() {
   loadChecklist()
 }
-
-const searchFilter = useDebouncedRef('', 220)
 </script>
 
 <template>
@@ -210,7 +207,6 @@ const searchFilter = useDebouncedRef('', 220)
       >
         <SplitterPanel :size="75" :min-size="40">
           <AssetChecklistGrid
-            :search-filter="searchFilter"
             :grid-data="gridData"
             :is-checklist-loading="isChecklistLoading"
             :selected-rule-id="selectedRuleId"
@@ -223,7 +219,6 @@ const searchFilter = useDebouncedRef('', 220)
             :can-accept="canAccept"
             :collection-id="collectionId"
             :asset-id="assetId"
-            @update:search-filter="searchFilter = $event"
             @review-saved="mergeReview"
             @review-loaded="mergeReview"
             @refresh="onGridRefresh"

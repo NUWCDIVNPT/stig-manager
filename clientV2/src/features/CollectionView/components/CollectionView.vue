@@ -8,16 +8,17 @@ import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import SidebarFilterIndicator from '../../../components/common/SidebarFilterIndicator.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { buildLabelFilterParams, parseLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
 import CollectionImportResults from '../../CollectionMetrics/components/CollectionImportResults.vue'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import Findings from '../../Findings/components/Findings.vue'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
-import { buildLabelFilterParams, parseLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollection } from '../api/collectionApi.js'
 import CollectionAssetsTab from './CollectionAssetsTab.vue'
 import CollectionLabelsTab from './CollectionLabelsTab.vue'
@@ -73,6 +74,11 @@ const selectedLabelNames = computed({
     const { labelName, labelMatch, ...rest } = route.query
     router.replace({ query: { ...rest, ...buildLabelFilterParams(names) } })
   },
+})
+// Flags the hidden filter on the collapsed dashboard rail.
+const labelFilterHint = computed(() => {
+  const n = selectedLabelNames.value.length
+  return n ? `Filtering by ${n} label${n === 1 ? '' : 's'}` : ''
 })
 
 // Track Recent Views on data load, route change and label filter change
@@ -237,6 +243,7 @@ function toggleDashboardSidebar() {
           >
             <i :class="dashboardCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'" />
           </button>
+          <SidebarFilterIndicator v-if="dashboardCollapsed && labelFilterHint" :hint="labelFilterHint" @expand="toggleDashboardSidebar" />
           <div v-if="dashboardCollapsed" class="sidebar-dots">
             <span class="dot dot--unassessed" title="Unassessed" />
             <span class="dot dot--assessed" title="Assessed" />

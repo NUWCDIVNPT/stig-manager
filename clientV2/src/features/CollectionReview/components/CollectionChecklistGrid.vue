@@ -1,6 +1,9 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
+import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
+import { catLabel } from '../../../shared/lib/exportCells.js'
 import CollectionChecklistGridHeader from './CollectionChecklistGridHeader.vue'
 import CollectionChecklistGridTable from './CollectionChecklistGridTable.vue'
 
@@ -37,10 +40,21 @@ const emit = defineEmits(['select-rule', 'refresh'])
 // Label filter selection (label names); `null` entries mean "assets with no label".
 const selectedLabelNames = defineModel('selectedLabelNames', { type: Array, default: () => [] })
 
-const searchFilter = ref('')
+const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
+  { field: 'groupId', header: 'Group' },
+  { field: 'groupTitle', header: 'Group Title' },
+  { field: 'version', header: 'STIG Id' },
+  { field: 'ruleId', header: 'Rule Id' },
+  { field: 'ruleTitle', header: 'Rule Title' },
+])
 
 const TOGGLEABLE_COLUMNS = [
-  { field: 'version', header: 'STIG Id', hidden: true },
+  { field: 'groupId', header: 'Group' },
+  { field: 'groupTitle', header: 'Group Title', defaultHidden: true },
+  { field: 'version', header: 'STIG Id', defaultHidden: true },
+  { field: 'ruleId', header: 'Rule Id', defaultHidden: true },
+  { field: 'ruleTitle', header: 'Rule Title' },
   { field: 'fail', header: 'O' },
   { field: 'pass', header: 'NF' },
   { field: 'notapplicable', header: 'NA' },
@@ -48,27 +62,22 @@ const TOGGLEABLE_COLUMNS = [
   { field: 'submitted', header: 'Submitted' },
   { field: 'rejected', header: 'Rejected' },
   { field: 'accepted', header: 'Accepted' },
-  { field: 'oldest', header: 'Oldest', hidden: true },
-  { field: 'newest', header: 'Newest', hidden: true },
+  { field: 'oldest', header: 'Oldest', defaultHidden: true },
+  { field: 'newest', header: 'Newest', defaultHidden: true },
 ]
 
-const DISPLAY_MODE_FIELDS = {
-  groupRule: ['groupId', 'ruleTitle'],
-  groupGroup: ['groupId', 'groupTitle'],
-  ruleRule: ['ruleId', 'ruleTitle'],
+// Group/Rule Display menu presets; each sets only these four columns
+const DISPLAY_PRESETS = {
+  groupRule: { groupId: true, ruleId: false, ruleTitle: true, groupTitle: false },
+  groupGroup: { groupId: true, ruleId: false, ruleTitle: false, groupTitle: true },
+  ruleRule: { groupId: false, ruleId: true, ruleTitle: true, groupTitle: false },
 }
 
-// Hidden by default; the rule title gets the room instead.
-const selectedColumns = ref(TOGGLEABLE_COLUMNS.filter(c => !c.hidden))
-const displayMode = ref('groupRule')
+const { selectedColumns, visibleFields, setShown } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'collectionChecklistGrid.columns')
 
-const visibleFields = computed(() => {
-  const fields = new Set(selectedColumns.value.map(c => c.field))
-  for (const f of DISPLAY_MODE_FIELDS[displayMode.value]) {
-    fields.add(f)
-  }
-  return fields
-})
+const activePreset = computed(() => Object.keys(DISPLAY_PRESETS).find(key =>
+  Object.entries(DISPLAY_PRESETS[key]).every(([field, shown]) => visibleFields.value.has(field) === shown),
+) ?? null)
 
 const selectedRow = computed(() => {
   if (!props.selectedRuleId) {
@@ -94,16 +103,22 @@ const { itemSize, gridStyle } = useGridDensity('collection-checklist')
     <CollectionChecklistGridHeader
       v-model:search-filter="searchFilter"
       v-model:selected-columns="selectedColumns"
-      v-model:display-mode="displayMode"
+      v-model:filters="gridFilters"
       v-model:selected-label-names="selectedLabelNames"
       :toggleable-columns="TOGGLEABLE_COLUMNS"
       :collection-id="collectionId"
+      :active-preset="activePreset"
+      :filter-columns="filterColumns"
+      :filter-value-options="valueOptions"
+      @apply-preset="key => setShown(DISPLAY_PRESETS[key])"
     />
     <CollectionChecklistGridTable
-      :grid-data="gridData"
+      :grid-data="filteredRows"
+      :total-count="gridData.length"
+      :is-filtered="isFiltered"
+      :highlight-term="highlightTerm"
       :is-loading="isLoading"
       :selected-row="selectedRow"
-      :search-filter="searchFilter"
       :asset-count="assetCount"
       :visible-fields="visibleFields"
       :item-size="itemSize"

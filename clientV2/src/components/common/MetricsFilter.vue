@@ -49,11 +49,14 @@ watch(() => props.collectionId, () => {
 const multiSelectPt = {
   root: { style: 'background-color: var(--color-background-light); border-color: var(--color-border-default)' },
   // flex on label: LabelsRow has no intrinsic width (contain: inline-size), so the label must grow to give it room
-  label: { style: 'padding: 6px 10px; font-size: var(--text-md); color: var(--color-text-primary); flex: 1 1 auto' },
+  label: { style: 'padding: 5px 10px; font-size: var(--text-md); color: var(--color-text-primary); flex: 1 1 auto' },
   labelContainer: { style: { display: 'flex', alignItems: 'center' } },
-  overlay: { style: { width: '235px' } },
-  listContainer: { style: { maxHeight: '300px' } },
-  header: { style: { padding: '0.5rem' } },
+  overlay: { style: { width: '250px' } },
+  listContainer: { style: { maxHeight: '270px' } },
+  list: { style: { padding: '0.25rem' } },
+  option: { style: { padding: '0.35rem 0.6rem', fontSize: 'var(--text-md)' } },
+  header: { style: { padding: '0.4rem 0.5rem' } },
+  pcFilter: { root: { style: { padding: '0.3rem 0.5rem', fontSize: 'var(--text-md)' } } },
 }
 
 const multiSelectRef = ref()
@@ -159,6 +162,11 @@ function applyFilters() {
   multiSelectRef.value?.hide?.()
 }
 
+function cancelFilters() {
+  syncDraftFromModel()
+  multiSelectRef.value?.hide?.()
+}
+
 function clearFilters() {
   draftValues.value = []
   emit('update:modelValue', [])
@@ -216,7 +224,10 @@ function formatLabelName(name) {
 
       <template #footer>
         <div class="panel-footer">
-          <button type="button" class="apply-btn" @click="applyFilters">
+          <button type="button" class="footer-btn" @click="cancelFilters">
+            <span>Cancel</span>
+          </button>
+          <button type="button" class="footer-btn footer-btn--primary" @click="applyFilters">
             <i class="pi pi-check" />
             <span>Apply</span>
           </button>
@@ -287,28 +298,33 @@ function formatLabelName(name) {
 }
 
 .panel-footer {
-  padding: 0.5rem;
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.4rem 0.5rem;
   border-top: 1px solid var(--color-border-default);
   background-color: var(--color-background-light);
 }
 
-.apply-btn {
-  width: 100%;
+.footer-btn {
+  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  padding: 0.45rem 0.75rem;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
   border: 1px solid var(--color-border-default);
-  border-radius: 6px;
+  border-radius: 5px;
   background: var(--color-bg-elevated);
   color: var(--color-text-primary);
   cursor: pointer;
   font-size: var(--text-md);
+}
+
+.footer-btn--primary {
   font-weight: 600;
 }
 
-.apply-btn:hover {
+.footer-btn:hover {
   background: var(--color-bg-hover-strong);
 }
 </style>

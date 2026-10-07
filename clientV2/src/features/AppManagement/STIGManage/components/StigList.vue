@@ -8,8 +8,12 @@ import shieldGreenCheck from '../../../../assets/shield-green-check.svg'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ClassificationBadge from '../../../../components/common/ClassificationBadge.vue'
-import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
+import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
+import GridSearch from '../../../../components/common/GridSearch.vue'
+import HighlightText from '../../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
+import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 
@@ -39,33 +43,32 @@ const selectedStigs = computed({
   set: value => emit('update:selection', value ?? []),
 })
 
-const benchmarkIdFilter = ref('')
-const titleFilter = ref('')
+// materialize collectionCount/earlierRevisions so those columns' fields
+// sort and export; rows become shallow copies, which dataKey-based
+// selection tolerates
+const rows = computed(() => props.stigs.map(s => ({
+  ...s,
+  collectionCount: s.collectionIds?.length ?? 0,
+  earlierRevisions: s.revisionStrs?.slice(1).join(', ') ?? '',
+})))
 
-const filteredData = computed(() => {
-  const idTerm = benchmarkIdFilter.value.trim().toLowerCase()
-  const titleTerm = titleFilter.value.trim().toLowerCase()
-  return props.stigs
-    .filter((s) => {
-      if (idTerm && !s.benchmarkId?.toLowerCase().includes(idTerm)) {
-        return false
-      }
-      if (titleTerm && !s.title?.toLowerCase().includes(titleTerm)) {
-        return false
-      }
-      return true
-    })
-    // materialize collectionCount/earlierRevisions so those columns' fields
-    // sort and export; rows become shallow copies, which dataKey-based
-    // selection tolerates
-    .map(s => ({
-      ...s,
-      collectionCount: s.collectionIds?.length ?? 0,
-      earlierRevisions: s.revisionStrs?.slice(1).join(', ') ?? '',
-    }))
-})
+const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility([
+  { field: 'benchmarkId', header: 'Benchmark ID', locked: true },
+  { field: 'title', header: 'Title' },
+  { field: 'status', header: 'Status' },
+  { field: 'lastRevisionStr', header: 'Latest Revision' },
+  { field: 'lastRevisionDate', header: 'Revision Date' },
+  { field: 'earlierRevisions', header: 'Earlier Revisions' },
+  { field: 'ruleCount', header: 'Rules' },
+  { field: 'collectionCount', header: 'Collections' },
+], 'adminStigs.columns')
 
-const filtersActive = computed(() => filteredData.value.length !== props.stigs.length)
+const { term: searchTerm, filteredRows, isFiltered, highlightTerm } = useGridSearch(rows, [
+  { field: 'benchmarkId', header: 'Benchmark ID' },
+  { field: 'title', header: 'Title' },
+  { field: 'status', header: 'Status' },
+  { field: 'lastRevisionStr', header: 'Latest Revision' },
+], { visibleFields, selection: selectedStigs, dataKey: 'benchmarkId' })
 
 const tablePt = {
   ...compactTablePt(),
@@ -197,13 +200,16 @@ function onRemoveAll() {
         <img :src="librarySvg" class="toolbar-svg-icon" alt="">
         Open Library
       </ActionButton>
+      <div class="toolbar-spacer" />
+      <GridSearch v-model="searchTerm" class="list-search" label="Search STIGs" placeholder="Search STIGs..." />
+      <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
     </ActionToolbar>
 
     <div class="table-container">
       <DataTable
         ref="dataTableRef"
         v-model:selection="selectedStigs"
-        :value="filteredData"
+        :value="filteredRows"
         selection-mode="multiple"
         :meta-key-selection="false"
         data-key="benchmarkId"
@@ -221,49 +227,39 @@ function onRemoveAll() {
         :pt="tablePt"
       >
         <template #empty>
-          No STIGs found.
+          {{ isFiltered && stigs.length ? 'No STIGs match the search.' : 'No STIGs found.' }}
         </template>
 
         <Column selection-mode="multiple" style="width: 1%;" />
 
         <Column
-          field="benchmarkId" export-header="Benchmark ID"
+          field="benchmarkId" header="Benchmark ID"
           sortable
           :pt="borderPt"
           style="width: 17%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"
         >
-          <template #header>
-            <div class="column-header-with-filter">
-              Benchmark ID
-              <ColumnSearchFilter v-model="benchmarkIdFilter" placeholder="Search ID..." />
-            </div>
-          </template>
           <template #body="{ data }">
             <div class="benchmark-id-cell">
-              <span :title="data.benchmarkId">{{ data.benchmarkId }}</span>
+              <span :title="data.benchmarkId"><HighlightText :text="data.benchmarkId" :term="highlightTerm('benchmarkId')" /></span>
               <ClassificationBadge v-if="data.marking" :level="data.marking" />
             </div>
           </template>
         </Column>
 
         <Column
-          field="title" export-header="Title"
+          v-if="visibleFields.has('title')"
+          field="title" header="Title"
           sortable
           :pt="borderPt"
           style="width: 32%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"
         >
-          <template #header>
-            <div class="column-header-with-filter">
-              Title
-              <ColumnSearchFilter v-model="titleFilter" placeholder="Search title..." />
-            </div>
-          </template>
           <template #body="{ data }">
-            <span :title="data.title">{{ data.title || '—' }}</span>
+            <span :title="data.title"><HighlightText :text="data.title || '—'" :term="highlightTerm('title')" /></span>
           </template>
         </Column>
 
         <Column
+          v-if="visibleFields.has('status')"
           field="status" export-header="Status"
           sortable
           :pt="centerBorderPt"
@@ -275,11 +271,12 @@ function onRemoveAll() {
             </span>
           </template>
           <template #body="{ data }">
-            <span :class="{ 'dim-value': !data.status }">{{ data.status || '—' }}</span>
+            <span :class="{ 'dim-value': !data.status }"><HighlightText :text="data.status || '—'" :term="highlightTerm('status')" /></span>
           </template>
         </Column>
 
         <Column
+          v-if="visibleFields.has('lastRevisionStr')"
           field="lastRevisionStr" export-header="Latest Revision"
           sortable
           :pt="centerWrappedBorderPt"
@@ -291,11 +288,12 @@ function onRemoveAll() {
             </span>
           </template>
           <template #body="{ data }">
-            {{ data.lastRevisionStr || '—' }}
+            <HighlightText :text="data.lastRevisionStr || '—'" :term="highlightTerm('lastRevisionStr')" />
           </template>
         </Column>
 
         <Column
+          v-if="visibleFields.has('lastRevisionDate')"
           field="lastRevisionDate" export-header="Revision Date"
           sortable
           :pt="centerWrappedBorderPt"
@@ -312,6 +310,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
+          v-if="visibleFields.has('earlierRevisions')"
           field="earlierRevisions" export-header="Earlier Revisions"
           sortable
           :pt="centerWrappedBorderPt"
@@ -330,6 +329,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
+          v-if="visibleFields.has('ruleCount')"
           field="ruleCount" export-header="Rules"
           sortable
           :pt="centerBorderPt"
@@ -346,6 +346,7 @@ function onRemoveAll() {
         </Column>
 
         <Column
+          v-if="visibleFields.has('collectionCount')"
           field="collectionCount" export-header="Collections"
           sortable
           :pt="centerBorderPt"
@@ -368,7 +369,7 @@ function onRemoveAll() {
             :dt="dataTableRef"
             :refresh-loading="loading"
             :total-count="stigs.length"
-            :filtered-count="filtersActive ? filteredData.length : null"
+            :filtered-count="isFiltered ? filteredRows.length : null"
             total-label="STIGs"
             :total-icon-src="shieldGreenCheck"
             @refresh="emit('refresh')"
@@ -381,6 +382,7 @@ function onRemoveAll() {
 
 <style scoped>
 .stig-list {
+  --checklist-control-height: 2rem;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -406,10 +408,9 @@ function onRemoveAll() {
   flex-direction: column;
 }
 
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+.list-search {
+  flex: 0 1 18rem;
+  min-width: 10rem;
 }
 
 .benchmark-id-cell {

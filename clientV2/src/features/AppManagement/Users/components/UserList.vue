@@ -4,9 +4,13 @@ import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
-import ColumnFilter from '../../../../components/common/ColumnFilter.vue'
-import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
+import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
+import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../../components/common/GridSearch.vue'
+import HighlightText from '../../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
+import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { formatDateTime, formatLastAccess, sortedGroupNames, statusDetail } from '../lib/userDisplay.js'
 
@@ -43,16 +47,6 @@ const selectedUser = computed({
   set: value => value && emit('update:selection', value),
 })
 
-const usernameFilter = ref('')
-const nameFilter = ref('')
-// Multi-select status filter; empty or both-selected shows everyone.
-const statusFilter = ref([])
-
-const statusOptions = [
-  { label: 'Available', value: 'available' },
-  { label: 'Unavailable', value: 'unavailable' },
-]
-
 // Rows carry derived flat fields (groupNames, grantCount) so sorting, display,
 // and DataTable CSV export all work from plain `field` bindings.
 const rows = computed(() => props.users.map(u => ({
@@ -61,25 +55,34 @@ const rows = computed(() => props.users.map(u => ({
   grantCount: u.statistics?.collectionGrantCount ?? 0,
 })))
 
-const filteredData = computed(() => {
-  const usernameTerm = usernameFilter.value.trim().toLowerCase()
-  const nameTerm = nameFilter.value.trim().toLowerCase()
-  const statuses = statusFilter.value
-  return rows.value.filter((u) => {
-    if (usernameTerm && !u.username?.toLowerCase().includes(usernameTerm)) {
-      return false
-    }
-    if (nameTerm && !u.displayName?.toLowerCase().includes(nameTerm)) {
-      return false
-    }
-    if (statuses?.length && !statuses.includes(u.status)) {
-      return false
-    }
-    return true
-  })
-})
+const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility([
+  { field: 'username', header: 'Username', locked: true },
+  { field: 'displayName', header: 'Name' },
+  { field: 'status', header: 'Status' },
+  { field: 'groupNames', header: 'Groups' },
+  { field: 'grantCount', header: 'Grants' },
+  { field: 'statistics.created', header: 'Added' },
+  { field: 'lastAccess', header: 'Last Access' },
+  { field: 'privileges.create_collection', header: 'Create Collection' },
+  { field: 'privileges.admin', header: 'Administrator' },
+  { field: 'userId', header: 'ID' },
+], 'adminUsers.columns')
 
-const filtersActive = computed(() => filteredData.value.length !== props.users.length)
+const {
+  term: searchTerm,
+  filters: gridFilters,
+  filteredRows,
+  isFiltered,
+  filterColumns,
+  valueOptions,
+  highlightTerm,
+} = useGridSearch(rows, [
+  { field: 'username', header: 'Username' },
+  { field: 'displayName', header: 'Name' },
+  { field: 'status', header: 'Status', filterValues: r => r.status },
+  { field: 'groupNames', header: 'Groups' },
+  { field: 'userId', header: 'ID' },
+], { visibleFields })
 
 // Single status toggle: its target is the opposite of the selected user's
 // current status. Self-protection: an admin can't set themselves unavailable.
@@ -136,13 +139,21 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
       >
         {{ statusToggle.label }}
       </ActionButton>
+      <div class="toolbar-spacer" />
+      <GridSearch v-model="searchTerm" class="list-search" label="Search users" placeholder="Search users..." />
+      <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions">
+        <template #option="{ option }">
+          <span class="status-pill" :class="option.value">{{ option.name }}</span>
+        </template>
+      </GridFilterButton>
+      <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
     </ActionToolbar>
 
     <div class="table-container">
       <DataTable
         ref="dataTableRef"
         v-model:selection="selectedUser"
-        :value="filteredData"
+        :value="filteredRows"
         selection-mode="single"
         data-key="userId"
         :loading="loading"
@@ -158,65 +169,50 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
         :pt="tablePt"
       >
         <template #empty>
-          No users found.
+          {{ isFiltered && users.length ? 'No users match the search.' : 'No users found.' }}
         </template>
 
-        <Column field="username" export-header="Username" sortable :pt="borderPt" style="width: 15%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
-          <template #header>
-            <div class="column-header-with-filter">
-              Username
-              <ColumnSearchFilter v-model="usernameFilter" placeholder="Search username..." />
-            </div>
-          </template>
-        </Column>
-
-        <Column field="displayName" export-header="Name" sortable :pt="borderPt" style="width: 14%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
-          <template #header>
-            <div class="column-header-with-filter">
-              Name
-              <ColumnSearchFilter v-model="nameFilter" placeholder="Search name..." />
-            </div>
-          </template>
+        <Column field="username" header="Username" sortable :pt="borderPt" style="width: 15%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #body="{ data }">
-            {{ data.displayName || '-' }}
+            <HighlightText :text="data.username" :term="highlightTerm('username')" />
           </template>
         </Column>
 
-        <Column field="status" export-header="Status" sortable class="center-header" :pt="borderPt" style="width: 9%; text-align: center;">
-          <template #header>
-            <div class="column-header-with-filter" style="justify-content: center; width: 100%;">
-              Status
-              <ColumnFilter v-model="statusFilter" :options="statusOptions" />
-            </div>
+        <Column v-if="visibleFields.has('displayName')" field="displayName" header="Name" sortable :pt="borderPt" style="width: 14%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+          <template #body="{ data }">
+            <HighlightText :text="data.displayName || '-'" :term="highlightTerm('displayName')" />
           </template>
+        </Column>
+
+        <Column v-if="visibleFields.has('status')" field="status" header="Status" sortable class="center-header" :pt="borderPt" style="width: 9%; text-align: center;">
           <template #body="{ data }">
             <span class="status-pill" :class="data.status" :title="statusDetail(data)">
-              {{ data.status }}
+              <HighlightText :text="data.status" :term="highlightTerm('status')" />
             </span>
           </template>
         </Column>
 
-        <Column field="groupNames" header="Groups" :pt="borderPt" style="width: 15%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+        <Column v-if="visibleFields.has('groupNames')" field="groupNames" header="Groups" :pt="borderPt" style="width: 15%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #body="{ data }">
-            <span :title="data.groupNames">{{ data.groupNames || '-' }}</span>
+            <span :title="data.groupNames"><HighlightText :text="data.groupNames || '-'" :term="highlightTerm('groupNames')" /></span>
           </template>
         </Column>
 
-        <Column field="grantCount" header="Grants" sortable class="center-header" :pt="borderPt" style="width: 7%; text-align: center;" />
+        <Column v-if="visibleFields.has('grantCount')" field="grantCount" header="Grants" sortable class="center-header" :pt="borderPt" style="width: 7%; text-align: center;" />
 
-        <Column field="statistics.created" header="Added" sortable :pt="borderPt" style="width: 9%">
+        <Column v-if="visibleFields.has('statistics.created')" field="statistics.created" header="Added" sortable :pt="borderPt" style="width: 9%">
           <template #body="{ data }">
             {{ formatDateTime(data.statistics?.created) }}
           </template>
         </Column>
 
-        <Column field="lastAccess" header="Last Access" :export-value="exportLastAccess" sortable :pt="borderPt" style="width: 13%">
+        <Column v-if="visibleFields.has('lastAccess')" field="lastAccess" header="Last Access" :export-value="exportLastAccess" sortable :pt="borderPt" style="width: 13%">
           <template #body="{ data }">
             {{ formatLastAccess(data.lastAccess) }}
           </template>
         </Column>
 
-        <Column field="privileges.create_collection" export-header="Create Collection" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
+        <Column v-if="visibleFields.has('privileges.create_collection')" field="privileges.create_collection" export-header="Create Collection" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
           <template #header>
             <span style="display: inline-block; text-align: center; line-height: 1.1; white-space: normal;">
               Create Collection
@@ -227,7 +223,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column field="privileges.admin" export-header="Administrator" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
+        <Column v-if="visibleFields.has('privileges.admin')" field="privileges.admin" export-header="Administrator" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
           <template #header>
             <span style="display: inline-block; text-align: center; line-height: 1.1; white-space: normal;">
               Administrator
@@ -238,14 +234,18 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column field="userId" header="ID" sortable class="center-header" style="width: 5%; text-align: center;" />
+        <Column v-if="visibleFields.has('userId')" field="userId" header="ID" sortable class="center-header" style="width: 5%; text-align: center;">
+          <template #body="{ data }">
+            <HighlightText :text="data.userId" :term="highlightTerm('userId')" />
+          </template>
+        </Column>
 
         <template #footer>
           <StatusFooter
             :dt="dataTableRef"
             :refresh-loading="loading"
             :total-count="users.length"
-            :filtered-count="filtersActive ? filteredData.length : null"
+            :filtered-count="isFiltered ? filteredRows.length : null"
             total-label="users"
             total-icon="pi pi-users"
             @refresh="emit('refresh')"
@@ -258,6 +258,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 
 <style scoped>
 .user-list {
+  --checklist-control-height: 2rem;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -283,10 +284,9 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   flex-direction: column;
 }
 
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+.list-search {
+  flex: 0 1 18rem;
+  min-width: 10rem;
 }
 
 .status-pill {

@@ -1,6 +1,7 @@
 <script setup>
 import { watch } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { valuesFilter } from '../../../shared/lib/columnFilters.js'
 import { fetchMetaMetricsSummary } from '../../MetaCollectionView/api/metaApi.js'
 import { useCollectionCora } from '../composables/useCollectionCora.js'
 import { useCollectionProgress } from '../composables/useCollectionProgress.js'
@@ -8,6 +9,7 @@ import { useCollectionStats } from '../composables/useCollectionStats.js'
 import Cora from './Cora.vue'
 import FindingsStats from './FindingsStats.vue'
 import InventoryStats from './InventoryStats.vue'
+import MetaMetricsFilter from './MetaMetricsFilter.vue'
 import Progress from './Progress.vue'
 import ReviewAgesStats from './ReviewAgesStats.vue'
 
@@ -20,7 +22,13 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  collectionFilter: {
+    type: Object,
+    default: () => valuesFilter(),
+  },
 })
+
+const emit = defineEmits(['update:collectionFilter', 'update:selectedCollectionIds'])
 
 const fetchMetrics = () => {
   return fetchMetaMetricsSummary(
@@ -46,6 +54,13 @@ const { inventory, findings, ages } = useCollectionStats(metrics)
 
 <template>
   <div>
+    <div v-if="vertical" class="metrics-filter-row">
+      <MetaMetricsFilter
+        :model-value="collectionFilter"
+        @update:model-value="emit('update:collectionFilter', $event)"
+        @update:effective-collection-ids="emit('update:selectedCollectionIds', $event)"
+      />
+    </div>
     <div v-if="isLoading">
       Loading metrics...
     </div>
@@ -65,6 +80,10 @@ const { inventory, findings, ages } = useCollectionStats(metrics)
 </template>
 
 <style scoped>
+.metrics-filter-row {
+  padding: 12px 12px 0;
+}
+
 .metrics-container {
   display: flex;
   flex-wrap: wrap;

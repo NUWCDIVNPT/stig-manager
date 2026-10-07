@@ -4,9 +4,11 @@ import Dialog from 'primevue/dialog'
 import Menu from 'primevue/menu'
 import { computed, ref, watch } from 'vue'
 import targetSvg from '../../../../assets/target.svg'
+import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import { fetchGrantAcl, replaceGrantAcl } from '../../../../shared/api/grantsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
-import { aclRuleToPayload, getAclRuleKey, getAllowedAclAccessOptions, getDefaultAccessForRole, isDuplicateAclRule, normalizeAclRule } from '../../lib/aclRules.js'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
+import { accessLabel, aclRuleToPayload, getAclRuleKey, getAllowedAclAccessOptions, getDefaultAccessForRole, isDuplicateAclRule, normalizeAclRule, resourceSortKey, resourceTypes } from '../../lib/aclRules.js'
 import { getGrantDisplay } from '../../lib/grantsUsers.js'
 import AclRuleBuilder from './AclRuleBuilder.vue'
 import AclRulesTable from './AclRulesTable.vue'
@@ -81,6 +83,12 @@ function addRule(access) {
 
 const selectedRules = ref([])
 
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, clear: clearFilters } = useGridSearch(rules, [
+  { field: 'resource', header: 'Resource', searchText: resourceSortKey },
+  { field: 'resourceType', header: 'Resource type', filterValues: resourceTypes, multiple: true },
+  { field: 'access', header: 'Access', filterValues: r => accessLabel(r.access) },
+], { selection: selectedRules, dataKey: getAclRuleKey })
+
 function removeSelected() {
   if (!selectedRules.value.length) {
     return
@@ -103,6 +111,7 @@ watch([visible, () => props.grant?.grantId], async ([isOpen, grantId]) => {
     // role so the header shows a real value instead of "null" during the load.
     selectedRules.value = []
     rules.value = []
+    clearFilters()
     defaultAccess.value = getDefaultAccessForRole(props.grant?.roleId)
     const response = await executeLoad()
     if (response) {
@@ -189,12 +198,15 @@ async function onSave() {
 
       <!-- Rules table -->
       <div class="acl-col rules-col">
-        <h4 class="col-header">
-          ACL Rules, default access = {{ defaultAccess }}
+        <h4 class="col-header col-header--with-filter">
+          <span>ACL Rules, default access = {{ defaultAccess }}</span>
+          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
         </h4>
         <AclRulesTable
           v-model:selection="selectedRules"
-          :rules="rules"
+          :rules="filteredRows"
+          :total-count="rules.length"
+          :filtered="isFiltered"
           :access-options="accessOptions"
           :loading="isLoading"
           @access-change="updateRuleAccess"
@@ -285,5 +297,15 @@ async function onSave() {
   color: var(--color-text-bright);
   background: var(--p-datatable-row-background);
   border-bottom: 1px solid var(--color-border-default);
+}
+
+.col-header--with-filter {
+  --checklist-control-height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 </style>

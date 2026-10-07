@@ -57,6 +57,31 @@ export function useAssetCsvImport(getCollectionId) {
     serverErrors.value = []
   }
 
+  // Every ClientErrorBadAssetPost detail item names the asset; AssetCsvParser rejects
+  // duplicate names, so the name alone identifies the CSV row (same as the legacy client).
+  function mapValidationFailures(detail) {
+    const blocking = []
+    const labelNames = new Set()
+
+    for (const item of detail) {
+      if (item?.detail?.labelName) {
+        labelNames.add(item.detail.labelName)
+        continue
+      }
+      const lines = [`Data error: ${item.failure}`]
+      if (item.detail?.name) { lines.push(`• Asset Affected: ${item.detail.name}`) }
+      if (item.detail?.benchmarkId) { lines.push(`• STIG Unknown: ${item.detail.benchmarkId}`) }
+      if (item.detail?.benchmarkIdIndex != null) { lines.push(`• STIG Unknown Index: ${item.detail.benchmarkIdIndex}`) }
+
+      const matched = item.detail?.name
+        ? parsedAssets.value.find(a => a.name === item.detail.name)
+        : undefined
+      blocking.push({ row: matched?.CSVRow ?? null, messages: lines.join('\n') })
+    }
+
+    return { blocking, labelNames: [...labelNames] }
+  }
+
   async function runDryRun() {
     isValidating.value = true
     try {
@@ -84,33 +109,9 @@ export function useAssetCsvImport(getCollectionId) {
 
       // 200 dry-run failure — ClientErrorBadAssetPost
       if (response?.error && Array.isArray(response.detail)) {
-        const blocking = []
-        const labelNames = new Set()
-
-        for (const item of response.detail) {
-          if (item?.detail?.labelName) {
-            labelNames.add(item.detail.labelName)
-            continue
-          }
-          const lines = [`Data error: ${item.failure}`]
-          if (item.detail?.name) { lines.push(`• Asset Affected: ${item.detail.name}`) }
-          if (item.detail?.benchmarkId) { lines.push(`• STIG Unknown: ${item.detail.benchmarkId}`) }
-          if (item.detail?.benchmarkIdIndex != null) { lines.push(`• STIG Unknown Index: ${item.detail.benchmarkIdIndex}`) }
-
-          let csvRow = null
-          if (item.detail?.assetIndex != null) {
-            const matched = parsedAssets.value[item.detail.assetIndex]
-            if (matched) { csvRow = matched.CSVRow ?? null }
-          }
-          else if (item.detail?.name) {
-            const matched = parsedAssets.value.find(a => a.name === item.detail.name)
-            if (matched) { csvRow = matched.CSVRow ?? null }
-          }
-          blocking.push({ row: csvRow, messages: lines.join('\n') })
-        }
-
+        const { blocking, labelNames } = mapValidationFailures(response.detail)
         serverErrors.value = blocking
-        newLabels.value = [...labelNames].map(name => ({ labelName: name }))
+        newLabels.value = labelNames.map(name => ({ labelName: name }))
 
         const blockedRows = new Set(blocking.map(e => e.row).filter(r => r !== null))
         validAssets.value = parsedAssets.value.filter(a => !blockedRows.has(a.CSVRow))
@@ -144,7 +145,18 @@ export function useAssetCsvImport(getCollectionId) {
       }
 
       const assetBody = validAssets.value.map(({ CSVRow, ...rest }) => rest)
-      await apiCall('createAssets', { collectionId: getCollectionId() }, assetBody)
+      const response = await apiCall('createAssets', { collectionId: getCollectionId() }, assetBody)
+
+      // The real POST also answers 200 ClientErrorBadAssetPost when validation fails
+      // (e.g. an asset name was taken between the dry run and submit). Nothing was created.
+      if (response?.error && Array.isArray(response.detail)) {
+        const { blocking } = mapValidationFailures(response.detail)
+        serverErrors.value = [...serverErrors.value, ...blocking]
+
+        const blockedRows = new Set(blocking.map(e => e.row).filter(r => r !== null))
+        validAssets.value = validAssets.value.filter(a => !blockedRows.has(a.CSVRow))
+        throw new Error(`No Assets were created: ${response.error}`)
+      }
     }
     finally {
       isSubmitting.value = false

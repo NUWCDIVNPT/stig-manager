@@ -161,36 +161,14 @@ describe('ruleTableGrid.vue', () => {
     })
   })
 
-  describe('text search', () => {
-    it('shows every row when the term is blank', () => {
-      createWrapper({ gridData: searchGridData, searchFilter: '' })
+  describe('filtered rows', () => {
+    it('shows every row when no rows are passed', () => {
+      createWrapper({ gridData: searchGridData })
       expect(renderedAssetNames()).toEqual(['web-01', 'db-01', 'web-02'])
     })
 
-    it('matches asset name, labels, detail, comment and user, ignoring case', async () => {
-      const { rerender } = createWrapper({ gridData: searchGridData, searchFilter: 'WEB' })
-      expect(renderedAssetNames()).toEqual(['web-01', 'web-02'])
-
-      await rerender({ ...defaultProps, gridData: searchGridData, searchFilter: 'prod' })
-      expect(renderedAssetNames()).toEqual(['web-01'])
-
-      await rerender({ ...defaultProps, gridData: searchGridData, searchFilter: 'compliant' })
-      expect(renderedAssetNames()).toEqual(['db-01'])
-
-      await rerender({ ...defaultProps, gridData: searchGridData, searchFilter: '4711' })
-      expect(renderedAssetNames()).toEqual(['web-01'])
-
-      await rerender({ ...defaultProps, gridData: searchGridData, searchFilter: 'bob' })
-      expect(renderedAssetNames()).toEqual(['db-01'])
-    })
-
-    it('does not search columns that are hidden', () => {
-      createWrapper({ gridData: searchGridData, searchFilter: 'alice', visibleFields: new Set(['labels', 'detail', 'comment', 'time']) })
-      expect(renderedAssetNames()).toEqual([])
-    })
-
-    it('still searches the asset name when every optional column is hidden', () => {
-      createWrapper({ gridData: searchGridData, searchFilter: 'db-', visibleFields: new Set() })
+    it('shows the rows search and filters left', () => {
+      createWrapper({ gridData: searchGridData, rows: [searchGridData[1]], isFiltered: true })
       expect(renderedAssetNames()).toEqual(['db-01'])
     })
   })

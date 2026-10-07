@@ -18,7 +18,7 @@ describe('DB outage: shutdown', function () {
     await oidc.start({port: oidcPort})
     console.log('    ✔ oidc started')
     console.log('    try mysql start')
-    mysql = await spawnMySQL({tag:'8.0.24', port:dbPort})
+    mysql = await spawnMySQL({tag:'8.4', port:dbPort})
     console.log('    ✔ mysql started')
     console.log('    try api start')
     api = await spawnApiPromise({
@@ -85,7 +85,7 @@ describe('DB outage: shutdown', function () {
       this.timeout(30000)
       console.log('      try mysql restart')
       logMark = api.logRecords.length
-      mysql = await spawnMySQL({tag: '8.0.24', port: dbPort})
+      mysql = await spawnMySQL({tag: '8.4', port: dbPort})
       console.log('      ✔ mysql restarted')
     })
 
@@ -115,7 +115,7 @@ describe('DB outage: network/host down', function () {
     await oidc.start({port: oidcPort})
     console.log('    ✔ oidc started')
     console.log('    try mysql start')
-    mysql = await spawnMySQL({tag:'8.0.24', port: dbPort})
+    mysql = await spawnMySQL({tag:'8.4', port: dbPort})
     console.log('    ✔ mysql started')
     console.log('    try api start')
     api = await spawnApiPromise({

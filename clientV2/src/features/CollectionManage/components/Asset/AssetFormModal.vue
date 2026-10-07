@@ -150,7 +150,7 @@ const pickListPt = {
     <div v-else class="form-body">
       <!-- ── Asset details ────────────────────────────────────────────────────── -->
       <div class="form-section">
-        <!-- Name + noncomputing -->
+        <!-- Name + description -->
         <div class="row row--name">
           <div class="labeled-field field--grow">
             <label class="flabel" for="am-name">Name <span class="req-star">*</span></label>
@@ -162,29 +162,40 @@ const pickListPt = {
               style="width: 100%"
             />
           </div>
-          <label class="noncomputing-label">
-            <Checkbox v-model="form.noncomputing" :binary="true" :pt="checkboxPt" />
-            <span>Non-computing</span>
-          </label>
+          <div class="labeled-field field--grow">
+            <label class="flabel" for="am-description">Description</label>
+            <InputText
+              id="am-description"
+              v-model="form.description"
+              placeholder="Enter description"
+              maxlength="255"
+              :pt="inputTextPt"
+              style="width: 100%"
+            />
+          </div>
         </div>
         <div v-if="nameError" class="name-error">
           {{ nameError }}
         </div>
 
-        <!-- FQDN / IP / MAC -->
+        <!-- FQDN / IP / MAC + noncomputing -->
         <div class="row row--3col">
           <div class="labeled-field">
-            <span class="flabel">FQDN <span class="opt-tag">optional</span></span>
+            <span class="flabel">FQDN</span>
             <InputText v-model="form.fqdn" placeholder="Enter FQDN" :pt="inputTextPt" class="fi" />
           </div>
           <div class="labeled-field">
-            <span class="flabel">IP address <span class="opt-tag">optional</span></span>
+            <span class="flabel">IP address</span>
             <InputText v-model="form.ip" placeholder="Enter IP address" :pt="inputTextPt" class="fi" />
           </div>
           <div class="labeled-field">
-            <span class="flabel">MAC address <span class="opt-tag">optional</span></span>
+            <span class="flabel">MAC address</span>
             <InputText v-model="form.mac" placeholder="Enter MAC address" :pt="inputTextPt" class="fi" />
           </div>
+          <label class="noncomputing-label">
+            <Checkbox v-model="form.noncomputing" :binary="true" :pt="checkboxPt" />
+            <span>Non-computing</span>
+          </label>
         </div>
 
         <!-- Labels + Metadata side by side -->
@@ -196,11 +207,7 @@ const pickListPt = {
               <span class="field-hint">{{ form.labelIds.length }} of {{ collectionLabels.length }} selected</span>
             </div>
 
-            <div v-if="collectionLabels.length === 0" class="no-labels-hint">
-              No labels defined for this collection.
-            </div>
-
-            <div v-else class="label-picker">
+            <div class="label-picker">
               <div class="label-picker-toolbar">
                 <span class="label-search">
                   <i class="pi pi-search" />
@@ -239,7 +246,7 @@ const pickListPt = {
                   />
                   <LabelChip :value="label.name" :color="labelColor(label)" />
                 </div>
-                <div v-if="filteredLabels.length === 0" class="label-empty">
+                <div v-if="labelFilter && filteredLabels.length === 0" class="label-empty">
                   No labels match "{{ labelFilter }}"
                 </div>
               </div>
@@ -374,9 +381,9 @@ const pickListPt = {
 
 .row--3col {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr) auto;
   gap: 0.75rem;
-  align-items: start;
+  align-items: end;
 }
 
 .row--labels-meta {
@@ -437,16 +444,6 @@ const pickListPt = {
   letter-spacing: normal;
 }
 
-.opt-tag {
-  font-size: var(--text-md);
-  font-weight: 400;
-  color: var(--color-text-dim);
-  opacity: 0.85;
-  margin-left: 0.2rem;
-  text-transform: none;
-  letter-spacing: 0;
-}
-
 .field-hint {
   font-size: var(--text-md);
   color: var(--color-text-dim);
@@ -459,13 +456,6 @@ const pickListPt = {
 }
 
 /* Labels */
-.no-labels-hint {
-  font-size: var(--text-md);
-  color: var(--color-text-dim);
-  opacity: 0.7;
-  padding: 0.4rem 0;
-}
-
 .label-picker {
   border: 1px solid var(--color-border-default);
   border-radius: 4px;

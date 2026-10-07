@@ -4,16 +4,11 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import assessmentIcon from '../../../assets/assessment.svg'
-import engineIcon from '../../../assets/bot2.svg'
-import overrideIcon from '../../../assets/override2.svg'
 
 import readOnlyIcon from '../../../assets/read-only.svg'
-import manualIcon from '../../../assets/user.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
-import ColumnFilter from '../../../components/common/ColumnFilter.vue'
 import EngineBadge from '../../../components/common/EngineBadge.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
-import Label from '../../../components/common/Label.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
@@ -24,16 +19,27 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
-import { normalizeColor } from '../../../shared/lib/colorUtils.js'
-import { gridColumnPt, iconHeaderPt } from '../../../shared/lib/dataTablePt.js'
-import { filterRows, labelNames } from '../../../shared/lib/gridSearch.js'
+import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
 import { formatReviewDate, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { patchReview, putReview } from '../../AssetReview/api/assetReviewApi.js'
 
 const props = defineProps({
+  // All reviews for the rule; `rows` is what search and filters leave
   gridData: {
     type: Array,
     default: () => [],
+  },
+  rows: {
+    type: Array,
+    default: null,
+  },
+  isFiltered: {
+    type: Boolean,
+    default: false,
+  },
+  highlightTerm: {
+    type: Function,
+    default: () => '',
   },
   isLoading: {
     type: Boolean,
@@ -42,10 +48,6 @@ const props = defineProps({
   visibleFields: {
     type: Set,
     required: true,
-  },
-  searchFilter: {
-    type: String,
-    default: '',
   },
   collectionId: {
     type: String,
@@ -215,78 +217,7 @@ function onGridScroll() {
   reviewEditPopover.value?.hide()
 }
 
-const filters = ref({
-  engine: { value: null },
-  status: { value: null },
-  result: { value: null },
-  label: { value: null },
-})
-
-const engineIconMap = { manual: manualIcon, engine: engineIcon, override: overrideIcon }
-const engineLabelMap = { manual: 'Manual', engine: 'Engine', override: 'Override' }
-
-const engineOptions = computed(() => {
-  const types = new Set(props.gridData.map(row => getEngineDisplay(row)).filter(Boolean))
-  return Array.from(types).map(val => ({ value: val, label: engineLabelMap[val] ?? val, image: engineIconMap[val] }))
-})
-
-const statusOptions = computed(() => {
-  const statuses = new Set(props.gridData.map(row => row.status?.label ?? row.status).filter(Boolean))
-  return Array.from(statuses).map(val => ({ value: val, label: val.charAt(0).toUpperCase() + val.slice(1) }))
-})
-
-const resultOptions = computed(() => {
-  const results = new Set(props.gridData.map(row => getResultDisplay(row.result)).filter(Boolean))
-  return Array.from(results).map(val => ({ value: val, label: val }))
-})
-
-const labelOptions = computed(() => {
-  const labelMap = new Map()
-  for (const row of props.gridData) {
-    for (const l of (row.assetLabels || [])) {
-      if (l.name && !labelMap.has(l.name)) {
-        labelMap.set(l.name, l.color)
-      }
-    }
-  }
-  return Array.from(labelMap.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([name, color]) => ({ value: name, label: name, color }))
-})
-
-// Text search covers the identifying and free-text columns. Asset is always
-// shown; the rest only count while their column is visible.
-const SEARCH_COLUMNS = [
-  { field: 'assetName', searchText: r => r.assetName },
-  { field: 'labels', searchText: r => labelNames(r.assetLabels) },
-  { field: 'detail', searchText: r => r.detail },
-  { field: 'comment', searchText: r => r.comment },
-  { field: 'user', searchText: r => r.username },
-]
-
-const searchColumns = computed(() => SEARCH_COLUMNS.filter(c => c.field === 'assetName' || props.visibleFields.has(c.field)))
-
-const filteredData = computed(() => {
-  let data = filterRows(props.gridData, searchColumns.value, props.searchFilter)
-  const ef = filters.value.engine.value
-  const sf = filters.value.status.value
-  const rf = filters.value.result.value
-  const lf = filters.value.label.value
-
-  if (ef?.length) {
-    data = data.filter(row => ef.includes(getEngineDisplay(row)))
-  }
-  if (sf?.length) {
-    data = data.filter(row => sf.includes(row.status?.label ?? row.status))
-  }
-  if (rf?.length) {
-    data = data.filter(row => rf.includes(getResultDisplay(row.result)))
-  }
-  if (lf?.length) {
-    data = data.filter(row => (row.assetLabels || []).some(l => lf.includes(l.name)))
-  }
-  return data
-})
+const filteredData = computed(() => props.rows ?? props.gridData)
 
 // One pass over the filtered rows: `all` drives the header checkbox and the
 // table's select-all, `some` the header's indeterminate state.
@@ -329,8 +260,6 @@ const stats = computed(() => calculateChecklistStats(filteredData.value) ?? {
 const columnPt = {
   center: gridColumnPt('center'),
   left: gridColumnPt('left'),
-  // Icon-only headers whose one action is sorting
-  icon: iconHeaderPt(gridColumnPt('center')),
 }
 
 // Unpadded so .selection-hit can fill the whole cell
@@ -417,10 +346,7 @@ const dataTablePt = {
     <!-- Engine -->
     <Column field="resultEngine" export-header="Engine" sort-field="resultEngine.product" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
       <template #header>
-        <div class="column-header-with-filter">
-          <img src="../../../assets/bot2.svg" alt="Engine" class="engine-header-icon" title="Result engine">
-          <ColumnFilter v-model="filters.engine.value" :options="engineOptions" />
-        </div>
+        <img src="../../../assets/bot2.svg" alt="Engine" class="engine-header-icon" title="Result engine">
       </template>
       <template #body="{ data }">
         <img
@@ -439,17 +365,7 @@ const dataTablePt = {
     </Column>
 
     <!-- Status -->
-    <Column field="status" export-header="Status" sort-field="status.label" sortable :style="{ width: '9rem', minWidth: '9rem' }" :pt="columnPt.center">
-      <template #header>
-        <div class="column-header-with-filter">
-          Status
-          <ColumnFilter v-model="filters.status.value" :options="statusOptions">
-            <template #option="{ option }">
-              <StatusBadge :status="option.value" />
-            </template>
-          </ColumnFilter>
-        </div>
-      </template>
+    <Column field="status" header="Status" sort-field="status.label" sortable :style="{ width: '9rem', minWidth: '9rem' }" :pt="columnPt.center">
       <template #body="{ data }">
         <StatusBadge v-if="data.status" :status="data.status?.label ?? data.status" />
       </template>
@@ -458,39 +374,19 @@ const dataTablePt = {
     <!-- Asset -->
     <Column field="assetName" header="Asset" sortable :style="{ minWidth: '10rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <span class="cell-text"><HighlightText :text="data.assetName" :term="searchFilter" /></span>
+        <span class="cell-text"><HighlightText :text="data.assetName" :term="highlightTerm('assetName')" /></span>
       </template>
     </Column>
 
     <!-- Labels -->
-    <Column v-if="visibleFields.has('labels')" field="assetLabels" export-header="Labels" :style="{ minWidth: '8rem' }" :pt="columnPt.left">
-      <template #header>
-        <div class="column-header-with-filter">
-          Labels
-          <ColumnFilter v-model="filters.label.value" :options="labelOptions">
-            <template #option="{ option }">
-              <Label :value="option.label" :color="normalizeColor(option.color)" />
-            </template>
-          </ColumnFilter>
-        </div>
-      </template>
+    <Column v-if="visibleFields.has('labels')" field="assetLabels" header="Labels" :style="{ minWidth: '8rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <LabelsRow :labels="data.assetLabels" :search-term="searchFilter" compact />
+        <LabelsRow :labels="data.assetLabels" :search-term="highlightTerm('labels')" compact />
       </template>
     </Column>
 
     <!-- Result -->
-    <Column field="result" export-header="Result" sortable :style="{ width: '7rem', minWidth: '6rem' }" :pt="columnPt.center">
-      <template #header>
-        <div class="column-header-with-filter">
-          Result
-          <ColumnFilter v-model="filters.result.value" :options="resultOptions">
-            <template #option="{ option }">
-              <ResultBadge :status="option.value" />
-            </template>
-          </ColumnFilter>
-        </div>
-      </template>
+    <Column field="result" header="Result" sortable :style="{ width: '7rem', minWidth: '6rem' }" :pt="columnPt.center">
       <template #body="{ data }">
         <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
         <span v-else class="cell-result__empty">—</span>
@@ -501,7 +397,7 @@ const dataTablePt = {
     <Column v-if="visibleFields.has('detail')" field="detail" header="Detail" sortable :style="{ width: '20%', minWidth: '12rem' }" :pt="columnPt.left">
       <template #body="{ data }">
         <div class="cell-text-field">
-          <span v-if="data.detail" class="cell-text cell-text--clamped" :title="data.detail"><HighlightText :text="data.detail" :term="searchFilter" /></span>
+          <span v-if="data.detail" class="cell-text cell-text--clamped" :title="data.detail"><HighlightText :text="data.detail" :term="highlightTerm('detail')" /></span>
           <span v-else class="cell-text cell-text--placeholder">—</span>
         </div>
       </template>
@@ -510,19 +406,19 @@ const dataTablePt = {
     <!-- Comment -->
     <Column v-if="visibleFields.has('comment')" field="comment" header="Comment" sortable :style="{ width: '20%', minWidth: '12rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <span class="cell-text cell-text--clamped" :title="data.comment"><HighlightText :text="data.comment" :term="searchFilter" /></span>
+        <span class="cell-text cell-text--clamped" :title="data.comment"><HighlightText :text="data.comment" :term="highlightTerm('comment')" /></span>
       </template>
     </Column>
 
     <!-- User -->
     <Column v-if="visibleFields.has('user')" field="username" header="User" sortable :style="{ width: '10rem', minWidth: '8rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <span class="cell-text"><HighlightText :text="data.username" :term="searchFilter" /></span>
+        <span class="cell-text"><HighlightText :text="data.username" :term="highlightTerm('user')" /></span>
       </template>
     </Column>
 
     <!-- Time -->
-    <Column v-if="visibleFields.has('time')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.icon">
+    <Column v-if="visibleFields.has('time')" field="touchTs" export-header="Last Changed" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
       <template #header>
         <i class="pi pi-clock" title="Last action" />
       </template>
@@ -544,7 +440,7 @@ const dataTablePt = {
         :show-refresh="false"
         :show-export="true"
         :total-count="gridData.length"
-        :filtered-count="filteredData.length !== gridData.length ? filteredData.length : null"
+        :filtered-count="isFiltered ? filteredData.length : null"
         total-label="reviews"
         :total-icon-src="assessmentIcon"
       >
@@ -605,15 +501,6 @@ const dataTablePt = {
 .rule-table-grid__mask-spinner {
   font-size: var(--text-display);
   color: var(--color-text-bright);
-}
-
-/* Grows into spare header width but never claims the sort icon's room. */
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.1rem;
-  flex: 1 1 auto;
 }
 
 .rule-table-grid {

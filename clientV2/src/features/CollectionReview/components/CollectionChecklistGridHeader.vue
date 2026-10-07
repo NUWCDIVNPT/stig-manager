@@ -6,13 +6,14 @@ import { useRoute } from 'vue-router'
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 import MetricsFilter from '../../../components/common/MetricsFilter.vue'
 import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 
-defineProps({
+const props = defineProps({
   toggleableColumns: {
     type: Array,
     required: true,
@@ -21,11 +22,25 @@ defineProps({
     type: String,
     default: null,
   },
+  activePreset: {
+    type: String,
+    default: null,
+  },
+  filterColumns: {
+    type: Array,
+    default: () => [],
+  },
+  filterValueOptions: {
+    type: Object,
+    default: () => ({}),
+  },
 })
+
+const emit = defineEmits(['apply-preset'])
 
 const searchFilter = defineModel('searchFilter', { type: String, default: '' })
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
-const displayMode = defineModel('displayMode', { type: String, required: true })
+const filters = defineModel('filters', { type: Array, default: () => [] })
 const selectedLabelNames = defineModel('selectedLabelNames', { type: Array, default: () => [] })
 
 const route = useRoute()
@@ -60,18 +75,18 @@ const checklistMenuItems = computed(() => [
     items: [
       {
         label: 'Group ID and Rule Title',
-        icon: displayMode.value === 'groupRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
-        command: () => { displayMode.value = 'groupRule' },
+        icon: props.activePreset === 'groupRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
+        command: () => emit('apply-preset', 'groupRule'),
       },
       {
         label: 'Group ID and Group Title',
-        icon: displayMode.value === 'groupGroup' ? 'pi pi-circle-fill' : 'pi pi-circle',
-        command: () => { displayMode.value = 'groupGroup' },
+        icon: props.activePreset === 'groupGroup' ? 'pi pi-circle-fill' : 'pi pi-circle',
+        command: () => emit('apply-preset', 'groupGroup'),
       },
       {
         label: 'Rule ID and Rule Title',
-        icon: displayMode.value === 'ruleRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
-        command: () => { displayMode.value = 'ruleRule' },
+        icon: props.activePreset === 'ruleRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
+        command: () => emit('apply-preset', 'ruleRule'),
       },
     ],
   },
@@ -115,7 +130,10 @@ function toggleChecklistMenu(event) {
 
     <div class="checklist-grid__header-bottom">
       <TieredMenu ref="checklistMenu" :model="checklistMenuItems" :popup="true" :pt="checklistMenuPT" />
-      <GridSearch v-model="searchFilter" class="checklist-grid__header-search" label="Search rules" />
+      <div class="checklist-grid__header-search">
+        <GridSearch v-model="searchFilter" class="checklist-grid__header-search-input" label="Search rules" />
+        <GridFilterButton v-model="filters" :columns="filterColumns" :value-options="filterValueOptions" />
+      </div>
 
       <div class="checklist-grid__header-controls">
         <button
@@ -143,7 +161,7 @@ function toggleChecklistMenu(event) {
   flex-direction: column;
   justify-content: center;
   padding: 0.75rem 1rem;
-  background: linear-gradient(180deg, var(--color-background-light), var(--color-background-dark));
+  background: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
   gap: 0.85rem;
@@ -167,8 +185,16 @@ function toggleChecklistMenu(event) {
 }
 
 .checklist-grid__header-search {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   flex: 1 1 24rem;
-  max-width: 42rem;
+  max-width: 48rem;
+  min-width: 0;
+}
+
+.checklist-grid__header-search-input {
+  flex: 1;
 }
 
 .checklist-grid__title-row {

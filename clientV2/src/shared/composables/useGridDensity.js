@@ -20,6 +20,7 @@ const LINE_HEIGHT = 1.3
 // A grid's header and body components both call useGridDensity(gridKey) and get
 // the same geometry, so the two can not fall out of sync.
 export const GRID_GEOMETRY = {
+  'asset-stig-import-preview': { defaultLineClamp: 1, textSize: 'md', padRem: 0.54, minRem: 2.2 },
   'asset-review-checklist': { defaultLineClamp: 3, textSize: 'lg', padRem: 0.4, minRem: 2.2 },
   'collection-checklist': { defaultLineClamp: 2, textSize: 'lg', padRem: 0.4, minRem: 2.2 },
   'collection-rule-table': { defaultLineClamp: 1, textSize: 'lg', padRem: 0.4, minRem: 2.4 },
