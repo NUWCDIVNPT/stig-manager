@@ -402,7 +402,7 @@ const flexCellPt = {
   flex-wrap: nowrap;
   gap: 0.6rem;
   padding: 0.5rem 0.75rem;
-  background: linear-gradient(180deg, var(--color-background-light), var(--color-background-dark));
+  background: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
 }

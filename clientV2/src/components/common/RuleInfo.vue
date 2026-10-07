@@ -149,7 +149,7 @@ const emit = defineEmits(['retry'])
   display: flex;
   align-items: center;
   padding: 0.7rem 0.9rem;
-  background: linear-gradient(180deg, var(--color-background-light), var(--color-background-dark));
+  background: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-default);
   transition: background 0.15s ease;
   flex-shrink: 0;
