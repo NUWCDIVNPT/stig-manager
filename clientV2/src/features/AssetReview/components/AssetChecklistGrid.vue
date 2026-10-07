@@ -107,7 +107,7 @@ const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filt
   { field: 'groupTitle', header: 'Group Title' },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
-  { field: 'username', header: 'User', searchText: r => r.username ?? r.status?.user?.username },
+  { field: 'username', header: 'User', searchText: r => [r.username, r.status?.user?.username].filter(Boolean).join(' ') },
   { field: 'engineInfo', header: 'Engine product', searchText: r => [r.resultEngine?.product, r.resultEngine?.type, r.resultEngine?.version].filter(Boolean).join(' ') },
   { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
   { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result), quickSearch: false },
