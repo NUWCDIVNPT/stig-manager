@@ -1305,7 +1305,7 @@ BEGIN
         CALL task_output_collection('info', concat('processing collectionId ', v_collectionId));
 
         BEGIN  -- collection-scoped error handling (no transaction at this scope)
-          -- The rule cursor is declared here, in the handler's own block, so the
+          -- The rule cursor is declared here, in the same block as the handler, so the
           -- handler can close it: a cursor left open by an abandoned inner block
           -- makes the next collection fail with 1325 (Cursor is already open).
           DECLARE v_rule_done INT DEFAULT FALSE;
