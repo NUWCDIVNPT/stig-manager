@@ -8,6 +8,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
+import { formatSize } from '../../../../shared/lib.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { dangerBtnPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { readStoredValue, storeValue } from '../../../../shared/lib/localStorage.js'
@@ -173,6 +174,10 @@ function onBodyDrop(event) {
 
 const importLabel = computed(() =>
   importState.rows.length > 1 ? `Import ${importState.rows.length} files` : 'Import')
+
+// Picked files only: XMLs unpacked from a zip carry no size
+const totalSize = computed(() =>
+  formatSize(importState.rows.reduce((sum, row) => sum + (row.size ?? 0), 0)))
 
 // Row ids are `${name}::${size}`, matching the drop zone's dedupe key
 function removeRow(row) {
@@ -453,7 +458,11 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               :filtered-count="isFiltered ? filteredRows.length : null"
               total-label="files"
               total-icon="pi pi-file"
-            />
+            >
+              <template #right-extra>
+                <span class="table-footer__size" title="Total size of the picked files">{{ totalSize }}</span>
+              </template>
+            </StatusFooter>
           </template>
         </DataTable>
       </div>
@@ -720,6 +729,12 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-text-bright);
+}
+
+.table-footer__size {
+  font-size: var(--text-md);
+  color: var(--color-text-dim);
+  white-space: nowrap;
 }
 
 .table-toolbar__end {

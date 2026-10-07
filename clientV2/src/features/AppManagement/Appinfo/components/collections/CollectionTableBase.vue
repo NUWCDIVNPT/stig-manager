@@ -15,6 +15,9 @@ const props = defineProps({
 
 const emit = defineEmits(['update:selectedCollectionId'])
 
+// Stable identity: a fresh literal per render would rebuild the search columns on every row click
+const keyColumn = computed(() => ({ field: 'name', header: 'Collection', width: '14rem', frozen: props.frozenName }))
+
 const selectedRow = computed({
   get: () => props.rows.find(r => r.collectionId === props.selectedCollectionId) ?? null,
   set: value => emit('update:selectedCollectionId', value?.collectionId ?? null),
@@ -31,7 +34,7 @@ function rowClass(data) {
     :title="title"
     :rows="rows"
     :columns="columns"
-    :key-column="{ field: 'name', header: 'Collection', width: '14rem', frozen: frozenName }"
+    :key-column="keyColumn"
     data-key="collectionId"
     sort-field="name"
     :export-filename="exportFilename"
