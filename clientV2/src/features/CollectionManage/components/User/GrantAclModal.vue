@@ -87,7 +87,7 @@ const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOpti
   { field: 'resource', header: 'Resource', searchText: resourceSortKey },
   { field: 'resourceType', header: 'Resource type', filterValues: resourceTypes, multiple: true },
   { field: 'access', header: 'Access', filterValues: r => accessLabel(r.access) },
-], { selection: selectedRules })
+], { selection: selectedRules, dataKey: getAclRuleKey })
 
 function removeSelected() {
   if (!selectedRules.value.length) {

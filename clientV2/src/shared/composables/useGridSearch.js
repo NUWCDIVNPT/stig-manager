@@ -17,7 +17,8 @@ import { ALL_COLUMNS, applyGridSearch, columnValueOptions, searchFilter } from '
  * @param {object} [options]
  * @param {import('vue').MaybeRefOrGetter<Set<string>|null>} [options.visibleFields] hidden columns drop out of the search box
  * @param {import('vue').Ref<object[]>} [options.selection] writable selection; rows the filter hides are dropped from it
- * @param {string} [options.dataKey] row id field for matching selection; compares objects when omitted
+ * @param {string|((row: object) => unknown)} [options.dataKey] row id field, or a key function for composite ids,
+ *   for matching the selection to rows; compares objects when omitted
  */
 export function useGridSearch(rows, columns, { visibleFields = null, selection = null, dataKey = null } = {}) {
   const term = ref('')
@@ -58,13 +59,20 @@ export function useGridSearch(rows, columns, { visibleFields = null, selection =
 
   const isFiltered = computed(() => rules.value.length > 0)
 
-  // Delete/Remove act on the selection, so drop rows the filter hid
+  // Delete/Remove act on the selection, so drop rows the filter hid. Selected rows are swapped
+  // for their current objects, so a row a caller replaced immutably (edit) stays selected and
+  // reads the edited values. The length source catches in-place splices, which hand the
+  // computed the same array.
   if (selection) {
-    const keyOf = dataKey ? r => r[dataKey] : r => r
-    watch(filteredRows, (visible) => {
-      const ids = new Set(visible.map(keyOf))
-      const kept = selection.value.filter(r => ids.has(keyOf(r)))
-      if (kept.length !== selection.value.length) {
+    const keyOf = typeof dataKey === 'function' ? dataKey : dataKey ? r => r[dataKey] : r => r
+    watch([filteredRows, () => toValue(rows)?.length], ([visible]) => {
+      const current = selection.value
+      if (!current.length) {
+        return
+      }
+      const byKey = new Map(visible.map(r => [keyOf(r), r]))
+      const kept = current.map(r => byKey.get(keyOf(r))).filter(Boolean)
+      if (kept.length !== current.length || kept.some((r, i) => r !== current[i])) {
         selection.value = kept
       }
     })

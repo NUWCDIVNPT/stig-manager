@@ -214,6 +214,49 @@ describe('useGridSearch', () => {
       expect(names(selection.value)).toEqual(['web-02', 'db-01'])
     })
 
+    it('keeps a selected row that is replaced immutably, swapping in the new object', async () => {
+      const data = keyed()
+      const selection = ref([data.value[0]])
+      useGridSearch(data, columns, { selection, dataKey: 'id' })
+      data.value = data.value.with(0, { ...data.value[0], os: 'bsd' })
+      await nextTick()
+      expect(selection.value).toHaveLength(1)
+      expect(selection.value[0]).toBe(data.value[0])
+      expect(selection.value[0].os).toBe('bsd')
+    })
+
+    it('matches by a key function when dataKey is one', async () => {
+      const data = ref([
+        { assetId: 1, labelId: null, access: 'r' },
+        { assetId: null, labelId: 7, access: 'rw' },
+      ])
+      const keyOf = r => `${r.assetId ?? ''}:${r.labelId ?? ''}`
+      const selection = ref([data.value[1]])
+      useGridSearch(data, [{ field: 'access', header: 'Access' }], { selection, dataKey: keyOf })
+      data.value = data.value.with(1, { ...data.value[1], access: 'none' })
+      await nextTick()
+      expect(selection.value).toHaveLength(1)
+      expect(selection.value[0].access).toBe('none')
+    })
+
+    it('compares object identity when dataKey is omitted', async () => {
+      const data = keyed()
+      const selection = ref([data.value[0], data.value[1]])
+      useGridSearch(data, columns, { selection })
+      data.value = [data.value[0], { ...data.value[1] }, data.value[2]]
+      await nextTick()
+      expect(names(selection.value)).toEqual(['web-01'])
+    })
+
+    it('drops selected rows removed by an in-place splice', async () => {
+      const data = keyed()
+      const selection = ref([...data.value])
+      useGridSearch(data, columns, { selection, dataKey: 'id' })
+      data.value.splice(0, 1)
+      await nextTick()
+      expect(names(selection.value)).toEqual(['web-02', 'db-01'])
+    })
+
     it('writes through a computed selection model', async () => {
       const data = keyed()
       let emitted = null
