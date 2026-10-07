@@ -152,7 +152,7 @@ function toggleChecklistMenu(event) {
   flex-direction: column;
   justify-content: center;
   padding: 0.75rem 1rem;
-  background: linear-gradient(180deg, var(--color-background-light), var(--color-background-dark));
+  background: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
   gap: 0.85rem;

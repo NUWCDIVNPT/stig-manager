@@ -77,13 +77,44 @@ describe('checklistGridHeader.vue', () => {
       expect(screen.getByText('V1R2')).toBeInTheDocument()
     })
 
-    it('renders asset info when provided', () => {
-      createWrapper({
-        asset: { name: 'Test Asset', assetId: 'A123', ip: '10.0.0.1' },
-      })
+    it('renders the asset name in the title row', () => {
+      createWrapper({ asset: { name: 'Test Asset', assetId: 'A123' } })
       expect(screen.getByText('Test Asset')).toBeInTheDocument()
-      expect(screen.getByText('ID: A123')).toBeInTheDocument()
-      expect(screen.getByText('IP: 10.0.0.1')).toBeInTheDocument()
+    })
+
+    it('shows asset properties in the details popover', async () => {
+      createWrapper({
+        asset: {
+          name: 'Test Asset',
+          assetId: 'A123',
+          ip: '10.0.0.1',
+          fqdn: 'host.example.com',
+          mac: 'AB-12-AB-12-AB-12',
+          noncomputing: true,
+          description: 'Lab box',
+        },
+      })
+      expect(screen.queryByText('host.example.com')).not.toBeInTheDocument()
+      await fireEvent.click(screen.getByRole('button', { name: /Test Asset/ }))
+      for (const [label, value] of [['ID', 'A123'], ['IP', '10.0.0.1'], ['FQDN', 'host.example.com'], ['MAC', 'AB-12-AB-12-AB-12'], ['Non-computing', 'Yes'], ['Description', 'Lab box']]) {
+        expect(screen.getByText(label)).toBeInTheDocument()
+        expect(screen.getByText(value)).toBeInTheDocument()
+      }
+    })
+
+    it('leaves metadata out of the details popover', async () => {
+      createWrapper({ asset: { name: 'Test Asset', assetId: 'A123', metadata: { owner: 'ops' } } })
+      await fireEvent.click(screen.getByRole('button', { name: /Test Asset/ }))
+      expect(screen.queryByText('owner')).not.toBeInTheDocument()
+    })
+
+    it('skips empty asset properties in the details popover', async () => {
+      createWrapper({ asset: { name: 'Test Asset', assetId: 'A123', ip: '', fqdn: null, mac: '' } })
+      await fireEvent.click(screen.getByRole('button', { name: /Test Asset/ }))
+      expect(screen.getByText('A123')).toBeInTheDocument()
+      for (const label of ['IP', 'FQDN', 'MAC', 'Non-computing', 'Description']) {
+        expect(screen.queryByText(label)).not.toBeInTheDocument()
+      }
     })
 
     it('renders Writable access mode', () => {

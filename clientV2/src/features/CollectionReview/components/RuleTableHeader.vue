@@ -126,7 +126,7 @@ function onAction(actionType) {
   display: flex;
   align-items: center;
   padding: 0.5rem 1rem;
-  background: linear-gradient(180deg, var(--color-background-light), var(--color-background-dark));
+  background: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
 }
