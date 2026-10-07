@@ -59,13 +59,12 @@ export function useGridSearch(rows, columns, { visibleFields = null, selection =
 
   const isFiltered = computed(() => rules.value.length > 0)
 
-  // Delete/Remove act on the selection, so drop rows the filter hid. Selected rows are swapped
-  // for their current objects, so a row a caller replaced immutably (edit) stays selected and
-  // reads the edited values. The length source catches in-place splices, which hand the
-  // computed the same array.
+  // Delete/Remove act on the selection, so drop rows the filter hid, swapping in current objects
+  // so an edited (replaced) row stays selected. deep: 1 also catches in-place array mutation,
+  // which hands the computed the same array when no rule is active.
   if (selection) {
     const keyOf = typeof dataKey === 'function' ? dataKey : dataKey ? r => r[dataKey] : r => r
-    watch([filteredRows, () => toValue(rows)?.length], ([visible]) => {
+    watch(filteredRows, (visible) => {
       const current = selection.value
       if (!current.length) {
         return
@@ -75,7 +74,7 @@ export function useGridSearch(rows, columns, { visibleFields = null, selection =
       if (kept.length !== current.length || kept.some((r, i) => r !== current[i])) {
         selection.value = kept
       }
-    })
+    }, { deep: 1 })
   }
 
   // Props for GridFilterButton

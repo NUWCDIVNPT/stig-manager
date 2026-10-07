@@ -128,12 +128,6 @@ async function onDeleteConfirmed() {
     triggerError(err)
   }
 }
-
-function onAssetsTransferred(transferredIds) {
-  const idSet = new Set(transferredIds)
-  applyAssetsTransferred(transferredIds)
-  selectedAssets.value = selectedAssets.value.filter(a => !idSet.has(a.assetId))
-}
 </script>
 
 <template>
@@ -149,7 +143,7 @@ function onAssetsTransferred(transferredIds) {
       @create-asset="openCreateModal"
       @modify-asset="openEditModal(selectedAssets[0].assetId)"
       @delete-assets="onDeleteAssets"
-      @assets-transferred="onAssetsTransferred"
+      @assets-transferred="applyAssetsTransferred"
     />
 
     <AssetFormModal

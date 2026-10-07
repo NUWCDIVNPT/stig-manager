@@ -167,29 +167,25 @@ describe('useGridSearch', () => {
       { id: 2, name: 'web-02', os: 'windows' },
       { id: 3, name: 'db-01', os: 'linux' },
     ])
-
-    it('drops selected rows the search term hides', async () => {
+    // Grid over keyed() with the given rows selected (all by default)
+    const setup = (pick = d => [...d], { dataKey = 'id', ...options } = {}) => {
       const data = keyed()
-      const selection = ref([...data.value])
-      const s = useGridSearch(data, columns, { selection, dataKey: 'id' })
-      s.term.value = 'web-01'
-      await nextTick()
-      expect(names(selection.value)).toEqual(['web-01'])
-    })
+      const selection = ref(pick(data.value))
+      return { data, selection, s: useGridSearch(data, columns, { selection, dataKey, ...options }) }
+    }
 
-    it('drops selected rows a filter rule hides', async () => {
-      const data = keyed()
-      const selection = ref([...data.value])
-      const s = useGridSearch(data, columns, { selection, dataKey: 'id' })
-      s.filters.value = [searchFilter('os', 'text', { value: 'linux' })]
+    it.each([
+      ['the search term', (s) => { s.term.value = 'web-01' }, ['web-01']],
+      ['a filter rule', (s) => { s.filters.value = [searchFilter('os', 'text', { value: 'linux' })] }, ['web-01', 'db-01']],
+    ])('drops selected rows %s hides', async (_, hide, kept) => {
+      const { selection, s } = setup()
+      hide(s)
       await nextTick()
-      expect(names(selection.value)).toEqual(['web-01', 'db-01'])
+      expect(names(selection.value)).toEqual(kept)
     })
 
     it('matches rows by dataKey, not object identity', async () => {
-      const data = keyed()
-      const selection = ref(data.value.map(r => ({ ...r })))
-      const s = useGridSearch(data, columns, { selection, dataKey: 'id' })
+      const { selection, s } = setup(d => d.map(r => ({ ...r })))
       s.term.value = 'web'
       await nextTick()
       expect(names(selection.value)).toEqual(['web-01', 'web-02'])
@@ -205,20 +201,26 @@ describe('useGridSearch', () => {
       expect(selection.value).toBe(original)
     })
 
-    it('drops selected rows that leave the data', async () => {
-      const data = keyed()
-      const selection = ref([...data.value])
-      useGridSearch(data, columns, { selection, dataKey: 'id' })
-      data.value = data.value.slice(1)
+    it.each([
+      ['reassignment', (d) => { d.value = d.value.slice(1) }, false],
+      ['an in-place splice', (d) => { d.value.splice(0, 1) }, false],
+      ['an in-place splice while a rule is active', (d) => { d.value.splice(0, 1) }, true],
+    ])('drops selected rows removed from the data by %s', async (_, remove, ruleActive) => {
+      const { data, selection, s } = setup()
+      if (ruleActive) {
+        s.term.value = '-0'
+      }
+      remove(data)
       await nextTick()
       expect(names(selection.value)).toEqual(['web-02', 'db-01'])
     })
 
-    it('keeps a selected row that is replaced immutably, swapping in the new object', async () => {
-      const data = keyed()
-      const selection = ref([data.value[0]])
-      useGridSearch(data, columns, { selection, dataKey: 'id' })
-      data.value = data.value.with(0, { ...data.value[0], os: 'bsd' })
+    it.each([
+      ['immutably', (d) => { d.value = d.value.with(0, { ...d.value[0], os: 'bsd' }) }],
+      ['in place', (d) => { d.value[0] = { ...d.value[0], os: 'bsd' } }],
+    ])('keeps a selected row replaced %s, swapping in the new object', async (_, replace) => {
+      const { data, selection } = setup(d => [d[0]])
+      replace(data)
       await nextTick()
       expect(selection.value).toHaveLength(1)
       expect(selection.value[0]).toBe(data.value[0])
@@ -240,21 +242,10 @@ describe('useGridSearch', () => {
     })
 
     it('compares object identity when dataKey is omitted', async () => {
-      const data = keyed()
-      const selection = ref([data.value[0], data.value[1]])
-      useGridSearch(data, columns, { selection })
+      const { data, selection } = setup(d => [d[0], d[1]], { dataKey: null })
       data.value = [data.value[0], { ...data.value[1] }, data.value[2]]
       await nextTick()
       expect(names(selection.value)).toEqual(['web-01'])
-    })
-
-    it('drops selected rows removed by an in-place splice', async () => {
-      const data = keyed()
-      const selection = ref([...data.value])
-      useGridSearch(data, columns, { selection, dataKey: 'id' })
-      data.value.splice(0, 1)
-      await nextTick()
-      expect(names(selection.value)).toEqual(['web-02', 'db-01'])
     })
 
     it('writes through a computed selection model', async () => {
@@ -272,9 +263,7 @@ describe('useGridSearch', () => {
     })
 
     it('leaves the selection alone when the search clears', async () => {
-      const data = keyed()
-      const selection = ref([data.value[0]])
-      const s = useGridSearch(data, columns, { selection, dataKey: 'id' })
+      const { selection, s } = setup(d => [d[0]])
       s.term.value = 'web'
       await nextTick()
       s.term.value = ''
