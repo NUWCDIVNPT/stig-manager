@@ -12,6 +12,7 @@ import { fetchCollectionLabels } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { getContrastColor, normalizeColor } from '../../../../shared/lib/colorUtils.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
 import {
@@ -437,7 +438,7 @@ const selectPt = {
               </div>
               <span class="asset-stig-count" :title="item.benchmarkIds.join(', ')">
                 <img :src="shieldIcon" class="asset-stig-icon" alt="">
-                {{ item.benchmarkIds.length }}
+                {{ dashZero(item.benchmarkIds.length) }}
               </span>
             </div>
           </template>

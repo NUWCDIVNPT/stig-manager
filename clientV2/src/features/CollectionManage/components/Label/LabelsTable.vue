@@ -13,6 +13,7 @@ import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
+import { dashZero } from '../../../../shared/lib/numberFormat.js'
 
 const props = defineProps({
   labels: {
@@ -162,7 +163,7 @@ const dataTableRef = ref(null)
           </div>
         </template>
         <template #body="{ data }">
-          <span class="uses-cell">{{ data.uses ?? 0 }}</span>
+          <span class="uses-cell">{{ dashZero(data.uses) }}</span>
         </template>
       </Column>
 

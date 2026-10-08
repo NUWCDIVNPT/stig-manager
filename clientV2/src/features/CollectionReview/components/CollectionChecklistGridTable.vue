@@ -14,6 +14,7 @@ import { durationToNow } from '../../../shared/lib.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
 import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
+import { dashZero } from '../../../shared/lib/numberFormat.js'
 
 const props = defineProps({
   // Rows after search and filters
@@ -179,7 +180,7 @@ const dataTablePt = {
         <ResultBadge status="O" />
       </template>
       <template #body="{ data }">
-        <span class="cell-text">{{ data.counts?.results?.fail ?? 0 }}</span>
+        <span class="cell-text">{{ dashZero(data.counts?.results?.fail) }}</span>
       </template>
     </Column>
     <Column v-if="visibleFields.has('pass')" field="counts.results.pass" export-header="NF" sortable :style="{ width: '4.5rem', minWidth: '4.5rem' }" :pt="columnPt.center">
@@ -187,7 +188,7 @@ const dataTablePt = {
         <ResultBadge status="NF" />
       </template>
       <template #body="{ data }">
-        <span class="cell-text">{{ data.counts?.results?.pass ?? 0 }}</span>
+        <span class="cell-text">{{ dashZero(data.counts?.results?.pass) }}</span>
       </template>
     </Column>
     <Column v-if="visibleFields.has('notapplicable')" field="counts.results.notapplicable" export-header="NA" sortable :style="{ width: '4.5rem', minWidth: '4.5rem' }" :pt="columnPt.center">
@@ -195,7 +196,7 @@ const dataTablePt = {
         <ResultBadge status="NA" />
       </template>
       <template #body="{ data }">
-        <span class="cell-text">{{ data.counts?.results?.notapplicable ?? 0 }}</span>
+        <span class="cell-text">{{ dashZero(data.counts?.results?.notapplicable) }}</span>
       </template>
     </Column>
     <Column v-if="visibleFields.has('other')" field="counts.results.other" export-header="NR+" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
@@ -203,7 +204,7 @@ const dataTablePt = {
         <ResultBadge status="NR+" />
       </template>
       <template #body="{ data }">
-        <span class="cell-text">{{ data.counts?.results?.other ?? 0 }}</span>
+        <span class="cell-text">{{ dashZero(data.counts?.results?.other) }}</span>
       </template>
     </Column>
 
@@ -213,7 +214,7 @@ const dataTablePt = {
         <StatusBadge status="submitted" />
       </template>
       <template #body="{ data }">
-        <span class="cell-text">{{ data.counts?.statuses?.submitted ?? 0 }}</span>
+        <span class="cell-text">{{ dashZero(data.counts?.statuses?.submitted) }}</span>
       </template>
     </Column>
     <Column v-if="visibleFields.has('rejected')" field="counts.statuses.rejected" export-header="Rejected" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
@@ -221,7 +222,7 @@ const dataTablePt = {
         <StatusBadge status="rejected" />
       </template>
       <template #body="{ data }">
-        <span class="cell-text">{{ data.counts?.statuses?.rejected ?? 0 }}</span>
+        <span class="cell-text">{{ dashZero(data.counts?.statuses?.rejected) }}</span>
       </template>
     </Column>
     <Column v-if="visibleFields.has('accepted')" field="counts.statuses.accepted" export-header="Accepted" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
@@ -229,7 +230,7 @@ const dataTablePt = {
         <StatusBadge status="accepted" />
       </template>
       <template #body="{ data }">
-        <span class="cell-text">{{ data.counts?.statuses?.accepted ?? 0 }}</span>
+        <span class="cell-text">{{ dashZero(data.counts?.statuses?.accepted) }}</span>
       </template>
     </Column>
 
