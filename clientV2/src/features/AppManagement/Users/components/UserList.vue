@@ -12,6 +12,7 @@ import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { formatDateTime, formatLastAccess, sortedGroupNames, statusDetail } from '../lib/userDisplay.js'
 
 const props = defineProps({
@@ -198,7 +199,11 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column v-if="visibleFields.has('grantCount')" field="grantCount" header="Grants" sortable class="center-header" :pt="borderPt" style="width: 7%; text-align: center;" />
+        <Column v-if="visibleFields.has('grantCount')" field="grantCount" header="Grants" sortable class="center-header" :pt="borderPt" style="width: 7%; text-align: center;">
+          <template #body="{ data }">
+            {{ dashZero(data.grantCount) }}
+          </template>
+        </Column>
 
         <Column v-if="visibleFields.has('statistics.created')" field="statistics.created" header="Added" sortable :pt="borderPt" style="width: 9%">
           <template #body="{ data }">

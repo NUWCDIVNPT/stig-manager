@@ -15,6 +15,7 @@ import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 
 const props = defineProps({
@@ -359,7 +360,7 @@ function onRemoveAll() {
           </template>
           <template #body="{ data }">
             <span :class="{ 'dim-value': !data.collectionCount }">
-              {{ data.collectionCount }}
+              {{ dashZero(data.collectionCount) }}
             </span>
           </template>
         </Column>
