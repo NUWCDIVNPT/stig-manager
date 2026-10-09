@@ -12,7 +12,8 @@ import SidebarFilterIndicator from '../../../components/common/SidebarFilterIndi
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
-import { buildLabelFilterParams, parseLabelFilterParams } from '../../../shared/lib/labelFilters.js'
+import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { pickLabelFilterQuery } from '../../../shared/lib/labelFilters.js'
 import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
 import CollectionImportResults from '../../CollectionMetrics/components/CollectionImportResults.vue'
@@ -62,19 +63,8 @@ const { state: collection, execute: loadCollection } = useAsyncState(
 
 const collectionName = computed(() => collection.value?.name || 'Collection')
 
-// Label filter shared by the dashboard sidebar and every tab. It lives in the
-// route query (labelName=<name>&labelMatch=null) so a filtered view is
-// bookmarkable and survives a round trip through Collection Review.
-// Keyed on a string so the array identity only changes with the filter itself,
-// not on every route change (the tabs deep-watch it to refetch).
-const labelFilterKey = computed(() => JSON.stringify(parseLabelFilterParams(route.query)))
-const selectedLabelNames = computed({
-  get: () => JSON.parse(labelFilterKey.value),
-  set: (names) => {
-    const { labelName, labelMatch, ...rest } = route.query
-    router.replace({ query: { ...rest, ...buildLabelFilterParams(names) } })
-  },
-})
+// Label filter shared by the dashboard sidebar and every tab.
+const { selectedLabelNames, labelFilterKey } = useLabelFilterQuery()
 // Flags the hidden filter on the collapsed dashboard rail.
 const labelFilterHint = computed(() => {
   const n = selectedLabelNames.value.length
@@ -137,7 +127,7 @@ const activeTab = computed({
       router.push({
         name: routeName,
         params: { collectionId: props.collectionId },
-        query: route.query, // keeps the label filter
+        query: pickLabelFilterQuery(route.query),
       })
     }
   },

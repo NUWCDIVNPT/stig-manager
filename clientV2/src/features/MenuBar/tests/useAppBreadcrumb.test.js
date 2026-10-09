@@ -42,7 +42,7 @@ describe('useAppBreadcrumb', () => {
     })
   })
 
-  it('keeps the route query when switching revision from Collection Review', () => {
+  it('carries the label filter when switching revision from Collection Review', () => {
     const { navigateToRevision } = useAppBreadcrumb()
 
     navigateToRevision('V2R1')
@@ -50,11 +50,11 @@ describe('useAppBreadcrumb', () => {
     expect(mockPush).toHaveBeenCalledWith({
       name: 'collection-benchmark-review',
       params: { collectionId: 'coll-1', benchmarkId: 'bench-1', revisionStr: 'V2R1' },
-      query: { labelName: 'label-a' },
+      query: { labelName: ['label-a'] },
     })
   })
 
-  it('keeps the route query when switching STIG from Collection Review', () => {
+  it('carries the label filter when switching STIG from Collection Review', () => {
     const { navigateToStig } = useAppBreadcrumb()
 
     navigateToStig('bench-2')
@@ -62,7 +62,7 @@ describe('useAppBreadcrumb', () => {
     expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({
       name: 'collection-benchmark-review',
       params: expect.objectContaining({ benchmarkId: 'bench-2' }),
-      query: { labelName: 'label-a' },
+      query: { labelName: ['label-a'] },
     }))
   })
 })

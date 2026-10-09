@@ -8,7 +8,7 @@ import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { fetchCollection } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
-import { buildLabelFilterParams, parseLabelFilterParams } from '../../../shared/lib/labelFilters.js'
+import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
 import { defaultFieldSettings, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchAssetsByCollectionStig, fetchCollectionChecklist, fetchReviewsByRule, fetchRule, postReviewBatch } from '../api/collectionReviewApi.js'
@@ -27,17 +27,8 @@ const collectionId = computed(() => route.params.collectionId)
 const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
 
-// Label filter lives in the route query (labelName=<name>&labelMatch=null) so a
-// label-scoped view is bookmarkable and readable; the API takes the names as is.
-const selectedLabelNames = computed(() => parseLabelFilterParams(route.query))
-const labelFilterParams = computed(() => buildLabelFilterParams(selectedLabelNames.value))
-// Stable watch source: the computeds above return fresh objects on every route change.
-const labelFilterKey = computed(() => JSON.stringify(labelFilterParams.value))
-
-function onUpdateSelectedLabelNames(names) {
-  const { labelName, labelMatch, ...rest } = route.query
-  router.replace({ query: { ...rest, ...buildLabelFilterParams(names) } })
-}
+// Label filter from the route query; the API takes the names as is.
+const { selectedLabelNames, labelFilterParams, labelFilterKey } = useLabelFilterQuery()
 
 function recentViewKey(cId = collectionId.value, bId = benchmarkId.value) {
   return `collection-review:${cId}:${bId}`
@@ -123,8 +114,9 @@ watch(collectionId, () => {
   }
 }, { immediate: true })
 
-// Reviews are fetched label-scoped (rule clicks stay small), so a label change
-// reloads the selected rule's reviews along with the checklist and assets.
+// Reviews are per collection and rule, fetched label-scoped (rule clicks stay
+// small), so the selected rule's reviews reload along with the checklist and
+// assets. A STIG change replaces the selection via the gridData watcher below.
 watch([collectionId, benchmarkId, revisionStr, labelFilterKey], () => {
   if (collectionId.value && benchmarkId.value && revisionStr.value) {
     loadChecklist()
@@ -327,11 +319,9 @@ async function onBatchEditConfirm(payload) {
                 :is-loading="isChecklistLoading"
                 :selected-rule-id="selectedRuleId"
                 :asset-count="assetCount"
-                :collection-id="collectionId"
-                :selected-label-names="selectedLabelNames"
+                v-model:selected-label-names="selectedLabelNames"
                 :export-filename="benchmarkId"
                 @select-rule="onSelectRule"
-                @update:selected-label-names="onUpdateSelectedLabelNames"
                 @refresh="loadChecklist"
               />
             </SplitterPanel>

@@ -61,27 +61,35 @@ const multiSelectPt = {
 
 const multiSelectRef = ref()
 const draftValues = ref([])
-// Label selections are label names (collections: collectionIds). The sentinel is longer than a label name can be, so it never collides with one.
-const NO_LABEL_SENTINEL = '__no_label_sentinel__' // ai suggestion because the value of null cannot be used in the multiselect options, we use a sentinel value to represent "no label"
+// MultiSelect cannot hold null, so "no label" is a sentinel in draftValues and
+// mapped back to null for the model. Label selections are label names; the
+// sentinel is only ever produced for noLabelOption (see optionValueOf) and is
+// longer than a label name can be (LabelName maxLength 16 in the API spec).
+const NO_LABEL_SENTINEL = '__no_label_sentinel__'
 const MAX_VISIBLE_SELECTED = 3
 
-const optionValue = computed(() => props.type === 'collection' ? 'collectionId' : 'filterValue')
 const placeholder = computed(() => props.type === 'collection' ? 'Select Collections to Filter...' : 'Select Labels to Filter ...')
 
+// labelId keys the chip in LabelsRow
 const noLabelOption = Object.freeze({
   labelId: NO_LABEL_SENTINEL,
-  filterValue: NO_LABEL_SENTINEL,
   name: 'No label',
   color: '777777',
 })
+
+// Selection values: collectionId for collections, the label name for labels.
+function optionValueOf(opt) {
+  if (props.type === 'collection') {
+    return opt.collectionId
+  }
+  return opt === noLabelOption ? NO_LABEL_SENTINEL : opt.name
+}
 
 const renderedOptions = computed(() => {
   if (props.type !== 'label') {
     return options.value || []
   }
-  const labelOptions = (options.value || [])
-    .filter(opt => opt.labelId !== null && opt.labelId !== 'null')
-    .map(opt => ({ ...opt, filterValue: opt.name }))
+  const labelOptions = (options.value || []).filter(opt => opt.labelId !== null && opt.labelId !== 'null')
   return [noLabelOption, ...labelOptions]
 })
 
@@ -98,7 +106,7 @@ const appliedOptions = computed(() => {
     return []
   }
   const selectedValues = new Set(toDraftValues(props.modelValue || []))
-  return renderedOptions.value.filter(opt => selectedValues.has(opt[optionValue.value]))
+  return renderedOptions.value.filter(opt => selectedValues.has(optionValueOf(opt)))
 })
 
 const selectedNames = computed(() => {
@@ -185,7 +193,7 @@ function formatLabelName(name) {
       class="metrics-multiselect"
       :class="{ 'is-active': appliedOptions.length > 0 }"
       :options="renderedOptions"
-      :option-value="optionValue"
+      :option-value="optionValueOf"
       option-label="name"
       :placeholder="placeholder"
       :filter="true"

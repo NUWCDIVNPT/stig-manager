@@ -5,6 +5,7 @@ import { fetchCollectionStigs } from '../../../shared/api/collectionsApi.js'
 import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { pickLabelFilterQuery } from '../../../shared/lib/labelFilters.js'
 
 /**
  * Global breadcrumb composable. Watches the active route and builds
@@ -175,7 +176,7 @@ export function useAppBreadcrumb() {
           benchmarkId: newBenchmarkId,
           revisionStr: stigData?.revisionStr || route.params.revisionStr,
         },
-        query: route.query, // keeps the label filter
+        query: pickLabelFilterQuery(route.query),
       })
     }
     else {
@@ -208,7 +209,7 @@ export function useAppBreadcrumb() {
           benchmarkId: route.params.benchmarkId,
           revisionStr: newRevisionStr,
         },
-        query: route.query, // keeps the label filter
+        query: pickLabelFilterQuery(route.query),
       })
     }
     else {

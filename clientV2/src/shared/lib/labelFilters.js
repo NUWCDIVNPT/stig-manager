@@ -23,8 +23,7 @@ export function buildLabelFilterParams(selectedLabelNames = []) {
 // Inverse of buildLabelFilterParams for values read back from a route query,
 // where a repeated key may arrive as a string or an array.
 export function parseLabelFilterParams(query = {}) {
-  const raw = query.labelName === undefined ? [] : [].concat(query.labelName)
-  const names = raw.filter(name => typeof name === 'string' && name)
+  const names = [].concat(query.labelName ?? []).filter(name => typeof name === 'string' && name)
   if (query.labelMatch === 'null') {
     names.push(null)
   }

@@ -18,10 +18,6 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-  collectionId: {
-    type: String,
-    default: null,
-  },
   activePreset: {
     type: String,
     default: null,
@@ -44,6 +40,7 @@ const filters = defineModel('filters', { type: Array, default: () => [] })
 const selectedLabelNames = defineModel('selectedLabelNames', { type: Array, default: () => [] })
 
 const route = useRoute()
+const collectionId = computed(() => route.params.collectionId)
 const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
 

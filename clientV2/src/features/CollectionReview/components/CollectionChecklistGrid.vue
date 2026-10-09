@@ -24,10 +24,6 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
-  collectionId: {
-    type: String,
-    default: null,
-  },
   // CSV export basename; the parent passes the benchmarkId (legacy convention).
   exportFilename: {
     type: String,
@@ -106,7 +102,6 @@ const { itemSize, gridStyle } = useGridDensity('collection-checklist')
       v-model:filters="gridFilters"
       v-model:selected-label-names="selectedLabelNames"
       :toggleable-columns="TOGGLEABLE_COLUMNS"
-      :collection-id="collectionId"
       :active-preset="activePreset"
       :filter-columns="filterColumns"
       :filter-value-options="valueOptions"

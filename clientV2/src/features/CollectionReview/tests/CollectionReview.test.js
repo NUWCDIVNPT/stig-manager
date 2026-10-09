@@ -49,7 +49,7 @@ vi.mock('vue-router', () => ({
 vi.mock('../components/CollectionChecklistGrid.vue', () => ({
   default: {
     name: 'CollectionChecklistGrid',
-    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount', 'collectionId', 'selectedLabelNames'],
+    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount', 'selectedLabelNames'],
     template: `
       <div data-testid="mock-checklist-grid">
         <button data-testid="emit-select-rule" @click="$emit('select-rule', 'V-456')">Select Rule</button>
@@ -182,12 +182,7 @@ describe('collectionReview.vue', () => {
     })
 
     it('passes the label filter from the route query to the checklist and asset fetches', async () => {
-      useRoute.mockReturnValue({
-        params: { collectionId: 'coll-1', benchmarkId: 'bench-1', revisionStr: 'rev-1' },
-        query: { labelName: 'label-a', labelMatch: 'null' },
-        fullPath: '/collections/coll-1/bench-1/rev-1?labelName=label-a&labelMatch=null',
-        path: '/collections/coll-1/bench-1/rev-1',
-      })
+      routeState.query = { labelName: 'label-a', labelMatch: 'null' }
       createWrapper()
       await flushPromises()
 
