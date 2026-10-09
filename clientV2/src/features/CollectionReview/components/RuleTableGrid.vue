@@ -94,20 +94,12 @@ const selectedIdSet = computed(() => {
   return s
 })
 
+// Shift-click range anchor, keyed by assetId so sorting/filtering can't stale it
+let selectAnchorId = null
+let shiftToggle = false
+
 function onSelectionChange(val) {
   emit('update:selection', val)
-}
-
-function onToggleSelectRow(data) {
-  const ids = selectedIdSet.value
-  let newSelection
-  if (ids.has(data.assetId)) {
-    newSelection = props.selection.filter(s => s.assetId !== data.assetId)
-  }
-  else {
-    newSelection = [...props.selection, data]
-  }
-  emit('update:selection', newSelection)
 }
 
 const getRowClass = (data) => {
@@ -172,6 +164,12 @@ function openRowEditor(event, rowData) {
 function onRowClick(event) {
   const rowData = event.data
   if (!rowData || rowData.access !== 'rw') {
+    return
+  }
+  if (event.originalEvent?.shiftKey) {
+    window.getSelection()?.removeAllRanges()
+    shiftToggle = true
+    onToggleSelectRow(rowData)
     return
   }
   openRowEditor(event.originalEvent || event, rowData)
@@ -248,6 +246,41 @@ function onSelectAllChange(event) {
   else {
     emit('update:selection', [])
   }
+}
+
+function onSelectHitMouseDown(event) {
+  shiftToggle = event.shiftKey
+  if (event.shiftKey) {
+    event.preventDefault()
+  }
+}
+
+// Sets every selectable row between the anchor and `data` (in displayed order) to `checked`
+function selectRangeTo(data, checked) {
+  const rows = dataTableRef.value?.processedData ?? filteredData.value
+  const from = rows.findIndex(r => r.assetId === selectAnchorId)
+  const to = rows.findIndex(r => r.assetId === data.assetId)
+  if (from < 0 || to < 0) {
+    return false
+  }
+  const range = rows.slice(Math.min(from, to), Math.max(from, to) + 1).filter(isDataSelectable)
+  const rangeIds = new Set(range.map(r => r.assetId))
+  const kept = props.selection.filter(s => !rangeIds.has(s.assetId))
+  emit('update:selection', checked ? [...kept, ...range] : kept)
+  return true
+}
+
+function onToggleSelectRow(data) {
+  const checked = !selectedIdSet.value.has(data.assetId)
+  // An empty selection resets the anchor, so the first click after a clear is a single toggle
+  const isRange = shiftToggle && props.selection.length > 0
+  shiftToggle = false
+  if (!isRange || !selectRangeTo(data, checked)) {
+    emit('update:selection', checked
+      ? [...props.selection, data]
+      : props.selection.filter(s => s.assetId !== data.assetId))
+  }
+  selectAnchorId = data.assetId
 }
 
 const stats = computed(() => calculateChecklistStats(filteredData.value) ?? {
@@ -333,7 +366,7 @@ const dataTablePt = {
           alt="Read only"
           title="Read only"
         >
-        <label v-else class="selection-hit" @click.stop>
+        <label v-else class="selection-hit" @click.stop @mousedown="onSelectHitMouseDown">
           <Checkbox
             :model-value="selectedIdSet.has(data.assetId)"
             :binary="true"
