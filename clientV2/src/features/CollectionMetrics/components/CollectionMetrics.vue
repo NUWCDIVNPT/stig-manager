@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue'
+import MetricsFilter from '../../../components/common/MetricsFilter.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionMetricsSummary } from '../api/metricsApi.js'
@@ -11,7 +12,6 @@ import Cora from './Cora.vue'
 import ExportMetricsModal from './ExportMetricsModal.vue'
 import FindingsStats from './FindingsStats.vue'
 import InventoryStats from './InventoryStats.vue'
-import MetricsFilter from './MetricsFilter.vue'
 import Progress from './Progress.vue'
 import ReviewAgesStats from './ReviewAgesStats.vue'
 
@@ -28,7 +28,7 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  selectedLabelIds: {
+  selectedLabelNames: {
     type: Array,
     default: () => [],
   },
@@ -38,12 +38,12 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:selectedLabelIds'])
+const emit = defineEmits(['update:selectedLabelNames'])
 
 const fetchMetrics = () => {
   return fetchCollectionMetricsSummary(
     props.collectionId,
-    buildLabelFilterParams(props.selectedLabelIds),
+    buildLabelFilterParams(props.selectedLabelNames),
   )
 }
 
@@ -52,7 +52,7 @@ const { state: metrics, isLoading, error: errorMessage, execute: loadMetrics } =
   { immediate: false },
 )
 
-watch([() => props.collectionId, () => props.selectedLabelIds, () => props.refreshKey], loadMetrics, { immediate: true, deep: true })
+watch([() => props.collectionId, () => props.selectedLabelNames, () => props.refreshKey], loadMetrics, { immediate: true, deep: true })
 
 // hint metrics is reactive cuz it's from a query
 const { stats: progressStats } = useCollectionProgress(metrics)
@@ -72,10 +72,10 @@ const showExportModal = ref(false)
     <div v-else class="metrics-container" :class="{ 'metrics-container--vertical': vertical }">
       <div v-if="vertical" class="metrics-filter-row">
         <MetricsFilter
-          :model-value="selectedLabelIds"
+          :model-value="selectedLabelNames"
           type="label"
           :collection-id="collectionId"
-          @update:model-value="emit('update:selectedLabelIds', $event)"
+          @update:model-value="emit('update:selectedLabelNames', $event)"
         />
       </div>
       <Progress :stats="progressStats" />

@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { getLastStigLibraryUrl } from '../features/STIGLibrary/lastVisited.js'
 import { isAppDataEnabled, isLogStreamEnabled } from '../shared/lib/featureFlags.js'
+import { pickLabelFilterQuery } from '../shared/lib/labelFilters.js'
 import { navigationGuard } from './navigationGuards.js'
 
 // Lazy load components
@@ -120,7 +121,8 @@ const routes = [
         { label: 'Collections', route: { name: 'collections' } },
         {
           label: (route, getCollectionName) => getCollectionName(route.params.collectionId),
-          route: route => ({ name: 'collection', params: { collectionId: route.params.collectionId } }),
+          // carries the label filter back to the Collection dashboard
+          route: route => ({ name: 'collection', params: { collectionId: route.params.collectionId }, query: pickLabelFilterQuery(route.query) }),
           pickerType: 'collection',
         },
         { label: route => route.params.benchmarkId || 'STIG', isDropdown: true, dropdownType: 'stig' },

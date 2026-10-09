@@ -1,10 +1,11 @@
 <script setup>
 import MultiSelect from 'primevue/multiselect'
 import { computed, ref, watch } from 'vue'
-import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { getContrastColor, normalizeColor } from '../../../shared/lib/colorUtils.js'
-import { fetchCollectionLabels } from '../../CollectionView/api/collectionApi.js'
-import { fetchMetaCollections } from '../../MetaCollectionView/api/metaApi.js'
+import { fetchCollectionLabels } from '../../features/CollectionView/api/collectionApi.js'
+import { fetchMetaCollections } from '../../features/MetaCollectionView/api/metaApi.js'
+import { useAsyncState } from '../../shared/composables/useAsyncState.js'
+import { getContrastColor, normalizeColor } from '../../shared/lib/colorUtils.js'
+import LabelsRow from '../columns/LabelsRow.vue'
 
 const props = defineProps({
   modelValue: {
@@ -47,7 +48,8 @@ watch(() => props.collectionId, () => {
 
 const multiSelectPt = {
   root: { style: 'background-color: var(--color-background-light); border-color: var(--color-border-default)' },
-  label: { style: 'padding: 5px 10px; font-size: var(--text-md); color: var(--color-text-primary)' },
+  // flex on label: LabelsRow has no intrinsic width (contain: inline-size), so the label must grow to give it room
+  label: { style: 'padding: 5px 10px; font-size: var(--text-md); color: var(--color-text-primary); flex: 1 1 auto' },
   labelContainer: { style: { display: 'flex', alignItems: 'center' } },
   overlay: { style: { width: '250px' } },
   listContainer: { style: { maxHeight: '270px' } },
@@ -59,17 +61,29 @@ const multiSelectPt = {
 
 const multiSelectRef = ref()
 const draftValues = ref([])
-const NO_LABEL_SENTINEL = '__no_label__' // ai suggestion because the value of null cannot be used in the multiselect options, we use a sentinel value to represent "no label"
+// MultiSelect cannot hold null, so "no label" is a sentinel in draftValues and
+// mapped back to null for the model. Label selections are label names; the
+// sentinel is only ever produced for noLabelOption (see optionValueOf) and is
+// longer than a label name can be (LabelName maxLength 16 in the API spec).
+const NO_LABEL_SENTINEL = '__no_label_sentinel__'
 const MAX_VISIBLE_SELECTED = 3
 
-const optionValue = computed(() => props.type === 'collection' ? 'collectionId' : 'labelId')
 const placeholder = computed(() => props.type === 'collection' ? 'Select Collections to Filter...' : 'Select Labels to Filter ...')
 
+// labelId keys the chip in LabelsRow
 const noLabelOption = Object.freeze({
   labelId: NO_LABEL_SENTINEL,
   name: 'No label',
   color: '777777',
 })
+
+// Selection values: collectionId for collections, the label name for labels.
+function optionValueOf(opt) {
+  if (props.type === 'collection') {
+    return opt.collectionId
+  }
+  return opt === noLabelOption ? NO_LABEL_SENTINEL : opt.name
+}
 
 const renderedOptions = computed(() => {
   if (props.type !== 'label') {
@@ -92,7 +106,7 @@ const appliedOptions = computed(() => {
     return []
   }
   const selectedValues = new Set(toDraftValues(props.modelValue || []))
-  return renderedOptions.value.filter(opt => selectedValues.has(opt[optionValue.value]))
+  return renderedOptions.value.filter(opt => selectedValues.has(optionValueOf(opt)))
 })
 
 const selectedNames = computed(() => {
@@ -107,6 +121,10 @@ const selectedNames = computed(() => {
 const visibleSelectedNames = computed(() => selectedNames.value.slice(0, MAX_VISIBLE_SELECTED))
 const hiddenSelectedCount = computed(() => Math.max(0, selectedNames.value.length - visibleSelectedNames.value.length))
 const fullSelectedListText = computed(() => selectedNames.value.join(', '))
+
+// Selected labels render through LabelsRow so the trigger shows the same chips
+// and "+N" overflow as label cells elsewhere; collections stay text.
+const showSelectedChips = computed(() => props.type === 'label' && !isLoading.value && appliedOptions.value.length > 0)
 
 const displayText = computed(() => {
   if (isLoading.value) {
@@ -175,7 +193,7 @@ function formatLabelName(name) {
       class="metrics-multiselect"
       :class="{ 'is-active': appliedOptions.length > 0 }"
       :options="renderedOptions"
-      :option-value="optionValue"
+      :option-value="optionValueOf"
       option-label="name"
       :placeholder="placeholder"
       :filter="true"
@@ -193,7 +211,10 @@ function formatLabelName(name) {
       <template #value>
         <div class="trigger-left" :title="appliedOptions.length > 0 ? fullSelectedListText : ''">
           <i class="pi" :class="appliedOptions.length > 0 ? 'pi-filter-fill' : 'pi-filter'" />
-          <span class="placeholder-text">{{ displayText }}</span>
+          <div v-if="showSelectedChips" class="trigger-chips">
+            <LabelsRow :labels="appliedOptions" compact />
+          </div>
+          <span v-else class="placeholder-text">{{ displayText }}</span>
         </div>
       </template>
 
@@ -256,9 +277,14 @@ function formatLabelName(name) {
 .trigger-left {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
   flex: 1;
   overflow: hidden;
+}
+
+.trigger-chips {
+  flex: 1;
+  min-width: 0;
 }
 
 .placeholder-text {

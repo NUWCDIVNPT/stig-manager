@@ -13,7 +13,7 @@ const props = defineProps({
     type: [String, Number],
     required: true,
   },
-  selectedLabelIds: {
+  selectedLabelNames: {
     type: Array,
     default: () => [],
   },
@@ -29,7 +29,7 @@ const router = useRouter()
 const fetchStigs = () => {
   return fetchCollectionStigSummary(
     props.collectionId,
-    buildLabelFilterParams(props.selectedLabelIds),
+    buildLabelFilterParams(props.selectedLabelNames),
   )
 }
 
@@ -48,14 +48,14 @@ const { state: checklistAssets, isLoading: checklistAssetsLoading, execute: load
     return fetchCollectionChecklistAssets(
       props.collectionId,
       selectedBenchmarkId.value,
-      buildLabelFilterParams(props.selectedLabelIds),
+      buildLabelFilterParams(props.selectedLabelNames),
     )
   },
   { initialState: [], immediate: false },
 )
 
 // Initial Load
-watch([() => props.collectionId, () => props.selectedLabelIds, () => props.refreshKey], () => {
+watch([() => props.collectionId, () => props.selectedLabelNames, () => props.refreshKey], () => {
   loadStigs()
   selectedBenchmarkId.value = null
 }, { immediate: true, deep: true })
@@ -93,6 +93,8 @@ function handleChecklistAssetAction(rowData) {
   })
 }
 
+// Carries the dashboard label filter along so Collection Review opens scoped
+// to the same Assets the grid was showing.
 function handleStigShieldClick(rowData) {
   router.push({
     name: 'collection-benchmark-review',
@@ -101,6 +103,7 @@ function handleStigShieldClick(rowData) {
       benchmarkId: rowData.benchmarkId,
       revisionStr: rowData.revisionStr,
     },
+    query: buildLabelFilterParams(props.selectedLabelNames),
   })
 }
 </script>

@@ -1,6 +1,7 @@
 import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 // API Mocks
 import { fetchCollection } from '../../../shared/api/collectionsApi.js'
@@ -48,11 +49,12 @@ vi.mock('vue-router', () => ({
 vi.mock('../components/CollectionChecklistGrid.vue', () => ({
   default: {
     name: 'CollectionChecklistGrid',
-    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount'],
+    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount', 'selectedLabelNames'],
     template: `
       <div data-testid="mock-checklist-grid">
         <button data-testid="emit-select-rule" @click="$emit('select-rule', 'V-456')">Select Rule</button>
         <button data-testid="emit-refresh" @click="$emit('refresh')">Refresh</button>
+        <button data-testid="set-labels" @click="$emit('update:selectedLabelNames', ['label-b', null])">Set Labels</button>
       </div>
     `,
   },
@@ -75,7 +77,11 @@ vi.mock('../components/RuleTable.vue', () => ({
 }))
 
 vi.mock('../../../components/common/RuleInfo.vue', () => ({
-  default: { name: 'RuleInfo', template: '<div data-testid="mock-rule-info"></div>' },
+  default: {
+    name: 'RuleInfo',
+    props: ['ruleContent'],
+    template: '<div data-testid="mock-rule-info" :data-has-rule="String(!!ruleContent)"></div>',
+  },
 }))
 
 vi.mock('../components/RejectReasonModal.vue', () => ({
@@ -108,25 +114,29 @@ vi.mock('primevue/splitter', () => ({ default: { name: 'Splitter', template: '<d
 vi.mock('primevue/splitterpanel', () => ({ default: { name: 'SplitterPanel', template: '<div><slot></slot></div>' } }))
 
 describe('collectionReview.vue', () => {
-  let mockRouterPush, mockAddView, mockRemoveView
+  let mockRouterPush, mockRouterReplace, mockAddView, mockRemoveView, routeState
 
   beforeEach(() => {
     vi.clearAllMocks()
 
     mockRouterPush = vi.fn()
+    mockRouterReplace = vi.fn()
     mockAddView = vi.fn()
     mockRemoveView = vi.fn()
 
-    useRouter.mockReturnValue({ push: mockRouterPush })
-    useRoute.mockReturnValue({
+    useRouter.mockReturnValue({ push: mockRouterPush, replace: mockRouterReplace })
+    // reactive so tests can change the query in place, as router.replace would
+    routeState = reactive({
       params: {
         collectionId: 'coll-1',
         benchmarkId: 'bench-1',
         revisionStr: 'rev-1',
       },
+      query: {},
       fullPath: '/collections/coll-1/bench-1/rev-1',
       path: '/collections/coll-1/bench-1/rev-1',
     })
+    useRoute.mockReturnValue(routeState)
 
     useCurrentUser.mockReturnValue({
       getCollectionRoleId: vi.fn().mockReturnValue(3),
@@ -167,8 +177,71 @@ describe('collectionReview.vue', () => {
       await flushPromises()
 
       expect(fetchCollection).toHaveBeenCalledWith('coll-1')
-      expect(fetchCollectionChecklist).toHaveBeenCalledWith('coll-1', 'bench-1', 'rev-1')
-      expect(fetchAssetsByCollectionStig).toHaveBeenCalledWith('coll-1', 'bench-1')
+      expect(fetchCollectionChecklist).toHaveBeenCalledWith('coll-1', 'bench-1', 'rev-1', {})
+      expect(fetchAssetsByCollectionStig).toHaveBeenCalledWith('coll-1', 'bench-1', {})
+    })
+
+    it('passes the label filter from the route query to the checklist and asset fetches', async () => {
+      routeState.query = { labelName: 'label-a', labelMatch: 'null' }
+      createWrapper()
+      await flushPromises()
+
+      const expected = { labelName: ['label-a'], labelMatch: 'null' }
+      expect(fetchCollectionChecklist).toHaveBeenCalledWith('coll-1', 'bench-1', 'rev-1', expected)
+      expect(fetchAssetsByCollectionStig).toHaveBeenCalledWith('coll-1', 'bench-1', expected)
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', expected)
+    })
+
+    it('writes a changed label selection to the route query', async () => {
+      createWrapper()
+      await flushPromises()
+
+      await fireEvent.click(screen.getByTestId('set-labels'))
+
+      expect(mockRouterReplace).toHaveBeenCalledWith({ query: { labelName: ['label-b'], labelMatch: 'null' } })
+    })
+
+    it('keeps unrelated query keys when writing the label selection', async () => {
+      routeState.query = { foo: 'bar', labelName: 'label-a' }
+      createWrapper()
+      await flushPromises()
+
+      await fireEvent.click(screen.getByTestId('set-labels'))
+
+      expect(mockRouterReplace).toHaveBeenCalledWith({ query: { foo: 'bar', labelName: ['label-b'], labelMatch: 'null' } })
+    })
+
+    it('reloads checklist, assets and the selected rule reviews on a label change, and refreshes the recent view', async () => {
+      createWrapper()
+      await flushPromises()
+      vi.clearAllMocks()
+
+      routeState.query = { labelName: 'label-a' }
+      routeState.fullPath = '/collections/coll-1/bench-1/rev-1?labelName=label-a'
+      await flushPromises()
+
+      const expected = { labelName: ['label-a'] }
+      expect(fetchCollectionChecklist).toHaveBeenCalledTimes(1)
+      expect(fetchCollectionChecklist).toHaveBeenCalledWith('coll-1', 'bench-1', 'rev-1', expected)
+      expect(fetchAssetsByCollectionStig).toHaveBeenCalledTimes(1)
+      expect(fetchAssetsByCollectionStig).toHaveBeenCalledWith('coll-1', 'bench-1', expected)
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', expected)
+      expect(mockAddView).toHaveBeenLastCalledWith(expect.objectContaining({
+        key: 'collection-review:coll-1:bench-1',
+        url: '/collections/coll-1/bench-1/rev-1?labelName=label-a',
+      }))
+    })
+
+    it('clears the rule panel when the filtered checklist comes back empty', async () => {
+      createWrapper()
+      await flushPromises()
+      expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('true')
+
+      fetchCollectionChecklist.mockResolvedValue([])
+      routeState.query = { labelName: 'label-with-no-assets' }
+      await flushPromises()
+
+      expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('false')
     })
 
     it('adds recent view entry when collection metadata loads', async () => {
@@ -212,7 +285,7 @@ describe('collectionReview.vue', () => {
       // When the grid loads, V-123 should be selected.
       // This will trigger fetchRule and fetchReviewsByRule.
       expect(fetchRule).toHaveBeenCalledWith('bench-1', 'rev-1', 'V-123')
-      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123')
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', {})
     })
 
     it('updates selectedRuleId and fetches new data on select-rule event', async () => {
@@ -226,7 +299,7 @@ describe('collectionReview.vue', () => {
       await flushPromises()
 
       expect(fetchRule).toHaveBeenCalledWith('bench-1', 'rev-1', 'V-456')
-      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-456')
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-456', {})
     })
   })
 
@@ -249,7 +322,7 @@ describe('collectionReview.vue', () => {
         rules: { ruleIds: ['V-123'] },
       })
       // Should reload reviews after bulk save
-      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123')
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', {})
     })
 
     it('opens RejectReasonModal on reject, then calls postReviewBatch on confirm', async () => {

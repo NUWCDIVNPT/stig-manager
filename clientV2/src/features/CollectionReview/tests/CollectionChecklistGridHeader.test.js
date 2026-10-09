@@ -45,6 +45,10 @@ vi.mock('vue-router', () => ({
   useRoute: vi.fn(),
 }))
 
+vi.mock('../../../components/common/MetricsFilter.vue', () => ({
+  default: { name: 'MetricsFilter', template: '<div data-testid="mock-label-filter" />' },
+}))
+
 describe('checklistGridHeader.vue', () => {
   let mockDensityState
 

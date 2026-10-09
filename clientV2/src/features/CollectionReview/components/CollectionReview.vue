@@ -8,6 +8,7 @@ import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { fetchCollection } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
 import { defaultFieldSettings, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchAssetsByCollectionStig, fetchCollectionChecklist, fetchReviewsByRule, fetchRule, postReviewBatch } from '../api/collectionReviewApi.js'
@@ -25,6 +26,9 @@ const { getCollectionRoleId } = useCurrentUser()
 const collectionId = computed(() => route.params.collectionId)
 const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
+
+// Label filter from the route query; the API takes the names as is.
+const { selectedLabelNames, labelFilterParams, labelFilterKey } = useLabelFilterQuery()
 
 function recentViewKey(cId = collectionId.value, bId = benchmarkId.value) {
   return `collection-review:${cId}:${bId}`
@@ -54,12 +58,12 @@ const canAccept = computed(() =>
 )
 
 const { state: gridData, isLoading: isChecklistLoading, error: checklistError, execute: loadChecklist } = useAsyncState(
-  () => fetchCollectionChecklist(collectionId.value, benchmarkId.value, revisionStr.value),
+  () => fetchCollectionChecklist(collectionId.value, benchmarkId.value, revisionStr.value, labelFilterParams.value),
   { immediate: false, initialState: [] },
 )
 
 const { state: assets, execute: loadAssets } = useAsyncState(
-  () => fetchAssetsByCollectionStig(collectionId.value, benchmarkId.value),
+  () => fetchAssetsByCollectionStig(collectionId.value, benchmarkId.value, labelFilterParams.value),
   { immediate: false, initialState: [] },
 )
 
@@ -82,7 +86,7 @@ const {
   isLoading: isReviewsLoading,
   execute: loadReviews,
 } = useAsyncState(
-  ruleId => fetchReviewsByRule(collectionId.value, ruleId),
+  ruleId => fetchReviewsByRule(collectionId.value, ruleId, labelFilterParams.value),
   { immediate: false, initialState: [], onError: null },
 )
 
@@ -110,15 +114,21 @@ watch(collectionId, () => {
   }
 }, { immediate: true })
 
-watch([collectionId, benchmarkId, revisionStr], () => {
+// Reviews are per collection and rule, fetched label-scoped (rule clicks stay
+// small), so the selected rule's reviews reload along with the checklist and
+// assets. A STIG change replaces the selection via the gridData watcher below.
+watch([collectionId, benchmarkId, revisionStr, labelFilterKey], () => {
   if (collectionId.value && benchmarkId.value && revisionStr.value) {
     loadChecklist()
     loadAssets()
+    if (selectedRuleId.value) {
+      loadReviews(selectedRuleId.value)
+    }
   }
 }, { immediate: true })
 
 watch(
-  [collection, () => route.params.benchmarkId, () => route.params.revisionStr],
+  [collection, () => route.params.benchmarkId, () => route.params.revisionStr, labelFilterKey],
   ([c]) => {
     if (c?.name && route.params.benchmarkId) {
       addView({
@@ -153,6 +163,8 @@ watch(gridData, (data) => {
 // load data when we have a selected rule and collection/benchmarkid/revisionstr
 watch(selectedRuleId, (ruleId) => {
   if (!ruleId) {
+    ruleContent.value = null
+    reviewsData.value = []
     return
   }
   if (benchmarkId.value && revisionStr.value) {
@@ -307,6 +319,7 @@ async function onBatchEditConfirm(payload) {
                 :is-loading="isChecklistLoading"
                 :selected-rule-id="selectedRuleId"
                 :asset-count="assetCount"
+                v-model:selected-label-names="selectedLabelNames"
                 :export-filename="benchmarkId"
                 @select-rule="onSelectRule"
                 @refresh="loadChecklist"

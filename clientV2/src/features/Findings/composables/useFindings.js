@@ -9,19 +9,19 @@ import { fetchFindings } from '../api/findingsApi.js'
 //   benchmarkId === null → "All Collection STIGs" (no benchmarkId query param)
 // getFindingsByCollection accepts labelId/labelMatch server-side, so aggregated
 // row counts honor the orchestrator's label filter.
-export function useFindings({ collectionId, aggregator, benchmarkId, labelIds }) {
+export function useFindings({ collectionId, aggregator, benchmarkId, labelNames }) {
   const { state: findings, isLoading, error, execute } = useAsyncState(
     ({ signal } = {}) => fetchFindings(collectionId.value, {
       aggregator: aggregator.value,
       benchmarkId: benchmarkId.value || undefined,
-      ...buildLabelFilterParams(labelIds.value),
+      ...buildLabelFilterParams(labelNames.value),
     }, { signal }),
     { immediate: false, initialState: [], onError: null },
   )
 
   // Refetch whenever the collection, aggregator, STIG scope, or label filter changes.
   watch(
-    [collectionId, aggregator, benchmarkId, labelIds],
+    [collectionId, aggregator, benchmarkId, labelNames],
     () => {
       if (collectionId.value && aggregator.value) {
         execute()

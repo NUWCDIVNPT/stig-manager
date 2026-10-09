@@ -14,7 +14,7 @@ const props = defineProps({
     type: [String],
     required: true,
   },
-  selectedLabelIds: {
+  selectedLabelNames: {
     type: Array,
     default: () => [],
   },
@@ -23,7 +23,7 @@ const props = defineProps({
 const { state: labels, isLoading: labelsLoading, execute: loadLabels } = useAsyncState(
   () => fetchCollectionLabelSummary(
     props.collectionId,
-    buildLabelFilterParams(props.selectedLabelIds),
+    buildLabelFilterParams(props.selectedLabelNames),
   ),
   { initialState: [], immediate: false },
 )
@@ -59,7 +59,7 @@ const { state: assetStigs, isLoading: assetStigsLoading, execute: loadAssetStigs
 )
 
 // first load
-watch([() => props.collectionId, () => props.selectedLabelIds], () => {
+watch([() => props.collectionId, () => props.selectedLabelNames], () => {
   loadLabels()
   selectedLabelId.value = null
   isLabelSelected.value = false

@@ -12,6 +12,8 @@ import SidebarFilterIndicator from '../../../components/common/SidebarFilterIndi
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { pickLabelFilterQuery } from '../../../shared/lib/labelFilters.js'
 import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
 import CollectionImportResults from '../../CollectionMetrics/components/CollectionImportResults.vue'
@@ -61,8 +63,16 @@ const { state: collection, execute: loadCollection } = useAsyncState(
 
 const collectionName = computed(() => collection.value?.name || 'Collection')
 
-// Track Recent Views on data load and route change
-watch([collection, () => route.name], ([col, routeName]) => {
+// Label filter shared by the dashboard sidebar and every tab.
+const { selectedLabelNames, labelFilterKey } = useLabelFilterQuery()
+// Flags the hidden filter on the collapsed dashboard rail.
+const labelFilterHint = computed(() => {
+  const n = selectedLabelNames.value.length
+  return n ? `Filtering by ${n} label${n === 1 ? '' : 's'}` : ''
+})
+
+// Track Recent Views on data load, route change and label filter change
+watch([collection, () => route.name, labelFilterKey], ([col, routeName]) => {
   if (col?.name && routeName?.startsWith('collection')) {
     let label = col.name
     let key = `collection:${props.collectionId}`
@@ -117,6 +127,7 @@ const activeTab = computed({
       router.push({
         name: routeName,
         params: { collectionId: props.collectionId },
+        query: pickLabelFilterQuery(route.query),
       })
     }
   },
@@ -132,24 +143,13 @@ watch(isManagement, () => {
   }, 300)
 })
 
-// Orchestrator-level label filter shared by the dashboard sidebar and every tab.
-const selectedLabelIds = ref([])
-const labelFilterHint = computed(() => {
-  const n = selectedLabelIds.value.length
-  return n ? `Filtering by ${n} label${n === 1 ? '' : 's'}` : ''
-})
-
 // Lazy-mount tab panels: only render a tab's content after it has been visited.
 // Reset on collection switch so tabs visited in a prior collection don't mount
-// (and fetch) unvisited in the new one. The label filter is reset alongside:
-// label IDs are collection-scoped, and this ref outlives the `v-if="collection"`
-// remount, so without the reset the new collection would be queried with the
-// old collection's labels (empty panes, lingering clear icon in MetricsFilter).
+// (and fetch) unvisited in the new one.
 const visitedTabs = ref(new Set([activeTab.value]))
 watch(activeTab, tab => visitedTabs.value.add(tab))
 watch(() => props.collectionId, () => {
   visitedTabs.value = new Set([activeTab.value])
-  selectedLabelIds.value = []
 })
 
 const tabsPt = {
@@ -243,7 +243,7 @@ function toggleDashboardSidebar() {
           </div>
           <div v-show="!dashboardCollapsed" class="sidebar-content">
             <CollectionMetrics
-              v-model:selected-label-ids="selectedLabelIds"
+              v-model:selected-label-names="selectedLabelNames"
               :collection-id="collectionId"
               :collection-name="collectionName"
               :refresh-key="refreshKey"
@@ -291,16 +291,16 @@ function toggleDashboardSidebar() {
 
             <TabPanels :pt="tabPanelsPt">
               <TabPanel value="stigs" :pt="tabPanelPt">
-                <CollectionStigsTab v-if="visitedTabs.has('stigs')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" :refresh-key="refreshKey" />
+                <CollectionStigsTab v-if="visitedTabs.has('stigs')" :collection-id="collectionId" :selected-label-names="selectedLabelNames" :refresh-key="refreshKey" />
               </TabPanel>
               <TabPanel value="assets" :pt="tabPanelPt">
-                <CollectionAssetsTab v-if="visitedTabs.has('assets')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" :refresh-key="refreshKey" />
+                <CollectionAssetsTab v-if="visitedTabs.has('assets')" :collection-id="collectionId" :selected-label-names="selectedLabelNames" :refresh-key="refreshKey" />
               </TabPanel>
               <TabPanel value="labels" :pt="tabPanelPt">
-                <CollectionLabelsTab v-if="visitedTabs.has('labels')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
+                <CollectionLabelsTab v-if="visitedTabs.has('labels')" :collection-id="collectionId" :selected-label-names="selectedLabelNames" />
               </TabPanel>
               <TabPanel value="findings" :pt="tabPanelPt">
-                <Findings v-if="visitedTabs.has('findings')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
+                <Findings v-if="visitedTabs.has('findings')" :collection-id="collectionId" :selected-label-names="selectedLabelNames" />
               </TabPanel>
               <TabPanel v-if="canManage" value="management" :pt="tabPanelPt">
                 <Transition name="management-fade">
