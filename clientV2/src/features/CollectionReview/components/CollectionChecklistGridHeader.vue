@@ -8,7 +8,6 @@ import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
-import MetricsFilter from '../../../components/common/MetricsFilter.vue'
 import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
@@ -37,10 +36,8 @@ const emit = defineEmits(['apply-preset'])
 const searchFilter = defineModel('searchFilter', { type: String, default: '' })
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
 const filters = defineModel('filters', { type: Array, default: () => [] })
-const selectedLabelNames = defineModel('selectedLabelNames', { type: Array, default: () => [] })
 
 const route = useRoute()
-const collectionId = computed(() => route.params.collectionId)
 const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
 
@@ -119,9 +116,6 @@ function toggleChecklistMenu(event) {
     <div class="checklist-grid__header-top">
       <div class="checklist-grid__title-row">
         <span class="checklist-grid__title">{{ headerTitle }}</span>
-        <div class="checklist-grid__label-filter">
-          <MetricsFilter v-model="selectedLabelNames" type="label" :collection-id="collectionId" />
-        </div>
       </div>
     </div>
 
@@ -200,11 +194,6 @@ function toggleChecklistMenu(event) {
   gap: 0.55rem;
   flex-wrap: nowrap;
   min-width: 0;
-}
-
-.checklist-grid__label-filter {
-  flex-shrink: 0;
-  margin-left: 0.5rem;
 }
 
 .checklist-grid__menu-btn {

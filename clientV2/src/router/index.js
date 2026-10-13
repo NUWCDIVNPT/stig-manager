@@ -60,28 +60,28 @@ const routes = [
         name: 'collection-stigs',
         component: EmptyComponent,
         props: true,
-        meta: { breadcrumbs: [{ label: 'STIGs' }] },
+        meta: { labelFilter: true, breadcrumbs: [{ label: 'STIGs' }] },
       },
       {
         path: 'assets',
         name: 'collection-assets',
         component: EmptyComponent,
         props: true,
-        meta: { breadcrumbs: [{ label: 'Assets' }] },
+        meta: { labelFilter: true, breadcrumbs: [{ label: 'Assets' }] },
       },
       {
         path: 'labels',
         name: 'collection-labels',
         component: EmptyComponent,
         props: true,
-        meta: { breadcrumbs: [{ label: 'Labels' }] },
+        meta: { labelFilter: true, breadcrumbs: [{ label: 'Labels' }] },
       },
       {
         path: 'findings',
         name: 'collection-findings',
         component: EmptyComponent,
         props: true,
-        meta: { breadcrumbs: [{ label: 'Findings' }] },
+        meta: { labelFilter: true, breadcrumbs: [{ label: 'Findings' }] },
       },
       {
         path: 'management',
@@ -117,6 +117,8 @@ const routes = [
     component: CollectionReview,
     meta: {
       requiresCollectionGrant: true,
+      // shows the collection label filter after the breadcrumb (MenuBar)
+      labelFilter: true,
       breadcrumbs: [
         { label: 'Collections', route: { name: 'collections' } },
         {

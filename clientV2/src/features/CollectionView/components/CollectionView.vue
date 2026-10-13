@@ -8,7 +8,6 @@ import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import SidebarFilterIndicator from '../../../components/common/SidebarFilterIndicator.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
@@ -63,13 +62,8 @@ const { state: collection, execute: loadCollection } = useAsyncState(
 
 const collectionName = computed(() => collection.value?.name || 'Collection')
 
-// Label filter shared by the dashboard sidebar and every tab.
+// Label filter (set from the breadcrumb) shared by the dashboard metrics and every tab.
 const { selectedLabelNames, labelFilterKey } = useLabelFilterQuery()
-// Flags the hidden filter on the collapsed dashboard rail.
-const labelFilterHint = computed(() => {
-  const n = selectedLabelNames.value.length
-  return n ? `Filtering by ${n} label${n === 1 ? '' : 's'}` : ''
-})
 
 // Track Recent Views on data load, route change and label filter change
 watch([collection, () => route.name, labelFilterKey], ([col, routeName]) => {
@@ -233,7 +227,6 @@ function toggleDashboardSidebar() {
           >
             <i :class="dashboardCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'" />
           </button>
-          <SidebarFilterIndicator v-if="dashboardCollapsed && labelFilterHint" :hint="labelFilterHint" @expand="toggleDashboardSidebar" />
           <div v-if="dashboardCollapsed" class="sidebar-dots">
             <span class="dot dot--unassessed" title="Unassessed" />
             <span class="dot dot--assessed" title="Assessed" />
@@ -243,7 +236,7 @@ function toggleDashboardSidebar() {
           </div>
           <div v-show="!dashboardCollapsed" class="sidebar-content">
             <CollectionMetrics
-              v-model:selected-label-names="selectedLabelNames"
+              :selected-label-names="selectedLabelNames"
               :collection-id="collectionId"
               :collection-name="collectionName"
               :refresh-key="refreshKey"

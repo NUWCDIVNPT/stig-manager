@@ -49,12 +49,11 @@ vi.mock('vue-router', () => ({
 vi.mock('../components/CollectionChecklistGrid.vue', () => ({
   default: {
     name: 'CollectionChecklistGrid',
-    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount', 'selectedLabelNames'],
+    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount'],
     template: `
       <div data-testid="mock-checklist-grid">
         <button data-testid="emit-select-rule" @click="$emit('select-rule', 'V-456')">Select Rule</button>
         <button data-testid="emit-refresh" @click="$emit('refresh')">Refresh</button>
-        <button data-testid="set-labels" @click="$emit('update:selectedLabelNames', ['label-b', null])">Set Labels</button>
       </div>
     `,
   },
@@ -190,25 +189,6 @@ describe('collectionReview.vue', () => {
       expect(fetchCollectionChecklist).toHaveBeenCalledWith('coll-1', 'bench-1', 'rev-1', expected)
       expect(fetchAssetsByCollectionStig).toHaveBeenCalledWith('coll-1', 'bench-1', expected)
       expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', expected)
-    })
-
-    it('writes a changed label selection to the route query', async () => {
-      createWrapper()
-      await flushPromises()
-
-      await fireEvent.click(screen.getByTestId('set-labels'))
-
-      expect(mockRouterReplace).toHaveBeenCalledWith({ query: { labelName: ['label-b'], labelMatch: 'null' } })
-    })
-
-    it('keeps unrelated query keys when writing the label selection', async () => {
-      routeState.query = { foo: 'bar', labelName: 'label-a' }
-      createWrapper()
-      await flushPromises()
-
-      await fireEvent.click(screen.getByTestId('set-labels'))
-
-      expect(mockRouterReplace).toHaveBeenCalledWith({ query: { foo: 'bar', labelName: ['label-b'], labelMatch: 'null' } })
     })
 
     it('reloads checklist, assets and the selected rule reviews on a label change, and refreshes the recent view', async () => {

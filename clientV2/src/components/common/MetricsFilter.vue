@@ -2,20 +2,17 @@
 import MultiSelect from 'primevue/multiselect'
 import { computed, ref, watch } from 'vue'
 import { fetchCollectionLabels } from '../../features/CollectionView/api/collectionApi.js'
-import { fetchMetaCollections } from '../../features/MetaCollectionView/api/metaApi.js'
 import { useAsyncState } from '../../shared/composables/useAsyncState.js'
-import { getContrastColor, normalizeColor } from '../../shared/lib/colorUtils.js'
-import LabelsRow from '../columns/LabelsRow.vue'
+import { labelChipStyle, normalizeColor } from '../../shared/lib/colorUtils.js'
+import LabelChip from './Label.vue'
+import { MAX_VISIBLE_PILLS, pillsMultiSelectPt } from './pillsPicker.js'
 
+// Collection label picker: the applied labels are removable chips that open the picker.
 const props = defineProps({
+  // Label names; `null` means "assets with no label"
   modelValue: {
     type: Array,
     default: () => [],
-  },
-  type: {
-    type: String,
-    required: true,
-    validator: val => ['collection', 'label'].includes(val),
   },
   collectionId: {
     type: [String, Number],
@@ -25,70 +22,61 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
-const fetchOptions = () => {
-  if (props.type === 'collection') {
-    return fetchMetaCollections()
-  }
-  if (props.type === 'label' && props.collectionId) {
-    return fetchCollectionLabels(props.collectionId)
-  }
-  return []
-}
-
 const { state: options, isLoading, execute } = useAsyncState(
-  fetchOptions,
-  { initialState: [], immediate: true },
+  () => props.collectionId ? fetchCollectionLabels(props.collectionId) : [],
+  { initialState: [], immediate: false },
 )
 
-watch(() => props.collectionId, () => {
-  if (props.type === 'label') {
-    execute()
-  }
-})
+// Collection the loaded label options belong to; null until a load succeeds
+const loadedCollectionId = ref(null)
 
-const multiSelectPt = {
-  root: { style: 'background-color: var(--color-background-light); border-color: var(--color-border-default)' },
-  // flex on label: LabelsRow has no intrinsic width (contain: inline-size), so the label must grow to give it room
-  label: { style: 'padding: 5px 10px; font-size: var(--text-md); color: var(--color-text-primary); flex: 1 1 auto' },
-  labelContainer: { style: { display: 'flex', alignItems: 'center' } },
-  overlay: { style: { width: '250px' } },
-  listContainer: { style: { maxHeight: '270px' } },
-  list: { style: { padding: '0.25rem' } },
-  option: { style: { padding: '0.35rem 0.6rem', fontSize: 'var(--text-md)' } },
-  header: { style: { padding: '0.4rem 0.5rem' } },
-  pcFilter: { root: { style: { padding: '0.3rem 0.5rem', fontSize: 'var(--text-md)' } } },
+async function loadOptions() {
+  const requestedId = props.collectionId
+  loadedCollectionId.value = null
+  const result = await execute()
+  if (result && requestedId && requestedId === props.collectionId) {
+    loadedCollectionId.value = requestedId
+  }
 }
+
+loadOptions()
+
+watch(() => props.collectionId, loadOptions)
+
+// Drop selected label names the collection doesn't have (stale bookmark, renamed or
+// deleted label) so the filter never applies something the picker can't show.
+watch([() => props.modelValue, loadedCollectionId], () => {
+  if (loadedCollectionId.value !== props.collectionId || !props.modelValue?.length) {
+    return
+  }
+  const known = new Set(options.value.map(opt => opt.name))
+  const kept = props.modelValue.filter(name => name === null || known.has(name))
+  if (kept.length !== props.modelValue.length) {
+    emit('update:modelValue', kept)
+  }
+}, { immediate: true })
 
 const multiSelectRef = ref()
 const draftValues = ref([])
+// Chip remove is hidden (space kept) while open: removing would reset the unapplied draft
+const isOverlayOpen = ref(false)
 // MultiSelect cannot hold null, so "no label" is a sentinel in draftValues and
 // mapped back to null for the model. Label selections are label names; the
 // sentinel is only ever produced for noLabelOption (see optionValueOf) and is
 // longer than a label name can be (LabelName maxLength 16 in the API spec).
 const NO_LABEL_SENTINEL = '__no_label_sentinel__'
-const MAX_VISIBLE_SELECTED = 3
 
-const placeholder = computed(() => props.type === 'collection' ? 'Select Collections to Filter...' : 'Select Labels to Filter ...')
-
-// labelId keys the chip in LabelsRow
 const noLabelOption = Object.freeze({
   labelId: NO_LABEL_SENTINEL,
   name: 'No label',
   color: '777777',
 })
 
-// Selection values: collectionId for collections, the label name for labels.
 function optionValueOf(opt) {
-  if (props.type === 'collection') {
-    return opt.collectionId
-  }
   return opt === noLabelOption ? NO_LABEL_SENTINEL : opt.name
 }
 
 const renderedOptions = computed(() => {
-  if (props.type !== 'label') {
-    return options.value || []
-  }
   const labelOptions = (options.value || []).filter(opt => opt.labelId !== null && opt.labelId !== 'null')
   return [noLabelOption, ...labelOptions]
 })
@@ -102,50 +90,19 @@ watch(
 )
 
 const appliedOptions = computed(() => {
-  if (!renderedOptions.value) {
-    return []
-  }
   const selectedValues = new Set(toDraftValues(props.modelValue || []))
   return renderedOptions.value.filter(opt => selectedValues.has(optionValueOf(opt)))
 })
 
-const selectedNames = computed(() => {
-  return appliedOptions.value.map((opt) => {
-    if (props.type === 'label') {
-      return formatLabelName(opt.name)
-    }
-    return opt.name || 'unnamed collection'
-  })
-})
+const visiblePills = computed(() => appliedOptions.value.slice(0, MAX_VISIBLE_PILLS))
+const hiddenPillCount = computed(() => appliedOptions.value.length - visiblePills.value.length)
 
-const visibleSelectedNames = computed(() => selectedNames.value.slice(0, MAX_VISIBLE_SELECTED))
-const hiddenSelectedCount = computed(() => Math.max(0, selectedNames.value.length - visibleSelectedNames.value.length))
-const fullSelectedListText = computed(() => selectedNames.value.join(', '))
-
-// Selected labels render through LabelsRow so the trigger shows the same chips
-// and "+N" overflow as label cells elsewhere; collections stay text.
-const showSelectedChips = computed(() => props.type === 'label' && !isLoading.value && appliedOptions.value.length > 0)
-
-const displayText = computed(() => {
-  if (isLoading.value) {
-    return 'Loading...'
-  }
-  if (selectedNames.value.length === 0) {
-    return placeholder.value
-  }
-  const visibleText = visibleSelectedNames.value.join(', ')
-  if (hiddenSelectedCount.value > 0) {
-    return `${visibleText} +${hiddenSelectedCount.value} more`
-  }
-  return visibleText
-})
-
-const isVisible = computed(() => {
-  if (props.type === 'label' && !isLoading.value && (!renderedOptions.value || renderedOptions.value.length === 0)) {
-    return false
-  }
-  return true
-})
+// Refetch labels on open so ones added or renamed elsewhere show up; silent, since
+// MultiSelect ignores clicks while `loading`.
+function onBeforeShow() {
+  isOverlayOpen.value = true
+  loadOptions()
+}
 
 function syncDraftFromModel() {
   draftValues.value = toDraftValues(props.modelValue || [])
@@ -175,59 +132,56 @@ function cancelFilters() {
   multiSelectRef.value?.hide?.()
 }
 
-function clearFilters() {
-  draftValues.value = []
-  emit('update:modelValue', [])
-}
-
-function formatLabelName(name) {
-  return name || 'no label'
+function removeOption(opt) {
+  const value = optionValueOf(opt)
+  emit('update:modelValue', toModelValues(toDraftValues(props.modelValue).filter(v => v !== value)))
 }
 </script>
 
 <template>
-  <div v-if="isVisible" class="metrics-filter-container">
+  <div class="label-picker-container">
     <MultiSelect
       ref="multiSelectRef"
       v-model="draftValues"
-      class="metrics-multiselect"
-      :class="{ 'is-active': appliedOptions.length > 0 }"
+      class="pills-picker"
       :options="renderedOptions"
       :option-value="optionValueOf"
       option-label="name"
-      :placeholder="placeholder"
+      placeholder="Filter by label"
       :filter="true"
       :show-toggle-all="true"
-      :max-selected-labels="3"
-      :loading="isLoading"
-      :pt="multiSelectPt"
-      :show-clear="true"
+      :loading="isLoading && !options.length"
+      :pt="pillsMultiSelectPt"
       @show="syncDraftFromModel"
+      @before-show="onBeforeShow"
+      @before-hide="isOverlayOpen = false"
     >
-      <template #clearicon>
-        <i class="pi pi-times sm-clear-icon" title="Clear filters" @click.stop.prevent="clearFilters" />
-      </template>
-
       <template #value>
-        <div class="trigger-left" :title="appliedOptions.length > 0 ? fullSelectedListText : ''">
-          <i class="pi" :class="appliedOptions.length > 0 ? 'pi-filter-fill' : 'pi-filter'" />
-          <div v-if="showSelectedChips" class="trigger-chips">
-            <LabelsRow :labels="appliedOptions" compact />
-          </div>
-          <span v-else class="placeholder-text">{{ displayText }}</span>
+        <div class="trigger-pills">
+          <span v-if="!appliedOptions.length" class="trigger-pills__placeholder">Filter by label</span>
+          <span v-else class="trigger-pills__chips">
+            <span
+              v-for="opt in visiblePills"
+              :key="opt.labelId"
+              class="trigger-pills__chip"
+              :style="labelChipStyle(opt.color)"
+            >
+              <span class="trigger-pills__name">{{ opt.name }}</span>
+              <i
+                class="pi pi-times trigger-pills__remove"
+                :style="isOverlayOpen ? { visibility: 'hidden' } : null"
+                :title="`Remove ${opt.name}`"
+                @click.stop.prevent="removeOption(opt)"
+              />
+            </span>
+            <span v-if="hiddenPillCount" class="trigger-pills__more">+{{ hiddenPillCount }}</span>
+          </span>
+          <span class="trigger-pills__chevron"><i class="pi pi-chevron-down" /></span>
         </div>
       </template>
 
       <template #option="slotProps">
-        <span
-          v-if="type === 'label'"
-          class="label-chip"
-          :class="{ 'is-empty-label': !slotProps.option.name }"
-          :style="{ backgroundColor: normalizeColor(slotProps.option.color, '#000000'), color: getContrastColor(slotProps.option.color, '#000000', '#ffffff') }"
-        >
-          {{ formatLabelName(slotProps.option.name) }}
-        </span>
-        <span v-else>{{ slotProps.option.name || 'unnamed collection' }}</span>
+        <LabelChip :value="slotProps.option.name" :color="normalizeColor(slotProps.option.color)" />
       </template>
 
       <template #footer>
@@ -245,64 +199,13 @@ function formatLabelName(name) {
   </div>
 </template>
 
+<style scoped src="./pillsPicker.css"></style>
+
 <style scoped>
-.metrics-filter-container {
+.label-picker-container {
   display: flex;
   align-items: center;
   width: 100%;
-}
-
-.metrics-multiselect {
-  width: 235px;
-}
-
-.metrics-multiselect.is-active {
-  background-color: var(--color-bg-hover-strong) !important;
-}
-
-.sm-clear-icon {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  right: 2rem;
-  padding: 0.3rem;
-  cursor: pointer;
-  color: var(--color-text-dim);
-}
-
-.sm-clear-icon:hover {
-  color: var(--color-text-bright);
-}
-
-.trigger-left {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  flex: 1;
-  overflow: hidden;
-}
-
-.trigger-chips {
-  flex: 1;
-  min-width: 0;
-}
-
-.placeholder-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.label-chip {
-  display: inline-block;
-  padding: 0.125rem 0.5rem;
-  border-radius: 4px;
-  font-size: var(--text-sm);
-  font-weight: 500;
-}
-
-.is-empty-label {
-  font-style: italic;
 }
 
 .panel-footer {

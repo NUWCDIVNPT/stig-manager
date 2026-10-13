@@ -1,6 +1,5 @@
 <script setup>
 import { ref, watch } from 'vue'
-import MetricsFilter from '../../../components/common/MetricsFilter.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionMetricsSummary } from '../api/metricsApi.js'
@@ -38,8 +37,6 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:selectedLabelNames'])
-
 const fetchMetrics = () => {
   return fetchCollectionMetricsSummary(
     props.collectionId,
@@ -70,14 +67,6 @@ const showExportModal = ref(false)
       {{ errorMessage }}
     </div>
     <div v-else class="metrics-container" :class="{ 'metrics-container--vertical': vertical }">
-      <div v-if="vertical" class="metrics-filter-row">
-        <MetricsFilter
-          :model-value="selectedLabelNames"
-          type="label"
-          :collection-id="collectionId"
-          @update:model-value="emit('update:selectedLabelNames', $event)"
-        />
-      </div>
       <Progress :stats="progressStats" />
       <Cora :cora-data="coraData" />
       <div class="stats-column">
@@ -114,17 +103,5 @@ const showExportModal = ref(false)
 
 .metrics-container--vertical .stats-column {
   max-width: none;
-}
-
-.metrics-filter-row {
-  width: 100%;
-}
-
-.metrics-filter-row :deep(.metrics-filter-container) {
-  width: 100%;
-}
-
-.metrics-filter-row :deep(.metrics-multiselect) {
-  width: 100%;
 }
 </style>

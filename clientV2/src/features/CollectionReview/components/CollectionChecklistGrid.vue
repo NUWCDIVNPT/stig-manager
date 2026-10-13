@@ -33,9 +33,6 @@ const props = defineProps({
 
 const emit = defineEmits(['select-rule', 'refresh'])
 
-// Label filter selection (label names); `null` entries mean "assets with no label".
-const selectedLabelNames = defineModel('selectedLabelNames', { type: Array, default: () => [] })
-
 const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
   { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
   { field: 'groupId', header: 'Group' },
@@ -100,7 +97,6 @@ const { itemSize, gridStyle } = useGridDensity('collection-checklist')
       v-model:search-filter="searchFilter"
       v-model:selected-columns="selectedColumns"
       v-model:filters="gridFilters"
-      v-model:selected-label-names="selectedLabelNames"
       :toggleable-columns="TOGGLEABLE_COLUMNS"
       :active-preset="activePreset"
       :filter-columns="filterColumns"

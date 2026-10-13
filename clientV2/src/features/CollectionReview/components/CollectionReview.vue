@@ -27,8 +27,8 @@ const collectionId = computed(() => route.params.collectionId)
 const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
 
-// Label filter from the route query; the API takes the names as is.
-const { selectedLabelNames, labelFilterParams, labelFilterKey } = useLabelFilterQuery()
+// Label filter from the route query (set from the breadcrumb); the API takes the names as is.
+const { labelFilterParams, labelFilterKey } = useLabelFilterQuery()
 
 function recentViewKey(cId = collectionId.value, bId = benchmarkId.value) {
   return `collection-review:${cId}:${bId}`
@@ -319,7 +319,6 @@ async function onBatchEditConfirm(payload) {
                 :is-loading="isChecklistLoading"
                 :selected-rule-id="selectedRuleId"
                 :asset-count="assetCount"
-                v-model:selected-label-names="selectedLabelNames"
                 :export-filename="benchmarkId"
                 @select-rule="onSelectRule"
                 @refresh="loadChecklist"
