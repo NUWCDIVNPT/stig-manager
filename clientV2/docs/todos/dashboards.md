@@ -9,12 +9,6 @@ Rolls up review notes for both metrics dashboards:
 
 ## Layout
 
-- [ ] **Meta-dash filter sits in the tab bar; move it above the progress panel.**
-  `MetaCollectionView.vue` renders `MetricsFilter` inside `<TabList>` (`.tab-filter-container`, ~L149).
-  The Collection dash puts it in a `.metrics-filter-row` directly above `<Progress>`
-  (`CollectionMetrics.vue` ~L73-81). Move the meta filter into the sidebar above
-  `MetaCollectionMetrics` to match.
-
 - [ ] **Progress panel renders at different widths in the two dashes; normalize.**
   `Progress.vue` is shared (`CollectionMetrics.vue` + `MetaCollectionMetrics.vue`) but renders at
   different sizes. Likely the container, not the component: `MetaCollectionMetrics`'s vertical layout
@@ -27,25 +21,12 @@ Rolls up review notes for both metrics dashboards:
   fixed dims jump straight to scroll — sidebar `min-width: 330px` (`MetaCollectionView.vue` ~L111),
   `.stats-column max-width: 400px`, `Progress.vue` label col `width: 120px`.
 
-- [ ] **Collapsed dash gives no sign a filter is applied.**
-  When the progress/dashboard panel is collapsed the filter control is hidden, so there's no cue that
-  the view is filtered. In the meta-dash the collapsed sidebar shows only status dots
-  (`MetaCollectionView.vue` `.sidebar-dots`, ~L121); add a filter-applied indicator (badge / count of
-  active filters) there, and the equivalent in the collection dash. `MetricsFilter` already exposes
-  active state to reuse (`is-active` class / `pi-filter-fill` icon, ~L168/L187).
-
 ## Visual
 
 - [ ] **CORA grid sprites use a gradient; make them flat like the other sprites.**
   `style.css` `.sm-cora-risk-*` (L150-165) use `linear-gradient(...)`; status sprites are flat fills.
   Shared by the grid CORA column (`CoraColumn` via `MetricsSummaryGrid`), `Cora.vue`, `CoraPctBadge`,
   `CoraTooltip` — swap to a flat `background-color` in one place.
-
-- [ ] **Collection dash label filter shows plain text; render styled label sprites instead.**
-  `MetricsFilter.vue`'s `#value` trigger renders applied labels as a comma-joined text string
-  (`displayText`, ~L108-120 / template ~L185-190). The dropdown `#option` already styles each label as a
-  colored `.label-chip` (~L192-201) — reuse that (or `common/Label.vue` `sm-label-sprite`) in the trigger
-  so the closed filter shows the same styled sprites.
 
 ## Grid columns (shared `components/common/MetricsSummaryGrid.vue`)
 
