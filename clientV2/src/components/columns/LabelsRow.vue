@@ -1,7 +1,7 @@
 <script setup>
 import Popover from 'primevue/popover'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { getContrastColor, normalizeColor } from '../../shared/lib/colorUtils.js'
+import { labelChipStyle } from '../../shared/lib/colorUtils.js'
 import { rootFontSizePx } from '../../shared/lib/remToPx.js'
 import { TEXT_SCALE_REM } from '../../shared/lib/textScale.js'
 import { bodyFontFamily, measureTextWidth } from '../../shared/lib/textWidth.js'
@@ -155,7 +155,7 @@ function hidePopover() {
     <span
       v-for="label in visibleLabelsData.visible"
       :key="label.labelId"
-      :style="{ backgroundColor: normalizeColor(label.color, '#cccccc'), color: getContrastColor(label.color, '#000000', 'var(--color-text-primary)') }"
+      :style="labelChipStyle(label.color)"
       class="label-tag"
     >
       <HighlightText :text="label.name" :term="searchTerm" />
@@ -178,7 +178,7 @@ function hidePopover() {
         <span
           v-for="label in visibleLabelsData.overflow"
           :key="label.labelId"
-          :style="{ backgroundColor: normalizeColor(label.color, '#cccccc'), color: getContrastColor(label.color, '#000000', 'var(--color-text-primary)') }"
+          :style="labelChipStyle(label.color)"
           class="label-tag"
         >
           <HighlightText :text="label.name" :term="searchTerm" />

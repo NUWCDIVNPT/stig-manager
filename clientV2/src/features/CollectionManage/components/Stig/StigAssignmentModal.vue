@@ -10,7 +10,7 @@ import HelpIcon from '../../../../components/common/HelpIcon.vue'
 import PickList from '../../../../components/common/PickList.vue'
 import { fetchCollectionLabels } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
-import { getContrastColor, normalizeColor } from '../../../../shared/lib/colorUtils.js'
+import { labelChipStyle } from '../../../../shared/lib/colorUtils.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
@@ -287,13 +287,6 @@ function onPickerUpdate(newValue) {
 const assignedCount = computed(() => pickerValue.value[1].length)
 const availableCount = computed(() => pickerValue.value[0].length)
 
-function labelChipStyle(label) {
-  return {
-    backgroundColor: normalizeColor(label.color, '#cccccc'),
-    color: getContrastColor(label.color, '#000000', 'var(--color-text-primary)'),
-  }
-}
-
 const overflowPopoverRef = ref(null)
 const overflowPopoverLabels = ref([])
 
@@ -422,7 +415,7 @@ const selectPt = {
                   v-for="label in item.visibleLabels"
                   :key="label.labelId"
                   class="label-chip"
-                  :style="labelChipStyle(label)"
+                  :style="labelChipStyle(label.color)"
                 >
                   {{ label.name }}
                 </span>
@@ -450,7 +443,7 @@ const selectPt = {
             v-for="label in overflowPopoverLabels"
             :key="label.labelId"
             class="label-chip"
-            :style="labelChipStyle(label)"
+            :style="labelChipStyle(label.color)"
           >
             {{ label.name }}
           </span>
