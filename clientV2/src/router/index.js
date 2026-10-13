@@ -136,7 +136,7 @@ const routes = [
     path: '/collections',
     name: 'collections',
     component: MetaCollectionView,
-    meta: { breadcrumbs: [{ label: 'Collections' }] },
+    meta: { collectionFilter: true, breadcrumbs: [{ label: 'Collections' }] },
   },
   {
     path: '/app-management',

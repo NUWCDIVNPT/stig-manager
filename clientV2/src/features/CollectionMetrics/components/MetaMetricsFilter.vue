@@ -2,6 +2,7 @@
 import MultiSelect from 'primevue/multiselect'
 import SelectButton from 'primevue/selectbutton'
 import { computed, ref, watch } from 'vue'
+import { MAX_VISIBLE_PILLS, pillsMultiSelectPt } from '../../../components/common/pillsPicker.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { isActive as isFilterActive, valuesFilter } from '../../../shared/lib/columnFilters.js'
 import { fetchMetaCollections } from '../../MetaCollectionView/api/metaApi.js'
@@ -20,7 +21,6 @@ const MODE_OPTIONS = [
   { label: 'Include', value: false },
   { label: 'Exclude', value: true },
 ]
-const MAX_VISIBLE_SELECTED = 3
 // Every id goes in the request URL, so keep it well under proxy URL limits
 const MAX_SENT_IDS = 250
 
@@ -28,18 +28,6 @@ const { state: options, isLoading } = useAsyncState(
   fetchMetaCollections,
   { initialState: [], immediate: true },
 )
-
-const multiSelectPt = {
-  root: { style: 'width: 100%; background-color: var(--color-background-light); border-color: var(--color-border-default)' },
-  label: { style: 'padding: 5px 10px; font-size: var(--text-md); color: var(--color-text-primary)' },
-  labelContainer: { style: { display: 'flex', alignItems: 'center' } },
-  overlay: { style: { width: '250px' } },
-  listContainer: { style: { maxHeight: '270px' } },
-  list: { style: { padding: '0.25rem' } },
-  option: { style: { padding: '0.35rem 0.6rem', fontSize: 'var(--text-md)' } },
-  header: { style: { padding: '0.4rem 0.5rem' } },
-  pcFilter: { root: { style: { padding: '0.3rem 0.5rem', fontSize: 'var(--text-md)' } } },
-}
 
 const selectButtonPt = {
   root: { style: { display: 'flex', width: '100%' } },
@@ -52,6 +40,8 @@ const selectButtonPt = {
 const multiSelectRef = ref()
 const draftIds = ref([])
 const draftExclude = ref(false)
+// Chip remove is hidden (space kept) while open, matching the label filter
+const isOverlayOpen = ref(false)
 
 const appliedExclude = computed(() => Boolean(props.modelValue?.exclude))
 const appliedIds = computed(() => props.modelValue?.value || [])
@@ -77,18 +67,8 @@ const tooManyIds = computed(() => {
 
 const selectedNames = computed(() => appliedOptions.value.map(opt => opt.name || 'unnamed collection'))
 
-const displayText = computed(() => {
-  if (isLoading.value) {
-    return 'Loading...'
-  }
-  if (!isActive.value) {
-    return 'Select Collections to Filter...'
-  }
-  const prefix = appliedExclude.value ? 'Excluding: ' : ''
-  const visible = selectedNames.value.slice(0, MAX_VISIBLE_SELECTED).join(', ')
-  const hidden = selectedNames.value.length - MAX_VISIBLE_SELECTED
-  return hidden > 0 ? `${prefix}${visible} +${hidden} more` : `${prefix}${visible}`
-})
+const visiblePills = computed(() => appliedOptions.value.slice(0, MAX_VISIBLE_PILLS))
+const hiddenPillCount = computed(() => appliedOptions.value.length - visiblePills.value.length)
 
 const titleText = computed(() => {
   if (!isActive.value) {
@@ -132,10 +112,9 @@ function cancelFilters() {
   multiSelectRef.value?.hide?.()
 }
 
-function clearFilters() {
-  draftIds.value = []
-  draftExclude.value = false
-  emit('update:modelValue', valuesFilter())
+function removeCollection(collectionId) {
+  const ids = appliedIds.value.filter(id => id !== collectionId)
+  emit('update:modelValue', ids.length ? valuesFilter({ value: ids, exclude: appliedExclude.value }) : valuesFilter())
 }
 </script>
 
@@ -144,26 +123,38 @@ function clearFilters() {
     <MultiSelect
       ref="multiSelectRef"
       v-model="draftIds"
-      :class="{ 'is-active': isActive }"
+      class="pills-picker"
       :options="options"
       option-value="collectionId"
       option-label="name"
-      placeholder="Select Collections to Filter..."
+      placeholder="Filter by collection"
       :filter="true"
       :show-toggle-all="true"
       :loading="isLoading"
-      :pt="multiSelectPt"
-      :show-clear="true"
+      :pt="pillsMultiSelectPt"
       @show="syncDraftFromModel"
+      @before-show="isOverlayOpen = true"
+      @before-hide="isOverlayOpen = false"
     >
-      <template #clearicon>
-        <i class="pi pi-times sm-clear-icon" title="Clear filters" @click.stop.prevent="clearFilters" />
-      </template>
-
       <template #value>
-        <div class="trigger-left" :title="titleText">
-          <i class="pi" :class="isActive ? 'pi-filter-fill' : 'pi-filter'" />
-          <span class="placeholder-text">{{ displayText }}</span>
+        <div class="trigger-pills" :title="titleText">
+          <span v-if="!isActive" class="trigger-pills__placeholder">Filter by collection</span>
+          <template v-else>
+            <span v-if="appliedExclude" class="trigger-pills__mode">Excluding</span>
+            <span class="trigger-pills__chips">
+              <span v-for="opt in visiblePills" :key="opt.collectionId" class="trigger-pills__chip collection-chip">
+                <span class="trigger-pills__name">{{ opt.name || 'unnamed collection' }}</span>
+                <i
+                  class="pi pi-times trigger-pills__remove"
+                  :style="isOverlayOpen ? { visibility: 'hidden' } : null"
+                  :title="`Remove ${opt.name || 'unnamed collection'}`"
+                  @click.stop.prevent="removeCollection(opt.collectionId)"
+                />
+              </span>
+              <span v-if="hiddenPillCount" class="trigger-pills__more">+{{ hiddenPillCount }}</span>
+            </span>
+          </template>
+          <span class="trigger-pills__chevron"><i class="pi pi-chevron-down" /></span>
         </div>
       </template>
 
@@ -203,6 +194,8 @@ function clearFilters() {
   </div>
 </template>
 
+<style scoped src="../../../components/common/pillsPicker.css"></style>
+
 <style scoped>
 .meta-metrics-filter {
   display: flex;
@@ -210,35 +203,17 @@ function clearFilters() {
   width: 100%;
 }
 
-.is-active {
-  background-color: var(--color-bg-hover-strong) !important;
+/* Collections have no colour, so a neutral chip */
+.collection-chip {
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
 }
 
-.sm-clear-icon {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  right: 2rem;
-  padding: 0.3rem;
-  cursor: pointer;
+.trigger-pills__mode {
+  flex-shrink: 0;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
-}
-
-.sm-clear-icon:hover {
-  color: var(--color-text-bright);
-}
-
-.trigger-left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 1;
-  overflow: hidden;
-}
-
-.placeholder-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 

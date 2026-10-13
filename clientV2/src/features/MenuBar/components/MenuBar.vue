@@ -4,12 +4,15 @@ import { computed, inject } from 'vue'
 import { useRoute } from 'vue-router'
 import LabelFilterPills from '../../../components/common/LabelFilterPills.vue'
 import { useEnv } from '../../../shared/stores/useEnv.js'
+import CollectionFilterPills from '../../MetaCollectionView/components/CollectionFilterPills.vue'
 import { useAppBreadcrumb } from '../composables/useAppBreadcrumb.js'
 import BreadcrumbSelect from './BreadcrumbSelect.vue'
 
-// Routes flagged `meta.labelFilter` show the collection label filter after the breadcrumb.
+// Routes flag which filter shows after the breadcrumb: `meta.labelFilter` (collection
+// labels) or `meta.collectionFilter` (Collections page).
 const route = useRoute()
 const showLabelPills = computed(() => !!route.meta.labelFilter)
+const showCollectionPills = computed(() => !!route.meta.collectionFilter)
 
 const oidcWorker = inject('worker')
 const env = useEnv()
@@ -206,8 +209,9 @@ const pt = {
             >/</span>
           </template>
         </nav>
-        <div v-if="showLabelPills" class="breadcrumb-filter">
-          <LabelFilterPills />
+        <div v-if="showLabelPills || showCollectionPills" class="breadcrumb-filter">
+          <LabelFilterPills v-if="showLabelPills" />
+          <CollectionFilterPills v-else />
         </div>
       </div>
     </template>
