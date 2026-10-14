@@ -1,10 +1,11 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref } from 'vue'
-import PickListControls from './PickListControls.vue'
+import { computed } from 'vue'
+import PickListLayout from './PickListLayout.vue'
 import PickListPane from './PickListPane.vue'
 import StatusFooter from './StatusFooter.vue'
+import { usePickListModel } from './usePickListModel.js'
 
 const props = defineProps({
   /**
@@ -84,16 +85,18 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+const FILL_STYLE = 'background-color: var(--color-background-dark); flex: 1 1 auto; display: flex; flex-direction: column;'
+
 // Zero out the footer cell padding/border so the StatusFooter sits flush,
 // matching the other tables in the app (e.g. LabelsTable).
 const mergedPt = computed(() => {
   const rootStyle = [
-    'background-color: var(--color-background-dark); flex: 1 1 auto; display: flex; flex-direction: column;',
+    FILL_STYLE,
     props.tablePt?.root?.style,
   ].filter(Boolean).join('; ')
 
   const wrapperStyle = [
-    'background-color: var(--color-background-dark); flex: 1 1 auto; display: flex; flex-direction: column;',
+    FILL_STYLE,
     props.tablePt?.wrapper?.style,
   ].filter(Boolean).join('; ')
 
@@ -116,187 +119,120 @@ const mergedPt = computed(() => {
   }
 })
 
-const sourceSearch = ref('')
-const targetSearch = ref('')
-
-const selectionSource = ref([])
-const selectionTarget = ref([])
-
-const sourceList = computed(() => props.modelValue[0] || [])
-const targetList = computed(() => props.modelValue[1] || [])
-
-function defaultTextMatch(item, lowerSearch) {
-  if (!props.filterBy) {
-    return true
-  }
-  const val = item[props.filterBy]
-  return val && String(val).toLowerCase().includes(lowerSearch)
-}
-
-function applyFilters(list, searchText, useTextFilter) {
-  const trimmed = searchText?.trim() ?? ''
-  if (!useTextFilter || trimmed.length === 0) {
-    return list
-  }
-  const lowerSearch = trimmed.toLowerCase()
-  return list.filter((item) => {
-    return props.textFilterFn
-      ? props.textFilterFn(item, trimmed)
-      : defaultTextMatch(item, lowerSearch)
-  })
-}
-
-const filteredSource = computed(() =>
-  applyFilters(sourceList.value, sourceSearch.value, props.showSourceFilter),
-)
-
-const filteredTarget = computed(() =>
-  applyFilters(targetList.value, targetSearch.value, props.showTargetFilter),
-)
-
-function resetSourceSelection() {
-  selectionSource.value = []
-}
-
-function resetTargetSelection() {
-  selectionTarget.value = []
-}
-
-const onMoveRight = () => {
-  if (selectionSource.value.length > 0) {
-    const itemsToMove = [...selectionSource.value]
-    const newTarget = [...targetList.value, ...itemsToMove]
-    const newSource = sourceList.value.filter(item => !itemsToMove.includes(item))
-
-    emit('update:modelValue', [newSource, newTarget])
-    resetSourceSelection()
-  }
-}
-
-const onMoveLeft = () => {
-  if (selectionTarget.value.length > 0) {
-    const itemsToMove = [...selectionTarget.value]
-    const newSource = [...sourceList.value, ...itemsToMove]
-    const newTarget = targetList.value.filter(item => !itemsToMove.includes(item))
-
-    emit('update:modelValue', [newSource, newTarget])
-    resetTargetSelection()
-  }
-}
-
-const onMoveAllRight = () => {
-  const newTarget = [...targetList.value, ...filteredSource.value]
-  const newSource = sourceList.value.filter(item => !filteredSource.value.includes(item))
-
-  emit('update:modelValue', [newSource, newTarget])
-  resetSourceSelection()
-}
-
-const onMoveAllLeft = () => {
-  const newSource = [...sourceList.value, ...filteredTarget.value]
-  const newTarget = targetList.value.filter(item => !filteredTarget.value.includes(item))
-
-  emit('update:modelValue', [newSource, newTarget])
-  resetTargetSelection()
-}
+const {
+  sourceSearch,
+  targetSearch,
+  selectionSource,
+  selectionTarget,
+  sourceList,
+  targetList,
+  filteredSource,
+  filteredTarget,
+  onMoveRight,
+  onMoveLeft,
+  onMoveAllRight,
+  onMoveAllLeft,
+} = usePickListModel(props, emit)
 </script>
 
 <template>
   <div class="common-picklist-table-root">
-    <div class="picklist-container">
-      <PickListPane
-        v-model:search="sourceSearch"
-        :show-search="showSourceFilter"
-        :search-placeholder="sourceFilterPlaceholder"
-      >
-        <template #header>
-          <slot name="sourceheader">
-            Available
-          </slot>
-        </template>
-
-        <DataTable
-          v-model:selection="selectionSource"
-          :value="filteredSource"
-          :data-key="dataKey"
-          scrollable
-          scroll-height="flex"
-          selection-mode="multiple"
-          :virtual-scroller-options="virtualScrollerOptions || undefined"
-          class="flex-fill"
-          :table-style="{ 'table-layout': 'fixed' }"
-          :pt="mergedPt"
+    <PickListLayout
+      :add-disabled="selectionSource.length === 0"
+      :remove-disabled="selectionTarget.length === 0"
+      @add="onMoveRight"
+      @add-all="onMoveAllRight"
+      @remove="onMoveLeft"
+      @remove-all="onMoveAllLeft"
+    >
+      <template #source>
+        <PickListPane
+          v-model:search="sourceSearch"
+          :show-search="showSourceFilter"
+          :search-placeholder="sourceFilterPlaceholder"
         >
-          <Column selection-mode="multiple" style="width: 2.7rem;" />
-          <slot name="columns">
-            <Column :field="dataKey" :header="dataKey" />
-          </slot>
-
-          <template #footer>
-            <StatusFooter
-              :show-refresh="false"
-              :show-export="false"
-              :total-count="sourceList.length"
-              :filtered-count="filteredSource.length !== sourceList.length ? filteredSource.length : null"
-              :show-selected="selectionSource.length > 0"
-              :selected-items="selectionSource"
-              :total-label="totalLabel"
-            />
+          <template #header>
+            <slot name="sourceheader">
+              Available
+            </slot>
           </template>
-        </DataTable>
-      </PickListPane>
 
-      <PickListControls
-        :add-disabled="selectionSource.length === 0"
-        :remove-disabled="selectionTarget.length === 0"
-        @add="onMoveRight"
-        @add-all="onMoveAllRight"
-        @remove="onMoveLeft"
-        @remove-all="onMoveAllLeft"
-      />
+          <DataTable
+            v-model:selection="selectionSource"
+            :value="filteredSource"
+            :data-key="dataKey"
+            scrollable
+            scroll-height="flex"
+            selection-mode="multiple"
+            :virtual-scroller-options="virtualScrollerOptions || undefined"
+            class="flex-fill"
+            :table-style="{ 'table-layout': 'fixed' }"
+            :pt="mergedPt"
+          >
+            <Column selection-mode="multiple" style="width: 2.7rem;" />
+            <slot name="columns">
+              <Column :field="dataKey" :header="dataKey" />
+            </slot>
 
-      <PickListPane
-        v-model:search="targetSearch"
-        :show-search="showTargetFilter"
-        :search-placeholder="targetFilterPlaceholder"
-      >
-        <template #header>
-          <slot name="targetheader">
-            Selected
-          </slot>
-        </template>
+            <template #footer>
+              <StatusFooter
+                :show-refresh="false"
+                :show-export="false"
+                :total-count="sourceList.length"
+                :filtered-count="filteredSource.length !== sourceList.length ? filteredSource.length : null"
+                :show-selected="selectionSource.length > 0"
+                :selected-items="selectionSource"
+                :total-label="totalLabel"
+              />
+            </template>
+          </DataTable>
+        </PickListPane>
+      </template>
 
-        <DataTable
-          v-model:selection="selectionTarget"
-          :value="filteredTarget"
-          :data-key="dataKey"
-          scrollable
-          scroll-height="flex"
-          selection-mode="multiple"
-          :virtual-scroller-options="virtualScrollerOptions || undefined"
-          class="flex-fill"
-          :table-style="{ 'table-layout': 'fixed' }"
-          :pt="mergedPt"
+      <template #target>
+        <PickListPane
+          v-model:search="targetSearch"
+          :show-search="showTargetFilter"
+          :search-placeholder="targetFilterPlaceholder"
         >
-          <Column selection-mode="multiple" style="width: 2.7rem;" />
-          <slot name="columns">
-            <Column :field="dataKey" :header="dataKey" />
-          </slot>
-
-          <template #footer>
-            <StatusFooter
-              :show-refresh="false"
-              :show-export="false"
-              :total-count="targetList.length"
-              :filtered-count="filteredTarget.length !== targetList.length ? filteredTarget.length : null"
-              :show-selected="selectionTarget.length > 0"
-              :selected-items="selectionTarget"
-              :total-label="totalLabel"
-            />
+          <template #header>
+            <slot name="targetheader">
+              Selected
+            </slot>
           </template>
-        </DataTable>
-      </PickListPane>
-    </div>
+
+          <DataTable
+            v-model:selection="selectionTarget"
+            :value="filteredTarget"
+            :data-key="dataKey"
+            scrollable
+            scroll-height="flex"
+            selection-mode="multiple"
+            :virtual-scroller-options="virtualScrollerOptions || undefined"
+            class="flex-fill"
+            :table-style="{ 'table-layout': 'fixed' }"
+            :pt="mergedPt"
+          >
+            <Column selection-mode="multiple" style="width: 2.7rem;" />
+            <slot name="columns">
+              <Column :field="dataKey" :header="dataKey" />
+            </slot>
+
+            <template #footer>
+              <StatusFooter
+                :show-refresh="false"
+                :show-export="false"
+                :total-count="targetList.length"
+                :filtered-count="filteredTarget.length !== targetList.length ? filteredTarget.length : null"
+                :show-selected="selectionTarget.length > 0"
+                :selected-items="selectionTarget"
+                :total-label="totalLabel"
+              />
+            </template>
+          </DataTable>
+        </PickListPane>
+      </template>
+    </PickListLayout>
   </div>
 </template>
 
@@ -308,14 +244,6 @@ const onMoveAllLeft = () => {
   flex-direction: column;
   min-height: 0;
   user-select: none;
-}
-
-.picklist-container {
-  display: flex;
-  flex-direction: row;
-  flex: 1 1 auto;
-  gap: 0.5rem;
-  min-height: 0;
 }
 
 .flex-fill {

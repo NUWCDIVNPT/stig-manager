@@ -4,10 +4,9 @@ import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import { computed } from 'vue'
-import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
-import PickListControls from '../PickListControls.vue'
+import { pickListListboxPt, pickListVirtualScrollerOptions } from '../../../shared/lib/pickListPt.js'
+import PickListLayout from '../PickListLayout.vue'
 import PickListPane from '../PickListPane.vue'
-import { pickListListboxPt } from '../pickListStyles.js'
 import { getAssignableRoleOptions, roleMap } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 import { useGranteeFilter } from './useGranteeFilter.js'
@@ -34,7 +33,7 @@ const props = defineProps({
 
 const emit = defineEmits(['save', 'cancel', 'update:source', 'update:target'])
 
-const ROW_HEIGHT = rowHeightPx('compact')
+const VIRTUAL_SCROLLER_OPTIONS = pickListVirtualScrollerOptions()
 
 // Only an Owner (or an elevated caller) may grant the Owner role.
 const availableRoleOptions = computed(() => getAssignableRoleOptions(props.canModifyOwners))
@@ -92,85 +91,87 @@ const onCancel = () => {
 
 <template>
   <div class="grants-picklist-root">
-    <div class="picklist-container">
-      <PickListPane v-model:search="searchText" show-search search-placeholder="Search grantees...">
-        <template #header>
-          Available Grantees
-        </template>
-        <template #filter>
-          <div class="filter-group">
-            <label class="filter-label">User Last Active:</label>
-            <Select
-              v-model="selectedFilter"
-              :options="filterOptions"
-              option-label="label"
-              :pt="{ label: { style: 'font-size: var(--text-lg);' } }"
-            />
-          </div>
-        </template>
-
-        <Listbox
-          v-model="selectionSource"
-          :options="displaySource"
-          :option-label="itemLabel"
-          option-group-label="label"
-          option-group-children="items"
-          option-disabled="collapsed"
-          multiple
-          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
-          :pt="pickListListboxPt"
-        >
-          <template #optiongroup="slotProps">
-            <div class="group-header" @click="toggleGroupSource(slotProps.option.value)">
-              <i :class="collapsedGroupsSource[slotProps.option.value] ? 'pi pi-chevron-right' : 'pi pi-chevron-down'" />
-              <span>{{ slotProps.option.label }}</span>
+    <PickListLayout
+      :add-disabled="selectionSource.length === 0"
+      :remove-disabled="selectionTarget.length === 0"
+      @add="onMoveRight"
+      @add-all="onMoveAllRight"
+      @remove="onMoveLeft"
+      @remove-all="onMoveAllLeft"
+    >
+      <template #source>
+        <PickListPane v-model:search="searchText" show-search search-placeholder="Search grantees...">
+          <template #header>
+            Available Grantees
+          </template>
+          <template #filter>
+            <div class="filter-group">
+              <label class="filter-label">User Last Active:</label>
+              <Select
+                v-model="selectedFilter"
+                :options="filterOptions"
+                option-label="label"
+                :pt="{ label: { style: 'font-size: var(--text-lg);' } }"
+              />
             </div>
           </template>
-          <template #option="slotProps">
-            <div v-if="!slotProps.option.collapsed" class="option-item" :title="slotProps.option[itemLabel]">
-              <i :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
-              <span>{{ slotProps.option[itemLabel] }}</span>
-            </div>
-          </template>
-        </Listbox>
-      </PickListPane>
 
-      <PickListControls
-        :add-disabled="selectionSource.length === 0"
-        :remove-disabled="selectionTarget.length === 0"
-        @add="onMoveRight"
-        @add-all="onMoveAllRight"
-        @remove="onMoveLeft"
-        @remove-all="onMoveAllLeft"
-      />
-
-      <PickListPane>
-        <template #header>
-          <span>New Grants</span>
-          <RolePopover />
-        </template>
-        <Listbox
-          v-model="selectionTarget"
-          :options="localTarget"
-          :option-label="itemLabel"
-          multiple
-          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
-          :pt="pickListListboxPt"
-        >
-          <template #option="slotProps">
-            <div class="target-option-item">
-              <div class="target-option-name" :title="slotProps.option[itemLabel]">
+          <Listbox
+            v-model="selectionSource"
+            :options="displaySource"
+            :option-label="itemLabel"
+            option-group-label="label"
+            option-group-children="items"
+            option-disabled="collapsed"
+            multiple
+            :virtual-scroller-options="VIRTUAL_SCROLLER_OPTIONS"
+            :pt="pickListListboxPt"
+          >
+            <template #optiongroup="slotProps">
+              <div class="group-header" @click="toggleGroupSource(slotProps.option.value)">
+                <i :class="collapsedGroupsSource[slotProps.option.value] ? 'pi pi-chevron-right' : 'pi pi-chevron-down'" />
+                <span>{{ slotProps.option.label }}</span>
+              </div>
+            </template>
+            <template #option="slotProps">
+              <div v-if="!slotProps.option.collapsed" class="option-item" :title="slotProps.option[itemLabel]">
                 <i :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
                 <span>{{ slotProps.option[itemLabel] }}</span>
               </div>
-              <span v-if="slotProps.option.roleId" class="target-option-role">
-                {{ roleMap[slotProps.option.roleId] || slotProps.option.roleId }}
-              </span>
-            </div>
+            </template>
+          </Listbox>
+        </PickListPane>
+      </template>
+
+      <template #target>
+        <PickListPane>
+          <template #header>
+            <span>New Grants</span>
+            <RolePopover />
           </template>
-        </Listbox>
-      </PickListPane>
-    </div>
+          <Listbox
+            v-model="selectionTarget"
+            :options="localTarget"
+            :option-label="itemLabel"
+            multiple
+            :virtual-scroller-options="VIRTUAL_SCROLLER_OPTIONS"
+            :pt="pickListListboxPt"
+          >
+            <template #option="slotProps">
+              <div class="target-option-item">
+                <div class="target-option-name" :title="slotProps.option[itemLabel]">
+                  <i :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
+                  <span>{{ slotProps.option[itemLabel] }}</span>
+                </div>
+                <span v-if="slotProps.option.roleId" class="target-option-role">
+                  {{ roleMap[slotProps.option.roleId] || slotProps.option.roleId }}
+                </span>
+              </div>
+            </template>
+          </Listbox>
+        </PickListPane>
+      </template>
+    </PickListLayout>
 
     <Menu ref="addMenu" :model="addMenuItems" popup />
 
@@ -187,14 +188,6 @@ const onCancel = () => {
   height: 100%;
   display: flex;
   flex-direction: column;
-}
-
-.picklist-container {
-  display: flex;
-  flex-direction: row;
-  flex: 1 1 auto;
-  gap: 0.5rem;
-  min-height: 0;
 }
 
 .picklist-footer {
@@ -223,7 +216,6 @@ const onCancel = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: var(--text-md);
   min-width: 0;
 }
 
@@ -261,7 +253,6 @@ const onCancel = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: var(--text-md);
   flex: 1;
   min-width: 0;
 }
@@ -278,7 +269,6 @@ const onCancel = () => {
 }
 
 .target-option-role {
-  font-size: var(--text-md);
   color: var(--color-text-bright);
 }
 </style>

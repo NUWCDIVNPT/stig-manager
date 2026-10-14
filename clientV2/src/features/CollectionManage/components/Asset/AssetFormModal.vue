@@ -13,7 +13,7 @@ import CommonPickList from '../../../../components/common/PickList.vue'
 
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
-import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
+import { pickListVirtualScrollerOptions } from '../../../../shared/lib/pickListPt.js'
 import { useAssetForm } from '../../composables/useAssetForm.js'
 
 const props = defineProps({
@@ -24,7 +24,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'asset-created', 'asset-changed'])
 
-const ROW_HEIGHT = rowHeightPx('compact')
+const VIRTUAL_SCROLLER_OPTIONS = pickListVirtualScrollerOptions()
 
 const localVisible = computed({
   get: () => props.visible,
@@ -255,7 +255,7 @@ const checkboxPt = {
           filter-by="benchmarkId"
           source-filter-placeholder="Search STIGs..."
           target-filter-placeholder="Search assigned..."
-          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
+          :virtual-scroller-options="VIRTUAL_SCROLLER_OPTIONS"
         >
           <template #sourceheader>
             Available

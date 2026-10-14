@@ -1,9 +1,10 @@
 <script setup>
 import Listbox from 'primevue/listbox'
-import { computed, ref } from 'vue'
-import PickListControls from './PickListControls.vue'
+import { ref } from 'vue'
+import { pickListListboxPt } from '../../shared/lib/pickListPt.js'
+import PickListLayout from './PickListLayout.vue'
 import PickListPane from './PickListPane.vue'
-import { pickListListboxPt } from './pickListStyles.js'
+import { usePickListModel } from './usePickListModel.js'
 
 const props = defineProps({
   /**
@@ -75,12 +76,6 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
-const sourceSearch = ref('')
-const targetSearch = ref('')
-
-const selectionSource = ref([])
-const selectionTarget = ref([])
-
 const lastClickedSource = ref(null)
 const lastClickedTarget = ref(null)
 const prevSelectionSource = ref([])
@@ -90,37 +85,27 @@ const prevSelectionTarget = ref([])
 const lastActionSource = ref('add')
 const lastActionTarget = ref('add')
 
-const sourceList = computed(() => props.modelValue[0] || [])
-const targetList = computed(() => props.modelValue[1] || [])
-
-function defaultTextMatch(item, lowerSearch) {
-  if (!props.filterBy) {
-    return true
-  }
-  const val = item[props.filterBy]
-  return val && String(val).toLowerCase().includes(lowerSearch)
-}
-
-function applyFilters(list, searchText, useTextFilter) {
-  const trimmed = searchText?.trim() ?? ''
-  if (!useTextFilter || trimmed.length === 0) {
-    return list
-  }
-  const lowerSearch = trimmed.toLowerCase()
-  return list.filter((item) => {
-    return props.textFilterFn
-      ? props.textFilterFn(item, trimmed)
-      : defaultTextMatch(item, lowerSearch)
-  })
-}
-
-const filteredSource = computed(() =>
-  applyFilters(sourceList.value, sourceSearch.value, props.showSourceFilter),
-)
-
-const filteredTarget = computed(() =>
-  applyFilters(targetList.value, targetSearch.value, props.showTargetFilter),
-)
+const {
+  sourceSearch,
+  targetSearch,
+  selectionSource,
+  selectionTarget,
+  filteredSource,
+  filteredTarget,
+  onMoveRight,
+  onMoveLeft,
+  onMoveAllRight,
+  onMoveAllLeft,
+} = usePickListModel(props, emit, {
+  onSourceReset: () => {
+    prevSelectionSource.value = []
+    lastClickedSource.value = null
+  },
+  onTargetReset: () => {
+    prevSelectionTarget.value = []
+    lastClickedTarget.value = null
+  },
+})
 
 // Returns the row that changed between the previous and next selection, along
 // with whether it was added ('add') or removed ('remove').
@@ -191,128 +176,78 @@ function onTargetChange(event) {
     filtered: filteredTarget.value,
   })
 }
-
-function resetSourceSelection() {
-  selectionSource.value = []
-  prevSelectionSource.value = []
-  lastClickedSource.value = null
-}
-
-function resetTargetSelection() {
-  selectionTarget.value = []
-  prevSelectionTarget.value = []
-  lastClickedTarget.value = null
-}
-
-const onMoveRight = () => {
-  if (selectionSource.value.length > 0) {
-    const itemsToMove = [...selectionSource.value]
-    const newTarget = [...targetList.value, ...itemsToMove]
-    const newSource = sourceList.value.filter(item => !itemsToMove.includes(item))
-
-    emit('update:modelValue', [newSource, newTarget])
-    resetSourceSelection()
-  }
-}
-
-const onMoveLeft = () => {
-  if (selectionTarget.value.length > 0) {
-    const itemsToMove = [...selectionTarget.value]
-    const newSource = [...sourceList.value, ...itemsToMove]
-    const newTarget = targetList.value.filter(item => !itemsToMove.includes(item))
-
-    emit('update:modelValue', [newSource, newTarget])
-    resetTargetSelection()
-  }
-}
-
-const onMoveAllRight = () => {
-  const newTarget = [...targetList.value, ...filteredSource.value]
-  const newSource = sourceList.value.filter(item => !filteredSource.value.includes(item))
-
-  emit('update:modelValue', [newSource, newTarget])
-  resetSourceSelection()
-}
-
-const onMoveAllLeft = () => {
-  const newSource = [...sourceList.value, ...filteredTarget.value]
-  const newTarget = targetList.value.filter(item => !filteredTarget.value.includes(item))
-
-  emit('update:modelValue', [newSource, newTarget])
-  resetTargetSelection()
-}
 </script>
 
 <template>
   <div class="common-picklist-root">
-    <div class="picklist-container">
-      <PickListPane
-        v-model:search="sourceSearch"
-        :show-search="showSourceFilter"
-        :search-placeholder="sourceFilterPlaceholder"
-      >
-        <template #header>
-          <slot name="sourceheader">
-            Available
-          </slot>
-        </template>
-
-        <Listbox
-          v-model="selectionSource"
-          :options="filteredSource"
-          multiple
-          scroll-height="100%"
-          :data-key="dataKey"
-          :virtual-scroller-options="virtualScrollerOptions || undefined"
-          :pt="pickListListboxPt"
-          @change="onSourceChange"
+    <PickListLayout
+      :add-disabled="selectionSource.length === 0"
+      :remove-disabled="selectionTarget.length === 0"
+      @add="onMoveRight"
+      @add-all="onMoveAllRight"
+      @remove="onMoveLeft"
+      @remove-all="onMoveAllLeft"
+    >
+      <template #source>
+        <PickListPane
+          v-model:search="sourceSearch"
+          :show-search="showSourceFilter"
+          :search-placeholder="sourceFilterPlaceholder"
         >
-          <template #option="slotProps">
-            <slot name="item" :item="slotProps.option">
-              {{ slotProps.option[dataKey] }}
+          <template #header>
+            <slot name="sourceheader">
+              Available
             </slot>
           </template>
-        </Listbox>
-      </PickListPane>
 
-      <PickListControls
-        :add-disabled="selectionSource.length === 0"
-        :remove-disabled="selectionTarget.length === 0"
-        @add="onMoveRight"
-        @add-all="onMoveAllRight"
-        @remove="onMoveLeft"
-        @remove-all="onMoveAllLeft"
-      />
+          <Listbox
+            v-model="selectionSource"
+            :options="filteredSource"
+            multiple
+            :data-key="dataKey"
+            :virtual-scroller-options="virtualScrollerOptions || undefined"
+            :pt="pickListListboxPt"
+            @change="onSourceChange"
+          >
+            <template #option="slotProps">
+              <slot name="item" :item="slotProps.option">
+                {{ slotProps.option[dataKey] }}
+              </slot>
+            </template>
+          </Listbox>
+        </PickListPane>
+      </template>
 
-      <PickListPane
-        v-model:search="targetSearch"
-        :show-search="showTargetFilter"
-        :search-placeholder="targetFilterPlaceholder"
-      >
-        <template #header>
-          <slot name="targetheader">
-            Selected
-          </slot>
-        </template>
-
-        <Listbox
-          v-model="selectionTarget"
-          :options="filteredTarget"
-          multiple
-          scroll-height="100%"
-          :data-key="dataKey"
-          :virtual-scroller-options="virtualScrollerOptions || undefined"
-          :pt="pickListListboxPt"
-          @change="onTargetChange"
+      <template #target>
+        <PickListPane
+          v-model:search="targetSearch"
+          :show-search="showTargetFilter"
+          :search-placeholder="targetFilterPlaceholder"
         >
-          <template #option="slotProps">
-            <slot name="item" :item="slotProps.option">
-              {{ slotProps.option[dataKey] }}
+          <template #header>
+            <slot name="targetheader">
+              Selected
             </slot>
           </template>
-        </Listbox>
-      </PickListPane>
-    </div>
+
+          <Listbox
+            v-model="selectionTarget"
+            :options="filteredTarget"
+            multiple
+            :data-key="dataKey"
+            :virtual-scroller-options="virtualScrollerOptions || undefined"
+            :pt="pickListListboxPt"
+            @change="onTargetChange"
+          >
+            <template #option="slotProps">
+              <slot name="item" :item="slotProps.option">
+                {{ slotProps.option[dataKey] }}
+              </slot>
+            </template>
+          </Listbox>
+        </PickListPane>
+      </template>
+    </PickListLayout>
   </div>
 </template>
 
@@ -322,14 +257,6 @@ const onMoveAllLeft = () => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-}
-
-.picklist-container {
-  display: flex;
-  flex-direction: row;
-  flex: 1 1 auto;
-  gap: 0.5rem;
   min-height: 0;
 }
 </style>

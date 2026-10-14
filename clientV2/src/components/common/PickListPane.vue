@@ -15,18 +15,14 @@ defineProps({
     type: Boolean,
     default: false,
   },
-  /** Search text, used with `v-model:search`. */
-  search: {
-    type: String,
-    default: '',
-  },
   searchPlaceholder: {
     type: String,
     default: 'Search...',
   },
 })
 
-const emit = defineEmits(['update:search'])
+/** Search text, used with `v-model:search`. */
+const search = defineModel('search', { type: String, default: '' })
 </script>
 
 <template>
@@ -38,12 +34,7 @@ const emit = defineEmits(['update:search'])
     <div v-if="showSearch || $slots.filter" class="filter-container">
       <IconField v-if="showSearch" class="search-field">
         <InputIcon class="pi pi-search" />
-        <InputText
-          :model-value="search"
-          :placeholder="searchPlaceholder"
-          fluid
-          @update:model-value="emit('update:search', $event)"
-        />
+        <InputText v-model="search" :placeholder="searchPlaceholder" fluid />
       </IconField>
       <slot name="filter" />
     </div>
