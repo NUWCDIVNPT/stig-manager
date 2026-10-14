@@ -136,7 +136,7 @@ const tablePt = {
     v-model:visible="localVisible"
     modal
     :draggable="false"
-    :style="{ width: 'min(940px, 96vw)', height: '74vh', maxHeight: '720px', minHeight: '480px' }"
+    :style="{ width: 'min(1040px, 96vw)', height: '74vh', maxHeight: '720px', minHeight: '480px' }"
     :pt="dialogPt"
   >
     <template #header>

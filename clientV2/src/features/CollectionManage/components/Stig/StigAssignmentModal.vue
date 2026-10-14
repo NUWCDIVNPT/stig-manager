@@ -13,7 +13,7 @@ import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { getContrastColor, normalizeColor } from '../../../../shared/lib/colorUtils.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { dashZero } from '../../../../shared/lib/numberFormat.js'
-import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
+import { pickListVirtualScrollerOptions } from '../../../../shared/lib/pickListPt.js'
 import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
 import {
   fetchAssetsByCollectionStig,
@@ -58,7 +58,7 @@ const labelMap = ref(new Map())
 
 const LATEST_REVISION = 'latest'
 const MAX_VISIBLE_LABELS = 2
-const VIRTUAL_SCROLLER_OPTIONS = { itemSize: rowHeightPx('control') }
+const VIRTUAL_SCROLLER_OPTIONS = pickListVirtualScrollerOptions()
 
 const selectedBenchmarkId = ref(null)
 const selectedRevisionStr = ref(LATEST_REVISION)

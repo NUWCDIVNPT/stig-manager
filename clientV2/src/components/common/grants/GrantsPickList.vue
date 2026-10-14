@@ -1,13 +1,12 @@
 <script setup>
 import Button from 'primevue/button'
-import IconField from 'primevue/iconfield'
-import InputIcon from 'primevue/inputicon'
-import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import { computed } from 'vue'
-import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
+import { pickListListboxPt, pickListVirtualScrollerOptions } from '../../../shared/lib/pickListPt.js'
+import PickListLayout from '../PickListLayout.vue'
+import PickListPane from '../PickListPane.vue'
 import { getAssignableRoleOptions, roleMap } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 import { useGranteeFilter } from './useGranteeFilter.js'
@@ -34,7 +33,7 @@ const props = defineProps({
 
 const emit = defineEmits(['save', 'cancel', 'update:source', 'update:target'])
 
-const ROW_HEIGHT = rowHeightPx('control')
+const VIRTUAL_SCROLLER_OPTIONS = pickListVirtualScrollerOptions()
 
 // Only an Owner (or an elevated caller) may grant the Owner role.
 const availableRoleOptions = computed(() => getAssignableRoleOptions(props.canModifyOwners))
@@ -92,125 +91,87 @@ const onCancel = () => {
 
 <template>
   <div class="grants-picklist-root">
-    <div class="picklist-container">
-      <div class="list-column">
-        <h4 class="col-header">
-          Available Grantees
-        </h4>
-        <div class="filter-container">
-          <IconField class="search-field">
-            <InputIcon class="pi pi-search" />
-            <InputText v-model="searchText" placeholder="Search By Name" fluid />
-          </IconField>
-          <div class="filter-group">
-            <label class="filter-label">User Last Active:</label>
-            <Select
-              v-model="selectedFilter"
-              :options="filterOptions"
-              option-label="label"
-              :pt="{ label: { style: 'font-size: var(--text-lg);' }, item: { style: 'font-size: var(--text-lg);' } }"
-            />
-          </div>
-        </div>
-
-        <Listbox
-          v-model="selectionSource"
-          :options="displaySource"
-          :option-label="itemLabel"
-          option-group-label="label"
-          option-group-children="items"
-          option-disabled="collapsed"
-          multiple
-          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
-          :pt="{
-            root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background: transparent; border: none;' },
-            item: { style: 'font-size: var(--text-lg);' },
-          }"
-        >
-          <template #optiongroup="slotProps">
-            <div class="group-header" @click="toggleGroupSource(slotProps.option.value)">
-              <i :class="collapsedGroupsSource[slotProps.option.value] ? 'pi pi-chevron-right' : 'pi pi-chevron-down'" />
-              <span>{{ slotProps.option.label }}</span>
+    <PickListLayout
+      :add-disabled="selectionSource.length === 0"
+      :remove-disabled="selectionTarget.length === 0"
+      @add="onMoveRight"
+      @add-all="onMoveAllRight"
+      @remove="onMoveLeft"
+      @remove-all="onMoveAllLeft"
+    >
+      <template #source>
+        <PickListPane v-model:search="searchText" show-search search-placeholder="Search grantees...">
+          <template #header>
+            Available Grantees
+          </template>
+          <template #filter>
+            <div class="filter-group">
+              <label class="filter-label">User Last Active:</label>
+              <Select
+                v-model="selectedFilter"
+                :options="filterOptions"
+                option-label="label"
+                :pt="{ label: { style: 'font-size: var(--text-lg);' } }"
+              />
             </div>
           </template>
-          <template #option="slotProps">
-            <div v-if="!slotProps.option.collapsed" class="option-item" :title="slotProps.option[itemLabel]">
-              <i :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
-              <span>{{ slotProps.option[itemLabel] }}</span>
-            </div>
-          </template>
-        </Listbox>
-      </div>
 
-      <div class="controls-column">
-        <Button
-          label="Add All"
-          icon="pi pi-angle-double-right"
-          icon-pos="right"
-          severity="secondary"
-          class="control-btn"
-          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-success)' } }) }"
-          @click="onMoveAllRight"
-        />
-        <Button
-          label="Add"
-          icon="pi pi-angle-right"
-          icon-pos="right"
-          severity="secondary"
-          :disabled="selectionSource.length === 0"
-          class="control-btn"
-          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-success)' } }) }"
-          @click="onMoveRight"
-        />
-        <Button
-          label="Remove"
-          icon="pi pi-angle-left"
-          severity="secondary"
-          :disabled="selectionTarget.length === 0"
-          class="control-btn"
-          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-action-red)' } }) }"
-          @click="onMoveLeft"
-        />
-        <Button
-          label="Remove All"
-          icon="pi pi-angle-double-left"
-          severity="secondary"
-          class="control-btn"
-          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-action-red)' } }) }"
-          @click="onMoveAllLeft"
-        />
-      </div>
-
-      <div class="list-column">
-        <h4 class="col-header" style="display: flex; align-items: center; justify-content: space-between;">
-          <span>New Grants</span>
-          <RolePopover />
-        </h4>
-        <Listbox
-          v-model="selectionTarget"
-          :options="localTarget"
-          :option-label="itemLabel"
-          multiple
-          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
-          :pt="{
-            root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background: transparent; border: none;' },
-            item: { style: 'font-size: var(--text-lg);' },
-          }"
-        >
-          <template #option="slotProps">
-            <div class="target-option-item">
-              <div class="target-option-name" :title="slotProps.option[itemLabel]">
+          <Listbox
+            v-model="selectionSource"
+            :options="displaySource"
+            :option-label="itemLabel"
+            option-group-label="label"
+            option-group-children="items"
+            option-disabled="collapsed"
+            multiple
+            :virtual-scroller-options="VIRTUAL_SCROLLER_OPTIONS"
+            :pt="pickListListboxPt"
+          >
+            <template #optiongroup="slotProps">
+              <div class="group-header" @click="toggleGroupSource(slotProps.option.value)">
+                <i :class="collapsedGroupsSource[slotProps.option.value] ? 'pi pi-chevron-right' : 'pi pi-chevron-down'" />
+                <span>{{ slotProps.option.label }}</span>
+              </div>
+            </template>
+            <template #option="slotProps">
+              <div v-if="!slotProps.option.collapsed" class="option-item" :title="slotProps.option[itemLabel]">
                 <i :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
                 <span>{{ slotProps.option[itemLabel] }}</span>
               </div>
-              <span v-if="slotProps.option.roleId" class="target-option-role">
-                {{ roleMap[slotProps.option.roleId] || slotProps.option.roleId }}
-              </span>
-            </div>
+            </template>
+          </Listbox>
+        </PickListPane>
+      </template>
+
+      <template #target>
+        <PickListPane>
+          <template #header>
+            <span>New Grants</span>
+            <RolePopover />
           </template>
-        </Listbox>
-      </div>
-    </div>
+          <Listbox
+            v-model="selectionTarget"
+            :options="localTarget"
+            :option-label="itemLabel"
+            multiple
+            :virtual-scroller-options="VIRTUAL_SCROLLER_OPTIONS"
+            :pt="pickListListboxPt"
+          >
+            <template #option="slotProps">
+              <div class="target-option-item">
+                <div class="target-option-name" :title="slotProps.option[itemLabel]">
+                  <i :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
+                  <span>{{ slotProps.option[itemLabel] }}</span>
+                </div>
+                <span v-if="slotProps.option.roleId" class="target-option-role">
+                  {{ roleMap[slotProps.option.roleId] || slotProps.option.roleId }}
+                </span>
+              </div>
+            </template>
+          </Listbox>
+        </PickListPane>
+      </template>
+    </PickListLayout>
 
     <Menu ref="addMenu" :model="addMenuItems" popup />
 
@@ -229,48 +190,12 @@ const onCancel = () => {
   flex-direction: column;
 }
 
-.picklist-container {
-  display: flex;
-  flex-direction: row;
-  flex: 1 1 auto;
-  gap: 0.3rem;
-  min-height: 0;
-}
-
 .picklist-footer {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
   padding-top: 1rem;
   margin-top: auto;
-}
-
-.list-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--color-border-default);
-  border-radius: 6px;
-  overflow: hidden;
-  background-color: var(--color-background-subtle);
-}
-
-.col-header {
-  margin: 0;
-  padding: 0.75rem 1rem;
-  font-size: var(--text-xl);
-  font-weight: 600;
-  color: var(--color-text-bright);
-  background: var(--p-datatable-row-background);
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.filter-container {
-  padding: 0.5rem 0.5rem;
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-  border-bottom: 1px solid var(--color-border-default);
 }
 
 .filter-group {
@@ -285,33 +210,17 @@ const onCancel = () => {
   color: var(--color-text-bright);
 }
 
-.controls-column {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: stretch;
-  gap: 1.2rem;
-  padding: 0 0.25rem;
-}
-
-.control-btn {
-  min-width: 8rem;
-  padding: 0.6rem 1rem;
-  font-size: var(--text-lg);
-}
-
 /* Fixed-height single-line rows (virtual scroller requirement); the full
    name shows in the title tooltip on hover. */
 .option-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: var(--text-lg);
   min-width: 0;
 }
 
 .option-item i {
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   flex-shrink: 0;
 }
 
@@ -321,29 +230,14 @@ const onCancel = () => {
   text-overflow: ellipsis;
 }
 
-.search-field {
-  flex: 1;
-}
-
 .group-header {
   display: flex;
   align-items: center;
   cursor: pointer;
   font-weight: 700;
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   padding: 0.25rem 0rem;
   gap: 0.3rem;
-}
-
-:deep(.p-listbox-list-container) {
-  flex: 1 1 auto;
-  min-height: 0;
-  max-height: none !important;
-  overflow: auto;
-}
-
-:deep(.p-virtualscroller) {
-  height: 100% !important;
 }
 
 .target-option-item {
@@ -359,13 +253,12 @@ const onCancel = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: var(--text-lg);
   flex: 1;
   min-width: 0;
 }
 
 .target-option-name i {
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   flex-shrink: 0;
 }
 
@@ -376,7 +269,6 @@ const onCancel = () => {
 }
 
 .target-option-role {
-  font-size: var(--text-md);
   color: var(--color-text-bright);
 }
 </style>

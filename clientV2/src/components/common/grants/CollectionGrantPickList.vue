@@ -1,13 +1,11 @@
 <script setup>
-import IconField from 'primevue/iconfield'
-import InputIcon from 'primevue/inputicon'
-import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import { computed, ref } from 'vue'
-import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
-import PickListControls from '../PickListControls.vue'
+import { pickListListboxPt, pickListVirtualScrollerOptions } from '../../../shared/lib/pickListPt.js'
+import PickListLayout from '../PickListLayout.vue'
+import PickListPane from '../PickListPane.vue'
 import { getAssignableRoleOptions } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 import { useRolePickList } from './useRolePickList.js'
@@ -27,7 +25,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:source', 'update:target'])
 
-const ROW_HEIGHT = rowHeightPx('control')
+const VIRTUAL_SCROLLER_OPTIONS = pickListVirtualScrollerOptions()
 
 // Elevated admin context, so every role (including Owner) is assignable.
 const availableRoleOptions = getAssignableRoleOptions(true)
@@ -68,20 +66,6 @@ function onMoveAllRight(event) {
   onMoveRight(event)
 }
 
-const listboxPt = {
-  root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background: transparent; border: none;' },
-  listContainer: { style: 'flex:1 1 auto; min-height:0; height:100%; max-height:none; overflow:auto;' },
-  virtualScroller: { root: { style: 'flex:1 1 auto; min-height:0; height:100%; max-height:none;' } },
-  option: { style: 'padding: 0.55rem 0.75rem;' },
-}
-
-// Shorter rows for the target pane so the role Select fits the fixed
-// virtual-scroller item height.
-const targetListboxPt = {
-  ...listboxPt,
-  option: { style: 'padding: 0.3rem 0.75rem;' },
-}
-
 const roleSelectPt = {
   root: { style: 'background-color: var(--color-background-light); border-color: var(--color-border-default); width: 8.5rem; flex-shrink: 0;' },
   label: { style: 'padding: 0.25rem 0.5rem; font-size: var(--text-md);' },
@@ -91,75 +75,71 @@ const roleSelectPt = {
 
 <template>
   <div class="grant-picklist-root">
-    <div class="picklist-container">
-      <div class="list-column">
-        <h4 class="col-header">
-          Available Collections
-        </h4>
-        <div class="filter-container">
-          <IconField class="search-field">
-            <InputIcon class="pi pi-search" />
-            <InputText v-model="searchText" placeholder="Search By Name" fluid />
-          </IconField>
-        </div>
-
-        <Listbox
-          v-model="selectionSource"
-          :options="displaySource"
-          option-label="name"
-          multiple
-          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
-          :pt="listboxPt"
-        >
-          <template #option="slotProps">
-            <div class="option-item" :title="slotProps.option.name">
-              <span>{{ slotProps.option.name }}</span>
-            </div>
+    <PickListLayout
+      :add-disabled="selectionSource.length === 0"
+      :remove-disabled="selectionTarget.length === 0"
+      @add="onMoveRight"
+      @add-all="onMoveAllRight"
+      @remove="onMoveLeft"
+      @remove-all="onMoveAllLeft"
+    >
+      <template #source>
+        <PickListPane v-model:search="searchText" show-search search-placeholder="Search collections...">
+          <template #header>
+            Available Collections
           </template>
-        </Listbox>
-      </div>
 
-      <PickListControls
-        :add-disabled="selectionSource.length === 0"
-        :remove-disabled="selectionTarget.length === 0"
-        @add="onMoveRight"
-        @add-all="onMoveAllRight"
-        @remove="onMoveLeft"
-        @remove-all="onMoveAllLeft"
-      />
+          <Listbox
+            v-model="selectionSource"
+            :options="displaySource"
+            option-label="name"
+            multiple
+            :virtual-scroller-options="VIRTUAL_SCROLLER_OPTIONS"
+            :pt="pickListListboxPt"
+          >
+            <template #option="slotProps">
+              <div class="option-item" :title="slotProps.option.name">
+                <span>{{ slotProps.option.name }}</span>
+              </div>
+            </template>
+          </Listbox>
+        </PickListPane>
+      </template>
 
-      <div class="list-column">
-        <h4 class="col-header" style="display: flex; align-items: center; justify-content: space-between;">
-          <span>Direct Grants</span>
-          <RolePopover />
-        </h4>
-        <Listbox
-          v-model="selectionTarget"
-          :options="localTarget"
-          option-label="name"
-          multiple
-          :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
-          :pt="targetListboxPt"
-        >
-          <template #option="slotProps">
-            <div class="target-option-item">
-              <span class="target-option-name" :title="slotProps.option.name">{{ slotProps.option.name }}</span>
-              <Select
-                v-if="slotProps.option.roleId"
-                :model-value="slotProps.option.roleId"
-                :options="availableRoleOptions"
-                option-label="label"
-                option-value="value"
-                size="small"
-                :pt="roleSelectPt"
-                @update:model-value="onRoleChange(slotProps.option, $event)"
-                @click.stop
-              />
-            </div>
+      <template #target>
+        <PickListPane>
+          <template #header>
+            <span>Direct Grants</span>
+            <RolePopover />
           </template>
-        </Listbox>
-      </div>
-    </div>
+          <Listbox
+            v-model="selectionTarget"
+            :options="localTarget"
+            option-label="name"
+            multiple
+            :virtual-scroller-options="VIRTUAL_SCROLLER_OPTIONS"
+            :pt="pickListListboxPt"
+          >
+            <template #option="slotProps">
+              <div class="target-option-item">
+                <span class="target-option-name" :title="slotProps.option.name">{{ slotProps.option.name }}</span>
+                <Select
+                  v-if="slotProps.option.roleId"
+                  :model-value="slotProps.option.roleId"
+                  :options="availableRoleOptions"
+                  option-label="label"
+                  option-value="value"
+                  size="small"
+                  :pt="roleSelectPt"
+                  @update:model-value="onRoleChange(slotProps.option, $event)"
+                  @click.stop
+                />
+              </div>
+            </template>
+          </Listbox>
+        </PickListPane>
+      </template>
+    </PickListLayout>
 
     <Menu ref="addMenu" :model="addMenuItems" popup />
   </div>
@@ -173,48 +153,7 @@ const roleSelectPt = {
   flex-direction: column;
 }
 
-.picklist-container {
-  display: flex;
-  flex-direction: row;
-  flex: 1 1 auto;
-  gap: 0.3rem;
-  min-height: 0;
-}
-
-.list-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--color-border-default);
-  border-radius: 6px;
-  overflow: hidden;
-  background-color: var(--color-background-subtle);
-}
-
-.col-header {
-  margin: 0;
-  padding: 0.75rem 1rem;
-  font-size: var(--text-xl);
-  font-weight: 600;
-  color: var(--color-text-bright);
-  background: var(--p-datatable-row-background);
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.filter-container {
-  padding: 0.5rem 0.5rem;
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.search-field {
-  flex: 1;
-}
-
 .option-item {
-  font-size: var(--text-md);
   line-height: 1.4;
   white-space: nowrap;
   overflow: hidden;
@@ -231,7 +170,6 @@ const roleSelectPt = {
 }
 
 .target-option-name {
-  font-size: var(--text-md);
   line-height: 1.4;
   flex: 1;
   min-width: 0;
