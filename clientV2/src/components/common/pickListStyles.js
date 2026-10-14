@@ -18,6 +18,12 @@ export const pickListListboxPt = {
       style: 'flex:1 1 auto; min-height:0; height:100%; max-height:none;',
     },
   },
+  // Under a virtual scroller the list is its absolutely positioned content
+  // (min-width:100% only), so nowrap rows would widen it past the pane
+  // instead of ellipsizing.
+  list: {
+    style: 'width:100%;',
+  },
   option: ({ context }) => ({
     style: context.selected ? `${OPTION_STYLE} ${OPTION_SELECTED_STYLE}` : OPTION_STYLE,
   }),

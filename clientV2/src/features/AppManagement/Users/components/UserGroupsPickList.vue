@@ -2,7 +2,7 @@
 import PickList from '../../../../components/common/PickList.vue'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 
-const ROW_HEIGHT = rowHeightPx('standard')
+const ROW_HEIGHT = rowHeightPx('compact')
 
 // User Groups dual-list ([available, assigned] tuple) shared by the User
 // Properties panel and the pre-register modal, so the two render identically.

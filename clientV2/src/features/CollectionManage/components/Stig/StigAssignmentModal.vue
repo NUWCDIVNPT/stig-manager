@@ -57,7 +57,7 @@ const labelMap = ref(new Map())
 
 const LATEST_REVISION = 'latest'
 const MAX_VISIBLE_LABELS = 2
-const VIRTUAL_SCROLLER_OPTIONS = { itemSize: rowHeightPx('control') }
+const VIRTUAL_SCROLLER_OPTIONS = { itemSize: rowHeightPx('compact') }
 
 const selectedBenchmarkId = ref(null)
 const selectedRevisionStr = ref(LATEST_REVISION)

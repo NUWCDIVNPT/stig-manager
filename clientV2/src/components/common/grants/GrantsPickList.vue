@@ -1,14 +1,12 @@
 <script setup>
 import Button from 'primevue/button'
-import IconField from 'primevue/iconfield'
-import InputIcon from 'primevue/inputicon'
-import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import { computed } from 'vue'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import PickListControls from '../PickListControls.vue'
+import PickListPane from '../PickListPane.vue'
 import { pickListListboxPt } from '../pickListStyles.js'
 import { getAssignableRoleOptions, roleMap } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
@@ -36,7 +34,7 @@ const props = defineProps({
 
 const emit = defineEmits(['save', 'cancel', 'update:source', 'update:target'])
 
-const ROW_HEIGHT = rowHeightPx('control')
+const ROW_HEIGHT = rowHeightPx('compact')
 
 // Only an Owner (or an elevated caller) may grant the Owner role.
 const availableRoleOptions = computed(() => getAssignableRoleOptions(props.canModifyOwners))
@@ -95,25 +93,21 @@ const onCancel = () => {
 <template>
   <div class="grants-picklist-root">
     <div class="picklist-container">
-      <div class="list-column">
-        <h4 class="col-header">
+      <PickListPane v-model:search="searchText" show-search search-placeholder="Search grantees...">
+        <template #header>
           Available Grantees
-        </h4>
-        <div class="filter-container">
-          <IconField class="search-field">
-            <InputIcon class="pi pi-search" />
-            <InputText v-model="searchText" placeholder="Search grantees..." fluid />
-          </IconField>
+        </template>
+        <template #filter>
           <div class="filter-group">
             <label class="filter-label">User Last Active:</label>
             <Select
               v-model="selectedFilter"
               :options="filterOptions"
               option-label="label"
-              :pt="{ label: { style: 'font-size: var(--text-lg);' }, item: { style: 'font-size: var(--text-lg);' } }"
+              :pt="{ label: { style: 'font-size: var(--text-lg);' } }"
             />
           </div>
-        </div>
+        </template>
 
         <Listbox
           v-model="selectionSource"
@@ -139,7 +133,7 @@ const onCancel = () => {
             </div>
           </template>
         </Listbox>
-      </div>
+      </PickListPane>
 
       <PickListControls
         :add-disabled="selectionSource.length === 0"
@@ -150,11 +144,11 @@ const onCancel = () => {
         @remove-all="onMoveAllLeft"
       />
 
-      <div class="list-column">
-        <h4 class="col-header" style="display: flex; align-items: center; justify-content: space-between;">
+      <PickListPane>
+        <template #header>
           <span>New Grants</span>
           <RolePopover />
-        </h4>
+        </template>
         <Listbox
           v-model="selectionTarget"
           :options="localTarget"
@@ -175,7 +169,7 @@ const onCancel = () => {
             </div>
           </template>
         </Listbox>
-      </div>
+      </PickListPane>
     </div>
 
     <Menu ref="addMenu" :model="addMenuItems" popup />
@@ -211,36 +205,6 @@ const onCancel = () => {
   margin-top: auto;
 }
 
-.list-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-  border: 1px solid var(--color-border-default);
-  border-radius: 6px;
-  overflow: hidden;
-  background-color: var(--color-background-subtle);
-}
-
-.col-header {
-  margin: 0;
-  padding: 0.75rem 1rem;
-  font-size: var(--text-xl);
-  font-weight: 600;
-  color: var(--color-text-bright);
-  background: var(--p-datatable-row-background);
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.filter-container {
-  padding: 0.5rem 0.5rem;
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-  border-bottom: 1px solid var(--color-border-default);
-}
-
 .filter-group {
   display: flex;
   flex-direction: column;
@@ -272,10 +236,6 @@ const onCancel = () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.search-field {
-  flex: 1;
 }
 
 .group-header {

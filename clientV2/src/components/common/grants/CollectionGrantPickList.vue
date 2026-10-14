@@ -1,13 +1,11 @@
 <script setup>
-import IconField from 'primevue/iconfield'
-import InputIcon from 'primevue/inputicon'
-import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import { computed, ref } from 'vue'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import PickListControls from '../PickListControls.vue'
+import PickListPane from '../PickListPane.vue'
 import { pickListListboxPt } from '../pickListStyles.js'
 import { getAssignableRoleOptions } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
@@ -28,7 +26,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:source', 'update:target'])
 
-const ROW_HEIGHT = rowHeightPx('control')
+const ROW_HEIGHT = rowHeightPx('compact')
 
 // Elevated admin context, so every role (including Owner) is assignable.
 const availableRoleOptions = getAssignableRoleOptions(true)
@@ -79,16 +77,10 @@ const roleSelectPt = {
 <template>
   <div class="grant-picklist-root">
     <div class="picklist-container">
-      <div class="list-column">
-        <h4 class="col-header">
+      <PickListPane v-model:search="searchText" show-search search-placeholder="Search collections...">
+        <template #header>
           Available Collections
-        </h4>
-        <div class="filter-container">
-          <IconField class="search-field">
-            <InputIcon class="pi pi-search" />
-            <InputText v-model="searchText" placeholder="Search collections..." fluid />
-          </IconField>
-        </div>
+        </template>
 
         <Listbox
           v-model="selectionSource"
@@ -104,7 +96,7 @@ const roleSelectPt = {
             </div>
           </template>
         </Listbox>
-      </div>
+      </PickListPane>
 
       <PickListControls
         :add-disabled="selectionSource.length === 0"
@@ -115,11 +107,11 @@ const roleSelectPt = {
         @remove-all="onMoveAllLeft"
       />
 
-      <div class="list-column">
-        <h4 class="col-header" style="display: flex; align-items: center; justify-content: space-between;">
+      <PickListPane>
+        <template #header>
           <span>Direct Grants</span>
           <RolePopover />
-        </h4>
+        </template>
         <Listbox
           v-model="selectionTarget"
           :options="localTarget"
@@ -145,7 +137,7 @@ const roleSelectPt = {
             </div>
           </template>
         </Listbox>
-      </div>
+      </PickListPane>
     </div>
 
     <Menu ref="addMenu" :model="addMenuItems" popup />
@@ -166,40 +158,6 @@ const roleSelectPt = {
   flex: 1 1 auto;
   gap: 0.5rem;
   min-height: 0;
-}
-
-.list-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-  border: 1px solid var(--color-border-default);
-  border-radius: 6px;
-  overflow: hidden;
-  background-color: var(--color-background-subtle);
-}
-
-.col-header {
-  margin: 0;
-  padding: 0.75rem 1rem;
-  font-size: var(--text-xl);
-  font-weight: 600;
-  color: var(--color-text-bright);
-  background: var(--p-datatable-row-background);
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.filter-container {
-  padding: 0.5rem 0.5rem;
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.search-field {
-  flex: 1;
 }
 
 .option-item {

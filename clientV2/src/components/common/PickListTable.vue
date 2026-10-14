@@ -1,11 +1,9 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import IconField from 'primevue/iconfield'
-import InputIcon from 'primevue/inputicon'
-import InputText from 'primevue/inputtext'
 import { computed, ref } from 'vue'
 import PickListControls from './PickListControls.vue'
+import PickListPane from './PickListPane.vue'
 import StatusFooter from './StatusFooter.vue'
 
 const props = defineProps({
@@ -206,19 +204,16 @@ const onMoveAllLeft = () => {
 <template>
   <div class="common-picklist-table-root">
     <div class="picklist-container">
-      <div class="list-column">
-        <h4 class="list-header">
+      <PickListPane
+        v-model:search="sourceSearch"
+        :show-search="showSourceFilter"
+        :search-placeholder="sourceFilterPlaceholder"
+      >
+        <template #header>
           <slot name="sourceheader">
             Available
           </slot>
-        </h4>
-
-        <div v-if="showSourceFilter" class="filter-container">
-          <IconField class="search-field">
-            <InputIcon class="pi pi-search" />
-            <InputText v-model="sourceSearch" :placeholder="sourceFilterPlaceholder" fluid />
-          </IconField>
-        </div>
+        </template>
 
         <DataTable
           v-model:selection="selectionSource"
@@ -249,7 +244,7 @@ const onMoveAllLeft = () => {
             />
           </template>
         </DataTable>
-      </div>
+      </PickListPane>
 
       <PickListControls
         :add-disabled="selectionSource.length === 0"
@@ -260,19 +255,16 @@ const onMoveAllLeft = () => {
         @remove-all="onMoveAllLeft"
       />
 
-      <div class="list-column">
-        <h4 class="list-header">
+      <PickListPane
+        v-model:search="targetSearch"
+        :show-search="showTargetFilter"
+        :search-placeholder="targetFilterPlaceholder"
+      >
+        <template #header>
           <slot name="targetheader">
             Selected
           </slot>
-        </h4>
-
-        <div v-if="showTargetFilter" class="filter-container">
-          <IconField class="search-field">
-            <InputIcon class="pi pi-search" />
-            <InputText v-model="targetSearch" :placeholder="targetFilterPlaceholder" fluid />
-          </IconField>
-        </div>
+        </template>
 
         <DataTable
           v-model:selection="selectionTarget"
@@ -303,7 +295,7 @@ const onMoveAllLeft = () => {
             />
           </template>
         </DataTable>
-      </div>
+      </PickListPane>
     </div>
   </div>
 </template>
@@ -324,41 +316,6 @@ const onMoveAllLeft = () => {
   flex: 1 1 auto;
   gap: 0.5rem;
   min-height: 0;
-}
-
-.list-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-  border: 1px solid var(--color-border-default);
-  border-radius: 6px;
-  overflow: hidden;
-  background-color: var(--color-background-subtle);
-}
-
-.list-header {
-  margin: 0;
-  padding: 0.75rem 1rem;
-  font-size: var(--text-xl);
-  font-weight: 600;
-  flex: 0 0 auto;
-  color: var(--color-text-bright);
-  background: var(--p-datatable-row-background);
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.filter-container {
-  padding: 0.5rem 0.5rem;
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-  border-bottom: 1px solid var(--color-border-default);
-}
-
-.search-field {
-  flex: 1;
 }
 
 .flex-fill {
