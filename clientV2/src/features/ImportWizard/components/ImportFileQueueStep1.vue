@@ -13,6 +13,7 @@ const props = defineProps({
   selectedRows: { type: Array, required: true },
   isDragOver: { type: Boolean, default: false },
   singleFile: { type: Boolean, default: false },
+  note: { type: String, default: '' },
 })
 
 const emit = defineEmits([
@@ -65,11 +66,15 @@ function onFilePicked(event) {
       <input
         ref="fileInputRef"
         type="file"
-        accept=".ckl,.cklb,.xml"
+        :accept="singleFile ? '.ckl,.cklb,.xml' : '.ckl,.cklb,.xml,.zip'"
         :multiple="!singleFile"
         style="display: none"
         @change="onFilePicked"
       >
+      <span v-if="note" class="queue-note">
+        <i class="pi pi-exclamation-triangle" />
+        {{ note }}
+      </span>
       <span class="queue-toolbar-spacer" />
       <GridFilterButton v-if="!singleFile" v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
       <button
@@ -96,7 +101,11 @@ function onFilePicked(event) {
         class="queue-table clickable-rows"
       >
         <Column selection-mode="multiple" style="width: 3rem; flex-shrink: 0" />
-        <Column field="name" header="Filename" sortable />
+        <Column field="name" header="Filename" sortable>
+          <template #body="{ data }">
+            <span :title="data.fullPath">{{ data.name }}</span>
+          </template>
+        </Column>
         <Column field="size" header="Size" style="width: 8.25rem" sortable>
           <template #body="{ data }">
             {{ (data.size / 1024).toFixed(1) }} KB
@@ -108,7 +117,7 @@ function onFilePicked(event) {
           </template>
         </Column>
         <template #empty>
-          <span class="queue-empty-hint">{{ isFiltered && sourceFiles.length ? 'No files match the filters.' : 'You may drop files here' }}</span>
+          <span class="queue-empty-hint">{{ isFiltered && sourceFiles.length ? 'No files match the filters.' : singleFile ? 'You may drop a file here' : 'You may drop files, folders or ZIP archives here' }}</span>
         </template>
       </DataTable>
     </div>
@@ -125,6 +134,15 @@ function onFilePicked(event) {
 </template>
 
 <style scoped>
+.queue-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  font-size: var(--text-md);
+  color: var(--color-warning-yellow);
+}
+
 .queue-table-wrapper {
   display: flex;
   flex-direction: column;

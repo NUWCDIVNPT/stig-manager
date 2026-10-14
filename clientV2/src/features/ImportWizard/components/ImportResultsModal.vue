@@ -161,6 +161,7 @@ function doneImport() { visible.value = false }
           v-model:selected-rows="queue.selectedQueueRows.value"
           :source-files="queue.sourceFiles.value"
           :is-drag-over="queue.isDragOver.value"
+          :note="queue.queueNote.value"
           @add-files="queue.addFilesToQueue"
           @drop-files="queue.onDropFiles"
           @remove-selected="queue.removeSelectedFromQueue"

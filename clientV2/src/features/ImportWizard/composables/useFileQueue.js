@@ -1,15 +1,40 @@
 import { computed, ref } from 'vue'
+import { extractFilesFromZip } from '../../../shared/lib/zipFiles.js'
+
+const RESULT_EXTENSIONS = ['ckl', 'cklb', 'xml']
+const isZip = name => name.toLowerCase().endsWith('.zip')
+const isQueueable = name => RESULT_EXTENSIONS.some(ext => name.toLowerCase().endsWith(`.${ext}`)) || isZip(name)
 
 export function useFileQueue() {
   const sourceFiles = ref([])
   const selectedQueueRows = ref([])
   const isDragOver = ref(false)
+  const queueNote = ref('')
   const canContinue = computed(() => sourceFiles.value.length > 0)
 
   function _queueId(file) { return `${file.name}-${file.size}-${file.lastModified}` }
 
-  function addFilesToQueue(files) {
+  async function addFilesToQueue(files) {
+    const expanded = []
+    const notes = []
     for (const file of files) {
+      if (!isZip(file.name)) {
+        expanded.push(file)
+        continue
+      }
+      try {
+        const inner = await extractFilesFromZip(file, RESULT_EXTENSIONS)
+        if (!inner.length) {
+          notes.push(`No .ckl, .cklb or .xml files found in ${file.name}`)
+        }
+        expanded.push(...inner)
+      }
+      catch {
+        notes.push(`Could not open ZIP archive ${file.name}`)
+      }
+    }
+    queueNote.value = notes.join('; ')
+    for (const file of expanded) {
       const id = _queueId(file)
       if (!sourceFiles.value.some(f => f._queueId === id)) {
         file._queueId = id
@@ -33,7 +58,7 @@ export function useFileQueue() {
     if (!items) { return }
     const entries = await _getAllFileEntries(items)
     const files = await Promise.all(entries.map(_entryFilePromise))
-    addFilesToQueue(files)
+    await addFilesToQueue(files)
   }
 
   async function _getAllFileEntries(dataTransferItemList) {
@@ -45,8 +70,7 @@ export function useFileQueue() {
     }
     while (queue.length > 0) {
       const entry = queue.shift()
-      const lower = entry.name.toLowerCase()
-      if (entry.isFile && (lower.endsWith('.ckl') || lower.endsWith('.cklb') || lower.endsWith('.xml'))) {
+      if (entry.isFile && isQueueable(entry.name)) {
         fileEntries.push(entry)
       }
       else if (entry.isDirectory) {
@@ -77,12 +101,14 @@ export function useFileQueue() {
     sourceFiles.value = []
     selectedQueueRows.value = []
     isDragOver.value = false
+    queueNote.value = ''
   }
 
   return {
     sourceFiles,
     selectedQueueRows,
     isDragOver,
+    queueNote,
     canContinue,
     addFilesToQueue,
     removeSelectedFromQueue,
