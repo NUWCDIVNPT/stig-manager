@@ -342,7 +342,7 @@ function onRemoveAll() {
             </span>
           </template>
           <template #body="{ data }">
-            {{ data.ruleCount ?? '—' }}
+            {{ dashZero(data.ruleCount) }}
           </template>
         </Column>
 

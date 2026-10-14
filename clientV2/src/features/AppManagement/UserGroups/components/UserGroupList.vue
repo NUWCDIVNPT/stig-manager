@@ -2,6 +2,7 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
+import CountColumn from '../../../../components/columns/CountColumn.vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
@@ -11,7 +12,6 @@ import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
-import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { formatDateTime } from '../lib/userGroupDisplay.js'
 
 const props = defineProps({
@@ -132,17 +132,9 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column v-if="visibleFields.has('userCount')" field="userCount" header="# Users" sortable class="center-header" :pt="borderPt" style="width: 12%; text-align: center;">
-          <template #body="{ data }">
-            {{ dashZero(data.userCount) }}
-          </template>
-        </Column>
+        <CountColumn v-if="visibleFields.has('userCount')" key="userCount" field="userCount" header="# Users" sortable class="center-header" :pt="borderPt" style="width: 12%; text-align: center;" />
 
-        <Column v-if="visibleFields.has('collectionCount')" field="collectionCount" header="# Collections" sortable class="center-header" style="width: 15%; text-align: center;">
-          <template #body="{ data }">
-            {{ dashZero(data.collectionCount) }}
-          </template>
-        </Column>
+        <CountColumn v-if="visibleFields.has('collectionCount')" key="collectionCount" field="collectionCount" header="# Collections" sortable class="center-header" style="width: 15%; text-align: center;" />
 
         <template #footer>
           <StatusFooter

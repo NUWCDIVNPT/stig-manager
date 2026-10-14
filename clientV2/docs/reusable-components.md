@@ -41,7 +41,6 @@ These don't need wrapper components—just inline templates with helper function
 
 | Pattern | Template Example | Helper Needed |
 |---------|------------------|---------------|
-| CountColumn | `{{ data.count }}` | none |
 | CountWithTooltip | `<span v-tooltip="itemList">{{ count }}</span>` | `formatTooltipList()` |
 | IconColumn | `<i :class="getIcon(data)" v-tooltip="label" />` | `getIconClass()` |
 | ResponseCodeColumn | `<Tag :severity="getHttpSeverity(code)">{{ code }}</Tag>` | `getHttpSeverity()` |
@@ -59,6 +58,7 @@ These warrant dedicated `.vue` files for reuse and consistency.
 
 | Column | Why Wrapper | Shared Sub-components |
 |--------|-------------|----------------------|
+| **CountColumn** | Zero/missing counts render as `-` so tallies of nothing read as blank; accepts dotted field paths. Needs a `key` when used directly (DataTable finds wrapped Columns by vnode key) | `dashZero()` helper |
 | **DurationColumn** | Complex relative time logic ("5 d", "2 h", "now") | `formatDuration()` helper |
 | **PercentageColumn** | Custom thermometer visualization | none |
 | **SeverityCountColumn** | Count + severity-appropriate color styling | `SeverityBadge` |

@@ -2,6 +2,7 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
+import CountColumn from '../../../../components/columns/CountColumn.vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
@@ -11,7 +12,6 @@ import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
-import { dashZero } from '../../../../shared/lib/numberFormat.js'
 
 const props = defineProps({
   collections: {
@@ -133,21 +133,9 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column v-if="visibleFields.has('statistics.userCount')" field="statistics.userCount" header="Users" sortable :pt="borderPt" style="width: 13%">
-          <template #body="{ data }">
-            {{ dashZero(data.statistics?.userCount) }}
-          </template>
-        </Column>
-        <Column v-if="visibleFields.has('statistics.assetCount')" field="statistics.assetCount" header="Assets" sortable :pt="borderPt" style="width: 13%">
-          <template #body="{ data }">
-            {{ dashZero(data.statistics?.assetCount) }}
-          </template>
-        </Column>
-        <Column v-if="visibleFields.has('statistics.checklistCount')" field="statistics.checklistCount" header="Checklists" sortable :pt="borderPt" style="width: 13%">
-          <template #body="{ data }">
-            {{ dashZero(data.statistics?.checklistCount) }}
-          </template>
-        </Column>
+        <CountColumn v-if="visibleFields.has('statistics.userCount')" key="statistics.userCount" field="statistics.userCount" header="Users" sortable :pt="borderPt" style="width: 13%" />
+        <CountColumn v-if="visibleFields.has('statistics.assetCount')" key="statistics.assetCount" field="statistics.assetCount" header="Assets" sortable :pt="borderPt" style="width: 13%" />
+        <CountColumn v-if="visibleFields.has('statistics.checklistCount')" key="statistics.checklistCount" field="statistics.checklistCount" header="Checklists" sortable :pt="borderPt" style="width: 13%" />
         <Column v-if="visibleFields.has('statistics.created')" field="statistics.created" header="Created" sortable :pt="borderPt" style="width: 13%">
           <template #body="{ data }">
             {{ formatDate(data.statistics?.created) }}
