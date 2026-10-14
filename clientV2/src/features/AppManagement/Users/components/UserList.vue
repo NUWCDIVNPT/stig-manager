@@ -2,6 +2,7 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
+import CountColumn from '../../../../components/columns/CountColumn.vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
@@ -198,7 +199,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column v-if="visibleFields.has('grantCount')" field="grantCount" header="Grants" sortable class="center-header" :pt="borderPt" style="width: 7%; text-align: center;" />
+        <CountColumn v-if="visibleFields.has('grantCount')" key="grantCount" field="grantCount" header="Grants" sortable class="center-header" :pt="borderPt" style="width: 7%; text-align: center;" />
 
         <Column v-if="visibleFields.has('statistics.created')" field="statistics.created" header="Added" sortable :pt="borderPt" style="width: 9%">
           <template #body="{ data }">
