@@ -8,6 +8,7 @@ import Select from 'primevue/select'
 import { computed, ref } from 'vue'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import PickListControls from '../PickListControls.vue'
+import { pickListListboxPt } from '../pickListStyles.js'
 import { getAssignableRoleOptions } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 import { useRolePickList } from './useRolePickList.js'
@@ -68,20 +69,6 @@ function onMoveAllRight(event) {
   onMoveRight(event)
 }
 
-const listboxPt = {
-  root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background: transparent; border: none;' },
-  listContainer: { style: 'flex:1 1 auto; min-height:0; height:100%; max-height:none; overflow:auto;' },
-  virtualScroller: { root: { style: 'flex:1 1 auto; min-height:0; height:100%; max-height:none;' } },
-  option: { style: 'padding: 0.55rem 0.75rem;' },
-}
-
-// Shorter rows for the target pane so the role Select fits the fixed
-// virtual-scroller item height.
-const targetListboxPt = {
-  ...listboxPt,
-  option: { style: 'padding: 0.3rem 0.75rem;' },
-}
-
 const roleSelectPt = {
   root: { style: 'background-color: var(--color-background-light); border-color: var(--color-border-default); width: 8.5rem; flex-shrink: 0;' },
   label: { style: 'padding: 0.25rem 0.5rem; font-size: var(--text-md);' },
@@ -99,7 +86,7 @@ const roleSelectPt = {
         <div class="filter-container">
           <IconField class="search-field">
             <InputIcon class="pi pi-search" />
-            <InputText v-model="searchText" placeholder="Search By Name" fluid />
+            <InputText v-model="searchText" placeholder="Search collections..." fluid />
           </IconField>
         </div>
 
@@ -109,7 +96,7 @@ const roleSelectPt = {
           option-label="name"
           multiple
           :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
-          :pt="listboxPt"
+          :pt="pickListListboxPt"
         >
           <template #option="slotProps">
             <div class="option-item" :title="slotProps.option.name">
@@ -139,7 +126,7 @@ const roleSelectPt = {
           option-label="name"
           multiple
           :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
-          :pt="targetListboxPt"
+          :pt="pickListListboxPt"
         >
           <template #option="slotProps">
             <div class="target-option-item">
@@ -177,7 +164,7 @@ const roleSelectPt = {
   display: flex;
   flex-direction: row;
   flex: 1 1 auto;
-  gap: 0.3rem;
+  gap: 0.5rem;
   min-height: 0;
 }
 
@@ -185,6 +172,8 @@ const roleSelectPt = {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  min-height: 0;
   border: 1px solid var(--color-border-default);
   border-radius: 6px;
   overflow: hidden;

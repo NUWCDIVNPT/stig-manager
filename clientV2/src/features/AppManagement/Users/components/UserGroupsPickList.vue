@@ -18,7 +18,6 @@ const model = defineModel({ type: Array, required: true })
     show-target-filter
     source-filter-placeholder="Search groups..."
     target-filter-placeholder="Search groups..."
-    option-style="padding: 0.4rem 0.75rem;"
     :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
   >
     <template #sourceheader>

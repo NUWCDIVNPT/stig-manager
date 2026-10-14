@@ -8,6 +8,8 @@ import Menu from 'primevue/menu'
 import Select from 'primevue/select'
 import { computed } from 'vue'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
+import PickListControls from '../PickListControls.vue'
+import { pickListListboxPt } from '../pickListStyles.js'
 import { getAssignableRoleOptions, roleMap } from './roleOptions.js'
 import RolePopover from './RolePopover.vue'
 import { useGranteeFilter } from './useGranteeFilter.js'
@@ -100,7 +102,7 @@ const onCancel = () => {
         <div class="filter-container">
           <IconField class="search-field">
             <InputIcon class="pi pi-search" />
-            <InputText v-model="searchText" placeholder="Search By Name" fluid />
+            <InputText v-model="searchText" placeholder="Search grantees..." fluid />
           </IconField>
           <div class="filter-group">
             <label class="filter-label">User Last Active:</label>
@@ -122,10 +124,7 @@ const onCancel = () => {
           option-disabled="collapsed"
           multiple
           :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
-          :pt="{
-            root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background: transparent; border: none;' },
-            item: { style: 'font-size: var(--text-lg);' },
-          }"
+          :pt="pickListListboxPt"
         >
           <template #optiongroup="slotProps">
             <div class="group-header" @click="toggleGroupSource(slotProps.option.value)">
@@ -142,44 +141,14 @@ const onCancel = () => {
         </Listbox>
       </div>
 
-      <div class="controls-column">
-        <Button
-          label="Add All"
-          icon="pi pi-angle-double-right"
-          icon-pos="right"
-          severity="secondary"
-          class="control-btn"
-          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-success)' } }) }"
-          @click="onMoveAllRight"
-        />
-        <Button
-          label="Add"
-          icon="pi pi-angle-right"
-          icon-pos="right"
-          severity="secondary"
-          :disabled="selectionSource.length === 0"
-          class="control-btn"
-          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-success)' } }) }"
-          @click="onMoveRight"
-        />
-        <Button
-          label="Remove"
-          icon="pi pi-angle-left"
-          severity="secondary"
-          :disabled="selectionTarget.length === 0"
-          class="control-btn"
-          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-action-red)' } }) }"
-          @click="onMoveLeft"
-        />
-        <Button
-          label="Remove All"
-          icon="pi pi-angle-double-left"
-          severity="secondary"
-          class="control-btn"
-          :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-action-red)' } }) }"
-          @click="onMoveAllLeft"
-        />
-      </div>
+      <PickListControls
+        :add-disabled="selectionSource.length === 0"
+        :remove-disabled="selectionTarget.length === 0"
+        @add="onMoveRight"
+        @add-all="onMoveAllRight"
+        @remove="onMoveLeft"
+        @remove-all="onMoveAllLeft"
+      />
 
       <div class="list-column">
         <h4 class="col-header" style="display: flex; align-items: center; justify-content: space-between;">
@@ -192,10 +161,7 @@ const onCancel = () => {
           :option-label="itemLabel"
           multiple
           :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
-          :pt="{
-            root: { style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; background: transparent; border: none;' },
-            item: { style: 'font-size: var(--text-lg);' },
-          }"
+          :pt="pickListListboxPt"
         >
           <template #option="slotProps">
             <div class="target-option-item">
@@ -233,7 +199,7 @@ const onCancel = () => {
   display: flex;
   flex-direction: row;
   flex: 1 1 auto;
-  gap: 0.3rem;
+  gap: 0.5rem;
   min-height: 0;
 }
 
@@ -249,6 +215,8 @@ const onCancel = () => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  min-height: 0;
   border: 1px solid var(--color-border-default);
   border-radius: 6px;
   overflow: hidden;
@@ -285,33 +253,18 @@ const onCancel = () => {
   color: var(--color-text-bright);
 }
 
-.controls-column {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: stretch;
-  gap: 1.2rem;
-  padding: 0 0.25rem;
-}
-
-.control-btn {
-  min-width: 8rem;
-  padding: 0.6rem 1rem;
-  font-size: var(--text-lg);
-}
-
 /* Fixed-height single-line rows (virtual scroller requirement); the full
    name shows in the title tooltip on hover. */
 .option-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   min-width: 0;
 }
 
 .option-item i {
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   flex-shrink: 0;
 }
 
@@ -330,20 +283,9 @@ const onCancel = () => {
   align-items: center;
   cursor: pointer;
   font-weight: 700;
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   padding: 0.25rem 0rem;
   gap: 0.3rem;
-}
-
-:deep(.p-listbox-list-container) {
-  flex: 1 1 auto;
-  min-height: 0;
-  max-height: none !important;
-  overflow: auto;
-}
-
-:deep(.p-virtualscroller) {
-  height: 100% !important;
 }
 
 .target-option-item {
@@ -359,13 +301,13 @@ const onCancel = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   flex: 1;
   min-width: 0;
 }
 
 .target-option-name i {
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   flex-shrink: 0;
 }
 

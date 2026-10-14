@@ -102,23 +102,6 @@ const checkboxPt = {
     style: `background-color: transparent; border-color: var(--color-border-hover); ${context.checked ? 'background-color: var(--color-primary-highlight); border-color: var(--color-primary-highlight);' : ''}`,
   }),
 }
-
-const pickListPt = {
-  sourceFilterInput: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border: 1px solid var(--color-border-default); border-radius: 4px; font-size: var(--text-md); padding: 0.35rem 0.6rem; width: 100%;' },
-  targetFilterInput: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border: 1px solid var(--color-border-default); border-radius: 4px; font-size: var(--text-md); padding: 0.35rem 0.6rem; width: 100%;' },
-  sourceControls: {
-    moveUpButton: { root: { style: 'border-radius: 4px;' } },
-    moveDownButton: { root: { style: 'border-radius: 4px;' } },
-    moveTopButton: { root: { style: 'border-radius: 4px;' } },
-    moveBottomButton: { root: { style: 'border-radius: 4px;' } },
-  },
-  transferControls: {
-    moveToTargetButton: { root: { style: 'border-radius: 4px;' } },
-    moveAllToTargetButton: { root: { style: 'border-radius: 4px;' } },
-    moveToSourceButton: { root: { style: 'border-radius: 4px;' } },
-    moveAllToSourceButton: { root: { style: 'border-radius: 4px;' } },
-  },
-}
 </script>
 
 <template>
@@ -273,7 +256,6 @@ const pickListPt = {
           source-filter-placeholder="Search STIGs..."
           target-filter-placeholder="Search assigned..."
           :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
-          :pt="pickListPt"
         >
           <template #sourceheader>
             Available

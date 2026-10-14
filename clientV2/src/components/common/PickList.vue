@@ -5,6 +5,7 @@ import InputText from 'primevue/inputtext'
 import Listbox from 'primevue/listbox'
 import { computed, ref } from 'vue'
 import PickListControls from './PickListControls.vue'
+import { pickListListboxPt } from './pickListStyles.js'
 
 const props = defineProps({
   /**
@@ -70,15 +71,6 @@ const props = defineProps({
    */
   textFilterFn: {
     type: Function,
-    default: null,
-  },
-  /**
-   * Inline style appended to each Listbox option's default styling via
-   * pass-through, e.g. for denser row padding. Overrides the defaults but
-   * not the selected-state highlight. Applies to both panes.
-   */
-  optionStyle: {
-    type: String,
     default: null,
   },
 })
@@ -251,31 +243,6 @@ const onMoveAllLeft = () => {
   emit('update:modelValue', [newSource, newTarget])
   resetTargetSelection()
 }
-
-const OPTION_BASE_STYLE
-  = 'padding:0.2rem 0.5rem; font-size:var(--text-md); border-radius:3px; margin-bottom:1px; user-select:none;'
-const OPTION_SELECTED_STYLE
-  = 'background:color-mix(in srgb, var(--color-action-blue-dark) 18%, transparent); color:var(--color-text-bright);'
-
-const listboxPt = {
-  root: {
-    style: 'flex:1 1 auto; min-height:0; display:flex; flex-direction:column; border:none; background:transparent;',
-  },
-  listContainer: {
-    style: 'flex:1 1 auto; min-height:0; height:100%; max-height:none; overflow:auto;',
-  },
-  virtualScroller: {
-    root: {
-      style: 'flex:1 1 auto; min-height:0; height:100%; max-height:none;',
-    },
-  },
-  // optionStyle comes after the base so its declarations win, while the
-  // selected-state style stays last so overrides can't lose the highlight.
-  option: ({ context }) => {
-    const base = props.optionStyle ? `${OPTION_BASE_STYLE} ${props.optionStyle}` : OPTION_BASE_STYLE
-    return { style: context.selected ? `${base} ${OPTION_SELECTED_STYLE}` : base }
-  },
-}
 </script>
 
 <template>
@@ -302,7 +269,7 @@ const listboxPt = {
           scroll-height="100%"
           :data-key="dataKey"
           :virtual-scroller-options="virtualScrollerOptions || undefined"
-          :pt="listboxPt"
+          :pt="pickListListboxPt"
           @change="onSourceChange"
         >
           <template #option="slotProps">
@@ -343,7 +310,7 @@ const listboxPt = {
           scroll-height="100%"
           :data-key="dataKey"
           :virtual-scroller-options="virtualScrollerOptions || undefined"
-          :pt="listboxPt"
+          :pt="pickListListboxPt"
           @change="onTargetChange"
         >
           <template #option="slotProps">
