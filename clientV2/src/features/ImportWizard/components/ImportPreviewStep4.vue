@@ -8,6 +8,7 @@ import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { formatDateTimeString } from '../../../shared/lib.js'
+import { dashZero } from '../../../shared/lib/numberFormat.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
 defineOptions({ inheritAttrs: false })
@@ -76,7 +77,7 @@ const dtRef = ref()
             <ResultBadge status="I" />
           </template>
           <template #body="{ data }">
-            {{ data.checklist.stats?.informational ?? 0 }}
+            {{ dashZero(data.checklist.stats?.informational) }}
           </template>
         </Column>
         <Column field="checklist.stats.notchecked" export-header="NR" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notchecked ?? 0">
@@ -84,7 +85,7 @@ const dtRef = ref()
             <ResultBadge status="NR" />
           </template>
           <template #body="{ data }">
-            {{ data.checklist.stats?.notchecked ?? 0 }}
+            {{ dashZero(data.checklist.stats?.notchecked) }}
           </template>
         </Column>
         <Column field="checklist.stats.notapplicable" export-header="NA" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notapplicable ?? 0">
@@ -92,7 +93,7 @@ const dtRef = ref()
             <ResultBadge status="NA" />
           </template>
           <template #body="{ data }">
-            {{ data.checklist.stats?.notapplicable ?? 0 }}
+            {{ dashZero(data.checklist.stats?.notapplicable) }}
           </template>
         </Column>
         <Column field="checklist.stats.pass" export-header="NF" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.pass ?? 0">
@@ -100,7 +101,7 @@ const dtRef = ref()
             <ResultBadge status="NF" />
           </template>
           <template #body="{ data }">
-            {{ data.checklist.stats?.pass ?? 0 }}
+            {{ dashZero(data.checklist.stats?.pass) }}
           </template>
         </Column>
         <Column field="checklist.stats.fail" export-header="O" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.fail ?? 0">
@@ -108,7 +109,7 @@ const dtRef = ref()
             <ResultBadge status="O" />
           </template>
           <template #body="{ data }">
-            {{ data.checklist.stats?.fail ?? 0 }}
+            {{ dashZero(data.checklist.stats?.fail) }}
           </template>
         </Column>
         <Column header="File" field="checklist.sourceRef.name" style="width: 25%" sortable :sort-field="r => r.checklist.sourceRef.name">

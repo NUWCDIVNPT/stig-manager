@@ -13,6 +13,7 @@ import { useGlobalError } from '../../../../shared/composables/useGlobalError.js
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
 
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import {
   fetchAssetsByLabel,
@@ -196,7 +197,7 @@ const tablePt = {
             <template #body="{ data }">
               <span class="asset-stig-count" style="justify-content: center;">
                 <img :src="shieldIcon" class="asset-stig-icon" alt="">
-                {{ data.stigCount }}
+                {{ dashZero(data.stigCount) }}
               </span>
             </template>
           </Column>
