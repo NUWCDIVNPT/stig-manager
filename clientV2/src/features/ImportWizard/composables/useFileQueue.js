@@ -12,7 +12,9 @@ export function useFileQueue() {
   const queueNote = ref('')
   const canContinue = computed(() => sourceFiles.value.length > 0)
 
-  function _queueId(file) { return `${file.name}-${file.size}-${file.lastModified}` }
+  function _queueId(file) {
+    return `${file.name}-${file.size}-${file.lastModified}`
+  }
 
   async function addFilesToQueue(files) {
     const expanded = []
