@@ -3,6 +3,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
 
+import CountColumn from '../../../../components/columns/CountColumn.vue'
 import DurationColumn from '../../../../components/columns/DurationColumn.vue'
 import PercentageColumn from '../../../../components/columns/PercentageColumn.vue'
 import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
@@ -44,8 +45,8 @@ const tablePt = { footer: { style: 'padding: 0; border: none;' } }
 
 const metricColumns = [
   { field: 'revisionStr', header: 'Revision', component: Column, width: '4.5rem', pt: borderPt },
-  { field: 'ruleCount', header: 'Rules', component: Column, width: '2.75rem', pt: borderPt },
-  { field: 'assets', header: 'Assets', component: Column, width: '2.75rem', pt: borderPt },
+  { field: 'ruleCount', header: 'Rules', component: CountColumn, width: '2.75rem', pt: borderPt },
+  { field: 'assets', header: 'Assets', component: CountColumn, width: '2.75rem', pt: borderPt },
   { field: 'oldest', header: 'Oldest', component: DurationColumn, width: '2.75rem', pt: borderPt },
   { field: 'newest', header: 'Newest', component: DurationColumn, width: '2.75rem', pt: borderPt },
   { field: 'assessedPct', header: 'Assessed', component: PercentageColumn, width: '5.5rem', pt: borderPt },

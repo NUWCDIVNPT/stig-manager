@@ -41,6 +41,7 @@ These don't need wrapper components—just inline templates with helper function
 
 | Pattern | Template Example | Helper Needed |
 |---------|------------------|---------------|
+| Count with own header slot | `{{ dashZero(data.count) }}` (use `CountColumn` when the column has no custom slots) | `dashZero()` |
 | CountWithTooltip | `<span v-tooltip="itemList">{{ count }}</span>` | `formatTooltipList()` |
 | IconColumn | `<i :class="getIcon(data)" v-tooltip="label" />` | `getIconClass()` |
 | ResponseCodeColumn | `<Tag :severity="getHttpSeverity(code)">{{ code }}</Tag>` | `getHttpSeverity()` |
