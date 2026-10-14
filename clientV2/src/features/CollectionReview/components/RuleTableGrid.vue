@@ -2,7 +2,7 @@
 import Checkbox from 'primevue/checkbox'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import assessmentIcon from '../../../assets/assessment.svg'
 
 import readOnlyIcon from '../../../assets/read-only.svg'
@@ -94,9 +94,15 @@ const selectedIdSet = computed(() => {
   return s
 })
 
-// Shift-click range anchor, keyed by assetId so sorting/filtering can't stale it
+// Shift-click range anchor, keyed by assetId so sorting/filtering can't stale it.
+// An empty selection (header clear, or the parent clearing on rule change)
+// drops it, so the next shift-click is a single toggle.
 let selectAnchorId = null
-let shiftToggle = false
+watch(() => props.selection.length === 0, (isEmpty) => {
+  if (isEmpty) {
+    selectAnchorId = null
+  }
+})
 
 function onSelectionChange(val) {
   emit('update:selection', val)
@@ -167,9 +173,7 @@ function onRowClick(event) {
     return
   }
   if (event.originalEvent?.shiftKey) {
-    window.getSelection()?.removeAllRanges()
-    shiftToggle = true
-    onToggleSelectRow(rowData)
+    onToggleSelectRow(rowData, true)
     return
   }
   openRowEditor(event.originalEvent || event, rowData)
@@ -248,8 +252,8 @@ function onSelectAllChange(event) {
   }
 }
 
-function onSelectHitMouseDown(event) {
-  shiftToggle = event.shiftKey
+// Shift-mousedown would start a text selection across the range
+function preventShiftTextSelect(event) {
   if (event.shiftKey) {
     event.preventDefault()
   }
@@ -270,12 +274,9 @@ function selectRangeTo(data, checked) {
   return true
 }
 
-function onToggleSelectRow(data) {
+function onToggleSelectRow(data, isShift) {
   const checked = !selectedIdSet.value.has(data.assetId)
-  // An empty selection resets the anchor, so the first click after a clear is a single toggle
-  const isRange = shiftToggle && props.selection.length > 0
-  shiftToggle = false
-  if (!isRange || !selectRangeTo(data, checked)) {
+  if (!isShift || !selectRangeTo(data, checked)) {
     emit('update:selection', checked
       ? [...props.selection, data]
       : props.selection.filter(s => s.assetId !== data.assetId))
@@ -314,7 +315,7 @@ const dataTablePt = {
     return {
       style: { cursor: 'pointer', height: 'var(--item-size, 36px)', overflow: 'hidden' },
       title: access !== 'rw' ? 'Read only' : '',
-
+      onMousedown: preventShiftTextSelect,
     }
   },
   footer: { style: { padding: '0', border: 'none' } },
@@ -366,12 +367,13 @@ const dataTablePt = {
           alt="Read only"
           title="Read only"
         >
-        <label v-else class="selection-hit" @click.stop @mousedown="onSelectHitMouseDown">
-          <Checkbox
-            :model-value="selectedIdSet.has(data.assetId)"
-            :binary="true"
-            @update:model-value="onToggleSelectRow(data)"
-          />
+        <label
+          v-else
+          class="selection-hit"
+          @mousedown="preventShiftTextSelect"
+          @click.prevent.stop="onToggleSelectRow(data, $event.shiftKey)"
+        >
+          <Checkbox :model-value="selectedIdSet.has(data.assetId)" :binary="true" />
         </label>
       </template>
     </Column>
@@ -660,9 +662,10 @@ const dataTablePt = {
   color: var(--color-text-bright, var(--color-text-primary)) !important;
 }
 
-/* Fills the selection cell so the whole cell is the checkbox hit area
-   (a label click toggles the input natively, and stops there so it never
-   reaches the row-click editor). */
+/* Fills the selection cell so the whole cell is the checkbox hit area.
+   The label click drives the toggle (so Shift reaches it, from mouse or
+   Space on the focused input) and stops there so it never reaches the
+   row-click editor. */
 .selection-hit {
   position: absolute;
   inset: 0;

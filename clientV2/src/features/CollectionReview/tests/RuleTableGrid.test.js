@@ -161,6 +161,102 @@ describe('ruleTableGrid.vue', () => {
     })
   })
 
+  describe('shift-click range selection', () => {
+    const rangeGridData = [
+      { assetId: 'asset-1', assetName: 'Asset 1', access: 'rw', ruleId: 'V-123', result: 'fail', status: 'saved' },
+      { assetId: 'asset-2', assetName: 'Asset 2', access: 'r', ruleId: 'V-123', result: 'pass', status: 'saved' },
+      { assetId: 'asset-3', assetName: 'Asset 3', access: 'rw', ruleId: 'V-123', result: 'pass', status: 'saved' },
+      { assetId: 'asset-4', assetName: 'Asset 4', access: 'rw', ruleId: 'V-123', result: 'pass', status: 'saved' },
+      { assetId: 'asset-5', assetName: 'Asset 5', access: 'rw', ruleId: 'V-123', result: 'pass', status: 'saved' },
+    ]
+    const [row1, , row3, row4, row5] = rangeGridData
+
+    function shiftClickRow(name) {
+      return fireEvent.click(screen.getByText(name).closest('tr'), { shiftKey: true })
+    }
+
+    function lastSelection(emitted) {
+      const calls = emitted()['update:selection']
+      return calls[calls.length - 1][0]
+    }
+
+    // Feeds the last emitted selection back in, as the parent's v-model does
+    async function syncSelection(emitted, rerender) {
+      await rerender({ selection: lastSelection(emitted) })
+    }
+
+    it('shift-click with an empty selection is a single toggle and does not open the editor', async () => {
+      const { emitted } = createWrapper({ gridData: rangeGridData })
+      await shiftClickRow('Asset 3')
+
+      expect(lastSelection(emitted)).toEqual([row3])
+      expect(screen.queryByTestId('popover-asset-id')).not.toBeInTheDocument()
+    })
+
+    it('selects every rw row between the anchor and the target', async () => {
+      const { emitted, rerender } = createWrapper({ gridData: rangeGridData })
+      await shiftClickRow('Asset 1')
+      await syncSelection(emitted, rerender)
+      await shiftClickRow('Asset 4')
+
+      // asset-2 is read-only and is skipped
+      expect(lastSelection(emitted)).toEqual([row1, row3, row4])
+    })
+
+    it('ranges in either direction', async () => {
+      const { emitted, rerender } = createWrapper({ gridData: rangeGridData })
+      await shiftClickRow('Asset 5')
+      await syncSelection(emitted, rerender)
+      await shiftClickRow('Asset 3')
+
+      expect(lastSelection(emitted)).toEqual([row3, row4, row5])
+    })
+
+    it('deselects the range when the target is already selected', async () => {
+      const { emitted, rerender } = createWrapper({ gridData: rangeGridData, selection: [row1, row3, row4, row5] })
+      // anchor on asset-5 (toggles it off)
+      await shiftClickRow('Asset 5')
+      expect(lastSelection(emitted)).toEqual([row1, row3, row4])
+      await syncSelection(emitted, rerender)
+      await shiftClickRow('Asset 3')
+
+      expect(lastSelection(emitted)).toEqual([row1])
+    })
+
+    it('keeps rows outside the range selected', async () => {
+      const { emitted, rerender } = createWrapper({ gridData: rangeGridData, selection: [row1] })
+      await shiftClickRow('Asset 3')
+      await syncSelection(emitted, rerender)
+      await shiftClickRow('Asset 5')
+
+      expect(lastSelection(emitted)).toEqual([row1, row3, row4, row5])
+    })
+
+    it('drops the anchor once the selection is cleared', async () => {
+      const { emitted, rerender } = createWrapper({ gridData: rangeGridData })
+      await shiftClickRow('Asset 1')
+      await syncSelection(emitted, rerender)
+      // parent clears (rule change / header clear), then select-all
+      await rerender({ selection: [] })
+      await fireEvent.click(screen.getByRole('checkbox', { name: 'select-all' }))
+      await syncSelection(emitted, rerender)
+      await shiftClickRow('Asset 3')
+
+      // single toggle: only asset-3 comes off, not asset-1..asset-3
+      expect(lastSelection(emitted)).toEqual([row1, row4, row5])
+    })
+
+    it('falls back to a single toggle when the anchor is not in the displayed rows', async () => {
+      const { emitted, rerender } = createWrapper({ gridData: rangeGridData })
+      await shiftClickRow('Asset 1')
+      await syncSelection(emitted, rerender)
+      await rerender({ rows: [row3, row4, row5], isFiltered: true })
+      await shiftClickRow('Asset 4')
+
+      expect(lastSelection(emitted)).toEqual([row1, row4])
+    })
+  })
+
   describe('filtered rows', () => {
     it('shows every row when no rows are passed', () => {
       createWrapper({ gridData: searchGridData })
