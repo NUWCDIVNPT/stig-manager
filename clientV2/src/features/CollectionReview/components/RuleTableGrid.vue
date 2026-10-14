@@ -172,8 +172,10 @@ function onRowClick(event) {
   if (!rowData || rowData.access !== 'rw') {
     return
   }
-  if (event.originalEvent?.shiftKey) {
-    onToggleSelectRow(rowData, true)
+  // Shift ranges, Ctrl/Cmd toggles the one row; neither opens the editor
+  const { shiftKey, ctrlKey, metaKey } = event.originalEvent ?? {}
+  if (shiftKey || ctrlKey || metaKey) {
+    onToggleSelectRow(rowData, shiftKey)
     return
   }
   openRowEditor(event.originalEvent || event, rowData)

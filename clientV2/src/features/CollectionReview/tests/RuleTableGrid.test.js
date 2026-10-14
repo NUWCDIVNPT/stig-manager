@@ -190,6 +190,29 @@ describe('ruleTableGrid.vue', () => {
       expect(screen.queryByTestId('popover-asset-id')).not.toBeInTheDocument()
     })
 
+    it.each([
+      ['Ctrl', { ctrlKey: true }],
+      ['Cmd', { metaKey: true }],
+    ])('%s-click toggles just that row and does not open the editor', async (_, modifier) => {
+      const { emitted, rerender } = createWrapper({ gridData: rangeGridData, selection: [row1] })
+      await fireEvent.click(screen.getByText('Asset 4').closest('tr'), modifier)
+      expect(lastSelection(emitted)).toEqual([row1, row4])
+      await syncSelection(emitted, rerender)
+      await fireEvent.click(screen.getByText('Asset 1').closest('tr'), modifier)
+
+      expect(lastSelection(emitted)).toEqual([row4])
+      expect(screen.queryByTestId('popover-asset-id')).not.toBeInTheDocument()
+    })
+
+    it('ctrl-click sets the anchor for a following shift-click', async () => {
+      const { emitted, rerender } = createWrapper({ gridData: rangeGridData })
+      await fireEvent.click(screen.getByText('Asset 3').closest('tr'), { ctrlKey: true })
+      await syncSelection(emitted, rerender)
+      await shiftClickRow('Asset 5')
+
+      expect(lastSelection(emitted)).toEqual([row3, row4, row5])
+    })
+
     it('selects every rw row between the anchor and the target', async () => {
       const { emitted, rerender } = createWrapper({ gridData: rangeGridData })
       await shiftClickRow('Asset 1')
