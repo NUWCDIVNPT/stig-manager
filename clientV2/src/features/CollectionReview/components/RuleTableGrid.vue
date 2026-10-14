@@ -252,7 +252,8 @@ function onSelectAllChange(event) {
   }
 }
 
-// Shift-mousedown would start a text selection across the range
+// Shift-mousedown would start a text selection across the range (bound on
+// the row, which also covers the checkbox cell)
 function preventShiftTextSelect(event) {
   if (event.shiftKey) {
     event.preventDefault()
@@ -367,12 +368,7 @@ const dataTablePt = {
           alt="Read only"
           title="Read only"
         >
-        <label
-          v-else
-          class="selection-hit"
-          @mousedown="preventShiftTextSelect"
-          @click.prevent.stop="onToggleSelectRow(data, $event.shiftKey)"
-        >
+        <label v-else class="selection-hit" @click.prevent.stop="onToggleSelectRow(data, $event.shiftKey)">
           <Checkbox :model-value="selectedIdSet.has(data.assetId)" :binary="true" />
         </label>
       </template>

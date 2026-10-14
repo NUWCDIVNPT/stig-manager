@@ -163,9 +163,7 @@ describe('ruleTableGrid.vue', () => {
 
   describe('shift-click range selection', () => {
     const rangeGridData = [
-      { assetId: 'asset-1', assetName: 'Asset 1', access: 'rw', ruleId: 'V-123', result: 'fail', status: 'saved' },
-      { assetId: 'asset-2', assetName: 'Asset 2', access: 'r', ruleId: 'V-123', result: 'pass', status: 'saved' },
-      { assetId: 'asset-3', assetName: 'Asset 3', access: 'rw', ruleId: 'V-123', result: 'pass', status: 'saved' },
+      ...mockGridData,
       { assetId: 'asset-4', assetName: 'Asset 4', access: 'rw', ruleId: 'V-123', result: 'pass', status: 'saved' },
       { assetId: 'asset-5', assetName: 'Asset 5', access: 'rw', ruleId: 'V-123', result: 'pass', status: 'saved' },
     ]
@@ -176,8 +174,7 @@ describe('ruleTableGrid.vue', () => {
     }
 
     function lastSelection(emitted) {
-      const calls = emitted()['update:selection']
-      return calls[calls.length - 1][0]
+      return emitted()['update:selection'].at(-1)[0]
     }
 
     // Feeds the last emitted selection back in, as the parent's v-model does
