@@ -1,5 +1,7 @@
 <script setup>
 import { computed } from 'vue'
+import { getContrastColor, normalizeColor } from '../../shared/lib/colorUtils.js'
+import HighlightText from './HighlightText.vue'
 
 const props = defineProps({
   value: {
@@ -8,43 +10,32 @@ const props = defineProps({
   },
   color: {
     type: String,
-    required: true,
+    default: '',
+  },
+  searchTerm: {
+    type: String,
+    default: '',
   },
 })
-const getTextColorFromBackground = (hexcolor) => {
-  const r = Number.parseInt(hexcolor.substr(0, 2), 16)
-  const g = Number.parseInt(hexcolor.substr(2, 2), 16)
-  const b = Number.parseInt(hexcolor.substr(4, 2), 16)
-  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000
-  return (yiq >= 128) ? '#080808' : '#f7f7f7'
-}
 
-const textColor = computed(() => {
-  return getTextColorFromBackground(props.color.replace('#', ''))
-})
+const backgroundColor = computed(() => normalizeColor(props.color, '#cccccc'))
+const textColor = computed(() => getContrastColor(backgroundColor.value, '#000000', 'var(--color-text-primary)'))
 </script>
 
 <template>
-  <span
-    class="sm-label-sprite"
-    :style="{
-      backgroundColor: props.color,
-      color: textColor,
-    }"
-  >
-    {{ props.value }}
+  <!-- LabelsRow measures chip width from this padding and font; keep them in sync -->
+  <span class="label-tag" :style="{ backgroundColor, color: textColor }">
+    <HighlightText :text="props.value" :term="props.searchTerm" />
   </span>
 </template>
 
 <style scoped>
-.sm-label-sprite {
-  font-weight: 600;
+.label-tag {
+  display: inline-block;
   font-size: var(--text-md);
-  line-height: 14px;
-  top: 0;
-  padding: 0 5px;
-  border-radius: 3px;
-  margin-left: 3px;
-  white-space: nowrap
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 6px;
+  white-space: nowrap;
 }
 </style>

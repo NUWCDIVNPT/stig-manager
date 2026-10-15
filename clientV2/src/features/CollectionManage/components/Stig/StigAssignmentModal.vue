@@ -1,16 +1,15 @@
 <script setup>
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import Popover from 'primevue/popover'
 import Select from 'primevue/select'
 import { computed, ref, watch } from 'vue'
 
 import shieldIcon from '../../../../assets/shield-green-check.svg'
+import LabelsRow from '../../../../components/columns/LabelsRow.vue'
 import HelpIcon from '../../../../components/common/HelpIcon.vue'
 import PickList from '../../../../components/common/PickList.vue'
 import { fetchCollectionLabels } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
-import { getContrastColor, normalizeColor } from '../../../../shared/lib/colorUtils.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { pickListVirtualScrollerOptions } from '../../../../shared/lib/pickListPt.js'
@@ -57,7 +56,6 @@ const stigAssets = ref([])
 const labelMap = ref(new Map())
 
 const LATEST_REVISION = 'latest'
-const MAX_VISIBLE_LABELS = 2
 const VIRTUAL_SCROLLER_OPTIONS = pickListVirtualScrollerOptions()
 
 const selectedBenchmarkId = ref(null)
@@ -233,8 +231,7 @@ function buildAssetRow(asset) {
     assetId: asset.assetId,
     name: asset.name,
     labelIds,
-    visibleLabels: labels.slice(0, MAX_VISIBLE_LABELS),
-    overflowLabels: labels.slice(MAX_VISIBLE_LABELS),
+    labels,
     benchmarkIds: (asset.stigs ?? []).map(s => s.benchmarkId),
   }
 }
@@ -287,25 +284,6 @@ function onPickerUpdate(newValue) {
 
 const assignedCount = computed(() => pickerValue.value[1].length)
 const availableCount = computed(() => pickerValue.value[0].length)
-
-function labelChipStyle(label) {
-  return {
-    backgroundColor: normalizeColor(label.color, '#cccccc'),
-    color: getContrastColor(label.color, '#000000', 'var(--color-text-primary)'),
-  }
-}
-
-const overflowPopoverRef = ref(null)
-const overflowPopoverLabels = ref([])
-
-function showOverflowPopover(event, labels) {
-  overflowPopoverLabels.value = labels
-  overflowPopoverRef.value?.show(event)
-}
-
-function hideOverflowPopover() {
-  overflowPopoverRef.value?.hide()
-}
 
 function assetTextFilter(item, text) {
   const lower = text.toLowerCase()
@@ -418,24 +396,7 @@ const selectPt = {
           <template #item="{ item }">
             <div class="asset-row">
               <span class="asset-name">{{ item.name }}</span>
-              <div class="asset-labels">
-                <span
-                  v-for="label in item.visibleLabels"
-                  :key="label.labelId"
-                  class="label-chip"
-                  :style="labelChipStyle(label)"
-                >
-                  {{ label.name }}
-                </span>
-                <span
-                  v-if="item.overflowLabels.length > 0"
-                  class="label-chip label-chip--overflow"
-                  @mouseenter="showOverflowPopover($event, item.overflowLabels)"
-                  @mouseleave="hideOverflowPopover"
-                >
-                  +{{ item.overflowLabels.length }}
-                </span>
-              </div>
+              <LabelsRow class="asset-labels" :labels="item.labels" compact />
               <span class="asset-stig-count" :title="item.benchmarkIds.join(', ')">
                 <img :src="shieldIcon" class="asset-stig-icon" alt="">
                 {{ dashZero(item.benchmarkIds.length) }}
@@ -444,19 +405,6 @@ const selectPt = {
           </template>
         </PickList>
       </div>
-
-      <Popover ref="overflowPopoverRef">
-        <div class="overflow-labels-popover">
-          <span
-            v-for="label in overflowPopoverLabels"
-            :key="label.labelId"
-            class="label-chip"
-            :style="labelChipStyle(label)"
-          >
-            {{ label.name }}
-          </span>
-        </div>
-      </Popover>
     </div>
 
     <template #footer>
@@ -614,35 +562,6 @@ const selectPt = {
 .asset-labels {
   flex: 1;
   min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  overflow: hidden;
-}
-
-.label-chip {
-  display: inline-block;
-  font-size: var(--text-md);
-  font-weight: 600;
-  padding: 1px 5px;
-  border-radius: 6px;
-  white-space: nowrap;
-  max-width: 10rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.label-chip--overflow {
-  background-color: var(--color-background-darkest);
-  color: var(--color-text-primary);
-  cursor: pointer;
-}
-
-.overflow-labels-popover {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  max-width: 250px;
 }
 
 .asset-stig-count {
