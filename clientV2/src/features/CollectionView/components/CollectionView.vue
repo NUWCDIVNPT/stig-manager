@@ -12,7 +12,6 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
-import { pickLabelFilterQuery } from '../../../shared/lib/labelFilters.js'
 import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
 import CollectionImportResults from '../../CollectionMetrics/components/CollectionImportResults.vue'
@@ -63,10 +62,10 @@ const { state: collection, execute: loadCollection } = useAsyncState(
 const collectionName = computed(() => collection.value?.name || 'Collection')
 
 // Label filter (set from the breadcrumb) shared by the dashboard metrics and every tab.
-const { selectedLabelNames, labelFilterKey } = useLabelFilterQuery()
+const { selectedLabelNames, labelFilterParams } = useLabelFilterQuery()
 
 // Track Recent Views on data load, route change and label filter change
-watch([collection, () => route.name, labelFilterKey], ([col, routeName]) => {
+watch([collection, () => route.name, selectedLabelNames], ([col, routeName]) => {
   if (col?.name && routeName?.startsWith('collection')) {
     let label = col.name
     let key = `collection:${props.collectionId}`
@@ -121,7 +120,7 @@ const activeTab = computed({
       router.push({
         name: routeName,
         params: { collectionId: props.collectionId },
-        query: pickLabelFilterQuery(route.query),
+        query: labelFilterParams.value,
       })
     }
   },

@@ -33,6 +33,7 @@ describe('label filter routes', () => {
   // The collection-name crumb keeps the label filter; the dashboard redirect keeps the query
   it.each([
     ['collection-assets', collection],
+    ['collection-asset-review', assetReview],
     ['collection-benchmark-review', review],
   ])('%s collection crumb carries the label filter', (name, params) => {
     const route = router.resolve({ name, params, query: { labelName: 'prod', labelMatch: 'null', foo: 'bar' } })

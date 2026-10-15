@@ -11,8 +11,6 @@ import BreadcrumbSelect from './BreadcrumbSelect.vue'
 // Routes flag which filter shows after the breadcrumb: `meta.labelFilter` (collection
 // labels) or `meta.collectionFilter` (Collections page).
 const route = useRoute()
-const showLabelPills = computed(() => !!route.meta.labelFilter)
-const showCollectionPills = computed(() => !!route.meta.collectionFilter)
 
 const oidcWorker = inject('worker')
 const env = useEnv()
@@ -209,8 +207,8 @@ const pt = {
             >/</span>
           </template>
         </nav>
-        <div v-if="showLabelPills || showCollectionPills" class="breadcrumb-filter">
-          <LabelFilterPills v-if="showLabelPills" />
+        <div v-if="route.meta.labelFilter || route.meta.collectionFilter" class="breadcrumb-filter">
+          <LabelFilterPills v-if="route.meta.labelFilter" />
           <CollectionFilterPills v-else />
         </div>
       </div>

@@ -8,6 +8,14 @@ import { useMetaCollectionFilter } from '../composables/useMetaCollectionFilter.
 // Collections page filter shown after the breadcrumb.
 const { collectionFilter, selectedCollectionIds, reset } = useMetaCollectionFilter()
 const isFiltered = computed(() => isActive(collectionFilter.value))
+
+// The picker emits a fresh empty array on mount; skip that no-op so the page's
+// watchers on the ids do not refetch.
+function setSelectedCollectionIds(ids) {
+  if (ids.length || selectedCollectionIds.value.length) {
+    selectedCollectionIds.value = ids
+  }
+}
 </script>
 
 <template>
@@ -19,7 +27,7 @@ const isFiltered = computed(() => isActive(collectionFilter.value))
   >
     <MetaMetricsFilter
       v-model="collectionFilter"
-      @update:effective-collection-ids="selectedCollectionIds = $event"
+      @update:effective-collection-ids="setSelectedCollectionIds"
     />
   </BreadcrumbFilter>
 </template>

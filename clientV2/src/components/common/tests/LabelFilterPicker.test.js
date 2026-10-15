@@ -17,9 +17,9 @@ const LABELS = [
   { labelId: '5', name: 'test', color: 'c62828' },
 ]
 
-function renderPills(modelValue, props = {}) {
+function renderPills(modelValue) {
   return renderWithProviders(LabelFilterPicker, {
-    props: { collectionId: '7', modelValue, ...props },
+    props: { collectionId: '7', modelValue },
   })
 }
 

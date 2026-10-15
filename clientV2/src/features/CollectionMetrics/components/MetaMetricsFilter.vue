@@ -2,7 +2,8 @@
 import MultiSelect from 'primevue/multiselect'
 import SelectButton from 'primevue/selectbutton'
 import { computed, ref, watch } from 'vue'
-import { MAX_VISIBLE_PILLS, pillsMultiSelectPt } from '../../../components/common/pillsPicker.js'
+import { pillsMultiSelectPt } from '../../../components/common/pillsPicker.js'
+import PillsTrigger from '../../../components/common/PillsTrigger.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { isActive as isFilterActive, valuesFilter } from '../../../shared/lib/columnFilters.js'
 import { fetchMetaCollections } from '../../MetaCollectionView/api/metaApi.js'
@@ -51,7 +52,9 @@ const appliedOptions = computed(() => {
   return (options.value || []).filter(opt => selected.has(opt.collectionId))
 })
 
-const isActive = computed(() => isFilterActive(props.modelValue) && appliedOptions.value.length > 0)
+const isActive = computed(() => appliedOptions.value.length > 0)
+
+const nameOf = opt => opt.name || 'unnamed collection'
 
 // Excluding every collection would resolve to an empty list, which the API treats as "all"
 const excludesEverything = computed(() =>
@@ -65,17 +68,19 @@ const tooManyIds = computed(() => {
   return sent > MAX_SENT_IDS
 })
 
-const selectedNames = computed(() => appliedOptions.value.map(opt => opt.name || 'unnamed collection'))
-
-const visiblePills = computed(() => appliedOptions.value.slice(0, MAX_VISIBLE_PILLS))
-const hiddenPillCount = computed(() => appliedOptions.value.length - visiblePills.value.length)
+// Collections have no colour, so neutral chips
+const pills = computed(() => appliedOptions.value.map(opt => ({
+  key: opt.collectionId,
+  name: nameOf(opt),
+  class: 'trigger-pills__chip--neutral',
+})))
 
 const titleText = computed(() => {
   if (!isActive.value) {
     return ''
   }
   const verb = appliedExclude.value ? 'Excluding' : 'Including'
-  return `${verb}: ${selectedNames.value.join(', ')}`
+  return `${verb}: ${pills.value.map(pill => pill.name).join(', ')}`
 })
 
 // Include passes ids straight through; exclude resolves against the full collection list
@@ -137,25 +142,14 @@ function removeCollection(collectionId) {
       @before-hide="isOverlayOpen = false"
     >
       <template #value>
-        <div class="trigger-pills" :title="titleText">
-          <span v-if="!isActive" class="trigger-pills__placeholder">Filter by collection</span>
-          <template v-else>
-            <span v-if="appliedExclude" class="trigger-pills__mode">Excluding</span>
-            <span class="trigger-pills__chips">
-              <span v-for="opt in visiblePills" :key="opt.collectionId" class="trigger-pills__chip collection-chip">
-                <span class="trigger-pills__name">{{ opt.name || 'unnamed collection' }}</span>
-                <i
-                  class="pi pi-times trigger-pills__remove"
-                  :style="isOverlayOpen ? { visibility: 'hidden' } : null"
-                  :title="`Remove ${opt.name || 'unnamed collection'}`"
-                  @click.stop.prevent="removeCollection(opt.collectionId)"
-                />
-              </span>
-              <span v-if="hiddenPillCount" class="trigger-pills__more">+{{ hiddenPillCount }}</span>
-            </span>
-          </template>
-          <span class="trigger-pills__chevron"><i class="pi pi-chevron-down" /></span>
-        </div>
+        <PillsTrigger
+          :pills="pills"
+          placeholder="Filter by collection"
+          :prefix="appliedExclude ? 'Excluding' : ''"
+          :open="isOverlayOpen"
+          :title="titleText"
+          @remove="removeCollection($event.key)"
+        />
       </template>
 
       <template #header>
@@ -172,7 +166,7 @@ function removeCollection(collectionId) {
       </template>
 
       <template #option="slotProps">
-        <span>{{ slotProps.option.name || 'unnamed collection' }}</span>
+        <span>{{ nameOf(slotProps.option) }}</span>
       </template>
 
       <template #footer>
@@ -203,68 +197,12 @@ function removeCollection(collectionId) {
   width: 100%;
 }
 
-/* Collections have no colour, so a neutral chip */
-.collection-chip {
-  border: 1px solid var(--color-border-default);
-  background: var(--color-bg-hover);
-  color: var(--color-text-primary);
-}
-
-.trigger-pills__mode {
-  flex-shrink: 0;
-  font-size: var(--text-md);
-  color: var(--color-text-dim);
-  white-space: nowrap;
-}
-
 .mode-row {
   padding: 0.4rem 0.5rem 0;
-}
-
-.panel-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  padding: 0.4rem 0.5rem;
-  border-top: 1px solid var(--color-border-default);
-  background-color: var(--color-background-light);
 }
 
 .footer-warning {
   font-size: var(--text-sm);
   color: var(--color-text-dim);
-}
-
-.footer-buttons {
-  display: flex;
-  gap: 0.4rem;
-}
-
-.footer-btn {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  padding: 0.3rem 0.6rem;
-  border: 1px solid var(--color-border-default);
-  border-radius: 5px;
-  background: var(--color-bg-elevated);
-  color: var(--color-text-primary);
-  cursor: pointer;
-  font-size: var(--text-md);
-}
-
-.footer-btn--primary {
-  font-weight: 600;
-}
-
-.footer-btn:hover:not(:disabled) {
-  background: var(--color-bg-hover-strong);
-}
-
-.footer-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 </style>

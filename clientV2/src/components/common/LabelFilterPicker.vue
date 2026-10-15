@@ -5,7 +5,8 @@ import { fetchCollectionLabels } from '../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../shared/composables/useAsyncState.js'
 import { labelChipStyle, normalizeColor } from '../../shared/lib/colorUtils.js'
 import LabelChip from './Label.vue'
-import { MAX_VISIBLE_PILLS, pillsMultiSelectPt } from './pillsPicker.js'
+import { pillsMultiSelectPt } from './pillsPicker.js'
+import PillsTrigger from './PillsTrigger.vue'
 
 // Collection label picker for the breadcrumb filter: the applied labels are removable
 // chips that open the picker.
@@ -23,31 +24,23 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
-const { state: options, isLoading, execute } = useAsyncState(
-  () => props.collectionId ? fetchCollectionLabels(props.collectionId) : [],
-  { initialState: [], immediate: false },
+// The label list is kept with the collection it was fetched for, so the prune below
+// never compares a selection against another collection's labels.
+const { state: loaded, isLoading, execute: loadOptions } = useAsyncState(
+  async () => props.collectionId
+    ? { collectionId: props.collectionId, labels: await fetchCollectionLabels(props.collectionId) }
+    : null,
+  { initialState: null, immediate: false },
 )
 
-// Collection the loaded label options belong to; null until a load succeeds
-const loadedCollectionId = ref(null)
+const options = computed(() => loaded.value?.labels ?? [])
 
-async function loadOptions() {
-  const requestedId = props.collectionId
-  loadedCollectionId.value = null
-  const result = await execute()
-  if (result && requestedId && requestedId === props.collectionId) {
-    loadedCollectionId.value = requestedId
-  }
-}
-
-loadOptions()
-
-watch(() => props.collectionId, loadOptions)
+watch(() => props.collectionId, () => loadOptions(), { immediate: true })
 
 // Drop selected label names the collection doesn't have (stale bookmark, renamed or
 // deleted label) so the filter never applies something the picker can't show.
-watch([() => props.modelValue, loadedCollectionId], () => {
-  if (loadedCollectionId.value !== props.collectionId || !props.modelValue?.length) {
+watch([() => props.modelValue, loaded], () => {
+  if (loaded.value?.collectionId !== props.collectionId || !props.modelValue.length) {
     return
   }
   const known = new Set(options.value.map(opt => opt.name))
@@ -59,7 +52,6 @@ watch([() => props.modelValue, loadedCollectionId], () => {
 
 const multiSelectRef = ref()
 const draftValues = ref([])
-// Chip remove is hidden (space kept) while open: removing would reset the unapplied draft
 const isOverlayOpen = ref(false)
 // MultiSelect cannot hold null, so "no label" is a sentinel in draftValues and
 // mapped back to null for the model. Label selections are label names; the
@@ -82,15 +74,20 @@ function modelValueOf(opt) {
   return opt === noLabelOption ? null : opt.name
 }
 
-const renderedOptions = computed(() => [noLabelOption, ...(options.value || [])])
+const renderedOptions = computed(() => [noLabelOption, ...options.value])
 
 const appliedOptions = computed(() => {
   const selected = new Set(props.modelValue)
   return renderedOptions.value.filter(opt => selected.has(modelValueOf(opt)))
 })
 
-const visiblePills = computed(() => appliedOptions.value.slice(0, MAX_VISIBLE_PILLS))
-const hiddenPillCount = computed(() => appliedOptions.value.length - visiblePills.value.length)
+// Trigger chips; `value` is what removing the chip takes out of the model
+const pills = computed(() => appliedOptions.value.map(opt => ({
+  key: opt.labelId,
+  name: opt.name,
+  style: labelChipStyle(opt.color),
+  value: modelValueOf(opt),
+})))
 
 // Refetch labels on open so ones added or renamed elsewhere show up; silent, since
 // MultiSelect ignores clicks while `loading`.
@@ -115,9 +112,8 @@ function cancelFilters() {
   multiSelectRef.value?.hide?.()
 }
 
-function removeOption(opt) {
-  const removed = modelValueOf(opt)
-  emit('update:modelValue', props.modelValue.filter(name => name !== removed))
+function removePill(pill) {
+  emit('update:modelValue', props.modelValue.filter(name => name !== pill.value))
 }
 </script>
 
@@ -140,27 +136,7 @@ function removeOption(opt) {
       @before-hide="isOverlayOpen = false"
     >
       <template #value>
-        <div class="trigger-pills">
-          <span v-if="!appliedOptions.length" class="trigger-pills__placeholder">Filter by label</span>
-          <span v-else class="trigger-pills__chips">
-            <span
-              v-for="opt in visiblePills"
-              :key="opt.labelId"
-              class="trigger-pills__chip"
-              :style="labelChipStyle(opt.color)"
-            >
-              <span class="trigger-pills__name">{{ opt.name }}</span>
-              <i
-                class="pi pi-times trigger-pills__remove"
-                :style="isOverlayOpen ? { visibility: 'hidden' } : null"
-                :title="`Remove ${opt.name}`"
-                @click.stop.prevent="removeOption(opt)"
-              />
-            </span>
-            <span v-if="hiddenPillCount" class="trigger-pills__more">+{{ hiddenPillCount }}</span>
-          </span>
-          <span class="trigger-pills__chevron"><i class="pi pi-chevron-down" /></span>
-        </div>
+        <PillsTrigger :pills="pills" placeholder="Filter by label" :open="isOverlayOpen" @remove="removePill" />
       </template>
 
       <template #option="slotProps">
@@ -169,13 +145,15 @@ function removeOption(opt) {
 
       <template #footer>
         <div class="panel-footer">
-          <button type="button" class="footer-btn" @click="cancelFilters">
-            <span>Cancel</span>
-          </button>
-          <button type="button" class="footer-btn footer-btn--primary" @click="applyFilters">
-            <i class="pi pi-check" />
-            <span>Apply</span>
-          </button>
+          <div class="footer-buttons">
+            <button type="button" class="footer-btn" @click="cancelFilters">
+              <span>Cancel</span>
+            </button>
+            <button type="button" class="footer-btn footer-btn--primary" @click="applyFilters">
+              <i class="pi pi-check" />
+              <span>Apply</span>
+            </button>
+          </div>
         </div>
       </template>
     </MultiSelect>
@@ -189,36 +167,5 @@ function removeOption(opt) {
   display: flex;
   align-items: center;
   width: 100%;
-}
-
-.panel-footer {
-  display: flex;
-  gap: 0.4rem;
-  padding: 0.4rem 0.5rem;
-  border-top: 1px solid var(--color-border-default);
-  background-color: var(--color-background-light);
-}
-
-.footer-btn {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  padding: 0.3rem 0.6rem;
-  border: 1px solid var(--color-border-default);
-  border-radius: 5px;
-  background: var(--color-bg-elevated);
-  color: var(--color-text-primary);
-  cursor: pointer;
-  font-size: var(--text-md);
-}
-
-.footer-btn--primary {
-  font-weight: 600;
-}
-
-.footer-btn:hover {
-  background: var(--color-bg-hover-strong);
 }
 </style>

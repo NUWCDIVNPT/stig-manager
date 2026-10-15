@@ -25,6 +25,13 @@ const NotFound = () => import('../features/NotFound/components/NotFound.vue')
 
 const EmptyComponent = { template: '<div><router-view></router-view></div>' }
 
+// Collection-name crumb; carries the label filter back to the Collection dashboard
+const collectionCrumb = {
+  label: (route, getCollectionName) => getCollectionName(route.params.collectionId),
+  route: route => ({ name: 'collection', params: { collectionId: route.params.collectionId }, query: pickLabelFilterQuery(route.query) }),
+  pickerType: 'collection',
+}
+
 const routes = [
   {
     path: '/',
@@ -38,14 +45,11 @@ const routes = [
     meta: {
       requiresCollectionGrant: true,
       collectionView: true,
+      // shows the collection label filter after the breadcrumb (MenuBar); tabs inherit it
+      labelFilter: true,
       breadcrumbs: [
         { label: 'Collections', route: { name: 'collections' } },
-        {
-          label: (route, getCollectionName) => getCollectionName(route.params.collectionId),
-          // keeps the label filter when returning to the dashboard from a tab
-          route: route => ({ name: 'collection', params: { collectionId: route.params.collectionId }, query: pickLabelFilterQuery(route.query) }),
-          pickerType: 'collection',
-        },
+        collectionCrumb,
       ],
     },
     children: [
@@ -60,35 +64,35 @@ const routes = [
         name: 'collection-stigs',
         component: EmptyComponent,
         props: true,
-        meta: { labelFilter: true, breadcrumbs: [{ label: 'STIGs' }] },
+        meta: { breadcrumbs: [{ label: 'STIGs' }] },
       },
       {
         path: 'assets',
         name: 'collection-assets',
         component: EmptyComponent,
         props: true,
-        meta: { labelFilter: true, breadcrumbs: [{ label: 'Assets' }] },
+        meta: { breadcrumbs: [{ label: 'Assets' }] },
       },
       {
         path: 'labels',
         name: 'collection-labels',
         component: EmptyComponent,
         props: true,
-        meta: { labelFilter: true, breadcrumbs: [{ label: 'Labels' }] },
+        meta: { breadcrumbs: [{ label: 'Labels' }] },
       },
       {
         path: 'findings',
         name: 'collection-findings',
         component: EmptyComponent,
         props: true,
-        meta: { labelFilter: true, breadcrumbs: [{ label: 'Findings' }] },
+        meta: { breadcrumbs: [{ label: 'Findings' }] },
       },
       {
         path: 'management',
         name: 'collection-management',
         component: EmptyComponent,
         props: true,
-        meta: { minRoleId: 3, breadcrumbs: [{ label: 'Management' }] },
+        meta: { minRoleId: 3, labelFilter: false, breadcrumbs: [{ label: 'Management' }] },
       },
     ],
   },
@@ -100,11 +104,7 @@ const routes = [
       requiresCollectionGrant: true,
       breadcrumbs: [
         { label: 'Collections', route: { name: 'collections' } },
-        {
-          label: (route, getCollectionName) => getCollectionName(route.params.collectionId),
-          route: route => ({ name: 'collection', params: { collectionId: route.params.collectionId } }),
-          pickerType: 'collection',
-        },
+        collectionCrumb,
         { label: (route, _, asset) => asset.value?.name || `Asset ${route.params.assetId}` },
         { label: route => route.params.benchmarkId || 'STIG', isDropdown: true, dropdownType: 'stig' },
         { label: route => route.params.revisionStr, isDropdown: true, dropdownType: 'revision' },
@@ -117,16 +117,10 @@ const routes = [
     component: CollectionReview,
     meta: {
       requiresCollectionGrant: true,
-      // shows the collection label filter after the breadcrumb (MenuBar)
       labelFilter: true,
       breadcrumbs: [
         { label: 'Collections', route: { name: 'collections' } },
-        {
-          label: (route, getCollectionName) => getCollectionName(route.params.collectionId),
-          // carries the label filter back to the Collection dashboard
-          route: route => ({ name: 'collection', params: { collectionId: route.params.collectionId }, query: pickLabelFilterQuery(route.query) }),
-          pickerType: 'collection',
-        },
+        collectionCrumb,
         { label: route => route.params.benchmarkId || 'STIG', isDropdown: true, dropdownType: 'stig' },
         { label: route => route.params.revisionStr, isDropdown: true, dropdownType: 'revision' },
       ],

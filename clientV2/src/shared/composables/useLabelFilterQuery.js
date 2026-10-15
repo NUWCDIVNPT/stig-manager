@@ -8,13 +8,13 @@ import { buildLabelFilterParams, parseLabelFilterParams } from '../lib/labelFilt
 //
 // selectedLabelNames: writable; label names, with `null` meaning "assets with no label".
 //   Its array identity only changes when the filter itself changes (not on every route
-//   change), so consumers can deep-watch it to refetch.
+//   change), so it is a watch source that fires once per filter change.
 // labelFilterParams: query params for the API wrappers, from buildLabelFilterParams.
-// labelFilterKey: string form of the selection, for use as a watch source.
 export function useLabelFilterQuery() {
   const route = useRoute()
   const router = useRouter()
 
+  // String key so the array below is only rebuilt when the filter changes
   const labelFilterKey = computed(() => JSON.stringify(parseLabelFilterParams(route.query)))
 
   const selectedLabelNames = computed({
@@ -27,5 +27,5 @@ export function useLabelFilterQuery() {
 
   const labelFilterParams = computed(() => buildLabelFilterParams(selectedLabelNames.value))
 
-  return { selectedLabelNames, labelFilterParams, labelFilterKey }
+  return { selectedLabelNames, labelFilterParams }
 }

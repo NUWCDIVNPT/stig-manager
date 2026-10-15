@@ -28,7 +28,7 @@ const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
 
 // Label filter from the route query (set from the breadcrumb); the API takes the names as is.
-const { labelFilterParams, labelFilterKey } = useLabelFilterQuery()
+const { selectedLabelNames, labelFilterParams } = useLabelFilterQuery()
 
 function recentViewKey(cId = collectionId.value, bId = benchmarkId.value) {
   return `collection-review:${cId}:${bId}`
@@ -114,24 +114,25 @@ watch(collectionId, () => {
   }
 }, { immediate: true })
 
-watch([collectionId, benchmarkId, revisionStr, labelFilterKey], () => {
-  if (collectionId.value && benchmarkId.value && revisionStr.value) {
-    loadChecklist()
-    loadAssets()
+const stigKey = computed(() => `${collectionId.value}/${benchmarkId.value}/${revisionStr.value}`)
+
+// Reviews are per collection and rule, fetched label-scoped (rule clicks stay
+// small), so a label-only change reloads the selected rule's reviews too. A STIG
+// or revision change leaves that to the gridData watcher below, which replaces
+// the selection (and would make a reviews request for the old rule wasted).
+watch([stigKey, selectedLabelNames], ([key], [prevKey] = []) => {
+  if (!(collectionId.value && benchmarkId.value && revisionStr.value)) {
+    return
+  }
+  loadChecklist()
+  loadAssets()
+  if (key === prevKey && selectedRuleId.value) {
+    loadReviews(selectedRuleId.value)
   }
 }, { immediate: true })
 
-// Reviews are per collection and rule, fetched label-scoped (rule clicks stay
-// small), so a label change reloads the selected rule's reviews too. A STIG or
-// revision change replaces the selection via the gridData watcher below instead.
-watch(labelFilterKey, () => {
-  if (collectionId.value && selectedRuleId.value) {
-    loadReviews(selectedRuleId.value)
-  }
-})
-
 watch(
-  [collection, () => route.params.benchmarkId, () => route.params.revisionStr, labelFilterKey],
+  [collection, () => route.params.benchmarkId, () => route.params.revisionStr, selectedLabelNames],
   ([c]) => {
     if (c?.name && route.params.benchmarkId) {
       addView({

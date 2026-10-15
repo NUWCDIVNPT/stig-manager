@@ -20,10 +20,9 @@ describe('useLabelFilterQuery', () => {
 
   it('reads the selection and API params from the route query', () => {
     route.query = { labelName: ['a', 'b'], labelMatch: 'null' }
-    const { selectedLabelNames, labelFilterParams, labelFilterKey } = useLabelFilterQuery()
+    const { selectedLabelNames, labelFilterParams } = useLabelFilterQuery()
     expect(selectedLabelNames.value).toEqual(['a', 'b', null])
     expect(labelFilterParams.value).toEqual({ labelName: ['a', 'b'], labelMatch: 'null' })
-    expect(labelFilterKey.value).toBe(JSON.stringify(['a', 'b', null]))
   })
 
   it('writes a new selection with router.replace, keeping unrelated query keys', () => {
