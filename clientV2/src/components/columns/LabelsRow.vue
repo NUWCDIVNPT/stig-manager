@@ -1,11 +1,10 @@
 <script setup>
 import Popover from 'primevue/popover'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { getContrastColor, normalizeColor } from '../../shared/lib/colorUtils.js'
 import { rootFontSizePx } from '../../shared/lib/remToPx.js'
 import { TEXT_SCALE_REM } from '../../shared/lib/textScale.js'
 import { bodyFontFamily, measureTextWidth } from '../../shared/lib/textWidth.js'
-import HighlightText from '../common/HighlightText.vue'
+import LabelChip from '../common/Label.vue'
 
 const props = defineProps({
   labels: {
@@ -152,14 +151,13 @@ function hidePopover() {
 
 <template>
   <div ref="containerRef" class="labels-row">
-    <span
+    <LabelChip
       v-for="label in visibleLabelsData.visible"
       :key="label.labelId"
-      :style="{ backgroundColor: normalizeColor(label.color, '#cccccc'), color: getContrastColor(label.color, '#000000', 'var(--color-text-primary)') }"
-      class="label-tag"
-    >
-      <HighlightText :text="label.name" :term="searchTerm" />
-    </span>
+      :value="label.name"
+      :color="label.color"
+      :search-term="searchTerm"
+    />
     <span
       v-if="visibleLabelsData.overflowCount > 0"
       class="label-tag label-overflow"
@@ -175,14 +173,13 @@ function hidePopover() {
         @mouseenter="cancelHide"
         @mouseleave="hidePopover"
       >
-        <span
+        <LabelChip
           v-for="label in visibleLabelsData.overflow"
           :key="label.labelId"
-          :style="{ backgroundColor: normalizeColor(label.color, '#cccccc'), color: getContrastColor(label.color, '#000000', 'var(--color-text-primary)') }"
-          class="label-tag"
-        >
-          <HighlightText :text="label.name" :term="searchTerm" />
-        </span>
+          :value="label.name"
+          :color="label.color"
+          :search-term="searchTerm"
+        />
       </div>
     </Popover>
   </div>
