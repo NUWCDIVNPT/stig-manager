@@ -33,7 +33,7 @@ const props = defineProps({
   },
 })
 
-const ROW_HEIGHT = rowHeightPx('control')
+const ROW_HEIGHT = rowHeightPx('compact')
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 

@@ -36,7 +36,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'save'])
 
-const ROW_HEIGHT = rowHeightPx('control')
+const ROW_HEIGHT = rowHeightPx('compact')
 
 // Only an Owner (or an elevated caller) may assign the Owner role.
 const availableRoleOptions = computed(() => getAssignableRoleOptions(props.canModifyOwners))
