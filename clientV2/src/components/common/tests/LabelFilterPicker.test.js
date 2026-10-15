@@ -1,11 +1,11 @@
 import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fetchCollectionLabels } from '../../../features/CollectionView/api/collectionApi.js'
+import { fetchCollectionLabels } from '../../../shared/api/collectionsApi.js'
 import { renderWithProviders } from '../../../testUtils/utils.js'
-import MetricsFilter from '../MetricsFilter.vue'
+import LabelFilterPicker from '../LabelFilterPicker.vue'
 
-vi.mock('../../../features/CollectionView/api/collectionApi.js', () => ({
+vi.mock('../../../shared/api/collectionsApi.js', () => ({
   fetchCollectionLabels: vi.fn(),
 }))
 
@@ -18,12 +18,12 @@ const LABELS = [
 ]
 
 function renderPills(modelValue, props = {}) {
-  return renderWithProviders(MetricsFilter, {
+  return renderWithProviders(LabelFilterPicker, {
     props: { collectionId: '7', modelValue, ...props },
   })
 }
 
-describe('metricsFilter', () => {
+describe('labelFilterPicker', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     fetchCollectionLabels.mockResolvedValue(LABELS)

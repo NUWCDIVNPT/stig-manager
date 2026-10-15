@@ -1,13 +1,14 @@
 <script setup>
 import MultiSelect from 'primevue/multiselect'
 import { computed, ref, watch } from 'vue'
-import { fetchCollectionLabels } from '../../features/CollectionView/api/collectionApi.js'
+import { fetchCollectionLabels } from '../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../shared/composables/useAsyncState.js'
 import { labelChipStyle, normalizeColor } from '../../shared/lib/colorUtils.js'
 import LabelChip from './Label.vue'
 import { MAX_VISIBLE_PILLS, pillsMultiSelectPt } from './pillsPicker.js'
 
-// Collection label picker: the applied labels are removable chips that open the picker.
+// Collection label picker for the breadcrumb filter: the applied labels are removable
+// chips that open the picker.
 const props = defineProps({
   // Label names; `null` means "assets with no label"
   modelValue: {
@@ -63,35 +64,29 @@ const isOverlayOpen = ref(false)
 // MultiSelect cannot hold null, so "no label" is a sentinel in draftValues and
 // mapped back to null for the model. Label selections are label names; the
 // sentinel is only ever produced for noLabelOption (see optionValueOf) and is
-// longer than a label name can be (LabelName maxLength 16 in the API spec).
+// longer than a label name can be (LABEL_NAME_MAX_LENGTH in labelFilters.js).
 const NO_LABEL_SENTINEL = '__no_label_sentinel__'
 
+// No colour, so the chip takes the theme's neutral label colour
 const noLabelOption = Object.freeze({
   labelId: NO_LABEL_SENTINEL,
   name: 'No label',
-  color: '777777',
+  color: null,
 })
 
 function optionValueOf(opt) {
   return opt === noLabelOption ? NO_LABEL_SENTINEL : opt.name
 }
 
-const renderedOptions = computed(() => {
-  const labelOptions = (options.value || []).filter(opt => opt.labelId !== null && opt.labelId !== 'null')
-  return [noLabelOption, ...labelOptions]
-})
+function modelValueOf(opt) {
+  return opt === noLabelOption ? null : opt.name
+}
 
-watch(
-  () => props.modelValue,
-  (newVal) => {
-    draftValues.value = toDraftValues(newVal || [])
-  },
-  { immediate: true },
-)
+const renderedOptions = computed(() => [noLabelOption, ...(options.value || [])])
 
 const appliedOptions = computed(() => {
-  const selectedValues = new Set(toDraftValues(props.modelValue || []))
-  return renderedOptions.value.filter(opt => selectedValues.has(optionValueOf(opt)))
+  const selected = new Set(props.modelValue)
+  return renderedOptions.value.filter(opt => selected.has(modelValueOf(opt)))
 })
 
 const visiblePills = computed(() => appliedOptions.value.slice(0, MAX_VISIBLE_PILLS))
@@ -105,25 +100,13 @@ function onBeforeShow() {
 }
 
 function syncDraftFromModel() {
-  draftValues.value = toDraftValues(props.modelValue || [])
+  draftValues.value = props.modelValue.map(name => name === null ? NO_LABEL_SENTINEL : name)
 }
 
-function toDraftValues(values = []) {
-  if (!values) {
-    return []
-  }
-  return values.map(value => value === null ? NO_LABEL_SENTINEL : value)
-}
-
-function toModelValues(values = []) {
-  if (!values) {
-    return []
-  }
-  return values.map(value => value === NO_LABEL_SENTINEL ? null : value)
-}
+watch(() => props.modelValue, syncDraftFromModel, { immediate: true })
 
 function applyFilters() {
-  emit('update:modelValue', toModelValues(draftValues.value))
+  emit('update:modelValue', draftValues.value.map(value => value === NO_LABEL_SENTINEL ? null : value))
   multiSelectRef.value?.hide?.()
 }
 
@@ -133,8 +116,8 @@ function cancelFilters() {
 }
 
 function removeOption(opt) {
-  const value = optionValueOf(opt)
-  emit('update:modelValue', toModelValues(toDraftValues(props.modelValue).filter(v => v !== value)))
+  const removed = modelValueOf(opt)
+  emit('update:modelValue', props.modelValue.filter(name => name !== removed))
 }
 </script>
 

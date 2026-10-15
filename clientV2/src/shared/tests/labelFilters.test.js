@@ -18,6 +18,11 @@ describe('labelFilters', () => {
       expect(parseLabelFilterParams({ labelName: ['a', ''], labelMatch: 'null' })).toEqual(['a', null])
       expect(parseLabelFilterParams({ labelMatch: 'other' })).toEqual([])
     })
+
+    it('drops duplicate and over-long names the API would reject', () => {
+      expect(parseLabelFilterParams({ labelName: ['a', 'a', 'b'] })).toEqual(['a', 'b'])
+      expect(parseLabelFilterParams({ labelName: ['a'.repeat(16), 'b'.repeat(17)] })).toEqual(['a'.repeat(16)])
+    })
   })
 
   it('writes label names under the labelName key', () => {

@@ -170,6 +170,8 @@
   --color-chip-default-bg: var(--color-background-darkest);
   --color-chip-default-border: var(--color-border-default);
   --color-chip-default-text: var(--color-text-primary);
+  /* Label chip for a label without a colour (light, so it takes --color-text-dark) */
+  --color-label-default-bg: #cccccc;
 
   /* Inline rule-ID character-level diff highlight (red for old, green for new) */
   --color-diff-inline-del-bg: rgba(239, 68, 68, 0.3);

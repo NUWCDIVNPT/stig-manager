@@ -1,12 +1,12 @@
 <script setup>
 import { computed } from 'vue'
 import BreadcrumbFilter from '../../../components/common/BreadcrumbFilter.vue'
-import { isActive, valuesFilter } from '../../../shared/lib/columnFilters.js'
+import { isActive } from '../../../shared/lib/columnFilters.js'
 import MetaMetricsFilter from '../../CollectionMetrics/components/MetaMetricsFilter.vue'
 import { useMetaCollectionFilter } from '../composables/useMetaCollectionFilter.js'
 
 // Collections page filter shown after the breadcrumb.
-const { collectionFilter, selectedCollectionIds } = useMetaCollectionFilter()
+const { collectionFilter, selectedCollectionIds, reset } = useMetaCollectionFilter()
 const isFiltered = computed(() => isActive(collectionFilter.value))
 </script>
 
@@ -15,7 +15,7 @@ const isFiltered = computed(() => isActive(collectionFilter.value))
     :active="isFiltered"
     hint="Include or exclude collections. Applies to the metrics and every tab on this page."
     clear-label="Clear collection filter"
-    @clear="collectionFilter = valuesFilter()"
+    @clear="reset"
   >
     <MetaMetricsFilter
       v-model="collectionFilter"

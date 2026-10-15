@@ -7,7 +7,7 @@ import { fetchCollectionStigSummary } from '../api/findingsApi.js'
 // dropdown (StigSelectorPanel) and the "Overall" CAT 1/2/3 totals badges.
 // `collectionId` and `labelNames` are Refs so the panel reacts to the
 // orchestrator-level label filter, which getMetricsSummaryByCollectionAggStig
-// applies server-side via labelId/labelMatch.
+// applies server-side via labelName/labelMatch.
 export function useCollectionStigSummary({ collectionId, labelNames }) {
   const { state: rawStigs, isLoading, error, execute } = useAsyncState(
     ({ signal } = {}) => fetchCollectionStigSummary(

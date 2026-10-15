@@ -114,18 +114,21 @@ watch(collectionId, () => {
   }
 }, { immediate: true })
 
-// Reviews are per collection and rule, fetched label-scoped (rule clicks stay
-// small), so the selected rule's reviews reload along with the checklist and
-// assets. A STIG change replaces the selection via the gridData watcher below.
 watch([collectionId, benchmarkId, revisionStr, labelFilterKey], () => {
   if (collectionId.value && benchmarkId.value && revisionStr.value) {
     loadChecklist()
     loadAssets()
-    if (selectedRuleId.value) {
-      loadReviews(selectedRuleId.value)
-    }
   }
 }, { immediate: true })
+
+// Reviews are per collection and rule, fetched label-scoped (rule clicks stay
+// small), so a label change reloads the selected rule's reviews too. A STIG or
+// revision change replaces the selection via the gridData watcher below instead.
+watch(labelFilterKey, () => {
+  if (collectionId.value && selectedRuleId.value) {
+    loadReviews(selectedRuleId.value)
+  }
+})
 
 watch(
   [collection, () => route.params.benchmarkId, () => route.params.revisionStr, labelFilterKey],

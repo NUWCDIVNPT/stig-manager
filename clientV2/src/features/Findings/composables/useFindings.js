@@ -7,7 +7,7 @@ import { fetchFindings } from '../api/findingsApi.js'
 // optionally scoped to one STIG. All inputs are Refs so the panel reacts to
 // orchestrator state changes.
 //   benchmarkId === null → "All Collection STIGs" (no benchmarkId query param)
-// getFindingsByCollection accepts labelId/labelMatch server-side, so aggregated
+// getFindingsByCollection accepts labelName/labelMatch server-side, so aggregated
 // row counts honor the orchestrator's label filter.
 export function useFindings({ collectionId, aggregator, benchmarkId, labelNames }) {
   const { state: findings, isLoading, error, execute } = useAsyncState(

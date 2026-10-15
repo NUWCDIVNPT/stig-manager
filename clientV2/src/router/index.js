@@ -40,10 +40,10 @@ const routes = [
       collectionView: true,
       breadcrumbs: [
         { label: 'Collections', route: { name: 'collections' } },
-
         {
           label: (route, getCollectionName) => getCollectionName(route.params.collectionId),
-          route: route => ({ name: 'collection', params: { collectionId: route.params.collectionId } }),
+          // keeps the label filter when returning to the dashboard from a tab
+          route: route => ({ name: 'collection', params: { collectionId: route.params.collectionId }, query: pickLabelFilterQuery(route.query) }),
           pickerType: 'collection',
         },
       ],

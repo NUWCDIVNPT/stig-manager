@@ -31,10 +31,11 @@ export function getContrastColor(hexColor, darkColor = '#000000', lightColor = '
   return luminance > 0.5 ? darkColor : lightColor
 }
 
-// Inline style for a label chip: the label colour, with readable text on top
+// Inline style for a label chip: the label colour, with readable text on top.
+// A label without a colour gets the theme's neutral label chip colour.
 export function labelChipStyle(color) {
   return {
-    backgroundColor: normalizeColor(color, '#cccccc'),
-    color: getContrastColor(color, '#000000', 'var(--color-text-primary)'),
+    backgroundColor: normalizeColor(color, 'var(--color-label-default-bg)'),
+    color: getContrastColor(color, 'var(--color-text-dark)', 'var(--color-text-primary)'),
   }
 }

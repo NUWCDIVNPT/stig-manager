@@ -8,7 +8,7 @@ import { fetchFailedReviews } from '../api/findingsApi.js'
 // records backing the currently selected aggregated finding. All inputs are
 // Refs so the pane reacts to selection changes in the middle pane.
 //   selectedFinding === null → returns [] without firing a request
-// getReviewsByCollection accepts labelId/labelMatch server-side, so review rows
+// getReviewsByCollection accepts labelName/labelMatch server-side, so review rows
 // honor the orchestrator's label filter.
 export function useFindingReviews({ collectionId, selectedFinding, aggregator, labelNames }) {
   // The reviews API expects the aggregator field's value on the matching

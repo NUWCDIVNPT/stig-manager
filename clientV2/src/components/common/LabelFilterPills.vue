@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLabelFilterQuery } from '../../shared/composables/useLabelFilterQuery.js'
 import BreadcrumbFilter from './BreadcrumbFilter.vue'
-import MetricsFilter from './MetricsFilter.vue'
+import LabelFilterPicker from './LabelFilterPicker.vue'
 
 // Collection label filter shown after the breadcrumb; reads and writes the route query.
 const route = useRoute()
@@ -23,6 +23,6 @@ const hint = computed(() => {
 
 <template>
   <BreadcrumbFilter :active="isFiltered" :hint="hint" clear-label="Clear label filter" @clear="selectedLabelNames = []">
-    <MetricsFilter v-model="selectedLabelNames" :collection-id="collectionId" />
+    <LabelFilterPicker v-model="selectedLabelNames" :collection-id="collectionId" />
   </BreadcrumbFilter>
 </template>

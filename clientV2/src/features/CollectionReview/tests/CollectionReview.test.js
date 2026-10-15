@@ -218,7 +218,7 @@ describe('collectionReview.vue', () => {
       expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('true')
 
       fetchCollectionChecklist.mockResolvedValue([])
-      routeState.query = { labelName: 'label-with-no-assets' }
+      routeState.query = { labelName: 'no-asset-label' }
       await flushPromises()
 
       expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('false')

@@ -10,9 +10,9 @@ vi.mock('vue-router', () => ({
   useRouter: vi.fn(),
 }))
 
-vi.mock('../MetricsFilter.vue', () => ({
+vi.mock('../LabelFilterPicker.vue', () => ({
   default: {
-    name: 'MetricsFilter',
+    name: 'LabelFilterPicker',
     props: ['modelValue', 'collectionId'],
     template: `
       <div data-testid="mock-filter" :data-collection="collectionId" :data-labels="JSON.stringify(modelValue)">
