@@ -28,6 +28,8 @@ const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOpti
 const ROW_HEIGHT = rowHeightPx('spacious')
 
 const dtRef = ref()
+
+const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;' } }
 </script>
 
 <template>
@@ -72,7 +74,7 @@ const dtRef = ref()
             </span>
           </template>
         </Column>
-        <Column field="checklist.stats.informational" export-header="I" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.informational ?? 0">
+        <Column field="checklist.stats.informational" export-header="I" style="width: 5%; text-align: center" :pt="centerHeaderPt" sortable :sort-field="r => r.checklist.stats?.informational ?? 0">
           <template #header>
             <ResultBadge status="I" />
           </template>
@@ -80,7 +82,7 @@ const dtRef = ref()
             {{ dashZero(data.checklist.stats?.informational) }}
           </template>
         </Column>
-        <Column field="checklist.stats.notchecked" export-header="NR" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notchecked ?? 0">
+        <Column field="checklist.stats.notchecked" export-header="NR" style="width: 5%; text-align: center" :pt="centerHeaderPt" sortable :sort-field="r => r.checklist.stats?.notchecked ?? 0">
           <template #header>
             <ResultBadge status="NR" />
           </template>
@@ -88,7 +90,7 @@ const dtRef = ref()
             {{ dashZero(data.checklist.stats?.notchecked) }}
           </template>
         </Column>
-        <Column field="checklist.stats.notapplicable" export-header="NA" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notapplicable ?? 0">
+        <Column field="checklist.stats.notapplicable" export-header="NA" style="width: 5%; text-align: center" :pt="centerHeaderPt" sortable :sort-field="r => r.checklist.stats?.notapplicable ?? 0">
           <template #header>
             <ResultBadge status="NA" />
           </template>
@@ -96,7 +98,7 @@ const dtRef = ref()
             {{ dashZero(data.checklist.stats?.notapplicable) }}
           </template>
         </Column>
-        <Column field="checklist.stats.pass" export-header="NF" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.pass ?? 0">
+        <Column field="checklist.stats.pass" export-header="NF" style="width: 5%; text-align: center" :pt="centerHeaderPt" sortable :sort-field="r => r.checklist.stats?.pass ?? 0">
           <template #header>
             <ResultBadge status="NF" />
           </template>
@@ -104,7 +106,7 @@ const dtRef = ref()
             {{ dashZero(data.checklist.stats?.pass) }}
           </template>
         </Column>
-        <Column field="checklist.stats.fail" export-header="O" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.fail ?? 0">
+        <Column field="checklist.stats.fail" export-header="O" style="width: 5%; text-align: center" :pt="centerHeaderPt" sortable :sort-field="r => r.checklist.stats?.fail ?? 0">
           <template #header>
             <ResultBadge status="O" />
           </template>

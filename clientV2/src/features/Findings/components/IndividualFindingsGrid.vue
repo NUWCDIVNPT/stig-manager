@@ -170,6 +170,7 @@ const tablePt = {
 
 // The one per-column PT every table in the app uses: a header border-right.
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
+const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-content: center;' } }
 </script>
 
 <template>
@@ -264,7 +265,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               <span class="cell-text cell-text--clamped" :title="data.comment"><HighlightText :text="data.comment || '—'" :term="highlightTerm('comment')" /></span>
             </template>
           </Column>
-          <Column v-if="visibleFields.has('resultEngine')" field="resultEngine" export-header="Engine" :pt="borderPt" :style="{ width: '2.8rem', minWidth: '2.8rem', textAlign: 'center' }">
+          <Column v-if="visibleFields.has('resultEngine')" field="resultEngine" export-header="Engine" :pt="centerBorderPt" :style="{ width: '2.8rem', minWidth: '2.8rem', textAlign: 'center' }">
             <template #header>
               <img :src="bot2" alt="" class="engine-header-icon" title="Result engine">
             </template>
@@ -272,7 +273,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               <EngineIconCell :display="data._engineDisplay" />
             </template>
           </Column>
-          <Column v-if="visibleFields.has('status')" header="Status" field="status" :style="{ width: '5.5rem', minWidth: '5.5rem', textAlign: 'center' }" :pt="borderPt">
+          <Column v-if="visibleFields.has('status')" header="Status" field="status" :style="{ width: '5.5rem', minWidth: '5.5rem', textAlign: 'center' }" :pt="centerBorderPt">
             <template #body="{ data }">
               <StatusBadge :status="data._statusLabel" />
             </template>
@@ -282,7 +283,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               <span :title="data.username"><HighlightText :text="data.username || '—'" :term="highlightTerm('username')" /></span>
             </template>
           </Column>
-          <Column v-if="visibleFields.has('ts')" field="ts" export-header="Last Changed" sortable :style="{ width: '4.5rem', minWidth: '4.5rem', textAlign: 'center' }" :pt="borderPt">
+          <Column v-if="visibleFields.has('ts')" field="ts" export-header="Last Changed" sortable :style="{ width: '4.5rem', minWidth: '4.5rem', textAlign: 'center' }" :pt="centerBorderPt">
             <template #header>
               <i class="pi pi-clock" title="Last action" />
             </template>

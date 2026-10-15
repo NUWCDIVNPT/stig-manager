@@ -165,11 +165,11 @@ function onRowClick(event) {
           field="lastRevisionStr"
           header="Latest"
           sortable
-          :pt="paneColumnPt.center"
-          :style="{ width: '7rem', minWidth: '6rem', textAlign: 'center' }"
+          :pt="paneColumnPt.left"
+          :style="{ width: '7rem', minWidth: '6rem' }"
         >
           <template #body="{ data }">
-            <span class="stiglib-cell-text stiglib-cell-text--mono"><HighlightText :text="data.lastRevisionStr || '—'" :term="highlightTerm('lastRevisionStr')" /></span>
+            <span class="stiglib-cell-text"><HighlightText :text="data.lastRevisionStr || '—'" :term="highlightTerm('lastRevisionStr')" /></span>
           </template>
         </Column>
 
@@ -178,11 +178,11 @@ function onRowClick(event) {
           field="lastRevisionDate"
           header="Revision Date"
           sortable
-          :pt="paneColumnPt.center"
-          :style="{ width: '10rem', minWidth: '8rem', textAlign: 'center' }"
+          :pt="paneColumnPt.left"
+          :style="{ width: '10rem', minWidth: '8rem' }"
         >
           <template #body="{ data }">
-            <span class="stiglib-cell-text stiglib-cell-text--date">{{ data.lastRevisionDate || '—' }}</span>
+            <span class="stiglib-cell-text">{{ data.lastRevisionDate || '—' }}</span>
           </template>
         </Column>
 
@@ -258,21 +258,6 @@ function onRowClick(event) {
 
 .bm-list__id-cell .stiglib-cell-text {
   flex: 1 1 auto;
-}
-
-.stiglib-cell-text--mono {
-  display: inline-block;
-  width: 100%;
-  text-align: center;
-  font-family: var(--font-mono);
-}
-
-.stiglib-cell-text--date {
-  display: inline-block;
-  width: 100%;
-  text-align: center;
-  color: var(--color-text-dim);
-  font-variant-numeric: tabular-nums;
 }
 
 .cell-count {

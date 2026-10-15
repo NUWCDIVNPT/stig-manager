@@ -153,6 +153,8 @@ const cellPt = {
   headerCell: { style: { padding: '0.4rem 0.5rem', borderRight: '1px solid var(--color-border-default)' } },
 }
 
+const centerCellPt = { ...cellPt, columnHeaderContent: { style: { justifyContent: 'center' } } }
+
 const flexCellPt = {
   bodyCell: {
     style: {
@@ -268,9 +270,9 @@ const flexCellPt = {
           :pt="dataTablePt"
           @row-select="onRowSelect"
         >
-          <Column v-if="visibleColumns.has('cat')" field="severity" :sort-field="severitySortValue" header="CAT" sortable :style="{ width: '5rem', minWidth: '4.5rem' }" :pt="cellPt">
+          <Column v-if="visibleColumns.has('cat')" field="severity" :sort-field="severitySortValue" header="CAT" sortable :style="{ width: '5rem', minWidth: '4.5rem' }" :pt="centerCellPt">
             <template #body="{ data }">
-              <CatBadge :category="severityMap[data.severity] ?? 2" variant="label" />
+              <CatBadge :category="severityMap[data.severity] ?? 2" variant="label" style="margin-inline: auto;" />
             </template>
           </Column>
           <Column v-if="visibleColumns.has('group')" field="groupId" header="Group" sortable :style="{ width: '8rem', minWidth: '6rem' }" :pt="cellPt">

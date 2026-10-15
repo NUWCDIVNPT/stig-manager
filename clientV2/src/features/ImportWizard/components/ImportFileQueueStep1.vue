@@ -43,6 +43,8 @@ function onFilePicked(event) {
   emit('add-files', files)
   event.target.value = ''
 }
+
+const centerPt = { columnHeaderContent: { style: 'justify-content: center;' }, bodyCell: { style: 'text-align: center;' } }
 </script>
 
 <template>
@@ -97,7 +99,7 @@ function onFilePicked(event) {
       >
         <Column selection-mode="multiple" style="width: 3rem; flex-shrink: 0" />
         <Column field="name" header="Filename" sortable />
-        <Column field="size" header="Size" style="width: 8.25rem" sortable>
+        <Column field="size" header="Size" style="width: 8.25rem" :pt="centerPt" sortable>
           <template #body="{ data }">
             {{ (data.size / 1024).toFixed(1) }} KB
           </template>

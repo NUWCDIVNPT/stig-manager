@@ -124,7 +124,7 @@ function onRowClick(event) {
     </Column>
     <Column header="CAT" field="cat" :export-value="exportCat" :style="{ width: '5rem' }" :pt="paneColumnPt.center">
       <template #body="{ data }">
-        <CatBadge v-if="data.cat" :category="severityMap[data.cat] ?? 3" variant="label" />
+        <CatBadge v-if="data.cat" :category="severityMap[data.cat] ?? 3" variant="label" style="margin-inline: auto;" />
       </template>
     </Column>
     <Column field="changed" export-header="Changed properties" :style="{ minWidth: '16rem' }" :pt="paneColumnPt.left">

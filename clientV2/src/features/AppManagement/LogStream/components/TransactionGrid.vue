@@ -120,6 +120,7 @@ const tablePt = compactTablePt({ footer: 'divider', headerPadding: '0.3rem 0.6re
 
 // Vertical divider between header cells — matches the Service Jobs grids.
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
+const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-content: center;' } }
 </script>
 
 <template>
@@ -184,7 +185,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           <span :title="data.url"><HighlightText :text="data.url" :term="highlightTerm('url')" /></span>
         </template>
       </Column>
-      <Column v-if="visibleFields.has('status')" field="status" header="Status" sortable class="center-header" :pt="borderPt" style="width: 7%; text-align: center;">
+      <Column v-if="visibleFields.has('status')" field="status" header="Status" sortable :pt="centerBorderPt" style="width: 7%; text-align: center;">
         <template #body="{ data }">
           <span v-if="data.status" class="sm-http-status-sprite" :class="statusClass(data.status)">{{ data.status }}</span>
         </template>

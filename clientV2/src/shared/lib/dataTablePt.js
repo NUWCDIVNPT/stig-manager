@@ -6,6 +6,7 @@
  * @param {object} [options]
  * @param {'flush'|'divider'} [options.footer] - 'flush' (borderless) or 'divider' (top border, transparent bg).
  * @param {string} [options.headerPadding] - Optional header-cell padding override (e.g. '0.25rem 0.6rem'), for denser tables like AppInfo's report grids.
+ *   Without it, headers keep the theme's vertical padding and take the body cell side padding so header text lines up with the data.
  * @returns {object} A `pt` object for `<DataTable :pt="...">`.
  */
 export function compactTablePt({ footer = 'flush', headerPadding } = {}) {
@@ -13,7 +14,7 @@ export function compactTablePt({ footer = 'flush', headerPadding } = {}) {
   const footerStyle = footer === 'divider'
     ? 'padding: 0; border-top: 1px solid var(--color-border-default); background: transparent;'
     : 'padding: 0; border: none;'
-  const headerCellStyle = `font-size: var(--text-md); font-weight: 600;${headerPadding ? ` padding: ${headerPadding};` : ''}`
+  const headerCellStyle = `font-size: var(--text-md); font-weight: 600; ${headerPadding ? `padding: ${headerPadding};` : 'padding-left: 0.6rem; padding-right: 0.6rem;'}`
 
   return {
     root: { style: 'background: var(--p-datatable-row-background); font-size: var(--text-md);' },
@@ -28,10 +29,10 @@ export function compactTablePt({ footer = 'flush', headerPadding } = {}) {
 
 /**
  * Per-`<Column>` `pt` for the review grids (Asset Review, Collection Review),
- * keyed by text alignment. Centered columns are narrow icon or badge columns:
- * their headers keep the body cell side padding so the column minimum stays
- * small, and fall back to start alignment (`safe center`) rather than clipping
- * on both sides when the panel narrows.
+ * keyed by text alignment. Headers use the body cell side padding so header
+ * text lines up with the data. Centered columns are narrow icon or badge
+ * columns: they fall back to start alignment (`safe center`) rather than
+ * clipping on both sides when the panel narrows.
  *
  * @param {'left'|'center'} [alignment]
  * @param {object} [options]
@@ -46,7 +47,8 @@ export function gridColumnPt(alignment = 'left', { verticalAlign = 'top' } = {})
     headerCell: {
       style: {
         borderRight: '1px solid var(--color-border-light)',
-        ...(isCenter ? { paddingLeft: '0.35rem', paddingRight: '0.35rem' } : {}),
+        paddingLeft: '0.35rem',
+        paddingRight: '0.35rem',
       },
       class: isCenter ? 'column-header-center' : 'column-header-left',
     },

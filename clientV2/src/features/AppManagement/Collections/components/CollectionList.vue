@@ -11,6 +11,7 @@ import HighlightText from '../../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
+import { formatDateTimeString } from '../../../../shared/lib.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 
 const props = defineProps({
@@ -60,15 +61,9 @@ const { term: searchTerm, filteredRows, isFiltered, highlightTerm } = useGridSea
   { field: 'collectionId', header: 'ID' },
 ], { visibleFields })
 
-const formatDate = (dateString) => {
-  if (!dateString) {
-    return '-'
-  }
-  return new Date(dateString).toLocaleDateString()
-}
-
 const tablePt = compactTablePt()
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
+const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-content: center;' } }
 </script>
 
 <template>
@@ -133,15 +128,15 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <CountColumn v-if="visibleFields.has('statistics.userCount')" key="statistics.userCount" field="statistics.userCount" header="Users" sortable :pt="borderPt" style="width: 13%" />
-        <CountColumn v-if="visibleFields.has('statistics.assetCount')" key="statistics.assetCount" field="statistics.assetCount" header="Assets" sortable :pt="borderPt" style="width: 13%" />
-        <CountColumn v-if="visibleFields.has('statistics.checklistCount')" key="statistics.checklistCount" field="statistics.checklistCount" header="Checklists" sortable :pt="borderPt" style="width: 13%" />
-        <Column v-if="visibleFields.has('statistics.created')" field="statistics.created" header="Created" sortable :pt="borderPt" style="width: 13%">
+        <CountColumn v-if="visibleFields.has('statistics.userCount')" key="statistics.userCount" field="statistics.userCount" header="Users" sortable :pt="centerBorderPt" style="width: 13%" body-style="text-align: center;" />
+        <CountColumn v-if="visibleFields.has('statistics.assetCount')" key="statistics.assetCount" field="statistics.assetCount" header="Assets" sortable :pt="centerBorderPt" style="width: 13%" body-style="text-align: center;" />
+        <CountColumn v-if="visibleFields.has('statistics.checklistCount')" key="statistics.checklistCount" field="statistics.checklistCount" header="Checklists" sortable :pt="centerBorderPt" style="width: 13%" body-style="text-align: center;" />
+        <Column v-if="visibleFields.has('statistics.created')" field="statistics.created" header="Created" sortable :pt="borderPt" style="width: 20%">
           <template #body="{ data }">
-            {{ formatDate(data.statistics?.created) }}
+            {{ formatDateTimeString(data.statistics?.created) || '-' }}
           </template>
         </Column>
-        <Column v-if="visibleFields.has('collectionId')" field="collectionId" header="ID" sortable style="width: 13%">
+        <Column v-if="visibleFields.has('collectionId')" field="collectionId" header="ID" sortable :pt="centerBorderPt" style="width: 6%" body-style="text-align: center;">
           <template #body="{ data }">
             <HighlightText :text="data.collectionId" :term="highlightTerm('collectionId')" />
           </template>

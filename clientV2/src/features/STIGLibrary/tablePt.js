@@ -29,11 +29,8 @@ function columnPt(align) {
   return {
     headerCell: {
       style: {
-        padding: '0.35rem 0.45rem',
-        color: 'var(--color-text-dim)',
-        background: 'var(--color-background-dark)',
+        padding: '0.5rem 0.45rem',
         borderRight: '1px solid var(--color-border-light)',
-        borderBottom: '1px solid var(--color-border-default)',
       },
     },
     columnHeaderContent: {

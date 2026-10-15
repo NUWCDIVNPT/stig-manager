@@ -21,9 +21,9 @@ describe('compactTablePt', () => {
     expect(pt.tableContainer.style).toContain('var(--p-datatable-row-background)')
   })
 
-  it('defaults the header cell to font styling with no padding override', () => {
+  it('defaults the header cell side padding to match the body cells', () => {
     const pt = compactTablePt()
-    expect(pt.column.headerCell.style).toBe('font-size: var(--text-md); font-weight: 600;')
+    expect(pt.column.headerCell.style).toBe('font-size: var(--text-md); font-weight: 600; padding-left: 0.6rem; padding-right: 0.6rem;')
   })
 
   it('appends a header-cell padding when provided', () => {
@@ -41,10 +41,10 @@ describe('gridColumnPt', () => {
     expect(pt.bodyCell.style.textAlign).toBe('center')
   })
 
-  it('left-aligns by default with the theme header padding', () => {
+  it('left-aligns by default with header padding matching the body cells', () => {
     const pt = gridColumnPt()
     expect(pt.headerCell.class).toBe('column-header-left')
-    expect(pt.headerCell.style).not.toHaveProperty('paddingLeft')
+    expect(pt.headerCell.style).toMatchObject({ paddingLeft: '0.35rem', paddingRight: '0.35rem' })
     expect(pt.columnHeaderContent.style.justifyContent).toBe('flex-start')
     expect(pt.bodyCell.class).toBe('column-body-left')
   })

@@ -63,6 +63,8 @@ const {
 
 const statusRef = ref()
 const rejectedRef = ref()
+
+const centerPt = { columnHeaderContent: { style: 'justify-content: center;' }, bodyCell: { style: 'text-align: center;' } }
 </script>
 
 <template>
@@ -115,27 +117,27 @@ const rejectedRef = ref()
                 <HighlightText :text="data.assetName" :term="highlightTerm('assetName')" />
               </template>
             </Column>
-            <Column field="created" header="Created" style="width: 8.25rem" sortable>
+            <Column field="created" header="Created" style="width: 8.25rem" :pt="centerPt" sortable>
               <template #body="{ data }">
                 {{ data.created ? 'true' : 'false' }}
               </template>
             </Column>
-            <Column field="addedStigs" header="Added STIGs" style="width: 10rem" sortable>
+            <Column field="addedStigs" header="Added STIGs" style="width: 10rem" :pt="centerPt" sortable>
               <template #body="{ data }">
                 {{ data.addedStigs ? 'true' : 'false' }}
               </template>
             </Column>
-            <Column field="inserted" header="Inserted" style="width: 8.25rem" sortable>
+            <Column field="inserted" header="Inserted" style="width: 8.25rem" :pt="centerPt" sortable>
               <template #body="{ data }">
                 {{ data.error ? '-' : (data.inserted ?? 0) }}
               </template>
             </Column>
-            <Column field="updated" header="Updated" style="width: 8.25rem" sortable>
+            <Column field="updated" header="Updated" style="width: 8.25rem" :pt="centerPt" sortable>
               <template #body="{ data }">
                 {{ data.error ? '-' : (data.updated ?? 0) }}
               </template>
             </Column>
-            <Column header="Rejected" :exportable="false" style="width: 8.25rem" sortable :sort-field="r => r.error ? -1 : (r.rejected?.length ?? 0)">
+            <Column header="Rejected" :exportable="false" style="width: 8.25rem" :pt="centerPt" sortable :sort-field="r => r.error ? -1 : (r.rejected?.length ?? 0)">
               <template #body="{ data }">
                 {{ data.error ? '!' : (data.rejected?.length ?? 0) }}
               </template>
