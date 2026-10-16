@@ -49,6 +49,23 @@ Most originated from the Findings feature review (2026-06-10) — see
   Caveats: token is regular-weight only (no bold), and `DiffPropertySection.vue`'s
   bold header needs a decision.
 
+- [ ] **One label-chip colour mechanism.** Three contrast functions coexist:
+  `shared/lib/colorUtils.js` (`getContrastColor`/`labelChipStyle`, theme tokens),
+  `components/common/Label.vue` (own YIQ fn, hardcoded `#080808`/`#f7f7f7`), and
+  `features/AssetReview/lib/labels.js` (unused). `LabelFilterPicker.vue` renders the
+  same label both ways (trigger chip vs option row), so near-threshold colours get
+  different text. Fix: `Label.vue` binds `:style="labelChipStyle(color)"`, `color`
+  becomes optional, delete `labels.js`; callers stop pre-normalising
+  (`grep -rn "normalizeColor(.*'#" src`). Visual shift in ~9 consumers, so do it as
+  its own pass with screenshots.
+
+- [ ] **Pills-picker style near-duplicates.** `PillsTrigger.vue` chevron copies
+  `BreadcrumbSelect.vue`'s `.p-select-dropdown` box (padding differs by a hair);
+  `.trigger-pills__chip--neutral` restates the `--color-chip-default-*` tokens with a
+  different bg; `pillsPicker.js` overlay sizes echo `GridFilterButton.vue` `valuesPt`
+  (280 vs 250px). Each merge nudges one side a few px, so decide the canonical values
+  together rather than one at a time.
+
 ## Behavior / UX
 
 - [ ] **Dashboard tab switches wipe per-tab URL state — fix at the CollectionView
@@ -63,3 +80,14 @@ Most originated from the Findings feature review (2026-06-10) — see
   because hidden tabs are inert, so the saved query cannot go stale. Separable
   follow-up: give the STIGs tab Findings-style state→query mirroring so it has
   restorable state at all.
+
+- [ ] **Label filter is lost on any round trip through Asset Review.** Carry is
+  per-site today (`grep -rn "pickLabelFilterQuery\|labelFilterParams.value" src`), and
+  the links into `collection-asset-review` (`grep -rn "collection-asset-review" src`)
+  plus the asset-review crumb back do not spread it. If the filter should survive
+  that drill-down, replace the per-site spreads with one `router.beforeEach` that
+  copies the label keys when `to.params.collectionId === from.params.collectionId`
+  and `to.query` has none. Costs: keys ride along on Asset Review / Management URLs
+  and recent-view entries; the nav-rail link to the current collection would keep the
+  filter instead of resetting. Pairs with the tab-URL-state item above (same
+  mechanism could restore both).

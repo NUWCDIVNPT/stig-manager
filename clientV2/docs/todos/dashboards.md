@@ -48,6 +48,15 @@ These manifest across the assets/STIGs grids in both dashes and the Collection v
   `Findings/AggregatedFindingsGrid.vue` already does this with a `visibleColumns` Set (~L236+) — a
   reusable pattern to lift.
 
+## Collection dash
+
+- [ ] **Every visited tab refetches on each label-filter change.** `CollectionView.vue`
+  passes `selectedLabelNames` to `CollectionMetrics` and all kept-alive tab panels, each
+  of which watches it and refetches (STIGs and Assets cascade into their selection
+  fetches; Findings fires three). Up to ~9 requests per change, only the active pane
+  visible. Predates the breadcrumb filter but is felt more now that changing it is one
+  click. Refetch the active tab only and mark the others stale, fetching on activation.
+
 ## Meta-dash
 
 - [ ] **"Go to collection" icon should be persistent, like the review shield.**
