@@ -543,6 +543,8 @@ const reference = {
   reviewMetadataKey: "testkey",
   reviewMetadataValue: "testvalue",
   scrapRuleIdWindows10: "SV-77809r3_rule",
+  unknownRuleId: "SV-0000000r0_rule",
+  unknownUuid: "00000000-0000-0000-0000-000000000000",
 
   //Reference Stig and Rule data
   benchmark: "VPN_SRG_TEST",
@@ -556,6 +558,15 @@ const reference = {
   testStigfileNonLatest: "U_VPN_SRG_V1R0_Manual-xccdf.xml",
   rulesMatchingFingerprints:
     "U_VPN_SRG-OTHER_V1R1_twoRules-matchingFingerprints.xml",
+  fingerprintMatchStig: {
+    benchmarkId: "VPN_SRG_Rule-fingerprint-match-test",
+    sharedVersionRuleIds: ["SV-106179r1_xxxx", "SV-106179r1_zzzzzz"],
+  },
+  // An older-dated VPN_SRG_TEST revision that keeps ruleId with V1R0's check content (as DISA did for SV-253338r1186375_rule).
+  reusedRuleIdStig: {
+    file: "U_VPN_SRG_V1R0.5_Manual-xccdf-reusedRuleId.xml",
+    revisionStr: "V1R0.5",
+  },
   testRule: {
     ruleId: "SV-106179r1_rule",
     groupId: "V-97041",

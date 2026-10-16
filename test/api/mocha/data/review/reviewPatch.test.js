@@ -30,6 +30,16 @@ describe('PATCH - Review', () => {
           expect(res.status).to.eql(200)
           expect(res.body.status).to.have.property('label').that.equals('submitted')
         })
+        it('PATCH Review with only metadata, expect metadata replaced and ts, user and result to remain', async () => {
+          const url = `${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`
+          const before = (await utils.executeRequest(url, 'GET', iteration.token)).body
+          const metadata = {[reference.reviewMetadataKey]: reference.reviewMetadataValue}
+          const res = await utils.executeRequest(`${url}?projection=metadata`, 'PATCH', iteration.token, {metadata})
+
+          expect(res.status).to.eql(200)
+          expect(res.body.metadata).to.eql(metadata)
+          expect(res.body).to.include({ts: before.ts, userId: before.userId, result: before.result})
+        })
         it('PATCH Review with new result, expect status to reset to saved', async () => {
             const res = await utils.executeRequest(`${config.baseUrl}/collections/${reference.testCollection.collectionId}/reviews/${reference.testAsset.assetId}/${reference.testCollection.ruleId}`, 'PATCH', iteration.token, {result: "pass"})
            

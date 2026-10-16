@@ -1293,7 +1293,8 @@ describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{asset
                 rejected: [],
                 affected: {
                     updated: 0,
-                    inserted: 2
+                    inserted: 2,
+                    routineApplied: 0
                 }
             }
             expect(res.body).to.eql(expectedResponse)
@@ -1406,7 +1407,8 @@ describe('POST - postReviewsByAsset - /collections/{collectionId}/reviews/{asset
                     rejected: [],
                     affected: {
                         updated: 0,
-                        inserted: 2
+                        inserted: 2,
+                        routineApplied: 0
                     }
                 }
                 expect(res.body).to.eql(expectedResponse)
