@@ -1604,6 +1604,8 @@ exports.updateAsset = async function( {assetId, body, currentCollectionId, trans
             `DELETE FROM collection_grant_acl WHERE assetId = ?`,
             [assetId]
           )  
+          // Routines belong to the source Collection, so the transferred Reviews no longer name one.
+          await connection.query(`UPDATE review SET routineId = NULL WHERE assetId = ?`, [assetId])
           const sqlGetAssetLabels = `SELECT name, description, color FROM collection_label_asset_map inner join collection_label using (clId) WHERE assetId = ?`
           const [assetLabels] = await connection.query(sqlGetAssetLabels, [assetId])
           

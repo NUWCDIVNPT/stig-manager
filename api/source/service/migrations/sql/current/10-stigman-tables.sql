@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.46, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.4.11, for Linux (x86_64)
 --
--- Host: 127.0.0.1    Database: stigman
+-- Host: localhost    Database: stigman
 -- ------------------------------------------------------
--- Server version	8.4.9
+-- Server version	8.4.11
 
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
@@ -220,6 +220,49 @@ CREATE TABLE `collection_rev_map` (
   UNIQUE KEY `index_collection_benchmark` (`collectionId`,`benchmarkId`),
   KEY `index_revId` (`revId`),
   CONSTRAINT `fk_collection_rev_map_1` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Table structure for table `collection_routine`
+--
+
+DROP TABLE IF EXISTS `collection_routine`;
+CREATE TABLE `collection_routine` (
+  `crId` int NOT NULL AUTO_INCREMENT,
+  `uuid` binary(16) NOT NULL,
+  `collectionId` int NOT NULL,
+  `name` varchar(64) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `state` enum('active','disabled','needsReview') NOT NULL DEFAULT 'active',
+  `version` varchar(45) NOT NULL,
+  `checkDigest` binary(32) NOT NULL,
+  `matchResultId` int NOT NULL,
+  `matchDetail` mediumtext NOT NULL,
+  `matchDetailDigest` binary(32) GENERATED ALWAYS AS (unhex(sha2(`matchDetail`,256))) STORED,
+  `actionResultId` int NOT NULL,
+  `actionDetail` mediumtext,
+  `actionComment` mediumtext,
+  `actionStatusId` int NOT NULL,
+  `createdUserId` int DEFAULT NULL,
+  `createdTs` datetime NOT NULL,
+  `approvedUserId` int DEFAULT NULL,
+  `approvedTs` datetime NOT NULL,
+  PRIMARY KEY (`crId`),
+  UNIQUE KEY `uk_name` (`collectionId`,`name`),
+  UNIQUE KEY `uk_match` (`collectionId`,`version`,`checkDigest`,`matchResultId`,`matchDetailDigest`),
+  KEY `idx_uuid` (`uuid`),
+  KEY `fk_collection_routine_matchResult` (`matchResultId`),
+  KEY `fk_collection_routine_actionResult` (`actionResultId`),
+  KEY `fk_collection_routine_actionStatus` (`actionStatusId`),
+  KEY `fk_collection_routine_createdUser` (`createdUserId`),
+  KEY `fk_collection_routine_approvedUser` (`approvedUserId`),
+  CONSTRAINT `fk_collection_routine_actionResult` FOREIGN KEY (`actionResultId`) REFERENCES `result` (`resultId`),
+  CONSTRAINT `fk_collection_routine_actionStatus` FOREIGN KEY (`actionStatusId`) REFERENCES `status` (`statusId`),
+  CONSTRAINT `fk_collection_routine_approvedUser` FOREIGN KEY (`approvedUserId`) REFERENCES `user_data` (`userId`) ON DELETE SET NULL,
+  CONSTRAINT `fk_collection_routine_collection` FOREIGN KEY (`collectionId`) REFERENCES `collection` (`collectionId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_collection_routine_createdUser` FOREIGN KEY (`createdUserId`) REFERENCES `user_data` (`userId`) ON DELETE SET NULL,
+  CONSTRAINT `fk_collection_routine_matchResult` FOREIGN KEY (`matchResultId`) REFERENCES `result` (`resultId`),
+  CONSTRAINT `ck_collection_routine_actionStatus` CHECK ((`actionStatusId` in (0,1)))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -486,12 +529,14 @@ CREATE TABLE `review` (
   `reAuthority` varchar(255) GENERATED ALWAYS AS (json_unquote(json_extract(`resultEngine`,_utf8mb4'$.overrides[0].authority'))) VIRTUAL,
   `version` varchar(45) NOT NULL,
   `checkDigest` binary(32) NOT NULL,
+  `routineId` int DEFAULT NULL,
   PRIMARY KEY (`reviewId`),
   KEY `INDEX_RESULTID` (`resultId`),
   KEY `INDEX_RULEID` (`ruleId`),
   KEY `INDEX_STATUSID` (`statusId`),
   KEY `idx_vcd` (`version`,`checkDigest`),
   KEY `idx_asset_vcd` (`assetId`,`version`,`checkDigest`),
+  KEY `idx_routineId` (`routineId`),
   KEY `idx_reProduct` (`reProduct`),
   KEY `idx_reType` (`reType`),
   KEY `idx_reAuthority` (`reAuthority`),
@@ -553,6 +598,7 @@ CREATE TABLE `review_history` (
   `reType` varchar(255) GENERATED ALWAYS AS (json_unquote(json_extract(`resultEngine`,_utf8mb4'$.type'))) VIRTUAL,
   `reAuthority` varchar(255) GENERATED ALWAYS AS (json_unquote(json_extract(`resultEngine`,_utf8mb4'$.overrides[0].authority'))) VIRTUAL,
   `ruleId` varchar(45) DEFAULT NULL,
+  `routineId` int DEFAULT NULL,
   PRIMARY KEY (`historyId`),
   KEY `index_reviewId` (`reviewId`),
   KEY `idx_reProduct` (`reProduct`),
@@ -1229,7 +1275,7 @@ BEGIN
         statusTs,
         statusId,
         touchTs,
-        resultEngine
+        resultEngine, routineId
       ) SELECT
           reviewId,
           ruleId,
@@ -1244,7 +1290,7 @@ BEGIN
           statusTs,
           statusId,
           touchTs,
-          CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END
+          CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END, routineId
         FROM review
         WHERE reviewId IN (SELECT reviewId FROM t_reviewIds);
     END $
@@ -1700,7 +1746,7 @@ BEGIN
           UPDATE review
             SET resultId = v_resultId, ts = NOW(), userId = @taskUserId,
             statusId = 0, statusTs = NOW(), statusUserId = @taskUserId,
-            statusText = 'Review change triggered status update'
+            statusText = 'Review change triggered status update', routineId = NULL
           WHERE reviewId IN (
             SELECT reviewId FROM t_reviewIds WHERE seq >= v_curMinId AND seq < v_curMaxId
           );
@@ -1747,7 +1793,7 @@ BEGIN
       IF IFNULL(v_numReviewIds, 0) > 0 THEN
         REPEAT
           UPDATE review
-            SET statusId = v_statusId, statusTs = NOW(), statusUserId = @taskUserId
+            SET statusId = v_statusId, statusTs = NOW(), statusUserId = @taskUserId, routineId = NULL
           WHERE reviewId IN (
             SELECT reviewId FROM t_reviewIds WHERE seq >= v_curMinId AND seq < v_curMaxId
           );
@@ -2029,4 +2075,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-03 18:34:06
+-- Dump completed on 2026-10-14 14:59:45

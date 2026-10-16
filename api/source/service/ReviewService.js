@@ -1,7 +1,29 @@
 'use strict';
 const dbUtils = require('./utils')
+const RoutineService = require('./RoutineService')
 
 let _this = this
+
+// A routine-matched row equal to the stored review is not rewritten, so repeated imports keep its history and timestamps.
+const sqlRoutineUnchanged = `cteCandidate.routineMatched
+  AND (review.resultId, CAST(review.detail AS BINARY), CAST(review.comment AS BINARY), review.statusId, review.metadata)
+    <=> (cteCandidate.resultId, CAST(cteCandidate.detail AS BINARY), CAST(cteCandidate.comment AS BINARY), cteCandidate.statusId, cteCandidate.metadata)`
+
+// A write that carries none of the fields a routine sets or resultEngine, such as a metadata-only PATCH, keeps the review's routine.
+const sqlKeptRoutineId = incoming => `CASE WHEN ${incoming}.resultId IS NULL AND ${incoming}.detail IS NULL
+    AND ${incoming}.comment IS NULL AND ${incoming}.statusId IS NULL AND ${incoming}.resultEngine IS NULL
+  THEN review.routineId
+END`
+
+// review.routineId has no FK: lock the referenced routines in the write transaction so a concurrent deleteRoutine
+// waits for the commit, and drop references to routines deleted since validation.
+const sqlLockRoutines = validatedTable => [
+  `SELECT crId FROM collection_routine WHERE crId IN (SELECT routineId FROM ${validatedTable}) FOR SHARE`,
+  `UPDATE ${validatedTable} SET routineId = NULL WHERE routineId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM collection_routine WHERE crId = ${validatedTable}.routineId)`
+]
+
+// postReviewBatch matches no routine for a row without a grant, so naming the routine reveals nothing of the stored review.
+const sqlRejectionReason = `IF(routineMatched, CONCAT(error, ' (', statusText, ')'), error)`
 
 exports.postReviewBatch = async function ({
   source, 
@@ -15,7 +37,8 @@ exports.postReviewBatch = async function ({
   grant,
   svcStatus,
   historyMaxReviews,
-  skipGrantCheck = false
+  skipGrantCheck = false,
+  applyRoutines = false
 }) {
   function cteReviewGen(obj) {
     const cte = `SELECT
@@ -34,7 +57,7 @@ exports.postReviewBatch = async function ({
       result VARCHAR(255) PATH "$.result",
       detail MEDIUMTEXT PATH "$.detail" NULL ON EMPTY,
       comment MEDIUMTEXT PATH "$.comment",
-      resultEngine JSON PATH "$.resultEngine" DEFAULT '0' ON EMPTY,
+      resultEngine JSON PATH "$.resultEngine",
       metadata JSON PATH "$.metadata",
       statusLabel VARCHAR(255) PATH "$.status.label",
       statusText VARCHAR(511) PATH "$.status.text"
@@ -170,6 +193,9 @@ exports.postReviewBatch = async function ({
   }
   
   function cteCandidateGen ({skipGrantCheck = false, action, updateFilters}) {
+    const routine = applyRoutines
+      ? RoutineService.sqlRoutineMatch('cteReview', skipGrantCheck ? {} : { extraOn: 'cteGrant.assetId IS NOT NULL' })
+      : RoutineService.sqlNoRoutineMatch
     let sqlFilterPredicates, sqlPredicates
     if (updateFilters) {
       sqlFilterPredicates = updateFilters.map( filter => genFilter(filter)).join(' AND ')
@@ -193,10 +219,10 @@ exports.postReviewBatch = async function ({
     rvcd.version,
     rvcd.checkDigest,
     
-    COALESCE(cteReview.resultId, review.resultId) as resultId,
-    COALESCE(cteReview.detail, review.detail, '') as detail,
-    COALESCE(cteReview.comment, review.comment, '') as comment,
-    COALESCE(cteReview.metadata, review.metadata, '{}') as metadata,
+    COALESCE(${routine.columns.resultId}, cteReview.resultId, review.resultId) as resultId,
+    COALESCE(${routine.columns.detail}, cteReview.detail, review.detail, '') as detail,
+    COALESCE(${routine.columns.comment}, cteReview.comment, review.comment, '') as comment,
+    COALESCE(cteReview.metadata, review.metadata, json_object()) as metadata,
     
     CASE WHEN cteReview.resultEngine != 0 -- resultEngine present
       THEN cteReview.resultEngine
@@ -207,7 +233,7 @@ exports.postReviewBatch = async function ({
       END
     END as resultEngine,
       
-    CASE WHEN cteReview.statusId is not null
+    COALESCE(${routine.columns.statusId}, CASE WHEN cteReview.statusId is not null
       THEN cteReview.statusId
       ELSE
         CASE WHEN review.reviewId is null
@@ -216,9 +242,9 @@ exports.postReviewBatch = async function ({
           THEN 0
           ELSE review.statusId
         END
-    END as statusId,
+    END) as statusId,
       
-    CASE WHEN cteReview.statusId is not null or review.reviewId is null
+    COALESCE(${routine.columns.statusText}, CASE WHEN cteReview.statusId is not null or review.reviewId is null
       THEN cteReview.statusText
       ELSE
         CASE WHEN (cteCollectionSetting.resetCriteria = 'result' and rChangedResult.reviewId is not null)
@@ -226,23 +252,23 @@ exports.postReviewBatch = async function ({
           THEN 'Review change triggered status update'
           ELSE review.statusText
         END
-    END as statusText,
+    END) as statusText,
       
-    CASE WHEN cteReview.statusId is not null 
+    COALESCE(${routine.columns.statusTs}, CASE WHEN cteReview.statusId is not null
         or review.reviewId is null
         or (cteCollectionSetting.resetCriteria = 'result' and rChangedResult.reviewId is not null)
         or (cteCollectionSetting.resetCriteria = 'any' and rChangedAny.reviewId is not null)
-      THEN UTC_TIMESTAMP()
+      THEN @utcTimestamp
       ELSE review.statusTs
-    END as statusTs,
+    END) as statusTs,
     
-    CASE WHEN cteReview.statusId is not null 
+    COALESCE(${routine.columns.statusUserId}, CASE WHEN cteReview.statusId is not null
         or review.reviewId is null
         or (cteCollectionSetting.resetCriteria = 'result' and rChangedResult.reviewId is not null)
         or (cteCollectionSetting.resetCriteria = 'any' and rChangedAny.reviewId is not null)
       THEN @userId
       ELSE review.statusUserId
-    END as statusUserId,
+    END) as statusUserId,
       
     CASE WHEN cteReview.resultId is not null
         or cteReview.detail is not null
@@ -256,10 +282,13 @@ exports.postReviewBatch = async function ({
         or cteReview.detail is not null
         or cteReview.comment is not null
         or review.reviewId is null
-      THEN UTC_TIMESTAMP()
+      THEN @utcTimestamp
       ELSE review.ts
-    END as ts
-  
+    END as ts,
+
+    ${routine.columns.routineId} IS NOT NULL as routineMatched,
+    COALESCE(${routine.columns.routineId}, ${sqlKeptRoutineId('cteReview')}) as routineId
+
   from
     cteAsset
     CROSS JOIN cteRule
@@ -267,6 +296,7 @@ exports.postReviewBatch = async function ({
     ${!skipGrantCheck ? 'LEFT JOIN cteGrant on (cteAsset.assetId = cteGrant.assetId and cteRule.ruleId = cteGrant.ruleId)' : ''}
     LEFT JOIN rule_version_check_digest rvcd on cteRule.ruleId = rvcd.ruleId
     LEFT JOIN review on (cteAsset.assetId = review.assetId and rvcd.version = review.version and rvcd.checkDigest = review.checkDigest)
+    ${routine.join}
     LEFT JOIN cteCollectionSetting on true
     LEFT JOIN review rChangedResult on (
       rChangedResult.reviewId = review.reviewId 
@@ -326,6 +356,9 @@ select
   cteCandidate.statusTs,
   cteCandidate.userId,
   cteCandidate.ts,
+  cteCandidate.routineId,
+  cteCandidate.routineMatched,
+  ${sqlRoutineUnchanged} as routineUnchanged,
   CASE WHEN cteCandidate.granted IS NULL
     THEN 
       'no grant for this asset/ruleId'
@@ -368,7 +401,8 @@ select
 	END as error
 from
   cteCandidate
-  LEFT JOIN cteCollectionSetting on true`
+  LEFT JOIN cteCollectionSetting on true
+  LEFT JOIN review on review.reviewId = cteCandidate.reviewId`
   const sqlHistoryPrune = `
   with historyRecs AS (
     select
@@ -378,7 +412,7 @@ from
       review_history rh
       left join review r using (reviewId)
     where
-      reviewId IN (SELECT reviewId from validated_reviews where error is null and reviewId is not null)
+      reviewId IN (SELECT reviewId from validated_reviews where error is null and reviewId is not null and not routineUnchanged)
   )
   delete review_history
   FROM 
@@ -402,7 +436,8 @@ from
     statusTs,
     statusId,
     touchTs,
-    resultEngine
+    resultEngine,
+    routineId
   ) SELECT 
       reviewId,
       ruleId,
@@ -417,11 +452,12 @@ from
       statusTs,
       statusId,
       touchTs,
-      CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END
+      CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END,
+      routineId
     FROM
       review 
     WHERE
-      reviewId IN (SELECT reviewId from validated_reviews where error is null and reviewId is not null)
+      reviewId IN (SELECT reviewId from validated_reviews where error is null and reviewId is not null and not routineUnchanged)
     FOR UPDATE    
   `
   const sqlInsertReviews = `
@@ -440,7 +476,8 @@ from
     statusUserId,
     statusTs,
     userId,
-    ts)
+    ts,
+    routineId)
   select 
     assetId,
     ruleId,
@@ -456,7 +493,8 @@ from
     statusUserId,
     statusTs,
     userId,
-    ts
+    ts,
+    routineId
   from
     validated_reviews vr
   where
@@ -465,7 +503,7 @@ from
   const sqlUpdateReviews = `
   update
     review r
-    inner join validated_reviews vr on (r.reviewId = vr.reviewId and vr.error is null)
+    inner join validated_reviews vr on (r.reviewId = vr.reviewId and vr.error is null and not vr.routineUnchanged)
   set
     r.resultId = vr.resultId,
     r.resultEngine = vr.resultEngine,
@@ -477,14 +515,22 @@ from
     r.statusUserId = vr.statusUserId,
     r.statusTs = vr.statusTs,
     r.userId = vr.userId,
-    r.ts = vr.ts
+    r.ts = vr.ts,
+    r.routineId = vr.routineId
+  `
+  const sqlAdoptUnchangedReviews = `
+  update
+    review r
+    inner join validated_reviews vr on (r.reviewId = vr.reviewId and vr.error is null and vr.routineUnchanged)
+  set
+    r.routineId = vr.routineId
   `
 
   let connection
   try {
     connection = await dbUtils.pool.getConnection()
 
-    const sqlVariables = `set @collectionId = ?, @userId = ?, @review = ?`
+    const sqlVariables = `set @collectionId = ?, @userId = ?, @review = ?, @utcTimestamp = UTC_TIMESTAMP()`
     await connection.query(sqlVariables, [parseInt(collectionId), parseInt(userId), JSON.stringify(source.review)])
     await connection.query(sqlTempTable)
     
@@ -493,13 +539,17 @@ from
     let [counts] = await connection.query(`select
     coalesce(sum(case when error is not null then 1 else 0 end),0) as failedValidations,
     coalesce(sum(case when error is null and reviewId is null then 1 else 0 end),0) as inserts,
-    coalesce(sum(case when error is null and reviewId is not null then 1 else 0 end),0) as updates
+    coalesce(sum(case when error is null and reviewId is not null and not routineUnchanged then 1 else 0 end),0) as updates,
+    coalesce(sum(case when error is null and routineMatched then 1 else 0 end),0) as routineApplied
     from validated_reviews`)
     if (counts[0].failedValidations) {
-      ;[validationErrors] = await connection.query('select CAST(assetId AS CHAR) as assetId, ruleId, error from validated_reviews where error is not null LIMIT 50')
+      ;[validationErrors] = await connection.query(`select CAST(assetId AS CHAR) as assetId, ruleId, ${sqlRejectionReason} as error from validated_reviews where error is not null LIMIT 50`)
     }
     async function transaction () {
       await connection.query('START TRANSACTION')
+      for (const sql of sqlLockRoutines('validated_reviews')) {
+        await connection.query(sql)
+      }
 
       if (counts[0].updates) {
           await connection.query(sqlHistoryPrune, [ historyMaxReviews ])
@@ -510,6 +560,9 @@ from
       }
       if (counts[0].inserts) {
         await connection.query(sqlInsertReviews) 
+      }
+      if (counts[0].routineApplied) {
+        await connection.query(sqlAdoptUnchangedReviews)
       }
       const statsParams = {
         collectionId
@@ -536,7 +589,7 @@ from
     if (dryRun) {
       return {willInsert: counts[0].inserts, willUpdate: counts[0].updates, willFailValidation: counts[0].failedValidations, validationErrors}
     }
-    return {inserted: counts[0].inserts, updated: counts[0].updates, failedValidation: counts[0].failedValidations, validationErrors}
+    return {inserted: counts[0].inserts, updated: counts[0].updates, failedValidation: counts[0].failedValidations, validationErrors, routineApplied: counts[0].routineApplied}
   }
   catch (err) {
     if (typeof connection !== 'undefined') {
@@ -713,6 +766,10 @@ exports.getReviews = async function ({projections = [], filter = {}, grant}) {
         json_array()
       )
     ) as "history"`)
+  }
+  if (projections.includes('routine')) {
+    columns.push(`(SELECT json_object('routineId', BIN_TO_UUID(cr.uuid,1), 'name', cr.name)
+      FROM collection_routine cr WHERE cr.crId = r.routineId AND cr.collectionId = a.collectionId) as "routine"`)
   }
 
   const predicates = {
@@ -902,17 +959,12 @@ exports.exportReviews = async function (includeHistory = false) {
  * projection List Additional properties to include in the response.  (optional)
  * returns ReviewProjected
  **/
-exports.deleteReviewByAssetRule = async function({assetId, ruleId, projections, grant, svcStatus = {}}) {
+exports.deleteReviewByAssetRule = async function({collectionId, assetId, ruleId, projections, grant, svcStatus = {}}) {
   let connection
   try {
-    let binds = {
-      assetId,
-      ruleId
-    }
+    const rows = await _this.getReviews({projections, filter: {collectionId, assetId, ruleId}, grant})
 
-    let rows = await _this.getReviews({projections, filter: binds, grant})
-
-    binds = [assetId, ruleId]
+    const binds = [assetId, ruleId]
     
     connection = await dbUtils.pool.getConnection()
     async function transaction () {
@@ -949,9 +1001,13 @@ exports.putReviewsByAsset = async function ({
   reviews,
   userId,
   grant,
-  svcStatus
+  svcStatus,
+  applyRoutines = false
   }) {
   let connection
+  const routine = applyRoutines
+    ? RoutineService.sqlRoutineMatch('cteIncoming')
+    : RoutineService.sqlNoRoutineMatch
   const sqlCreateTableValidatedReview = `
 CREATE TEMPORARY TABLE IF NOT EXISTS tt_validated_review (
   INDEX idx_reviewId (reviewId),
@@ -1029,10 +1085,10 @@ select
   rvcd.version,
   rvcd.checkDigest,
   
-  COALESCE(cteIncoming.resultId, review.resultId) as resultId,
-  COALESCE(cteIncoming.detail, review.detail, '') as detail,
-  COALESCE(cteIncoming.comment, review.comment, '') as comment,
-  COALESCE(cteIncoming.metadata, review.metadata, '{}') as metadata,
+  COALESCE(${routine.columns.resultId}, cteIncoming.resultId, review.resultId) as resultId,
+  COALESCE(${routine.columns.detail}, cteIncoming.detail, review.detail, '') as detail,
+  COALESCE(${routine.columns.comment}, cteIncoming.comment, review.comment, '') as comment,
+  COALESCE(cteIncoming.metadata, review.metadata, json_object()) as metadata,
   
   CASE WHEN cteIncoming.resultEngine != 0 -- resultEngine present
     THEN cteIncoming.resultEngine
@@ -1043,7 +1099,7 @@ select
       END
   END as resultEngine,
   
-  CASE WHEN cteIncoming.statusId is not null
+  COALESCE(${routine.columns.statusId}, CASE WHEN cteIncoming.statusId is not null
     THEN cteIncoming.statusId
     ELSE
       CASE WHEN review.reviewId is null
@@ -1052,9 +1108,9 @@ select
         THEN 0
         ELSE review.statusId
       END
-  END as statusId,
+  END) as statusId,
   
-  CASE WHEN cteIncoming.statusId is not null or review.reviewId is null
+  COALESCE(${routine.columns.statusText}, CASE WHEN cteIncoming.statusId is not null or review.reviewId is null
     THEN cteIncoming.statusText
     ELSE
       CASE WHEN (cteCollectionSetting.resetCriteria = 'result' and rChangedResult.reviewId is not null)
@@ -1062,23 +1118,23 @@ select
         THEN 'Review change triggered status update'
         ELSE review.statusText
       END
-  END as statusText,
+  END) as statusText,
   
-  CASE WHEN cteIncoming.statusId is not null -- request contains a status
+  COALESCE(${routine.columns.statusTs}, CASE WHEN cteIncoming.statusId is not null -- request contains a status
       or review.reviewId is null -- no existing review
       or (cteCollectionSetting.resetCriteria = 'result' and rChangedResult.reviewId is not null) -- status meets criteria for resetting
       or (cteCollectionSetting.resetCriteria = 'any' and rChangedAny.reviewId is not null) -- status meets criteria for resetting
     THEN @utcTimestamp -- now
     ELSE review.statusTs -- saved time
-  END as statusTs,
+  END) as statusTs,
   
-  CASE WHEN cteIncoming.statusId is not null -- request contains a status
+  COALESCE(${routine.columns.statusUserId}, CASE WHEN cteIncoming.statusId is not null -- request contains a status
       or review.reviewId is null -- no existing review
       or (cteCollectionSetting.resetCriteria = 'result' and rChangedResult.reviewId is not null) -- status meets criteria for resetting
       or (cteCollectionSetting.resetCriteria = 'any' and rChangedAny.reviewId is not null) -- status meets criteria for resetting
     THEN @userId -- this user
     ELSE review.statusUserId -- saved user
-  END as statusUserId,
+  END) as statusUserId,
   
   CASE WHEN review.reviewId is null -- no existing review
       or cteIncoming.resultId is not null -- patch request contains result
@@ -1094,12 +1150,16 @@ select
       or cteIncoming.comment is not null -- patch request contains comment
     THEN @utcTimestamp -- now
     ELSE review.ts -- saved time
-  END as ts
+  END as ts,
+
+  ${routine.columns.routineId} IS NOT NULL as routineMatched,
+  COALESCE(${routine.columns.routineId}, ${sqlKeptRoutineId('cteIncoming')}) as routineId
 from
   cteIncoming
   LEFT JOIN cteGrant on cteIncoming.ruleId = cteGrant.ruleId
   LEFT JOIN rule_version_check_digest rvcd on cteGrant.ruleId = rvcd.ruleId
   LEFT JOIN review on (@assetId = review.assetId and rvcd.version = review.version and rvcd.checkDigest = review.checkDigest)
+  ${routine.join}
   LEFT JOIN cteCollectionSetting on true
   LEFT JOIN review rChangedResult on (
   review.reviewId = rChangedResult.reviewId
@@ -1173,10 +1233,14 @@ select
   cteCandidate.statusUserId,
   cteCandidate.statusTs,
   cteCandidate.userId,
-  cteCandidate.ts
+  cteCandidate.ts,
+  cteCandidate.routineId,
+  cteCandidate.routineMatched,
+  ${sqlRoutineUnchanged} as routineUnchanged
 from
   cteCandidate
-  LEFT JOIN cteCollectionSetting on true`
+  LEFT JOIN cteCollectionSetting on true
+  LEFT JOIN review on review.reviewId = cteCandidate.reviewId`
   const sqlHistoryPrune = `
 with historyRecs AS (
   select
@@ -1186,7 +1250,7 @@ with historyRecs AS (
     review_history rh
     left join review r using (reviewId)
   where
-    reviewId IN (SELECT reviewId from tt_validated_review where error is null and reviewId is not null)
+    reviewId IN (SELECT reviewId from tt_validated_review where error is null and reviewId is not null and not routineUnchanged)
 )
 delete review_history
 FROM 
@@ -1210,7 +1274,8 @@ INSERT INTO review_history (
   statusTs,
   statusId,
   touchTs,
-  resultEngine
+  resultEngine,
+  routineId
 ) SELECT 
     reviewId,
     ruleId,
@@ -1225,17 +1290,18 @@ INSERT INTO review_history (
     statusTs,
     statusId,
     touchTs,
-    CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END
+    CASE WHEN resultEngine = 0 THEN NULL ELSE resultEngine END,
+    routineId
   FROM
     review 
   WHERE
-    reviewId IN (SELECT reviewId from tt_validated_review where error is null and reviewId is not null)
+    reviewId IN (SELECT reviewId from tt_validated_review where error is null and reviewId is not null and not routineUnchanged)
   FOR UPDATE
 `
   const sqlUpdateReviews = `
 update
   review r
-  inner join tt_validated_review vr on (r.reviewId = vr.reviewId and vr.error is null)
+  inner join tt_validated_review vr on (r.reviewId = vr.reviewId and vr.error is null and not vr.routineUnchanged)
 set
   r.ruleId = vr.ruleId,
   r.resultId = vr.resultId,
@@ -1248,7 +1314,15 @@ set
   r.statusUserId = vr.statusUserId,
   r.statusTs = vr.statusTs,
   r.userId = vr.userId,
-  r.ts = vr.ts
+  r.ts = vr.ts,
+  r.routineId = vr.routineId
+`
+  const sqlAdoptUnchangedReviews = `
+update
+  review r
+  inner join tt_validated_review vr on (r.reviewId = vr.reviewId and vr.error is null and vr.routineUnchanged)
+set
+  r.routineId = vr.routineId
 `
   const sqlInsertReviews = `
 insert into review (
@@ -1266,7 +1340,8 @@ insert into review (
   statusUserId,
   statusTs,
   userId,
-  ts)
+  ts,
+  routineId)
 select 
   assetId,
   ruleId,
@@ -1282,7 +1357,8 @@ select
   statusUserId,
   statusTs,
   userId,
-  ts
+  ts,
+  routineId
 from
   tt_validated_review vr
 where
@@ -1299,15 +1375,19 @@ where
     let [counts] = await connection.query(`select
     coalesce(sum(case when error is not null then 1 else 0 end),0) as failedValidations,
     coalesce(sum(case when error is null and reviewId is null then 1 else 0 end),0) as inserts,
-    coalesce(sum(case when error is null and reviewId is not null then 1 else 0 end),0) as updates
+    coalesce(sum(case when error is null and reviewId is not null and not routineUnchanged then 1 else 0 end),0) as updates,
+    coalesce(sum(case when error is null and routineMatched then 1 else 0 end),0) as routineApplied
     from tt_validated_review`)
     let validationErrors = []
     if (counts[0].failedValidations) {
-      ;[validationErrors] = await connection.query('select ruleId, error as reason from tt_validated_review where error is not null LIMIT 50')
+      ;[validationErrors] = await connection.query(`select ruleId, ${sqlRejectionReason} as reason from tt_validated_review where error is not null LIMIT 50`)
     }
 
     async function transaction () {
       await connection.query('START TRANSACTION')
+      for (const sql of sqlLockRoutines('tt_validated_review')) {
+        await connection.query(sql)
+      }
       if (counts[0].updates) {
           await connection.query(sqlHistoryPrune, [ historyMaxReviews ])
         if (historyMaxReviews !== 0) {
@@ -1318,6 +1398,9 @@ where
       if (counts[0].inserts) {
         await connection.query(sqlInsertReviews) 
       }
+      if (counts[0].routineApplied) {
+        await connection.query(sqlAdoptUnchangedReviews)
+      }
       await dbUtils.updateStatsAssetStig(connection, {assetId})
       await connection.commit()
     }
@@ -1327,7 +1410,8 @@ where
       rejected: validationErrors,
       affected: {
         updated: counts[0].updates,
-        inserted: counts[0].inserts
+        inserted: counts[0].inserts,
+        routineApplied: counts[0].routineApplied
       }
     }
   }
