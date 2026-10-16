@@ -34,7 +34,7 @@ async function addCollectionManager( params ) {
 			cls: 'sm-round-panel',
 			margins: { top: SM.Margin.top, right: SM.Margin.adjacent, bottom: SM.Margin.bottom, left: SM.Margin.edge },
 			region: 'west',
-			width: 450,
+			width: 560,
 			minWidth:450,
 			padding: '10px 10px 10px 10px',
 			border: false,
@@ -45,6 +45,7 @@ async function addCollectionManager( params ) {
 			allowClone: collectionGrant.roleId >= 3 && curUser.privileges.create_collection,
 			canModifyOwners: collectionGrant.roleId === 4,
 			canConfigureTasks: collectionGrant.roleId === 4,
+			canManageRoutines: collectionGrant.roleId >= 3,
 		})
 		let assetGrid = new SM.Manage.Asset.Grid({
 			collectionId: collectionId,

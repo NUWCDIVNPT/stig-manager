@@ -27,6 +27,11 @@ SM.TipContent.ImportOptions.EmptyComment = `How to handle Reviews with empty com
 <br><br><b>Imported:</b> This will have the effect of clearing any existing text.
 `
 
+SM.TipContent.ImportOptions.ApplyRoutines = `Should the Collection's Review Routines apply to the imported results?
+<br><br>When <b>checked</b>, a Review Routine that matches an imported result sets the Review, as it does for every bulk import.
+<br><br>When <b>unchecked</b>, every Review is written as the import alone would write it.
+`
+
 SM.TipContent.ImportOptions.UpdateAssetProps = `Should Asset properties be updated from the import source when the Asset already exists in the Collection?
 <br><br>When <b>checked</b>, the import will update Asset information (IP, MAC, FQDN, noncomputing, and metadata including role and tech area) from the import source, if present.
 <br><br>When <b>unchecked</b>, existing Asset properties will be preserved.
@@ -81,6 +86,8 @@ Making changes to the source Collection while it is being cloned may lead to inc
 <b>Before proceeding, it is recommended that you warn other Users to refrain from modifying any components of the source Collection while the cloning process is underway.</b>`
 
 SM.TipContent.CloneOptions.Grants = `<b>Clone the source Collection's users and their grants.</b><br><br>Whether this option is selected or not, the creator of the cloned Collection (ie. you) will be given an Owner grant in the clone.`
+
+SM.TipContent.CloneOptions.Routines = `<b>Clone the source Collection's Review Routines.</b><br><br>Cloned Routines are marked Needs Review, with you as approver, and do not apply until a Manager of the clone approves them.`
 
 SM.TipContent.CloneOptions.Stigs = `The source Collection's Assets, their core properties, and their Labels are always cloned.<br><br>
 <b>Assignments and Reviews:</b> Assets will be cloned with their current STIG assignments and ALL stored Reviews. This will include Reviews that are no longer associated with a current STIG assignment or are associated with a non-default Revision of a STIG.<br><br>
