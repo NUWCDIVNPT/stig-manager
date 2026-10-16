@@ -1000,7 +1000,7 @@ This feature can be useful for creating a "snapshot" of a Collection at a partic
 
 The new Collection can be substantially identical to the original, but must have a different name.
 
-The clone always includes the original Collection's Assets, their core properties, their Labels, and their STIG assignments. Users can choose whether to copy Reviews, whether to copy the User Grants from the original Collection into the new one, and how STIG Revisions are pinned in the clone.
+The clone always includes the original Collection's Assets, their core properties, their Labels, and their STIG assignments. Users can choose whether to copy Reviews, whether to copy the User Grants and the :ref:`Review Routines<review-routines>` from the original Collection into the new one, and how STIG Revisions are pinned in the clone.
 
 .. note::
    Whether or not the User Grants are copied, the User who created the new Collection will be an Owner of the new Collection.
@@ -1211,6 +1211,97 @@ Empty Comment text is:
 
 Options can be customized for each import:
   Allow users to customize these import options to suit their needs. The options specified here will always be the initial settings presented to all users for this Collection. (**default: allow**)
+
+
+
+-------------------------------
+
+
+.. _review-routines:
+
+Review Routines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A Review Routine records a decision about one exact automated result for one Rule, and repeats that decision whenever the same result is imported again. Routines spare reviewers from re-evaluating identical findings every continuous-monitoring cycle.
+
+Users with the Manage or Owner Role create Routines from the :ref:`Collection Review Workspace` and manage them in the Routines tab. Users with the Full Role or higher can read its Routines through the API, so evaluators can see why a Review changed. Restricted Users cannot, because a Routine's match can reveal Reviews of Assets outside their Grant.
+
+
+Creating a Routine
+++++++++++++++++++++++++++++++++++++
+
+Select a single Review in the Collection Review Workspace and choose "Create Routine...". The dialog shows the match before anything is created: the Result and Detail of the Review's most recent automated result, found in the Review or its History. The match changes only if you tick "Edit match"; unticking it restores the original match. If the automated result has no Detail, Create stays unavailable until you tick "Edit match" and enter one. The Name starts as the Rule's SV number, such as SV-257777r925318, and can be changed.
+
+If a Routine with the same Rule already has the match shown, whether derived or edited, the dialog names it in red and offers "Open routine" to open it instead of creating a duplicate; Create stays unavailable while the match is the same. When the selected Review was set by a Routine, the button reads "Edit Routine..." and opens that Routine.
+
+To change a Routine, select it in the Routines tab and choose "Modify...", or double-click it. Choose "Save" to keep the change or "Cancel" to discard it. An edited match that another Routine with the same Rule has is named in red the same way, and Save stays unavailable while it is. Users with the Full Role cannot open the Routines tab; in the Collection Review Workspace, when the selected Review was set by a Routine, their button reads "Routine Details..." and opens that Routine read-only.
+
+In the Routines tab, "Enable", "Disable", and "Mark Needs Review" act on every selected Routine they apply to, and "Delete..." deletes every selected Routine, provided none of them set any Reviews. The refresh button below the grid reloads it; the grid also reloads when the Collection's STIG assignments or pinned Revisions change.
+
+
+What a Routine Matches
+++++++++++++++++++++++++++++++++++++
+
+A Routine matches an incoming Review only when all of the following hold:
+
+  - The Rule has the Routine's Version and Check Content digest, the same identity STIG Manager uses to track Reviews (see :ref:`review-handling`).
+  - The incoming Result equals the Routine's match Result.
+  - The incoming Detail, with leading and trailing spaces trimmed, is identical to the Routine's match Detail.
+
+Comments and the Result Engine are not compared. The match Result can be any Result, including Not Reviewed.
+
+
+What a Routine Applies
+++++++++++++++++++++++++++++++++++++
+
+A Routine sets the Review's Result, Detail, Comment, and Status. The Detail and Comment are optional: if the Routine has no Detail, the imported Detail is kept as evidence, and if it has no Comment, the imported Comment is kept. The Status can be "Saved" or "Submitted"; a Routine never Accepts or Rejects a Review, so acceptance remains a human decision. The Result can be any Result except Not Reviewed, because a Routine records a decision.
+
+The resulting Review must still meet the Collection's Review Field requirements. A Review that fails them is rejected like any other import, and the rejection reason names the Routine.
+
+
+When Routines Apply
+++++++++++++++++++++++++++++++++++++
+
+Routines are applied by the API when Reviews are written in bulk: .ckl, .cklb, and XCCDF imports, STIGMan Watcher, and batch Review requests, including batch edits in the Collection Review Workspace. Saving a single Review never applies a Routine. To import without Routines, untick "Apply Review Routines" in the import dialog's options; API clients send ``applyRoutines=false`` with the bulk Review requests.
+
+A Routine never overrides a human decision it does not encode. It applies only when the Asset has no Review for the Rule, the Review was last set by this Routine, the Review already equals the Routine's action (including its Detail and Comment, when the Routine has them), or the Review is untouched automated output (the matched Result and Detail, in "Saved" status, with the imported Comment or the Comment this Routine sets). Any other Review is left as the import would otherwise leave it.
+
+Importing a result that a Routine has already handled changes nothing: no History record is written and no timestamps are updated. Import responses report how many Reviews a Routine matched.
+
+
+Provenance
+++++++++++++++++++++++++++++++++++++
+
+A Review set by a Routine records the Routine that set it, and that record is kept in Review History. The Review's Status text reads "Routine: <name>", and its Status User is the User who approved the Routine. Any later write to the Review that the Routine does not make, other than a Metadata change, removes the Routine reference.
+
+The Routines tab's "Reviews set" column counts the Reviews whose current value a Routine set. Disabled and Needs Review Routines keep their count. Only a Routine whose count is 0 can be deleted; disable any other.
+
+
+Approval and Needs Review
+++++++++++++++++++++++++++++++++++++
+
+Each Routine is Active, Disabled, or Needs Review, and Managers can change that state with "Enable", "Disable", and "Mark Needs Review". Only Active Routines apply. A Routine is also reported as Needs Review, and does not apply, when:
+
+  - No Rule in the Collection's current STIG Revisions, including :ref:`pinned Revisions<pin-revision>`, has the Routine's Version and Check Content digest. This happens when the Collection moves to a DISA release that changes the Rule's Check Content.
+  - The User who approved the Routine has been deleted.
+
+Routines follow Review identity, one Version and Check Content per Rule id: when a pinned older Revision reuses a Rule id with different Check Content, the Rule's Reviews, and so its Routines, keep the Check Content of the newest-dated Revision.
+
+The Routines tab shows each Routine's state in its State column, with the reason a Routine needs review in the column's tooltip. Disabled takes precedence: a Disabled Routine shows Disabled even when one of these conditions holds.
+
+Creating a Routine, changing its match or action, re-approving it, or making it Active records the acting User as its approver.
+
+After a STIG update, select Routines in the Routines tab and choose "Review..." to step through the selected Routines shown as Needs Review, in grid order. A Disabled Routine is not offered until it is Enabled. Each Routine is approved individually in the Review Routine window, after seeing its match, its action, and the changes from the Check Content it was approved against to its Rule's current Check Content. When several current Rules share the Routine's Version (STIG ID), choose the Rule. For each Routine, choose:
+
+  - **Approve**: Re-approve this Routine against the Check Content shown, which points it at that Rule and makes it Active.
+  - **Disable**: Disable the Routine.
+  - **Skip**: Leave the Routine as it is.
+
+Approving a Routine whose Name is still an SV number renames it to the SV number of the Rule it is approved against. A Name you changed is kept.
+
+Approve is unavailable when no current Rule has the Routine's Version; the window then gives "No current rule has this STIG ID" as the reason and shows the approved Check Content as removed. If the Routine or the Check Content changed after the step was shown, the step reloads with a notice instead of approving. The Check Content a Routine was approved against is kept after its STIG Revision is deleted, so the comparison remains available.
+
+Cloning a Collection copies its Routines unless "Routines" is unticked in the clone options. They are copied, whether or not Reviews are, as Needs Review, with the cloning User as approver, so the new Collection's Managers confirm them before they apply. Cloned Reviews do not keep their Routine reference.
 
 
 
@@ -1619,7 +1710,7 @@ Transfer Asset(s) to Another Collection
 Select one or more(with Shift+Click) Assets, click the "Transfer To" button, and select the destination Collection.  You will be prompted with a confirmation pop-up. Click "Yes" to transfer the Assets to the new Collection. 
 
 You must have "Manage" or "Owner" levels of access on both the originating and destination Collections. You will only see Collections that you have sufficient access to in the "Transfer To" pulldown.  
-Individual Asset-STIG assignments to Restricted Users are removed when an Asset is moved to a new Collection. All other information (STIG Assignments, Assessments, etc.) transfers with the Asset.  
+Individual Asset-STIG assignments to Restricted Users are removed when an Asset is moved to a new Collection. All other information (STIG Assignments, Assessments, etc.) transfers with the Asset. Its Reviews no longer name the Routine that set them, because Routines stay with their Collection.  
 
 
 .. thumbnail:: /assets/images/transfer-asset.png
