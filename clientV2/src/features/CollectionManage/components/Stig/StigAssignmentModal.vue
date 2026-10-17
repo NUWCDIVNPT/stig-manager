@@ -230,7 +230,6 @@ function buildAssetRow(asset) {
   return {
     assetId: asset.assetId,
     name: asset.name,
-    labelIds,
     labels,
     benchmarkIds: (asset.stigs ?? []).map(s => s.benchmarkId),
   }
@@ -290,13 +289,7 @@ function assetTextFilter(item, text) {
   if (item.name && item.name.toLowerCase().includes(lower)) {
     return true
   }
-  for (const id of (item.labelIds ?? [])) {
-    const label = labelMap.value.get(id)
-    if (label?.name?.toLowerCase().includes(lower)) {
-      return true
-    }
-  }
-  return false
+  return (item.labels ?? []).some(l => l.name.toLowerCase().includes(lower))
 }
 
 const dialogPt = {
@@ -562,6 +555,7 @@ const selectPt = {
 .asset-labels {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 .asset-stig-count {

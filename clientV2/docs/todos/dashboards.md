@@ -44,8 +44,8 @@ Rolls up review notes for both metrics dashboards:
 - [ ] **Collection dash label filter shows plain text; render styled label sprites instead.**
   `MetricsFilter.vue`'s `#value` trigger renders applied labels as a comma-joined text string
   (`displayText`, ~L108-120 / template ~L185-190). The dropdown `#option` already styles each label as a
-  colored `.label-chip` (~L192-201) — reuse that (or `common/Label.vue` `sm-label-sprite`) in the trigger
-  so the closed filter shows the same styled sprites.
+  colored `.label-chip` (~L192-201) — render both through `common/Label.vue` (`LabelChip`, the global
+  `.label-tag` chip `LabelsRow` uses) so the closed filter shows the same styled chips.
 
 ## Grid columns (shared `components/common/MetricsSummaryGrid.vue`)
 

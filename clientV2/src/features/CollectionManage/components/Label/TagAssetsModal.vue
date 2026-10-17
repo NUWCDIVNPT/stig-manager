@@ -10,7 +10,6 @@ import LabelChip from '../../../../components/common/Label.vue'
 import PickListTable from '../../../../components/common/PickListTable.vue'
 import { fetchCollectionLabels } from '../../../../shared/api/collectionsApi.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
-import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
 
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { dashZero } from '../../../../shared/lib/numberFormat.js'
@@ -43,8 +42,6 @@ const isLoading = ref(false)
 const saving = ref(false)
 const pickerValue = ref([[], []])
 const labelMap = ref(new Map())
-
-const labelColor = computed(() => normalizeColor(props.label?.color, '#cccccc'))
 
 const availableCount = computed(() => pickerValue.value[0].length)
 const taggedCount = computed(() => pickerValue.value[1].length)
@@ -149,7 +146,7 @@ const tablePt = {
             Tag Assets
           </div>
           <div class="modal-header-sub">
-            <LabelChip v-if="label" :value="label.name" :color="labelColor" />
+            <LabelChip v-if="label" :value="label.name" :color="label.color" />
             <span v-else>Select assets for this label</span>
           </div>
         </div>

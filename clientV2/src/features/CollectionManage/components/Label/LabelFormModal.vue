@@ -67,8 +67,6 @@ const isValid = computed(() => {
   return validateLabelName(form.value.name, props.labels, props.label?.labelId ?? null) === true
 })
 
-const previewColor = computed(() => normalizeColor(form.value.color, '#cccccc'))
-
 const availablePalette = computed(() => {
   let custom = props.label?.color?.toUpperCase()
   if (custom) {
@@ -194,7 +192,7 @@ const textareaPt = {
         <div class="field-header-row">
           <span class="flabel">Color</span>
           <div class="preview-chip-container">
-            <LabelChip :value="form.name || 'Preview'" :color="previewColor" />
+            <LabelChip :value="form.name || 'Preview'" :color="form.color" />
           </div>
         </div>
         <div class="palette-row" style="margin-top: 0.2rem;">

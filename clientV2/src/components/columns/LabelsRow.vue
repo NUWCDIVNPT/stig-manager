@@ -26,8 +26,8 @@ const popoverRef = ref()
 let hideTimeout = null
 
 // Chip geometry in px derived from rem so it tracks the root font-size along
-// with the chip CSS below. Padding, gap and font (--text-md) mirror .label-tag /
-// .labels-row exactly; the +N badge is a chip too and is measured the same
+// with the chip CSS. Padding, gap and font (--text-md) mirror the global
+// .label-tag (style.css) and .labels-row below exactly; the +N badge is a chip too and is measured the same
 // way. `compact` only drops the trailing margin.
 const root = rootFontSizePx()
 const LABEL_FONT = `600 ${TEXT_SCALE_REM.md * root}px ${bodyFontFamily()}`
@@ -195,15 +195,6 @@ function hidePopover() {
   gap: 0.25rem;
   align-items: center;
   contain: inline-size;
-}
-
-.label-tag {
-  display: inline-block;
-  font-size: var(--text-md);
-  font-weight: 600;
-  padding: 0.1rem 0.45rem;
-  border-radius: 6px;
-  white-space: nowrap;
 }
 
 .label-overflow {
