@@ -162,6 +162,7 @@ function doneImport() { visible.value = false }
           :source-files="queue.sourceFiles.value"
           :is-drag-over="queue.isDragOver.value"
           :note="queue.queueNote.value"
+          :busy="queue.isExtracting.value"
           @add-files="queue.addFilesToQueue"
           @drop-files="queue.onDropFiles"
           @remove-selected="queue.removeSelectedFromQueue"

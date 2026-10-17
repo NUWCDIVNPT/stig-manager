@@ -10,38 +10,47 @@ export function useFileQueue() {
   const selectedQueueRows = ref([])
   const isDragOver = ref(false)
   const queueNote = ref('')
-  const canContinue = computed(() => sourceFiles.value.length > 0)
+  const pendingAdds = ref(0)
+  const isExtracting = computed(() => pendingAdds.value > 0)
+  const canContinue = computed(() => sourceFiles.value.length > 0 && !isExtracting.value)
 
   function _queueId(file) {
     return `${file.name}-${file.size}-${file.lastModified}`
   }
 
   async function addFilesToQueue(files) {
-    const expanded = []
-    const notes = []
-    for (const file of files) {
-      if (!isZip(file.name)) {
-        expanded.push(file)
-        continue
-      }
-      try {
-        const inner = await extractFilesFromZip(file, RESULT_EXTENSIONS)
-        if (!inner.length) {
-          notes.push(`No .ckl, .cklb or .xml files found in ${file.name}`)
+    pendingAdds.value++
+    try {
+      const expanded = []
+      const notes = []
+      for (const file of files) {
+        if (!isZip(file.name)) {
+          expanded.push(file)
+          continue
         }
-        expanded.push(...inner)
+        try {
+          const onSkip = (path, reason) => notes.push(`Skipped nested archive ${path} (${reason})`)
+          const inner = await extractFilesFromZip(file, RESULT_EXTENSIONS, { onSkip })
+          if (!inner.length) {
+            notes.push(`No .ckl, .cklb or .xml files found in ${file.name}`)
+          }
+          expanded.push(...inner)
+        }
+        catch {
+          notes.push(`Could not open ZIP archive ${file.name}`)
+        }
       }
-      catch {
-        notes.push(`Could not open ZIP archive ${file.name}`)
+      queueNote.value = notes.join('; ')
+      for (const file of expanded) {
+        const id = _queueId(file)
+        if (!sourceFiles.value.some(f => f._queueId === id)) {
+          file._queueId = id
+          sourceFiles.value.push(file)
+        }
       }
     }
-    queueNote.value = notes.join('; ')
-    for (const file of expanded) {
-      const id = _queueId(file)
-      if (!sourceFiles.value.some(f => f._queueId === id)) {
-        file._queueId = id
-        sourceFiles.value.push(file)
-      }
+    finally {
+      pendingAdds.value--
     }
   }
 
@@ -111,6 +120,7 @@ export function useFileQueue() {
     selectedQueueRows,
     isDragOver,
     queueNote,
+    isExtracting,
     canContinue,
     addFilesToQueue,
     removeSelectedFromQueue,

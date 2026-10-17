@@ -361,6 +361,13 @@ describe('useFileQueue', () => {
       expect(q.queueNote.value).toContain('empty.zip')
     })
 
+    it('notes a skipped nested zip while keeping its siblings', async () => {
+      const q = useFileQueue()
+      await q.addFilesToQueue([await makeZip('outer.zip', { 'ok.ckl': '1', 'inner/bad.zip': 'not a zip' })])
+      expect(q.sourceFiles.value.map(f => f.name)).toEqual(['ok.ckl'])
+      expect(q.queueNote.value).toBe('Skipped nested archive outer.zip/inner/bad.zip (could not be opened)')
+    })
+
     it('sets queueNote for a corrupt zip without dropping other files', async () => {
       const q = useFileQueue()
       await q.addFilesToQueue([new File(['not a zip'], 'bad.zip'), makeFile('a.ckl')])
@@ -374,6 +381,25 @@ describe('useFileQueue', () => {
       const entry = { ...makeFileEntry(zip), fullPath: '/drops/export.zip' }
       await q.onDropFiles(makeDropEvent([entry]))
       expect(q.sourceFiles.value[0].fullPath).toBe('/drops/export.zip/a.ckl')
+    })
+
+    it('reports isExtracting and blocks Continue while a zip is being expanded', async () => {
+      const q = useFileQueue()
+      q.addFilesToQueue([makeFile('plain.ckl')])
+      expect(q.canContinue.value).toBe(true)
+      const pending = q.addFilesToQueue([await makeZip('export.zip', { 'a.ckl': 'a' })])
+      expect(q.isExtracting.value).toBe(true)
+      expect(q.canContinue.value).toBe(false)
+      await pending
+      expect(q.isExtracting.value).toBe(false)
+      expect(q.canContinue.value).toBe(true)
+      expect(q.sourceFiles.value.map(f => f.name).sort()).toEqual(['a.ckl', 'plain.ckl'])
+    })
+
+    it('clears isExtracting even when a zip is corrupt', async () => {
+      const q = useFileQueue()
+      await q.addFilesToQueue([new File(['not a zip'], 'bad.zip')])
+      expect(q.isExtracting.value).toBe(false)
     })
 
     it('reset clears queueNote', async () => {

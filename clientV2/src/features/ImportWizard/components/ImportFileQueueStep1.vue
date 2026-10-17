@@ -14,6 +14,7 @@ const props = defineProps({
   isDragOver: { type: Boolean, default: false },
   singleFile: { type: Boolean, default: false },
   note: { type: String, default: '' },
+  busy: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
@@ -71,7 +72,11 @@ function onFilePicked(event) {
         style="display: none"
         @change="onFilePicked"
       >
-      <span v-if="note" class="queue-note">
+      <span v-if="busy" class="queue-busy">
+        <i class="pi pi-spin pi-spinner" />
+        Extracting archives…
+      </span>
+      <span v-else-if="note" class="queue-note">
         <i class="pi pi-exclamation-triangle" />
         {{ note }}
       </span>
@@ -134,12 +139,16 @@ function onFilePicked(event) {
 </template>
 
 <style scoped>
-.queue-note {
+.queue-note,
+.queue-busy {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
   font-size: var(--text-md);
+}
+
+.queue-note {
   color: var(--color-warning-yellow);
 }
 
